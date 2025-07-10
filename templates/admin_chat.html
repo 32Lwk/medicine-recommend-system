@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医薬品相談AI - 管理画面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 800px;
+            height: calc(100vh - 200px);
+        }
+
+        .session-sidebar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-monitor {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .ai-status {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+
+        .ai-status.on {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .ai-status.off {
+            border-left-color: #e74c3c;
+            background: #fadbd8;
+        }
+
+        .status-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .queue-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .queue-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .queue-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .queue-item.selected {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .queue-item.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #27ae60;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .queue-item.current-session {
+            border-color: #28a745;
+            background: #d4edda;
+            border-width: 2px;
+        }
+
+        .queue-item.current-session:hover {
+            border-color: #1e7e34;
+            background: #c3e6cb;
+        }
+
+        .queue-item.current-session::after {
+            content: '🔴 LIVE';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .queue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .session-id {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .timestamp {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .user-message {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .reply-section {
+            margin-top: 10px;
+        }
+
+        .reply-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .reply-btn {
+            background: #27ae60;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .reply-btn:hover {
+            background: #229954;
+        }
+
+        .chat-area {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .chat-header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .chat-header::before {
+            content: '👨‍💼 管理者視点';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            min-height: 300px;
+            max-height: none;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-start;
+        }
+
+        .message.bot {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: #f8f9fa;
+            color: #2c3e50;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .message.bot .message-content {
+            background: #3498db;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .message.user .message-time {
+            text-align: left;
+        }
+
+        .message.bot .message-time {
+            text-align: right;
+        }
+
+        .ai-indicator {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .user-indicator {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .manual-indicator {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        .notification.warning {
+            background: #f39c12;
+        }
+
+        .stats-panel {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .refresh-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6268;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .chat-input-area {
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .send-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .send-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: #f1f2f6;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            color: #6c757d;
+            font-style: italic;
+            margin: 10px 15px;
+        }
+
+        .typing-indicator.show {
+            display: block;
+        }
+
+        .session-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .session-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .session-item.selected {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .session-id {
+            font-weight: bold;
+        }
+
+        .count {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 医薬品相談AI - 管理画面</h1>
+            <p>リアルタイム監視・手動対応システム</p>
+            <div id="ai-status-banner" style="margin-top: 10px; padding: 8px 16px; border-radius: 20px; display: inline-block; background: rgba(255,255,255,0.2);">
+                <span id="ai-status-text">🔄 AI状態確認中...</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- 左側: セッション一覧 -->
+            <div class="session-sidebar">
+                <h2 class="section-title" style="font-size: 1.3em; margin-bottom: 10px;">👥 セッション一覧</h2>
+                <button class="refresh-btn" onclick="refreshSessionList()" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 10px;">🔄 更新</button>
+                <div id="session-list" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 300px);">
+                    <div class="empty-state">
+                        <div>👥</div>
+                        <p>セッションを読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側: チャット監視・AI制御 -->
+            <div class="chat-monitor">
+                <h2 class="section-title">💬 チャット監視・AI制御</h2>
+                
+                <!-- AI制御パネル -->
+                <div class="ai-status" id="ai-status" style="margin-bottom: 15px; padding: 10px;">
+                    <div class="status-text" id="status-text" style="font-size: 1em; margin-bottom: 8px;">🔄 状態確認中...</div>
+                    <div class="button-group" style="margin-bottom: 0;">
+                        <button class="btn btn-success" id="ai-on-btn" onclick="setAIMode('on')" style="padding: 8px 15px; font-size: 0.9em;">AI自動応答ON</button>
+                        <button class="btn btn-danger" id="ai-off-btn" onclick="setAIMode('off')" style="padding: 8px 15px; font-size: 0.9em;">AI自動応答OFF</button>
+                        <button class="btn btn-danger" id="admin-mode-btn" onclick="setAIMode('admin')" style="padding: 8px 15px; font-size: 0.9em; background:#c82333;">管理者対応</button>
+                    </div>
+                </div>
+
+                <!-- 統計情報 -->
+                <div class="stats-panel" style="margin-bottom: 15px; padding: 10px;">
+                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">📊 統計情報</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="queue-count">0</div>
+                            <div class="stat-label">待機中</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-sessions">0</div>
+                            <div class="stat-label">総セッション</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 手動返信待ちキュー -->
+                <div class="queue-section" style="margin-bottom: 15px; max-height: 200px; overflow-y: auto;">
+                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">📋 手動返信待ちキュー</h3>
+                    <button class="refresh-btn" onclick="refreshQueue()" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 10px;">🔄 更新</button>
+                    <div id="manual-reply-queue">
+                        <div class="empty-state">
+                            <div>📭</div>
+                            <p>手動返信待ちのメッセージがありません</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- チャットエリア -->
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <span id="chat-title">セッション選択中...</span>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="empty-state">
+                            <div>💬</div>
+                            <p>左側のセッションから選択してください</p>
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="typing-indicator">
+                        <span>入力中...</span>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="chat-input-container">
+                            <textarea 
+                                class="chat-input" 
+                                id="chat-input" 
+                                placeholder="セッションを選択してください..."
+                                rows="1"
+                                onkeydown="handleKeyDown(event)"
+                                disabled
+                            ></textarea>
+                            <button class="send-btn" id="send-btn" onclick="sendReply()" disabled>📤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        let currentSessionId = null;
+        let allSessions = [];
+        let socket = null;
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初期データ読み込み
+            refreshAIStatus();
+            refreshQueue();
+            refreshSessionList();
+            
+            // チャット入力の制御
+            const chatInput = document.getElementById('chat-input');
+            chatInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+                
+                // 送信ボタンの有効/無効を切り替え
+                updateSendButtonState();
+            });
+            
+            // パフォーマンス最適化: 統合された更新処理
+            let updateTimer = null;
+            let lastUpdateTime = 0;
+            const UPDATE_INTERVAL = 5000; // 5秒間隔に統一
+            
+            function performUpdate() {
+                const now = Date.now();
+                if (now - lastUpdateTime >= UPDATE_INTERVAL) {
+                    lastUpdateTime = now;
+                    
+                    // キューとセッション情報を一度に更新
+                    Promise.all([
+                        fetch('/api/main_manual_reply_queue', {
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        }).then(res => res.json()),
+                        fetch('/api/main_sessions', {
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        }).then(res => res.json())
+                    ])
+                    .then(([queueData, sessionsData]) => {
+                        renderQueue(queueData);
+                        updateStats(queueData);
+                        renderCurrentSession(sessionsData);
+                        
+                        // セッション一覧も更新
+                        allSessions = Array.isArray(sessionsData) ? sessionsData : [];
+                        renderSessionList(allSessions);
+                        document.getElementById('total-sessions').textContent = allSessions.length;
+                        
+                        // 現在選択中のセッションのチャット履歴を更新
+                        if (currentSessionId) {
+                            const targetSession = allSessions.find(s => s.session_id === currentSessionId);
+                            if (targetSession && targetSession.messages) {
+                                const currentMessages = document.querySelectorAll('.message');
+                                if (targetSession.messages.length !== currentMessages.length) {
+                                    renderChatMessages(targetSession.messages);
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Update error:', error);
+                    });
+                }
+                
+                updateTimer = setTimeout(performUpdate, UPDATE_INTERVAL);
+            }
+            
+            // 更新処理を開始
+            performUpdate();
+            
+            // ページ離脱時にタイマーをクリア
+            window.addEventListener('beforeunload', function() {
+                if (updateTimer) {
+                    clearTimeout(updateTimer);
+                }
+            });
+        });
+
+        function initializeSocket() {
+            // WebSocket機能は簡素化し、定期的なAPI呼び出しに集中
+            console.log('Admin chat initialized');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function setAIMode(mode) {
+            if (mode === 'admin') {
+                fetch('/api/admin_mode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    showNotification(data.message || '管理者対応モードに切り替えました');
+                    refreshAIStatus && refreshAIStatus();
+                    refreshQueue && refreshQueue();
+                })
+                .catch((error) => {
+                    console.error('管理者対応APIエラー:', error);
+                    showNotification('通信エラーが発生しました: ' + (error && error.message ? error.message : error), 'error');
+                });
+                return;
+            }
+            fetch('/api/main_ai_control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({mode: mode})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification(`エラー: ${data.error}`, 'error');
+                } else {
+                    showNotification(data.message || `AI自動応答を${mode === 'on' ? 'ON' : 'OFF'}にしました`);
+                    refreshAIStatus();
+                    refreshQueue();
+                }
+            })
+            .catch(error => {
+                showNotification(`エラー: ${error.message}`, 'error');
+            });
+        }
+
+        function refreshAIStatus() {
+            fetch('/api/main_ai_control', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const statusElement = document.getElementById('ai-status');
+                    const statusText = document.getElementById('status-text');
+                    const onBtn = document.getElementById('ai-on-btn');
+                    const offBtn = document.getElementById('ai-off-btn');
+                    const headerStatusText = document.getElementById('ai-status-text');
+                    
+                    if (data.ai_auto_reply) {
+                        statusElement.className = 'ai-status on';
+                        statusText.textContent = '🟢 AI自動応答ON';
+                        headerStatusText.textContent = '🟢 AI自動応答ON';
+                        onBtn.disabled = true;
+                        offBtn.disabled = false;
+                    } else {
+                        statusElement.className = 'ai-status off';
+                        statusText.textContent = '🔴 AI自動応答OFF';
+                        headerStatusText.textContent = '🔴 AI自動応答OFF';
+                        onBtn.disabled = false;
+                        offBtn.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    showNotification('AI状態取得エラー', 'error');
+                });
+        }
+
+        function refreshQueue() {
+            fetch('/api/main_manual_reply_queue', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    renderQueue(data);
+                    updateStats(data);
+                })
+                .catch(error => {
+                    showNotification('キュー取得エラー', 'error');
+                });
+            
+            // 現在のセッション情報も取得（AI自動応答ONでも表示）
+            fetch('/api/main_sessions', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    renderCurrentSession(data);
+                })
+                .catch(error => {
+                    console.error('Current session error:', error);
+                });
+        }
+
+        function renderQueue(queue) {
+            const content = document.getElementById('manual-reply-queue');
+            
+            if (!Array.isArray(queue) || queue.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div>📭</div>
+                        <p>手動返信待ちのメッセージがありません</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            queue.forEach((item, index) => {
+                html += `
+                    <div class="queue-item" onclick="selectSession('${item.session_id}', ${index})">
+                        <div class="queue-header">
+                            <span class="session-id">セッション: ${item.session_id}</span>
+                            <span class="timestamp">${item.timestamp}</span>
+                        </div>
+                        <div class="user-message">
+                            <strong>👤 ユーザー:</strong> ${item.user_message}
+                        </div>
+                        <div class="reply-section">
+                            <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力してください..."></textarea>
+                            <button class="reply-btn" onclick="sendReply('${item.session_id}', ${index}, event)">📤 返信送信</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+
+        function updateStats(queue) {
+            document.getElementById('queue-count').textContent = Array.isArray(queue) ? queue.length : 0;
+        }
+
+        function renderCurrentSession(sessionData) {
+            const content = document.getElementById('manual-reply-queue');
+            
+            // 既存のキュー情報を保持
+            let existingContent = content.innerHTML;
+            
+            // 現在のセッション情報を追加
+            if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
+                const currentSessionHtml = `
+                    <div class="queue-item current-session" onclick="selectSession('${sessionData.session_id}', 'current')">
+                        <div class="queue-header">
+                            <span class="session-id">📱 現在のセッション: ${sessionData.session_id}</span>
+                            <span class="timestamp">${sessionData.last_activity}</span>
+                            <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">アクティブ</span>
+                        </div>
+                        <div class="user-message">
+                            <strong>💬 最新メッセージ:</strong> ${sessionData.messages[sessionData.messages.length - 1]?.content || 'なし'}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #6c757d;">
+                            メッセージ数: ${sessionData.messages_count} | セッション有効: ${sessionData.session_active ? '✅' : '❌'}
+                        </div>
+                    </div>
+                `;
+                
+                // 現在のセッションを最初に表示
+                content.innerHTML = currentSessionHtml + existingContent;
+            }
+        }
+
+        function selectSession(sessionId, index) {
+            currentSessionId = sessionId;
+            
+            // 選択状態を更新
+            document.querySelectorAll('.queue-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // チャットタイトルを更新
+            document.getElementById('chat-title').textContent = `セッション: ${sessionId}`;
+            
+            // チャット入力エリアを有効化
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            chatInput.disabled = false;
+            chatInput.placeholder = `${sessionId} に返信メッセージを入力してください...`;
+            
+            // 送信ボタンの状態を更新
+            updateSendButtonState();
+            
+            // セッションのメッセージ履歴を即座に取得
+            loadChatHistory(sessionId);
+            
+            // 選択したセッションをハイライト
+            showNotification(`セッション ${sessionId} を選択しました`, 'success');
+        }
+
+        function loadChatHistory(sessionId) {
+            // ローディング表示
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div class="empty-state">
+                    <div>🔄</div>
+                    <p>チャット履歴を読み込み中...</p>
+                </div>
+            `;
+            
+            fetch('/api/main_sessions', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('All sessions data:', data);
+                    
+                    // 指定されたセッションIDのデータを探す
+                    const targetSession = Array.isArray(data) ? 
+                        data.find(session => session.session_id === sessionId) : null;
+                    
+                    if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
+                        renderChatMessages(targetSession.messages);
+                    } else {
+                        renderChatMessages([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Chat history error:', error);
+                    showNotification('セッション情報取得エラー', 'error');
+                    renderChatMessages([]);
+                });
+        }
+
+        function renderChatMessages(messages) {
+            const chatMessages = document.getElementById('chat-messages');
+            
+            if (!messages || messages.length === 0) {
+                chatMessages.innerHTML = `
+                    <div class="empty-state">
+                        <div>💬</div>
+                        <p>メッセージ履歴がありません</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            messages.forEach(msg => {
+                const messageClass = msg.type === 'user' ? 'user' : 'bot';
+                let indicator = '';
+                
+                // 管理画面用のインジケーター：管理者視点で表示
+                if (msg.type === 'user') {
+                    indicator = '<span class="user-indicator">👤 ユーザー</span>';
+                } else if (msg.type === 'bot') {
+                    if (msg.manual_reply) {
+                        indicator = '<span class="manual-indicator">👨‍💼 管理者</span>';
+                    } else {
+                        indicator = '<span class="ai-indicator">🤖 AI</span>';
+                    }
+                }
+                
+                const messageContentClass = msg.manual_reply ? 'message-content manual-reply' : 'message-content';
+                
+                // メッセージの内容を適切に表示
+                let content = msg.content;
+                if (msg.diagnosis) {
+                    // 診断結果がある場合は適切に表示
+                    content = formatDiagnosisMessage(msg.diagnosis);
+                }
+                
+                const timestamp = new Date().toLocaleTimeString('ja-JP', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                html += `
+                    <div class="message ${messageClass}">
+                        <div class="${messageContentClass}">
+                            ${content}${indicator}
+                            <div class="message-time">${timestamp}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            chatMessages.innerHTML = html;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function formatDiagnosisMessage(diagnosis) {
+            let content = '';
+            
+            if (diagnosis.error) {
+                content = `申し訳ございません。${diagnosis.error}`;
+            } else {
+                if (diagnosis.symptom_pairs) {
+                    content += `<div style="margin-bottom: 10px;"><strong>🔍 推定された症状:</strong><br>${diagnosis.symptom_pairs.join(', ')}</div>`;
+                }
+                
+                if (diagnosis.medicines) {
+                    content += `<div style="margin-bottom: 10px;"><strong>💊 市販薬候補:</strong><br>${diagnosis.medicines.join(', ')}</div>`;
+                }
+                
+                if (diagnosis.cautions) {
+                    content += `<div style="margin-bottom: 10px;"><strong>⚠️ 注意点:</strong><br>${diagnosis.cautions.join('<br>')}</div>`;
+                }
+                
+                if (diagnosis.combination_advice) {
+                    content += `<div style="margin-bottom: 10px;"><strong>💡 薬の選び方アドバイス:</strong><br>${diagnosis.combination_advice}</div>`;
+                }
+                
+                if (diagnosis.symptom_pairs && !diagnosis.error) {
+                    content += `<div style="margin-top: 10px; font-style: italic; color: #666;"><strong>❓ 他にご質問はありますか？</strong><br>薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。</div>`;
+                }
+            }
+            
+            return content || '診断結果をお伝えします。';
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendReply();
+            }
+        }
+
+        function sendReply() {
+            if (!currentSessionId) {
+                showNotification('セッションを選択してください', 'warning');
+                return;
+            }
+            
+            const chatInput = document.getElementById('chat-input');
+            const replyMessage = chatInput.value.trim();
+            
+            if (!replyMessage) {
+                showNotification('返信メッセージを入力してください', 'warning');
+                return;
+            }
+            
+            // 入力中表示
+            const typingIndicator = document.getElementById('typing-indicator');
+            typingIndicator.classList.add('show');
+            
+            // 送信ボタンを無効化
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            
+            fetch('/api/main_manual_reply_queue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: currentSessionId,
+                    reply_message: replyMessage
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                typingIndicator.classList.remove('show');
+                
+                if (data.error) {
+                    showNotification(`エラー: ${data.error}`, 'error');
+                    sendBtn.disabled = false;
+                } else {
+                    showNotification(`返信を送信しました (セッション: ${data.target_session_id})`, 'success');
+                    chatInput.value = '';
+                    chatInput.style.height = 'auto';
+                    
+                    console.log('Manual reply sent successfully:', data);
+                    
+                    // 即座にチャット履歴を更新（1回のみ）
+                    setTimeout(() => {
+                        fetch('/api/main_sessions', {
+                            headers: {
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        })
+                            .then(res => res.json())
+                            .then(sessionsData => {
+                                console.log('Updated sessions data after reply:', sessionsData);
+                                const targetSession = sessionsData.find(s => s.session_id === currentSessionId);
+                                if (targetSession) {
+                                    console.log('Target session after reply:', targetSession);
+                                    renderChatMessages(targetSession.messages);
+                                    
+                                    // セッション一覧も更新
+                                    allSessions = Array.isArray(sessionsData) ? sessionsData : [];
+                                    renderSessionList(allSessions);
+                                    document.getElementById('total-sessions').textContent = allSessions.length;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Session refresh error:', error);
+                            })
+                            .finally(() => {
+                                // 更新完了後に送信ボタンの状態を更新
+                                updateSendButtonState();
+                            });
+                    }, 200);
+                }
+            })
+            .catch(error => {
+                typingIndicator.classList.remove('show');
+                sendBtn.disabled = false;
+                showNotification(`エラー: ${error.message}`, 'error');
+            });
+        }
+
+        // 送信ボタンの状態を更新する関数
+        function updateSendButtonState() {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            const hasText = chatInput.value.trim().length > 0;
+            const hasSession = currentSessionId !== null;
+            sendBtn.disabled = !hasText || !hasSession;
+        }
+
+        // サイドバーに全セッション一覧を表示
+        function refreshSessionList() {
+            fetch('/api/main_sessions')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Sessions data:', data);
+                    allSessions = Array.isArray(data) ? data : [];
+                    renderSessionList(allSessions);
+                    
+                    // 統計情報も更新
+                    document.getElementById('total-sessions').textContent = allSessions.length;
+                })
+                .catch(error => {
+                    console.error('Session list error:', error);
+                    renderSessionList([]);
+                    document.getElementById('total-sessions').textContent = '0';
+                });
+        }
+
+        function renderSessionList(sessions) {
+            const sidebar = document.getElementById('session-list');
+            if (!sidebar) return;
+            
+            if (!Array.isArray(sessions) || sessions.length === 0) {
+                sidebar.innerHTML = '<div style="padding: 24px; color: #888;">セッションがありません</div>';
+                return;
+            }
+            
+            let html = '';
+            sessions.forEach((session, idx) => {
+                const username = session.username || `ユーザー${idx + 1}`;
+                const messageCount = session.messages_count || 0;
+                const isSelected = currentSessionId === session.session_id;
+                
+                html += `
+                    <div class="session-item" 
+                         style="padding: 12px 18px; cursor: pointer; border-bottom: 1px solid #eee; ${isSelected ? 'background:#e3f2fd;' : ''}" 
+                         onclick="selectSession('${session.session_id}', '${username}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-weight: bold; color: #2c3e50;">${username}</span><br>
+                                <span style="font-size: 0.8em; color: #888;">${session.session_id}</span>
+                            </div>
+                            <span style="background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">
+                                ${messageCount}件
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            sidebar.innerHTML = html;
+        }
+
+        function selectSession(sessionId, username) {
+            currentSessionId = sessionId;
+            
+            // 選択状態を更新
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.style.background = '';
+            });
+            event.currentTarget.style.background = '#e3f2fd';
+            
+            // チャットタイトルを更新
+            document.getElementById('chat-title').textContent = `${username} (${sessionId})`;
+            
+            // チャット入力エリアを有効化
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            chatInput.disabled = false;
+            chatInput.placeholder = `${username} に返信メッセージを入力してください...`;
+            
+            // 送信ボタンの状態を更新
+            updateSendButtonState();
+            
+            // 選択したセッションのメッセージ履歴を取得
+            loadChatHistory(sessionId);
+            
+            // 選択したセッションをハイライト
+            showNotification(`${username} のセッションを選択しました`, 'success');
+        }
+
+        function loadChatHistory(sessionId) {
+            // ローディング表示
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div class="empty-state">
+                    <div>🔄</div>
+                    <p>チャット履歴を読み込み中...</p>
+                </div>
+            `;
+            
+            fetch('/api/main_sessions', {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('All sessions data:', data);
+                    
+                    // 指定されたセッションIDのデータを探す
+                    const targetSession = Array.isArray(data) ? 
+                        data.find(session => session.session_id === sessionId) : null;
+                    
+                    if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
+                        renderChatMessages(targetSession.messages);
+                    } else {
+                        renderChatMessages([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Chat history error:', error);
+                    showNotification('セッション情報取得エラー', 'error');
+                    renderChatMessages([]);
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医薬品相談AI - テストサイト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .mode-switcher {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mode-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .button-primary {
+            background: #007bff;
+            color: white;
+        }
+        .button-primary:hover {
+            background: #0056b3;
+        }
+        .button-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .button-secondary:hover {
+            background: #545b62;
+        }
+        .button-success {
+            background: #28a745;
+            color: white;
+        }
+        .button-success:hover {
+            background: #1e7e34;
+        }
+        .button-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .button-danger:hover {
+            background: #c82333;
+        }
+        .mode-indicator {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .mode-api {
+            background: #d4edda;
+            color: #155724;
+        }
+        .mode-mock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .content {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-content {
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .input-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .test-result {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .test-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .logs-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-size: 12px;
+            border-left: 3px solid #007bff;
+        }
+        .log-info {
+            background: #e7f3ff;
+        }
+        .log-error {
+            background: #ffe7e7;
+            border-left-color: #dc3545;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .status-item {
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .status-ok {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 医薬品相談AI - テストサイト</h1>
+            <p>API接続テストとモックモードの切り替えが可能</p>
+        </div>
+
+        <!-- モード切り替え -->
+        <div class="mode-switcher">
+            <div>
+                <span class="mode-indicator mode-{{ 'api' if test_mode == 'api' else 'mock' }}">
+                    {{ 'APIモード' if test_mode == 'api' else 'モックモード' }}
+                </span>
+            </div>
+            <div class="mode-buttons">
+                <button class="button button-primary" onclick="switchMode('api')">APIモード</button>
+                <button class="button button-secondary" onclick="switchMode('mock')">モックモード</button>
+                <button class="button button-success" onclick="checkStatus()">状態確認</button>
+                <button class="button button-danger" onclick="clearLogs()">ログクリア</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 症状マッチングテスト -->
+            <div class="section">
+                <div class="section-header">
+                    <span>🔍 症状マッチングテスト</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label for="symptomInput">症状を入力:</label>
+                        <input type="text" id="symptomInput" placeholder="例: 喉が痛くて熱がある" value="喉が痛くて熱がある">
+                    </div>
+                    <button class="button button-primary" onclick="testSymptom()">症状マッチングテスト</button>
+                    <div id="symptomResult"></div>
+                </div>
+            </div>
+
+            <!-- 注意点生成テスト -->
+            <div class="section">
+                <div class="section-header">
+                    <span>⚠️ 注意点生成テスト</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label for="symptomPairInput">症状ペアを入力:</label>
+                        <input type="text" id="symptomPairInput" placeholder="例: 喉 - 痛み" value="喉 - 痛み">
+                    </div>
+                    <button class="button button-primary" onclick="testCautions()">注意点生成テスト</button>
+                    <div id="cautionsResult"></div>
+                </div>
+            </div>
+
+            <!-- 薬の組み合わせテスト -->
+            <div class="section">
+                <div class="section-header">
+                    <span>💊 薬の組み合わせテスト</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label for="medicinesInput">薬のリスト（カンマ区切り）:</label>
+                        <input type="text" id="medicinesInput" placeholder="例: バファリン, ロキソニン" value="バファリン, ロキソニン">
+                    </div>
+                    <button class="button button-primary" onclick="testCombination()">組み合わせテスト</button>
+                    <div id="combinationResult"></div>
+                </div>
+            </div>
+
+            <!-- 会話テスト -->
+            <div class="section">
+                <div class="section-header">
+                    <span>💬 会話テスト</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label for="questionInput">質問を入力:</label>
+                        <input type="text" id="questionInput" placeholder="例: 副作用について教えて" value="副作用について教えて">
+                    </div>
+                    <div class="input-group">
+                        <label for="symptomPairsInput">症状ペア（カンマ区切り）:</label>
+                        <input type="text" id="symptomPairsInput" placeholder="例: 喉 - 痛み, 全身 - 発熱" value="喉 - 痛み, 全身 - 発熱">
+                    </div>
+                    <button class="button button-primary" onclick="testConversation()">会話テスト</button>
+                    <div id="conversationResult"></div>
+                </div>
+            </div>
+
+            <!-- 統合テスト -->
+            <div class="section">
+                <div class="section-header">
+                    <span>🔄 統合テスト</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label for="fullTestInput">症状を入力（統合テスト）:</label>
+                        <input type="text" id="fullTestInput" placeholder="例: 頭が痛くて吐き気がする" value="頭が痛くて吐き気がする">
+                    </div>
+                    <button class="button button-primary" onclick="testFullFlow()">統合テスト実行</button>
+                    <div id="fullTestResult"></div>
+                </div>
+            </div>
+
+            <!-- システム状態 -->
+            <div class="section">
+                <div class="section-header">
+                    <span>📊 システム状態</span>
+                </div>
+                <div class="section-content">
+                    <div id="statusGrid"></div>
+                </div>
+            </div>
+
+            <!-- ログ表示 -->
+            <div class="section">
+                <div class="section-header">
+                    <span>📝 テストログ</span>
+                </div>
+                <div class="section-content">
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-entry log-info">ログがありません</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ローディング表示 -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>処理中...</p>
+    </div>
+
+    <script>
+        // モード切り替え
+        async function switchMode(mode) {
+            try {
+                const response = await fetch('/api/mode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ mode: mode })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('エラー: ' + result.error);
+                }
+            } catch (error) {
+                alert('エラー: ' + error.message);
+            }
+        }
+
+        // 症状マッチングテスト
+        async function testSymptom() {
+            const symptom = document.getElementById('symptomInput').value;
+            if (!symptom) {
+                alert('症状を入力してください');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/test_symptom', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symptom: symptom })
+                });
+                const result = await response.json();
+                displayResult('symptomResult', result, '症状マッチング');
+            } catch (error) {
+                displayError('symptomResult', error.message);
+            }
+            hideLoading();
+        }
+
+        // 注意点生成テスト
+        async function testCautions() {
+            const symptomPair = document.getElementById('symptomPairInput').value;
+            if (!symptomPair) {
+                alert('症状ペアを入力してください');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/test_cautions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symptom_pair: symptomPair })
+                });
+                const result = await response.json();
+                displayResult('cautionsResult', result, '注意点生成');
+            } catch (error) {
+                displayError('cautionsResult', error.message);
+            }
+            hideLoading();
+        }
+
+        // 薬の組み合わせテスト
+        async function testCombination() {
+            const medicines = document.getElementById('medicinesInput').value;
+            if (!medicines) {
+                alert('薬のリストを入力してください');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/test_combination', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ medicines: medicines.split(',').map(m => m.trim()) })
+                });
+                const result = await response.json();
+                displayResult('combinationResult', result, '薬の組み合わせ');
+            } catch (error) {
+                displayError('combinationResult', error.message);
+            }
+            hideLoading();
+        }
+
+        // 会話テスト
+        async function testConversation() {
+            const question = document.getElementById('questionInput').value;
+            const symptomPairs = document.getElementById('symptomPairsInput').value;
+            if (!question || !symptomPairs) {
+                alert('質問と症状ペアを入力してください');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/test_conversation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        question: question,
+                        symptom_pairs: symptomPairs.split(',').map(s => s.trim()),
+                        medicines: []
+                    })
+                });
+                const result = await response.json();
+                displayResult('conversationResult', result, '会話');
+            } catch (error) {
+                displayError('conversationResult', error.message);
+            }
+            hideLoading();
+        }
+
+        // 統合テスト
+        async function testFullFlow() {
+            const symptom = document.getElementById('fullTestInput').value;
+            if (!symptom) {
+                alert('症状を入力してください');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch('/api/test_full_flow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symptom: symptom })
+                });
+                const result = await response.json();
+                displayResult('fullTestResult', result, '統合テスト');
+            } catch (error) {
+                displayError('fullTestResult', error.message);
+            }
+            hideLoading();
+        }
+
+        // 状態確認
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const result = await response.json();
+                displayStatus(result);
+            } catch (error) {
+                alert('状態確認エラー: ' + error.message);
+            }
+        }
+
+        // ログクリア
+        async function clearLogs() {
+            try {
+                await fetch('/api/clear_logs', { method: 'POST' });
+                loadLogs();
+            } catch (error) {
+                alert('ログクリアエラー: ' + error.message);
+            }
+        }
+
+        // ログ読み込み
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const logs = await response.json();
+                displayLogs(logs);
+            } catch (error) {
+                console.error('ログ読み込みエラー:', error);
+            }
+        }
+
+        // 結果表示
+        function displayResult(elementId, result, testType) {
+            const element = document.getElementById(elementId);
+            if (result.error) {
+                element.innerHTML = `<div class="test-result test-error">エラー: ${result.error}</div>`;
+            } else {
+                let content = `<div class="test-result test-success">`;
+                content += `<strong>${testType}テスト結果:</strong>\n`;
+                content += `モード: ${result.mode}\n`;
+                
+                if (result.symptom_pairs) {
+                    content += `症状ペア: ${result.symptom_pairs.join(', ')}\n`;
+                }
+                if (result.medicines) {
+                    content += `薬: ${result.medicines.join(', ')}\n`;
+                }
+                if (result.cautions) {
+                    if (Array.isArray(result.cautions)) {
+                        content += `注意点:\n`;
+                        result.cautions.forEach(caution => {
+                            content += `- ${caution.symptom_pair}: ${caution.cautions}\n`;
+                        });
+                    } else {
+                        content += `注意点: ${result.cautions}\n`;
+                    }
+                }
+                if (result.advice) {
+                    content += `アドバイス: ${result.advice}\n`;
+                }
+                if (result.combination_advice) {
+                    content += `組み合わせアドバイス: ${result.combination_advice}\n`;
+                }
+                if (result.answer) {
+                    content += `回答: ${result.answer}\n`;
+                }
+                if (result.response_time) {
+                    content += `応答時間: ${result.response_time}秒\n`;
+                }
+                content += `</div>`;
+                element.innerHTML = content;
+            }
+        }
+
+        // エラー表示
+        function displayError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result test-error">エラー: ${error}</div>`;
+        }
+
+        // 状態表示
+        function displayStatus(status) {
+            const grid = document.getElementById('statusGrid');
+            grid.innerHTML = `
+                <div class="status-item ${status.api_key ? 'status-ok' : 'status-error'}">
+                    <strong>APIキー</strong><br>
+                    ${status.api_key ? '設定済み' : '未設定'}
+                </div>
+                <div class="status-item ${status.client ? 'status-ok' : 'status-error'}">
+                    <strong>OpenAIクライアント</strong><br>
+                    ${status.client ? '初期化済み' : '未初期化'}
+                </div>
+                <div class="status-item ${status.csv_file ? 'status-ok' : 'status-error'}">
+                    <strong>CSVファイル</strong><br>
+                    ${status.csv_file ? '読み込み済み' : '読み込み失敗'}
+                </div>
+                <div class="status-item ${status.test_mode === 'api' ? 'status-ok' : 'status-error'}">
+                    <strong>テストモード</strong><br>
+                    ${status.test_mode === 'api' ? 'APIモード' : 'モックモード'}
+                </div>
+            `;
+        }
+
+        // ログ表示
+        function displayLogs(logs) {
+            const container = document.getElementById('logsContainer');
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="log-entry log-info">ログがありません</div>';
+                return;
+            }
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry ${log.level === 'ERROR' ? 'log-error' : 'log-info'}">
+                    <strong>[${log.timestamp}]</strong> [${log.level}] [${log.mode}]<br>
+                    ${log.message}
+                </div>
+            `).join('');
+        }
+
+        // ローディング表示
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStatus();
+            loadLogs();
+            // 5秒ごとにログを更新
+            setInterval(loadLogs, 5000);
+        });
+    </script>
+</body>
+</html> 
