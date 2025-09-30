@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユーザー名入力 | 医薬品相談AI</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .username-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .username-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .username-box input {
+            padding: 12px 18px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1.1em;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+        .username-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .username-box button:hover {
+            background: #4b5fc2;
+        }
+    </style>
+</head>
+<body>
+    <form class="username-box" method="post">
+        <h2>ニックネームを入力してください</h2>
+        <input type="text" name="username" placeholder="例：ユーザー1" required maxlength="20">
+        <br>
+        <button type="submit">開始</button>
+    </form>
+</body>
+</html> 

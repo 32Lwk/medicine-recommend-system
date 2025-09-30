@@ -1,0 +1,16 @@
+Python-3.9.23/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.env
+*.log
+.vscode/
+.idea/
+*.sqlite
+*.db
+node_modules/
+dist/
+build/
+*.egg-info/
