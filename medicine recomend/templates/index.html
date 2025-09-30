@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>医薬品相談AI - チャット</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            text-align: left;
+        }
+        .chat-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: #fff; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .chat-header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .chat-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .chat-messages { 
+            flex: 1;
+            overflow-y: auto; 
+            padding: 20px;
+            background: #f5f5f5;
+            text-align: left;
+            min-height: 0;
+            position: relative;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.bot {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+        }
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .message.bot .message-content.manual-reply {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+        }
+        .chat-input { 
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input, .chat-input textarea { 
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .chat-input input:focus, .chat-input textarea:focus {
+            border-color: #4CAF50;
+        }
+        .chat-input button { 
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover {
+            background: #45a049;
+        }
+        .diagnosis-result {
+            background: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .medicine-list {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .caution-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 6px;
+            margin: 3px 0;
+            border-radius: 8px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            text-align: left;
+            text-indent: 0;
+            white-space: pre-line;
+            min-height: 24px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .advice-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            text-align: left;
+            text-indent: 0;
+            white-space: pre-line;
+            min-height: 50px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .typing-indicator {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .question-prompt {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-style: italic;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .caution-box strong,
+        .advice-box strong,
+        .diagnosis-result strong,
+        .medicine-list strong {
+            text-align: left;
+            display: inline;
+            margin-right: 8px;
+            margin-left: 0;
+            padding-left: 0;
+            text-indent: 0;
+        }
+        
+        .caution-box div,
+        .advice-box div,
+        .diagnosis-result div,
+        .medicine-list div {
+            text-align: left;
+            text-indent: 0;
+            margin-left: 0;
+            padding-left: 0;
+        }
+        
+        /* 注意点とアドバイスの内容を強制的に左寄りにする */
+        .caution-box p,
+        .advice-box p {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        
+        /* 最初の段落を特に強制的に左寄りにする */
+        .caution-box p:first-of-type,
+        .advice-box p:first-of-type {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        
+        /* 注意点とアドバイスの内容コンテナを強制的に左寄りにする */
+        .caution-content,
+        .advice-content {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            white-space: pre-line !important;
+            min-height: 30px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .manual-reply-indicator {
+            display: inline-block;
+            background: #ffc107;
+            color: #212529;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        /* 新しい推奨結果のスタイル */
+        .recommendation-result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            min-height: 100px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .recommendation-result h4 {
+            color: #495057;
+            margin: 10px 0 5px 0;
+            font-size: 16px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+        
+        .medicine-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .medicine-item h5 {
+            color: #4CAF50;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+        
+        .medicine-item p {
+            margin: 5px 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .medicine-item strong {
+            color: #495057;
+        }
+        
+        .medicine-summary {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 13px;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .medicine-summary em {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* 医薬品相談回答のスタイル */
+        .chat-response {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            min-height: 100px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .chat-response h4 {
+            color: #495057;
+            margin: 10px 0 5px 0;
+            font-size: 16px;
+            border-bottom: 2px solid #17a2b8;
+            padding-bottom: 5px;
+        }
+        
+        .answer-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .details-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .details-section h5 {
+            color: #17a2b8;
+            margin: 8px 0 5px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 3px;
+        }
+        
+        .details-section p {
+            margin: 5px 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #2e7d32;
+        }
+        
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        
+        .submit-attributes-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .submit-attributes-btn:hover {
+            background: #45a049;
+        }
+        
+        .answer-questions-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .answer-questions-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>💊 医薬品相談AI</h1>
+        <p>症状を教えてください。適切な市販薬と注意点をご案内します。</p>
+        <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px;">履歴クリア</button>
+        <button id="new-session-btn" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">新しいセッションを開始</button>
+        <button id="admin-request-btn" style="background: #ffc107; color: #212529; border: 1px solid #ffc107; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">薬剤師を要請</button>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+            <div class="message-content">
+                こんにちは！どのような症状でお困りでしょうか？<br>
+                例：「頭痛がする」「喉が痛い」「熱がある」など
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.type == 'user' %}
+                    <div class="message user">
+                        <div class="message-content">{{ message.content }}</div>
+                    </div>
+                {% elif message.type == 'bot' %}
+                    <div class="message bot">
+                        <div class="message-content{% if message.manual_reply %} manual-reply{% endif %}">
+                            {% if message.manual_reply %}
+                                <span class="manual-reply-indicator">👤 薬剤師 川嶋 返信</span><br><br>
+                            {% endif %}
+                            
+                            {% if message.diagnosis %}
+                                {% if message.diagnosis.symptoms %}
+                                    <div class="diagnosis-result">
+                                        <strong>🔍 推定された症状:</strong><br>
+                                        {{ message.diagnosis.symptoms|join(', ') }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if message.diagnosis.recommended_medicines %}
+                                    <div class="medicine-list">
+                                        <strong>💊 推奨医薬品:</strong><br>
+                                        {% for medicine in message.diagnosis.recommended_medicines %}
+                                            <div class="medicine-summary">
+                                                <strong>
+                                                {% if medicine.number == 1 %}1つ目
+                                                {% elif medicine.number == 2 %}2つ目
+                                                {% elif medicine.number == 3 %}3つ目
+                                                {% else %}{{ medicine.number }}つ目
+                                                {% endif %}
+                                                :</strong> {{ medicine.product_name }}<br>
+                                                <em>推奨理由:</em> {{ medicine.reason }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if message.diagnosis.usage_notes %}
+                                    <div class="caution-box">
+                                        <strong>⚠️ 使用上の注意:</strong>
+                                        <div class="caution-content" style="white-space: pre-line;">
+                                            {{ message.diagnosis.usage_notes|safe }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if message.diagnosis.doctor_consultation %}
+                                    <div class="advice-box">
+                                        <strong>🏥 医師の受診が必要な場合:</strong><br>
+                                        <div class="advice-content">{{ message.diagnosis.doctor_consultation|safe }}</div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if message.diagnosis.additional_questions %}
+                                    <div class="question-box" style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 10px 0;">
+                                        <strong>❓ 追加でお伺いしたいこと</strong>
+                                        {% if message.diagnosis.missing_priority %}
+                                            <span style="color: #ff9800; font-weight: bold;">
+                                            （優先度: 
+                                            {% if message.diagnosis.missing_priority == 'critical' %}必須
+                                            {% elif message.diagnosis.missing_priority == 'important' %}重要
+                                            {% else %}任意{% endif %}）
+                                            </span>
+                                        {% endif %}
+                                        <br>
+                                        <p style="margin: 5px 0;">
+                                        {% if message.diagnosis.missing_priority == 'critical' %}
+                                            より適切な医薬品をご提案するため、以下の情報を教えてください：
+                                        {% elif message.diagnosis.missing_priority == 'important' %}
+                                            安全のため、以下の情報を教えてください：
+                                        {% else %}
+                                            より安全な使用のため、可能であれば以下の情報を教えてください：
+                                        {% endif %}
+                                        </p>
+                                        <ul style="margin: 10px 0; padding-left: 20px;">
+                                        {% for question in message.diagnosis.additional_questions %}
+                                            <li>{{ question }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if message.diagnosis.symptoms and not message.diagnosis.error %}
+                                    <div class="question-prompt">
+                                        <strong>❓ 他にご質問はありますか？</strong><br>
+                                        薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                {{ message.content|safe }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+    </div>
+    
+    <div class="chat-input">
+        <form method="post" id="chatForm">
+            <div class="input-group">
+                <textarea name="message" id="messageInput" placeholder="症状を入力してください..." required rows="1"></textarea>
+                <button type="submit">送信</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 送信中フラグ（グローバル変数）
+    let isSubmitting = false;
+    
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (message === '') {
+            return;
+        }
+        
+        // 送信中フラグを立てる
+        isSubmitting = true;
+        
+        // 入力フィールドをクリア
+        input.value = '';
+        input.style.height = 'auto';
+        
+        // ユーザーメッセージを即座に表示
+        addUserMessage(message);
+        
+        // タイピングインジケーターを表示
+        addTypingIndicator();
+        
+        // チャットを最下部にスクロール
+        scrollToBottom();
+        
+        // フォームを送信
+        submitForm(message);
+    });
+
+    // Enterキーで送信、Shift+Enterで改行
+    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const form = document.getElementById('chatForm');
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // textareaの高さを自動調整
+    document.getElementById('messageInput').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    // ユーザーメッセージをチャット画面に追加
+    function addUserMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user';
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(message)}</div>
+        `;
+        chatMessages.appendChild(messageDiv);
+    }
+
+    // タイピングインジケーターを追加
+    function addTypingIndicator() {
+        const chatMessages = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'currentTypingIndicator';
+        typingDiv.innerHTML = `
+            <div class="message-content">
+                <div class="typing-indicator">
+                    AIが診断中...
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(typingDiv);
+    }
+
+    // HTMLエスケープ関数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // エラーメッセージを表示
+    function showErrorMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'message bot';
+        errorDiv.innerHTML = `
+            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px;">
+                <strong>⚠️ エラー</strong><br>
+                ${escapeHtml(message)}
+            </div>
+        `;
+        chatMessages.appendChild(errorDiv);
+        scrollToBottom();
+    }
+
+    // フォームを送信
+    function submitForm(message) {
+        const formData = new FormData();
+        formData.append('message', message);
+        
+        fetch('/?v={{ version }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        })
+                .then(response => {
+            console.log('POST response status:', response.status, response.statusText);
+            if (response.ok) {
+                return response.json();
+            } else {
+                console.error('POST failed:', response.status, response.statusText);
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+        })
+        .then((data) => {
+            console.log('POST response:', data);
+            
+            // 少し待ってから最新のメッセージを取得（サーバー処理完了を待つ）
+            // 最大10回リトライ（合計5秒）
+            let retryCount = 0;
+            const maxRetries = 10;
+            const retryInterval = 500;
+            
+            const fetchMessages = () => {
+                fetch('/api/sessions?v={{ version }}', {
+                    headers: { 'Cache-Control': 'no-cache' }
+                })
+                .then(response => response.json())
+                .then(sessionData => {
+                    console.log(`Session data received (attempt ${retryCount + 1}):`, sessionData);
+                    console.log('Messages count:', sessionData?.messages?.length);
+                    
+                    if (sessionData && sessionData.messages && sessionData.messages.length >= data.message_count) {
+                        // メッセージが揃った
+                        console.log('✓ All messages loaded, rendering...');
+                        removeTypingIndicator();
+                        renderChatMessages(sessionData.messages);
+                        isSubmitting = false;
+                    } else if (retryCount < maxRetries) {
+                        // リトライ
+                        retryCount++;
+                        console.log(`Retrying... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        // 最大リトライ回数に達した
+                        console.error('Max retries reached, showing error');
+                        removeTypingIndicator();
+                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        isSubmitting = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Session fetch error:', error);
+                    removeTypingIndicator();
+                    showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
+                    isSubmitting = false;
+                });
+            };
+            
+            // 最初の取得を500ms後に開始
+            setTimeout(fetchMessages, retryInterval);
+        })
+        .catch(error => {
+            console.error('POST Error details:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            
+            // エラー時はタイピングインジケーターを削除
+            removeTypingIndicator();
+            // 送信完了フラグを解除
+            isSubmitting = false;
+            
+            // エラーメッセージを表示
+            let errorMsg = '申し訳ございません。送信中にエラーが発生しました。';
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg += '\nサーバーに接続できません。サーバーが起動しているか確認してください。';
+            } else {
+                errorMsg += `\nエラー詳細: ${error.message}`;
+            }
+            showErrorMessage(errorMsg);
+        });
+    }
+
+    // タイピングインジケーターを削除
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    // チャットを最下部にスクロール
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        // スクロール位置を固定してレイアウトの安定性を向上
+        requestAnimationFrame(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+    }
+
+    // ページ読み込み時に入力欄の内容を復元
+    window.onload = function() {
+        const input = document.getElementById('messageInput');
+        if (input) {
+            const pending = sessionStorage.getItem('pendingMessage');
+            if (pending) {
+                input.value = pending;
+            }
+        }
+        scrollToBottom();
+        // チャット部分のみ定期的にAPIで取得・描画
+        setInterval(function() {
+            fetch('/api/sessions?v={{ version }}', {
+                headers: { 'Cache-Control': 'no-cache' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.messages) {
+                    renderChatMessages(data.messages);
+                }
+            })
+            .catch(error => {
+                console.error('Session update error:', error);
+            });
+        }, 5000);
+    };
+
+    // チャット履歴をクリアする関数
+    function clearChat() {
+        if (confirm('チャット履歴をクリアしますか？')) {
+            fetch('/clear?v={{ version }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            }).then(() => {
+                location.reload();
+            });
+        }
+    }
+
+    // 新しいセッションを開始する関数
+    document.getElementById('new-session-btn').onclick = function() {
+        if (confirm('本当に新しいセッションを開始しますか？（履歴もユーザー名もリセットされます）')) {
+            fetch('/new_session?v={{ version }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('新しいセッションの開始に失敗しました');
+                }
+            })
+            .catch(() => {
+                alert('通信エラーが発生しました');
+            });
+        }
+    };
+
+    // 薬剤師対応を要請ボタン
+    document.getElementById('admin-request-btn').onclick = function() {
+        if (confirm('薬剤師対応を要請しますか？')) {
+            fetch('/api/request_admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => response.json())
+
+            .then(data => {
+                if (data.status === 'ok') {
+                    // チャット欄に即時システムメッセージを表示
+                    const chatMessages = document.getElementById('chatMessages');
+                    const sysDiv = document.createElement('div');
+                    sysDiv.className = 'message bot';
+                    sysDiv.innerHTML = '<div class="message-content" style="background:#fffbe6; color:#856404; border:1px solid #ffeeba;">薬剤師対応を要請しました。しばらくお待ちください。</div>';
+                    chatMessages.appendChild(sysDiv);
+                    scrollToBottom();
+                } else {
+                    alert('薬剤師対応の要請に失敗しました');
+                }
+            })
+            .catch(() => {
+                alert('通信エラーが発生しました');
+            });
+        }
+    };
+
+    function renderChatMessages(messages) {
+        console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            console.error('chatMessages element not found');
+            return;
+        }
+        
+        // タイピングインジケーターの状態を保存
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        const hasTypingIndicator = typingIndicator !== null;
+        console.log('hasTypingIndicator:', hasTypingIndicator);
+        
+        // レイアウトの安定性を向上させるため、一括更新
+        const fragment = document.createDocumentFragment();
+        
+        // 初期メッセージ
+        const initialMessage = document.createElement('div');
+        initialMessage.className = 'message bot';
+        initialMessage.innerHTML = `
+            <div class="message-content">
+                こんにちは！どのような症状でお困りでしょうか？<br>
+                例：「頭痛がする」「喉が痛い」「熱がある」など
+            </div>
+        `;
+        fragment.appendChild(initialMessage);
+        
+        messages.forEach(message => {
+            const messageDiv = document.createElement('div');
+            if (message.type === 'user') {
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `<div class="message-content">${escapeHtml(message.content)}</div>`;
+            } else if (message.type === 'bot') {
+                messageDiv.className = 'message bot';
+                
+                // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
+                if (message.content && message.content.includes('<div class="recommendation-result">')) {
+                    messageDiv.innerHTML = message.content;
+                }
+                // 従来の形式
+                else {
+                    let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}">`;
+                    
+                    if (message.manual_reply) {
+                        content += `<span class="manual-reply-indicator">👤 薬剤師 川嶋 返信</span><br><br>`;
+                    }
+                    
+                    // 新しい推奨結果の形式に対応
+                    if (message.diagnosis) {
+                    // 医薬品相談回答の場合
+                    if (message.diagnosis.is_question && message.diagnosis.chat_response) {
+                        const chatResponse = message.diagnosis.chat_response;
+                        content += `<div class="chat-response"><h4>💬 医薬品相談回答</h4>`;
+                        content += `<div class="answer-section"><strong>回答:</strong><br>${chatResponse.answer || '回答を取得できませんでした'}</div>`;
+                        content += `<div class="details-section">`;
+                        content += `<h5>📋 医薬品詳細</h5><p>${chatResponse.medicine_details || '詳細情報を取得できませんでした'}</p>`;
+                        content += `<h5>💊 飲み合わせ・相互作用</h5><p>${chatResponse.interactions || '飲み合わせ情報を取得できませんでした'}</p>`;
+                        content += `<h5>🏃 ドーピング規制チェック</h5><p>${chatResponse.doping_check || 'ドーピング規制の確認ができませんでした'}</p>`;
+                        content += `<h5>⚠️ 副作用・注意点</h5><p>${chatResponse.side_effects || '副作用情報を取得できませんでした'}</p>`;
+                        content += `<h5>🏥 医師相談のアドバイス</h5><p>${chatResponse.consultation_advice || '医師にご相談ください'}</p>`;
+                        content += `</div></div>`;
+                    }
+                    // 従来の推奨結果の場合
+                    else if (message.diagnosis.symptoms) {
+                        content += `<div class="diagnosis-result"><strong>🔍 推定された症状:</strong><br>${message.diagnosis.symptoms.join(', ')}</div>`;
+                    }
+                    if (message.diagnosis.recommended_medicines && message.diagnosis.recommended_medicines.length > 0) {
+                        content += `<div class="medicine-list"><strong>💊 推奨医薬品:</strong><br>`;
+                        message.diagnosis.recommended_medicines.forEach(medicine => {
+                            content += `<div class="medicine-summary"><strong>${(() => {
+    if (medicine.number === 1) return '1つ目';
+    else if (medicine.number === 2) return '2つ目';
+    else if (medicine.number === 3) return '3つ目';
+    else return medicine.number + 'つ目';
+})()}:</strong> ${medicine.product_name}<br><em>推奨理由:</em> ${medicine.reason}</div>`;
+                        });
+                        content += `</div>`;
+                    }
+                    if (message.diagnosis.usage_notes) {
+                        content += `<div class="caution-box"><strong>⚠️ 使用上の注意:</strong><div class="caution-content" style="white-space: pre-line;">${message.diagnosis.usage_notes}</div></div>`;
+                    }
+                    if (message.diagnosis.doctor_consultation) {
+                        content += `<div class="advice-box"><strong>🏥 医師の受診が必要な場合:</strong><br><div class="advice-content">${message.diagnosis.doctor_consultation}</div></div>`;
+                    }
+                    
+                    // 追加質問の表示
+                    if (message.diagnosis.additional_questions && message.diagnosis.additional_questions.length > 0) {
+                        const priorityLabel = message.diagnosis.missing_priority === 'critical' ? '必須' :
+                                             message.diagnosis.missing_priority === 'important' ? '重要' : '任意';
+                        const priorityMessage = message.diagnosis.missing_priority === 'critical' ? 
+                            'より適切な医薬品をご提案するため、以下の情報を教えてください：' :
+                            message.diagnosis.missing_priority === 'important' ?
+                            '安全のため、以下の情報を教えてください：' :
+                            'より安全な使用のため、可能であれば以下の情報を教えてください：';
+                        
+                        content += `<div class="question-box" style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 10px 0;">
+                            <strong>❓ 追加でお伺いしたいこと</strong>
+                            <span style="color: #ff9800; font-weight: bold;">（優先度: ${priorityLabel}）</span><br>
+                            <p style="margin: 5px 0;">${priorityMessage}</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">`;
+                        
+                        message.diagnosis.additional_questions.forEach(question => {
+                            content += `<li>${question}</li>`;
+                        });
+                        
+                        content += `</ul></div>`;
+                    }
+                    
+                    if (message.diagnosis.symptoms && !message.diagnosis.error) {
+                        content += `<div class="question-prompt"><strong>❓ 他にご質問はありますか？</strong><br>薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。</div>`;
+                    }
+                    } else {
+                        content += message.content;
+                    }
+                    content += `</div>`;
+                    messageDiv.innerHTML = content;
+                }
+            }
+            fragment.appendChild(messageDiv);
+        });
+        
+        // レイアウトの安定性を向上させるため、一括更新と固定レイアウト
+        const currentScrollTop = chatMessages.scrollTop;
+        const currentScrollHeight = chatMessages.scrollHeight;
+        const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 10;
+        
+        chatMessages.innerHTML = '';
+        chatMessages.appendChild(fragment);
+        
+        // タイピングインジケーターを復元
+        if (hasTypingIndicator) {
+            const newTypingDiv = document.createElement('div');
+            newTypingDiv.className = 'message bot';
+            newTypingDiv.id = 'currentTypingIndicator';
+            newTypingDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        AIが診断中...
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(newTypingDiv);
+        }
+        
+        // スクロール位置を安定化
+        requestAnimationFrame(() => {
+            if (isAtBottom) {
+                scrollToBottom();
+            } else {
+                // スクロール位置を維持
+                const newScrollHeight = chatMessages.scrollHeight;
+                const heightDifference = newScrollHeight - currentScrollHeight;
+                chatMessages.scrollTop = currentScrollTop + heightDifference;
+            }
+        });
+    }
+
+    // 8秒ごとにメッセージ部分だけAPIで取得して再描画（安定性向上のため間隔を調整）
+    setInterval(function() {
+        // 送信中は定期更新をスキップ（タイピングインジケーターを保護）
+        if (isSubmitting) {
+            console.log('⏭️ Skipping periodic update - form is submitting');
+            return;
+        }
+        
+        // タイピングインジケーターが表示されている場合もスキップ
+        if (document.getElementById('currentTypingIndicator')) {
+            console.log('⏭️ Skipping periodic update - typing indicator is shown');
+            return;
+        }
+        
+        console.log('🔄 Periodic update - fetching messages');
+        fetch('/api/sessions?v={{ version }}', {
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.messages) {
+                console.log('🔄 Periodic update - rendering', data.messages.length, 'messages');
+                renderChatMessages(data.messages);
+            }
+        })
+        .catch(error => {
+            console.log('Session update error:', error);
+        });
+    }, 8000);
+    
+    // モーダル関連の関数
+    function openAttributeModal() {
+        // 今日の日付をmaxに設定
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('attr_duration_date').max = today;
+        
+        document.getElementById('attributeModal').style.display = 'block';
+    }
+    
+    function closeAttributeModal() {
+        document.getElementById('attributeModal').style.display = 'none';
+    }
+    
+    // モーダル外をクリックで閉じる
+    window.onclick = function(event) {
+        const modal = document.getElementById('attributeModal');
+        if (event.target === modal) {
+            closeAttributeModal();
+        }
+    }
+    
+    // 性別選択時に妊娠・授乳の表示を切り替え
+    function togglePregnancyFields() {
+        const gender = document.getElementById('attr_gender').value;
+        const pregnancyGroup = document.getElementById('pregnancy_group');
+        const breastfeedingGroup = document.getElementById('breastfeeding_group');
+        
+        if (gender === '女性') {
+            pregnancyGroup.style.display = 'block';
+            breastfeedingGroup.style.display = 'block';
+        } else {
+            pregnancyGroup.style.display = 'none';
+            breastfeedingGroup.style.display = 'none';
+            document.getElementById('attr_pregnant').value = '';
+            document.getElementById('attr_breastfeeding').value = '';
+        }
+    }
+    
+    // 服用中の薬の詳細表示を切り替え
+    function toggleMedicationsField() {
+        const hasMedications = document.getElementById('attr_has_medications').value;
+        const medicationsDetailGroup = document.getElementById('medications_detail_group');
+        
+        if (hasMedications === 'yes') {
+            medicationsDetailGroup.style.display = 'block';
+        } else {
+            medicationsDetailGroup.style.display = 'none';
+            document.getElementById('attr_medications').value = '';
+        }
+    }
+    
+    // 属性フォームの送信
+    function submitAttributes() {
+        const age = document.getElementById('attr_age').value;
+        const gender = document.getElementById('attr_gender').value;
+        const pregnant = document.getElementById('attr_pregnant').value;
+        const breastfeeding = document.getElementById('attr_breastfeeding').value;
+        const allergies = document.getElementById('attr_allergies').value;
+        const hasMedications = document.getElementById('attr_has_medications').value;
+        const medications = document.getElementById('attr_medications').value;
+        const durationDate = document.getElementById('attr_duration_date').value;
+        const other = document.getElementById('attr_other').value;
+        
+        // 日付から期間を計算
+        let duration = '';
+        if (durationDate) {
+            const startDate = new Date(durationDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                duration = '今日から';
+            } else if (diffDays === 1) {
+                duration = '昨日から';
+            } else if (diffDays < 7) {
+                duration = `${diffDays}日前から`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                duration = `${diffWeeks}週間前から`;
+            }
+        }
+        
+        // 回答を組み立てる
+        let response = [];
+        if (age) response.push(`${age}歳です`);
+        if (gender) response.push(`${gender}です`);
+        if (gender === '女性') {
+            if (pregnant === 'no') response.push('妊娠していません');
+            else if (pregnant === 'yes') response.push('妊娠中です');
+            if (breastfeeding === 'no') response.push('授乳していません');
+            else if (breastfeeding === 'yes') response.push('授乳中です');
+        }
+        if (allergies) response.push(`アレルギーは${allergies}です`);
+        else response.push('アレルギーはありません');
+        
+        // 服用中の薬
+        if (hasMedications === 'yes' && medications) {
+            response.push(`現在${medications}を服用しています`);
+        } else if (hasMedications === 'no') {
+            response.push('他に服用している薬はありません');
+        }
+        
+        if (duration) response.push(`症状は${duration}続いています`);
+        if (other) response.push(other);
+        
+        const message = response.join('。') + '。';
+        
+        console.log('属性フォーム送信:', message);
+        
+        // モーダルを閉じる
+        closeAttributeModal();
+        
+        // フォームをリセット
+        document.getElementById('attributeForm').reset();
+        togglePregnancyFields(); // 妊娠・授乳フィールドを非表示に戻す
+        
+        // メッセージとして送信
+        const input = document.getElementById('messageInput');
+        input.value = message;
+        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    }
+</script>
+
+<!-- 属性入力モーダル -->
+<div id="attributeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📋 追加情報の入力</h3>
+            <span class="close-modal" onclick="closeAttributeModal()">&times;</span>
+        </div>
+        <form id="attributeForm" onsubmit="event.preventDefault(); submitAttributes();">
+            <div class="form-group">
+                <label for="attr_age">年齢</label>
+                <input type="number" id="attr_age" min="0" max="120" placeholder="例: 30">
+            </div>
+            
+            <div class="form-group">
+                <label for="attr_gender">性別</label>
+                <select id="attr_gender" onchange="togglePregnancyFields()">
+                    <option value="">選択してください</option>
+                    <option value="男性">男性</option>
+                    <option value="女性">女性</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="pregnancy_group" style="display: none;">
+                <label for="attr_pregnant">妊娠中ですか？</label>
+                <select id="attr_pregnant">
+                    <option value="">選択してください</option>
+                    <option value="no">いいえ</option>
+                    <option value="yes">はい</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="breastfeeding_group" style="display: none;">
+                <label for="attr_breastfeeding">授乳中ですか？</label>
+                <select id="attr_breastfeeding">
+                    <option value="">選択してください</option>
+                    <option value="no">いいえ</option>
+                    <option value="yes">はい</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="attr_allergies">アレルギー（ある場合は具体的に）</label>
+                <input type="text" id="attr_allergies" placeholder="例: 花粉、そば">
+            </div>
+            
+            <div class="form-group">
+                <label for="attr_has_medications">現在、他に服用している薬はありますか？</label>
+                <select id="attr_has_medications" onchange="toggleMedicationsField()">
+                    <option value="">選択してください</option>
+                    <option value="no">いいえ</option>
+                    <option value="yes">はい</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="medications_detail_group" style="display: none;">
+                <label for="attr_medications">服用中の薬の名前</label>
+                <input type="text" id="attr_medications" placeholder="例: 血圧の薬">
+            </div>
+            
+            <div class="form-group">
+                <label for="attr_duration">症状が続いている期間（いつから？）</label>
+                <input type="date" id="attr_duration_date" max="" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                <small style="color: #666; display: block; margin-top: 5px;">カレンダーから症状が始まった日を選択してください</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="attr_other">その他、伝えたいこと（任意）</label>
+                <textarea id="attr_other" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: vertical;" placeholder="例: 運動をしているので、ドーピングに注意したい"></textarea>
+            </div>
+            
+            <button type="submit" class="submit-attributes-btn">📤 送信して再分析</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html> 
