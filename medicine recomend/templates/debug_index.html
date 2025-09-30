@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>医薬品相談AI - デバッグ・保守画面</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+        }
+        .section-content {
+            padding: 20px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .status-card h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            font-size: 16px;
+        }
+        .status-item {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .status-success {
+            color: #28a745;
+        }
+        .status-error {
+            color: #dc3545;
+        }
+        .status-warning {
+            color: #ffc107;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button-danger {
+            background: #dc3545;
+        }
+        .button-danger:hover {
+            background: #c82333;
+        }
+        .button-success {
+            background: #28a745;
+        }
+        .button-success:hover {
+            background: #218838;
+        }
+        .logs-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-info {
+            background: #d1ecf1;
+            border-left: 3px solid #17a2b8;
+        }
+        .log-error {
+            background: #f8d7da;
+            border-left: 3px solid #dc3545;
+        }
+        .log-warning {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+        }
+        .test-success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .test-error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background: #f2f2f2;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        .connection-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .connection-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .new-log {
+            animation: highlight 2s ease-out;
+        }
+        @keyframes highlight {
+            0% { background-color: #fff3cd; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connection-status">
+        <div id="connection-text">接続中...</div>
+        <div id="last-update-time" style="font-size: 10px; margin-top: 2px; opacity: 0.8;">最終取得: --:--:--</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔧 医薬品相談AI - デバッグ・保守画面</h1>
+            <p>システム状態の確認とメンテナンス</p>
+        </div>
+        
+        <div class="content">
+            <!-- システム状態 -->
+            <div class="section">
+                <div class="section-header">📊 システム状態</div>
+                <div class="section-content">
+                    <div id="status-content">
+                        <div class="loading">状態を確認中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- テスト機能 -->
+            <div class="section">
+                <div class="section-header">🧪 テスト機能</div>
+                <div class="section-content">
+                    <button class="button" onclick="testCSV()">CSVファイルテスト</button>
+                    <button class="button" onclick="testAPI()">OpenAI APIテスト</button>
+                    <button class="button" onclick="detailedAPITest()">詳細APIテスト</button>
+                    <button class="button button-success" onclick="reloadCSV()">CSV再読み込み</button>
+                    <div id="test-results"></div>
+                </div>
+            </div>
+            
+            <!-- ログ -->
+            <div class="section">
+                <div class="section-header">📝 デバッグログ</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshLogs()">ログを更新</button>
+                    <button class="button button-danger" onclick="clearLogs()">ログをクリア</button>
+                    <button class="button button-success" onclick="exportLogs()">ログをエクスポート</button>
+                    <div class="logs-container" id="logs-content">
+                        <div class="loading">ログを読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ネットワーク監視 -->
+            <div class="section">
+                <div class="section-header">🌐 ネットワーク監視</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshNetworkLogs()">ネットワークログ更新</button>
+                    <div class="logs-container" id="network-logs-content">
+                        <div class="loading">ネットワークログを読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パフォーマンス統計 -->
+            <div class="section">
+                <div class="section-header">📈 パフォーマンス統計</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshPerformanceStats()">統計更新</button>
+                    <button class="button button-danger" onclick="resetPerformanceStats()">統計リセット</button>
+                    <div id="performance-stats-content">
+                        <div class="loading">パフォーマンス統計を読み込み中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メインサイト システム状況 -->
+            <div class="section">
+                <div class="section-header">📊 メインサイト システム状況</div>
+                <div class="section-content">
+                    <div id="main-status">
+                        <div class="loading">メインサイトの情報を取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メインサイト パフォーマンス統計 -->
+            <div class="section">
+                <div class="section-header">📈 メインサイト パフォーマンス統計</div>
+                <div class="section-content">
+                    <div id="main-performance">
+                        <div class="loading">メインサイトのパフォーマンス情報を取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メインサイト 通信ログ -->
+            <div class="section">
+                <div class="section-header">📝 メインサイト 通信ログ</div>
+                <div class="section-content">
+                    <div id="main-logs">
+                        <div class="loading">メインサイトのログを取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- サーバーログ・プロセス情報 -->
+            <div class="section">
+                <div class="section-header">🖥️ サーバーログ・プロセス情報</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshServerLogs()">サーバーログ更新</button>
+                    <div id="server-logs">
+                        <div class="loading">サーバーログを取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- システムリソース監視 -->
+            <div class="section">
+                <div class="section-header">💻 システムリソース監視</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshSystemResources()">リソース状況更新</button>
+                    <div id="system-resources">
+                        <div class="loading">システムリソースを取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メインサイト セッション情報 -->
+            <div class="section">
+                <div class="section-header">👥 メインサイト セッション情報</div>
+                <div class="section-content">
+                    <button class="button" onclick="refreshMainSessions()">セッション情報更新</button>
+                    <div id="main-sessions">
+                        <div class="loading">セッション情報を取得中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI管理・手動返信 -->
+            <div class="section">
+                <div class="section-header">AI管理・手動返信</div>
+                <div class="section-content">
+                    <div style="margin-bottom: 20px;">
+                        <h4>AI自動応答制御</h4>
+                        <button id="ai-on-btn" class="button button-success" onclick="setAIMode('on')">AI自動応答ON</button>
+                        <button id="ai-off-btn" class="button button-danger" onclick="setAIMode('off')">AI自動応答OFF</button>
+                        <button id="admin-mode-btn" class="button button-danger" style="background:#c82333;" onclick="setAIMode('admin')">薬剤師対応</button>
+                        <span id="ai-status" style="margin-left: 10px; font-weight: bold;">状態確認中...</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4>手動返信待ちキュー</h4>
+                        <button class="button" onclick="refreshManualReplyQueue()">キュー更新</button>
+                        <div id="manual-reply-queue">
+                            <div class="loading">手動返信キューを取得中...</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4>手動返信送信</h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="reply-session-select" style="padding: 5px; min-width: 200px;">
+                                <option value="">セッションを選択</option>
+                            </select>
+                            <input type="text" id="reply-message-input" placeholder="返信メッセージを入力" style="flex: 1; padding: 5px;">
+                            <button class="button button-success" onclick="sendManualReply()">送信</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <button class="btn btn-primary" onclick="window.open('/admin', '_blank')">薬剤師用チャット監視・手動返信ページ（/admin）へ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                🟢 リアルタイム接続中
+                <span id="main-last-update" style="font-size:12px; color:#666; margin-left:10px;"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Socket.IO接続
+        const socket = io();
+        let isConnected = false;
+
+        // 接続状態の管理
+        socket.on('connect', function() {
+            isConnected = true;
+            updateConnectionStatus(true);
+            console.log('Connected to debug server');
+        });
+
+        socket.on('disconnect', function() {
+            isConnected = false;
+            updateConnectionStatus(false);
+            console.log('Disconnected from debug server');
+        });
+
+        // リアルタイム更新イベント
+        socket.on('debug_log_update', function(data) {
+            addNewLog(data.log);
+        });
+
+        socket.on('network_log_update', function(data) {
+            updateNetworkLogsDisplay(data.logs);
+            updatePerformanceStatsDisplay(data.performance_stats);
+        });
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            const textElement = document.getElementById('connection-text');
+            
+            if (statusElement && textElement) {
+                if (connected) {
+                    statusElement.className = 'connection-status connection-connected';
+                    textElement.textContent = 'リアルタイム接続中';
+                } else {
+                    statusElement.className = 'connection-status connection-disconnected';
+                    textElement.textContent = '接続切れ';
+                }
+            }
+            
+            // 接続状態更新時にも最終取得時刻を更新（存在チェック付き）
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
+            const lastUpdateElement = document.getElementById('last-update-time');
+            if (lastUpdateElement) {
+                lastUpdateElement.textContent = `最終取得: ${timeStr}`;
+            }
+        }
+
+        function addNewLog(logEntry) {
+            const content = document.getElementById('logs-content');
+            if (!content) {
+                console.warn('logs-content element not found');
+                return;
+            }
+            
+            const logClass = `log-${logEntry.level.toLowerCase()}`;
+            const logHtml = `
+                <div class="log-entry ${logClass} new-log">
+                    <strong>${logEntry.timestamp}</strong> [${logEntry.level}] ${logEntry.message}
+                </div>
+            `;
+            
+            // 新しいログを先頭に追加
+            content.insertAdjacentHTML('afterbegin', logHtml);
+            
+            // アニメーション後にクラスを削除
+            setTimeout(() => {
+                const newLogElement = content.querySelector('.new-log');
+                if (newLogElement) {
+                    newLogElement.classList.remove('new-log');
+                }
+            }, 2000);
+        }
+
+        function updateNetworkLogsDisplay(logs) {
+            const content = document.getElementById('network-logs-content');
+            if (!content) {
+                console.warn('network-logs-content element not found');
+                return;
+            }
+            
+            // データが配列でない場合の処理
+            if (!logs) {
+                content.innerHTML = '<div class="loading">ネットワークログを取得できませんでした</div>';
+                return;
+            }
+            
+            // データが配列でない場合は配列に変換
+            const logsArray = Array.isArray(logs) ? logs : [];
+            
+            if (logsArray.length === 0) {
+                content.innerHTML = '<div class="loading">ネットワークログがありません</div>';
+                return;
+            }
+            
+            let html = '';
+            logsArray.forEach(log => {
+                html += `<div class="log-entry">
+                    <strong>${log.timestamp}</strong> [${log.status}] ${log.endpoint}<br>
+                    <span style="font-size:11px;">${JSON.stringify(log.request_data)}<br>${JSON.stringify(log.response_data)}<br>time: ${log.response_time}s, tokens: ${log.tokens_used}</span>
+                </div>`;
+            });
+            content.innerHTML = html;
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function updatePerformanceStatsDisplay(stats) {
+            renderPerformanceTable(stats);
+        }
+
+        // ページ読み込み時の初期化
+        window.onload = function() {
+            checkStatus();
+            refreshLogs();
+            refreshNetworkLogs();
+            refreshPerformanceStats();
+        };
+
+        // システム状態を確認
+        function checkStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('status-content');
+                    if (!data || !data.csv_status) {
+                        content.innerHTML = '<div class="test-error">データ取得エラー: csv_statusが存在しません</div>';
+                        return;
+                    }
+                    const s = data.csv_status;
+                    content.innerHTML = `
+                        <table class="data-table">
+                            <tr><th>項目</th><th>値</th></tr>
+                            <tr><td>タイムスタンプ</td><td>${new Date().toLocaleString('ja-JP')}</td></tr>
+                            <tr><td>読み込み</td><td>${s.success ? '✅' : '❌'}</td></tr>
+                            <tr><td>エンコーディング</td><td>${s.encoding || ''}</td></tr>
+                            <tr><td>行数</td><td>${s.row_count || 0}</td></tr>
+                            <tr><td>列数</td><td>${s.col_count || 0}</td></tr>
+                            <tr><td>列名</td><td>${s.columns ? s.columns.join(', ') : ''}</td></tr>
+                            <tr><td>パス</td><td>${s.path || ''}</td></tr>
+                            <tr><td>エラー</td><td>${s.error || ''}</td></tr>
+                        </table>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('status-content').innerHTML = `
+                        <div class="test-error">エラー: ${error.message}</div>
+                    `;
+                });
+        }
+
+        // CSVファイルをテスト
+        function testCSV() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="loading">CSVファイルをテスト中...</div>';
+            
+            fetch('/test_csv')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        results.innerHTML = `<div class="test-error">エラー: ${data.error}</div>`;
+                    } else {
+                        let tableHtml = '<table class="data-table"><thead><tr>';
+                        data.stats.column_names.forEach(col => {
+                            tableHtml += `<th>${col}</th>`;
+                        });
+                        tableHtml += '</tr></thead><tbody>';
+                        
+                        data.sample_data.forEach(row => {
+                            tableHtml += '<tr>';
+                            data.stats.column_names.forEach(col => {
+                                tableHtml += `<td>${row[col] || ''}</td>`;
+                            });
+                            tableHtml += '</tr>';
+                        });
+                        tableHtml += '</tbody></table>';
+                        
+                        results.innerHTML = `
+                            <div class="test-success">
+                                <h4>CSVファイルテスト成功</h4>
+                                <p>総行数: ${data.stats.total_rows}</p>
+                                <p>総列数: ${data.stats.total_columns}</p>
+                                <h5>サンプルデータ（最初の5行）:</h5>
+                                ${tableHtml}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                });
+        }
+
+        // OpenAI APIをテスト
+        function testAPI() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="loading">OpenAI APIをテスト中...</div>';
+            
+            fetch('/test_api')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        results.innerHTML = `<div class="test-error">エラー: ${data.error}</div>`;
+                    } else {
+                        results.innerHTML = `
+                            <div class="test-success">
+                                <h4>OpenAI APIテスト成功</h4>
+                                <p>レスポンス: ${data.response}</p>
+                                <p>応答時間: ${data.response_time}秒</p>
+                                <p>モデル: ${data.model}</p>
+                                ${data.usage ? `<p>使用量: ${JSON.stringify(data.usage)}</p>` : ''}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                });
+        }
+
+        // 詳細APIテスト
+        function detailedAPITest() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="loading">詳細APIテストを実行中...</div>';
+            
+            fetch('/detailed_api_test')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        results.innerHTML = `<div class="test-error">エラー: ${data.error}</div>`;
+                    } else {
+                        let testResultsHtml = '';
+                        data.test_results.forEach(test => {
+                            testResultsHtml += `
+                                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <h5>${test.test_type}</h5>
+                                    <p><strong>入力:</strong> ${test.input}</p>
+                                    <p><strong>応答時間:</strong> ${test.response_time}秒</p>
+                                    <p><strong>トークン使用量:</strong> ${test.usage ? test.usage.total_tokens : 'N/A'}</p>
+                                    <p><strong>レスポンス:</strong></p>
+                                    <pre style="background: #f5f5f5; padding: 10px; border-radius: 3px; font-size: 12px; overflow-x: auto;">${test.response}</pre>
+                                </div>
+                            `;
+                        });
+                        
+                        results.innerHTML = `
+                            <div class="test-success">
+                                <h4>詳細APIテスト完了</h4>
+                                <p><strong>総テスト数:</strong> ${data.summary.total_tests}</p>
+                                <p><strong>総応答時間:</strong> ${data.summary.total_response_time}秒</p>
+                                <p><strong>平均応答時間:</strong> ${data.summary.average_response_time}秒</p>
+                                <p><strong>総トークン使用量:</strong> ${data.summary.total_tokens_used}</p>
+                                <h5>テスト結果詳細:</h5>
+                                ${testResultsHtml}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                });
+        }
+
+        // CSVファイルを再読み込み
+        function reloadCSV() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="loading">CSVファイルを再読み込み中...</div>';
+            
+            fetch('/reload_csv', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        results.innerHTML = `<div class="test-error">エラー: ${data.error}</div>`;
+                    } else {
+                        results.innerHTML = `
+                            <div class="test-success">
+                                <h4>CSV再読み込み成功</h4>
+                                <p>${data.message}</p>
+                                <p>読み込まれた行数: ${data.rows}</p>
+                            </div>
+                        `;
+                        // 状態を更新
+                        checkStatus();
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                });
+        }
+
+        // ログを更新
+        function refreshLogs() {
+            fetch('/logs')
+                .then(response => response.json())
+                .then(logs => {
+                    const content = document.getElementById('logs-content');
+                    if (logs.length === 0) {
+                        content.innerHTML = '<div class="loading">ログがありません</div>';
+                        return;
+                    }
+                    
+                    let logsHtml = '';
+                    logs.forEach(log => {
+                        const logClass = `log-${log.level.toLowerCase()}`;
+                        logsHtml += `
+                            <div class="log-entry ${logClass}">
+                                <strong>${log.timestamp}</strong> [${log.level}] ${log.message}
+                            </div>
+                        `;
+                    });
+                    content.innerHTML = logsHtml;
+                    content.scrollTop = content.scrollHeight;
+                })
+                .catch(error => {
+                    document.getElementById('logs-content').innerHTML = `
+                        <div class="log-error">エラー: ${error.message}</div>
+                    `;
+                });
+        }
+
+        // ログをクリア
+        function clearLogs() {
+            if (confirm('ログをクリアしますか？')) {
+                fetch('/clear_logs', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        refreshLogs();
+                        alert(data.message);
+                    })
+                    .catch(error => {
+                        alert('エラー: ' + error.message);
+                    });
+            }
+        }
+
+        // ログをエクスポート
+        function exportLogs() {
+            fetch('/export_logs')
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    alert('エラー: ' + error.message);
+                });
+        }
+
+        // ネットワークログを更新
+        function refreshNetworkLogs() {
+            fetch('/network_logs')
+                .then(res => res.json())
+                .then(data => {
+                    updateNetworkLogsDisplay(data);
+                    updateTimestamp('network-logs-update');
+                })
+                .catch(error => {
+                    const content = document.getElementById('network-logs-content');
+                    if (content) {
+                        content.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                    }
+                    updateTimestamp('network-logs-update');
+                });
+        }
+
+        // パフォーマンス統計を更新
+        function refreshPerformanceStats() {
+            fetch('/performance_stats')
+                .then(res => res.json())
+                .then(data => {
+                    renderPerformanceTable(data);
+                    updateTimestamp('performance-stats-update');
+                })
+                .catch(error => {
+                    const content = document.getElementById('performance-stats-content');
+                    if (content) {
+                        content.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                    }
+                    updateTimestamp('performance-stats-update');
+                });
+        }
+
+        // パフォーマンス統計をリセット
+        function resetPerformanceStats() {
+            fetch('/reset_performance_stats', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    refreshPerformanceStats();
+                    add_debug_log("パフォーマンス統計をリセットしました");
+                })
+                .catch(error => {
+                    console.error('パフォーマンス統計リセットエラー:', error);
+                });
+        }
+
+        function updateTimestamp(elementId) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
+            
+            // 指定された要素が存在する場合のみ更新
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = `最終取得: ${timeStr}`;
+            }
+            
+            // 右上の最終取得時刻も更新（存在チェック付き）
+            const lastUpdateElement = document.getElementById('last-update-time');
+            if (lastUpdateElement) {
+                lastUpdateElement.textContent = `最終取得: ${timeStr}`;
+            }
+        }
+
+        function fetchMainStatus() {
+            fetch('/api/main_status')
+              .then(res => res.json())
+              .then(data => {
+                renderMainStatusTable(data);
+                updateTimestamp('main-last-update');
+              })
+              .catch(error => {
+                const content = document.getElementById('main-status');
+                if (content) {
+                    content.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                }
+                updateTimestamp('main-last-update');
+              });
+        }
+
+        function fetchMainPerformance() {
+            fetch('/api/main_performance')
+              .then(res => res.json())
+              .then(data => {
+                renderMainPerformanceTable(data);
+                updateTimestamp('main-last-update');
+              })
+              .catch(error => {
+                const content = document.getElementById('main-performance');
+                if (content) {
+                    content.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                }
+                updateTimestamp('main-last-update');
+              });
+        }
+
+        function fetchMainLogs() {
+            fetch('/api/main_logs')
+              .then(res => res.json())
+              .then(data => {
+                renderMainLogsTable(data);
+                updateTimestamp('main-last-update');
+              })
+              .catch(error => {
+                const content = document.getElementById('main-logs');
+                if (content) {
+                    content.innerHTML = `<div class="test-error">エラー: ${error.message}</div>`;
+                }
+                updateTimestamp('main-last-update');
+              });
+        }
+
+        function fetchTestStatus() {
+            fetch('/api/status')
+              .then(res => res.json())
+              .then(data => {
+                updateTimestamp('test-last-update');
+              })
+              .catch(error => {
+                console.log('テストサイト状態取得エラー:', error.message);
+                updateTimestamp('test-last-update');
+              });
+        }
+
+        // 1秒ごとの自動更新を設定
+        setInterval(checkStatus, 1000);
+        setInterval(refreshPerformanceStats, 1000);
+        setInterval(refreshNetworkLogs, 1000);
+        setInterval(() => {
+            fetch('/logs')
+                .then(res => res.json())
+                .then(data => renderLogsTable(data))
+                .catch(e => {
+                    const content = document.getElementById('logs-content');
+                    if (content) {
+                        content.innerHTML = '<div class="test-error">取得失敗</div>';
+                    }
+                });
+        }, 1000);
+        setInterval(fetchMainStatus, 1000);
+        setInterval(fetchMainPerformance, 1000);
+        setInterval(fetchMainLogs, 1000);
+        
+        // 初期読み込み
+        checkStatus();
+        refreshPerformanceStats();
+        refreshNetworkLogs();
+        fetch('/logs')
+            .then(res => res.json())
+            .then(data => renderLogsTable(data))
+            .catch(e => {
+                const content = document.getElementById('logs-content');
+                if (content) {
+                    content.innerHTML = '<div class="test-error">取得失敗</div>';
+                }
+            });
+        fetchMainStatus();
+        fetchMainPerformance();
+        fetchMainLogs();
+
+        function renderMainStatusTable(data) {
+            const content = document.getElementById('main-status');
+            if (!content) {
+                console.warn('main-status element not found');
+                return;
+            }
+            
+            if (!data || !data.csv_load_status) {
+                content.innerHTML = '<div class="test-error">メインサイトからデータを取得できませんでした</div>';
+                return;
+            }
+            const s = data.csv_load_status;
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>タイムスタンプ</td><td>${data.timestamp || ''}</td></tr>
+                    <tr><td>読み込み</td><td>${s.success ? '✅' : '❌'}</td></tr>
+                    <tr><td>エンコーディング</td><td>${s.encoding || ''}</td></tr>
+                    <tr><td>行数</td><td>${s.row_count || 0}</td></tr>
+                    <tr><td>列数</td><td>${s.col_count || 0}</td></tr>
+                    <tr><td>列名</td><td>${s.columns ? s.columns.join(', ') : ''}</td></tr>
+                    <tr><td>パス</td><td>${s.path || ''}</td></tr>
+                    <tr><td>エラー</td><td>${s.error || ''}</td></tr>
+                </table>
+            `;
+        }
+
+        function renderMainPerformanceTable(data) {
+            const content = document.getElementById('main-performance');
+            if (!content) {
+                console.warn('main-performance element not found');
+                return;
+            }
+            
+            if (!data) {
+                content.innerHTML = '<div class="test-error">メインサイトからパフォーマンスデータを取得できませんでした</div>';
+                return;
+            }
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>タイムスタンプ</td><td>${new Date().toLocaleString('ja-JP')}</td></tr>
+                    <tr><td>総リクエスト数</td><td>${data.total_requests || 0}</td></tr>
+                    <tr><td>成功リクエスト数</td><td>${data.successful_requests || 0}</td></tr>
+                    <tr><td>失敗リクエスト数</td><td>${data.failed_requests || 0}</td></tr>
+                    <tr><td>平均応答時間</td><td>${data.average_response_time || 0} 秒</td></tr>
+                    <tr><td>総トークン使用量</td><td>${data.total_tokens_used || 0}</td></tr>
+                    <tr><td>本日APIコール数</td><td>${data.api_calls_today || 0}</td></tr>
+                </table>
+            `;
+        }
+
+        function renderMainLogsTable(data) {
+            const content = document.getElementById('main-logs');
+            if (!content) {
+                console.warn('main-logs element not found');
+                return;
+            }
+            
+            // データが配列でない場合の処理
+            if (!data) {
+                content.innerHTML = '<div class="loading">メインサイトのログを取得できませんでした</div>';
+                return;
+            }
+            
+            // データが配列でない場合は配列に変換
+            const logsArray = Array.isArray(data) ? data : [];
+            
+            if (logsArray.length === 0) {
+                content.innerHTML = '<div class="loading">メインサイトのログがありません</div>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><tr><th>時刻</th><th>ステータス</th><th>エンドポイント</th><th>応答時間</th><th>トークン</th></tr>';
+            logsArray.forEach(log => {
+                html += `<tr>
+                    <td>${log.timestamp || ''}</td>
+                    <td>${log.status || ''}</td>
+                    <td>${log.endpoint || ''}</td>
+                    <td>${log.response_time || 0}s</td>
+                    <td>${log.tokens_used || 0}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            content.innerHTML = html;
+        }
+
+        function renderLogsTable(logs) {
+            const content = document.getElementById('logs-content');
+            if (!content) {
+                console.warn('logs-content element not found');
+                return;
+            }
+            
+            // データが配列でない場合の処理
+            if (!logs) {
+                content.innerHTML = '<div class="loading">ログを取得できませんでした</div>';
+                return;
+            }
+            
+            // データが配列でない場合は配列に変換
+            const logsArray = Array.isArray(logs) ? logs : [];
+            
+            if (logsArray.length === 0) {
+                content.innerHTML = '<div class="loading">ログがありません</div>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><tr><th>時刻</th><th>レベル</th><th>内容</th></tr>';
+            logsArray.forEach(log => {
+                html += `<tr>
+                    <td>${log.timestamp || ''}</td>
+                    <td>${log.level || ''}</td>
+                    <td>${log.message || ''}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            content.innerHTML = html;
+        }
+
+        function renderPerformanceTable(stats) {
+            const content = document.getElementById('performance-stats-content');
+            if (!content) {
+                console.warn('performance-stats-content element not found');
+                return;
+            }
+            
+            if (!stats) {
+                content.innerHTML = '<div class="test-error">データ取得エラー</div>';
+                return;
+            }
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>タイムスタンプ</td><td>${new Date().toLocaleString('ja-JP')}</td></tr>
+                    <tr><td>総リクエスト数</td><td>${stats.total_requests || 0}</td></tr>
+                    <tr><td>成功リクエスト数</td><td>${stats.successful_requests || 0}</td></tr>
+                    <tr><td>失敗リクエスト数</td><td>${stats.failed_requests || 0}</td></tr>
+                    <tr><td>平均応答時間</td><td>${stats.average_response_time || 0} 秒</td></tr>
+                    <tr><td>総トークン使用量</td><td>${stats.total_tokens_used || 0}</td></tr>
+                    <tr><td>本日APIコール数</td><td>${stats.api_calls_today || 0}</td></tr>
+                </table>
+            `;
+        }
+
+        // 新しい監視機能の関数
+        function refreshServerLogs() {
+            fetch('/api/server_logs')
+                .then(res => res.json())
+                .then(data => {
+                    renderServerLogs(data);
+                })
+                .catch(error => {
+                    const content = document.getElementById('server-logs');
+                    if (content) {
+                        content.innerHTML = `<div class="test-error">サーバーログ取得エラー: ${error.message}</div>`;
+                    }
+                });
+        }
+
+        function refreshSystemResources() {
+            fetch('/api/system_resources')
+                .then(res => res.json())
+                .then(data => {
+                    renderSystemResources(data);
+                })
+                .catch(error => {
+                    const content = document.getElementById('system-resources');
+                    if (content) {
+                        content.innerHTML = `<div class="test-error">システムリソース取得エラー: ${error.message}</div>`;
+                    }
+                });
+        }
+
+        function refreshMainSessions() {
+            fetch('/api/main_sessions')
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    renderMainSessions(data);
+                })
+                .catch(error => {
+                    const content = document.getElementById('main-sessions');
+                    if (content) {
+                        const errorMsg = error.message || 'Unknown error';
+                        const errorDetails = error.details || '';
+                        content.innerHTML = `
+                            <div class="test-error">
+                                <strong>セッション情報取得エラー:</strong> ${errorMsg}
+                                ${errorDetails ? `<br><small>詳細: ${errorDetails}</small>` : ''}
+                                <br><small>メインサイト（localhost:5000）に接続できません。メインサイトが起動しているか確認してください。</small>
+                                <br><button onclick="refreshMainSessions()" style="margin-top: 10px; padding: 5px 10px;">🔄 再試行</button>
+                            </div>
+                        `;
+                    }
+                    console.error('Main sessions fetch error:', error);
+                });
+        }
+
+        function renderServerLogs(data) {
+            const content = document.getElementById('server-logs');
+            if (!content) {
+                console.warn('server-logs element not found');
+                return;
+            }
+            
+            if (!data || data.error) {
+                content.innerHTML = `<div class="test-error">サーバーログ取得エラー: ${data?.error || 'Unknown error'}</div>`;
+                return;
+            }
+            
+            const process = data.process_info;
+            const lastDebugLog = data.last_debug_log;
+            const lastNetworkLog = data.last_network_log;
+            
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>プロセスID</td><td>${process.pid || 'N/A'}</td></tr>
+                    <tr><td>プロセス名</td><td>${process.name || 'N/A'}</td></tr>
+                    <tr><td>ステータス</td><td>${process.status || 'N/A'}</td></tr>
+                    <tr><td>メモリ使用量 (RSS)</td><td>${(process.memory_rss / 1024 / 1024).toFixed(2)} MB</td></tr>
+                    <tr><td>メモリ使用量 (VMS)</td><td>${(process.memory_vms / 1024 / 1024).toFixed(2)} MB</td></tr>
+                    <tr><td>CPU使用率</td><td>${process.cpu_percent || 0}%</td></tr>
+                    <tr><td>スレッド数</td><td>${process.num_threads || 0}</td></tr>
+                    <tr><td>接続数</td><td>${process.connections || 0}</td></tr>
+                    <tr><td>作成時刻</td><td>${process.create_time || 'N/A'}</td></tr>
+                    <tr><td>デバッグログ数</td><td>${data.debug_logs_count || 0}</td></tr>
+                    <tr><td>ネットワークログ数</td><td>${data.network_logs_count || 0}</td></tr>
+                    <tr><td>最新デバッグログ</td><td>${lastDebugLog ? `${lastDebugLog.timestamp} - ${lastDebugLog.message}` : 'なし'}</td></tr>
+                    <tr><td>最新ネットワークログ</td><td>${lastNetworkLog ? `${lastNetworkLog.timestamp} - ${lastNetworkLog.endpoint}` : 'なし'}</td></tr>
+                </table>
+            `;
+        }
+
+        function renderSystemResources(data) {
+            const content = document.getElementById('system-resources');
+            if (!content) {
+                console.warn('system-resources element not found');
+                return;
+            }
+            
+            if (!data || data.error) {
+                content.innerHTML = `<div class="test-error">システムリソース取得エラー: ${data?.error || 'Unknown error'}</div>`;
+                return;
+            }
+            
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>CPU使用率</td><td>${data.cpu_percent || 0}%</td></tr>
+                    <tr><td>メモリ総容量</td><td>${(data.memory_total / 1024 / 1024 / 1024).toFixed(2)} GB</td></tr>
+                    <tr><td>メモリ使用可能</td><td>${(data.memory_available / 1024 / 1024 / 1024).toFixed(2)} GB</td></tr>
+                    <tr><td>メモリ使用率</td><td>${data.memory_percent || 0}%</td></tr>
+                    <tr><td>ディスク総容量</td><td>${(data.disk_total / 1024 / 1024 / 1024).toFixed(2)} GB</td></tr>
+                    <tr><td>ディスク空き容量</td><td>${(data.disk_free / 1024 / 1024 / 1024).toFixed(2)} GB</td></tr>
+                    <tr><td>ディスク使用率</td><td>${data.disk_percent || 0}%</td></tr>
+                </table>
+            `;
+        }
+
+        function renderMainSessions(data) {
+            const content = document.getElementById('main-sessions');
+            if (!content) {
+                console.warn('main-sessions element not found');
+                return;
+            }
+            
+            if (!data || data.error) {
+                const errorMsg = data?.error || 'Unknown error';
+                const errorDetails = data?.details || '';
+                content.innerHTML = `
+                    <div class="test-error">
+                        <strong>セッション情報取得エラー:</strong> ${errorMsg}
+                        ${errorDetails ? `<br><small>詳細: ${errorDetails}</small>` : ''}
+                        <br><small>メインサイト（localhost:5000）に接続できません。メインサイトが起動しているか確認してください。</small>
+                        <br><button onclick="refreshMainSessions()" style="margin-top: 10px; padding: 5px 10px;">🔄 再試行</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            content.innerHTML = `
+                <table class="data-table">
+                    <tr><th>項目</th><th>値</th></tr>
+                    <tr><td>セッションID</td><td>${data.session_id || 'N/A'}</td></tr>
+                    <tr><td>メッセージ数</td><td>${data.messages_count || 0}</td></tr>
+                    <tr><td>最終アクティビティ</td><td>${data.last_activity || 'N/A'}</td></tr>
+                    <tr><td>セッション有効</td><td>${data.session_active ? '✅' : '❌'}</td></tr>
+                </table>
+                ${data.messages && data.messages.length > 0 ? `
+                <h4>メッセージ履歴:</h4>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                    ${data.messages.map(msg => `
+                        <div style="margin: 5px 0; padding: 5px; background: ${msg.type === 'user' ? '#e3f2fd' : '#f3e5f5'}; border-radius: 3px;">
+                            <strong>${msg.type === 'user' ? '👤 ユーザー' : '🤖 ボット'}</strong>: ${msg.content}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : '<p>メッセージ履歴がありません</p>'}
+            `;
+        }
+
+        // 初期読み込み時に新しい監視機能も実行
+        refreshServerLogs();
+        refreshSystemResources();
+        refreshMainSessions();
+
+        // AI管理・手動返信機能
+        function setAIMode(mode) {
+            if (mode === 'admin') {
+                fetch('/api/admin_mode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || '薬剤師対応モードに切り替えました');
+                    refreshAIStatus && refreshAIStatus();
+                    refreshManualReplyQueue && refreshManualReplyQueue();
+                })
+                .catch(() => {
+                    alert('通信エラーが発生しました');
+                });
+                return;
+            }
+            fetch('/api/main_ai_control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({mode: mode})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(`エラー: ${data.error}`);
+                } else {
+                    alert(data.message || `AI自動応答を${mode === 'on' ? 'ON' : 'OFF'}にしました`);
+                    refreshAIStatus();
+                    refreshManualReplyQueue();
+                }
+            })
+            .catch(error => {
+                alert(`エラー: ${error.message}`);
+            });
+        }
+
+        function refreshAIStatus() {
+            fetch('/api/main_ai_control')
+                .then(res => res.json())
+                .then(data => {
+                    const statusElement = document.getElementById('ai-status');
+                    const onBtn = document.getElementById('ai-on-btn');
+                    const offBtn = document.getElementById('ai-off-btn');
+                    
+                    if (data.ai_auto_reply) {
+                        statusElement.textContent = '🟢 AI自動応答ON';
+                        statusElement.style.color = '#28a745';
+                        onBtn.disabled = true;
+                        offBtn.disabled = false;
+                    } else {
+                        statusElement.textContent = '🔴 AI自動応答OFF';
+                        statusElement.style.color = '#dc3545';
+                        onBtn.disabled = false;
+                        offBtn.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('ai-status').textContent = '❌ 状態取得エラー';
+                });
+        }
+
+        function refreshManualReplyQueue() {
+            // 現在の選択値・入力値を保存
+            const select = document.getElementById('reply-session-select');
+            const input = document.getElementById('reply-message-input');
+            const prevSession = select ? select.value : '';
+            const prevInput = input ? input.value : '';
+
+            fetch('/api/main_manual_reply_queue')
+                .then(res => res.json())
+                .then(data => {
+                    renderManualReplyQueue(data);
+                    updateReplySessionSelect(data, prevSession);
+                    // 再描画後に値を復元
+                    const input2 = document.getElementById('reply-message-input');
+                    if (input2) input2.value = prevInput;
+                })
+                .catch(error => {
+                    const content = document.getElementById('manual-reply-queue');
+                    if (content) {
+                        content.innerHTML = `<div class="test-error">キュー取得エラー: ${error.message}</div>`;
+                    }
+                });
+        }
+
+        function renderManualReplyQueue(queue) {
+            const content = document.getElementById('manual-reply-queue');
+            if (!content) {
+                console.warn('manual-reply-queue element not found');
+                return;
+            }
+            
+            if (!Array.isArray(queue) || queue.length === 0) {
+                content.innerHTML = '<div class="loading">手動返信待ちのメッセージがありません</div>';
+                return;
+            }
+            
+            let html = '<table class="data-table"><tr><th>セッションID</th><th>時刻</th><th>ユーザーメッセージ</th><th>ステータス</th></tr>';
+            queue.forEach(item => {
+                if (item.admin_request) {
+                    html += `<tr style="color: #d32f2f; font-weight: bold;">
+                        <td>${item.session_id || 'N/A'}</td>
+                        <td>${item.timestamp || 'N/A'}</td>
+                        <td>🆘 ${item.user_message || 'N/A'}</td>
+                        <td>薬剤師要請</td>
+                    </tr>`;
+                } else {
+                    html += `<tr>
+                        <td>${item.session_id || 'N/A'}</td>
+                        <td>${item.timestamp || 'N/A'}</td>
+                        <td>${item.user_message || 'N/A'}</td>
+                        <td>${item.status || 'N/A'}</td>
+                    </tr>`;
+                }
+            });
+            html += '</table>';
+            content.innerHTML = html;
+        }
+
+        function updateReplySessionSelect(queue, prevSession) {
+            const select = document.getElementById('reply-session-select');
+            if (!select) return;
+            // 既存のオプションをクリア（最初の「セッションを選択」は残す）
+            select.innerHTML = '<option value="">セッションを選択</option>';
+            if (Array.isArray(queue)) {
+                queue.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.session_id;
+                    option.textContent = `${item.session_id} - ${item.user_message.substring(0, 30)}...`;
+                    select.appendChild(option);
+                });
+            }
+            // ここで必ず値を復元
+            if (prevSession) select.value = prevSession;
+        }
+
+        function sendManualReply() {
+            const sessionId = document.getElementById('reply-session-select').value;
+            const message = document.getElementById('reply-message-input').value;
+            
+            if (!sessionId || !message) {
+                alert('セッションとメッセージを入力してください');
+                return;
+            }
+            
+            fetch('/api/main_manual_reply_queue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    reply_message: message
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(`エラー: ${data.error}`);
+                } else {
+                    alert(data.message || '手動返信を送信しました');
+                    // フォームの内容や選択状態はクリアしない
+                    // refreshManualReplyQueue(); // 自動更新は行わず、手動で更新ボタンを押す運用に
+                }
+            })
+            .catch(error => {
+                alert(`エラー: ${error.message}`);
+            });
+        }
+
+        // 初期読み込み時にAI管理機能も実行
+        refreshAIStatus();
+        refreshManualReplyQueue();
+    </script>
+</body>
+</html> 
