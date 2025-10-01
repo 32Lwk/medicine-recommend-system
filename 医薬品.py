@@ -17,7 +17,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 # 環境変数が設定されていない場合のフォールバック
 if not api_key:
     # 直接APIキーを設定（開発・テスト用）
-    api_key = "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"
+    api_key = "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"
     print("環境変数からAPIキーを取得できませんでした。直接設定されたAPIキーを使用します。")
 
 # --- OpenAIクライアント初期化 ---
