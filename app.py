@@ -6,6 +6,7 @@ from debug_logger import performance_stats, network_logs, add_network_log
 from typing import Dict, List
 import json
 import time
+import os
 from datetime import datetime
 import random
 import logging
@@ -75,29 +76,10 @@ def log_system_status():
     logger.info(f"   Manual Reply Queue: {len(MANUAL_REPLY_QUEUE)}")
 
 def cleanup_old_sessions():
-    """古いセッションをクリーンアップ"""
-    global ALL_SESSIONS, USER_COUNTER
-    current_time = time.time()
-    expired_sessions = []
-    
-    for sid, info in ALL_SESSIONS.items():
-        last_activity = info.get('last_activity', 0)
-        if current_time - last_activity > SESSION_TIMEOUT:
-            expired_sessions.append(sid)
-    
-    # 期限切れセッションを削除
-    for sid in expired_sessions:
-        del ALL_SESSIONS[sid]
-        logger.info(f"🗑️ Expired session removed: {sid}")
-    
-    # セッション数が上限を超えた場合、最も古いセッションを削除
-    if len(ALL_SESSIONS) > MAX_SESSIONS:
-        oldest_sessions = sorted(ALL_SESSIONS.items(), key=lambda x: x[1].get('last_activity', 0))
-        sessions_to_remove = len(ALL_SESSIONS) - MAX_SESSIONS
-        for i in range(sessions_to_remove):
-            sid = oldest_sessions[i][0]
-            del ALL_SESSIONS[sid]
-            logger.info(f"🗑️ Old session removed due to limit: {sid}")
+    """古いセッションをクリーンアップ（無効化）"""
+    # セッションの自動削除を無効化
+    # 管理者が手動でセッションを管理できるようにする
+    pass
 
 def get_next_user_number():
     """次のユーザー番号を取得（既存の番号を再利用）"""
@@ -194,7 +176,8 @@ def index():
             'current_medications': [],
             'allergies': [],
             'medical_history': [],
-            'symptom_duration_days': None
+            'symptom_duration_days': None,
+            'other_info': None
         }
     
     if request.method == 'POST':
@@ -288,67 +271,200 @@ def index():
                         'current_medications': [],
                         'allergies': [],
                         'medical_history': [],
-                        'symptom_duration_days': None
+                        'symptom_duration_days': None,
+                        'other_info': None
                     })
                     
-                    # メッセージから属性情報を抽出
+                    # ChatGPTを使用して属性情報を抽出
                     import re
+                    import json
+                    from openai import OpenAI
+                    
                     updated = False
                     
-                    # 年齢
-                    age_match = re.search(r'(\d+)歳', user_message)
-                    if age_match:
-                        user_attributes['age'] = int(age_match.group(1))
-                        logger.info(f"📝 年齢を更新: {user_attributes['age']}")
-                        updated = True
+                    # OpenAI clientを初期化
+                    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY', 'sk-proj-REDACTED'))
                     
-                    # 性別
-                    if '男性' in user_message or '男' in user_message:
-                        user_attributes['gender'] = '男性'
-                        logger.info(f"📝 性別を更新: 男性")
-                        updated = True
-                    elif '女性' in user_message or '女' in user_message:
-                        user_attributes['gender'] = '女性'
-                        logger.info(f"📝 性別を更新: 女性")
-                        updated = True
+                    # ChatGPTによる属性抽出
+                    try:
+                        prompt = f"""
+ユーザーのメッセージから以下の属性情報を抽出してください：
+
+【ユーザーメッセージ】
+{user_message}
+
+【抽出すべき情報】
+1. 年齢（数値のみ）
+2. 性別（男性/女性）
+3. 妊娠状態（true/false/null）
+4. 授乳状態（true/false/null）
+5. アレルギー（配列形式、なしの場合は["なし"]）
+6. 現在服用中の薬（配列形式、なしの場合は[]）
+7. 既往症（配列形式、なしの場合は[]）
+8. 症状の持続期間（日数、不明の場合はnull）
+9. その他伝えたいこと（文字列、なしの場合はnull）
+
+【回答形式】
+以下のJSON形式で回答してください：
+{{
+    "age": 数値またはnull,
+    "gender": "男性"または"女性"またはnull,
+    "pregnant": true/false/null,
+    "breastfeeding": true/false/null,
+    "allergies": ["アレルギー1", "アレルギー2"]または["なし"]または[],
+    "current_medications": ["薬1", "薬2"]または[],
+    "medical_history": ["既往症1", "既往症2"]または[],
+    "symptom_duration_days": 数値またはnull,
+    "other_info": "文字列"またはnull
+}}
+
+注意：
+- 情報が明示されていない場合はnullを使用
+- アレルギーがない場合は["なし"]
+- 薬や既往症がない場合は空配列[]
+- 症状期間は日数で回答（例：3日前から → 3）
+"""
+
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "あなたは医療情報抽出システムです。ユーザーのメッセージから正確に属性情報を抽出してください。"},
+                                {"role": "user", "content": prompt}
+                            ],
+                            temperature=0.1,
+                            max_tokens=500
+                        )
+                        
+                        result = response.choices[0].message.content
+                        
+                        # JSON解析
+                        json_start = result.find('{')
+                        json_end = result.rfind('}') + 1
+                        
+                        if json_start != -1 and json_end != -1:
+                            json_str = result[json_start:json_end]
+                            extracted_attrs = json.loads(json_str)
+                            
+                            logger.info(f"🤖 ChatGPT抽出結果: {extracted_attrs}")
+                            
+                            # 抽出された情報をセッションに保存
+                            for key, value in extracted_attrs.items():
+                                if value is not None and value != [] and value != "":
+                                    if key == 'age' and isinstance(value, (int, float)):
+                                        user_attributes['age'] = int(value)
+                                        logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                                        updated = True
+                                    elif key == 'gender' and value in ['男性', '女性']:
+                                        user_attributes['gender'] = value
+                                        logger.info(f"📝 性別を更新: {user_attributes['gender']}")
+                                        updated = True
+                                    elif key == 'pregnant' and isinstance(value, bool):
+                                        user_attributes['pregnant'] = value
+                                        logger.info(f"📝 妊娠状態を更新: {user_attributes['pregnant']}")
+                                        updated = True
+                                    elif key == 'breastfeeding' and isinstance(value, bool):
+                                        user_attributes['breastfeeding'] = value
+                                        logger.info(f"📝 授乳状態を更新: {user_attributes['breastfeeding']}")
+                                        updated = True
+                                    elif key == 'allergies' and isinstance(value, list):
+                                        user_attributes['allergies'] = value
+                                        logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
+                                        updated = True
+                                    elif key == 'current_medications' and isinstance(value, list):
+                                        user_attributes['current_medications'] = value
+                                        logger.info(f"📝 服用中の薬を更新: {user_attributes['current_medications']}")
+                                        updated = True
+                                    elif key == 'medical_history' and isinstance(value, list):
+                                        user_attributes['medical_history'] = value
+                                        logger.info(f"📝 既往症を更新: {user_attributes['medical_history']}")
+                                        updated = True
+                                    elif key == 'symptom_duration_days' and isinstance(value, (int, float)):
+                                        user_attributes['symptom_duration_days'] = int(value)
+                                        logger.info(f"📝 症状期間を更新: {user_attributes['symptom_duration_days']}日")
+                                        updated = True
+                                    elif key == 'other_info' and isinstance(value, str):
+                                        user_attributes['other_info'] = value
+                                        logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
+                                        updated = True
+                        
+                    except Exception as e:
+                        logger.error(f"ChatGPT属性抽出エラー: {e}")
+                        logger.info("フォールバック: 正規表現による抽出に切り替えます")
+                        
+                        # フォールバック: 正規表現による抽出
+                        # 年齢（日本語と英語）
+                        age_match = re.search(r'(\d+)歳', user_message)
+                        if age_match:
+                            user_attributes['age'] = int(age_match.group(1))
+                            logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                            updated = True
+                        else:
+                            # 英語の年齢パターン
+                            age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
+                            if age_match_en:
+                                user_attributes['age'] = int(age_match_en.group(1))
+                                logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                                updated = True
+                        
+                        # 性別（日本語と英語）
+                        if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
+                            user_attributes['gender'] = '男性'
+                            logger.info(f"📝 性別を更新: 男性")
+                            updated = True
+                        elif '女性' in user_message or '女' in user_message or 'female' in user_message.lower():
+                            user_attributes['gender'] = '女性'
+                            logger.info(f"📝 性別を更新: 女性")
+                            updated = True
+                        
+                        # 妊娠・授乳（フォールバック処理）
+                        if '妊娠' in user_message:
+                            if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
+                                user_attributes['pregnant'] = False
+                                logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
+                            elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
+                                user_attributes['pregnant'] = True
+                                logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
+                            updated = True
+                        
+                        if '授乳' in user_message:
+                            if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
+                                user_attributes['breastfeeding'] = False
+                                logger.info(f"📝 授乳状態を更新: False（授乳していない）")
+                            elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
+                                user_attributes['breastfeeding'] = True
+                                logger.info(f"📝 授乳状態を更新: True（授乳中）")
+                            updated = True
                     
-                    # 妊娠・授乳（より正確な判定）
-                    if '妊娠' in user_message:
-                        if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
-                            user_attributes['pregnant'] = False
-                            logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
-                        elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
-                            user_attributes['pregnant'] = True
-                            logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
-                        updated = True
-                    
-                    if '授乳' in user_message:
-                        if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
-                            user_attributes['breastfeeding'] = False
-                            logger.info(f"📝 授乳状態を更新: False（授乳していない）")
-                        elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
-                            user_attributes['breastfeeding'] = True
-                            logger.info(f"📝 授乳状態を更新: True（授乳中）")
-                        updated = True
-                    
-                    # アレルギー
-                    if 'アレルギー' in user_message:
-                        if 'ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message:
+                    # アレルギー（日本語と英語）
+                    if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
+                        if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
+                            'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
                             user_attributes['allergies'] = ['なし']
                         else:
+                            # 日本語のアレルギー抽出
                             allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
                             if allergens:
                                 user_attributes['allergies'] = allergens
+                            else:
+                                # 英語のアレルギー抽出
+                                allergy_match = re.search(r'have\s+([^,\s]+)\s+allergy', user_message, re.IGNORECASE)
+                                if allergy_match:
+                                    user_attributes['allergies'] = [allergy_match.group(1)]
                         logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
                         updated = True
                     
-                    # 症状期間
-                    if '続いています' in user_message or 'から' in user_message:
+                    # 症状期間（日本語と英語）
+                    if ('続いています' in user_message or 'から' in user_message or 
+                        'started' in user_message.lower() or 'ago' in user_message.lower()):
                         duration_patterns = [
                             (r'(今日|きょう)から', 0),
                             (r'(昨日|きのう)から', 1),
                             (r'(\d+)日前から', None),
-                            (r'(\d+)週間前から', None)
+                            (r'(\d+)週間前から', None),
+                            # 英語のパターン
+                            (r'(\d+)\s*days?\s*ago', None),
+                            (r'(\d+)\s*weeks?\s*ago', None),
+                            (r'(\d+)\s*months?\s*ago', None)
                         ]
                         for pattern, days in duration_patterns:
                             match = re.search(pattern, user_message)
@@ -365,22 +481,110 @@ def index():
                                         num_match = re.search(r'(\d+)週間前', user_message)
                                         if num_match:
                                             user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
+                                    elif 'days ago' in user_message.lower():
+                                        num_match = re.search(r'(\d+)\s*days?\s*ago', user_message, re.IGNORECASE)
+                                        if num_match:
+                                            user_attributes['symptom_duration_days'] = int(num_match.group(1))
+                                    elif 'weeks ago' in user_message.lower():
+                                        num_match = re.search(r'(\d+)\s*weeks?\s*ago', user_message, re.IGNORECASE)
+                                        if num_match:
+                                            user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
+                                    elif 'months ago' in user_message.lower():
+                                        num_match = re.search(r'(\d+)\s*months?\s*ago', user_message, re.IGNORECASE)
+                                        if num_match:
+                                            user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 30
                                 logger.info(f"📝 症状期間を更新: {user_attributes.get('symptom_duration_days')}日前から")
                                 updated = True
                                 break
                     
-                    # 服用中の薬
-                    if '服用している' in user_message or '飲んでいる' in user_message:
-                        logger.info(f"📝 服用中の薬を検出")
-                        updated = True
-                    elif '服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message:
+                    # 服用中の薬（日本語と英語）
+                    if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
+                        'not taking' in user_message.lower() or 'no medication' in user_message.lower()):
                         user_attributes['current_medications'] = []
                         logger.info(f"📝 服用中の薬なしを確認")
                         updated = True
+                    elif ('服用している' in user_message or '飲んでいる' in user_message or '薬を' in user_message or
+                          'taking' in user_message.lower() or 'medication' in user_message.lower() or 'medicine' in user_message.lower()):
+                        # 薬の名前を抽出（日本語と英語）
+                        medication_patterns = [
+                            r'服用している薬[はが]?([^。、\n]+)',
+                            r'飲んでいる薬[はが]?([^。、\n]+)',
+                            r'薬[はが]?([^。、\n]+)',
+                            r'([^。、\n]*薬[^。、\n]*)',
+                            # 英語のパターン
+                            r'taking\s+([^,\s]+(?:\s+[^,\s]+)*)',
+                            r'medication[:\s]+([^,\n]+)',
+                            r'medicine[:\s]+([^,\n]+)'
+                        ]
+                        
+                        for pattern in medication_patterns:
+                            match = re.search(pattern, user_message)
+                            if match:
+                                medication_name = match.group(1).strip()
+                                if medication_name and medication_name not in user_attributes['current_medications']:
+                                    user_attributes['current_medications'].append(medication_name)
+                                    logger.info(f"📝 服用中の薬を抽出: {medication_name}")
+                                    updated = True
+                                    break
+                    
+                    # 既往症の抽出（日本語と英語）
+                    if ('既往症' in user_message or '病気' in user_message or '疾患' in user_message or
+                        'history' in user_message.lower() or 'disease' in user_message.lower() or 'condition' in user_message.lower()):
+                        # 既往症のパターンを抽出
+                        history_patterns = [
+                            r'既往症[はが]?([^。、\n]+)',
+                            r'病気[はが]?([^。、\n]+)',
+                            r'疾患[はが]?([^。、\n]+)',
+                            r'([^。、\n]*病[^。、\n]*)',
+                            # 英語のパターン
+                            r'have\s+([^,\s]+(?:\s+[^,\s]+)*)\s+history',
+                            r'history\s+of\s+([^,\n]+)',
+                            r'disease[:\s]+([^,\n]+)',
+                            r'condition[:\s]+([^,\n]+)'
+                        ]
+                        
+                        for pattern in history_patterns:
+                            match = re.search(pattern, user_message)
+                            if match:
+                                history_name = match.group(1).strip()
+                                if history_name and history_name not in user_attributes['medical_history']:
+                                    user_attributes['medical_history'].append(history_name)
+                                    logger.info(f"📝 既往症を抽出: {history_name}")
+                                    updated = True
+                                    break
+                    
+                    # その他伝えたいことの抽出（日本語と英語）
+                    if ('その他' in user_message or '伝えたい' in user_message or '他に' in user_message or
+                        'want to know' in user_message.lower() or 'ask about' in user_message.lower() or 'tell you' in user_message.lower()):
+                        # その他の情報を抽出
+                        other_patterns = [
+                            r'その他[はが]?([^。、\n]+)',
+                            r'伝えたいこと[はが]?([^。、\n]+)',
+                            r'他に[はが]?([^。、\n]+)',
+                            # 英語のパターン
+                            r'want to know about\s+([^,\n]+)',
+                            r'ask about\s+([^,\n]+)',
+                            r'tell you\s+([^,\n]+)'
+                        ]
+                        
+                        for pattern in other_patterns:
+                            match = re.search(pattern, user_message)
+                            if match:
+                                other_info = match.group(1).strip()
+                                if other_info:
+                                    user_attributes['other_info'] = other_info
+                                    logger.info(f"📝 その他情報を抽出: {other_info}")
+                                    updated = True
+                                    break
                     
                     # セッションに保存
                     session['user_attributes'] = user_attributes
                     session.modified = True
+                    
+                    # ALL_SESSIONSも更新
+                    sid = session.get('_id')
+                    if sid and sid in ALL_SESSIONS:
+                        ALL_SESSIONS[sid]['user_attributes'] = user_attributes
                     
                     # ステップ2: 属性が更新された場合、最後の症状で再分析
                     last_symptom_message = None
@@ -485,11 +689,15 @@ def index():
                     # ハイブリッド医薬品推奨システム（ルールベース + ChatGPT）
                     logger.info(f"💊 Hybrid medicine recommendation system starting...")
                     
+                    # OpenAI clientを初期化（推奨システム用）
+                    from openai import OpenAI
+                    recommendation_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY', 'sk-proj-REDACTED'))
+                    
                     # ステップ1: ChatGPTで医薬品の種類を判定
                     start_time = time.time()
                     try:
                         logger.info(f"🔍 Step 1: Analyzing medicine type with ChatGPT...")
-                        analysis_result = analyze_symptoms_and_medicine_type(user_message, client)
+                        analysis_result = analyze_symptoms_and_medicine_type(user_message, recommendation_client)
                         medicine_type = analysis_result.get('medicine_type', 'その他')
                         symptoms = analysis_result.get('symptoms', [])
                         
@@ -511,7 +719,9 @@ def index():
                                 'breastfeeding': None,
                                 'current_medications': [],
                                 'allergies': [],
-                                'medical_history': []
+                                'medical_history': [],
+                                'symptom_duration_days': None,
+                                'other_info': None
                             })
                             
                             # メッセージから属性情報を抽出してセッションに保存
@@ -565,6 +775,11 @@ def index():
                             session['user_attributes'] = user_attributes
                             session.modified = True
                             
+                            # ALL_SESSIONSも更新
+                            sid = session.get('_id')
+                            if sid and sid in ALL_SESSIONS:
+                                ALL_SESSIONS[sid]['user_attributes'] = user_attributes
+                            
                             # ルールベース推奨用のuser_infoを構築（デフォルト値は使用しない）
                             user_info = {
                                 'age': user_attributes.get('age'),  # Noneのまま渡す
@@ -581,7 +796,7 @@ def index():
                             recommendation_result = rule_based_medicine_recommendation(
                                 user_message, 
                                 user_info, 
-                                client
+                                recommendation_client
                             )
                             
                             # ルールベース結果を従来の形式に変換
@@ -699,7 +914,7 @@ def index():
                                         reanalysis_attrs,
                                         recommended_medicines,
                                         symptoms,
-                                        client
+                                        recommendation_client
                                     )
                                     
                                     personalized_section = f"""
@@ -768,7 +983,7 @@ def index():
             <h5 style="margin: 0 0 10px 0;">🏆 {rank}位: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
             <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
             {age_restriction_display}
-            <p style="margin: 5px 0;"><strong>効能効果:</strong> {medicine.get('efficacy', '')[:200]}...</p>
+            <p style="margin: 5px 0;"><strong>効能効果:</strong> {medicine.get('efficacy', '')}</p>
         </div>
 """
                                     else:
@@ -806,6 +1021,9 @@ def index():
                                     current_section = None
                                     current_html = ""
                                     
+                                    # 年齢制限の重複チェック用
+                                    age_restriction_added = False
+                                    
                                     for line in lines:
                                         line = line.strip()
                                         if not line:
@@ -819,6 +1037,7 @@ def index():
                                             # 新しい医薬品セクション開始（シンプルな区切り）
                                             current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">💊 {line}</h5>'
                                             current_section = 'individual'
+                                            age_restriction_added = False  # 新しい医薬品セクションでリセット
                                         elif line.startswith('【使ってはいけない人】'):
                                             # 個別セクションを閉じる
                                             if current_section == 'individual' and current_html:
@@ -835,12 +1054,36 @@ def index():
                                             # 服用注意セクション
                                             current_html = f'<div style="padding: 10px 0; margin: 10px 0;"><h5 style="color: #f57c00; margin: 0 0 8px 0;">📌 {line}</h5>'
                                             current_section = 'usage'
+                                        elif line.startswith('年齢制限:'):
+                                            # 年齢制限の処理（重複を避けるため）
+                                            if not age_restriction_added:
+                                                age_restriction = line.replace('年齢制限:', '').strip()
+                                                if age_restriction and age_restriction != 'なし':
+                                                    # 年齢制限がある場合のみ表示（重複を避けるため）
+                                                    if '未満の方は使用しないでください' in age_restriction or '未満は服用しないこと' in age_restriction:
+                                                        # 既に適切な形式になっている場合はそのまま表示
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
+                                                    elif '歳以上の方が対象です' in age_restriction:
+                                                        # 「歳以上の方が対象です」の場合は「歳未満の方は使用しないでください」に変換
+                                                        age_num = age_restriction.replace('歳以上の方が対象です', '').strip()
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_num}歳未満の方は使用しないでください。</p>'
+                                                    else:
+                                                        # その他の場合は「未満の方は使用しないでください」を追加
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}未満の方は使用しないでください。</p>'
+                                                    age_restriction_added = True
+                                        elif line.startswith('ドーピング:'):
+                                            # ドーピングの処理
+                                            doping_info = line.replace('ドーピング:', '').strip()
+                                            if doping_info and doping_info != 'なし':
+                                                # ドーピング情報がある場合のみ表示
+                                                current_html += f'<p style="margin: 3px 0;"><strong>ドーピング:</strong> {doping_info}</p>'
                                         elif line.startswith('・'):
                                             # リストアイテム
                                             current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
                                         else:
-                                            # 通常のテキスト
-                                            current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                            # 通常のテキスト（年齢制限とドーピング以外）
+                                            if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
+                                                current_html += f'<p style="margin: 3px 0;">{line}</p>'
                                     
                                     # 最後のセクションを閉じる
                                     if current_section and current_html:
@@ -961,7 +1204,8 @@ def index():
             'messages': current_messages,
             'last_activity': current_time,
             'client_ip': client_ip,
-            'user_agent': user_agent
+            'user_agent': user_agent,
+            'user_attributes': session.get('user_attributes', {})
         }
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
@@ -979,7 +1223,8 @@ def index():
             'messages': session['messages'].copy(),
             'last_activity': current_time,
             'client_ip': client_ip,
-            'user_agent': user_agent
+            'user_agent': user_agent,
+            'user_attributes': session.get('user_attributes', {})
         }
         logger.info(f"🆕 New session {sid} created: {len(session['messages'])} messages (ALL_SESSIONS保存完了)")
     
@@ -1126,7 +1371,11 @@ def is_symptom_input(message):
         'いいえ', 'はい', 'ありません', 'ないです', 'なしです',
         '妊娠', '授乳', 'アレルギー',
         '昨日から', '今日から', 'きのうから', 'きょうから', '日前から', '週間前から',
-        '服用している', '飲んでいる', '続いています'
+        '服用している', '飲んでいる', '続いています',
+        # 英語の属性キーワード
+        'years old', 'male', 'female', 'man', 'woman', 'allergy', 'allergies',
+        'pregnant', 'breastfeeding', 'taking', 'medication', 'medicine',
+        'started', 'days ago', 'weeks ago', 'months ago', 'yesterday', 'today'
     ]
     
     # 属性応答の場合は質問（症状入力ではない）
@@ -1531,7 +1780,8 @@ def new_session():
         'messages': [],
         'last_activity': current_time,
         'client_ip': client_ip,
-        'user_agent': user_agent
+        'user_agent': user_agent,
+        'user_attributes': session.get('user_attributes', {})
     }
 
     return jsonify({'message': '新しいセッションを開始しました', 'username': session['username']}), 200
@@ -1576,6 +1826,170 @@ def api_admin_mode():
     AI_AUTO_REPLY = False
     return jsonify({'admin_mode': ADMIN_MODE, 'ai_auto_reply': AI_AUTO_REPLY, 'message': '管理者対応モードに切り替えました'})
 
+@app.route('/admin')
+def admin():
+    """管理画面"""
+    return render_template('admin_chat.html')
+
+@app.route('/api/admin/sessions', methods=['GET'])
+def get_all_sessions():
+    """全セッション情報を取得"""
+    cleanup_old_sessions()
+    
+    sessions_data = []
+    for sid, info in ALL_SESSIONS.items():
+        sessions_data.append({
+            'session_id': sid,
+            'username': info.get('username', 'Unknown'),
+            'messages': info.get('messages', []),
+            'last_activity': info.get('last_activity', 0)
+        })
+    
+    return jsonify({
+        'sessions': sessions_data,
+        'admin_mode': ADMIN_MODE,
+        'ai_auto_reply': AI_AUTO_REPLY
+    })
+
+@app.route('/api/admin/send_message', methods=['POST'])
+def admin_send_message():
+    """管理者からのメッセージ送信"""
+    data = request.json
+    session_id = data.get('session_id')
+    message = data.get('message')
+    
+    if not session_id or not message:
+        return jsonify({'status': 'error', 'message': 'session_idとmessageが必要です'}), 400
+    
+    if session_id not in ALL_SESSIONS:
+        return jsonify({'status': 'error', 'message': 'セッションが見つかりません'}), 404
+    
+    # 管理者メッセージを追加
+    ai_response = {
+        'role': 'ai',
+        'content': message,
+        'timestamp': datetime.now().isoformat(),
+        'from_admin': True
+    }
+    
+    ALL_SESSIONS[session_id]['messages'].append(ai_response)
+    ALL_SESSIONS[session_id]['last_activity'] = time.time()
+    
+    return jsonify({'status': 'success', 'message': 'メッセージを送信しました'})
+
+@app.route('/api/main_sessions', methods=['GET'])
+def api_main_sessions():
+    """全セッション情報を取得（admin_chat.html用）"""
+    cleanup_old_sessions()
+    
+    sessions_list = []
+    for sid, info in ALL_SESSIONS.items():
+        sessions_list.append({
+            'session_id': sid,
+            'username': info.get('username', 'Unknown'),
+            'messages': info.get('messages', []),
+            'last_activity': info.get('last_activity', 0),
+            'message_count': len(info.get('messages', [])),
+            'user_info': info.get('user_attributes', {}),
+            'attributes': info.get('user_attributes', {})
+        })
+    
+    # NaN値をnullに変換（JSONシリアライズ対応）
+    import math
+    import json
+    
+    def convert_nan_to_null(obj):
+        """NaN値をnullに変換する再帰関数"""
+        if isinstance(obj, dict):
+            return {k: convert_nan_to_null(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_nan_to_null(item) for item in obj]
+        elif isinstance(obj, float) and math.isnan(obj):
+            return None
+        else:
+            return obj
+    
+    sessions_list = convert_nan_to_null(sessions_list)
+    
+    return jsonify(sessions_list)
+
+@app.route('/api/main_manual_reply_queue', methods=['GET', 'POST'])
+def api_main_manual_reply_queue():
+    """手動返信キューの管理"""
+    global MANUAL_REPLY_QUEUE
+    
+    if request.method == 'GET':
+        return jsonify(MANUAL_REPLY_QUEUE)
+    
+    elif request.method == 'POST':
+        data = request.json
+        action = data.get('action')
+        
+        if action == 'add':
+            session_id = data.get('session_id')
+            if session_id and session_id in ALL_SESSIONS:
+                if session_id not in MANUAL_REPLY_QUEUE:
+                    MANUAL_REPLY_QUEUE.append(session_id)
+                return jsonify({'status': 'success', 'queue': MANUAL_REPLY_QUEUE})
+        
+        elif action == 'remove':
+            session_id = data.get('session_id')
+            if session_id in MANUAL_REPLY_QUEUE:
+                MANUAL_REPLY_QUEUE.remove(session_id)
+            return jsonify({'status': 'success', 'queue': MANUAL_REPLY_QUEUE})
+        
+        elif action == 'reply':
+            session_id = data.get('session_id')
+            message = data.get('message')
+            
+            if session_id and message and session_id in ALL_SESSIONS:
+                # 管理者メッセージを追加
+                ai_response = {
+                    'role': 'ai',
+                    'content': message,
+                    'timestamp': datetime.now().isoformat(),
+                    'from_admin': True
+                }
+                
+                ALL_SESSIONS[session_id]['messages'].append(ai_response)
+                ALL_SESSIONS[session_id]['last_activity'] = time.time()
+                
+                # キューから削除
+                if session_id in MANUAL_REPLY_QUEUE:
+                    MANUAL_REPLY_QUEUE.remove(session_id)
+                
+                return jsonify({'status': 'success', 'message': 'メッセージを送信しました'})
+        
+        return jsonify({'status': 'error', 'message': '無効なアクションです'}), 400
+
+@app.route('/api/main_ai_control', methods=['GET', 'POST'])
+def api_main_ai_control():
+    """AI自動応答の制御"""
+    global AI_AUTO_REPLY, ADMIN_MODE
+    
+    if request.method == 'GET':
+        return jsonify({
+            'ai_auto_reply': AI_AUTO_REPLY,
+            'admin_mode': ADMIN_MODE
+        })
+    
+    elif request.method == 'POST':
+        data = request.json
+        action = data.get('action')
+        
+        if action == 'enable':
+            AI_AUTO_REPLY = True
+            ADMIN_MODE = False
+        elif action == 'disable':
+            AI_AUTO_REPLY = False
+            ADMIN_MODE = True
+        
+        return jsonify({
+            'ai_auto_reply': AI_AUTO_REPLY,
+            'admin_mode': ADMIN_MODE,
+            'message': 'AI自動応答を' + ('有効化' if AI_AUTO_REPLY else '無効化') + 'しました'
+        })
+
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
     logger.info(f"📁 CSVファイル絶対パス: {csv_load_status['path']}")
@@ -1587,4 +2001,4 @@ if __name__ == '__main__':
     log_system_status()
     
     logger.info("🌐 Starting Flask development server...")
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000, host='0.0.0.0') 
