@@ -80,7 +80,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 # 環境変数が設定されていない場合のフォールバック
 if not api_key:
     # 直接APIキーを設定（開発・テスト用）
-    api_key = "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"
+    api_key = "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"
     print("環境変数からAPIキーを取得できませんでした。直接設定されたAPIキーを使用します。")
 
 # --- OpenAIクライアント初期化 ---
@@ -159,8 +159,7 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
     ChatGPTで症状リストから最も近い症状名を1～3個推定
     """
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     prompt = (
         "あなたは薬剤師AIです。以下は症状リストです。\n"
         "ユーザーの症状文から最も近い症状名を日本語で返してください。(複数選択可)\n\n"
@@ -194,8 +193,7 @@ def gpt_select_best_otc(user_text, candidates, client=None):
     ChatGPTで候補リストから最適な市販薬3つを選ばせる
     """
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     prompt = (
         f"あなたは薬剤師AIです。ユーザーの症状「{user_text}」に最も適した市販薬を3つ選び、理由も簡単に説明してください。(市販薬の重複は避けてください)\n\n"
         "【候補リスト】\n" +
@@ -228,6 +226,9 @@ def recommend_otc_medicines_via_gpt(user_text, symptom_csv_path=None, otc_csv_pa
     otc_csv = otc_csv_path or os.path.join(base_dir, "otc_medicine_data.csv")
     df_symptom = pd.read_csv(symptom_csv)
     df_otc = pd.read_csv(otc_csv)
+    
+    # NaN値を適切に処理
+    df_otc = df_otc.fillna("")
     # 症状リスト作成
     symptom_list = df_symptom["症状"].dropna().unique().tolist()
     # 1. ChatGPTで症状名推定
@@ -256,6 +257,9 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     base_dir = os.path.dirname(os.path.abspath(__file__))
     summarized_csv = summarized_csv_path or os.path.join(base_dir, "summarized_efficacy_data.csv")
     df = pd.read_csv(summarized_csv)
+    
+    # NaN値を適切に処理
+    df = df.fillna("")
     # --- 症状語リストを抽出 ---
     symptom_set = set()
     for eff in df["Summarized Efficacy"].dropna():
@@ -319,8 +323,7 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
         {"role": "system", "content": prompt}
     ]
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
@@ -340,6 +343,9 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     base_dir = os.path.dirname(os.path.abspath(__file__))
     summarized_csv = summarized_csv_path or os.path.join(base_dir, "summarized_efficacy_data.csv")
     df = pd.read_csv(summarized_csv)
+    
+    # NaN値を適切に処理
+    df = df.fillna("")
     efficacy_list = df["Summarized Efficacy"].dropna().unique().tolist()
     # 候補数が多すぎる場合はランダムサンプリング
     import random
@@ -356,8 +362,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
         {"role": "system", "content": prompt}
     ]
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
@@ -381,7 +386,25 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     import os
     base_dir = os.path.dirname(os.path.abspath(__file__))
     symptoms_csv = symptoms_csv_path or os.path.join(base_dir, "unique_symptoms_from_summarized_efficacy.csv")
+    
+    # ファイルの存在確認
+    if not os.path.exists(symptoms_csv):
+        print(f"⚠️ Warning: {symptoms_csv} not found. Using fallback symptom list.")
+        # フォールバック用の症状リスト
+        symptom_list = [
+            "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
+            "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
+        ]
+        return {
+            'status': 'success',
+            'symptoms': symptom_list[:max_symptoms],
+            'message': 'Fallback symptom list used'
+        }
+    
     df = pd.read_csv(symptoms_csv, header=0)
+    
+    # NaN値を適切に処理
+    df = df.fillna("")
     symptom_list = df.iloc[:, 0].dropna().unique().tolist()
     if len(symptom_list) > max_symptoms:
         symptom_list = symptom_list[:max_symptoms]
@@ -396,8 +419,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         {"role": "system", "content": prompt}
     ]
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     print("ユーザー入力:", user_text)
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -431,12 +453,27 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     # 症状リストを読み込み
     symptoms_csv_path = os.path.join(BASE_DIR, "unique_symptoms_from_summarized_efficacy.csv")
     symptoms_list = []
-    try:
-        symptoms_df = pd.read_csv(symptoms_csv_path)
-        symptoms_list = symptoms_df['症状'].tolist()
-    except Exception as e:
-        print(f"症状リストの読み込みエラー: {e}")
-        symptoms_list = []
+    
+    # ファイルの存在確認
+    if not os.path.exists(symptoms_csv_path):
+        print(f"⚠️ Warning: {symptoms_csv_path} not found. Using fallback symptom list.")
+        symptoms_list = [
+            "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
+            "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
+        ]
+    else:
+        try:
+            symptoms_df = pd.read_csv(symptoms_csv_path)
+            
+            # NaN値を適切に処理
+            symptoms_df = symptoms_df.fillna("")
+            symptoms_list = symptoms_df['症状'].tolist()
+        except Exception as e:
+            print(f"症状リストの読み込みエラー: {e}")
+            symptoms_list = [
+                "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
+                "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
+            ]
     
     prompt = f"""
 以下の症状文を分析して、該当する症状と適する医薬品の種類を選択してください。
@@ -741,12 +778,25 @@ def get_medicine_details(recommended_medicines, medicine_list):
     for rec in recommended_medicines:
         product_name = rec.get('product_name', '')
         manufacturer = rec.get('manufacturer', '')
+        
+        # NaN値を適切に処理
+        if product_name is None or str(product_name) == 'nan':
+            product_name = ''
+        if manufacturer is None or str(manufacturer) == 'nan':
+            manufacturer = ''
 
         # まず完全一致で検索
         matched_medicine = None
         for medicine in medicine_list:
             csv_product = medicine.get('製品名', '')
             csv_manufacturer = medicine.get('メーカー名', '')
+            
+            # NaN値を適切に処理
+            if csv_product is None or str(csv_product) == 'nan':
+                csv_product = ''
+            if csv_manufacturer is None or str(csv_manufacturer) == 'nan':
+                csv_manufacturer = ''
+            
             if product_name == csv_product and manufacturer == csv_manufacturer:
                 matched_medicine = medicine
                 break
@@ -754,6 +804,11 @@ def get_medicine_details(recommended_medicines, medicine_list):
         if not matched_medicine:
             for medicine in medicine_list:
                 csv_product = medicine.get('製品名', '')
+                
+                # NaN値を適切に処理
+                if csv_product is None or str(csv_product) == 'nan':
+                    csv_product = ''
+                
                 if product_name == csv_product:
                     matched_medicine = medicine
                     break
@@ -763,17 +818,70 @@ def get_medicine_details(recommended_medicines, medicine_list):
             usage_notes = rec.get('usage_notes')
             if not usage_notes:
                 usage_notes = matched_medicine.get('使用上の注意', '')
+            # NaN値を適切に処理して医薬品詳細情報を構築
+            def safe_get(value):
+                if value is None or str(value) == 'nan':
+                    return ''
+                return value
+            
+            # スコアリング計算（管理者画面用）
+            def calculate_medicine_score(medicine_data, rec_data):
+                score = 0
+                max_score = 100
+                
+                # 基本スコア（順位による）
+                rank_score = max(0, 30 - (rec_data.get('number', 1) - 1) * 5)
+                score += rank_score
+                
+                # 効能効果の充実度
+                efficacy = safe_get(medicine_data.get('効能効果', ''))
+                if efficacy and len(efficacy) > 50:
+                    score += 20
+                elif efficacy and len(efficacy) > 20:
+                    score += 10
+                
+                # 成分情報の充実度
+                ingredients = safe_get(medicine_data.get('成分', ''))
+                if ingredients and len(ingredients) > 30:
+                    score += 15
+                elif ingredients and len(ingredients) > 10:
+                    score += 8
+                
+                # 使用上の注意の充実度
+                usage_notes = safe_get(usage_notes)
+                if usage_notes and len(usage_notes) > 50:
+                    score += 15
+                elif usage_notes and len(usage_notes) > 20:
+                    score += 8
+                
+                # ドーピング情報の有無
+                doping = safe_get(medicine_data.get('禁止物質あり', ''))
+                if doping and doping != '':
+                    score += 10
+                
+                # 推奨理由の充実度
+                reason = safe_get(rec_data.get('reason', ''))
+                if reason and len(reason) > 30:
+                    score += 10
+                elif reason and len(reason) > 10:
+                    score += 5
+                
+                return min(score, max_score)
+            
+            medicine_score = calculate_medicine_score(matched_medicine, rec)
+            
             detailed_medicine = {
                 'number': rec.get('number', 0),
-                'product_name': matched_medicine.get('製品名', product_name),
-                'manufacturer': matched_medicine.get('メーカー名', manufacturer),
-                'reason': rec.get('reason', ''),
-                'efficacy': matched_medicine.get('効能効果', ''),
-                'ingredients': matched_medicine.get('成分', ''),
-                'usage_notes': usage_notes,
-                'doping_prohibited': matched_medicine.get('禁止物質あり', ''),
-                'competition_category': matched_medicine.get('競技会区分', ''),
-                'doping_conditions': matched_medicine.get('条件', '')
+                'product_name': safe_get(matched_medicine.get('製品名', product_name)),
+                'manufacturer': safe_get(matched_medicine.get('メーカー名', manufacturer)),
+                'reason': safe_get(rec.get('reason', '')),
+                'efficacy': safe_get(matched_medicine.get('効能効果', '')),
+                'ingredients': safe_get(matched_medicine.get('成分', '')),
+                'usage_notes': safe_get(usage_notes),
+                'doping_prohibited': safe_get(matched_medicine.get('禁止物質あり', '')),
+                'competition_category': safe_get(matched_medicine.get('競技会区分', '')),
+                'doping_conditions': safe_get(matched_medicine.get('条件', '')),
+                'score': medicine_score  # スコアリング情報を追加
             }
             detailed_medicines.append(detailed_medicine)
             print(f"医薬品詳細情報取得: {product_name} ({manufacturer}) -> {matched_medicine.get('製品名', '')} ({matched_medicine.get('メーカー名', '')})")
@@ -783,17 +891,42 @@ def get_medicine_details(recommended_medicines, medicine_list):
             usage_notes = rec.get('usage_notes')
             if not usage_notes:
                 usage_notes = '詳細情報が見つかりませんでした'
+            # NaN値を適切に処理して医薬品詳細情報を構築
+            def safe_get(value):
+                if value is None or str(value) == 'nan':
+                    return ''
+                return value
+            
+            # 詳細情報が見つからない場合のスコアリング
+            def calculate_fallback_score(rec_data):
+                score = 0
+                # 基本スコア（順位による）
+                rank_score = max(0, 30 - (rec_data.get('number', 1) - 1) * 5)
+                score += rank_score
+                
+                # 推奨理由の充実度
+                reason = safe_get(rec_data.get('reason', ''))
+                if reason and len(reason) > 30:
+                    score += 20
+                elif reason and len(reason) > 10:
+                    score += 10
+                
+                return min(score, 50)  # 詳細情報がない場合は最大50点
+            
+            fallback_score = calculate_fallback_score(rec)
+            
             detailed_medicine = {
                 'number': rec.get('number', 0),
-                'product_name': product_name,
-                'manufacturer': manufacturer,
-                'reason': rec.get('reason', ''),
+                'product_name': safe_get(product_name),
+                'manufacturer': safe_get(manufacturer),
+                'reason': safe_get(rec.get('reason', '')),
                 'efficacy': '詳細情報が見つかりませんでした',
                 'ingredients': '詳細情報が見つかりませんでした',
-                'usage_notes': usage_notes,
+                'usage_notes': safe_get(usage_notes),
                 'doping_prohibited': '詳細情報が見つかりませんでした',
                 'competition_category': '詳細情報が見つかりませんでした',
-                'doping_conditions': '詳細情報が見つかりませんでした'
+                'doping_conditions': '詳細情報が見つかりませんでした',
+                'score': fallback_score  # スコアリング情報を追加
             }
             detailed_medicines.append(detailed_medicine)
     
@@ -872,8 +1005,7 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
         推奨結果
     """
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     
     # ルールベース推奨モジュールをインポート
     try:
@@ -924,8 +1056,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
         dict: ChatGPTの回答
     """
     if client is None:
-        from medicine_logic import client as global_client
-        client = global_client
+        client = OpenAI(api_key=api_key)
     
     # 推奨医薬品がない場合は登録販売者相談を推奨
     if not recommended_medicines:

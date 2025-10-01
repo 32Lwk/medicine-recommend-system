@@ -338,17 +338,127 @@
         }
 
         .message.user .message-content {
-            background: #f8f9fa;
-            color: #2c3e50;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
             border-bottom-left-radius: 4px;
-            border: 1px solid #e9ecef;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
 
         .message.bot .message-content {
-            background: #f8f9fa;
-            color: #2c3e50;
-            border-bottom-right-radius: 4px;
-            border: 1px solid #e9ecef;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .message-content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .message-content a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .message-content h4, .message-content h5 {
+            color: #333;
+            margin: 8px 0;
+        }
+
+        .message-content p {
+            color: #333;
+            margin: 4px 0;
+        }
+
+        .message-content strong {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .message-text {
+            color: inherit;
+        }
+
+        .message-text * {
+            color: inherit;
+        }
+
+        .message-text h4, .message-text h5 {
+            color: #333 !important;
+            margin: 8px 0;
+        }
+
+        .message-text p {
+            color: #333 !important;
+            margin: 4px 0;
+        }
+
+        .message-text strong {
+            color: #333 !important;
+            font-weight: bold;
+        }
+
+        .message-text div {
+            color: #333 !important;
+        }
+
+        .message-text span {
+            color: #333 !important;
+        }
+
+        /* AIメッセージ内のHTMLコンテンツのスタイルを強制適用 */
+        .message.bot .message-text h4[style*="color: #1976d2"] {
+            color: #1976d2 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #2e7d32"] {
+            color: #2e7d32 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #e65100"] {
+            color: #e65100 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #c62828"] {
+            color: #c62828 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #388e3c"] {
+            color: #388e3c !important;
+        }
+
+        .message.bot .message-text p {
+            color: #333 !important;
+        }
+
+        .message.bot .message-text div {
+            color: #333 !important;
+        }
+
+        .message.bot .message-text span {
+            color: #333 !important;
+        }
+
+        /* AIメッセージ内の背景色とボーダーを調整 */
+        .message.bot .message-text div[style*="background: #e8f5e9"] {
+            background: #e8f5e9 !important;
+            border-left: 4px solid #4caf50 !important;
+        }
+
+        .message.bot .message-text div[style*="background: #fff3e0"] {
+            background: #fff3e0 !important;
+            border-left: 4px solid #ff9800 !important;
+        }
+
+        .message.bot .message-text div[style*="background: #ffebee"] {
+            background: #ffebee !important;
+            border-left: 4px solid #f44336 !important;
+        }
+
+        .message.bot .message-text div[style*="border-bottom: 1px solid #ddd"] {
+            border-bottom: 1px solid #ddd !important;
         }
 
         .message-time {
@@ -701,17 +811,127 @@
         }
 
         .message.user .message-content {
-            background: #f8f9fa;
-            color: #2c3e50;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
             border-bottom-left-radius: 4px;
-            border: 1px solid #e9ecef;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
 
         .message.bot .message-content {
-            background: #f8f9fa;
-            color: #2c3e50;
-            border-bottom-right-radius: 4px;
-            border: 1px solid #e9ecef;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .message-content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .message-content a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .message-content h4, .message-content h5 {
+            color: #333;
+            margin: 8px 0;
+        }
+
+        .message-content p {
+            color: #333;
+            margin: 4px 0;
+        }
+
+        .message-content strong {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .message-text {
+            color: inherit;
+        }
+
+        .message-text * {
+            color: inherit;
+        }
+
+        .message-text h4, .message-text h5 {
+            color: #333 !important;
+            margin: 8px 0;
+        }
+
+        .message-text p {
+            color: #333 !important;
+            margin: 4px 0;
+        }
+
+        .message-text strong {
+            color: #333 !important;
+            font-weight: bold;
+        }
+
+        .message-text div {
+            color: #333 !important;
+        }
+
+        .message-text span {
+            color: #333 !important;
+        }
+
+        /* AIメッセージ内のHTMLコンテンツのスタイルを強制適用 */
+        .message.bot .message-text h4[style*="color: #1976d2"] {
+            color: #1976d2 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #2e7d32"] {
+            color: #2e7d32 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #e65100"] {
+            color: #e65100 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #c62828"] {
+            color: #c62828 !important;
+        }
+
+        .message.bot .message-text h4[style*="color: #388e3c"] {
+            color: #388e3c !important;
+        }
+
+        .message.bot .message-text p {
+            color: #333 !important;
+        }
+
+        .message.bot .message-text div {
+            color: #333 !important;
+        }
+
+        .message.bot .message-text span {
+            color: #333 !important;
+        }
+
+        /* AIメッセージ内の背景色とボーダーを調整 */
+        .message.bot .message-text div[style*="background: #e8f5e9"] {
+            background: #e8f5e9 !important;
+            border-left: 4px solid #4caf50 !important;
+        }
+
+        .message.bot .message-text div[style*="background: #fff3e0"] {
+            background: #fff3e0 !important;
+            border-left: 4px solid #ff9800 !important;
+        }
+
+        .message.bot .message-text div[style*="background: #ffebee"] {
+            background: #ffebee !important;
+            border-left: 4px solid #f44336 !important;
+        }
+
+        .message.bot .message-text div[style*="border-bottom: 1px solid #ddd"] {
+            border-bottom: 1px solid #ddd !important;
         }
 
         .diagnosis-result {
@@ -993,7 +1213,12 @@
             <div class="chat-monitor" style="flex: 1; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px;">
                 <div class="chat-area">
                     <div class="chat-header" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <span id="chat-title" style="font-size: 1.2em; font-weight: bold;">セッション選択中...</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <span id="chat-title" style="font-size: 1.2em; font-weight: bold; flex: 1; min-width: 0; word-break: break-all; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">セッション選択中...</span>
+                            <button id="userAttributesBtn" onclick="showUserAttributesModal()" style="display: none; background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.9em; cursor: pointer; flex-shrink: 0;">
+                                👤 ユーザー属性
+                            </button>
+                        </div>
                     </div>
                     <div class="chat-messages" id="chat-messages" style="max-height: calc(100vh - 500px); overflow-y: auto;">
                         <div class="empty-state">
@@ -1054,6 +1279,24 @@
             <button onclick="sendMedicineChat()" class="admin-btn">送信</button>
             <div id="medicineChatResult" style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px;">
                 <p>結果がここに表示されます...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ユーザー属性情報モーダル -->
+    <div id="userAttributesModal" class="admin-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+        <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 700px; max-height: 80vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; position: relative;">
+                <h3 style="margin: 0; font-size: 1.4em; font-weight: 600;">👤 ユーザー属性情報</h3>
+                <span class="close" onclick="closeUserAttributesModal()" style="position: absolute; top: 15px; right: 20px; color: white; font-size: 1.8em; font-weight: bold; cursor: pointer; opacity: 0.8; transition: opacity 0.3s; line-height: 1;">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 0; background: white;">
+                <div id="userAttributesContent" style="padding: 20px; background: white;">
+                    <div class="loading" style="text-align: center; padding: 40px; color: #666; background: white;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">⏳</div>
+                        <p style="background: white; color: #666;">読み込み中...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1385,6 +1628,14 @@
                 </div>
             `;
             
+            // セッションタイトルを更新
+            const session = allSessions.find(s => s.session_id === sessionId);
+            if (session) {
+                document.getElementById('chat-title').textContent = `${session.username} (${sessionId})`;
+                // ユーザー属性ボタンを表示
+                document.getElementById('userAttributesBtn').style.display = 'block';
+            }
+            
             fetch('/api/main_sessions', {
                 headers: {
                     'Cache-Control': 'no-cache',
@@ -1410,6 +1661,239 @@
                     showNotification('セッション情報取得エラー', 'error');
                     renderChatMessages([]);
                 });
+        }
+
+        // ユーザー属性情報モーダルを表示
+        function showUserAttributesModal() {
+            if (!currentSessionId) {
+                showNotification('セッションが選択されていません', 'error');
+                return;
+            }
+            
+            document.getElementById('userAttributesModal').style.display = 'block';
+            loadUserAttributes(currentSessionId);
+        }
+
+        // ユーザー属性情報モーダルを閉じる
+        function closeUserAttributesModal() {
+            document.getElementById('userAttributesModal').style.display = 'none';
+        }
+
+        // ユーザー属性情報を読み込み
+        function loadUserAttributes(sessionId) {
+            const content = document.getElementById('userAttributesContent');
+            content.innerHTML = `
+                <div class="loading" style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">⏳</div>
+                    <p>読み込み中...</p>
+                </div>
+            `;
+            
+            // デバッグ情報を出力
+            console.log('loadUserAttributes called with sessionId:', sessionId);
+            console.log('allSessions:', allSessions);
+            
+            // セッション情報からユーザー属性を取得
+            const session = allSessions.find(s => s.session_id === sessionId);
+            console.log('Found session:', session);
+            
+            if (session) {
+                const userInfo = session.user_info || {};
+                const attributes = session.attributes || {};
+                console.log('userInfo:', userInfo);
+                console.log('attributes:', attributes);
+                
+                // userInfoとattributesをマージ（attributesが優先）
+                const mergedUserInfo = { ...userInfo, ...attributes };
+                console.log('mergedUserInfo:', mergedUserInfo);
+                
+                let html = `
+                    <div style="margin-bottom: 25px; background: white;">
+                        <div style="display: flex; align-items: center; margin-bottom: 20px; background: white;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; margin-right: 15px;">
+                                👤
+                            </div>
+                            <div style="background: white;">
+                                <h4 style="color: #2c3e50; margin: 0 0 5px 0; font-size: 1.3em; background: white;">${session.username || '不明'}</h4>
+                                <p style="color: #666; margin: 0; font-size: 0.9em; background: white;">セッションID: ${sessionId.substring(0, 20)}...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (Object.keys(mergedUserInfo).length > 0) {
+                    html += `
+                        <div style="margin-bottom: 25px; background: white;">
+                            <h4 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.2em; display: flex; align-items: center; background: white;">
+                                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 0.8em;">👤</span>
+                                <span style="background: white;">ユーザー属性</span>
+                            </h4>
+                            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 12px; border-left: 4px solid #28a745;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    `;
+                    
+                    // ユーザー情報を表示（追加質問と同じ項目）
+                    if (mergedUserInfo.age) {
+                        html += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">🎂 年齢</div>
+                                <div style="color: #2c3e50; font-size: 1.1em; background: white;">${mergedUserInfo.age}歳</div>
+                            </div>
+                        `;
+                    }
+                    if (mergedUserInfo.gender) {
+                        html += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">⚥ 性別</div>
+                                <div style="color: #2c3e50; font-size: 1.1em; background: white;">${mergedUserInfo.gender}</div>
+                            </div>
+                        `;
+                    }
+                    // 妊娠・授乳状態（女性の場合のみ表示）
+                    if (mergedUserInfo.gender === '女性' || mergedUserInfo.gender === '女') {
+                        if (mergedUserInfo.pregnant !== undefined && mergedUserInfo.pregnant !== null) {
+                            const pregnancyStatus = mergedUserInfo.pregnant ? '妊娠中' : '妊娠していない';
+                            html += `
+                                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">🤱 妊娠状態</div>
+                                    <div style="color: #2c3e50; font-size: 1.1em; background: white;">${pregnancyStatus}</div>
+                                </div>
+                            `;
+                        }
+                        if (mergedUserInfo.breastfeeding !== undefined && mergedUserInfo.breastfeeding !== null) {
+                            const breastfeedingStatus = mergedUserInfo.breastfeeding ? '授乳中' : '授乳していない';
+                            html += `
+                                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">🍼 授乳状態</div>
+                                    <div style="color: #2c3e50; font-size: 1.1em; background: white;">${breastfeedingStatus}</div>
+                                </div>
+                            `;
+                        }
+                    }
+                    // アレルギー
+                    if (mergedUserInfo.allergies && mergedUserInfo.allergies.length > 0) {
+                        const allergyText = Array.isArray(mergedUserInfo.allergies) ? mergedUserInfo.allergies.join(', ') : mergedUserInfo.allergies;
+                        html += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">⚠️ アレルギー</div>
+                                <div style="color: #2c3e50; font-size: 1.1em; background: white;">${allergyText}</div>
+                            </div>
+                        `;
+                    }
+                    // 現在服用中の薬（副用薬）
+                    const medicationText = (mergedUserInfo.current_medications && mergedUserInfo.current_medications.length > 0) 
+                        ? (Array.isArray(mergedUserInfo.current_medications) ? mergedUserInfo.current_medications.join(', ') : mergedUserInfo.current_medications)
+                        : 'なし';
+                    html += `
+                        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">💊 副用薬（現在服用中の薬）</div>
+                            <div style="color: #2c3e50; font-size: 1.1em; background: white;">${medicationText}</div>
+                        </div>
+                    `;
+                    // 症状の持続期間
+                    if (mergedUserInfo.symptom_duration_days !== undefined && mergedUserInfo.symptom_duration_days !== null) {
+                        let durationText = '';
+                        const days = mergedUserInfo.symptom_duration_days;
+                        const today = new Date();
+                        const startDate = new Date(today.getTime() - (days * 24 * 60 * 60 * 1000));
+                        const dateStr = startDate.getFullYear() + '/' + 
+                                      String(startDate.getMonth() + 1).padStart(2, '0') + '/' + 
+                                      String(startDate.getDate()).padStart(2, '0');
+                        
+                        if (days === 0) {
+                            durationText = '今日から';
+                        } else if (days === 1) {
+                            durationText = '昨日から';
+                        } else if (days < 7) {
+                            durationText = `${days}日前から`;
+                        } else if (days < 30) {
+                            const weeks = Math.floor(days / 7);
+                            durationText = `${weeks}週間前から`;
+                        } else {
+                            const months = Math.floor(days / 30);
+                            durationText = `${months}ヶ月前から`;
+                        }
+                        
+                        durationText += ` (${dateStr})`;
+                        
+                        html += `
+                            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">⏰ 症状の持続期間</div>
+                                <div style="color: #2c3e50; font-size: 1.1em; background: white;">${durationText}</div>
+                            </div>
+                        `;
+                    }
+                    // 既往症
+                    const historyText = (mergedUserInfo.medical_history && mergedUserInfo.medical_history.length > 0) 
+                        ? (Array.isArray(mergedUserInfo.medical_history) ? mergedUserInfo.medical_history.join(', ') : mergedUserInfo.medical_history)
+                        : 'なし';
+                    html += `
+                        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">🏥 既往症</div>
+                            <div style="color: #2c3e50; font-size: 1.1em; background: white;">${historyText}</div>
+                        </div>
+                    `;
+                    // その他伝えたいこと
+                    const otherInfoText = mergedUserInfo.other_info || 'なし';
+                    html += `
+                        <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="color: #28a745; font-weight: bold; margin-bottom: 5px; background: white;">📝 その他伝えたいこと</div>
+                            <div style="color: #2c3e50; font-size: 1.1em; background: white;">${otherInfoText}</div>
+                        </div>
+                    `;
+                    
+                    html += `</div></div></div>`;
+                } else {
+                    html += `
+                        <div style="margin-bottom: 25px; background: white;">
+                            <h4 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.2em; display: flex; align-items: center; background: white;">
+                                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 0.8em;">👤</span>
+                                <span style="background: white;">ユーザー属性</span>
+                            </h4>
+                            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 30px; border-radius: 12px; border-left: 4px solid #ffc107; text-align: center;">
+                                <div style="font-size: 3em; margin-bottom: 15px; background: transparent;">📝</div>
+                                <p style="color: #666; margin: 0; font-size: 1.1em; background: white; padding: 10px; border-radius: 8px;">ユーザー属性情報はまだ入力されていません</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                content.innerHTML = html;
+            } else {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #e74c3c; background: white;">
+                        <div style="font-size: 3em; margin-bottom: 15px; background: white;">❌</div>
+                        <p style="font-size: 1.1em; background: white;">セッション情報が見つかりません</p>
+                    </div>
+                `;
+            }
+        }
+
+        // HTMLコンテンツにスコアリングを追加（管理者画面用）
+        function addScoringToHtmlContent(htmlContent, medicines) {
+            if (!medicines || medicines.length === 0) {
+                return htmlContent;
+            }
+            
+            let modifiedContent = htmlContent;
+            
+            // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
+            medicines.forEach((medicine, index) => {
+                if (medicine.score !== undefined) {
+                    const scoreColor = medicine.score >= 80 ? '#27ae60' : medicine.score >= 60 ? '#f39c12' : '#e74c3c';
+                    const scoringHtml = `<span style="background: ${scoreColor}; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.7em; font-weight: bold; margin-left: 8px;">最適度: ${medicine.score}%</span>`;
+                    
+                    // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
+                    const medicineName = medicine.product_name || '';
+                    if (medicineName) {
+                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
+                        const rankPattern = new RegExp(`(🏆 ${index + 1}位: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
+                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
+                    }
+                }
+            });
+            
+            return modifiedContent;
         }
 
         function renderChatMessages(messages) {
@@ -1602,7 +2086,15 @@
                 
                 // メッセージの内容を適切に表示
                 let content = msg.content;
-                if (msg.diagnosis) {
+                
+                // HTMLコンテンツが直接含まれている場合（ユーザー側と同じ表示）
+                if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                    content = msg.content;
+                    // 管理者画面でスコアリングを追加
+                    if (msg.diagnosis && msg.diagnosis.recommended_medicines) {
+                        content = addScoringToHtmlContent(content, msg.diagnosis.recommended_medicines);
+                    }
+                } else if (msg.diagnosis) {
                     // 診断結果がある場合は詳細に表示
                     content = formatDiagnosisMessage(msg.diagnosis);
                 } else if (msg.content && msg.content.includes('診断結果をお伝えします')) {
@@ -1619,7 +2111,7 @@
                 html += `
                     <div class="message ${messageClass}">
                         <div class="${messageContentClass}">
-                            ${content}${indicator}
+                            <div class="message-text">${content}</div>${indicator}
                             <div class="message-time">${timestamp}</div>
                         </div>
                     </div>
@@ -1658,7 +2150,14 @@
                     content += `<div style="margin-bottom: 15px;"><strong>💊 推奨医薬品:</strong></div>`;
                     diagnosis.recommended_medicines.forEach((medicine, index) => {
                         content += `<div style="margin-bottom: 10px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; background: #f9f9f9;">`;
+                        content += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">`;
                         content += `<div style="font-weight: bold; color: #2c3e50;">${index + 1}. ${medicine.product_name || '製品名不明'}</div>`;
+                        // スコアリング表示（管理者画面のみ）
+                        if (medicine.score !== undefined) {
+                            const scoreColor = medicine.score >= 80 ? '#27ae60' : medicine.score >= 60 ? '#f39c12' : '#e74c3c';
+                            content += `<div style="background: ${scoreColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">最適度: ${medicine.score}%</div>`;
+                        }
+                        content += `</div>`;
                         if (medicine.manufacturer) {
                             content += `<div style="font-size: 0.9em; color: #666;">メーカー: ${medicine.manufacturer}</div>`;
                         }
@@ -1669,7 +2168,26 @@
                             content += `<div style="font-size: 0.9em; color: #666;">成分: ${medicine.ingredients}</div>`;
                         }
                         if (medicine.usage_notes) {
-                            content += `<div style="font-size: 0.9em; color: #e74c3c;"><strong>使用上の注意:</strong> ${medicine.usage_notes}</div>`;
+                            // 使用上の注意を項目ごとに改行して表示
+                            const usageNotes = medicine.usage_notes;
+                            content += `<div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid #e74c3c;">`;
+                            content += `<div style="font-size: 0.9em; color: #e74c3c; font-weight: bold; margin-bottom: 6px;">📋 使用上の注意</div>`;
+                            
+                            // 使用上の注意を改行で分割して表示
+                            const notesArray = usageNotes
+                                .split(/\r?\n/)
+                                .map(note => note.trim())
+                                .filter(note => note && note !== '');
+                            
+                            if (notesArray.length > 0) {
+                                notesArray.forEach(note => {
+                                    content += `<div style="margin-bottom: 4px; font-size: 0.85em; color: #333;">• ${note}</div>`;
+                                });
+                            } else {
+                                // 改行がない場合はそのまま表示
+                                content += `<div style="margin-bottom: 4px; font-size: 0.85em; color: #333;">• ${usageNotes}</div>`;
+                            }
+                            content += `</div>`;
                         }
                         if (medicine.doping_prohibited) {
                             content += `<div style="font-size: 0.9em; color: #f39c12;"><strong>ドーピング規制:</strong> ${medicine.doping_prohibited}</div>`;
@@ -2059,6 +2577,14 @@
                     <p>チャット履歴を読み込み中...</p>
                 </div>
             `;
+            
+            // セッションタイトルを更新
+            const session = allSessions.find(s => s.session_id === sessionId);
+            if (session) {
+                document.getElementById('chat-title').textContent = `${session.username} (${sessionId})`;
+                // ユーザー属性ボタンを表示
+                document.getElementById('userAttributesBtn').style.display = 'block';
+            }
             
             fetch('/api/main_sessions', {
                 headers: {
