@@ -1303,16 +1303,90 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
+        // グローバルエラーハンドラー
+        window.addEventListener('error', function(event) {
+            console.error('🔴 Global error:', event.error);
+            console.error('🔴 Error message:', event.message);
+            console.error('🔴 Error at:', event.filename, 'line', event.lineno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🔴 Unhandled promise rejection:', event.reason);
+        });
+        
+        console.log('📄 Script loaded successfully');
+        
         let currentSessionId = null;
         let allSessions = [];
         let socket = null;
 
         // ページ読み込み時の初期化
         document.addEventListener('DOMContentLoaded', function() {
-            // 初期データ読み込み
-            refreshAIStatus();
-            refreshQueue();
-            refreshSessionList();
+            console.log('🚀 Admin page loaded, initializing...');
+            
+            // 関数が定義されているか確認
+            console.log('🔍 Function check:');
+            console.log('  - refreshAIStatus:', typeof refreshAIStatus);
+            console.log('  - refreshQueue:', typeof refreshQueue);
+            console.log('  - refreshSessionList:', typeof refreshSessionList);
+            console.log('  - renderSessionList:', typeof renderSessionList);
+            console.log('  - selectSession:', typeof selectSession);
+            
+            // 初期データ読み込み（エラーハンドリング付き）
+            try {
+                console.log('📡 Calling refreshAIStatus...');
+                refreshAIStatus();
+            } catch (error) {
+                console.error('❌ refreshAIStatus error:', error);
+            }
+            
+            try {
+                console.log('📡 Calling refreshQueue...');
+                refreshQueue();
+            } catch (error) {
+                console.error('❌ refreshQueue error:', error);
+            }
+            
+            try {
+                console.log('📡 Calling refreshSessionList...');
+                refreshSessionList();
+            } catch (error) {
+                console.error('❌ refreshSessionList error:', error);
+            }
+            
+            // 管理ボタンのイベントリスナー
+            document.getElementById('aiControlBtn').addEventListener('click', function() {
+                document.getElementById('aiControlModal').style.display = 'block';
+            });
+            
+            document.getElementById('systemStatusBtn').addEventListener('click', function() {
+                document.getElementById('systemStatusModal').style.display = 'block';
+                loadSystemStatus();
+            });
+            
+            document.getElementById('medicineChatBtn').addEventListener('click', function() {
+                document.getElementById('medicineChatModal').style.display = 'block';
+            });
+            
+            document.getElementById('clearLogsBtn').addEventListener('click', function() {
+                if (confirm('すべてのログをクリアしますか？')) {
+                    clearAllLogs();
+                }
+            });
+            
+            // モーダルの閉じるボタン
+            document.querySelectorAll('.close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    this.closest('.admin-modal').style.display = 'none';
+                });
+            });
+            
+            // モーダル外クリックで閉じる
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('admin-modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
             
             // チャット入力の制御
             const chatInput = document.getElementById('chat-input');
@@ -1345,6 +1419,7 @@
                     }).then(res => res.json())
                 ])
                 .then(([queueData, sessionsData]) => {
+                    console.log('✅ Initial data loaded successfully');
                     renderQueue(queueData);
                     updateStats(queueData);
                     renderCurrentSession(sessionsData);
@@ -1355,7 +1430,7 @@
                     document.getElementById('total-sessions').textContent = allSessions.length;
                 })
                 .catch(error => {
-                    console.error('Initial data load error:', error);
+                    console.error('❌ Initial data load error:', error);
                 });
             }
             
@@ -1588,34 +1663,6 @@
                 // 現在のセッションを最初に表示
                 content.innerHTML = currentSessionHtml + existingContent;
             }
-        }
-
-        function selectSession(sessionId, index) {
-            currentSessionId = sessionId;
-            
-            // 選択状態を更新
-            document.querySelectorAll('.queue-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-            
-            // チャットタイトルを更新
-            document.getElementById('chat-title').textContent = `セッション: ${sessionId}`;
-            
-            // チャット入力エリアを有効化
-            const chatInput = document.getElementById('chat-input');
-            const sendBtn = document.getElementById('send-btn');
-            chatInput.disabled = false;
-            chatInput.placeholder = `${sessionId} に返信メッセージを入力してください...`;
-            
-            // 送信ボタンの状態を更新
-            updateSendButtonState();
-            
-            // セッションのメッセージ履歴を即座に取得
-            loadChatHistory(sessionId);
-            
-            // 選択したセッションをハイライト
-            showNotification(`セッション ${sessionId} を選択しました`, 'success');
         }
 
         function loadChatHistory(sessionId) {
@@ -1909,55 +1956,67 @@
                 return;
             }
             
+            console.log('📨 Rendering chat messages:', messages.length, 'messages');
+            
             let html = '';
-            messages.forEach(msg => {
+            messages.forEach((msg, index) => {
                 const messageClass = msg.type === 'user' ? 'user' : 'bot';
                 let indicator = '';
                 
+                console.log(`Message ${index}:`, msg);
+                
                 // 管理画面用のインジケーター：薬剤師視点で表示
+                if (msg.type === 'bot') {
+                    if (msg.manual_reply) {
+                        indicator = '<span class="manual-reply-indicator">👤 薬剤師返信</span><br>';
+                    } else {
+                        indicator = '<span class="ai-indicator">🤖 AI返信</span><br>';
+                    }
+                }
+                
+                // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
+                if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                    html += `
+                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
+                            <div style="max-width: 80%;">
+                                ${indicator}
+                                ${msg.content}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 通常のテキストメッセージ
+                    const content = escapeHtml(msg.content || '');
+                    html += `
+                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
+                            <div class="message-content" style="max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; ${
+                                messageClass === 'user' 
+                                    ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
+                                    : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
+                            }">
+                                ${indicator}
+                                ${content}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            chatMessages.innerHTML = html;
+            console.log('✅ Chat messages rendered');
+            
+            // スクロールを最下部に
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
         
-        // 管理画面用の機能
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Admin page loaded, initializing...');
-            
-            // 管理ボタンのイベントリスナー
-            document.getElementById('aiControlBtn').addEventListener('click', function() {
-                document.getElementById('aiControlModal').style.display = 'block';
-            });
-            
-            document.getElementById('systemStatusBtn').addEventListener('click', function() {
-                document.getElementById('systemStatusModal').style.display = 'block';
-                loadSystemStatus();
-            });
-            
-            document.getElementById('medicineChatBtn').addEventListener('click', function() {
-                document.getElementById('medicineChatModal').style.display = 'block';
-            });
-            
-            document.getElementById('clearLogsBtn').addEventListener('click', function() {
-                if (confirm('すべてのログをクリアしますか？')) {
-                    clearAllLogs();
-                }
-            });
-            
-            // モーダルの閉じるボタン
-            document.querySelectorAll('.close').forEach(function(closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    this.closest('.admin-modal').style.display = 'none';
-                });
-            });
-            
-            // モーダル外クリックで閉じる
-            window.addEventListener('click', function(event) {
-                if (event.target.classList.contains('admin-modal')) {
-                    event.target.style.display = 'none';
-                }
-            });
-            
-            // 初期セッション一覧の読み込み
-            console.log('Loading initial session list...');
-            refreshSessionList();
-        });
+        // HTMLエスケープ関数（既に上部で定義済み）
+        // function escapeHtml(text) {
+        //     const div = document.createElement('div');
+        //     div.textContent = text;
+        //     return div.innerHTML;
+        // }
         
         // AI管理機能
         function setAIMode(mode) {
@@ -2071,55 +2130,6 @@
                 console.error('Error:', error);
                 alert('エラーが発生しました');
             });
-        }
-                if (msg.type === 'user') {
-                    indicator = '<span class="user-indicator">👤 ユーザー</span>';
-                } else if (msg.type === 'bot') {
-                    if (msg.manual_reply) {
-                        indicator = '<span class="manual-indicator">👨‍💼 薬剤師</span>';
-                    } else {
-                        indicator = '<span class="ai-indicator">🤖 AI</span>';
-                    }
-                }
-                
-                const messageContentClass = msg.manual_reply ? 'message-content manual-reply' : 'message-content';
-                
-                // メッセージの内容を適切に表示
-                let content = msg.content;
-                
-                // HTMLコンテンツが直接含まれている場合（ユーザー側と同じ表示）
-                if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
-                    content = msg.content;
-                    // 管理者画面でスコアリングを追加
-                    if (msg.diagnosis && msg.diagnosis.recommended_medicines) {
-                        content = addScoringToHtmlContent(content, msg.diagnosis.recommended_medicines);
-                    }
-                } else if (msg.diagnosis) {
-                    // 診断結果がある場合は詳細に表示
-                    content = formatDiagnosisMessage(msg.diagnosis);
-                } else if (msg.content && msg.content.includes('診断結果をお伝えします')) {
-                    // 固定メッセージの場合は実際の診断結果を表示
-                    content = `<div style="color: #666; font-style: italic;">診断結果の詳細情報を確認中...</div>`;
-                }
-                
-                const timestamp = new Date().toLocaleTimeString('ja-JP', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                
-                html += `
-                    <div class="message ${messageClass}">
-                        <div class="${messageContentClass}">
-                            <div class="message-text">${content}</div>${indicator}
-                            <div class="message-time">${timestamp}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            chatMessages.innerHTML = html;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function formatDiagnosisMessage(diagnosis) {
@@ -2270,6 +2280,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    action: 'reply',
                     session_id: currentSessionId,
                     reply_message: replyMessage
                 })
@@ -2421,8 +2432,21 @@
                 
                 const messageCount = session.messages_count || 0;
                 const isSelected = currentSessionId === session.session_id;
-                const lastMessage = session.messages && session.messages.length > 0 ? 
-                    session.messages[session.messages.length - 1].content.substring(0, 30) + '...' : 'メッセージなし';
+                
+                // 最後のメッセージを取得（HTMLタグを除去）
+                let lastMessage = 'メッセージなし';
+                if (session.messages && session.messages.length > 0) {
+                    const lastMsg = session.messages[session.messages.length - 1];
+                    let content = lastMsg.content || '';
+                    // HTMLタグを除去
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = content;
+                    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                    lastMessage = textContent.substring(0, 30);
+                    if (textContent.length > 30) {
+                        lastMessage += '...';
+                    }
+                }
                 
                 // 最終更新時刻を計算
                 let lastUpdate = '不明';
@@ -2472,7 +2496,7 @@
                             </div>
                         </div>
                         <div style="font-size: 0.85em; color: ${isSelected ? '#e0e0e0' : '#666'}; line-height: 1.3;">
-                            ${lastMessage}
+                            ${escapeHtml(lastMessage)}
                         </div>
                     </div>
                 `;
@@ -2543,6 +2567,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    action: 'reply',
                     session_id: currentSessionId,
                     reply_message: replyMessage
                 })

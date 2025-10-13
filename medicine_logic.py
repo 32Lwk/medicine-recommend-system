@@ -825,7 +825,7 @@ def get_medicine_details(recommended_medicines, medicine_list):
                 return value
             
             # スコアリング計算（管�?�?画面用?�?
-            def calculate_medicine_score(medicine_data, rec_data):
+            def calculate_medicine_score(medicine_data, rec_data, notes):
                 score = 0
                 max_score = 100
                 
@@ -848,10 +848,10 @@ def get_medicine_details(recommended_medicines, medicine_list):
                     score += 8
                 
                 # 使用上�?�注意�?��?実度
-                usage_notes = safe_get(usage_notes)
-                if usage_notes and len(usage_notes) > 50:
+                usage_notes_safe = safe_get(notes)
+                if usage_notes_safe and len(usage_notes_safe) > 50:
                     score += 15
-                elif usage_notes and len(usage_notes) > 20:
+                elif usage_notes_safe and len(usage_notes_safe) > 20:
                     score += 8
                 
                 # ド�?�ピング�?報の有無
@@ -868,7 +868,7 @@ def get_medicine_details(recommended_medicines, medicine_list):
                 
                 return min(score, max_score)
             
-            medicine_score = calculate_medicine_score(matched_medicine, rec)
+            medicine_score = calculate_medicine_score(matched_medicine, rec, usage_notes)
             
             detailed_medicine = {
                 'number': rec.get('number', 0),
