@@ -2,9 +2,21 @@
 
 このプログラムは、症状を入力すると適切な市販薬を提案し、薬の飲み合わせや注意点についてアドバイスを提供するAIシステムです。ルールベースとAIを組み合わせたハイブリッド推奨システムを採用しています。
 
-## 🚀 最新機能（2025年1月）
+## 🚀 最新機能（2025年10月）
 
-### 📝 最新の修正・改善（2025年1月2日）
+### 📝 最新の修正・改善（2025年10月13日）
+- **UIの大幅改善**: モダンでレスポンシブなチャットインターフェースに刷新
+- **システムアーキテクチャドキュメント**: 包括的な技術ドキュメント（`SYSTEM_ARCHITECTURE_DOCUMENTATION.md`）を追加
+- **視覚的な設計図**: Draw.ioによる詳細なシステム図面を追加（drowio/フォルダ）
+  - データフロー図
+  - ERダイアグラム
+  - シーケンス図
+  - システムアーキテクチャ図
+  - フローチャート
+- **ユーザー体験向上**: チャット履歴の表示改善、メッセージ送信UIの最適化
+- **コードの最適化**: medicine_logic.pyとapp.pyの機能強化と安定性向上
+
+### 📝 過去の修正・改善（2025年1月2日）
 - **管理者アプリケーション追加**: 独立した管理者用Webアプリケーション（`admin_app.py`）を新設
 - **デバッグ機能強化**: デバッグログの詳細化とJSON形式での出力機能を追加
 - **ファイル構成の最適化**: 不要なテストファイルと重複ファイルを削除
@@ -247,10 +259,20 @@ python debug_app.py
 
 ### ドキュメント
 - `README.md`: このファイル
+- `SYSTEM_ARCHITECTURE_DOCUMENTATION.md`: システムアーキテクチャ総合ドキュメント
 - `RULE_BASED_ALGORITHM.md`: ルールベースアルゴリズム詳細
 - `HYBRID_SYSTEM_INTEGRATION.md`: ハイブリッドシステム統合ドキュメント
 - `SESSION_MANAGEMENT_COMPLETE.md`: セッション管理仕様
 - `ALL_REQUIREMENTS_COMPLETE.md`: 全要件実装完了報告
+
+### 設計図・ダイアグラム
+- `drowio/enhanced_system_architecture.drawio`: システムアーキテクチャ図
+- `drowio/enhanced_dataflow_diagram.drawio`: データフロー図
+- `drowio/enhanced_sequence_diagram.drawio`: シーケンス図
+- `drowio/enhanced_er_diagram.drawio`: ERダイアグラム
+- `drowio/enhanced_flowchart.drawio`: フローチャート
+- `system_architecture.drawio`: システム全体アーキテクチャ
+- `contest_presentation_architecture.drawio`: プレゼンテーション用アーキテクチャ図
 
 ### ログ
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
