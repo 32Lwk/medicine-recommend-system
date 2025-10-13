@@ -47,13 +47,25 @@
         }
         .message {
             margin-bottom: 15px;
-            display: flex;
+            display: block;
+            width: 100%;
         }
         .message.user {
-            justify-content: flex-end;
+            text-align: right;
         }
         .message.bot {
-            justify-content: flex-start;
+            text-align: left;
+            display: block !important;
+        }
+        .message.bot > div {
+            display: inline-block;
+            max-width: 85%;
+            vertical-align: top;
+        }
+        .message.bot > div.recommendation-result,
+        .message.bot > div[style*="background: #e3f2fd"] {
+            display: block;
+            max-width: 95%;
         }
         .message-content {
             max-width: 70%;
@@ -63,6 +75,7 @@
             text-align: left;
             min-height: 20px;
             box-sizing: border-box;
+            display: inline-block;
         }
         .message.user .message-content {
             background: #4CAF50;
@@ -73,6 +86,9 @@
             color: #333;
             border: 1px solid #ddd;
             text-align: left;
+            display: inline-block;
+            max-width: 85%;
+            width: auto;
         }
         .message.bot .message-content.manual-reply {
             background: #fff3cd;
@@ -505,9 +521,12 @@
     <div class="chat-header">
         <h1>💊 医薬品相談AI</h1>
         <p>症状を教えてください。適切な市販薬と注意点をご案内します。</p>
-        <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px;">履歴クリア</button>
-        <button id="new-session-btn" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">新しいセッションを開始</button>
-        <button id="admin-request-btn" style="background: #ffc107; color: #212529; border: 1px solid #ffc107; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">薬剤師を要請</button>
+        <div style="margin-top: 10px;">
+            <button onclick="openUserInfoModal()" style="background: #2196F3; border: 1px solid #2196F3; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">👤 ユーザー情報登録</button>
+            <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">履歴クリア</button>
+            <button id="new-session-btn" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">新しいセッションを開始</button>
+            <button id="admin-request-btn" style="background: #ffc107; color: #212529; border: 1px solid #ffc107; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">薬剤師を要請</button>
+        </div>
     </div>
     
     <div class="chat-messages" id="chatMessages">
@@ -738,13 +757,26 @@
                 'Cache-Control': 'no-cache'
             }
         })
-                .then(response => {
+        .then(response => {
             console.log('POST response status:', response.status, response.statusText);
-            if (response.ok) {
-                return response.json();
-            } else {
+            console.log('POST response content-type:', response.headers.get('content-type'));
+            
+            if (!response.ok) {
                 console.error('POST failed:', response.status, response.statusText);
                 throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            
+            // Content-Typeがapplication/jsonかどうかを確認
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // HTMLやその他の形式の場合
+                console.error('Unexpected content-type:', contentType);
+                return response.text().then(text => {
+                    console.error('Response body:', text.substring(0, 500));
+                    throw new Error('サーバーから予期しない形式のレスポンスが返されました');
+                });
             }
         })
         .then((data) => {
@@ -1315,6 +1347,194 @@
         </form>
     </div>
 </div>
+
+<!-- ユーザー情報登録モーダル -->
+<div id="userInfoModal" class="modal">
+    <div class="modal-content" style="max-width: 600px; max-height: 40%; overflow-y: auto;">
+        <div class="modal-header">
+            <h3>👤 ユーザー情報登録</h3>
+            <span class="close-modal" onclick="closeUserInfoModal()">&times;</span>
+        </div>
+        <form id="userInfoForm" onsubmit="event.preventDefault(); saveUserInfo();">
+            <div class="form-group">
+                <label for="user_age">年齢 <span style="color: red;">*</span></label>
+                <input type="number" id="user_age" min="0" max="120" placeholder="例: 30" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_gender">性別 <span style="color: red;">*</span></label>
+                <select id="user_gender" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: white;">
+                    <option value="">選択してください</option>
+                    <option value="男性">男性</option>
+                    <option value="女性">女性</option>
+                </select>
+            </div>
+            
+            <!-- 妊娠・授乳フィールド（女性の場合のみ表示） -->
+            <div id="user_pregnancy_fields" style="display: none;">
+                <div class="form-group">
+                    <label for="user_pregnant">妊娠中ですか？</label>
+                    <select id="user_pregnant" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: white;">
+                        <option value="">選択してください</option>
+                        <option value="false">いいえ</option>
+                        <option value="true">はい</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user_breastfeeding">授乳中ですか？</label>
+                    <select id="user_breastfeeding" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: white;">
+                        <option value="">選択してください</option>
+                        <option value="false">いいえ</option>
+                        <option value="true">はい</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_allergies">アレルギー</label>
+                <input type="text" id="user_allergies" placeholder="例: 花粉、卵（複数ある場合はカンマ区切り）">
+            </div>
+            
+            <div class="form-group">
+                <label for="user_medications">現在服用中の薬（副用薬）</label>
+                <input type="text" id="user_medications" placeholder="例: ビタミンD、血圧の薬（複数ある場合はカンマ区切り）">
+            </div>
+            
+            <div class="form-group">
+                <label for="user_medical_history">既往症</label>
+                <input type="text" id="user_medical_history" placeholder="例: 糖尿病、高血圧（複数ある場合はカンマ区切り）">
+            </div>
+            
+            <div class="form-group">
+                <label for="user_other_info">その他、伝えたいこと</label>
+                <textarea id="user_other_info" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: vertical;" placeholder="例: 運動をしているので、ドーピングに注意したい"></textarea>
+            </div>
+            
+            <button type="submit" class="submit-attributes-btn">💾 保存</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ユーザー情報登録モーダル制御
+    function openUserInfoModal() {
+        document.getElementById('userInfoModal').style.display = 'flex';
+        loadExistingUserInfo();
+    }
+    
+    function closeUserInfoModal() {
+        document.getElementById('userInfoModal').style.display = 'none';
+    }
+    
+    // 性別選択時に妊娠・授乳フィールドを表示/非表示
+    document.getElementById('user_gender').addEventListener('change', function() {
+        const pregnancyFields = document.getElementById('user_pregnancy_fields');
+        if (this.value === '女性') {
+            pregnancyFields.style.display = 'block';
+        } else {
+            pregnancyFields.style.display = 'none';
+        }
+    });
+    
+    // 既存のユーザー情報を読み込む
+    function loadExistingUserInfo() {
+        fetch('/api/user_attributes', {
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.age) document.getElementById('user_age').value = data.age;
+            if (data.gender) {
+                document.getElementById('user_gender').value = data.gender;
+                // 性別に応じて妊娠・授乳フィールドを表示
+                if (data.gender === '女性') {
+                    document.getElementById('user_pregnancy_fields').style.display = 'block';
+                }
+            }
+            if (data.pregnant !== null && data.pregnant !== undefined) {
+                document.getElementById('user_pregnant').value = data.pregnant.toString();
+            }
+            if (data.breastfeeding !== null && data.breastfeeding !== undefined) {
+                document.getElementById('user_breastfeeding').value = data.breastfeeding.toString();
+            }
+            if (data.allergies && data.allergies.length > 0) {
+                document.getElementById('user_allergies').value = data.allergies.join(', ');
+            }
+            if (data.current_medications && data.current_medications.length > 0) {
+                document.getElementById('user_medications').value = data.current_medications.join(', ');
+            }
+            if (data.medical_history && data.medical_history.length > 0) {
+                document.getElementById('user_medical_history').value = data.medical_history.join(', ');
+            }
+            if (data.other_info) {
+                document.getElementById('user_other_info').value = data.other_info;
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load user info:', error);
+        });
+    }
+    
+    // ユーザー情報を保存
+    function saveUserInfo() {
+        const age = parseInt(document.getElementById('user_age').value);
+        const gender = document.getElementById('user_gender').value;
+        const pregnant = document.getElementById('user_pregnant').value === 'true' ? true : (document.getElementById('user_pregnant').value === 'false' ? false : null);
+        const breastfeeding = document.getElementById('user_breastfeeding').value === 'true' ? true : (document.getElementById('user_breastfeeding').value === 'false' ? false : null);
+        const allergies = document.getElementById('user_allergies').value.split(',').map(a => a.trim()).filter(a => a);
+        const medications = document.getElementById('user_medications').value.split(',').map(m => m.trim()).filter(m => m);
+        const medicalHistory = document.getElementById('user_medical_history').value.split(',').map(h => h.trim()).filter(h => h);
+        const otherInfo = document.getElementById('user_other_info').value.trim() || null;
+        
+        const userInfo = {
+            age: age,
+            gender: gender,
+            pregnant: pregnant,
+            breastfeeding: breastfeeding,
+            allergies: allergies,
+            current_medications: medications,
+            medical_history: medicalHistory,
+            other_info: otherInfo
+        };
+        
+        fetch('/api/user_attributes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify(userInfo)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response Content-Type:', response.headers.get('Content-Type'));
+            
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // JSONでない場合はテキストとして読み取る
+                return response.text().then(text => {
+                    console.error('Expected JSON but got:', text.substring(0, 200));
+                    throw new Error('サーバーからJSON形式のレスポンスが返されませんでした');
+                });
+            }
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                alert('✅ ユーザー情報を保存しました！');
+                closeUserInfoModal();
+            } else {
+                alert('❌ 保存に失敗しました: ' + (data.message || '不明なエラー'));
+            }
+        })
+        .catch(error => {
+            console.error('Save error:', error);
+            alert('❌ 保存中にエラーが発生しました: ' + error.message);
+        });
+    }
+</script>
 
 </body>
 </html> 

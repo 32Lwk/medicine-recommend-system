@@ -1,0 +1,491 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="改良版データフロー図" id="enhanced-dataflow">
+    <mxGraphModel dx="968" dy="906" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-46" value="チャットデータ" style="endArrow=classic;html=1;rounded=0;strokeColor=#388E3C;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="recommendation-history" target="_XlMFUXaqpcWdSy5LSdp-44" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="838" y="110" as="sourcePoint" />
+            <mxPoint x="1148" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="title" value="医薬品相談AIシステム - データフロー図" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="400" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="ユーザー" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="100" y="70" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="openai" value="OpenAI API" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="738" y="390" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="web-interface" target="input-classifier" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="web-interface" value="ユーザー&lt;div&gt;インターフェース&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="328" y="70" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="session-mgmt" value="セッション管理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="528" y="70" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="input-classifier" value="入力分類器" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="328" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="attribute-extraction" value="属性抽出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="528" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;shadow=0;strokeColor=#388E3C;" parent="1" source="user-attr-mgmt" target="user-attr-data" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user-attr-mgmt" value="ユーザー属性管理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="728" y="190" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-control" value="AI制御システム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="470" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="symptom-analysis" target="medicine-type-judge" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="symptom-analysis" value="症状分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#D79B00;" parent="1" vertex="1">
+          <mxGeometry x="528" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="medicine-type-judge" value="医薬品種類判定" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#D79B00;" parent="1" vertex="1">
+          <mxGeometry x="528" y="490" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="nlu-processor" value="NLU処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="728" y="590" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="manual-reply" value="手動返信システム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="550" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="safety-check" value="安全性チェック" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="528" y="820" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="escalation-check" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;エスカレーション判定&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="328" y="290" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="question-handler" value="質問応答処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="328" y="580" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="response-generation" value="応答生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="160" y="790" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#388E3C;shadow=0;" parent="1" source="user-attr-data" target="user-attr-mgmt" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#388E3C;shadow=0;" parent="1" source="user-attr-data" target="user-attr-mgmt" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="user-attr-data" value="ユーザー属性データ" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="938" y="190" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="medicine-db" value="医薬品DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="748" y="490" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="recommendation-history" value="チャット履歴" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1D5E7;strokeColor=#9673A6;" parent="1" vertex="1">
+          <mxGeometry x="1098" y="910" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="flow1" value="症状入力" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="web-interface" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="140" y="100" as="sourcePoint" />
+            <mxPoint x="200" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow2" value="セッション情報" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="session-mgmt" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="448" y="100" as="sourcePoint" />
+            <mxPoint x="478" y="100" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow3" value="入力データ" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="388" y="130" as="sourcePoint" />
+            <mxPoint x="388" y="190" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="388" y="130" />
+              <mxPoint x="388" y="190" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow4" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="attribute-extraction" target="user-attr-mgmt" edge="1">
+          <mxGeometry x="0.25" y="-60" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="448" y="220" as="sourcePoint" />
+            <mxPoint x="478" y="220" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-5" value="属性情報" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="flow4" vertex="1" connectable="0">
+          <mxGeometry x="-0.2298" y="2" relative="1" as="geometry">
+            <mxPoint x="9" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow5" value="属性抽出" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="input-classifier" target="attribute-extraction" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="478" y="180" as="sourcePoint" />
+            <mxPoint x="528" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow7" value="分析結果" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="448" y="535" as="sourcePoint" />
+            <mxPoint x="478" y="535" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow8" value="質問文" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-6" target="question-handler" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1018" y="615" as="sourcePoint" />
+            <mxPoint x="858" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow12" value="症状文" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" target="nlu-processor" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="648" y="620" as="sourcePoint" />
+            <mxPoint x="728" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow14" value="推奨医薬品" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" target="safety-check" edge="1">
+          <mxGeometry x="-0.2" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="587.9999999999998" y="760" as="sourcePoint" />
+            <mxPoint x="478" y="795" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow18" value="最終応答" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="response-generation" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="740" as="sourcePoint" />
+            <mxPoint x="115" y="150" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="115" y="820" />
+              <mxPoint x="115" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow19" value="保存" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="session-mgmt" target="session-data" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1068" y="90" as="sourcePoint" />
+            <mxPoint x="928" y="100" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow21" value="読み込み" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="medicine-db" target="medicine-type-judge" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="968" y="535" as="sourcePoint" />
+            <mxPoint x="798" y="540" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow22" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="medicine-db" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1028" y="570" as="sourcePoint" />
+            <mxPoint x="978" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow23" value="記録" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="recommendation-history" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="175" y="940" as="sourcePoint" />
+            <mxPoint x="880" y="950" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow32" value="管理データ" style="endArrow=classic;html=1;rounded=0;strokeColor=#388E3C;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="session-data" target="_XlMFUXaqpcWdSy5LSdp-44" edge="1">
+          <mxGeometry x="-0.3621" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="708" y="60" as="sourcePoint" />
+            <mxPoint x="1210" y="350" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1140" y="100" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="flow33" value="管理指示" style="endArrow=classic;html=1;rounded=0;strokeColor=#d32f2f;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry x="0.0038" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1330" y="420" as="sourcePoint" />
+            <mxPoint x="1198" y="419.5799999999999" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-title" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="540" y="1010" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-db" value="データベースアクセス" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;" parent="1" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="1075" as="sourcePoint" />
+            <mxPoint x="620" y="1075" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-api" value="API呼び出し" style="endArrow=classic;html=1;rounded=0;strokeColor=#f57c00;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="1096" as="sourcePoint" />
+            <mxPoint x="620" y="1096" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-admin" value="管理者操作" style="endArrow=classic;html=1;rounded=0;strokeColor=#d32f2f;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="1118" as="sourcePoint" />
+            <mxPoint x="620" y="1118" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="process-legend-title" value="プロセス色分け" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="653" y="1010" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="process-interface" value="インターフェース" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="648" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="process-input" value="入力分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="870" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="process-symptom" value="症状分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="978" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="process-safety" value="安全性・管理者" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1088" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="process-response" value="応答生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1198" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="datastore-legend-title" value="データベース色分け" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="643" y="1090" width="157" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="datastore-session" value="システム" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="653" y="1120" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="datastore-medicine" value="医薬品DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="743" y="1120" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="session-data" value="セッション&lt;div&gt;データ&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="748" y="70" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-6" value="質問判定" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="328" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-8" value="入力データ" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="input-classifier" target="escalation-check" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="388" y="260" as="sourcePoint" />
+            <mxPoint x="470" y="270" as="targetPoint" />
+            <Array as="points" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#388E3C;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="session-data" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="788" y="160" as="sourcePoint" />
+            <mxPoint x="418" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="788" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-11" value="症状文" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-6" target="symptom-analysis" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="388.01" y="450" as="sourcePoint" />
+            <mxPoint x="387.71999999999997" y="500" as="targetPoint" />
+            <Array as="points" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-15" value="抽出症状" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" target="medicine-type-judge" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="588.02" y="450" as="sourcePoint" />
+            <mxPoint x="587.73" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-17" value="医薬品種類" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="587.62" y="550" as="sourcePoint" />
+            <mxPoint x="587.6" y="590" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-19" value="症状分析" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="nlu-processor" edge="1">
+          <mxGeometry x="0.3" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="788" y="835" as="sourcePoint" />
+            <mxPoint x="648" y="730" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="730" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-20" value="読み込み" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="888" y="709.77" as="sourcePoint" />
+            <mxPoint x="788" y="709.77" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-21" value="読み込み" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="user-attr-data" edge="1">
+          <mxGeometry x="0.8355" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="888" y="589.17" as="sourcePoint" />
+            <mxPoint x="790" y="670" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="978" y="670" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-22" value="読み込み" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="user-attr-data" target="safety-check" edge="1">
+          <mxGeometry x="0.5743" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="980" y="670" as="sourcePoint" />
+            <mxPoint x="788" y="895" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="978" y="850" />
+            </Array>
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-23" value="最終データ" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0.75;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="safety-check" target="response-generation" edge="1">
+          <mxGeometry x="-0.0526" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="590" y="890" as="sourcePoint" />
+            <mxPoint x="598" y="900" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="588" y="890" />
+              <mxPoint x="480" y="890" />
+              <mxPoint x="250" y="890" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-24" value="不足情報チェック" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="230" y="480" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-25" value="入力データ" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="escalation-check" target="_XlMFUXaqpcWdSy5LSdp-6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="398" y="260" as="sourcePoint" />
+            <mxPoint x="398" y="300" as="targetPoint" />
+            <Array as="points" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-26" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;医師相談推奨&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="160" y="290" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-28" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="escalation-check" target="_XlMFUXaqpcWdSy5LSdp-26" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="140" y="470" as="sourcePoint" />
+            <mxPoint x="220" y="470" as="targetPoint" />
+            <Array as="points" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-29" value="医師推奨" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-26" target="response-generation" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="398" y="460" as="sourcePoint" />
+            <mxPoint x="398" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-30" value="症状文" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" target="_XlMFUXaqpcWdSy5LSdp-24" edge="1">
+          <mxGeometry x="0.3333" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="370" as="sourcePoint" />
+            <mxPoint x="398" y="590" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="310" y="370" />
+              <mxPoint x="290" y="370" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-32" value="不足情報" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-24" target="response-generation" edge="1">
+          <mxGeometry x="0.3103" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="650" as="sourcePoint" />
+            <mxPoint x="290" y="710" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="290" y="590" />
+              <mxPoint x="250" y="590" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-34" value="質問文" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="question-handler" target="response-generation" edge="1">
+          <mxGeometry x="-0.375" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="398" y="460" as="sourcePoint" />
+            <mxPoint x="388" y="830" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="388" y="820" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-35" value="応答" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" edge="1">
+          <mxGeometry x="0.1111" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="115" y="820" as="sourcePoint" />
+            <mxPoint x="115" y="910" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-36" value="大規模言語モデル API" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;" parent="1" vertex="1">
+          <mxGeometry x="170" y="990" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-38" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-36" target="response-generation" edge="1">
+          <mxGeometry x="-0.4286" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="230" y="860" as="sourcePoint" />
+            <mxPoint x="230" y="1000" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-37" value="応答生成" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="response-generation" target="_XlMFUXaqpcWdSy5LSdp-36" edge="1">
+          <mxGeometry x="-0.4286" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="220" y="920" as="sourcePoint" />
+            <mxPoint x="220" y="980" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-39" value="症状分析要求" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;entryX=0.004;entryY=0.352;entryDx=0;entryDy=0;exitX=1.004;exitY=0.383;exitDx=0;exitDy=0;entryPerimeter=0;exitPerimeter=0;" parent="1" source="symptom-analysis" target="openai" edge="1">
+          <mxGeometry x="-0.0755" y="2" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="747.52" y="240" as="sourcePoint" />
+            <mxPoint x="747.52" y="380" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-40" value="分析結果" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;entryX=0.996;entryY=0.677;entryDx=0;entryDy=0;exitX=0.019;exitY=0.669;exitDx=0;exitDy=0;entryPerimeter=0;exitPerimeter=0;" parent="1" source="openai" target="symptom-analysis" edge="1">
+          <mxGeometry x="-0.0755" y="2" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="658" y="423" as="sourcePoint" />
+            <mxPoint x="748" y="421" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-41" value="症状DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="648" y="290" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-42" value="読み込み" style="endArrow=classic;html=1;rounded=0;strokeColor=#388e3c;strokeWidth=2;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="_XlMFUXaqpcWdSy5LSdp-41" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="758" y="530" as="sourcePoint" />
+            <mxPoint x="688" y="400" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-44" value="管理者&lt;div&gt;インターフェース&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1078" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-45" value="管理者" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1335" y="390" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-47" value="医薬品推奨システム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#D79B00;" parent="1" vertex="1">
+          <mxGeometry x="528" y="590" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-48" value="スコアリング" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#D79B00;" parent="1" vertex="1">
+          <mxGeometry x="528" y="700" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-49" value="ログ記録" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="60" y="910" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-50" value="バックエンド" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;" parent="1" vertex="1">
+          <mxGeometry x="760" y="1040" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="_XlMFUXaqpcWdSy5LSdp-51" value="効能データ" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="890" y="680" width="80" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-data" value="データフロー" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="1050" as="sourcePoint" />
+            <mxPoint x="610" y="1050" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
