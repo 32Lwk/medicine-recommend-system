@@ -889,6 +889,15 @@ def index():
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
                     
+                    # 属性情報の不足チェック
+                    user_attributes = session.get('user_attributes', {})
+                    missing_questions, missing_priority = check_missing_attributes(user_attributes)
+                    
+                    if missing_questions:
+                        recommendation_result['additional_questions'] = missing_questions
+                        recommendation_result['missing_priority'] = missing_priority
+                        logger.info(f"❓ Missing attributes detected: {len(missing_questions)} questions, priority: {missing_priority}")
+                    
                     # medicine_logic.pyの呼び出しをログ出力
                     log_medicine_logic_call(
                         f"hybrid_recommendation ({recommendation_result.get('algorithm', 'unknown')})",
@@ -1412,6 +1421,43 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
             else:
                 return "あなたの情報を考慮して、最適な医薬品を推奨しています。服用前に添付文書をよく読み、用法用量を守ってご使用ください。お大事にしてください。"
 
+def check_missing_attributes(user_attributes):
+    """不足している属性情報をチェックし、追加質問を生成"""
+    missing_questions = []
+    missing_priority = 'optional'
+    
+    # 必須情報のチェック
+    if not user_attributes.get('age'):
+        missing_questions.append('年齢を教えてください。（医薬品の適切な選択に必要です）')
+        missing_priority = 'critical'
+    
+    if not user_attributes.get('gender'):
+        missing_questions.append('性別を教えてください。（男性/女性）')
+        missing_priority = 'critical'
+    
+    # 重要情報のチェック
+    if user_attributes.get('gender') == 'female' and user_attributes.get('pregnant') is None:
+        missing_questions.append('現在、妊娠中または授乳中ですか？（はい/いいえ）')
+        if missing_priority == 'optional':
+            missing_priority = 'important'
+    
+    if not user_attributes.get('symptom_duration_days'):
+        missing_questions.append('症状はいつ頃から続いていますか？（例：昨日から、3日前から）')
+        if missing_priority == 'optional':
+            missing_priority = 'important'
+    
+    # 任意情報のチェック
+    if not user_attributes.get('allergies'):
+        missing_questions.append('アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）')
+    
+    if not user_attributes.get('current_medications'):
+        missing_questions.append('現在服用中の薬はありますか？')
+    
+    if not user_attributes.get('medical_history'):
+        missing_questions.append('持病や既往歴はありますか？')
+    
+    return missing_questions, missing_priority
+
 def is_symptom_input(message):
     """メッセージが症状入力かどうかを判定"""
     # 属性応答を示すキーワード（質問への回答）
@@ -1443,6 +1489,7 @@ def is_symptom_input(message):
     question_keywords = [
         'ですか', 'でしょうか', 'ですか？', 'でしょうか？', 'どう', '何', 'なぜ', 'いつ',
         '副作用', '飲み方', '注意', '効果', '効き目', '時間', '回数', '量', '併用',
+        'ドーピング', '禁止', '違反', '大丈夫', '安全', '危険', '問題', '影響',
         '一緒に', '同時に', '飲んで', '使って', '服用', '投与', '飲み合わせ', 'ドーピング',
         'スポーツ', '競技', '運動', 'トレーニング', '試合', '大会', '検査', '陽性',
         '禁止', '規制', '成分', '効能', '効果', '作用', 'メカニズム', '仕組み',
