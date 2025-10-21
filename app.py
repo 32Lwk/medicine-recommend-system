@@ -534,84 +534,83 @@ def index():
                         
                         # 妊娠・授乳（フォールバック処理）
                         if '妊娠' in user_message:
-                        if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
-                            user_attributes['pregnant'] = False
-                            logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
-                        elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
-                            user_attributes['pregnant'] = True
-                            logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
-                        updated = True
+                            if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
+                                user_attributes['pregnant'] = False
+                                logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
+                            elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
+                                user_attributes['pregnant'] = True
+                                logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
+                            updated = True
                         
                         if '授乳' in user_message:
-                        if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
-                            user_attributes['breastfeeding'] = False
-                            logger.info(f"📝 授乳状態を更新: False（授乳していない）")
-                        elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
-                            user_attributes['breastfeeding'] = True
-                            logger.info(f"📝 授乳状態を更新: True（授乳中）")
-                        updated = True
-                
-                # アレルギー（日本語と英語）
-                if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
-                        if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
-                        'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
-                        user_attributes['allergies'] = ['なし']
-                        else:
-                        # 日本語のアレルギー抽出
-                        allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
-                        if allergens:
-                            user_attributes['allergies'] = allergens
-                        else:
-                            # 英語のアレルギー抽出
-                            allergy_match = re.search(r'have\s+([^,\s]+)\s+allergy', user_message, re.IGNORECASE)
-                            if allergy_match:
-                                user_attributes['allergies'] = [allergy_match.group(1)]
-                        logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
-                        updated = True
-                
-                # 症状期間（日本語と英語）
-                if ('続いています' in user_message or 'から' in user_message or 
-                        'started' in user_message.lower() or 'ago' in user_message.lower()):
-                        duration_patterns = [
-                        (r'(今日|きょう)から', 0),
-                        (r'(昨日|きのう)から', 1),
-                        (r'(\d+)日前から', None),
-                        (r'(\d+)週間前から', None),
-                        # 英語のパターン
-                        (r'(\d+)\s*days?\s*ago', None),
-                        (r'(\d+)\s*weeks?\s*ago', None),
-                        (r'(\d+)\s*months?\s*ago', None)
-                        ]
-                        for pattern, days in duration_patterns:
-                        match = re.search(pattern, user_message)
-                        if match:
-                            if days is not None:
-                                user_attributes['symptom_duration_days'] = days
-                            else:
-                                # 数値を抽出
-                                if '日前' in user_message:
-                                    num_match = re.search(r'(\d+)日前', user_message)
-                                    if num_match:
-                                        user_attributes['symptom_duration_days'] = int(num_match.group(1))
-                                elif '週間前' in user_message:
-                                    num_match = re.search(r'(\d+)週間前', user_message)
-                                    if num_match:
-                                        user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
-                                elif 'days ago' in user_message.lower():
-                                    num_match = re.search(r'(\d+)\s*days?\s*ago', user_message, re.IGNORECASE)
-                                    if num_match:
-                                        user_attributes['symptom_duration_days'] = int(num_match.group(1))
-                                elif 'weeks ago' in user_message.lower():
-                                    num_match = re.search(r'(\d+)\s*weeks?\s*ago', user_message, re.IGNORECASE)
-                                    if num_match:
-                                        user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
-                                elif 'months ago' in user_message.lower():
-                                    num_match = re.search(r'(\d+)\s*months?\s*ago', user_message, re.IGNORECASE)
-                                    if num_match:
-                                        user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 30
-                            logger.info(f"📝 症状期間を更新: {user_attributes.get('symptom_duration_days')}日前から")
+                            if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
+                                user_attributes['breastfeeding'] = False
+                                logger.info(f"📝 授乳状態を更新: False（授乳していない）")
+                            elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
+                                user_attributes['breastfeeding'] = True
+                                logger.info(f"📝 授乳状態を更新: True（授乳中）")
                             updated = True
-                            break
+                        # アレルギー（日本語と英語）
+                        if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
+                            if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
+                                'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
+                                user_attributes['allergies'] = ['なし']
+                            else:
+                                # 日本語のアレルギー抽出
+                                allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
+                                if allergens:
+                                    user_attributes['allergies'] = allergens
+                                else:
+                                    # 英語のアレルギー抽出
+                                    allergy_match = re.search(r'have\s+([^,\s]+)\s+allergy', user_message, re.IGNORECASE)
+                                    if allergy_match:
+                                        user_attributes['allergies'] = [allergy_match.group(1)]
+                            logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
+                            updated = True
+                        updated = True
+                        # 症状期間（日本語と英語）
+                        if ('続いています' in user_message or 'から' in user_message or 
+                                'started' in user_message.lower() or 'ago' in user_message.lower()):
+                            duration_patterns = [
+                                (r'(今日|きょう)から', 0),
+                                (r'(昨日|きのう)から', 1),
+                                (r'(\d+)日前から', None),
+                                (r'(\d+)週間前から', None),
+                                # 英語のパターン
+                                (r'(\d+)\s*days?\s*ago', None),
+                                (r'(\d+)\s*weeks?\s*ago', None),
+                                (r'(\d+)\s*months?\s*ago', None)
+                            ]
+                            for pattern, days in duration_patterns:
+                                match = re.search(pattern, user_message)
+                                if match:
+                                    if days is not None:
+                                        user_attributes['symptom_duration_days'] = days
+                                    else:
+                                        # 数値を抽出
+                                        if '日前' in user_message:
+                                            num_match = re.search(r'(\d+)日前', user_message)
+                                            if num_match:
+                                                user_attributes['symptom_duration_days'] = int(num_match.group(1))
+                                        elif '週間前' in user_message:
+                                            num_match = re.search(r'(\d+)週間前', user_message)
+                                            if num_match:
+                                                user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
+                                        elif 'days ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*days?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                user_attributes['symptom_duration_days'] = int(num_match.group(1))
+                                        elif 'weeks ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*weeks?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 7
+                                        elif 'months ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*months?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                user_attributes['symptom_duration_days'] = int(num_match.group(1)) * 30
+                                    logger.info(f"📝 症状期間を更新: {user_attributes.get('symptom_duration_days')}日前から")
+                                    updated = True
+                                    break
                 
                 # 服用中の薬（日本語と英語）
                 if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
