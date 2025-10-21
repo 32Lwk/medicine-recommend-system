@@ -1316,6 +1316,17 @@
                 margin: 10px auto;
                 padding: 15px;
             }
+            
+            /* メインコンテンツの高さ調整 */
+            .main-content {
+                height: calc(100vh - 350px) !important;
+            }
+            
+            /* セッション一覧とチャットエリアの高さ調整 */
+            .session-sidebar,
+            .chat-monitor {
+                height: 100%;
+            }
         }
     </style>
 </head>
@@ -1386,16 +1397,16 @@
             </div>
         </div>
 
-        <div class="main-content" style="display: flex; gap: 20px;">
+        <div class="main-content" style="display: flex; gap: 20px; height: calc(100vh - 400px);">
             <!-- 左側: セッション一覧 -->
-            <div class="session-sidebar" style="flex: 0 0 350px; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px;">
-                <h2 class="section-title" style="font-size: 1.3em; margin-bottom: 15px;">👥 セッション一覧</h2>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <div class="session-sidebar" style="flex: 0 0 350px; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px; display: flex; flex-direction: column;">
+                <h2 class="section-title" style="font-size: 1.3em; margin-bottom: 15px; flex-shrink: 0;">👥 セッション一覧</h2>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0;">
                     <button class="refresh-btn" onclick="refreshSessionList()" style="padding: 6px 12px; font-size: 0.8em; flex: 1;">🔄 更新</button>
                     <button class="refresh-btn" onclick="clearSessionFilter()" style="padding: 6px 12px; font-size: 0.8em; background: #6c757d;">🔍 クリア</button>
                 </div>
-                <input type="text" id="session-search" placeholder="ユーザー名で検索..." style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;" onkeyup="filterSessions()">
-                <div id="session-list" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 500px); min-height: 200px;">
+                <input type="text" id="session-search" placeholder="ユーザー名で検索..." style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em; flex-shrink: 0;" onkeyup="filterSessions()">
+                <div id="session-list" style="flex: 1; overflow-y: auto; min-height: 0;">
                     <div class="empty-state">
                         <div>👥</div>
                         <p>セッションを読み込み中...</p>
@@ -1404,9 +1415,9 @@
             </div>
 
             <!-- 右側: チャットエリア -->
-            <div class="chat-monitor" style="flex: 1; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px;">
-                <div class="chat-area">
-                    <div class="chat-header" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+            <div class="chat-monitor" style="flex: 1; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px; display: flex; flex-direction: column;">
+                <div class="chat-area" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                    <div class="chat-header" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; flex-shrink: 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                             <span id="chat-title" style="font-size: 1.2em; font-weight: bold; flex: 1; min-width: 0; word-break: break-all; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">セッション選択中...</span>
                             <button id="userAttributesBtn" onclick="showUserAttributesModal()" style="display: none; background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.9em; cursor: pointer; flex-shrink: 0;">
@@ -1414,16 +1425,16 @@
                             </button>
                         </div>
                     </div>
-                    <div class="chat-messages" id="chat-messages" style="max-height: calc(100vh - 550px); min-height: 300px; overflow-y: auto;">
+                    <div class="chat-messages" id="chat-messages" style="flex: 1; overflow-y: auto; min-height: 0;">
                         <div class="empty-state">
                             <div>💬</div>
                             <p>左側のセッションから選択してください</p>
                         </div>
                     </div>
-                    <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-indicator" id="typing-indicator" style="flex-shrink: 0;">
                         <span>入力中...</span>
                     </div>
-                    <div class="chat-input-area">
+                    <div class="chat-input-area" style="flex-shrink: 0; margin-top: 10px;">
                         <div class="chat-input-container">
                             <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" disabled title="音声入力">🎤</button>
                             <textarea 
