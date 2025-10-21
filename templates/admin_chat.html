@@ -789,7 +789,7 @@
         #medicineChatModal .admin-modal-content {
             max-width: 1000px;
             width: 90%;
-            max-height: 90vh;
+            max-height: 100h;
         }
         
         .admin-modal h2 {
@@ -1395,7 +1395,7 @@
                     <button class="refresh-btn" onclick="clearSessionFilter()" style="padding: 6px 12px; font-size: 0.8em; background: #6c757d;">🔍 クリア</button>
                 </div>
                 <input type="text" id="session-search" placeholder="ユーザー名で検索..." style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;" onkeyup="filterSessions()">
-                <div id="session-list" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 450px);">
+                <div id="session-list" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 500px); min-height: 200px;">
                     <div class="empty-state">
                         <div>👥</div>
                         <p>セッションを読み込み中...</p>
@@ -1414,7 +1414,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="chat-messages" id="chat-messages" style="max-height: calc(100vh - 500px); overflow-y: auto;">
+                    <div class="chat-messages" id="chat-messages" style="max-height: calc(100vh - 550px); min-height: 300px; overflow-y: auto;">
                         <div class="empty-state">
                             <div>💬</div>
                             <p>左側のセッションから選択してください</p>
@@ -2157,8 +2157,29 @@
             messages.forEach((msg, index) => {
                 const messageClass = msg.type === 'user' ? 'user' : 'bot';
                 let indicator = '';
+                let timestamp = '';
                 
                 console.log(`Message ${index}:`, msg);
+                
+                // 送信時刻を追加
+                if (msg.timestamp) {
+                    const date = new Date(msg.timestamp);
+                    const timeStr = date.toLocaleTimeString('ja-JP', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    timestamp = `<div class="message-timestamp" style="font-size: 0.7em; color: #666; margin-top: 4px; text-align: ${messageClass === 'user' ? 'left' : 'right'};">${timeStr}</div>`;
+                } else {
+                    // タイムスタンプがない場合は現在時刻を使用
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString('ja-JP', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    timestamp = `<div class="message-timestamp" style="font-size: 0.7em; color: #666; margin-top: 4px; text-align: ${messageClass === 'user' ? 'left' : 'right'};">${timeStr}</div>`;
+                }
                 
                 // 管理画面用のインジケーター：薬剤師視点で表示
                 if (msg.type === 'bot') {
@@ -2176,6 +2197,7 @@
                             <div style="max-width: 80%;">
                                 ${indicator}
                                 ${msg.content}
+                                ${timestamp}
                             </div>
                         </div>
                     `;
@@ -2191,6 +2213,7 @@
                             }">
                                 ${indicator}
                                 ${content}
+                                ${timestamp}
                             </div>
                         </div>
                     `;
