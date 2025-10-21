@@ -24,7 +24,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # セッション管理用
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
 # キャッシュバスティング用のバージョン番号
 VERSION = str(int(time.time()))
@@ -2064,4 +2064,5 @@ if __name__ == '__main__':
     log_system_status()
     
     logger.info("🌐 Starting Flask development server...")
-    app.run(debug=True, port=5000, host='0.0.0.0') 
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=True, port=port, host='0.0.0.0') 

@@ -654,6 +654,45 @@
             box-shadow: none;
         }
 
+        .mic-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .mic-btn:hover:not(:disabled) {
+            background: #2980b9;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .mic-btn.recording {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        .mic-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
         .typing-indicator {
             display: none;
             padding: 10px 15px;
@@ -1231,6 +1270,7 @@
                     </div>
                     <div class="chat-input-area">
                         <div class="chat-input-container">
+                            <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" disabled title="音声入力">🎤</button>
                             <textarea 
                                 class="chat-input" 
                                 id="chat-input" 
@@ -2521,8 +2561,10 @@
             // チャット入力エリアを有効化
             const chatInput = document.getElementById('chat-input');
             const sendBtn = document.getElementById('send-btn');
+            const micBtn = document.getElementById('mic-btn');
             chatInput.disabled = false;
             chatInput.placeholder = `${username} に返信メッセージを入力してください...`;
+            micBtn.disabled = false;
             
             // 送信ボタンの状態を更新
             updateSendButtonState();
@@ -2591,6 +2633,114 @@
                 typingIndicator.classList.remove('show');
                 showNotification(`エラー: ${error.message}`, 'error');
             });
+        }
+
+        // 音声認識機能
+        let recognition = null;
+        let isRecording = false;
+
+        function initVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                console.log('音声認識APIはこのブラウザではサポートされていません');
+                return false;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                const chatInput = document.getElementById('chat-input');
+                if (finalTranscript) {
+                    chatInput.value += finalTranscript;
+                    updateSendButtonState();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('音声認識エラー:', event.error);
+                stopVoiceInput();
+                
+                let errorMessage = '';
+                switch(event.error) {
+                    case 'not-allowed':
+                        errorMessage = 'マイクの使用が許可されていません。アドレスバー左側のアイコンからマイクを「許可」に変更してください。';
+                        break;
+                    case 'no-speech':
+                        // 無音の場合は何もしない
+                        return;
+                    case 'audio-capture':
+                        errorMessage = 'マイクが見つかりません。マイクが接続されているか確認してください。';
+                        break;
+                    case 'network':
+                        errorMessage = 'ネットワークエラーが発生しました。';
+                        break;
+                    default:
+                        errorMessage = '音声認識エラー: ' + event.error;
+                }
+                showNotification(errorMessage, 'error');
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                }
+            };
+
+            return true;
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                if (!initVoiceRecognition()) {
+                    showNotification('このブラウザは音声認識に対応していません', 'error');
+                    return;
+                }
+            }
+
+            if (isRecording) {
+                stopVoiceInput();
+            } else {
+                startVoiceInput();
+            }
+        }
+
+        function startVoiceInput() {
+            try {
+                recognition.start();
+                isRecording = true;
+                const micBtn = document.getElementById('mic-btn');
+                micBtn.classList.add('recording');
+                micBtn.title = '録音中... (クリックで停止)';
+                showNotification('音声認識を開始しました', 'success');
+            } catch (error) {
+                console.error('音声認識開始エラー:', error);
+                showNotification('音声認識の開始に失敗しました', 'error');
+            }
+        }
+
+        function stopVoiceInput() {
+            if (recognition) {
+                recognition.stop();
+            }
+            isRecording = false;
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.remove('recording');
+            micBtn.title = '音声入力';
         }
 
         function loadChatHistory(sessionId) {
