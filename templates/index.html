@@ -624,6 +624,14 @@
                 font-size: 16px;
             }
             
+            .chat-header p {
+                font-size: 11px;
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
             .message-content {
                 max-width: 90%;
                 font-size: 13px;
@@ -631,6 +639,64 @@
             
             .chat-messages {
                 padding: 8px;
+            }
+            
+            /* ボタンエリアの改善 */
+            .button-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+            
+            .button-group button {
+                flex: 1;
+                min-width: calc(50% - 3px);
+                font-size: 11px;
+                padding: 6px 4px;
+                border-radius: 6px;
+                margin-left: 0 !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .button-group button:first-child {
+                min-width: calc(100% - 3px);
+                margin-bottom: 6px;
+            }
+            
+            /* チャット入力エリアの改善 */
+            .chat-input {
+                padding: 10px;
+            }
+            
+            .input-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .mic-btn {
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+            
+            #messageInput {
+                flex: 1;
+                font-size: 14px;
+                padding: 10px 12px;
+                min-height: 35px;
+                max-height: 80px;
+            }
+            
+            .chat-input button[type="submit"] {
+                padding: 10px 16px;
+                font-size: 14px;
+                border-radius: 18px;
+                flex-shrink: 0;
             }
         }
         
@@ -655,7 +721,7 @@
     <div class="chat-header">
         <h1>💊 医薬品相談AI</h1>
         <p>症状を教えてください。適切な市販薬と注意点をご案内します。</p>
-        <div style="margin-top: 10px;">
+        <div class="button-group" style="margin-top: 10px;">
             <button onclick="openUserInfoModal()" style="background: #2196F3; border: 1px solid #2196F3; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">👤 ユーザー情報登録</button>
             <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">履歴クリア</button>
             <button id="new-session-btn" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;">新しいセッションを開始</button>
@@ -1715,6 +1781,13 @@
                                  '2. マイクを「許可」に変更\n' +
                                  '3. ページをリロード';
                     break;
+                case 'service-not-allowed':
+                    errorMessage = '音声認識サービスが利用できません。\n\n' +
+                                 '【解決方法】\n' +
+                                 '1. HTTPS接続を確認\n' +
+                                 '2. ブラウザを最新版に更新\n' +
+                                 '3. プライベートブラウジングを無効化';
+                    break;
                 case 'no-speech':
                     // 無音の場合は何もしない
                     return;
@@ -1724,10 +1797,15 @@
                 case 'network':
                     errorMessage = 'ネットワークエラーが発生しました。';
                     break;
+                case 'aborted':
+                    // 中断された場合は何もしない
+                    return;
                 default:
                     errorMessage = '音声認識エラーが発生しました: ' + event.error;
             }
-            alert(errorMessage);
+            if (errorMessage) {
+                alert(errorMessage);
+            }
         };
 
         recognition.onend = () => {
