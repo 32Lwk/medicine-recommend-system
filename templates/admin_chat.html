@@ -1195,9 +1195,17 @@
                 font-size: 0.9em;
             }
             
+            /* チャット監視・AI管理を縦並びに */
+            .top-control-panel > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            
             .main-content {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                flex-direction: column;
+            }
+            
+            .session-sidebar {
+                flex: 1 1 auto;
             }
             
             .sidebar {
@@ -1234,6 +1242,10 @@
             .manual-reply-queue,
             .pending-queue {
                 max-height: 300px;
+            }
+            
+            #manual-reply-queue {
+                min-height: 200px !important;
             }
             
             input[type="text"],
@@ -1305,48 +1317,51 @@
             </div>
         </div>
 
-        <!-- 上部: チャット監視・AI管理 -->
+        <!-- 上部: チャット監視・AI管理（2列レイアウト） -->
         <div class="top-control-panel" style="background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
             <h2 class="section-title" style="margin-bottom: 15px;">💬 チャット監視・AI管理</h2>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                <!-- AI管理パネル -->
-                <div class="ai-status" id="ai-status" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
-                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">AI管理</h3>
-                    <div class="status-text" id="status-text" style="font-size: 0.9em; margin-bottom: 10px; color: #666;">🔄 状態確認中...</div>
-                    <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="btn btn-success" id="ai-on-btn" onclick="setAIMode('on')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答ON</button>
-                        <button class="btn btn-danger" id="ai-off-btn" onclick="setAIMode('off')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答OFF</button>
-                        <button class="btn btn-warning" id="admin-mode-btn" onclick="setAIMode('admin')" style="padding: 8px 12px; font-size: 0.85em;">薬剤師対応</button>
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px;">
+                <!-- 左側：AI管理と統計情報（縦2段） -->
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- AI管理パネル -->
+                    <div class="ai-status" id="ai-status" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <h3 style="font-size: 1.1em; margin-bottom: 10px;">🤖 AI管理</h3>
+                        <div class="status-text" id="status-text" style="font-size: 0.9em; margin-bottom: 10px; color: #666;">🔄 状態確認中...</div>
+                        <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-success" id="ai-on-btn" onclick="setAIMode('on')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答ON</button>
+                            <button class="btn btn-danger" id="ai-off-btn" onclick="setAIMode('off')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答OFF</button>
+                            <button class="btn btn-warning" id="admin-mode-btn" onclick="setAIMode('admin')" style="padding: 8px 12px; font-size: 0.85em;">薬剤師対応</button>
+                        </div>
+                    </div>
+
+                    <!-- 統計情報 -->
+                    <div class="stats-panel" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <h3 style="font-size: 1.1em; margin-bottom: 10px;">📊 統計情報</h3>
+                        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="stat-item" style="text-align: center;">
+                                <div class="stat-number" id="queue-count" style="font-size: 1.5em; font-weight: bold; color: #e74c3c;">0</div>
+                                <div class="stat-label" style="font-size: 0.8em; color: #666;">待機中</div>
+                            </div>
+                            <div class="stat-item" style="text-align: center;">
+                                <div class="stat-number" id="total-sessions" style="font-size: 1.5em; font-weight: bold; color: #3498db;">0</div>
+                                <div class="stat-label" style="font-size: 0.8em; color: #666;">総セッション</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 統計情報 -->
-                <div class="stats-panel" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
-                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">📊 統計情報</h3>
-                    <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="stat-item" style="text-align: center;">
-                            <div class="stat-number" id="queue-count" style="font-size: 1.5em; font-weight: bold; color: #e74c3c;">0</div>
-                            <div class="stat-label" style="font-size: 0.8em; color: #666;">待機中</div>
-                        </div>
-                        <div class="stat-item" style="text-align: center;">
-                            <div class="stat-number" id="total-sessions" style="font-size: 1.5em; font-weight: bold; color: #3498db;">0</div>
-                            <div class="stat-label" style="font-size: 0.8em; color: #666;">総セッション</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 手動返信待ちキュー -->
+                <!-- 右側：手動返信待ちキュー（大きく表示） -->
                 <div class="queue-section" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
                     <h3 style="font-size: 1.1em; margin-bottom: 10px;">📋 手動返信待ちキュー</h3>
                     <div class="button-group" style="margin-bottom: 10px; display: flex; gap: 8px;">
                         <button class="btn btn-success" id="refresh-btn" onclick="manualRefresh()" style="padding: 6px 10px; font-size: 0.8em;">🔄 更新</button>
                         <button class="btn btn-info" onclick="refreshQueue()" style="padding: 6px 10px; font-size: 0.8em;">📋 キュー</button>
                     </div>
-                    <div id="manual-reply-queue" style="max-height: 500px; overflow-y: auto;">
-                        <div class="empty-state" style="text-align: center; color: #888; font-size: 0.9em;">
-                            <div>📭</div>
-                            <p>手動返信待ちなし</p>
+                    <div id="manual-reply-queue" style="max-height: 500px; overflow-y: auto; min-height: 300px;">
+                        <div class="empty-state" style="text-align: center; color: #888; font-size: 0.9em; padding: 50px 0;">
+                            <div style="font-size: 3em;">📭</div>
+                            <p style="margin-top: 10px;">手動返信待ちなし</p>
                         </div>
                     </div>
                 </div>
