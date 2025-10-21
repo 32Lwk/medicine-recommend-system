@@ -696,6 +696,13 @@ def index():
                             }
                         }
                         
+                        # 質問応答をセッションに追加
+                        session['messages'].append(bot_response)
+                        if sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        
+                        logger.info(f"✅ 質問応答完了: {user_message}")
+                        
                     except Exception as e:
                         logger.error(f"❌ 医薬品相談機能実行時エラー: {e}")
                         bot_response = {
@@ -703,6 +710,11 @@ def index():
                             'content': f"申し訳ございません。システムエラーが発生しました: {str(e)}",
                             'diagnosis': None
                         }
+                        
+                        # エラー応答をセッションに追加
+                        session['messages'].append(bot_response)
+                        if sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'].append(bot_response)
                 
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
