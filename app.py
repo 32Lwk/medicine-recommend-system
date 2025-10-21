@@ -39,6 +39,34 @@ USER_COUNTER = 1  # ユーザー名の連番
 MAX_SESSIONS = 50  # 最大セッション数
 SESSION_TIMEOUT = 3600  # セッションタイムアウト（秒）
 
+# グローバルエラーハンドラー
+@app.errorhandler(500)
+def handle_500_error(e):
+    """500エラーのハンドラー"""
+    logger.error(f"❌ 500 Internal Server Error: {str(e)}")
+    logger.error(f"❌ エラータイプ: {type(e).__name__}")
+    
+    import traceback
+    logger.error(f"❌ トレースバック:\n{traceback.format_exc()}")
+    
+    # APIキーのチェック
+    if not os.getenv('OPENAI_API_KEY'):
+        logger.error("❌ OPENAI_API_KEY が環境変数に設定されていません！")
+        error_msg = "⚠️ OpenAI APIキーが設定されていません。Renderの環境変数を確認してください。"
+    else:
+        error_msg = "申し訳ございません。システムエラーが発生しました。管理者に連絡してください。"
+    
+    # JSONリクエストの場合
+    if request.is_json or request.method == 'POST':
+        return jsonify({
+            'error': True,
+            'response': error_msg,
+            'error_type': type(e).__name__ if os.getenv('FLASK_ENV') != 'production' else None
+        }), 500
+    
+    # HTMLリクエストの場合
+    return f"<h1>エラー</h1><p>{error_msg}</p>", 500
+
 def log_network_request(method, endpoint, request_data, response_data, response_time, status):
     """ネットワークリクエストをログ出力"""
     logger.info(f"🌐 NETWORK REQUEST:")
