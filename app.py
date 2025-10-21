@@ -1978,11 +1978,35 @@ def admin_medicine_chat():
         return jsonify({'status': 'error', 'message': 'メッセージが空です'}), 400
     
     try:
-        # medicine_logic.pyで初期化されたclientをインポート
-        from medicine_logic import client, select_symptoms_via_gpt
+        start_time = time.time()
+        
+        # OpenAI APIキーを確認
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            logger.error("❌ OPENAI_API_KEY が環境変数に設定されていません")
+            add_network_log(
+                'POST',
+                '管理画面 - 医薬品相談テスト',
+                {'message': user_message},
+                None,
+                time.time() - start_time,
+                'failed',
+                'OpenAI APIキーが設定されていません'
+            )
+            return jsonify({
+                'status': 'error',
+                'message': 'OpenAI APIキーが設定されていません',
+                'error': '環境変数 OPENAI_API_KEY を設定してください'
+            }), 500
+        
+        # OpenAIクライアントを初期化
+        from openai import OpenAI
+        test_client = OpenAI(api_key=api_key)
+        logger.info(f"✅ OpenAIクライアント初期化成功（医薬品相談テスト用）")
         
         # 症状抽出を実行
-        symptoms_result = select_symptoms_via_gpt(user_message)
+        from medicine_logic import select_symptoms_via_gpt
+        symptoms_result = select_symptoms_via_gpt(user_message, None, test_client)
         
         # 医薬品推奨を実行
         if symptoms_result and symptoms_result.get('status') == 'success':
@@ -1990,7 +2014,7 @@ def admin_medicine_chat():
             
             # ルールベース推奨を試行
             from medicine_logic import analyze_symptoms_and_medicine_type
-            medicine_type_result = analyze_symptoms_and_medicine_type(user_message, client)
+            medicine_type_result = analyze_symptoms_and_medicine_type(user_message, test_client)
             
             if medicine_type_result and medicine_type_result.get('medicine_type'):
                 medicine_type = medicine_type_result['medicine_type']
@@ -2000,7 +2024,7 @@ def admin_medicine_chat():
                 recommendation = rule_based_medicine_recommendation(
                     user_text=user_message,
                     user_info={},
-                    client=client
+                    client=test_client
                 )
                 
                 # NaN値を処理してJSON互換にする
@@ -2020,6 +2044,19 @@ def admin_medicine_chat():
                     return obj
                 
                 clean_recommendation = clean_nan(recommendation)
+                
+                # パフォーマンス統計を更新
+                response_time = time.time() - start_time
+                add_network_log(
+                    'POST',
+                    '管理画面 - 医薬品相談テスト',
+                    {'message': user_message, 'type': 'rule_based'},
+                    clean_recommendation,
+                    response_time,
+                    'success'
+                )
+                
+                logger.info(f"✅ 医薬品相談テスト成功（ルールベース）: {response_time:.2f}秒")
                 
                 return jsonify({
                     'status': 'ok',
@@ -2033,7 +2070,7 @@ def admin_medicine_chat():
                 from medicine_logic import comprehensive_medicine_recommendation
                 recommendation = comprehensive_medicine_recommendation(
                     user_text=user_message,
-                    client=client
+                    client=test_client
                 )
                 
                 # NaN値を処理してJSON互換にする
@@ -2053,6 +2090,19 @@ def admin_medicine_chat():
                     return obj
                 
                 clean_recommendation = clean_nan(recommendation)
+                
+                # パフォーマンス統計を更新
+                response_time = time.time() - start_time
+                add_network_log(
+                    'POST',
+                    '管理画面 - 医薬品相談テスト',
+                    {'message': user_message, 'type': 'ai_based'},
+                    clean_recommendation,
+                    response_time,
+                    'success'
+                )
+                
+                logger.info(f"✅ 医薬品相談テスト成功（AI）: {response_time:.2f}秒")
                 
                 return jsonify({
                     'status': 'ok',
@@ -2071,6 +2121,19 @@ def admin_medicine_chat():
         logger.error(f"❌ 医薬品相談テストエラー: {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
+        
+        # エラー時もパフォーマンス統計を更新
+        response_time = time.time() - start_time if 'start_time' in locals() else 0
+        add_network_log(
+            'POST',
+            '管理画面 - 医薬品相談テスト',
+            {'message': user_message},
+            None,
+            response_time,
+            'failed',
+            str(e)
+        )
+        
         return jsonify({
             'status': 'error',
             'message': 'エラーが発生しました',
