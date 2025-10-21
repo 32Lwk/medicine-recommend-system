@@ -1917,9 +1917,17 @@ def admin_system_status():
 
 @app.route('/clear_logs', methods=['POST'])
 def clear_logs():
-    """ログをクリア"""
-    global network_logs
+    """ログとセッション履歴をクリア"""
+    global network_logs, ALL_SESSIONS, MANUAL_REPLY_QUEUE
+    
+    # ネットワークログをクリア
     network_logs.clear()
+    
+    # すべてのセッションをクリア
+    ALL_SESSIONS.clear()
+    
+    # 手動返信待ちキューをクリア
+    MANUAL_REPLY_QUEUE.clear()
     
     # ログファイルもクリア
     log_file = 'log/recommendation_log.jsonl'
@@ -1931,7 +1939,9 @@ def clear_logs():
         except Exception as e:
             logger.error(f"❌ ログファイルのクリアに失敗: {e}")
     
-    return jsonify({'status': 'ok', 'message': 'ログをクリアしました'})
+    logger.info("🗑️ ログ、セッション履歴、手動返信待ちキューをすべてクリアしました")
+    
+    return jsonify({'status': 'ok', 'message': 'ログ、セッション履歴、手動返信待ちキューをクリアしました'})
 
 @app.route('/admin/ai_control', methods=['POST'])
 def admin_ai_control():
@@ -1993,12 +2003,30 @@ def admin_medicine_chat():
                     client=client
                 )
                 
+                # NaN値を処理してJSON互換にする
+                import json
+                import math
+                
+                def clean_nan(obj):
+                    """NaN/Infinityを処理"""
+                    if isinstance(obj, dict):
+                        return {k: clean_nan(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [clean_nan(item) for item in obj]
+                    elif isinstance(obj, float):
+                        if math.isnan(obj) or math.isinf(obj):
+                            return None
+                        return obj
+                    return obj
+                
+                clean_recommendation = clean_nan(recommendation)
+                
                 return jsonify({
                     'status': 'ok',
                     'message': '医薬品推奨を実行しました',
                     'symptoms': symptoms,
                     'medicine_type': medicine_type,
-                    'recommendation': recommendation
+                    'recommendation': clean_recommendation
                 })
             else:
                 # AI推奨
@@ -2008,11 +2036,29 @@ def admin_medicine_chat():
                     client=client
                 )
                 
+                # NaN値を処理してJSON互換にする
+                import json
+                import math
+                
+                def clean_nan(obj):
+                    """NaN/Infinityを処理"""
+                    if isinstance(obj, dict):
+                        return {k: clean_nan(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [clean_nan(item) for item in obj]
+                    elif isinstance(obj, float):
+                        if math.isnan(obj) or math.isinf(obj):
+                            return None
+                        return obj
+                    return obj
+                
+                clean_recommendation = clean_nan(recommendation)
+                
                 return jsonify({
                     'status': 'ok',
                     'message': '医薬品推奨を実行しました（AI）',
                     'symptoms': symptoms,
-                    'recommendation': recommendation
+                    'recommendation': clean_recommendation
                 })
         else:
             return jsonify({

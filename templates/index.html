@@ -1080,13 +1080,10 @@
 
             .then(data => {
                 if (data.status === 'ok') {
-                    // チャット欄に即時システムメッセージを表示
-                    const chatMessages = document.getElementById('chatMessages');
-                    const sysDiv = document.createElement('div');
-                    sysDiv.className = 'message bot';
-                    sysDiv.innerHTML = '<div class="message-content" style="background:#fffbe6; color:#856404; border:1px solid #ffeeba;">薬剤師対応を要請しました。しばらくお待ちください。</div>';
-                    chatMessages.appendChild(sysDiv);
-                    scrollToBottom();
+                    // サーバーからメッセージを再取得して表示（永続化されたメッセージを表示）
+                    setTimeout(() => {
+                        loadMessages();
+                    }, 500);
                 } else {
                     alert('薬剤師対応の要請に失敗しました');
                 }
