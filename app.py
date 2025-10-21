@@ -299,40 +299,110 @@ def index():
             original_user_message = None  # 元のユーザーメッセージ
             
             if is_question:
-                # 質問の場合：ChatGPTで属性データを抽出し、必要なら再分析
-                logger.info(f"❓ QUESTION/ATTRIBUTE RESPONSE DETECTED: {user_message}")
+                # 質問かどうかを判定（質問キーワードがあるか確認）
+                has_question_keyword = False
+                question_keywords = [
+                    'ですか', 'でしょうか', 'ですか？', 'でしょうか？',
+                    'ドーピング', '禁止', '違反', '大丈夫', '安全', '危険',
+                    '当たる', '当たります', '対象', '含まれる', '使える',
+                    '副作用', '飲み方', '効果', '効き目'
+                ]
+                for keyword in question_keywords:
+                    if keyword in user_message:
+                        has_question_keyword = True
+                        break
                 
-                # ステップ1: ユーザー属性を抽出・更新
-                user_attributes = session.get('user_attributes', {
-                    'age': None,
-                    'gender': None,
-                    'pregnant': None,
-                    'breastfeeding': None,
-                    'current_medications': [],
-                    'allergies': [],
-                    'medical_history': [],
-                    'symptom_duration_days': None,
-                    'other_info': None
-                })
+                # 明確な質問の場合は、属性抽出をスキップして質問回答に進む
+                if has_question_keyword:
+                    logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
+                    # 質問回答に直接進む
+                    try:
+                        # 最新の推奨医薬品を取得
+                        latest_recommended_medicines = []
+                        for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
+                            if msg.get('type') == 'bot' and msg.get('diagnosis'):
+                                diagnosis = msg.get('diagnosis', {})
+                                if diagnosis.get('recommended_medicines'):
+                                    latest_recommended_medicines = diagnosis.get('recommended_medicines', [])
+                                    break
+                        
+                        logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
+                        
+                        # 会話履歴を取得
+                        conversation_history = ALL_SESSIONS.get(sid, {}).get('messages', [])[-10:]
+                        
+                        # ChatGPTに質問を送信
+                        chat_response = chat_with_medicine_context(
+                            user_message, 
+                            conversation_history, 
+                            latest_recommended_medicines
+                        )
+                        
+                        # 回答をHTML形式で整形
+                        bot_content = f"""
+<div class="chat-response">
+    <h4>💬 医薬品相談回答</h4>
+    <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
+</div>
+"""
+                        
+                        bot_response = {
+                            'type': 'bot',
+                            'content': bot_content,
+                            'diagnosis': {
+                                'chat_response': chat_response,
+                                'is_question': True
+                            },
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        
+                        logger.info(f"✅ 質問応答完了: {user_message}")
+                        
+                    except Exception as e:
+                        logger.error(f"❌ 医薬品相談機能実行時エラー: {e}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        bot_response = {
+                            'type': 'bot',
+                            'content': f"申し訳ございません。システムエラーが発生しました: {str(e)}",
+                            'diagnosis': None,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                else:
+                    # 属性応答の可能性がある場合のみ属性抽出を実行
+                    logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
                 
-                # ChatGPTを使用して属性情報を抽出
-                import re
-                import json
-                from openai import OpenAI
-                
-                updated = False
-                
-                # OpenAI clientを初期化
-                api_key = os.getenv('OPENAI_API_KEY')
-                if not api_key:
-                    return jsonify({
-                        'error': True,
-                        'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
+                    # ステップ1: ユーザー属性を抽出・更新
+                    user_attributes = session.get('user_attributes', {
+                        'age': None,
+                        'gender': None,
+                        'pregnant': None,
+                        'breastfeeding': None,
+                        'current_medications': [],
+                        'allergies': [],
+                        'medical_history': [],
+                        'symptom_duration_days': None,
+                        'other_info': None
                     })
-                client = OpenAI(api_key=api_key)
-                
-                # ChatGPTによる属性抽出
-                try:
+                    
+                    # ChatGPTを使用して属性情報を抽出
+                    import re
+                    import json
+                    from openai import OpenAI
+                    
+                    updated = False
+                    
+                    # OpenAI clientを初期化
+                    api_key = os.getenv('OPENAI_API_KEY')
+                    if not api_key:
+                        return jsonify({
+                            'error': True,
+                            'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
+                        })
+                    client = OpenAI(api_key=api_key)
+                    
+                    # ChatGPTによる属性抽出
+                    try:
                     prompt = f"""
 ユーザーのメッセージから以下の属性情報を抽出してください：
 
