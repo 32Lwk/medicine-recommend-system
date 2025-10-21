@@ -315,6 +315,16 @@ def index():
                 # 明確な質問の場合は、属性抽出をスキップして質問回答に進む
                 if has_question_keyword:
                     logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
+                    
+                    # まずユーザーメッセージを保存
+                    user_response = {
+                        'type': 'user',
+                        'content': user_message,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    ALL_SESSIONS[sid]['messages'].append(user_response)
+                    logger.info(f"💾 ユーザー質問を保存: {user_message}")
+                    
                     # 質問回答に直接進む
                     try:
                         # 最新の推奨医薬品を取得
