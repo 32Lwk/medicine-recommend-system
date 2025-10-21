@@ -287,7 +287,13 @@ def index():
                 updated = False
                 
                 # OpenAI clientを初期化
-                client = OpenAI(api_key=os.getenv('OPENAI_API_KEY', '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'))
+                api_key = os.getenv('OPENAI_API_KEY')
+                if not api_key:
+                    return jsonify({
+                        'error': True,
+                        'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
+                    })
+                client = OpenAI(api_key=api_key)
                 
                 # ChatGPTによる属性抽出
                 try:
@@ -696,7 +702,13 @@ def index():
                 
                 # OpenAI clientを初期化（推奨システム用）
                 from openai import OpenAI
-                recommendation_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY', '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'))
+                api_key = os.getenv('OPENAI_API_KEY')
+                if not api_key:
+                    return jsonify({
+                        'error': True,
+                        'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
+                    })
+                recommendation_client = OpenAI(api_key=api_key)
                 
                 # ステップ1: ChatGPTで医薬品の種類を判定
                 start_time = time.time()
