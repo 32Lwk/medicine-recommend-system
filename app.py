@@ -759,8 +759,8 @@ def index():
                 if updated:
                     logger.info(f"✅ 属性データが更新されました。再分析を実行します。")
                     
-                    # 最後の症状入力を取得
-                    for msg in reversed(session.get('messages', [])):
+                    # 最後の症状入力を取得（ALL_SESSIONSから取得）
+                    for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
                         if msg.get('type') == 'user' and is_symptom_input(msg.get('content', '')):
                             last_symptom_message = msg.get('content', '')
                             break
