@@ -1933,6 +1933,103 @@ def clear_logs():
     
     return jsonify({'status': 'ok', 'message': 'ログをクリアしました'})
 
+@app.route('/admin/ai_control', methods=['POST'])
+def admin_ai_control():
+    """AI自動応答の制御（管理画面用）"""
+    global AI_AUTO_REPLY
+    
+    data = request.get_json()
+    mode = data.get('mode')
+    
+    if mode == 'on':
+        AI_AUTO_REPLY = True
+        message = 'AI自動応答をONにしました'
+    elif mode == 'off':
+        AI_AUTO_REPLY = False
+        message = 'AI自動応答をOFFにしました'
+    else:
+        return jsonify({'status': 'error', 'message': '無効なモード'}), 400
+    
+    logger.info(f"🤖 AI自動応答: {mode.upper()} (グローバル設定)")
+    
+    return jsonify({
+        'status': 'ok',
+        'message': message,
+        'ai_auto_reply': AI_AUTO_REPLY
+    })
+
+@app.route('/admin/medicine_chat', methods=['POST'])
+def admin_medicine_chat():
+    """医薬品相談テスト（管理画面用）"""
+    data = request.get_json()
+    user_message = data.get('message', '').strip()
+    
+    if not user_message:
+        return jsonify({'status': 'error', 'message': 'メッセージが空です'}), 400
+    
+    try:
+        # 症状抽出を実行
+        from medicine_logic import select_symptoms_via_gpt
+        symptoms_result = select_symptoms_via_gpt(user_message)
+        
+        # 医薬品推奨を実行
+        if symptoms_result and symptoms_result.get('status') == 'success':
+            symptoms = symptoms_result.get('symptoms', [])
+            
+            # ルールベース推奨を試行
+            from medicine_logic import analyze_symptoms_and_medicine_type
+            medicine_type_result = analyze_symptoms_and_medicine_type(user_message, [])
+            
+            if medicine_type_result and medicine_type_result.get('medicine_type'):
+                medicine_type = medicine_type_result['medicine_type']
+                
+                # ルールベース推奨
+                from medicine_logic import rule_based_medicine_recommendation
+                recommendation = rule_based_medicine_recommendation(
+                    user_message=user_message,
+                    conversation_history=[],
+                    user_attributes={}
+                )
+                
+                return jsonify({
+                    'status': 'ok',
+                    'message': '医薬品推奨を実行しました',
+                    'symptoms': symptoms,
+                    'medicine_type': medicine_type,
+                    'recommendation': recommendation
+                })
+            else:
+                # AI推奨
+                from medicine_logic import comprehensive_medicine_recommendation
+                recommendation = comprehensive_medicine_recommendation(
+                    user_message=user_message,
+                    conversation_history=[],
+                    user_attributes={}
+                )
+                
+                return jsonify({
+                    'status': 'ok',
+                    'message': '医薬品推奨を実行しました（AI）',
+                    'symptoms': symptoms,
+                    'recommendation': recommendation
+                })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': '症状抽出に失敗しました',
+                'details': symptoms_result
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"❌ 医薬品相談テストエラー: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': 'エラーが発生しました',
+            'error': str(e)
+        }), 500
+
 @app.route('/api/admin/sessions', methods=['GET'])
 def get_all_sessions():
     """全セッション情報を取得"""
