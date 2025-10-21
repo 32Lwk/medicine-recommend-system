@@ -551,6 +551,7 @@
                 max-width: 100%;
                 height: 100vh;
                 height: 100dvh; /* モバイルブラウザのアドレスバーを考慮 */
+                overflow: hidden; /* スクロールを防止 */
             }
             
             .chat-header {
@@ -568,16 +569,18 @@
             }
             
             .button-group {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr 1fr;
-                gap: 3px;
+                display: flex;
+                flex-direction: row;
+                gap: 2px;
                 margin-bottom: 8px;
+                flex-wrap: nowrap;
             }
             
             .button-group button {
-                padding: 4px 6px;
-                font-size: 9px;
-                min-height: 24px;
+                flex: 1;
+                padding: 3px 4px;
+                font-size: 8px;
+                min-height: 22px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -600,7 +603,7 @@
             }
             
             .chat-input {
-                padding: 4px 8px;
+                padding: 4px 0;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -618,7 +621,6 @@
                 justify-content: center;
                 gap: 4px;
                 width: 100%;
-                max-width: 400px;
             }
             
             #user-input {
@@ -1528,7 +1530,7 @@
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-height: 60%; overflow-y: auto;">
         <div class="modal-header">
             <h3>📋 追加情報の入力</h3>
             <span class="close-modal" onclick="closeAttributeModal()">&times;</span>
@@ -1603,7 +1605,7 @@
 
 <!-- ユーザー情報登録モーダル -->
 <div id="userInfoModal" class="modal">
-    <div class="modal-content" style="max-width: 600px; max-height: 40%; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 600px; max-height: 70%; overflow-y: auto;">
         <div class="modal-header">
             <h3>👤 ユーザー情報登録</h3>
             <span class="close-modal" onclick="closeUserInfoModal()">&times;</span>
