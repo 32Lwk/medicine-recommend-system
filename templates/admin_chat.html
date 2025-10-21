@@ -777,10 +777,18 @@
             margin: 5% auto;
             padding: 20px;
             border-radius: 15px;
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow-y: auto;
             color: white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        /* 医薬品相談テストモーダル専用のスタイル */
+        #medicineChatModal .admin-modal-content {
+            max-width: 1200px;
+            width: 95%;
         }
         
         .admin-modal h2 {
@@ -1298,6 +1306,15 @@
             .session-item p {
                 font-size: 0.8em;
             }
+            
+            /* モーダルをスマホでフル幅に */
+            .admin-modal-content,
+            #medicineChatModal .admin-modal-content {
+                width: 95%;
+                max-width: 95%;
+                margin: 10px auto;
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -1451,10 +1468,10 @@
     <div id="medicineChatModal" class="admin-modal">
         <div class="admin-modal-content">
             <span class="close">&times;</span>
-            <h2>💊 医薬品相談テスト</h2>
-            <textarea id="medicineChatInput" placeholder="症状や質問を入力してください..." rows="4"></textarea>
-            <button onclick="sendMedicineChat()" class="admin-btn">送信</button>
-            <div id="medicineChatResult" style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0; min-height: 100px;">
+            <h2 style="margin-bottom: 20px;">💊 医薬品相談テスト</h2>
+            <textarea id="medicineChatInput" placeholder="症状や質問を入力してください...（例：頭が痛いです、のどが痛い）" rows="4" style="width: 100%; padding: 12px; font-size: 14px; border: 1px solid #ddd; border-radius: 5px; resize: vertical; font-family: inherit;"></textarea>
+            <button onclick="sendMedicineChat()" class="admin-btn" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 16px;">📤 送信</button>
+            <div id="medicineChatResult" style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0; min-height: 100px; max-height: 600px; overflow-y: auto;">
                 <p style="color: #666; text-align: center; padding: 20px 0;">結果がここに表示されます...</p>
             </div>
         </div>
@@ -2357,8 +2374,10 @@
                             ` : '<div style="background: #fff3e0; padding: 12px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ffe0b2;"><p style="color: #f57c00;">推奨医薬品が見つかりませんでした</p></div>'}
                             
                             <details style="margin-top: 15px;">
-                                <summary style="cursor: pointer; color: #1976d2; padding: 8px; background: #f5f5f5; border-radius: 5px; user-select: none;">📋 詳細結果を表示（JSON）</summary>
-                                <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; margin-top: 10px; font-family: 'Courier New', monospace; line-height: 1.5;">${JSON.stringify(data, null, 2)}</pre>
+                                <summary style="cursor: pointer; color: #1976d2; padding: 10px; background: #f5f5f5; border-radius: 5px; user-select: none; font-weight: 600;">📋 詳細結果を表示（JSON）</summary>
+                                <div style="margin-top: 10px; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 5px;">
+                                    <pre style="background: #263238; color: #aed581; padding: 15px; margin: 0; font-size: 11px; font-family: 'Courier New', monospace; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(data, null, 2)}</pre>
+                                </div>
                             </details>
                         </div>
                     `;
