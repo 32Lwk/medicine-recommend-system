@@ -2224,43 +2224,43 @@
                 const perfStats = data.performance_stats || {};
                 
                 content.innerHTML = `
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📊 システム全体</h3>
-                        <p><strong>ステータス:</strong> ${data.status === 'ok' ? '✅ 正常' : '❌ エラー'}</p>
-                        <p><strong>総セッション数:</strong> ${data.total_sessions}件</p>
-                        <p><strong>アクティブセッション:</strong> ${data.active_sessions}件</p>
-                        <p><strong>手動返信待ち:</strong> ${data.manual_reply_queue}件</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #dee2e6;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📊 システム全体</h3>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">ステータス:</strong> ${data.status === 'ok' ? '✅ 正常' : '❌ エラー'}</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総セッション数:</strong> ${data.total_sessions}件</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">アクティブセッション:</strong> ${data.active_sessions}件</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">手動返信待ち:</strong> ${data.manual_reply_queue}件</p>
                     </div>
                     
-                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <h3 style="margin-bottom: 10px; color: #2c3e50;">🤖 AI設定</h3>
-                        <p><strong>AI自動応答:</strong> ${data.ai_auto_reply ? '✅ ON' : '⚠️ OFF'}</p>
-                        <p><strong>管理者モード:</strong> ${data.admin_mode ? '✅ ON' : '⚪ OFF'}</p>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">🤖 AI設定</h3>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">AI自動応答:</strong> ${data.ai_auto_reply ? '✅ ON' : '⚠️ OFF'}</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">管理者モード:</strong> ${data.admin_mode ? '✅ ON' : '⚪ OFF'}</p>
                     </div>
                     
-                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📁 CSVデータ</h3>
-                        <p><strong>読み込み状態:</strong> ${csvStatus.success ? '✅ 成功' : '❌ 失敗'}</p>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe0b2;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📁 CSVデータ</h3>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">読み込み状態:</strong> ${csvStatus.success ? '✅ 成功' : '❌ 失敗'}</p>
                         ${csvStatus.success ? `
-                            <p><strong>エンコーディング:</strong> ${csvStatus.encoding || 'N/A'}</p>
-                            <p><strong>行数:</strong> ${csvStatus.row_count || 0}行</p>
-                            <p><strong>列数:</strong> ${csvStatus.col_count || 0}列</p>
+                            <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">エンコーディング:</strong> ${csvStatus.encoding || 'N/A'}</p>
+                            <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">行数:</strong> ${csvStatus.row_count || 0}行</p>
+                            <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">列数:</strong> ${csvStatus.col_count || 0}列</p>
                         ` : `
-                            <p><strong>エラー:</strong> ${csvStatus.error || '不明なエラー'}</p>
+                            <p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">エラー:</strong> ${csvStatus.error || '不明なエラー'}</p>
                         `}
                     </div>
                     
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
-                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📈 パフォーマンス統計</h3>
-                        <p><strong>総リクエスト数:</strong> ${perfStats.total_requests || 0}件</p>
-                        <p><strong>成功:</strong> ${perfStats.successful_requests || 0}件</p>
-                        <p><strong>失敗:</strong> ${perfStats.failed_requests || 0}件</p>
-                        <p><strong>平均応答時間:</strong> ${(perfStats.average_response_time || 0).toFixed(2)}秒</p>
-                        <p><strong>総トークン使用量:</strong> ${perfStats.total_tokens_used || 0}</p>
-                        <p><strong>今日のAPI呼び出し:</strong> ${perfStats.api_calls_today || 0}回</p>
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📈 パフォーマンス統計</h3>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総リクエスト数:</strong> ${perfStats.total_requests || 0}件</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">成功:</strong> ${perfStats.successful_requests || 0}件</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">失敗:</strong> ${perfStats.failed_requests || 0}件</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">平均応答時間:</strong> ${(perfStats.average_response_time || 0).toFixed(2)}秒</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総トークン使用量:</strong> ${perfStats.total_tokens_used || 0}</p>
+                        <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">今日のAPI呼び出し:</strong> ${perfStats.api_calls_today || 0}回</p>
                     </div>
                     
-                    <p style="margin-top: 15px; text-align: center;"><small>最終更新: ${new Date().toLocaleString('ja-JP')}</small></p>
+                    <p style="margin-top: 15px; text-align: center; color: #666;"><small>最終更新: ${new Date().toLocaleString('ja-JP')}</small></p>
                 `;
             })
             .catch(error => {

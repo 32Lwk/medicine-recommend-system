@@ -1968,8 +1968,10 @@ def admin_medicine_chat():
         return jsonify({'status': 'error', 'message': 'メッセージが空です'}), 400
     
     try:
+        # medicine_logic.pyで初期化されたclientをインポート
+        from medicine_logic import client, select_symptoms_via_gpt
+        
         # 症状抽出を実行
-        from medicine_logic import select_symptoms_via_gpt
         symptoms_result = select_symptoms_via_gpt(user_message)
         
         # 医薬品推奨を実行
@@ -1978,7 +1980,7 @@ def admin_medicine_chat():
             
             # ルールベース推奨を試行
             from medicine_logic import analyze_symptoms_and_medicine_type
-            medicine_type_result = analyze_symptoms_and_medicine_type(user_message, [])
+            medicine_type_result = analyze_symptoms_and_medicine_type(user_message, client)
             
             if medicine_type_result and medicine_type_result.get('medicine_type'):
                 medicine_type = medicine_type_result['medicine_type']
@@ -1986,9 +1988,9 @@ def admin_medicine_chat():
                 # ルールベース推奨
                 from medicine_logic import rule_based_medicine_recommendation
                 recommendation = rule_based_medicine_recommendation(
-                    user_message=user_message,
-                    conversation_history=[],
-                    user_attributes={}
+                    user_text=user_message,
+                    user_info={},
+                    client=client
                 )
                 
                 return jsonify({
@@ -2002,9 +2004,8 @@ def admin_medicine_chat():
                 # AI推奨
                 from medicine_logic import comprehensive_medicine_recommendation
                 recommendation = comprehensive_medicine_recommendation(
-                    user_message=user_message,
-                    conversation_history=[],
-                    user_attributes={}
+                    user_text=user_message,
+                    client=client
                 )
                 
                 return jsonify({
