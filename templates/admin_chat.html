@@ -2175,6 +2175,33 @@
             return modifiedContent;
         }
 
+        function addScoringToMedicines(htmlContent, medicines) {
+            if (!medicines || medicines.length === 0) {
+                return htmlContent;
+            }
+            
+            let modifiedContent = htmlContent;
+            
+            // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
+            medicines.forEach((medicine, index) => {
+                if (medicine.score !== undefined) {
+                    const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
+                    const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${medicine.score}% (${scoreText})</span>`;
+                    
+                    // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
+                    const medicineName = medicine.product_name || '';
+                    if (medicineName) {
+                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
+                        const rankPattern = new RegExp(`(🏆 ${index + 1}位: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
+                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
+                    }
+                }
+            });
+            
+            return modifiedContent;
+        }
+
         function renderChatMessages(messages) {
             const chatMessages = document.getElementById('chat-messages');
             
@@ -3084,51 +3111,6 @@
             const micBtn = document.getElementById('mic-btn');
             micBtn.classList.remove('recording');
             micBtn.title = '音声入力';
-        }
-
-        function loadChatHistory(sessionId) {
-            // ローディング表示
-            const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = `
-                <div class="empty-state">
-                    <div>🔄</div>
-                    <p>チャット履歴を読み込み中...</p>
-                </div>
-            `;
-            
-            // セッションタイトルを更新
-            const session = allSessions.find(s => s.session_id === sessionId);
-            if (session) {
-                document.getElementById('chat-title').textContent = `${session.username} (${sessionId})`;
-                // ユーザー属性ボタンを表示
-                document.getElementById('userAttributesBtn').style.display = 'block';
-            }
-            
-            fetch('/api/main_sessions', {
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log('All sessions data:', data);
-                    
-                    // 指定されたセッションIDのデータを探す
-                    const targetSession = Array.isArray(data) ? 
-                        data.find(session => session.session_id === sessionId) : null;
-                    
-                    if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
-                        renderChatMessages(targetSession.messages);
-                    } else {
-                        renderChatMessages([]);
-                    }
-                })
-                .catch(error => {
-                    console.error('Chat history error:', error);
-                    showNotification('セッション情報取得エラー', 'error');
-                    renderChatMessages([]);
-                });
         }
     </script>
 </body>
