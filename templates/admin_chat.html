@@ -2294,8 +2294,16 @@
                         </div>
                     `;
                 } else {
-                    // 通常のテキストメッセージ
-                    const content = escapeHtml(msg.content || '');
+                    // 通常のテキストメッセージまたはAI応答
+                    let content;
+                    if (msg.content && msg.content.includes('<div class="chat-response">')) {
+                        // AI応答の場合はHTMLをそのまま表示
+                        content = msg.content;
+                    } else {
+                        // 通常のテキストメッセージはエスケープ
+                        content = escapeHtml(msg.content || '');
+                    }
+                    
                     html += `
                         <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
                             <div class="message-content" style="max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; ${
