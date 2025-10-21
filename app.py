@@ -356,7 +356,28 @@ def index():
                             'timestamp': datetime.now().isoformat()
                         }
                         
+                        # 質問応答をセッションに追加
+                        ALL_SESSIONS[sid]['messages'].append(bot_response)
                         logger.info(f"✅ 質問応答完了: {user_message}")
+                        
+                        # 質問応答の場合は、user_attributesを初期化してセッションに保存
+                        user_attributes = session.get('user_attributes', {
+                            'age': None,
+                            'gender': None,
+                            'pregnant': None,
+                            'breastfeeding': None,
+                            'current_medications': [],
+                            'allergies': [],
+                            'medical_history': [],
+                            'symptom_duration_days': None,
+                            'other_info': None
+                        })
+                        session['user_attributes'] = user_attributes
+                        session.modified = True
+                        
+                        # JSONレスポンスを返す
+                        message_count = len(ALL_SESSIONS[sid]['messages'])
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                         
                     except Exception as e:
                         logger.error(f"❌ 医薬品相談機能実行時エラー: {e}")
@@ -368,6 +389,28 @@ def index():
                             'diagnosis': None,
                             'timestamp': datetime.now().isoformat()
                         }
+                        
+                        # エラー応答をセッションに追加
+                        ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        
+                        # エラーの場合もuser_attributesを初期化
+                        user_attributes = session.get('user_attributes', {
+                            'age': None,
+                            'gender': None,
+                            'pregnant': None,
+                            'breastfeeding': None,
+                            'current_medications': [],
+                            'allergies': [],
+                            'medical_history': [],
+                            'symptom_duration_days': None,
+                            'other_info': None
+                        })
+                        session['user_attributes'] = user_attributes
+                        session.modified = True
+                        
+                        # JSONレスポンスを返す
+                        message_count = len(ALL_SESSIONS[sid]['messages'])
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                 else:
                     # 属性応答の可能性がある場合のみ属性抽出を実行
                     logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
