@@ -1165,6 +1165,128 @@
             box-sizing: border-box;
             position: relative;
         }
+        
+        /* レスポンシブデザイン - タブレット・スマホ対応 */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 250px 1fr;
+                gap: 15px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .sidebar {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 10px;
+            }
+            
+            .sidebar a {
+                min-width: 120px;
+                white-space: nowrap;
+            }
+            
+            .section {
+                padding: 12px;
+            }
+            
+            .section h2 {
+                font-size: 1.3em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls button {
+                width: 100%;
+                min-height: 44px;
+            }
+            
+            .session-list,
+            .manual-reply-queue,
+            .pending-queue {
+                max-height: 300px;
+            }
+            
+            input[type="text"],
+            textarea {
+                font-size: 16px; /* iOSズーム防止 */
+            }
+            
+            .manual-reply-item,
+            .session-item {
+                padding: 12px;
+            }
+            
+            .chat-history {
+                max-height: 250px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            .header p {
+                font-size: 0.8em;
+            }
+            
+            .section {
+                padding: 10px;
+            }
+            
+            .section h2 {
+                font-size: 1.1em;
+            }
+            
+            .controls button {
+                font-size: 14px;
+                padding: 10px;
+            }
+            
+            .manual-reply-item h4,
+            .session-item h4 {
+                font-size: 0.9em;
+            }
+            
+            .manual-reply-item p,
+            .session-item p {
+                font-size: 0.8em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1221,7 +1343,7 @@
                         <button class="btn btn-success" id="refresh-btn" onclick="manualRefresh()" style="padding: 6px 10px; font-size: 0.8em;">🔄 更新</button>
                         <button class="btn btn-info" onclick="refreshQueue()" style="padding: 6px 10px; font-size: 0.8em;">📋 キュー</button>
                     </div>
-                    <div id="manual-reply-queue" style="max-height: 100px; overflow-y: auto;">
+                    <div id="manual-reply-queue" style="max-height: 500px; overflow-y: auto;">
                         <div class="empty-state" style="text-align: center; color: #888; font-size: 0.9em;">
                             <div>📭</div>
                             <p>手動返信待ちなし</p>
