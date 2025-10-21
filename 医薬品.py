@@ -14,11 +14,10 @@ except ImportError:
 # 環境変数からAPIキーを取得
 api_key = os.getenv('OPENAI_API_KEY')
 
-# 環境変数が設定されていない場合のフォールバック
+# 環境変数が設定されていない場合のエラー表示
 if not api_key:
-    # 直接APIキーを設定（開発・テスト用）
-    api_key = "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"
-    print("環境変数からAPIキーを取得できませんでした。直接設定されたAPIキーを使用します。")
+    print("⚠️ 警告: OpenAI API keyが環境変数に設定されていません。")
+    print("環境変数 OPENAI_API_KEY を設定してください。")
 
 # --- OpenAIクライアント初期化 ---
 client = None

@@ -1,0 +1,42 @@
+# Renderデプロイ時に除外するファイル
+
+# 開発関連ファイル
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.vscode/
+.idea/
+
+# ログファイル
+*.log
+app.log
+
+# 環境ファイル
+.env
+*.env
+
+# データベースファイル
+*.sqlite
+*.db
+
+# Python配布フォルダ
+Python-3.9.23/
+
+# テスト・デバッグファイル
+test_*.py
+debug_*.py
+*_test.py
+
+# ドキュメントフォルダ（オプション）
+drowio/
+
+# 一時ファイル
+*.diff
+apply_*.py
+fix_*.py
+
+# 不要なMarkdownファイル（オプション：必要なものはコメントアウト）
+# README.md
+# DEPLOY.md
+
