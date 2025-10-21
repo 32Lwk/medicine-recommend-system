@@ -2571,10 +2571,11 @@
                         content += `<div style="font-weight: bold; color: #2c3e50;">${index + 1}. ${medicine.product_name || '製品名不明'}</div>`;
                         // スコアリング表示（管理者画面のみ）
                         if (medicine.score !== undefined) {
+                            console.log('🔍 Medicine score:', medicine.score, 'for', medicine.product_name);
                             const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
                             const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
                             content += `<div class="admin-score-display ${scoreClass}">
-                                📊 最適度: ${medicine.score}% (${scoreText})
+                                📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})
                             </div>`;
                         }
                         content += `</div>`;
