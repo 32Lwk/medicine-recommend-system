@@ -239,8 +239,12 @@ def index():
                 'type': 'user',
                 'content': user_message
             })
+            
+            # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
+            chat_ai_auto_reply = ALL_SESSIONS.get(sid, {}).get('ai_auto_reply', True)
+            
             # AI自動応答がOFFの場合は手動返信待ちにする
-            if not AI_AUTO_REPLY:
+            if not chat_ai_auto_reply:
                 if ADMIN_MODE:
                     # 管理者対応モード時は自動返信せず、ユーザーメッセージのみ保存
                     session.modified = True
@@ -1833,34 +1837,45 @@ def new_session():
 
 @app.route('/api/request_admin', methods=['POST'])
 def request_admin():
-    """管理者対応要請を受け付ける"""
-    global AI_AUTO_REPLY
+    """管理者対応要請を受け付ける（個別チャット単位）"""
     sid = session.get('_id')
     username = session.get('username', 'unknown')
     if sid:
-        # セッションに要請フラグを追加
+        # セッションに要請フラグとAI自動応答OFFフラグを追加（個別チャット単位）
         if sid in ALL_SESSIONS:
             ALL_SESSIONS[sid]['admin_request'] = True
+            ALL_SESSIONS[sid]['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
+        
         session['admin_request'] = True
-        # メッセージ履歴にも記録
-        session['messages'].append({
+        session['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
+        
+        # システムメッセージを追加
+        system_message = {
             'type': 'system',
-            'content': '薬剤師を要請しました。しばらくお待ちください。',
+            'content': '薬剤師対応を要請しました。しばらくお待ちください。',
             'admin_request': True
-        })
+        }
+        session['messages'].append(system_message)
+        
+        # ALL_SESSIONSにも保存（ページ更新後も表示されるように）
+        if sid in ALL_SESSIONS:
+            ALL_SESSIONS[sid]['messages'].append(system_message)
+        
         session.modified = True
+        
         # MANUAL_REPLY_QUEUEに同じセッションIDのadmin_requestがなければ追加
         already_exists = any(item.get('session_id') == sid and item.get('admin_request') for item in MANUAL_REPLY_QUEUE)
         if not already_exists:
             MANUAL_REPLY_QUEUE.append({
                 'session_id': sid,
-                'user_message': '薬剤師を要請しました。しばらくお待ちください。',
+                'username': username,
+                'user_message': '【薬剤師要請】' + username,
                 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'status': 'admin_requested',
                 'admin_request': True
             })
-        # AI自動応答をOFFにする
-        AI_AUTO_REPLY = False
+        
+        logger.info(f"💊 薬剤師要請: {username} (Session: {sid}) - このチャットのみAI自動応答OFF")
         return jsonify({'status': 'ok'})
     return jsonify({'status': 'error', 'message': 'No session'}), 400
 
@@ -1873,8 +1888,50 @@ def api_admin_mode():
 
 @app.route('/admin')
 def admin():
-    """管理画面"""
+    """管理画面（パスワード認証付き）"""
+    # Basic認証のチェック
+    auth = request.authorization
+    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')  # デフォルトパスワード
+    
+    if not auth or auth.username != 'admin' or auth.password != admin_password:
+        # 認証が必要
+        return ('認証が必要です', 401, {
+            'WWW-Authenticate': 'Basic realm="Admin Area"'
+        })
+    
     return render_template('admin_chat.html')
+
+@app.route('/admin/system_status', methods=['GET'])
+def admin_system_status():
+    """システム状況を取得"""
+    return jsonify({
+        'status': 'ok',
+        'csv_load_status': csv_load_status,
+        'total_sessions': len(ALL_SESSIONS),
+        'active_sessions': len([s for s in ALL_SESSIONS.values() if time.time() - s.get('last_activity', 0) < SESSION_TIMEOUT]),
+        'manual_reply_queue': len(MANUAL_REPLY_QUEUE),
+        'ai_auto_reply': AI_AUTO_REPLY,
+        'admin_mode': ADMIN_MODE,
+        'performance_stats': performance_stats
+    })
+
+@app.route('/clear_logs', methods=['POST'])
+def clear_logs():
+    """ログをクリア"""
+    global network_logs
+    network_logs.clear()
+    
+    # ログファイルもクリア
+    log_file = 'log/recommendation_log.jsonl'
+    if os.path.exists(log_file):
+        try:
+            with open(log_file, 'w', encoding='utf-8') as f:
+                pass  # ファイルを空にする
+            logger.info("📝 ログファイルをクリアしました")
+        except Exception as e:
+            logger.error(f"❌ ログファイルのクリアに失敗: {e}")
+    
+    return jsonify({'status': 'ok', 'message': 'ログをクリアしました'})
 
 @app.route('/api/admin/sessions', methods=['GET'])
 def get_all_sessions():

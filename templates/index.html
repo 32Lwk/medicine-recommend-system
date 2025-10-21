@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -542,6 +543,110 @@
         
         .answer-questions-btn:hover {
             background: #45a049;
+        }
+        
+        /* レスポンシブデザイン - スマホ・タブレット対応 */
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+                height: 100vh;
+                height: 100dvh; /* モバイルブラウザのアドレスバーを考慮 */
+            }
+            
+            .chat-header h1 {
+                font-size: 18px;
+            }
+            
+            .chat-messages {
+                padding: 10px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+            
+            .message.bot .message-content {
+                max-width: 90%;
+            }
+            
+            .chat-input {
+                padding: 10px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            #user-input {
+                font-size: 16px; /* iOSのズーム防止 */
+                min-height: 44px; /* タッチしやすいサイズ */
+            }
+            
+            button {
+                width: 100%;
+                min-height: 44px;
+                font-size: 16px;
+            }
+            
+            .clear-btn,
+            .pharmacist-request-btn,
+            .answer-questions-btn {
+                padding: 12px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+            
+            .recommendation-result,
+            .medicine-item,
+            .diagnosis-box {
+                max-width: 100% !important;
+                font-size: 14px;
+            }
+            
+            .medicine-header {
+                font-size: 16px;
+            }
+            
+            .medicine-info {
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chat-header {
+                padding: 15px 10px;
+            }
+            
+            .chat-header h1 {
+                font-size: 16px;
+            }
+            
+            .message-content {
+                max-width: 90%;
+                font-size: 13px;
+            }
+            
+            .chat-messages {
+                padding: 8px;
+            }
+        }
+        
+        /* 横向き（ランドスケープ）モード対応 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .chat-header {
+                padding: 10px;
+            }
+            
+            .chat-header h1 {
+                font-size: 14px;
+            }
+            
+            .chat-input {
+                padding: 8px;
+            }
         }
     </style>
 </head>
