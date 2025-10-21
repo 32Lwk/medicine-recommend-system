@@ -403,7 +403,7 @@ def index():
                     
                     # ChatGPTによる属性抽出
                     try:
-                    prompt = f"""
+                        prompt = f"""
 ユーザーのメッセージから以下の属性情報を抽出してください：
 
 【ユーザーメッセージ】
@@ -441,76 +441,76 @@ def index():
 - 症状期間は日数で回答（例：3日前から → 3）
 """
 
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {"role": "system", "content": "あなたは医療情報抽出システムです。ユーザーのメッセージから正確に属性情報を抽出してください。"},
-                            {"role": "user", "content": prompt}
-                        ],
-                        temperature=0.1,
-                        max_tokens=500
-                    )
-                    
-                    result = response.choices[0].message.content
-                    
-                    # JSON解析
-                    json_start = result.find('{')
-                    json_end = result.rfind('}') + 1
-                    
-                    if json_start != -1 and json_end != -1:
-                        json_str = result[json_start:json_end]
-                        extracted_attrs = json.loads(json_str)
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "あなたは医療情報抽出システムです。ユーザーのメッセージから正確に属性情報を抽出してください。"},
+                                {"role": "user", "content": prompt}
+                            ],
+                            temperature=0.1,
+                            max_tokens=500
+                        )
                         
-                        logger.info(f"🤖 ChatGPT抽出結果: {extracted_attrs}")
+                        result = response.choices[0].message.content
                         
-                        # 抽出された情報をセッションに保存
-                        for key, value in extracted_attrs.items():
-                            if value is not None and value != [] and value != "":
-                                if key == 'age' and isinstance(value, (int, float)):
-                                    user_attributes['age'] = int(value)
-                                    logger.info(f"📝 年齢を更新: {user_attributes['age']}")
-                                    updated = True
-                                elif key == 'gender' and value in ['男性', '女性']:
-                                    user_attributes['gender'] = value
-                                    logger.info(f"📝 性別を更新: {user_attributes['gender']}")
-                                    updated = True
-                                elif key == 'pregnant' and isinstance(value, bool):
-                                    user_attributes['pregnant'] = value
-                                    logger.info(f"📝 妊娠状態を更新: {user_attributes['pregnant']}")
-                                    updated = True
-                                elif key == 'breastfeeding' and isinstance(value, bool):
-                                    user_attributes['breastfeeding'] = value
-                                    logger.info(f"📝 授乳状態を更新: {user_attributes['breastfeeding']}")
-                                    updated = True
-                                elif key == 'allergies' and isinstance(value, list):
-                                    user_attributes['allergies'] = value
-                                    logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
-                                    updated = True
-                                elif key == 'current_medications' and isinstance(value, list):
-                                    user_attributes['current_medications'] = value
-                                    logger.info(f"📝 服用中の薬を更新: {user_attributes['current_medications']}")
-                                    updated = True
-                                elif key == 'medical_history' and isinstance(value, list):
-                                    user_attributes['medical_history'] = value
-                                    logger.info(f"📝 既往症を更新: {user_attributes['medical_history']}")
-                                    updated = True
-                                elif key == 'symptom_duration_days' and isinstance(value, (int, float)):
-                                    user_attributes['symptom_duration_days'] = int(value)
-                                    logger.info(f"📝 症状期間を更新: {user_attributes['symptom_duration_days']}日")
-                                    updated = True
-                                elif key == 'other_info' and isinstance(value, str):
-                                    user_attributes['other_info'] = value
-                                    logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
-                                    updated = True
-                    
-                except Exception as e:
-                    logger.error(f"ChatGPT属性抽出エラー: {e}")
-                    logger.info("フォールバック: 正規表現による抽出に切り替えます")
-                    
-                    # フォールバック: 正規表現による抽出
-                    # 年齢（日本語と英語）
-                    age_match = re.search(r'(\d+)歳', user_message)
-                    if age_match:
+                        # JSON解析
+                        json_start = result.find('{')
+                        json_end = result.rfind('}') + 1
+                        
+                        if json_start != -1 and json_end != -1:
+                            json_str = result[json_start:json_end]
+                            extracted_attrs = json.loads(json_str)
+                            
+                            logger.info(f"🤖 ChatGPT抽出結果: {extracted_attrs}")
+                            
+                            # 抽出された情報をセッションに保存
+                            for key, value in extracted_attrs.items():
+                                if value is not None and value != [] and value != "":
+                                    if key == 'age' and isinstance(value, (int, float)):
+                                        user_attributes['age'] = int(value)
+                                        logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                                        updated = True
+                                    elif key == 'gender' and value in ['男性', '女性']:
+                                        user_attributes['gender'] = value
+                                        logger.info(f"📝 性別を更新: {user_attributes['gender']}")
+                                        updated = True
+                                    elif key == 'pregnant' and isinstance(value, bool):
+                                        user_attributes['pregnant'] = value
+                                        logger.info(f"📝 妊娠状態を更新: {user_attributes['pregnant']}")
+                                        updated = True
+                                    elif key == 'breastfeeding' and isinstance(value, bool):
+                                        user_attributes['breastfeeding'] = value
+                                        logger.info(f"📝 授乳状態を更新: {user_attributes['breastfeeding']}")
+                                        updated = True
+                                    elif key == 'allergies' and isinstance(value, list):
+                                        user_attributes['allergies'] = value
+                                        logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
+                                        updated = True
+                                    elif key == 'current_medications' and isinstance(value, list):
+                                        user_attributes['current_medications'] = value
+                                        logger.info(f"📝 服用中の薬を更新: {user_attributes['current_medications']}")
+                                        updated = True
+                                    elif key == 'medical_history' and isinstance(value, list):
+                                        user_attributes['medical_history'] = value
+                                        logger.info(f"📝 既往症を更新: {user_attributes['medical_history']}")
+                                        updated = True
+                                    elif key == 'symptom_duration_days' and isinstance(value, (int, float)):
+                                        user_attributes['symptom_duration_days'] = int(value)
+                                        logger.info(f"📝 症状期間を更新: {user_attributes['symptom_duration_days']}日")
+                                        updated = True
+                                    elif key == 'other_info' and isinstance(value, str):
+                                        user_attributes['other_info'] = value
+                                        logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
+                                        updated = True
+                        
+                    except Exception as e:
+                        logger.error(f"ChatGPT属性抽出エラー: {e}")
+                        logger.info("フォールバック: 正規表現による抽出に切り替えます")
+                        
+                        # フォールバック: 正規表現による抽出
+                        # 年齢（日本語と英語）
+                        age_match = re.search(r'(\d+)歳', user_message)
+                        if age_match:
                         user_attributes['age'] = int(age_match.group(1))
                         logger.info(f"📝 年齢を更新: {user_attributes['age']}")
                         updated = True
