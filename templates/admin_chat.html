@@ -797,6 +797,31 @@
             color: white;
         }
         
+        /* 管理画面専用のスコアリング表示スタイル */
+        .admin-score-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: inline-block;
+            margin-left: 8px;
+        }
+        
+        .admin-score-high {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+        
+        .admin-score-medium {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        
+        .admin-score-low {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
         .admin-modal input, .admin-modal textarea {
             width: 100%;
             padding: 10px;
@@ -2133,8 +2158,9 @@
             // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
             medicines.forEach((medicine, index) => {
                 if (medicine.score !== undefined) {
-                    const scoreColor = medicine.score >= 80 ? '#27ae60' : medicine.score >= 60 ? '#f39c12' : '#e74c3c';
-                    const scoringHtml = `<span style="background: ${scoreColor}; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.7em; font-weight: bold; margin-left: 8px;">最適度: ${medicine.score}%</span>`;
+                    const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
+                    const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${medicine.score}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
@@ -2512,8 +2538,11 @@
                         content += `<div style="font-weight: bold; color: #2c3e50;">${index + 1}. ${medicine.product_name || '製品名不明'}</div>`;
                         // スコアリング表示（管理者画面のみ）
                         if (medicine.score !== undefined) {
-                            const scoreColor = medicine.score >= 80 ? '#27ae60' : medicine.score >= 60 ? '#f39c12' : '#e74c3c';
-                            content += `<div style="background: ${scoreColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">最適度: ${medicine.score}%</div>`;
+                            const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
+                            const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                            content += `<div class="admin-score-display ${scoreClass}">
+                                📊 最適度: ${medicine.score}% (${scoreText})
+                            </div>`;
                         }
                         content += `</div>`;
                         if (medicine.manufacturer) {
