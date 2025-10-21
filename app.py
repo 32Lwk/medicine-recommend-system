@@ -511,29 +511,29 @@ def index():
                         # 年齢（日本語と英語）
                         age_match = re.search(r'(\d+)歳', user_message)
                         if age_match:
-                        user_attributes['age'] = int(age_match.group(1))
-                        logger.info(f"📝 年齢を更新: {user_attributes['age']}")
-                        updated = True
-                    else:
-                        # 英語の年齢パターン
-                        age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
-                        if age_match_en:
-                            user_attributes['age'] = int(age_match_en.group(1))
+                            user_attributes['age'] = int(age_match.group(1))
                             logger.info(f"📝 年齢を更新: {user_attributes['age']}")
                             updated = True
-                    
-                    # 性別（日本語と英語）
-                    if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
-                        user_attributes['gender'] = '男性'
-                        logger.info(f"📝 性別を更新: 男性")
-                        updated = True
-                    elif '女性' in user_message or '女' in user_message or 'female' in user_message.lower():
-                        user_attributes['gender'] = '女性'
-                        logger.info(f"📝 性別を更新: 女性")
-                        updated = True
-                    
-                    # 妊娠・授乳（フォールバック処理）
-                    if '妊娠' in user_message:
+                        else:
+                            # 英語の年齢パターン
+                            age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
+                            if age_match_en:
+                                user_attributes['age'] = int(age_match_en.group(1))
+                                logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                                updated = True
+                        
+                        # 性別（日本語と英語）
+                        if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
+                            user_attributes['gender'] = '男性'
+                            logger.info(f"📝 性別を更新: 男性")
+                            updated = True
+                        elif '女性' in user_message or '女' in user_message or 'female' in user_message.lower():
+                            user_attributes['gender'] = '女性'
+                            logger.info(f"📝 性別を更新: 女性")
+                            updated = True
+                        
+                        # 妊娠・授乳（フォールバック処理）
+                        if '妊娠' in user_message:
                         if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
                             user_attributes['pregnant'] = False
                             logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
@@ -541,8 +541,8 @@ def index():
                             user_attributes['pregnant'] = True
                             logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
                         updated = True
-                    
-                    if '授乳' in user_message:
+                        
+                        if '授乳' in user_message:
                         if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
                             user_attributes['breastfeeding'] = False
                             logger.info(f"📝 授乳状態を更新: False（授乳していない）")
@@ -553,10 +553,10 @@ def index():
                 
                 # アレルギー（日本語と英語）
                 if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
-                    if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
+                        if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
                         'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
                         user_attributes['allergies'] = ['なし']
-                    else:
+                        else:
                         # 日本語のアレルギー抽出
                         allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
                         if allergens:
@@ -566,13 +566,13 @@ def index():
                             allergy_match = re.search(r'have\s+([^,\s]+)\s+allergy', user_message, re.IGNORECASE)
                             if allergy_match:
                                 user_attributes['allergies'] = [allergy_match.group(1)]
-                    logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
-                    updated = True
+                        logger.info(f"📝 アレルギーを更新: {user_attributes['allergies']}")
+                        updated = True
                 
                 # 症状期間（日本語と英語）
                 if ('続いています' in user_message or 'から' in user_message or 
-                    'started' in user_message.lower() or 'ago' in user_message.lower()):
-                    duration_patterns = [
+                        'started' in user_message.lower() or 'ago' in user_message.lower()):
+                        duration_patterns = [
                         (r'(今日|きょう)から', 0),
                         (r'(昨日|きのう)から', 1),
                         (r'(\d+)日前から', None),
@@ -581,8 +581,8 @@ def index():
                         (r'(\d+)\s*days?\s*ago', None),
                         (r'(\d+)\s*weeks?\s*ago', None),
                         (r'(\d+)\s*months?\s*ago', None)
-                    ]
-                    for pattern, days in duration_patterns:
+                        ]
+                        for pattern, days in duration_patterns:
                         match = re.search(pattern, user_message)
                         if match:
                             if days is not None:
