@@ -2229,11 +2229,17 @@
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
                 if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                    // 管理画面でのスコアリング表示を追加
+                    let modifiedContent = msg.content;
+                    if (msg.diagnosis && msg.diagnosis.recommended_medicines) {
+                        modifiedContent = addScoringToMedicines(msg.content, msg.diagnosis.recommended_medicines);
+                    }
+                    
                     html += `
                         <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
                             <div style="max-width: 80%;">
                                 ${indicator}
-                                ${msg.content}
+                                ${modifiedContent}
                                 ${timestamp}
                             </div>
                         </div>
