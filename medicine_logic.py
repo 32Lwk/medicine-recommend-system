@@ -378,61 +378,117 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
 
 def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_symptoms=250):
     """
-    unique_symptoms_from_summarized_efficacy.csvの症状リストとユーザー症状文をChatGPTに渡し、
-    該当する症状（複数可）を返答させる。ユーザー入力とChatGPT返答をターミナルにprint表示。
+    ユーザーの症状文からChatGPTを使って適切な症状を抽出する
     """
     import pandas as pd
     import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    symptoms_csv = symptoms_csv_path or os.path.join(base_dir, "unique_symptoms_from_summarized_efficacy.csv")
+    import re
     
-    # ファイルの存在確認
-    if not os.path.exists(symptoms_csv):
-        print(f"⚠️ Warning: {symptoms_csv} not found. Using fallback symptom list.")
-        # フォールバック用の症状リスト
-        symptom_list = [
-            "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
-            "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
-        ]
-        return {
-            'status': 'success',
-            'symptoms': symptom_list[:max_symptoms],
-            'message': 'Fallback symptom list used'
-        }
-    
-    df = pd.read_csv(symptoms_csv, header=0)
-    
-    # NaN値を適切に処理
-    df = df.fillna("")
-    symptom_list = df.iloc[:, 0].dropna().unique().tolist()
-    if len(symptom_list) > max_symptoms:
-        symptom_list = symptom_list[:max_symptoms]
-    prompt = (
-        f"あなたは薬剤師AIです。下記は市販薬の代表的な症状リストです。\n"
-        f"ユーザーの症状:『{user_text}』\n"
-        "この中から該当する症状をすべて選び、日本語でリスト形式で出力してください。\n"
-        "【症状リスト】\n" +
-        "\n".join(f"{i+1}. {s}" for i, s in enumerate(symptom_list))
-    )
-    messages = [
-        {"role": "system", "content": prompt}
+    # より包括的な症状リストを作成
+    comprehensive_symptom_list = [
+        # 風邪・インフルエンザ関連
+        "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "くしゃみ", "寒気", "悪寒",
+        # 消化器系
+        "腹痛", "下痢", "便秘", "吐き気", "嘔吐", "胃痛", "胸やけ", "胃もたれ",
+        # 神経系・全身症状
+        "めまい", "疲労感", "倦怠感", "筋肉痛", "関節痛", "肩こり", "腰痛",
+        # 皮膚系
+        "かゆみ", "発疹", "湿疹", "蕁麻疹", "皮膚の乾燥",
+        # 睡眠・精神系
+        "不眠", "眠気", "イライラ", "不安", "ストレス",
+        # 女性特有
+        "生理痛", "月経不順", "更年期症状",
+        # その他
+        "口内炎", "目の疲れ", "耳鳴り", "動悸"
     ]
+    
+    # 症状抽出のプロンプトを改善
+    prompt = f"""
+あなたは薬剤師AIです。ユーザーの症状文から該当する症状を正確に抽出してください。
+
+【ユーザーの症状文】
+{user_text}
+
+【抽出すべき症状リスト】
+{', '.join(comprehensive_symptom_list)}
+
+【指示】
+1. ユーザーの症状文から該当する症状のみを抽出してください
+2. 症状文に明示的に書かれていない症状は含めないでください
+3. 症状文が曖昧な場合は、最も可能性の高い症状のみを選択してください
+4. 「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
+
+【回答形式】
+該当する症状を以下の形式で出力してください：
+症状1, 症状2, 症状3
+
+該当する症状がない場合は「なし」と出力してください。
+"""
+    
+    messages = [
+        {"role": "system", "content": "あなたは薬剤師AIです。ユーザーの症状文から正確に症状を抽出してください。"},
+        {"role": "user", "content": prompt}
+    ]
+    
     if client is None:
         client = OpenAI(api_key=api_key)
+    
     print("ユーザー入力:", user_text)
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        temperature=0
-    )
-    content = response.choices[0].message.content if response.choices[0].message.content else ""
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.1,
+            max_tokens=500
+        )
+        content = response.choices[0].message.content if response.choices[0].message.content else ""
+    except Exception as e:
+        print(f"ChatGPT API エラー: {e}")
+        return {
+            'status': 'error',
+            'symptoms': [],
+            'message': f'ChatGPT API エラー: {e}'
+        }
     print("ChatGPT返答:\n", content.strip())
-    # リスト形式で返す
-    selected = [line.strip(" ・-0123456789.") for line in content.splitlines() if line.strip()]
-    # 元の症状リストと突合して正規化
-    selected_set = set(selected)
-    matched_symptoms = [s for s in symptom_list if any(sel in s or s in sel for sel in selected_set)]
-    return matched_symptoms 
+    
+    # 症状抽出の結果を処理
+    if "なし" in content or "症状なし" in content or not content.strip():
+        return {
+            'status': 'success',
+            'symptoms': [],
+            'message': 'No symptoms detected'
+        }
+    
+    # カンマ区切りで症状を抽出
+    symptoms = []
+    if "," in content:
+        symptoms = [s.strip() for s in content.split(",") if s.strip()]
+    else:
+        # 改行区切りの場合
+        symptoms = [line.strip(" ・-0123456789.") for line in content.splitlines() if line.strip()]
+    
+    # 症状リストと照合して正規化
+    matched_symptoms = []
+    for symptom in symptoms:
+        # 完全一致を探す
+        if symptom in comprehensive_symptom_list:
+            matched_symptoms.append(symptom)
+        else:
+            # 部分一致を探す
+            for ref_symptom in comprehensive_symptom_list:
+                if symptom in ref_symptom or ref_symptom in symptom:
+                    matched_symptoms.append(ref_symptom)
+                    break
+    
+    # 重複を除去
+    matched_symptoms = list(set(matched_symptoms))
+    
+    return {
+        'status': 'success',
+        'symptoms': matched_symptoms,
+        'message': f'Extracted {len(matched_symptoms)} symptoms'
+    } 
 
 def analyze_symptoms_and_medicine_type(user_text, client=None):
     """
@@ -449,55 +505,48 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
         "鼻炎用薬", "風邪薬", "目薬"
     ]
     
-    # 症状リストを読み込み
-    symptoms_csv_path = os.path.join(BASE_DIR, "unique_symptoms_from_summarized_efficacy.csv")
-    symptoms_list = []
-    
-    # ファイルの存在確認
-    if not os.path.exists(symptoms_csv_path):
-        print(f"⚠️ Warning: {symptoms_csv_path} not found. Using fallback symptom list.")
-        symptoms_list = [
-            "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
-            "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
-        ]
-    else:
-        try:
-            symptoms_df = pd.read_csv(symptoms_csv_path)
-            
-            # NaN値を適切に処理
-            symptoms_df = symptoms_df.fillna("")
-            symptoms_list = symptoms_df['症状'].tolist()
-        except Exception as e:
-            print(f"症状リストの読み込みエラー: {e}")
-            symptoms_list = [
-                "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "腹痛", "下痢", "便秘",
-                "吐き気", "めまい", "疲労感", "筋肉痛", "関節痛", "かゆみ", "発疹", "不眠"
-            ]
+    # 症状リスト（包括的なリストを使用）
+    symptoms_list = [
+        "頭痛", "発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "くしゃみ", "寒気", "悪寒",
+        "腹痛", "下痢", "便秘", "吐き気", "嘔吐", "胃痛", "胸やけ", "胃もたれ",
+        "めまい", "疲労感", "倦怠感", "筋肉痛", "関節痛", "肩こり", "腰痛",
+        "かゆみ", "発疹", "湿疹", "蕁麻疹", "皮膚の乾燥",
+        "不眠", "眠気", "イライラ", "不安", "ストレス",
+        "生理痛", "月経不順", "更年期症状",
+        "口内炎", "目の疲れ", "耳鳴り", "動悸"
+    ]
     
     prompt = f"""
-以下の症状文を分析して、該当する症状と適する医薬品の種類を選択してください。
+あなたは薬剤師AIです。ユーザーの症状文を分析して、該当する症状と適する医薬品の種類を選択してください。
 
-【症状文】
+【ユーザーの症状文】
 {user_text}
 
 【選択可能な症状リスト】
-{', '.join(symptoms_list[:100])}  # 最初の100個のみ表示
+{', '.join(symptoms_list)}
 
 【医薬品の種類】
 {', '.join(medicine_types)}
 
+【指示】
+1. 症状文から該当する症状のみを抽出してください
+2. 症状文に明示的に書かれていない症状は含めないでください
+3. 症状文が曖昧な場合は、最も可能性の高い症状のみを選択してください
+4. 「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
+5. 医薬品の種類は1つ選択してください
+
 【回答形式】
 以下のJSON形式で回答してください：
 {{
-    "symptoms": ["症状1", "症状2", "症状3"],
+    "symptoms": ["症状1", "症状2"],
     "medicine_type": "適する医薬品の種類"
 }}
 
-注意：
-- 症状は複数選択可能です
-- 医薬品の種類は1つ選択してください
-- 該当する症状や医薬品の種類が見つからない場合は、最も近いものを選択してください
-- その他(医薬品の種類に当てはまらないものはその他とする)
+該当する症状がない場合は：
+{{
+    "symptoms": [],
+    "medicine_type": "その他"
+}}
 """
 
     print(f"=== 症状分析開始 ===")
