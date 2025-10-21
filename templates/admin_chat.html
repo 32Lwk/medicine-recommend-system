@@ -2191,12 +2191,26 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                document.getElementById('aiControlModal').style.display = 'none';
+                if (data.status === 'ok') {
+                    // 成功通知
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #4caf50; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10000; animation: slideIn 0.3s ease-out;';
+                    notification.innerHTML = `<strong>✅ ${data.message}</strong>`;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                    
+                    // モーダルを閉じる
+                    document.getElementById('aiControlModal').style.display = 'none';
+                } else {
+                    alert('エラー: ' + (data.message || '不明なエラー'));
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('エラーが発生しました');
+                alert('通信エラーが発生しました: ' + error.message);
             });
         }
         
@@ -2206,24 +2220,57 @@
             .then(response => response.json())
             .then(data => {
                 const content = document.getElementById('systemStatusContent');
+                const csvStatus = data.csv_load_status || {};
+                const perfStats = data.performance_stats || {};
+                
                 content.innerHTML = `
-                    <h3>メインサイト状況</h3>
-                    <p>CSVファイル: ${data.main_site.csv_status ? '読み込み済み' : 'エラー'}</p>
-                    <p>行数: ${data.main_site.csv_status?.row_count || 'N/A'}</p>
-                    <p>列数: ${data.main_site.csv_status?.col_count || 'N/A'}</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📊 システム全体</h3>
+                        <p><strong>ステータス:</strong> ${data.status === 'ok' ? '✅ 正常' : '❌ エラー'}</p>
+                        <p><strong>総セッション数:</strong> ${data.total_sessions}件</p>
+                        <p><strong>アクティブセッション:</strong> ${data.active_sessions}件</p>
+                        <p><strong>手動返信待ち:</strong> ${data.manual_reply_queue}件</p>
+                    </div>
                     
-                    <h3>デバッグサイト状況</h3>
-                    <p>デバッグログ: ${data.debug_site.debug_logs_count}件</p>
-                    <p>アプリログ: ${data.debug_site.app_logs_count}件</p>
-                    <p>医薬品ロジックログ: ${data.debug_site.medicine_logic_logs_count}件</p>
-                    <p>ネットワークログ: ${data.debug_site.network_logs_count}件</p>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50;">🤖 AI設定</h3>
+                        <p><strong>AI自動応答:</strong> ${data.ai_auto_reply ? '✅ ON' : '⚠️ OFF'}</p>
+                        <p><strong>管理者モード:</strong> ${data.admin_mode ? '✅ ON' : '⚪ OFF'}</p>
+                    </div>
                     
-                    <p><small>最終更新: ${data.timestamp}</small></p>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📁 CSVデータ</h3>
+                        <p><strong>読み込み状態:</strong> ${csvStatus.success ? '✅ 成功' : '❌ 失敗'}</p>
+                        ${csvStatus.success ? `
+                            <p><strong>エンコーディング:</strong> ${csvStatus.encoding || 'N/A'}</p>
+                            <p><strong>行数:</strong> ${csvStatus.row_count || 0}行</p>
+                            <p><strong>列数:</strong> ${csvStatus.col_count || 0}列</p>
+                        ` : `
+                            <p><strong>エラー:</strong> ${csvStatus.error || '不明なエラー'}</p>
+                        `}
+                    </div>
+                    
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                        <h3 style="margin-bottom: 10px; color: #2c3e50;">📈 パフォーマンス統計</h3>
+                        <p><strong>総リクエスト数:</strong> ${perfStats.total_requests || 0}件</p>
+                        <p><strong>成功:</strong> ${perfStats.successful_requests || 0}件</p>
+                        <p><strong>失敗:</strong> ${perfStats.failed_requests || 0}件</p>
+                        <p><strong>平均応答時間:</strong> ${(perfStats.average_response_time || 0).toFixed(2)}秒</p>
+                        <p><strong>総トークン使用量:</strong> ${perfStats.total_tokens_used || 0}</p>
+                        <p><strong>今日のAPI呼び出し:</strong> ${perfStats.api_calls_today || 0}回</p>
+                    </div>
+                    
+                    <p style="margin-top: 15px; text-align: center;"><small>最終更新: ${new Date().toLocaleString('ja-JP')}</small></p>
                 `;
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('systemStatusContent').innerHTML = '<p>エラーが発生しました</p>';
+                document.getElementById('systemStatusContent').innerHTML = `
+                    <div style="background: #ffebee; padding: 15px; border-radius: 8px; color: #c62828;">
+                        <p><strong>❌ エラーが発生しました</strong></p>
+                        <p>${error.message || 'システム状況の取得に失敗しました'}</p>
+                    </div>
+                `;
             });
         }
         
@@ -2247,35 +2294,59 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    if (data.type === 'recommendation') {
-                        resultDiv.innerHTML = `
-                            <h4>医薬品推薦結果</h4>
-                            <p>実行時間: ${data.execution_time}s</p>
-                            <p>推奨医薬品数: ${data.diagnosis.recommended_medicines?.length || 0}件</p>
+                if (data.status === 'ok') {
+                    const symptoms = data.symptoms || [];
+                    const medicineType = data.medicine_type || 'AI推奨';
+                    const recommendation = data.recommendation || {};
+                    
+                    resultDiv.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px;">✅ ${data.message}</h4>
+                            
+                            <div style="background: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                <p><strong>抽出された症状:</strong></p>
+                                <p>${symptoms.length > 0 ? symptoms.join('、') : '症状なし'}</p>
+                            </div>
+                            
+                            <div style="background: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                <p><strong>医薬品タイプ:</strong> ${medicineType}</p>
+                            </div>
+                            
+                            ${recommendation.recommended_medicines && recommendation.recommended_medicines.length > 0 ? `
+                                <div style="background: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                                    <p><strong>推奨医薬品:</strong> ${recommendation.recommended_medicines.length}件</p>
+                                    <ul style="margin: 10px 0; padding-left: 20px;">
+                                        ${recommendation.recommended_medicines.slice(0, 3).map(med => 
+                                            `<li>${med.name || med.商品名 || 'N/A'}</li>`
+                                        ).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
                             <details>
-                                <summary>詳細結果</summary>
-                                <pre>${JSON.stringify(data.diagnosis, null, 2)}</pre>
+                                <summary style="cursor: pointer; color: #1976d2;">📋 詳細結果を表示</summary>
+                                <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; margin-top: 10px;">${JSON.stringify(data, null, 2)}</pre>
                             </details>
-                        `;
-                    } else {
-                        resultDiv.innerHTML = `
-                            <h4>医薬品相談結果</h4>
-                            <p>実行時間: ${data.execution_time}s</p>
-                            <p>回答: ${data.chat_response.answer}</p>
-                            <details>
-                                <summary>詳細結果</summary>
-                                <pre>${JSON.stringify(data.chat_response, null, 2)}</pre>
-                            </details>
-                        `;
-                    }
+                        </div>
+                    `;
                 } else {
-                    resultDiv.innerHTML = `<p style="color: red;">エラー: ${data.message}</p>`;
+                    resultDiv.innerHTML = `
+                        <div style="background: #ffebee; padding: 15px; border-radius: 8px; color: #c62828;">
+                            <p><strong>❌ エラー</strong></p>
+                            <p>${data.message || '不明なエラー'}</p>
+                            ${data.error ? `<p style="font-size: 12px; margin-top: 10px;">詳細: ${data.error}</p>` : ''}
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                resultDiv.innerHTML = '<p style="color: red;">エラーが発生しました</p>';
+                resultDiv.innerHTML = `
+                    <div style="background: #ffebee; padding: 15px; border-radius: 8px; color: #c62828;">
+                        <p><strong>❌ 通信エラー</strong></p>
+                        <p>${error.message || 'サーバーとの通信に失敗しました'}</p>
+                    </div>
+                `;
             });
         }
         
