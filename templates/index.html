@@ -1132,6 +1132,20 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // メッセージを再読み込み
+    function loadMessages() {
+        fetch('/api/sessions')
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages) {
+                    renderChatMessages(data.messages);
+                }
+            })
+            .catch(error => {
+                console.error('メッセージ読み込みエラー:', error);
+            });
+    }
+
     // タイピングインジケーターを追加
     function addTypingIndicator() {
         const chatMessages = document.getElementById('chatMessages');
