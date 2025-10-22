@@ -1219,16 +1219,25 @@
     // エラーメッセージを表示
     function showErrorMessage(message) {
         const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存のエラーメッセージを削除
+        const existingErrors = chatMessages.querySelectorAll('.error-message');
+        existingErrors.forEach(error => error.remove());
+        
         const errorDiv = document.createElement('div');
-        errorDiv.className = 'message bot';
+        errorDiv.className = 'message bot error-message';
         errorDiv.innerHTML = `
-            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px;">
+            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; position: relative;">
                 <strong>⚠️ エラー</strong><br>
                 ${escapeHtml(message)}
+                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer;">×</button>
             </div>
         `;
         chatMessages.appendChild(errorDiv);
         scrollToBottom();
+        
+        // エラーメッセージを永続化（自動削除しない）
+        console.log('Error message displayed:', message);
     }
 
     // フォームを送信
