@@ -1346,9 +1346,15 @@
                     'Cache-Control': 'no-cache'
                 }
             })
-            .then(response => response.json())
-
+            .then(response => {
+                console.log('薬剤師要請レスポンス:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('薬剤師要請データ:', data);
                 if (data.status === 'ok') {
                     // 薬剤師要請の確認メッセージを即座に表示
                     addMessage('薬剤師対応を要請しました。しばらくお待ちください。', 'bot', new Date());
@@ -1361,8 +1367,9 @@
                     alert('薬剤師対応の要請に失敗しました: ' + (data.message || '不明なエラー'));
                 }
             })
-            .catch(() => {
-                alert('通信エラーが発生しました');
+            .catch(error => {
+                console.error('薬剤師要請通信エラー:', error);
+                alert('通信エラーが発生しました: ' + error.message);
             });
         }
     };

@@ -2088,7 +2088,7 @@ def request_admin():
             })
         
         logger.info(f"💊 薬剤師要請: {username} (Session: {sid}) - このチャットのみAI自動応答OFF")
-        return jsonify({'status': 'ok'})
+        return jsonify({'status': 'ok', 'message': '薬剤師対応を要請しました'})
     return jsonify({'status': 'error', 'message': 'No session'}), 400
 
 @app.route('/api/admin_mode', methods=['POST'])
