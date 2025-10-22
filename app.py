@@ -1458,77 +1458,83 @@ def index():
                             # 使用上の注意を整形（セクションごとに色分け）
                             formatted_usage_notes = ""
                             if usage_notes:
-                                lines = usage_notes.split('\n')
-                                current_section = None
-                                current_html = ""
-                                
-                                # 年齢制限の重複チェック用
-                                age_restriction_added = False
-                                
-                                for line in lines:
-                                    line = line.strip()
-                                    if not line:
-                                        continue
-                                        
-                                    if line.startswith('1つ目：') or line.startswith('2つ目：') or line.startswith('3つ目：'):
-                                        # 前のセクションを閉じる
-                                        if current_section and current_html:
-                                            formatted_usage_notes += current_html + '</div>'
-                                        
-                                        # 新しい医薬品セクション開始（シンプルな区切り）
-                                        current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">💊 {line}</h5>'
-                                        current_section = 'individual'
-                                        age_restriction_added = False  # 新しい医薬品セクションでリセット
-                                    elif line.startswith('【使ってはいけない人】'):
-                                        # 個別セクションを閉じる
-                                        if current_section == 'individual' and current_html:
-                                            formatted_usage_notes += current_html + '</div>'
-                                            current_html = ""
-                                        # 禁忌セクション
-                                        current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="color: #d32f2f; margin: 0 0 8px 0;">⚠️ {line}</h5>'
-                                        current_section = 'caution'
-                                    elif line.startswith('【服用時の注意】'):
-                                        # 禁忌セクションを閉じる
-                                        if current_section == 'caution' and current_html:
-                                            formatted_usage_notes += current_html + '</div>'
-                                            current_html = ""
-                                        # 服用注意セクション
-                                        current_html = f'<div style="padding: 10px 0; margin: 10px 0;"><h5 style="color: #f57c00; margin: 0 0 8px 0;">📌 {line}</h5>'
-                                        current_section = 'usage'
-                                    elif line.startswith('年齢制限:'):
-                                        # 年齢制限の処理（重複を避けるため）
-                                        if not age_restriction_added:
-                                            age_restriction = line.replace('年齢制限:', '').strip()
-                                            if age_restriction and age_restriction != 'なし':
-                                                # 年齢制限がある場合のみ表示（重複を避けるため）
-                                                if '未満の方は使用しないでください' in age_restriction or '未満は服用しないこと' in age_restriction:
-                                                    # 既に適切な形式になっている場合はそのまま表示
-                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
-                                                elif '歳以上の方が対象です' in age_restriction:
-                                                    # 「歳以上の方が対象です」の場合は「歳未満の方は使用しないでください」に変換
-                                                    age_num = age_restriction.replace('歳以上の方が対象です', '').strip()
-                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_num}歳未満の方は使用しないでください。</p>'
-                                                else:
-                                                    # その他の場合は「未満の方は使用しないでください」を追加
-                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}未満の方は使用しないでください。</p>'
-                                                age_restriction_added = True
-                                    elif line.startswith('ドーピング:'):
-                                        # ドーピングの処理
-                                        doping_info = line.replace('ドーピング:', '').strip()
-                                        if doping_info and doping_info != 'なし':
-                                            # ドーピング情報がある場合のみ表示
-                                            current_html += f'<p style="margin: 3px 0;"><strong>ドーピング:</strong> {doping_info}</p>'
-                                    elif line.startswith('・'):
-                                        # リストアイテム
-                                        current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
-                                    else:
-                                        # 通常のテキスト（年齢制限とドーピング以外）
-                                        if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
-                                            current_html += f'<p style="margin: 3px 0;">{line}</p>'
-                                
-                                # 最後のセクションを閉じる
-                                if current_section and current_html:
-                                    formatted_usage_notes += current_html + '</div>'
+                                # ChatGPTベースの使用上の注意（HTML形式）をチェック
+                                if '<strong>' in usage_notes and '<br>' in usage_notes:
+                                    # ChatGPTベースの形式（HTML）の場合はそのまま表示
+                                    formatted_usage_notes = usage_notes
+                                else:
+                                    # ルールベースの形式（テキスト）の場合は従来の処理
+                                    lines = usage_notes.split('\n')
+                                    current_section = None
+                                    current_html = ""
+                                    
+                                    # 年齢制限の重複チェック用
+                                    age_restriction_added = False
+                                    
+                                    for line in lines:
+                                        line = line.strip()
+                                        if not line:
+                                            continue
+                                            
+                                        if line.startswith('1つ目：') or line.startswith('2つ目：') or line.startswith('3つ目：'):
+                                            # 前のセクションを閉じる
+                                            if current_section and current_html:
+                                                formatted_usage_notes += current_html + '</div>'
+                                            
+                                            # 新しい医薬品セクション開始（シンプルな区切り）
+                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">💊 {line}</h5>'
+                                            current_section = 'individual'
+                                            age_restriction_added = False  # 新しい医薬品セクションでリセット
+                                        elif line.startswith('【使ってはいけない人】'):
+                                            # 個別セクションを閉じる
+                                            if current_section == 'individual' and current_html:
+                                                formatted_usage_notes += current_html + '</div>'
+                                                current_html = ""
+                                            # 禁忌セクション
+                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="color: #d32f2f; margin: 0 0 8px 0;">⚠️ {line}</h5>'
+                                            current_section = 'caution'
+                                        elif line.startswith('【服用時の注意】'):
+                                            # 禁忌セクションを閉じる
+                                            if current_section == 'caution' and current_html:
+                                                formatted_usage_notes += current_html + '</div>'
+                                                current_html = ""
+                                            # 服用注意セクション
+                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0;"><h5 style="color: #f57c00; margin: 0 0 8px 0;">📌 {line}</h5>'
+                                            current_section = 'usage'
+                                        elif line.startswith('年齢制限:'):
+                                            # 年齢制限の処理（重複を避けるため）
+                                            if not age_restriction_added:
+                                                age_restriction = line.replace('年齢制限:', '').strip()
+                                                if age_restriction and age_restriction != 'なし':
+                                                    # 年齢制限がある場合のみ表示（重複を避けるため）
+                                                    if '未満の方は使用しないでください' in age_restriction or '未満は服用しないこと' in age_restriction:
+                                                        # 既に適切な形式になっている場合はそのまま表示
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
+                                                    elif '歳以上の方が対象です' in age_restriction:
+                                                        # 「歳以上の方が対象です」の場合は「歳未満の方は使用しないでください」に変換
+                                                        age_num = age_restriction.replace('歳以上の方が対象です', '').strip()
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_num}歳未満の方は使用しないでください。</p>'
+                                                    else:
+                                                        # その他の場合は「未満の方は使用しないでください」を追加
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}未満の方は使用しないでください。</p>'
+                                                    age_restriction_added = True
+                                        elif line.startswith('ドーピング:'):
+                                            # ドーピングの処理
+                                            doping_info = line.replace('ドーピング:', '').strip()
+                                            if doping_info and doping_info != 'なし':
+                                                # ドーピング情報がある場合のみ表示
+                                                current_html += f'<p style="margin: 3px 0;"><strong>ドーピング:</strong> {doping_info}</p>'
+                                        elif line.startswith('・'):
+                                            # リストアイテム
+                                            current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
+                                        else:
+                                            # 通常のテキスト（年齢制限とドーピング以外）
+                                            if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
+                                                current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                    
+                                    # 最後のセクションを閉じる
+                                    if current_section and current_html:
+                                        formatted_usage_notes += current_html + '</div>'
                             
                             bot_content += f"""
     <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
