@@ -1113,14 +1113,16 @@ def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
         "priority": "optional"
     }
     
-    # 1. 年齢チェック（最重要）
+    # 1. 年齢チェック（重要だが推奨は継続）
     if user_info.get('age') is None:
         missing_info["has_missing_info"] = True
         missing_info["missing_fields"].append("age")
-        missing_info["questions"].append("年齢を教えてください。（医薬品の適切な選択に必要です）")
-        missing_info["priority"] = "critical"
+        missing_info["questions"].append("年齢を教えてください。（より適切な医薬品選択のため）")
+        # 年齢不明でも推奨は継続（importantレベルに変更）
+        if missing_info["priority"] != "critical":
+            missing_info["priority"] = "important"
     
-    # 2. 症状が検出されない場合
+    # 2. 症状が検出されない場合（criticalのまま維持）
     symptoms = nlu_result.get('symptoms', [])
     if not symptoms:
         missing_info["has_missing_info"] = True

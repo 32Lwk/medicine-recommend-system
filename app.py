@@ -159,26 +159,33 @@ def cleanup_old_sessions():
     current_time = time.time()
     sessions_to_remove = []
     
-    # タイムアウトしたセッションを特定
+    # タイムアウトしたセッションを特定（現在のセッションは除外）
+    current_sid = session.get('_id')
     for sid, session_info in ALL_SESSIONS.items():
+        # 現在のセッションは削除しない
+        if sid == current_sid:
+            continue
+            
         last_activity = session_info.get('last_activity', 0)
         if current_time - last_activity > SESSION_TIMEOUT:
             sessions_to_remove.append(sid)
     
-    # セッション数が上限を超えている場合、古いものから削除
+    # セッション数が上限を超えている場合、古いものから削除（現在のセッションは除外）
     if len(ALL_SESSIONS) > MAX_SESSIONS:
-        # 最終アクティビティでソートして古いものから削除
-        sorted_sessions = sorted(
-            ALL_SESSIONS.items(), 
-            key=lambda x: x[1].get('last_activity', 0)
-        )
-        excess_count = len(ALL_SESSIONS) - MAX_SESSIONS
-        for i in range(excess_count):
-            sessions_to_remove.append(sorted_sessions[i][0])
+        # 現在のセッションを除外してソート
+        other_sessions = {k: v for k, v in ALL_SESSIONS.items() if k != current_sid}
+        if len(other_sessions) > 0:
+            sorted_sessions = sorted(
+                other_sessions.items(), 
+                key=lambda x: x[1].get('last_activity', 0)
+            )
+            excess_count = len(ALL_SESSIONS) - MAX_SESSIONS
+            for i in range(min(excess_count, len(sorted_sessions))):
+                sessions_to_remove.append(sorted_sessions[i][0])
     
     # セッションを削除
     for sid in sessions_to_remove:
-        if sid in ALL_SESSIONS:
+        if sid in ALL_SESSIONS and sid != current_sid:
             del ALL_SESSIONS[sid]
             logger.info(f"🗑️ 古いセッションを削除: {sid}")
     
