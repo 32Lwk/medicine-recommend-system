@@ -554,6 +554,15 @@
                 overflow: hidden; /* スクロールを防止 */
             }
             
+            /* スマホでの表示を強制 */
+            .chat-input {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 999 !important;
+            }
+            
             .chat-header {
                 padding: 8px 5px;
             }
@@ -569,7 +578,7 @@
             }
             
             .button-group {
-                display: flex;
+                display: flex !important;
                 flex-direction: row;
                 gap: 2px;
                 margin-bottom: 8px;
@@ -577,6 +586,8 @@
                 width: 100%;
                 max-width: 100%;
                 overflow: hidden;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
             .button-group button {
@@ -724,6 +735,21 @@
         }
         
         @media (max-width: 480px) {
+            /* より小さな画面での表示を強制 */
+            .chat-input {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 999 !important;
+            }
+            
+            .button-group {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
             .chat-header {
                 padding: 15px 10px;
             }
@@ -1206,6 +1232,23 @@
 
     // ページ読み込み時に入力欄の内容を復元
     window.onload = function() {
+        // スマホでの表示を強制
+        const chatInput = document.querySelector('.chat-input');
+        if (chatInput) {
+            chatInput.style.display = 'flex';
+            chatInput.style.visibility = 'visible';
+            chatInput.style.opacity = '1';
+            chatInput.style.position = 'relative';
+            chatInput.style.zIndex = '999';
+        }
+        
+        const buttonGroup = document.querySelector('.button-group');
+        if (buttonGroup) {
+            buttonGroup.style.display = 'flex';
+            buttonGroup.style.visibility = 'visible';
+            buttonGroup.style.opacity = '1';
+        }
+        
         const input = document.getElementById('messageInput');
         if (input) {
             const pending = sessionStorage.getItem('pendingMessage');
