@@ -777,6 +777,12 @@ def index():
                         session['messages'].append(medical_advice)
                         if sid and sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(medical_advice)
+                        
+                        # 症状期間が7日を超える場合は医薬品推奨を停止
+                        logger.info(f"🚫 症状期間が7日を超えるため医薬品推奨を停止します")
+                        session.modified = True
+                        message_count = len(session['messages'])
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                     
                     # 最後の症状入力を取得（ALL_SESSIONSから取得）
                     for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
@@ -1424,11 +1430,17 @@ def index():
         }
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
-        # messagesはALL_SESSIONSのみに保存
+        # messagesはALL_SESSIONSのみに保存（永続化）
         session.modified = True
+        
+        # チャット履歴の永続化を強化
+        if sid in ALL_SESSIONS:
+            ALL_SESSIONS[sid]['last_activity'] = current_time
+            ALL_SESSIONS[sid]['messages'] = current_messages.copy()
         
         logger.info(f"📝 Session {sid} updated: {len(current_messages)} messages (ALL_SESSIONS保存完了)")
         logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
+        logger.info(f"💾 チャット履歴永続化完了: {len(current_messages)} messages")
         if manual_replies:
             logger.info(f"📝 Manual replies preserved: {len(manual_replies)} messages")
     else:
@@ -2022,7 +2034,8 @@ def api_debug_manual_replies():
 def new_session():
     """新しいセッションを開始"""
     global ALL_SESSIONS
-    session.clear()  # 現在のセッション情報をクリア
+    # 現在のセッション情報をクリア（ユーザーが明示的に新しいセッションを開始した場合のみ）
+    session.clear()
 
     # 新しいセッションIDとユーザー名を割り当て
     sid = str(int(time.time() * 1000)) + str(id(session))
@@ -2135,7 +2148,8 @@ def clear_logs():
     # ネットワークログをクリア
     network_logs.clear()
     
-    # すべてのセッションをクリア
+    # すべてのセッションをクリア（管理者が明示的にクリアした場合のみ）
+    # 注意: これによりすべてのチャット履歴が削除されます
     ALL_SESSIONS.clear()
     
     # 手動返信待ちキューをクリア
