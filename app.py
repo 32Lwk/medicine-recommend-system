@@ -2082,7 +2082,7 @@ def request_admin():
         
         # システムメッセージを追加
         system_message = {
-            'type': 'system',
+            'type': 'bot',
             'content': '薬剤師対応を要請しました。しばらくお待ちください。',
             'admin_request': True,
             'style_class': 'admin-request'
