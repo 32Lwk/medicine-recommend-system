@@ -107,6 +107,13 @@
             border: 1px solid #ffc107;
             border-left: 4px solid #ffc107;
         }
+        .message.bot .message-content.admin-request {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+            font-weight: bold;
+        }
         .chat-input { 
             padding: 20px;
             background: white;
@@ -1120,7 +1127,6 @@
         
         messageDiv.innerHTML = `
             <div class="message-content">${escapeHtml(message)}</div>
-            <div class="message-time">${timeStr}</div>
         `;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1372,12 +1378,10 @@
             .then(data => {
                 console.log('薬剤師要請データ:', data);
                 if (data.status === 'ok') {
-                    // 薬剤師要請の確認メッセージを即座に表示
-                    addMessage('薬剤師対応を要請しました。しばらくお待ちください。', 'bot', new Date());
                     // サーバーからメッセージを再取得して表示（永続化されたメッセージを表示）
                     setTimeout(() => {
                         loadMessages();
-                    }, 500);
+                    }, 100);
                 } else {
                     console.error('薬剤師要請エラー:', data);
                     alert('薬剤師対応の要請に失敗しました: ' + (data.message || '不明なエラー'));
@@ -1431,7 +1435,7 @@
                 }
                 // 従来の形式
                 else {
-                    let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}">`;
+                    let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}${message.style_class ? ' ' + message.style_class : ''}">`;
                     
                     if (message.manual_reply) {
                         content += `<span class="manual-reply-indicator">👤 薬剤師 川嶋 返信</span><br><br>`;

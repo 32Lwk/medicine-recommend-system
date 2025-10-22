@@ -2084,7 +2084,8 @@ def request_admin():
         system_message = {
             'type': 'system',
             'content': '薬剤師対応を要請しました。しばらくお待ちください。',
-            'admin_request': True
+            'admin_request': True,
+            'style_class': 'admin-request'
         }
         session['messages'].append(system_message)
         
