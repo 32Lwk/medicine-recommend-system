@@ -1253,11 +1253,21 @@ def index():
                         # API呼び出し回数を記録
                         monitor.increment_api_calls()
                         
-                        # ChatGPTベースでは使用上の注意生成を簡略化（API呼び出し削減）
+                        # ChatGPTベースでも個別の医薬品の使用上の注意を表示
                         recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                        if recommended_medicines and not recommendation_result.get('usage_notes'):
-                            # 簡易的な使用上の注意を設定
-                            recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
+                        if recommended_medicines:
+                            # 個別の医薬品の使用上の注意を収集
+                            individual_notes = []
+                            for medicine in recommended_medicines:
+                                if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
+                                    individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
+                            
+                            if individual_notes:
+                                # 個別の使用上の注意がある場合はそれを使用
+                                recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
+                            elif not recommendation_result.get('usage_notes'):
+                                # 個別の使用上の注意がない場合のみ簡易的なものを設定
+                                recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
