@@ -108,17 +108,14 @@
             border-left: 4px solid #ffc107;
         }
         .chat-input { 
-            padding: 20px calc(5vw + env(safe-area-inset-left)) calc(20px + env(safe-area-inset-bottom)) calc(5vw + env(safe-area-inset-right));
+            padding: 20px;
             background: white;
             border-top: 1px solid #ddd;
             flex-shrink: 0;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            z-index: 999;
-            margin: 0;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
         }
         .input-group {
             display: flex;
@@ -1086,9 +1083,9 @@
         submitForm(message);
     });
 
-    // Enterキーで送信、Shift+Enterで改行
+    // Alt+Enterで送信、通常のEnterは改行
     document.getElementById('messageInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && e.altKey) {
             e.preventDefault();
             const form = document.getElementById('chatForm');
             form.dispatchEvent(new Event('submit'));
@@ -1352,6 +1349,8 @@
 
             .then(data => {
                 if (data.status === 'ok') {
+                    // 薬剤師要請の確認メッセージを即座に表示
+                    addMessage('薬剤師対応を要請しました。しばらくお待ちください。', 'bot', new Date());
                     // サーバーからメッセージを再取得して表示（永続化されたメッセージを表示）
                     setTimeout(() => {
                         loadMessages();
@@ -1990,9 +1989,9 @@
                 case 'service-not-allowed':
                     errorMessage = '音声認識サービスが利用できません。\n\n' +
                                  '【解決方法】\n' +
-                                 '1. HTTPS接続を確認\n' +
-                                 '2. ブラウザを最新版に更新\n' +
-                                 '3. プライベートブラウジングを無効化';
+                                 '1. HTTPS接続でアクセスしてください\n' +
+                                 '2. ブラウザを最新版に更新してください\n' +
+                                 '3. 他のブラウザ（Chrome、Safari）をお試しください';
                     break;
                 case 'no-speech':
                     // 無音の場合は何もしない

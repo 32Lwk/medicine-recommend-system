@@ -1584,6 +1584,12 @@ def check_missing_attributes(user_attributes):
         if missing_priority == 'optional':
             missing_priority = 'important'
     
+    # 症状期間が7日を超える場合の医療機関受診案内
+    symptom_duration = user_attributes.get('symptom_duration_days')
+    if symptom_duration and symptom_duration > 7:
+        missing_questions.append('⚠️ 症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。医療機関（病院・クリニック）での受診をお勧めします。')
+        missing_priority = 'critical'
+    
     # 任意情報のチェック
     if not user_attributes.get('allergies'):
         missing_questions.append('アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）')
