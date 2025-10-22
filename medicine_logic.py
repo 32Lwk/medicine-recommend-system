@@ -57,6 +57,16 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
             if user_info.get('allergies'):
                 user_context += f"アレルギー: {', '.join(user_info['allergies'])}\n"
         
+        # ドーピング禁止物質の情報を追加
+        doping_info = ""
+        if medicine_info.get('doping_prohibited') == '禁止物質あり':
+            doping_info = f"""
+ドーピング禁止物質情報:
+- 禁止物質あり: {medicine_info.get('doping_prohibited', 'なし')}
+- 競技会区分: {medicine_info.get('competition_category', '情報なし')}
+- 条件: {medicine_info.get('conditions', '情報なし')}
+"""
+        
         # プロンプトの構築
         prompt = f"""
 以下の医薬品について、使用上の注意を生成してください。
@@ -66,30 +76,33 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
 効能・効果: {medicine_info.get('efficacy', '情報なし')}
 年齢制限: {medicine_info.get('age_restriction', '情報なし')}
 用法・用量: {medicine_info.get('usage', '情報なし')}
+{doping_info}
 
 ユーザー情報:
 {user_context if user_context else '情報なし'}
 
 以下の形式で使用上の注意を生成してください：
 1. 基本的な使用上の注意
-2. 年齢・性別による注意点
+2. 年齢・性別による注意点（年齢制限の詳細を含む）
 3. 妊娠・授乳中の注意点
 4. アレルギーに関する注意点
 5. 副作用について
 6. 他の薬との相互作用
 7. 保存方法・保管上の注意
+8. ドーピング禁止物質に関する注意（該当する場合）
 
 各項目は簡潔で分かりやすく、実際の使用場面で役立つ内容にしてください。
+特に年齢制限とドーピング禁止物質については、具体的で明確な注意事項を含めてください。
 """
         
         # ChatGPT APIを呼び出し
         response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師です。医薬品の使用上の注意を専門的で分かりやすく説明してください。"},
+                {"role": "system", "content": "あなたは薬剤師です。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000,
+            max_tokens=1200,
             temperature=0.7
         )
         

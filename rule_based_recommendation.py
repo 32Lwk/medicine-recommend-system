@@ -1588,8 +1588,16 @@ def generate_individual_usage_notes_with_gpt(
         
         # ドーピング情報
         doping = medicine.get('doping_prohibited', '')
+        competition_category = medicine.get('competition_category', '')
+        conditions = medicine.get('conditions', '')
+        
         if doping and '禁止物質あり' in doping:
-            notes.append(f"ドーピング: {doping}")
+            doping_note = f"ドーピング禁止物質: {doping}"
+            if competition_category:
+                doping_note += f"\n競技会区分: {competition_category}"
+            if conditions:
+                doping_note += f"\n条件: {conditions}"
+            notes.append(doping_note)
         
         return '\n'.join(notes) if notes else '用法用量を守ってご使用ください。'
 
