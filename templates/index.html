@@ -545,6 +545,42 @@
             background: #45a049;
         }
         
+        /* デスクトップ版の基本スタイル（768px以上） */
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .button-group button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
         /* レスポンシブデザイン - スマホ・タブレット対応 */
         @media (max-width: 768px) {
             .chat-container {
@@ -583,29 +619,29 @@
             
             .button-group {
                 display: flex !important;
-                flex-direction: row;
-                gap: 2px;
-                margin-bottom: 8px;
-                flex-wrap: nowrap;
-                width: 100%;
-                max-width: 100%;
-                overflow: hidden;
+                flex-direction: row !important;
+                gap: 1px !important;
+                margin-bottom: 8px !important;
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
                 visibility: visible !important;
                 opacity: 1 !important;
             }
             
             .button-group button {
                 flex: 1 !important;
-                padding: 2px 1px !important;
+                padding: 1px !important;
                 font-size: 0 !important;
-                min-height: 28px !important;
+                min-height: 24px !important;
                 max-width: 24% !important;
                 width: 24% !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
                 justify-content: center !important;
-                border-radius: 4px !important;
+                border-radius: 3px !important;
                 position: relative !important;
                 text-indent: -9999px !important;
                 overflow: hidden !important;
@@ -616,7 +652,7 @@
             }
             
             .button-group button::before {
-                font-size: 14px !important;
+                font-size: 12px !important;
                 content: "" !important;
                 position: absolute !important;
                 top: 50% !important;
@@ -624,9 +660,9 @@
                 transform: translate(-50%, -50%) !important;
                 z-index: 10 !important;
                 display: block !important;
-                width: 20px !important;
-                height: 20px !important;
-                line-height: 20px !important;
+                width: 16px !important;
+                height: 16px !important;
+                line-height: 16px !important;
             }
             
             .button-group button:nth-child(1)::before {
@@ -805,10 +841,10 @@
             .button-group button {
                 flex: 1 !important;
                 font-size: 0 !important;
-                padding: 2px 1px !important;
-                border-radius: 4px !important;
+                padding: 1px !important;
+                border-radius: 3px !important;
                 margin-left: 0 !important;
-                min-height: 26px !important;
+                min-height: 22px !important;
                 max-width: 24% !important;
                 width: 24% !important;
                 display: flex !important;
@@ -824,13 +860,17 @@
             }
             
             .button-group button::before {
-                font-size: 14px;
-                content: "";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 1;
+                font-size: 10px !important;
+                content: "" !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                z-index: 10 !important;
+                display: block !important;
+                width: 14px !important;
+                height: 14px !important;
+                line-height: 14px !important;
             }
             
             .button-group button:first-child {
@@ -1273,17 +1313,19 @@
             buttonGroup.style.maxWidth = '100%';
         }
         
-        // 各ボタンのスタイルを強制適用
-        const buttons = document.querySelectorAll('.button-group button');
-        buttons.forEach(button => {
-            button.style.fontSize = '0';
-            button.style.textIndent = '-9999px';
-            button.style.maxWidth = '24%';
-            button.style.width = '24%';
-            button.style.padding = '2px 1px';
-            button.style.minHeight = '26px';
-            button.style.margin = '0';
-        });
+        // スマホでの各ボタンのスタイルを強制適用
+        if (window.innerWidth <= 768) {
+            const buttons = document.querySelectorAll('.button-group button');
+            buttons.forEach(button => {
+                button.style.fontSize = '0';
+                button.style.textIndent = '-9999px';
+                button.style.maxWidth = '24%';
+                button.style.width = '24%';
+                button.style.padding = '1px';
+                button.style.minHeight = '24px';
+                button.style.margin = '0';
+            });
+        }
         
         const input = document.getElementById('messageInput');
         if (input) {
