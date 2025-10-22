@@ -1067,7 +1067,31 @@ def index():
                             monitor.increment_api_calls()
                             
                             recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                            usage_notes = recommendation_result.get('usage_notes', '添付文書をよく読んでご使用ください。')
+                            
+                            # 使用上の注意をChatGPTで自動生成
+                            usage_notes = recommendation_result.get('usage_notes', '')
+                            if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
+                                # 推奨された医薬品ごとに使用上の注意を生成
+                                generated_notes = []
+                                for medicine in recommended_medicines[:3]:  # 上位3つのみ
+                                    try:
+                                        from medicine_logic import generate_usage_notes
+                                        medicine_notes = generate_usage_notes(
+                                            medicine.get('name', ''),
+                                            medicine,
+                                            user_info
+                                        )
+                                        if medicine_notes:
+                                            generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
+                                    except Exception as e:
+                                        logger.warning(f"使用上の注意生成エラー: {e}")
+                                        continue
+                                
+                                if generated_notes:
+                                    usage_notes = '<br><br>'.join(generated_notes)
+                                else:
+                                    usage_notes = '添付文書をよく読んでご使用ください。'
+                            
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
                             additional_questions = recommendation_result.get('additional_questions', [])
                             
@@ -1105,6 +1129,30 @@ def index():
                         recommendation_result['algorithm'] = 'chatgpt'
                         # API呼び出し回数を記録
                         monitor.increment_api_calls()
+                        
+                        # ChatGPTベースでも使用上の注意を生成
+                        recommended_medicines = recommendation_result.get('recommended_medicines', [])
+                        if recommended_medicines:
+                            try:
+                                from medicine_logic import generate_usage_notes
+                                generated_notes = []
+                                for medicine in recommended_medicines[:3]:  # 上位3つのみ
+                                    try:
+                                        medicine_notes = generate_usage_notes(
+                                            medicine.get('name', ''),
+                                            medicine,
+                                            user_info
+                                        )
+                                        if medicine_notes:
+                                            generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
+                                    except Exception as e:
+                                        logger.warning(f"使用上の注意生成エラー: {e}")
+                                        continue
+                                
+                                if generated_notes:
+                                    recommendation_result['usage_notes'] = '<br><br>'.join(generated_notes)
+                            except Exception as e:
+                                logger.warning(f"使用上の注意生成エラー: {e}")
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
