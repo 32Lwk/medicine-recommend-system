@@ -579,7 +579,7 @@
             .button-group button {
                 flex: 1;
                 padding: 8px 4px;
-                font-size: 0;
+                font-size: 0 !important;
                 min-height: 40px;
                 width: 100%;
                 display: flex;
@@ -588,6 +588,8 @@
                 justify-content: center;
                 border-radius: 8px;
                 position: relative;
+                text-indent: -9999px;
+                overflow: hidden;
             }
             
             .button-group button::before {
@@ -597,6 +599,7 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+                z-index: 1;
             }
             
             .button-group button:nth-child(1)::before {
@@ -645,6 +648,8 @@
                 min-height: 50px;
                 width: 100%;
                 box-sizing: border-box;
+                position: relative;
+                z-index: 10;
             }
             
             .input-group {
@@ -655,6 +660,8 @@
                 gap: 4px;
                 width: 100%;
                 min-height: 40px;
+                position: relative;
+                z-index: 10;
             }
             
             #user-input {
@@ -665,6 +672,8 @@
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 text-align: center;
+                position: relative;
+                z-index: 10;
             }
             
             .mic-btn {
@@ -743,7 +752,7 @@
             
             .button-group button {
                 flex: 1;
-                font-size: 0;
+                font-size: 0 !important;
                 padding: 6px 2px;
                 border-radius: 6px;
                 margin-left: 0 !important;
@@ -753,7 +762,17 @@
                 justify-content: center;
                 position: relative;
                 overflow: hidden;
-                text-overflow: ellipsis;
+                text-indent: -9999px;
+            }
+            
+            .button-group button::before {
+                font-size: 14px;
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 1;
             }
             
             .button-group button:first-child {
@@ -764,12 +783,18 @@
             /* チャット入力エリアの改善 */
             .chat-input {
                 padding: 10px;
+                display: flex !important;
+                position: relative;
+                z-index: 10;
             }
             
             .input-group {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 gap: 8px;
+                width: 100%;
+                position: relative;
+                z-index: 10;
             }
             
             .mic-btn {
