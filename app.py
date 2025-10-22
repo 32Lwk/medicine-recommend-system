@@ -424,26 +424,31 @@ def index():
                 else:
                     # 属性応答の可能性がある場合のみ属性抽出を実行
                     logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
-                
-                    # ステップ1: ユーザー属性を抽出・更新
-                    user_attributes = session.get('user_attributes', {
-                        'age': None,
-                        'gender': None,
-                        'pregnant': None,
-                        'breastfeeding': None,
-                        'current_medications': [],
-                        'allergies': [],
-                        'medical_history': [],
-                        'symptom_duration_days': None,
-                        'other_info': None
-                    })
                     
-                    # ChatGPTを使用して属性情報を抽出
-                    import re
-                    import json
-                    from openai import OpenAI
-                    
-                    updated = False
+                    # 初回チャットで症状入力の場合は属性抽出をスキップして症状分析に進む
+                    if len(session.get('messages', [])) <= 1 and is_symptom_input(user_message):
+                        logger.info(f"🔄 初回症状入力のため属性抽出をスキップして症状分析に進みます")
+                        is_question = False  # 症状分析を強制実行
+                    else:
+                        # ステップ1: ユーザー属性を抽出・更新
+                        user_attributes = session.get('user_attributes', {
+                            'age': None,
+                            'gender': None,
+                            'pregnant': None,
+                            'breastfeeding': None,
+                            'current_medications': [],
+                            'allergies': [],
+                            'medical_history': [],
+                            'symptom_duration_days': None,
+                            'other_info': None
+                        })
+                        
+                        # ChatGPTを使用して属性情報を抽出
+                        import re
+                        import json
+                        from openai import OpenAI
+                        
+                        updated = False
                     
                     # OpenAI clientを初期化
                     api_key = os.getenv('OPENAI_API_KEY')
@@ -758,6 +763,20 @@ def index():
                 last_symptom_message = None
                 if updated:
                     logger.info(f"✅ 属性データが更新されました。再分析を実行します。")
+                    
+                    # 症状期間が7日を超える場合の医療機関受診案内をチェック
+                    symptom_duration = user_attributes.get('symptom_duration_days')
+                    if symptom_duration and symptom_duration > 7:
+                        logger.info(f"⚠️ 症状期間が7日を超えています: {symptom_duration}日")
+                        # 医療機関受診案内を追加
+                        medical_advice = {
+                            'type': 'bot',
+                            'content': '⚠️ 症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。医療機関（病院・クリニック）での受診をお勧めします。',
+                            'medical_advice': True
+                        }
+                        session['messages'].append(medical_advice)
+                        if sid and sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'].append(medical_advice)
                     
                     # 最後の症状入力を取得（ALL_SESSIONSから取得）
                     for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
