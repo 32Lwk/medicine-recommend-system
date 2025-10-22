@@ -196,7 +196,14 @@ def index():
     
     # セッションクッキーサイズ削減のため、メッセージはALL_SESSIONSのみに保存
     # セッションには最小限の情報のみ保存
-    session['messages'] = []  # セッションからメッセージを削除
+    # ただし、薬剤師要請メッセージは保持する
+    if sid and sid in ALL_SESSIONS:
+        admin_request_messages = [msg for msg in ALL_SESSIONS[sid].get('messages', []) 
+                                 if msg.get('admin_request') and msg.get('type') == 'bot']
+        session['messages'] = admin_request_messages.copy()
+        logger.info(f"💊 薬剤師要請メッセージを保持: {len(admin_request_messages)} messages")
+    else:
+        session['messages'] = []  # セッションからメッセージを削除
     
     # ユーザー属性データの初期化（セッション管理）
     if 'user_attributes' not in session:
@@ -276,10 +283,13 @@ def index():
                         0,
                         'pending'
                     )
-                    # 薬剤師要請メッセージが既に存在するかチェック
+                    # 薬剤師要請メッセージが既に存在するかチェック（sessionとALL_SESSIONSの両方を確認）
                     has_admin_request_message = any(
                         msg.get('admin_request') and msg.get('type') == 'bot' 
                         for msg in session['messages']
+                    ) or any(
+                        msg.get('admin_request') and msg.get('type') == 'bot' 
+                        for msg in ALL_SESSIONS.get(sid, {}).get('messages', [])
                     )
                     
                     if not has_admin_request_message:
@@ -297,6 +307,18 @@ def index():
                     else:
                         # 薬剤師要請メッセージが既に存在する場合は追加しない
                         logger.info(f"💊 薬剤師要請メッセージが既に存在するため、追加のメッセージをスキップします")
+                        
+                        # 薬剤師要請メッセージがsessionにない場合はALL_SESSIONSから復元
+                        if not any(msg.get('admin_request') and msg.get('type') == 'bot' for msg in session['messages']):
+                            admin_request_msg = next(
+                                (msg for msg in ALL_SESSIONS.get(sid, {}).get('messages', []) 
+                                 if msg.get('admin_request') and msg.get('type') == 'bot'), 
+                                None
+                            )
+                            if admin_request_msg:
+                                session['messages'].append(admin_request_msg)
+                                logger.info(f"💊 薬剤師要請メッセージをALL_SESSIONSから復元しました")
+                        
                         session.modified = True
                         
                         # ALL_SESSIONSを更新
