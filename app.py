@@ -1076,9 +1076,22 @@ def index():
                                 for medicine in recommended_medicines[:3]:  # 上位3つのみ
                                     try:
                                         from medicine_logic import generate_usage_notes
+                                        
+                                        # CSVデータから追加情報を取得
+                                        medicine_with_details = medicine.copy()
+                                        # 年齢制限とドーピング情報を追加
+                                        if 'age_restriction' not in medicine_with_details:
+                                            medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
+                                        if 'doping_prohibited' not in medicine_with_details:
+                                            medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
+                                        if 'competition_category' not in medicine_with_details:
+                                            medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
+                                        if 'conditions' not in medicine_with_details:
+                                            medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
+                                        
                                         medicine_notes = generate_usage_notes(
                                             medicine.get('name', ''),
-                                            medicine,
+                                            medicine_with_details,
                                             user_info
                                         )
                                         if medicine_notes:
@@ -1138,9 +1151,21 @@ def index():
                                 generated_notes = []
                                 for medicine in recommended_medicines[:3]:  # 上位3つのみ
                                     try:
+                                        # CSVデータから追加情報を取得
+                                        medicine_with_details = medicine.copy()
+                                        # 年齢制限とドーピング情報を追加
+                                        if 'age_restriction' not in medicine_with_details:
+                                            medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
+                                        if 'doping_prohibited' not in medicine_with_details:
+                                            medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
+                                        if 'competition_category' not in medicine_with_details:
+                                            medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
+                                        if 'conditions' not in medicine_with_details:
+                                            medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
+                                        
                                         medicine_notes = generate_usage_notes(
                                             medicine.get('name', ''),
-                                            medicine,
+                                            medicine_with_details,
                                             user_info
                                         )
                                         if medicine_notes:
