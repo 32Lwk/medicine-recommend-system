@@ -4,12 +4,19 @@
 """
 
 import time
-import psutil
 import json
 import os
 from datetime import datetime
 from typing import Dict, List, Optional
 import threading
+
+# psutilのインポート（利用できない場合はフォールバック）
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    print("Warning: psutil not available, system metrics will be limited")
 
 class PerformanceMonitor:
     """パフォーマンス監視クラス"""
@@ -34,8 +41,13 @@ class PerformanceMonitor:
             response_time = (current_time - self.start_time) * 1000 if self.start_time else 0
             
             # システムリソース情報
-            memory_info = psutil.virtual_memory()
-            cpu_percent = psutil.cpu_percent(interval=1)
+            if PSUTIL_AVAILABLE:
+                memory_info = psutil.virtual_memory()
+                cpu_percent = psutil.cpu_percent(interval=1)
+            else:
+                # psutilが利用できない場合のフォールバック
+                memory_info = type('obj', (object,), {'used': 0, 'percent': 0})()
+                cpu_percent = 0
             
             # キャッシュヒット率の計算
             total_cache_attempts = self.cache_hits + self.cache_misses
