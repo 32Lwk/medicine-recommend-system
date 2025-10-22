@@ -1547,48 +1547,48 @@
                     <!-- アクセス統計 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">🌐 アクセス統計</h3>
-                        <div id="accessStats">
-                            <p>読み込み中...</p>
+                        <div id="accessStats" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                     
                     <!-- パフォーマンス統計 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">⚡ パフォーマンス統計</h3>
-                        <div id="performanceStats">
-                            <p>読み込み中...</p>
+                        <div id="performanceStats" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                     
                     <!-- ブラウザ分布 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">🌍 ブラウザ分布</h3>
-                        <div id="browserDistribution">
-                            <p>読み込み中...</p>
+                        <div id="browserDistribution" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                     
                     <!-- OS分布 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">💻 OS分布</h3>
-                        <div id="osDistribution">
-                            <p>読み込み中...</p>
+                        <div id="osDistribution" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                     
                     <!-- デバイス分布 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">📱 デバイス分布</h3>
-                        <div id="deviceDistribution">
-                            <p>読み込み中...</p>
+                        <div id="deviceDistribution" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                     
                     <!-- リアルタイム監視 -->
                     <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
                         <h3 style="color: #2c3e50; margin-bottom: 15px;">🔄 リアルタイム監視</h3>
-                        <div id="realtimeMonitoring">
-                            <p>読み込み中...</p>
+                        <div id="realtimeMonitoring" style="color: #333333;">
+                            <p style="color: #333333;">読み込み中...</p>
                         </div>
                     </div>
                 </div>
@@ -2448,9 +2448,9 @@
             .then(data => {
                 const accessStats = document.getElementById('accessStats');
                 accessStats.innerHTML = `
-                    <p><strong>総アクセス数:</strong> ${data.total_accesses || 0}</p>
-                    <p><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
-                    <p><strong>最終更新:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                    <p style="color: #333333;"><strong>総アクセス数:</strong> ${data.total_accesses || 0}</p>
+                    <p style="color: #333333;"><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
+                    <p style="color: #333333;"><strong>最終更新:</strong> ${new Date().toLocaleString('ja-JP')}</p>
                 `;
             })
             .catch(error => {
@@ -2463,12 +2463,12 @@
             .then(data => {
                 const performanceStats = document.getElementById('performanceStats');
                 performanceStats.innerHTML = `
-                    <p><strong>総リクエスト数:</strong> ${data.total_requests || 0}</p>
-                    <p><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
-                    <p><strong>平均メモリ使用率:</strong> ${(data.avg_memory_usage || 0).toFixed(1)}%</p>
-                    <p><strong>平均CPU使用率:</strong> ${(data.avg_cpu_usage || 0).toFixed(1)}%</p>
-                    <p><strong>キャッシュヒット率:</strong> ${(data.avg_cache_hit_rate || 0).toFixed(1)}%</p>
-                    <p><strong>エラー率:</strong> ${(data.error_rate || 0).toFixed(1)}%</p>
+                    <p style="color: #333333;"><strong>総リクエスト数:</strong> ${data.total_requests || 0}</p>
+                    <p style="color: #333333;"><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
+                    <p style="color: #333333;"><strong>平均メモリ使用率:</strong> ${(data.avg_memory_usage || 0).toFixed(1)}%</p>
+                    <p style="color: #333333;"><strong>平均CPU使用率:</strong> ${(data.avg_cpu_usage || 0).toFixed(1)}%</p>
+                    <p style="color: #333333;"><strong>キャッシュヒット率:</strong> ${(data.avg_cache_hit_rate || 0).toFixed(1)}%</p>
+                    <p style="color: #333333;"><strong>エラー率:</strong> ${(data.error_rate || 0).toFixed(1)}%</p>
                 `;
             })
             .catch(error => {
@@ -2482,9 +2482,9 @@
                 const browserDistribution = document.getElementById('browserDistribution');
                 let html = '';
                 for (const [browser, stats] of Object.entries(data)) {
-                    html += `<p><strong>${browser}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                    html += `<p style="color: #333333;"><strong>${browser}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
                 }
-                browserDistribution.innerHTML = html || '<p>データがありません</p>';
+                browserDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
             })
             .catch(error => {
                 document.getElementById('browserDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
@@ -2497,9 +2497,9 @@
                 const osDistribution = document.getElementById('osDistribution');
                 let html = '';
                 for (const [os, stats] of Object.entries(data)) {
-                    html += `<p><strong>${os}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                    html += `<p style="color: #333333;"><strong>${os}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
                 }
-                osDistribution.innerHTML = html || '<p>データがありません</p>';
+                osDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
             })
             .catch(error => {
                 document.getElementById('osDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
@@ -2512,9 +2512,9 @@
                 const deviceDistribution = document.getElementById('deviceDistribution');
                 let html = '';
                 for (const [device, stats] of Object.entries(data)) {
-                    html += `<p><strong>${device}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                    html += `<p style="color: #333333;"><strong>${device}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
                 }
-                deviceDistribution.innerHTML = html || '<p>データがありません</p>';
+                deviceDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
             })
             .catch(error => {
                 document.getElementById('deviceDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
@@ -2526,12 +2526,12 @@
             .then(data => {
                 const realtimeMonitoring = document.getElementById('realtimeMonitoring');
                 realtimeMonitoring.innerHTML = `
-                    <p><strong>現在のメモリ使用率:</strong> ${data.memory_usage_percent || 0}%</p>
-                    <p><strong>現在のCPU使用率:</strong> ${data.cpu_usage_percent || 0}%</p>
-                    <p><strong>現在のレスポンス時間:</strong> ${data.response_time_ms || 0}ms</p>
-                    <p><strong>アクティブセッション:</strong> ${data.active_sessions || 0}</p>
-                    <p><strong>API呼び出し回数:</strong> ${data.api_calls || 0}</p>
-                    <p><strong>キャッシュヒット率:</strong> ${(data.cache_hit_rate || 0).toFixed(1)}%</p>
+                    <p style="color: #333333;"><strong>現在のメモリ使用率:</strong> ${data.memory_usage_percent || 0}%</p>
+                    <p style="color: #333333;"><strong>現在のCPU使用率:</strong> ${data.cpu_usage_percent || 0}%</p>
+                    <p style="color: #333333;"><strong>現在のレスポンス時間:</strong> ${data.response_time_ms || 0}ms</p>
+                    <p style="color: #333333;"><strong>アクティブセッション:</strong> ${data.active_sessions || 0}</p>
+                    <p style="color: #333333;"><strong>API呼び出し回数:</strong> ${data.api_calls || 0}</p>
+                    <p style="color: #333333;"><strong>キャッシュヒット率:</strong> ${(data.cache_hit_rate || 0).toFixed(1)}%</p>
                 `;
             })
             .catch(error => {

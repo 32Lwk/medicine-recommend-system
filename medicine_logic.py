@@ -32,6 +32,78 @@ def convert_markdown_bold(text):
     result = re.sub(r'^\s+', '', result, flags=re.MULTILINE)
     return result
 
+def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dict = None) -> str:
+    """
+    ChatGPTを使用して医薬品の使用上の注意を自動生成
+    
+    Args:
+        medicine_name: 医薬品名
+        medicine_info: 医薬品情報（成分、効能、年齢制限など）
+        user_info: ユーザー情報（年齢、妊娠状態など）
+    
+    Returns:
+        str: 生成された使用上の注意
+    """
+    try:
+        # ユーザー情報の準備
+        user_context = ""
+        if user_info:
+            if user_info.get('age'):
+                user_context += f"年齢: {user_info['age']}歳\n"
+            if user_info.get('pregnant'):
+                user_context += "妊娠中\n"
+            if user_info.get('breastfeeding'):
+                user_context += "授乳中\n"
+            if user_info.get('allergies'):
+                user_context += f"アレルギー: {', '.join(user_info['allergies'])}\n"
+        
+        # プロンプトの構築
+        prompt = f"""
+以下の医薬品について、使用上の注意を生成してください。
+
+医薬品名: {medicine_name}
+成分: {medicine_info.get('ingredients', '情報なし')}
+効能・効果: {medicine_info.get('efficacy', '情報なし')}
+年齢制限: {medicine_info.get('age_restriction', '情報なし')}
+用法・用量: {medicine_info.get('usage', '情報なし')}
+
+ユーザー情報:
+{user_context if user_context else '情報なし'}
+
+以下の形式で使用上の注意を生成してください：
+1. 基本的な使用上の注意
+2. 年齢・性別による注意点
+3. 妊娠・授乳中の注意点
+4. アレルギーに関する注意点
+5. 副作用について
+6. 他の薬との相互作用
+7. 保存方法・保管上の注意
+
+各項目は簡潔で分かりやすく、実際の使用場面で役立つ内容にしてください。
+"""
+        
+        # ChatGPT APIを呼び出し
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "あなたは薬剤師です。医薬品の使用上の注意を専門的で分かりやすく説明してください。"},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        usage_notes = response.choices[0].message.content.strip()
+        
+        # HTMLタグを適切に処理
+        usage_notes = convert_markdown_bold(usage_notes)
+        
+        return usage_notes
+        
+    except Exception as e:
+        print(f"使用上の注意生成エラー: {e}")
+        return "使用上の注意の生成に失敗しました。医師または薬剤師にご相談ください。"
+
 # テキストを整形して見やすくする関数
 def format_text_for_display(text):
     """テキストを整形して見やすくする"""
