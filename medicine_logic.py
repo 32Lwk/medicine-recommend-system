@@ -32,9 +32,12 @@ def convert_markdown_bold(text):
     result = re.sub(r'^\s+', '', result, flags=re.MULTILINE)
     return result
 
+# 使用上の注意生成のキャッシュ
+_usage_notes_cache = {}
+
 def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dict = None) -> str:
     """
-    ChatGPTを使用して医薬品の使用上の注意を自動生成
+    ChatGPTを使用して医薬品の使用上の注意を自動生成（キャッシュ機能付き）
     
     Args:
         medicine_name: 医薬品名
@@ -45,6 +48,14 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         str: 生成された使用上の注意
     """
     try:
+        # キャッシュキーの生成（医薬品名とユーザー情報の組み合わせ）
+        cache_key = f"{medicine_name}_{hash(str(user_info))}"
+        
+        # キャッシュから取得を試行
+        if cache_key in _usage_notes_cache:
+            print(f"📋 使用上の注意をキャッシュから取得: {medicine_name}")
+            return _usage_notes_cache[cache_key]
+        
         # ユーザー情報の準備
         user_context = ""
         if user_info:
@@ -110,6 +121,11 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         
         # HTMLタグを適切に処理
         usage_notes = convert_markdown_bold(usage_notes)
+        
+        # キャッシュに保存（最大100件まで）
+        if len(_usage_notes_cache) < 100:
+            _usage_notes_cache[cache_key] = usage_notes
+            print(f"💾 使用上の注意をキャッシュに保存: {medicine_name}")
         
         return usage_notes
         
