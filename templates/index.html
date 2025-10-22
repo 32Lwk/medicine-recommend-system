@@ -113,8 +113,9 @@
             border-top: 1px solid #ddd;
             flex-shrink: 0;
             position: relative;
-            max-width: 800px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
             box-sizing: border-box;
         }
         .input-group {
@@ -1356,7 +1357,8 @@
                         loadMessages();
                     }, 500);
                 } else {
-                    alert('薬剤師対応の要請に失敗しました');
+                    console.error('薬剤師要請エラー:', data);
+                    alert('薬剤師対応の要請に失敗しました: ' + (data.message || '不明なエラー'));
                 }
             })
             .catch(() => {
