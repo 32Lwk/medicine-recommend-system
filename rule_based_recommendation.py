@@ -18,7 +18,7 @@ from openai import OpenAI
 # 1. データ構造と定数定義
 # ================================================================================
 
-# 症状辞書（風邪薬、解熱鎮痛薬、鼻炎用薬に関連する症状のみ）
+# 症状辞書（全医薬品種類に対応）
 SYMPTOM_DICTIONARY = {
     # 風邪関連症状
     "発熱": {
@@ -127,35 +127,242 @@ SYMPTOM_DICTIONARY = {
         "severity_tags": ["軽度", "中等度"],
         "medicine_types": ["鼻炎用薬"],
         "weight": 0.7
+    },
+    # 胃腸薬関連症状
+    "胃痛": {
+        "canonical_name": "胃痛",
+        "synonyms": ["胃が痛い", "胃の痛み", "胃部痛", "みぞおちの痛み"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "腹痛": {
+        "canonical_name": "腹痛",
+        "synonyms": ["お腹が痛い", "腹部痛", "おなかが痛い", "腹が痛い"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "下痢": {
+        "canonical_name": "下痢",
+        "synonyms": ["下痢", "軟便", "水様便", "便がゆるい"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "便秘": {
+        "canonical_name": "便秘",
+        "synonyms": ["便秘", "便が出ない", "便通がない", "便が硬い"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "吐き気": {
+        "canonical_name": "吐き気",
+        "synonyms": ["吐き気", "むかつき", "気持ち悪い", "嘔吐感"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "胸やけ": {
+        "canonical_name": "胸やけ",
+        "synonyms": ["胸やけ", "胸焼け", "胃もたれ", "胃の重い感じ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.85
+    },
+    "胃もたれ": {
+        "canonical_name": "胃もたれ",
+        "synonyms": ["胃もたれ", "胃の重い感じ", "消化が悪い", "胃の不快感"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.85
+    },
+    # 外用薬関連症状
+    "かゆみ": {
+        "canonical_name": "かゆみ",
+        "synonyms": ["かゆい", "痒み", "かゆみ", "皮膚のかゆみ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "発疹": {
+        "canonical_name": "発疹",
+        "synonyms": ["発疹", "ブツブツ", "赤い斑点", "皮膚の異常"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "湿疹": {
+        "canonical_name": "湿疹",
+        "synonyms": ["湿疹", "皮膚炎", "かぶれ", "皮膚の炎症"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "水虫": {
+        "canonical_name": "水虫",
+        "synonyms": ["水虫", "白癬", "足の水虫", "指の間のかゆみ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.95
+    },
+    "打撲": {
+        "canonical_name": "打撲",
+        "synonyms": ["打撲", "打ち身", "青あざ", "内出血"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "捻挫": {
+        "canonical_name": "捻挫",
+        "synonyms": ["捻挫", "くじいた", "関節の痛み", "靭帯損傷"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "肩こり": {
+        "canonical_name": "肩こり",
+        "synonyms": ["肩こり", "肩の凝り", "肩の痛み", "首肩の痛み"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）", "筋肉痛"],
+        "weight": 0.85
+    },
+    # 目薬関連症状
+    "目の充血": {
+        "canonical_name": "目の充血",
+        "synonyms": ["目の充血", "目が赤い", "充血", "目の血走り"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["目薬"],
+        "weight": 0.9
+    },
+    "目の疲れ": {
+        "canonical_name": "目の疲れ",
+        "synonyms": ["目の疲れ", "眼精疲労", "目が疲れる", "目の重い感じ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["目薬"],
+        "weight": 0.85
+    },
+    "目のかゆみ": {
+        "canonical_name": "目のかゆみ",
+        "synonyms": ["目のかゆみ", "目がかゆい", "目の痒み", "目のかゆみ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["目薬"],
+        "weight": 0.9
+    },
+    # 睡眠・精神関連症状
+    "不眠": {
+        "canonical_name": "不眠",
+        "synonyms": ["不眠", "眠れない", "睡眠不足", "寝つきが悪い"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["睡眠障害"],
+        "weight": 0.9
+    },
+    "めまい": {
+        "canonical_name": "めまい",
+        "synonyms": ["めまい", "眩暈", "ふらつき", "立ちくらみ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状"],
+        "weight": 0.8
+    },
+    "疲労感": {
+        "canonical_name": "疲労感",
+        "synonyms": ["疲労感", "疲れ", "だるい", "倦怠感"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状"],
+        "weight": 0.7
+    },
+    "イライラ": {
+        "canonical_name": "イライラ",
+        "synonyms": ["イライラ", "いらいら", "焦燥感", "落ち着かない"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状"],
+        "weight": 0.8
+    },
+    "不安": {
+        "canonical_name": "不安",
+        "synonyms": ["不安", "心配", "憂鬱", "落ち込み"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状"],
+        "weight": 0.8
+    },
+    "ストレス": {
+        "canonical_name": "ストレス",
+        "synonyms": ["ストレス", "ストレス", "緊張", "プレッシャー"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状"],
+        "weight": 0.7
     }
 }
 
 # 重症疑い症状（赤旗：Red Flag）- 即座にエスカレーション
 RED_FLAG_SYMPTOMS = {
-    "呼吸困難": ["呼吸が苦しい", "息苦しい", "呼吸困難", "息ができない"],
-    "高熱": ["38.5度以上", "39度", "40度"],
-    "胸痛": ["胸が痛い", "胸の痛み", "胸部痛"],
-    "意識障害": ["意識がもうろう", "意識がない", "気を失う"],
-    "激しい頭痛": ["激しい頭痛", "突然の頭痛", "今まで経験したことのない頭痛"],
-    "血便": ["血便", "便に血が混じる"],
-    "喀血": ["血を吐く", "喀血", "吐血"]
+    "呼吸困難": ["呼吸が苦しい", "息苦しい", "呼吸困難", "息ができない", "息切れ"],
+    "高熱": ["38.5度以上", "39度", "40度", "高熱", "熱が下がらない"],
+    "胸痛": ["胸が痛い", "胸の痛み", "胸部痛", "心臓が痛い", "胸が締め付けられる"],
+    "意識障害": ["意識がもうろう", "意識がない", "気を失う", "意識不明", "ぼーっとする"],
+    "激しい頭痛": ["激しい頭痛", "突然の頭痛", "今まで経験したことのない頭痛", "頭が割れる", "耐えられない頭痛"],
+    "血便": ["血便", "便に血が混じる", "黒い便", "タール便"],
+    "喀血": ["血を吐く", "喀血", "吐血"],
+    "激しい腹痛": ["激しい腹痛", "お腹が痛くて動けない", "耐えられない腹痛"],
+    "顔面麻痺": ["顔面麻痺", "顔が動かない", "口が曲がる", "顔の半分が動かない"],
+    "手足の麻痺": ["手足の麻痺", "手足が動かない", "力が入らない", "しびれが続く"],
+    "持続する嘔吐": ["持続する嘔吐", "何度も吐く", "止まらない嘔吐", "嘔吐が続く"]
 }
 
-# 禁忌チェックルール
+# 医師受診推奨条件
+DOCTOR_REFERRAL_CONDITIONS = {
+    "pregnancy": {
+        "description": "妊娠中",
+        "message": "妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
+        "priority": "critical"
+    },
+    "breastfeeding": {
+        "description": "授乳中", 
+        "message": "授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
+        "priority": "critical"
+    },
+    "symptoms_over_week": {
+        "description": "症状が1週間以上続いている",
+        "message": "症状が1週間以上続いている場合は、医師の診断を受けることをお勧めします。",
+        "priority": "high"
+    },
+    "severe_symptoms": {
+        "description": "重症疑い症状",
+        "message": "重症の疑いがある症状がみられます。速やかに医師の診断を受けてください。",
+        "priority": "critical"
+    },
+    "age_under_7": {
+        "description": "7歳未満",
+        "message": "7歳未満のお子様は医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
+        "priority": "critical"
+    }
+}
+
+# 禁忌チェックルール（強化版）
 CONTRAINDICATION_RULES = {
     "年齢制限": {
-        "最小年齢": 7,  # 7歳未満は医師相談
-        "推奨年齢": 15  # 15歳未満は注意が必要
+        "乳児": (0, 3),      # 0-3歳: 絶対禁忌
+        "幼児": (3, 7),      # 3-7歳: 医師相談必須
+        "小児": (7, 15),     # 7-15歳: 注意が必要
+        "成人": (15, 65),    # 15-65歳: 通常使用可能
+        "高齢者": (65, 150)  # 65歳以上: 注意が必要
     },
     "妊娠中": {
         "風邪薬": "要注意",
         "解熱鎮痛薬": "禁忌（特にNSAIDs）",
-        "鼻炎用薬": "要注意"
+        "鼻炎用薬": "要注意",
+        "胃腸薬": "要注意",
+        "外用薬": "要注意",
+        "目薬": "要注意"
     },
     "授乳中": {
         "風邪薬": "要注意",
         "解熱鎮痛薬": "要注意",
-        "鼻炎用薬": "要注意"
+        "鼻炎用薬": "要注意",
+        "胃腸薬": "要注意",
+        "外用薬": "要注意",
+        "目薬": "要注意"
     }
 }
 
@@ -173,15 +380,118 @@ SCORING_WEIGHTS = {
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
 
+# NLUキャッシュ（セッションごとの症状抽出結果を保存）
+_nlu_cache = {}
+_max_cache_size = 50  # 最大50セッション分を保持
+
+def get_cached_nlu_result(user_text: str, session_id: str = None) -> Optional[Dict]:
+    """
+    NLUキャッシュから結果を取得
+    
+    Args:
+        user_text: ユーザーの症状入力
+        session_id: セッションID（オプション）
+    
+    Returns:
+        キャッシュされたNLU結果、またはNone
+    """
+    if not session_id:
+        return None
+    
+    cache_key = f"{session_id}:{hash(user_text)}"
+    return _nlu_cache.get(cache_key)
+
+def set_cached_nlu_result(user_text: str, nlu_result: Dict, session_id: str = None):
+    """
+    NLUキャッシュに結果を保存
+    
+    Args:
+        user_text: ユーザーの症状入力
+        nlu_result: NLU結果
+        session_id: セッションID（オプション）
+    """
+    if not session_id:
+        return
+    
+    # キャッシュサイズ制限
+    if len(_nlu_cache) >= _max_cache_size:
+        # 古いエントリを削除（FIFO）
+        oldest_key = next(iter(_nlu_cache))
+        del _nlu_cache[oldest_key]
+    
+    cache_key = f"{session_id}:{hash(user_text)}"
+    _nlu_cache[cache_key] = nlu_result
+    print(f"NLUキャッシュに保存: {cache_key}")
+
+def clear_nlu_cache():
+    """NLUキャッシュをクリア"""
+    global _nlu_cache
+    _nlu_cache.clear()
+    print("NLUキャッシュをクリアしました")
+
 def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     """
-    簡易パターンマッチングによる症状抽出（APIフォールバック用）
+    強化されたルールベースNLU（正規表現、重症度推定、期間抽出）
     """
+    import re
+    
     text_lower = user_text.lower()
     detected_symptoms = []
     red_flags = []
     
-    # 症状辞書から同義語でマッチング
+    # 重症度修飾語のパターン（拡張版）
+    severity_patterns = {
+        "重度": [
+            r"激しい", r"ひどい", r"重い", r"酷い", r"深刻", r"重症", r"強烈", r"猛烈",
+            r"耐えられない", r"我慢できない", r"今までにない", r"異常に", r"非常に",
+            r"緊急", r"救急", r"命に関わる", r"危険", r"危篤", r"重症化"
+        ],
+        "軽度": [
+            r"少し", r"軽い", r"軽微", r"微か", r"弱い", r"軽度", r"軽い",
+            r"ちょっと", r"やや", r"わずか", r"軽く", r"微か", r"軽微"
+        ],
+        "中等度": [
+            r"中程度", r"普通", r"まあまあ", r"そこそこ", r"それなりに",
+            r"そこそこ", r"普通程度", r"一般的", r"標準的"
+        ]
+    }
+    
+    # 期間表現のパターン（拡張版）
+    duration_patterns = [
+        r'(\d+)\s*(日|日間|日前)',
+        r'(昨日|今日|一昨日|おととい)',
+        r'(先週|今週|先月|今月)',
+        r'(数日|数日前|数週間|数ヶ月|長期間|慢性的)',
+        r'(今朝|昨夜|今晩|今午後)',
+        r'(先ほど|さっき|つい先ほど)',
+        r'(ずっと|継続的に|持続的に)'
+    ]
+    
+    # 症状の組み合わせパターン
+    SYMPTOM_COMBINATIONS = {
+        '風邪': {
+            'required': ['発熱', '咳'],
+            'optional': ['鼻水', 'のどの痛み', '悪寒'],
+            'confidence_boost': 0.2
+        },
+        'インフルエンザ': {
+            'required': ['高熱', '頭痛'],
+            'optional': ['関節痛', '悪寒', '筋肉痛'],
+            'confidence_boost': 0.3
+        },
+        '胃腸炎': {
+            'required': ['下痢', '腹痛'],
+            'optional': ['吐き気', '嘔吐', '発熱'],
+            'confidence_boost': 0.25
+        },
+        'アレルギー性鼻炎': {
+            'required': ['鼻水', 'くしゃみ'],
+            'optional': ['鼻づまり', '目のかゆみ'],
+            'confidence_boost': 0.2
+        }
+    }
+    
+    # 症状辞書から同義語でマッチング（強化版）
     for symptom_name, symptom_data in SYMPTOM_DICTIONARY.items():
         # 正規化名でチェック
         if symptom_data["canonical_name"] in user_text:
@@ -192,7 +502,7 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
             })
             continue
         
-        # 同義語でチェック
+        # 同義語でチェック（部分一致も含む）
         for synonym in symptom_data["synonyms"]:
             if synonym in user_text:
                 detected_symptoms.append({
@@ -202,42 +512,146 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
                 })
                 break
     
-    # 重症疑い症状のチェック
+    # 重症疑い症状のチェック（強化版）
     for flag_name, flag_keywords in RED_FLAG_SYMPTOMS.items():
         for keyword in flag_keywords:
             if keyword in user_text:
                 red_flags.append(flag_name)
                 break
     
-    # 重症度の推定（キーワードベース）
+    # 重症度の推定（強化版）
     for symptom in detected_symptoms:
-        if "激しい" in user_text or "ひどい" in user_text or "重い" in user_text:
-            symptom["severity"] = "重度"
-        elif "少し" in user_text or "軽い" in user_text:
-            symptom["severity"] = "軽度"
+        symptom_text = user_text
+        severity = "中等度"  # デフォルト
+        
+        # 重症度修飾語の検出
+        for severity_level, patterns in severity_patterns.items():
+            for pattern in patterns:
+                if re.search(pattern, symptom_text):
+                    severity = severity_level
+                    break
+            if severity != "中等度":
+                break
+        
+        symptom["severity"] = severity
     
-    # 期間の推定
-    import re
-    duration_match = re.search(r'(\d+)\s*(日|日間)', user_text)
-    if duration_match:
-        days = int(duration_match.group(1))
+    # 期間の推定（強化版）
+    duration_days = None
+    
+    # 数値表現の期間
+    for pattern in duration_patterns:
+        match = re.search(pattern, user_text)
+        if match:
+            if pattern.startswith(r'(\d+)'):
+                duration_days = int(match.group(1))
+            elif "昨日" in match.group(0):
+                duration_days = 1
+            elif "一昨日" in match.group(0):
+                duration_days = 2
+            elif "先週" in match.group(0):
+                duration_days = 7
+            elif "数日" in match.group(0):
+                duration_days = 3  # 推定値
+            elif "数週間" in match.group(0):
+                duration_days = 14  # 推定値
+            break
+    
+    # 期間を全症状に適用
+    if duration_days is not None:
         for symptom in detected_symptoms:
-            symptom["duration_days"] = days
+            symptom["duration_days"] = duration_days
+    
+    # 症状の組み合わせパターン認識
+    symptom_names = [s['name'] for s in detected_symptoms]
+    combination_boost = 0.0
+    
+    for pattern_name, pattern_data in SYMPTOM_COMBINATIONS.items():
+        required_symptoms = pattern_data['required']
+        optional_symptoms = pattern_data['optional']
+        boost = pattern_data['confidence_boost']
+        
+        # 必須症状のチェック
+        required_matched = sum(1 for req in required_symptoms if req in symptom_names)
+        if required_matched == len(required_symptoms):
+            # オプション症状のボーナス
+            optional_matched = sum(1 for opt in optional_symptoms if opt in symptom_names)
+            combination_boost = boost + (optional_matched * 0.05)
+            break
+    
+    # 症状の信頼度を計算（強化版）
+    confidence_score = 0.0
+    if detected_symptoms:
+        # 症状数による信頼度
+        confidence_score += min(len(detected_symptoms) * 0.3, 0.6)
+        
+        # 重症度の明確性による信頼度
+        severity_specificity = sum(1 for s in detected_symptoms if s["severity"] != "中等度")
+        confidence_score += severity_specificity * 0.1
+        
+        # 期間の明確性による信頼度
+        if duration_days is not None:
+            confidence_score += 0.2
+        
+        # 症状組み合わせによる信頼度向上
+        confidence_score += combination_boost
     
     needs_escalation = len(red_flags) > 0
     escalation_reason = f"重症疑い症状が検出されました: {', '.join(red_flags)}" if needs_escalation else ""
     
-    print(f"=== 簡易NLU結果 ===")
+    print(f"=== 強化NLU結果 ===")
     print(f"検出された症状: {[s['name'] for s in detected_symptoms]}")
     print(f"重症疑い: {red_flags}")
     print(f"エスカレーション必要: {needs_escalation}")
+    print(f"信頼度スコア: {confidence_score:.2f}")
     
     return {
         "symptoms": detected_symptoms,
         "red_flags": red_flags,
         "needs_escalation": needs_escalation,
-        "escalation_reason": escalation_reason
+        "escalation_reason": escalation_reason,
+        "confidence_score": confidence_score
     }
+
+def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, session_id: str = None) -> Dict:
+    """
+    ハイブリッドNLU（ルールベース優先、ChatGPT APIフォールバック）
+    
+    Args:
+        user_text: ユーザーの症状入力
+        user_info: ユーザー情報（年齢、性別など）
+        client: OpenAI client
+        session_id: セッションID（キャッシュ用）
+    
+    Returns:
+        構造化された症状データ
+    """
+    # 1. キャッシュチェック
+    cached_result = get_cached_nlu_result(user_text, session_id)
+    if cached_result:
+        print("NLUキャッシュから結果を取得")
+        return cached_result
+    
+    # 2. ルールベースNLUを実行
+    print("ルールベースNLUを実行")
+    rule_based_result = simple_pattern_matching_nlu(user_text, user_info)
+    
+    # 3. 信頼度チェック
+    confidence_score = rule_based_result.get('confidence_score', 0.0)
+    symptoms_count = len(rule_based_result.get('symptoms', []))
+    
+    # 信頼度が低い場合（症状0個または信頼度0.3未満）のみChatGPT APIを呼び出し
+    if symptoms_count == 0 or confidence_score < 0.3:
+        print(f"ルールベースNLUの信頼度が低いため、ChatGPT APIを呼び出し（信頼度: {confidence_score:.2f}）")
+        gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
+        
+        # 結果をキャッシュに保存
+        set_cached_nlu_result(user_text, gpt_result, session_id)
+        return gpt_result
+    else:
+        print(f"ルールベースNLUの信頼度が十分（信頼度: {confidence_score:.2f}）")
+        # 結果をキャッシュに保存
+        set_cached_nlu_result(user_text, rule_based_result, session_id)
+        return rule_based_result
 
 def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -> Dict:
     """
@@ -347,7 +761,8 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
 
 def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
     """
-    安全性チェック（禁忌、年齢制限、重症疑い）
+    安全性チェック（禁忌、年齢制限、重症疑い）- 強化版
+    妊婦・1週間以上・重症疑いの場合は医師受診を必須とする
     
     Returns:
         {
@@ -355,7 +770,9 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
             "warnings": List[str],
             "exclusions": List[str],
             "requires_escalation": bool,
-            "escalation_reason": str
+            "escalation_reason": str,
+            "doctor_referral_required": bool,
+            "referral_reasons": List[Dict]
         }
     """
     safety_result = {
@@ -363,41 +780,98 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
         "warnings": [],
         "exclusions": [],
         "requires_escalation": False,
-        "escalation_reason": ""
+        "escalation_reason": "",
+        "doctor_referral_required": False,
+        "referral_reasons": []
     }
     
-    # 1. 重症疑い症状チェック（最優先）
+    # 1. 重症疑い症状チェック（最優先）- 医師受診必須
     if nlu_result.get("needs_escalation", False):
         safety_result["is_safe"] = False
         safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
         safety_result["escalation_reason"] = nlu_result.get("escalation_reason", "重症疑い症状が検出されました")
+        safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["severe_symptoms"])
         return safety_result
     
-    # 2. 年齢チェック
+    # 2. 年齢チェック（強化版）
     age = user_info.get('age')
     if age is not None:
-        if age < CONTRAINDICATION_RULES["年齢制限"]["最小年齢"]:
+        age_rules = CONTRAINDICATION_RULES["年齢制限"]
+        
+        if age_rules["乳児"][0] <= age < age_rules["乳児"][1]:
+            # 0-3歳: 絶対禁忌
             safety_result["is_safe"] = False
             safety_result["requires_escalation"] = True
-            safety_result["escalation_reason"] = f"{age}歳は市販薬の適応年齢外です。医師の診察を受けてください。"
+            safety_result["doctor_referral_required"] = True
+            safety_result["escalation_reason"] = f"{age}歳の乳児は市販薬の使用ができません。必ず医師の診察を受けてください。"
+            safety_result["referral_reasons"].append({
+                "description": "乳児（0-3歳）",
+                "message": "乳児は市販薬の使用ができません。必ず医師の診察を受けてください。",
+                "priority": "critical"
+            })
             return safety_result
-        elif age < CONTRAINDICATION_RULES["年齢制限"]["推奨年齢"]:
-            safety_result["warnings"].append(f"{age}歳は市販薬使用に注意が必要です。")
+        elif age_rules["幼児"][0] <= age < age_rules["幼児"][1]:
+            # 3-7歳: 医師相談必須
+            safety_result["is_safe"] = False
+            safety_result["requires_escalation"] = True
+            safety_result["doctor_referral_required"] = True
+            safety_result["escalation_reason"] = f"{age}歳の幼児は医師の診察を受けてください。市販薬の使用は医師にご相談ください。"
+            safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["age_under_7"])
+            return safety_result
+        elif age_rules["小児"][0] <= age < age_rules["小児"][1]:
+            # 7-15歳: 注意が必要
+            safety_result["warnings"].append(f"{age}歳の小児は市販薬使用に注意が必要です。保護者の監督下で使用してください。")
+        elif age_rules["高齢者"][0] <= age:
+            # 65歳以上: 注意が必要
+            safety_result["warnings"].append(f"{age}歳の高齢者は市販薬使用に注意が必要です。副作用に特に注意してください。")
     
-    # 3. 妊娠中チェック
+    # 3. 妊娠中チェック（医師受診必須）
     if user_info.get('pregnant', False):
-        safety_result["warnings"].append("妊娠中のため、使用できる医薬品が限定されます。")
-        safety_result["exclusions"].append("NSAIDs含有製品")
+        safety_result["is_safe"] = False
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+        safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["pregnancy"])
+        
+        # 妊娠中の医薬品種類別制限を追加
+        pregnancy_restrictions = CONTRAINDICATION_RULES["妊娠中"]
+        for medicine_type, restriction in pregnancy_restrictions.items():
+            if restriction == "禁忌":
+                safety_result["warnings"].append(f"妊娠中は{medicine_type}の使用が禁忌です。")
+            elif restriction == "要注意":
+                safety_result["warnings"].append(f"妊娠中は{medicine_type}の使用に注意が必要です。")
+        
+        return safety_result
     
-    # 4. 授乳中チェック
+    # 4. 授乳中チェック（医師受診必須）
     if user_info.get('breastfeeding', False):
-        safety_result["warnings"].append("授乳中のため、医薬品の使用に注意が必要です。")
+        safety_result["is_safe"] = False
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+        safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["breastfeeding"])
+        
+        # 授乳中の医薬品種類別制限を追加
+        breastfeeding_restrictions = CONTRAINDICATION_RULES["授乳中"]
+        for medicine_type, restriction in breastfeeding_restrictions.items():
+            if restriction == "要注意":
+                safety_result["warnings"].append(f"授乳中は{medicine_type}の使用に注意が必要です。")
+        
+        return safety_result
     
-    # 5. 症状の期間チェック
+    # 5. 症状の期間チェック（1週間以上で医師受診推奨）
+    symptoms_over_week = False
     for symptom in nlu_result.get("symptoms", []):
         duration = symptom.get("duration_days")
-        if duration is not None and duration > 7:
+        if duration is not None and duration >= 7:
+            symptoms_over_week = True
             safety_result["warnings"].append(f"症状が{duration}日間続いています。長期化している場合は医師の診察を推奨します。")
+    
+    # 1週間以上の症状がある場合は医師受診推奨
+    if symptoms_over_week:
+        safety_result["doctor_referral_required"] = True
+        safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["symptoms_over_week"])
     
     # 6. 症状の重症度チェック
     for symptom in nlu_result.get("symptoms", []):
@@ -530,27 +1004,91 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
     else:
         return 0.7  # 小児は減点
 
-def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
+def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> Dict:
     """
-    最終スコアを計算
+    最終スコアを計算（全スコアを統合）
+    
+    Returns:
+        {
+            "total_score": float,
+            "score_breakdown": {
+                "symptom_match": float,
+                "efficacy_specificity": float,
+                "age_fit": float,
+                "usage_convenience": float,
+                "side_effect_risk": float,
+                "interaction_risk": float
+            }
+        }
     """
-    # 症状適合度スコア
-    symptom_score = calculate_symptom_match_score(candidate, nlu_result)
-    
-    # 年齢適合性スコア
-    age_score = calculate_age_fit_score(candidate, user_info)
-    
-    # 用法簡便性スコア（簡易版：1日の服用回数が少ないほど高い）
-    usage_score = 0.5  # デフォルト
-    
-    # 最終スコア計算
-    final_score = (
-        SCORING_WEIGHTS["症状適合度"] * symptom_score +
-        SCORING_WEIGHTS["年齢適合性"] * age_score +
-        SCORING_WEIGHTS["用法簡便性"] * usage_score
+    # スコアリングユーティリティをインポート
+    from scoring_utils import (
+        calculate_efficacy_specificity_score,
+        calculate_side_effect_risk_score,
+        calculate_interaction_risk_score,
+        calculate_usage_convenience_score,
+        check_allergy_contraindication,
+        check_drug_interactions
     )
     
-    return final_score
+    # 各スコアを計算
+    symptom_score = calculate_symptom_match_score(candidate, nlu_result)
+    efficacy_specificity_score = calculate_efficacy_specificity_score(candidate, nlu_result)
+    age_score = calculate_age_fit_score(candidate, user_info)
+    usage_score = calculate_usage_convenience_score(candidate)
+    side_effect_score = calculate_side_effect_risk_score(candidate, user_info)
+    interaction_score = calculate_interaction_risk_score(candidate, user_info)
+    
+    # アレルギー成分チェック
+    is_allergic, allergy_ingredient = check_allergy_contraindication(candidate, user_info)
+    if is_allergic:
+        # アレルギー成分がある場合はスコアを0に設定
+        return {
+            "total_score": 0.0,
+            "score_breakdown": {
+                "symptom_match": 0.0,
+                "efficacy_specificity": 0.0,
+                "age_fit": 0.0,
+                "usage_convenience": 0.0,
+                "side_effect_risk": 0.0,
+                "interaction_risk": 0.0
+            },
+            "allergy_warning": f"アレルギー成分 '{allergy_ingredient}' が含まれています"
+        }
+    
+    # 相互作用チェック
+    has_interaction, interaction_warnings = check_drug_interactions(candidate, user_info)
+    if has_interaction:
+        # 相互作用がある場合は大幅減点
+        interaction_score = min(interaction_score, -0.5)
+    
+    # 最終スコア計算
+    total_score = (
+        SCORING_WEIGHTS["症状適合度"] * symptom_score +
+        SCORING_WEIGHTS["効能特異性"] * efficacy_specificity_score +
+        SCORING_WEIGHTS["年齢適合性"] * age_score +
+        SCORING_WEIGHTS["用法簡便性"] * usage_score +
+        SCORING_WEIGHTS["副作用リスク"] * side_effect_score +
+        SCORING_WEIGHTS["相互作用リスク"] * interaction_score
+    )
+    
+    result = {
+        "total_score": max(0.0, min(1.0, total_score)),  # 0.0-1.0の範囲に制限
+        "score_breakdown": {
+            "symptom_match": symptom_score,
+            "efficacy_specificity": efficacy_specificity_score,
+            "age_fit": age_score,
+            "usage_convenience": usage_score,
+            "side_effect_risk": side_effect_score,
+            "interaction_risk": interaction_score
+        }
+    }
+    
+    # 相互作用警告がある場合は追加
+    if has_interaction:
+        result["interaction_warnings"] = interaction_warnings
+    
+    return result
 
 # ================================================================================
 # 5. 不足情報のチェックと質問生成
@@ -662,10 +1200,11 @@ def rule_based_recommendation(
     user_info: Dict,
     medicine_df: pd.DataFrame,
     client: OpenAI,
-    top_n: int = 3
+    top_n: int = 3,
+    session_id: str = None
 ) -> Dict:
     """
-    ルールベース医薬品推奨システムのメイン関数
+    ルールベース医薬品推奨システムのメイン関数（全医薬品種類対応）
     
     Args:
         user_text: ユーザーの症状入力
@@ -692,7 +1231,7 @@ def rule_based_recommendation(
     
     # ステップ1: NLU（症状抽出）
     print(f"\n--- ステップ1: NLU（症状抽出） ---")
-    nlu_result = extract_symptoms_with_gpt(user_text, user_info, client)
+    nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
     # ステップ1.5: 不足情報のチェック
     print(f"\n--- ステップ1.5: 不足情報のチェック ---")
@@ -702,7 +1241,21 @@ def rule_based_recommendation(
         priority = missing_info_result["priority"]
         print(f"不足情報検出（優先度: {priority}）")
         print(f"不足フィールド: {missing_info_result['missing_fields']}")
-        print(f"推奨は続行しますが、追加質問も表示します")
+        
+        # criticalレベルの情報が欠けている場合は推奨を中断
+        if priority == "critical":
+            print(f"[警告] 必須情報が不足しているため推奨を中断します")
+            return {
+                "status": "missing_critical_info",
+                "reason": "必須情報が不足しています",
+                "missing_fields": missing_info_result['missing_fields'],
+                "questions": missing_info_result['questions'],
+                "recommended_medicines": [],
+                "nlu_result": nlu_result,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            print(f"推奨は続行しますが、追加質問も表示します")
     
     # ステップ2: 安全性チェック
     print(f"\n--- ステップ2: 安全性チェック ---")
@@ -737,7 +1290,13 @@ def rule_based_recommendation(
     # ステップ4: スコアリング
     print(f"\n--- ステップ4: スコアリング ---")
     for candidate in candidates:
-        candidate['final_score'] = calculate_final_score(candidate, nlu_result, user_info)
+        score_result = calculate_final_score(candidate, nlu_result, user_info)
+        candidate['final_score'] = score_result['total_score']
+        candidate['score_breakdown'] = score_result['score_breakdown']
+        if 'allergy_warning' in score_result:
+            candidate['allergy_warning'] = score_result['allergy_warning']
+        if 'interaction_warnings' in score_result:
+            candidate['interaction_warnings'] = score_result['interaction_warnings']
         print(f"{candidate['product_name']}: {candidate['final_score']:.3f}")
     
     # スコア順にソート
@@ -768,8 +1327,11 @@ def rule_based_recommendation(
             "conditions": candidate.get('conditions', ''),  # K列
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
+            "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
-            "reason": explanation  # ChatGPTベース互換性のため追加
+            "reason": explanation,  # ChatGPTベース互換性のため追加
+            "allergy_warning": candidate.get('allergy_warning', ''),
+            "interaction_warnings": candidate.get('interaction_warnings', [])
         })
     
     # ステップ6: 使用上の注意と医師相談アドバイスをChatGPTで生成
@@ -803,55 +1365,92 @@ def rule_based_recommendation(
 
 def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict, user_info: Dict) -> str:
     """
-    推奨理由の説明を生成（成分と制限情報を含む）
+    推奨理由の説明を生成（スコア内訳に基づく詳細版）
     """
     explanation_parts = []
     
-    # 症状適合の説明
-    matched_symptoms = []
-    efficacy_text = candidate.get('efficacy', '')
-    for symptom in nlu_result.get("symptoms", []):
-        symptom_name = symptom.get("name")
-        if symptom_name and symptom_name in efficacy_text:
-            matched_symptoms.append(symptom_name)
+    # スコア内訳に基づく詳細説明
+    score_breakdown = candidate.get('score_breakdown', {})
     
-    if matched_symptoms:
-        explanation_parts.append(f"この医薬品は{', '.join(matched_symptoms)}に適応しています。")
+    # 症状適合度の説明
+    symptom_match = score_breakdown.get('symptom_match', 0)
+    if symptom_match > 0.8:
+        matched_symptoms = []
+        efficacy_text = candidate.get('efficacy', '')
+        for symptom in nlu_result.get("symptoms", []):
+            symptom_name = symptom.get("name")
+            if symptom_name and symptom_name in efficacy_text:
+                matched_symptoms.append(symptom_name)
+        
+        if matched_symptoms:
+            explanation_parts.append(f"✅ 症状に非常によく適合: {', '.join(matched_symptoms)}に特化した効果")
+        else:
+            explanation_parts.append("✅ 症状に非常によく適合")
+    elif symptom_match > 0.6:
+        explanation_parts.append("✅ 症状に適度に適合")
+    else:
+        explanation_parts.append("⚠️ 症状への適合度は中程度")
+    
+    # 効能特異性の説明
+    efficacy_specificity = score_breakdown.get('efficacy_specificity', 0)
+    if efficacy_specificity > 0.7:
+        explanation_parts.append("✅ 効能が症状に特化")
+    elif efficacy_specificity > 0.5:
+        explanation_parts.append("✅ 効能が適度に特化")
+    
+    # 副作用リスクの説明
+    side_effect_risk = score_breakdown.get('side_effect_risk', 0)
+    if side_effect_risk < -0.3:
+        explanation_parts.append("⚠️ 副作用リスクがやや高め")
+    elif side_effect_risk < -0.1:
+        explanation_parts.append("⚠️ 軽度の副作用リスク")
+    else:
+        explanation_parts.append("✅ 副作用リスクは低め")
+    
+    # 相互作用リスクの説明
+    interaction_risk = score_breakdown.get('interaction_risk', 0)
+    if interaction_risk < -0.2:
+        explanation_parts.append("⚠️ 薬物相互作用の可能性")
+    elif interaction_risk < -0.1:
+        explanation_parts.append("⚠️ 軽度の相互作用リスク")
+    else:
+        explanation_parts.append("✅ 相互作用リスクは低め")
+    
+    # 年齢適合性の説明
+    age_fit = score_breakdown.get('age_fit', 0)
+    user_age = user_info.get('age')
+    if age_fit > 0.8:
+        explanation_parts.append("✅ 年齢制限に適合")
+    elif age_fit < 0.5:
+        age_restriction = candidate.get('age_restriction', '')
+        if age_restriction:
+            explanation_parts.append(f"⚠️ 年齢制限: {age_restriction}")
+    
+    # 用法簡便性の説明
+    usage_convenience = score_breakdown.get('usage_convenience', 0)
+    if usage_convenience > 0.7:
+        explanation_parts.append("✅ 服用が簡便")
+    elif usage_convenience < 0.3:
+        explanation_parts.append("⚠️ 服用回数が多い")
     
     # 主要成分の説明
     ingredients = candidate.get('ingredients', '')
     if ingredients:
-        # 改行で分割して最初の3成分を取得
         ingredient_list = [ing.strip() for ing in ingredients.split('\n') if ing.strip()][:3]
         if ingredient_list:
-            explanation_parts.append(f"主な成分: {', '.join(ingredient_list)}。")
-    
-    # 年齢制限の説明
-    age_restriction = candidate.get('age_restriction', '')
-    user_age = user_info.get('age')
-    if age_restriction and isinstance(age_restriction, str):
-        if '15歳未満' in age_restriction:
-            if user_age and user_age < 15:
-                explanation_parts.append(f"[注意] {user_age}歳の方は服用できません。")
-            else:
-                explanation_parts.append(f"15歳以上の方が対象です。")
-        elif '7歳未満' in age_restriction:
-            if user_age and user_age < 7:
-                explanation_parts.append(f"[注意] {user_age}歳の方は服用できません。")
-            else:
-                explanation_parts.append(f"7歳以上の方が対象です。")
+            explanation_parts.append(f"主成分: {', '.join(ingredient_list)}")
     
     # 医薬品の種類
     medicine_type = candidate.get('medicine_type', '')
     if medicine_type:
-        explanation_parts.append(f"{medicine_type}として効果が期待できます。")
+        explanation_parts.append(f"{medicine_type}として効果が期待できます")
     
     # 警告がある場合
     if safety_result.get("warnings"):
         for warning in safety_result['warnings']:
-            explanation_parts.append(f"[警告] {warning}")
+            explanation_parts.append(f"⚠️ {warning}")
     
-    return " ".join(explanation_parts)
+    return " | ".join(explanation_parts)
 
 # ================================================================================
 # 6. ChatGPTによる使用上の注意と医師相談アドバイスの生成
@@ -1157,3 +1756,42 @@ def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, lo
         f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
     
     print(f"ログ保存完了: {log_path}")
+
+# ================================================================================
+# 7. ラッパー関数（app.pyから呼び出し用）
+# ================================================================================
+
+def rule_based_medicine_recommendation(
+    user_text: str,
+    user_info: Dict,
+    client: OpenAI,
+    top_n: int = 3,
+    session_id: str = None
+) -> Dict:
+    """
+    ルールベース医薬品推奨システムのラッパー関数（app.pyから呼び出し用）
+    
+    Args:
+        user_text: ユーザーの症状入力
+        user_info: ユーザー情報
+        client: OpenAI client
+        top_n: 推奨医薬品数
+        session_id: セッションID（キャッシュ用）
+    
+    Returns:
+        推奨結果
+    """
+    # CSVデータを読み込み
+    medicine_df = pd.read_csv('otc_medicine_data.csv')
+    
+    # メイン関数を呼び出し
+    result = rule_based_recommendation(
+        user_text=user_text,
+        user_info=user_info,
+        medicine_df=medicine_df,
+        client=client,
+        top_n=top_n,
+        session_id=session_id
+    )
+    
+    return result

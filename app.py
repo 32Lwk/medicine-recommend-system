@@ -3,6 +3,8 @@ from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
 from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
 from debug_logger import performance_stats, network_logs, add_network_log
+from analytics import log_access_analytics, get_access_statistics
+from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
 from typing import Dict, List
 import json
 import time
@@ -154,6 +156,11 @@ def update_session_activity(sid):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # パフォーマンス監視開始
+    monitor = get_global_monitor()
+    monitor.start_monitoring()
+    monitor.increment_request()
+    
     # 古いセッションをクリーンアップ
     cleanup_old_sessions()
     
@@ -1056,6 +1063,9 @@ def index():
                         
                         # ルールベース結果を従来の形式に変換
                         if recommendation_result.get('status') == 'success':
+                            # API呼び出し回数を記録
+                            monitor.increment_api_calls()
+                            
                             recommended_medicines = recommendation_result.get('recommended_medicines', [])
                             usage_notes = recommendation_result.get('usage_notes', '添付文書をよく読んでご使用ください。')
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
@@ -1072,6 +1082,7 @@ def index():
                             }
                         elif recommendation_result.get('status') == 'escalation_required':
                             # エスカレーションが必要な場合
+                            monitor.increment_error()
                             recommendation_result = {
                                 'symptoms': symptoms,
                                 'medicine_type': medicine_type,
@@ -1083,6 +1094,7 @@ def index():
                             }
                         else:
                             # エラーの場合はChatGPTベースにフォールバック
+                            monitor.increment_error()
                             logger.warning(f"⚠️ Rule-based algorithm failed, falling back to ChatGPT")
                             recommendation_result = comprehensive_medicine_recommendation(user_message)
                             recommendation_result['algorithm'] = 'chatgpt_fallback'
@@ -1091,6 +1103,8 @@ def index():
                         logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
                         recommendation_result = comprehensive_medicine_recommendation(user_message)
                         recommendation_result['algorithm'] = 'chatgpt'
+                        # API呼び出し回数を記録
+                        monitor.increment_api_calls()
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
@@ -1507,11 +1521,37 @@ def index():
     
     # POSTリクエストの場合はJSON形式で成功を返す
     if request.method == 'POST':
+        # パフォーマンスメトリクスをログに記録
+        metrics = monitor.get_metrics()
+        log_performance_metrics(monitor, sid, 'POST_request', {
+            'user_agent': user_agent,
+            'client_ip': client_ip
+        })
+        
+        # アクセス分析ログを記録
+        log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
+            'username': session.get('username', ''),
+            'message_count': len(ALL_SESSIONS.get(sid, {}).get('messages', []))
+        })
+        
         message_count = len(ALL_SESSIONS.get(sid, {}).get('messages', []))
         logger.info(f"✅ POST処理完了 - JSON返却: {message_count} messages")
         return jsonify({'status': 'ok', 'message_count': message_count})
     
     # GET処理（初期表示）
+    # パフォーマンスメトリクスをログに記録
+    metrics = monitor.get_metrics()
+    log_performance_metrics(monitor, sid, 'GET_request', {
+        'user_agent': user_agent,
+        'client_ip': client_ip
+    })
+    
+    # アクセス分析ログを記録
+    log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
+        'username': session.get('username', ''),
+        'message_count': len(ALL_SESSIONS.get(sid, {}).get('messages', []))
+    })
+    
     messages = ALL_SESSIONS.get(sid, {}).get('messages', [])
     logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages")
     return render_template('index.html', messages=messages, version=VERSION, username=session['username'])
@@ -2183,6 +2223,72 @@ def admin_system_status():
         'admin_mode': ADMIN_MODE,
         'performance_stats': performance_stats
     })
+
+@app.route('/admin/access_stats', methods=['GET'])
+def admin_access_stats():
+    """アクセス統計を取得"""
+    from analytics import get_access_statistics
+    stats = get_access_statistics()
+    return jsonify(stats)
+
+@app.route('/admin/performance_stats', methods=['GET'])
+def admin_performance_stats():
+    """パフォーマンス統計を取得"""
+    from performance_monitor import get_performance_statistics
+    stats = get_performance_statistics()
+    return jsonify(stats)
+
+@app.route('/admin/browser_distribution', methods=['GET'])
+def admin_browser_distribution():
+    """ブラウザ分布を取得"""
+    from analytics import get_browser_distribution
+    distribution = get_browser_distribution()
+    return jsonify(distribution)
+
+@app.route('/admin/os_distribution', methods=['GET'])
+def admin_os_distribution():
+    """OS分布を取得"""
+    from analytics import get_os_distribution
+    distribution = get_os_distribution()
+    return jsonify(distribution)
+
+@app.route('/admin/device_distribution', methods=['GET'])
+def admin_device_distribution():
+    """デバイス分布を取得"""
+    from analytics import get_device_distribution
+    distribution = get_device_distribution()
+    return jsonify(distribution)
+
+@app.route('/admin/realtime_monitoring', methods=['GET'])
+def admin_realtime_monitoring():
+    """リアルタイム監視データを取得"""
+    from performance_monitor import get_global_monitor
+    monitor = get_global_monitor()
+    metrics = monitor.get_metrics()
+    
+    return jsonify({
+        'memory_usage_percent': metrics.get('memory_usage_percent', 0),
+        'cpu_usage_percent': metrics.get('cpu_usage_percent', 0),
+        'response_time_ms': metrics.get('response_time_ms', 0),
+        'active_sessions': len(ALL_SESSIONS),
+        'api_calls': metrics.get('api_calls', 0),
+        'cache_hit_rate': metrics.get('cache_hit_rate', 0)
+    })
+
+@app.route('/admin/export_monitoring_data', methods=['GET'])
+def admin_export_monitoring_data():
+    """監視データをエクスポート"""
+    from analytics import get_access_statistics
+    from performance_monitor import get_performance_statistics
+    import json
+    
+    data = {
+        'access_stats': get_access_statistics(),
+        'performance_stats': get_performance_statistics(),
+        'export_time': datetime.now().isoformat()
+    }
+    
+    return jsonify(data)
 
 @app.route('/clear_logs', methods=['POST'])
 def clear_logs():
