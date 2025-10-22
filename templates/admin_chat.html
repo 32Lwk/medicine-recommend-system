@@ -1384,6 +1384,7 @@
         <div class="admin-controls">
             <button id="aiControlBtn" class="admin-btn">AI管理</button>
             <button id="systemStatusBtn" class="admin-btn">システム状況</button>
+            <button id="monitoringBtn" class="admin-btn">監視ダッシュボード</button>
             <button id="medicineChatBtn" class="admin-btn">医薬品相談テスト</button>
             <button id="clearLogsBtn" class="admin-btn">ログクリア</button>
         </div>
@@ -1536,6 +1537,70 @@
         </div>
     </div>
 
+    <!-- 監視ダッシュボードモーダル -->
+    <div id="monitoringModal" class="admin-modal">
+        <div class="admin-modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+            <span class="close">&times;</span>
+            <h2>📊 監視ダッシュボード</h2>
+            <div id="monitoringContent">
+                <div class="monitoring-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <!-- アクセス統計 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🌐 アクセス統計</h3>
+                        <div id="accessStats">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- パフォーマンス統計 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">⚡ パフォーマンス統計</h3>
+                        <div id="performanceStats">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ブラウザ分布 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🌍 ブラウザ分布</h3>
+                        <div id="browserDistribution">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- OS分布 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">💻 OS分布</h3>
+                        <div id="osDistribution">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- デバイス分布 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">📱 デバイス分布</h3>
+                        <div id="deviceDistribution">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- リアルタイム監視 -->
+                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🔄 リアルタイム監視</h3>
+                        <div id="realtimeMonitoring">
+                            <p>読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="refreshMonitoringData()" class="admin-btn" style="padding: 10px 20px; font-size: 14px;">🔄 データ更新</button>
+                    <button onclick="exportMonitoringData()" class="admin-btn" style="padding: 10px 20px; font-size: 14px; margin-left: 10px;">📊 データエクスポート</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ユーザー属性情報モーダル -->
     <div id="userAttributesModal" class="admin-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
         <div class="modal-content" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 700px; max-height: 80vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
@@ -1615,6 +1680,11 @@
             document.getElementById('systemStatusBtn').addEventListener('click', function() {
                 document.getElementById('systemStatusModal').style.display = 'block';
                 loadSystemStatus();
+            });
+            
+            document.getElementById('monitoringBtn').addEventListener('click', function() {
+                document.getElementById('monitoringModal').style.display = 'block';
+                loadMonitoringData();
             });
             
             document.getElementById('medicineChatBtn').addEventListener('click', function() {
@@ -2371,6 +2441,127 @@
         }
         
         // システム状況取得
+        function loadMonitoringData() {
+            // アクセス統計の読み込み
+            fetch('/admin/access_stats')
+            .then(response => response.json())
+            .then(data => {
+                const accessStats = document.getElementById('accessStats');
+                accessStats.innerHTML = `
+                    <p><strong>総アクセス数:</strong> ${data.total_accesses || 0}</p>
+                    <p><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
+                    <p><strong>最終更新:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('accessStats').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+
+            // パフォーマンス統計の読み込み
+            fetch('/admin/performance_stats')
+            .then(response => response.json())
+            .then(data => {
+                const performanceStats = document.getElementById('performanceStats');
+                performanceStats.innerHTML = `
+                    <p><strong>総リクエスト数:</strong> ${data.total_requests || 0}</p>
+                    <p><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
+                    <p><strong>平均メモリ使用率:</strong> ${(data.avg_memory_usage || 0).toFixed(1)}%</p>
+                    <p><strong>平均CPU使用率:</strong> ${(data.avg_cpu_usage || 0).toFixed(1)}%</p>
+                    <p><strong>キャッシュヒット率:</strong> ${(data.avg_cache_hit_rate || 0).toFixed(1)}%</p>
+                    <p><strong>エラー率:</strong> ${(data.error_rate || 0).toFixed(1)}%</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('performanceStats').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+
+            // ブラウザ分布の読み込み
+            fetch('/admin/browser_distribution')
+            .then(response => response.json())
+            .then(data => {
+                const browserDistribution = document.getElementById('browserDistribution');
+                let html = '';
+                for (const [browser, stats] of Object.entries(data)) {
+                    html += `<p><strong>${browser}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                }
+                browserDistribution.innerHTML = html || '<p>データがありません</p>';
+            })
+            .catch(error => {
+                document.getElementById('browserDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+
+            // OS分布の読み込み
+            fetch('/admin/os_distribution')
+            .then(response => response.json())
+            .then(data => {
+                const osDistribution = document.getElementById('osDistribution');
+                let html = '';
+                for (const [os, stats] of Object.entries(data)) {
+                    html += `<p><strong>${os}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                }
+                osDistribution.innerHTML = html || '<p>データがありません</p>';
+            })
+            .catch(error => {
+                document.getElementById('osDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+
+            // デバイス分布の読み込み
+            fetch('/admin/device_distribution')
+            .then(response => response.json())
+            .then(data => {
+                const deviceDistribution = document.getElementById('deviceDistribution');
+                let html = '';
+                for (const [device, stats] of Object.entries(data)) {
+                    html += `<p><strong>${device}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
+                }
+                deviceDistribution.innerHTML = html || '<p>データがありません</p>';
+            })
+            .catch(error => {
+                document.getElementById('deviceDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+
+            // リアルタイム監視の読み込み
+            fetch('/admin/realtime_monitoring')
+            .then(response => response.json())
+            .then(data => {
+                const realtimeMonitoring = document.getElementById('realtimeMonitoring');
+                realtimeMonitoring.innerHTML = `
+                    <p><strong>現在のメモリ使用率:</strong> ${data.memory_usage_percent || 0}%</p>
+                    <p><strong>現在のCPU使用率:</strong> ${data.cpu_usage_percent || 0}%</p>
+                    <p><strong>現在のレスポンス時間:</strong> ${data.response_time_ms || 0}ms</p>
+                    <p><strong>アクティブセッション:</strong> ${data.active_sessions || 0}</p>
+                    <p><strong>API呼び出し回数:</strong> ${data.api_calls || 0}</p>
+                    <p><strong>キャッシュヒット率:</strong> ${(data.cache_hit_rate || 0).toFixed(1)}%</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('realtimeMonitoring').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+            });
+        }
+
+        function refreshMonitoringData() {
+            loadMonitoringData();
+        }
+
+        function exportMonitoringData() {
+            // 監視データのエクスポート機能
+            fetch('/admin/export_monitoring_data')
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `monitoring_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                alert('エクスポートに失敗しました: ' + error.message);
+            });
+        }
+
         function loadSystemStatus() {
             fetch('/admin/system_status')
             .then(response => response.json())
