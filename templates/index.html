@@ -9,22 +9,34 @@
     <title>医薬品相談AI - チャット</title>
     <style>
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; 
             padding: 0; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
+            height: 100dvh;
             text-align: left;
+            -webkit-text-size-adjust: 100%;
         }
         .chat-container { 
             max-width: 800px; 
             margin: 0 auto; 
             background: #fff; 
             height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            html, body {
+                height: -webkit-fill-available;
+            }
+            .chat-container {
+                height: -webkit-fill-available;
+            }
         }
         .chat-header {
             background: #4CAF50;
@@ -101,7 +113,8 @@
             background: white;
             border-top: 1px solid #ddd;
             flex-shrink: 0;
-            position: relative;
+            position: sticky;
+            bottom: 0;
         }
         .input-group {
             display: flex;
@@ -566,6 +579,7 @@
             gap: 10px;
             margin-bottom: 10px;
             flex-wrap: wrap;
+            overflow-x: auto;
         }
         
         .button-group button {
@@ -587,7 +601,7 @@
                 max-width: 100%;
                 height: 100vh;
                 height: 100dvh; /* モバイルブラウザのアドレスバーを考慮 */
-                overflow: hidden; /* スクロールを防止 */
+                overflow: visible !important; /* 入力欄を表示 */
             }
             
             /* スマホでの表示を強制 */
@@ -595,12 +609,14 @@
                 display: flex !important;
                 visibility: visible !important;
                 opacity: 1 !important;
-                position: relative !important;
+                position: sticky !important;
+                bottom: 0 !important;
                 z-index: 999 !important;
-                padding: 1px !important;
+                padding: 10px !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
+                background: white !important;
             }
             
             .chat-header {
@@ -620,65 +636,61 @@
             .button-group {
                 display: flex !important;
                 flex-direction: row !important;
-                gap: 1px !important;
+                gap: 5px !important;
                 margin-bottom: 8px !important;
-                flex-wrap: nowrap !important;
+                flex-wrap: wrap !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                overflow: hidden !important;
+                overflow-x: auto !important;
                 visibility: visible !important;
                 opacity: 1 !important;
             }
             
             .button-group button {
                 flex: 1 !important;
-                padding: 1px !important;
-                font-size: 0 !important;
-                min-height: 24px !important;
-                max-width: 24% !important;
-                width: 24% !important;
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+                min-height: 36px !important;
+                min-width: calc(50% - 5px) !important;
                 display: flex !important;
-                flex-direction: column !important;
+                flex-direction: row !important;
                 align-items: center !important;
                 justify-content: center !important;
-                border-radius: 3px !important;
+                gap: 4px !important;
+                border-radius: 8px !important;
                 position: relative !important;
-                text-indent: -9999px !important;
-                overflow: hidden !important;
                 white-space: nowrap !important;
-                line-height: 1 !important;
                 text-align: center !important;
                 margin: 0 !important;
             }
             
             .button-group button::before {
-                font-size: 12px !important;
-                content: "" !important;
-                position: absolute !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
+                font-size: 14px !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
                 z-index: 10 !important;
-                display: block !important;
-                width: 16px !important;
-                height: 16px !important;
-                line-height: 16px !important;
+                display: inline !important;
+                width: auto !important;
+                height: auto !important;
+                line-height: 1 !important;
             }
             
             .button-group button:nth-child(1)::before {
-                content: "👤";
+                content: "👤 ";
             }
             
             .button-group button:nth-child(2)::before {
-                content: "🗑️";
+                content: "🗑️ ";
             }
             
             .button-group button:nth-child(3)::before {
-                content: "🔄";
+                content: "🔄 ";
             }
             
             .button-group button:nth-child(4)::before {
-                content: "👨‍⚕️";
+                content: "👨‍⚕️ ";
             }
             
             .chat-messages {
@@ -699,21 +711,19 @@
             }
             
             .chat-input {
-                padding: 1px !important;
+                padding: 10px !important;
                 display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 1px !important;
-                background: #f5f5f5 !important;
-                border-radius: 8px !important;
-                margin: 1px 0 !important;
-                min-height: 50px !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                background: white !important;
+                margin: 0 !important;
+                min-height: auto !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
-                position: relative !important;
-                z-index: 10 !important;
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 999 !important;
                 visibility: visible !important;
                 opacity: 1 !important;
             }
@@ -722,13 +732,9 @@
                 display: flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
-                justify-content: center !important;
-                gap: 1px !important;
+                gap: 8px !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                min-height: 40px !important;
-                position: relative !important;
-                z-index: 10 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 box-sizing: border-box !important;
@@ -737,13 +743,10 @@
             #user-input {
                 flex: 1;
                 font-size: 14px;
-                min-height: 32px;
-                padding: 6px 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                text-align: center;
-                position: relative;
-                z-index: 10;
+                min-height: 40px;
+                padding: 10px 12px;
+                border: 2px solid #ddd;
+                border-radius: 20px;
             }
             
             .mic-btn {
@@ -788,17 +791,21 @@
         @media (max-width: 480px) {
             /* より小さな画面での表示を強制 */
             .chat-input {
-                display: block !important;
+                display: flex !important;
                 visibility: visible !important;
                 opacity: 1 !important;
-                position: relative !important;
+                position: sticky !important;
+                bottom: 0 !important;
                 z-index: 999 !important;
+                background: white !important;
             }
             
             .button-group {
                 display: flex !important;
                 visibility: visible !important;
                 opacity: 1 !important;
+                flex-wrap: wrap !important;
+                overflow-x: auto !important;
             }
             
             .chat-header {
@@ -830,29 +837,27 @@
             .button-group {
                 display: flex;
                 flex-direction: row;
-                gap: 2px;
+                gap: 4px;
                 margin-bottom: 10px;
-                flex-wrap: nowrap;
+                flex-wrap: wrap !important;
                 width: 100%;
                 max-width: 100%;
-                overflow: hidden;
+                overflow-x: auto !important;
             }
             
             .button-group button {
                 flex: 1 !important;
-                font-size: 0 !important;
-                padding: 1px !important;
-                border-radius: 3px !important;
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+                border-radius: 8px !important;
                 margin-left: 0 !important;
-                min-height: 22px !important;
-                max-width: 24% !important;
-                width: 24% !important;
+                min-height: 32px !important;
+                min-width: calc(50% - 4px) !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
+                gap: 3px !important;
                 position: relative !important;
-                overflow: hidden !important;
-                text-indent: -9999px !important;
                 white-space: nowrap !important;
                 line-height: 1 !important;
                 text-align: center !important;
@@ -860,41 +865,53 @@
             }
             
             .button-group button::before {
-                font-size: 10px !important;
-                content: "" !important;
-                position: absolute !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
+                font-size: 12px !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
                 z-index: 10 !important;
-                display: block !important;
-                width: 14px !important;
-                height: 14px !important;
-                line-height: 14px !important;
+                display: inline !important;
+                width: auto !important;
+                height: auto !important;
+                line-height: 1 !important;
             }
             
-            .button-group button:first-child {
-                min-width: calc(100% - 3px);
-                margin-bottom: 6px;
+            .button-group button:nth-child(1)::before {
+                content: "👤 ";
+            }
+            
+            .button-group button:nth-child(2)::before {
+                content: "🗑️ ";
+            }
+            
+            .button-group button:nth-child(3)::before {
+                content: "🔄 ";
+            }
+            
+            .button-group button:nth-child(4)::before {
+                content: "👨‍⚕️ ";
             }
             
             /* チャット入力エリアの改善 */
             .chat-input {
-                padding: 4px;
+                padding: 8px !important;
                 display: flex !important;
-                position: relative;
-                z-index: 10;
+                flex-direction: column !important;
+                gap: 8px !important;
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 999 !important;
                 visibility: visible !important;
                 opacity: 1 !important;
+                background: white !important;
             }
             
             .input-group {
                 display: flex !important;
                 align-items: center;
-                gap: 4px;
+                gap: 6px;
                 width: 100%;
-                position: relative;
-                z-index: 10;
                 margin: 0;
                 padding: 0;
             }
@@ -1291,42 +1308,6 @@
 
     // ページ読み込み時に入力欄の内容を復元
     window.onload = function() {
-        // スマホでの表示を強制
-        const chatInput = document.querySelector('.chat-input');
-        if (chatInput) {
-            chatInput.style.display = 'flex';
-            chatInput.style.visibility = 'visible';
-            chatInput.style.opacity = '1';
-            chatInput.style.position = 'relative';
-            chatInput.style.zIndex = '999';
-            chatInput.style.padding = '2px';
-            chatInput.style.width = '100%';
-            chatInput.style.maxWidth = '100%';
-        }
-        
-        const buttonGroup = document.querySelector('.button-group');
-        if (buttonGroup) {
-            buttonGroup.style.display = 'flex';
-            buttonGroup.style.visibility = 'visible';
-            buttonGroup.style.opacity = '1';
-            buttonGroup.style.width = '100%';
-            buttonGroup.style.maxWidth = '100%';
-        }
-        
-        // スマホでの各ボタンのスタイルを強制適用
-        if (window.innerWidth <= 768) {
-            const buttons = document.querySelectorAll('.button-group button');
-            buttons.forEach(button => {
-                button.style.fontSize = '0';
-                button.style.textIndent = '-9999px';
-                button.style.maxWidth = '24%';
-                button.style.width = '24%';
-                button.style.padding = '1px';
-                button.style.minHeight = '24px';
-                button.style.margin = '0';
-            });
-        }
-        
         const input = document.getElementById('messageInput');
         if (input) {
             const pending = sessionStorage.getItem('pendingMessage');
