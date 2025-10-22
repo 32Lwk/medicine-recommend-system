@@ -2252,7 +2252,7 @@
                 if (medicine.score !== undefined) {
                     const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
-                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${medicine.score}% (${scoreText})</span>`;
+                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
@@ -2279,7 +2279,7 @@
                 if (medicine.score !== undefined) {
                     const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
-                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${medicine.score}% (${scoreText})</span>`;
+                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
