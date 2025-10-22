@@ -38,8 +38,8 @@ MANUAL_REPLY_QUEUE = []  # 手動返信待ちのメッセージ
 
 ALL_SESSIONS = {}  # {session_id: {'username': str, 'messages': list, 'last_activity': timestamp}}
 USER_COUNTER = 1  # ユーザー名の連番
-MAX_SESSIONS = 20  # 最大セッション数（メモリ最適化のため削減）
-SESSION_TIMEOUT = 1800  # セッションタイムアウト（秒）- 30分に短縮
+MAX_SESSIONS = 10  # 最大セッション数（Render無料プラン用に大幅削減）
+SESSION_TIMEOUT = 900  # セッションタイムアウト（秒）- 15分に短縮
 
 # グローバルエラーハンドラー
 @app.errorhandler(500)
@@ -1253,41 +1253,11 @@ def index():
                         # API呼び出し回数を記録
                         monitor.increment_api_calls()
                         
-                        # ChatGPTベースでも使用上の注意を生成
+                        # ChatGPTベースでは使用上の注意生成を簡略化（API呼び出し削減）
                         recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                        if recommended_medicines:
-                            try:
-                                from medicine_logic import generate_usage_notes
-                                generated_notes = []
-                                for medicine in recommended_medicines[:3]:  # 上位3つのみ
-                                    try:
-                                        # CSVデータから追加情報を取得
-                                        medicine_with_details = medicine.copy()
-                                        # 年齢制限とドーピング情報を追加
-                                        if 'age_restriction' not in medicine_with_details:
-                                            medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
-                                        if 'doping_prohibited' not in medicine_with_details:
-                                            medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
-                                        if 'competition_category' not in medicine_with_details:
-                                            medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
-                                        if 'conditions' not in medicine_with_details:
-                                            medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
-                                        
-                                        medicine_notes = generate_usage_notes(
-                                            medicine.get('name', ''),
-                                            medicine_with_details,
-                                            user_info
-                                        )
-                                        if medicine_notes:
-                                            generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
-                                    except Exception as e:
-                                        logger.warning(f"使用上の注意生成エラー: {e}")
-                                        continue
-                                
-                                if generated_notes:
-                                    recommendation_result['usage_notes'] = '<br><br>'.join(generated_notes)
-                            except Exception as e:
-                                logger.warning(f"使用上の注意生成エラー: {e}")
+                        if recommended_medicines and not recommendation_result.get('usage_notes'):
+                            # 簡易的な使用上の注意を設定
+                            recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
