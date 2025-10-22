@@ -1110,6 +1110,22 @@
         chatMessages.appendChild(messageDiv);
     }
 
+    // ボットメッセージをチャット画面に追加
+    function addMessage(message, type, timestamp) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(message)}</div>
+            <div class="message-time">${timeStr}</div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
     // タイピングインジケーターを追加
     function addTypingIndicator() {
         const chatMessages = document.getElementById('chatMessages');
