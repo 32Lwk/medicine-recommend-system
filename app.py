@@ -1223,6 +1223,31 @@ def index():
                     else:
                         # ChatGPTベースのアルゴリズムを使用
                         logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
+                        
+                        # ユーザー属性データをセッションから取得
+                        user_attributes = session.get('user_attributes', {
+                            'age': None,
+                            'gender': None,
+                            'pregnant': None,
+                            'breastfeeding': None,
+                            'current_medications': [],
+                            'allergies': [],
+                            'medical_history': [],
+                            'symptom_duration_days': None,
+                            'other_info': None
+                        })
+                        
+                        # ChatGPTベース推奨用のuser_infoを構築
+                        user_info = {
+                            'age': user_attributes.get('age'),
+                            'gender': user_attributes.get('gender'),
+                            'pregnant': user_attributes.get('pregnant'),
+                            'breastfeeding': user_attributes.get('breastfeeding'),
+                            'current_medications': user_attributes.get('current_medications', []),
+                            'allergies': user_attributes.get('allergies', []),
+                            'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                        }
+                        
                         recommendation_result = comprehensive_medicine_recommendation(user_message)
                         recommendation_result['algorithm'] = 'chatgpt'
                         # API呼び出し回数を記録
