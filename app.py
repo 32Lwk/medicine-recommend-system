@@ -276,17 +276,32 @@ def index():
                         0,
                         'pending'
                     )
-                    bot_response = {
-                        'type': 'bot',
-                        'content': '申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。',
-                        'diagnosis': None
-                    }
-                    session['messages'].append(bot_response)
-                    session.modified = True
+                    # 薬剤師要請メッセージが既に存在するかチェック
+                    has_admin_request_message = any(
+                        msg.get('admin_request') and msg.get('type') == 'bot' 
+                        for msg in session['messages']
+                    )
                     
-                    # ALL_SESSIONSを更新
-                    if sid and sid in ALL_SESSIONS:
-                        ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                    if not has_admin_request_message:
+                        bot_response = {
+                            'type': 'bot',
+                            'content': '申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。',
+                            'diagnosis': None
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # ALL_SESSIONSを更新
+                        if sid and sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                    else:
+                        # 薬剤師要請メッセージが既に存在する場合は追加しない
+                        logger.info(f"💊 薬剤師要請メッセージが既に存在するため、追加のメッセージをスキップします")
+                        session.modified = True
+                        
+                        # ALL_SESSIONSを更新
+                        if sid and sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
                     
                     message_count = len(session['messages'])
                     logger.info(f"✅ POST処理完了（手動返信待ち） - JSON返却: {message_count} messages")
