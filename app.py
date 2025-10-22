@@ -1061,6 +1061,10 @@ def index():
                             recommendation_client
                         )
                         
+                        # ルールベース結果のデバッグログ
+                        logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
+                        logger.info(f"🔍 Rule-based medicines count: {len(recommendation_result.get('recommended_medicines', []))}")
+                        
                         # ルールベース結果を従来の形式に変換
                         if recommendation_result.get('status') == 'success':
                             # API呼び出し回数を記録
@@ -1132,9 +1136,45 @@ def index():
                         else:
                             # エラーの場合はChatGPTベースにフォールバック
                             monitor.increment_error()
-                            logger.warning(f"⚠️ Rule-based algorithm failed, falling back to ChatGPT")
+                            logger.warning(f"⚠️ Rule-based algorithm failed (status: {recommendation_result.get('status', 'unknown')}), falling back to ChatGPT")
                             recommendation_result = comprehensive_medicine_recommendation(user_message)
                             recommendation_result['algorithm'] = 'chatgpt_fallback'
+                            
+                            # ChatGPTフォールバックでも使用上の注意を生成
+                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
+                            if recommended_medicines:
+                                try:
+                                    from medicine_logic import generate_usage_notes
+                                    generated_notes = []
+                                    for medicine in recommended_medicines[:3]:  # 上位3つのみ
+                                        try:
+                                            # CSVデータから追加情報を取得
+                                            medicine_with_details = medicine.copy()
+                                            # 年齢制限とドーピング情報を追加
+                                            if 'age_restriction' not in medicine_with_details:
+                                                medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
+                                            if 'doping_prohibited' not in medicine_with_details:
+                                                medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
+                                            if 'competition_category' not in medicine_with_details:
+                                                medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
+                                            if 'conditions' not in medicine_with_details:
+                                                medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
+                                            
+                                            medicine_notes = generate_usage_notes(
+                                                medicine.get('name', ''),
+                                                medicine_with_details,
+                                                user_info
+                                            )
+                                            if medicine_notes:
+                                                generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
+                                        except Exception as e:
+                                            logger.warning(f"使用上の注意生成エラー: {e}")
+                                            continue
+                                    
+                                    if generated_notes:
+                                        recommendation_result['usage_notes'] = '<br><br>'.join(generated_notes)
+                                except Exception as e:
+                                    logger.warning(f"使用上の注意生成エラー: {e}")
                     else:
                         # ChatGPTベースのアルゴリズムを使用
                         logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
