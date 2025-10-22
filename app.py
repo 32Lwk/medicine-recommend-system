@@ -768,6 +768,12 @@ def index():
                     symptom_duration = user_attributes.get('symptom_duration_days')
                     if symptom_duration and symptom_duration > 7:
                         logger.info(f"⚠️ 症状期間が7日を超えています: {symptom_duration}日")
+                        
+                        # ユーザーメッセージをALL_SESSIONSに保存（症状期間チェック前に保存）
+                        if sid and sid in ALL_SESSIONS:
+                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                            logger.info(f"💾 ユーザーメッセージをALL_SESSIONSに保存: {len(session['messages'])} messages")
+                        
                         # 医療機関受診案内を追加
                         medical_advice = {
                             'type': 'bot',
