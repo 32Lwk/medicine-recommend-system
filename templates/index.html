@@ -574,14 +574,17 @@
                 gap: 2px;
                 margin-bottom: 8px;
                 flex-wrap: nowrap;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
             }
             
             .button-group button {
                 flex: 1;
-                padding: 8px 4px;
+                padding: 6px 2px;
                 font-size: 0 !important;
-                min-height: 40px;
-                width: 100%;
+                min-height: 36px;
+                max-width: 25%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -590,6 +593,7 @@
                 position: relative;
                 text-indent: -9999px;
                 overflow: hidden;
+                white-space: nowrap;
             }
             
             .button-group button::before {
@@ -636,7 +640,7 @@
             }
             
             .chat-input {
-                padding: 8px;
+                padding: 4px;
                 display: flex !important;
                 flex-direction: row;
                 align-items: center;
@@ -650,6 +654,8 @@
                 box-sizing: border-box;
                 position: relative;
                 z-index: 10;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
             .input-group {
@@ -662,6 +668,8 @@
                 min-height: 40px;
                 position: relative;
                 z-index: 10;
+                margin: 0;
+                padding: 0;
             }
             
             #user-input {
@@ -748,21 +756,26 @@
                 gap: 2px;
                 margin-bottom: 10px;
                 flex-wrap: nowrap;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
             }
             
             .button-group button {
                 flex: 1;
                 font-size: 0 !important;
-                padding: 6px 2px;
+                padding: 4px 1px;
                 border-radius: 6px;
                 margin-left: 0 !important;
-                min-height: 36px;
+                min-height: 32px;
+                max-width: 25%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
                 overflow: hidden;
                 text-indent: -9999px;
+                white-space: nowrap;
             }
             
             .button-group button::before {
@@ -782,19 +795,23 @@
             
             /* チャット入力エリアの改善 */
             .chat-input {
-                padding: 10px;
+                padding: 4px;
                 display: flex !important;
                 position: relative;
                 z-index: 10;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
             .input-group {
                 display: flex !important;
                 align-items: center;
-                gap: 8px;
+                gap: 4px;
                 width: 100%;
                 position: relative;
                 z-index: 10;
+                margin: 0;
+                padding: 0;
             }
             
             .mic-btn {
