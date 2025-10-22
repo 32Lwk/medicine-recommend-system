@@ -1,14 +1,13 @@
 # Gunicorn設定ファイル
 
-# ワーカープロセス数（推奨: CPU数 * 2 + 1）
-workers = 2
+# ワーカープロセス数（Render無料プラン用に削減）
+workers = 1
 
-# ワーカークラス（非同期処理で効率化）
-worker_class = 'gevent'
-worker_connections = 1000
+# ワーカークラス（同期処理で安定性重視）
+worker_class = 'sync'
 
-# タイムアウト（秒）- ChatGPT API呼び出しを考慮して大幅延長
-timeout = 600
+# タイムアウト（秒）- Render制限内で最適化
+timeout = 300
 
 # バインドするアドレスとポート
 bind = '0.0.0.0:5000'
@@ -25,12 +24,12 @@ errorlog = '-'
 # プロセス名
 proc_name = 'medicine-recommend-app'
 
-# ワーカーの再起動前のリクエスト数（メモリ使用量を考慮して削減）
-max_requests = 200
-max_requests_jitter = 20
+# ワーカーの再起動前のリクエスト数（Render無料プラン用に削減）
+max_requests = 100
+max_requests_jitter = 10
 
-# メモリ制限（MB）- 大幅に増加
-worker_memory_limit = 1024
+# メモリ制限（MB）- Render無料プラン制限内
+worker_memory_limit = 512
 
 # Keep-aliveタイムアウト
 keepalive = 5
