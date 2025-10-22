@@ -1972,6 +1972,15 @@ def api_sessions():
             messages = session.get('messages', [])
             logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})")
             logger.info(f"📦 /api/sessions - セッションから取得: {len(messages)} messages")
+            
+            # セッションが存在しない場合は初期化
+            if sid not in ALL_SESSIONS:
+                ALL_SESSIONS[sid] = {
+                    'messages': messages.copy(),
+                    'user_attributes': {},
+                    'created_at': datetime.now().isoformat()
+                }
+                logger.info(f"🆕 新しいセッションを初期化: {sid}")
         
         session_data = {
             'session_id': sid,

@@ -6,8 +6,8 @@ workers = 2
 # ワーカークラス
 worker_class = 'sync'
 
-# タイムアウト（秒）
-timeout = 120
+# タイムアウト（秒）- ChatGPT API呼び出しを考慮して延長
+timeout = 300
 
 # バインドするアドレスとポート
 bind = '0.0.0.0:5000'
@@ -25,8 +25,11 @@ errorlog = '-'
 proc_name = 'medicine-recommend-app'
 
 # ワーカーの再起動前のリクエスト数
-max_requests = 1000
+max_requests = 500
 max_requests_jitter = 50
+
+# メモリ制限（MB）
+worker_memory_limit = 512
 
 # Keep-aliveタイムアウト
 keepalive = 5
