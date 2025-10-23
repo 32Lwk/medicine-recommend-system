@@ -1894,7 +1894,7 @@
         // 評価ボタンを追加（定期更新時も含む）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 500); // タイミングを延長してチカチカを防ぐ
+        }, 800); // タイミングをさらに延長してチカチカを防ぐ
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
@@ -1914,7 +1914,7 @@
         // AI応答メッセージに評価ボタンを追加（簡素化）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 400); // タイミングを延長してチカチカを防ぐ
+        }, 600); // タイミングを延長してチカチカを防ぐ
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2596,7 +2596,7 @@
         
         if (messageElements.length > 0) {
             const lastBotMessage = messageElements[messageElements.length - 1];
-            if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons')) {
+            if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons') && !lastBotMessage.getAttribute('data-feedback-added')) {
                 // 最新のbotメッセージの内容を取得
                 const messageContent = lastBotMessage.querySelector('.message-content');
                 if (messageContent && messageContent.textContent.trim()) {
@@ -2605,8 +2605,26 @@
                     if (messageText.includes('こんにちは！どのような症状でお困りでしょうか？') ||
                         messageText.includes('どのような症状でお困りでしょうか？') ||
                         messageText.includes('例：') ||
-                        messageText.length < 50) { // 短いメッセージ（初期メッセージ）は除外
+                        messageText.includes('頭痛がする') ||
+                        messageText.includes('喉が痛い') ||
+                        messageText.includes('熱がある') ||
+                        messageText.length < 100) { // 短いメッセージ（初期メッセージ）は除外
                         return; // 初期メッセージの場合は評価ボタンを追加しない
+                    }
+                    
+                    // 症状分析や質問対応のメッセージには評価ボタンを追加
+                    if (messageText.includes('症状') || 
+                        messageText.includes('分析') || 
+                        messageText.includes('質問') || 
+                        messageText.includes('回答') ||
+                        messageText.includes('おすすめ') ||
+                        messageText.includes('薬') ||
+                        messageText.includes('治療') ||
+                        messageText.includes('病院') ||
+                        messageText.length > 100) {
+                        // これらのメッセージには評価ボタンを追加する
+                    } else {
+                        return; // その他のメッセージには評価ボタンを追加しない
                     }
                     
                     const messageData = {
@@ -2627,6 +2645,9 @@
         if (messageElement.querySelector('.feedback-buttons')) {
             return;
         }
+        
+        // メッセージ要素に評価ボタン追加済みフラグを設定
+        messageElement.setAttribute('data-feedback-added', 'true');
         
         const feedbackButtons = document.createElement('div');
         feedbackButtons.className = 'feedback-buttons';
