@@ -1465,9 +1465,10 @@
                 ${escapeHtml(message)}
                 <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer;">×</button>
             </div>
-            <div class="report-bug-section" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーについて報告しますか？</p>
                 <button class="report-bug-btn" onclick="handleSecurityReport({
-                    'user_message': '${escapeHtml(getCurrentUserMessage())}',
+                    'user_message': '${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}',
                     'ai_response': '${escapeHtml(message)}',
                     'security_score': 0
                 })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
@@ -1480,15 +1481,10 @@
         
         // エラーメッセージを永続化（自動削除しない）
         console.log('Error message displayed:', message);
-    }
-    
-    // 現在のユーザーメッセージを取得
-    function getCurrentUserMessage() {
-        const messages = document.querySelectorAll('.message.user .message-content');
-        if (messages.length > 0) {
-            return messages[messages.length - 1].textContent.trim();
-        }
-        return 'メッセージ取得エラー';
+        
+        // エラーメッセージの永続化を強化
+        errorDiv.setAttribute('data-persistent', 'true');
+        errorDiv.style.display = 'block';
     }
     
     // 警告メッセージを表示
@@ -1507,9 +1503,10 @@
                 ${escapeHtml(message)}
                 <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer; font-weight: bold;">×</button>
             </div>
-            <div class="report-bug-section" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この警告について報告しますか？</p>
                 <button class="report-bug-btn" onclick="handleSecurityReport({
-                    'user_message': '${escapeHtml(getCurrentUserMessage())}',
+                    'user_message': '${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}',
                     'ai_response': '${escapeHtml(message)}',
                     'security_score': 0
                 })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
@@ -1518,8 +1515,6 @@
             </div>
         `;
         chatMessages.appendChild(warningDiv);
-        
-        // セキュリティ警告に報告ボタンを追加（削除済み - HTMLに直接組み込み）
         
         scrollToBottom();
         
