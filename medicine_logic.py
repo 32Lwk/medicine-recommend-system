@@ -110,7 +110,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師です。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
+                {"role": "system", "content": "あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1200,
@@ -261,7 +261,8 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
     if client is None:
         client = OpenAI(api_key=api_key)
     prompt = (
-        "あなたは薬剤師AIです。以下は症状リストです。\n"
+        "あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。\n"
+        "以下は症状リストです。\n"
         "ユーザーの症状文から最も近い症状名を日本語で返してください。(複数選択可)\n\n"
         "【症状リスト】\n" +
         "\n".join(f"{i+1}. {s}" for i, s in enumerate(symptom_list)) +
@@ -295,7 +296,7 @@ def gpt_select_best_otc(user_text, candidates, client=None):
     if client is None:
         client = OpenAI(api_key=api_key)
     prompt = (
-        f"あなたは薬剤師AIです。ユーザーの症状「{user_text}」に最も適した市販薬を3つ選び、理由も簡単に説明してください。(市販薬の重複は避けてください)\n\n"
+        f"あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの症状「{user_text}」に最も適した市販薬を3つ選び、理由も簡単に説明してください。(市販薬の重複は避けてください)\n\n"
         "【候補リスト】\n" +
         "\n".join(
             f"{i+1}. 製品名: {row['製品名']} / 効能効果: {row['効能効果']} / 成分: {row['成分']}"
@@ -410,7 +411,7 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     # --- 3. ChatGPTで最適薬3つ選定 ---
     # プロンプト工夫: 症状文・推定症状語・候補リストを明示
     prompt = (
-        f"あなたは薬剤師AIです。ユーザーの症状:『{user_text}』\n"
+        f"あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの症状:『{user_text}』\n"
         f"推定された症状語: {', '.join(symptoms)}\n"
         "以下の候補リストから、症状に最も適した市販薬を3つ選び、それぞれの医薬品の特徴を効果効能から要約して日本語で説明してください。\n"
         "【候補リスト】\n" +
@@ -452,7 +453,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     if len(efficacy_list) > max_candidates:
         efficacy_list = random.sample(efficacy_list, max_candidates)
     prompt = (
-        f"あなたは薬剤師AIです。下記は市販薬の効能効果リストです。\n"
+        f"あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。下記は市販薬の効能効果リストです。\n"
         f"ユーザーの症状:『{user_text}』\n"
         "この中から症状に最も近い効能効果をすべて選び、日本語でリスト形式で出力してください。\n"
         "【効能効果リスト】\n" +
@@ -505,7 +506,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     
     # 症状抽出のプロンプトを改善
     prompt = f"""
-あなたは薬剤師AIです。ユーザーの症状文から該当する症状を正確に抽出してください。
+あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの症状文から該当する症状を正確に抽出してください。
 
 【ユーザーの症状文】
 {user_text}
@@ -527,7 +528,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
 """
     
     messages = [
-        {"role": "system", "content": "あなたは薬剤師AIです。ユーザーの症状文から正確に症状を抽出してください。"},
+        {"role": "system", "content": "あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの症状文から正確に症状を抽出してください。"},
         {"role": "user", "content": prompt}
     ]
     
@@ -618,7 +619,7 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     ]
     
     prompt = f"""
-あなたは薬剤師AIです。ユーザーの症状文を分析して、該当する症状と適する医薬品の種類を選択してください。
+あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの症状文を分析して、該当する症状と適する医薬品の種類を選択してください。
 
 【ユーザーの症状文】
 {user_text}
@@ -1281,7 +1282,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
 """
     
     prompt = f"""
-あなたは薬剤師AIです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
+あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
 
 【会話履歴】
 {history_text}
@@ -1321,7 +1322,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師AIです。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
+                {"role": "system", "content": "あなたは医薬品推奨システムです。薬剤師を名乗ることは薬剤師法違反のため、推奨する立場であることを明確にしてください。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
