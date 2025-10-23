@@ -5,6 +5,7 @@ from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_
 from debug_logger import performance_stats, network_logs, add_network_log
 from analytics import log_access_analytics, get_access_statistics
 from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
+from database import init_database, get_database
 from typing import Dict, List
 import json
 import time
@@ -27,6 +28,10 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
+
+# データベース初期化
+if not init_database():
+    logger.warning("⚠️ Database initialization failed. Feedback features will be disabled.")
 
 # キャッシュバスティング用のバージョン番号
 VERSION = str(int(time.time()))
@@ -2987,6 +2992,103 @@ def api_user_attributes():
             logger.info(f"✅ User attributes saved to session {sid}")
         
         return jsonify({'status': 'success', 'message': 'ユーザー属性を保存しました'})
+
+# フィードバック関連API
+@app.route('/api/submit_feedback', methods=['POST'])
+def submit_feedback():
+    """フィードバックをデータベースに保存"""
+    try:
+        data = request.json
+        logger.info(f"📝 Feedback submission: {data}")
+        
+        # データベース接続確認
+        db = get_database()
+        if not db.connection:
+            return jsonify({'error': 'Database not available'}), 500
+        
+        # 必須フィールドの検証
+        required_fields = ['report_type', 'user_message', 'ai_response']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # レート制限チェック（同一セッションから60秒に1回まで）
+        session_id = session.get('_id')
+        if session_id:
+            # 簡易的なレート制限（実際の実装ではRedis等を使用）
+            current_time = time.time()
+            last_feedback_time = session.get('last_feedback_time', 0)
+            if current_time - last_feedback_time < 60:
+                return jsonify({'error': 'Rate limit exceeded. Please wait 60 seconds.'}), 429
+            session['last_feedback_time'] = current_time
+        
+        # フィードバックテキストの文字数制限
+        feedback_text = data.get('feedback_text', '')
+        if len(feedback_text) > 1000:
+            return jsonify({'error': 'Feedback text too long (max 1000 characters)'}), 400
+        
+        # データベースに保存
+        feedback_id = db.insert_feedback(
+            report_type=data['report_type'],
+            session_id=session_id,
+            username=session.get('username', 'Unknown'),
+            user_message=data['user_message'],
+            ai_response=data['ai_response'],
+            security_score=data.get('security_score'),
+            feedback_text=feedback_text,
+            is_google_form=data.get('is_google_form', False)
+        )
+        
+        if feedback_id:
+            logger.info(f"✅ Feedback saved with ID: {feedback_id}")
+            return jsonify({'status': 'success', 'feedback_id': feedback_id})
+        else:
+            return jsonify({'error': 'Failed to save feedback'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Feedback submission error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/get_feedback_reports', methods=['GET'])
+def get_feedback_reports():
+    """フィードバック報告一覧を取得（管理画面用）"""
+    try:
+        db = get_database()
+        if not db.connection:
+            return jsonify({'error': 'Database not available'}), 500
+        
+        # クエリパラメータ
+        limit = request.args.get('limit', 100, type=int)
+        unresolved_only = request.args.get('unresolved_only', 'false').lower() == 'true'
+        
+        reports = db.get_feedback_reports(limit=limit, unresolved_only=unresolved_only)
+        
+        logger.info(f"📊 Retrieved {len(reports)} feedback reports")
+        return jsonify({'reports': reports})
+        
+    except Exception as e:
+        logger.error(f"❌ Get feedback reports error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/resolve_feedback/<int:feedback_id>', methods=['POST'])
+def resolve_feedback(feedback_id):
+    """フィードバックを解決済みにマーク"""
+    try:
+        db = get_database()
+        if not db.connection:
+            return jsonify({'error': 'Database not available'}), 500
+        
+        success = db.resolve_feedback(feedback_id)
+        
+        if success:
+            logger.info(f"✅ Feedback {feedback_id} marked as resolved")
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'error': 'Failed to resolve feedback'}), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Resolve feedback error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
