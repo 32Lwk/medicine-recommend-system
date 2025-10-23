@@ -1673,20 +1673,30 @@ def index():
     </div>
 """
                         
-                        # 評価ボタン用のデータを準備（改行文字を適切にエスケープ）
+                        # 評価ボタン用のデータを準備（HTMLエスケープ処理）
+                        import json
+                        import html
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_ai_response = html.escape(bot_content)
+                        
                         feedback_data = {
-                            'user_message': user_message,
-                            'ai_response': bot_content,
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_ai_response,
                             'security_score': None
                         }
+                        
+                        # JSONエンコードしてHTMLエスケープ
+                        feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
                         
                         bot_content += f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この推奨結果はいかがでしたか？</p>
-        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_data})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
             適切
         </button>
-        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_data})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
             不適切
         </button>
     </div>
