@@ -1323,31 +1323,42 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     
     if is_system_intro and not recommended_medicines:
         return {
-            "answer": """🏥 **医薬品推奨システムについて**
-
-このシステムは、症状に基づいて適切な市販薬（OTC医薬品）を推奨する医薬品推奨システムです。
-
-📋 **主な機能**
-・症状に基づく医薬品推奨
-・医薬品の詳細情報提供（効能、用法用量、注意事項）
-・ドーピング規制チェック
-・医薬品の相互作用確認
-・副作用情報の提供
-
-🔍 **できること**
-・「頭痛がする」「のどが痛い」など症状を入力すると、適切な市販薬を推奨します
-・「ビタミンCの薬を教えて」など医薬品名で検索できます
-・推奨された医薬品について質問できます
-
-⚠️ **ご注意**
-・本システムは医薬品推奨を行いますが、最終的な判断は登録販売者や薬剤師にご相談ください
-・重篤な症状の場合は医療機関を受診してください
-
-どのような症状でお困りですか？お気軽にお伝えください。""",
-            "medicine_details": "システム紹介",
-            "interactions": "システム紹介",
-            "doping_check": "システム紹介",
-            "side_effects": "システム紹介",
+            "answer": """<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <h3 style="color: #007bff; margin-top: 0;">🏥 医薬品推奨システムについて</h3>
+                <p>このシステムは、症状に基づいて適切な市販薬（OTC医薬品）を推奨する医薬品推奨システムです。</p>
+                
+                <h4 style="color: #28a745; margin: 20px 0 10px 0;">📋 主な機能</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>症状に基づく医薬品推奨</li>
+                    <li>医薬品の詳細情報提供（効能、用法用量、注意事項）</li>
+                    <li>ドーピング規制チェック</li>
+                    <li>医薬品の相互作用確認</li>
+                    <li>副作用情報の提供</li>
+                </ul>
+                
+                <h4 style="color: #17a2b8; margin: 20px 0 10px 0;">🔍 できること</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>「頭痛がする」「のどが痛い」など症状を入力すると、適切な市販薬を推奨します</li>
+                    <li>「ビタミンCの薬を教えて」など医薬品名で検索できます</li>
+                    <li>推奨された医薬品について質問できます</li>
+                </ul>
+                
+                <div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+                    <h4 style="color: #856404; margin-top: 0;">⚠️ ご注意</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #856404;">
+                        <li>本システムは医薬品推奨を行いますが、最終的な判断は登録販売者や薬剤師にご相談ください</li>
+                        <li>重篤な症状の場合は医療機関を受診してください</li>
+                    </ul>
+                </div>
+                
+                <p style="text-align: center; margin: 20px 0; font-weight: bold; color: #007bff;">
+                    どのような症状でお困りですか？お気軽にお伝えください。
+                </p>
+            </div>""",
+            "medicine_details": "システム紹介のため、医薬品詳細はありません",
+            "interactions": "システム紹介のため、相互作用情報はありません",
+            "doping_check": "システム紹介のため、ドーピング規制情報はありません",
+            "side_effects": "システム紹介のため、副作用情報はありません",
             "consultation_advice": "お近くの登録販売者にご相談ください"
         }
     
