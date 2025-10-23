@@ -945,6 +945,18 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame) -> List
             if not age_restriction and len(row) > 6:
                 age_restriction = row.iloc[6] if hasattr(row, 'iloc') else ''
             
+            # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
+            if age_restriction and isinstance(age_restriction, str):
+                import re
+                # 数値のみを抽出（例：「15歳以上」→「15」）
+                age_match = re.search(r'(\d+)歳', age_restriction)
+                if age_match:
+                    age_num = age_match.group(1)
+                    age_restriction = f"{age_num}歳以上"
+                else:
+                    # 数値が見つからない場合は元の値を保持
+                    pass
+            
             # 用法用量から使用上の注意部分を抽出
             usage_full = row.get('用法用量', '')
             usage_notes = ''
