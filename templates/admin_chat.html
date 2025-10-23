@@ -3568,6 +3568,9 @@
         function renderFeedbackReports(reports) {
             const content = document.getElementById('feedbackReportsContent');
             
+            // 統計データを計算・表示
+            updateFeedbackStats(reports);
+            
             if (reports.length === 0) {
                 content.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">報告はありません</p>';
                 return;
@@ -3620,6 +3623,31 @@
             
             html += '</tbody></table>';
             content.innerHTML = html;
+        }
+        
+        function updateFeedbackStats(reports) {
+            // 全報告数
+            const totalReports = reports.length;
+            
+            // 解決済み・未解決の数
+            const resolvedCount = reports.filter(r => r.resolved).length;
+            const unresolvedCount = totalReports - resolvedCount;
+            
+            // 適切・不適切の数（ai_positiveとai_negativeのみ）
+            const positiveCount = reports.filter(r => r.report_type === 'ai_positive').length;
+            const negativeCount = reports.filter(r => r.report_type === 'ai_negative').length;
+            const totalFeedback = positiveCount + negativeCount;
+            
+            // 適切率・不適切率の計算
+            const positiveRatio = totalFeedback > 0 ? ((positiveCount / totalFeedback) * 100).toFixed(1) : '0.0';
+            const negativeRatio = totalFeedback > 0 ? ((negativeCount / totalFeedback) * 100).toFixed(1) : '0.0';
+            
+            // 統計データを表示
+            document.getElementById('totalReports').textContent = totalReports;
+            document.getElementById('resolvedReports').textContent = resolvedCount;
+            document.getElementById('unresolvedReports').textContent = unresolvedCount;
+            document.getElementById('positiveRatio').textContent = `${positiveRatio}%`;
+            document.getElementById('negativeRatio').textContent = `${negativeRatio}%`;
         }
         
         function resolveFeedback(feedbackId) {
@@ -3725,9 +3753,39 @@
             <div style="margin-bottom: 20px;">
                 <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
                 <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
-                <label style="margin-left: 20px;">
-                    <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
-                </label>
+                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 5px;">
+                        <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
+                    </label>
+                </div>
+            </div>
+            <div id="feedbackStats" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;" id="totalReports">-</div>
+                            <div style="font-size: 12px; color: #666;">総報告数</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;" id="resolvedReports">-</div>
+                            <div style="font-size: 12px; color: #666;">解決済み</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;" id="unresolvedReports">-</div>
+                            <div style="font-size: 12px; color: #666;">未解決</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 18px; font-weight: bold; color: #28a745;" id="positiveRatio">-</div>
+                            <div style="font-size: 12px; color: #666;">適切率</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 18px; font-weight: bold; color: #dc3545;" id="negativeRatio">-</div>
+                            <div style="font-size: 12px; color: #666;">不適切率</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="feedbackReportsContent">
                 <p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>
