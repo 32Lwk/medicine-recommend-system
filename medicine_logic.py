@@ -792,6 +792,35 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
     症状と医薬品リストをChatGPTに渡して推奨医薬品を3つ選び、
     使用上の注意を要約して返す。適した医薬品が返ってこなければ再試行
     """
+    # セキュリティ検証の追加
+    from security_validator import validate_user_input
+    from security_config import should_block_input
+    from security_logger import log_input_validation
+    
+    # 入力検証
+    is_safe, risk_score, warnings, sanitized_text = validate_user_input(
+        user_text, context='medicine_recommendation'
+    )
+    
+    # ログ記録
+    log_input_validation(
+        user_id='medicine_recommendation',
+        input_text=user_text,
+        risk_score=risk_score,
+        is_safe=is_safe,
+        warnings=warnings,
+        sanitized_text=sanitized_text
+    )
+    
+    # ブロック判定
+    if should_block_input(risk_score):
+        print(f"⚠️ 医薬品推奨がブロックされました: リスクスコア {risk_score}")
+        return {
+            "recommended_medicines": [],
+            "usage_notes": "入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。",
+            "doctor_consultation": "医師にご相談ください。"
+        }
+    
     if client is None:
         client = OpenAI(api_key=api_key)
     
@@ -814,7 +843,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
 {', '.join(symptoms)}
 
 【症状文】
-{user_text}
+{sanitized_text}
 
 【選択可能な医薬品】
 {medicine_text}
@@ -873,39 +902,32 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
             if not result:
                 print("ChatGPTからの応答が空です。再試行します。")
                 continue
-            # JSON形式の回答を解析
-            import json
+            # 安全なJSON解析
+            from json_validator import safe_json_parse
             try:
-                # JSON部分を抽出
-                json_start = result.find('{') if result else -1
-                json_end = result.rfind('}') + 1 if result else -1
-                if json_start != -1 and json_end != -1:
-                    json_str = result[json_start:json_end]
-                    parsed_result = json.loads(json_str)
-                    
-                    # 推奨医薬品が3つあるかチェック＋重複除去
-                    if (parsed_result.get('recommended_medicines')):
-                        # 製品名・メーカー名の重複を除去
-                        seen = set()
-                        unique_meds = []
-                        for med in parsed_result['recommended_medicines']:
-                            key = (med.get('product_name', ''), med.get('manufacturer', ''))
-                            if key not in seen:
-                                seen.add(key)
-                                unique_meds.append(med)
-                            if len(unique_meds) == 3:
-                                break
-                        parsed_result['recommended_medicines'] = unique_meds
-                        if len(unique_meds) >= 3:
-                            print(f"適切な推奨医薬品が見つかりました（重複除去済み）")
-                            return parsed_result
-                        else:
-                            print(f"推奨医薬品が不足しています（重複除去後）。再試行します。")
+                parsed_result = safe_json_parse(result, schema='medicine_recommendation')
+                
+                # 推奨医薬品が3つあるかチェック＋重複除去
+                if (parsed_result.get('recommended_medicines')):
+                    # 製品名・メーカー名の重複を除去
+                    seen = set()
+                    unique_meds = []
+                    for med in parsed_result['recommended_medicines']:
+                        key = (med.get('product_name', ''), med.get('manufacturer', ''))
+                        if key not in seen:
+                            seen.add(key)
+                            unique_meds.append(med)
+                        if len(unique_meds) == 3:
+                            break
+                    parsed_result['recommended_medicines'] = unique_meds
+                    if len(unique_meds) >= 3:
+                        print(f"適切な推奨医薬品が見つかりました（重複除去済み）")
+                        return parsed_result
                     else:
-                        print(f"推奨医薬品が不足しています。再試行します。")
+                        print(f"推奨医薬品が不足しています（重複除去後）。再試行します。")
                 else:
-                    print("JSON形式が見つかりませんでした。再試行します。")
-            except json.JSONDecodeError as e:
+                    print(f"推奨医薬品が不足しています。再試行します。")
+            except Exception as e:
                 print(f"JSON解析エラー: {e}。再試行します。")
                 
         except Exception as e:
