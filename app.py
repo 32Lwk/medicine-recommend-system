@@ -1478,6 +1478,15 @@ def index():
                                     if isinstance(age_restriction, float) and math.isnan(age_restriction):
                                         age_restriction = ''
                                     
+                                    # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
+                                    if age_restriction and isinstance(age_restriction, str):
+                                        import re
+                                        # 数値のみを抽出（例：「15歳以上」→「15」）
+                                        age_match = re.search(r'(\d+)歳', age_restriction)
+                                        if age_match:
+                                            age_num = age_match.group(1)
+                                            age_restriction = f"{age_num}歳以上"
+                                    
                                     if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
                                         if '15歳未満' in age_restriction:
                                             age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳以上の方が対象です。</span></p>'
