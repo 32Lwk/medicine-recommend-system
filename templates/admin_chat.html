@@ -3658,7 +3658,7 @@
             const negativeCount = reports.filter(r => r.report_type === 'ai_negative').length;
             const totalFeedback = positiveCount + negativeCount;
             
-            // 適切率・不適切率の計算
+            // 適切率・不適切率の計算（適切もカウントに含める）
             const positiveRatio = totalFeedback > 0 ? ((positiveCount / totalFeedback) * 100).toFixed(1) : '0.0';
             const negativeRatio = totalFeedback > 0 ? ((negativeCount / totalFeedback) * 100).toFixed(1) : '0.0';
             
