@@ -48,6 +48,65 @@
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 20px;
+        }
+        
+        .security-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .security-panel h3 {
+            color: #dc3545;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .security-alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            color: #721c24;
+        }
+        
+        .security-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            color: #0c5460;
+        }
+        
+        .risk-score {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .risk-score.high {
+            color: #dc3545;
+        }
+        
+        .risk-score.medium {
+            color: #fd7e14;
+        }
+        
+        .risk-score.low {
+            color: #28a745;
+        }
+        
+        .attack-patterns {
+            font-family: monospace;
+            font-size: 0.9em;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
             padding: 20px;
             min-height: 800px;
             height: calc(100vh - 200px);
@@ -1464,6 +1523,14 @@
 
             <!-- 右側: チャットエリア -->
             <div class="chat-monitor" style="flex: 1; background: white; border-radius: 8px; border: 1px solid #dee2e6; padding: 15px; display: flex; flex-direction: column;">
+                <!-- セキュリティパネル -->
+                <div class="security-panel" id="security-panel" style="display: none;">
+                    <h3>🔒 セキュリティ詳細</h3>
+                    <div id="security-details">
+                        <!-- セキュリティ詳細がここに表示される -->
+                    </div>
+                </div>
+                
                 <div class="chat-area" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
                     <div class="chat-header" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; flex-shrink: 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
@@ -3333,6 +3400,94 @@
             const micBtn = document.getElementById('mic-btn');
             micBtn.classList.remove('recording');
             micBtn.title = '音声入力';
+        }
+        
+        // セキュリティ詳細表示機能
+        function showSecurityDetails(securityInfo) {
+            const securityPanel = document.getElementById('security-panel');
+            const securityDetails = document.getElementById('security-details');
+            
+            if (!securityInfo || !securityInfo.risk_score) {
+                securityPanel.style.display = 'none';
+                return;
+            }
+            
+            // リスクスコアに応じたクラス設定
+            let riskClass = 'low';
+            if (securityInfo.risk_score >= 80) {
+                riskClass = 'high';
+            } else if (securityInfo.risk_score >= 60) {
+                riskClass = 'medium';
+            }
+            
+            // 攻撃パターンの表示
+            let attackPatternsHtml = '';
+            if (securityInfo.detected_patterns && securityInfo.detected_patterns.length > 0) {
+                attackPatternsHtml = `
+                    <div class="attack-patterns">
+                        <strong>検出された攻撃パターン:</strong><br>
+                        ${securityInfo.detected_patterns.map(pattern => `• ${pattern}`).join('<br>')}
+                    </div>
+                `;
+            }
+            
+            // 警告メッセージの表示
+            let warningsHtml = '';
+            if (securityInfo.warnings && securityInfo.warnings.length > 0) {
+                warningsHtml = `
+                    <div class="security-alert">
+                        <strong>警告:</strong><br>
+                        ${securityInfo.warnings.map(warning => `• ${warning}`).join('<br>')}
+                    </div>
+                `;
+            }
+            
+            // セキュリティ詳細のHTML生成
+            securityDetails.innerHTML = `
+                <div class="security-info">
+                    <strong>リスクスコア:</strong> 
+                    <span class="risk-score ${riskClass}">${securityInfo.risk_score}/100</span>
+                </div>
+                <div class="security-info">
+                    <strong>検証結果:</strong> 
+                    ${securityInfo.is_safe ? '✅ 安全' : '❌ 危険'}
+                </div>
+                <div class="security-info">
+                    <strong>入力テキスト:</strong> 
+                    <span style="font-family: monospace; background: #f8f9fa; padding: 2px 4px; border-radius: 3px;">
+                        ${securityInfo.input_text ? securityInfo.input_text.substring(0, 100) + (securityInfo.input_text.length > 100 ? '...' : '') : 'N/A'}
+                    </span>
+                </div>
+                <div class="security-info">
+                    <strong>サニタイズ済みテキスト:</strong> 
+                    <span style="font-family: monospace; background: #f8f9fa; padding: 2px 4px; border-radius: 3px;">
+                        ${securityInfo.sanitized_text ? securityInfo.sanitized_text.substring(0, 100) + (securityInfo.sanitized_text.length > 100 ? '...' : '') : 'N/A'}
+                    </span>
+                </div>
+                <div class="security-info">
+                    <strong>検証時刻:</strong> 
+                    ${securityInfo.timestamp ? new Date(securityInfo.timestamp).toLocaleString('ja-JP') : 'N/A'}
+                </div>
+                ${attackPatternsHtml}
+                ${warningsHtml}
+            `;
+            
+            securityPanel.style.display = 'block';
+        }
+        
+        // セキュリティ詳細を隠す
+        function hideSecurityDetails() {
+            const securityPanel = document.getElementById('security-panel');
+            securityPanel.style.display = 'none';
+        }
+        
+        // メッセージクリック時のセキュリティ詳細表示
+        function showMessageSecurityDetails(message) {
+            if (message.security_info) {
+                showSecurityDetails(message.security_info);
+            } else {
+                hideSecurityDetails();
+            }
         }
     </script>
 </body>
