@@ -1894,7 +1894,7 @@
         // 評価ボタンを追加（定期更新時も含む）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 800); // タイミングをさらに延長してチカチカを防ぐ
+        }, 1000); // タイミングをさらに延長してチカチカを防ぐ
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
@@ -1914,7 +1914,7 @@
         // AI応答メッセージに評価ボタンを追加（簡素化）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 600); // タイミングを延長してチカチカを防ぐ
+        }, 800); // タイミングを延長してチカチカを防ぐ
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2621,6 +2621,16 @@
                         messageText.includes('薬') ||
                         messageText.includes('治療') ||
                         messageText.includes('病院') ||
+                        messageText.includes('推奨') ||
+                        messageText.includes('医薬品') ||
+                        messageText.includes('相談') ||
+                        messageText.includes('アドバイス') ||
+                        messageText.includes('服用') ||
+                        messageText.includes('副作用') ||
+                        messageText.includes('効果') ||
+                        messageText.includes('効能') ||
+                        messageText.includes('用法') ||
+                        messageText.includes('用量') ||
                         messageText.length > 100) {
                         // これらのメッセージには評価ボタンを追加する
                     } else {
@@ -2642,7 +2652,7 @@
     // AI応答メッセージに評価ボタンを追加
     function addFeedbackButtons(messageElement, messageData) {
         // 既に評価ボタンが存在する場合は追加しない
-        if (messageElement.querySelector('.feedback-buttons')) {
+        if (messageElement.querySelector('.feedback-buttons') || messageElement.getAttribute('data-feedback-added')) {
             return;
         }
         
@@ -2651,6 +2661,7 @@
         
         const feedbackButtons = document.createElement('div');
         feedbackButtons.className = 'feedback-buttons';
+        feedbackButtons.setAttribute('data-feedback-buttons', 'true');
         feedbackButtons.innerHTML = `
             <button class="feedback-btn-positive" onclick="handlePositiveFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
                 適切
