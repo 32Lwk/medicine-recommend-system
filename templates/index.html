@@ -1468,6 +1468,10 @@
         
         // 警告メッセージを永続化（自動削除しない）
         console.log('Warning message displayed:', message);
+        
+        // 警告メッセージの永続化を強化
+        warningDiv.setAttribute('data-persistent', 'true');
+        warningDiv.style.display = 'block';
     }
 
     // フォームを送信
@@ -1839,8 +1843,22 @@
         const currentScrollHeight = chatMessages.scrollHeight;
         const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 10;
         
+        // 永続化された警告メッセージを保持
+        const persistentWarnings = chatMessages.querySelectorAll('[data-persistent="true"]');
+        const warningElements = Array.from(persistentWarnings);
+        
         chatMessages.innerHTML = '';
         chatMessages.appendChild(fragment);
+        
+        // 永続化された警告メッセージを復元
+        warningElements.forEach(warning => {
+            chatMessages.appendChild(warning);
+        });
+        
+        // 評価ボタンを追加（定期更新時も含む）
+        setTimeout(() => {
+            addFeedbackButtonsToLatestMessage();
+        }, 300);
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
@@ -1857,24 +1875,10 @@
             chatMessages.appendChild(newTypingDiv);
         }
         
-        // AI応答メッセージに評価ボタンを追加
-        messages.forEach((message, index) => {
-            if (message.type === 'bot' && message.content && !message.content.includes('<div class="recommendation-result">')) {
-                // 最新のAI応答メッセージに評価ボタンを追加
-                const messageElements = chatMessages.querySelectorAll('.message.bot');
-                if (messageElements.length > 0) {
-                    const lastBotMessage = messageElements[messageElements.length - 1];
-                    if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons')) {
-                        const messageData = {
-                            user_message: messages[index - 1]?.content || 'ユーザーメッセージ',
-                            ai_response: message.content,
-                            security_score: null
-                        };
-                        addFeedbackButtons(lastBotMessage, messageData);
-                    }
-                }
-            }
-        });
+        // AI応答メッセージに評価ボタンを追加（簡素化）
+        setTimeout(() => {
+            addFeedbackButtonsToLatestMessage();
+        }, 200);
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2506,6 +2510,29 @@
 <script>
     // フィードバック関連のグローバル変数
     let currentFeedbackData = null;
+    
+    // 最新のAI応答メッセージに評価ボタンを追加する関数
+    function addFeedbackButtonsToLatestMessage() {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageElements = chatMessages.querySelectorAll('.message.bot');
+        
+        if (messageElements.length > 0) {
+            const lastBotMessage = messageElements[messageElements.length - 1];
+            if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons')) {
+                // 最新のbotメッセージの内容を取得
+                const messageContent = lastBotMessage.querySelector('.message-content');
+                if (messageContent && messageContent.textContent.trim()) {
+                    const messageData = {
+                        user_message: 'ユーザーメッセージ',
+                        ai_response: messageContent.textContent.trim(),
+                        security_score: null
+                    };
+                    addFeedbackButtons(lastBotMessage, messageData);
+                    console.log('✅ Feedback buttons added to latest message');
+                }
+            }
+        }
+    }
     
     // AI応答メッセージに評価ボタンを追加
     function addFeedbackButtons(messageElement, messageData) {
