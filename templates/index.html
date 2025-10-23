@@ -1594,9 +1594,9 @@
             }
             
             // 少し待ってから最新のメッセージを取得（サーバー処理完了を待つ）
-            // 最大10回リトライ（合計5秒）
+            // 最大5回リトライ（合計2.5秒）
             let retryCount = 0;
-            const maxRetries = 10;
+            const maxRetries = 5;
             const retryInterval = 500;
             
             const fetchMessages = () => {
@@ -1607,9 +1607,10 @@
                 .then(sessionData => {
                     console.log(`Session data received (attempt ${retryCount + 1}):`, sessionData);
                     console.log('Messages count:', sessionData?.messages?.length);
+                    console.log('Expected message count:', data.message_count);
                     
-                    if (sessionData && sessionData.messages && sessionData.messages.length >= data.message_count) {
-                        // メッセージが揃った
+                    if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
+                        // メッセージが存在する場合は表示（厳密な数値比較を緩和）
                         console.log('✓ All messages loaded, rendering...');
                         removeTypingIndicator();
                         renderChatMessages(sessionData.messages);

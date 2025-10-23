@@ -589,6 +589,9 @@ def index():
                         
                         # 質問応答をセッションに追加
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        # セッション同期を確実にする
+                        session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                        session.modified = True
                         logger.info(f"✅ 質問応答完了: {user_message}")
                         
                         # 質問応答の場合は、user_attributesを初期化してセッションに保存
@@ -623,6 +626,9 @@ def index():
                         
                         # エラー応答をセッションに追加
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        # セッション同期を確実にする
+                        session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                        session.modified = True
                         
                         # エラーの場合もuser_attributesを初期化
                         user_attributes = session.get('user_attributes', {
@@ -1106,6 +1112,9 @@ def index():
                         session['messages'].append(bot_response)
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
+                            # セッション同期を確実にする
+                            session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                            session.modified = True
                         
                         logger.info(f"✅ 質問応答完了: {user_message}")
                         
@@ -1121,6 +1130,9 @@ def index():
                         session['messages'].append(bot_response)
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
+                            # セッション同期を確実にする
+                            session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                            session.modified = True
                 
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
