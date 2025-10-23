@@ -1674,7 +1674,25 @@ def index():
     </div>
 """
                         
-                        bot_content += "</div>"
+                        bot_content += """
+    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この推奨結果はいかがでしたか？</p>
+        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({
+            'user_message': '""" + user_message.replace("'", "\\'") + """',
+            'ai_response': '""" + bot_content.replace("'", "\\'").replace('\n', '\\n') + """',
+            'security_score': null
+        })" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            適切
+        </button>
+        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({
+            'user_message': '""" + user_message.replace("'", "\\'") + """',
+            'ai_response': '""" + bot_content.replace("'", "\\'").replace('\n', '\\n') + """',
+            'security_score': null
+        })" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            不適切
+        </button>
+    </div>
+</div>"""
                     
                     bot_diag = recommendation_result
                     
