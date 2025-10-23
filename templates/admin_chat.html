@@ -1447,6 +1447,7 @@
             <button id="systemStatusBtn" class="admin-btn">システム状況</button>
             <button id="monitoringBtn" class="admin-btn">監視ダッシュボード</button>
             <button id="medicineChatBtn" class="admin-btn">医薬品相談テスト</button>
+            <button id="feedbackReportsBtn" class="admin-btn">不具合報告</button>
             <button id="clearLogsBtn" class="admin-btn">ログクリア</button>
         </div>
             <p>リアルタイム監視・手動対応システム</p>
@@ -1764,6 +1765,11 @@
                 if (confirm('すべてのログをクリアしますか？')) {
                     clearAllLogs();
                 }
+            });
+            
+            document.getElementById('feedbackReportsBtn').addEventListener('click', function() {
+                document.getElementById('feedbackReportsModal').style.display = 'block';
+                loadFeedbackReports();
             });
             
             // モーダルの閉じるボタン
@@ -3527,6 +3533,204 @@
             // その他のエラーのみログ出力
             console.log('未処理のPromise拒否をキャッチ:', event.reason);
         });
+
+        // 不具合報告関連の関数
+        function loadFeedbackReports() {
+            const unresolvedOnly = document.getElementById('unresolvedOnly').checked;
+            const url = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}`;
+            
+            fetch(url, {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('feedbackReportsContent').innerHTML = 
+                        `<p style="color: red; text-align: center; padding: 20px;">エラー: ${data.error}</p>`;
+                    return;
+                }
+                
+                const reports = data.reports || [];
+                renderFeedbackReports(reports);
+            })
+            .catch(error => {
+                console.error('Feedback reports fetch error:', error);
+                document.getElementById('feedbackReportsContent').innerHTML = 
+                    `<p style="color: red; text-align: center; padding: 20px;">通信エラー: ${error.message}</p>`;
+            });
+        }
+        
+        function renderFeedbackReports(reports) {
+            const content = document.getElementById('feedbackReportsContent');
+            
+            if (reports.length === 0) {
+                content.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">報告はありません</p>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">報告日時</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">タイプ</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">ユーザー</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">ユーザーメッセージ</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">AI応答/警告</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">スコア</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">フィードバック</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">状態</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            reports.forEach(report => {
+                const reportTypeText = {
+                    'ai_positive': 'AI評価（適切）',
+                    'ai_negative': 'AI評価（不適切）',
+                    'security_warning': 'セキュリティ警告'
+                }[report.report_type] || report.report_type;
+                
+                const statusText = report.resolved ? '解決済み' : '未解決';
+                const statusColor = report.resolved ? '#28a745' : '#dc3545';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 10px; border: 1px solid #dee2e6; font-size: 0.9em;">${new Date(report.created_at).toLocaleString('ja-JP')}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">${reportTypeText}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">${report.username || 'Unknown'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${report.user_message || '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${report.ai_response || '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">${report.feedback_text || '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">
+                            ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 5px 10px; font-size: 0.8em;">解決済み</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            content.innerHTML = html;
+        }
+        
+        function resolveFeedback(feedbackId) {
+            if (!confirm('この報告を解決済みにマークしますか？')) {
+                return;
+            }
+            
+            fetch(`/api/resolve_feedback/${feedbackId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('報告を解決済みにマークしました', 'success');
+                    loadFeedbackReports(); // 一覧を更新
+                } else {
+                    showNotification(`エラー: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Resolve feedback error:', error);
+                showNotification(`エラー: ${error.message}`, 'error');
+            });
+        }
+        
+        function exportFeedbackReports() {
+            const unresolvedOnly = document.getElementById('unresolvedOnly').checked;
+            const url = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}`;
+            
+            fetch(url, {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification(`エラー: ${data.error}`, 'error');
+                    return;
+                }
+                
+                const reports = data.reports || [];
+                const csvContent = generateCSV(reports);
+                downloadCSV(csvContent, 'feedback_reports.csv');
+            })
+            .catch(error => {
+                console.error('Export feedback reports error:', error);
+                showNotification(`エラー: ${error.message}`, 'error');
+            });
+        }
+        
+        function generateCSV(reports) {
+            const headers = ['報告日時', 'タイプ', 'ユーザー', 'ユーザーメッセージ', 'AI応答/警告', 'スコア', 'フィードバック', '状態'];
+            let csv = headers.join(',') + '\n';
+            
+            reports.forEach(report => {
+                const reportTypeText = {
+                    'ai_positive': 'AI評価（適切）',
+                    'ai_negative': 'AI評価（不適切）',
+                    'security_warning': 'セキュリティ警告'
+                }[report.report_type] || report.report_type;
+                
+                const statusText = report.resolved ? '解決済み' : '未解決';
+                
+                const row = [
+                    new Date(report.created_at).toLocaleString('ja-JP'),
+                    reportTypeText,
+                    report.username || 'Unknown',
+                    `"${(report.user_message || '').replace(/"/g, '""')}"`,
+                    `"${(report.ai_response || '').replace(/"/g, '""')}"`,
+                    report.security_score ? report.security_score.toFixed(1) : '',
+                    `"${(report.feedback_text || '').replace(/"/g, '""')}"`,
+                    statusText
+                ];
+                csv += row.join(',') + '\n';
+            });
+            
+            return csv;
+        }
+        
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
+
+    <!-- 不具合報告モーダル -->
+    <div id="feedbackReportsModal" class="admin-modal">
+        <div class="admin-modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+            <span class="close">&times;</span>
+            <h2>🐛 不具合報告一覧</h2>
+            <div style="margin-bottom: 20px;">
+                <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
+                <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
+                <label style="margin-left: 20px;">
+                    <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
+                </label>
+            </div>
+            <div id="feedbackReportsContent">
+                <p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
