@@ -517,12 +517,37 @@ def index():
                         )
                         
                         # 回答をHTML形式で整形
+                        # 医薬品相談回答用のデータを準備（HTMLエスケープ処理）
+                        import json
+                        import html
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_chat_answer = html.escape(chat_response.get('answer', '回答を取得できませんでした'))
+                        
+                        chat_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_chat_answer,
+                            'security_score': None
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ
+                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
+                        
                         bot_content = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
     <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
 </div>
-"""
+<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
+    <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+        適切
+    </button>
+    <button class="feedback-btn-negative" onclick="handleNegativeFeedback({chat_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+        不適切
+    </button>
+</div>"""
                         
                         bot_response = {
                             'type': 'bot',
@@ -1005,12 +1030,37 @@ def index():
                         )
                         
                         # 回答をHTML形式で整形
+                        # 医薬品相談回答用のデータを準備（HTMLエスケープ処理）
+                        import json
+                        import html
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_chat_answer = html.escape(chat_response.get('answer', '回答を取得できませんでした'))
+                        
+                        chat_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_chat_answer,
+                            'security_score': None
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ
+                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
+                        
                         bot_content = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
     <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
 </div>
-"""
+<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
+    <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+        適切
+    </button>
+    <button class="feedback-btn-negative" onclick="handleNegativeFeedback({chat_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+        不適切
+    </button>
+</div>"""
                         
                         bot_response = {
                             'type': 'bot',

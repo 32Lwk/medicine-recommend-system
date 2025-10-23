@@ -1239,10 +1239,10 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     if client is None:
         client = OpenAI(api_key=api_key)
     
-    # 推奨医薬品がない場合は登録販売者相談を推奨
+    # 推奨医薬品がない場合の一般的なアドバイス
     if not recommended_medicines:
         return {
-            "answer": "申し訳ございません。推奨医薬品の情報がないため、具体的な回答ができません。お近くの登録販売者にご相談ください。",
+            "answer": "申し訳ございません。該当する推奨医薬品が見つかりませんでした。\n\n以下の点をご確認ください：\n・症状の詳細（いつから、どの程度の症状か）\n・他の症状の有無\n・現在服用中の薬の有無\n・アレルギーの有無\n\nより適切なアドバイスをするため、上記の情報をお教えいただけますでしょうか？\n\nまた、お近くの登録販売者や薬剤師にご相談いただくこともお勧めします。",
             "medicine_details": "推奨医薬品の情報がありません",
             "interactions": "推奨医薬品の情報がありません",
             "doping_check": "推奨医薬品の情報がありません",
