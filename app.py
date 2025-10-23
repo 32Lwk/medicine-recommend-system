@@ -183,7 +183,7 @@ def find_existing_session(client_ip, user_agent):
 def update_session_activity(sid):
     """セッションの最終アクティビティを更新"""
     if sid in ALL_SESSIONS:
-        ALL_SESSIONS[sid]['last_activity'] = time.time()
+        ALL_SESSIONS[sid]['last_activity'] = time.time()  # 数値で保存
 
 def cleanup_old_sessions():
     """古いセッションをクリーンアップ（メモリ最適化）"""
@@ -198,6 +198,18 @@ def cleanup_old_sessions():
             continue
             
         last_activity = session_info.get('last_activity', 0)
+        
+        # last_activityが文字列の場合は数値に変換
+        if isinstance(last_activity, str):
+            try:
+                # ISO形式の文字列をパース
+                from datetime import datetime
+                last_activity_dt = datetime.fromisoformat(last_activity.replace('Z', '+00:00'))
+                last_activity = last_activity_dt.timestamp()
+            except (ValueError, AttributeError):
+                # パースに失敗した場合は0（古いセッションとして扱う）
+                last_activity = 0
+        
         if current_time - last_activity > SESSION_TIMEOUT:
             sessions_to_remove.append(sid)
     
@@ -2263,23 +2275,23 @@ def api_sessions():
         # ALL_SESSIONSに存在しない場合は復旧
         if sid not in ALL_SESSIONS:
             logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})。セッションから復旧を試みます。")
-            ALL_SESSIONS[sid] = {
-                'session_id': sid,
-                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                'messages': session.get('messages', []),
-                'session_active': True,
-                'last_activity': datetime.now().isoformat(),
-                'user_info': session.get('user_info', {}),
-                'user_attributes': session.get('user_attributes', {})
-            }
-            logger.info(f"🔄 セッション復旧完了: {sid}")
+        ALL_SESSIONS[sid] = {
+            'session_id': sid,
+            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+            'messages': session.get('messages', []),
+            'session_active': True,
+            'last_activity': time.time(),  # 数値で保存
+            'user_info': session.get('user_info', {}),
+            'user_attributes': session.get('user_attributes', {})
+        }
+        logger.info(f"🔄 セッション復旧完了: {sid}")
         
         # ALL_SESSIONSから取得（セッションCookieの肥大化を防ぐ）
         messages = ALL_SESSIONS[sid].get('messages', [])
         logger.info(f"📦 /api/sessions - ALL_SESSIONSから取得: {len(messages)} messages (sid={sid})")
         
         # セッション情報を更新
-        ALL_SESSIONS[sid]['last_activity'] = datetime.now().isoformat()
+        ALL_SESSIONS[sid]['last_activity'] = time.time()  # 数値で保存
         
         session_data = {
             'session_id': sid,
