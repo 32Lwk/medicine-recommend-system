@@ -180,7 +180,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 
 # 環境変数が設定されていない場合のエラー表示
 if not api_key:
-    print("⚠️ 警告: OpenAI API keyが環境変数に設定されていません。")
+    print("WARNING: OpenAI API keyが環境変数に設定されていません。")
     print("環境変数 OPENAI_API_KEY を設定してください。")
 
 # --- OpenAIクライアント初期化 ---

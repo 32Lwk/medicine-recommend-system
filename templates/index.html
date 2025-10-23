@@ -569,6 +569,197 @@
             background: #45a049;
         }
         
+        /* フィードバックボタンスタイル */
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: flex-start;
+        }
+        
+        .feedback-btn-positive {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .feedback-btn-positive:hover {
+            background: #45a049;
+        }
+        
+        .feedback-btn-negative {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .feedback-btn-negative:hover {
+            background: #d32f2f;
+        }
+        
+        .report-bug-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .report-bug-btn:hover {
+            background: #f57c00;
+        }
+        
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-body textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .modal-btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #45a049;
+        }
+        
+        .modal-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .modal-btn-link {
+            background: #007bff;
+            color: white;
+        }
+        
+        .modal-btn-link:hover {
+            background: #0056b3;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* 成功モーダル */
+        .success-modal {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .success-modal .modal-title {
+            color: #155724;
+        }
+        
         /* デスクトップ版の基本スタイル（768px以上） */
         .chat-input {
             padding: 20px;
@@ -1264,6 +1455,15 @@
             </div>
         `;
         chatMessages.appendChild(warningDiv);
+        
+        // セキュリティ警告に報告ボタンを追加
+        const warningData = {
+            user_message: 'セキュリティ警告が表示されました',
+            ai_response: message,
+            security_score: 80 // デフォルトスコア
+        };
+        addReportButton(warningDiv, warningData);
+        
         scrollToBottom();
         
         // 警告メッセージを永続化（自動削除しない）
@@ -1656,6 +1856,25 @@
             `;
             chatMessages.appendChild(newTypingDiv);
         }
+        
+        // AI応答メッセージに評価ボタンを追加
+        messages.forEach((message, index) => {
+            if (message.type === 'bot' && message.content && !message.content.includes('<div class="recommendation-result">')) {
+                // 最新のAI応答メッセージに評価ボタンを追加
+                const messageElements = chatMessages.querySelectorAll('.message.bot');
+                if (messageElements.length > 0) {
+                    const lastBotMessage = messageElements[messageElements.length - 1];
+                    if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons')) {
+                        const messageData = {
+                            user_message: messages[index - 1]?.content || 'ユーザーメッセージ',
+                            ai_response: message.content,
+                            security_score: null
+                        };
+                        addFeedbackButtons(lastBotMessage, messageData);
+                    }
+                }
+            }
+        });
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2251,6 +2470,206 @@
         // その他のエラーのみログ出力
         console.log('未処理のPromise拒否をキャッチ:', event.reason);
     });
+</script>
+
+<!-- フィードバックモーダル -->
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">フィードバック</h3>
+            <span class="close" onclick="closeFeedbackModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>具体的にどこが適切でなかったか教えてください：</p>
+            <textarea id="feedbackText" placeholder="改善点や問題点を具体的にお聞かせください..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-secondary" onclick="closeFeedbackModal()">キャンセル</button>
+            <button class="modal-btn modal-btn-link" onclick="openGoogleForm()">より詳細な報告</button>
+            <button class="modal-btn modal-btn-primary" onclick="submitFeedback()">送信</button>
+        </div>
+    </div>
+</div>
+
+<!-- 成功モーダル -->
+<div id="successModal" class="modal">
+    <div class="modal-content success-modal">
+        <div class="modal-header">
+            <h3 class="modal-title">✅ 評価ありがとうございます</h3>
+        </div>
+        <div class="modal-body">
+            <p id="successMessage">評価ありがとうございます。報告いただいた内容は早急に修復します。</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // フィードバック関連のグローバル変数
+    let currentFeedbackData = null;
+    
+    // AI応答メッセージに評価ボタンを追加
+    function addFeedbackButtons(messageElement, messageData) {
+        const feedbackButtons = document.createElement('div');
+        feedbackButtons.className = 'feedback-buttons';
+        feedbackButtons.innerHTML = `
+            <button class="feedback-btn-positive" onclick="handlePositiveFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
+                <span>○</span> 適切
+            </button>
+            <button class="feedback-btn-negative" onclick="handleNegativeFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
+                <span>×</span> 不適切
+            </button>
+        `;
+        messageElement.appendChild(feedbackButtons);
+    }
+    
+    // セキュリティ警告に報告ボタンを追加
+    function addReportButton(warningElement, warningData) {
+        const reportButton = document.createElement('div');
+        reportButton.className = 'feedback-buttons';
+        reportButton.innerHTML = `
+            <button class="report-bug-btn" onclick="handleSecurityReport(${JSON.stringify(warningData).replace(/"/g, '&quot;')})">
+                <span>🐛</span> 不具合を報告する
+            </button>
+        `;
+        warningElement.appendChild(reportButton);
+    }
+    
+    // ○ボタンクリック処理
+    function handlePositiveFeedback(messageData) {
+        currentFeedbackData = {
+            ...messageData,
+            report_type: 'ai_positive',
+            feedback_text: ''
+        };
+        
+        // データベースに保存
+        submitFeedbackToServer();
+        
+        // 成功モーダル表示
+        showSuccessModal('評価ありがとうございます。');
+    }
+    
+    // ×ボタンクリック処理
+    function handleNegativeFeedback(messageData) {
+        currentFeedbackData = {
+            ...messageData,
+            report_type: 'ai_negative'
+        };
+        
+        // フィードバックモーダル表示
+        document.getElementById('feedbackModal').style.display = 'block';
+        document.getElementById('feedbackText').focus();
+    }
+    
+    // セキュリティ警告報告処理
+    function handleSecurityReport(warningData) {
+        currentFeedbackData = {
+            ...warningData,
+            report_type: 'security_warning'
+        };
+        
+        // フィードバックモーダル表示
+        document.getElementById('feedbackModal').style.display = 'block';
+        document.getElementById('feedbackText').focus();
+    }
+    
+    // フィードバック送信
+    function submitFeedback() {
+        const feedbackText = document.getElementById('feedbackText').value.trim();
+        
+        if (!feedbackText) {
+            alert('フィードバック内容を入力してください。');
+            return;
+        }
+        
+        if (feedbackText.length > 1000) {
+            alert('フィードバック内容が長すぎます（最大1000文字）。');
+            return;
+        }
+        
+        currentFeedbackData.feedback_text = feedbackText;
+        submitFeedbackToServer();
+        
+        // モーダルを閉じる
+        closeFeedbackModal();
+        
+        // 成功モーダル表示
+        showSuccessModal('評価ありがとうございます。報告いただいた内容は早急に修復します。');
+    }
+    
+    // Googleフォームリンク処理
+    function openGoogleForm() {
+        if (currentFeedbackData) {
+            // データベースにGoogleフォーム経由の記録を保存
+            currentFeedbackData.is_google_form = true;
+            submitFeedbackToServer();
+        }
+        
+        // Googleフォームを新しいタブで開く
+        window.open('https://docs.google.com/forms/d/e/1FAIpQLSdgLw1jgIg_wVASq6hYJDQ50nw2DgN92uTynMvtfkht4KYWpg/viewform?usp=header', '_blank');
+        
+        // モーダルを閉じる
+        closeFeedbackModal();
+        
+        // 成功モーダル表示
+        showSuccessModal('評価ありがとうございます。報告いただいた内容は早急に修復します。');
+    }
+    
+    // サーバーにフィードバックを送信
+    function submitFeedbackToServer() {
+        if (!currentFeedbackData) return;
+        
+        fetch('/api/submit_feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify(currentFeedbackData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('✅ Feedback submitted successfully:', data.feedback_id);
+            } else {
+                console.error('❌ Feedback submission failed:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Feedback submission error:', error);
+        });
+    }
+    
+    // フィードバックモーダルを閉じる
+    function closeFeedbackModal() {
+        document.getElementById('feedbackModal').style.display = 'none';
+        document.getElementById('feedbackText').value = '';
+        currentFeedbackData = null;
+    }
+    
+    // 成功モーダル表示（3秒自動消去）
+    function showSuccessModal(message) {
+        document.getElementById('successMessage').textContent = message;
+        document.getElementById('successModal').style.display = 'block';
+        
+        // 3秒後に自動で閉じる
+        setTimeout(() => {
+            document.getElementById('successModal').style.display = 'none';
+        }, 3000);
+    }
+    
+    // モーダル外クリックで閉じる
+    window.onclick = function(event) {
+        const feedbackModal = document.getElementById('feedbackModal');
+        const successModal = document.getElementById('successModal');
+        
+        if (event.target === feedbackModal) {
+            closeFeedbackModal();
+        }
+        if (event.target === successModal) {
+            successModal.style.display = 'none';
+        }
+    }
 </script>
 
 </body>

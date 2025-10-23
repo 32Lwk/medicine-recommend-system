@@ -7,3 +7,4 @@ numpy<2.0.0
 gunicorn==21.2.0
 python-dotenv==1.0.0
 psutil==5.9.8
+psycopg2-binary==2.9.9
