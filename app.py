@@ -3118,6 +3118,9 @@ if __name__ == '__main__':
     # システムステータスをログ出力
     log_system_status()
     
-    logger.info("🌐 Starting Flask development server...")
+    # Render環境での適切な起動
     port = int(os.getenv('PORT', 5000))
-    app.run(debug=True, port=port, host='0.0.0.0') 
+    debug_mode = os.getenv('FLASK_ENV') != 'production'
+    
+    logger.info(f"🌐 Starting Flask server on port {port} (debug={debug_mode})...")
+    app.run(debug=debug_mode, port=port, host='0.0.0.0') 
