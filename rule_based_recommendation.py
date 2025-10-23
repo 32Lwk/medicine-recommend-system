@@ -366,15 +366,9 @@ CONTRAINDICATION_RULES = {
     }
 }
 
-# スコアリングウェイト
-SCORING_WEIGHTS = {
-    "症状適合度": 0.35,
-    "効能特異性": 0.25,
-    "副作用リスク": -0.20,
-    "年齢適合性": 0.10,
-    "用法簡便性": 0.05,
-    "相互作用リスク": -0.05
-}
+# スコアリングウェイト（強化版）
+from enhanced_safety_checker import enhanced_scoring_weights
+SCORING_WEIGHTS = enhanced_scoring_weights()
 
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
@@ -665,6 +659,36 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
     Returns:
         構造化された症状データ
     """
+    # セキュリティ検証の追加
+    from security_validator import validate_user_input
+    from security_config import should_block_input, get_block_threshold
+    from security_logger import log_input_validation
+    
+    # 入力検証
+    is_safe, risk_score, warnings, sanitized_text = validate_user_input(
+        user_text, context='symptom'
+    )
+    
+    # ログ記録
+    log_input_validation(
+        user_id=user_info.get('user_id', 'unknown'),
+        input_text=user_text,
+        risk_score=risk_score,
+        is_safe=is_safe,
+        warnings=warnings,
+        sanitized_text=sanitized_text
+    )
+    
+    # ブロック判定
+    if should_block_input(risk_score):
+        print(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
+        return {
+            "symptoms": [],
+            "red_flags": ["入力検証エラー"],
+            "needs_escalation": True,
+            "escalation_reason": "入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。"
+        }
+    
     # 症状リストを作成
     all_symptoms = []
     for symptom_name, symptom_data in SYMPTOM_DICTIONARY.items():
@@ -675,7 +699,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
 あなたは医療NLUシステムです。ユーザーの症状文から以下の情報を抽出してください。
 
 【ユーザー入力】
-{user_text}
+{sanitized_text}
 
 【ユーザー情報】
 年齢: {user_info.get('age', '不明')}
@@ -725,28 +749,25 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
         
         result = response.choices[0].message.content
         
-        # JSON解析
-        json_start = result.find('{')
-        json_end = result.rfind('}') + 1
-        
-        if json_start != -1 and json_end != -1:
-            json_str = result[json_start:json_end]
-            parsed_result = json.loads(json_str)
-            
-            print(f"=== NLU結果 ===")
-            print(f"抽出された症状: {parsed_result.get('symptoms', [])}")
-            print(f"重症疑い: {parsed_result.get('red_flags', [])}")
-            print(f"エスカレーション必要: {parsed_result.get('needs_escalation', False)}")
-            
-            return parsed_result
-        else:
-            print("JSON形式が見つかりませんでした")
+        # 安全なJSON解析
+        from json_validator import safe_json_parse
+        try:
+            parsed_result = safe_json_parse(result, schema='symptom_analysis')
+        except Exception as e:
+            print(f"JSON解析エラー: {e}")
             return {
                 "symptoms": [],
                 "red_flags": [],
                 "needs_escalation": False,
                 "escalation_reason": ""
             }
+        
+        print(f"=== NLU結果 ===")
+        print(f"抽出された症状: {parsed_result.get('symptoms', [])}")
+        print(f"重症疑い: {parsed_result.get('red_flags', [])}")
+        print(f"エスカレーション必要: {parsed_result.get('needs_escalation', False)}")
+        
+        return parsed_result
             
     except Exception as e:
         print(f"NLU処理エラー: {e}")

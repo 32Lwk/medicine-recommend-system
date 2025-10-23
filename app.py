@@ -269,11 +269,39 @@ def index():
         user_message = request.form.get('message', '').strip()
         logger.info(f"📝 受信メッセージ: {user_message}")
         if user_message:
-            # ユーザーインタラクションをログ出力
-            log_user_interaction(user_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
+            # セキュリティ検証の追加
+            from security_validator import validate_user_input
+            from security_config import should_block_input
+            from security_logger import log_input_validation
             
-            # 「終了」ワード検知
-            if user_message in ['終了', 'end', 'おわり', '終わり', 'quit', 'exit']:
+            # 入力検証
+            is_safe, risk_score, warnings, sanitized_message = validate_user_input(
+                user_message, context='chat'
+            )
+            
+            # ログ記録
+            log_input_validation(
+                user_id=session.get('username', 'unknown'),
+                input_text=user_message,
+                risk_score=risk_score,
+                is_safe=is_safe,
+                warnings=warnings,
+                sanitized_text=sanitized_message
+            )
+            
+            # ブロック判定
+            if should_block_input(risk_score):
+                logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
+                return jsonify({
+                    'error': True,
+                    'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
+                })
+            
+            # ユーザーインタラクションをログ出力
+            log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
+            
+            # 「終了」ワード検知（サニタイズされたメッセージでチェック）
+            if sanitized_message in ['終了', 'end', 'おわり', '終わり', 'quit', 'exit']:
                 logger.info(f"🔚 CHAT ENDED by user: {session.get('username', 'unknown')}")
                 session.modified = True
                 bot_response = {
@@ -293,7 +321,7 @@ def index():
             # ユーザーメッセージを追加（AI自動応答ON/OFF問わず）
             session['messages'].append({
                 'type': 'user',
-                'content': user_message
+                'content': sanitized_message  # サニタイズされたメッセージを使用
             })
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
