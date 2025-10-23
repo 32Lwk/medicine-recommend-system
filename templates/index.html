@@ -1182,7 +1182,12 @@
     // メッセージを再読み込み
     function loadMessages() {
         fetch('/api/sessions')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.messages) {
                     renderChatMessages(data.messages);
@@ -1190,6 +1195,7 @@
             })
             .catch(error => {
                 console.error('メッセージ読み込みエラー:', error);
+                // エラーが発生してもアプリケーションを継続
             });
     }
 
@@ -2201,6 +2207,29 @@
         micBtn.title = '音声入力';
         console.log('音声認識停止');
     }
+
+    // グローバルエラーハンドリング
+    window.addEventListener('error', function(event) {
+        console.log('JavaScriptエラーをキャッチ:', event.error);
+        // メッセージポートエラーは無視
+        if (event.error && event.error.message && 
+            event.error.message.includes('message port closed')) {
+            console.log('メッセージポートエラーを無視しました');
+            return;
+        }
+    });
+
+    // 未処理のPromise拒否をキャッチ
+    window.addEventListener('unhandledrejection', function(event) {
+        console.log('未処理のPromise拒否をキャッチ:', event.reason);
+        // メッセージポートエラーは無視
+        if (event.reason && event.reason.message && 
+            event.reason.message.includes('message port closed')) {
+            console.log('メッセージポートエラーを無視しました');
+            event.preventDefault();
+            return;
+        }
+    });
 </script>
 
 </body>

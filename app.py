@@ -42,6 +42,27 @@ MAX_SESSIONS = 10  # 最大セッション数（Render無料プラン用に大�
 SESSION_TIMEOUT = 900  # セッションタイムアウト（秒）- 15分に短縮
 
 # グローバルエラーハンドラー
+@app.errorhandler(404)
+def handle_404_error(e):
+    """404エラーのハンドラー"""
+    logger.warning(f"⚠️ 404 Not Found: {request.url}")
+    return render_template('index.html', messages=[], version=VERSION), 404
+
+@app.errorhandler(502)
+def handle_502_error(e):
+    """502エラーのハンドラー"""
+    logger.error(f"❌ 502 Bad Gateway Error: {str(e)}")
+    logger.error(f"❌ エラータイプ: {type(e).__name__}")
+    
+    # JSONリクエストの場合
+    if request.is_json or request.method == 'POST':
+        return jsonify({
+            'error': True,
+            'response': 'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。'
+        }), 502
+    else:
+        return render_template('index.html', messages=[], version=VERSION), 502
+
 @app.errorhandler(500)
 def handle_500_error(e):
     """500エラーのハンドラー"""
@@ -191,6 +212,11 @@ def cleanup_old_sessions():
     
     if sessions_to_remove:
         logger.info(f"🧹 セッションクリーンアップ完了: {len(sessions_to_remove)}件削除, 残り: {len(ALL_SESSIONS)}件")
+
+@app.route('/favicon.ico')
+def favicon():
+    """favicon.icoの404エラーを防ぐ"""
+    return '', 204
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
