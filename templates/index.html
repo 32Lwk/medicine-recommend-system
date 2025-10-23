@@ -88,6 +88,7 @@
             min-height: 20px;
             box-sizing: border-box;
             display: inline-block;
+            overflow-x: hidden;
         }
         .message.user .message-content {
             background: #4CAF50;
@@ -578,6 +579,9 @@
             width: 100%;
             position: relative;
             z-index: 1;
+            flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         
         .feedback-btn-positive {
@@ -593,6 +597,9 @@
             min-width: 60px;
             text-align: center;
             font-weight: 500;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         
         .feedback-btn-positive:hover {
@@ -616,6 +623,9 @@
             min-width: 60px;
             text-align: center;
             font-weight: 500;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         
         .feedback-btn-negative:hover {
@@ -638,6 +648,9 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         
         .report-bug-btn:hover {
