@@ -2661,11 +2661,7 @@
     function submitFeedback() {
         const feedbackText = document.getElementById('feedbackText').value.trim();
         
-        if (!feedbackText) {
-            alert('フィードバック内容を入力してください。');
-            return;
-        }
-        
+        // フィードバック内容の長さチェック（空でもOK）
         if (feedbackText.length > 1000) {
             alert('フィードバック内容が長すぎます（最大1000文字）。');
             return;
