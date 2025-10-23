@@ -575,6 +575,9 @@
             gap: 8px;
             margin-top: 10px;
             justify-content: flex-start;
+            width: 100%;
+            position: relative;
+            z-index: 1;
         }
         
         .feedback-btn-positive {
@@ -582,17 +585,22 @@
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
             cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            transition: background 0.2s ease;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            font-weight: 500;
         }
         
         .feedback-btn-positive:hover {
             background: #45a049;
+        }
+        
+        .feedback-btn-positive:active {
+            background: #3d8b40;
         }
         
         .feedback-btn-negative {
@@ -600,17 +608,22 @@
             color: white;
             border: none;
             border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
             cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            transition: background 0.2s ease;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            font-weight: 500;
         }
         
         .feedback-btn-negative:hover {
             background: #d32f2f;
+        }
+        
+        .feedback-btn-negative:active {
+            background: #c62828;
         }
         
         .report-bug-btn {
@@ -1881,7 +1894,7 @@
         // 評価ボタンを追加（定期更新時も含む）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 300);
+        }, 500); // タイミングを延長してチカチカを防ぐ
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
@@ -1901,7 +1914,7 @@
         // AI応答メッセージに評価ボタンを追加（簡素化）
         setTimeout(() => {
             addFeedbackButtonsToLatestMessage();
-        }, 200);
+        }, 400); // タイミングを延長してチカチカを防ぐ
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2587,9 +2600,18 @@
                 // 最新のbotメッセージの内容を取得
                 const messageContent = lastBotMessage.querySelector('.message-content');
                 if (messageContent && messageContent.textContent.trim()) {
+                    // 初期メッセージ（こんにちは！どのような症状でお困りでしょうか？）には評価ボタンを追加しない
+                    const messageText = messageContent.textContent.trim();
+                    if (messageText.includes('こんにちは！どのような症状でお困りでしょうか？') ||
+                        messageText.includes('どのような症状でお困りでしょうか？') ||
+                        messageText.includes('例：') ||
+                        messageText.length < 50) { // 短いメッセージ（初期メッセージ）は除外
+                        return; // 初期メッセージの場合は評価ボタンを追加しない
+                    }
+                    
                     const messageData = {
                         user_message: 'ユーザーメッセージ',
-                        ai_response: messageContent.textContent.trim(),
+                        ai_response: messageText,
                         security_score: null
                     };
                     addFeedbackButtons(lastBotMessage, messageData);
@@ -2601,14 +2623,19 @@
     
     // AI応答メッセージに評価ボタンを追加
     function addFeedbackButtons(messageElement, messageData) {
+        // 既に評価ボタンが存在する場合は追加しない
+        if (messageElement.querySelector('.feedback-buttons')) {
+            return;
+        }
+        
         const feedbackButtons = document.createElement('div');
         feedbackButtons.className = 'feedback-buttons';
         feedbackButtons.innerHTML = `
             <button class="feedback-btn-positive" onclick="handlePositiveFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
-                <span>○</span> 適切
+                適切
             </button>
             <button class="feedback-btn-negative" onclick="handleNegativeFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
-                <span>×</span> 不適切
+                不適切
             </button>
         `;
         messageElement.appendChild(feedbackButtons);
