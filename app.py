@@ -1480,11 +1480,11 @@ def index():
                                     
                                     if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
                                         if '15歳未満' in age_restriction:
-                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳未満の方は使用しないでください。</span></p>'
+                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳以上の方が対象です。</span></p>'
                                         elif '7歳未満' in age_restriction:
-                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">7歳未満の方は使用しないでください。</span></p>'
+                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">7歳以上の方が対象です。</span></p>'
                                         elif '12歳未満' in age_restriction:
-                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳未満の方は使用しないでください。</span></p>'
+                                            age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳以上の方が対象です。</span></p>'
                                         else:
                                             # その他の年齢制限がある場合
                                             import re
@@ -1592,12 +1592,11 @@ def index():
                                                         # 既に適切な形式になっている場合はそのまま表示
                                                         current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
                                                     elif '歳以上の方が対象です' in age_restriction:
-                                                        # 「歳以上の方が対象です」の場合は「歳未満の方は使用しないでください」に変換
-                                                        age_num = age_restriction.replace('歳以上の方が対象です', '').strip()
-                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_num}歳未満の方は使用しないでください。</p>'
+                                                        # 「歳以上の方が対象です」の場合はそのまま表示
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
                                                     else:
-                                                        # その他の場合は「未満の方は使用しないでください」を追加
-                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}未満の方は使用しないでください。</p>'
+                                                        # その他の場合は「以上の方が対象です」を追加
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}以上の方が対象です。</p>'
                                                     age_restriction_added = True
                                         elif line.startswith('ドーピング:'):
                                             # ドーピングの処理

@@ -1563,7 +1563,7 @@ def generate_individual_usage_notes_with_gpt(
             if not math.isnan(age_restriction):
                 try:
                     age_val = int(age_restriction)
-                    notes.append(f"年齢制限: {age_val}歳未満の方は使用しないでください。")
+                    notes.append(f"年齢制限: {age_val}歳以上の方が対象です。")
                 except:
                     pass
         elif age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
@@ -1663,22 +1663,22 @@ def generate_usage_notes_and_consultation_with_gpt(
         
         if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
             if '15歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 15歳未満の方は使用しないでください。'
+                age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
             elif '7歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 7歳未満の方は使用しないでください。'
+                age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
             elif '12歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 12歳未満の方は使用しないでください。'
+                age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
             else:
                 import re
                 match = re.search(r'(\d+)歳', age_restriction)
                 if match:
                     age_val = match.group(1)
-                    age_restriction_display = f'年齢制限: {age_val}歳未満の方は使用しないでください。'
+                    age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
         elif isinstance(age_restriction, (int, float)):
             if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
                 try:
                     age_val = int(age_restriction)
-                    age_restriction_display = f'年齢制限: {age_val}歳未満の方は使用しないでください。'
+                    age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
                 except (ValueError, OverflowError):
                     pass
         
