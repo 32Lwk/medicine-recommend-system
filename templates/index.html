@@ -1301,47 +1301,70 @@
     let isSubmitting = false;
     
     document.getElementById('chatForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const input = document.getElementById('messageInput');
-        const message = input.value.trim();
-        
-        if (message === '') {
-            return;
-        }
-        
-        // 送信中フラグを立てる
-        isSubmitting = true;
-        
-        // 入力フィールドをクリア
-        input.value = '';
-        input.style.height = 'auto';
-        
-        // ユーザーメッセージを即座に表示
-        addUserMessage(message);
-        
-        // タイピングインジケーターを表示
-        addTypingIndicator();
-        
-        // チャットを最下部にスクロール
-        scrollToBottom();
-        
-        // フォームを送信
-        submitForm(message);
-    });
-
-    // Alt+Enterで送信、通常のEnterは改行
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && e.altKey) {
+        try {
             e.preventDefault();
-            const form = document.getElementById('chatForm');
-            form.dispatchEvent(new Event('submit'));
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message === '') {
+                return;
+            }
+            
+            // 送信中フラグを立てる
+            isSubmitting = true;
+            
+            // 入力フィールドをクリア
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // ユーザーメッセージを即座に表示
+            addUserMessage(message);
+            
+            // タイピングインジケーターを表示
+            addTypingIndicator();
+            
+            // チャットを最下部にスクロール
+            scrollToBottom();
+            
+            // フォームを送信
+            submitForm(message);
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Form submit error:', error);
+            }
+            // 送信中フラグをリセット
+            isSubmitting = false;
         }
     });
 
-    // textareaの高さを自動調整
+    // Alt+Enterで送信、通常のEnterは改行（エラーハンドリング付き）
+    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+        try {
+            if (e.key === 'Enter' && e.altKey) {
+                e.preventDefault();
+                const form = document.getElementById('chatForm');
+                form.dispatchEvent(new Event('submit'));
+            }
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Keydown event error:', error);
+            }
+        }
+    });
+
+    // textareaの高さを自動調整（エラーハンドリング付き）
     document.getElementById('messageInput').addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        try {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Input event error:', error);
+            }
+        }
     });
 
     // ユーザーメッセージをチャット画面に追加
@@ -2438,37 +2461,59 @@
         console.log('音声認識停止');
     }
 
-    // グローバルエラーハンドリング
+    // グローバルエラーハンドリング（Chrome拡張機能エラーを完全に抑制）
     window.addEventListener('error', function(event) {
         // Chrome拡張機能のエラーを無視
         if (event.filename && event.filename.includes('chrome-extension://')) {
-            return;
+            event.preventDefault();
+            return false;
         }
         
         // メッセージポートエラーは無視
         if (event.error && event.error.message && 
             event.error.message.includes('message port closed')) {
-            return;
+            event.preventDefault();
+            return false;
+        }
+        
+        // 拡張機能関連のリソース読み込みエラーを無視
+        if (event.filename && (
+            event.filename.includes('completion_list.html') ||
+            event.filename.includes('utils.js') ||
+            event.filename.includes('extensionState.js') ||
+            event.filename.includes('heuristicsRedefinitions.js')
+        )) {
+            event.preventDefault();
+            return false;
         }
         
         // その他のエラーのみログ出力
         console.log('JavaScriptエラーをキャッチ:', event.error);
     });
 
-    // 未処理のPromise拒否をキャッチ
+    // 未処理のPromise拒否をキャッチ（Chrome拡張機能エラーを完全に抑制）
     window.addEventListener('unhandledrejection', function(event) {
         // Chrome拡張機能のエラーを無視
         if (event.reason && event.reason.stack && 
             event.reason.stack.includes('chrome-extension://')) {
             event.preventDefault();
-            return;
+            return false;
         }
         
         // メッセージポートエラーは無視
         if (event.reason && event.reason.message && 
             event.reason.message.includes('message port closed')) {
             event.preventDefault();
-            return;
+            return false;
+        }
+        
+        // 拡張機能関連のPromise拒否を無視
+        if (event.reason && (
+            event.reason.message && event.reason.message.includes('extension') ||
+            event.reason.message && event.reason.message.includes('chrome-extension')
+        )) {
+            event.preventDefault();
+            return false;
         }
         
         // その他のエラーのみログ出力
@@ -2510,6 +2555,26 @@
 <script>
     // フィードバック関連のグローバル変数
     let currentFeedbackData = null;
+    
+    // コンソールエラーをフィルタリング（Chrome拡張機能エラーを抑制）
+    (function() {
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            const message = args.join(' ');
+            // Chrome拡張機能関連のエラーを抑制
+            if (message.includes('chrome-extension://') ||
+                message.includes('message port closed') ||
+                message.includes('completion_list.html') ||
+                message.includes('utils.js') ||
+                message.includes('extensionState.js') ||
+                message.includes('heuristicsRedefinitions.js') ||
+                message.includes('runtime.lastError')) {
+                return; // エラーを表示しない
+            }
+            // その他のエラーは通常通り表示
+            originalConsoleError.apply(console, args);
+        };
+    })();
     
     // 最新のAI応答メッセージに評価ボタンを追加する関数
     function addFeedbackButtonsToLatestMessage() {
