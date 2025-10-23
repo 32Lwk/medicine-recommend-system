@@ -1239,6 +1239,30 @@
         // エラーメッセージを永続化（自動削除しない）
         console.log('Error message displayed:', message);
     }
+    
+    // 警告メッセージを表示
+    function showWarningMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存の警告メッセージを削除
+        const existingWarnings = chatMessages.querySelectorAll('.warning-message');
+        existingWarnings.forEach(warning => warning.remove());
+        
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'message bot warning-message';
+        warningDiv.innerHTML = `
+            <div class="message-content" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; position: relative;">
+                <strong>⚠️ 警告</strong><br>
+                ${escapeHtml(message)}
+                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #856404; font-size: 16px; cursor: pointer;">×</button>
+            </div>
+        `;
+        chatMessages.appendChild(warningDiv);
+        scrollToBottom();
+        
+        // 警告メッセージを永続化（自動削除しない）
+        console.log('Warning message displayed:', message);
+    }
 
     // フォームを送信
     function submitForm(message) {
@@ -1276,6 +1300,23 @@
         })
         .then((data) => {
             console.log('POST response:', data);
+            
+            // エラーまたは警告のチェック
+            if (data.error) {
+                console.error('Server error:', data.response);
+                removeTypingIndicator();
+                showErrorMessage(data.response);
+                isSubmitting = false;
+                return;
+            }
+            
+            if (data.warning) {
+                console.warn('Server warning:', data.response);
+                removeTypingIndicator();
+                showWarningMessage(data.response);
+                isSubmitting = false;
+                return;
+            }
             
             // 少し待ってから最新のメッセージを取得（サーバー処理完了を待つ）
             // 最大10回リトライ（合計5秒）

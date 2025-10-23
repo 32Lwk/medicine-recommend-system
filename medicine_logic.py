@@ -794,7 +794,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
     """
     # セキュリティ検証の追加
     from security_validator import validate_user_input
-    from security_config import should_block_input
+    from security_config import should_block_input, get_current_phase
     from security_logger import log_input_validation
     
     # 入力検証
@@ -820,6 +820,11 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
             "usage_notes": "入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。",
             "doctor_consultation": "医師にご相談ください。"
         }
+    
+    # Phase 1でも高リスクの場合は警告付きで処理を継続
+    if risk_score >= 80:
+        print(f"⚠️ 高リスク入力で医薬品推奨を実行: リスクスコア {risk_score}")
+        # 警告付きで処理を継続（Phase 1の動作）
     
     if client is None:
         client = OpenAI(api_key=api_key)

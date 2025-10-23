@@ -289,12 +289,20 @@ def index():
                 sanitized_text=sanitized_message
             )
             
-            # ブロック判定
+            # ブロック判定（Phase 1でも高リスクは警告表示）
             if should_block_input(risk_score):
                 logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
                 return jsonify({
                     'error': True,
                     'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
+                })
+            
+            # Phase 1でも高リスクの場合は警告表示
+            if risk_score >= 80:
+                logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
+                return jsonify({
+                    'warning': True,
+                    'response': '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
                 })
             
             # ユーザーインタラクションをログ出力
