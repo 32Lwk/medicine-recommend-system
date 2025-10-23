@@ -1512,7 +1512,8 @@
     };
 
     function renderChatMessages(messages) {
-        console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) {
             console.error('chatMessages element not found');
@@ -1522,7 +1523,8 @@
         // タイピングインジケーターの状態を保存
         const typingIndicator = document.getElementById('currentTypingIndicator');
         const hasTypingIndicator = typingIndicator !== null;
-        console.log('hasTypingIndicator:', hasTypingIndicator);
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('hasTypingIndicator:', hasTypingIndicator);
         
         // レイアウトの安定性を向上させるため、一括更新
         const fragment = document.createDocumentFragment();
@@ -1682,21 +1684,26 @@
             return;
         }
         
-        console.log('🔄 Periodic update - fetching messages');
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('🔄 Periodic update - fetching messages');
         fetch('/api/sessions?v={{ version }}', {
             headers: { 'Cache-Control': 'no-cache' }
         })
         .then(response => response.json())
         .then(data => {
             if (data && data.messages) {
-                console.log('🔄 Periodic update - rendering', data.messages.length, 'messages');
+                // メッセージがある場合のみログ出力
+                if (data.messages.length > 0) {
+                    console.log('🔄 Periodic update - rendering', data.messages.length, 'messages');
+                }
                 renderChatMessages(data.messages);
             }
         })
         .catch(error => {
-            console.log('Session update error:', error);
+            // エラーログを削減
+            // console.log('Session update error:', error);
         });
-    }, 8000);
+    }, 10000); // 8秒から10秒に延長
     
     // モーダル関連の関数
     function openAttributeModal() {
@@ -2210,25 +2217,39 @@
 
     // グローバルエラーハンドリング
     window.addEventListener('error', function(event) {
-        console.log('JavaScriptエラーをキャッチ:', event.error);
+        // Chrome拡張機能のエラーを無視
+        if (event.filename && event.filename.includes('chrome-extension://')) {
+            return;
+        }
+        
         // メッセージポートエラーは無視
         if (event.error && event.error.message && 
             event.error.message.includes('message port closed')) {
-            console.log('メッセージポートエラーを無視しました');
             return;
         }
+        
+        // その他のエラーのみログ出力
+        console.log('JavaScriptエラーをキャッチ:', event.error);
     });
 
     // 未処理のPromise拒否をキャッチ
     window.addEventListener('unhandledrejection', function(event) {
-        console.log('未処理のPromise拒否をキャッチ:', event.reason);
-        // メッセージポートエラーは無視
-        if (event.reason && event.reason.message && 
-            event.reason.message.includes('message port closed')) {
-            console.log('メッセージポートエラーを無視しました');
+        // Chrome拡張機能のエラーを無視
+        if (event.reason && event.reason.stack && 
+            event.reason.stack.includes('chrome-extension://')) {
             event.preventDefault();
             return;
         }
+        
+        // メッセージポートエラーは無視
+        if (event.reason && event.reason.message && 
+            event.reason.message.includes('message port closed')) {
+            event.preventDefault();
+            return;
+        }
+        
+        // その他のエラーのみログ出力
+        console.log('未処理のPromise拒否をキャッチ:', event.reason);
     });
 </script>
 
