@@ -821,10 +821,14 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
             "doctor_consultation": "医師にご相談ください。"
         }
     
-    # Phase 1でも高リスクの場合は警告付きで処理を継続
+    # 高リスク入力の場合は医薬品推奨を停止
     if risk_score >= 80:
-        print(f"⚠️ 高リスク入力で医薬品推奨を実行: リスクスコア {risk_score}")
-        # 警告付きで処理を継続（Phase 1の動作）
+        print(f"⚠️ 高リスク入力のため医薬品推奨を停止: リスクスコア {risk_score}")
+        return {
+            "recommended_medicines": [],
+            "usage_notes": "入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。",
+            "doctor_consultation": "医師にご相談ください。"
+        }
     
     if client is None:
         client = OpenAI(api_key=api_key)
