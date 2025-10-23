@@ -21,7 +21,12 @@ class DatabaseManager:
                 logger.warning("DATABASE_URL not found. Using fallback mode.")
                 return False
                 
-            self.connection = psycopg2.connect(self.database_url)
+            # タイムアウト設定を追加（10秒）
+            self.connection = psycopg2.connect(
+                self.database_url,
+                connect_timeout=10,
+                application_name="medicine-recommend-system"
+            )
             logger.info("✅ PostgreSQL connection established")
             return True
             
@@ -192,9 +197,13 @@ db_manager = DatabaseManager()
 
 def init_database():
     """データベースを初期化（アプリ起動時に呼び出し）"""
-    if db_manager.connect():
-        return db_manager.initialize_tables()
-    return False
+    try:
+        if db_manager.connect():
+            return db_manager.initialize_tables()
+        return False
+    except Exception as e:
+        logger.warning(f"⚠️ Database initialization error: {str(e)} - continuing without database")
+        return False
 
 def get_database():
     """データベースマネージャーを取得"""
