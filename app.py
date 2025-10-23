@@ -529,24 +529,28 @@ def index():
                         import json
                         import html
                         
-                        # HTMLエスケープ処理
-                        escaped_user_message = html.escape(user_message)
-                        escaped_chat_answer = html.escape(chat_response.get('answer', '回答を取得できませんでした'))
-                        
-                        chat_data = {
-                            'user_message': escaped_user_message,
-                            'ai_response': escaped_chat_answer,
-                            'security_score': None
-                        }
-                        
-                        # JSONエンコードしてHTMLエスケープ
-                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
-                        
-                        bot_content = f"""
+                        # 回答の全文を作成（症状分析結果と同じ方式）
+                        full_response_html = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
     <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
-</div>
+</div>"""
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
+                        
+                        chat_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_ai_response,
+                            'security_score': None
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ（症状分析結果と同じ方式）
+                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
+                        
+                        # 評価ボタンを追加（症状分析結果と同じスタイル）
+                        bot_content = full_response_html + f"""
 <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
     <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
     <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
@@ -556,6 +560,10 @@ def index():
         不適切
     </button>
 </div>"""
+                        
+                        # デバッグログの追加
+                        logger.info(f"📊 医薬品相談回答評価ボタン生成: chat_json length = {len(chat_json)}")
+                        logger.info(f"📊 bot_content preview: {bot_content[:200]}...")
                         
                         bot_response = {
                             'type': 'bot',
