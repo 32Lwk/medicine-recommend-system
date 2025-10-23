@@ -1674,27 +1674,26 @@ def index():
     </div>
 """
                         
-                        bot_content += """
+                        # 評価ボタン用のデータを準備（改行文字を適切にエスケープ）
+                        feedback_data = {
+                            'user_message': user_message,
+                            'ai_response': bot_content,
+                            'security_score': None
+                        }
+                        
+                        bot_content += f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この推奨結果はいかがでしたか？</p>
-        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({
-            'user_message': '""" + user_message.replace("'", "\\'") + """',
-            'ai_response': '""" + bot_content.replace("'", "\\'").replace('\n', '\\n') + """',
-            'security_score': null
-        })" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_data})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
             適切
         </button>
-        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({
-            'user_message': '""" + user_message.replace("'", "\\'") + """',
-            'ai_response': '""" + bot_content.replace("'", "\\'").replace('\n', '\\n') + """',
-            'security_score': null
-        })" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_data})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
             不適切
         </button>
     </div>
 </div>"""
                     
-                    bot_diag = recommendation_result
+                        bot_diag = recommendation_result
                     
                 except Exception as e:
                     logger.error(f"❌ 包括的医薬品推奨システム実行時エラー: {e}")
@@ -1709,9 +1708,23 @@ def index():
                     'diagnosis': bot_diag
                 }
             if 'bot_response' in locals():
-                session['messages'].append(bot_response)
-                session.modified = True
-                logger.info(f"💾 メッセージ保存完了: {len(session['messages'])} messages")
+                # 重複チェック：同じ内容のメッセージが既に存在するかチェック
+                existing_messages = session.get('messages', [])
+                is_duplicate = False
+                
+                for existing_msg in existing_messages:
+                    if (existing_msg.get('type') == 'bot' and 
+                        existing_msg.get('content') == bot_response['content']):
+                        is_duplicate = True
+                        logger.warning(f"⚠️ 重複メッセージを検出、追加をスキップします")
+                        break
+                
+                if not is_duplicate:
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    logger.info(f"💾 メッセージ保存完了: {len(session['messages'])} messages")
+                else:
+                    logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
                 logger.error(f"❌ bot_responseが定義されていません")
                 # フォールバック
