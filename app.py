@@ -29,9 +29,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
-# データベース初期化
-if not init_database():
-    logger.warning("⚠️ Database initialization failed. Feedback features will be disabled.")
+# データベース初期化（非同期化）
+try:
+    if not init_database():
+        logger.warning("⚠️ Database initialization failed. Feedback features will be disabled.")
+    else:
+        logger.info("✅ Database initialized successfully.")
+except Exception as e:
+    logger.warning(f"⚠️ Database initialization error: {e}. Feedback features will be disabled.")
 
 # キャッシュバスティング用のバージョン番号
 VERSION = str(int(time.time()))
@@ -3141,15 +3146,8 @@ def resolve_feedback(feedback_id):
 
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
-    logger.info(f"📁 CSVファイル絶対パス: {csv_load_status['path']}")
-    logger.info("🔑 環境変数からAPIキーを取得できませんでした。直接設定されたAPIキーを使用します。")
-    logger.info("✅ OpenAI client initialized successfully.")
-    logger.info("✅ CSVファイルを正常に読み込みました（エンコーディング: utf-8）。")
     
-    # システムステータスをログ出力
-    log_system_status()
-    
-    # Render環境での適切な起動
+    # 最小限のログ出力で起動時間を短縮
     port = int(os.getenv('PORT', 5000))
     debug_mode = os.getenv('FLASK_ENV') != 'production'
     
