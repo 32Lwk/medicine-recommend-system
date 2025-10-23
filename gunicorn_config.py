@@ -10,7 +10,9 @@ worker_class = 'sync'
 timeout = 300
 
 # バインドするアドレスとポート
-bind = '0.0.0.0:5000'
+import os
+port = int(os.getenv('PORT', 5000))
+bind = f'0.0.0.0:{port}'
 
 # ログレベル
 loglevel = 'info'
