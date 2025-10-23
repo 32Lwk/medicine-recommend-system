@@ -3609,9 +3609,20 @@
                 const statusColor = report.resolved ? '#28a745' : '#dc3545';
                 
                 // HTMLタグを削除してプレーンテキスト化
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = report.ai_response || '-';
-                const plainAiResponse = tempDiv.textContent || tempDiv.innerText || '-';
+                let plainAiResponse = report.ai_response || '-';
+                
+                // HTMLタグを完全に削除
+                plainAiResponse = plainAiResponse
+                    .replace(/<[^>]*>/g, '')  // HTMLタグを削除
+                    .replace(/&lt;/g, '<')   // HTMLエンティティをデコード
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/\s+/g, ' ')  // 複数の空白を1つに
+                    .replace(/\n\s*\n/g, '\n')  // 複数の改行を1つに
+                    .trim();
                 
                 // 200文字で切り詰め
                 const displayText = plainAiResponse.length > 200 
@@ -3676,13 +3687,25 @@
             
             if (responseDiv.getAttribute('data-expanded') === 'true') {
                 // 省略表示に戻す
-                responseDiv.textContent = fullText.substring(0, 200) + '...';
+                const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
+                responseDiv.textContent = truncatedText;
                 responseDiv.style.maxHeight = '100px';
                 responseDiv.setAttribute('data-expanded', 'false');
                 button.textContent = '詳細表示';
             } else {
-                // 全文表示
-                responseDiv.textContent = fullText;
+                // 全文表示（整理されたテキスト）
+                const cleanText = fullText
+                    .replace(/<[^>]*>/g, '')  // HTMLタグを削除
+                    .replace(/&lt;/g, '<')   // HTMLエンティティをデコード
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/\s+/g, ' ')  // 複数の空白を1つに
+                    .replace(/\n\s*\n/g, '\n')  // 複数の改行を1つに
+                    .trim();
+                responseDiv.textContent = cleanText;
                 responseDiv.style.maxHeight = 'none';
                 responseDiv.setAttribute('data-expanded', 'true');
                 button.textContent = '省略表示';
