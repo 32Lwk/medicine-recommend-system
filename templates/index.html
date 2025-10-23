@@ -1615,7 +1615,7 @@
                         removeTypingIndicator();
                         renderChatMessages(sessionData.messages);
                         isSubmitting = false;
-                    } else if (retryCount < maxRetries) {
+                    } else if (retryCount < maxRetries && sessionData && sessionData.messages) {
                         // リトライ
                         retryCount++;
                         console.log(`Retrying... (${retryCount}/${maxRetries})`);

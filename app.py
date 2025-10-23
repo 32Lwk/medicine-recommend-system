@@ -589,9 +589,10 @@ def index():
                         
                         # 質問応答をセッションに追加
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        # セッション同期を確実にする
-                        session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
-                        session.modified = True
+                        # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
+                        if 'messages' in session:
+                            del session['messages']
+                            session.modified = True
                         logger.info(f"✅ 質問応答完了: {user_message}")
                         
                         # 質問応答の場合は、user_attributesを初期化してセッションに保存
@@ -626,9 +627,10 @@ def index():
                         
                         # エラー応答をセッションに追加
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        # セッション同期を確実にする
-                        session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
-                        session.modified = True
+                        # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
+                        if 'messages' in session:
+                            del session['messages']
+                            session.modified = True
                         
                         # エラーの場合もuser_attributesを初期化
                         user_attributes = session.get('user_attributes', {
@@ -1109,11 +1111,11 @@ def index():
                         }
                         
                         # 質問応答をセッションに追加
-                        session['messages'].append(bot_response)
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
-                            # セッション同期を確実にする
-                            session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                        # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
+                        if 'messages' in session:
+                            del session['messages']
                             session.modified = True
                         
                         logger.info(f"✅ 質問応答完了: {user_message}")
@@ -1127,11 +1129,11 @@ def index():
                         }
                         
                         # エラー応答をセッションに追加
-                        session['messages'].append(bot_response)
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
-                            # セッション同期を確実にする
-                            session['messages'] = ALL_SESSIONS[sid]['messages'].copy()
+                        # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
+                        if 'messages' in session:
+                            del session['messages']
                             session.modified = True
                 
             # 症状入力の場合のみ医薬品推奨を実行
@@ -1866,9 +1868,14 @@ def index():
                         break
                 
                 if not is_duplicate:
-                    session['messages'].append(bot_response)
-                    session.modified = True
-                    logger.info(f"💾 メッセージ保存完了: {len(session['messages'])} messages")
+                    # ALL_SESSIONSに保存
+                    if sid and sid in ALL_SESSIONS:
+                        ALL_SESSIONS[sid]['messages'].append(bot_response)
+                    # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
+                    if 'messages' in session:
+                        del session['messages']
+                        session.modified = True
+                    logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
@@ -2304,6 +2311,13 @@ def api_sessions():
         
         # セッション情報を更新
         ALL_SESSIONS[sid]['last_activity'] = time.time()  # 数値で保存
+        
+        # セッションCookie肥大化を防ぐため、messagesをALL_SESSIONSのみに保存
+        # Flaskセッションからはmessagesを削除
+        if 'messages' in session:
+            del session['messages']
+            session.modified = True
+            logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
         
         session_data = {
             'session_id': sid,
