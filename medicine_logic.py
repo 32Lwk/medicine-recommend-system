@@ -1223,6 +1223,55 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
             "reason": f"システムエラー: {str(e)}"
         }
 
+def detect_medicine_name_in_query(user_message, medicine_df):
+    """
+    ユーザーの質問から医薬品名を検出する
+    
+    Args:
+        user_message: ユーザーの質問
+        medicine_df: 医薬品データフレーム
+    
+    Returns:
+        list: 検出された医薬品のリスト
+    """
+    if medicine_df is None or medicine_df.empty:
+        return []
+    
+    detected_medicines = []
+    user_message_lower = user_message.lower()
+    
+    # 医薬品名で検索
+    for _, row in medicine_df.iterrows():
+        product_name = str(row.get('製品名', '')).lower()
+        if product_name and product_name in user_message_lower:
+            detected_medicines.append({
+                'product_name': row.get('製品名', ''),
+                'manufacturer': row.get('メーカー名', ''),
+                'efficacy': row.get('効能効果', ''),
+                'usage': row.get('用法用量', ''),
+                'age_restriction': row.get('年齢制限', ''),
+                'ingredients': row.get('成分', ''),
+                'doping_prohibited': row.get('禁止物質あり', ''),
+                'medicine_type': row.get('医薬品の種類', '')
+            })
+    
+    # 成分名で検索
+    for _, row in medicine_df.iterrows():
+        ingredients = str(row.get('成分', '')).lower()
+        if ingredients and any(ingredient in user_message_lower for ingredient in ingredients.split(',')):
+            detected_medicines.append({
+                'product_name': row.get('製品名', ''),
+                'manufacturer': row.get('メーカー名', ''),
+                'efficacy': row.get('効能効果', ''),
+                'usage': row.get('用法用量', ''),
+                'age_restriction': row.get('年齢制限', ''),
+                'ingredients': row.get('成分', ''),
+                'doping_prohibited': row.get('禁止物質あり', ''),
+                'medicine_type': row.get('医薬品の種類', '')
+            })
+    
+    return detected_medicines
+
 def chat_with_medicine_context(user_message, conversation_history, recommended_medicines, client=None):
     """
     会話履歴と推奨医薬品の情報をChatGPTに渡して、医薬品に関する質問に回答する
@@ -1239,10 +1288,41 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     if client is None:
         client = OpenAI(api_key=api_key)
     
-    # 推奨医薬品がない場合の一般的なアドバイス
+    # 推奨医薬品がない場合、医薬品名での直接検索を試行
     if not recommended_medicines:
+        # 医薬品データを読み込み
+        try:
+            import pandas as pd
+            df = pd.read_csv('otc_medicine_data.csv')
+            detected_medicines = detect_medicine_name_in_query(user_message, df)
+            
+            if detected_medicines:
+                # 検出された医薬品の情報を返す
+                medicine_info = ""
+                for i, med in enumerate(detected_medicines[:3], 1):  # 最大3つまで
+                    medicine_info += f"\n💊 **{i}位: {med['product_name']}** ({med['manufacturer']})\n"
+                    medicine_info += f"**効能効果:** {med['efficacy']}\n"
+                    medicine_info += f"**成分:** {med['ingredients']}\n"
+                    if med['age_restriction']:
+                        medicine_info += f"**年齢制限:** {med['age_restriction']}\n"
+                    if med['usage']:
+                        medicine_info += f"**用法用量:** {med['usage']}\n"
+                    medicine_info += "\n"
+                
+                return {
+                    "answer": f"🔍 **医薬品検索結果**\n\n{medicine_info}\n⚠️ **ご注意**\n・医薬品の使用前には必ず登録販売者や薬剤師にご相談ください\n・アレルギー体質の方は成分を確認してください\n・用法用量を守ってご使用ください",
+                    "medicine_details": "検出された医薬品の情報",
+                    "interactions": "医薬品の相互作用については登録販売者にご相談ください",
+                    "doping_check": "ドーピング検査については各競技団体にご確認ください",
+                    "side_effects": "副作用については登録販売者にご相談ください",
+                    "consultation_advice": "お近くの登録販売者にご相談ください"
+                }
+        except Exception as e:
+            print(f"医薬品検索エラー: {e}")
+        
+        # 医薬品が見つからない場合の一般的なアドバイス
         return {
-            "answer": "申し訳ございません。該当する推奨医薬品が見つかりませんでした。\n\n以下の点をご確認ください：\n・症状の詳細（いつから、どの程度の症状か）\n・他の症状の有無\n・現在服用中の薬の有無\n・アレルギーの有無\n\nより適切なアドバイスをするため、上記の情報をお教えいただけますでしょうか？\n\nまた、お近くの登録販売者や薬剤師にご相談いただくこともお勧めします。",
+            "answer": "申し訳ございません。該当する推奨医薬品が見つかりませんでした。\n\n💡 より適切なアドバイスをするために、以下の情報をお教えください：\n\n📋 **基本情報**\n・年齢と性別\n・症状の詳細（いつから、どの程度の症状か）\n・他の症状の有無\n\n💊 **薬に関する情報**\n・現在服用中の薬はありますか？\n・アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）\n・持病や既往歴はありますか？\n\n🔍 **具体的な症状や医薬品名での検索も可能です**\n・「ビタミンCの薬について」\n・「風邪薬を教えて」\n・「頭痛薬を探している」\n\n上記の情報をお教えいただければ、より具体的なアドバイスができます。また、お近くの登録販売者や薬剤師にご相談いただくこともお勧めします。",
             "medicine_details": "推奨医薬品の情報がありません",
             "interactions": "推奨医薬品の情報がありません",
             "doping_check": "推奨医薬品の情報がありません",
