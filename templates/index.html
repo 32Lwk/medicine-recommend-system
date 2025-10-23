@@ -2580,10 +2580,10 @@
 <div id="successModal" class="modal">
     <div class="modal-content success-modal">
         <div class="modal-header">
-            <h3 class="modal-title">✅ 評価ありがとうございます</h3>
+            <h3 class="modal-title">✅ 報告ありがとうございます</h3>
         </div>
         <div class="modal-body">
-            <p id="successMessage">評価ありがとうございます。報告いただいた内容は早急に修復します。</p>
+            <p id="successMessage">報告ありがとうございます。報告いただいた内容は早急に修復します。</p>
         </div>
     </div>
 </div>
@@ -2620,8 +2620,14 @@
     
     // ○ボタンクリック処理
     function handlePositiveFeedback(messageData) {
+        // HTMLタグを削除してプレーンテキスト化
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = messageData.ai_response || '';
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
         currentFeedbackData = {
             ...messageData,
+            ai_response: plainText,
             report_type: 'ai_positive',
             feedback_text: ''
         };
@@ -2635,8 +2641,14 @@
     
     // ×ボタンクリック処理
     function handleNegativeFeedback(messageData) {
+        // HTMLタグを削除してプレーンテキスト化
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = messageData.ai_response || '';
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
         currentFeedbackData = {
             ...messageData,
+            ai_response: plainText,
             report_type: 'ai_negative'
         };
         
@@ -2647,8 +2659,14 @@
     
     // セキュリティ警告報告処理
     function handleSecurityReport(warningData) {
+        // HTMLタグを削除してプレーンテキスト化
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = warningData.ai_response || '';
+        const plainText = tempDiv.textContent || tempDiv.innerText || '';
+        
         currentFeedbackData = {
             ...warningData,
+            ai_response: plainText,
             report_type: 'security_warning'
         };
         
@@ -2674,7 +2692,7 @@
         closeFeedbackModal();
         
         // 成功モーダル表示
-        showSuccessModal('評価ありがとうございます。報告いただいた内容は早急に修復します。');
+        showSuccessModal('報告ありがとうございます。報告いただいた内容は早急に修復します。');
     }
     
     // Googleフォームリンク処理
@@ -2692,7 +2710,7 @@
         closeFeedbackModal();
         
         // 成功モーダル表示
-        showSuccessModal('評価ありがとうございます。報告いただいた内容は早急に修復します。');
+        showSuccessModal('報告ありがとうございます。報告いただいた内容は早急に修復します。');
     }
     
     // サーバーにフィードバックを送信
