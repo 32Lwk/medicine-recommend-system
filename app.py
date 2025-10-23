@@ -1408,7 +1408,13 @@ def index():
                     
                     # エスカレーションが必要な場合の特別処理
                     if recommendation_result.get('escalation'):
-                        bot_content = f"""
+                        # 重要な注意事項用のデータを準備（HTMLエスケープ処理）
+                        import json
+                        import html
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escalation_content = f"""
 <div class="recommendation-result escalation">
     <h4>⚠️ 重要な注意事項</h4>
     <p class="escalation-warning"><strong>{doctor_consultation}</strong></p>
@@ -1421,8 +1427,28 @@ def index():
         <li>市販薬での自己治療は推奨されません</li>
         <li>症状が悪化する場合は救急医療機関へ</li>
     </ul>
-</div>
-"""
+</div>"""
+                        
+                        escalation_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escalation_content,
+                            'security_score': None
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ
+                        escalation_json = html.escape(json.dumps(escalation_data, ensure_ascii=False))
+                        
+                        bot_content = escalation_content + f"""
+    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この重要な注意事項はいかがでしたか？</p>
+        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({escalation_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            適切
+        </button>
+        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({escalation_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            不適切
+        </button>
+    </div>
+</div>"""
                     else:
                         # 通常の推奨結果の表示
                         algorithm_label = {
