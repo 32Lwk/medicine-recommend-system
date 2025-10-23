@@ -1240,25 +1240,46 @@ def detect_medicine_name_in_query(user_message, medicine_df):
     detected_medicines = []
     user_message_lower = user_message.lower()
     
-    # 医薬品名で検索
-    for _, row in medicine_df.iterrows():
-        product_name = str(row.get('製品名', '')).lower()
-        if product_name and product_name in user_message_lower:
-            detected_medicines.append({
-                'product_name': row.get('製品名', ''),
-                'manufacturer': row.get('メーカー名', ''),
-                'efficacy': row.get('効能効果', ''),
-                'usage': row.get('用法用量', ''),
-                'age_restriction': row.get('年齢制限', ''),
-                'ingredients': row.get('成分', ''),
-                'doping_prohibited': row.get('禁止物質あり', ''),
-                'medicine_type': row.get('医薬品の種類', '')
-            })
-    
-    # 成分名で検索
+    # 成分名での検索を優先（ビタミンC、イブプロフェンなど）
     for _, row in medicine_df.iterrows():
         ingredients = str(row.get('成分', '')).lower()
-        if ingredients and any(ingredient in user_message_lower for ingredient in ingredients.split(',')):
+        if ingredients:
+            ingredient_list = [ing.strip() for ing in ingredients.split(',')]
+            for ingredient in ingredient_list:
+                if ingredient and ingredient in user_message_lower:
+                    detected_medicines.append({
+                        'product_name': row.get('製品名', ''),
+                        'manufacturer': row.get('メーカー名', ''),
+                        'efficacy': row.get('効能効果', ''),
+                        'usage': row.get('用法用量', ''),
+                        'age_restriction': row.get('年齢制限', ''),
+                        'ingredients': row.get('成分', ''),
+                        'doping_prohibited': row.get('禁止物質あり', ''),
+                        'medicine_type': row.get('医薬品の種類', '')
+                    })
+                    break  # 重複を避ける
+    
+    # 効能効果での検索を追加（「風邪薬」「頭痛薬」など）
+    efficacy_keywords = {'風邪': '風邪', 'ビタミン': 'ビタミン', '頭痛': '頭痛', '胃痛': '胃', '胃薬': '胃', 'かぜ': '風邪'}
+    for keyword, search_term in efficacy_keywords.items():
+        if keyword in user_message_lower:
+            matched = medicine_df[medicine_df['効能効果'].str.contains(search_term, na=False)]
+            for _, row in matched.head(5).iterrows():  # 最大5件
+                detected_medicines.append({
+                    'product_name': row.get('製品名', ''),
+                    'manufacturer': row.get('メーカー名', ''),
+                    'efficacy': row.get('効能効果', ''),
+                    'usage': row.get('用法用量', ''),
+                    'age_restriction': row.get('年齢制限', ''),
+                    'ingredients': row.get('成分', ''),
+                    'doping_prohibited': row.get('禁止物質あり', ''),
+                    'medicine_type': row.get('医薬品の種類', '')
+                })
+    
+    # 医薬品名で検索（部分一致）
+    for _, row in medicine_df.iterrows():
+        product_name = str(row.get('製品名', '')).lower()
+        if product_name and any(word in product_name for word in user_message_lower.split() if len(word) > 2):
             detected_medicines.append({
                 'product_name': row.get('製品名', ''),
                 'manufacturer': row.get('メーカー名', ''),
@@ -1270,7 +1291,15 @@ def detect_medicine_name_in_query(user_message, medicine_df):
                 'medicine_type': row.get('医薬品の種類', '')
             })
     
-    return detected_medicines
+    # 重複を除去
+    unique_medicines = []
+    seen_names = set()
+    for med in detected_medicines:
+        if med['product_name'] not in seen_names:
+            unique_medicines.append(med)
+            seen_names.add(med['product_name'])
+    
+    return unique_medicines[:10]  # 最大10件に制限
 
 def chat_with_medicine_context(user_message, conversation_history, recommended_medicines, client=None):
     """
@@ -1287,6 +1316,40 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     """
     if client is None:
         client = OpenAI(api_key=api_key)
+    
+    # システム紹介質問を検出
+    system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能']
+    is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
+    
+    if is_system_intro and not recommended_medicines:
+        return {
+            "answer": """🏥 **医薬品推奨システムについて**
+
+このシステムは、症状に基づいて適切な市販薬（OTC医薬品）を推奨する医薬品推奨システムです。
+
+📋 **主な機能**
+・症状に基づく医薬品推奨
+・医薬品の詳細情報提供（効能、用法用量、注意事項）
+・ドーピング規制チェック
+・医薬品の相互作用確認
+・副作用情報の提供
+
+🔍 **できること**
+・「頭痛がする」「のどが痛い」など症状を入力すると、適切な市販薬を推奨します
+・「ビタミンCの薬を教えて」など医薬品名で検索できます
+・推奨された医薬品について質問できます
+
+⚠️ **ご注意**
+・本システムは医薬品推奨を行いますが、最終的な判断は登録販売者や薬剤師にご相談ください
+・重篤な症状の場合は医療機関を受診してください
+
+どのような症状でお困りですか？お気軽にお伝えください。""",
+            "medicine_details": "システム紹介",
+            "interactions": "システム紹介",
+            "doping_check": "システム紹介",
+            "side_effects": "システム紹介",
+            "consultation_advice": "お近くの登録販売者にご相談ください"
+        }
     
     # 推奨医薬品がない場合、医薬品名での直接検索を試行
     if not recommended_medicines:

@@ -466,6 +466,14 @@ def index():
             original_user_message = None  # 元のユーザーメッセージ
             
             if is_question:
+                # システム紹介質問を検出
+                system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能']
+                is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
+                
+                # 医薬品名検索を検出
+                medicine_search_keywords = ['の薬', '薬を', '医薬品', 'について教えて', 'を教えて', 'お勧め', 'おすすめ']
+                is_medicine_search = any(keyword in user_message for keyword in medicine_search_keywords)
+                
                 # 質問かどうかを判定（質問キーワードがあるか確認）
                 has_question_keyword = False
                 question_keywords = [
@@ -480,8 +488,8 @@ def index():
                         has_question_keyword = True
                         break
                 
-                # 明確な質問の場合は、属性抽出をスキップして質問回答に進む
-                if has_question_keyword:
+                # システム紹介、医薬品検索、または明確な質問の場合は質問回答に進む
+                if is_system_intro or is_medicine_search or has_question_keyword:
                     logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
                     
                     # まずユーザーメッセージを保存
@@ -1029,29 +1037,32 @@ def index():
                             latest_recommended_medicines
                         )
                         
-                        # 回答をHTML形式で整形
-                        # 医薬品相談回答用のデータを準備（HTMLエスケープ処理）
+                        # 評価ボタン用のデータを準備（症状分析結果と同じ方式）
                         import json
                         import html
                         
-                        # HTMLエスケープ処理
-                        escaped_user_message = html.escape(user_message)
-                        escaped_chat_answer = html.escape(chat_response.get('answer', '回答を取得できませんでした'))
-                        
-                        chat_data = {
-                            'user_message': escaped_user_message,
-                            'ai_response': escaped_chat_answer,
-                            'security_score': None
-                        }
-                        
-                        # JSONエンコードしてHTMLエスケープ
-                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
-                        
-                        bot_content = f"""
+                        # 回答の全文を作成
+                        full_response_html = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
     <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
-</div>
+</div>"""
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
+                        
+                        chat_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_ai_response,
+                            'security_score': None
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ（症状分析結果と同じ方式）
+                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
+                        
+                        # 評価ボタンを追加（症状分析結果と同じスタイル）
+                        bot_content = full_response_html + f"""
 <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
     <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
     <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
@@ -2234,25 +2245,33 @@ def api_sessions():
         logger.info(f"🔍 /api/sessions called - Session ID: {sid}")
         logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
         
+        # セッションIDがない場合は新規作成
+        if not sid or sid == 'unknown':
+            sid = str(int(time.time() * 1000000))
+            session['_id'] = sid
+            session['username'] = f'ユーザー{get_next_user_number()}'
+            logger.info(f"🆕 新しいセッションIDを作成: {sid}")
+        
+        # ALL_SESSIONSに存在しない場合は復旧
+        if sid not in ALL_SESSIONS:
+            logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})。セッションから復旧を試みます。")
+            ALL_SESSIONS[sid] = {
+                'session_id': sid,
+                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                'messages': session.get('messages', []),
+                'session_active': True,
+                'last_activity': datetime.now().isoformat(),
+                'user_info': session.get('user_info', {}),
+                'user_attributes': session.get('user_attributes', {})
+            }
+            logger.info(f"🔄 セッション復旧完了: {sid}")
+        
         # ALL_SESSIONSから取得（セッションCookieの肥大化を防ぐ）
-        messages = []
-        if sid in ALL_SESSIONS:
-            messages = ALL_SESSIONS[sid].get('messages', [])
-            logger.info(f"📦 /api/sessions - ALL_SESSIONSから取得: {len(messages)} messages (sid={sid})")
-        else:
-            # フォールバック: セッションから取得
-            messages = session.get('messages', [])
-            logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})")
-            logger.info(f"📦 /api/sessions - セッションから取得: {len(messages)} messages")
-            
-            # セッションが存在しない場合は初期化
-            if sid not in ALL_SESSIONS:
-                ALL_SESSIONS[sid] = {
-                    'messages': messages.copy(),
-                    'user_attributes': {},
-                    'created_at': datetime.now().isoformat()
-                }
-                logger.info(f"🆕 新しいセッションを初期化: {sid}")
+        messages = ALL_SESSIONS[sid].get('messages', [])
+        logger.info(f"📦 /api/sessions - ALL_SESSIONSから取得: {len(messages)} messages (sid={sid})")
+        
+        # セッション情報を更新
+        ALL_SESSIONS[sid]['last_activity'] = datetime.now().isoformat()
         
         session_data = {
             'session_id': sid,
