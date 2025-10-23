@@ -3610,7 +3610,13 @@
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${reportTypeText}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.username || 'Unknown'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.user_message || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.ai_response || '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">
+                            <div id="ai-response-${report.id}" style="max-height: 100px; overflow: hidden; position: relative;">
+                                ${report.ai_response || '-'}
+                            </div>
+                            ${(report.ai_response && report.ai_response.length > 200) ? 
+                                `<button onclick="toggleAIDetails(${report.id})" class="admin-btn" style="padding: 2px 6px; font-size: 0.7em; margin-top: 5px;">詳細表示</button>` : ''}
+                        </td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
@@ -3648,6 +3654,23 @@
             document.getElementById('unresolvedReports').textContent = unresolvedCount;
             document.getElementById('positiveRatio').textContent = `${positiveRatio}%`;
             document.getElementById('negativeRatio').textContent = `${negativeRatio}%`;
+        }
+        
+        function toggleAIDetails(reportId) {
+            const responseDiv = document.getElementById(`ai-response-${reportId}`);
+            const button = responseDiv.nextElementSibling;
+            
+            if (responseDiv.style.maxHeight === '100px') {
+                // 詳細表示
+                responseDiv.style.maxHeight = 'none';
+                responseDiv.style.overflow = 'visible';
+                button.textContent = '省略表示';
+            } else {
+                // 省略表示
+                responseDiv.style.maxHeight = '100px';
+                responseDiv.style.overflow = 'hidden';
+                button.textContent = '詳細表示';
+            }
         }
         
         function resolveFeedback(feedbackId) {
