@@ -2317,8 +2317,8 @@
             // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
             medicines.forEach((medicine, index) => {
                 if (medicine.score !== undefined) {
-                    const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
-                    const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                    const scoreClass = medicine.score >= 70 ? 'admin-score-high' : medicine.score >= 50 ? 'admin-score-medium' : 'admin-score-low';
+                    const scoreText = medicine.score >= 70 ? '高' : medicine.score >= 50 ? '中' : '低';
                     const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
@@ -2344,8 +2344,8 @@
             // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
             medicines.forEach((medicine, index) => {
                 if (medicine.score !== undefined) {
-                    const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
-                    const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                    const scoreClass = medicine.score >= 70 ? 'admin-score-high' : medicine.score >= 50 ? 'admin-score-medium' : 'admin-score-low';
+                    const scoreText = medicine.score >= 70 ? '高' : medicine.score >= 50 ? '中' : '低';
                     const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
@@ -2860,8 +2860,8 @@
                         // スコアリング表示（管理者画面のみ）
                         if (medicine.score !== undefined) {
                             console.log('🔍 Medicine score:', medicine.score, 'for', medicine.product_name);
-                            const scoreClass = medicine.score >= 80 ? 'admin-score-high' : medicine.score >= 60 ? 'admin-score-medium' : 'admin-score-low';
-                            const scoreText = medicine.score >= 80 ? '高' : medicine.score >= 60 ? '中' : '低';
+                            const scoreClass = medicine.score >= 70 ? 'admin-score-high' : medicine.score >= 50 ? 'admin-score-medium' : 'admin-score-low';
+                            const scoreText = medicine.score >= 70 ? '高' : medicine.score >= 50 ? '中' : '低';
                             content += `<div class="admin-score-display ${scoreClass}">
                                 📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})
                             </div>`;
