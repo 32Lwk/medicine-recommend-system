@@ -3491,6 +3491,42 @@
                 hideSecurityDetails();
             }
         }
+        
+        // グローバルエラーハンドラー（Chrome拡張機能エラーを無視）
+        window.addEventListener('error', function(event) {
+            // Chrome拡張機能のエラーを無視
+            if (event.filename && event.filename.includes('chrome-extension://')) {
+                return;
+            }
+            
+            // メッセージポートエラーは無視
+            if (event.error && event.error.message && 
+                event.error.message.includes('message port closed')) {
+                return;
+            }
+            
+            // その他のエラーのみログ出力
+            console.log('JavaScriptエラーをキャッチ:', event.error);
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            // Chrome拡張機能のエラーを無視
+            if (event.reason && event.reason.stack && 
+                event.reason.stack.includes('chrome-extension://')) {
+                event.preventDefault();
+                return;
+            }
+            
+            // メッセージポートエラーは無視
+            if (event.reason && event.reason.message && 
+                event.reason.message.includes('message port closed')) {
+                event.preventDefault();
+                return;
+            }
+            
+            // その他のエラーのみログ出力
+            console.log('未処理のPromise拒否をキャッチ:', event.reason);
+        });
     </script>
 </body>
 </html>
