@@ -218,3 +218,80 @@
 {"timestamp": "2025-10-23T14:54:54.648051", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-10-23T14:54:54.648907", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-10-23T14:54:54.649203", "original_length": 40, "sanitized_length": 40, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.701751", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.702555", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.702758", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.704660", "original_length": 1000, "sanitized_length": 1000, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.705200", "original_length": 1005, "sanitized_length": 1003, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.705413", "original_length": 35, "sanitized_length": 35, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.705636", "original_length": 31, "sanitized_length": 31, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.705841", "original_length": 27, "sanitized_length": 27, "risk_score": 40, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.707198", "original_length": 71, "sanitized_length": 71, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.707501", "original_length": 42, "sanitized_length": 42, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.707748", "original_length": 49, "sanitized_length": 49, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.707925", "original_length": 36, "sanitized_length": 36, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.708106", "original_length": 31, "sanitized_length": 31, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.708346", "original_length": 30, "sanitized_length": 30, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.708625", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.708816", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.709276", "original_length": 55, "sanitized_length": 55, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.709651", "original_length": 51, "sanitized_length": 51, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:18.711562", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.712021", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.712321", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.712641", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.712862", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.713066", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.713242", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.713419", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.713604", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.713780", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.729608", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:18.729881", "original_length": 40, "sanitized_length": 40, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました", "危険なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:20:32.049706", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:32.050164", "original_length": 13, "sanitized_length": 13, "risk_score": 55, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:20:32.050421", "original_length": 29, "sanitized_length": 29, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:04.970126", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:04.970614", "original_length": 13, "sanitized_length": 13, "risk_score": 85, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:04.970968", "original_length": 29, "sanitized_length": 29, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:04.971335", "original_length": 14, "sanitized_length": 14, "risk_score": 30, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:08.856503", "original_length": 71, "sanitized_length": 71, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.856771", "original_length": 42, "sanitized_length": 42, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.857009", "original_length": 49, "sanitized_length": 49, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.857271", "original_length": 36, "sanitized_length": 36, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.857582", "original_length": 31, "sanitized_length": 31, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.857884", "original_length": 30, "sanitized_length": 30, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.858218", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.858462", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.858662", "original_length": 55, "sanitized_length": 55, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:08.858846", "original_length": 51, "sanitized_length": 51, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.765397", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.765797", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.766024", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.767755", "original_length": 1000, "sanitized_length": 1000, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.768220", "original_length": 1005, "sanitized_length": 1003, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.768386", "original_length": 35, "sanitized_length": 35, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.768693", "original_length": 31, "sanitized_length": 31, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.768933", "original_length": 27, "sanitized_length": 27, "risk_score": 40, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.770179", "original_length": 71, "sanitized_length": 71, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.770415", "original_length": 42, "sanitized_length": 42, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.770704", "original_length": 49, "sanitized_length": 49, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.770870", "original_length": 36, "sanitized_length": 36, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.771133", "original_length": 31, "sanitized_length": 31, "risk_score": 80, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.771505", "original_length": 30, "sanitized_length": 30, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.771755", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.772114", "original_length": 34, "sanitized_length": 34, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.772507", "original_length": 55, "sanitized_length": 55, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.772902", "original_length": 51, "sanitized_length": 51, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
+{"timestamp": "2025-10-23T15:21:16.774391", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.774641", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.774872", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.775047", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.775281", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.775469", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.775619", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.775863", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.776077", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.776341", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.785059", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-23T15:21:16.785342", "original_length": 40, "sanitized_length": 40, "risk_score": 100, "is_safe": false, "warnings": ["入力内容に不審なパターンが検出されました"], "action": "blocked"}
