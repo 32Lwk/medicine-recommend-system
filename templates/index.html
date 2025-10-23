@@ -1492,13 +1492,7 @@
         `;
         chatMessages.appendChild(warningDiv);
         
-        // セキュリティ警告に報告ボタンを追加
-        const warningData = {
-            user_message: 'セキュリティ警告が表示されました',
-            ai_response: message,
-            security_score: 80 // デフォルトスコア
-        };
-        addReportButton(warningDiv, warningData);
+        // セキュリティ警告に報告ボタンを追加（削除済み - HTMLに直接組み込み）
         
         scrollToBottom();
         
@@ -1891,10 +1885,7 @@
             chatMessages.appendChild(warning);
         });
         
-        // 評価ボタンを追加（定期更新時も含む）
-        setTimeout(() => {
-            addFeedbackButtonsToLatestMessage();
-        }, 1000); // タイミングをさらに延長してチカチカを防ぐ
+        // 評価ボタンを追加（削除済み - HTMLに直接組み込み）
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
@@ -1911,10 +1902,7 @@
             chatMessages.appendChild(newTypingDiv);
         }
         
-        // AI応答メッセージに評価ボタンを追加（簡素化）
-        setTimeout(() => {
-            addFeedbackButtonsToLatestMessage();
-        }, 800); // タイミングを延長してチカチカを防ぐ
+        // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -2589,101 +2577,11 @@
         };
     })();
     
-    // 最新のAI応答メッセージに評価ボタンを追加する関数
-    function addFeedbackButtonsToLatestMessage() {
-        const chatMessages = document.getElementById('chatMessages');
-        const messageElements = chatMessages.querySelectorAll('.message.bot');
-        
-        if (messageElements.length > 0) {
-            const lastBotMessage = messageElements[messageElements.length - 1];
-            if (lastBotMessage && !lastBotMessage.querySelector('.feedback-buttons') && !lastBotMessage.getAttribute('data-feedback-added')) {
-                // 最新のbotメッセージの内容を取得
-                const messageContent = lastBotMessage.querySelector('.message-content');
-                if (messageContent && messageContent.textContent.trim()) {
-                    // 初期メッセージ（こんにちは！どのような症状でお困りでしょうか？）には評価ボタンを追加しない
-                    const messageText = messageContent.textContent.trim();
-                    if (messageText.includes('こんにちは！どのような症状でお困りでしょうか？') ||
-                        messageText.includes('どのような症状でお困りでしょうか？') ||
-                        messageText.includes('例：') ||
-                        messageText.includes('頭痛がする') ||
-                        messageText.includes('喉が痛い') ||
-                        messageText.includes('熱がある') ||
-                        messageText.length < 100) { // 短いメッセージ（初期メッセージ）は除外
-                        return; // 初期メッセージの場合は評価ボタンを追加しない
-                    }
-                    
-                    // 症状分析や質問対応のメッセージには評価ボタンを追加
-                    if (messageText.includes('症状') || 
-                        messageText.includes('分析') || 
-                        messageText.includes('質問') || 
-                        messageText.includes('回答') ||
-                        messageText.includes('おすすめ') ||
-                        messageText.includes('薬') ||
-                        messageText.includes('治療') ||
-                        messageText.includes('病院') ||
-                        messageText.includes('推奨') ||
-                        messageText.includes('医薬品') ||
-                        messageText.includes('相談') ||
-                        messageText.includes('アドバイス') ||
-                        messageText.includes('服用') ||
-                        messageText.includes('副作用') ||
-                        messageText.includes('効果') ||
-                        messageText.includes('効能') ||
-                        messageText.includes('用法') ||
-                        messageText.includes('用量') ||
-                        messageText.length > 100) {
-                        // これらのメッセージには評価ボタンを追加する
-                    } else {
-                        return; // その他のメッセージには評価ボタンを追加しない
-                    }
-                    
-                    const messageData = {
-                        user_message: 'ユーザーメッセージ',
-                        ai_response: messageText,
-                        security_score: null
-                    };
-                    addFeedbackButtons(lastBotMessage, messageData);
-                    console.log('✅ Feedback buttons added to latest message');
-                }
-            }
-        }
-    }
+    // 最新のAI応答メッセージに評価ボタンを追加する関数（削除済み - HTMLに直接組み込み）
     
-    // AI応答メッセージに評価ボタンを追加
-    function addFeedbackButtons(messageElement, messageData) {
-        // 既に評価ボタンが存在する場合は追加しない
-        if (messageElement.querySelector('.feedback-buttons') || messageElement.getAttribute('data-feedback-added')) {
-            return;
-        }
-        
-        // メッセージ要素に評価ボタン追加済みフラグを設定
-        messageElement.setAttribute('data-feedback-added', 'true');
-        
-        const feedbackButtons = document.createElement('div');
-        feedbackButtons.className = 'feedback-buttons';
-        feedbackButtons.setAttribute('data-feedback-buttons', 'true');
-        feedbackButtons.innerHTML = `
-            <button class="feedback-btn-positive" onclick="handlePositiveFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
-                適切
-            </button>
-            <button class="feedback-btn-negative" onclick="handleNegativeFeedback(${JSON.stringify(messageData).replace(/"/g, '&quot;')})">
-                不適切
-            </button>
-        `;
-        messageElement.appendChild(feedbackButtons);
-    }
+    // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
     
-    // セキュリティ警告に報告ボタンを追加
-    function addReportButton(warningElement, warningData) {
-        const reportButton = document.createElement('div');
-        reportButton.className = 'feedback-buttons';
-        reportButton.innerHTML = `
-            <button class="report-bug-btn" onclick="handleSecurityReport(${JSON.stringify(warningData).replace(/"/g, '&quot;')})">
-                <span>🐛</span> 不具合を報告する
-            </button>
-        `;
-        warningElement.appendChild(reportButton);
-    }
+    // セキュリティ警告に報告ボタンを追加（削除済み - HTMLに直接組み込み）
     
     // ○ボタンクリック処理
     function handlePositiveFeedback(messageData) {
