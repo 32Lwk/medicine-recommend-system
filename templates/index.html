@@ -1465,12 +1465,30 @@
                 ${escapeHtml(message)}
                 <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer;">×</button>
             </div>
+            <div class="report-bug-section" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+                <button class="report-bug-btn" onclick="handleSecurityReport({
+                    'user_message': '${escapeHtml(getCurrentUserMessage())}',
+                    'ai_response': '${escapeHtml(message)}',
+                    'security_score': 0
+                })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                    不具合を報告する
+                </button>
+            </div>
         `;
         chatMessages.appendChild(errorDiv);
         scrollToBottom();
         
         // エラーメッセージを永続化（自動削除しない）
         console.log('Error message displayed:', message);
+    }
+    
+    // 現在のユーザーメッセージを取得
+    function getCurrentUserMessage() {
+        const messages = document.querySelectorAll('.message.user .message-content');
+        if (messages.length > 0) {
+            return messages[messages.length - 1].textContent.trim();
+        }
+        return 'メッセージ取得エラー';
     }
     
     // 警告メッセージを表示
@@ -1488,6 +1506,15 @@
                 <strong>🚨 セキュリティ警告</strong><br>
                 ${escapeHtml(message)}
                 <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer; font-weight: bold;">×</button>
+            </div>
+            <div class="report-bug-section" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
+                <button class="report-bug-btn" onclick="handleSecurityReport({
+                    'user_message': '${escapeHtml(getCurrentUserMessage())}',
+                    'ai_response': '${escapeHtml(message)}',
+                    'security_score': 0
+                })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                    不具合を報告する
+                </button>
             </div>
         `;
         chatMessages.appendChild(warningDiv);

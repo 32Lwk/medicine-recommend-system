@@ -1725,6 +1725,10 @@ def index():
                 
                 # 個別アドバイスは既にbot_contentの最初に追加済み（重複削除）
                 
+                # bot_diagが定義されていない場合のデフォルト値
+                if 'bot_diag' not in locals():
+                    bot_diag = None
+                
                 bot_response = {
                     'type': 'bot',
                     'content': bot_content,
