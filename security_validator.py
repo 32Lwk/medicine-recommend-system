@@ -104,7 +104,16 @@ DANGER_PATTERNS = {
         r'危険な薬を推奨',
         r'毒を推奨',
         r'管理者権限',
-        r'root権限'
+        r'root権限',
+        r'権限を渡して',
+        r'権限を付与',
+        r'管理者として',
+        r'rootとして',
+        r'システム管理者',
+        r'スーパーユーザー',
+        r'admin権限',
+        r'管理者モード',
+        r'特権モード'
     ],
     
     'instruction_override': [
@@ -339,18 +348,21 @@ class SecurityValidator:
     
     def _make_final_judgment(self, risk_score: int, medical_score: float, safe_match: bool, warnings: List[str]) -> bool:
         """最終判定"""
+        # 明らかな攻撃パターンがある場合は医療用語スコアに関係なく危険と判定
+        if risk_score >= 80:
+            warnings.append("入力内容に不審なパターンが検出されました")
+            return False
+        
         # 医療用語が多く、安全パターンにマッチする場合は危険度を下げる
         # ただし、明らかな攻撃パターンがある場合は下げすぎない
         if medical_score > 0.3 and safe_match and risk_score < 50:
             risk_score = max(0, risk_score - 20)
         
         # 警告の追加
-        if risk_score > 60:
-            warnings.append("入力内容に不審なパターンが検出されました")
-        if risk_score > 80:
-            warnings.append("危険なパターンが検出されました")
+        if risk_score >= 60:
+            warnings.append("入力内容に注意が必要なパターンが検出されました")
         
-        # 判定
+        # 最終判定
         return risk_score < 80
     
     def _log_validation_result(self, original_text: str, sanitized_text: str, risk_score: int, is_safe: bool, warnings: List[str]):
