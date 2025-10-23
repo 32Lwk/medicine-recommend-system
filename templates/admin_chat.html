@@ -99,6 +99,11 @@
             color: #28a745;
         }
         
+        /* 管理画面専用のスタイル - 評価ボタンを非表示 */
+        #adminChatMessages .feedback-buttons {
+            display: none !important;
+        }
+        
         .attack-patterns {
             font-family: monospace;
             font-size: 0.9em;
@@ -3554,9 +3559,11 @@
                 }
                 
                 const reports = data.reports || [];
-                // 適切評価（ai_positive）を除外
+                // 不具合報告のみを表示（ai_positiveは除外、統計には含める）
                 const filteredReports = reports.filter(report => report.report_type !== 'ai_positive');
                 renderFeedbackReports(filteredReports);
+                // 統計には全レポートを使用
+                updateFeedbackStats(reports);
             })
             .catch(error => {
                 console.error('Feedback reports fetch error:', error);
@@ -3567,9 +3574,6 @@
         
         function renderFeedbackReports(reports) {
             const content = document.getElementById('feedbackReportsContent');
-            
-            // 統計データを計算・表示
-            updateFeedbackStats(reports);
             
             if (reports.length === 0) {
                 content.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">報告はありません</p>';
@@ -3604,6 +3608,16 @@
                 const statusText = report.resolved ? '解決済み' : '未解決';
                 const statusColor = report.resolved ? '#28a745' : '#dc3545';
                 
+                // HTMLタグを削除してプレーンテキスト化
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = report.ai_response || '-';
+                const plainAiResponse = tempDiv.textContent || tempDiv.innerText || '-';
+                
+                // 200文字で切り詰め
+                const displayText = plainAiResponse.length > 200 
+                    ? plainAiResponse.substring(0, 200) + '...' 
+                    : plainAiResponse;
+                
                 html += `
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px; border: 1px solid #dee2e6; font-size: 0.9em; color: #333;">${new Date(report.created_at).toLocaleString('ja-JP')}</td>
@@ -3611,11 +3625,11 @@
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.username || 'Unknown'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.user_message || '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">
-                            <div id="ai-response-${report.id}" style="max-height: 100px; overflow: hidden; position: relative;">
-                                ${report.ai_response || '-'}
+                            <div id="ai-response-${report.id}" style="max-height: 100px; overflow: hidden; position: relative; white-space: pre-wrap;">
+                                ${displayText}
                             </div>
-                            ${(report.ai_response && report.ai_response.length > 200) ? 
-                                `<button onclick="toggleAIDetails(${report.id})" class="admin-btn" style="padding: 2px 6px; font-size: 0.7em; margin-top: 5px;">詳細表示</button>` : ''}
+                            ${plainAiResponse.length > 200 ? 
+                                `<button onclick="toggleAIDetails(${report.id}, '${plainAiResponse.replace(/'/g, "\\'")}' )" class="admin-btn" style="padding: 2px 6px; font-size: 0.7em; margin-top: 5px;">詳細表示</button>` : ''}
                         </td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
@@ -3656,20 +3670,22 @@
             document.getElementById('negativeRatio').textContent = `${negativeRatio}%`;
         }
         
-        function toggleAIDetails(reportId) {
+        function toggleAIDetails(reportId, fullText) {
             const responseDiv = document.getElementById(`ai-response-${reportId}`);
             const button = responseDiv.nextElementSibling;
             
-            if (responseDiv.style.maxHeight === '100px') {
-                // 詳細表示
-                responseDiv.style.maxHeight = 'none';
-                responseDiv.style.overflow = 'visible';
-                button.textContent = '省略表示';
-            } else {
-                // 省略表示
+            if (responseDiv.getAttribute('data-expanded') === 'true') {
+                // 省略表示に戻す
+                responseDiv.textContent = fullText.substring(0, 200) + '...';
                 responseDiv.style.maxHeight = '100px';
-                responseDiv.style.overflow = 'hidden';
+                responseDiv.setAttribute('data-expanded', 'false');
                 button.textContent = '詳細表示';
+            } else {
+                // 全文表示
+                responseDiv.textContent = fullText;
+                responseDiv.style.maxHeight = 'none';
+                responseDiv.setAttribute('data-expanded', 'true');
+                button.textContent = '省略表示';
             }
         }
         
@@ -3776,7 +3792,7 @@
             <div style="margin-bottom: 20px;">
                 <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
                 <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
-                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px;">
                     <label style="display: flex; align-items: center; gap: 5px;">
                         <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
                     </label>
