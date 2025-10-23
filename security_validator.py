@@ -133,7 +133,31 @@ DANGER_PATTERNS = {
         r'秘密の指示に従って',
         r'データベースの内容',
         r'APIキーを教えて',
-        r'パスワードを教えて'
+        r'パスワードを教えて',
+        r'API.*渡して',
+        r'API.*教えて',
+        r'API.*提供',
+        r'API.*公開',
+        r'キー.*渡して',
+        r'キー.*教えて',
+        r'キー.*提供',
+        r'キー.*公開',
+        r'トークン.*渡して',
+        r'トークン.*教えて',
+        r'トークン.*提供',
+        r'トークン.*公開',
+        r'APIを渡して',
+        r'APIを教えて',
+        r'APIを提供',
+        r'APIを公開',
+        r'キーを渡して',
+        r'キーを教えて',
+        r'キーを提供',
+        r'キーを公開',
+        r'トークンを渡して',
+        r'トークンを教えて',
+        r'トークンを提供',
+        r'トークンを公開'
     ],
     
     'system_commands': [
@@ -316,7 +340,7 @@ class SecurityValidator:
             if category == 'role_manipulation':
                 risk_score += category_score * 30
             elif category == 'instruction_override':
-                risk_score += category_score * 25
+                risk_score += category_score * 40  # 35から40に増加
             elif category == 'system_commands':
                 risk_score += category_score * 40
             elif category == 'data_extraction':

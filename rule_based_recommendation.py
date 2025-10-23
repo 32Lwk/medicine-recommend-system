@@ -689,6 +689,16 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
             "escalation_reason": "入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。"
         }
     
+    # 高リスク入力の場合は症状抽出を停止
+    if risk_score >= 80:
+        print(f"⚠️ 高リスク入力のため症状抽出を停止: リスクスコア {risk_score}")
+        return {
+            "symptoms": [],
+            "red_flags": ["高リスク入力"],
+            "needs_escalation": True,
+            "escalation_reason": "入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。"
+        }
+    
     # 症状リストを作成
     all_symptoms = []
     for symptom_name, symptom_data in SYMPTOM_DICTIONARY.items():
