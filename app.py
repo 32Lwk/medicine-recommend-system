@@ -389,6 +389,8 @@ def index():
                 return jsonify({'status': 'ok', 'message_count': message_count})
             
             # ユーザーメッセージを追加（AI自動応答ON/OFF問わず）
+            if 'messages' not in session:
+                session['messages'] = []
             session['messages'].append({
                 'type': 'user',
                 'content': sanitized_message  # サニタイズされたメッセージを使用
@@ -1011,6 +1013,8 @@ def index():
                             'content': '⚠️ 症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。医療機関（病院・クリニック）での受診をお勧めします。',
                             'medical_advice': True
                         }
+                        if 'messages' not in session:
+                            session['messages'] = []
                         session['messages'].append(medical_advice)
                         if sid and sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(medical_advice)
@@ -1889,6 +1893,8 @@ def index():
                 'content': '処理中にエラーが発生しました。',
                 'diagnosis': None
                 }
+                if 'messages' not in session:
+                    session['messages'] = []
                 session['messages'].append(bot_response)
                 session.modified = True
             
@@ -1906,8 +1912,8 @@ def index():
         # 手動返信メッセージを保持
         manual_replies = [msg for msg in existing_messages if msg.get('manual_reply')]
         
-        # 現在のセッションメッセージに手動返信を追加
-        current_messages = session['messages'].copy()
+        # 現在のセッションメッセージに手動返信を追加（安全な取得）
+        current_messages = session.get('messages', []).copy()
         for manual_reply in manual_replies:
             # 既に同じ内容の手動返信が含まれていないかチェック
             if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in current_messages):

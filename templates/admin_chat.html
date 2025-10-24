@@ -73,6 +73,33 @@
             line-height: 1.5;
         }
 
+        /* 詳細表示ボタンのスタイル強化 */
+        .admin-btn {
+            font-size: 0.7rem !important;
+            padding: 2px 6px !important;
+            margin-top: 5px;
+            border: none;
+            background-color: #1976d2;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .admin-btn:hover {
+            background-color: #1565c0;
+        }
+
+        /* テーブル内のAI応答セル */
+        td .ai-response {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+            white-space: pre-wrap;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 300px 1fr;

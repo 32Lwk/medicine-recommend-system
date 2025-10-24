@@ -1596,17 +1596,39 @@
             }
             
             // 少し待ってから最新のメッセージを取得（サーバー処理完了を待つ）
-            // 最大5回リトライ（合計2.5秒）
+            // 最大3回リトライ（合計1.5秒）に短縮
             let retryCount = 0;
-            const maxRetries = 5;
+            const maxRetries = 3;
             const retryInterval = 500;
             
             const fetchMessages = () => {
+                // タイムアウト処理を追加
+                const timeoutId = setTimeout(() => {
+                    console.warn('Fetch timeout, retrying...');
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`Timeout retry... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        console.error('Max retries reached after timeout');
+                        removeTypingIndicator();
+                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        isSubmitting = false;
+                    }
+                }, 2000); // 2秒でタイムアウト
+                
                 fetch('/api/sessions?v={{ version }}', {
                     headers: { 'Cache-Control': 'no-cache' }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(sessionData => {
+                    clearTimeout(timeoutId);
                     console.log(`Session data received (attempt ${retryCount + 1}):`, sessionData);
                     console.log('Messages count:', sessionData?.messages?.length);
                     console.log('Expected message count:', data.message_count);
@@ -1631,10 +1653,17 @@
                     }
                 })
                 .catch(error => {
+                    clearTimeout(timeoutId);
                     console.error('Session fetch error:', error);
-                    removeTypingIndicator();
-                    showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
-                    isSubmitting = false;
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`Error retry... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        removeTypingIndicator();
+                        showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
+                        isSubmitting = false;
+                    }
                 });
             };
             
