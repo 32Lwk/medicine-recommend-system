@@ -1931,11 +1931,22 @@
                     // 管理画面専用のスコア情報を除去
                     let cleanedContent = message.content;
                     
-                    // admin-score-displayクラスを含む要素を除去
+                    // 管理画面専用の要素を除去
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = cleanedContent;
+                    
+                    // admin-score-displayクラスを含む要素を除去
                     const adminScoreElements = tempDiv.querySelectorAll('.admin-score-display');
                     adminScoreElements.forEach(el => el.remove());
+                    
+                    // score-breakdownクラスを含む要素を除去（スコア内訳）
+                    const scoreBreakdownElements = tempDiv.querySelectorAll('.score-breakdown');
+                    scoreBreakdownElements.forEach(el => el.remove());
+                    
+                    // score-itemクラスを含む要素を除去（個別スコア項目）
+                    const scoreItemElements = tempDiv.querySelectorAll('.score-item');
+                    scoreItemElements.forEach(el => el.remove());
+                    
                     cleanedContent = tempDiv.innerHTML;
                     
                     messageDiv.innerHTML = cleanedContent;
