@@ -1882,7 +1882,26 @@
         tempMessages.forEach(msg => {
             // 同じ内容のメッセージがサーバーから来ている場合のみ削除
             const content = msg.querySelector('.message-content')?.textContent;
-            const hasServerVersion = messages.some(m => m.type === 'user' && m.content === content);
+            
+            // タイムスタンプ比較を追加（±3秒以内のメッセージのみマッチ）
+            const hasServerVersion = messages.some(m => {
+                if (m.type !== 'user' || m.content !== content) {
+                    return false;
+                }
+                
+                // タイムスタンプがある場合は時刻も比較
+                if (m.timestamp) {
+                    const serverTime = new Date(m.timestamp).getTime();
+                    const now = Date.now();
+                    const timeDiff = Math.abs(now - serverTime);
+                    // 3秒以内のメッセージのみマッチとみなす（Renderの遅延を考慮）
+                    return timeDiff < 3000;
+                }
+                
+                // タイムスタンプがない場合は内容のみで判定（後方互換性）
+                return true;
+            });
+            
             if (hasServerVersion) {
                 msg.remove();
             }
