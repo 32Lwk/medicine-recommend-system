@@ -431,7 +431,7 @@ def index():
                     # 薬剤師要請メッセージが既に存在するかチェック（sessionとALL_SESSIONSの両方を確認）
                     has_admin_request_message = any(
                         msg.get('admin_request') and msg.get('type') == 'bot' 
-                        for msg in session['messages']
+                        for msg in session.get('messages', [])
                     ) or any(
                         msg.get('admin_request') and msg.get('type') == 'bot' 
                         for msg in ALL_SESSIONS.get(sid, {}).get('messages', [])
@@ -443,6 +443,8 @@ def index():
                             'content': '申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。',
                             'diagnosis': None
                         }
+                        if 'messages' not in session:
+                            session['messages'] = []
                         session['messages'].append(bot_response)
                         session.modified = True
                         
@@ -454,13 +456,15 @@ def index():
                         logger.info(f"💊 薬剤師要請メッセージが既に存在するため、追加のメッセージをスキップします")
                         
                         # 薬剤師要請メッセージがsessionにない場合はALL_SESSIONSから復元
-                        if not any(msg.get('admin_request') and msg.get('type') == 'bot' for msg in session['messages']):
+                        if not any(msg.get('admin_request') and msg.get('type') == 'bot' for msg in session.get('messages', [])):
                             admin_request_msg = next(
                                 (msg for msg in ALL_SESSIONS.get(sid, {}).get('messages', []) 
                                  if msg.get('admin_request') and msg.get('type') == 'bot'), 
                                 None
                             )
                             if admin_request_msg:
+                                if 'messages' not in session:
+                                    session['messages'] = []
                                 session['messages'].append(admin_request_msg)
                                 logger.info(f"💊 薬剤師要請メッセージをALL_SESSIONSから復元しました")
                         
@@ -1955,8 +1959,8 @@ def index():
         }
         logger.info(f"🆕 New session {sid} created: {len(session['messages'])} messages (ALL_SESSIONS保存完了)")
     
-    # 手動返信メッセージがあるかチェック
-    manual_replies = [msg for msg in session['messages'] if msg.get('manual_reply')]
+    # 手動返信メッセージがあるかチェック（安全な取得）
+    manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
     if manual_replies:
         print(f"Manual replies found in session {sid}: {len(manual_replies)} messages")
         for i, reply in enumerate(manual_replies):
@@ -2632,6 +2636,8 @@ def request_admin():
             'admin_request': True,
             'style_class': 'admin-request'
         }
+        if 'messages' not in session:
+            session['messages'] = []
         session['messages'].append(system_message)
         
         # ALL_SESSIONSにも保存（ページ更新後も表示されるように）
