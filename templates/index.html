@@ -1876,40 +1876,6 @@
             return;
         }
         
-        // リロード時の診断結果表示制御
-        const isPageReload = performance.navigation && performance.navigation.type === 1;
-        if (isPageReload && messages && messages.length > 0) {
-            // リロード時は診断結果の詳細を非表示にし、評価ボタンのみ表示
-            messages = messages.map(message => {
-                if (message.type === 'bot' && message.content && 
-                    (message.content.includes('<div class="recommendation-result">') || 
-                     message.content.includes('class="feedback-buttons"'))) {
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = message.content;
-                    
-                    // 診断結果の詳細部分を非表示にする
-                    const recommendationResult = tempDiv.querySelector('.recommendation-result');
-                    if (recommendationResult) {
-                        recommendationResult.style.display = 'none';
-                    }
-                    
-                    // 評価ボタンのみ表示
-                    const feedbackButtons = tempDiv.querySelector('.feedback-buttons');
-                    if (feedbackButtons) {
-                        return {
-                            ...message,
-                            content: feedbackButtons.outerHTML
-                        };
-                    } else {
-                        return {
-                            ...message,
-                            content: '<div class="message-content">診断結果が利用可能です</div>'
-                        };
-                    }
-                }
-                return message;
-            });
-        }
         
         // タイピングインジケーターの状態を保存
         const typingIndicator = document.getElementById('currentTypingIndicator');
@@ -1960,10 +1926,19 @@
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
                 if (message.content && (message.content.includes('<div class="recommendation-result">') || 
-                                       message.content.includes('<div class="chat-response">') ||
-                                       message.content.includes('class="feedback-buttons"'))) {
+                                       message.content.includes('<div class="chat-response">'))) {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示
-                    messageDiv.innerHTML = message.content;
+                    // 管理画面専用のスコア情報を除去
+                    let cleanedContent = message.content;
+                    
+                    // admin-score-displayクラスを含む要素を除去
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = cleanedContent;
+                    const adminScoreElements = tempDiv.querySelectorAll('.admin-score-display');
+                    adminScoreElements.forEach(el => el.remove());
+                    cleanedContent = tempDiv.innerHTML;
+                    
+                    messageDiv.innerHTML = cleanedContent;
                 }
                 // 従来の形式
                 else {
