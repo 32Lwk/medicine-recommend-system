@@ -578,23 +578,17 @@ def index():
                         escaped_user_message = html.escape(user_message)
                         escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
                         
-                        chat_data = {
-                            'user_message': escaped_user_message,
-                            'ai_response': escaped_ai_response,
-                            'security_score': None
-                        }
+                        # メッセージIDを生成
+                        message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
                         
-                        # JSONエンコードしてHTMLエスケープ（症状分析結果と同じ方式）
-                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
-                        
-                        # 評価ボタンを追加（症状分析結果と同じスタイル）
+                        # 評価ボタンを追加（メッセージIDベース方式）
                         bot_content = full_response_html + f"""
 <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
     <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-    <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    <button class="feedback-btn-positive" onclick="handlePositiveFeedback('{message_id}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
         適切
     </button>
-    <button class="feedback-btn-negative" onclick="handleNegativeFeedback({chat_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    <button class="feedback-btn-negative" onclick="handleNegativeFeedback('{message_id}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
         不適切
     </button>
 </div>"""
@@ -1109,23 +1103,17 @@ def index():
                         escaped_user_message = html.escape(user_message)
                         escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
                         
-                        chat_data = {
-                            'user_message': escaped_user_message,
-                            'ai_response': escaped_ai_response,
-                            'security_score': None
-                        }
+                        # メッセージIDを生成
+                        message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
                         
-                        # JSONエンコードしてHTMLエスケープ（症状分析結果と同じ方式）
-                        chat_json = html.escape(json.dumps(chat_data, ensure_ascii=False))
-                        
-                        # 評価ボタンを追加（症状分析結果と同じスタイル）
+                        # 評価ボタンを追加（メッセージIDベース方式）
                         bot_content = full_response_html + f"""
 <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
     <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-    <button class="feedback-btn-positive" onclick="handlePositiveFeedback({chat_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    <button class="feedback-btn-positive" onclick="handlePositiveFeedback('{message_id}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
         適切
     </button>
-    <button class="feedback-btn-negative" onclick="handleNegativeFeedback({chat_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    <button class="feedback-btn-negative" onclick="handleNegativeFeedback('{message_id}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
         不適切
     </button>
 </div>"""
