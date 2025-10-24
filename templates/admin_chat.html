@@ -2463,7 +2463,8 @@
                         tooltipContent += `副作用リスク: ${(medicine.scores.side_effect_risk_score || 0).toFixed(1)}%<br>`;
                         tooltipContent += `相互作用リスク: ${(medicine.scores.interaction_risk_score || 0).toFixed(1)}%`;
                     } else {
-                        tooltipContent += '詳細スコア情報なし';
+                        // スコア情報が利用可能になるまで非表示にする
+                        return modifiedContent; // スコアリングを追加しない
                     }
                     
                     const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
@@ -2543,6 +2544,15 @@
                         modifiedContent = addScoringToMedicines(msg.content, msg.diagnosis.recommended_medicines);
                     }
                     
+                    // 管理画面では評価ボタンを非表示にする
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = modifiedContent;
+                    const feedbackButtons = tempDiv.querySelector('.feedback-buttons');
+                    if (feedbackButtons) {
+                        feedbackButtons.remove();
+                    }
+                    modifiedContent = tempDiv.innerHTML;
+                    
                     html += `
                         <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
                             <div style="max-width: 80%;">
@@ -2555,11 +2565,14 @@
                 } else {
                     // 通常のテキストメッセージまたはAI応答
                     let content;
-                    if (msg.content && msg.content.includes('<div class="chat-response">')) {
+                    if (msg.type === 'user') {
+                        // ユーザーメッセージの場合はエスケープして表示
+                        content = escapeHtml(msg.content || '');
+                    } else if (msg.content && msg.content.includes('<div class="chat-response">')) {
                         // AI応答の場合はHTMLをそのまま表示
                         content = msg.content;
                     } else {
-                        // 通常のテキストメッセージはエスケープ
+                        // その他の場合はエスケープ
                         content = escapeHtml(msg.content || '');
                     }
                     
