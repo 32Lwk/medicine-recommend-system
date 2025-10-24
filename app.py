@@ -293,6 +293,10 @@ def index():
         session['_id'] = sid
         logger.info(f"🆕 新しいセッションIDを作成: {sid}")
     
+    # セッションIDの整合性を確認
+    logger.info(f"🔍 Current session ID: {sid}")
+    logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+    
     # ユーザー名の設定
     if 'username' not in session:
         # 既存のセッションを検索（同じ人からのアクセスのみ）
@@ -1907,12 +1911,19 @@ def index():
                         logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                     else:
                         logger.error(f"❌ ALL_SESSIONSにセッションID {sid} が存在しません")
-                        # フォールバック: Flaskセッションに保存
-                        if 'messages' not in session:
-                            session['messages'] = []
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        logger.info(f"💾 フォールバック: Flaskセッションに保存完了")
+                        # ALL_SESSIONSにセッションを作成
+                        ALL_SESSIONS[sid] = {
+                            'session_id': sid,
+                            'username': session.get('username', 'Unknown'),
+                            'messages': [bot_response],
+                            'last_activity': time.time(),
+                            'client_ip': request.remote_addr,
+                            'user_agent': request.headers.get('User-Agent', ''),
+                            'user_attributes': session.get('user_attributes', {}),
+                            'session_active': True
+                        }
+                        logger.info(f"💾 ALL_SESSIONSにセッションを作成: {sid}")
+                        logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                     # ALL_SESSIONSに正常に保存された場合のみ、セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
                     if sid and sid in ALL_SESSIONS and 'messages' in session:
                         del session['messages']
@@ -1953,17 +1964,36 @@ def index():
             if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in current_messages):
                 current_messages.append(manual_reply)
         
-        # ALL_SESSIONSを更新
-        ALL_SESSIONS[sid] = {
-            'session_id': sid,
-            'username': session['username'],
-            'messages': current_messages,
-            'last_activity': current_time,
-            'client_ip': client_ip,
-            'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {}),
-            'session_active': True
-        }
+        # ALL_SESSIONSを更新（既存のメッセージを保持）
+        if sid in ALL_SESSIONS:
+            # 既存のメッセージを保持
+            existing_messages = ALL_SESSIONS[sid].get('messages', [])
+            # 新しいメッセージを追加
+            for msg in current_messages:
+                if msg not in existing_messages:
+                    existing_messages.append(msg)
+            ALL_SESSIONS[sid].update({
+                'session_id': sid,
+                'username': session['username'],
+                'messages': existing_messages,
+                'last_activity': current_time,
+                'client_ip': client_ip,
+                'user_agent': user_agent,
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
+            })
+        else:
+            # 新しいセッションの場合
+            ALL_SESSIONS[sid] = {
+                'session_id': sid,
+                'username': session['username'],
+                'messages': current_messages,
+                'last_activity': current_time,
+                'client_ip': client_ip,
+                'user_agent': user_agent,
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
+            }
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
         # messagesはALL_SESSIONSのみに保存（永続化）
