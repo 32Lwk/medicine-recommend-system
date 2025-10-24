@@ -2452,21 +2452,34 @@
                 if (medicine.score !== undefined) {
                     const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
-                    
-                    // スコア内訳のツールチップコンテンツを生成
-                    let tooltipContent = '<strong>スコア内訳:</strong><br>';
-                    if (medicine.scores) {
-                        tooltipContent += `症状適合: ${(medicine.scores.symptom_match_score || 0).toFixed(1)}%<br>`;
-                        tooltipContent += `効能特異性: ${(medicine.scores.efficacy_specificity_score || 0).toFixed(1)}%<br>`;
-                        tooltipContent += `年齢適合: ${(medicine.scores.age_suitability_score || 0).toFixed(1)}%<br>`;
-                        tooltipContent += `用法簡便性: ${(medicine.scores.dosage_convenience_score || 0).toFixed(1)}%<br>`;
-                        tooltipContent += `副作用リスク: ${(medicine.scores.side_effect_risk_score || 0).toFixed(1)}%<br>`;
-                        tooltipContent += `相互作用リスク: ${(medicine.scores.interaction_risk_score || 0).toFixed(1)}%`;
-                    } else {
-                        // スコア情報が利用可能になるまで非表示にする
-                        return modifiedContent; // スコアリングを追加しない
-                    }
-                    
+
+                    // スコア内訳のツールチップコンテンツを生成（scores または score_breakdown に対応）
+                    const breakdown = medicine.scores || medicine.score_breakdown || {};
+                    const pct = (v) => {
+                        if (v === undefined || v === null || isNaN(v)) return 0;
+                        return Math.max(0, Math.min(100, Math.round(v * 100)));
+                    };
+                    const riskToPct = (v) => {
+                        // リスクは -1.0〜0.0 を 0〜100 に正規化（低リスクほど高スコア）
+                        if (v === undefined || v === null || isNaN(v)) return 100;
+                        return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
+                    };
+
+                    const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
+                    const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
+                    const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
+                    const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
+                    const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
+                    const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+
+                    let tooltipContent = '<strong>スコア内訳:</strong><br>' +
+                        `症状適合度: ${pct(symptom)}%<br>` +
+                        `効能特異性: ${pct(efficacy)}%<br>` +
+                        `年齢適合性: ${pct(age)}%<br>` +
+                        `用法簡便性: ${pct(usage)}%<br>` +
+                        `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
+                        `相互作用リスク: ${riskToPct(interRisk)}%`;
+
                     const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
