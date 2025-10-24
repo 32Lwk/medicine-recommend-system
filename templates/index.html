@@ -1421,7 +1421,9 @@
 
     // メッセージを再読み込み
     function loadMessages() {
-        fetch('/api/sessions')
+        fetch('/api/sessions', {
+            credentials: 'include'
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -1548,6 +1550,7 @@
         
         fetch('/?v={{ version }}', {
             method: 'POST',
+            credentials: 'include',
             body: formData,
             headers: {
                 'Cache-Control': 'no-cache'
@@ -1618,6 +1621,7 @@
                 }, 2000); // 2秒でタイムアウト
                 
                 fetch('/api/sessions?v={{ version }}', {
+                    credentials: 'include',
                     headers: { 'Cache-Control': 'no-cache' }
                 })
                 .then(response => {
@@ -1638,6 +1642,11 @@
                         console.log('✓ All messages loaded, rendering...');
                         removeTypingIndicator();
                         renderChatMessages(sessionData.messages);
+                        isSubmitting = false;
+                    } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
+                        // 新規セッションまたは非アクティブセッションの場合、リトライ不要
+                        console.log('✓ New session or inactive session, no retry needed');
+                        removeTypingIndicator();
                         isSubmitting = false;
                     } else if (retryCount < maxRetries) {
                         // リトライ
@@ -1724,6 +1733,7 @@
         // チャット部分のみ定期的にAPIで取得・描画
         setInterval(function() {
             fetch('/api/sessions?v={{ version }}', {
+                credentials: 'include',
                 headers: { 'Cache-Control': 'no-cache' }
             })
             .then(response => response.json())
@@ -1743,6 +1753,7 @@
         if (confirm('チャット履歴をクリアしますか？')) {
             fetch('/clear?v={{ version }}', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache'
@@ -1758,6 +1769,7 @@
         if (confirm('本当に新しいセッションを開始しますか？（履歴もユーザー名もリセットされます）')) {
             fetch('/new_session?v={{ version }}', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache'
@@ -1781,6 +1793,7 @@
         if (confirm('薬剤師対応を要請しますか？')) {
             fetch('/api/request_admin', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache'
@@ -2003,6 +2016,7 @@
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('🔄 Periodic update - fetching messages');
         fetch('/api/sessions?v={{ version }}', {
+            credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         })
         .then(response => response.json())
@@ -2312,6 +2326,7 @@
     // 既存のユーザー情報を読み込む
     function loadExistingUserInfo() {
         fetch('/api/user_attributes', {
+            credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         })
         .then(response => response.json())
@@ -2372,6 +2387,7 @@
         
         fetch('/api/user_attributes', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'
@@ -2763,6 +2779,7 @@
         
         fetch('/api/submit_feedback', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'

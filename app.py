@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, jsonify
+from flask_cors import CORS
 from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
 from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
@@ -29,9 +30,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
+# CORS設定（Render環境対応）
+CORS(app, supports_credentials=True, origins=["https://medicine-recommend-system.onrender.com"])
+
 # セッション設定（Render環境対応）
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
 
 # データベース初期化（非同期化）
 try:
