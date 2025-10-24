@@ -1977,6 +1977,23 @@
                     const scoreItemElements = tempDiv.querySelectorAll('.score-item');
                     scoreItemElements.forEach(el => el.remove());
                     
+                    // 推奨理由から詳細スコア情報を除去
+                    const reasonElements = tempDiv.querySelectorAll('em');
+                    reasonElements.forEach(el => {
+                        if (el.textContent.includes('✅') || el.textContent.includes('⚠️') || el.textContent.includes('|')) {
+                            // 詳細なスコア情報を含む推奨理由を簡潔化
+                            el.textContent = '症状に適した医薬品です';
+                        }
+                    });
+                    
+                    // 管理者専用のスコア表示を除去
+                    const adminScoreDisplayElements = tempDiv.querySelectorAll('[style*="background-color: #f8f9fa"]');
+                    adminScoreDisplayElements.forEach(el => {
+                        if (el.textContent.includes('スコア内訳') || el.textContent.includes('症状適合') || el.textContent.includes('効能特異性')) {
+                            el.remove();
+                        }
+                    });
+                    
                     cleanedContent = tempDiv.innerHTML;
                     
                     messageDiv.innerHTML = cleanedContent;
