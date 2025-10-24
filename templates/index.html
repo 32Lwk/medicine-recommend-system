@@ -1669,7 +1669,11 @@
                         // 最新のAI応答をセッションストレージに保存（評価ボタン用）
                         const latestMessage = sessionData.messages[sessionData.messages.length - 1];
                         if (latestMessage && latestMessage.type === 'bot') {
-                            const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                            // 既存のメッセージIDを確認または新規生成
+                            let messageId = latestMessage.message_id;
+                            if (!messageId) {
+                                messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                            }
                             const messageData = {
                                 user_message: sessionStorage.getItem('lastUserMessage') || '',
                                 ai_response: latestMessage.content || '',
@@ -1923,7 +1927,23 @@
                 if (message.content && (message.content.includes('<div class="recommendation-result">') || 
                                        message.content.includes('<div class="chat-response">') ||
                                        message.content.includes('class="feedback-buttons"'))) {
-                    messageDiv.innerHTML = message.content;
+                    // 診断結果の場合は評価ボタンのみ表示し、詳細は非表示
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = message.content;
+                    
+                    // 診断結果の詳細部分を非表示にする
+                    const recommendationResult = tempDiv.querySelector('.recommendation-result');
+                    if (recommendationResult) {
+                        recommendationResult.style.display = 'none';
+                    }
+                    
+                    // 評価ボタンのみ表示
+                    const feedbackButtons = tempDiv.querySelector('.feedback-buttons');
+                    if (feedbackButtons) {
+                        messageDiv.innerHTML = feedbackButtons.outerHTML;
+                    } else {
+                        messageDiv.innerHTML = '<div class="message-content">診断結果が利用可能です</div>';
+                    }
                 }
                 // 従来の形式
                 else {
