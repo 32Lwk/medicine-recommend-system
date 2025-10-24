@@ -594,7 +594,7 @@ def index():
 </div>"""
                         
                         # デバッグログの追加
-                        logger.info(f"📊 医薬品相談回答評価ボタン生成: chat_json length = {len(chat_json)}")
+                        logger.info(f"📊 医薬品相談回答評価ボタン生成: message_id = {message_id}")
                         logger.info(f"📊 bot_content preview: {bot_content[:200]}...")
                         
                         bot_response = {
