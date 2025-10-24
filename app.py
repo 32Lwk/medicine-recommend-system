@@ -279,24 +279,25 @@ def index():
     else:
         logger.info(f"👤 Existing session accessed: {session['username']} for IP: {client_ip}")
     
-    # メッセージの初期化
+    # メッセージの初期化（KeyError対策）
+    if 'messages' not in session:
+        session['messages'] = []
+    
     # ALL_SESSIONSから復元（Cookieサイズ削減のため）
     if sid and sid in ALL_SESSIONS:
         session['messages'] = ALL_SESSIONS[sid].get('messages', []).copy()
         logger.info(f"📥 Session messages restored from ALL_SESSIONS: {len(session['messages'])} messages")
-    elif 'messages' not in session:
-        session['messages'] = []
-    
-    # セッションクッキーサイズ削減のため、メッセージはALL_SESSIONSのみに保存
-    # セッションには最小限の情報のみ保存
-    # ただし、薬剤師要請メッセージは保持する
-    if sid and sid in ALL_SESSIONS:
+        
+        # セッションクッキーサイズ削減のため、メッセージはALL_SESSIONSのみに保存
+        # セッションには最小限の情報のみ保存
+        # ただし、薬剤師要請メッセージは保持する
         admin_request_messages = [msg for msg in ALL_SESSIONS[sid].get('messages', []) 
                                  if msg.get('admin_request') and msg.get('type') == 'bot']
         session['messages'] = admin_request_messages.copy()
         logger.info(f"💊 薬剤師要請メッセージを保持: {len(admin_request_messages)} messages")
     else:
-        session['messages'] = []  # セッションからメッセージを削除
+        if 'messages' not in session or not session['messages']:
+            session['messages'] = []
     
     # ユーザー属性データの初期化（セッション管理）
     if 'user_attributes' not in session:
