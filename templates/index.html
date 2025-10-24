@@ -1422,6 +1422,7 @@
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message user';
+        messageDiv.setAttribute('data-temporary', 'true'); // 一時的なマーク
         messageDiv.innerHTML = `
             <div class="message-content">${escapeHtml(message)}</div>
         `;
@@ -1876,6 +1877,16 @@
             return;
         }
         
+        // メッセージをレンダリング前に一時的なユーザーメッセージを削除
+        const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
+        tempMessages.forEach(msg => {
+            // 同じ内容のメッセージがサーバーから来ている場合のみ削除
+            const content = msg.querySelector('.message-content')?.textContent;
+            const hasServerVersion = messages.some(m => m.type === 'user' && m.content === content);
+            if (hasServerVersion) {
+                msg.remove();
+            }
+        });
         
         // タイピングインジケーターの状態を保存
         const typingIndicator = document.getElementById('currentTypingIndicator');
