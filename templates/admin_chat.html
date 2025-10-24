@@ -944,6 +944,43 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
         
+        /* スコア内訳ツールチップスタイル */
+        .score-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .score-tooltip .tooltip-content {
+            visibility: hidden;
+            background-color: #333;
+            color: white;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .score-tooltip:hover .tooltip-content {
+            visibility: visible;
+        }
+        .score-tooltip .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        
         .admin-modal input, .admin-modal textarea {
             width: 100%;
             padding: 10px;
@@ -2415,7 +2452,21 @@
                 if (medicine.score !== undefined) {
                     const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
-                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
+                    
+                    // スコア内訳のツールチップコンテンツを生成
+                    let tooltipContent = '<strong>スコア内訳:</strong><br>';
+                    if (medicine.scores) {
+                        tooltipContent += `症状適合: ${(medicine.scores.symptom_match_score || 0).toFixed(1)}%<br>`;
+                        tooltipContent += `効能特異性: ${(medicine.scores.efficacy_specificity_score || 0).toFixed(1)}%<br>`;
+                        tooltipContent += `年齢適合: ${(medicine.scores.age_suitability_score || 0).toFixed(1)}%<br>`;
+                        tooltipContent += `用法簡便性: ${(medicine.scores.dosage_convenience_score || 0).toFixed(1)}%<br>`;
+                        tooltipContent += `副作用リスク: ${(medicine.scores.side_effect_risk_score || 0).toFixed(1)}%<br>`;
+                        tooltipContent += `相互作用リスク: ${(medicine.scores.interaction_risk_score || 0).toFixed(1)}%`;
+                    } else {
+                        tooltipContent += '詳細スコア情報なし';
+                    }
+                    
+                    const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
@@ -2480,6 +2531,8 @@
                     } else {
                         indicator = '<span class="ai-indicator">🤖 AI返信</span><br>';
                     }
+                } else if (msg.type === 'user') {
+                    indicator = '<span class="user-indicator" style="color: #007bff; font-weight: bold;">👤 ユーザー</span><br>';
                 }
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
