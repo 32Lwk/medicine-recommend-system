@@ -1957,42 +1957,37 @@ def index():
         # 手動返信メッセージを保持
         manual_replies = [msg for msg in existing_messages if msg.get('manual_reply')]
         
-        # 現在のセッションメッセージに手動返信を追加（安全な取得）
-        current_messages = session.get('messages', []).copy()
+        # ALL_SESSIONSから直接メッセージを取得（session['messages']は既に削除されているため）
+        existing_messages = ALL_SESSIONS[sid].get('messages', []).copy()
+        
+        # 手動返信メッセージを保持
         for manual_reply in manual_replies:
             # 既に同じ内容の手動返信が含まれていないかチェック
-            if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in current_messages):
-                current_messages.append(manual_reply)
+            if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in existing_messages):
+                existing_messages.append(manual_reply)
         
-        # ALL_SESSIONSを更新（既存のメッセージを保持）
-        if sid in ALL_SESSIONS:
-            # 既存のメッセージを保持
-            existing_messages = ALL_SESSIONS[sid].get('messages', [])
-            # 新しいメッセージを追加
-            for msg in current_messages:
-                if msg not in existing_messages:
-                    existing_messages.append(msg)
-            ALL_SESSIONS[sid].update({
-                'session_id': sid,
-                'username': session['username'],
-                'messages': existing_messages,
-                'last_activity': current_time,
-                'client_ip': client_ip,
-                'user_agent': user_agent,
-                'user_attributes': session.get('user_attributes', {}),
-                'session_active': True
-            })
-        else:
-            # 新しいセッションの場合
-            ALL_SESSIONS[sid] = {
-                'session_id': sid,
-                'username': session['username'],
-                'messages': current_messages,
-                'last_activity': current_time,
-                'client_ip': client_ip,
-                'user_agent': user_agent,
-                'user_attributes': session.get('user_attributes', {}),
-                'session_active': True
+        # ALL_SESSIONSを更新（メッセージは既に保存済みなので更新しない）
+        ALL_SESSIONS[sid].update({
+            'session_id': sid,
+            'username': session['username'],
+            'last_activity': current_time,
+            'client_ip': client_ip,
+            'user_agent': user_agent,
+            'user_attributes': session.get('user_attributes', {}),
+            'session_active': True
+            # messagesは既に保存済みなので更新しない
+        })
+    else:
+        # 新しいセッションの場合
+        ALL_SESSIONS[sid] = {
+            'session_id': sid,
+            'username': session['username'],
+            'messages': session.get('messages', []).copy(),
+            'last_activity': current_time,
+            'client_ip': client_ip,
+            'user_agent': user_agent,
+            'user_attributes': session.get('user_attributes', {}),
+            'session_active': True
             }
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
@@ -2009,19 +2004,6 @@ def index():
         logger.info(f"💾 チャット履歴永続化完了: {len(current_messages)} messages")
         if manual_replies:
             logger.info(f"📝 Manual replies preserved: {len(manual_replies)} messages")
-    else:
-        # 新しいセッションの場合
-        ALL_SESSIONS[sid] = {
-            'session_id': sid,
-            'username': session['username'],
-            'messages': session['messages'].copy(),
-            'last_activity': current_time,
-            'client_ip': client_ip,
-            'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {}),
-            'session_active': True
-        }
-        logger.info(f"🆕 New session {sid} created: {len(session['messages'])} messages (ALL_SESSIONS保存完了)")
     
     # 手動返信メッセージがあるかチェック（安全な取得）
     manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
@@ -2374,16 +2356,20 @@ def api_sessions():
         # ALL_SESSIONSに存在しない場合は復旧
         if sid not in ALL_SESSIONS:
             logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})。セッションから復旧を試みます。")
-        ALL_SESSIONS[sid] = {
-            'session_id': sid,
-            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-            'messages': session.get('messages', []),
-            'session_active': True,
-            'last_activity': time.time(),  # 数値で保存
-            'user_info': session.get('user_info', {}),
-            'user_attributes': session.get('user_attributes', {})
-        }
-        logger.info(f"🔄 セッション復旧完了: {sid}")
+            ALL_SESSIONS[sid] = {
+                'session_id': sid,
+                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                'messages': session.get('messages', []),
+                'session_active': True,
+                'last_activity': time.time(),  # 数値で保存
+                'user_info': session.get('user_info', {}),
+                'user_attributes': session.get('user_attributes', {})
+            }
+            logger.info(f"🆕 新規セッション作成: {sid}")
+        else:
+            # 既存セッションの場合はlast_activityのみ更新
+            ALL_SESSIONS[sid]['last_activity'] = time.time()
+            logger.info(f"🔄 既存セッション更新: {sid} ({len(ALL_SESSIONS[sid].get('messages', []))} messages)")
         
         # ALL_SESSIONSから取得（セッションCookieの肥大化を防ぐ）
         messages = ALL_SESSIONS[sid].get('messages', [])
