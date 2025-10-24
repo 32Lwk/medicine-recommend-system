@@ -594,7 +594,6 @@ def index():
                         if 'messages' in session:
                             del session['messages']
                             session.modified = True
-                        logger.info(f"💾 質問応答保存完了: {len(ALL_SESSIONS[sid]['messages'])} messages")
                         logger.info(f"✅ 質問応答完了: {user_message}")
                         
                         # 質問応答の場合は、user_attributesを初期化してセッションに保存
@@ -629,12 +628,10 @@ def index():
                         
                         # エラー応答をセッションに追加
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        ALL_SESSIONS[sid]['last_activity'] = time.time()
                         # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                         if 'messages' in session:
                             del session['messages']
                             session.modified = True
-                        logger.info(f"💾 エラー応答保存完了: {len(ALL_SESSIONS[sid]['messages'])} messages")
                         
                         # エラーの場合もuser_attributesを初期化
                         user_attributes = session.get('user_attributes', {
@@ -1117,6 +1114,7 @@ def index():
                         # 質問応答をセッションに追加
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
+                            ALL_SESSIONS[sid]['last_activity'] = time.time()
                         # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                         if 'messages' in session:
                             del session['messages']
@@ -1872,17 +1870,14 @@ def index():
                         break
                 
                 if not is_duplicate:
-                    # ALL_SESSIONSに保存（確実に保存）
+                    # ALL_SESSIONSに保存
                     if sid and sid in ALL_SESSIONS:
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        ALL_SESSIONS[sid]['last_activity'] = time.time()
-                        logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS[sid]['messages'])} messages")
-                    else:
-                        logger.error(f"❌ セッションID {sid} がALL_SESSIONSに存在しません")
                     # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                     if 'messages' in session:
                         del session['messages']
                         session.modified = True
+                    logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
@@ -2301,21 +2296,16 @@ def api_sessions():
         # ALL_SESSIONSに存在しない場合は復旧
         if sid not in ALL_SESSIONS:
             logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})。セッションから復旧を試みます。")
-            # セッション復旧時は空のメッセージリストで開始
-            ALL_SESSIONS[sid] = {
-                'session_id': sid,
-                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                'messages': [],  # 空のリストで開始
-                'session_active': True,
-                'last_activity': time.time(),  # 数値で保存
-                'user_info': session.get('user_info', {}),
-                'user_attributes': session.get('user_attributes', {})
-            }
-            logger.info(f"🔄 セッション復旧完了: {sid}")
-        else:
-            # 既存のセッション情報を更新
-            ALL_SESSIONS[sid]['last_activity'] = time.time()
-            logger.info(f"📝 セッション情報更新: {sid}")
+        ALL_SESSIONS[sid] = {
+            'session_id': sid,
+            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+            'messages': session.get('messages', []),
+            'session_active': True,
+            'last_activity': time.time(),  # 数値で保存
+            'user_info': session.get('user_info', {}),
+            'user_attributes': session.get('user_attributes', {})
+        }
+        logger.info(f"🔄 セッション復旧完了: {sid}")
         
         # ALL_SESSIONSから取得（セッションCookieの肥大化を防ぐ）
         messages = ALL_SESSIONS[sid].get('messages', [])
