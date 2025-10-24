@@ -63,6 +63,7 @@ ADMIN_MODE = False
 MANUAL_REPLY_QUEUE = []  # 手動返信待ちのメッセージ
 
 ALL_SESSIONS = {}  # {session_id: {'username': str, 'messages': list, 'last_activity': timestamp}}
+ADMIN_SESSIONS = {}  # 管理者専用のセッション情報
 USER_COUNTER = 1  # ユーザー名の連番
 MAX_SESSIONS = 10  # 最大セッション数（Render無料プラン用に大幅削減）
 SESSION_TIMEOUT = 900  # セッションタイムアウト（秒）- 15分に短縮
@@ -1867,10 +1868,46 @@ def index():
                 if 'bot_diag' not in locals():
                     bot_diag = None
                 
+                # ユーザー向け情報のサニタイズ
+                def sanitize_for_user_storage(diagnosis_data):
+                    """ユーザー向けに情報をサニタイズ"""
+                    if not diagnosis_data:
+                        return diagnosis_data
+                    
+                    sanitized = diagnosis_data.copy()
+                    
+                    # 推奨医薬品から管理者専用情報を除去
+                    if 'recommended_medicines' in sanitized:
+                        for medicine in sanitized['recommended_medicines']:
+                            # スコア関連情報を除去
+                            medicine.pop('score', None)
+                            medicine.pop('scores', None)
+                            medicine.pop('score_breakdown', None)
+                            
+                            # 推奨理由を簡潔化
+                            if 'reason' in medicine:
+                                # 詳細なスコア情報を含む推奨理由を簡潔化
+                                reason = medicine['reason']
+                                if '✅' in reason or '⚠️' in reason or '|' in reason:
+                                    medicine['reason'] = "症状に適した医薬品です"
+                    
+                    return sanitized
+                
+                # 診断結果をサニタイズ
+                sanitized_diagnosis = sanitize_for_user_storage(bot_diag)
+                
+                # 管理者専用の詳細情報を別途保存
+                if bot_diag and sid:
+                    if sid not in ADMIN_SESSIONS:
+                        ADMIN_SESSIONS[sid] = {}
+                    ADMIN_SESSIONS[sid]['detailed_diagnosis'] = bot_diag
+                    ADMIN_SESSIONS[sid]['last_updated'] = time.time()
+                    logger.info(f"💾 管理者専用詳細情報を保存: {sid}")
+                
                 bot_response = {
                     'type': 'bot',
                     'content': bot_content,
-                    'diagnosis': bot_diag
+                    'diagnosis': sanitized_diagnosis
                 }
             
             # bot_responseが定義されている場合の処理
