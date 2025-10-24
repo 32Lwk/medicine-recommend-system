@@ -29,6 +29,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
+# セッション設定（Render環境対応）
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_TYPE'] = 'filesystem'
+
 # データベース初期化（非同期化）
 try:
     if not init_database():
@@ -254,6 +258,20 @@ def index():
     client_ip = request.remote_addr
     user_agent = request.headers.get('User-Agent', '')
     
+    # セッション初期化（最優先・KeyError対策）
+    session.setdefault('messages', [])
+    session.setdefault('user_attributes', {
+        'age': None,
+        'gender': None,
+        'pregnant': None,
+        'breastfeeding': None,
+        'current_medications': [],
+        'allergies': [],
+        'medical_history': [],
+        'symptom_duration_days': None,
+        'other_info': None
+    })
+    
     # セッションIDの取得または作成
     sid = session.get('_id')
     if not sid:
@@ -279,10 +297,6 @@ def index():
     else:
         logger.info(f"👤 Existing session accessed: {session['username']} for IP: {client_ip}")
     
-    # メッセージの初期化（KeyError対策）
-    if 'messages' not in session:
-        session['messages'] = []
-    
     # ALL_SESSIONSから復元（Cookieサイズ削減のため）
     if sid and sid in ALL_SESSIONS:
         session['messages'] = ALL_SESSIONS[sid].get('messages', []).copy()
@@ -295,23 +309,9 @@ def index():
                                  if msg.get('admin_request') and msg.get('type') == 'bot']
         session['messages'] = admin_request_messages.copy()
         logger.info(f"💊 薬剤師要請メッセージを保持: {len(admin_request_messages)} messages")
-    else:
-        if 'messages' not in session or not session['messages']:
-            session['messages'] = []
     
-    # ユーザー属性データの初期化（セッション管理）
-    if 'user_attributes' not in session:
-        session['user_attributes'] = {
-            'age': None,
-            'gender': None,
-            'pregnant': None,
-            'breastfeeding': None,
-            'current_medications': [],
-            'allergies': [],
-            'medical_history': [],
-            'symptom_duration_days': None,
-            'other_info': None
-        }
+    # current_messagesは安全に取得
+    current_messages = session.get('messages', []).copy()
     
     if request.method == 'POST':
         logger.info(f"📨 POST処理開始")

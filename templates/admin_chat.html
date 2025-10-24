@@ -44,6 +44,35 @@
             font-size: 1.1em;
         }
 
+        /* 管理者画面のボタンとテキストスタイル調整 */
+        .admin-btn {
+            font-size: 0.75rem !important;
+            padding: 3px 6px !important;
+            margin-top: 6px;
+            border: none;
+            background-color: #1976d2;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .admin-btn:hover {
+            background-color: #1565c0;
+        }
+
+        .recommendation-result {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* AI応答の表示調整 */
+        .ai-response {
+            max-height: 100px;
+            overflow: hidden;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -3691,26 +3720,27 @@
             document.getElementById('negativeRatio').textContent = `${negativeRatio}%`;
         }
         
-        function showAIDetails(reportId) {
-            const responseDiv = document.getElementById(`ai-response-${reportId}`);
-            const button = responseDiv.parentElement.querySelector('button');
-            const fullText = responseDiv.getAttribute('data-full-text');
+        function showAIDetails(id) {
+            const element = document.getElementById(`ai-response-${id}`);
+            const button = element.parentElement.querySelector('button');
+            const fullText = element.getAttribute('data-full-text');
             
-            if (responseDiv.getAttribute('data-expanded') === 'true') {
+            if (element.getAttribute('data-expanded') === 'true') {
                 const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
-                responseDiv.textContent = truncatedText;
-                responseDiv.style.maxHeight = '100px';
-                responseDiv.style.overflow = 'hidden';
-                responseDiv.setAttribute('data-expanded', 'false');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(truncatedText, "text/html");
+                element.innerHTML = doc.body.innerHTML || truncatedText;
+                element.style.maxHeight = '100px';
+                element.style.overflow = 'hidden';
+                element.setAttribute('data-expanded', 'false');
                 if (button) button.textContent = '詳細表示';
             } else {
                 const parser = new DOMParser();
-                const decodedHTML = parser.parseFromString(fullText, "text/html").body.textContent || fullText;
-                
-                responseDiv.textContent = decodedHTML;
-                responseDiv.style.maxHeight = 'none';
-                responseDiv.style.overflow = 'visible';
-                responseDiv.setAttribute('data-expanded', 'true');
+                const doc = parser.parseFromString(fullText, "text/html");
+                element.innerHTML = doc.body.innerHTML || fullText;
+                element.style.maxHeight = 'none';
+                element.style.overflow = 'visible';
+                element.setAttribute('data-expanded', 'true');
                 if (button) button.textContent = '閉じる';
             }
         }
