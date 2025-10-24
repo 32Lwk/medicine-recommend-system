@@ -647,6 +647,7 @@ def index():
                         bot_response = {
                             'type': 'bot',
                             'content': bot_content,
+                            'message_id': message_id,
                             'diagnosis': {
                                 'chat_response': chat_response,
                                 'is_question': True
