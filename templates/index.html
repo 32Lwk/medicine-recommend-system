@@ -1187,7 +1187,7 @@
             </div>
         </div>
         
-        {% if messages %}
+        {% if false %}
             {% for message in messages %}
                 {% if message.type == 'user' %}
                     <div class="message user">
@@ -1444,10 +1444,11 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // メッセージを再読み込み
+    // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
-        fetch('/api/sessions', {
-            credentials: 'include'
+        fetch('/api/sessions?v={{ version }}', {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
         })
             .then(response => {
                 if (!response.ok) {
@@ -1763,7 +1764,7 @@
         }, 200);
     }
 
-    // ページ読み込み時に入力欄の内容を復元
+    // ページ読み込み時の初期化
     window.onload = function() {
         const input = document.getElementById('messageInput');
         if (input) {
@@ -1773,22 +1774,8 @@
             }
         }
         scrollToBottom();
-        // チャット部分のみ定期的にAPIで取得・描画
-        setInterval(function() {
-            fetch('/api/sessions?v={{ version }}', {
-                credentials: 'include',
-                headers: { 'Cache-Control': 'no-cache' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.messages) {
-                    renderChatMessages(data.messages);
-                }
-            })
-            .catch(error => {
-                console.error('Session update error:', error);
-            });
-        }, 5000);
+        // 初回ロード時にAPIから現在の履歴を取得
+        loadMessages();
     };
 
     // チャット履歴をクリアする関数
@@ -2134,8 +2121,8 @@
         });
     }
 
-    // 8秒ごとにメッセージ部分だけAPIで取得して再描画（安定性向上のため間隔を調整）
-    setInterval(function() {
+    // 定期的にメッセージ部分だけAPIで取得して再描画（間隔10秒）
+    setInterval(function refreshMessagesPeriodically() {
         // 送信中は定期更新をスキップ（タイピングインジケーターを保護）
         if (isSubmitting) {
             console.log('⏭️ Skipping periodic update - form is submitting');
@@ -2168,7 +2155,7 @@
             // エラーログを削減
             // console.log('Session update error:', error);
         });
-    }, 10000); // 8秒から10秒に延長
+    }, 10000);
     
     // モーダル関連の関数
     function openAttributeModal() {
