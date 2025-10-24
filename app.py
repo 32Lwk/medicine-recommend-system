@@ -410,9 +410,15 @@ def index():
             # ユーザーメッセージを追加（AI自動応答ON/OFF問わず）
             if 'messages' not in session:
                 session['messages'] = []
+            
+            from datetime import datetime
+            import uuid
+            
             session['messages'].append({
                 'type': 'user',
-                'content': sanitized_message  # サニタイズされたメッセージを使用
+                'content': sanitized_message,  # サニタイズされたメッセージを使用
+                'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
+                'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
             })
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
@@ -531,10 +537,12 @@ def index():
                     logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
                     
                     # まずユーザーメッセージを保存
+                    import uuid
                     user_response = {
                         'type': 'user',
                         'content': user_message,
-                        'timestamp': datetime.now().isoformat()
+                        'timestamp': datetime.now().isoformat(),
+                        'uuid': str(uuid.uuid4())  # 一意な識別子を追加
                     }
                     ALL_SESSIONS[sid]['messages'].append(user_response)
                     logger.info(f"💾 ユーザー質問を保存: {user_message}")
@@ -1141,13 +1149,13 @@ def index():
                         logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
                         logger.info("-" * 40)
                         
-                        # HTMLエスケープ処理
-                        escaped_user_message = html.escape(user_message)
-                        escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
-                        
                         # メッセージIDを生成
                         message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
                         logger.info(f"[DEBUG] Generated message_id: {message_id}")
+                        
+                        # [SECURITY NOTE]: full_response_html is generated only from safe, pre-sanitized templates.
+                        # All user input is escaped via safe_format (html.escape + newline conversion).
+                        # Do not re-escape, otherwise structured HTML (icons, sections) will break.
                         
                         # 評価ボタンを追加（メッセージIDベース方式）
                         bot_content = full_response_html + f"""
