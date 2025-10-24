@@ -1875,16 +1875,20 @@
         // レイアウトの安定性を向上させるため、一括更新
         const fragment = document.createDocumentFragment();
         
-        // 初期メッセージ
-        const initialMessage = document.createElement('div');
-        initialMessage.className = 'message bot';
-        initialMessage.innerHTML = `
-            <div class="message-content">
-                こんにちは！どのような症状でお困りでしょうか？<br>
-                例：「頭痛がする」「喉が痛い」「熱がある」など
-            </div>
-        `;
-        fragment.appendChild(initialMessage);
+        // 初期メッセージの重複チェック
+        const hasInitialMessage = chatMessages.querySelector('[data-initial-message="true"]');
+        if (!hasInitialMessage) {
+            const initialMessage = document.createElement('div');
+            initialMessage.className = 'message bot';
+            initialMessage.setAttribute('data-initial-message', 'true');
+            initialMessage.innerHTML = `
+                <div class="message-content">
+                    こんにちは！どのような症状でお困りでしょうか？<br>
+                    例：「頭痛がする」「喉が痛い」「熱がある」など
+                </div>
+            `;
+            fragment.appendChild(initialMessage);
+        }
         
         messages.forEach((message, index) => {
             // 既存メッセージの場合はスキップ（重複防止）
