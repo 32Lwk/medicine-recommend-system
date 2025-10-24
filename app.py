@@ -31,13 +31,19 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
 # CORS設定（Render環境対応）
-CORS(app, supports_credentials=True, origins=["https://medicine-recommend-system.onrender.com"])
+CORS(app, 
+     supports_credentials=True, 
+     origins=["https://medicine-recommend-system.onrender.com", "http://localhost:5000", "http://127.0.0.1:5000"],
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # セッション設定（Render環境対応）
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = False  # JavaScriptからアクセス可能に
+app.config['SESSION_COOKIE_DOMAIN'] = None  # ドメイン制限を解除
 
 # データベース初期化（非同期化）
 try:
@@ -1891,10 +1897,21 @@ def index():
                 if not is_duplicate:
                     # ALL_SESSIONSに保存
                     if sid and sid in ALL_SESSIONS:
+                        # messagesキーが存在しない場合は初期化
+                        if 'messages' not in ALL_SESSIONS[sid]:
+                            ALL_SESSIONS[sid]['messages'] = []
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
                         logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
-                    # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
-                    if 'messages' in session:
+                    else:
+                        logger.error(f"❌ ALL_SESSIONSにセッションID {sid} が存在しません")
+                        # フォールバック: Flaskセッションに保存
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        logger.info(f"💾 フォールバック: Flaskセッションに保存完了")
+                    # ALL_SESSIONSに正常に保存された場合のみ、セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
+                    if sid and sid in ALL_SESSIONS and 'messages' in session:
                         del session['messages']
                         session.modified = True
                 else:
