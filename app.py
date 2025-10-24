@@ -1888,11 +1888,11 @@ def index():
                     # ALL_SESSIONSに保存
                     if sid and sid in ALL_SESSIONS:
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                     # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                     if 'messages' in session:
                         del session['messages']
                         session.modified = True
-                    logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
@@ -1989,6 +1989,7 @@ def index():
         
         message_count = len(ALL_SESSIONS.get(sid, {}).get('messages', []))
         logger.info(f"✅ POST処理完了 - JSON返却: {message_count} messages")
+        logger.info(f"📦 ALL_SESSIONS[{sid}] messages: {ALL_SESSIONS.get(sid, {}).get('messages', [])}")
         return jsonify({'status': 'ok', 'message_count': message_count})
     
     # GET処理（初期表示）
