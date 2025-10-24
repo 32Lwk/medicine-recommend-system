@@ -1872,7 +1872,11 @@ def index():
                     'content': bot_content,
                     'diagnosis': bot_diag
                 }
-            if 'bot_response' in locals():
+            
+            # bot_responseが定義されている場合の処理
+            logger.info(f"🔍 bot_response check: in locals={('bot_response' in locals())}, bot_response={bot_response is not None if 'bot_response' in locals() else 'N/A'}")
+            if 'bot_response' in locals() and bot_response is not None:
+                logger.info(f"✅ bot_response found, content length: {len(bot_response.get('content', ''))}")
                 # 重複チェック：同じ内容のメッセージが既に存在するかチェック
                 existing_messages = session.get('messages', [])
                 is_duplicate = False
@@ -1896,7 +1900,7 @@ def index():
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
-                logger.error(f"❌ bot_responseが定義されていません")
+                logger.error(f"❌ bot_responseが定義されていません - locals: {list(locals().keys())}")
                 # フォールバック
                 bot_response = {
                 'type': 'bot',
