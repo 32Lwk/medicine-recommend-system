@@ -288,7 +288,7 @@ def index():
     sid = session.get('_id')
     if not sid:
         # より安定したセッションID生成（マイクロ秒 + ランダム）
-        import random
+        # randomモジュールは15行目でグローバルにインポート済み
         sid = str(int(time.time() * 1000000)) + str(random.randint(100000, 999999))
         session['_id'] = sid
         logger.info(f"🆕 新しいセッションIDを作成: {sid}")
@@ -1105,6 +1105,7 @@ def index():
                         
                         # メッセージIDを生成
                         message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+                        logger.info(f"[DEBUG] Generated message_id: {message_id}")
                         
                         # 評価ボタンを追加（メッセージIDベース方式）
                         bot_content = full_response_html + f"""
