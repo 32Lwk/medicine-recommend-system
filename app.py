@@ -1092,11 +1092,28 @@ def index():
                         import json
                         import html
                         
-                        # 回答の全文を作成
+                        # 回答の全文を作成（全項目を含める）
+                        answer_text = chat_response.get('answer', '回答を取得できませんでした')
+                        medicine_details = chat_response.get('medicine_details', '')
+                        interactions = chat_response.get('interactions', '')
+                        doping_check = chat_response.get('doping_check', '')
+                        side_effects = chat_response.get('side_effects', '')
+                        consultation_advice = chat_response.get('consultation_advice', '')
+                        
                         full_response_html = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
-    <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
+    <p><strong>回答:</strong><br>{answer_text}</p>
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{medicine_details}</div>' if medicine_details else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{interactions}</div>' if interactions else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping_check}</div>' if doping_check else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_effects}</div>' if side_effects else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
 </div>"""
                         
                         # HTMLエスケープ処理
