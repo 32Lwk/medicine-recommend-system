@@ -3127,7 +3127,9 @@ def api_main_sessions():
             'last_activity': info.get('last_activity', 0),
             'message_count': len(info.get('messages', [])),
             'user_info': info.get('user_attributes', {}),
-            'attributes': info.get('user_attributes', {})
+            'attributes': info.get('user_attributes', {}),
+            # 管理者向けに詳細な診断情報（スコア内訳を含む）も返す
+            'detailed_diagnosis': ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
         })
     
     # NaN値をnullに変換（JSONシリアライズ対応）
