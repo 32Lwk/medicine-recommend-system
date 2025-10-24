@@ -1092,13 +1092,22 @@ def index():
                         import json
                         import html
                         
+                        # HTML整形用ヘルパー関数
+                        def safe_format(text):
+                            """テキストを安全にHTML表示用に整形"""
+                            if not text:
+                                return ""
+                            # XSSリスクを防ぐためにエスケープしてから改行を変換
+                            escaped = html.escape(text)
+                            return escaped.replace("\n", "<br>")
+                        
                         # 回答の全文を作成（全項目を含める）
-                        answer_text = chat_response.get('answer', '回答を取得できませんでした')
-                        medicine_details = chat_response.get('medicine_details', '')
-                        interactions = chat_response.get('interactions', '')
-                        doping_check = chat_response.get('doping_check', '')
-                        side_effects = chat_response.get('side_effects', '')
-                        consultation_advice = chat_response.get('consultation_advice', '')
+                        answer_text = safe_format(chat_response.get('answer', '回答を取得できませんでした'))
+                        medicine_details = safe_format(chat_response.get('medicine_details', ''))
+                        interactions = safe_format(chat_response.get('interactions', ''))
+                        doping_check = safe_format(chat_response.get('doping_check', ''))
+                        side_effects = safe_format(chat_response.get('side_effects', ''))
+                        consultation_advice = safe_format(chat_response.get('consultation_advice', ''))
                         
                         full_response_html = f"""
 <div class="chat-response">
@@ -1115,6 +1124,22 @@ def index():
     
     {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
 </div>"""
+                        
+                        # デバッグログ：ChatGPT応答の内容確認
+                        logger.info("-" * 40)
+                        logger.info(f"[DEBUG] ChatGPT response fields:")
+                        logger.info(f"  - answer: {'✓' if answer_text else '✗'} ({len(answer_text) if answer_text else 0} chars)")
+                        logger.info(f"  - medicine_details: {'✓' if medicine_details else '✗'} ({len(medicine_details) if medicine_details else 0} chars)")
+                        logger.info(f"  - interactions: {'✓' if interactions else '✗'} ({len(interactions) if interactions else 0} chars)")
+                        logger.info(f"  - doping_check: {'✓' if doping_check else '✗'} ({len(doping_check) if doping_check else 0} chars)")
+                        logger.info(f"  - side_effects: {'✓' if side_effects else '✗'} ({len(side_effects) if side_effects else 0} chars)")
+                        logger.info(f"  - consultation_advice: {'✓' if consultation_advice else '✗'} ({len(consultation_advice) if consultation_advice else 0} chars)")
+                        
+                        # デバッグログ：HTML構造の整合性確認
+                        opening_divs = full_response_html.count('<div')
+                        closing_divs = full_response_html.count('</div>')
+                        logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
+                        logger.info("-" * 40)
                         
                         # HTMLエスケープ処理
                         escaped_user_message = html.escape(user_message)
