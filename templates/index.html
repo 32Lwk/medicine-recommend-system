@@ -1665,6 +1665,20 @@
                         // メッセージが存在する場合は表示（厳密な数値比較を緩和）
                         console.log('✓ All messages loaded, rendering...');
                         removeTypingIndicator();
+                        
+                        // 最新のAI応答をセッションストレージに保存（評価ボタン用）
+                        const latestMessage = sessionData.messages[sessionData.messages.length - 1];
+                        if (latestMessage && latestMessage.type === 'bot') {
+                            const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                            const messageData = {
+                                user_message: sessionStorage.getItem('lastUserMessage') || '',
+                                ai_response: latestMessage.content || '',
+                                security_score: null,
+                                message_id: messageId
+                            };
+                            sessionStorage.setItem(`message_${messageId}`, JSON.stringify(messageData));
+                        }
+                        
                         renderChatMessages(sessionData.messages);
                         isSubmitting = false;
                     } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
@@ -2016,17 +2030,20 @@
         
         // タイピングインジケーターを復元
         if (hasTypingIndicator) {
-            const newTypingDiv = document.createElement('div');
-            newTypingDiv.className = 'message bot';
-            newTypingDiv.id = 'currentTypingIndicator';
-            newTypingDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        AIが診断中...
+            const existingTypingIndicator = document.getElementById('currentTypingIndicator');
+            if (!existingTypingIndicator) {
+                const newTypingDiv = document.createElement('div');
+                newTypingDiv.className = 'message bot';
+                newTypingDiv.id = 'currentTypingIndicator';
+                newTypingDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            AIが診断中...
+                        </div>
                     </div>
-                </div>
-            `;
-            chatMessages.appendChild(newTypingDiv);
+                `;
+                chatMessages.appendChild(newTypingDiv);
+            }
         }
         
         // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
@@ -2713,8 +2730,18 @@
     
     // セキュリティ警告に報告ボタンを追加（削除済み - HTMLに直接組み込み）
     
-    // ○ボタンクリック処理
-    function handlePositiveFeedback(messageData) {
+    // ○ボタンクリック処理（メッセージIDベース）
+    function handlePositiveFeedback(messageId) {
+        // セッションストレージからメッセージデータを取得
+        const messageDataStr = sessionStorage.getItem(`message_${messageId}`);
+        if (!messageDataStr) {
+            console.error('Message data not found for ID:', messageId);
+            showErrorMessage('メッセージデータが見つかりません。');
+            return;
+        }
+        
+        const messageData = JSON.parse(messageDataStr);
+        
         // HTMLタグを削除してプレーンテキスト化
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = messageData.ai_response || '';
@@ -2734,8 +2761,18 @@
         showSuccessModal('評価ありがとうございます。');
     }
     
-    // ×ボタンクリック処理
-    function handleNegativeFeedback(messageData) {
+    // ×ボタンクリック処理（メッセージIDベース）
+    function handleNegativeFeedback(messageId) {
+        // セッションストレージからメッセージデータを取得
+        const messageDataStr = sessionStorage.getItem(`message_${messageId}`);
+        if (!messageDataStr) {
+            console.error('Message data not found for ID:', messageId);
+            showErrorMessage('メッセージデータが見つかりません。');
+            return;
+        }
+        
+        const messageData = JSON.parse(messageDataStr);
+        
         // HTMLタグを削除してプレーンテキスト化
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = messageData.ai_response || '';
