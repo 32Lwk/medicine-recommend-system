@@ -1864,6 +1864,14 @@
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('hasTypingIndicator:', hasTypingIndicator);
         
+        // 既存メッセージのインデックスをチェック（重複防止）
+        const existingMessages = chatMessages.querySelectorAll('[data-message-index]');
+        const existingIndices = new Set();
+        existingMessages.forEach(msg => {
+            const index = msg.getAttribute('data-message-index');
+            if (index) existingIndices.add(parseInt(index));
+        });
+        
         // レイアウトの安定性を向上させるため、一括更新
         const fragment = document.createDocumentFragment();
         
@@ -1878,8 +1886,15 @@
         `;
         fragment.appendChild(initialMessage);
         
-        messages.forEach(message => {
+        messages.forEach((message, index) => {
+            // 既存メッセージの場合はスキップ（重複防止）
+            if (existingIndices.has(index)) {
+                return;
+            }
+            
             const messageDiv = document.createElement('div');
+            messageDiv.setAttribute('data-message-index', index);
+            
             if (message.type === 'user') {
                 messageDiv.className = 'message user';
                 messageDiv.innerHTML = `<div class="message-content">${escapeHtml(message.content)}</div>`;
@@ -1983,8 +1998,10 @@
         const persistentWarnings = chatMessages.querySelectorAll('[data-persistent="true"]');
         const warningElements = Array.from(persistentWarnings);
         
-        chatMessages.innerHTML = '';
-        chatMessages.appendChild(fragment);
+        // 新規メッセージのみ追加（既存メッセージは保持）
+        if (fragment.children.length > 0) {
+            chatMessages.appendChild(fragment);
+        }
         
         // 永続化された警告メッセージを復元
         warningElements.forEach(warning => {

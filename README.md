@@ -4,6 +4,25 @@
 
 このシステムは、症状を入力すると適切な市販薬を提案し、薬の飲み合わせや注意点についてアドバイスを提供するAIシステムです。ルールベースとAIを組み合わせたハイブリッド推奨システムを採用し、安全性と監視機能を大幅に強化した最新版です。
 
+## 🧹 プロジェクトクリーンアップ完了（2025年10月24日）
+
+### ✅ 不要ファイル削除完了
+- **巨大ファイル削除**: Python-3.9.23フォルダ（数GB削減）
+- **開発用一時ファイル削除**: apply_minimal_changes.py, fix_indent_final.py, __pycache__/
+- **レガシーファイル削除**: 医薬品.py（コマンドライン版）, medicine recomend/フォルダ
+- **重複ファイル削除**: README_INTEGRATED.md, templates/test_index.html
+- **設計図ファイル整理**: docs/フォルダに移動・整理
+
+### 📁 最適化されたファイル構成
+- **メインアプリケーション**: app.py, admin_app.py, debug_app.py
+- **コアモジュール**: medicine_logic.py, rule_based_recommendation.py, database.py
+- **セキュリティモジュール**: security_validator.py, security_logger.py, security_config.py
+- **監視・分析モジュール**: analytics.py, performance_monitor.py, debug_logger.py
+- **データファイル**: CSV形式の医薬品データベース
+- **テンプレート**: HTML/CSS/JavaScript UI
+- **ドキュメント**: README.md, SECURITY_IMPLEMENTATION.md
+- **設計図**: docs/フォルダに整理されたDraw.ioファイル
+
 ## 🚀 最新機能（2025年10月）
 
 ### 🔒 セキュリティ強化（2025年10月23日）
@@ -453,11 +472,16 @@ python debug_app.py
 - `medicine_logic.py`: 医薬品推奨ロジック（システム紹介・医薬品検索機能強化）
 - `rule_based_recommendation.py`: ルールベースアルゴリズム（安全性強化版）
 - `database.py`: PostgreSQLデータベース管理（フィードバック保存）
-- `scoring_utils.py`: スコアリングユーティリティ（新規）
-- `analytics.py`: アクセス分析モジュール（新規）
-- `performance_monitor.py`: パフォーマンス監視モジュール（新規）
+- `scoring_utils.py`: スコアリングユーティリティ
+- `analytics.py`: アクセス分析モジュール
+- `performance_monitor.py`: パフォーマンス監視モジュール
 - `debug_logger.py`: ログ管理モジュール
-- `医薬品.py`: コマンドライン版（レガシー）
+- `security_validator.py`: セキュリティ検証モジュール
+- `security_logger.py`: セキュリティログモジュール
+- `security_config.py`: セキュリティ設定モジュール
+- `enhanced_safety_checker.py`: 安全性チェック強化モジュール
+- `json_validator.py`: JSON検証モジュール
+- `gunicorn_config.py`: Gunicorn設定ファイル
 
 ### データファイル
 - `otc_medicine_data.csv`: 市販薬データベース（283件）
@@ -473,29 +497,29 @@ python debug_app.py
 
 ### テストファイル
 - `test_comprehensive.py`: 包括的テストスイート（全機能統合テスト）
+- `test_comprehensive_security.py`: セキュリティ機能テスト
+- `test_enhanced_safety.py`: 安全性チェックテスト
+- `test_security_validator.py`: セキュリティ検証テスト
 
 ### ドキュメント
 - `README.md`: このファイル
-- `SYSTEM_ARCHITECTURE_DOCUMENTATION.md`: システムアーキテクチャ総合ドキュメント
-- `RULE_BASED_ALGORITHM.md`: ルールベースアルゴリズム詳細
-- `HYBRID_SYSTEM_INTEGRATION.md`: ハイブリッドシステム統合ドキュメント
-- `SESSION_MANAGEMENT_COMPLETE.md`: セッション管理仕様
-- `ALL_REQUIREMENTS_COMPLETE.md`: 全要件実装完了報告
+- `SECURITY_IMPLEMENTATION.md`: セキュリティ実装ドキュメント
 
-### 設計図・ダイアグラム
-- `drowio/enhanced_system_architecture.drawio`: システムアーキテクチャ図
-- `drowio/enhanced_dataflow_diagram.drawio`: データフロー図
-- `drowio/enhanced_sequence_diagram.drawio`: シーケンス図
-- `drowio/enhanced_er_diagram.drawio`: ERダイアグラム
-- `drowio/enhanced_flowchart.drawio`: フローチャート
-- `system_architecture.drawio`: システム全体アーキテクチャ
-- `contest_presentation_architecture.drawio`: プレゼンテーション用アーキテクチャ図
+### 設計図・ダイアグラム（docs/フォルダ）
+- `docs/system_architecture.drawio`: システム全体アーキテクチャ
+- `docs/contest_presentation_architecture.drawio`: プレゼンテーション用アーキテクチャ図
+- `docs/drowio/enhanced_system_architecture.drawio`: システムアーキテクチャ図
+- `docs/drowio/enhanced_dataflow_diagram.drawio`: データフロー図
+- `docs/drowio/enhanced_sequence_diagram.drawio`: シーケンス図
+- `docs/drowio/enhanced_er_diagram.drawio`: ERダイアグラム
+- `docs/drowio/enhanced_flowchart.drawio`: フローチャート
 
 ### ログ
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
-- `log/access_analytics.jsonl`: アクセス分析ログ（新規）
-- `log/performance_metrics.jsonl`: パフォーマンス監視ログ（新規）
-- `app.log`: アプリケーションログ
+- `log/access_analytics.jsonl`: アクセス分析ログ
+- `log/performance_metrics.jsonl`: パフォーマンス監視ログ
+- `log/security_events.jsonl`: セキュリティイベントログ
+- `app.log`: アプリケーションログ（自動生成）
 
 ## システムアーキテクチャ
 
