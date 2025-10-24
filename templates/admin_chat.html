@@ -3697,19 +3697,21 @@
             const fullText = responseDiv.getAttribute('data-full-text');
             
             if (responseDiv.getAttribute('data-expanded') === 'true') {
-                // 省略表示に戻す
                 const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
                 responseDiv.textContent = truncatedText;
                 responseDiv.style.maxHeight = '100px';
+                responseDiv.style.overflow = 'hidden';
                 responseDiv.setAttribute('data-expanded', 'false');
                 if (button) button.textContent = '詳細表示';
             } else {
-                // 全文表示（整理されたテキスト）
-                const cleanText = decodeHTMLEntities(fullText);
-                responseDiv.textContent = cleanText;
+                const parser = new DOMParser();
+                const decodedHTML = parser.parseFromString(fullText, "text/html").body.textContent || fullText;
+                
+                responseDiv.textContent = decodedHTML;
                 responseDiv.style.maxHeight = 'none';
+                responseDiv.style.overflow = 'visible';
                 responseDiv.setAttribute('data-expanded', 'true');
-                if (button) button.textContent = '省略表示';
+                if (button) button.textContent = '閉じる';
             }
         }
         

@@ -1480,11 +1480,12 @@
             </div>
             <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
                 <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーについて報告しますか？</p>
-                <button class="report-bug-btn" onclick="handleSecurityReport({
-                    'user_message': '${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}',
-                    'ai_response': '${escapeHtml(message)}',
-                    'security_score': 0
-                })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                <button class="report-bug-btn" 
+                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
+                    data-ai-response="${escapeHtml(message)}" 
+                    data-security-score="0"
+                    onclick="handleSecurityReportFromButton(this)" 
+                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
                     不具合を報告する
                 </button>
             </div>
@@ -1518,11 +1519,12 @@
             </div>
             <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
                 <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この警告について報告しますか？</p>
-                <button class="report-bug-btn" onclick="handleSecurityReport({
-                    'user_message': '${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}',
-                    'ai_response': '${escapeHtml(message)}',
-                    'security_score': 0
-                })" style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                <button class="report-bug-btn" 
+                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
+                    data-ai-response="${escapeHtml(message)}" 
+                    data-security-score="0"
+                    onclick="handleSecurityReportFromButton(this)" 
+                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
                     不具合を報告する
                 </button>
             </div>
@@ -1819,7 +1821,9 @@
                 messageDiv.className = 'message bot';
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (message.content && message.content.includes('<div class="recommendation-result">')) {
+                if (message.content && (message.content.includes('<div class="recommendation-result">') || 
+                                       message.content.includes('<div class="chat-response">') ||
+                                       message.content.includes('class="feedback-buttons"'))) {
                     messageDiv.innerHTML = message.content;
                 }
                 // 従来の形式
@@ -2676,6 +2680,16 @@
         document.getElementById('feedbackText').focus();
     }
     
+    // ボタンからセキュリティ報告を処理するヘルパー関数
+    function handleSecurityReportFromButton(button) {
+        const warningData = {
+            user_message: button.getAttribute('data-user-message') || '',
+            ai_response: button.getAttribute('data-ai-response') || '',
+            security_score: parseInt(button.getAttribute('data-security-score') || '0', 10)
+        };
+        handleSecurityReport(warningData);
+    }
+    
     // フィードバック送信
     function submitFeedback() {
         const feedbackText = document.getElementById('feedbackText').value.trim();
@@ -2726,7 +2740,12 @@
             },
             body: JSON.stringify(currentFeedbackData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 console.log('✅ Feedback submitted successfully:', data.feedback_id);
