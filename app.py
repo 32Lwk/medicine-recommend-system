@@ -570,24 +570,66 @@ def index():
                             latest_recommended_medicines
                         )
                         
-                        # 回答をHTML形式で整形
-                        # 医薬品相談回答用のデータを準備（HTMLエスケープ処理）
+                        # 評価ボタン用のデータを準備
                         import json
                         import html
                         
-                        # 回答の全文を作成（症状分析結果と同じ方式）
+                        # HTML整形用ヘルパー関数
+                        def safe_format(text):
+                            """テキストを安全にHTML表示用に整形"""
+                            if not text:
+                                return ""
+                            # XSSリスクを防ぐためにエスケープしてから改行を変換
+                            escaped = html.escape(text)
+                            return escaped.replace("\n", "<br>")
+                        
+                        # 回答の全文を作成（全項目を含める）
+                        answer_text = safe_format(chat_response.get('answer', '回答を取得できませんでした'))
+                        medicine_details = safe_format(chat_response.get('medicine_details', ''))
+                        interactions = safe_format(chat_response.get('interactions', ''))
+                        doping_check = safe_format(chat_response.get('doping_check', ''))
+                        side_effects = safe_format(chat_response.get('side_effects', ''))
+                        consultation_advice = safe_format(chat_response.get('consultation_advice', ''))
+                        
                         full_response_html = f"""
 <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
-    <p>{chat_response.get('answer', '回答を取得できませんでした')}</p>
+    <p><strong>回答:</strong><br>{answer_text}</p>
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{medicine_details}</div>' if medicine_details else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{interactions}</div>' if interactions else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping_check}</div>' if doping_check else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_effects}</div>' if side_effects else ''}
+    
+    {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
 </div>"""
                         
-                        # HTMLエスケープ処理
-                        escaped_user_message = html.escape(user_message)
-                        escaped_ai_response = html.escape(full_response_html)  # HTML全体をエスケープ
+                        # デバッグログ：ChatGPT応答の内容確認
+                        logger.info("-" * 40)
+                        logger.info(f"[DEBUG] ChatGPT response fields:")
+                        logger.info(f"  - answer: {'✓' if answer_text else '✗'} ({len(answer_text) if answer_text else 0} chars)")
+                        logger.info(f"  - medicine_details: {'✓' if medicine_details else '✗'} ({len(medicine_details) if medicine_details else 0} chars)")
+                        logger.info(f"  - interactions: {'✓' if interactions else '✗'} ({len(interactions) if interactions else 0} chars)")
+                        logger.info(f"  - doping_check: {'✓' if doping_check else '✗'} ({len(doping_check) if doping_check else 0} chars)")
+                        logger.info(f"  - side_effects: {'✓' if side_effects else '✗'} ({len(side_effects) if side_effects else 0} chars)")
+                        logger.info(f"  - consultation_advice: {'✓' if consultation_advice else '✗'} ({len(consultation_advice) if consultation_advice else 0} chars)")
+                        
+                        # デバッグログ：HTML構造の整合性確認
+                        opening_divs = full_response_html.count('<div')
+                        closing_divs = full_response_html.count('</div>')
+                        logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
+                        logger.info("-" * 40)
                         
                         # メッセージIDを生成
                         message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+                        logger.info(f"[DEBUG] Generated message_id: {message_id}")
+                        
+                        # [SECURITY NOTE]: full_response_html is generated only from safe, pre-sanitized templates.
+                        # All user input is escaped via safe_format (html.escape + newline conversion).
+                        # Do not re-escape, otherwise structured HTML (icons, sections) will break.
                         
                         # 評価ボタンを追加（メッセージIDベース方式）
                         bot_content = full_response_html + f"""
@@ -600,10 +642,6 @@ def index():
         不適切
     </button>
 </div>"""
-                        
-                        # デバッグログの追加
-                        logger.info(f"📊 医薬品相談回答評価ボタン生成: message_id = {message_id}")
-                        logger.info(f"📊 bot_content preview: {bot_content[:200]}...")
                         
                         bot_response = {
                             'type': 'bot',
@@ -1096,98 +1134,8 @@ def index():
                             latest_recommended_medicines
                         )
                         
-                        # 評価ボタン用のデータを準備（症状分析結果と同じ方式）
-                        import json
-                        import html
-                        
-                        # HTML整形用ヘルパー関数
-                        def safe_format(text):
-                            """テキストを安全にHTML表示用に整形"""
-                            if not text:
-                                return ""
-                            # XSSリスクを防ぐためにエスケープしてから改行を変換
-                            escaped = html.escape(text)
-                            return escaped.replace("\n", "<br>")
-                        
-                        # 回答の全文を作成（全項目を含める）
-                        answer_text = safe_format(chat_response.get('answer', '回答を取得できませんでした'))
-                        medicine_details = safe_format(chat_response.get('medicine_details', ''))
-                        interactions = safe_format(chat_response.get('interactions', ''))
-                        doping_check = safe_format(chat_response.get('doping_check', ''))
-                        side_effects = safe_format(chat_response.get('side_effects', ''))
-                        consultation_advice = safe_format(chat_response.get('consultation_advice', ''))
-                        
-                        full_response_html = f"""
-<div class="chat-response">
-    <h4>💬 医薬品相談回答</h4>
-    <p><strong>回答:</strong><br>{answer_text}</p>
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{medicine_details}</div>' if medicine_details else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{interactions}</div>' if interactions else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping_check}</div>' if doping_check else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_effects}</div>' if side_effects else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
-</div>"""
-                        
-                        # デバッグログ：ChatGPT応答の内容確認
-                        logger.info("-" * 40)
-                        logger.info(f"[DEBUG] ChatGPT response fields:")
-                        logger.info(f"  - answer: {'✓' if answer_text else '✗'} ({len(answer_text) if answer_text else 0} chars)")
-                        logger.info(f"  - medicine_details: {'✓' if medicine_details else '✗'} ({len(medicine_details) if medicine_details else 0} chars)")
-                        logger.info(f"  - interactions: {'✓' if interactions else '✗'} ({len(interactions) if interactions else 0} chars)")
-                        logger.info(f"  - doping_check: {'✓' if doping_check else '✗'} ({len(doping_check) if doping_check else 0} chars)")
-                        logger.info(f"  - side_effects: {'✓' if side_effects else '✗'} ({len(side_effects) if side_effects else 0} chars)")
-                        logger.info(f"  - consultation_advice: {'✓' if consultation_advice else '✗'} ({len(consultation_advice) if consultation_advice else 0} chars)")
-                        
-                        # デバッグログ：HTML構造の整合性確認
-                        opening_divs = full_response_html.count('<div')
-                        closing_divs = full_response_html.count('</div>')
-                        logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
-                        logger.info("-" * 40)
-                        
-                        # メッセージIDを生成
-                        message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
-                        logger.info(f"[DEBUG] Generated message_id: {message_id}")
-                        
-                        # [SECURITY NOTE]: full_response_html is generated only from safe, pre-sanitized templates.
-                        # All user input is escaped via safe_format (html.escape + newline conversion).
-                        # Do not re-escape, otherwise structured HTML (icons, sections) will break.
-                        
-                        # 評価ボタンを追加（メッセージIDベース方式）
-                        bot_content = full_response_html + f"""
-<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-    <button class="feedback-btn-positive" onclick="handlePositiveFeedback('{message_id}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-        適切
-    </button>
-    <button class="feedback-btn-negative" onclick="handleNegativeFeedback('{message_id}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-        不適切
-    </button>
-</div>"""
-                        
-                        bot_response = {
-                            'type': 'bot',
-                            'content': bot_content,
-                            'diagnosis': {
-                                'chat_response': chat_response,
-                                'is_question': True
-                            }
-                        }
-                        
-                        # 質問応答をセッションに追加
-                        if sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'].append(bot_response)
-                            ALL_SESSIONS[sid]['last_activity'] = time.time()
-                        # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
-                        if 'messages' in session:
-                            del session['messages']
-                            session.modified = True
-                        
-                        logger.info(f"✅ 質問応答完了: {user_message}")
+                        # 医薬品相談回答の処理は既に上記で実装済み
+                        # 重複コードを削除
                         
                     except Exception as e:
                         logger.error(f"❌ 医薬品相談機能実行時エラー: {e}")
