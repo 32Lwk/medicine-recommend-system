@@ -2790,18 +2790,40 @@
     
     // セキュリティ警告に報告ボタンを追加（削除済み - HTMLに直接組み込み）
     
-    // ○ボタンクリック処理（メッセージIDベース）
-    function handlePositiveFeedback(messageId) {
-        // セッションストレージからメッセージデータを取得
-        const messageDataStr = sessionStorage.getItem(`message_${messageId}`);
+    // ○ボタンクリック処理（メッセージID/データ両対応）
+    function handlePositiveFeedback(messageOrData) {
+        let messageData = null;
+        if (messageOrData && typeof messageOrData === 'object' && !Array.isArray(messageOrData)) {
+            // サーバーから直接渡されたデータオブジェクト
+            messageData = messageOrData;
+        } else if (typeof messageOrData === 'string') {
+            // 旧仕様: セッションストレージから取得
+            const messageDataStr = sessionStorage.getItem(`message_${messageOrData}`);
         if (!messageDataStr) {
-            console.error('Message data not found for ID:', messageId);
+            // フォールバック: 最新メッセージから推定
+            try {
+                const chatMessages = document.getElementById('chatMessages');
+                const lastMsg = chatMessages ? chatMessages.querySelector('.message.bot:last-of-type .message-content') : null;
+                const core = lastMsg ? (lastMsg.querySelector('.recommendation-result, .chat-response') || lastMsg) : null;
+                const lastAiHtml = core ? core.innerHTML : '';
+                messageData = {
+                    user_message: sessionStorage.getItem('lastUserMessage') || '',
+                    ai_response: lastAiHtml || '',
+                    security_score: null
+                };
+            } catch (e) {
+                console.error('Message data not found for ID:', messageOrData, e);
+                showErrorMessage('メッセージデータが見つかりません。');
+                return;
+            }
+        } else {
+            messageData = JSON.parse(messageDataStr);
+        }
+        } else {
+            console.error('Invalid feedback payload:', messageOrData);
             showErrorMessage('メッセージデータが見つかりません。');
             return;
         }
-        
-        const messageData = JSON.parse(messageDataStr);
-        
         // HTMLタグを削除してプレーンテキスト化
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = messageData.ai_response || '';
@@ -2821,17 +2843,40 @@
         showSuccessModal('評価ありがとうございます。');
     }
     
-    // ×ボタンクリック処理（メッセージIDベース）
-    function handleNegativeFeedback(messageId) {
-        // セッションストレージからメッセージデータを取得
-        const messageDataStr = sessionStorage.getItem(`message_${messageId}`);
+    // ×ボタンクリック処理（メッセージID/データ両対応）
+    function handleNegativeFeedback(messageOrData) {
+        let messageData = null;
+        if (messageOrData && typeof messageOrData === 'object' && !Array.isArray(messageOrData)) {
+            // サーバーから直接渡されたデータオブジェクト
+            messageData = messageOrData;
+        } else if (typeof messageOrData === 'string') {
+            // 旧仕様: セッションストレージから取得
+            const messageDataStr = sessionStorage.getItem(`message_${messageOrData}`);
         if (!messageDataStr) {
-            console.error('Message data not found for ID:', messageId);
+            // フォールバック: 最新メッセージから推定
+            try {
+                const chatMessages = document.getElementById('chatMessages');
+                const lastMsg = chatMessages ? chatMessages.querySelector('.message.bot:last-of-type .message-content') : null;
+                const core = lastMsg ? (lastMsg.querySelector('.recommendation-result, .chat-response') || lastMsg) : null;
+                const lastAiHtml = core ? core.innerHTML : '';
+                messageData = {
+                    user_message: sessionStorage.getItem('lastUserMessage') || '',
+                    ai_response: lastAiHtml || '',
+                    security_score: null
+                };
+            } catch (e) {
+                console.error('Message data not found for ID:', messageOrData, e);
+                showErrorMessage('メッセージデータが見つかりません。');
+                return;
+            }
+        } else {
+            messageData = JSON.parse(messageDataStr);
+        }
+        } else {
+            console.error('Invalid feedback payload:', messageOrData);
             showErrorMessage('メッセージデータが見つかりません。');
             return;
         }
-        
-        const messageData = JSON.parse(messageDataStr);
         
         // HTMLタグを削除してプレーンテキスト化
         const tempDiv = document.createElement('div');
