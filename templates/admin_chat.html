@@ -92,9 +92,9 @@
 
         /* テーブル内のAI応答セル */
         td .ai-response {
-            font-size: 0.8rem;
-            line-height: 1.4;
-            max-height: 100px;
+            font-size: 0.65rem;
+            line-height: 1.3;
+            max-height: 80px;
             overflow: hidden;
             position: relative;
             white-space: pre-wrap;
@@ -3677,9 +3677,12 @@
                     .replace(/&amp;/g, '&')
                     .replace(/&quot;/g, '"')
                     .replace(/&#39;/g, "'")
+                    .replace(/&#x27;/g, "'")
                     .replace(/&nbsp;/g, ' ')
                     .replace(/&apos;/g, "'")
                     .replace(/&hellip;/g, '...')
+                    .replace(/&mdash;/g, '—')
+                    .replace(/&ndash;/g, '–')
                     .replace(/&amp;#39;/g, "'")  // 追加のHTMLエンティティ
                     .replace(/&amp;lt;/g, '<')
                     .replace(/&amp;gt;/g, '>')
@@ -3701,12 +3704,12 @@
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${reportTypeText}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.username || 'Unknown'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.user_message || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">
-                            <div id="ai-response-${report.id}" style="max-height: 100px; overflow: hidden; position: relative; white-space: pre-wrap;" data-expanded="false" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}">
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333; font-size: 0.65rem; line-height: 1.3;">
+                            <div id="ai-response-${report.id}" style="max-height: 80px; overflow: hidden; position: relative; white-space: pre-wrap; font-size: 0.65rem; line-height: 1.3;" data-expanded="false" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}">
                                 ${displayText}
                             </div>
                             ${plainAiResponse.length > 200 ? 
-                                `<button onclick="showAIDetails(${report.id})" class="admin-btn" style="padding: 2px 6px; font-size: 0.7em; margin-top: 5px; display: block;">詳細表示</button>` : ''}
+                                `<button onclick="showAIDetails(${report.id})" class="admin-btn" style="padding: 2px 6px; font-size: 0.6em; margin-top: 3px; display: block;">詳細表示</button>` : ''}
                         </td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
@@ -3753,18 +3756,16 @@
             const fullText = element.getAttribute('data-full-text');
             
             if (element.getAttribute('data-expanded') === 'true') {
+                // 縮小表示
                 const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(truncatedText, "text/html");
-                element.innerHTML = doc.body.innerHTML || truncatedText;
-                element.style.maxHeight = '100px';
+                element.textContent = truncatedText;
+                element.style.maxHeight = '80px';
                 element.style.overflow = 'hidden';
                 element.setAttribute('data-expanded', 'false');
                 if (button) button.textContent = '詳細表示';
             } else {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(fullText, "text/html");
-                element.innerHTML = doc.body.innerHTML || fullText;
+                // 拡大表示（プレーンテキストとして）
+                element.textContent = fullText;
                 element.style.maxHeight = 'none';
                 element.style.overflow = 'visible';
                 element.setAttribute('data-expanded', 'true');
@@ -3882,8 +3883,8 @@
             <div style="margin-bottom: 20px;">
                 <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
                 <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
-                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px;">
-                    <label style="display: flex; align-items: center; gap: 5px;">
+                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; overflow-x: auto;">
+                    <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;">
                         <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
                     </label>
                 </div>
