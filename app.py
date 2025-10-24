@@ -1989,12 +1989,11 @@ def index():
         logger.info(f"📝 Session {sid} updated: {len(current_messages)} messages (ALL_SESSIONS保存完了)")
         logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
         logger.info(f"💾 チャット履歴永続化完了: {len(current_messages)} messages")
-        if manual_replies:
-            logger.info(f"📝 Manual replies preserved: {len(manual_replies)} messages")
     
     # 手動返信メッセージがあるかチェック（安全な取得）
     manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
     if manual_replies:
+        logger.info(f"📝 Manual replies preserved: {len(manual_replies)} messages")
         print(f"Manual replies found in session {sid}: {len(manual_replies)} messages")
         for i, reply in enumerate(manual_replies):
             print(f"  Manual reply {i+1}: {reply.get('content', '')[:50]}...")
