@@ -287,8 +287,11 @@ def index():
     # セッションIDの取得または作成
     sid = session.get('_id')
     if not sid:
-        sid = str(int(time.time() * 1000)) + str(id(session))
+        # より安定したセッションID生成（マイクロ秒 + ランダム）
+        import random
+        sid = str(int(time.time() * 1000000)) + str(random.randint(100000, 999999))
         session['_id'] = sid
+        logger.info(f"🆕 新しいセッションIDを作成: {sid}")
     
     # ユーザー名の設定
     if 'username' not in session:
@@ -1952,12 +1955,14 @@ def index():
         
         # ALL_SESSIONSを更新
         ALL_SESSIONS[sid] = {
+            'session_id': sid,
             'username': session['username'],
             'messages': current_messages,
             'last_activity': current_time,
             'client_ip': client_ip,
             'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {})
+            'user_attributes': session.get('user_attributes', {}),
+            'session_active': True
         }
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
@@ -1977,12 +1982,14 @@ def index():
     else:
         # 新しいセッションの場合
         ALL_SESSIONS[sid] = {
+            'session_id': sid,
             'username': session['username'],
             'messages': session['messages'].copy(),
             'last_activity': current_time,
             'client_ip': client_ip,
             'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {})
+            'user_attributes': session.get('user_attributes', {}),
+            'session_active': True
         }
         logger.info(f"🆕 New session {sid} created: {len(session['messages'])} messages (ALL_SESSIONS保存完了)")
     
@@ -2011,6 +2018,8 @@ def index():
         message_count = len(ALL_SESSIONS.get(sid, {}).get('messages', []))
         logger.info(f"✅ POST処理完了 - JSON返却: {message_count} messages")
         logger.info(f"📦 ALL_SESSIONS[{sid}] messages: {ALL_SESSIONS.get(sid, {}).get('messages', [])}")
+        logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+        logger.info(f"🔍 Current session ID: {sid}")
         return jsonify({'status': 'ok', 'message_count': message_count})
     
     # GET処理（初期表示）
