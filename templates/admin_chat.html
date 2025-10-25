@@ -2616,8 +2616,28 @@
                 
                 let messageContentHtml = '';
 
-                // ★★★ 推奨メッセージ（diagnosisがある場合）の処理 ★★★
-                if (msg.type === 'bot' && msg.diagnosis && msg.diagnosis.recommended_medicines) {
+                // ★★★ 推奨医薬品メッセージの判定（簡素化） ★★★
+                const isMedicineRecommendation = (msg) => {
+                    // デバッグログ
+                    console.log('🔍 Message analysis:', {
+                        type: msg.type,
+                        hasDiagnosis: !!(msg.diagnosis && msg.diagnosis.recommended_medicines),
+                        hasContent: !!(msg.content && msg.content.includes('推奨医薬品')),
+                        hasContentHtml: !!(msg.content && msg.content.includes('<div class="recommendation-result">')),
+                        hasTrophy: !!(msg.content && msg.content.includes('🏆'))
+                    });
+                    
+                    return msg.type === 'bot' && (
+                        (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
+                        (msg.content && (
+                            msg.content.includes('推奨医薬品') ||
+                            msg.content.includes('<div class="recommendation-result">') ||
+                            msg.content.includes('🏆')
+                        ))
+                    );
+                };
+
+                if (isMedicineRecommendation(msg)) {
                     // 詳細診断（管理者向け）を優先
                     const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
                         ? currentDetailedDiagnosis
@@ -2725,67 +2745,39 @@
 
                     messageContentHtml += `</div>`;
 
-                // ★★★ msg.contentにHTMLが含まれている場合の処理（スコア表示を追加） ★★★
-                } else if (msg.type === 'bot' && msg.content && msg.content.includes('<div class="recommendation-result">')) {
-                    // msg.contentにHTMLが含まれている場合も、可能であればスコア表示を追加
-                    let modifiedContent = msg.content;
-                    
-                    // 詳細診断（管理者向け）を優先
-                    const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
-                        ? currentDetailedDiagnosis
-                        : (msg.diagnosis || {});
-                    
-                    if (adminDiag && adminDiag.recommended_medicines) {
-                        // 各医薬品のスコアリングを追加
-                        adminDiag.recommended_medicines.forEach((medicine, index) => {
-                            if (medicine.score !== undefined) {
-                                const score = medicine.score;
-                                const scoreClass = score >= 0.7 ? 'admin-score-high' : score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
-                                const scoreText = score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低';
-                                const breakdown = medicine.scores || medicine.score_breakdown || {};
-
-                                // スコア計算ヘルパー
-                                const pct = (v) => {
-                                    if (v === undefined || v === null || isNaN(v)) return 0;
-                                    return Math.max(0, Math.min(100, Math.round(v * 100)));
-                                };
-                                const riskToPct = (v) => {
-                                    if (v === undefined || v === null || isNaN(v)) return 100;
-                                    return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
-                                };
-
-                                // 各スコア抽出
-                                const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
-                                const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
-                                const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
-                                const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
-                                const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
-                                const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
-
-                                let tooltipContent = '<strong>6要素スコアリング:</strong><br>' +
-                                    `症状適合度: ${pct(symptom)}%<br>` +
-                                    `効能特異性: ${pct(efficacy)}%<br>` +
-                                    `年齢適合性: ${pct(age)}%<br>` +
-                                    `用法簡便性: ${pct(usage)}%<br>` +
-                                    `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
-                                    `相互作用リスク: ${riskToPct(interRisk)}%`;
-
-                                // 詳細スコアボタンを追加
-                                const medicineId = `medicine_${index + 1}`;
-                                const scoreButton = `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${index})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
-                                
-                                // 推奨医薬品セクション内の医薬品名の後にボタンを追加
-                                const medicineName = medicine.product_name || medicine.name || '';
-                                if (medicineName) {
-                                    // 該当行に既にボタンが付いていない場合のみ追加（同一行内で判定）
-                                    const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*詳細スコア)`, 'g');
-                                    modifiedContent = modifiedContent.replace(namePattern, `$1${scoreButton}`);
+                    // msg.contentにHTMLが含まれている場合は、ボタンを追加してから表示
+                    if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                        let modifiedContent = msg.content;
+                        
+                        // 詳細診断（管理者向け）を優先
+                        const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                            ? currentDetailedDiagnosis
+                            : (msg.diagnosis || {});
+                        
+                        if (adminDiag && adminDiag.recommended_medicines) {
+                            // 各医薬品のスコアリングを追加
+                            adminDiag.recommended_medicines.forEach((medicine, index) => {
+                                if (medicine.score !== undefined) {
+                                    // 詳細スコアボタンを追加
+                                    const medicineId = `medicine_${index + 1}`;
+                                    const scoreButton = `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${index})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
+                                    
+                                    // 推奨医薬品セクション内の医薬品名の後にボタンを追加
+                                    const medicineName = medicine.product_name || medicine.name || '';
+                                    if (medicineName) {
+                                        // 該当行に既にボタンが付いていない場合のみ追加（同一行内で判定）
+                                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*詳細スコア)`, 'g');
+                                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoreButton}`);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                        
+                        messageContentHtml = modifiedContent;
+                    } else {
+                        // msg.contentをそのまま使用
+                        messageContentHtml = msg.content || '';
                     }
-                    
-                    messageContentHtml = modifiedContent;
 
                 // ★★★ 通常のテキストメッセージ ★★★
                 } else {
