@@ -1980,13 +1980,22 @@ def index():
                 # 診断結果をサニタイズ
                 sanitized_diagnosis = sanitize_for_user_storage(bot_diag)
                 
-                # 管理者専用の詳細情報を別途保存
+                # 管理者専用の詳細情報を別途保存（session_idを付与してフロントの一致判定を通す）
                 if bot_diag and sid:
                     if sid not in ADMIN_SESSIONS:
                         ADMIN_SESSIONS[sid] = {}
-                    ADMIN_SESSIONS[sid]['detailed_diagnosis'] = bot_diag
+                    try:
+                        bot_diag_with_sid = dict(bot_diag)
+                    except Exception:
+                        # 念のためフォールバック
+                        bot_diag_with_sid = bot_diag
+                    # フロント側（admin_chat.html）は currentDetailedDiagnosis.session_id === currentSessionId を要求
+                    # ここでセッションIDを埋め込むことでスコア付き詳細を確実に表示可能にする
+                    if isinstance(bot_diag_with_sid, dict):
+                        bot_diag_with_sid['session_id'] = sid
+                    ADMIN_SESSIONS[sid]['detailed_diagnosis'] = bot_diag_with_sid
                     ADMIN_SESSIONS[sid]['last_updated'] = time.time()
-                    logger.info(f"💾 管理者専用詳細情報を保存: {sid}")
+                    logger.info(f"💾 管理者専用詳細情報を保存: {sid} (session_id付与済み)")
                 
                 bot_response = {
                     'type': 'bot',
@@ -3262,6 +3271,14 @@ def api_main_sessions():
     
     sessions_list = []
     for sid, info in ALL_SESSIONS.items():
+        detailed_diag = ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
+        # 互換対応: detailed_diagnosis に session_id が無ければ付与（フロントの一致判定用）
+        if isinstance(detailed_diag, dict) and 'session_id' not in detailed_diag:
+            try:
+                detailed_diag = dict(detailed_diag)
+                detailed_diag['session_id'] = sid
+            except Exception:
+                pass
         sessions_list.append({
             'session_id': sid,
             'username': info.get('username', 'Unknown'),
@@ -3271,7 +3288,7 @@ def api_main_sessions():
             'user_info': info.get('user_attributes', {}),
             'attributes': info.get('user_attributes', {}),
             # 管理者向けに詳細な診断情報（スコア内訳を含む）も返す
-            'detailed_diagnosis': ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
+            'detailed_diagnosis': detailed_diag
         })
     
     # NaN値をnullに変換（JSONシリアライズ対応）
