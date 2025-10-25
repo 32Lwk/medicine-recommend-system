@@ -2052,17 +2052,23 @@ def index():
     else:
         # 新しいセッションの場合
         existing_messages = ALL_SESSIONS.get(sid, {}).get('messages', [])
-        session_messages = session.get('messages', [])
-
-        # 重複を避けてメッセージをマージ
-        for session_msg in session_messages:
-            if not any(
-                existing_msg.get('type') == session_msg.get('type') and 
-                existing_msg.get('content') == session_msg.get('content') and
-                existing_msg.get('uuid') == session_msg.get('uuid')
-                for existing_msg in existing_messages
-            ):
-                existing_messages.append(session_msg)
+        
+        # session['messages']が存在する場合のみマージ処理を実行（重複を避けるため）
+        if 'messages' in session and session['messages']:
+            session_messages = session['messages']
+            
+            # 重複を避けてメッセージをマージ
+            for session_msg in session_messages:
+                if not any(
+                    existing_msg.get('type') == session_msg.get('type') and 
+                    existing_msg.get('content') == session_msg.get('content') and
+                    existing_msg.get('uuid') == session_msg.get('uuid')
+                    for existing_msg in existing_messages
+                ):
+                    existing_messages.append(session_msg)
+        else:
+            # session['messages']が存在しない場合は既存のALL_SESSIONSメッセージをそのまま使用
+            logger.info(f"📝 session['messages']が存在しないため、ALL_SESSIONSの既存メッセージを維持: {len(existing_messages)} messages")
 
         ALL_SESSIONS[sid] = {
             'session_id': sid,
