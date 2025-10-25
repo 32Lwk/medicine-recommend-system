@@ -1362,6 +1362,11 @@
             
             // 送信中フラグを立てる
             isSubmitting = true;
+
+            // 直近のユーザーメッセージを保存（重複防止の補助や評価用）
+            try {
+                sessionStorage.setItem('lastUserMessage', message);
+            } catch (e) {}
             
             // 入力フィールドをクリア
             input.value = '';
@@ -1864,35 +1869,10 @@
             return;
         }
         
-        // メッセージをレンダリング前に一時的なユーザーメッセージを削除
+        // メッセージをレンダリング前に一時的なユーザーメッセージを無条件に削除
+        // （サーバーからの正規メッセージで置き換えるため、条件付き一致は不要）
         const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
-        tempMessages.forEach(msg => {
-            // 同じ内容のメッセージがサーバーから来ている場合のみ削除
-            const content = msg.querySelector('.message-content')?.textContent;
-            
-            // タイムスタンプ比較を追加（±3秒以内のメッセージのみマッチ）
-            const hasServerVersion = messages.some(m => {
-                if (m.type !== 'user' || m.content !== content) {
-                    return false;
-                }
-                
-                // タイムスタンプがある場合は時刻も比較
-                if (m.timestamp) {
-                    const serverTime = new Date(m.timestamp).getTime();
-                    const now = Date.now();
-                    const timeDiff = Math.abs(now - serverTime);
-                    // 3秒以内のメッセージのみマッチとみなす（Renderの遅延を考慮）
-                    return timeDiff < 3000;
-                }
-                
-                // タイムスタンプがない場合は内容のみで判定（後方互換性）
-                return true;
-            });
-            
-            if (hasServerVersion) {
-                msg.remove();
-            }
-        });
+        tempMessages.forEach(msg => msg.remove());
         
         // タイピングインジケーターの状態を保存
         const typingIndicator = document.getElementById('currentTypingIndicator');
