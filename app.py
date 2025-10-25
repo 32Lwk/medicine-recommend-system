@@ -2070,16 +2070,33 @@ def index():
             # session['messages']が存在しない場合は既存のALL_SESSIONSメッセージをそのまま使用
             logger.info(f"📝 session['messages']が存在しないため、ALL_SESSIONSの既存メッセージを維持: {len(existing_messages)} messages")
 
-        ALL_SESSIONS[sid] = {
-            'session_id': sid,
-            'username': session['username'],
-            'messages': existing_messages,
-            'last_activity': current_time,
-            'client_ip': client_ip,
-            'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {}),
-            'session_active': True
+        # session['messages']が削除された後は、ALL_SESSIONSの更新をスキップ（重複を避けるため）
+        if 'messages' in session and session['messages']:
+            # session['messages']が存在する場合のみALL_SESSIONSを更新
+            ALL_SESSIONS[sid] = {
+                'session_id': sid,
+                'username': session['username'],
+                'messages': existing_messages,
+                'last_activity': current_time,
+                'client_ip': client_ip,
+                'user_agent': user_agent,
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
             }
+            logger.info(f"📝 ALL_SESSIONS更新完了: {len(existing_messages)} messages")
+        else:
+            # session['messages']が削除された後は、ALL_SESSIONSの既存メッセージを維持
+            ALL_SESSIONS[sid].update({
+                'session_id': sid,
+                'username': session['username'],
+                'last_activity': current_time,
+                'client_ip': client_ip,
+                'user_agent': user_agent,
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
+                # messagesは既存のものを維持（重複を避けるため）
+            })
+            logger.info(f"📝 ALL_SESSIONS更新完了（メッセージ維持）: {len(ALL_SESSIONS[sid].get('messages', []))} messages")
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
         # messagesはALL_SESSIONSのみに保存（永続化）
