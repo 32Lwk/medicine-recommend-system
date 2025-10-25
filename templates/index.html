@@ -1869,10 +1869,7 @@
             return;
         }
         
-        // メッセージをレンダリング前に一時的なユーザーメッセージを無条件に削除
-        // （サーバーからの正規メッセージで置き換えるため、条件付き一致は不要）
-        const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
-        tempMessages.forEach(msg => msg.remove());
+        // 一時的なユーザーメッセージは、新規メッセージ反映後に安全に除去する
         
         // タイピングインジケーターの状態を保存
         const typingIndicator = document.getElementById('currentTypingIndicator');
@@ -2059,6 +2056,9 @@
         // 新規メッセージのみ追加（既存メッセージは保持）
         if (fragment.children.length > 0) {
             chatMessages.appendChild(fragment);
+            // 新規メッセージが反映できた場合のみ、仮表示のユーザーメッセージを除去
+            const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
+            tempMessages.forEach(msg => msg.remove());
         }
         
         // 永続化された警告メッセージを復元

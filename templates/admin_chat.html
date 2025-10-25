@@ -2433,9 +2433,9 @@
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
                     if (medicineName) {
-                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
-                        const rankPattern = new RegExp(`(🏆 ${index + 1}位: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
-                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
+                        // 該当行に既に最適度が付いていない場合のみ追加（同一行内で判定）
+                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*最適度:)`, 'g');
+                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoringHtml}`);
                     }
                 }
             });
@@ -2488,9 +2488,9 @@
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
                     if (medicineName) {
-                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
-                        const rankPattern = new RegExp(`(🏆 ${index + 1}位: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
-                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
+                        // 該当行に既に最適度が付いていない場合のみ追加（同一行内で判定）
+                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*最適度:)`, 'g');
+                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoringHtml}`);
                     }
                 }
             });
@@ -3833,11 +3833,14 @@
         }
         
         function updateFeedbackStats(reports) {
-            // 全報告数
-            const totalReports = reports.length;
+            // 不具合報告のみを対象（ai_positive は統計から除外）
+            const bugReports = (reports || []).filter(r => r.report_type !== 'ai_positive');
             
-            // 解決済み・未解決の数
-            const resolvedCount = reports.filter(r => r.resolved).length;
+            // 全報告数（テーブル表示と一致させるため不具合報告のみ）
+            const totalReports = bugReports.length;
+            
+            // 解決済み・未解決の数（不具合報告のみ）
+            const resolvedCount = bugReports.filter(r => r.resolved === true).length;
             const unresolvedCount = totalReports - resolvedCount;
             
             // 適切・不適切の数（ai_positiveとai_negativeのみ）
