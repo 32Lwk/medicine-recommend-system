@@ -618,16 +618,16 @@ def index():
                 if is_system_intro or is_medicine_search or has_question_keyword:
                     logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
                     
-                    # まずユーザーメッセージを保存
-                    import uuid
-                    user_response = {
-                        'type': 'user',
-                        'content': user_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())  # 一意な識別子を追加
-                    }
-                    ALL_SESSIONS[sid]['messages'].append(user_response)
-                    logger.info(f"💾 ユーザー質問を保存: {user_message}")
+                    # ユーザーメッセージは既に1回目の保存処理で保存済み（重複を避けるため削除）
+                    # import uuid
+                    # user_response = {
+                    #     'type': 'user',
+                    #     'content': user_message,
+                    #     'timestamp': datetime.now().isoformat(),
+                    #     'uuid': str(uuid.uuid4())  # 一意な識別子を追加
+                    # }
+                    # ALL_SESSIONS[sid]['messages'].append(user_response)
+                    # logger.info(f"💾 ユーザー質問を保存: {user_message}")
                     
                     # 質問回答に直接進む
                     try:
