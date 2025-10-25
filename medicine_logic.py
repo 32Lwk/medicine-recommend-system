@@ -1062,7 +1062,8 @@ def get_medicine_details(recommended_medicines, medicine_list):
                 'doping_prohibited': safe_get(matched_medicine.get('禁止物質あり', '')),
                 'competition_category': safe_get(matched_medicine.get('競技会区分', '')),
                 'doping_conditions': safe_get(matched_medicine.get('条件', '')),
-                'score': medicine_score  # スコアリング情報を追加
+                # 管理画面表示に合わせて 0-1 の範囲に正規化
+                'score': (medicine_score / 100.0)  # スコアリング情報を追加（正規化）
             }
             detailed_medicines.append(detailed_medicine)
             print(f"医薬品詳細情報取得: {product_name} ({manufacturer}) -> {matched_medicine.get('製品名', '')} ({matched_medicine.get('メーカー名', '')})")
@@ -1107,7 +1108,8 @@ def get_medicine_details(recommended_medicines, medicine_list):
                 'doping_prohibited': '詳細情報が見つかりませんでした',
                 'competition_category': '詳細情報が見つかりませんでした',
                 'doping_conditions': '詳細情報が見つかりませんでした',
-                'score': fallback_score  # スコアリング情報を追加
+                # 管理画面表示に合わせて 0-1 の範囲に正規化
+                'score': (fallback_score / 100.0)  # スコアリング情報を追加（正規化）
             }
             detailed_medicines.append(detailed_medicine)
     
@@ -1347,18 +1349,28 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
             "consultation_advice": ""
         }
     
-    # 推奨医薬品がない場合、医薬品名での直接検索を試行
+    # 推奨医薬品が空の場合でも、まず会話履歴から復元を試みる
+    if not recommended_medicines and conversation_history:
+        try:
+            for hist in reversed(conversation_history):
+                diag = hist.get('diagnosis') if isinstance(hist, dict) else None
+                if isinstance(diag, dict) and diag.get('recommended_medicines'):
+                    recommended_medicines = diag.get('recommended_medicines') or []
+                    if recommended_medicines:
+                        print(f"会話履歴から推奨医薬品を復元: {len(recommended_medicines)}件")
+                        break
+        except Exception as e:
+            print(f"履歴復元エラー: {e}")
+
+    # それでも推奨医薬品がない場合、医薬品名での直接検索を試行（成功時のみ早期return）
     if not recommended_medicines:
-        # 医薬品データを読み込み
         try:
             import pandas as pd
             df = pd.read_csv('otc_medicine_data.csv')
             detected_medicines = detect_medicine_name_in_query(user_message, df)
-            
             if detected_medicines:
-                # 検出された医薬品の情報を返す
                 medicine_info = ""
-                for i, med in enumerate(detected_medicines[:3], 1):  # 最大3つまで
+                for i, med in enumerate(detected_medicines[:3], 1):
                     medicine_info += f"\n💊 **{i}位: {med['product_name']}** ({med['manufacturer']})\n"
                     medicine_info += f"**効能効果:** {med['efficacy']}\n"
                     medicine_info += f"**成分:** {med['ingredients']}\n"
@@ -1367,7 +1379,6 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
                     if med['usage']:
                         medicine_info += f"**用法用量:** {med['usage']}\n"
                     medicine_info += "\n"
-                
                 return {
                     "answer": f"🔍 **医薬品検索結果**\n\n{medicine_info}\n⚠️ **ご注意**\n・医薬品の使用前には必ず登録販売者や薬剤師にご相談ください\n・アレルギー体質の方は成分を確認してください\n・用法用量を守ってご使用ください",
                     "medicine_details": "検出された医薬品の情報",
@@ -1378,16 +1389,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
                 }
         except Exception as e:
             print(f"医薬品検索エラー: {e}")
-        
-        # 医薬品が見つからない場合の一般的なアドバイス
-        return {
-            "answer": "申し訳ございません。該当する推奨医薬品が見つかりませんでした。\n\n💡 より適切なアドバイスをするために、以下の情報をお教えください：\n\n📋 **基本情報**\n・年齢と性別\n・症状の詳細（いつから、どの程度の症状か）\n・他の症状の有無\n\n💊 **薬に関する情報**\n・現在服用中の薬はありますか？\n・アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）\n・持病や既往歴はありますか？\n\n🔍 **具体的な症状や医薬品名での検索も可能です**\n・「ビタミンCの薬について」\n・「風邪薬を教えて」\n・「頭痛薬を探している」\n\n上記の情報をお教えいただければ、より具体的なアドバイスができます。また、お近くの登録販売者や薬剤師にご相談いただくこともお勧めします。",
-            "medicine_details": "推奨医薬品の情報がありません",
-            "interactions": "推奨医薬品の情報がありません",
-            "doping_check": "推奨医薬品の情報がありません",
-            "side_effects": "推奨医薬品の情報がありません",
-            "consultation_advice": "お近くの登録販売者にご相談ください"
-        }
+        # 検索でも見つからない場合は、会話履歴を踏まえた一般回答にフォールバック（以降の処理で生成）
     
     # 会話履歴を整形（最新の5件程度）
     history_text = ""
