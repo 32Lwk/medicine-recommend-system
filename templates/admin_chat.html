@@ -2428,7 +2428,7 @@
                 if (medicine.score !== undefined) {
                     const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
-                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
+                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適値: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
@@ -2483,7 +2483,7 @@
                         `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
                         `相互作用リスク: ${riskToPct(interRisk)}%`;
 
-                    const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
+                    const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適値: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
                     
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
@@ -3018,7 +3018,7 @@
                             const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
                             const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
                             content += `<div class="admin-score-display ${scoreClass}">
-                                📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})
+                                📊 最適値: ${(medicine.score * 100).toFixed(0)}% (${scoreText})
                             </div>`;
                         }
                         content += `</div>`;
