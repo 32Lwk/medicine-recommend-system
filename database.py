@@ -185,6 +185,31 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"❌ Failed to resolve feedback: {str(e)}")
             return False
+
+    def delete_feedback(self, feedback_id):
+        """フィードバックを削除"""
+        if not self.connection:
+            logger.error("❌ No database connection")
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+
+            delete_sql = """
+            DELETE FROM feedback_reports
+            WHERE id = %s;
+            """
+
+            cursor.execute(delete_sql, (feedback_id,))
+            self.connection.commit()
+            cursor.close()
+
+            logger.info(f"🗑️ Feedback {feedback_id} deleted")
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to delete feedback: {str(e)}")
+            return False
     
     def close(self):
         """データベース接続を閉じる"""
