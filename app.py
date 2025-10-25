@@ -37,12 +37,24 @@ CORS(app,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
-# セッション設定（Render環境対応）
+# セッション設定（環境に応じて自動調整）
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = False  # JavaScriptからアクセス可能に
+
+# 本番環境（FLASK_ENV=production）では Secure/None、開発では非Secure/Lax
+env = os.getenv('FLASK_ENV', 'development').lower()
+is_prod = (env == 'production')
+secure_override = os.getenv('SESSION_COOKIE_SECURE')
+if secure_override is not None:
+    secure_flag = secure_override.lower() == 'true'
+else:
+    secure_flag = is_prod
+
+samesite_value = 'None' if secure_flag else 'Lax'
+
+app.config['SESSION_COOKIE_SECURE'] = secure_flag
+app.config['SESSION_COOKIE_SAMESITE'] = samesite_value
+app.config['SESSION_COOKIE_HTTPONLY'] = False  # 既存挙動を維持
 app.config['SESSION_COOKIE_DOMAIN'] = None  # ドメイン制限を解除
 
 # データベース初期化（非同期化）
@@ -319,16 +331,9 @@ def index():
     
     # ALL_SESSIONSから復元（Cookieサイズ削減のため）
     if sid and sid in ALL_SESSIONS:
+        # 会話履歴は常に完全な履歴を復元する（管理者要請メッセージのみで上書きしない）
         session['messages'] = ALL_SESSIONS[sid].get('messages', []).copy()
-        logger.info(f"📥 Session messages restored from ALL_SESSIONS: {len(session['messages'])} messages")
-        
-        # セッションクッキーサイズ削減のため、メッセージはALL_SESSIONSのみに保存
-        # セッションには最小限の情報のみ保存
-        # ただし、薬剤師要請メッセージは保持する
-        admin_request_messages = [msg for msg in ALL_SESSIONS[sid].get('messages', []) 
-                                 if msg.get('admin_request') and msg.get('type') == 'bot']
-        session['messages'] = admin_request_messages.copy()
-        logger.info(f"💊 薬剤師要請メッセージを保持: {len(admin_request_messages)} messages")
+        logger.info(f"📥 Session messages restored from ALL_SESSIONS: {len(session['messages'])} messages (full history)")
     
     # current_messagesは安全に取得
     current_messages = session.get('messages', []).copy()
