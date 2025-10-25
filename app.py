@@ -420,12 +420,24 @@ def index():
             from datetime import datetime
             import uuid
             
-            session['messages'].append({
-                'type': 'user',
-                'content': sanitized_message,  # サニタイズされたメッセージを使用
-                'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
-                'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
-            })
+            # 重複チェック：同じ内容のユーザーメッセージが既に存在するかチェック
+            user_message_exists = any(
+                msg.get('type') == 'user' and 
+                msg.get('content') == sanitized_message and
+                msg.get('uuid')  # UUIDが存在する場合は既存メッセージ
+                for msg in session.get('messages', [])
+            )
+            
+            if not user_message_exists:
+                session['messages'].append({
+                    'type': 'user',
+                    'content': sanitized_message,  # サニタイズされたメッセージを使用
+                    'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
+                    'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
+                })
+                logger.info(f"✅ ユーザーメッセージ追加: {sanitized_message[:50]}...")
+            else:
+                logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
             # 管理画面表示用にALL_SESSIONSへも即時反映（ユーザーメッセージが見えるように）
             if sid:
                 if sid not in ALL_SESSIONS:
@@ -440,7 +452,21 @@ def index():
                         'session_active': True
                     }
                 else:
-                    ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                    # 既存のALL_SESSIONSメッセージと重複チェック
+                    existing_messages = ALL_SESSIONS[sid].get('messages', [])
+                    new_user_messages = [msg for msg in session['messages'] if msg.get('type') == 'user']
+                    
+                    # 新しいユーザーメッセージのみを追加
+                    for new_msg in new_user_messages:
+                        if not any(
+                            existing_msg.get('type') == 'user' and 
+                            existing_msg.get('content') == new_msg.get('content') and
+                            existing_msg.get('uuid') == new_msg.get('uuid')
+                            for existing_msg in existing_messages
+                        ):
+                            existing_messages.append(new_msg)
+                    
+                    ALL_SESSIONS[sid]['messages'] = existing_messages
                     ALL_SESSIONS[sid]['last_activity'] = time.time()
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
@@ -2025,10 +2051,23 @@ def index():
         })
     else:
         # 新しいセッションの場合
+        existing_messages = ALL_SESSIONS.get(sid, {}).get('messages', [])
+        session_messages = session.get('messages', [])
+
+        # 重複を避けてメッセージをマージ
+        for session_msg in session_messages:
+            if not any(
+                existing_msg.get('type') == session_msg.get('type') and 
+                existing_msg.get('content') == session_msg.get('content') and
+                existing_msg.get('uuid') == session_msg.get('uuid')
+                for existing_msg in existing_messages
+            ):
+                existing_messages.append(session_msg)
+
         ALL_SESSIONS[sid] = {
             'session_id': sid,
             'username': session['username'],
-            'messages': session.get('messages', []).copy(),
+            'messages': existing_messages,
             'last_activity': current_time,
             'client_ip': client_ip,
             'user_agent': user_agent,
