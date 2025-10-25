@@ -944,6 +944,118 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
         
+        /* 詳細スコアボタンスタイル */
+        .score-detail-btn {
+            transition: background-color 0.3s ease;
+        }
+        
+        .score-detail-btn:hover {
+            background-color: #0056b3 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .score-detail-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* スコア詳細モーダルスタイル */
+        .score-detail {
+            padding: 20px;
+        }
+        
+        .score-detail h4 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 10px;
+        }
+        
+        .overall-score {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .score-circle.high {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        
+        .score-circle.medium {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+        
+        .score-circle.low {
+            background: linear-gradient(135deg, #F44336, #D32F2F);
+        }
+        
+        .score-breakdown {
+            margin-top: 30px;
+        }
+        
+        .score-breakdown h5 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .score-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .score-label {
+            min-width: 120px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .score-bar {
+            flex: 1;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .score-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .score-value {
+            min-width: 40px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+        }
+        
         /* スコア内訳ツールチップスタイル */
         .score-tooltip {
             position: relative;
@@ -2529,7 +2641,15 @@
                             messageContentHtml += `<div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">`;
                             messageContentHtml += `<h5 style="margin: 0 0 10px 0;">🏆 ${medIndex + 1}位: ${escapeHtml(medicine.product_name || medicine.name || 'N/A')}`;
 
-                            // --- スコアリングラベルとツールチップ ---
+                            // --- 詳細スコアボタンを追加 ---
+                            if (medicine.score !== undefined) {
+                                const medicineId = `medicine_${medIndex + 1}`;
+                                messageContentHtml += `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${medIndex})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
+                            }
+
+                            messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
+
+                            // --- スコアリングラベルとツールチップ（簡略表示） ---
                             if (medicine.score !== undefined) {
                                 const score = medicine.score;
                                 const scoreClass = score >= 0.7 ? 'admin-score-high' : score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
@@ -2650,14 +2770,16 @@
                                     `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
                                     `相互作用リスク: ${riskToPct(interRisk)}%`;
 
-                                const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適値: ${(score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
+                                // 詳細スコアボタンを追加
+                                const medicineId = `medicine_${index + 1}`;
+                                const scoreButton = `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${index})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
                                 
-                                // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
+                                // 推奨医薬品セクション内の医薬品名の後にボタンを追加
                                 const medicineName = medicine.product_name || medicine.name || '';
                                 if (medicineName) {
-                                    // 該当行に既に最適度が付いていない場合のみ追加（同一行内で判定）
-                                    const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*最適値:)`, 'g');
-                                    modifiedContent = modifiedContent.replace(namePattern, `$1${scoringHtml}`);
+                                    // 該当行に既にボタンが付いていない場合のみ追加（同一行内で判定）
+                                    const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*詳細スコア)`, 'g');
+                                    modifiedContent = modifiedContent.replace(namePattern, `$1${scoreButton}`);
                                 }
                             }
                         });
@@ -4118,6 +4240,118 @@
             const modal = document.getElementById('aiFullTextModal');
             if (modal) modal.style.display = 'none';
         }
+
+        // スコア詳細モーダル関連の関数
+        function showScoreModal(medicineId, medicineIndex) {
+            // 現在のセッションの詳細診断データを取得
+            const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                ? currentDetailedDiagnosis
+                : null;
+            
+            if (!adminDiag || !adminDiag.recommended_medicines || !adminDiag.recommended_medicines[medicineIndex]) {
+                alert('スコア情報が見つかりません。');
+                return;
+            }
+            
+            const medicine = adminDiag.recommended_medicines[medicineIndex];
+            const scoreHtml = generateScoreDetailHtml(medicine);
+            
+            // モーダルに表示
+            document.getElementById('scoreModalContent').innerHTML = scoreHtml;
+            document.getElementById('scoreModal').style.display = 'block';
+        }
+
+        function closeScoreModal() {
+            document.getElementById('scoreModal').style.display = 'none';
+        }
+
+        function generateScoreDetailHtml(medicine) {
+            if (!medicine.score) {
+                return '<p>スコア情報がありません。</p>';
+            }
+            
+            const breakdown = medicine.scores || medicine.score_breakdown || {};
+            const score = medicine.score;
+            const scoreClass = score >= 0.7 ? 'high' : score >= 0.5 ? 'medium' : 'low';
+            
+            // スコア計算ヘルパー
+            const pct = (v) => {
+                if (v === undefined || v === null || isNaN(v)) return 0;
+                return Math.max(0, Math.min(100, Math.round(v * 100)));
+            };
+            const riskToPct = (v) => {
+                if (v === undefined || v === null || isNaN(v)) return 100;
+                return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
+            };
+
+            // 各スコア抽出
+            const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
+            const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
+            const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
+            const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
+            const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
+            const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+
+            return `
+                <div class="score-detail">
+                    <h4>${escapeHtml(medicine.product_name || medicine.name || 'N/A')}</h4>
+                    <div class="overall-score">
+                        <div class="score-circle ${scoreClass}">
+                            ${(score * 100).toFixed(0)}%
+                        </div>
+                        <p style="margin-top: 10px; font-size: 18px;">総合スコア: ${score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低'}</p>
+                    </div>
+                    
+                    <div class="score-breakdown">
+                        <h5>6要素スコアリング詳細</h5>
+                        <div class="score-items">
+                            <div class="score-item">
+                                <span class="score-label">症状適合度</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(symptom)}%; background: #4CAF50;"></div>
+                                </div>
+                                <span class="score-value">${pct(symptom)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">効能特異性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(efficacy)}%; background: #2196F3;"></div>
+                                </div>
+                                <span class="score-value">${pct(efficacy)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">年齢適合性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(age)}%; background: #9C27B0;"></div>
+                                </div>
+                                <span class="score-value">${pct(age)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">用法簡便性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(usage)}%; background: #FF9800;"></div>
+                                </div>
+                                <span class="score-value">${pct(usage)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">副作用リスク</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${riskToPct(sideRisk)}%; background: #F44336;"></div>
+                                </div>
+                                <span class="score-value">${riskToPct(sideRisk)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">相互作用リスク</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${riskToPct(interRisk)}%; background: #795548;"></div>
+                                </div>
+                                <span class="score-value">${riskToPct(interRisk)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     </script>
 
     <!-- 不具合報告モーダル -->
@@ -4176,6 +4410,17 @@
             <div id="aiFullTextBody" style="white-space: pre-wrap; background:#fff; color:#333; padding:12px; border:1px solid #dee2e6; border-radius:6px; max-height:60vh; overflow:auto;"></div>
             <div style="margin-top: 12px; text-align: right;">
                 <button class="admin-btn" onclick="closeAiResponseModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- スコア詳細モーダル -->
+    <div id="scoreModal" class="admin-modal" style="display: none;">
+        <div class="admin-modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <span class="close" onclick="closeScoreModal()">&times;</span>
+            <h2>📊 医薬品スコア詳細</h2>
+            <div id="scoreModalContent">
+                <!-- スコア詳細がここに表示される -->
             </div>
         </div>
     </div>
