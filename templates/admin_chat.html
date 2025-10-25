@@ -956,19 +956,22 @@
             color: white;
             text-align: left;
             border-radius: 6px;
-            padding: 10px;
+            padding: 12px;
             position: absolute;
             z-index: 1000;
             bottom: 125%;
             left: 50%;
-            transform: translateX(-50%);
-            width: 280px;
-            font-size: 0.85em;
+            margin-left: -120px;
+            width: 240px;
+            font-size: 12px;
             line-height: 1.4;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         .score-tooltip:hover .tooltip-content {
             visibility: visible;
+            opacity: 1;
         }
         .score-tooltip .tooltip-content::after {
             content: "";
@@ -2443,60 +2446,7 @@
             return modifiedContent;
         }
 
-        function addScoringToMedicines(htmlContent, medicines) {
-            if (!medicines || medicines.length === 0) {
-                return htmlContent;
-            }
-            
-            let modifiedContent = htmlContent;
-            
-            // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
-            medicines.forEach((medicine, index) => {
-                if (medicine.score !== undefined) {
-                    const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
-                    const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
-
-                    // スコア内訳のツールチップコンテンツを生成（scores または score_breakdown に対応）
-                    const breakdown = medicine.scores || medicine.score_breakdown || {};
-                    const pct = (v) => {
-                        if (v === undefined || v === null || isNaN(v)) return 0;
-                        return Math.max(0, Math.min(100, Math.round(v * 100)));
-                    };
-                    const riskToPct = (v) => {
-                        // リスクは -1.0〜0.0 を 0〜100 に正規化（低リスクほど高スコア）
-                        if (v === undefined || v === null || isNaN(v)) return 100;
-                        return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
-                    };
-
-                    const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
-                    const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
-                    const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
-                    const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
-                    const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
-                    const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
-
-                    let tooltipContent = '<strong>スコア内訳:</strong><br>' +
-                        `症状適合度: ${pct(symptom)}%<br>` +
-                        `効能特異性: ${pct(efficacy)}%<br>` +
-                        `年齢適合性: ${pct(age)}%<br>` +
-                        `用法簡便性: ${pct(usage)}%<br>` +
-                        `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
-                        `相互作用リスク: ${riskToPct(interRisk)}%`;
-
-                    const scoringHtml = `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適値: ${(medicine.score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
-                    
-                    // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
-                    const medicineName = medicine.product_name || '';
-                    if (medicineName) {
-                        // 該当行に既に最適度が付いていない場合のみ追加（同一行内で判定）
-                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*最適度:)`, 'g');
-                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoringHtml}`);
-                    }
-                }
-            });
-            
-            return modifiedContent;
-        }
+        // ★★★ addScoringToMedicines 関数は削除（動的HTML生成に変更） ★★★
 
         function renderChatMessages(messages) {
             const chatMessages = document.getElementById('chat-messages');
@@ -2552,64 +2502,139 @@
                     indicator = '<span class="user-indicator" style="color: #007bff; font-weight: bold;">👤 ユーザー</span><br>';
                 }
                 
-                // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
-                    // 管理画面でのスコアリング表示を追加
-                    let modifiedContent = msg.content;
-                    // 詳細診断（管理者向け）を優先し、スコア/内訳を確実に利用
-                    const adminDiag = (currentDetailedDiagnosis && Array.isArray(currentDetailedDiagnosis.recommended_medicines)) 
-                        ? currentDetailedDiagnosis 
+                let messageContentHtml = '';
+
+                // ★★★ 推奨メッセージ（diagnosisがある場合）の処理 ★★★
+                if (msg.type === 'bot' && msg.diagnosis && msg.diagnosis.recommended_medicines) {
+                    // 詳細診断（管理者向け）を優先
+                    const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                        ? currentDetailedDiagnosis
                         : (msg.diagnosis || {});
-                    if (adminDiag && adminDiag.recommended_medicines) {
-                        modifiedContent = addScoringToMedicines(modifiedContent, adminDiag.recommended_medicines);
-                    }
+
+                    messageContentHtml += `<div class="recommendation-result">`;
+                    messageContentHtml += `<h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>`;
                     
-                    // 管理画面では評価ボタンを非表示にする
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = modifiedContent;
-                    const feedbackButtons = tempDiv.querySelector('.feedback-buttons');
-                    if (feedbackButtons) {
-                        feedbackButtons.remove();
+                    if (adminDiag.symptoms && adminDiag.symptoms.length > 0) {
+                        messageContentHtml += `<p><strong>推測される症状:</strong> ${adminDiag.symptoms.join(', ')}</p>`;
                     }
-                    modifiedContent = tempDiv.innerHTML;
-                    
-                    html += `
-                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
-                            <div style="max-width: 80%;">
-                                ${indicator}
-                                ${modifiedContent}
-                                ${timestamp}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // 通常のテキストメッセージまたはAI応答
-                    let content;
-                    if (msg.type === 'user') {
-                        // ユーザーメッセージの場合はエスケープして表示
-                        content = escapeHtml(msg.content || '');
-                    } else if (msg.content && msg.content.includes('<div class="chat-response">')) {
-                        // AI応答の場合はHTMLをそのまま表示
-                        content = msg.content;
+                    if (adminDiag.medicine_type) {
+                        messageContentHtml += `<p><strong>医薬品の種類:</strong> ${adminDiag.medicine_type}</p>`;
+                    }
+
+                    messageContentHtml += `<div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">`;
+                    messageContentHtml += `<h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>`;
+
+                    if (adminDiag.recommended_medicines && adminDiag.recommended_medicines.length > 0) {
+                        adminDiag.recommended_medicines.forEach((medicine, medIndex) => {
+                            messageContentHtml += `<div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">`;
+                            messageContentHtml += `<h5 style="margin: 0 0 10px 0;">🏆 ${medIndex + 1}位: ${escapeHtml(medicine.product_name || medicine.name || 'N/A')}`;
+
+                            // --- スコアリングラベルとツールチップ ---
+                            if (medicine.score !== undefined) {
+                                const score = medicine.score;
+                                const scoreClass = score >= 0.7 ? 'admin-score-high' : score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
+                                const scoreText = score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低';
+                                const breakdown = medicine.scores || medicine.score_breakdown || {};
+
+                                // スコア計算ヘルパー
+                                const pct = (v) => {
+                                    if (v === undefined || v === null || isNaN(v)) return 0;
+                                    return Math.max(0, Math.min(100, Math.round(v * 100)));
+                                };
+                                const riskToPct = (v) => {
+                                    if (v === undefined || v === null || isNaN(v)) return 100;
+                                    return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
+                                };
+
+                                // 各スコア抽出
+                                const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
+                                const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
+                                const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
+                                const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
+                                const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
+                                const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+
+                                let tooltipContent = '<strong>6要素スコアリング:</strong><br>' +
+                                    `症状適合度: ${pct(symptom)}%<br>` +
+                                    `効能特異性: ${pct(efficacy)}%<br>` +
+                                    `年齢適合性: ${pct(age)}%<br>` +
+                                    `用法簡便性: ${pct(usage)}%<br>` +
+                                    `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
+                                    `相互作用リスク: ${riskToPct(interRisk)}%`;
+
+                                messageContentHtml += `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適値: ${(score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
+                            }
+
+                            messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
+                            
+                            if (medicine.explanation || medicine.reason) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>推奨理由:</strong> ${escapeHtml(medicine.explanation || medicine.reason)}</p>`;
+                            }
+                            if (medicine.age_restriction) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>年齢制限:</strong> ${escapeHtml(medicine.age_restriction)}</p>`;
+                            }
+                            if (medicine.efficacy) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>効能効果:</strong> ${escapeHtml(medicine.efficacy.substring(0,100))}...</p>`;
+                            }
+                            messageContentHtml += `</div>`;
+                        });
                     } else {
-                        // その他の場合はエスケープ
-                        content = escapeHtml(msg.content || '');
+                        messageContentHtml += "<p>適切な医薬品が見つかりませんでした。</p>";
                     }
-                    
-                    html += `
-                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
-                            <div class="message-content" style="max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; ${
-                                messageClass === 'user' 
-                                    ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
-                                    : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
-                            }">
-                                ${indicator}
-                                ${content}
-                                ${timestamp}
-                            </div>
-                        </div>
-                    `;
+                    messageContentHtml += `</div>`;
+
+                    // 使用上の注意、医師相談など
+                    if (adminDiag.usage_notes) {
+                        messageContentHtml += `<div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                            <h4 style="color: #e65100; margin-top: 0;">⚠️ 使用上の注意</h4>
+                            <div class="caution-content" style="white-space: pre-wrap;">${escapeHtml(adminDiag.usage_notes)}</div>
+                        </div>`;
+                    }
+                    if (adminDiag.doctor_consultation) {
+                        messageContentHtml += `<div style="background: #ffebee; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+                            <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
+                            <div class="advice-content" style="white-space: pre-wrap;">${escapeHtml(adminDiag.doctor_consultation)}</div>
+                        </div>`;
+                    }
+                    if (adminDiag.additional_questions && adminDiag.additional_questions.length > 0) {
+                        messageContentHtml += `<div style="background: #e8f5e9; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
+                            <h4 style="color: #388e3c; margin-top: 0;">❓ 追加でお伺いしたいこと</h4>
+                            <ul>${adminDiag.additional_questions.map(q => `<li>${escapeHtml(q)}</li>`).join('')}</ul>
+                        </div>`;
+                    }
+
+                    messageContentHtml += `</div>`;
+
+                // ★★★ 通常のテキストメッセージ ★★★
+                } else {
+                    let contentText = msg.content || '';
+                    if (msg.type === 'user') {
+                        messageContentHtml = escapeHtml(contentText);
+                    } else if (msg.type === 'bot') {
+                        if (contentText.includes('<div class="chat-response">')) {
+                            messageContentHtml = contentText;
+                        } else {
+                            messageContentHtml = escapeHtml(contentText);
+                        }
+                    } else {
+                        messageContentHtml = escapeHtml(contentText);
+                    }
                 }
+                
+                // メッセージ全体のHTML生成
+                html += `
+                    <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
+                        <div class="message-content" style="max-width: 80%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; line-height: 1.4; ${
+                            messageClass === 'user'
+                                ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
+                                : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
+                        }">
+                            ${indicator}
+                            <div class="message-text">${messageContentHtml}</div>
+                            ${timestamp}
+                        </div>
+                    </div>
+                `;
             });
             
             chatMessages.innerHTML = html;
