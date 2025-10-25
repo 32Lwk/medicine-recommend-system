@@ -2,8 +2,15 @@
 PostgreSQL接続管理とテーブル初期化
 """
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+except Exception as e:
+    # psycopg2が利用できない環境ではDB機能を無効化（アプリは継続動作）
+    psycopg2 = None
+    RealDictCursor = None
+    import logging as _logging
+    _logging.getLogger(__name__).warning(f"psycopg2 not available: {e}. Database features disabled.")
 import logging
 from datetime import datetime
 
@@ -17,6 +24,9 @@ class DatabaseManager:
     def connect(self):
         """データベースに接続"""
         try:
+            if psycopg2 is None:
+                logger.warning("psycopg2 not installed. Skipping database connection.")
+                return False
             if not self.database_url:
                 logger.warning("DATABASE_URL not found. Using fallback mode.")
                 return False
