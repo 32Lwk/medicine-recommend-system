@@ -482,22 +482,26 @@ def index():
                         'session_active': True
                     }
                 else:
-                    # 既存のALL_SESSIONSメッセージと重複チェック
-                    existing_messages = ALL_SESSIONS[sid].get('messages', [])
-                    new_user_messages = [msg for msg in session['messages'] if msg.get('type') == 'user']
-                    
-                    # 新しいユーザーメッセージのみを追加
-                    for new_msg in new_user_messages:
-                        if not any(
-                            existing_msg.get('type') == 'user' and 
-                            existing_msg.get('content') == new_msg.get('content') and
-                            existing_msg.get('uuid') == new_msg.get('uuid')
-                            for existing_msg in existing_messages
-                        ):
-                            existing_messages.append(new_msg)
-                    
-                    ALL_SESSIONS[sid]['messages'] = existing_messages
-                    ALL_SESSIONS[sid]['last_activity'] = time.time()
+                    # 医薬品相談回答処理中は即時反映を完全にスキップ（重複を根本的に防止）
+                    if not session.get('is_medicine_consultation', False):
+                        # 既存のALL_SESSIONSメッセージと重複チェック
+                        existing_messages = ALL_SESSIONS[sid].get('messages', [])
+                        new_user_messages = [msg for msg in session['messages'] if msg.get('type') == 'user']
+                        
+                        # 新しいユーザーメッセージのみを追加
+                        for new_msg in new_user_messages:
+                            if not any(
+                                existing_msg.get('type') == 'user' and 
+                                existing_msg.get('content') == new_msg.get('content') and
+                                existing_msg.get('uuid') == new_msg.get('uuid')
+                                for existing_msg in existing_messages
+                            ):
+                                existing_messages.append(new_msg)
+                        
+                        ALL_SESSIONS[sid]['messages'] = existing_messages
+                        ALL_SESSIONS[sid]['last_activity'] = time.time()
+                    else:
+                        logger.info(f"📝 医薬品相談回答処理中のため、ALL_SESSIONS即時反映を完全にスキップ")
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
             chat_ai_auto_reply = ALL_SESSIONS.get(sid, {}).get('ai_auto_reply', True)
@@ -589,7 +593,7 @@ def index():
             
             if is_question:
                 # システム紹介質問を検出
-                system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能']
+                system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能', '自己紹介']
                 is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
                 
                 # 医薬品名検索を検出
@@ -1235,8 +1239,10 @@ def index():
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
             if not is_question:
-                # 症状入力の場合：従来の医薬品推奨システムを使用
+                # 医薬品相談回答処理の開始時にフラグを設定
+                session['is_medicine_consultation'] = True
                 logger.info(f"🏥 SYMPTOM INPUT DETECTED: {user_message}")
+                logger.info(f"💊 医薬品相談回答処理開始 - フラグ設定完了")
                 last_diagnosis = None
                 
                 # ユーザー症状文をselect_symptoms_via_gptに渡してChatGPT返答をターミナルに表示
@@ -2034,6 +2040,11 @@ def index():
                     if sid and sid in ALL_SESSIONS and 'messages' in session:
                         del session['messages']
                         session.modified = True
+                        
+                        # 医薬品相談回答処理の終了時にフラグをクリア
+                        if session.get('is_medicine_consultation', False):
+                            session['is_medicine_consultation'] = False
+                            logger.info(f"💊 医薬品相談回答処理終了 - フラグクリア完了")
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
@@ -3528,4 +3539,4 @@ if __name__ == '__main__':
     debug_mode = os.getenv('FLASK_ENV') != 'production'
     
     logger.info(f"🌐 Starting Flask server on port {port} (debug={debug_mode})...")
-    app.run(debug=debug_mode, port=port, host='0.0.0.0') 
+    app.run(debug=debug_mode, port=port, host='0.0.0.0')
