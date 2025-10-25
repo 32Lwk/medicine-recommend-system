@@ -1960,13 +1960,13 @@ def index():
                     
                     sanitized = diagnosis_data.copy()
                     
-                    # 推奨医薬品から管理者専用情報を除去
+                    # 推奨医薬品から管理者専用情報を除去（管理画面ではスコア情報を保持）
                     if 'recommended_medicines' in sanitized:
                         for medicine in sanitized['recommended_medicines']:
-                            # スコア関連情報を除去
-                            medicine.pop('score', None)
-                            medicine.pop('scores', None)
-                            medicine.pop('score_breakdown', None)
+                            # 管理画面ではスコア情報を保持するため、削除しない
+                            # medicine.pop('score', None)
+                            # medicine.pop('scores', None)
+                            # medicine.pop('score_breakdown', None)
                             
                             # 推奨理由を簡潔化
                             if 'reason' in medicine:
