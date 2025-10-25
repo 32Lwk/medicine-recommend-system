@@ -421,6 +421,22 @@ def index():
                 'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
                 'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
             })
+            # 管理画面表示用にALL_SESSIONSへも即時反映（ユーザーメッセージが見えるように）
+            if sid:
+                if sid not in ALL_SESSIONS:
+                    ALL_SESSIONS[sid] = {
+                        'session_id': sid,
+                        'username': session.get('username', 'Unknown'),
+                        'messages': session['messages'].copy(),
+                        'last_activity': time.time(),
+                        'client_ip': request.remote_addr,
+                        'user_agent': request.headers.get('User-Agent', ''),
+                        'user_attributes': session.get('user_attributes', {}),
+                        'session_active': True
+                    }
+                else:
+                    ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                    ALL_SESSIONS[sid]['last_activity'] = time.time()
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
             chat_ai_auto_reply = ALL_SESSIONS.get(sid, {}).get('ai_auto_reply', True)
@@ -3381,6 +3397,26 @@ def resolve_feedback(feedback_id):
             
     except Exception as e:
         logger.error(f"❌ Resolve feedback error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/delete_feedback/<int:feedback_id>', methods=['POST'])
+def delete_feedback(feedback_id):
+    """フィードバックを削除"""
+    try:
+        db = get_database()
+        if not db.connection:
+            return jsonify({'error': 'Database not available'}), 500
+
+        success = db.delete_feedback(feedback_id)
+
+        if success:
+            logger.info(f"🗑️ Feedback {feedback_id} deleted")
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'error': 'Failed to delete feedback'}), 500
+
+    except Exception as e:
+        logger.error(f"❌ Delete feedback error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
