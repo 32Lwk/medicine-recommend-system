@@ -2082,11 +2082,11 @@ def index():
         # チャット履歴の永続化を強化
         if sid in ALL_SESSIONS:
             ALL_SESSIONS[sid]['last_activity'] = current_time
-            ALL_SESSIONS[sid]['messages'] = current_messages.copy()
+            # メッセージは既に他の箇所で適切に保存済み（重複を避けるため更新しない）
         
-        logger.info(f"📝 Session {sid} updated: {len(current_messages)} messages (ALL_SESSIONS保存完了)")
+        logger.info(f"📝 Session {sid} updated: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages (ALL_SESSIONS保存完了)")
         logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
-        logger.info(f"💾 チャット履歴永続化完了: {len(current_messages)} messages")
+        logger.info(f"💾 チャット履歴永続化完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
     
     # 手動返信メッセージがあるかチェック（安全な取得）
     manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
