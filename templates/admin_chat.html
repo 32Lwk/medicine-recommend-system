@@ -2642,6 +2642,8 @@
                     const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
                         ? currentDetailedDiagnosis
                         : (msg.diagnosis || {});
+                    // 管理者用に再描画できる推奨医薬品が存在するか
+                    const hasAdminDiagMeds = !!(adminDiag && Array.isArray(adminDiag.recommended_medicines) && adminDiag.recommended_medicines.length > 0);
 
                     messageContentHtml += `<div class="recommendation-result">`;
                     messageContentHtml += `<h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>`;
@@ -2746,7 +2748,8 @@
                     messageContentHtml += `</div>`;
 
                     // msg.contentにHTMLが含まれている場合は、ボタンを追加してから表示
-                    if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                    // ただし、管理者用の再描画（hasAdminDiagMeds）が可能な場合は上書きしない
+                    if (!hasAdminDiagMeds && msg.content && msg.content.includes('<div class="recommendation-result">')) {
                         let modifiedContent = msg.content;
                         
                         // 詳細診断（管理者向け）を優先
@@ -2773,9 +2776,12 @@
                             });
                         }
                         
-                        messageContentHtml = modifiedContent;
-                    } else {
-                        // msg.contentをそのまま使用
+                        // 挿入が成功した場合のみ置き換え（少なくとも1つのボタンが入っているか）
+                        if (modifiedContent.includes('score-detail-btn')) {
+                            messageContentHtml = modifiedContent;
+                        }
+                    } else if (!hasAdminDiagMeds) {
+                        // 管理者用の再描画ができない場合のみ、msg.contentをそのまま使用
                         messageContentHtml = msg.content || '';
                     }
 
