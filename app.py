@@ -1131,30 +1131,30 @@ def index():
                     # 属性が更新されていない場合は通常の質問応答
                     logger.info(f"❓ 通常の質問として処理します")
                     try:
-                        # 最新の推奨医薬品を取得
+                        # 最新の推奨医薬品を取得（ALL_SESSIONSを参照）
                         latest_recommended_medicines = []
-                        for msg in reversed(session.get('messages', [])):
+                        for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
                             if msg.get('type') == 'bot' and msg.get('diagnosis'):
                                 diagnosis = msg.get('diagnosis', {})
                                 if diagnosis.get('recommended_medicines'):
                                     latest_recommended_medicines = diagnosis.get('recommended_medicines', [])
                                     break
-                        
+
                         logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
-                        
-                        # 会話履歴を取得
-                        conversation_history = session.get('messages', [])[-10:]
-                        
+
+                        # 会話履歴を取得（ALL_SESSIONSから直近10件）
+                        conversation_history = ALL_SESSIONS.get(sid, {}).get('messages', [])[-10:]
+
                         # ChatGPTに質問を送信
                         chat_response = chat_with_medicine_context(
-                            user_message, 
-                            conversation_history, 
+                            user_message,
+                            conversation_history,
                             latest_recommended_medicines
                         )
-                        
+
                         # 医薬品相談回答の処理は既に上記で実装済み
                         # 重複コードを削除
-                        
+
                     except Exception as e:
                         logger.error(f"❌ 医薬品相談機能実行時エラー: {e}")
                         bot_response = {
@@ -1162,7 +1162,7 @@ def index():
                             'content': f"申し訳ございません。システムエラーが発生しました: {str(e)}",
                             'diagnosis': None
                         }
-                        
+
                         # エラー応答をセッションに追加
                         if sid in ALL_SESSIONS:
                             ALL_SESSIONS[sid]['messages'].append(bot_response)
