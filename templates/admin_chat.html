@@ -1056,45 +1056,6 @@
             color: #333;
         }
         
-        /* スコア内訳ツールチップスタイル */
-        .score-tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-        .score-tooltip .tooltip-content {
-            visibility: hidden;
-            background-color: #333;
-            color: white;
-            text-align: left;
-            border-radius: 6px;
-            padding: 12px;
-            position: absolute;
-            z-index: 1000;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -120px;
-            width: 240px;
-            font-size: 12px;
-            line-height: 1.4;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .score-tooltip:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }
-        .score-tooltip .tooltip-content::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
         
         .admin-modal input, .admin-modal textarea {
             width: 100%;
@@ -2696,15 +2657,7 @@
                                 const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
                                 const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
 
-                                let tooltipContent = '<strong>6要素スコアリング:</strong><br>' +
-                                    `症状適合度: ${pct(symptom)}%<br>` +
-                                    `効能特異性: ${pct(efficacy)}%<br>` +
-                                    `年齢適合性: ${pct(age)}%<br>` +
-                                    `用法簡便性: ${pct(usage)}%<br>` +
-                                    `副作用リスク: ${riskToPct(sideRisk)}%<br>` +
-                                    `相互作用リスク: ${riskToPct(interRisk)}%`;
-
-                                messageContentHtml += `<span class="admin-score-display score-tooltip ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(score * 100).toFixed(0)}% (${scoreText})<span class="tooltip-content">${tooltipContent}</span></span>`;
+                                messageContentHtml += `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(score * 100).toFixed(0)}% (${scoreText})</span>`;
                             }
 
                             messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
