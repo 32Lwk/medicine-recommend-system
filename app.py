@@ -157,6 +157,36 @@ def log_user_interaction(user_message, response_type, session_id, username):
     logger.info(f"   User Message: {user_message}")
     logger.info(f"   Response Type: {response_type}")
 
+def remove_duplicate_user_messages_after_ai_response(sid):
+    """AI応答後に重複するユーザーメッセージを削除"""
+    if sid and sid in ALL_SESSIONS:
+        messages = ALL_SESSIONS[sid].get('messages', [])
+        original_count = len(messages)
+        
+        # 重複するユーザーメッセージを特定
+        user_messages = [msg for msg in messages if msg.get('type') == 'user']
+        seen_contents = set()
+        unique_messages = []
+        
+        for msg in messages:
+            if msg.get('type') == 'user':
+                content = msg.get('content', '')
+                if content not in seen_contents:
+                    seen_contents.add(content)
+                    unique_messages.append(msg)
+                else:
+                    logger.info(f"⏭️ 重複ユーザーメッセージを削除: {content[:50]}...")
+            else:
+                unique_messages.append(msg)
+        
+        # 重複が削除された場合のみ更新
+        if len(unique_messages) < original_count:
+            ALL_SESSIONS[sid]['messages'] = unique_messages
+            logger.info(f"✅ 重複削除完了: {original_count} → {len(unique_messages)} messages")
+            return True
+    
+    return False
+
 def log_system_status():
     """システムステータスをログ出力"""
     logger.info(f"📊 SYSTEM STATUS:")
@@ -1981,6 +2011,10 @@ def index():
                             ALL_SESSIONS[sid]['messages'] = []
                         ALL_SESSIONS[sid]['messages'].append(bot_response)
                         logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
+                        
+                        # 医薬品相談回答処理後の重複削除を実行
+                        if remove_duplicate_user_messages_after_ai_response(sid):
+                            logger.info(f"✅ 重複削除完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
                     else:
                         logger.error(f"❌ ALL_SESSIONSにセッションID {sid} が存在しません")
                         # ALL_SESSIONSにセッションを作成
