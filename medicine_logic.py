@@ -912,6 +912,14 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
             if not result:
                 print("ChatGPTからの応答が空です。再試行します。")
                 continue
+            
+            # ChatGPTの応答から```json```マークダウンブロックを除去
+            if result.startswith('```json'):
+                result = result[7:]  # ```jsonを除去
+            if result.endswith('```'):
+                result = result[:-3]  # ```を除去
+            result = result.strip()
+            
             # 安全なJSON解析
             from json_validator import safe_json_parse
             try:
