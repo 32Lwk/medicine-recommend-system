@@ -1164,6 +1164,46 @@
                 padding: 8px;
             }
         }
+        
+        /* スピナーアニメーション */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 処理中メッセージのスタイル */
+        .processing-message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .processing-message .message-content {
+            border-left: 4px solid #1976d2;
+        }
+        
+        /* 無効化された送信ボタンのスタイル */
+        button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            background: #6c757d !important;
+        }
+        
+        /* 無効化された入力フィールドのスタイル */
+        #messageInput:disabled {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* スピナーのスタイル */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1976d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -1360,8 +1400,25 @@
                 return;
             }
             
-            // 送信中フラグを立てる
+            // 送信処理中の場合
+            if (isSubmitting) {
+                showProcessingMessage();
+                return;
+            }
+            
+            // 送信処理開始
             isSubmitting = true;
+            
+            // 送信ボタンを無効化
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ 処理中...';
+            submitBtn.style.background = '#6c757d';
+            submitBtn.style.cursor = 'not-allowed';
+            
+            // 入力フィールドを無効化
+            input.disabled = true;
+            input.placeholder = 'AI処理中です。しばらくお待ちください...';
 
             // 直近のユーザーメッセージを保存（重複防止の補助や評価用）
             try {
@@ -1390,6 +1447,7 @@
             }
             // 送信中フラグをリセット
             isSubmitting = false;
+            restoreSubmitButton();
         }
     });
 
@@ -1472,8 +1530,88 @@
             });
     }
 
+    // 送信ボタンを元の状態に復元
+    function restoreSubmitButton() {
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const input = document.getElementById('messageInput');
+        
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '送信';
+        submitBtn.style.background = '';
+        submitBtn.style.cursor = '';
+        
+        input.disabled = false;
+        input.placeholder = '症状を入力してください...';
+    }
+
+    // 処理中メッセージを表示する関数
+    function showProcessingMessage() {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存の処理中メッセージを削除
+        const existingMessage = document.getElementById('processingMessage');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // 新しい処理中メッセージを作成
+        const processingDiv = document.createElement('div');
+        processingDiv.id = 'processingMessage';
+        processingDiv.className = 'message bot processing-message';
+        processingDiv.innerHTML = `
+            <div class="message-content" style="background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; padding: 15px; border-radius: 8px; position: relative;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="spinner" style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div>
+                        <strong>⏳ AI処理中です</strong><br>
+                        <span style="font-size: 14px; color: #666;">少々お待ちください。処理が完了するまで新しいメッセージは送信できません。</span>
+                    </div>
+                </div>
+                <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">処理に時間がかかっている場合は報告してください</p>
+                    <button class="report-bug-btn" 
+                        onclick="reportProcessingIssue()" 
+                        style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                        🐛 不具合報告
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(processingDiv);
+        scrollToBottom();
+    }
+
+    // 処理中メッセージを削除
+    function removeProcessingMessage() {
+        const processingMessage = document.getElementById('processingMessage');
+        if (processingMessage) {
+            processingMessage.remove();
+        }
+    }
+
+    // 処理中の不具合報告機能
+    function reportProcessingIssue() {
+        const reportData = {
+            user_message: sessionStorage.getItem('lastUserMessage') || '',
+            ai_response: 'AI処理が長時間実行中',
+            report_type: 'processing_timeout',
+            feedback_text: 'AI処理に時間がかかりすぎています'
+        };
+        
+        currentFeedbackData = reportData;
+        document.getElementById('feedbackModal').style.display = 'block';
+        document.getElementById('feedbackText').focus();
+    }
+
     // タイピングインジケーターを追加
     function addTypingIndicator() {
+        // 処理中メッセージが既に表示されている場合は追加しない
+        if (document.getElementById('processingMessage')) {
+            return;
+        }
+        
         const chatMessages = document.getElementById('chatMessages');
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message bot';
@@ -1481,11 +1619,15 @@
         typingDiv.innerHTML = `
             <div class="message-content">
                 <div class="typing-indicator">
-                    AIが診断中...
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="spinner" style="width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <span>AIが診断中...</span>
+                    </div>
                 </div>
             </div>
         `;
         chatMessages.appendChild(typingDiv);
+        scrollToBottom();
     }
 
     // HTMLエスケープ関数
@@ -1616,16 +1758,18 @@
             if (data.error) {
                 console.error('Server error:', data.response);
                 removeTypingIndicator();
+                removeProcessingMessage();
                 showErrorMessage(data.response);
-                isSubmitting = false;
+                restoreSubmitButton();
                 return;
             }
             
             if (data.warning) {
                 console.warn('Server warning:', data.response);
                 removeTypingIndicator();
+                removeProcessingMessage();
                 showWarningMessage(data.response);
-                isSubmitting = false;
+                restoreSubmitButton();
                 return;
             }
             
@@ -1646,8 +1790,9 @@
                     } else {
                         console.error('Max retries reached after timeout');
                         removeTypingIndicator();
+                        removeProcessingMessage();
                         showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
-                        isSubmitting = false;
+                        restoreSubmitButton();
                     }
                 }, 2000); // 2秒でタイムアウト
                 
@@ -1691,12 +1836,14 @@
                         }
                         
                         renderChatMessages(sessionData.messages);
-                        isSubmitting = false;
+                        removeProcessingMessage();
+                        restoreSubmitButton();
                     } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
                         // 新規セッションまたは非アクティブセッションの場合、リトライ不要
                         console.log('✓ New session or inactive session, no retry needed');
                         removeTypingIndicator();
-                        isSubmitting = false;
+                        removeProcessingMessage();
+                        restoreSubmitButton();
                     } else if (retryCount < maxRetries) {
                         // リトライ
                         retryCount++;
@@ -1706,8 +1853,9 @@
                         // 最大リトライ回数に達した
                         console.error('Max retries reached, showing error');
                         removeTypingIndicator();
+                        removeProcessingMessage();
                         showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
-                        isSubmitting = false;
+                        restoreSubmitButton();
                     }
                 })
                 .catch(error => {
@@ -1719,8 +1867,9 @@
                         setTimeout(fetchMessages, retryInterval);
                     } else {
                         removeTypingIndicator();
+                        removeProcessingMessage();
                         showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
-                        isSubmitting = false;
+                        restoreSubmitButton();
                     }
                 });
             };
@@ -1736,8 +1885,9 @@
             
             // エラー時はタイピングインジケーターを削除
             removeTypingIndicator();
+            removeProcessingMessage();
             // 送信完了フラグを解除
-            isSubmitting = false;
+            restoreSubmitButton();
             
             // エラーメッセージを表示
             let errorMsg = '申し訳ございません。送信中にエラーが発生しました。';
