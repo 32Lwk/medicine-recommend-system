@@ -22,7 +22,7 @@ SCHEMAS = {
                 'maxItems': 3,
                 'items': {
                     'type': 'object',
-                    'required': ['product_name', 'manufacturer', 'reason'],
+                    'required': ['product_name', 'manufacturer', 'reason', 'usage_notes'],
                     'properties': {
                         'product_name': {'type': 'string', 'maxLength': 100},
                         'manufacturer': {'type': 'string', 'maxLength': 50},
