@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 SCHEMAS = {
     'medicine_recommendation': {
         'type': 'object',
-        'required': ['recommended_medicines', 'usage_notes', 'doctor_consultation'],
+        'required': ['recommended_medicines', 'doctor_consultation'],
         'properties': {
             'recommended_medicines': {
                 'type': 'array',
