@@ -3978,9 +3978,11 @@
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
-                        <td style="padding: 10px; border: 1px solid #dee2e6; display:flex; gap:8px; align-items:center; justify-content:center;">
-                            ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em;">解決済み</button>` : ''}
-                            <button onclick="deleteFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em; background:#dc3545; color:#fff;">削除</button>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">
+                            <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+                                ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em;">解決済み</button>` : ''}
+                                <button onclick="deleteFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em; background:#dc3545; color:#fff;">削除</button>
+                            </div>
                         </td>
                     </tr>
                 `;
