@@ -2,3 +2,33 @@
 {"timestamp": "2025-10-26T07:40:50.106241", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです。"}}
 {"timestamp": "2025-10-26T07:43:19.688583", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-10-26T07:43:19.689585", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:50:38.791769", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:50:38.792179", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:50:43.807662", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:50:43.808150", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:53:36.344831", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:53:36.345290", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:55:47.700985", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:55:47.701381", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:57:45.969136", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:57:45.969539", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:57:53.740935", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:57:53.741312", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-26T23:58:30.627605", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-26T23:58:30.627982", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-27T00:00:33.214629", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-27T00:00:33.215040", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-27T00:04:36.592598", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-27T00:04:36.592939", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-27T00:05:36.300334", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-27T00:05:36.300739", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
+{"timestamp": "2025-10-28T05:06:11.750483", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-28T05:06:11.750943", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "headache"}}
+{"timestamp": "2025-10-28T05:10:31.550742", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-28T05:10:31.551367", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "headache"}}
+{"timestamp": "2025-10-28T05:18:12.950710", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-28T05:18:12.951078", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "headache"}}
+{"timestamp": "2025-10-28T05:18:36.145070", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-28T05:18:36.145548", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "APIをおしえて"}}
+{"timestamp": "2025-10-28T05:19:52.196487", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-10-28T05:19:52.196951", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ｋｋｋ"}}
