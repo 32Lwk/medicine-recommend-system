@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>医薬品相談AI - チャット</title>
+    <title>チャット型医薬品相談ツール - チャット</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -46,7 +46,7 @@
         }
         .chat-header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 28px;
         }
         
         /* Language Selector Styles */
@@ -1282,6 +1282,356 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        
+        /* 情報ボタンスタイル */
+        .info-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .info-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .info-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: none;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .modal-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .modal-nav {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .nav-button.active {
+            background: #4CAF50;
+        }
+
+        .nav-button.back {
+            background: #17a2b8;
+        }
+
+        /* コンテンツスタイル */
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h4 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+        }
+
+        .contact-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .emergency-box {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        /* 一覧ページスタイル */
+        .list-page {
+            padding: 20px;
+        }
+        
+        .list-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .list-item:hover {
+            background: #e9ecef;
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .list-item-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .list-item-content {
+            flex: 1;
+        }
+        
+        .list-item-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        
+        .list-item-description {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+        
+        .list-item-arrow {
+            font-size: 18px;
+            color: #4CAF50;
+            transition: transform 0.3s ease;
+        }
+        
+        .list-item:hover .list-item-arrow {
+            transform: translateX(5px);
+        }
+        
+        /* 詳細ページスタイル */
+        .detail-page {
+            display: none;
+        }
+        
+        .detail-page.active {
+            display: block;
+        }
+        
+        /* 戻るボタン */
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                max-height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 15px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .list-page {
+                padding: 15px;
+            }
+            
+            .list-item {
+                padding: 12px 15px;
+                margin-bottom: 8px;
+            }
+            
+            .list-item-title {
+                font-size: 15px;
+            }
+            
+            .list-item-description {
+                font-size: 11px;
+            }
+            
+            .list-item-icon {
+                font-size: 20px;
+                margin-right: 12px;
+            }
+            
+            .back-button {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 98%;
+                margin: 2% auto;
+                max-height: 95vh;
+            }
+            
+            .list-item {
+                padding: 10px 12px;
+                margin-bottom: 6px;
+            }
+            
+            .list-item-title {
+                font-size: 14px;
+            }
+            
+            .list-item-description {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1301,8 +1651,15 @@
             </div>
         </div>
         
-        <h1 id="appTitle">💊 医薬品相談AI</h1>
-        <p id="appDescription">症状を教えてください。適切な市販薬と注意点をご案内します。</p>
+        <!-- 情報ボタン -->
+        <div class="info-selector">
+            <button class="info-toggle" id="infoBtn" onclick="openInfoModal()" title="">
+                ℹ️
+            </button>
+        </div>
+        
+        <h1 id="appTitle"></h1>
+        <p id="appDescription"></p>
         <div class="button-group" style="margin-top: 10px;">
             <button onclick="openUserInfoModal()" style="background: #2196F3; border: 1px solid #2196F3; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" id="userInfoBtn">👤 ユーザー情報登録</button>
             <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;" id="clearBtn">🗑️ 履歴クリア</button>
@@ -1467,6 +1824,76 @@
         
     </div>
     
+    <!-- モーダル -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">アプリ情報</h2>
+                <button class="modal-close" onclick="closeInfoModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- 一覧ページ -->
+                <div id="listPage" class="list-page">
+                    <div class="list-item" onclick="showDetailPage('app-overview')">
+                        <div class="list-item-icon">📱</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-app-overview-title">アプリ概要</div>
+                            <div class="list-item-description" id="list-app-overview-desc">アプリの機能と特徴について</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </div>
+                    
+                    <div class="list-item" onclick="showDetailPage('disclaimer')">
+                        <div class="list-item-icon">📋</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-disclaimer-title">免責事項・利用規約</div>
+                            <div class="list-item-description" id="list-disclaimer-desc">利用規約と免責事項について</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </div>
+                    
+                    <div class="list-item" onclick="showDetailPage('privacy')">
+                        <div class="list-item-icon">🔒</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-privacy-title">プライバシーポリシー</div>
+                            <div class="list-item-description" id="list-privacy-desc">個人情報の取り扱いについて</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </div>
+                    
+                    <div class="list-item" onclick="showDetailPage('consultation')">
+                        <div class="list-item-icon">🏥</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-consultation-title">医薬品相談先</div>
+                            <div class="list-item-description" id="list-consultation-desc">公的機関の相談窓口情報</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </div>
+                    
+                    <div class="list-item" onclick="showDetailPage('operator')">
+                        <div class="list-item-icon">👤</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-operator-title">運営者情報</div>
+                            <div class="list-item-description" id="list-operator-desc">開発者と連絡先について</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </div>
+                </div>
+                
+                <!-- 詳細ページ -->
+                <div id="detailPage" class="detail-page">
+                    <button class="back-button" onclick="showListPage()" id="back-button">
+                        ← 戻る
+                    </button>
+                    <div id="detailContent">
+                        <!-- 詳細コンテンツは動的に生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="chat-input">
         <form method="post" id="chatForm">
             <div class="input-group">
@@ -1482,7 +1909,7 @@
     // 多言語翻訳データ
     const translations = {
         ja: {
-            title: "💊 医薬品相談AI",
+            title: "💊 チャット型医薬品相談ツール",
             description: "症状を教えてください。適切な市販薬と注意点をご案内します。",
             userInfoBtn: "👤 ユーザー情報登録",
             clearBtn: "🗑️ 履歴クリア",
@@ -1537,10 +1964,25 @@
             // 不具合報告
             bugReportPrompt: "不具合の内容を詳しく説明してください",
             bugReportSubmitted: "不具合報告を送信しました",
-            bugReportFailed: "不具合報告の送信に失敗しました"
+            bugReportFailed: "不具合報告の送信に失敗しました",
+            
+            // モーダル関連
+            infoButton: "アプリ情報",
+            appInfo: "アプリ概要",
+            appInfoDesc: "アプリの機能と特徴について",
+            disclaimer: "免責事項・利用規約",
+            disclaimerDesc: "利用規約と免責事項について",
+            privacy: "プライバシーポリシー",
+            privacyDesc: "個人情報の取り扱いについて",
+            operator: "運営者情報",
+            operatorDesc: "開発者と連絡先について",
+            consultation: "医薬品相談先",
+            consultationDesc: "公的機関の相談窓口情報",
+            back: "← 戻る",
+            close: "×"
         },
         en: {
-            title: "💊 Medicine Consultation AI",
+            title: "💊 Chat Pharmaceutical Consultation Tool",
             description: "Please tell us your symptoms. We will recommend appropriate OTC medicines and precautions.",
             userInfoBtn: "👤 User Info",
             clearBtn: "🗑️ Clear History",
@@ -1595,10 +2037,25 @@
             // 不具合報告
             bugReportPrompt: "Please describe the issue in detail",
             bugReportSubmitted: "Bug report submitted",
-            bugReportFailed: "Failed to submit bug report"
+            bugReportFailed: "Failed to submit bug report",
+            
+            // モーダル関連
+            infoButton: "App Info",
+            appInfo: "App Overview",
+            appInfoDesc: "About app features and characteristics",
+            disclaimer: "Disclaimer & Terms",
+            disclaimerDesc: "About terms of use and disclaimers",
+            privacy: "Privacy Policy",
+            privacyDesc: "About personal information handling",
+            operator: "Operator Info",
+            operatorDesc: "About developer and contact information",
+            consultation: "Consultation Info",
+            consultationDesc: "Public institution consultation information",
+            back: "← Back",
+            close: "×"
         },
         ko: {
-            title: "💊 의약품 상담 AI",
+            title: "💊 채팅형 의약품 상담 도구",
             description: "증상을 알려주세요. 적절한 일반의약품과 주의사항을 안내해드립니다.",
             userInfoBtn: "👤 사용자 정보",
             clearBtn: "🗑️ 기록 삭제",
@@ -1653,10 +2110,25 @@
             // 不具合報告
             bugReportPrompt: "문제를 자세히 설명해주세요",
             bugReportSubmitted: "버그 신고가 제출되었습니다",
-            bugReportFailed: "버그 신고 제출에 실패했습니다"
+            bugReportFailed: "버그 신고 제출에 실패했습니다",
+            
+            // モーダル関連
+            infoButton: "앱 정보",
+            appInfo: "앱 개요",
+            appInfoDesc: "앱 기능 및 특징에 대해",
+            disclaimer: "약관 및 면책 조항",
+            disclaimerDesc: "이용약관 및 면책조항에 대해",
+            privacy: "개인정보 취급방침",
+            privacyDesc: "개인정보 처리에 대해",
+            operator: "운영자 정보",
+            operatorDesc: "개발자 및 연락처에 대해",
+            consultation: "의약품 상담 정보",
+            consultationDesc: "공공기관 상담창구 정보",
+            back: "← 뒤로",
+            close: "×"
         },
         zh: {
-            title: "💊 药品咨询AI",
+            title: "💊 聊天式药品咨询工具",
             description: "请告诉我们您的症状。我们将推荐合适的非处方药和注意事项。",
             userInfoBtn: "👤 用户信息",
             clearBtn: "🗑️ 清除历史",
@@ -1711,13 +2183,1180 @@
             // 不具合報告
             bugReportPrompt: "请详细说明问题",
             bugReportSubmitted: "错误报告已提交",
-            bugReportFailed: "错误报告提交失败"
+            bugReportFailed: "错误报告提交失败",
+            
+            // モーダル関連
+            infoButton: "应用信息",
+            appInfo: "应用概述",
+            appInfoDesc: "关于应用功能和特点",
+            disclaimer: "免责声明和使用条款",
+            disclaimerDesc: "关于使用条款和免责声明",
+            privacy: "隐私政策",
+            privacyDesc: "关于个人信息处理",
+            operator: "运营者信息",
+            operatorDesc: "关于开发者和联系方式",
+            consultation: "药品咨询信息",
+            consultationDesc: "公共机构咨询窗口信息",
+            back: "返回",
+            close: "×"
         }
     };
 
     // 現在の言語設定
     let currentLanguage = sessionStorage.getItem('language') || 'ja';
     
+    // モーダル管理
+    let currentModalPage = 'list';
+    const modalPages = {
+        'app-overview': {
+            title: 'アプリ概要',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>📱 アプリ概要</h3>
+                        <p>本アプリは、ユーザーの症状・体調・生活状況に基づいて、一般用医薬品（OTC薬）をチャット形式で提案するAI支援型医薬品相談ツールです。</p>
+                        <p>独自のアルゴリズムと大規模言語モデルを組み合わせることで、症状に適した市販薬を安全かつ柔軟に提案し、誰もが安心してセルフメディケーションを行える環境の実現を目指します。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 開発背景</h3>
+                        <p>少子高齢化や訪日外国人観光客の増加、ECサイトの普及により、セルフメディケーションの需要は年々高まっている。しかし、言語の壁や人材不足により、利用者が適切な医薬品を選べず、安全性が懸念されているのが現状である。私自身もドラッグストアで勤務しており、高齢者の聴力・理解力の差や外国人の言語障壁に直面している。これらの課題を解決するために、大規模言語モデルと薬学的知識を組み合わせた独自のチャット型相談ツールを開発した。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 利用目的</h3>
+                        <p>本アプリは、利用者が自身の症状を正しく理解し、適切な一般用医薬品を安全に選択できるよう支援することを目的としています。</p>
+                        <p>チャット形式による対話を通じて、症状に合った市販薬の候補や受診の目安を提示し、セルフメディケーションの推進を図ります。</p>
+                        <p>また、薬局来店前やオンライン購入前の参考情報として活用できるよう設計されており、医療機関への早期受診判断を助ける役割も担います。</p>
+                        <p>本アプリは医師・薬剤師の診断や指導を代替するものではなく、利用者が安全に判断できる環境を補助するツールとして位置づけられています。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 対象者</h3>
+                        <ul>
+                            <li>どの薬を選べばよいかわからない一般消費者</li>
+                            <li>忙しくて薬局に行けない人や過疎地域の住民</li>
+                            <li>言語の壁で相談が難しい訪日外国人</li>
+                            <li>高齢者や聴覚・理解力に個人差のある方</li>
+                            <li>ECサイトやオンライン薬局で購入を検討する利用者</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 主な特徴</h3>
+                        <ol>
+                            <li><strong>自然なチャット形式での相談</strong><br>専門知識がなくても、会話形式で症状を入力するだけで薬の候補を提示します。</li>
+                            <li><strong>AI × 薬学知識による安全性の担保</strong><br>医薬品データベース・薬学的知識・AIモデルを組み合わせ、誤情報を抑制した安全設計。</li>
+                            <li><strong>受診勧奨システムの導入</strong><br>危険な症状や重篤な疾患が疑われる場合には、AIが自動的に医療機関受診を推奨します。</li>
+                            <li><strong>多言語・多環境対応</strong><br>日本語・英語・中国語などの多言語対応を予定。<br>スマートフォン、タブレット、PCなど、あらゆる端末・環境（iOS / Android / Windows / macOS / Chrome / Safari など）から利用可能です。</li>
+                            <li><strong>データの安全管理</strong><br>入力情報は匿名化され、薬提案以外の目的では利用しません。<br>ユーザーのプライバシーを最優先に設計されています。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 アプリの強み・差別化ポイント</h3>
+                        <ul>
+                            <li>AIと独自アルゴリズムの併用による、安全性と柔軟性の両立</li>
+                            <li>薬学的根拠に基づく提案と、自然言語理解（LLM）の対話力の融合</li>
+                            <li>人手不足・言語の壁・情報格差など、現場で顕在化している課題を直接解決</li>
+                            <li>UI設計の簡潔さ・導入の容易さにより、誰でも迷わず利用できる操作性</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 独自のアルゴリズム</h3>
+                        <p>本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。</p>
+                        <p>これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。また、AIによる回答には常に「出典情報」や「注意喚起」を付与し、利用者が自ら判断できる設計としています。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 開発環境・使用ツール</h3>
+                        <ul>
+                            <li><strong>プログラミング言語・フレームワーク:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
+                            <li><strong>AI・自然言語処理:</strong> OpenAI GPT-4o-mini、ルールベースNLU（正規表現・症状辞書）、MeCab</li>
+                            <li><strong>データベース:</strong> PostgreSQL（フィードバック保存用）</li>
+                            <li><strong>フロントエンド:</strong> HTML/CSS、JavaScript、TailwindCSS（UI軽量化）、Chart.js（解析表示）</li>
+                            <li><strong>開発・デバッグツール:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
+                            <li><strong>監視・ログ管理:</strong> psutil、SocketIOログ配信、JSONL形式でアクセス・セキュリティ・性能記録</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 今後の展望</h3>
+                        <p>今後は薬局・医療機関・自治体などとの連携を強化し、地域医療のデジタル支援基盤としての活用を目指します。</p>
+                        <p>また、ECサイトとの統合や服薬指導支援機能など、利用者と販売者双方に価値を提供する拡張も予定しています。</p>
+                        <p>最終的には、「誰もがどこでも安心して薬を選べる社会」を実現することが本アプリの目標です。</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 重要な注意事項</strong><br>
+                        本アプリは情報提供のみを目的とし、医療アドバイスではありません。医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>📱 App Overview</h3>
+                        <p>This app is an AI-assisted pharmaceutical consultation tool that recommends over-the-counter (OTC) medicines in a chat format based on users' symptoms, physical condition, and lifestyle.</p>
+                        <p>By combining proprietary algorithms with large language models, we aim to safely and flexibly recommend appropriate over-the-counter medicines for symptoms, creating an environment where everyone can practice self-medication with confidence.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Development Background</h3>
+                        <p>With aging population, increasing foreign tourists, and the spread of e-commerce sites, the demand for self-medication is growing year by year. However, language barriers and staff shortages prevent users from selecting appropriate medicines, raising safety concerns. Having worked at a drugstore myself, I have faced challenges with elderly people's varying hearing and comprehension abilities and language barriers for foreigners. To solve these issues, I developed a unique chat-based consultation tool that combines large language models with pharmaceutical knowledge.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Purpose</h3>
+                        <p>This app aims to help users correctly understand their symptoms and safely select appropriate over-the-counter medicines.</p>
+                        <p>Through chat-based dialogue, we present over-the-counter medicine candidates and consultation guidelines for symptoms to promote self-medication.</p>
+                        <p>It is also designed to be used as reference information before visiting pharmacies or making online purchases, and plays a role in helping with early medical consultation decisions.</p>
+                        <p>This app does not replace diagnosis or guidance by doctors or pharmacists, but is positioned as a tool to assist users in making safe decisions.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 Target Users</h3>
+                        <ul>
+                            <li>General consumers who don't know which medicine to choose</li>
+                            <li>People who are too busy to visit pharmacies or residents of remote areas</li>
+                            <li>Foreign visitors who have difficulty consulting due to language barriers</li>
+                            <li>Elderly people and those with varying hearing and comprehension abilities</li>
+                            <li>Users considering purchases on e-commerce sites or online pharmacies</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Key Features</h3>
+                        <ol>
+                            <li><strong>Natural Chat-based Consultation</strong><br>Even without specialized knowledge, simply input symptoms in conversation format to get medicine recommendations.</li>
+                            <li><strong>Safety Assurance through AI × Pharmaceutical Knowledge</strong><br>Combines pharmaceutical databases, pharmaceutical knowledge, and AI models for safe design that suppresses misinformation.</li>
+                            <li><strong>Medical Consultation Recommendation System</strong><br>When dangerous symptoms or serious diseases are suspected, AI automatically recommends medical consultation.</li>
+                            <li><strong>Multi-language and Multi-environment Support</strong><br>Planned support for Japanese, English, Chinese, and other languages.<br>Available on smartphones, tablets, PCs, and all devices and environments (iOS/Android/Windows/macOS/Chrome/Safari, etc.).</li>
+                            <li><strong>Secure Data Management</strong><br>Input information is anonymized and not used for purposes other than medicine recommendations.<br>User privacy is the top priority in design.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 App Strengths & Differentiators</h3>
+                        <ul>
+                            <li>Balance of safety and flexibility through combined use of AI and proprietary algorithms</li>
+                            <li>Fusion of evidence-based recommendations and natural language understanding (LLM) dialogue capabilities</li>
+                            <li>Direct solution to on-site challenges such as staff shortages, language barriers, and information gaps</li>
+                            <li>Operability that anyone can use without confusion through simple UI design and easy introduction</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ Proprietary Algorithm</h3>
+                        <p>The "Medicine Selection Algorithm," which is the heart of this app, consists of a proprietary algorithm that flexibly understands language through large language models and comprehensively evaluates elements such as drug efficacy, contraindications, user attribute information, and symptoms.</p>
+                        <p>This enables evidence-based medicine selection rather than simple AI responses. AI responses always include "source information" and "warnings" to allow users to make their own judgments.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ Development Environment & Tools</h3>
+                        <ul>
+                            <li><strong>Programming Languages & Frameworks:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
+                            <li><strong>AI & Natural Language Processing:</strong> OpenAI GPT-4o-mini, Rule-based NLU (regex & symptom dictionary), MeCab</li>
+                            <li><strong>Database:</strong> PostgreSQL (for feedback storage)</li>
+                            <li><strong>Frontend:</strong> HTML/CSS, JavaScript, TailwindCSS (UI optimization), Chart.js (analytics display)</li>
+                            <li><strong>Development & Debug Tools:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
+                            <li><strong>Monitoring & Log Management:</strong> psutil, SocketIO log distribution, JSONL format for access, security, and performance records</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 Future Outlook</h3>
+                        <p>We aim to strengthen collaboration with pharmacies, medical institutions, and local governments to utilize this as a digital support platform for regional healthcare.</p>
+                        <p>We also plan expansions such as e-commerce site integration and medication guidance support functions to provide value to both users and sellers.</p>
+                        <p>Ultimately, the goal of this app is to realize a society where "everyone can safely choose medicines anywhere."</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ Important Notice</strong><br>
+                        This app is for informational purposes only and is not medical advice. Please consult with a pharmacist or doctor when using medicines.
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>📱 앱 개요</h3>
+                        <p>이 앱은 사용자의 증상, 체조건, 생활 상황을 바탕으로 일반의약품(OTC 약품)을 채팅 형태로 제안하는 AI 지원 의약품 상담 도구입니다.</p>
+                        <p>독자적인 알고리즘과 대규모 언어 모델을 결합하여 증상에 적합한 일반의약품을 안전하고 유연하게 제안하며, 누구나 안심하고 셀프메디케이션을 할 수 있는 환경 구현을 목표로 합니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 개발 배경</h3>
+                        <p>저출산 고령화와 방일 외국인 관광객 증가, EC 사이트 보급으로 셀프메디케이션 수요가 해마다 증가하고 있습니다. 하지만 언어의 벽과 인력 부족으로 이용자가 적절한 의약품을 선택하지 못하고 안전성에 대한 우려가 현재 상황입니다. 저도 드럭스토어에서 근무하며 고령자의 청력·이해력 차이와 외국인의 언어 장벽을 직면했습니다. 이러한 과제를 해결하기 위해 대규모 언어 모델과 약학 지식을 결합한 독자적인 채팅형 상담 도구를 개발했습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 이용 목적</h3>
+                        <p>이 앱은 이용자가 자신의 증상을 올바르게 이해하고 적절한 일반의약품을 안전하게 선택할 수 있도록 지원하는 것을 목적으로 합니다.</p>
+                        <p>채팅 형태의 대화를 통해 증상에 맞는 일반의약품 후보나 진료 기준을 제시하여 셀프메디케이션 촉진을 도모합니다.</p>
+                        <p>또한 약국 방문 전이나 온라인 구매 전 참고 정보로 활용할 수 있도록 설계되어 있으며, 의료기관 조기 진료 판단을 돕는 역할도 담당합니다.</p>
+                        <p>이 앱은 의사·약사진의 진단이나 지도를 대체하는 것이 아니라, 이용자가 안전하게 판단할 수 있는 환경을 보조하는 도구로 위치하고 있습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 대상자</h3>
+                        <ul>
+                            <li>어떤 약을 선택해야 할지 모르는 일반 소비자</li>
+                            <li>바빠서 약국에 갈 수 없는 사람이나 과소지역 주민</li>
+                            <li>언어의 벽으로 상담이 어려운 방일 외국인</li>
+                            <li>고령자나 청각·이해력에 개인차가 있는 분</li>
+                            <li>EC 사이트나 온라인 약국에서 구매를 검토하는 이용자</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 주요 특징</h3>
+                        <ol>
+                            <li><strong>자연스러운 채팅 형태의 상담</strong><br>전문 지식이 없어도 대화 형태로 증상을 입력하기만 하면 약 후보를 제시합니다.</li>
+                            <li><strong>AI × 약학 지식에 의한 안전성 보장</strong><br>의약품 데이터베이스·약학 지식·AI 모델을 결합하여 오정보를 억제한 안전 설계.</li>
+                            <li><strong>진료 권장 시스템 도입</strong><br>위험한 증상이나 중증 질환이 의심되는 경우 AI가 자동으로 의료기관 진료를 권장합니다.</li>
+                            <li><strong>다국어·다환경 대응</strong><br>일본어·영어·중국어 등의 다국어 대응을 예정.<br>스마트폰, 태블릿, PC 등 모든 단말·환경(iOS/Android/Windows/macOS/Chrome/Safari 등)에서 이용 가능합니다.</li>
+                            <li><strong>데이터의 안전 관리</strong><br>입력 정보는 익명화되어 약 제안 외의 목적으로는 이용하지 않습니다.<br>이용자의 프라이버시를 최우선으로 설계되어 있습니다.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 앱의 강점·차별화 포인트</h3>
+                        <ul>
+                            <li>AI와 독자 알고리즘의 병용에 의한 안전성과 유연성의 양립</li>
+                            <li>약학적 근거에 기반한 제안과 자연어 이해(LLM)의 대화력 융합</li>
+                            <li>인력 부족·언어의 벽·정보 격차 등 현장에서 현저화되는 과제를 직접 해결</li>
+                            <li>UI 설계의 간결함·도입의 용이함에 의해 누구나 혼란 없이 이용할 수 있는 조작성</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 독자적인 알고리즘</h3>
+                        <p>이 앱의 심장부가 되는 "의약품 선정 알고리즘"은 대규모 언어 모델에 의한 유연한 언어 이해와 약효·금기·이용자 속성 정보·증상 등의 요소를 통합적으로 평가하는 독자적인 알고리즘으로 구성되어 있습니다.</p>
+                        <p>이에 의해 단순한 AI 응답이 아닌 근거에 기반한 약 선택을 실현하고 있습니다. 또한 AI에 의한 답변에는 항상 "출전 정보"나 "주의 환기"를 부여하여 이용자가 스스로 판단할 수 있는 설계로 하고 있습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 개발 환경·사용 도구</h3>
+                        <ul>
+                            <li><strong>프로그래밍 언어·프레임워크:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
+                            <li><strong>AI·자연어 처리:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(정규표현·증상 사전), MeCab</li>
+                            <li><strong>데이터베이스:</strong> PostgreSQL(피드백 저장용)</li>
+                            <li><strong>프론트엔드:</strong> HTML/CSS, JavaScript, TailwindCSS(UI 경량화), Chart.js(분석 표시)</li>
+                            <li><strong>개발·디버그 도구:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
+                            <li><strong>모니터링·로그 관리:</strong> psutil, SocketIO 로그 배송, JSONL 형태로 액세스·보안·성능 기록</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 향후 전망</h3>
+                        <p>향후 약국·의료기관·자치단체 등과의 연계를 강화하여 지역 의료의 디지털 지원 기반으로서의 활용을 목표로 합니다.</p>
+                        <p>또한 EC 사이트와의 통합이나 복용 지도 지원 기능 등 이용자와 판매자 양쪽에 가치를 제공하는 확장도 예정하고 있습니다.</p>
+                        <p>궁극적으로는 "누구나 어디서나 안심하고 약을 선택할 수 있는 사회"를 실현하는 것이 이 앱의 목표입니다.</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 중요한 주의사항</strong><br>
+                        이 앱은 정보 제공만을 목적으로 하며 의료 조언이 아닙니다. 의약품 사용 시에는 반드시 약사 또는 의사에게 상담하세요.
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>📱 应用概述</h3>
+                        <p>本应用是基于用户症状、身体状况、生活情况，以聊天形式推荐非处方药（OTC药品）的AI辅助药品咨询工具。</p>
+                        <p>通过结合独创算法和大规模语言模型，安全灵活地推荐适合症状的非处方药，旨在实现任何人都能安心进行自我药疗的环境。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 开发背景</h3>
+                        <p>随着少子老龄化、访日外国游客增加、电商网站普及，自我药疗需求逐年增长。然而，语言障碍和人员不足导致用户无法选择适当的药品，安全性令人担忧。我本人也在药店工作，面临老年人听力理解力差异和外国人语言障碍。为了解决这些课题，开发了结合大规模语言模型和药学知识的独创聊天式咨询工具。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 使用目的</h3>
+                        <p>本应用旨在帮助用户正确理解自身症状，安全选择适当的非处方药。</p>
+                        <p>通过聊天形式对话，提供适合症状的非处方药候选和就诊标准，促进自我药疗。</p>
+                        <p>同时设计为可在药店访问前或在线购买前作为参考信息使用，也承担帮助医疗机构早期就诊判断的作用。</p>
+                        <p>本应用不替代医生·药师的诊断或指导，而是定位为辅助用户安全判断环境的工具。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 目标用户</h3>
+                        <ul>
+                            <li>不知道选择哪种药品的一般消费者</li>
+                            <li>忙碌无法去药店的人或偏远地区居民</li>
+                            <li>因语言障碍难以咨询的访日外国人</li>
+                            <li>老年人和听力理解力存在个人差异的人</li>
+                            <li>考虑在电商网站或在线药店购买的用户</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 主要特点</h3>
+                        <ol>
+                            <li><strong>自然聊天形式咨询</strong><br>即使没有专业知识，只需以对话形式输入症状即可提供药品候选。</li>
+                            <li><strong>AI × 药学知识保障安全性</strong><br>结合药品数据库·药学知识·AI模型，抑制错误信息的安全设计。</li>
+                            <li><strong>引入就诊推荐系统</strong><br>当怀疑危险症状或严重疾病时，AI自动推荐医疗机构就诊。</li>
+                            <li><strong>多语言·多环境对应</strong><br>计划支持日语·英语·中文等多语言。<br>可在智能手机、平板、PC等所有终端·环境（iOS/Android/Windows/macOS/Chrome/Safari等）使用。</li>
+                            <li><strong>数据安全管理</strong><br>输入信息匿名化，除药品推荐外不用于其他目的。<br>用户隐私优先设计。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 应用优势·差异化要点</h3>
+                        <ul>
+                            <li>通过AI和独创算法并用，实现安全性和灵活性的平衡</li>
+                            <li>基于药学依据的推荐与自然语言理解（LLM）对话能力融合</li>
+                            <li>直接解决现场显现的人员不足·语言障碍·信息差距等课题</li>
+                            <li>通过UI设计简洁·导入容易，实现任何人都能无困惑使用的操作性</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 独创算法</h3>
+                        <p>作为本应用核心的"药品选择算法"，由通过大规模语言模型灵活理解语言，综合评估药效·禁忌·用户属性信息·症状等要素的独创算法构成。</p>
+                        <p>由此实现基于依据的药品选择而非简单AI回答。同时AI回答始终附加"出处信息"和"注意提醒"，让用户能够自主判断。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 开发环境·使用工具</h3>
+                        <ul>
+                            <li><strong>编程语言·框架:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
+                            <li><strong>AI·自然语言处理:</strong> OpenAI GPT-4o-mini、规则基础NLU（正则表达式·症状词典）、MeCab</li>
+                            <li><strong>数据库:</strong> PostgreSQL（反馈保存用）</li>
+                            <li><strong>前端:</strong> HTML/CSS、JavaScript、TailwindCSS（UI轻量化）、Chart.js（分析显示）</li>
+                            <li><strong>开发·调试工具:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
+                            <li><strong>监控·日志管理:</strong> psutil、SocketIO日志分发、JSONL格式访问·安全·性能记录</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 未来展望</h3>
+                        <p>今后将加强与药店·医疗机构·自治体等的合作，作为地区医疗数字支持平台活用。</p>
+                        <p>同时计划电商网站整合、用药指导支持功能等为用户和销售者双方提供价值的扩展。</p>
+                        <p>最终目标是实现"任何人都能安心选择药品的社会"。</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 重要注意事项</strong><br>
+                        本应用仅用于信息提供，非医疗建议。使用药品时请务必咨询药师或医生。
+                    </div>
+                `
+            }
+        },
+        
+        disclaimer: {
+            title: '免責事項・利用規約',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>🧾 免責事項・利用規約（試験運用版）</h3>
+                        
+                        <h4>第1条（目的と適用範囲）</h4>
+                        <p>本アプリ「チャット型医薬品相談ツール」（以下、「本アプリ」といいます。）は、一般用医薬品を症状に基づいて参考提示するシステムです。現在はテスター限定の試験運用（β版）として公開されており、正式な医療サービスではありません。本アプリを利用することにより、利用者は本規約に同意したものとみなします。</p>
+                        
+                        <h4>第2条（試験運用について）</h4>
+                        <ol>
+                            <li>本アプリは、動作確認・機能検証・改善提案を目的として、一部のテスターに限定公開しています。</li>
+                            <li>本アプリは試験段階にあるため、表示内容の正確性・安全性・安定性について保証できません。</li>
+                            <li>テスト期間中に収集された利用データは、サービス改善のために匿名的かつ統計的に利用されます。</li>
+                        </ol>
+                        
+                        <h4>第3条（免責事項）</h4>
+                        <ol>
+                            <li>本アプリの情報は、あくまで一般的な参考情報であり、医師・薬剤師・登録販売者など専門家の判断を代替するものではありません。</li>
+                            <li>利用者が本アプリの情報に基づいて行った行動や判断により生じた損害について、運営者は一切の責任を負いません。</li>
+                            <li>本アプリの機能停止、障害、改変、削除等により利用者に不利益が生じても、運営者は責任を負いません。</li>
+                        </ol>
+                        
+                        <h4>第4条（禁止事項）</h4>
+                        <p>テスターは、次の行為を行ってはなりません。</p>
+                        <ol>
+                            <li>他者にURLを転送し、非許可の第三者に利用させる行為</li>
+                            <li>不正アクセスやリバースエンジニアリング行為</li>
+                            <li>本アプリの内容を外部に無断公開・転載する行為</li>
+                            <li>虚偽の情報を入力する行為</li>
+                            <li>本アプリを商業目的で不正利用する行為</li>
+                            <li>本アプリの運営を妨げる行為</li>
+                            <li>法令または公序良俗に反する行為</li>
+                        </ol>
+                        
+                        <h4>第5条（試験内容の変更・終了）</h4>
+                        <p>運営者は、事前通知なく本アプリの内容を変更・停止・終了することがあります。</p>
+                        
+                        <h4>第6条（知的財産権）</h4>
+                        <p>本アプリに関する著作権、プログラム、デザインなどの知的財産権は、運営者または正当な権利者に帰属します。</p>
+                        
+                        <h4>第7条（連絡先）</h4>
+                        <p>本アプリの不具合や問い合わせは、以下のフォームまたはメールにてご連絡ください。</p>
+                        <ul>
+                            <li>不具合報告フォーム：<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>連絡先メールアドレス：weary-scoots.7y@icloud.com</li>
+                            <li>運営者ホームページ：<a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>第8条（準拠法・管轄）</h4>
+                        <p>本規約の解釈および運営者とテスター間の紛争については、日本法を準拠法、同法に従って解釈されるものとします。本アプリに関して紛争が生じた場合には、運営者所在地を管轄する地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>🧾 Disclaimer & Terms of Use (Beta Version)</h3>
+                        
+                        <h4>Article 1 (Purpose and Scope of Application)</h4>
+                        <p>This app "Chat-based Medicine Consultation Tool" (hereinafter referred to as "this app") is a system that provides reference information for over-the-counter medicines based on symptoms. It is currently released as a limited beta test for testers only and is not an official medical service. By using this app, users are deemed to have agreed to these terms.</p>
+                        
+                        <h4>Article 2 (About Beta Testing)</h4>
+                        <ol>
+                            <li>This app is limited to a select group of testers for the purpose of operation verification, function testing, and improvement proposals.</li>
+                            <li>Since this app is in the testing phase, we cannot guarantee the accuracy, safety, or stability of the displayed content.</li>
+                            <li>Usage data collected during the testing period will be used anonymously and statistically for service improvement.</li>
+                        </ol>
+                        
+                        <h4>Article 3 (Disclaimer)</h4>
+                        <ol>
+                            <li>The information in this app is for general reference only and does not replace the judgment of medical professionals such as doctors, pharmacists, or registered sellers.</li>
+                            <li>The operator assumes no responsibility for any damages arising from actions or judgments made by users based on information from this app.</li>
+                            <li>The operator is not responsible for any disadvantages to users due to app suspension, malfunctions, modifications, or deletion.</li>
+                        </ol>
+                        
+                        <h4>Article 4 (Prohibited Activities)</h4>
+                        <p>Testers must not engage in the following activities:</p>
+                        <ol>
+                            <li>Forwarding URLs to others and allowing unauthorized third parties to use the app</li>
+                            <li>Unauthorized access or reverse engineering</li>
+                            <li>Unauthorized publication or reproduction of app content externally</li>
+                            <li>Inputting false information</li>
+                            <li>Misusing the app for commercial purposes</li>
+                            <li>Activities that interfere with app operation</li>
+                            <li>Activities that violate laws or public order and morals</li>
+                        </ol>
+                        
+                        <h4>Article 5 (Changes and Termination of Beta Content)</h4>
+                        <p>The operator may change, suspend, or terminate the app content without prior notice.</p>
+                        
+                        <h4>Article 6 (Intellectual Property Rights)</h4>
+                        <p>Intellectual property rights such as copyrights, programs, and designs related to this app belong to the operator or rightful owners.</p>
+                        
+                        <h4>Article 7 (Contact Information)</h4>
+                        <p>Please contact us through the following form or email for app issues or inquiries:</p>
+                        <ul>
+                            <li>Bug Report Form: <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>Contact Email: weary-scoots.7y@icloud.com</li>
+                            <li>Operator Homepage: <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>Article 8 (Governing Law and Jurisdiction)</h4>
+                        <p>These terms shall be interpreted in accordance with Japanese law. Any disputes arising from this app shall be subject to the exclusive jurisdiction of the district court with jurisdiction over the operator's location as the court of first instance.</p>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>🧾 면책조항·이용약관 (시험운용판)</h3>
+                        
+                        <h4>제1조 (목적 및 적용범위)</h4>
+                        <p>본 앱 "채팅형 의약품 상담 도구"(이하 "본 앱"이라 함)는 증상에 따라 일반의약품을 참고 제시하는 시스템입니다. 현재는 테스터 한정 시험운용(β판)으로 공개되어 있으며, 정식 의료 서비스가 아닙니다. 본 앱을 이용함으로써 이용자는 본 약관에 동의한 것으로 간주됩니다.</p>
+                        
+                        <h4>제2조 (시험운용에 대해)</h4>
+                        <ol>
+                            <li>본 앱은 동작 확인·기능 검증·개선 제안을 목적으로 일부 테스터에게 한정 공개하고 있습니다.</li>
+                            <li>본 앱은 시험 단계에 있으므로 표시 내용의 정확성·안전성·안정성에 대해 보장할 수 없습니다.</li>
+                            <li>테스트 기간 중 수집된 이용 데이터는 서비스 개선을 위해 익명적이고 통계적으로 이용됩니다.</li>
+                        </ol>
+                        
+                        <h4>제3조 (면책사항)</h4>
+                        <ol>
+                            <li>본 앱의 정보는 어디까지나 일반적인 참고 정보이며, 의사·약사·등록판매자 등 전문가의 판단을 대체하는 것이 아닙니다.</li>
+                            <li>이용자가 본 앱의 정보에 기반하여 행한 행동이나 판단으로 인해 발생한 손해에 대해 운영자는 일체의 책임을 지지 않습니다.</li>
+                            <li>본 앱의 기능 정지, 장애, 개변, 삭제 등으로 이용자에게 불이익이 발생해도 운영자는 책임을 지지 않습니다.</li>
+                        </ol>
+                        
+                        <h4>제4조 (금지사항)</h4>
+                        <p>테스터는 다음 행위를 해서는 안 됩니다.</p>
+                        <ol>
+                            <li>타인에게 URL을 전송하여 비허가 제3자에게 이용시키는 행위</li>
+                            <li>부정 접근이나 리버스 엔지니어링 행위</li>
+                            <li>본 앱의 내용을 외부에 무단 공개·전재하는 행위</li>
+                            <li>허위 정보를 입력하는 행위</li>
+                            <li>본 앱을 상업 목적으로 부정 이용하는 행위</li>
+                            <li>본 앱의 운영을 방해하는 행위</li>
+                            <li>법령 또는 공서양속에 반하는 행위</li>
+                        </ol>
+                        
+                        <h4>제5조 (시험 내용의 변경·종료)</h4>
+                        <p>운영자는 사전 통지 없이 본 앱의 내용을 변경·중지·종료할 수 있습니다.</p>
+                        
+                        <h4>제6조 (지적재산권)</h4>
+                        <p>본 앱에 관한 저작권, 프로그램, 디자인 등의 지적재산권은 운영자 또는 정당한 권리자에 귀속됩니다.</p>
+                        
+                        <h4>제7조 (연락처)</h4>
+                        <p>본 앱의 불구나 문의는 다음 폼 또는 메일로 연락해 주세요.</p>
+                        <ul>
+                            <li>불구 신고 폼: <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>연락처 메일 주소: weary-scoots.7y@icloud.com</li>
+                            <li>운영자 홈페이지: <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>제8조 (준거법·관할)</h4>
+                        <p>본 약관의 해석 및 운영자와 테스터 간의 분쟁에 대해서는 일본법을 준거법으로 하여 동법에 따라 해석되는 것으로 합니다. 본 앱에 관해 분쟁이 발생한 경우에는 운영자 소재지를 관할하는 지방법원을 제1심의 전속적 합의 관할 법원으로 합니다.</p>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>🧾 免责声明和使用条款（测试版）</h3>
+                        
+                        <h4>第1条（目的和适用范围）</h4>
+                        <p>本应用"聊天式药品咨询工具"（以下简称"本应用"）是基于症状提供非处方药参考信息的系统。目前作为测试者限定的测试运营（β版）公开，非正式医疗服务。使用本应用即视为用户同意本条款。</p>
+                        
+                        <h4>第2条（关于测试运营）</h4>
+                        <ol>
+                            <li>本应用为动作确认·功能验证·改进提案目的，限定向部分测试者公开。</li>
+                            <li>本应用处于测试阶段，无法保证显示内容的准确性·安全性·稳定性。</li>
+                            <li>测试期间收集的使用数据将匿名且统计性地用于服务改进。</li>
+                        </ol>
+                        
+                        <h4>第3条（免责事项）</h4>
+                        <ol>
+                            <li>本应用信息仅为一般参考信息，不替代医生·药师·注册销售者等专家的判断。</li>
+                            <li>用户基于本应用信息采取的行动或判断造成的损害，运营者不承担任何责任。</li>
+                            <li>因本应用功能停止、故障、修改、删除等对用户造成不利影响，运营者不承担责任。</li>
+                        </ol>
+                        
+                        <h4>第4条（禁止事项）</h4>
+                        <p>测试者不得进行以下行为：</p>
+                        <ol>
+                            <li>向他人转发URL，让未授权第三方使用</li>
+                            <li>非法访问或逆向工程行为</li>
+                            <li>未经授权对外公开·转载本应用内容</li>
+                            <li>输入虚假信息</li>
+                            <li>为商业目的非法使用本应用</li>
+                            <li>妨碍本应用运营的行为</li>
+                            <li>违反法令或公序良俗的行为</li>
+                        </ol>
+                        
+                        <h4>第5条（测试内容变更·终止）</h4>
+                        <p>运营者可无事先通知变更·停止·终止本应用内容。</p>
+                        
+                        <h4>第6条（知识产权）</h4>
+                        <p>本应用相关的著作权、程序、设计等知识产权归运营者或正当权利人所有。</p>
+                        
+                        <h4>第7条（联系方式）</h4>
+                        <p>本应用故障或咨询请通过以下表单或邮件联系：</p>
+                        <ul>
+                            <li>故障报告表单：<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>联系邮箱：weary-scoots.7y@icloud.com</li>
+                            <li>运营者主页：<a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>第8条（准据法·管辖）</h4>
+                        <p>本条款解释及运营者与测试者间争议以日本法为准据法，按该法解释。本应用相关争议发生时，以运营者所在地管辖地方法院为第一审专属合意管辖法院。</p>
+                    </div>
+                `
+            }
+        },
+        
+        privacy: {
+            title: 'プライバシーポリシー',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>🔒 プライバシーポリシー（試験運用版）</h3>
+                        
+                        <h4>第1条（基本方針）</h4>
+                        <p>本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、テスターから得られた情報を適切に取り扱い、個人情報保護法および関連法令を遵守します。テスターのプライバシーを尊重し、安全で信頼できる環境の提供に努めます。</p>
+                        
+                        <h4>第2条（取得する情報）</h4>
+                        <p>本アプリでは、試験運用の目的で以下の情報を収集する場合があります。</p>
+                        <ol>
+                            <li>ユーザー入力情報（症状、年齢層、性別など）</li>
+                            <li>利用履歴・アクセスログ・利用日時・エラー情報等</li>
+                            <li>アンケートやフィードバックフォームへの回答内容</li>
+                        </ol>
+                        <p><strong>※いずれの情報も、氏名や住所など「個人を直接特定できる情報」は収集しません。</strong></p>
+                        
+                        <h4>第3条（利用目的）</h4>
+                        <p>収集した情報は、次の目的に限り利用します。</p>
+                        <ul>
+                            <li>本アプリの精度向上・不具合修正・機能改善のため</li>
+                            <li>テスト結果の分析および開発報告資料の作成のため</li>
+                            <li>運営上必要な連絡（バグ報告、改善依頼など）のため</li>
+                        </ul>
+                        
+                        <h4>第4条（第三者提供）</h4>
+                        <p>運営者は、以下の場合を除き、取得情報を第三者に提供しません。</p>
+                        <ul>
+                            <li>法令に基づく場合</li>
+                            <li>本人の明確な同意がある場合</li>
+                        </ul>
+                        
+                        <h4>第5条（情報の管理と削除）</h4>
+                        <p>取得情報は安全な環境で管理し、第三者が不正にアクセスできないよう適切な措置を講じます。</p>
+                        <ol>
+                            <li>取得情報は安全な環境で管理し、不正アクセス・漏洩・改ざん等が起こらないよう適切な技術的・組織的措置を講じます。</li>
+                            <li>テスト期間終了後、個人を特定できる情報は速やかに削除または匿名化します。</li>
+                        </ol>
+                        
+                        <h4>第6条（匿名加工情報の取り扱い）</h4>
+                        <ol>
+                            <li>運営者は、利用者から取得した情報のうち、個人を特定できないように加工した「匿名加工情報」を作成する場合があります。</li>
+                            <li>匿名加工情報は、個人を特定できない形式で統計処理・サービス改善・学術的検討などの目的で利用することがあります。</li>
+                            <li>匿名加工情報を第三者に提供する場合は、再識別できない形式を維持し、適切な安全管理措置を講じます。</li>
+                            <li>匿名加工情報の作成および提供に関する方針が変更された場合には、本ポリシー内で速やかに公表します。</li>
+                        </ol>
+                        
+                        <h4>第7条（テスターの権利）</h4>
+                        <p>テスターは、自身に関する情報の開示・訂正・削除を運営者に請求できます。希望する場合は、以下の連絡先までお問い合わせください。</p>
+                        <ul>
+                            <li>運営者名：川嶋 宥翔（Kawashima Yuto）</li>
+                            <li>メールアドレス：weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>第8条（改定）</h4>
+                        <p>本ポリシーは、必要に応じて内容を変更する場合があります。改定後の内容は、本アプリ上に掲示された時点から効力を有します。</p>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>🔒 Privacy Policy (Beta Version)</h3>
+                        
+                        <h4>Article 1 (Basic Policy)</h4>
+                        <p>This app "Chat-based Medicine Consultation Tool" appropriately handles information obtained from testers during the beta testing phase, complying with the Personal Information Protection Act and related laws. We respect tester privacy and strive to provide a safe and trustworthy environment.</p>
+                        
+                        <h4>Article 2 (Information Collected)</h4>
+                        <p>This app may collect the following information for beta testing purposes:</p>
+                        <ol>
+                            <li>User input information (symptoms, age group, gender, etc.)</li>
+                            <li>Usage history, access logs, usage times, error information, etc.</li>
+                            <li>Survey and feedback form responses</li>
+                        </ol>
+                        <p><strong>※We do not collect "personally identifiable information" such as names or addresses.</strong></p>
+                        
+                        <h4>Article 3 (Purpose of Use)</h4>
+                        <p>Collected information is used only for the following purposes:</p>
+                        <ul>
+                            <li>To improve app accuracy, fix bugs, and enhance functionality</li>
+                            <li>To analyze test results and create development reports</li>
+                            <li>For necessary operational communications (bug reports, improvement requests, etc.)</li>
+                        </ul>
+                        
+                        <h4>Article 4 (Third-Party Disclosure)</h4>
+                        <p>The operator will not provide collected information to third parties except in the following cases:</p>
+                        <ul>
+                            <li>When required by law</li>
+                            <li>When there is clear consent from the individual</li>
+                        </ul>
+                        
+                        <h4>Article 5 (Information Management and Deletion)</h4>
+                        <p>Collected information is managed in a secure environment with appropriate measures to prevent unauthorized access by third parties.</p>
+                        <ol>
+                            <li>We implement appropriate technical and organizational measures to manage collected information securely and prevent unauthorized access, leakage, or tampering.</li>
+                            <li>After the testing period ends, personally identifiable information is promptly deleted or anonymized.</li>
+                        </ol>
+                        
+                        <h4>Article 6 (Handling of Anonymized Information)</h4>
+                        <ol>
+                            <li>The operator may create "anonymized information" by processing information obtained from users so that individuals cannot be identified.</li>
+                            <li>Anonymized information may be used for statistical processing, service improvement, academic research, and other purposes in a format that cannot identify individuals.</li>
+                            <li>When providing anonymized information to third parties, we maintain a format that cannot be re-identified and implement appropriate security management measures.</li>
+                            <li>When policies regarding the creation and provision of anonymized information change, we will promptly announce them within this policy.</li>
+                        </ol>
+                        
+                        <h4>Article 7 (Tester Rights)</h4>
+                        <p>Testers can request disclosure, correction, or deletion of their information from the operator. Please contact us at the following address if you wish to do so:</p>
+                        <ul>
+                            <li>Operator Name: Kawashima Yuto</li>
+                            <li>Email Address: weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>Article 8 (Revisions)</h4>
+                        <p>This policy may be revised as necessary. Revised content takes effect from the time it is posted on this app.</p>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>🔒 개인정보 취급방침 (시험운용판)</h3>
+                        
+                        <h4>제1조 (기본방침)</h4>
+                        <p>본 앱 "채팅형 의약품 상담 도구"는 시험운용(β테스트) 단계에서 테스터로부터 얻은 정보를 적절히 취급하며, 개인정보보호법 및 관련 법령을 준수합니다. 테스터의 프라이버시를 존중하고 안전하고 신뢰할 수 있는 환경 제공에 노력합니다.</p>
+                        
+                        <h4>제2조 (수집하는 정보)</h4>
+                        <p>본 앱에서는 시험운용 목적으로 다음 정보를 수집할 수 있습니다.</p>
+                        <ol>
+                            <li>사용자 입력 정보 (증상, 연령층, 성별 등)</li>
+                            <li>이용 이력·접근 로그·이용 일시·오류 정보 등</li>
+                            <li>설문이나 피드백 폼에 대한 답변 내용</li>
+                        </ol>
+                        <p><strong>※어떤 정보도 성명이나 주소 등 "개인을 직접 특정할 수 있는 정보"는 수집하지 않습니다.</strong></p>
+                        
+                        <h4>제3조 (이용 목적)</h4>
+                        <p>수집한 정보는 다음 목적으로만 이용합니다.</p>
+                        <ul>
+                            <li>본 앱의 정확도 향상·불구 수정·기능 개선을 위해</li>
+                            <li>테스트 결과 분석 및 개발 보고 자료 작성을 위해</li>
+                            <li>운영상 필요한 연락 (버그 신고, 개선 요청 등)을 위해</li>
+                        </ul>
+                        
+                        <h4>제4조 (제3자 제공)</h4>
+                        <p>운영자는 다음 경우를 제외하고 수집 정보를 제3자에게 제공하지 않습니다.</p>
+                        <ul>
+                            <li>법령에 근거한 경우</li>
+                            <li>본인의 명확한 동의가 있는 경우</li>
+                        </ul>
+                        
+                        <h4>제5조 (정보의 관리와 삭제)</h4>
+                        <p>수집 정보는 안전한 환경에서 관리하며, 제3자가 부정하게 접근할 수 없도록 적절한 조치를 취합니다.</p>
+                        <ol>
+                            <li>수집 정보는 안전한 환경에서 관리하며, 부정 접근·누설·변조 등이 일어나지 않도록 적절한 기술적·조직적 조치를 취합니다.</li>
+                            <li>테스트 기간 종료 후, 개인을 특정할 수 있는 정보는 신속히 삭제하거나 익명화합니다.</li>
+                        </ol>
+                        
+                        <h4>제6조 (익명가공정보의 취급)</h4>
+                        <ol>
+                            <li>운영자는 이용자로부터 얻은 정보 중 개인을 특정할 수 없도록 가공한 "익명가공정보"를 작성할 수 있습니다.</li>
+                            <li>익명가공정보는 개인을 특정할 수 없는 형태로 통계 처리·서비스 개선·학술적 검토 등의 목적으로 이용할 수 있습니다.</li>
+                            <li>익명가공정보를 제3자에게 제공하는 경우, 재식별할 수 없는 형태를 유지하고 적절한 안전 관리 조치를 취합니다.</li>
+                            <li>익명가공정보의 작성 및 제공에 관한 방침이 변경된 경우에는 본 정책 내에서 신속히 공표합니다.</li>
+                        </ol>
+                        
+                        <h4>제7조 (테스터의 권리)</h4>
+                        <p>테스터는 자신에 관한 정보의 공개·정정·삭제를 운영자에게 요청할 수 있습니다. 희망하는 경우 다음 연락처로 문의해 주세요.</p>
+                        <ul>
+                            <li>운영자명: 가와시마 유토 (Kawashima Yuto)</li>
+                            <li>메일 주소: weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>제8조 (개정)</h4>
+                        <p>본 정책은 필요에 따라 내용을 변경할 수 있습니다. 개정된 내용은 본 앱에 게시된 시점부터 효력을 가집니다.</p>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>🔒 隐私政策（测试版）</h3>
+                        
+                        <h4>第1条（基本方针）</h4>
+                        <p>本应用"聊天式药品咨询工具"在测试运营（β测试）阶段适当处理从测试者获得的信息，遵守个人信息保护法及相关法令。尊重测试者隐私，努力提供安全可信的环境。</p>
+                        
+                        <h4>第2条（收集信息）</h4>
+                        <p>本应用可能为测试运营目的收集以下信息：</p>
+                        <ol>
+                            <li>用户输入信息（症状、年龄层、性别等）</li>
+                            <li>使用历史·访问日志·使用时间·错误信息等</li>
+                            <li>问卷调查和反馈表单的回答内容</li>
+                        </ol>
+                        <p><strong>※任何信息都不收集姓名或地址等"可直接识别个人的信息"。</strong></p>
+                        
+                        <h4>第3条（使用目的）</h4>
+                        <p>收集的信息仅用于以下目的：</p>
+                        <ul>
+                            <li>提高应用准确性·修复故障·功能改进</li>
+                            <li>分析测试结果及制作开发报告资料</li>
+                            <li>运营必要联系（故障报告、改进请求等）</li>
+                        </ul>
+                        
+                        <h4>第4条（第三方提供）</h4>
+                        <p>运营者除以下情况外不向第三方提供收集信息：</p>
+                        <ul>
+                            <li>基于法令的情况</li>
+                            <li>本人明确同意的情况</li>
+                        </ul>
+                        
+                        <h4>第5条（信息管理与删除）</h4>
+                        <p>收集信息在安全环境中管理，采取适当措施防止第三方非法访问。</p>
+                        <ol>
+                            <li>在安全环境中管理收集信息，采取适当技术·组织措施防止非法访问·泄露·篡改等。</li>
+                            <li>测试期间结束后，可识别个人的信息将迅速删除或匿名化。</li>
+                        </ol>
+                        
+                        <h4>第6条（匿名加工信息处理）</h4>
+                        <ol>
+                            <li>运营者可能将用户获得的信息加工为无法识别个人的"匿名加工信息"。</li>
+                            <li>匿名加工信息可能以无法识别个人的形式用于统计处理·服务改进·学术研究等目的。</li>
+                            <li>向第三方提供匿名加工信息时，维持无法重新识别的形式，采取适当安全管理措施。</li>
+                            <li>匿名加工信息制作及提供相关方针变更时，将在本政策内迅速公布。</li>
+                        </ol>
+                        
+                        <h4>第7条（测试者权利）</h4>
+                        <p>测试者可向运营者请求自身相关信息的公开·订正·删除。希望时请通过以下联系方式咨询：</p>
+                        <ul>
+                            <li>运营者名：川嶋宥翔（Kawashima Yuto）</li>
+                            <li>邮箱地址：weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>第8条（修订）</h4>
+                        <p>本政策可能根据需要变更内容。修订后内容自在本应用上公布时起生效。</p>
+                    </div>
+                `
+            }
+        },
+        
+        operator: {
+            title: '運営者情報',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>👤 運営者情報</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本情報</h4>
+                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年</p>
+                            <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>連絡先</h4>
+                            <p><strong>連絡先メール：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技術情報</h4>
+                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公開目的</h4>
+                            <p>一般用医薬品の選定支援、安全でわかりやすい薬選びを促すこと</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>👤 Operator Information</h3>
+                        
+                        <div class="contact-info">
+                            <h4>Basic Information</h4>
+                            <p><strong>Operator Name:</strong> Kawashima Yuto</p>
+                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics, 2nd Year</p>
+                            <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Contact Information</h4>
+                            <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Technical Information</h4>
+                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Publication Purpose</h4>
+                            <p>To support over-the-counter medicine selection and promote safe and easy medicine selection</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>👤 운영자 정보</h3>
+                        
+                        <div class="contact-info">
+                            <h4>기본 정보</h4>
+                            <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
+                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과 2학년</p>
+                            <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>연락처</h4>
+                            <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>기술 정보</h4>
+                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>공개 목적</h4>
+                            <p>일반의약품 선정 지원, 안전하고 이해하기 쉬운 약 선택을 촉진</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>👤 运营者信息</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本信息</h4>
+                            <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年级</p>
+                            <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>联系方式</h4>
+                            <p><strong>联系邮箱：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>故障·咨询表单：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技术信息</h4>
+                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公开目的</h4>
+                            <p>支持非处方药选择，促进安全易懂的药品选择</p>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        
+        consultation: {
+            title: '医薬品相談先',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>💊 医薬品・健康相談窓口（公的情報）</h3>
+                        <p>以下の公的機関の情報も参考にしてください。</p>
+                        
+                        <div class="contact-info">
+                            <h4>独立行政法人 医薬品医療機器総合機構（PMDA）</h4>
+                            <ul>
+                                <li><strong>一般用医薬品の安全性や副作用情報</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>副作用情報</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>添付文書検索（OTC医薬品）</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>厚生労働省</h4>
+                            <ul>
+                                <li><strong>「要指導・一般用医薬品」情報</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>医薬品等安全性関連情報</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>救急安心センター（#7119）</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>医療機関・薬局検索（医療情報ネット）</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 緊急時</h4>
+                            <p><strong>救急車:</strong> 119番</p>
+                            <p><strong>救急安心センター:</strong> #7119</p>
+                            <p>症状が重篤な場合や緊急を要する場合は、速やかに医療機関を受診してください。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 重要な注意</h4>
+                            <p>本アプリは情報提供のみを目的としており、医療アドバイスではありません。医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>💊 Medicine & Health Consultation Services (Public Information)</h3>
+                        <p>Please also refer to the following public institution information.</p>
+                        
+                        <div class="contact-info">
+                            <h4>Pharmaceuticals and Medical Devices Agency (PMDA)</h4>
+                            <ul>
+                                <li><strong>Over-the-counter Medicine Safety and Side Effect Information</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>Side Effect Information</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>Package Insert Search (OTC Medicines)</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Ministry of Health, Labour and Welfare</h4>
+                            <ul>
+                                <li><strong>"Guidance-Required and Over-the-Counter Medicines" Information</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>Medicine Safety-Related Information</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>Emergency Consultation Center (#7119)</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>Medical Institution & Pharmacy Search (Medical Information Network)</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 Emergency</h4>
+                            <p><strong>Ambulance:</strong> 119</p>
+                            <p><strong>Emergency Consultation Center:</strong> #7119</p>
+                            <p>If symptoms are severe or require emergency care, please seek medical attention immediately.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ Important Notice</h4>
+                            <p>This app is for informational purposes only and is not medical advice. Please consult with a pharmacist or doctor when using medicines.</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>💊 의약품·건강 상담 창구 (공공 정보)</h3>
+                        <p>다음 공공기관 정보도 참고해 주세요.</p>
+                        
+                        <div class="contact-info">
+                            <h4>독립행정법인 의약품의료기기총합기구 (PMDA)</h4>
+                            <ul>
+                                <li><strong>일반의약품의 안전성 및 부작용 정보</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>부작용 정보</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>첨부문서 검색 (OTC 의약품)</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>후생노동성</h4>
+                            <ul>
+                                <li><strong>"요지도·일반의약품" 정보</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>의약품 등 안전성 관련 정보</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>응급안심센터 (#7119)</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>의료기관·약국 검색 (의료정보넷)</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 응급시</h4>
+                            <p><strong>구급차:</strong> 119번</p>
+                            <p><strong>응급안심센터:</strong> #7119</p>
+                            <p>증상이 중증이거나 응급을 요하는 경우 신속히 의료기관을 방문하세요.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 중요한 주의사항</h4>
+                            <p>본 앱은 정보 제공만을 목적으로 하며 의료 조언이 아닙니다. 의약품 사용 시에는 반드시 약사 또는 의사에게 상담하세요.</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>💊 药品·健康咨询窗口（公共信息）</h3>
+                        <p>请参考以下公共机构信息。</p>
+                        
+                        <div class="contact-info">
+                            <h4>独立行政法人 药品医疗器械综合机构（PMDA）</h4>
+                            <ul>
+                                <li><strong>非处方药安全性和副作用信息</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>副作用信息</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>说明书检索（OTC药品）</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>厚生劳动省</h4>
+                            <ul>
+                                <li><strong>"需指导·非处方药"信息</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>药品等安全性相关信息</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>急救安心中心（#7119）</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>医疗机构·药店检索（医疗信息网）</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 紧急时</h4>
+                            <p><strong>救护车：</strong> 119号</p>
+                            <p><strong>急救安心中心：</strong> #7119</p>
+                            <p>症状严重或需要紧急处理时，请迅速前往医疗机构就诊。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 重要注意事项</h4>
+                            <p>本应用仅用于信息提供，非医疗建议。使用药品时请务必咨询药师或医生。</p>
+                        </div>
+                    </div>
+                `
+            }
+        }
+    };
+    
+    // モーダルを開く
+    function openInfoModal() {
+        document.getElementById('infoModal').style.display = 'block';
+        showListPage();
+    }
+
+    // モーダルを閉じる
+    function closeInfoModal() {
+        document.getElementById('infoModal').style.display = 'none';
+        currentModalPage = 'list';
+    }
+
+    // 一覧ページを表示
+    function showListPage() {
+        currentModalPage = 'list';
+        const t = translations[currentLanguage];
+        document.getElementById('modalTitle').textContent = t.appInfo;
+        document.getElementById('listPage').style.display = 'block';
+        document.getElementById('detailPage').style.display = 'none';
+    }
+
+    // 詳細ページを表示
+    function showDetailPage(pageId) {
+        currentModalPage = pageId;
+        const page = modalPages[pageId];
+        
+        if (!page) return;
+        
+        // タイトル更新（翻訳対応）
+        const t = translations[currentLanguage];
+        let translatedTitle = page.title;
+        if (pageId === 'app-overview') translatedTitle = t.appInfo;
+        else if (pageId === 'disclaimer') translatedTitle = t.disclaimer;
+        else if (pageId === 'privacy') translatedTitle = t.privacy;
+        else if (pageId === 'consultation') translatedTitle = t.consultation;
+        else if (pageId === 'operator') translatedTitle = t.operator;
+        
+        document.getElementById('modalTitle').textContent = translatedTitle;
+        
+        // 一覧ページを非表示、詳細ページを表示
+        document.getElementById('listPage').style.display = 'none';
+        document.getElementById('detailPage').style.display = 'block';
+        
+        // 詳細コンテンツ更新（言語対応）
+        let content = page.content;
+        if (typeof content === 'object' && content[currentLanguage]) {
+            content = content[currentLanguage];
+        }
+        document.getElementById('detailContent').innerHTML = content;
+    }
+
+    // モーダル外クリックで閉じる
+    window.onclick = function(event) {
+        const modal = document.getElementById('infoModal');
+        if (event.target === modal) {
+            closeInfoModal();
+        }
+    }
+
+    // ESCキーでモーダルを閉じる
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeInfoModal();
+        }
+    });
+
     // 言語切り替え機能
     function toggleLanguageMenu() {
         const dropdown = document.getElementById('langDropdown');
@@ -1806,12 +3445,46 @@
         document.getElementById('new-session-btn').textContent = t.newSessionBtn;
         document.getElementById('admin-request-btn').textContent = t.adminRequestBtn;
         
+        // 情報ボタンのタイトル更新
+        document.getElementById('infoBtn').title = t.infoButton;
+        
+        // モーダル内の一覧項目の翻訳更新
+        updateModalListItems();
+        
+        // 戻るボタンの翻訳更新
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.textContent = t.back;
+        }
+        
         // 入力フィールドの更新
         document.getElementById('messageInput').placeholder = t.placeholder;
         document.querySelector('button[type="submit"]').textContent = t.send;
         
         // 初期メッセージの更新（新規追加）
         updateInitialMessage();
+    }
+    
+    // モーダル内の一覧項目を翻訳
+    function updateModalListItems() {
+        const t = translations[currentLanguage];
+        
+        // 各項目のタイトルと説明を更新
+        const items = [
+            { id: 'app-overview', title: t.appInfo, desc: t.appInfoDesc },
+            { id: 'disclaimer', title: t.disclaimer, desc: t.disclaimerDesc },
+            { id: 'privacy', title: t.privacy, desc: t.privacyDesc },
+            { id: 'consultation', title: t.consultation, desc: t.consultationDesc },
+            { id: 'operator', title: t.operator, desc: t.operatorDesc }
+        ];
+        
+        items.forEach(item => {
+            const titleElement = document.getElementById(`list-${item.id}-title`);
+            const descElement = document.getElementById(`list-${item.id}-desc`);
+            
+            if (titleElement) titleElement.textContent = item.title;
+            if (descElement) descElement.textContent = item.desc;
+        });
     }
     
     // ページ読み込み時に言語設定を適用
