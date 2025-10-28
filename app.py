@@ -3,6 +3,7 @@ from flask_cors import CORS
 from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
 from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
+from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
 from debug_logger import performance_stats, network_logs, add_network_log
 from analytics import log_access_analytics, get_access_statistics
 from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
@@ -334,6 +335,9 @@ def index():
         # randomモジュールは15行目でグローバルにインポート済み
         sid = str(int(time.time() * 1000000)) + str(random.randint(100000, 999999))
         session['_id'] = sid
+        # 言語設定を初期化
+        session['ui_language'] = 'ja'  # UI言語（デフォルトは日本語）
+        session['detected_language'] = 'ja'  # 検出された言語
         logger.info(f"🆕 新しいセッションIDを作成: {sid}")
     
     # セッションIDの整合性を確認
@@ -809,7 +813,7 @@ def index():
                         logger.info(f"🔄 初回症状入力のため属性抽出をスキップして症状分析に進みます")
                         is_question = False  # 症状分析を強制実行
                     else:
-                        # ステップ1: ユーザー属性を抽出・更新
+                        # ステップ1: 多言語対応ユーザー属性を抽出・更新
                         user_attributes = session.get('user_attributes', {
                             'age': None,
                             'gender': None,
@@ -822,93 +826,36 @@ def index():
                             'other_info': None
                         })
                         
-                        # ChatGPTを使用して属性情報を抽出
-                        import re
-                        import json
-                        from openai import OpenAI
+                        # 言語を検出
+                        detected_language = detect_language(user_message)
+                        session['detected_language'] = detected_language
+                        logger.info(f"🌍 検出された言語: {detected_language}")
                         
-                        updated = False
-                    
-                    # OpenAI clientを初期化
-                    api_key = os.getenv('OPENAI_API_KEY')
-                    if not api_key:
-                        return jsonify({
-                            'error': True,
-                            'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
-                        })
-                    client = OpenAI(api_key=api_key)
-                    
-                    # ChatGPTによる属性抽出
-                    try:
-                        prompt = f"""
-ユーザーのメッセージから以下の属性情報を抽出してください：
-
-【ユーザーメッセージ】
-{user_message}
-
-【抽出すべき情報】
-1. 年齢（数値のみ）
-2. 性別（男性/女性）
-3. 妊娠状態（true/false/null）
-4. 授乳状態（true/false/null）
-5. アレルギー（配列形式、なしの場合は["なし"]）
-6. 現在服用中の薬（配列形式、なしの場合は[]）
-7. 既往症（配列形式、なしの場合は[]）
-8. 症状の持続期間（日数、不明の場合はnull）
-9. その他伝えたいこと（文字列、なしの場合はnull）
-
-【回答形式】
-以下のJSON形式で回答してください：
-{{
-    "age": 数値またはnull,
-    "gender": "男性"または"女性"またはnull,
-    "pregnant": true/false/null,
-    "breastfeeding": true/false/null,
-    "allergies": ["アレルギー1", "アレルギー2"]または["なし"]または[],
-    "current_medications": ["薬1", "薬2"]または[],
-    "medical_history": ["既往症1", "既往症2"]または[],
-    "symptom_duration_days": 数値またはnull,
-    "other_info": "文字列"またはnull
-}}
-
-注意：
-- 情報が明示されていない場合はnullを使用
-- アレルギーがない場合は["なし"]
-- 薬や既往症がない場合は空配列[]
-- 症状期間は日数で回答（例：3日前から → 3）
-"""
-
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=[
-                                {"role": "system", "content": "あなたは医療情報抽出システムです。ユーザーのメッセージから正確に属性情報を抽出してください。"},
-                                {"role": "user", "content": prompt}
-                            ],
-                            temperature=0.1,
-                            max_tokens=500
-                        )
-                        
-                        result = response.choices[0].message.content
-                        
-                        # JSON解析
-                        json_start = result.find('{')
-                        json_end = result.rfind('}') + 1
-                        
-                        if json_start != -1 and json_end != -1:
-                            json_str = result[json_start:json_end]
-                            extracted_attrs = json.loads(json_str)
+                        # 多言語対応の属性抽出を実行
+                        try:
+                            extracted_attrs = extract_user_attributes_multilingual(
+                                user_message, 
+                                client, 
+                                user_attributes
+                            )
                             
-                            logger.info(f"🤖 ChatGPT抽出結果: {extracted_attrs}")
+                            logger.info(f"🤖 多言語属性抽出結果: {extracted_attrs}")
                             
                             # 抽出された情報をセッションに保存
                             for key, value in extracted_attrs.items():
-                                if value is not None and value != [] and value != "":
+                                if value is not None and value != [] and value != "" and key != 'detected_language':
                                     if key == 'age' and isinstance(value, (int, float)):
                                         user_attributes['age'] = int(value)
                                         logger.info(f"📝 年齢を更新: {user_attributes['age']}")
                                         updated = True
-                                    elif key == 'gender' and value in ['男性', '女性']:
-                                        user_attributes['gender'] = value
+                                    elif key == 'gender' and value in ['男性', '女性', 'Male', 'Female', '남성', '여성', '男性', '女性']:
+                                        # 多言語の性別を日本語に統一
+                                        if value in ['Male', '남성', '男性']:
+                                            user_attributes['gender'] = '男性'
+                                        elif value in ['Female', '여성', '女性']:
+                                            user_attributes['gender'] = '女性'
+                                        else:
+                                            user_attributes['gender'] = value
                                         logger.info(f"📝 性別を更新: {user_attributes['gender']}")
                                         updated = True
                                     elif key == 'pregnant' and isinstance(value, bool):
@@ -940,58 +887,61 @@ def index():
                                         logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
                                         updated = True
                         
-                    except Exception as e:
-                        logger.error(f"ChatGPT属性抽出エラー: {e}")
-                        logger.info("フォールバック: 正規表現による抽出に切り替えます")
-                        
-                        # フォールバック: 正規表現による抽出
-                        # 年齢（日本語と英語）
-                        age_match = re.search(r'(\d+)歳', user_message)
-                        if age_match:
-                            user_attributes['age'] = int(age_match.group(1))
-                            logger.info(f"📝 年齢を更新: {user_attributes['age']}")
-                            updated = True
-                        else:
-                            # 英語の年齢パターン
-                            age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
-                            if age_match_en:
-                                user_attributes['age'] = int(age_match_en.group(1))
+                        except Exception as e:
+                            logger.error(f"多言語属性抽出エラー: {e}")
+                            logger.info("フォールバック: 正規表現による抽出に切り替えます")
+                            
+                            # フォールバック: 正規表現による抽出
+                            import re
+                            
+                            # 年齢（日本語と英語）
+                            age_match = re.search(r'(\d+)歳', user_message)
+                            if age_match:
+                                user_attributes['age'] = int(age_match.group(1))
                                 logger.info(f"📝 年齢を更新: {user_attributes['age']}")
                                 updated = True
-                        
-                        # 性別（日本語と英語）
-                        if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
-                            user_attributes['gender'] = '男性'
-                            logger.info(f"📝 性別を更新: 男性")
-                            updated = True
-                        elif '女性' in user_message or '女' in user_message or 'female' in user_message.lower():
-                            user_attributes['gender'] = '女性'
-                            logger.info(f"📝 性別を更新: 女性")
-                            updated = True
-                        
-                        # 妊娠・授乳（フォールバック処理）
-                        if '妊娠' in user_message:
-                            if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
-                                user_attributes['pregnant'] = False
-                                logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
-                            elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
-                                user_attributes['pregnant'] = True
-                                logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
-                            updated = True
-                        
-                        if '授乳' in user_message:
-                            if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
-                                user_attributes['breastfeeding'] = False
-                                logger.info(f"📝 授乳状態を更新: False（授乳していない）")
-                            elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
-                                user_attributes['breastfeeding'] = True
-                                logger.info(f"📝 授乳状態を更新: True（授乳中）")
-                            updated = True
-                        # アレルギー（日本語と英語）
-                        if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
-                            if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
-                                'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
-                                user_attributes['allergies'] = ['なし']
+                            else:
+                                # 英語の年齢パターン
+                                age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
+                                if age_match_en:
+                                    user_attributes['age'] = int(age_match_en.group(1))
+                                    logger.info(f"📝 年齢を更新: {user_attributes['age']}")
+                                    updated = True
+                            
+                            # 性別（日本語と英語）
+                            if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
+                                user_attributes['gender'] = '男性'
+                                logger.info(f"📝 性別を更新: 男性")
+                                updated = True
+                            elif '女性' in user_message or '女' in user_message or 'female' in user_message.lower():
+                                user_attributes['gender'] = '女性'
+                                logger.info(f"📝 性別を更新: 女性")
+                                updated = True
+                            
+                            # 妊娠・授乳（フォールバック処理）
+                            if '妊娠' in user_message:
+                                if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
+                                    user_attributes['pregnant'] = False
+                                    logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
+                                elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
+                                    user_attributes['pregnant'] = True
+                                    logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
+                                updated = True
+                            
+                            if '授乳' in user_message:
+                                if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
+                                    user_attributes['breastfeeding'] = False
+                                    logger.info(f"📝 授乳状態を更新: False（授乳していない）")
+                                elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message:
+                                    user_attributes['breastfeeding'] = True
+                                    logger.info(f"📝 授乳状態を更新: True（授乳中）")
+                                updated = True
+                            
+                            # アレルギー（日本語と英語）
+                            if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
+                                if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
+                                    'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
+                                    user_attributes['allergies'] = ['なし']
                             else:
                                 # 日本語のアレルギー抽出
                                 allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
@@ -1940,6 +1890,21 @@ def index():
 </div>"""
                     
                         bot_diag = recommendation_result
+                        
+                        # 多言語対応: UI言語に応じて翻訳
+                        ui_language = session.get('ui_language', 'ja')
+                        if ui_language != 'ja' and bot_content:
+                            try:
+                                logger.info(f"🌍 翻訳開始: {ui_language}")
+                                translated_content = translate_medicine_recommendation(bot_content, ui_language, client)
+                                if translated_content and translated_content != bot_content:
+                                    bot_content = translated_content
+                                    logger.info(f"✅ 翻訳完了: {ui_language}")
+                                else:
+                                    logger.info(f"⚠️ 翻訳スキップ: 翻訳結果が空または同じ")
+                            except Exception as e:
+                                logger.error(f"❌ 翻訳エラー: {e}")
+                                # 翻訳に失敗した場合は元のコンテンツを使用
                     
                 except Exception as e:
                     logger.error(f"❌ 包括的医薬品推奨システム実行時エラー: {e}")
@@ -3561,6 +3526,75 @@ def delete_feedback(feedback_id):
     except Exception as e:
         logger.error(f"❌ Delete feedback error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/translate', methods=['POST'])
+def translate_text():
+    """テキスト翻訳API"""
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        target_language = data.get('target_language', 'ja')
+        
+        if not text:
+            return jsonify({'error': 'No text provided'}), 400
+        
+        # ChatGPTを使用して翻訳
+        translation_prompt = f"""
+以下の医薬品関連情報を{target_language}に翻訳してください。医療専門用語は正確に翻訳し、医薬品名は適切に翻訳してください。
+
+翻訳対象テキスト:
+{text}
+
+翻訳:
+"""
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
+                {"role": "user", "content": translation_prompt}
+            ],
+            temperature=0.1,
+            max_tokens=2000
+        )
+        
+        translated_text = response.choices[0].message.content.strip()
+        
+        return jsonify({
+            'translated_text': translated_text,
+            'original_text': text,
+            'target_language': target_language
+        })
+        
+    except Exception as e:
+        logger.error(f"翻訳エラー: {e}")
+        return jsonify({'error': 'Translation failed'}), 500
+
+@app.route('/api/set_language', methods=['POST'])
+def set_language():
+    """UI言語を設定"""
+    try:
+        data = request.get_json()
+        language = data.get('language', 'ja')
+        
+        if language not in ['ja', 'en', 'ko', 'zh']:
+            return jsonify({'error': 'Invalid language code'}), 400
+        
+        # セッションにUI言語を保存
+        session['ui_language'] = language
+        session.modified = True
+        
+        logger.info(f"🌍 UI言語を設定: {language}")
+        
+        return jsonify({
+            'status': 'success',
+            'language': language,
+            'message': f'Language set to {language}'
+        })
+        
+    except Exception as e:
+        logger.error(f"言語設定エラー: {e}")
+        return jsonify({'error': 'Failed to set language'}), 500
 
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
