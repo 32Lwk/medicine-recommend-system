@@ -513,6 +513,15 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
                 red_flags.append(flag_name)
                 break
     
+    # 自傷・自殺関連の緊急検知（最優先）
+    # 明示的な自殺・自傷表現にマッチした場合は即座にエスカレーション
+    crisis_patterns = [
+        r"自殺", r"自死", r"死にたい", r"消えたい", r"生きていたくない", r"命を絶ちたい",
+        r"首を", r"飛び降り", r"リスカ", r"OD", r"オーバードーズ", r"手首を切",
+        r"kill myself", r"suicide", r"self[-_ ]?harm"
+    ]
+    crisis_detected = any(re.search(pat, user_text, re.IGNORECASE) for pat in crisis_patterns)
+
     # 重症度の推定（強化版）
     for symptom in detected_symptoms:
         symptom_text = user_text
@@ -589,8 +598,22 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         # 症状組み合わせによる信頼度向上
         confidence_score += combination_boost
     
-    needs_escalation = len(red_flags) > 0
-    escalation_reason = f"重症疑い症状が検出されました: {', '.join(red_flags)}" if needs_escalation else ""
+    needs_escalation = len(red_flags) > 0 or crisis_detected
+    escalation_reason = ""
+    if crisis_detected:
+        red_flags.append("自傷・自殺リスク")
+        escalation_reason = (
+            "💥 危機的状況が検出されました（自傷・自殺に関する表現）。\n"
+            "今は医薬品の提案ではなく、直ちに専門の窓口や身近な方への連絡を優先してください。\n\n"
+            "【緊急の連絡先（日本）】\n"
+            "・救急/警察: 119 / 110（緊急時）\n"
+            "・こころの健康相談統一ダイヤル: 0570-064-556\n"
+            "・よりそいホットライン: 0120-279-338（24時間）\n"
+            "・いのちの電話: 0570-783-556（10:00-22:00）／0120-783-556（毎日16:00-21:00）\n\n"
+            "ひとりで抱えず、今すぐ安全な場所で支援を受けてください。"
+        )
+    elif needs_escalation:
+        escalation_reason = f"重症疑い症状が検出されました: {', '.join(red_flags)}"
     
     print(f"=== 強化NLU結果 ===")
     print(f"検出された症状: {[s['name'] for s in detected_symptoms]}")

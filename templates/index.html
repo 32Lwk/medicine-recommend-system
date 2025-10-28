@@ -573,6 +573,28 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             animation: slideIn 0.3s;
         }
+
+        /* ユーザー情報登録モーダル（スマホ最適化・中央配置） */
+        #userInfoModal {
+            align-items: center;  /* display:flex 時に有効 */
+            justify-content: center;
+        }
+        #userInfoModal .modal-content {
+            margin: 0;                /* 親flexで中央寄せ */
+            width: 92%;               /* 横幅を少し絞る */
+            max-width: 420px;         /* モバイルでの最大幅 */
+            padding: 20px;            /* 文字と枠の余白を確保 */
+            max-height: 70vh;         /* 画面内に収める */
+            overflow-y: auto;
+        }
+        @media (max-width: 480px) {
+            #userInfoModal .modal-content {
+                width: 90%;
+                max-width: 380px;
+                padding: 18px;
+                max-height: 78vh;
+            }
+        }
         
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -4615,7 +4637,7 @@
 
 <!-- ユーザー情報登録モーダル -->
 <div id="userInfoModal" class="modal">
-    <div class="modal-content" style="max-width: 600px; max-height: 70%; overflow-y: auto;">
+    <div class="modal-content">
         <div class="modal-header">
             <h3>👤 ユーザー情報登録</h3>
             <span class="close-modal" onclick="closeUserInfoModal()">&times;</span>
