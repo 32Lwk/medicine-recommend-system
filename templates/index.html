@@ -1767,6 +1767,8 @@
         #userInfoModal .modal-content,
         #attributeModal .modal-content {
             padding: 24px 28px; /* 左右の余白を拡大して見やすく */
+            max-height: 80vh; /* 高さ制限を設定して下部余白を抑制 */
+            overflow-y: auto; /* 内容が多い場合はスクロール可能 */
         }
 
         /* 入力要素の内側余白と角丸を強化 */
@@ -1781,12 +1783,34 @@
             border-radius: 10px;
         }
 
+        /* モーダルヘッダーの緑色背景を大きく */
+        #userInfoModal .modal-header,
+        #attributeModal .modal-header {
+            padding: 24px 28px; /* 上下のパディングを増やして緑色背景を大きく */
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-radius: 15px 15px 0 0; /* 上部の角丸を維持 */
+        }
+
+        #userInfoModal .modal-header h3,
+        #attributeModal .modal-header h3 {
+            margin: 0;
+            font-size: 18px; /* フォントサイズを少し大きく */
+            font-weight: 600; /* フォントウェイトを太く */
+        }
+
         /* モバイル時の余白最適化（はみ出し防止） */
         @media (max-width: 480px) {
             #userInfoModal .modal-content,
             #attributeModal .modal-content {
                 width: 95%;
                 padding: 14px 16px; /* 端末幅が狭いときは少し控えめに */
+                max-height: 85vh; /* モバイルでは少し高めに設定 */
+            }
+            
+            #userInfoModal .modal-header,
+            #attributeModal .modal-header {
+                padding: 20px 16px; /* モバイルでは少し控えめに */
             }
         }
     </style>
