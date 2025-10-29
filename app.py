@@ -997,6 +997,14 @@ def index():
                                         user_attributes['other_info'] = value
                                         logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
                                         updated = True
+                                    elif key == 'doping_concern' and isinstance(value, bool):
+                                        user_attributes['doping_concern'] = value
+                                        logger.info(f"📝 ドーピング注意を更新: {user_attributes['doping_concern']}")
+                                        updated = True
+                                    elif key == 'constitution' and isinstance(value, str):
+                                        user_attributes['constitution'] = value
+                                        logger.info(f"📝 体質情報を更新: {user_attributes['constitution']}")
+                                        updated = True
                         
                         except Exception as e:
                             logger.error(f"多言語属性抽出エラー: {e}")
@@ -1715,14 +1723,25 @@ def index():
                             'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                         }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                         
-                        # 再分析の場合、個別アドバイスを最初に表示
+                        # 個別アドバイスを生成（再分析時または属性情報がある場合）
                         personalized_section = ""
-                        if session.get('is_reanalysis'):
-                            reanalysis_attrs = session.get('reanalysis_attributes', {})
+                        should_generate_advice = (
+                            session.get('is_reanalysis') or 
+                            user_attributes.get('age') or 
+                            user_attributes.get('gender') or
+                            user_attributes.get('pregnant') is not None or
+                            user_attributes.get('breastfeeding') is not None or
+                            user_attributes.get('doping_concern') or
+                            user_attributes.get('constitution')
+                        )
+                        
+                        if should_generate_advice:
+                            # 再分析の場合は再分析属性を使用、それ以外は現在のユーザー属性を使用
+                            attrs_for_advice = session.get('reanalysis_attributes', user_attributes) if session.get('is_reanalysis') else user_attributes
                             
                             try:
                                 personalized_advice = generate_personalized_advice(
-                                    reanalysis_attrs,
+                                    attrs_for_advice,
                                     recommended_medicines,
                                     symptoms,
                                     recommendation_client
@@ -1738,8 +1757,9 @@ def index():
                                 logger.error(f"❌ 個別説明生成エラー: {e}")
                             
                             # 再分析フラグをリセット
-                            session.pop('is_reanalysis', None)
-                            session.pop('reanalysis_attributes', None)
+                            if session.get('is_reanalysis'):
+                                session.pop('is_reanalysis', None)
+                                session.pop('reanalysis_attributes', None)
                         
                         bot_content = f"""
 <div class="recommendation-result">
@@ -2321,6 +2341,18 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
         allergy_list = user_attrs['allergies']
         if allergy_list and allergy_list != ['なし']:
             attr_text.append(f"アレルギー: {', '.join(allergy_list)}")
+    if user_attrs.get('current_medications'):
+        med_list = user_attrs['current_medications']
+        if med_list and med_list != []:
+            attr_text.append(f"服用中の薬: {', '.join(med_list)}")
+    if user_attrs.get('medical_history'):
+        history_list = user_attrs['medical_history']
+        if history_list and history_list != []:
+            attr_text.append(f"既往症: {', '.join(history_list)}")
+    if user_attrs.get('constitution'):
+        attr_text.append(f"体質: {user_attrs['constitution']}")
+    if user_attrs.get('doping_concern'):
+        attr_text.append("ドーピング注意が必要")
     if user_attrs.get('symptom_duration_days') is not None:
         days = user_attrs['symptom_duration_days']
         if days == 0:
@@ -2348,13 +2380,19 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
 {', '.join(medicine_names)}
 
 【生成するアドバイス】
-- ユーザーの年齢、性別、妊娠状態などを考慮
+- ユーザーの年齢、性別、妊娠状態、既往症、体質などを考慮
 - 推奨医薬品がこのユーザーに適している理由
-- 特に注意すべきポイント
+- 特に注意すべきポイント（ドーピング注意、相互作用、体質に応じた注意など）
 - 温かく、分かりやすい言葉で
 
+【特別な考慮事項】
+- ドーピング注意が必要な場合は、競技や運動への影響を言及
+- 冷え性などの体質がある場合は、体質改善のアドバイスも含める
+- 既往症がある場合は、その病気との関連性を考慮
+- 服用中の薬がある場合は、相互作用に注意
+
 例：
-「19歳女性で妊娠中とのこと。妊娠中は薬の選択に特に注意が必要です。推奨した医薬品は妊娠中でも安全に使用できるものを選んでいます。服用前に必ず添付文書を確認し、不安な点があれば医師にご相談ください。」
+「30代女性で冷え性とのこと。推奨した医薬品は頭痛とむくみに効果的ですが、冷え性の改善には体を温めることも大切です。服用と合わせて、温かい飲み物や適度な運動も心がけてください。」
 
 100字程度で、このユーザーに合わせた温かいアドバイスを生成してください。
 """

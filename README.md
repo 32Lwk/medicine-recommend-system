@@ -23,7 +23,45 @@
 - **ドキュメント**: README.md, SECURITY_IMPLEMENTATION.md
 - **設計図**: docs/フォルダに整理されたDraw.ioファイル
 
-## 🚀 最新機能（2025年10月29日）
+## 🚀 最新機能（2025年10月30日）
+
+### 📊 総合評価システムの実装（2025年10月30日）
+- **属性抽出精度測定システム**: 自然文からの属性抽出精度を包括的に評価
+  - 年齢・性別・妊娠状態・授乳状態・アレルギー情報の抽出精度測定
+  - バッチ処理による大規模データの効率的な評価（200件ずつ処理）
+  - 適合率・再現率・F1スコアによる詳細な精度分析
+  - 処理時間の統計とパフォーマンス監視
+- **最終テストレポート生成**: 自然文.csvの事前分析と正確な評価方式による包括的レポート
+  - アノテーションファイルの統計分析
+  - 詳細テスト結果の分析と改善提案
+  - Googleスプレッドシート形式での結果出力
+  - 失敗パターンの詳細分析と改善案の提示
+
+### 🔍 分析ツール群の追加（2025年10月30日）
+- **自然文分析ツール**: `analyze_natural_language_csv.py`
+  - 自然文データの統計分析と可視化
+  - 属性分布の詳細分析
+  - データ品質の評価と改善提案
+- **テスト結果分析ツール**: `analyze_test_results.py`
+  - テスト実行結果の詳細分析
+  - 精度向上のための具体的な改善提案
+  - 失敗ケースのパターン分析
+- **アレルギーテストデータ生成**: `generate_allergy_test_data.py`
+  - アレルギー関連のテストケース自動生成
+  - 多様なアレルギー表現のテストデータ作成
+  - アレルギー抽出精度の向上支援
+
+### 🧪 包括的テストスイートの拡張（2025年10月30日）
+- **属性抽出テスト**: `test_age_extraction.py`, `test_allergy_extraction.py`, `test_duration_extraction.py`
+  - 年齢抽出の精度テスト
+  - アレルギー情報抽出の精度テスト
+  - 症状期間抽出の精度テスト
+- **アレルギー変異テスト**: `test_allergy_variations.py`
+  - 様々なアレルギー表現パターンのテスト
+  - アレルギー抽出アルゴリズムの堅牢性検証
+- **アノテーション付きテスト**: `test_with_annotation.py`
+  - アノテーションデータを使用した精度検証
+  - 実データに基づく性能評価
 
 ### ℹ️ 情報表示機能の追加（2025年10月29日）
 - **情報アイコン（ℹ️）の追加**: ユーザーインターフェースに情報表示機能を追加
@@ -576,6 +614,18 @@ python debug_app.py
 - `test_comprehensive_security.py`: セキュリティ機能テスト
 - `test_enhanced_safety.py`: 安全性チェックテスト
 - `test_security_validator.py`: セキュリティ検証テスト
+- `test_age_extraction.py`: 年齢抽出精度テスト
+- `test_allergy_extraction.py`: アレルギー情報抽出テスト
+- `test_allergy_variations.py`: アレルギー変異パターンテスト
+- `test_duration_extraction.py`: 症状期間抽出テスト
+- `test_with_annotation.py`: アノテーションデータ付きテスト
+
+### 分析・評価ツール
+- `evaluate_comprehensive_system.py`: 総合評価システム（属性抽出精度測定）
+- `final_test_report.py`: 最終テストレポート生成
+- `analyze_natural_language_csv.py`: 自然文データ分析ツール
+- `analyze_test_results.py`: テスト結果分析ツール
+- `generate_allergy_test_data.py`: アレルギーテストデータ生成
 
 ### ドキュメント
 - `README.md`: このファイル
@@ -702,12 +752,47 @@ python debug_app.py
 python test_comprehensive.py      # 全機能の統合テスト
 ```
 
+### 個別機能テスト
+```bash
+# 属性抽出精度テスト
+python test_age_extraction.py     # 年齢抽出テスト
+python test_allergy_extraction.py # アレルギー情報抽出テスト
+python test_duration_extraction.py # 症状期間抽出テスト
+python test_allergy_variations.py # アレルギー変異パターンテスト
+python test_with_annotation.py    # アノテーションデータ付きテスト
+
+# セキュリティ・安全性テスト
+python test_comprehensive_security.py # セキュリティ機能テスト
+python test_enhanced_safety.py        # 安全性チェックテスト
+python test_security_validator.py     # セキュリティ検証テスト
+```
+
+### 総合評価システム
+```bash
+# 属性抽出精度の包括的評価
+python evaluate_comprehensive_system.py
+
+# 最終テストレポート生成
+python final_test_report.py
+
+# 自然文データ分析
+python analyze_natural_language_csv.py
+
+# テスト結果分析
+python analyze_test_results.py
+
+# アレルギーテストデータ生成
+python generate_allergy_test_data.py
+```
+
 ### テスト内容
 - **ルールベース推奨**: 風邪薬・解熱鎮痛薬・鼻炎用薬の推奨テスト
 - **ハイブリッドシステム**: 医薬品種類の自動判定テスト
 - **属性不足チェック**: 年齢・性別・妊娠状態の不足情報質問テスト
 - **安全性チェック**: 年齢制限・妊娠中・Red Flag症状の検出テスト
 - **包括的システム**: 全機能統合の動作確認テスト
+- **属性抽出精度**: 年齢・性別・妊娠状態・アレルギー情報の抽出精度テスト
+- **多言語対応**: 日本語・英語・中国語・韓国語での属性抽出テスト
 
 ### 期待される結果
 - ✅ ルールベース推奨: 風邪薬・解熱鎮痛薬・鼻炎用薬で正常動作
@@ -715,6 +800,8 @@ python test_comprehensive.py      # 全機能の統合テスト
 - ✅ 安全性チェック: Red Flag症状、年齢制限、禁忌を正しく検出
 - ✅ セッション管理: ユーザー属性の保存と取得が正常動作
 - ✅ ハイブリッド判定: 症状から適切な推奨方式を自動選択
+- ✅ 属性抽出精度: 年齢抽出56%、アレルギー抽出8%（改善目標90%以上）
+- ✅ 多言語対応: 4言語での属性抽出と翻訳機能の正常動作
 
 ## 開発者向け情報
 
@@ -818,6 +905,8 @@ POST /api/admin_mode      # 管理者モード切り替え
 - **フィードバック**: 評価ボタン、不具合報告、統計表示、PostgreSQL連携
 - **セキュリティ**: プロンプトインジェクション対策、多層防御システム
 - **多言語**: 日本語、英語、中国語、韓国語対応
+- **評価・分析**: 属性抽出精度測定、バッチ処理、統計分析、レポート生成
+- **テスト**: 包括的テストスイート、個別機能テスト、アノテーションデータ検証
 - **デプロイ**: Gunicorn、Render環境対応
 - **CORS**: クロスオリジン対応
 

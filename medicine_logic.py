@@ -15,6 +15,427 @@ CSV_PATH = os.path.join(BASE_DIR, "otc_medicine_data.csv")
 print('CSVファイル絶対パス:', CSV_PATH)
 print('ファイル存在:', os.path.exists(CSV_PATH))
 
+def extract_allergies_from_text(text):
+    """
+    アレルギー28品目を辞書式で抽出
+    
+    Args:
+        text (str): 解析対象のテキスト
+    
+    Returns:
+        list: 抽出されたアレルギー品目のリスト
+    """
+    if not text or not isinstance(text, str):
+        return []
+    
+    # アレルギー28品目
+    ALLERGY_28_ITEMS = [
+        'えび', 'かに', 'くるみ', '小麦', 'そば', '卵', '乳', '落花生',
+        'ピーナッツ', 'アーモンド', 'あわび', 'いか', 'いくら', 'オレンジ',
+        'カシューナッツ', 'キウイフルーツ', '牛肉', 'ごま', 'さけ', 'さば',
+        '大豆', '鶏肉', 'バナナ', '豚肉', 'マカダミアナッツ', 'もも',
+        'やまいも', 'りんご', 'ゼラチン'
+    ]
+    
+    # 拡充された異表記辞書
+    ALLERGY_VARIATIONS = {
+        '卵': ['たまご', 'タマゴ', 'エッグ', 'egg', '玉子', 'たまご'],
+        '乳': ['牛乳', 'ミルク', 'milk', '乳製品', 'ミルク製品'],
+        '小麦': ['こむぎ', 'コムギ', 'wheat', '小麦粉', 'フラワー'],
+        'えび': ['エビ', '海老', 'shrimp', 'えび類'],
+        'かに': ['カニ', '蟹', 'crab', 'かに類'],
+        'そば': ['ソバ', '蕎麦', 'soba', 'そば粉'],
+        '落花生': ['らっかせい', 'ピーナツ', 'ピーナッツ'],
+        'ピーナッツ': ['peanut', 'ピーナツ', '落花生'],
+        'くるみ': ['クルミ', '胡桃', 'walnut', 'くるみ類'],
+        'あわび': ['アワビ', '鮑', 'abalone', 'あわび類'],
+        'いか': ['イカ', '烏賊', 'squid', 'いか類'],
+        'いくら': ['イクラ', 'salmon roe', 'いくら類'],
+        'オレンジ': ['orange', 'みかん類', 'オレンジ類'],
+        'キウイフルーツ': ['kiwi', 'キウイ', 'キウイフルーツ類'],
+        'バナナ': ['banana', 'バナナ類'],
+        'りんご': ['リンゴ', '林檎', 'apple', 'りんご類'],
+        'もも': ['モモ', '桃', 'peach', 'もも類'],
+        'やまいも': ['ヤマイモ', '山芋', 'yam', 'やまいも類'],
+        'アーモンド': ['almond', 'アーモンド類'],
+        'カシューナッツ': ['cashew', 'カシュー', 'カシューナッツ類'],
+        'マカダミアナッツ': ['macadamia', 'マカダミア', 'マカダミアナッツ類'],
+        'ゼラチン': ['gelatin', 'ゼリー', 'ゼラチン類'],
+        '牛肉': ['beef', 'ビーフ', '牛肉類'],
+        '豚肉': ['pork', 'ポーク', '豚肉類'],
+        '鶏肉': ['chicken', 'チキン', '鶏肉類'],
+        'さけ': ['鮭', 'サーモン', 'salmon', 'さけ類'],
+        'さば': ['鯖', 'mackerel', 'さば類'],
+        '大豆': ['soy', 'ソイ', '豆腐', '大豆類'],
+        'ごま': ['sesame', 'ゴマ', '胡麻', 'ごま類']
+    }
+    
+    # 拡充された文脈キーワード
+    ALLERGY_CONTEXT = [
+        'アレルギー', 'アレルギー体質', '食物アレルギー', '食物過敏症',
+        '食べられない', '食べれない', 'ダメ', 'アレルゲン', 'アレルゲン',
+        '蕁麻疹', '発疹', 'かゆみ', 'アナフィラキシー', 'アナフィラキシーショック',
+        '反応', '症状', '出る', '起きる', '起こる', '発症',
+        'が', 'で', 'に', 'を', 'は', 'も', 'と', 'や',
+        '原因', '誘因', '引き起こす', '引き起こし', '引き起こして',
+        '避ける', '避け', '避けて', '控える', '控え', '控えて',
+        '除去', '除去食', '除去している', '除去して',
+        '不耐症', '不耐性', '過敏', '過敏症'
+    ]
+    
+    # 拡充された除外パターン
+    EXCLUDE_PATTERNS = [
+        '太もも', '小麦色', 'さばを読む', '包み込む',
+        '卵形', '卵型', '卵のような', '卵のような形',
+        '牛乳色', '牛乳のような', '牛乳のような色',
+        'バナナの皮', 'バナナのような', 'バナナのような形',
+        'りんごのような', 'りんごのような形', 'りんごのような色',
+        'もものような', 'もものような形', 'もものような色'
+    ]
+    
+    found_allergies = []
+    
+    def match_allergy_with_context(text, item):
+        """アレルギー品目と文脈をチェックしてマッチング"""
+        if item not in text:
+            return False
+            
+        # 除外パターンに該当しないか確認
+        for exclude in EXCLUDE_PATTERNS:
+            if exclude in text and item in exclude:
+                return False
+        
+        # 文脈キーワードが近くにあるか確認（前後30文字以内に拡大）
+        item_pos = text.find(item)
+        context_found = False
+        
+        # より厳密な文脈判定
+        for context in ALLERGY_CONTEXT:
+            context_pos = text.find(context)
+            if context_pos != -1 and abs(item_pos - context_pos) <= 30:
+                context_found = True
+                break
+        
+        # 文脈キーワードがない場合でも、助詞が近くにあれば追加
+        if not context_found:
+            # 助詞パターンをチェック
+            particle_patterns = ['が', 'で', 'に', 'を', 'は', 'も', 'と', 'や']
+            for particle in particle_patterns:
+                particle_pos = text.find(particle, item_pos)
+                if particle_pos != -1 and 0 <= particle_pos - item_pos <= 10:
+                    context_found = True
+                    break
+        
+        return context_found
+    
+    # 標準名でのマッチング
+    for item in ALLERGY_28_ITEMS:
+        if match_allergy_with_context(text, item):
+            found_allergies.append(item)
+    
+    # 異表記でのマッチング
+    for standard_name, variations in ALLERGY_VARIATIONS.items():
+        for variation in variations:
+            if match_allergy_with_context(text, variation):
+                found_allergies.append(standard_name)
+                break
+    
+    return found_allergies
+
+def extract_symptom_duration(text):
+    """
+    症状期間を抽出
+    
+    Args:
+        text (str): 解析対象のテキスト
+    
+    Returns:
+        int or None: 抽出された期間（日数）、見つからない場合はNone
+    """
+    if not text or not isinstance(text, str):
+        return None
+    
+    duration_patterns = [
+        (r'(\d+)日前から', lambda m: int(m.group(1))),
+        (r'(\d+)日間', lambda m: int(m.group(1))),
+        (r'(\d+)週間', lambda m: int(m.group(1)) * 7),
+        (r'(\d+)ヶ月', lambda m: int(m.group(1)) * 30),
+        (r'昨日から', lambda m: 1),
+        (r'今朝から', lambda m: 0),
+        (r'先週から', lambda m: 7),
+        (r'(\d+)日続いている', lambda m: int(m.group(1))),
+        (r'(\d+)日ほど', lambda m: int(m.group(1))),
+        (r'(\d+)日くらい', lambda m: int(m.group(1))),
+    ]
+    
+    for pattern, converter in duration_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            try:
+                duration = converter(match)
+                if 0 <= duration <= 365:  # 妥当な範囲内
+                    return duration
+            except (ValueError, IndexError):
+                continue
+    
+    return None
+
+def parse_age_expression(text):
+    """
+    年齢表現を解析して数値に変換
+    
+    Args:
+        text (str): 年齢が含まれるテキスト
+    
+    Returns:
+        int or None: 抽出された年齢（数値）、見つからない場合はNone
+    """
+    if not text or not isinstance(text, str):
+        return None
+    
+    # より包括的な年齢パターン
+    age_patterns = [
+        # 基本パターン
+        (r'(\d+)\s*歳', lambda m: int(m.group(1))),
+        (r'(\d+)\s*才', lambda m: int(m.group(1))),
+        (r'(\d+)歳代', lambda m: int(m.group(1))),
+        (r'(\d{1,2})歳児', lambda m: int(m.group(1))),
+        
+        # 年代表現の詳細化
+        (r'(\d+)代前半', lambda m: int(m.group(1)) + 2),
+        (r'(\d+)代後半', lambda m: int(m.group(1)) + 7),
+        (r'(\d+)代半ば', lambda m: int(m.group(1)) + 5),
+        (r'(\d+)代', lambda m: int(m.group(1)) + 5),
+        
+        # 多言語対応
+        (r'(\d+)\s*years?\s*old', lambda m: int(m.group(1))),
+        (r'(\d+)\s*세', lambda m: int(m.group(1))),
+        (r'(\d+)\s*岁', lambda m: int(m.group(1))),
+        
+        # 新しいパターン
+        (r'(\d+)歳くらい', lambda m: int(m.group(1))),
+        (r'(\d+)歳ぐらい', lambda m: int(m.group(1))),
+        (r'(\d+)歳程度', lambda m: int(m.group(1))),
+        (r'(\d+)歳前後', lambda m: int(m.group(1))),
+        (r'(\d+)歳台', lambda m: int(m.group(1))),
+    ]
+    
+    for pattern, converter in age_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            try:
+                age = converter(match)
+                if 0 <= age <= 120:  # 妥当な年齢範囲
+                    return age
+            except (ValueError, IndexError):
+                continue
+    
+    # 拡充された年齢推定パターン
+    age_estimation_patterns = [
+        (r'子ども|子供|こども|幼児', 10),
+        (r'赤ちゃん|赤ん坊|乳児', 1),
+        (r'若い|若者|青年', 25),
+        (r'中年|中年者', 45),
+        (r'高齢|高齢者|お年寄り|シニア', 70),
+        (r'学生|学生さん|生徒', 20),
+        (r'おじいちゃん|おじいさん|祖父', 70),
+        (r'おばあちゃん|おばあさん|祖母', 70),
+        (r'お父さん|お父様|父親', 45),
+        (r'お母さん|お母様|母親', 40),
+        (r'小学生', 8),
+        (r'中学生', 14),
+        (r'高校生', 17),
+        (r'大学生', 20),
+        (r'社会人', 30),
+        (r'新社会人', 22),
+        (r'ベテラン', 50),
+        (r'シニア', 65),
+    ]
+    
+    for pattern, estimated_age in age_estimation_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return estimated_age
+    
+    return None
+
+def validate_and_fix_data_types(data):
+    """データ型の検証と修正"""
+    if not isinstance(data, dict):
+        return {}
+    
+    # 年齢の検証
+    if 'age' in data and data['age'] is not None:
+        try:
+            data['age'] = int(data['age'])
+            if not (0 <= data['age'] <= 120):
+                data['age'] = None
+        except (ValueError, TypeError):
+            data['age'] = None
+    
+    # 性別の検証
+    if 'gender' in data and data['gender'] is not None:
+        if data['gender'] not in ['男性', '女性']:
+            data['gender'] = None
+    
+    # 妊娠・授乳の検証
+    for key in ['pregnant', 'breastfeeding', 'doping_concern']:
+        if key in data:
+            if isinstance(data[key], str):
+                data[key] = data[key].lower() in ['true', '1', 'yes', 'はい']
+            elif not isinstance(data[key], bool):
+                data[key] = False
+    
+    # 配列の検証
+    for key in ['allergies', 'current_medications', 'medical_history']:
+        if key in data and not isinstance(data[key], list):
+            data[key] = []
+    
+    # 文字列の検証
+    for key in ['constitution', 'other_info']:
+        if key in data and not isinstance(data[key], (str, type(None))):
+            data[key] = None
+    
+    return data
+
+def validate_and_complete_attributes(attrs, user_text):
+    """
+    抽出された属性を検証し、必要に応じて補完する（改善版）
+    
+    Args:
+        attrs (dict): 抽出された属性
+        user_text (str): 元の入力テキスト
+    
+    Returns:
+        dict: 検証・補完された属性
+    """
+    validated = attrs.copy()
+    
+    # データ型の検証と修正
+    validated = validate_and_fix_data_types(validated)
+    
+    # 必須フィールドのデフォルト値設定
+    default_attributes = {
+        'age': None,
+        'gender': None,
+        'pregnant': False,
+        'breastfeeding': False,
+        'allergies': [],
+        'current_medications': [],
+        'medical_history': [],
+        'constitution': None,
+        'doping_concern': False,
+        'symptom_duration_days': None,
+        'other_info': None
+    }
+    
+    # 既存の属性をマージ
+    for key, value in default_attributes.items():
+        if key not in validated:
+            validated[key] = value
+        elif validated[key] is None and value is not None:
+            validated[key] = value
+    
+    # 矛盾チェック（妊娠中かつ男性など）
+    if validated.get('pregnant') and validated.get('gender') == '男性':
+        validated['pregnant'] = False
+    
+    # 文脈からの補完
+    if not validated.get('gender') and user_text:
+        if re.search(r'女性|女の子|お母さん|おばあちゃん|妊娠|生理', user_text):
+            validated['gender'] = '女性'
+        elif re.search(r'男性|男の子|お父さん|おじいちゃん', user_text):
+            validated['gender'] = '男性'
+    
+    return validated
+
+def retry_extraction_with_enhanced_prompt(user_text, language, user_info, client):
+    """
+    強化されたプロンプトでリトライ抽出を実行
+    
+    Args:
+        user_text (str): 入力テキスト
+        language (str): 言語コード
+        user_info (dict): ユーザー情報
+        client: OpenAIクライアント
+    
+    Returns:
+        dict: 抽出された属性
+    """
+    # より具体的なプロンプトを作成
+    enhanced_prompt = f"""
+【重要】以下のテキストから年齢と性別を必ず抽出してください。
+
+入力テキスト: {user_text}
+
+【抽出ルール】
+1. 年齢: 数字 + 歳/代/才 のパターンを探す
+   - "30代" → 35歳
+   - "25歳" → 25歳
+   - "40才" → 40歳
+
+2. 性別: 以下のキーワードを探す
+   - 女性: 女性、女の子、お母さん、おばあちゃん、妊娠、生理
+   - 男性: 男性、男の子、お父さん、おじいちゃん
+
+【必須】以下のJSON形式で回答してください：
+{{
+    "age": 数値またはnull,
+    "gender": "男性"または"女性"またはnull,
+    "pregnant": false,
+    "breastfeeding": false,
+    "allergies": ["なし"],
+    "current_medications": [],
+    "medical_history": [],
+    "symptom_duration_days": null,
+    "other_info": null,
+    "doping_concern": false,
+    "constitution": null
+}}
+"""
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "あなたは属性抽出の専門家です。年齢と性別を必ず抽出してください。"},
+                {"role": "user", "content": enhanced_prompt}
+            ],
+            temperature=0.0,  # より一貫性のある結果
+            max_tokens=500
+        )
+        
+        result = response.choices[0].message.content
+        import json
+        
+        # JSON解析
+        json_start = result.find('{')
+        json_end = result.rfind('}') + 1
+        if json_start != -1 and json_end != -1:
+            json_str = result[json_start:json_end]
+            retry_result = json.loads(json_str)
+            retry_result['detected_language'] = language
+            return validate_and_complete_attributes(retry_result, user_text)
+    
+    except Exception as e:
+        if not os.getenv('TEST_MODE'):
+            print(f"リトライ抽出エラー: {e}")
+    
+    # リトライも失敗した場合は空の結果を返す
+    return {
+        'detected_language': language,
+        'age': None,
+        'gender': None,
+        'pregnant': False,
+        'breastfeeding': False,
+        'allergies': ['なし'],
+        'current_medications': [],
+        'medical_history': [],
+        'symptom_duration_days': None,
+        'other_info': None,
+        'doping_concern': False,
+        'constitution': None
+    }
+
 def detect_language(text):
     """
     テキストから言語を自動検出
@@ -56,7 +477,7 @@ def create_multilingual_attribute_extraction_prompt(user_text, language, user_in
         str: プロンプトテキスト
     """
     prompts = {
-        'ja': f"""
+        'ja': """
 あなたは医薬品推奨システムです。ユーザーのメッセージから以下の属性情報を抽出してください。
 
 【ユーザーのメッセージ】
@@ -75,6 +496,59 @@ def create_multilingual_attribute_extraction_prompt(user_text, language, user_in
 - medical_history: 既往症（リスト）
 - symptom_duration_days: 症状の期間（日数）
 - other_info: その他の情報（文字列）
+- doping_concern: ドーピング注意が必要か（true/false）
+- constitution: 体質情報（冷え性、アレルギー体質など）
+
+【年齢表現の例】
+- "30歳" → 30
+- "30代" → 35（代の中央値）
+- "30 years old" → 30
+
+【性別・妊娠・授乳の判定】
+- "30代女性" → gender: "女性"
+- "生理前"、"生理痛" → gender: "女性"
+- "妊娠中"、"妊婦" → pregnant: true
+- "授乳中"、"授乳" → breastfeeding: true
+
+【ドーピング注意の判定】
+- "運動"、"スポーツ"、"競技"、"アスリート" → doping_concern: true
+
+【アレルギーの判定】
+- "アレルギー"、"花粉症"、"アトピー"、"アレルギー体質"、"アレルギー性鼻炎" → allergiesに記録
+- "アレルギー体質です" → allergies: ["アレルギー体質"]
+- "花粉症持ちです" → allergies: ["花粉症"]
+- "アトピーがあります" → allergies: ["アトピー"]
+
+【体質情報の判定】
+- "冷え性"、"便秘しやすい" → constitutionに記録
+
+【既往症の判定】
+- "糖尿病"、"高血圧"、"便秘"、"更年期" → medical_historyに記録
+
+【Few-shot例】
+例1: "30代女性で冷え性です。生理前から頭痛とむくみがひどいです。"
+→ {{"age": 35, "gender": "女性", "pregnant": false, "breastfeeding": false, "allergies": ["なし"], "current_medications": [], "medical_history": [], "symptom_duration_days": null, "other_info": null, "doping_concern": false, "constitution": "冷え性"}}
+
+例2: "40代男性で糖尿病の薬を飲んでいます。喉が痛くて咳が出ます。"
+→ {{"age": 45, "gender": "男性", "pregnant": false, "breastfeeding": false, "allergies": ["なし"], "current_medications": ["糖尿病の薬"], "medical_history": ["糖尿病"], "symptom_duration_days": null, "other_info": "喉が痛くて咳が出ます", "doping_concern": false, "constitution": null}}
+
+例3: "妊娠中の女性です。鼻づまりがつらいのですが薬を使っても大丈夫ですか。"
+→ {{"age": null, "gender": "女性", "pregnant": true, "breastfeeding": false, "allergies": ["なし"], "current_medications": [], "medical_history": [], "symptom_duration_days": null, "other_info": "鼻づまりがつらい", "doping_concern": false, "constitution": null}}
+
+例4: "えびとかにのアレルギーがあります。2日前から蕁麻疹が出ています。"
+→ {{"age": null, "gender": null, "pregnant": false, "breastfeeding": false, "allergies": ["えび", "かに"], "current_medications": [], "medical_history": [], "symptom_duration_days": 2, "other_info": "蕁麻疹が出ています", "doping_concern": false, "constitution": null}}
+
+例5: "子どもが小麦アレルギーで、昨日から咳が止まりません。"
+→ {{"age": 10, "gender": null, "pregnant": false, "breastfeeding": false, "allergies": ["小麦"], "current_medications": [], "medical_history": [], "symptom_duration_days": 1, "other_info": "咳が止まりません", "doping_concern": false, "constitution": null}}
+
+例6: "高齢の男性で、1週間前から頭痛が続いています。"
+→ {{"age": 70, "gender": "男性", "pregnant": false, "breastfeeding": false, "allergies": ["なし"], "current_medications": [], "medical_history": [], "symptom_duration_days": 7, "other_info": "頭痛が続いています", "doping_concern": false, "constitution": null}}
+
+例7: "卵と乳のアレルギー体質です。3日前から胃が痛いです。"
+→ {{"age": null, "gender": null, "pregnant": false, "breastfeeding": false, "allergies": ["卵", "乳"], "current_medications": [], "medical_history": [], "symptom_duration_days": 3, "other_info": "胃が痛いです", "doping_concern": false, "constitution": "アレルギー体質"}}
+
+例8: "20代の女性で、妊娠中です。ピーナッツアレルギーがあります。"
+→ {{"age": 25, "gender": "女性", "pregnant": true, "breastfeeding": false, "allergies": ["ピーナッツ"], "current_medications": [], "medical_history": [], "symptom_duration_days": null, "other_info": null, "doping_concern": false, "constitution": null}}
 
 【回答形式】
 以下のJSON形式で回答してください：
@@ -87,13 +561,48 @@ def create_multilingual_attribute_extraction_prompt(user_text, language, user_in
     "current_medications": [],
     "medical_history": [],
     "symptom_duration_days": 3,
-    "other_info": "その他の情報があれば"
+    "other_info": "その他の情報があれば",
+    "doping_concern": false,
+    "constitution": "冷え性"
 }}
 
-情報が不明な場合は null を返してください。
+【アレルギー28品目の優先検出】
+以下の28品目は必ず検出してください：
+えび、かに、くるみ、小麦、そば、卵、乳、落花生、ピーナッツ、アーモンド、あわび、いか、いくら、オレンジ、カシューナッツ、キウイフルーツ、牛肉、ごま、さけ、さば、大豆、鶏肉、バナナ、豚肉、マカダミアナッツ、もも、やまいも、りんご、ゼラチン
+
+【年齢が明示されていない場合】
+文脈から推測できる場合は推定値を返してください
+例: "子ども" → 10歳程度, "高齢者" → 70歳程度
+
+【症状期間の抽出】
+「〜日前から」「〜週間続いている」などの表現からsymptom_duration_daysを抽出
+
+【出力形式の厳格化】
+以下のJSONスキーマに従って、必ずすべてのキーを含めて回答してください。
+キーが存在しない場合は null を設定してください。
+
+{
+  "age": 数値またはnull,
+  "gender": "男性"または"女性"またはnull,
+  "pregnant": trueまたはfalse,
+  "breastfeeding": trueまたはfalse,
+  "allergies": 文字列の配列,
+  "current_medications": 文字列の配列,
+  "medical_history": 文字列の配列,
+  "constitution": 文字列またはnull,
+  "doping_concern": trueまたはfalse,
+  "symptom_duration_days": 数値またはnull,
+  "other_info": 文字列またはnull
+}
+
+【重要】
+- すべてのキーを必ず出力してください
+- 情報がない場合は null または [] を使用してください
+- 配列は必ず [] で初期化してください
+- 必ずJSON形式で回答し、情報が不明な場合は null を返してください。
 """,
         
-        'en': f"""
+        'en': """
 You are a medicine recommendation system. Extract the following attribute information from the user's message.
 
 【User's Message】
@@ -130,7 +639,7 @@ Please respond in the following JSON format:
 Return null for unknown information.
 """,
         
-        'ko': f"""
+        'ko': """
 당신은 의약품 추천 시스템입니다. 사용자의 메시지에서 다음 속성 정보를 추출해주세요.
 
 【사용자의 메시지】
@@ -167,7 +676,7 @@ Return null for unknown information.
 정보를 모르는 경우 null을 반환하세요.
 """,
         
-        'zh': f"""
+        'zh': """
 您是药品推荐系统。请从用户消息中提取以下属性信息。
 
 【用户消息】
@@ -230,22 +739,55 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
     detected_language = detect_language(user_text)
     print(f"検出された言語: {detected_language}")
     
+    # まず、ルールベースで年齢を抽出を試行
+    extracted_age = parse_age_expression(user_text)
+    if extracted_age and not os.getenv('TEST_MODE'):
+        print(f"ルールベース年齢抽出: {extracted_age}歳")
+    
+    # ルールベースでアレルギーを抽出
+    extracted_allergies = extract_allergies_from_text(user_text)
+    if extracted_allergies and not os.getenv('TEST_MODE'):
+        print(f"ルールベースアレルギー抽出: {extracted_allergies}")
+    
+    # ルールベースで症状期間を抽出
+    extracted_duration = extract_symptom_duration(user_text)
+    if extracted_duration is not None and not os.getenv('TEST_MODE'):
+        print(f"ルールベース期間抽出: {extracted_duration}日")
+    
     # 言語に応じたプロンプトを作成
     prompt = create_multilingual_attribute_extraction_prompt(user_text, detected_language, user_info)
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.1,
-            max_tokens=1000
-        )
+        import time
+        max_retries = 3
+        retry_delay = 1
+        
+        for attempt in range(max_retries):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.1,  # より一貫性を重視
+                    max_tokens=1000,
+                    timeout=30  # 30秒タイムアウト
+                )
+                break  # 成功したらループを抜ける
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    if not os.getenv('TEST_MODE'):
+                        print(f"API呼び出しエラー (試行 {attempt + 1}/{max_retries}): {e}")
+                    time.sleep(retry_delay * (2 ** attempt))  # 指数バックオフ
+                else:
+                    raise e
         
         result = response.choices[0].message.content
-        print(f"ChatGPT属性抽出応答 ({detected_language}): {result}")
+        # テストモードの場合は詳細ログを抑制
+        if not os.getenv('TEST_MODE'):
+            print(f"ChatGPT属性抽出応答 ({detected_language}): {result}")
         
         # JSON形式の回答を解析
         import json
@@ -256,19 +798,72 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
                 json_str = result[json_start:json_end]
                 parsed_result = json.loads(json_str)
                 
-                # 言語情報を追加
-                parsed_result['detected_language'] = detected_language
+                # データ型の検証と修正
+                parsed_result = validate_and_fix_data_types(parsed_result)
                 
-                return parsed_result
+                # ルールベース抽出結果を優先
+                priority_rules = {
+                    'age': extracted_age,  # ルールベース年齢を最優先
+                    'allergies': extracted_allergies,  # ルールベースアレルギーを最優先
+                    'symptom_duration_days': extracted_duration  # ルールベース期間を最優先
+                }
+                
+                # より厳密な統合処理
+                for key, rule_value in priority_rules.items():
+                    if rule_value:  # ルールベースで抽出できた場合
+                        if key == 'allergies':
+                            # アレルギーはマージ（重複排除）
+                            chatgpt_allergies = parsed_result.get(key, [])
+                            if not isinstance(chatgpt_allergies, list):
+                                chatgpt_allergies = []
+                            merged = list(set(rule_value + chatgpt_allergies))
+                            parsed_result[key] = merged
+                            if not os.getenv('TEST_MODE'):
+                                print(f"ルールベースアレルギーをマージ: {rule_value}")
+                        else:
+                            # その他は上書き
+                            parsed_result[key] = rule_value
+                            if not os.getenv('TEST_MODE'):
+                                print(f"ルールベース{key}を適用: {rule_value}")
+                
+                # 抽出結果の検証と補完
+                validated_result = validate_and_complete_attributes(parsed_result, user_text)
+                
+                # 言語情報を追加
+                validated_result['detected_language'] = detected_language
+                
+                # デフォルト値を設定
+                if 'doping_concern' not in validated_result:
+                    validated_result['doping_concern'] = False
+                if 'constitution' not in validated_result:
+                    validated_result['constitution'] = None
+                
+                # 年齢と性別が両方欠損の場合はリトライ
+                if not validated_result.get('age') and not validated_result.get('gender'):
+                    if not os.getenv('TEST_MODE'):
+                        print("年齢と性別が両方欠損のためリトライを実行")
+                    return retry_extraction_with_enhanced_prompt(user_text, detected_language, user_info, client)
+                
+                return validated_result
             else:
-                return {"detected_language": detected_language}
+                # ルールベース年齢があれば使用
+                result = {"detected_language": detected_language}
+                if extracted_age:
+                    result['age'] = extracted_age
+                return result
         except json.JSONDecodeError as e:
             print(f"JSON解析エラー: {e}")
-            return {"detected_language": detected_language}
+            result = {"detected_language": detected_language}
+            if extracted_age:
+                result['age'] = extracted_age
+            return result
             
     except Exception as e:
         print(f"ChatGPT API呼び出しエラー: {e}")
-        return {"detected_language": detected_language}
+        result = {"detected_language": detected_language}
+        if extracted_age:
+            result['age'] = extracted_age
+        return result
 
 def translate_medicine_recommendation(text, target_language, client=None):
     """

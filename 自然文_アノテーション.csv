@@ -1,0 +1,501 @@
+test_id,input_text,age,gender,pregnant,breastfeeding,allergies,current_medications,medical_history,constitution,doping_concern,symptoms,detected_language
+1,30代女性で冷え性です。生理前から頭痛とむくみがひどいです。,35,女性,False,False,null,null,null,冷え性,False,頭痛; 冷え; むくみ,ja
+2,40代男性で糖尿病の薬を飲んでいます。喉が痛くて咳が出ます。,40,男性,False,False,null,糖尿病の薬,糖尿病,null,False,咳,ja
+3,20代女性でアレルギー体質です。春先から鼻がムズムズして止まりません。,20,女性,False,False,アレルギー,null,null,アレルギー体質,False,アレルギー,ja
+4,50代男性で高血圧です。肩こりと頭痛がひどいです。,50,男性,False,False,null,null,高血圧,null,False,頭痛; 肩こり,ja
+5,60代女性で便秘しやすく、最近お腹が張って苦しいです。,60,女性,False,False,null,null,便秘,便秘しやすい,False,便秘,ja
+6,10歳の男の子で風邪気味です。微熱と鼻水があります。,10,男性,False,False,null,null,null,null,False,鼻水,ja
+7,妊娠中の女性です。鼻づまりがつらいのですが薬を使っても大丈夫ですか。,null,女性,True,False,null,null,null,null,False,鼻づまり,ja
+8,授乳中の母親です。喉が痛くて咳が出ます。,null,女性,False,True,null,null,null,null,False,咳,ja
+9,30代男性でよく胃が荒れます。食後に胃もたれがします。,35,男性,False,False,null,null,null,null,False,胃もたれ,ja
+10,50代女性で更年期に入っていて、最近頭痛とイライラが強いです。,50,女性,False,False,null,null,null,null,False,頭痛; 更年期; イライラ,ja
+11,70代男性で心臓の薬を飲んでいます。腰の痛みが続いています。,70,男性,False,False,null,心臓の薬,null,null,False,null,ja
+12,40代女性で便秘気味です。お腹が重く感じます。,40,女性,False,False,null,null,便秘,便秘しやすい,False,便秘,ja
+13,30代男性で喫煙者です。咳が止まらず痰も出ます。,35,男性,False,False,null,null,null,null,False,咳,ja
+14,20代女性で生理痛が重く、腹痛と吐き気があります。,20,女性,False,False,null,null,null,null,False,吐き気; 腹痛; 生理痛,ja
+15,60代男性で胃が弱く、下痢をしやすいです。,60,男性,False,False,null,null,胃が弱い; 下痢をしやすい,null,False,下痢,ja
+16,30代女性で肌が弱く、最近顔にかゆみがあります。,35,女性,False,False,null,null,null,アレルギー体質,False,かゆみ,ja
+17,50代男性でお酒をよく飲みます。二日酔いと頭痛がひどいです。,50,男性,False,False,null,null,null,null,False,頭痛,ja
+18,40代女性で花粉症持ちです。目がかゆく鼻水が止まりません。,40,女性,False,False,花粉症,null,null,アレルギー体質,False,鼻水; 花粉症,ja
+19,20代男性で夜更かしが多く、目の疲れと肩こりがあります。,20,男性,False,False,null,null,null,null,False,肩こり; 疲れ,ja
+20,10代女性でニキビが増えてきました。,15,女性,False,False,null,null,null,null,False,null,ja
+21,70代女性で足の関節が痛みます。歩くのがつらいです。,70,女性,False,False,null,null,null,null,False,null,ja
+22,30代男性でデスクワーク中心です。首と肩が凝って頭痛がします。,35,男性,False,False,null,null,null,null,False,頭痛,ja
+23,60代女性で便秘と胃の張りがあります。,60,女性,False,False,null,null,便秘,null,False,便秘,ja
+24,40代男性で寝不足気味で目の充血と頭重感があります。,40,男性,False,False,null,null,null,null,False,null,ja
+25,30代女性でダイエット中ですが、便秘がひどくなっています。,35,女性,False,False,null,null,便秘,便秘しやすい,False,便秘,ja
+26,50代男性で慢性的な腰痛があります。,50,男性,False,False,null,null,慢性的な腰痛,null,False,腰痛,ja
+27,20代女性でストレスが多く、胃が痛くなることがあります。,20,女性,False,False,null,null,null,null,False,ストレス,ja
+28,30代男性でアトピーがあります。手の湿疹が悪化しています。,35,男性,False,False,アトピー,null,null,null,False,湿疹,ja
+29,40代女性で喉の違和感と乾いた咳が続いています。,40,女性,False,False,null,null,null,null,False,咳,ja
+30,60代男性で高脂血症の薬を飲んでいます。最近頭が重いです。,60,男性,False,False,null,高脂血症の薬,null,null,False,null,ja
+31,妊娠初期の女性で、つわりがひどく吐き気があります。,null,女性,True,False,null,null,null,null,False,吐き気; つわり,ja
+32,授乳中の女性で鼻がつまって息苦しいです。,null,女性,False,True,null,null,null,null,False,息苦しい,ja
+33,30代男性で偏頭痛持ちです。今朝からズキズキ痛みます。,35,男性,False,False,null,null,偏頭痛,null,False,頭痛,ja
+34,50代女性で目が疲れやすくドライアイ気味です。,50,女性,False,False,null,null,null,null,False,疲れ,ja
+35,20代男性で運動後に筋肉痛があります。,20,男性,False,False,null,null,null,null,True,筋肉痛,ja
+36,40代女性でストレスが多く、不眠気味です。,40,女性,False,False,null,null,null,null,False,不眠; ストレス,ja
+37,60代男性で関節が痛み、特に膝がつらいです。,60,男性,False,False,null,null,null,null,False,null,ja
+38,30代女性で肌が乾燥してかゆみがあります。,35,女性,False,False,null,null,null,null,False,かゆみ,ja
+39,70代女性で血圧の薬を飲んでいます。咳が止まりません。,70,女性,False,False,null,血圧の薬,null,null,False,咳,ja
+40,20代女性で喉が痛く声がかすれています。,20,女性,False,False,null,null,null,null,False,null,ja
+41,40代男性で鼻づまりと頭の重さがあります。,40,男性,False,False,null,null,null,null,False,鼻づまり,ja
+42,30代女性で目がかゆく、涙が止まりません。,35,女性,False,False,アレルギー,null,null,アレルギー体質,False,null,ja
+43,50代男性で胃が重く食欲がありません。,50,男性,False,False,null,null,null,null,False,null,ja
+44,60代女性で足がむくんでだるいです。,60,女性,False,False,null,null,null,null,False,null,ja
+45,20代男性で夜寝つけず、朝もだるいです。,20,男性,False,False,null,null,null,null,False,null,ja
+46,30代女性で冷えと肩こりがひどいです。,35,女性,False,False,null,null,null,冷え性,False,肩こり; 冷え,ja
+47,40代男性で風邪気味で、喉がイガイガします。,40,男性,False,False,null,null,null,null,False,null,ja
+48,50代女性で便秘がちでお腹が痛いです。,50,女性,False,False,null,null,便秘,便秘しやすい,False,便秘,ja
+49,60代男性で眠気が取れず集中できません。,60,男性,False,False,null,null,null,null,False,null,ja
+50,70代女性で食後に胃もたれします。,70,女性,False,False,null,null,null,null,False,胃もたれ,ja
+51,30代男性でタバコを吸っています。咳が止まりません。,35,男性,False,False,null,null,null,null,False,咳,ja
+52,20代女性で肌が荒れてかゆいです。,20,女性,False,False,null,null,null,null,False,null,ja
+53,40代男性でアレルギー性鼻炎があります。鼻水が止まりません。,40,男性,False,False,アレルギー性鼻炎,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+54,50代女性で目が疲れ、頭も重いです。,50,女性,False,False,null,null,null,null,False,疲れ,ja
+55,30代男性で二日酔いと吐き気があります。,35,男性,False,False,null,null,null,null,False,吐き気,ja
+56,60代女性で便秘と胃の張りがあります。,60,女性,False,False,null,null,便秘,null,False,便秘,ja
+57,40代男性で喉の痛みと発熱があります。,40,男性,False,False,null,null,null,null,False,発熱; 喉の痛み,ja
+58,20代女性で肌が乾燥して粉を吹いています。,20,女性,False,False,null,null,null,null,False,null,ja
+59,30代男性で風邪気味で鼻水が出ています。,35,男性,False,False,null,null,null,null,False,鼻水,ja
+60,50代女性で更年期のせいか頭痛がします。,50,女性,False,False,null,null,null,null,False,頭痛; 更年期,ja
+61,60代男性で腰が痛く歩くのがつらいです。,60,男性,False,False,null,null,null,null,False,null,ja
+62,30代女性で生理不順と腹痛があります。,35,女性,False,False,null,null,生理不順; 腹痛,null,False,腹痛; 生理不順,ja
+63,20代男性で胃がムカムカします。,20,男性,False,False,null,null,null,null,False,null,ja
+64,70代女性で眠れない夜が続いています。,70,女性,False,False,null,null,null,null,False,眠れない,ja
+65,40代男性で頭痛と肩こりがひどいです。,40,男性,False,False,null,null,null,null,False,頭痛; 肩こり,ja
+66,50代女性で肌が乾燥してかゆいです。,50,女性,False,False,null,null,null,null,False,null,ja
+67,60代男性で花粉症がひどく、くしゃみが止まりません。,60,男性,False,False,花粉症,null,null,null,False,花粉症; くしゃみ,ja
+68,30代女性で冷え性で手足が冷たいです。,35,女性,False,False,null,null,null,冷え性,False,冷え,ja
+69,20代男性で鼻が詰まって息苦しいです。,20,男性,False,False,null,null,null,null,False,息苦しい,ja
+70,40代女性で風邪気味で喉が痛いです。,40,女性,False,False,null,null,null,null,False,喉が痛い,ja
+71,50代男性で目の充血と疲れがあります。,50,男性,False,False,null,null,null,null,False,疲れ,ja
+72,30代女性で肌荒れと吹き出物が増えています。,35,女性,False,False,null,null,null,null,False,null,ja
+73,60代男性で便秘がちでお腹が重いです。,60,男性,False,False,null,null,便秘,便秘しやすい,False,便秘,ja
+74,20代女性で立ちくらみとめまいがあります。,20,女性,False,False,null,null,null,null,False,めまい; 立ちくらみ,ja
+75,70代女性で腰が重く痛みます。,70,女性,False,False,null,null,null,null,False,null,ja
+76,40代男性で肩がこって頭痛がします。,40,男性,False,False,null,null,null,null,False,頭痛,ja
+77,50代女性で眠れず疲れが取れません。,50,女性,False,False,null,null,null,null,False,疲れ,ja
+78,60代男性で鼻がつまって頭が重いです。,60,男性,False,False,null,null,null,null,False,null,ja
+79,30代女性で生理痛が強くつらいです。,35,女性,False,False,null,null,null,null,False,生理痛,ja
+80,20代男性で喉が乾いて痛みます。,20,男性,False,False,null,null,null,null,False,null,ja
+81,40代女性で冷えと便秘が同時にあります。,40,女性,False,False,null,null,便秘,冷え性,False,便秘; 冷え,ja
+82,50代男性で腰痛と足のしびれがあります。,50,男性,False,False,null,null,null,null,False,腰痛,ja
+83,60代女性で肌がかゆく乾燥しています。,60,女性,False,False,null,null,null,null,False,null,ja
+84,70代男性で関節が痛く歩くのが大変です。,70,男性,False,False,null,null,null,null,False,null,ja
+85,30代女性で目が乾いて痛みます。,35,女性,False,False,null,null,null,null,False,null,ja
+86,20代男性で喉がかれて声が出にくいです。,20,男性,False,False,null,null,null,null,False,null,ja
+87,40代女性で咳と痰が続いています。,40,女性,False,False,null,null,null,null,False,咳,ja
+88,50代男性でお腹が痛く下痢をしています。,50,男性,False,False,null,null,null,null,False,下痢,ja
+89,60代女性で胃の調子が悪く食欲がありません。,60,女性,False,False,null,null,null,null,False,null,ja
+90,70代男性で頭が重くめまいがあります。,70,男性,False,False,null,null,null,null,False,めまい,ja
+91,30代女性で冷えと肩こりが気になります。,35,女性,False,False,null,null,null,冷え性,False,肩こり; 冷え,ja
+92,20代男性で鼻水とくしゃみが止まりません。,20,男性,False,False,花粉症,null,null,アレルギー体質,False,鼻水; くしゃみ,ja
+93,40代女性で肌の乾燥がひどく、粉を吹いています。,40,女性,False,False,null,null,null,null,False,null,ja
+94,50代男性で疲れが取れず体がだるいです。,50,男性,False,False,null,null,null,null,False,疲れ,ja
+95,60代女性で喉が痛く声がかすれます。,60,女性,False,False,null,null,null,null,False,null,ja
+96,70代男性で咳が長引いています。,70,男性,False,False,null,null,null,null,False,咳,ja
+97,30代女性で頭痛とめまいがあります。,35,女性,False,False,null,null,null,null,False,頭痛; めまい,ja
+98,20代男性で鼻がつまって眠れません。,20,男性,False,False,null,null,null,null,False,null,ja
+99,40代女性でお腹が張って苦しいです。,40,女性,False,False,null,null,null,null,False,null,ja
+100,50代男性で喉が乾燥して痛みます。,50,男性,False,False,null,null,null,null,False,null,ja
+101,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+102,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+103,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+104,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+105,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+106,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+107,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+108,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+109,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+110,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+111,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+112,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+113,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+114,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+115,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+116,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+117,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+118,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+119,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+120,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+121,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+122,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+123,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+124,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+125,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+126,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+127,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+128,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+129,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+130,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+131,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+132,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+133,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+134,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+135,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+136,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+137,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+138,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+139,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+140,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+141,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+142,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+143,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+144,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+145,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+146,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+147,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+148,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+149,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+150,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+151,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+152,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+153,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+154,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+155,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+156,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+157,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+158,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+159,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+160,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+161,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+162,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+163,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+164,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+165,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+166,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+167,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+168,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+169,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+170,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+171,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+172,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+173,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+174,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+175,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+176,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+177,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+178,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+179,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+180,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+181,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+182,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+183,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+184,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+185,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+186,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+187,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+188,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+189,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+190,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+191,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+192,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+193,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+194,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+195,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+196,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+197,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+198,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+199,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+200,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+201,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+202,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+203,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+204,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+205,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+206,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+207,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+208,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+209,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+210,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+211,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+212,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+213,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+214,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+215,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+216,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+217,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+218,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+219,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+220,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+221,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+222,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+223,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+224,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+225,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+226,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+227,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+228,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+229,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+230,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+231,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+232,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+233,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+234,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+235,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+236,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+237,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+238,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+239,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+240,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+241,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+242,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+243,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+244,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+245,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+246,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+247,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+248,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+249,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+250,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+251,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+252,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+253,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+254,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+255,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+256,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+257,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+258,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+259,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+260,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+261,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+262,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+263,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+264,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+265,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+266,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+267,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+268,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+269,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+270,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+271,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+272,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+273,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+274,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+275,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+276,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+277,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+278,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+279,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+280,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+281,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+282,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+283,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+284,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+285,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+286,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+287,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+288,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+289,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+290,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+291,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+292,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+293,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+294,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+295,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+296,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+297,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+298,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+299,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+300,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+301,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+302,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+303,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+304,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+305,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+306,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+307,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+308,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+309,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+310,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+311,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+312,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+313,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+314,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+315,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+316,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+317,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+318,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+319,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+320,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+321,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+322,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+323,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+324,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+325,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+326,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+327,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+328,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+329,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+330,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+331,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+332,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+333,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+334,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+335,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+336,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+337,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+338,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+339,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+340,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+341,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+342,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+343,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+344,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+345,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+346,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+347,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+348,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+349,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+350,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+351,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+352,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+353,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+354,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+355,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+356,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+357,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+358,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+359,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+360,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+361,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+362,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+363,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+364,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+365,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+366,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+367,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+368,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+369,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+370,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+371,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+372,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+373,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+374,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+375,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+376,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+377,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+378,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+379,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+380,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+381,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+382,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+383,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+384,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+385,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+386,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+387,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+388,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+389,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+390,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+391,30代女性で妊娠中ですが、喉の痛みと咳が続いています。,35,女性,True,False,null,null,null,null,False,咳; 喉の痛み,ja
+392,60代男性で血圧の薬を服用中、鼻づまりがひどいです。,60,男性,False,False,null,血圧の薬,null,null,False,鼻づまり,ja
+393,40代女性で授乳中、頭痛と肩こりがつらいです。,40,女性,False,True,null,null,null,null,False,頭痛; 肩こり,ja
+394,20代男性で、花粉アレルギーがあり、目がかゆく鼻水が止まりません。,20,男性,False,False,花粉アレルギー,null,null,アレルギー体質,False,鼻水; アレルギー,ja
+395,50代男性で糖尿病治療中に喉が渇いて眠れません。,50,男性,False,False,null,null,糖尿病,null,False,null,ja
+396,妊娠5ヶ月で便秘とお腹の張りを感じています。,null,女性,True,False,null,null,便秘,null,False,便秘,ja
+397,30代男性で、風邪気味で発熱と倦怠感があります。,35,男性,False,False,null,null,null,null,False,発熱; 倦怠感,ja
+398,70代女性で、高血圧の薬を飲んでいますがめまいがします。,70,女性,False,False,null,高血圧の薬,高血圧,null,False,めまい,ja
+399,10歳の子どもが発熱して食欲がありません。,10,女の子,False,False,null,null,null,null,False,発熱,ja
+400,20代女性で、生理痛がひどく腰が重いです。,20,女性,False,False,null,null,null,null,False,生理痛,ja
+401,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+402,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+403,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+404,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+405,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+406,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+407,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+408,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+409,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+410,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+411,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+412,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+413,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+414,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+415,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+416,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+417,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+418,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+419,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+420,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+421,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+422,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+423,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+424,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+425,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+426,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+427,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+428,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+429,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+430,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+431,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+432,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+433,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+434,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+435,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+436,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+437,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+438,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+439,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+440,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+441,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+442,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+443,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+444,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+445,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+446,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+447,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+448,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+449,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+450,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+451,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+452,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+453,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+454,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+455,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+456,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+457,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+458,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+459,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+460,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+461,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+462,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+463,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+464,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+465,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+466,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+467,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+468,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+469,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+470,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+471,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+472,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+473,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+474,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+475,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+476,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+477,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+478,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+479,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+480,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+481,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+482,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+483,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+484,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+485,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+486,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+487,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+488,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+489,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+490,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
+491,喉が痛くて咳が止まりません。,null,null,False,False,null,null,null,null,False,咳,ja
+492,頭痛と発熱が2日ほど続いています。,null,null,False,False,null,null,null,null,False,頭痛; 発熱,ja
+493,鼻水が止まらず、夜眠れません。,null,null,False,False,null,null,null,null,False,鼻水,ja
+494,肩こりと腰痛がひどいです。,null,null,False,False,null,null,null,null,False,肩こり; 腰痛,ja
+495,胃がムカムカして食欲がありません。,null,null,False,False,null,null,null,null,False,null,ja
+496,目が乾いてかゆいです。,null,null,False,False,null,null,null,null,False,null,ja
+497,吐き気がして立っていられません。,null,null,False,False,null,null,null,null,False,吐き気,ja
+498,手足の関節が痛いです。,null,null,False,False,null,null,null,null,False,null,ja
+499,お腹が痛くて下痢が続いています。,null,null,False,False,null,null,null,null,False,下痢,ja
+500,喉の違和感が取れません。,null,null,False,False,null,null,null,null,False,null,ja
