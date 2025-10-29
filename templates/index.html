@@ -438,6 +438,12 @@
             box-sizing: border-box;
             position: relative;
         }
+        /* 危機（エスカレーション）カードの強調スタイル */
+        .recommendation-result.escalation {
+            background: #ffebee;
+            border: 1px solid #f5c6cb;
+            border-left: 4px solid #dc3545;
+        }
         
         .recommendation-result h4 {
             color: #000;
@@ -4218,7 +4224,7 @@
                 messageDiv.className = 'message bot';
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (message.content && (message.content.includes('<div class="recommendation-result">') || 
+                if (message.content && (message.content.includes('<div class="recommendation-result') || 
                                        message.content.includes('<div class="chat-response">'))) {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示
                     // 管理画面専用のスコア情報を除去

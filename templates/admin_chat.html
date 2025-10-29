@@ -120,6 +120,11 @@
             font-size: 0.9rem;
             line-height: 1.4;
         }
+        .recommendation-result.escalation {
+            background: #ffebee;
+            border: 1px solid #f5c6cb;
+            border-left: 4px solid #dc3545;
+        }
 
         /* AI応答の表示調整 */
         .ai-response {
@@ -2696,7 +2701,7 @@
                         type: msg.type,
                         hasDiagnosis: !!(msg.diagnosis && msg.diagnosis.recommended_medicines),
                         hasContent: !!(msg.content && msg.content.includes('推奨医薬品')),
-                        hasContentHtml: !!(msg.content && msg.content.includes('<div class="recommendation-result">')),
+                        hasContentHtml: !!(msg.content && msg.content.includes('<div class="recommendation-result')),
                         hasTrophy: !!(msg.content && msg.content.includes('🏆'))
                     });
                     
@@ -2704,7 +2709,7 @@
                         (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
                         (msg.content && (
                             msg.content.includes('推奨医薬品') ||
-                            msg.content.includes('<div class="recommendation-result">') ||
+                            msg.content.includes('<div class="recommendation-result') ||
                             msg.content.includes('🏆')
                         ))
                     );
@@ -2814,7 +2819,7 @@
 
                     // msg.contentにHTMLが含まれている場合は、ボタンを追加してから表示
                     // ただし、管理者用の再描画（hasAdminDiagMeds）が可能な場合は上書きしない
-                    if (!hasAdminDiagMeds && msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                    if (!hasAdminDiagMeds && msg.content && msg.content.includes('<div class="recommendation-result')) {
                         let modifiedContent = msg.content;
                         
                         // 詳細診断（管理者向け）を優先
@@ -2856,7 +2861,7 @@
                     if (msg.type === 'user') {
                         messageContentHtml = escapeHtml(contentText);
                     } else if (msg.type === 'bot') {
-                        if (contentText.includes('<div class="chat-response">')) {
+                        if (contentText.includes('<div class="chat-response">') || contentText.includes('<div class="recommendation-result')) {
                             messageContentHtml = contentText;
                         } else {
                             messageContentHtml = escapeHtml(contentText);
