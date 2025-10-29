@@ -1477,6 +1477,91 @@
             margin: 15px 0;
         }
 
+        /* 危機対応相談先カードのスタイル */
+        .crisis-support-card {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid #2196f3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+            width: 100%;
+            min-height: 200px;
+            box-sizing: border-box;
+        }
+
+        .crisis-support-title {
+            color: #1565c0;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .crisis-support-message {
+            color: #1976d2;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .resource-item {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .resource-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .resource-org {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .resource-contact {
+            color: #1976d2;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .resource-description {
+            color: #34495e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .emergency-message {
+            background: #1976d2;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .resource-link {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+
         /* 一覧ページスタイル */
         .list-page {
             padding: 20px;
@@ -1610,6 +1695,29 @@
                 padding: 8px 16px;
                 font-size: 13px;
             }
+            
+            /* スマホでの言語選択アイコンの位置調整 */
+            .language-selector {
+                top: 5px;
+                left: 5px;
+                z-index: 1000;
+            }
+            
+            .lang-toggle {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 50px;
+            }
+            
+            /* descriptionの上マージンを追加して重なりを防ぐ */
+            .chat-header h1 {
+                margin-top: 50px;
+            }
+            
+            .chat-header p {
+                margin-top: 10px;
+                padding-right: 60px; /* 右側の情報ボタンとの間隔を確保 */
+            }
         }
         
         @media (max-width: 480px) {
@@ -1630,6 +1738,28 @@
             
             .list-item-description {
                 font-size: 10px;
+            }
+            
+            /* より小さなスマホでの調整 */
+            .language-selector {
+                top: 3px;
+                left: 3px;
+            }
+            
+            .lang-toggle {
+                padding: 5px 8px;
+                font-size: 11px;
+                min-width: 45px;
+            }
+            
+            .chat-header h1 {
+                margin-top: 45px;
+                font-size: 24px;
+            }
+            
+            .chat-header p {
+                font-size: 13px;
+                padding-right: 50px;
             }
         }
     </style>
@@ -1966,6 +2096,11 @@
             bugReportSubmitted: "不具合報告を送信しました",
             bugReportFailed: "不具合報告の送信に失敗しました",
             
+            // 危機対応メッセージ
+            crisisSupportTitle: "あなたの気持ちを大切に思っています",
+            crisisSupportMessage: "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。",
+            crisisEmergency: "緊急の場合は、すぐに119番（救急）または110番（警察）に連絡してください。",
+            
             // モーダル関連
             infoButton: "アプリ情報",
             appInfo: "アプリ概要",
@@ -2038,6 +2173,11 @@
             bugReportPrompt: "Please describe the issue in detail",
             bugReportSubmitted: "Bug report submitted",
             bugReportFailed: "Failed to submit bug report",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "Your feelings matter",
+            crisisSupportMessage: "Professional support is available. Please contact a crisis counselor.",
+            crisisEmergency: "In emergency, call 119 (ambulance) or 110 (police) immediately.",
             
             // モーダル関連
             infoButton: "App Info",
@@ -2112,6 +2252,11 @@
             bugReportSubmitted: "버그 신고가 제출되었습니다",
             bugReportFailed: "버그 신고 제출에 실패했습니다",
             
+            // 危機対応メッセージ
+            crisisSupportTitle: "당신의 마음을 소중히 생각합니다",
+            crisisSupportMessage: "전문 상담사가 도움을 드릴 수 있습니다. 위기 상담원에게 연락하세요.",
+            crisisEmergency: "응급상황 시 즉시 119(구급차) 또는 110(경찰)에 연락하세요.",
+            
             // モーダル関連
             infoButton: "앱 정보",
             appInfo: "앱 개요",
@@ -2184,6 +2329,11 @@
             bugReportPrompt: "请详细说明问题",
             bugReportSubmitted: "错误报告已提交",
             bugReportFailed: "错误报告提交失败",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "我们关心您的感受",
+            crisisSupportMessage: "专业支持服务可用。请联系危机咨询师。",
+            crisisEmergency: "紧急情况请立即拨打119（救护车）或110（警察）。",
             
             // モーダル関連
             infoButton: "应用信息",
@@ -3630,6 +3780,57 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // 危機対応相談先情報を表示する関数
+    function displayCrisisSupportResources(message) {
+        if (!message.crisis_support || !message.resources) {
+            return '';
+        }
+        
+        const t = translations[currentLanguage];
+        let resourcesHtml = `
+            <div class="crisis-support-card">
+                <div class="crisis-support-title">${message.crisis_title || t.crisisSupportTitle}</div>
+                <div class="crisis-support-message">${message.content || t.crisisSupportMessage}</div>
+                <div class="crisis-support-message">信頼できる相談先をご紹介します：</div>
+        `;
+        
+        message.resources.forEach(resource => {
+            resourcesHtml += `
+                <div class="resource-item">
+                    <div class="resource-name">${resource.name}</div>
+                    <div class="resource-org">${resource.organization}</div>
+            `;
+            
+            if (resource.phone) {
+                resourcesHtml += `<div class="resource-contact">📞 ${resource.phone}</div>`;
+            }
+            if (resource.line) {
+                resourcesHtml += `<div class="resource-contact">💬 <a href="${resource.line}" target="_blank" class="resource-link">LINEで相談する</a></div>`;
+            }
+            if (resource.line_qr) {
+                resourcesHtml += `<div class="resource-contact" style="margin-top: 10px;">
+                    <div style="font-size: 14px; margin-bottom: 5px;">📱 QRコードで追加:</div>
+                    <img src="${resource.line_qr}" alt="LINE QRコード" style="width: 120px; height: 120px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>`;
+            }
+            if (resource.website) {
+                resourcesHtml += `<div class="resource-contact">🌐 <a href="${resource.website}" target="_blank" class="resource-link">ウェブサイト</a></div>`;
+            }
+            if (resource.hours) {
+                resourcesHtml += `<div class="resource-contact">⏰ ${resource.hours}</div>`;
+            }
+            
+            resourcesHtml += `<div class="resource-description">${resource.description}</div></div>`;
+        });
+        
+        if (message.emergency_message) {
+            resourcesHtml += `<div class="emergency-message">${message.emergency_message}</div>`;
+        }
+        
+        resourcesHtml += '</div>';
+        return resourcesHtml;
+    }
+
     // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
         fetch('/api/sessions?v={{ version }}', {
@@ -4238,6 +4439,10 @@
                     cleanedContent = tempDiv.innerHTML;
                     
                     messageDiv.innerHTML = cleanedContent;
+                }
+                // 危機対応メッセージの特別表示
+                else if (message.crisis_support) {
+                    messageDiv.innerHTML = displayCrisisSupportResources(message);
                 }
                 // 従来の形式
                 else {
