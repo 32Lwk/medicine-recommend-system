@@ -1563,17 +1563,22 @@ def index():
                         escaped_user_message = html.escape(user_message)
                         escalation_content = f"""
 <div class="recommendation-result escalation">
-    <h4>🚨 危機対応メッセージ</h4>
-    <p class="escalation-warning" style="white-space: pre-wrap;"><strong>{doctor_consultation}</strong></p>
-    <p><strong>医薬品の種類:</strong> {medicine_type}</p>
-    <p><strong>アルゴリズム:</strong> {recommendation_result.get('algorithm', 'unknown')}</p>
-    
-    <h4>🏥 推奨される対応</h4>
-    <ul>
-        <li>速やかに医師の診察を受けてください</li>
-        <li>市販薬での自己治療は推奨されません</li>
-        <li>緊急の危険がある場合は 119/110 に連絡してください</li>
-    </ul>
+    <h4>💙 そっとお伝えしたいこと</h4>
+    <p style="white-space: pre-wrap; line-height: 1.7;">
+        いま、とてもつらいお気持ちかもしれません。ここでは、あなたのペースを大切にします。<br>
+        もしよろしければ、安心してお話できる相談先をご案内します。<br>
+        ご利用はいつでも、必要だと感じたときで大丈夫です。
+    </p>
+    <div style="background: #ffffff; border: 1px solid #bbdefb; border-left: 3px solid #2196f3; border-radius: 6px; padding: 12px; margin-top: 10px;">
+        <strong>ご相談先のご案内（日本）</strong>
+        <ul style="margin: 8px 0 0 18px;">
+            <li>いのちの電話（10:00-22:00 / 毎日16:00-21:00）</li>
+            <li>こころの健康相談統一ダイヤル</li>
+            <li>よりそいホットライン（24時間）</li>
+        </ul>
+        <small style="display:block; color:#1976d2; margin-top:6px;">※ 詳細は下記の相談先情報（管理側で確認）や公式サイト等をご参照ください。</small>
+        <small style="display:block; color:#546e7a; margin-top:6px;">※ もし今すぐの安全に不安がある場合は、近くの方や医療機関に連絡する選択肢もあります。</small>
+    </div>
 </div>"""
                         
                         escalation_data = {
