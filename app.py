@@ -1891,9 +1891,9 @@ def index():
                     
                         bot_diag = recommendation_result
                         
-                        # 多言語対応: UI言語に応じて翻訳
+                        # 多言語対応: UI言語に応じて翻訳（危機対応時はスキップ）
                         ui_language = session.get('ui_language', 'ja')
-                        if ui_language != 'ja' and bot_content:
+                        if ui_language != 'ja' and bot_content and not (bot_diag and isinstance(bot_diag, dict) and bot_diag.get('escalation')):
                             try:
                                 logger.info(f"🌍 翻訳開始: {ui_language}")
                                 translated_content = translate_medicine_recommendation(bot_content, ui_language, client)
