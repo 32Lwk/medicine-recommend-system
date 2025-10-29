@@ -284,6 +284,22 @@ def translate_medicine_recommendation(text, target_language, client=None):
     """
     if not text or target_language == 'ja':
         return text  # 日本語の場合は翻訳不要
+
+    # エスカレーション（危機対応）コンテンツは翻訳せず原文のまま返す
+    crisis_markers = [
+        "重要な注意事項", "緊急の連絡先", "いのちの電話", "自殺", "自死", "OD", "オーバードーズ"
+    ]
+    try:
+        lower_text = str(text)
+        if any(marker in lower_text for marker in crisis_markers):
+            return text
+    except Exception:
+        # 万一の型不整合は翻訳スキップ
+        return text
+
+    # 入力が長すぎる場合は翻訳をスキップ（ワーカー負荷軽減）
+    if isinstance(text, str) and len(text) > 6000:
+        return text
     
     if client is None:
         from openai import OpenAI
@@ -319,7 +335,7 @@ def translate_medicine_recommendation(text, target_language, client=None):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_tokens=800
         )
         
         translated_text = response.choices[0].message.content.strip()
@@ -329,6 +345,38 @@ def translate_medicine_recommendation(text, target_language, client=None):
     except Exception as e:
         print(f"翻訳エラー: {e}")
         return text  # 翻訳に失敗した場合は元のテキストを返す
+
+# 危機関連ワードを検出
+def detect_crisis_text(user_text: str) -> bool:
+    if not user_text:
+        return False
+    import re
+    crisis_patterns = [
+        r"自殺", r"自死", r"死にたい", r"消えたい", r"生きていたくない", r"命を絶ちたい",
+        r"首を", r"飛び降り", r"リスカ", r"OD", r"オーバードーズ", r"手首を切",
+        r"kill myself", r"suicide", r"self[-_ ]?harm"
+    ]
+    return any(re.search(pat, user_text, re.IGNORECASE) for pat in crisis_patterns)
+
+def build_crisis_escalation_result() -> dict:
+    # ルールベース実装と整合する緊急メッセージ
+    crisis_message = (
+        "今は医薬品の提案ではなく、直ちに専門の窓口や身近な方への連絡を優先してください。\n\n"
+        "【緊急の連絡先（日本）】\n"
+        "・救急/警察: 119 / 110（緊急時）\n"
+        "・こころの健康相談統一ダイヤル: 0570-064-556\n"
+        "・よりそいホットライン: 0120-279-338（24時間）\n"
+        "・いのちの電話: 0570-783-556（10:00-22:00）／0120-783-556（毎日16:00-21:00）\n\n"
+        "ひとりで抱えず、今すぐ安全な場所で支援を受けてください。"
+    )
+    return {
+        'symptoms': [],
+        'medicine_type': 'その他',
+        'recommended_medicines': [],
+        'usage_notes': '',
+        'doctor_consultation': crisis_message,
+        'escalation': True
+    }
 
 # Markdown太文字をHTML太文字に変換する関数
 def convert_markdown_bold(text):
@@ -1134,7 +1182,8 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
         return {
             "recommended_medicines": [],
             "usage_notes": "入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。",
-            "doctor_consultation": "医師にご相談ください。"
+            "doctor_consultation": "医師にご相談ください。",
+            "escalation": True
         }
     
     # 高リスク入力の場合は医薬品推奨を停止
@@ -1143,7 +1192,8 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
         return {
             "recommended_medicines": [],
             "usage_notes": "入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。",
-            "doctor_consultation": "医師にご相談ください。"
+            "doctor_consultation": "医師にご相談ください。",
+            "escalation": True
         }
     
     if client is None:
@@ -1444,6 +1494,17 @@ def comprehensive_medicine_recommendation(user_text, client=None):
     """
     print(f"=== 包括的医薬品推奨システム開始 ===")
     print(f"症状文: {user_text}")
+
+    # 危機関連（自傷・自殺・OD等）を早期検知して即エスカレーション
+    try:
+        if detect_crisis_text(user_text):
+            print("[警告] 危機関連表現を検出。推奨処理をスキップしてエスカレーションを返却")
+            result = build_crisis_escalation_result()
+            # ChatGPTベース経路でも分かるように明示
+            result['algorithm'] = 'chatgpt'
+            return result
+    except Exception as e:
+        print(f"危機検知処理エラー: {e}")
     
     # ステップ1: 症状と医薬品の種類を分析
     analysis_result = analyze_symptoms_and_medicine_type(user_text, client)
