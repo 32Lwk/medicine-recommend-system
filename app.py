@@ -1011,7 +1011,6 @@ def index():
                             logger.info("フォールバック: 正規表現による抽出に切り替えます")
                             
                             # フォールバック: 正規表現による抽出
-                            import re
                             
                             # 年齢（日本語と英語）
                             age_match = re.search(r'(\d+)歳', user_message)
@@ -1377,7 +1376,6 @@ def index():
                         })
                         
                         # メッセージから属性情報を抽出してセッションに保存
-                        import re
                         
                         # 年齢の抽出
                         age_match = re.search(r'(\d+)\s*歳', user_message)
@@ -1789,7 +1787,6 @@ def index():
                                     
                                     # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
                                     if age_restriction and isinstance(age_restriction, str):
-                                        import re
                                         # 数値のみを抽出（例：「15歳以上」→「15」）
                                         age_match = re.search(r'(\d+)歳', age_restriction)
                                         if age_match:
@@ -1805,7 +1802,6 @@ def index():
                                             age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳以上の方が対象です。</span></p>'
                                         else:
                                             # その他の年齢制限がある場合
-                                            import re
                                             match = re.search(r'(\d+)歳', age_restriction)
                                             if match:
                                                 age_restriction_display = f'<p><strong>年齢制限:</strong> {age_restriction}</p>'
