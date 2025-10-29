@@ -1563,8 +1563,8 @@ def index():
                         escaped_user_message = html.escape(user_message)
                         escalation_content = f"""
 <div class="recommendation-result escalation">
-    <h4>⚠️ 重要な注意事項</h4>
-    <p class="escalation-warning"><strong>{doctor_consultation}</strong></p>
+    <h4>🚨 危機対応メッセージ</h4>
+    <p class="escalation-warning" style="white-space: pre-wrap;"><strong>{doctor_consultation}</strong></p>
     <p><strong>医薬品の種類:</strong> {medicine_type}</p>
     <p><strong>アルゴリズム:</strong> {recommendation_result.get('algorithm', 'unknown')}</p>
     
@@ -1572,7 +1572,7 @@ def index():
     <ul>
         <li>速やかに医師の診察を受けてください</li>
         <li>市販薬での自己治療は推奨されません</li>
-        <li>症状が悪化する場合は救急医療機関へ</li>
+        <li>緊急の危険がある場合は 119/110 に連絡してください</li>
     </ul>
 </div>"""
                         
@@ -1585,6 +1585,39 @@ def index():
                         # JSONエンコードしてHTMLエスケープ
                         escalation_json = html.escape(json.dumps(escalation_data, ensure_ascii=False))
                         
+                        # 管理画面での危機表示用メタ情報
+                        crisis_meta_fields = {
+                            'crisis_support': True,
+                            'crisis_title': 'あなたの気持ちを大切に思っています',
+                            'resources': [
+                                {
+                                    'name': 'いのちの電話',
+                                    'organization': '一般社団法人 日本いのちの電話連盟',
+                                    'phone': '0570-783-556 / 0120-783-556',
+                                    'website': 'https://www.inochinodenwa.org/',
+                                    'hours': '10:00-22:00（0570）/ 毎日16:00-21:00（0120）',
+                                    'description': 'つらい気持ちを話せる相談窓口'
+                                },
+                                {
+                                    'name': 'こころの健康相談統一ダイヤル',
+                                    'organization': '厚生労働省',
+                                    'phone': '0570-064-556',
+                                    'website': 'https://www.mhlw.go.jp/kokoro/nationwide_support.html',
+                                    'hours': '各自治体の窓口につながります',
+                                    'description': 'こころの悩み・不安の相談先'
+                                },
+                                {
+                                    'name': 'よりそいホットライン',
+                                    'organization': '一般社団法人 社会的包摂サポートセンター',
+                                    'phone': '0120-279-338',
+                                    'website': 'https://www.since2011.net/yorisoi/',
+                                    'hours': '24時間対応',
+                                    'description': '生きづらさや困難に寄り添う相談窓口'
+                                }
+                            ],
+                            'emergency_message': '直ちに危険がある場合は 119/110 に連絡し、安全な場所で支援を受けてください'
+                        }
+
                         bot_content = escalation_content + f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この重要な注意事項はいかがでしたか？</p>
@@ -1596,6 +1629,33 @@ def index():
         </button>
     </div>
 </div>"""
+                        # 危機検知時は手動返信キューに高優先度で登録し、セッションにもフラグ付与
+                        try:
+                            from datetime import datetime as _dt
+                            username = session.get('username', 'unknown')
+                            # 危機キーワードの抽出（簡易）
+                            import re as _re
+                            _patterns = [r"自殺", r"自死", r"死にたい", r"消えたい", r"生きていたくない", r"命を絶ちたい", r"kill myself", r"suicide", r"self[-_ ]?harm", r"OD", r"オーバードーズ", r"リスカ"]
+                            matched = list({p for p in _patterns if _re.search(p, user_message or '', _re.IGNORECASE)})
+                            # 既存の同一危機通知が無ければ追加
+                            exists = any(item.get('session_id') == sid and item.get('status') == 'crisis_detected' for item in MANUAL_REPLY_QUEUE)
+                            if not exists:
+                                MANUAL_REPLY_QUEUE.append({
+                                    'session_id': sid,
+                                    'username': username,
+                                    'user_message': user_message,
+                                    'timestamp': _dt.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    'status': 'crisis_detected',
+                                    'priority': 'high',
+                                    'crisis_keywords': matched
+                                })
+                            # セッションに危機フラグ
+                            if sid:
+                                if sid not in ALL_SESSIONS:
+                                    ALL_SESSIONS[sid] = {'messages': []}
+                                ALL_SESSIONS[sid]['crisis_detected'] = True
+                        except Exception as _e:
+                            logger.warning(f"⚠️ 危機キュー更新時エラー: {_e}")
                     else:
                         # 通常の推奨結果の表示
                         algorithm_label = {
@@ -1962,10 +2022,13 @@ def index():
                     ADMIN_SESSIONS[sid]['last_updated'] = time.time()
                     logger.info(f"💾 管理者専用詳細情報を保存: {sid} (session_id付与済み)")
                 
+                # 危機メタ情報があればメッセージに付与
+                extra_meta = locals().get('crisis_meta_fields', {}) if isinstance(locals().get('crisis_meta_fields', {}), dict) else {}
                 bot_response = {
                     'type': 'bot',
                     'content': bot_content,
-                    'diagnosis': sanitized_diagnosis
+                    'diagnosis': sanitized_diagnosis,
+                    **extra_meta
                 }
             
             # bot_responseが定義されている場合の処理
