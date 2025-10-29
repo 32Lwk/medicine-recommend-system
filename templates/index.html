@@ -1766,9 +1766,15 @@
         /* ===== 入力モーダルの可読性改善（左右余白の拡大） ===== */
         #userInfoModal .modal-content,
         #attributeModal .modal-content {
-            padding: 24px 28px; /* 左右の余白を拡大して見やすく */
+            padding: 0 0 24px 0; /* ヘッダーをモーダル幅いっぱいに、上下のみ余白 */
             max-height: 80vh; /* 高さ制限を設定して下部余白を抑制 */
             overflow-y: auto; /* 内容が多い場合はスクロール可能 */
+        }
+
+        /* コンテンツ本体に内側余白を付与（ヘッダーは余白なしでフル幅） */
+        #userInfoModal form,
+        #attributeModal form {
+            padding: 24px 28px;
         }
 
         /* 入力要素の内側余白と角丸を強化 */
