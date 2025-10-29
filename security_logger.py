@@ -284,3 +284,33 @@ def get_recent_events(limit: int = 100) -> List[Dict[str, Any]]:
 def get_high_risk_events(risk_threshold: int = 80) -> List[Dict[str, Any]]:
     """高リスクイベントの取得（外部インターフェース）"""
     return security_logger.get_high_risk_events(risk_threshold)
+
+def log_crisis_keyword_detection(user_id: str, input_text: str, detected_keywords: List[str], session_id: str = None):
+    """
+    危機関連ワード検出のログ記録
+    
+    Args:
+        user_id: ユーザーID
+        input_text: 入力テキスト
+        detected_keywords: 検出されたキーワードのリスト
+        session_id: セッションID
+    """
+    log_entry = {
+        'timestamp': datetime.now().isoformat(),
+        'event_type': 'crisis_keyword_detection',
+        'user_id': user_id,
+        'session_id': session_id,
+        'input_text': input_text[:100] + '...' if len(input_text) > 100 else input_text,
+        'detected_keywords': detected_keywords,
+        'severity': 'critical',
+        'action_taken': 'crisis_resources_provided',
+        'is_safe': False,
+        'risk_score': 100  # 最高リスクレベル
+    }
+    
+    try:
+        with open('log/security_events.jsonl', 'a', encoding='utf-8') as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        logger.warning(f"🚨 危機関連ワード検出ログ記録: {user_id} - キーワード: {detected_keywords}")
+    except Exception as e:
+        logger.error(f"❌ 危機関連ワード検出ログ記録エラー: {e}")
