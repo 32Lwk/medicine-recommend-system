@@ -429,6 +429,116 @@ def index():
                 sanitized_message = user_message
                 log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
             
+            # 危機関連ワード検出（「終了」ワード検知の前）
+            try:
+                from medicine_logic import detect_crisis_keywords, get_crisis_support_resources
+                from security_logger import log_crisis_keyword_detection
+                
+                # 危機関連ワードをチェック
+                has_crisis_keywords, detected_keywords = detect_crisis_keywords(sanitized_message)
+                
+                if has_crisis_keywords:
+                    logger.warning(f"🚨 危機関連ワード検出: {detected_keywords}")
+                    
+                    # ユーザーメッセージをセッションに追加
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    
+                    from datetime import datetime
+                    import uuid
+                    
+                    # 重複チェック
+                    user_message_exists = any(
+                        msg.get('type') == 'user' and 
+                        msg.get('content') == sanitized_message and
+                        msg.get('uuid')
+                        for msg in session.get('messages', [])
+                    )
+                    
+                    if not user_message_exists:
+                        session['messages'].append({
+                            'type': 'user',
+                            'content': sanitized_message,
+                            'timestamp': datetime.now().isoformat(),
+                            'uuid': str(uuid.uuid4())
+                        })
+                    
+                    # 言語設定を取得（デフォルトは日本語）
+                    user_language = session.get('language', 'ja')
+                    crisis_resources = get_crisis_support_resources(user_language)
+                    
+                    # 危機対応の特別な応答メッセージを作成
+                    bot_response = {
+                        'type': 'bot',
+                        'content': crisis_resources['message'],
+                        'crisis_support': True,
+                        'crisis_title': crisis_resources['title'],
+                        'resources': crisis_resources['resources'],
+                        'emergency_message': crisis_resources['emergency_message'],
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    
+                    # セッションに追加
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # セッションに危機検出フラグを設定
+                    session['crisis_detected'] = True
+                    
+                    # ALL_SESSIONSを更新
+                    if sid:
+                        if sid not in ALL_SESSIONS:
+                            ALL_SESSIONS[sid] = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': time.time(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True,
+                                'crisis_detected': True
+                            }
+                        else:
+                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                            ALL_SESSIONS[sid]['crisis_detected'] = True
+                            ALL_SESSIONS[sid]['last_activity'] = time.time()
+                    
+                    # セキュリティログに記録
+                    log_crisis_keyword_detection(
+                        user_id=session.get('username', 'unknown'),
+                        input_text=sanitized_message,
+                        detected_keywords=detected_keywords,
+                        session_id=sid
+                    )
+                    
+                    # 危機対応セッションを手動返信キューに追加
+                    crisis_queue_item = {
+                        'session_id': sid,
+                        'user_message': sanitized_message,
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'status': 'crisis_detected',
+                        'crisis_keywords': detected_keywords,
+                        'priority': 'high'
+                    }
+                    MANUAL_REPLY_QUEUE.append(crisis_queue_item)
+                    logger.info(f"🚨 危機対応セッションを手動返信キューに追加: {sid}")
+                    
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 危機対応完了: {message_count} messages")
+                    return jsonify({
+                        'status': 'ok', 
+                        'message_count': message_count, 
+                        'crisis_support': True
+                    })
+                    
+            except ImportError as e:
+                logger.warning(f"⚠️ 危機対応機能のインポートに失敗: {e}")
+                # 機能をスキップして通常処理を続行
+            except Exception as e:
+                logger.error(f"❌ 危機対応機能でエラー: {e}")
+                # 機能をスキップして通常処理を続行
+
             # 「終了」ワード検知（サニタイズされたメッセージでチェック）
             if sanitized_message in ['終了', 'end', 'おわり', '終わり', 'quit', 'exit']:
                 logger.info(f"🔚 CHAT ENDED by user: {session.get('username', 'unknown')}")
