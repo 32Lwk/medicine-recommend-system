@@ -1783,20 +1783,27 @@
             border-radius: 10px;
         }
 
-        /* モーダルヘッダーの緑色背景を大きく */
+        /* モーダルヘッダーの緑色背景を大きく（アプリ概要モーダルと同様のスタイル） */
         #userInfoModal .modal-header,
         #attributeModal .modal-header {
-            padding: 24px 28px; /* 上下のパディングを増やして緑色背景を大きく */
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0; /* デフォルトのmarginをリセット */
             border-radius: 15px 15px 0 0; /* 上部の角丸を維持 */
+            /* スクロールバーによる角の角ばりを防ぐ */
+            position: relative;
+            z-index: 1;
         }
 
         #userInfoModal .modal-header h3,
         #attributeModal .modal-header h3 {
             margin: 0;
-            font-size: 18px; /* フォントサイズを少し大きく */
-            font-weight: 600; /* フォントウェイトを太く */
+            font-size: 20px; /* アプリ概要モーダルと同じサイズ */
+            font-weight: bold; /* アプリ概要モーダルと同じウェイト */
         }
 
         /* モバイル時の余白最適化（はみ出し防止） */
@@ -1810,7 +1817,7 @@
             
             #userInfoModal .modal-header,
             #attributeModal .modal-header {
-                padding: 20px 16px; /* モバイルでは少し控えめに */
+                padding: 15px; /* モバイルでは少し控えめに */
             }
         }
     </style>
