@@ -401,7 +401,7 @@ def retry_extraction_with_enhanced_prompt(user_text, language, user_info, client
                 {"role": "user", "content": enhanced_prompt}
             ],
             temperature=0.0,  # より一貫性のある結果
-            max_tokens=500
+            max_completion_tokens=500
         )
         
         result = response.choices[0].message.content
@@ -771,7 +771,7 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.1,  # より一貫性を重視
-                    max_tokens=1000,
+                    max_completion_tokens=1000,
                     timeout=30  # 30秒タイムアウト
                 )
                 break  # 成功したらループを抜ける
@@ -914,7 +914,7 @@ def translate_medicine_recommendation(text, target_language, client=None):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_completion_tokens=2000
         )
         
         translated_text = response.choices[0].message.content.strip()
@@ -1023,7 +1023,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1200,
+            max_completion_tokens=1200,
             temperature=0.7
         )
         
@@ -1452,7 +1452,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
             model="gpt-5-mini",
             messages=messages,
             temperature=0.1,
-            max_tokens=500
+            max_completion_tokens=500
         )
         content = response.choices[0].message.content if response.choices[0].message.content else ""
     except Exception as e:
@@ -1572,7 +1572,7 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=500
+            max_completion_tokens=500
         )
         
         result = response.choices[0].message.content
@@ -1892,7 +1892,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
-                max_tokens=800
+                max_completion_tokens=800
             )
             
             result = response.choices[0].message.content
@@ -2463,7 +2463,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=1000
+            max_completion_tokens=1000
         )
         
         result = response.choices[0].message.content
