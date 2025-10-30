@@ -1565,8 +1565,8 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     print(f"症状文: {user_text}")
     
     try:
-                response = client.chat.completions.create(
-                model="gpt-5-mini",
+        response = client.chat.completions.create(
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状文を分析して適切な症状と医薬品の種類を選択してください。"},
                 {"role": "user", "content": prompt}
