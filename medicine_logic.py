@@ -911,7 +911,8 @@ def translate_medicine_recommendation(text, target_language, client=None):
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": prompt}
             ],
-            max_completion_tokens=2000
+            max_completion_tokens=600,
+            timeout=30
         )
         
         translated_text = response.choices[0].message.content.strip()
@@ -1013,15 +1014,15 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
 特に年齢制限とドーピング禁止物質については、具体的で明確な注意事項を含めてください。
 """
         
-        # ChatGPT APIを呼び出し
+        # ChatGPT APIを呼び出し（軽量モデル＋タイムアウト）
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_completion_tokens=1200,
-            
+            max_completion_tokens=400,
+            timeout=45
         )
         
         usage_notes = response.choices[0].message.content.strip()
@@ -1179,9 +1180,10 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-5",
+        model="gpt-5-mini",
         messages=messages,
-        
+        max_completion_tokens=200,
+        timeout=20
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1214,9 +1216,10 @@ def gpt_select_best_otc(user_text, candidates, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-5",
+        model="gpt-5-mini",
         messages=messages,
-        
+        max_completion_tokens=400,
+        timeout=30
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1333,9 +1336,10 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-5",
+        model="gpt-5-mini",
         messages=messages,
-        
+        max_completion_tokens=400,
+        timeout=30
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1372,9 +1376,10 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-5",
+        model="gpt-5-mini",
         messages=messages,
-        
+        max_completion_tokens=600,
+        timeout=30
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1448,7 +1453,8 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         response = client.chat.completions.create(
             model="gpt-5-mini",
             messages=messages,
-            max_completion_tokens=500
+            max_completion_tokens=400,
+            timeout=30
         )
         content = response.choices[0].message.content if response.choices[0].message.content else ""
     except Exception as e:
@@ -1567,7 +1573,8 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状文を分析して適切な症状と医薬品の種類を選択してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_completion_tokens=500
+            max_completion_tokens=300,
+            timeout=30
         )
         
         result = response.choices[0].message.content
@@ -2355,9 +2362,19 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     # それでも推奨医薬品がない場合、医薬品名での直接検索を試行（成功時のみ早期return）
     if not recommended_medicines:
         try:
-            import pandas as pd
-            df = pd.read_csv('otc_medicine_data.csv')
-            detected_medicines = detect_medicine_name_in_query(user_message, df)
+            # CSV常駐データフレームを優先使用
+            try:
+                from medicine_logic import df as global_df
+                df_search = global_df
+            except Exception:
+                df_search = None
+
+            if df_search is None or getattr(df_search, 'empty', False):
+                import pandas as pd
+                usecols = ['製品名','メーカー名','分類','効能効果','用法用量','年齢制限','成分','禁止物質あり','競技会区分','条件','医薬品の種類']
+                df_search = pd.read_csv('otc_medicine_data.csv', usecols=usecols, dtype=str, low_memory=True)
+
+            detected_medicines = detect_medicine_name_in_query(user_message, df_search)
             if detected_medicines:
                 medicine_info = ""
                 for i, med in enumerate(detected_medicines[:3], 1):
@@ -2451,12 +2468,13 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
 
     try:
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_completion_tokens=1000
+            max_completion_tokens=600,
+            timeout=40
         )
         
         result = response.choices[0].message.content

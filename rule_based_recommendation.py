@@ -1419,11 +1419,16 @@ def rule_based_recommendation(
             "interaction_warnings": candidate.get('interaction_warnings', [])
         })
     
-    # ステップ6: 使用上の注意と医師相談アドバイスをChatGPTで生成
+    # ステップ6: 使用上の注意と医師相談アドバイス
     print(f"\n--- ステップ6: 使用上の注意と医師相談アドバイスの生成 ---")
-    usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
-        recommendations, nlu_result, user_info, client
-    )
+    import os
+    if os.getenv("SAFE_MODE", "").lower() == "true":
+        # SAFEモードでは生成系をスキップし、フォールバックを使用
+        usage_and_consultation = generate_default_usage_notes_and_consultation(recommendations, user_info)
+    else:
+        usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
+            recommendations, nlu_result, user_info, client
+        )
     
     print(f"\n{'='*80}")
     print(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
@@ -1873,8 +1878,24 @@ def rule_based_medicine_recommendation(
     Returns:
         推奨結果
     """
-    # CSVデータを読み込み
-    medicine_df = pd.read_csv('otc_medicine_data.csv')
+    # CSV常駐化: 可能なら常駐のDataFrameを利用（再読込回避）
+    try:
+        from medicine_logic import df as global_df
+        medicine_df = global_df
+    except Exception:
+        medicine_df = None
+
+    if medicine_df is None or getattr(medicine_df, 'empty', False):
+        # フォールバック時のみ最小列で読む（メモリ節約）
+        usecols = [
+            '製品名', 'メーカー名', '分類', '効能効果', '用法用量', '年齢制限',
+            '成分', '禁止物質あり', '競技会区分', '条件', '医薬品の種類'
+        ]
+        try:
+            medicine_df = pd.read_csv('otc_medicine_data.csv', usecols=usecols, dtype=str, low_memory=True)
+        except Exception:
+            # 最終フォールバック
+            medicine_df = pd.read_csv('otc_medicine_data.csv')
     
     # メイン関数を呼び出し
     result = rule_based_recommendation(

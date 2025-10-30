@@ -1,13 +1,15 @@
 # Gunicorn設定ファイル
 
-# ワーカープロセス数（Render無料プラン用に削減）
+# ワーカープロセス数（Render無料プラン向け）
 workers = 1
 
-# ワーカークラス（同期処理で安定性重視）
-worker_class = 'sync'
+# I/Oに強いスレッド型ワーカー
+worker_class = 'gthread'
+threads = 2
 
-# タイムアウト（秒）- Render制限内で最適化
-timeout = 300
+# タイムアウト（秒）- Renderの約100秒制限を考慮
+timeout = 90
+graceful_timeout = 30
 
 # バインドするアドレスとポート
 import os
@@ -26,13 +28,16 @@ errorlog = '-'
 # プロセス名
 proc_name = 'medicine-recommend-app'
 
-# ワーカーの再起動前のリクエスト数（Render無料プラン用に削減）
-max_requests = 100
+# ワーカーの再起動前のリクエスト数（メモリリーク対策）
+max_requests = 20
 max_requests_jitter = 10
 
 # メモリ制限（MB）- Render無料プラン制限内
 worker_memory_limit = 512
 
-# Keep-aliveタイムアウト
-keepalive = 5
+# Keep-aliveタイムアウトを短めに
+keepalive = 2
+
+# アプリを事前ロードしてCoWでメモリ最適化
+preload_app = True
 

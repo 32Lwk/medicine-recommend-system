@@ -16,6 +16,7 @@ import re
 from datetime import datetime
 import random
 import logging
+import threading
 
 # ログ設定
 logging.basicConfig(
@@ -1314,6 +1315,18 @@ def index():
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
             if not is_question:
+                # 非同期モードが有効ならバックグラウンド処理に切り替え
+                if os.getenv('ASYNC_RECOMMENDATION', '').lower() == 'true':
+                    sid = session.get('_id')
+                    _start_async_recommendation(sid, user_message)
+                    # すぐにACKを返す（クライアントは /api/sessions をポーリング）
+                    session['is_medicine_consultation'] = True
+                    session.modified = True
+                    if sid and sid in ALL_SESSIONS:
+                        ALL_SESSIONS[sid]['last_activity'] = time.time()
+                    message_count = len(ALL_SESSIONS.get(sid, {}).get('messages', []))
+                    logger.info(f"✅ 非同期リクエスト受領 - JSON返却: {message_count} messages")
+                    return jsonify({'status': 'processing', 'message_count': message_count})
                 # 医薬品相談回答処理の開始時にフラグを設定
                 session['is_medicine_consultation'] = True
                 logger.info(f"🏥 SYMPTOM INPUT DETECTED: {user_message}")
@@ -1467,49 +1480,44 @@ def index():
                             
                             recommended_medicines = recommendation_result.get('recommended_medicines', [])
                             
-                            # 使用上の注意をChatGPTで自動生成（最適化版）
+                            # 使用上の注意生成（SAFE_MODEではスキップして簡易文）
+                            import os as _os
                             usage_notes = recommendation_result.get('usage_notes', '')
-                            if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
-                                # 推奨された医薬品の使用上の注意を一括生成
-                                try:
-                                    from medicine_logic import generate_usage_notes
-                                    
-                                    # 上位3つの医薬品の使用上の注意を並列処理で生成
-                                    generated_notes = []
-                                    for medicine in recommended_medicines[:3]:  # 上位3つのみ
-                                        try:
-                                            # CSVデータから追加情報を取得
-                                            medicine_with_details = medicine.copy()
-                                            # 年齢制限とドーピング情報を追加
-                                            if 'age_restriction' not in medicine_with_details:
-                                                medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
-                                            if 'doping_prohibited' not in medicine_with_details:
-                                                medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
-                                            if 'competition_category' not in medicine_with_details:
-                                                medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
-                                            if 'conditions' not in medicine_with_details:
-                                                medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
-                                            
-                                            # 使用上の注意を生成（キャッシュ機能付き）
-                                            medicine_notes = generate_usage_notes(
-                                                medicine.get('name', ''),
-                                                medicine_with_details,
-                                                user_info
-                                            )
-                                            if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。医師または薬剤師にご相談ください。":
-                                                generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
-                                        except Exception as e:
-                                            logger.warning(f"使用上の注意生成エラー: {e}")
-                                            continue
-                                    
-                                    if generated_notes:
-                                        usage_notes = '<br><br>'.join(generated_notes)
-                                    else:
+                            if _os.getenv('SAFE_MODE', '').lower() == 'true':
+                                usage_notes = usage_notes or '添付文書をよく読んでご使用ください。'
+                            else:
+                                if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
+                                    try:
+                                        from medicine_logic import generate_usage_notes
+                                        generated_notes = []
+                                        for medicine in recommended_medicines[:3]:
+                                            try:
+                                                medicine_with_details = medicine.copy()
+                                                if 'age_restriction' not in medicine_with_details:
+                                                    medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
+                                                if 'doping_prohibited' not in medicine_with_details:
+                                                    medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
+                                                if 'competition_category' not in medicine_with_details:
+                                                    medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
+                                                if 'conditions' not in medicine_with_details:
+                                                    medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
+                                                medicine_notes = generate_usage_notes(
+                                                    medicine.get('name', ''),
+                                                    medicine_with_details,
+                                                    user_info
+                                                )
+                                                if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。医師または薬剤師にご相談ください。":
+                                                    generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
+                                            except Exception as e:
+                                                logger.warning(f"使用上の注意生成エラー: {e}")
+                                                continue
+                                        if generated_notes:
+                                            usage_notes = '<br><br>'.join(generated_notes)
+                                        else:
+                                            usage_notes = '添付文書をよく読んでご使用ください。'
+                                    except Exception as e:
+                                        logger.warning(f"使用上の注意一括生成エラー: {e}")
                                         usage_notes = '添付文書をよく読んでご使用ください。'
-                                        
-                                except Exception as e:
-                                    logger.warning(f"使用上の注意一括生成エラー: {e}")
-                                    usage_notes = '添付文書をよく読んでご使用ください。'
                             
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
                             additional_questions = recommendation_result.get('additional_questions', [])
@@ -1610,20 +1618,18 @@ def index():
                         # API呼び出し回数を記録
                         monitor.increment_api_calls()
                         
-                        # ChatGPTベースでも個別の医薬品の使用上の注意を表示
+                        # ChatGPTベースでも個別の医薬品の使用上の注意を表示（SAFE_MODE時はスキップ）
                         recommended_medicines = recommendation_result.get('recommended_medicines', [])
                         if recommended_medicines:
-                            # 個別の医薬品の使用上の注意を収集
-                            individual_notes = []
-                            for medicine in recommended_medicines:
-                                if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
-                                    individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
-                            
-                            if individual_notes:
-                                # 個別の使用上の注意がある場合はそれを使用
-                                recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
-                            elif not recommendation_result.get('usage_notes'):
-                                # 個別の使用上の注意がない場合のみ簡易的なものを設定
+                            import os as _os2
+                            if _os2.getenv('SAFE_MODE', '').lower() != 'true':
+                                individual_notes = []
+                                for medicine in recommended_medicines:
+                                    if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
+                                        individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
+                                if individual_notes:
+                                    recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
+                            if not recommendation_result.get('usage_notes'):
                                 recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
                     
                     end_time = time.time()
@@ -2446,7 +2452,8 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
                 {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
                 {"role": "user", "content": prompt}
             ],
-            max_completion_tokens=200
+            max_completion_tokens=200,
+            timeout=15
         )
         
         advice = response.choices[0].message.content.strip()
@@ -2541,6 +2548,95 @@ def check_missing_attributes(user_attributes):
         missing_questions.append('持病や既往歴はありますか？')
     
     return missing_questions, missing_priority
+
+
+# =========================
+# 非同期推奨（任意機能）
+# =========================
+def _start_async_recommendation(sid: str, user_message: str) -> None:
+    t = threading.Thread(target=_run_recommendation_job, args=(sid, user_message), daemon=True)
+    t.start()
+
+
+def _run_recommendation_job(sid: str, user_message: str) -> None:
+    try:
+        from openai import OpenAI as _OpenAI
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            logger.warning("OPENAI_API_KEY not set; skipping async recommendation")
+            return
+        rec_client = _OpenAI(api_key=api_key)
+
+        # 症状・医薬品種別の分析
+        analysis_result = analyze_symptoms_and_medicine_type(user_message, rec_client)
+        medicine_type = analysis_result.get('medicine_type', 'その他')
+        symptoms = analysis_result.get('symptoms', [])
+
+        # ユーザー属性をALL_SESSIONSから取得
+        ua = ALL_SESSIONS.get(sid, {}).get('user_attributes', {})
+        user_info = {
+            'age': ua.get('age'),
+            'gender': ua.get('gender'),
+            'pregnant': ua.get('pregnant'),
+            'breastfeeding': ua.get('breastfeeding'),
+            'current_medications': ua.get('current_medications', []),
+            'allergies': ua.get('allergies', []),
+            'symptom_duration_days': ua.get('symptom_duration_days')
+        }
+
+        target_types = ['風邪薬', '解熱鎮痛薬', '鼻炎用薬']
+        algorithm = 'chatgpt'
+        recommended_medicines = []
+        usage_notes = ''
+        doctor_consultation = ''
+
+        if medicine_type in target_types:
+            algorithm = 'rule_based'
+            res = rule_based_medicine_recommendation(user_message, user_info, rec_client)
+            if res.get('status') == 'success':
+                recommended_medicines = res.get('recommended_medicines', [])
+                usage_notes = res.get('usage_notes', '')
+                doctor_consultation = res.get('doctor_consultation', '')
+            elif res.get('status') == 'escalation_required':
+                doctor_consultation = res.get('reason', '')
+            else:
+                # フォールバック
+                alt = comprehensive_medicine_recommendation(user_message, rec_client)
+                algorithm = 'chatgpt_fallback'
+                recommended_medicines = alt.get('recommended_medicines', [])
+                usage_notes = alt.get('usage_notes', '')
+                doctor_consultation = alt.get('doctor_consultation', '')
+        else:
+            alt = comprehensive_medicine_recommendation(user_message, rec_client)
+            algorithm = 'chatgpt'
+            recommended_medicines = alt.get('recommended_medicines', [])
+            usage_notes = alt.get('usage_notes', '')
+            doctor_consultation = alt.get('doctor_consultation', '')
+
+        # 簡易コンテンツ
+        content_html = "推奨結果を更新しました。最新の一覧をご確認ください。"
+        bot_response = {
+            'type': 'bot',
+            'content': content_html,
+            'diagnosis': {
+                'symptoms': symptoms,
+                'medicine_type': medicine_type,
+                'recommended_medicines': recommended_medicines,
+                'usage_notes': usage_notes,
+                'doctor_consultation': doctor_consultation,
+                'algorithm': algorithm
+            },
+            'timestamp': datetime.now().isoformat()
+        }
+
+        # ALL_SESSIONSへ保存
+        if sid not in ALL_SESSIONS:
+            ALL_SESSIONS[sid] = {'session_id': sid, 'username': 'Unknown', 'messages': [], 'last_activity': time.time()}
+        ALL_SESSIONS[sid]['messages'].append(bot_response)
+        ALL_SESSIONS[sid]['last_activity'] = time.time()
+        logger.info(f"✅ 非同期推奨完了: sid={sid}, meds={len(recommended_medicines)}")
+    except Exception as e:
+        logger.exception(f"❌ 非同期推奨エラー: {e}")
 
 def is_symptom_input(message):
     """メッセージが症状入力かどうかを判定"""
@@ -3744,7 +3840,8 @@ def translate_text():
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": translation_prompt}
             ],
-            max_completion_tokens=2000
+            max_completion_tokens=600,
+            timeout=30
         )
         
         translated_text = response.choices[0].message.content.strip()
