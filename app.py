@@ -1254,12 +1254,19 @@ def index():
                         is_question = False
                         user_message = last_symptom_message  # 症状メッセージで再分析
                     else:
-                        # 症状が見つからない場合は、属性更新のみの確認メッセージ
-                        bot_response = {
-                            'type': 'bot',
-                            'content': f'情報を更新しました。ありがとうございます。',
-                            'diagnosis': None
-                        }
+                        # 直近に症状が見つからない場合でも、今回の入力に症状が含まれていれば再分析を実行
+                        if is_symptom_input(user_message):
+                            logger.info("🔄 現在の入力に症状が含まれるため、そのまま再分析に進みます")
+                            session['is_reanalysis'] = True
+                            session['reanalysis_attributes'] = user_attributes.copy()
+                            is_question = False
+                        else:
+                            # 症状が見つからない場合は、属性更新のみの確認メッセージ
+                            bot_response = {
+                                'type': 'bot',
+                                'content': f'情報を更新しました。ありがとうございます。',
+                                'diagnosis': None
+                            }
                 else:
                     # 属性が更新されていない場合は通常の質問応答
                     logger.info(f"❓ 通常の質問として処理します")
@@ -1354,10 +1361,10 @@ def index():
                     
                     logger.info(f"📋 Detected medicine type: {medicine_type}")
                     logger.info(f"📋 Detected symptoms: {symptoms}")
-                    
+
                     # ステップ2: 医薬品の種類に応じて推奨アルゴリズムを選択
                     target_types = ['風邪薬', '解熱鎮痛薬', '鼻炎用薬']
-                    
+
                     if medicine_type in target_types:
                         # ルールベースアルゴリズムを使用
                         logger.info(f"✅ Using RULE-BASED algorithm for {medicine_type}")
@@ -1571,53 +1578,54 @@ def index():
                                 except Exception as e:
                                     logger.warning(f"使用上の注意生成エラー: {e}")
                     else:
-                        # ChatGPTベースのアルゴリズムを使用
-                        logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
-                        
-                        # ユーザー属性データをセッションから取得
-                        user_attributes = session.get('user_attributes', {
-                            'age': None,
-                            'gender': None,
-                            'pregnant': None,
-                            'breastfeeding': None,
-                            'current_medications': [],
-                            'allergies': [],
-                            'medical_history': [],
-                            'symptom_duration_days': None,
-                            'other_info': None
-                        })
-                        
-                        # ChatGPTベース推奨用のuser_infoを構築
-                        user_info = {
-                            'age': user_attributes.get('age'),
-                            'gender': user_attributes.get('gender'),
-                            'pregnant': user_attributes.get('pregnant'),
-                            'breastfeeding': user_attributes.get('breastfeeding'),
-                            'current_medications': user_attributes.get('current_medications', []),
-                            'allergies': user_attributes.get('allergies', []),
-                            'symptom_duration_days': user_attributes.get('symptom_duration_days')
-                        }
-                        
-                        recommendation_result = comprehensive_medicine_recommendation(user_message)
-                        recommendation_result['algorithm'] = 'chatgpt'
-                        # API呼び出し回数を記録
-                        monitor.increment_api_calls()
-                        
-                        # ChatGPTベースでも個別の医薬品の使用上の注意を表示
-                        recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                        if recommended_medicines:
-                            # 個別の医薬品の使用上の注意を収集
-                            individual_notes = []
-                            for medicine in recommended_medicines:
-                                if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
-                                    individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
+                        # ChatGPTベースのアルゴリズムを使用（事前に実行済みの場合はスキップ）
+                        if not skip_chatgpt_branch:
+                            logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
                             
-                            if individual_notes:
-                                # 個別の使用上の注意がある場合はそれを使用
-                                recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
-                            elif not recommendation_result.get('usage_notes'):
-                                # 個別の使用上の注意がない場合のみ簡易的なものを設定
-                                recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
+                            # ユーザー属性データをセッションから取得
+                            user_attributes = session.get('user_attributes', {
+                                'age': None,
+                                'gender': None,
+                                'pregnant': None,
+                                'breastfeeding': None,
+                                'current_medications': [],
+                                'allergies': [],
+                                'medical_history': [],
+                                'symptom_duration_days': None,
+                                'other_info': None
+                            })
+                            
+                            # ChatGPTベース推奨用のuser_infoを構築
+                            user_info = {
+                                'age': user_attributes.get('age'),
+                                'gender': user_attributes.get('gender'),
+                                'pregnant': user_attributes.get('pregnant'),
+                                'breastfeeding': user_attributes.get('breastfeeding'),
+                                'current_medications': user_attributes.get('current_medications', []),
+                                'allergies': user_attributes.get('allergies', []),
+                                'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                            }
+                            
+                            recommendation_result = comprehensive_medicine_recommendation(user_message)
+                            recommendation_result['algorithm'] = 'chatgpt'
+                            # API呼び出し回数を記録
+                            monitor.increment_api_calls()
+                            
+                            # ChatGPTベースでも個別の医薬品の使用上の注意を表示
+                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
+                            if recommended_medicines:
+                                # 個別の医薬品の使用上の注意を収集
+                                individual_notes = []
+                                for medicine in recommended_medicines:
+                                    if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
+                                        individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
+                                
+                                if individual_notes:
+                                    # 個別の使用上の注意がある場合はそれを使用
+                                    recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
+                                elif not recommendation_result.get('usage_notes'):
+                                    # 個別の使用上の注意がない場合のみ簡易的なものを設定
+                                    recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
@@ -1676,6 +1684,40 @@ def index():
                         import json
                         import html
                         
+                        # 個別アドバイス（ユーザー情報がある場合は必ず表示）
+                        personalized_section = ""
+                        try:
+                            should_generate_advice = (
+                                session.get('is_reanalysis') or 
+                                user_attributes.get('age') or 
+                                user_attributes.get('gender') or
+                                user_attributes.get('pregnant') is not None or
+                                user_attributes.get('breastfeeding') is not None or
+                                user_attributes.get('doping_concern') or
+                                user_attributes.get('constitution') or
+                                user_attributes.get('current_medications') or
+                                user_attributes.get('allergies') or
+                                user_attributes.get('medical_history') or
+                                user_attributes.get('symptom_duration_days') is not None or
+                                user_attributes.get('other_info')
+                            )
+                            if should_generate_advice:
+                                attrs_for_advice = session.get('reanalysis_attributes', user_attributes) if session.get('is_reanalysis') else user_attributes
+                                advice_text = generate_personalized_advice(
+                                    attrs_for_advice,
+                                    recommended_medicines,
+                                    symptoms,
+                                    recommendation_client
+                                )
+                                personalized_section = f"""
+    <div style="background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
+        <h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>
+        <p style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;">{advice_text}</p>
+    </div>
+"""
+                        except Exception as e:
+                            logger.warning(f"個別アドバイス生成失敗（エスカレーション時）: {e}")
+
                         # HTMLエスケープ処理
                         escaped_user_message = html.escape(user_message)
                         escalation_content = f"""
@@ -1702,7 +1744,7 @@ def index():
                         # JSONエンコードしてHTMLエスケープ
                         escalation_json = html.escape(json.dumps(escalation_data, ensure_ascii=False))
                         
-                        bot_content = escalation_content + f"""
+                        bot_content = personalized_section + escalation_content + f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この重要な注意事項はいかがでしたか？</p>
         <button class="feedback-btn-positive" onclick="handlePositiveFeedback({escalation_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
@@ -1730,7 +1772,12 @@ def index():
                             user_attributes.get('pregnant') is not None or
                             user_attributes.get('breastfeeding') is not None or
                             user_attributes.get('doping_concern') or
-                            user_attributes.get('constitution')
+                            user_attributes.get('constitution') or
+                            user_attributes.get('current_medications') or
+                            user_attributes.get('allergies') or
+                            user_attributes.get('medical_history') or
+                            user_attributes.get('symptom_duration_days') is not None or
+                            user_attributes.get('other_info')
                         )
                         
                         if should_generate_advice:
@@ -2499,31 +2546,13 @@ def check_missing_attributes(user_attributes):
 
 def is_symptom_input(message):
     """メッセージが症状入力かどうかを判定"""
-    # 属性応答を示すキーワード（質問への回答）
-    attribute_keywords = [
-        '歳です', '歳、', '男性です', '女性です', '男です', '女です',
-        'いいえ', 'はい', 'ありません', 'ないです', 'なしです',
-        '妊娠', '授乳', 'アレルギー',
-        '昨日から', '今日から', 'きのうから', 'きょうから', '日前から', '週間前から',
-        '服用している', '飲んでいる', '続いています',
-        # 英語の属性キーワード
-        'years old', 'male', 'female', 'man', 'woman', 'allergy', 'allergies',
-        'pregnant', 'breastfeeding', 'taking', 'medication', 'medicine',
-        'started', 'days ago', 'weeks ago', 'months ago', 'yesterday', 'today'
-    ]
-    
-    # 属性応答の場合は質問（症状入力ではない）
-    for keyword in attribute_keywords:
-        if keyword in message:
-            return False
-    
-    # 症状を示すキーワード
+    # 症状を示すキーワード（先に症状有無を優先判定）
     symptom_keywords = [
         '痛い', '痛み', '熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '下痢', '便秘',
         '痒い', '腫れ', '炎症', '発疹', 'めまい', 'だるい', '疲れ', '不調', '症状',
         '喉', '胃', '腸', '目', '耳', '鼻', '皮膚', '関節', '筋肉', '風邪', 'インフルエンザ'
     ]
-    
+
     # 質問を示すキーワード
     question_keywords = [
         'ですか', 'でしょうか', 'ですか？', 'でしょうか？', 'どう', '何', 'なぜ', 'いつ',
@@ -2543,21 +2572,39 @@ def is_symptom_input(message):
         '安全', '危険', 'リスク', '危険性', '安全性',
         '教えて', '教えてください', '知りたい', '聞きたい'
     ]
-    
-    # 質問キーワードが含まれている場合は質問と判定
+
+    # 属性応答を示すキーワード（質問への回答）
+    attribute_keywords = [
+        '歳です', '歳、', '男性です', '女性です', '男です', '女です',
+        'いいえ', 'はい', 'ありません', 'ないです', 'なしです',
+        '妊娠', '授乳', 'アレルギー',
+        '昨日から', '今日から', 'きのうから', 'きょうから', '日前から', '週間前から',
+        '服用している', '飲んでいる', '続いています',
+        # 英語の属性キーワード
+        'years old', 'male', 'female', 'man', 'woman', 'allergy', 'allergies',
+        'pregnant', 'breastfeeding', 'taking', 'medication', 'medicine',
+        'started', 'days ago', 'weeks ago', 'months ago', 'yesterday', 'today'
+    ]
+
+    # まずは明確な質問を判定
     for keyword in question_keywords:
         if keyword in message:
             return False
-    
-    # 症状キーワードが含まれている場合は症状入力と判定
+
+    # 症状キーワードが含まれている場合は、属性情報と混在していても症状入力として扱う
     for keyword in symptom_keywords:
         if keyword in message:
             return True
-    
+
+    # 上記で症状が見つからない場合にのみ、属性応答を質問扱いにする
+    for keyword in attribute_keywords:
+        if keyword in message:
+            return False
+
     # 文末が「？」の場合は質問と判定
     if message.strip().endswith('？') or message.strip().endswith('?'):
         return False
-    
+
     # デフォルトは症状入力として扱う
     return True
 

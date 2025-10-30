@@ -856,6 +856,19 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
         elif age_rules["高齢者"][0] <= age:
             # 65歳以上: 注意が必要
             safety_result["warnings"].append(f"{age}歳の高齢者は市販薬使用に注意が必要です。副作用に特に注意してください。")
+        
+        # 後期高齢者（75歳以上）は受診勧奨にエスカレーション
+        if age is not None and age >= 75:
+            safety_result["is_safe"] = False
+            safety_result["requires_escalation"] = True
+            safety_result["doctor_referral_required"] = True
+            safety_result["escalation_reason"] = f"{age}歳の後期高齢者の方は副作用や相互作用のリスクが高いため、自己判断での市販薬使用は避け、医師の診察を受けてください。"
+            safety_result["referral_reasons"].append({
+                "description": "後期高齢者（75歳以上）",
+                "message": "後期高齢者は相互作用・副作用リスクが高く、医師の診療を推奨します。",
+                "priority": "critical"
+            })
+            return safety_result
     
     # 3. 妊娠中チェック（医師受診必須）
     if user_info.get('pregnant', False):
@@ -890,6 +903,20 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
                 safety_result["warnings"].append(f"授乳中は{medicine_type}の使用に注意が必要です。")
         
         return safety_result
+
+    # 4.5. 治療中の病気（既往症・通院中）: 医師の診療を推奨（エスカレーション）
+    medical_history = user_info.get('medical_history')
+    if isinstance(medical_history, list) and len(medical_history) > 0:
+        safety_result["is_safe"] = False
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "現在治療中の病気（既往症）があるため、医師の診療を優先してください。"
+        safety_result["referral_reasons"].append({
+            "description": "治療中の病気・既往症",
+            "message": "持病がある場合は自己判断での市販薬使用を避け、医師に相談してください。",
+            "priority": "critical"
+        })
+        return safety_result
     
     # 5. 症状の期間チェック（1週間以上で医師受診推奨）
     symptoms_over_week = False
@@ -908,6 +935,20 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
     for symptom in nlu_result.get("symptoms", []):
         if symptom.get("severity") == "重度":
             safety_result["warnings"].append(f"重度の{symptom.get('name')}が報告されています。症状が重い場合は医師の診察を推奨します。")
+
+    # 7. 現在服用中の医薬品がある場合（相互作用リスクが高い可能性）
+    meds = user_info.get('current_medications')
+    if isinstance(meds, list) and len(meds) > 0:
+        safety_result["is_safe"] = False
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "他の医薬品を服用中のため、相互作用リスクを考慮し医師の診療を推奨します。"
+        safety_result["referral_reasons"].append({
+            "description": "医薬品の併用（相互作用リスク）",
+            "message": "服用中の医薬品がある場合は相互作用の可能性があるため、医師に相談してください。",
+            "priority": "critical"
+        })
+        return safety_result
     
     return safety_result
 
