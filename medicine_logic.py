@@ -400,7 +400,6 @@ def retry_extraction_with_enhanced_prompt(user_text, language, user_info, client
                 {"role": "system", "content": "あなたは属性抽出の専門家です。年齢と性別を必ず抽出してください。"},
                 {"role": "user", "content": enhanced_prompt}
             ],
-            temperature=0.0,  # より一貫性のある結果
             max_completion_tokens=500
         )
         
@@ -770,7 +769,6 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
                         {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=0.1,  # より一貫性を重視
                     max_completion_tokens=1000,
                     timeout=30  # 30秒タイムアウト
                 )
@@ -913,7 +911,6 @@ def translate_medicine_recommendation(text, target_language, client=None):
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1,
             max_completion_tokens=2000
         )
         
@@ -1024,7 +1021,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
                 {"role": "user", "content": prompt}
             ],
             max_completion_tokens=1200,
-            temperature=0.7
+            
         )
         
         usage_notes = response.choices[0].message.content.strip()
@@ -1184,7 +1181,7 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
     response = client.chat.completions.create(
         model="gpt-5",
         messages=messages,
-        temperature=0
+        
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1219,7 +1216,7 @@ def gpt_select_best_otc(user_text, candidates, client=None):
     response = client.chat.completions.create(
         model="gpt-5",
         messages=messages,
-        temperature=0
+        
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1338,7 +1335,7 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     response = client.chat.completions.create(
         model="gpt-5",
         messages=messages,
-        temperature=0
+        
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1377,7 +1374,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     response = client.chat.completions.create(
         model="gpt-5",
         messages=messages,
-        temperature=0
+        
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
     print("ChatGPT返答:\n", content.strip())
@@ -1451,7 +1448,6 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         response = client.chat.completions.create(
             model="gpt-5-mini",
             messages=messages,
-            temperature=0.1,
             max_completion_tokens=500
         )
         content = response.choices[0].message.content if response.choices[0].message.content else ""
@@ -1571,7 +1567,6 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状文を分析して適切な症状と医薬品の種類を選択してください。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
             max_completion_tokens=500
         )
         
@@ -1891,7 +1886,6 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
                     {"role": "system", "content": "あなたは医薬品の専門家です。症状に適した医薬品を推奨し、使用上の注意を説明してください。"},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
                 max_completion_tokens=800
             )
             
@@ -2462,7 +2456,6 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
             max_completion_tokens=1000
         )
         
