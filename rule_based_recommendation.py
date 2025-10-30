@@ -753,7 +753,6 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
                 {"role": "system", "content": "あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1,
             max_completion_tokens=800
         )
         
@@ -1591,7 +1590,6 @@ def generate_individual_usage_notes_with_gpt(
                 {"role": "system", "content": "あなたは登録販売者です。効能は詳細に、用法用量の注意は簡潔に要約してください。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2,
             max_completion_tokens=400
         )
         

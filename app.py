@@ -2446,7 +2446,6 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
                 {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
             max_completion_tokens=200
         )
         
@@ -3745,7 +3744,6 @@ def translate_text():
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": translation_prompt}
             ],
-            temperature=0.1,
             max_completion_tokens=2000
         )
         
