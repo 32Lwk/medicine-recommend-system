@@ -748,7 +748,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。"},
                 {"role": "user", "content": prompt}
@@ -1586,7 +1586,7 @@ def generate_individual_usage_notes_with_gpt(
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは登録販売者です。効能は詳細に、用法用量の注意は簡潔に要約してください。"},
                 {"role": "user", "content": prompt}

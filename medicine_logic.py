@@ -395,7 +395,7 @@ def retry_extraction_with_enhanced_prompt(user_text, language, user_info, client
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは属性抽出の専門家です。年齢と性別を必ず抽出してください。"},
                 {"role": "user", "content": enhanced_prompt}
@@ -765,7 +765,7 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4.1",
+                    model="gpt-5-mini",
                     messages=[
                         {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
                         {"role": "user", "content": prompt}
@@ -908,7 +908,7 @@ def translate_medicine_recommendation(text, target_language, client=None):
 """
         
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": prompt}
@@ -1018,7 +1018,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         
         # ChatGPT APIを呼び出し
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
@@ -1182,7 +1182,7 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         messages=messages,
         temperature=0
     )
@@ -1217,7 +1217,7 @@ def gpt_select_best_otc(user_text, candidates, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         messages=messages,
         temperature=0
     )
@@ -1336,7 +1336,7 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         messages=messages,
         temperature=0
     )
@@ -1375,7 +1375,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         messages=messages,
         temperature=0
     )
@@ -1449,7 +1449,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5-mini",
             messages=messages,
             temperature=0.1,
             max_tokens=500
@@ -1566,7 +1566,7 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     
     try:
                 response = client.chat.completions.create(
-                model="gpt-4.1",
+                model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状文を分析して適切な症状と医薬品の種類を選択してください。"},
                 {"role": "user", "content": prompt}
@@ -1886,7 +1886,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
 
         try:
             response = client.chat.completions.create(
-                model="gpt-4.1",
+                model="gpt-5-mini",
                 messages=[
                     {"role": "system", "content": "あなたは医薬品の専門家です。症状に適した医薬品を推奨し、使用上の注意を説明してください。"},
                     {"role": "user", "content": prompt}
@@ -2457,7 +2457,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-5",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
                 {"role": "user", "content": prompt}
