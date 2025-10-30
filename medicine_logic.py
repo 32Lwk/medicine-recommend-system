@@ -395,7 +395,7 @@ def retry_extraction_with_enhanced_prompt(user_text, language, user_info, client
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは属性抽出の専門家です。年齢と性別を必ず抽出してください。"},
                 {"role": "user", "content": enhanced_prompt}
@@ -765,7 +765,7 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
         for attempt in range(max_retries):
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-4.1",
                     messages=[
                         {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
                         {"role": "user", "content": prompt}
@@ -908,7 +908,7 @@ def translate_medicine_recommendation(text, target_language, client=None):
 """
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": prompt}
@@ -1018,7 +1018,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         
         # ChatGPT APIを呼び出し
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の使用上の注意を専門的で分かりやすく説明してください。特に年齢制限とドーピング禁止物質については詳細に説明してください。"},
                 {"role": "user", "content": prompt}
@@ -1182,7 +1182,7 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=messages,
         temperature=0
     )
@@ -1217,7 +1217,7 @@ def gpt_select_best_otc(user_text, candidates, client=None):
         {"role": "system", "content": prompt}
     ]
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=messages,
         temperature=0
     )
@@ -1336,7 +1336,7 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=messages,
         temperature=0
     )
@@ -1375,7 +1375,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     if client is None:
         client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=messages,
         temperature=0
     )
@@ -1449,7 +1449,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1",
             messages=messages,
             temperature=0.1,
             max_tokens=500
@@ -1565,8 +1565,8 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     print(f"症状文: {user_text}")
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+                response = client.chat.completions.create(
+                model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状文を分析して適切な症状と医薬品の種類を選択してください。"},
                 {"role": "user", "content": prompt}
@@ -1609,7 +1609,7 @@ def simple_symptom_and_type_detection(user_text):
     """
     import re
     
-    # 症状キーワードマッピング（消化器系を拡充）
+    # 症状キーワードマッピング（全カテゴリを拡充）
     symptom_keywords = {
         "頭痛": ["頭痛", "頭が痛い", "ズキズキ", "偏頭痛"],
         "発熱": ["熱", "発熱", "熱っぽい", "高熱"],
@@ -1619,6 +1619,18 @@ def simple_symptom_and_type_detection(user_text):
         "鼻づまり": ["鼻づまり", "鼻詰まり"],
         "くしゃみ": ["くしゃみ", "クシャミ"],
         "生理痛": ["生理痛", "月経痛", "生理"],
+        "めまい": ["めまい", "目眩", "立ちくらみ"],
+        "疲労感": ["疲労", "疲れ", "だるい", "倦怠感"],
+        "筋肉痛": ["筋肉痛", "筋肉が痛い", "筋肉が張る", "ふくらはぎが痛い"],
+        "関節痛": ["関節痛", "関節が痛い", "手足の関節", "膝が痛い"],
+        "肩こり": ["肩こり", "肩がこる", "肩が張る"],
+        "腰痛": ["腰痛", "腰が痛い", "ぎっくり腰"],
+        # 皮膚・アレルギー
+        "かゆみ": ["かゆみ", "痒み", "かゆい"],
+        "発疹": ["発疹", "赤いぶつぶつ", "ブツブツ"],
+        "湿疹": ["湿疹", "皮膚炎"],
+        "蕁麻疹": ["蕁麻疹", "じんましん", "ミミズ腫れ"],
+        "皮膚の乾燥": ["皮膚の乾燥", "乾燥肌", "かさつき", "かさかさ", "ひび割れ"],
         # 消化器系（拡充）
         "胃痛": ["胃痛", "胃が痛い", "胃がキリキリ", "みぞおちが痛い"],
         "吐き気": ["吐き気", "嘔吐", "吐いた", "吐いている", "むかむか"],
@@ -1636,6 +1648,21 @@ def simple_symptom_and_type_detection(user_text):
         ],
         "胃もたれ": ["胃もたれ", "もたれる", "食後にもたれる"],
         "胸やけ": ["胸やけ", "胸焼け", "胸が焼ける"],
+        # 目
+        "目の疲れ": ["目の疲れ", "眼精疲労"],
+        "充血": ["充血", "目が赤い"],
+        "ドライアイ": ["ドライアイ", "目が乾く"],
+        # 睡眠・精神
+        "不眠": ["不眠", "眠れない", "寝付けない", "寝つけない", "なかなか眠れない"],
+        "不安": ["不安", "ソワソワ", "緊張"],
+        "ストレス": ["ストレス", "疲れがとれない"],
+        "イライラ": ["イライラ", "神経が高ぶる"],
+        # 更年期
+        "更年期": ["更年期", "ほてり", "のぼせ", "ホットフラッシュ", "発汗"],
+        # 禁煙
+        "禁煙": ["禁煙", "タバコやめたい", "たばこやめたい", "煙草やめたい", "ニコチン"],
+        # 口腔
+        "口内炎": ["口内炎", "口角炎", "口の中が痛い"],
     }
     
     detected_symptoms = []
@@ -1663,10 +1690,10 @@ def simple_symptom_and_type_detection(user_text):
     elif any(s in detected_symptoms for s in other_cold_symptoms):
         medicine_type = "風邪薬"
     
-    # 解熱鎮痛薬の判定
-    elif any(s in detected_symptoms for s in ["頭痛", "生理痛"]):
+    # 解熱鎮痛薬の判定（頭痛・生理痛・筋骨格痛）
+    elif any(s in detected_symptoms for s in ["頭痛", "生理痛", "筋肉痛", "関節痛", "肩こり", "腰痛"]):
         medicine_type = "解熱鎮痛薬"
-    
+
     # 胃腸薬の判定（拡充）
     elif any(
         s in detected_symptoms
@@ -1682,6 +1709,30 @@ def simple_symptom_and_type_detection(user_text):
         ]
     ):
         medicine_type = "胃腸薬"
+
+    # 外用薬（皮膚）の判定（皮膚症状）
+    elif any(s in detected_symptoms for s in ["かゆみ", "発疹", "湿疹", "蕁麻疹", "皮膚の乾燥"]):
+        medicine_type = "外用薬（皮膚）"
+
+    # 目薬の判定（目の症状）
+    elif any(s in detected_symptoms for s in ["目の疲れ", "充血", "ドライアイ"]):
+        medicine_type = "目薬"
+
+    # 睡眠障害の判定
+    elif any(s in detected_symptoms for s in ["不眠"]):
+        medicine_type = "睡眠障害"
+
+    # 精神症状の判定
+    elif any(s in detected_symptoms for s in ["不安", "ストレス", "イライラ"]):
+        medicine_type = "精神症状"
+
+    # 更年期障害の判定
+    elif any(s in detected_symptoms for s in ["更年期"]):
+        medicine_type = "更年期障害"
+
+    # 禁煙補助薬の判定
+    elif any(s in detected_symptoms for s in ["禁煙"]):
+        medicine_type = "禁煙補助薬"
     
     print(f"=== 簡易検出結果 ===")
     print(f"検出された症状: {detected_symptoms}")
@@ -1835,7 +1886,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
 
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1",
                 messages=[
                     {"role": "system", "content": "あなたは医薬品の専門家です。症状に適した医薬品を推奨し、使用上の注意を説明してください。"},
                     {"role": "user", "content": prompt}
@@ -2406,7 +2457,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"},
                 {"role": "user", "content": prompt}

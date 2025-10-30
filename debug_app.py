@@ -273,7 +273,7 @@ def test_api():
         
         start_time = time.time()
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.1",
             messages=test_messages,  # type: ignore
             max_tokens=50
         )
@@ -343,7 +343,7 @@ def detailed_api_test():
         ]
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.1",
             messages=messages,  # type: ignore
             temperature=0
         )
@@ -373,7 +373,7 @@ def detailed_api_test():
         ]
         
         response = client.chat.completions.create(
-            model="gpt-4o", 
+            model="gpt-4.1", 
             messages=caution_messages  # type: ignore
         )
         end_time = time.time()
@@ -408,7 +408,7 @@ def detailed_api_test():
         ]
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.1",
             messages=combination_messages,  # type: ignore
             temperature=0.2
         )
