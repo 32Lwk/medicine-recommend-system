@@ -1578,54 +1578,53 @@ def index():
                                 except Exception as e:
                                     logger.warning(f"使用上の注意生成エラー: {e}")
                     else:
-                        # ChatGPTベースのアルゴリズムを使用（事前に実行済みの場合はスキップ）
-                        if not skip_chatgpt_branch:
-                            logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
+                        # ChatGPTベースのアルゴリズムを使用
+                        logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
+                        
+                        # ユーザー属性データをセッションから取得
+                        user_attributes = session.get('user_attributes', {
+                            'age': None,
+                            'gender': None,
+                            'pregnant': None,
+                            'breastfeeding': None,
+                            'current_medications': [],
+                            'allergies': [],
+                            'medical_history': [],
+                            'symptom_duration_days': None,
+                            'other_info': None
+                        })
+                        
+                        # ChatGPTベース推奨用のuser_infoを構築
+                        user_info = {
+                            'age': user_attributes.get('age'),
+                            'gender': user_attributes.get('gender'),
+                            'pregnant': user_attributes.get('pregnant'),
+                            'breastfeeding': user_attributes.get('breastfeeding'),
+                            'current_medications': user_attributes.get('current_medications', []),
+                            'allergies': user_attributes.get('allergies', []),
+                            'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                        }
+                        
+                        recommendation_result = comprehensive_medicine_recommendation(user_message)
+                        recommendation_result['algorithm'] = 'chatgpt'
+                        # API呼び出し回数を記録
+                        monitor.increment_api_calls()
+                        
+                        # ChatGPTベースでも個別の医薬品の使用上の注意を表示
+                        recommended_medicines = recommendation_result.get('recommended_medicines', [])
+                        if recommended_medicines:
+                            # 個別の医薬品の使用上の注意を収集
+                            individual_notes = []
+                            for medicine in recommended_medicines:
+                                if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
+                                    individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
                             
-                            # ユーザー属性データをセッションから取得
-                            user_attributes = session.get('user_attributes', {
-                                'age': None,
-                                'gender': None,
-                                'pregnant': None,
-                                'breastfeeding': None,
-                                'current_medications': [],
-                                'allergies': [],
-                                'medical_history': [],
-                                'symptom_duration_days': None,
-                                'other_info': None
-                            })
-                            
-                            # ChatGPTベース推奨用のuser_infoを構築
-                            user_info = {
-                                'age': user_attributes.get('age'),
-                                'gender': user_attributes.get('gender'),
-                                'pregnant': user_attributes.get('pregnant'),
-                                'breastfeeding': user_attributes.get('breastfeeding'),
-                                'current_medications': user_attributes.get('current_medications', []),
-                                'allergies': user_attributes.get('allergies', []),
-                                'symptom_duration_days': user_attributes.get('symptom_duration_days')
-                            }
-                            
-                            recommendation_result = comprehensive_medicine_recommendation(user_message)
-                            recommendation_result['algorithm'] = 'chatgpt'
-                            # API呼び出し回数を記録
-                            monitor.increment_api_calls()
-                            
-                            # ChatGPTベースでも個別の医薬品の使用上の注意を表示
-                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                            if recommended_medicines:
-                                # 個別の医薬品の使用上の注意を収集
-                                individual_notes = []
-                                for medicine in recommended_medicines:
-                                    if medicine.get('usage_notes') and medicine.get('usage_notes') != '添付文書をよく読んでご使用ください。':
-                                        individual_notes.append(f"<strong>{medicine.get('product_name', '')}:</strong><br>{medicine.get('usage_notes', '')}")
-                                
-                                if individual_notes:
-                                    # 個別の使用上の注意がある場合はそれを使用
-                                    recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
-                                elif not recommendation_result.get('usage_notes'):
-                                    # 個別の使用上の注意がない場合のみ簡易的なものを設定
-                                    recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
+                            if individual_notes:
+                                # 個別の使用上の注意がある場合はそれを使用
+                                recommendation_result['usage_notes'] = '<br><br>'.join(individual_notes)
+                            elif not recommendation_result.get('usage_notes'):
+                                # 個別の使用上の注意がない場合のみ簡易的なものを設定
+                                recommendation_result['usage_notes'] = '添付文書をよく読んでご使用ください。妊娠中・授乳中の方、アレルギー体質の方は医師にご相談ください。'
                     
                     end_time = time.time()
                     response_time = round(end_time - start_time, 3)
