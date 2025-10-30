@@ -754,7 +754,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=800
+            max_completion_tokens=800
         )
         
         result = response.choices[0].message.content
@@ -1592,7 +1592,7 @@ def generate_individual_usage_notes_with_gpt(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=400
+            max_completion_tokens=400
         )
         
         result = response.choices[0].message.content

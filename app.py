@@ -2447,7 +2447,7 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=200
+            max_completion_tokens=200
         )
         
         advice = response.choices[0].message.content.strip()
@@ -3746,7 +3746,7 @@ def translate_text():
                 {"role": "user", "content": translation_prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_completion_tokens=2000
         )
         
         translated_text = response.choices[0].message.content.strip()

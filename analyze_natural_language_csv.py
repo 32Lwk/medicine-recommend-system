@@ -147,7 +147,7 @@ def extract_attributes_with_ai(user_text, client):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.0,
-            max_tokens=1000
+            max_completion_tokens=1000
         )
         
         result = response.choices[0].message.content

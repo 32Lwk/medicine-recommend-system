@@ -275,7 +275,7 @@ def test_api():
         response = client.chat.completions.create(
             model="gpt-4.1",
             messages=test_messages,  # type: ignore
-            max_tokens=50
+            max_completion_tokens=50
         )
         end_time = time.time()
         
