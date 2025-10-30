@@ -141,7 +141,7 @@ def extract_attributes_with_ai(user_text, client):
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは属性抽出の専門家です。自然文から正確に属性情報を抽出してください。"},
                 {"role": "user", "content": prompt}

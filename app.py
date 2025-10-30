@@ -2441,7 +2441,7 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
                 {"role": "user", "content": prompt}
@@ -3740,7 +3740,7 @@ def translate_text():
 """
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[
                 {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
                 {"role": "user", "content": translation_prompt}
