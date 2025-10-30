@@ -15,6 +15,7 @@ import os
 from datetime import datetime
 import random
 import logging
+import re
 
 # ログ設定
 logging.basicConfig(
@@ -1002,7 +1003,6 @@ def index():
                             logger.info("フォールバック: 正規表現による抽出に切り替えます")
                             
                             # フォールバック: 正規表現による抽出
-                            import re
                             
                             # 年齢（日本語と英語）
                             age_match = re.search(r'(\d+)歳', user_message)
