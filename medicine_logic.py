@@ -930,7 +930,7 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
         "かゆみ", "発疹", "湿疹", "蕁麻疹", "皮膚の乾燥",
         "不眠", "眠気", "イライラ", "不安", "ストレス",
         "生理痛", "月経不順", "更年期症状",
-        "口内炎", "目の疲れ", "耳鳴り", "動悸"
+        "口内炎", "目の疲れ", "目のかゆみ", "目の充血", "耳鳴り", "動悸"
     ]
     
     prompt = f"""
@@ -944,6 +944,11 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
 
 【医薬品の種類】
 {', '.join(medicine_types)}
+
+【重要な判断ルール】
+- 「目が痒い」「目のかゆみ」「目の痒み」などの目の症状は「目のかゆみ」として抽出し、医薬品の種類は「目薬」を選択してください
+- 「目がかゆい」は皮膚のかゆみ（「かゆみ」）ではなく、「目のかゆみ」として分類してください
+- 目の症状（目のかゆみ、目の充血、目の疲れ）がある場合は、必ず「目薬」を選択してください
 
 【指示】
 1. 症状文から該当する症状のみを抽出してください
@@ -1014,8 +1019,11 @@ def simple_symptom_and_type_detection(user_text):
     """
     import re
     
-    # 症状キーワードマッピング
+    # 症状キーワードマッピング（目の症状を優先的に検出するため、先に定義）
     symptom_keywords = {
+        "目のかゆみ": ["目が痒", "目がかゆ", "目の痒", "目のかゆ", "目痒", "目かゆ", "目のかゆみ"],
+        "目の充血": ["目の充血", "目が赤い", "目赤", "充血"],
+        "目の疲れ": ["目の疲れ", "目が疲", "眼精疲労"],
         "頭痛": ["頭痛", "頭が痛い", "ズキズキ", "偏頭痛"],
         "発熱": ["熱", "発熱", "熱っぽい", "高熱"],
         "のどの痛み": ["喉", "のど", "咽頭痛"],
@@ -1038,11 +1046,13 @@ def simple_symptom_and_type_detection(user_text):
     # 医薬品種類の推定
     medicine_type = "その他"
     
+    eye_symptoms = ["目のかゆみ", "目の充血", "目の疲れ"]
+    if any(s in detected_symptoms for s in eye_symptoms):
+        medicine_type = "目薬"
     # 鼻炎用薬の判定（鼻症状のみで発熱・喉・咳がない場合）
-    nose_symptoms = ["鼻水", "鼻づまり", "くしゃみ"]
-    other_cold_symptoms = ["発熱", "のどの痛み", "咳"]
-    
-    if any(s in detected_symptoms for s in nose_symptoms):
+    elif any(s in detected_symptoms for s in ["鼻水", "鼻づまり", "くしゃみ"]):
+        nose_symptoms = ["鼻水", "鼻づまり", "くしゃみ"]
+        other_cold_symptoms = ["発熱", "のどの痛み", "咳"]
         # 鼻症状のみで他の風邪症状がない場合は鼻炎用薬
         if not any(s in detected_symptoms for s in other_cold_symptoms):
             medicine_type = "鼻炎用薬"
