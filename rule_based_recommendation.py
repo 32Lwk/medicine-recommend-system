@@ -123,7 +123,7 @@ SYMPTOM_DICTIONARY = {
     },
     "なみだ目": {
         "canonical_name": "なみだ目",
-        "synonyms": ["涙目", "目がかゆい", "目の痒み"],
+        "synonyms": ["涙目"],
         "severity_tags": ["軽度", "中等度"],
         "medicine_types": ["鼻炎用薬"],
         "weight": 0.7
