@@ -1124,14 +1124,17 @@
             }
             
             .chat-header h1 {
-                font-size: 14px;
+                font-size: clamp(12px, calc((100vw - 140px) / 10), 18px);
                 margin-top: 0;
                 position: absolute;
-                top: 10px;
+                top: 30px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
                 white-space: nowrap;
                 z-index: 999;
+                max-width: calc(100% - 140px);
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .chat-header p {
@@ -1140,7 +1143,7 @@
                 white-space: normal;
                 text-align: center;
                 margin-top: 50px;
-                padding: 0 10px;
+                padding: 0 20px;
             }
             
             .message-content {
@@ -1720,18 +1723,21 @@
             /* titleをlanguage-selectorとinfo-selectorの間に配置 */
             .chat-header h1 {
                 margin-top: 0;
-                font-size: 16px;
+                font-size: clamp(14px, calc((100vw - 140px) / 9), 20px);
                 position: absolute;
-                top: 10px;
+                top: 30px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
                 white-space: nowrap;
                 z-index: 999;
+                max-width: calc(100% - 140px);
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .chat-header p {
                 margin-top: 50px;
-                padding: 0 60px;
+                padding: 0 30px;
                 text-align: center;
                 white-space: normal;
                 line-height: 1.4;
@@ -1777,19 +1783,22 @@
             
             .chat-header h1 {
                 margin-top: 0;
-                font-size: 12px;
+                font-size: clamp(11px, calc((100vw - 113px) / 11), 16px);
                 position: absolute;
-                top: 3px;
+                top: 23px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
                 white-space: nowrap;
                 z-index: 999;
+                max-width: calc(100% - 113px);
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .chat-header p {
                 font-size: 11px;
                 margin-top: 45px;
-                padding: 0 50px;
+                padding: 0 20px;
                 text-align: center;
                 white-space: normal;
                 line-height: 1.4;
