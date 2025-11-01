@@ -370,6 +370,203 @@ CONTRAINDICATION_RULES = {
 from enhanced_safety_checker import enhanced_scoring_weights
 SCORING_WEIGHTS = enhanced_scoring_weights()
 
+# リスク成分リスト（減点対象、詳細症状がない場合は注意喚起）
+RISK_INGREDIENTS_EXCLUDE = {
+    # 下剤・緩下剤関連（使用条件が厳しい）
+    "ヒマシ油": {
+        "name": "ヒマシ油",
+        "aliases": ["ヒマシ油", "加香ヒマシ油", "カストル油"],
+        "penalty_score": -0.4,
+        "warning": "ヒマシ油が含まれています。腸の炎症、激しい腹痛、吐き気・嘔吐、妊娠中の方は使用できません。使用前に必ず医師または薬剤師にご相談ください。"
+    },
+    "センナ": {
+        "name": "センナ",
+        "aliases": ["センナ", "センノシド", "センナエキス"],
+        "penalty_score": -0.3,
+        "warning": "センナが含まれています。長期連用や妊娠中は避けてください。使用は短期間に限り、症状が続く場合は医師にご相談ください。"
+    },
+    "アロエエキス": {
+        "name": "アロエエキス",
+        "aliases": ["アロエエキス", "アロエ", "アロエエキス末"],
+        "penalty_score": -0.3,
+        "warning": "アロエエキスが含まれています。妊娠中は使用できません。長期連用は避けてください。"
+    },
+    "ビサコジル": {
+        "name": "ビサコジル",
+        "aliases": ["ビサコジル", "ピコスルファート"],
+        "penalty_score": -0.25,
+        "warning": "ビサコジルが含まれています。妊娠中・授乳中、15歳未満の方は使用前に医師にご相談ください。"
+    },
+    # 解熱鎮痛薬関連（インフルエンザ時や特定条件下でリスク）
+    "アスピリン": {
+        "name": "アスピリン",
+        "aliases": ["アスピリン", "アセチルサリチル酸", "ASA"],
+        "penalty_score": -0.5,  # インフルエンザ時は除外
+        "warning": "アスピリンが含まれています。インフルエンザや水痘の患者、特に小児ではライ症候群のリスクがあるため使用できません。"
+    },
+    # 麻薬性鎮咳薬（依存性リスク）
+    "コデイン": {
+        "name": "コデイン",
+        "aliases": ["コデイン", "リン酸コデイン", "コデインリン酸塩"],
+        "penalty_score": -0.4,
+        "warning": "コデインが含まれています。依存性の可能性があるため、長期連用は避けてください。15歳未満、妊娠中・授乳中の方は使用できません。"
+    },
+    "トラマドール": {
+        "name": "トラマドール",
+        "aliases": ["トラマドール", "トラマドール塩酸塩"],
+        "penalty_score": -0.4,
+        "warning": "トラマドールが含まれています。依存性の可能性があるため、長期連用は避けてください。15歳未満、妊娠中・授乳中の方は使用できません。"
+    },
+    # 覚醒剤原料関連（制限あり）
+    "エフェドリン": {
+        "name": "エフェドリン",
+        "aliases": ["エフェドリン", "エフェドリン塩酸塩"],
+        "penalty_score": -0.3,
+        "warning": "エフェドリンが含まれています。高血圧、心臓病、甲状腺機能亢進症の方は使用できません。"
+    },
+    "プソイドエフェドリン": {
+        "name": "プソイドエフェドリン",
+        "aliases": ["プソイドエフェドリン", "プソイドエフェドリン塩酸塩"],
+        "penalty_score": -0.3,
+        "warning": "プソイドエフェドリンが含まれています。高血圧、心臓病、甲状腺機能亢進症の方は使用できません。"
+    }
+}
+
+# 特殊用途医薬品パターン（効能効果が特定の用途に限定されている）
+SPECIFIC_USE_PATTERNS = {
+    "食あたり": {
+        "pattern": re.compile(r"食あたり|食中毒|食中り", re.IGNORECASE),
+        "required_symptoms": ["下痢", "腹痛", "吐き気"],
+        "medicine_types": ["胃腸薬"]
+    },
+    "便秘限定": {
+        "pattern": re.compile(r"^便秘[。、]?$|便秘のみ|便秘だけ", re.IGNORECASE),
+        "required_symptoms": ["便秘"],
+        "medicine_types": ["胃腸薬"],
+        "exclude_symptoms": ["下痢", "腹痛"]  # 下痢や腹痛がある場合は除外
+    },
+    "腸内容物排除": {
+        "pattern": re.compile(r"腸内容物の急速な排除|腸管洗浄|検査前処置", re.IGNORECASE),
+        "required_symptoms": [],
+        "medicine_types": ["胃腸薬"],
+        "strict": True  # 完全一致が必要
+    }
+}
+
+# 複合薬識別パターン（複数の効能を持つ医薬品）
+COMPOUND_MEDICINE_INDICATORS = {
+    "風邪薬": {
+        "patterns": [
+            re.compile(r"総合感冒薬|総合かぜ薬|総合感冒|かぜ薬総合", re.IGNORECASE),
+            re.compile(r"解熱.*鎮痛.*鎮咳|解熱.*鎮痛.*去痰", re.IGNORECASE),
+            re.compile(r"風邪薬.*複数|複数の.*風邪症状", re.IGNORECASE)
+        ],
+        "required_symptoms_count": 2  # 複数の症状が必要
+    },
+    "総合胃腸薬": {
+        "patterns": [
+            re.compile(r"総合胃腸薬|胃腸薬総合", re.IGNORECASE),
+            re.compile(r"胃痛.*下痢|下痢.*胃痛", re.IGNORECASE)
+        ],
+        "required_symptoms_count": 2
+    }
+}
+
+# 曖昧症状リスト（詳細情報が必要な症状）
+AMBIGUOUS_SYMPTOMS = {
+    "腹痛": {
+        "canonical_name": "腹痛",
+        "clarification_questions": [
+            "痛みの場所を教えてください（例：みぞおち、下腹部、全体など）",
+            "痛みのきっかけはありますか？（例：食後、空腹時、下痢を伴うなど）",
+            "他に症状はありますか？（例：下痢、便秘、発熱、吐き気など）"
+        ],
+        "priority": "critical"
+    },
+    "頭痛": {
+        "canonical_name": "頭痛",
+        "clarification_questions": [
+            "頭痛の種類を教えてください（例：ズキズキする、締めつけられる、重い感じなど）",
+            "頭痛のきっかけはありますか？（例：緊張時、生理中、風邪の初期症状など）",
+            "他に症状はありますか？（例：発熱、吐き気、めまいなど）"
+        ],
+        "priority": "critical"
+    },
+    "咳": {
+        "canonical_name": "咳",
+        "clarification_questions": [
+            "咳の種類を教えてください（例：乾いた咳、痰がからむ、夜間に出るなど）",
+            "咳はいつから続いていますか？",
+            "他に症状はありますか？（例：発熱、のどの痛み、鼻水など）"
+        ],
+        "priority": "important"
+    },
+    "のどの痛み": {
+        "canonical_name": "のどの痛み",
+        "clarification_questions": [
+            "のどのどのあたりが痛みますか？",
+            "発熱や咳はありますか？",
+            "他に症状はありますか？（例：鼻水、頭痛など）"
+        ],
+        "priority": "important"
+    },
+    "胸やけ": {
+        "canonical_name": "胸やけ",
+        "clarification_questions": [
+            "胸やけのきっかけはありますか？（例：食後、脂っこい食事後など）",
+            "他に症状はありますか？（例：胃もたれ、胃痛など）"
+        ],
+        "priority": "optional"
+    },
+    "胃もたれ": {
+        "canonical_name": "胃もたれ",
+        "clarification_questions": [
+            "胃もたれのきっかけはありますか？（例：食後、食べ過ぎなど）",
+            "他に症状はありますか？（例：胸やけ、胃痛など）"
+        ],
+        "priority": "optional"
+    }
+}
+
+# 症状カテゴリ間優先表（症状×医薬品種類のペナルティ設定）
+SYMPTOM_CATEGORY_PENALTY = {
+    "発熱": {
+        "風邪薬": -0.3,  # 単一症状の場合は複合薬にペナルティ
+        "解熱鎮痛薬": 0.0,  # 単一症状の場合は特化薬を優先
+        "鼻炎用薬": -0.5  # 発熱のみでは鼻炎薬は不適切
+    },
+    "咳": {
+        "風邪薬": -0.2,  # 咳のみの場合は総合感冒薬より鎮咳薬を優先
+        "解熱鎮痛薬": -0.5,
+        "鼻炎用薬": -0.3
+    },
+    "頭痛": {
+        "風邪薬": -0.2,  # 頭痛のみの場合は解熱鎮痛薬を優先
+        "解熱鎮痛薬": 0.0,
+        "鼻炎用薬": -0.5
+    },
+    "鼻水": {
+        "風邪薬": -0.1,  # 鼻水のみでも風邪薬は許容（軽微なペナルティ）
+        "鼻炎用薬": 0.0,
+        "解熱鎮痛薬": -0.5
+    },
+    "腹痛": {
+        "胃腸薬": 0.0,  # 腹痛は胃腸薬が適切だが、詳細情報が必要
+        "風邪薬": -0.5,
+        "解熱鎮痛薬": -0.5
+    },
+    "下痢": {
+        "胃腸薬": 0.0,
+        "風邪薬": -0.5,
+        "解熱鎮痛薬": -0.5
+    },
+    "便秘": {
+        "胃腸薬": 0.0,
+        "風邪薬": -0.5,
+        "解熱鎮痛薬": -0.5
+    }
+}
+
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
@@ -744,13 +941,21 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
 - 症状名は必ず上記のリストから選択してください
 - 重症疑い症状がある場合は必ず needs_escalation を true にしてください
 - 情報が不明な場合は null を使用してください
+- インフルエンザの可能性がある場合（高熱38.5度以上+複数の風邪症状）は、red_flagsに「インフルエンザ疑い」を追加してください
+- 体温情報がある場合は、38.5度以上の場合は「高熱」としてred_flagsに追加してください
 """
     
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。"},
+                {"role": "system", "content": """あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。
+
+重要な注意事項：
+- 高熱（38.5度以上）と複数の風邪症状がある場合は、red_flagsに「インフルエンザ疑い」を追加してください
+- 体温情報を正確に抽出し、38.5度以上の場合は「高熱」として扱ってください
+- 症状名は必ずSYMPTOM_DICTIONARYに定義されている症状名から選択してください
+- 重症疑い症状がある場合は必ずneeds_escalationをtrueにしてください"""},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
@@ -915,13 +1120,89 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
 # 4. 候補薬取得とスコアリング
 # ================================================================================
 
-def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame) -> List[Dict]:
+def _is_symptom_matching_specific_use(efficacy: str, symptoms: List[Dict], pattern_name: str) -> bool:
     """
-    症状に基づいて候補医薬品を取得
+    症状が特殊用途パターンと一致するかチェック
+    
+    Args:
+        efficacy: 効能効果テキスト
+        symptoms: 検出された症状リスト
+        pattern_name: パターン名（SPECIFIC_USE_PATTERNSのキー）
+    
+    Returns:
+        一致する場合True
+    """
+    if pattern_name not in SPECIFIC_USE_PATTERNS:
+        return False
+    
+    pattern_info = SPECIFIC_USE_PATTERNS[pattern_name]
+    pattern = pattern_info.get("pattern")
+    
+    if not pattern or not pattern.search(efficacy):
+        return False
+    
+    # strictフラグがTrueの場合は完全一致が必要
+    if pattern_info.get("strict", False):
+        return True
+    
+    # required_symptomsのチェック
+    required_symptoms = pattern_info.get("required_symptoms", [])
+    if required_symptoms:
+        symptom_names = [s.get("name") for s in symptoms]
+        if not all(req in symptom_names for req in required_symptoms):
+            return False
+    
+    # exclude_symptomsのチェック
+    exclude_symptoms = pattern_info.get("exclude_symptoms", [])
+    if exclude_symptoms:
+        symptom_names = [s.get("name") for s in symptoms]
+        if any(excl in symptom_names for excl in exclude_symptoms):
+            return False
+    
+    return True
+
+def _contains_risk_ingredient(ingredients: str) -> Tuple[bool, Optional[str], Optional[Dict]]:
+    """
+    リスク成分が含まれているかチェック
+    
+    Args:
+        ingredients: 成分テキスト
+    
+    Returns:
+        (contains_risk, ingredient_name, risk_info): リスク成分の有無、成分名、リスク情報
+    """
+    if not ingredients or not isinstance(ingredients, str):
+        return False, None, None
+    
+    ingredients_upper = ingredients.upper()
+    
+    for risk_name, risk_info in RISK_INGREDIENTS_EXCLUDE.items():
+        aliases = risk_info.get("aliases", [])
+        for alias in aliases:
+            if alias.upper() in ingredients_upper:
+                return True, risk_name, risk_info
+    
+    return False, None, None
+
+def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_text: str = "", influenza_risk: bool = False) -> List[Dict]:
+    """
+    症状に基づいて候補医薬品を取得（フィルタリング機能付き）
+    
+    Args:
+        nlu_result: NLU解析結果
+        medicine_df: 医薬品データフレーム
+        user_text: ユーザーの入力テキスト（オプション）
+        influenza_risk: インフルエンザリスクの有無
+    
+    Returns:
+        フィルタリングされた候補医薬品リスト
     """
     symptoms = nlu_result.get("symptoms", [])
     if not symptoms:
         return []
+    
+    symptom_names = [s.get("name") for s in symptoms]
+    is_single_symptom = len(symptom_names) == 1
     
     # 症状から医薬品の種類を推定
     medicine_types = set()
@@ -938,6 +1219,38 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame) -> List
     for medicine_type in medicine_types:
         matched = medicine_df[medicine_df['医薬品の種類'] == medicine_type]
         for _, row in matched.iterrows():
+            efficacy = row.get('効能効果', '')
+            ingredients = row.get('成分', '')
+            
+            # 特殊用途医薬品のチェック
+            should_exclude = False
+            for pattern_name in SPECIFIC_USE_PATTERNS.keys():
+                if _is_symptom_matching_specific_use(efficacy, symptoms, pattern_name):
+                    # 症状が特殊用途と完全に一致しない場合は除外
+                    pattern_info = SPECIFIC_USE_PATTERNS[pattern_name]
+                    required_symptoms = pattern_info.get("required_symptoms", [])
+                    if required_symptoms and not all(req in symptom_names for req in required_symptoms):
+                        should_exclude = True
+                        print(f"特殊用途医薬品を除外: {row.get('製品名', '')} (パターン: {pattern_name}, 症状不足)")
+                        break
+            
+            if should_exclude:
+                continue
+            
+            # インフルエンザ時のアスピリン除外
+            if influenza_risk:
+                contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
+                if contains_aspirin and "アスピリン" in ingredients:
+                    print(f"インフルエンザリスクのためアスピリン含有医薬品を除外: {row.get('製品名', '')}")
+                    continue
+            
+            # リスク成分のチェック（単一症状の場合は除外、複数症状の場合は減点のみ）
+            contains_risk, risk_name, risk_info = _contains_risk_ingredient(ingredients)
+            if contains_risk and is_single_symptom:
+                # 単一症状の場合はリスク成分を含む医薬品を除外
+                print(f"単一症状のためリスク成分含有医薬品を除外: {row.get('製品名', '')} (成分: {risk_name})")
+                continue
+            
             # CSVのG列（インデックス6）から年齢制限を取得
             age_restriction = row.get('年齢制限', '')
             
@@ -947,7 +1260,6 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame) -> List
             
             # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
             if age_restriction and isinstance(age_restriction, str):
-                import re
                 # 数値のみを抽出（例：「15歳以上」→「15」）
                 age_match = re.search(r'(\d+)歳', age_restriction)
                 if age_match:
@@ -966,24 +1278,32 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame) -> List
                 note_parts = [p for p in parts if '注意' in p or '＜' in p or '用法' in p]
                 usage_notes = '\n'.join(note_parts[:3])  # 最初の3行まで
             
-            candidates.append({
+            candidate = {
                 'medicine_id': len(candidates),
                 'product_name': row.get('製品名', ''),  # A列
                 'manufacturer': row.get('メーカー名', ''),  # B列
                 'medicine_type': row.get('医薬品の種類', ''),  # D列
                 'classification': row.get('分類', ''),  # C列
-                'efficacy': row.get('効能効果', ''),  # E列
+                'efficacy': efficacy,  # E列
                 'usage': row.get('用法用量', ''),  # F列
                 'age_restriction': age_restriction,  # G列
-                'ingredients': row.get('成分', ''),  # H列
+                'ingredients': ingredients,  # H列
                 'doping_prohibited': row.get('禁止物質あり', ''),  # I列
                 'competition_category': row.get('競技会区分', ''),  # J列
                 'conditions': row.get('条件', ''),  # K列
                 'usage_notes': usage_notes if usage_notes else '用法用量を守ってご使用ください。',
                 'base_score': 0.0
-            })
+            }
+            
+            # リスク成分情報を追加（減点用）
+            if contains_risk and risk_info:
+                candidate['risk_ingredient'] = risk_name
+                candidate['risk_warning'] = risk_info.get("warning", "")
+                candidate['risk_penalty'] = risk_info.get("penalty_score", -0.3)
+            
+            candidates.append(candidate)
     
-    print(f"候補医薬品数: {len(candidates)}")
+    print(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
     return candidates
 
 def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
@@ -1105,14 +1425,25 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         # 相互作用がある場合は大幅減点
         interaction_score = min(interaction_score, -0.5)
     
-    # 最終スコア計算
+    # 症状特異性ペナルティを計算
+    symptom_specificity_penalty = calculate_symptom_specificity_penalty(candidate, nlu_result)
+    
+    # リスク成分の減点（複数症状の場合は減点のみ、単一症状の場合は既に除外済み）
+    risk_penalty = 0.0
+    if candidate.get('risk_ingredient'):
+        risk_penalty = candidate.get('risk_penalty', -0.3)
+        print(f"リスク成分ペナルティ: {candidate.get('risk_ingredient')} = {risk_penalty}")
+    
+    # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティを追加）
     total_score = (
         SCORING_WEIGHTS["症状適合度"] * symptom_score +
         SCORING_WEIGHTS["効能特異性"] * efficacy_specificity_score +
         SCORING_WEIGHTS["年齢適合性"] * age_score +
         SCORING_WEIGHTS["用法簡便性"] * usage_score +
         SCORING_WEIGHTS["副作用リスク"] * side_effect_score +
-        SCORING_WEIGHTS["相互作用リスク"] * interaction_score
+        SCORING_WEIGHTS["相互作用リスク"] * interaction_score +
+        symptom_specificity_penalty +  # 症状特異性ペナルティ
+        risk_penalty  # リスク成分ペナルティ
     )
     
     result = {
@@ -1123,7 +1454,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "age_fit": age_score,
             "usage_convenience": usage_score,
             "side_effect_risk": side_effect_score,
-            "interaction_risk": interaction_score
+            "interaction_risk": interaction_score,
+            "symptom_specificity_penalty": symptom_specificity_penalty,  # スコア内訳に追加
+            "risk_ingredient_penalty": risk_penalty  # リスク成分ペナルティ
         }
     }
     
@@ -1134,18 +1467,247 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     return result
 
 # ================================================================================
+# 4.5 症状特異性ペナルティ計算関数
+# ================================================================================
+
+def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> float:
+    """
+    症状特異性に基づくペナルティを計算
+    
+    Args:
+        candidate: 候補医薬品情報
+        nlu_result: NLU解析結果
+    
+    Returns:
+        ペナルティスコア（負の値、0.0が最大）
+    """
+    symptoms = nlu_result.get("symptoms", [])
+    if not symptoms:
+        return 0.0
+    
+    symptom_names = [s.get("name") for s in symptoms]
+    medicine_type = candidate.get("medicine_type", "")
+    
+    # 単一症状の場合
+    if len(symptom_names) == 1:
+        symptom_name = symptom_names[0]
+        
+        # 症状カテゴリ間優先表からペナルティを取得
+        if symptom_name in SYMPTOM_CATEGORY_PENALTY:
+            penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
+            if medicine_type in penalty_table:
+                penalty = penalty_table[medicine_type]
+                print(f"症状特異性ペナルティ: {symptom_name} + {medicine_type} = {penalty}")
+                return penalty
+        
+        # 複合薬識別パターンによるチェック
+        # 単一症状なのに複合薬（風邪薬など）が推奨される場合
+        if medicine_type in COMPOUND_MEDICINE_INDICATORS:
+            compound_info = COMPOUND_MEDICINE_INDICATORS[medicine_type]
+            required_count = compound_info.get("required_symptoms_count", 2)
+            if len(symptom_names) < required_count:
+                # デフォルトペナルティ（カテゴリ間優先表にない場合）
+                default_penalty = -0.3
+                print(f"複合薬ペナルティ: 単一症状({symptom_name})に対して複合薬({medicine_type}) = {default_penalty}")
+                return default_penalty
+    
+    # 複数症状の場合
+    elif len(symptom_names) >= 2:
+        # 複数症状がある場合は、症状カテゴリ間優先表から最も適切なペナルティを適用
+        # 各症状について、該当する医薬品種類のペナルティを確認
+        penalties = []
+        for symptom_name in symptom_names:
+            if symptom_name in SYMPTOM_CATEGORY_PENALTY:
+                penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
+                if medicine_type in penalty_table:
+                    penalties.append(penalty_table[medicine_type])
+        
+        if penalties:
+            # 最悪のペナルティを採用（最も適切でない組み合わせ）
+            max_penalty = max(penalties)
+            if max_penalty < 0:
+                print(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {max_penalty}")
+                return max_penalty
+    
+    return 0.0
+
+# ================================================================================
+# 4.6 推奨後の検証関数（責務分離）
+# ================================================================================
+
+def _recheck_risk_ingredients(candidates: List[Dict], nlu_result: Dict) -> List[Dict]:
+    """
+    リスク成分の再チェック
+    
+    Args:
+        candidates: 候補医薬品リスト
+        nlu_result: NLU解析結果
+    
+    Returns:
+        検証済み候補リスト（リスク警告を追加）
+    """
+    symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name") for s in symptoms]
+    is_single_symptom = len(symptom_names) == 1
+    
+    validated = []
+    for candidate in candidates:
+        ingredients = candidate.get('ingredients', '')
+        contains_risk, risk_name, risk_info = _contains_risk_ingredient(ingredients)
+        
+        if contains_risk:
+            # リスク成分情報を追加
+            if 'risk_ingredient' not in candidate:
+                candidate['risk_ingredient'] = risk_name
+                candidate['risk_warning'] = risk_info.get("warning", "") if risk_info else ""
+            
+            # 単一症状の場合は警告を強化
+            if is_single_symptom:
+                candidate['risk_warning'] = f"⚠️ {candidate.get('risk_warning', '')} 単一症状のため、より安全な医薬品の検討をお勧めします。"
+        
+        validated.append(candidate)
+    
+    return validated
+
+def _check_influenza_compatibility(candidates: List[Dict], influenza_risk: bool) -> List[Dict]:
+    """
+    インフルエンザ適合性チェック
+    
+    Args:
+        candidates: 候補医薬品リスト
+        influenza_risk: インフルエンザリスクの有無
+    
+    Returns:
+        検証済み候補リスト（アスピリン含有医薬品を除外）
+    """
+    if not influenza_risk:
+        return candidates
+    
+    validated = []
+    for candidate in candidates:
+        ingredients = candidate.get('ingredients', '')
+        contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
+        
+        if contains_aspirin and "アスピリン" in ingredients:
+            print(f"検証処理: インフルエンザリスクのためアスピリン含有医薬品を除外: {candidate.get('product_name', '')}")
+            continue  # インフルエンザ時はアスピリン含有医薬品を除外
+        
+        validated.append(candidate)
+    
+    return validated
+
+def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenza_risk: bool) -> List[Dict]:
+    """
+    最終推奨の確定処理（責務を統合）
+    
+    Args:
+        candidates: 候補医薬品リスト
+        nlu_result: NLU解析結果
+        influenza_risk: インフルエンザリスクの有無
+    
+    Returns:
+        最終確定された候補リスト
+    """
+    # 1. インフルエンザ適合性チェック
+    validated = _check_influenza_compatibility(candidates, influenza_risk)
+    
+    # 2. リスク成分の再チェック
+    validated = _recheck_risk_ingredients(validated, nlu_result)
+    
+    # 3. スコアが0.5未満の候補を警告付きで残す（完全には除外しない）
+    final_candidates = []
+    for candidate in validated:
+        score = candidate.get('final_score', 0.0)
+        if score < 0.5:
+            candidate['low_score_warning'] = True
+            print(f"⚠️ 低スコア警告: {candidate.get('product_name', '')} (スコア: {score:.3f})")
+        final_candidates.append(candidate)
+    
+    return final_candidates
+
+# ================================================================================
+# 4.7 インフルエンザリスク検出関数
+# ================================================================================
+
+def detect_influenza_risk(nlu_result: Dict, user_text: str = "") -> Tuple[bool, str]:
+    """
+    インフルエンザの可能性を検出
+    
+    Args:
+        nlu_result: NLU解析結果
+        user_text: ユーザーの入力テキスト（オプション）
+    
+    Returns:
+        (is_influenza_risk, reason): インフルエンザリスクの有無と理由
+    """
+    symptoms = nlu_result.get("symptoms", [])
+    
+    # 条件1: 「インフルエンザ」という単語が入力に含まれている
+    if user_text and ("インフルエンザ" in user_text or "influenza" in user_text.lower()):
+        return True, "入力文にインフルエンザの記載があります"
+    
+    # 条件2: 高熱（38.5度以上）+ 複数の風邪症状
+    has_high_fever = False
+    fever_symptom = None
+    
+    # 高熱の検出
+    for symptom in symptoms:
+        symptom_name = symptom.get("name", "")
+        severity = symptom.get("severity", "")
+        
+        # 発熱症状のチェック
+        if symptom_name == "発熱":
+            fever_symptom = symptom
+            # 重症度が「重度」の場合は高熱の可能性
+            if severity == "重度":
+                has_high_fever = True
+            # ユーザー入力から体温情報を抽出
+            if user_text:
+                # 38.5度以上のパターンを検索
+                temp_pattern = re.compile(r"(38\.5|39|40|41|42)[度°]?", re.IGNORECASE)
+                if temp_pattern.search(user_text):
+                    has_high_fever = True
+    
+    # RED_FLAG_SYMPTOMSの「高熱」もチェック
+    if not has_high_fever and user_text:
+        for flag_keyword in RED_FLAG_SYMPTOMS.get("高熱", []):
+            if flag_keyword in user_text:
+                has_high_fever = True
+                break
+    
+    # 風邪関連症状のカウント
+    cold_symptoms = ["発熱", "頭痛", "関節痛", "筋肉痛", "悪寒", "のどの痛み", "咳", "鼻水", "鼻づまり"]
+    detected_cold_symptoms = [s for s in symptoms if s.get("name") in cold_symptoms]
+    
+    # 高熱 + 複数の風邪症状（2つ以上）でインフルエンザリスクと判定
+    if has_high_fever and len(detected_cold_symptoms) >= 2:
+        symptom_names = [s.get("name") for s in detected_cold_symptoms]
+        return True, f"高熱（38.5度以上の可能性）と複数の風邪症状（{', '.join(symptom_names)}）が確認されました"
+    
+    # 高熱はないが、発熱 + 複数の全身症状（頭痛、関節痛、筋肉痛、悪寒）の組み合わせ
+    if fever_symptom and len(detected_cold_symptoms) >= 3:
+        systemic_symptoms = ["頭痛", "関節痛", "筋肉痛", "悪寒"]
+        has_systemic = any(s.get("name") in systemic_symptoms for s in detected_cold_symptoms)
+        if has_systemic:
+            symptom_names = [s.get("name") for s in detected_cold_symptoms]
+            return True, f"発熱と全身症状（{', '.join(symptom_names)}）が確認されました"
+    
+    return False, ""
+
+# ================================================================================
 # 5. 不足情報のチェックと質問生成
 # ================================================================================
 
 def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
     """
-    不足している情報をチェックし、追加質問を生成
+    不足している情報をチェックし、追加質問を生成（あいまい症状対応を含む）
     
     Returns:
         {
             "has_missing_info": bool,
             "missing_fields": List[str],
             "questions": List[str],
+            "critical_questions": List[str],  # 優先度が高い質問
             "priority": str  # "critical", "important", "optional"
         }
     """
@@ -1153,8 +1715,31 @@ def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
         "has_missing_info": False,
         "missing_fields": [],
         "questions": [],
+        "critical_questions": [],  # 新規追加
         "priority": "optional"
     }
+    
+    # あいまい症状のチェック
+    symptoms = nlu_result.get('symptoms', [])
+    for symptom in symptoms:
+        symptom_name = symptom.get("name", "")
+        if symptom_name in AMBIGUOUS_SYMPTOMS:
+            ambiguous_info = AMBIGUOUS_SYMPTOMS[symptom_name]
+            questions = ambiguous_info.get("clarification_questions", [])
+            priority = ambiguous_info.get("priority", "important")
+            
+            missing_info["has_missing_info"] = True
+            missing_info["missing_fields"].append(f"ambiguous_symptom_{symptom_name}")
+            
+            # 優先度に応じて分類
+            if priority == "critical":
+                missing_info["critical_questions"].extend(questions)
+                if missing_info["priority"] != "critical":
+                    missing_info["priority"] = "critical"
+            else:
+                missing_info["questions"].extend(questions)
+                if missing_info["priority"] not in ["critical", "important"] and priority == "important":
+                    missing_info["priority"] = "important"
     
     # 1. 年齢チェック（重要だが推奨は継続）
     if user_info.get('age') is None:
@@ -1278,6 +1863,12 @@ def rule_based_recommendation(
     print(f"\n--- ステップ1: NLU（症状抽出） ---")
     nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
+    # confidenceチェック（0.4未満の場合はGPTフォールバックを検討）
+    confidence_score = nlu_result.get('confidence_score', 0.0)
+    symptoms_count = len(nlu_result.get("symptoms", []))
+    
+    print(f"NLU信頼度スコア: {confidence_score:.2f}, 検出症状数: {symptoms_count}")
+    
     # ステップ1.5: 不足情報のチェック
     print(f"\n--- ステップ1.5: 不足情報のチェック ---")
     missing_info_result = check_missing_information(user_info, nlu_result)
@@ -1295,15 +1886,25 @@ def rule_based_recommendation(
                 "reason": "必須情報が不足しています",
                 "missing_fields": missing_info_result['missing_fields'],
                 "questions": missing_info_result['questions'],
+                "critical_questions": missing_info_result.get('critical_questions', []),
                 "recommended_medicines": [],
                 "nlu_result": nlu_result,
+                "confidence_score": confidence_score,
                 "timestamp": datetime.now().isoformat()
             }
         else:
             print(f"推奨は続行しますが、追加質問も表示します")
     
-    # ステップ2: 安全性チェック
-    print(f"\n--- ステップ2: 安全性チェック ---")
+    # ステップ2: インフルエンザリスク検出
+    print(f"\n--- ステップ2: インフルエンザリスク検出 ---")
+    influenza_risk, influenza_reason = detect_influenza_risk(nlu_result, user_text)
+    if influenza_risk:
+        print(f"[警告] インフルエンザの可能性: {influenza_reason}")
+    else:
+        print(f"インフルエンザリスク: なし")
+    
+    # ステップ3: 安全性チェック
+    print(f"\n--- ステップ3: 安全性チェック ---")
     safety_result = check_safety_contraindications(user_info, nlu_result)
     
     if safety_result["requires_escalation"]:
@@ -1314,12 +1915,14 @@ def rule_based_recommendation(
             "warnings": safety_result["warnings"],
             "recommended_medicines": [],
             "nlu_result": nlu_result,
+            "influenza_risk": influenza_risk,
+            "influenza_reason": influenza_reason,
             "timestamp": datetime.now().isoformat()
         }
     
-    # ステップ3: 候補医薬品取得
-    print(f"\n--- ステップ3: 候補医薬品取得 ---")
-    candidates = get_candidate_medicines(nlu_result, medicine_df)
+    # ステップ4: 候補医薬品取得（インフルエンザリスクを考慮）
+    print(f"\n--- ステップ4: 候補医薬品取得 ---")
+    candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
     
     if not candidates:
         print("該当する候補医薬品が見つかりませんでした")
@@ -1329,11 +1932,12 @@ def rule_based_recommendation(
             "warnings": safety_result["warnings"],
             "recommended_medicines": [],
             "nlu_result": nlu_result,
+            "confidence_score": confidence_score,  # confidence_scoreを追加
             "timestamp": datetime.now().isoformat()
         }
     
-    # ステップ4: スコアリング
-    print(f"\n--- ステップ4: スコアリング ---")
+    # ステップ5: スコアリング
+    print(f"\n--- ステップ5: スコアリング ---")
     for candidate in candidates:
         score_result = calculate_final_score(candidate, nlu_result, user_info)
         candidate['final_score'] = score_result['total_score']
@@ -1350,13 +1954,17 @@ def rule_based_recommendation(
     # 上位N件を選択
     top_candidates = candidates_sorted[:top_n]
     
-    # ステップ5: 説明生成
-    print(f"\n--- ステップ5: 説明生成 ---")
+    # ステップ5.5: 推奨後の検証処理
+    print(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
+    validated_candidates = _finalize_recommendations(top_candidates, nlu_result, influenza_risk)
+    
+    # ステップ6: 説明生成
+    print(f"\n--- ステップ6: 説明生成 ---")
     recommendations = []
-    for i, candidate in enumerate(top_candidates, 1):
+    for i, candidate in enumerate(validated_candidates, 1):
         explanation = generate_explanation(candidate, nlu_result, safety_result, user_info)
         
-        recommendations.append({
+        recommendation_item = {
             "rank": i,
             "number": i,  # ChatGPTベース互換性のため追加
             "product_name": candidate['product_name'],
@@ -1377,10 +1985,18 @@ def rule_based_recommendation(
             "reason": explanation,  # ChatGPTベース互換性のため追加
             "allergy_warning": candidate.get('allergy_warning', ''),
             "interaction_warnings": candidate.get('interaction_warnings', [])
-        })
+        }
+        
+        # リスク警告を追加
+        if candidate.get('risk_warning'):
+            recommendation_item['risk_warning'] = candidate['risk_warning']
+        if candidate.get('low_score_warning'):
+            recommendation_item['low_score_warning'] = True
+        
+        recommendations.append(recommendation_item)
     
-    # ステップ6: 使用上の注意と医師相談アドバイスをChatGPTで生成
-    print(f"\n--- ステップ6: 使用上の注意と医師相談アドバイスの生成 ---")
+    # ステップ7: 使用上の注意と医師相談アドバイスをChatGPTで生成
+    print(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
     usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
         recommendations, nlu_result, user_info, client
     )
@@ -1388,6 +2004,16 @@ def rule_based_recommendation(
     print(f"\n{'='*80}")
     print(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
     print(f"{'='*80}\n")
+    
+    # score_breakdownのJSON出力（デバッグ・トレース用）
+    score_breakdown_json = None
+    if recommendations:
+        try:
+            score_breakdowns = [r.get('score_breakdown', {}) for r in recommendations]
+            score_breakdown_json = json.dumps(score_breakdowns, ensure_ascii=False, indent=2)
+            print(f"📊 Score Breakdown JSON:\n{score_breakdown_json}")
+        except Exception as e:
+            print(f"⚠️ Score breakdown JSON化エラー: {e}")
     
     # 不足情報の質問を追加（すべての優先度で表示）
     additional_questions = []
@@ -1403,8 +2029,13 @@ def rule_based_recommendation(
         "usage_notes": usage_and_consultation.get('usage_notes', ''),
         "doctor_consultation": usage_and_consultation.get('doctor_consultation', ''),
         "additional_questions": additional_questions,
+        "critical_questions": missing_info_result.get("critical_questions", []),  # 新規追加
         "missing_priority": missing_priority,
         "nlu_result": nlu_result,
+        "influenza_risk": influenza_risk,  # 新規追加
+        "influenza_reason": influenza_reason,  # 新規追加
+        "confidence_score": confidence_score,  # confidence_scoreを追加
+        "score_breakdown_json": score_breakdown_json,  # デバッグ用JSON出力
         "timestamp": datetime.now().isoformat()
     }
 
@@ -1489,6 +2120,26 @@ def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict,
     medicine_type = candidate.get('medicine_type', '')
     if medicine_type:
         explanation_parts.append(f"{medicine_type}として効果が期待できます")
+    
+    # 症状特異性ペナルティの説明
+    symptom_specificity_penalty = score_breakdown.get('symptom_specificity_penalty', 0)
+    if symptom_specificity_penalty < -0.2:
+        explanation_parts.append(f"⚠️ 症状への特異性: 複合薬のため、単一症状への適合度はやや低めです")
+    
+    # リスク成分ペナルティの説明
+    risk_ingredient_penalty = score_breakdown.get('risk_ingredient_penalty', 0)
+    if risk_ingredient_penalty < -0.2:
+        risk_ingredient = candidate.get('risk_ingredient', '')
+        if risk_ingredient:
+            explanation_parts.append(f"⚠️ リスク成分含有: {risk_ingredient}が含まれています")
+    
+    # リスク警告がある場合（candidateから取得）
+    if candidate.get('risk_warning'):
+        explanation_parts.append(f"⚠️ {candidate.get('risk_warning')}")
+    
+    # 低スコア警告
+    if candidate.get('low_score_warning'):
+        explanation_parts.append("⚠️ 推奨スコアが低めです。使用前に医師または薬剤師にご相談ください。")
     
     # 警告がある場合
     if safety_result.get("warnings"):
