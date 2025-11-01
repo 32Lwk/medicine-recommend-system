@@ -60,6 +60,62 @@
             background-color: #1565c0;
         }
 
+        /* 危機対応セッションのスタイル */
+        .crisis-session {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2) !important;
+            border: 2px solid #e74c3c !important;
+            /* アニメーションを削除してサイズを固定 */
+        }
+
+        .crisis-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            animation: crisis-blink 1s infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes crisis-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .crisis-message-highlight {
+            background: #ffebee !important;
+            border-left: 4px solid #e74c3c !important;
+            padding: 10px !important;
+            margin: 5px 0 !important;
+            border-radius: 4px !important;
+        }
+
+        /* 危機対応キューアイテムのスタイル */
+        .crisis-queue-item {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2) !important;
+            border: 2px solid #e74c3c !important;
+            /* アニメーションを削除してサイズを固定 */
+        }
+
+        .crisis-queue-item .queue-header {
+            background: rgba(231, 76, 60, 0.1) !important;
+        }
+
+        .crisis-queue-item .session-id {
+            color: #e74c3c !important;
+            font-weight: bold !important;
+        }
+
+        .crisis-queue-item .user-message {
+            color: #e74c3c !important;
+        }
+
+        .crisis-queue-item .reply-section {
+            background: rgba(255, 255, 255, 0.8) !important;
+        }
+
         .recommendation-result {
             font-size: 0.9rem;
             line-height: 1.4;
@@ -94,7 +150,7 @@
         td .ai-response {
             font-size: 0.65rem;
             line-height: 1.3;
-            max-height: 10px;
+            max-height: 80px;
             overflow: hidden;
             position: relative;
             white-space: pre-wrap;
@@ -944,6 +1000,119 @@
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
         
+        /* 詳細スコアボタンスタイル */
+        .score-detail-btn {
+            transition: background-color 0.3s ease;
+        }
+        
+        .score-detail-btn:hover {
+            background-color: #0056b3 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .score-detail-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* スコア詳細モーダルスタイル */
+        .score-detail {
+            padding: 20px;
+        }
+        
+        .score-detail h4 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 10px;
+        }
+        
+        .overall-score {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .score-circle.high {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        
+        .score-circle.medium {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+        
+        .score-circle.low {
+            background: linear-gradient(135deg, #F44336, #D32F2F);
+        }
+        
+        .score-breakdown {
+            margin-top: 30px;
+        }
+        
+        .score-breakdown h5 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .score-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .score-label {
+            min-width: 120px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .score-bar {
+            flex: 1;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .score-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .score-value {
+            min-width: 40px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        
         .admin-modal input, .admin-modal textarea {
             width: 100%;
             padding: 10px;
@@ -1502,7 +1671,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>医薬品相談AI - 管理画面</h1>
+            <h1>チャット型医薬品相談ツール - 管理画面</h1>
         <div class="admin-controls">
             <button id="aiControlBtn" class="admin-btn">AI管理</button>
             <button id="systemStatusBtn" class="admin-btn">システム状況</button>
@@ -1553,7 +1722,7 @@
 
                 <!-- 右側：手動返信待ちキュー（大きく表示） -->
                 <div class="queue-section" style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
-                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">📋 手動返信待ちキュー</h3>
+                    <h3 style="font-size: 1.1em; margin-bottom: 10px;">📋 手動返信待ちキュー <span id="crisis-count" style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-left: 10px;"></span></h3>
                     <div class="button-group" style="margin-bottom: 10px; display: flex; gap: 8px;">
                         <button class="btn btn-success" id="refresh-btn" onclick="manualRefresh()" style="padding: 6px 10px; font-size: 0.8em;">🔄 更新</button>
                         <button class="btn btn-info" onclick="refreshQueue()" style="padding: 6px 10px; font-size: 0.8em;">📋 キュー</button>
@@ -1767,6 +1936,7 @@
         
         let currentSessionId = null;
         let allSessions = [];
+        let currentDetailedDiagnosis = null; // 管理APIからの詳細診断（スコア内訳含む）
         let socket = null;
 
         // ページ読み込み時の初期化
@@ -2071,15 +2241,25 @@
             
             let html = '';
             queue.forEach((item, index) => {
+                // 危機対応セッションかどうかをチェック
+                const isCrisisItem = item.status === 'crisis_detected' || item.priority === 'high';
+                const itemClass = isCrisisItem ? 'queue-item crisis-queue-item' : 'queue-item';
+                const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
+                const crisisKeywords = isCrisisItem && item.crisis_keywords ? 
+                    `<div class="crisis-keywords" style="background: #ffebee; padding: 8px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c; font-size: 0.9em; color: #e74c3c;">
+                        <strong>検出キーワード:</strong> ${item.crisis_keywords.join(', ')}
+                    </div>` : '';
+                
                 html += `
-                    <div class="queue-item" onclick="selectSession('${item.session_id}', ${index})">
+                    <div class="${itemClass}" onclick="selectSession(event, '${item.session_id}', ${index})">
                         <div class="queue-header">
-                            <span class="session-id">セッション: ${item.session_id}</span>
+                            <span class="session-id">セッション: ${item.session_id} ${crisisBadge}</span>
                             <span class="timestamp">${item.timestamp}</span>
                         </div>
                         <div class="user-message">
                             <strong>👤 ユーザー:</strong> ${item.user_message}
                         </div>
+                        ${crisisKeywords}
                         <div class="reply-section">
                             <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力してください..."></textarea>
                             <button class="reply-btn" onclick="sendReply('${item.session_id}', ${index}, event)">📤 返信送信</button>
@@ -2089,6 +2269,19 @@
             });
             
             content.innerHTML = html;
+            
+            // 危機対応セッションの数をカウントして表示
+            const crisisCount = queue.filter(item => item.status === 'crisis_detected' || item.priority === 'high').length;
+            const crisisCountElement = document.getElementById('crisis-count');
+            if (crisisCountElement) {
+                if (crisisCount > 0) {
+                    crisisCountElement.textContent = `🚨 緊急: ${crisisCount}件`;
+                    crisisCountElement.style.background = '#ffebee';
+                    crisisCountElement.style.color = '#e74c3c';
+                } else {
+                    crisisCountElement.textContent = '';
+                }
+            }
         }
 
         function updateStats(queue) {
@@ -2104,7 +2297,7 @@
             // 現在のセッション情報を追加
             if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
                 const currentSessionHtml = `
-                    <div class="queue-item current-session" onclick="selectSession('${sessionData.session_id}', 'current')">
+                    <div class="queue-item current-session" onclick="selectSession(event, '${sessionData.session_id}', 'current')">
                         <div class="queue-header">
                             <span class="session-id">📱 現在のセッション: ${sessionData.session_id}</span>
                             <span class="timestamp">${sessionData.last_activity}</span>
@@ -2157,6 +2350,8 @@
                         data.find(session => session.session_id === sessionId) : null;
                     
                     if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
+                        // 管理者専用の詳細診断を保持（推奨薬ごとのscore/score_breakdownを含む）
+                        currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
                         renderChatMessages(targetSession.messages);
                     } else {
                         renderChatMessages([]);
@@ -2393,9 +2588,9 @@
                     // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
                     const medicineName = medicine.product_name || '';
                     if (medicineName) {
-                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
-                        const rankPattern = new RegExp(`(🏆 ${index + 1}つ目: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
-                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
+                        // 該当行に既に最適度が付いていない場合のみ追加（同一行内で判定）
+                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*最適度:)`, 'g');
+                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoringHtml}`);
                     }
                 }
             });
@@ -2403,32 +2598,7 @@
             return modifiedContent;
         }
 
-        function addScoringToMedicines(htmlContent, medicines) {
-            if (!medicines || medicines.length === 0) {
-                return htmlContent;
-            }
-            
-            let modifiedContent = htmlContent;
-            
-            // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
-            medicines.forEach((medicine, index) => {
-                if (medicine.score !== undefined) {
-                    const scoreClass = medicine.score >= 0.7 ? 'admin-score-high' : medicine.score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
-                    const scoreText = medicine.score >= 0.7 ? '高' : medicine.score >= 0.5 ? '中' : '低';
-                    const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(medicine.score * 100).toFixed(0)}% (${scoreText})</span>`;
-                    
-                    // 推奨医薬品セクション内の医薬品名の後にスコアリングを追加
-                    const medicineName = medicine.product_name || '';
-                    if (medicineName) {
-                        // 推奨医薬品セクション内でのみ置換（重複を避けるため）
-                        const rankPattern = new RegExp(`(🏆 ${index + 1}つ目: ${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?!.*最適度:)`, 'g');
-                        modifiedContent = modifiedContent.replace(rankPattern, `$1${scoringHtml}`);
-                    }
-                }
-            });
-            
-            return modifiedContent;
-        }
+        // ★★★ addScoringToMedicines 関数は削除（動的HTML生成に変更） ★★★
 
         function renderChatMessages(messages) {
             const chatMessages = document.getElementById('chat-messages');
@@ -2475,55 +2645,241 @@
                 
                 // 管理画面用のインジケーター：薬剤師視点で表示
                 if (msg.type === 'bot') {
-                    if (msg.manual_reply) {
+                if (msg.crisis_support) {
+                    indicator = '<span class="crisis-indicator" style="color: #e74c3c; font-weight: bold; background: #ffebee; padding: 2px 6px; border-radius: 4px;">🚨 危機対応</span><br>';
+                    } else if (msg.manual_reply) {
                         indicator = '<span class="manual-reply-indicator">👤 薬剤師返信</span><br>';
                     } else {
                         indicator = '<span class="ai-indicator">🤖 AI返信</span><br>';
                     }
+                } else if (msg.type === 'user') {
+                    indicator = '<span class="user-indicator" style="color: #007bff; font-weight: bold;">👤 ユーザー</span><br>';
                 }
                 
-                // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (msg.content && msg.content.includes('<div class="recommendation-result">')) {
-                    // 管理画面でのスコアリング表示を追加
-                    let modifiedContent = msg.content;
-                    if (msg.diagnosis && msg.diagnosis.recommended_medicines) {
-                        modifiedContent = addScoringToMedicines(msg.content, msg.diagnosis.recommended_medicines);
+                let messageContentHtml = '';
+
+                // 危機対応メッセージの特別表示
+                if (msg.crisis_support) {
+                    messageContentHtml += `<div class="crisis-message-highlight">`;
+                    messageContentHtml += `<h4 style="color: #e74c3c; margin-bottom: 10px;">🚨 危機対応メッセージ</h4>`;
+                    messageContentHtml += `<p><strong>タイトル:</strong> ${msg.crisis_title || 'あなたの気持ちを大切に思っています'}</p>`;
+                    messageContentHtml += `<p><strong>メッセージ:</strong> ${msg.content || '今、とてもつらい状況かもしれません。'}</p>`;
+                    
+                    if (msg.resources && msg.resources.length > 0) {
+                        messageContentHtml += `<h5 style="color: #e74c3c; margin-top: 15px;">相談先情報:</h5>`;
+                        msg.resources.forEach(resource => {
+                            messageContentHtml += `<div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c;">`;
+                            messageContentHtml += `<strong>${resource.name}</strong><br>`;
+                            messageContentHtml += `<small>${resource.organization}</small><br>`;
+                            if (resource.phone) messageContentHtml += `📞 ${resource.phone}<br>`;
+                            if (resource.line) messageContentHtml += `💬 <a href="${resource.line}" target="_blank">LINEで相談する</a><br>`;
+                            if (resource.line_qr) messageContentHtml += `📱 <img src="${resource.line_qr}" alt="LINE QRコード" style="width: 80px; height: 80px; border: 1px solid #ddd; border-radius: 4px; margin: 5px 0;"><br>`;
+                            if (resource.website) messageContentHtml += `🌐 <a href="${resource.website}" target="_blank">ウェブサイト</a><br>`;
+                            if (resource.hours) messageContentHtml += `⏰ ${resource.hours}<br>`;
+                            messageContentHtml += `<small>${resource.description}</small>`;
+                            messageContentHtml += `</div>`;
+                        });
                     }
                     
-                    html += `
-                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
-                            <div style="max-width: 80%;">
-                                ${indicator}
-                                ${modifiedContent}
-                                ${timestamp}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // 通常のテキストメッセージまたはAI応答
-                    let content;
-                    if (msg.content && msg.content.includes('<div class="chat-response">')) {
-                        // AI応答の場合はHTMLをそのまま表示
-                        content = msg.content;
-                    } else {
-                        // 通常のテキストメッセージはエスケープ
-                        content = escapeHtml(msg.content || '');
+                    if (msg.emergency_message) {
+                        messageContentHtml += `<div style="background: #e74c3c; color: white; padding: 10px; margin-top: 10px; border-radius: 4px; text-align: center; font-weight: bold;">`;
+                        messageContentHtml += `${msg.emergency_message}`;
+                        messageContentHtml += `</div>`;
                     }
                     
-                    html += `
-                        <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
-                            <div class="message-content" style="max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; ${
-                                messageClass === 'user' 
-                                    ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
-                                    : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
-                            }">
-                                ${indicator}
-                                ${content}
-                                ${timestamp}
-                            </div>
-                        </div>
-                    `;
+                    messageContentHtml += `</div>`;
                 }
+                // ★★★ 推奨医薬品メッセージの判定（簡素化） ★★★
+                const isMedicineRecommendation = (msg) => {
+                    // デバッグログ
+                    console.log('🔍 Message analysis:', {
+                        type: msg.type,
+                        hasDiagnosis: !!(msg.diagnosis && msg.diagnosis.recommended_medicines),
+                        hasContent: !!(msg.content && msg.content.includes('推奨医薬品')),
+                        hasContentHtml: !!(msg.content && msg.content.includes('<div class="recommendation-result">')),
+                        hasTrophy: !!(msg.content && msg.content.includes('🏆'))
+                    });
+                    
+                    return msg.type === 'bot' && (
+                        (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
+                        (msg.content && (
+                            msg.content.includes('推奨医薬品') ||
+                            msg.content.includes('<div class="recommendation-result">') ||
+                            msg.content.includes('🏆')
+                        ))
+                    );
+                };
+
+                if (isMedicineRecommendation(msg)) {
+                    // 詳細診断（管理者向け）を優先
+                    const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                        ? currentDetailedDiagnosis
+                        : (msg.diagnosis || {});
+                    // 管理者用に再描画できる推奨医薬品が存在するか
+                    const hasAdminDiagMeds = !!(adminDiag && Array.isArray(adminDiag.recommended_medicines) && adminDiag.recommended_medicines.length > 0);
+
+                    messageContentHtml += `<div class="recommendation-result">`;
+                    messageContentHtml += `<h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>`;
+                    
+                    if (adminDiag.symptoms && adminDiag.symptoms.length > 0) {
+                        messageContentHtml += `<p><strong>推測される症状:</strong> ${adminDiag.symptoms.join(', ')}</p>`;
+                    }
+                    if (adminDiag.medicine_type) {
+                        messageContentHtml += `<p><strong>医薬品の種類:</strong> ${adminDiag.medicine_type}</p>`;
+                    }
+
+                    messageContentHtml += `<div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">`;
+                    messageContentHtml += `<h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>`;
+
+                    if (adminDiag.recommended_medicines && adminDiag.recommended_medicines.length > 0) {
+                        adminDiag.recommended_medicines.forEach((medicine, medIndex) => {
+                            messageContentHtml += `<div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">`;
+                            messageContentHtml += `<h5 style="margin: 0 0 10px 0;">🏆 ${medIndex + 1}位: ${escapeHtml(medicine.product_name || medicine.name || 'N/A')}`;
+
+                            // --- 詳細スコアボタンを追加 ---
+                            if (medicine.score !== undefined) {
+                                const medicineId = `medicine_${medIndex + 1}`;
+                                messageContentHtml += `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${medIndex})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
+                            }
+
+                            messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
+
+                            // --- スコアリングラベルとツールチップ（簡略表示） ---
+                            if (medicine.score !== undefined) {
+                                const score = medicine.score;
+                                const scoreClass = score >= 0.7 ? 'admin-score-high' : score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
+                                const scoreText = score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低';
+                                const breakdown = medicine.scores || medicine.score_breakdown || {};
+
+                                // スコア計算ヘルパー
+                                const pct = (v) => {
+                                    if (v === undefined || v === null || isNaN(v)) return 0;
+                                    return Math.max(0, Math.min(100, Math.round(v * 100)));
+                                };
+                                const riskToPct = (v) => {
+                                    if (v === undefined || v === null || isNaN(v)) return 100;
+                                    return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
+                                };
+
+                                // 各スコア抽出
+                                const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
+                                const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
+                                const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
+                                const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
+                                const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
+                                const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+
+                                messageContentHtml += `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(score * 100).toFixed(0)}% (${scoreText})</span>`;
+                            }
+
+                            messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
+                            
+                            if (medicine.explanation || medicine.reason) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>推奨理由:</strong> ${escapeHtml(medicine.explanation || medicine.reason)}</p>`;
+                            }
+                            if (medicine.age_restriction) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>年齢制限:</strong> ${escapeHtml(medicine.age_restriction)}</p>`;
+                            }
+                            if (medicine.efficacy) {
+                                messageContentHtml += `<p style="margin: 5px 0;"><strong>効能効果:</strong> ${escapeHtml(medicine.efficacy.substring(0,100))}...</p>`;
+                            }
+                            messageContentHtml += `</div>`;
+                        });
+                    } else {
+                        messageContentHtml += "<p>適切な医薬品が見つかりませんでした。</p>";
+                    }
+                    messageContentHtml += `</div>`;
+
+                    // 使用上の注意、医師相談など
+                    if (adminDiag.usage_notes) {
+                        messageContentHtml += `<div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                            <h4 style="color: #e65100; margin-top: 0;">⚠️ 使用上の注意</h4>
+                            <div class="caution-content" style="white-space: pre-wrap;">${escapeHtml(adminDiag.usage_notes)}</div>
+                        </div>`;
+                    }
+                    if (adminDiag.doctor_consultation) {
+                        messageContentHtml += `<div style="background: #ffebee; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+                            <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
+                            <div class="advice-content" style="white-space: pre-wrap;">${escapeHtml(adminDiag.doctor_consultation)}</div>
+                        </div>`;
+                    }
+                    if (adminDiag.additional_questions && adminDiag.additional_questions.length > 0) {
+                        messageContentHtml += `<div style="background: #e8f5e9; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
+                            <h4 style="color: #388e3c; margin-top: 0;">❓ 追加でお伺いしたいこと</h4>
+                            <ul>${adminDiag.additional_questions.map(q => `<li>${escapeHtml(q)}</li>`).join('')}</ul>
+                        </div>`;
+                    }
+
+                    messageContentHtml += `</div>`;
+
+                    // msg.contentにHTMLが含まれている場合は、ボタンを追加してから表示
+                    // ただし、管理者用の再描画（hasAdminDiagMeds）が可能な場合は上書きしない
+                    if (!hasAdminDiagMeds && msg.content && msg.content.includes('<div class="recommendation-result">')) {
+                        let modifiedContent = msg.content;
+                        
+                        // 詳細診断（管理者向け）を優先
+                        const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                            ? currentDetailedDiagnosis
+                            : (msg.diagnosis || {});
+                        
+                        if (adminDiag && adminDiag.recommended_medicines) {
+                            // 各医薬品のスコアリングを追加
+                            adminDiag.recommended_medicines.forEach((medicine, index) => {
+                                if (medicine.score !== undefined) {
+                                    // 詳細スコアボタンを追加
+                                    const medicineId = `medicine_${index + 1}`;
+                                    const scoreButton = `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${index})" style="margin-left: 10px; padding: 4px 8px; font-size: 0.7em; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">📊 詳細スコア</button>`;
+                                    
+                                    // 推奨医薬品セクション内の医薬品名の後にボタンを追加
+                                    const medicineName = medicine.product_name || medicine.name || '';
+                                    if (medicineName) {
+                                        // 該当行に既にボタンが付いていない場合のみ追加（同一行内で判定）
+                                        const namePattern = new RegExp(`(🏆 ${index + 1}位:\\s*${medicineName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![^\\n]*詳細スコア)`, 'g');
+                                        modifiedContent = modifiedContent.replace(namePattern, `$1${scoreButton}`);
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // 挿入が成功した場合のみ置き換え（少なくとも1つのボタンが入っているか）
+                        if (modifiedContent.includes('score-detail-btn')) {
+                            messageContentHtml = modifiedContent;
+                        }
+                    } else if (!hasAdminDiagMeds) {
+                        // 管理者用の再描画ができない場合のみ、msg.contentをそのまま使用
+                        messageContentHtml = msg.content || '';
+                    }
+
+                // ★★★ 通常のテキストメッセージ ★★★
+                } else {
+                    let contentText = msg.content || '';
+                    if (msg.type === 'user') {
+                        messageContentHtml = escapeHtml(contentText);
+                    } else if (msg.type === 'bot') {
+                        if (contentText.includes('<div class="chat-response">')) {
+                            messageContentHtml = contentText;
+                        } else {
+                            messageContentHtml = escapeHtml(contentText);
+                        }
+                    } else {
+                        messageContentHtml = escapeHtml(contentText);
+                    }
+                }
+                
+                // メッセージ全体のHTML生成
+                html += `
+                    <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
+                        <div class="message-content" style="max-width: 80%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; line-height: 1.4; ${
+                            messageClass === 'user'
+                                ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
+                                : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
+                        }">
+                            ${indicator}
+                            <div class="message-text">${messageContentHtml}</div>
+                            ${timestamp}
+                        </div>
+                    </div>
+                `;
             });
             
             chatMessages.innerHTML = html;
@@ -2879,6 +3235,14 @@
                             <p style="margin-top: 10px;">手動返信待ちなし</p>
                         </div>
                     `;
+                }
+                
+                // 緊急件数カウンターをリセット
+                const crisisCountElement = document.getElementById('crisis-count');
+                if (crisisCountElement) {
+                    crisisCountElement.textContent = '';
+                    crisisCountElement.style.background = '#e3f2fd';
+                    crisisCountElement.style.color = '#1976d2';
                 }
                 
                 // セッション一覧を更新
@@ -3239,6 +3603,9 @@
                     }
                 }
                 
+                // 危機対応セッションかどうかをチェック
+                const isCrisisSession = session.crisis_detected === true;
+                
                 // メッセージ数に応じた色分け
                 let messageCountColor = '#3498db';
                 if (messageCount > 10) messageCountColor = '#e74c3c';
@@ -3247,23 +3614,32 @@
                 // セッションIDの短縮表示
                 const shortSessionId = session.session_id ? session.session_id.substring(0, 8) + '...' : 'unknown';
                 
+                // 危機対応セッションの場合は特別なスタイルを適用
+                const sessionClass = isCrisisSession ? 'session-item crisis-session' : 'session-item';
+                const sessionStyle = isCrisisSession ? 
+                    'padding: 15px; cursor: pointer; border-bottom: 1px solid #e0e0e0; margin-bottom: 5px; border-radius: 8px; background: linear-gradient(135deg, #ffebee, #ffcdd2); color: #e74c3c;' :
+                    `padding: 15px; cursor: pointer; border-bottom: 1px solid #e0e0e0; margin-bottom: 5px; border-radius: 8px; ${isSelected ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : 'background: #f8f9fa;'}`;
+                
                 html += `
-                    <div class="session-item" 
-                         style="padding: 15px; cursor: pointer; border-bottom: 1px solid #e0e0e0; margin-bottom: 5px; border-radius: 8px; ${isSelected ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : 'background: #f8f9fa;'}" 
-                         onclick="selectSession('${session.session_id}', '${username}')">
+                    <div class="${sessionClass}" 
+                         style="${sessionStyle}" 
+                         onclick="selectSession(event, '${session.session_id}', '${username}')">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div style="flex: 1;">
-                                <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 4px; ${isSelected ? 'color: white;' : 'color: #2c3e50;'}">${username}</div>
-                                <div style="font-size: 0.75em; color: ${isSelected ? '#e0e0e0' : '#888'}; margin-bottom: 4px;">ID: ${shortSessionId}</div>
-                                <div style="font-size: 0.7em; color: ${isSelected ? '#e0e0e0' : '#999'};">最終更新: ${lastUpdate}</div>
+                                <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 4px; color: ${isCrisisSession ? '#e74c3c' : (isSelected ? 'white' : '#2c3e50')};">
+                                    ${username}
+                                    ${isCrisisSession ? '<span class="crisis-badge">🚨 緊急</span>' : ''}
+                                </div>
+                                <div style="font-size: 0.75em; color: ${isCrisisSession ? '#e74c3c' : (isSelected ? '#e0e0e0' : '#888')}; margin-bottom: 4px;">ID: ${shortSessionId}</div>
+                                <div style="font-size: 0.7em; color: ${isCrisisSession ? '#e74c3c' : (isSelected ? '#e0e0e0' : '#999')};">最終更新: ${lastUpdate}</div>
                             </div>
                             <div style="text-align: right;">
-                                <span style="background: ${isSelected ? 'rgba(255,255,255,0.3)' : messageCountColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">
+                                <span style="background: ${isCrisisSession ? '#e74c3c' : (isSelected ? 'rgba(255,255,255,0.3)' : messageCountColor)}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">
                                     ${messageCount}件
                                 </span>
                             </div>
                         </div>
-                        <div style="font-size: 0.85em; color: ${isSelected ? '#e0e0e0' : '#666'}; line-height: 1.3;">
+                        <div style="font-size: 0.85em; color: ${isCrisisSession ? '#e74c3c' : (isSelected ? '#e0e0e0' : '#666')}; line-height: 1.3;">
                             ${escapeHtml(lastMessage)}
                         </div>
                     </div>
@@ -3272,7 +3648,7 @@
             sidebar.innerHTML = html;
         }
 
-        function selectSession(sessionId, username) {
+        function selectSession(event, sessionId, username) {
             currentSessionId = sessionId;
             
             // 選択状態を更新
@@ -3598,13 +3974,33 @@
         // 不具合報告関連の関数
         function loadFeedbackReports() {
             const unresolvedOnly = document.getElementById('unresolvedOnly').checked;
-            const url = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}`;
             
-            fetch(url, {
+            // 統計用に常に全データを取得
+            fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}` , {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache'
                 }
+            })
+            .then(response => response.json())
+            .then(allData => {
+                if (allData.error) {
+                    document.getElementById('feedbackReportsContent').innerHTML = 
+                        `<p style="color: red; text-align: center; padding: 20px;">エラー: ${allData.error}</p>`;
+                    return;
+                }
+                
+                // 統計は全データから計算
+                updateFeedbackStats(allData.reports || []);
+                
+                // 表示用データを取得
+                const displayUrl = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}&t=${Date.now()}`;
+                return fetch(displayUrl, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
             })
             .then(response => response.json())
             .then(data => {
@@ -3615,11 +4011,9 @@
                 }
                 
                 const reports = data.reports || [];
-                // 不具合報告のみを表示（ai_positiveは除外、統計には含める）
+                // 不具合報告のみを表示（ai_positiveは除外）
                 const filteredReports = reports.filter(report => report.report_type !== 'ai_positive');
                 renderFeedbackReports(filteredReports);
-                // 統計には全レポートを使用
-                updateFeedbackStats(reports);
             })
             .catch(error => {
                 console.error('Feedback reports fetch error:', error);
@@ -3688,15 +4082,14 @@
                     .replace(/&amp;gt;/g, '>')
                     .replace(/&amp;quot;/g, '"')
                     .replace(/&amp;amp;/g, '&')
+                    .replace(/\r?\n/g, ' ') // 改行をスペースに
                     .replace(/\s+/g, ' ')  // 複数の空白を1つに
-                    .replace(/\n\s*\n/g, '\n')  // 複数の改行を1つに
                     .replace(/^\s+|\s+$/g, '')  // 前後の空白を削除
                     .trim();
                 
-                // 200文字で切り詰め
-                const displayText = plainAiResponse.length > 200 
-                    ? plainAiResponse.substring(0, 200) + '...' 
-                    : plainAiResponse;
+                // 50文字超はボタンのみ表示（全文はモーダル）
+                const threshold = 50;
+                const isLong = plainAiResponse.length > threshold;
                 
                 html += `
                     <tr style="border-bottom: 1px solid #dee2e6;">
@@ -3704,18 +4097,24 @@
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${reportTypeText}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.username || 'Unknown'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.user_message || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333; font-size: 0.65rem; line-height: 1.3;">
-                            <div id="ai-response-${report.id}" style="max-height: 80px; overflow: hidden; position: relative; white-space: pre-wrap; font-size: 0.65rem; line-height: 1.3;" data-expanded="false" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}">
-                                ${displayText}
+                        <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333; font-size: 0.75rem; line-height: 1.4;">
+                            <div id="ai-response-${report.id}" style="max-height: 80px; overflow: hidden; position: relative; white-space: normal; font-size: 0.75rem; line-height: 1.4;" data-expanded="false" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}">
+                                ${isLong ? '' : escapeHtml(plainAiResponse)}
                             </div>
-                            ${plainAiResponse.length > 200 ? 
-                                `<button onclick="showAIDetails(${report.id})" class="admin-btn" style="padding: 2px 6px; font-size: 0.6em; margin-top: 3px; display: block;">詳細表示</button>` : ''}
+                            ${isLong ? 
+                                `<div style="display:flex; align-items:center; justify-content:center; min-height:40px;">
+                                    <button onclick="openAiResponseModal(this)" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}" class="admin-btn" style="padding: 6px 12px; font-size: 0.8em; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">詳細を表示</button>
+                                 </div>`
+                            : ''}
                         </td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
                         <td style="padding: 10px; border: 1px solid #dee2e6;">
-                            ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 5px 10px; font-size: 0.8em;">解決済み</button>` : ''}
+                            <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+                                ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em;">解決済み</button>` : ''}
+                                <button onclick="deleteFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em; background:#dc3545; color:#fff;">削除</button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -3726,11 +4125,14 @@
         }
         
         function updateFeedbackStats(reports) {
-            // 全報告数
-            const totalReports = reports.length;
+            // 不具合報告のみを対象（ai_positive は統計から除外）
+            const bugReports = (reports || []).filter(r => r.report_type !== 'ai_positive');
             
-            // 解決済み・未解決の数
-            const resolvedCount = reports.filter(r => r.resolved).length;
+            // 全報告数（テーブル表示と一致させるため不具合報告のみ）
+            const totalReports = bugReports.length;
+            
+            // 解決済み・未解決の数（不具合報告のみ）
+            const resolvedCount = bugReports.filter(r => r.resolved === true).length;
             const unresolvedCount = totalReports - resolvedCount;
             
             // 適切・不適切の数（ai_positiveとai_negativeのみ）
@@ -3750,28 +4152,38 @@
             document.getElementById('negativeRatio').textContent = `${negativeRatio}%`;
         }
         
-        function showAIDetails(id) {
-            const element = document.getElementById(`ai-response-${id}`);
-            const button = element.parentElement.querySelector('button');
-            const fullText = element.getAttribute('data-full-text');
-            
-            if (element.getAttribute('data-expanded') === 'true') {
-                // 縮小表示
-                const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
-                element.textContent = truncatedText;
-                element.style.maxHeight = '80px';
-                element.style.overflow = 'hidden';
-                element.setAttribute('data-expanded', 'false');
-                if (button) button.textContent = '詳細表示';
-            } else {
-                // 拡大表示（プレーンテキストとして）
-                element.textContent = fullText;
-                element.style.maxHeight = 'none';
-                element.style.overflow = 'visible';
-                element.setAttribute('data-expanded', 'true');
-                if (button) button.textContent = '閉じる';
+    function showAIDetails(id) {
+        const element = document.getElementById(`ai-response-${id}`);
+        const button = element.parentElement.querySelector('button');
+        const fullText = element.getAttribute('data-full-text');
+        
+        if (element.getAttribute('data-expanded') === 'true') {
+            // 縮小表示
+            const truncatedText = fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText;
+            element.textContent = truncatedText;
+            element.style.maxHeight = '80px';
+            element.style.overflow = 'hidden';
+            element.style.whiteSpace = 'pre-wrap';
+            element.setAttribute('data-expanded', 'false');
+            if (button) {
+                button.textContent = 'もっと見る';
+                button.style.backgroundColor = '#007bff';
+                button.style.color = 'white';
+            }
+        } else {
+            // 拡大表示（プレーンテキストとして）
+            element.textContent = fullText;
+            element.style.maxHeight = 'none';
+            element.style.overflow = 'visible';
+            element.style.whiteSpace = 'pre-wrap';
+            element.setAttribute('data-expanded', 'true');
+            if (button) {
+                button.textContent = '閉じる';
+                button.style.backgroundColor = '#6c757d';
+                button.style.color = 'white';
             }
         }
+    }
         
         // HTMLエンティティを元のタグに戻す関数
         function decodeHTMLEntities(text) {
@@ -3802,6 +4214,31 @@
             })
             .catch(error => {
                 console.error('Resolve feedback error:', error);
+                showNotification(`エラー: ${error.message}`, 'error');
+            });
+        }
+
+        function deleteFeedback(feedbackId) {
+            if (!confirm('この報告を削除しますか？')) {
+                return;
+            }
+            fetch(`/api/delete_feedback/${feedbackId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('報告を削除しました', 'success');
+                    loadFeedbackReports(); // 一覧と統計を更新
+                } else {
+                    showNotification(`エラー: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete feedback error:', error);
                 showNotification(`エラー: ${error.message}`, 'error');
             });
         }
@@ -3873,6 +4310,133 @@
             link.click();
             document.body.removeChild(link);
         }
+
+        // 不具合報告: AI応答全文モーダル
+        function openAiResponseModal(buttonEl) {
+            const fullText = buttonEl.getAttribute('data-full-text') || '';
+            const modal = document.getElementById('aiFullTextModal');
+            const body = document.getElementById('aiFullTextBody');
+            if (modal && body) {
+                body.textContent = fullText; // プレーンテキストとして安全に表示
+                modal.style.display = 'block';
+            }
+        }
+        function closeAiResponseModal() {
+            const modal = document.getElementById('aiFullTextModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // スコア詳細モーダル関連の関数
+        function showScoreModal(medicineId, medicineIndex) {
+            // 現在のセッションの詳細診断データを取得
+            const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                ? currentDetailedDiagnosis
+                : null;
+            
+            if (!adminDiag || !adminDiag.recommended_medicines || !adminDiag.recommended_medicines[medicineIndex]) {
+                alert('スコア情報が見つかりません。');
+                return;
+            }
+            
+            const medicine = adminDiag.recommended_medicines[medicineIndex];
+            const scoreHtml = generateScoreDetailHtml(medicine);
+            
+            // モーダルに表示
+            document.getElementById('scoreModalContent').innerHTML = scoreHtml;
+            document.getElementById('scoreModal').style.display = 'block';
+        }
+
+        function closeScoreModal() {
+            document.getElementById('scoreModal').style.display = 'none';
+        }
+
+        function generateScoreDetailHtml(medicine) {
+            if (!medicine.score) {
+                return '<p>スコア情報がありません。</p>';
+            }
+            
+            const breakdown = medicine.scores || medicine.score_breakdown || {};
+            const score = medicine.score;
+            const scoreClass = score >= 0.7 ? 'high' : score >= 0.5 ? 'medium' : 'low';
+            
+            // スコア計算ヘルパー
+            const pct = (v) => {
+                if (v === undefined || v === null || isNaN(v)) return 0;
+                return Math.max(0, Math.min(100, Math.round(v * 100)));
+            };
+            const riskToPct = (v) => {
+                if (v === undefined || v === null || isNaN(v)) return 100;
+                return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
+            };
+
+            // 各スコア抽出
+            const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
+            const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
+            const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
+            const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
+            const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
+            const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+
+            return `
+                <div class="score-detail">
+                    <h4>${escapeHtml(medicine.product_name || medicine.name || 'N/A')}</h4>
+                    <div class="overall-score">
+                        <div class="score-circle ${scoreClass}">
+                            ${(score * 100).toFixed(0)}%
+                        </div>
+                        <p style="margin-top: 10px; font-size: 18px;">最適度: ${score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低'}</p>
+                    </div>
+                    
+                    <div class="score-breakdown">
+                        <h5>6要素スコアリング詳細</h5>
+                        <div class="score-items">
+                            <div class="score-item">
+                                <span class="score-label">症状適合度</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(symptom)}%; background: #4CAF50;"></div>
+                                </div>
+                                <span class="score-value">${pct(symptom)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">効能特異性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(efficacy)}%; background: #2196F3;"></div>
+                                </div>
+                                <span class="score-value">${pct(efficacy)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">年齢適合性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(age)}%; background: #9C27B0;"></div>
+                                </div>
+                                <span class="score-value">${pct(age)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">用法簡便性</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${pct(usage)}%; background: #FF9800;"></div>
+                                </div>
+                                <span class="score-value">${pct(usage)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">副作用リスク</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${riskToPct(sideRisk)}%; background: #F44336;"></div>
+                                </div>
+                                <span class="score-value">${riskToPct(sideRisk)}%</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">相互作用リスク</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${riskToPct(interRisk)}%; background: #795548;"></div>
+                                </div>
+                                <span class="score-value">${riskToPct(interRisk)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     </script>
 
     <!-- 不具合報告モーダル -->
@@ -3919,6 +4483,29 @@
             </div>
             <div id="feedbackReportsContent">
                 <p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI応答全文表示モーダル（不具合報告用） -->
+    <div id="aiFullTextModal" class="admin-modal" style="display:none;">
+        <div class="admin-modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeAiResponseModal()">&times;</span>
+            <h2>AI応答（全文）</h2>
+            <div id="aiFullTextBody" style="white-space: pre-wrap; background:#fff; color:#333; padding:12px; border:1px solid #dee2e6; border-radius:6px; max-height:60vh; overflow:auto;"></div>
+            <div style="margin-top: 12px; text-align: right;">
+                <button class="admin-btn" onclick="closeAiResponseModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- スコア詳細モーダル -->
+    <div id="scoreModal" class="admin-modal" style="display: none;">
+        <div class="admin-modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <span class="close" onclick="closeScoreModal()">&times;</span>
+            <h2>📊 医薬品スコア詳細</h2>
+            <div id="scoreModalContent">
+                <!-- スコア詳細がここに表示される -->
             </div>
         </div>
     </div>
