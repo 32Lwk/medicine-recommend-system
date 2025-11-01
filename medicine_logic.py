@@ -1535,6 +1535,13 @@ def comprehensive_medicine_recommendation(user_text, client=None):
         medicine_list
     )
     
+    # スコア順にソート（降順：スコアが高い順）
+    detailed_medicines.sort(key=lambda x: x.get('score', 0), reverse=True)
+    
+    # ソート後の順位を更新
+    for i, medicine in enumerate(detailed_medicines, 1):
+        medicine['number'] = i
+    
     # 最終結果を構築
     final_result = {
         'symptoms': symptoms,
