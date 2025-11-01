@@ -1785,18 +1785,66 @@ def index():
     </div>
 """
                         
-                        # critical_questionsを優先表示（質問→推奨→アドバイスの順）
-                        critical_questions_section = ""
+                        # critical_questionsとadditional_questionsを統合して推奨前に表示
                         critical_questions = recommendation_result.get('critical_questions', [])
+                        additional_questions = recommendation_result.get('additional_questions', [])
+                        missing_priority = recommendation_result.get('missing_priority')
+                        
+                        # すべての質問を統合（critical_questionsを先に）
+                        all_questions_before = []
                         if critical_questions:
-                            critical_questions_section = f"""
-    <div style="background: #ffebee; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
-        <h4 style="color: #c62828; margin-top: 0;">❓ より適切な推奨のため、以下について教えてください（優先度: 必須）</h4>
+                            all_questions_before.extend(critical_questions)
+                        if additional_questions:
+                            for q in additional_questions:
+                                if q not in all_questions_before:
+                                    all_questions_before.append(q)
+                        
+                        # 推奨前の質問セクション（すべての質問を統合して表示）
+                        questions_section_before = ""
+                        if all_questions_before:
+                            priority_label = {
+                                'critical': '必須',
+                                'important': '重要',
+                                'optional': '任意'
+                            }.get(missing_priority, '重要' if critical_questions else '任意')
+                            
+                            priority_message = {
+                                'critical': 'より適切な医薬品をご提案するため、以下の情報を教えてください：',
+                                'important': '安全のため、以下の情報を教えてください：',
+                                'optional': 'より安全な使用のため、可能であれば以下の情報を教えてください：'
+                            }.get(missing_priority, 'より適切な医薬品をご提案するため、以下の情報を教えてください：')
+                            
+                            # critical_questionsがある場合はcriticalスタイル、そうでない場合はimportantスタイル
+                            if critical_questions:
+                                question_bg = '#ffebee'
+                                question_border = '#f44336'
+                                question_title = '#c62828'
+                                if missing_priority != 'critical':
+                                    missing_priority = 'critical'
+                                    priority_label = '必須'
+                                    priority_message = 'より適切な医薬品をご提案するため、以下の情報を教えてください：'
+                            elif missing_priority == 'critical':
+                                question_bg = '#ffebee'
+                                question_border = '#f44336'
+                                question_title = '#c62828'
+                            elif missing_priority == 'important':
+                                question_bg = '#fff3e0'
+                                question_border = '#ff9800'
+                                question_title = '#f57c00'
+                            else:
+                                question_bg = '#e8f5e9'
+                                question_border = '#4caf50'
+                                question_title = '#388e3c'
+                            
+                            questions_section_before = f"""
+    <div style="background: {question_bg}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {question_border};">
+        <h4 style="color: {question_title}; margin-top: 0;">❓ 追加でお伺いしたいこと <span style="font-size: 0.9em;">（優先度: {priority_label}）</span></h4>
+        <p style="margin: 10px 0;">{priority_message}</p>
         <ul style="margin: 10px 0; padding-left: 20px;">
 """
-                            for question in critical_questions:
-                                critical_questions_section += f"            <li style='margin: 5px 0;'>{question}</li>\n"
-                            critical_questions_section += """
+                            for question in all_questions_before:
+                                questions_section_before += f"            <li style='margin: 5px 0;'>{question}</li>\n"
+                            questions_section_before += """
         </ul>
         <button onclick="openAttributeModal()" class="answer-questions-btn">📝 回答する</button>
     </div>
@@ -1804,7 +1852,7 @@ def index():
                         
                         bot_content = f"""
 <div class="recommendation-result">
-{critical_questions_section}{personalized_section}
+{personalized_section}
     <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
     <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
     <p><strong>医薬品の種類:</strong> {medicine_type}</p>
@@ -1995,52 +2043,10 @@ def index():
         <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
         <p style="margin: 5px 0;">{doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'}</p>
     </div>
+{questions_section_before}
 """
                         
-                        # 追加質問がある場合（すべての優先度で表示）
-                        additional_questions = recommendation_result.get('additional_questions', [])
-                        missing_priority = recommendation_result.get('missing_priority')
-                        
-                        if additional_questions:
-                            priority_label = {
-                                'critical': '必須',
-                                'important': '重要',
-                                'optional': '任意'
-                            }.get(missing_priority, '任意')
-                            
-                            priority_message = {
-                                'critical': 'より適切な医薬品をご提案するため、以下の情報を教えてください：',
-                                'important': '安全のため、以下の情報を教えてください：',
-                                'optional': 'より安全な使用のため、可能であれば以下の情報を教えてください：'
-                            }.get(missing_priority, 'より安全な使用のため、可能であれば以下の情報を教えてください：')
-                            
-                            # 優先度に応じた色
-                            if missing_priority == 'critical':
-                                question_bg = '#ffebee'
-                                question_border = '#f44336'
-                                question_title = '#c62828'
-                            elif missing_priority == 'important':
-                                question_bg = '#fff3e0'
-                                question_border = '#ff9800'
-                                question_title = '#f57c00'
-                            else:
-                                question_bg = '#e8f5e9'
-                                question_border = '#4caf50'
-                                question_title = '#388e3c'
-                            
-                            bot_content += f"""
-    <div style="background: {question_bg}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {question_border};">
-        <h4 style="color: {question_title}; margin-top: 0;">❓ 追加でお伺いしたいこと <span style="font-size: 0.9em;">（優先度: {priority_label}）</span></h4>
-        <p style="margin: 10px 0;">{priority_message}</p>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-"""
-                            for question in additional_questions:
-                                bot_content += f"            <li style='margin: 5px 0;'>{question}</li>\n"
-                            bot_content += """
-        </ul>
-        <button onclick="openAttributeModal()" class="answer-questions-btn">📝 回答する</button>
-    </div>
-"""
+                        # 表示順序: アドバイス → 推奨 → 質問（アドバイスを一番上に表示）
                         
                         # 評価ボタン用のデータを準備（HTMLエスケープ処理）
                         import json
@@ -2733,12 +2739,18 @@ def api_sessions():
             session.modified = True
             logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
         
+        # user_attributesを取得（セッションまたはALL_SESSIONSから）
+        user_attributes = session.get('user_attributes', {})
+        if not user_attributes:
+            user_attributes = ALL_SESSIONS[sid].get('user_attributes', {})
+        
         session_data = {
             'session_id': sid,
             'messages_count': len(messages),
             'last_activity': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'session_active': len(messages) > 0,
-            'messages': messages
+            'messages': messages,
+            'user_attributes': user_attributes  # user_attributesを追加
         }
         
         # usage_notesを直近のbotレスポンスから抽出
