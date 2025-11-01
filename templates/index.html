@@ -4736,6 +4736,75 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('attr_duration_date').max = today;
         
+        // セッション情報から既存のユーザー属性を取得してフォームに設定
+        fetch('/api/sessions')
+            .then(response => response.json())
+            .then(data => {
+                const attrs = data.user_attributes || {};
+                
+                // 年齢を設定
+                if (attrs.age) {
+                    document.getElementById('attr_age').value = attrs.age;
+                }
+                
+                // 性別を設定
+                if (attrs.gender) {
+                    document.getElementById('attr_gender').value = attrs.gender;
+                    togglePregnancyFields(); // 性別に応じて妊娠・授乳フィールドを表示
+                    
+                    // 妊娠・授乳状態を設定（女性の場合のみ）
+                    if (attrs.gender === '女性') {
+                        if (attrs.pregnant !== undefined && attrs.pregnant !== null) {
+                            document.getElementById('attr_pregnant').value = attrs.pregnant ? 'yes' : 'no';
+                        }
+                        if (attrs.breastfeeding !== undefined && attrs.breastfeeding !== null) {
+                            document.getElementById('attr_breastfeeding').value = attrs.breastfeeding ? 'yes' : 'no';
+                        }
+                    }
+                }
+                
+                // アレルギーを設定
+                if (attrs.allergies && Array.isArray(attrs.allergies) && attrs.allergies.length > 0) {
+                    document.getElementById('attr_allergies').value = attrs.allergies.join('、');
+                } else if (attrs.allergies && typeof attrs.allergies === 'string') {
+                    document.getElementById('attr_allergies').value = attrs.allergies;
+                }
+                
+                // 服用中の薬を設定
+                if (attrs.current_medications && Array.isArray(attrs.current_medications) && attrs.current_medications.length > 0) {
+                    document.getElementById('attr_has_medications').value = 'yes';
+                    toggleMedicationsField(); // 服用中の薬の詳細フィールドを表示
+                    document.getElementById('attr_medications').value = attrs.current_medications.join('、');
+                } else if (attrs.current_medications && typeof attrs.current_medications === 'string' && attrs.current_medications.trim()) {
+                    document.getElementById('attr_has_medications').value = 'yes';
+                    toggleMedicationsField();
+                    document.getElementById('attr_medications').value = attrs.current_medications;
+                } else {
+                    document.getElementById('attr_has_medications').value = 'no';
+                    toggleMedicationsField();
+                }
+                
+                // 症状期間を設定（symptom_duration_daysから日付を逆算）
+                if (attrs.symptom_duration_days !== undefined && attrs.symptom_duration_days !== null) {
+                    const days = attrs.symptom_duration_days;
+                    if (days > 0) {
+                        const startDate = new Date();
+                        startDate.setDate(startDate.getDate() - days);
+                        const dateStr = startDate.toISOString().split('T')[0];
+                        document.getElementById('attr_duration_date').value = dateStr;
+                    }
+                }
+                
+                // その他情報を設定
+                if (attrs.other_info) {
+                    document.getElementById('attr_other').value = attrs.other_info;
+                }
+            })
+            .catch(error => {
+                console.error('セッション情報の取得エラー:', error);
+                // エラーが発生してもモーダルは開く
+            });
+        
         document.getElementById('attributeModal').style.display = 'block';
     }
     
