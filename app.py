@@ -16,6 +16,7 @@ from datetime import datetime
 import random
 import logging
 import re
+import socket
 
 # ログ設定
 logging.basicConfig(
@@ -1348,9 +1349,17 @@ def index():
                     logger.info(f"📋 Detected symptoms: {symptoms}")
                     
                     # ステップ2: 医薬品の種類に応じて推奨アルゴリズムを選択
-                    target_types = ['風邪薬', '解熱鎮痛薬', '鼻炎用薬']
+                    # SYMPTOM_DICTIONARYから動的に対応種類を判定
+                    from rule_based_recommendation import SYMPTOM_DICTIONARY
                     
-                    if medicine_type in target_types:
+                    # SYMPTOM_DICTIONARYに含まれる全てのmedicine_typesを取得
+                    supported_types = set()
+                    for symptom_data in SYMPTOM_DICTIONARY.values():
+                        supported_types.update(symptom_data.get('medicine_types', []))
+                    
+                    # 全ての医薬品種類でルールベース推奨を使用
+                    # confidence < 0.4 の場合のみGPTフォールバック
+                    if medicine_type in supported_types:
                         # ルールベースアルゴリズムを使用
                         logger.info(f"✅ Using RULE-BASED algorithm for {medicine_type}")
                         
@@ -1498,6 +1507,9 @@ def index():
                             
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
                             additional_questions = recommendation_result.get('additional_questions', [])
+                            critical_questions = recommendation_result.get('critical_questions', [])
+                            influenza_risk = recommendation_result.get('influenza_risk', False)
+                            influenza_reason = recommendation_result.get('influenza_reason', '')
                             
                             recommendation_result = {
                                 'symptoms': symptoms,
@@ -1506,6 +1518,9 @@ def index():
                                 'usage_notes': usage_notes,
                                 'doctor_consultation': doctor_consultation,
                                 'additional_questions': additional_questions,
+                                'critical_questions': critical_questions,  # 新規追加
+                                'influenza_risk': influenza_risk,  # 新規追加
+                                'influenza_reason': influenza_reason,  # 新規追加
                                 'algorithm': 'rule_based'
                             }
                         elif recommendation_result.get('status') == 'escalation_required':
@@ -1520,8 +1535,21 @@ def index():
                                 'escalation': True,
                                 'algorithm': 'rule_based'
                             }
+                        elif recommendation_result.get('status') == 'no_candidates' and recommendation_result.get('confidence_score', 1.0) < 0.4:
+                            # confidence < 0.4 の場合のみGPTフォールバック
+                            monitor.increment_error()
+                            logger.warning(f"⚠️ Rule-based algorithm: low confidence ({recommendation_result.get('confidence_score', 0):.2f}) and no candidates, falling back to ChatGPT")
+                            recommendation_result = comprehensive_medicine_recommendation(user_message)
+                            recommendation_result['algorithm'] = 'chatgpt_fallback'
+                            
+                            # GPT出力を検証（簡易チェック）
+                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
+                            if recommended_medicines:
+                                logger.info(f"✅ ChatGPTフォールバック: {len(recommended_medicines)}件の医薬品を推奨")
+                            else:
+                                logger.warning(f"⚠️ ChatGPTフォールバック: 推奨医薬品が0件")
                         else:
-                            # エラーの場合はChatGPTベースにフォールバック
+                            # その他のエラーの場合もChatGPTベースにフォールバック
                             monitor.increment_error()
                             logger.warning(f"⚠️ Rule-based algorithm failed (status: {recommendation_result.get('status', 'unknown')}), falling back to ChatGPT")
                             recommendation_result = comprehensive_medicine_recommendation(user_message)
@@ -1713,35 +1741,70 @@ def index():
                             'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                         }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                         
-                        # 再分析の場合、個別アドバイスを最初に表示
+                        # 全ての推奨結果に対してアドバイスを生成（再分析時だけでなく常時）
                         personalized_section = ""
-                        if session.get('is_reanalysis'):
-                            reanalysis_attrs = session.get('reanalysis_attributes', {})
+                        try:
+                            # ユーザー属性を取得
+                            user_attrs = session.get('user_attributes', {})
                             
-                            try:
-                                personalized_advice = generate_personalized_advice(
-                                    reanalysis_attrs,
-                                    recommended_medicines,
-                                    symptoms,
-                                    recommendation_client
-                                )
-                                
-                                personalized_section = f"""
+                            # 再分析時はreanalysis_attributesを使用
+                            if session.get('is_reanalysis'):
+                                user_attrs = session.get('reanalysis_attributes', user_attrs)
+                                session.pop('is_reanalysis', None)
+                                session.pop('reanalysis_attributes', None)
+                            
+                            # インフルエンザリスク情報を追加
+                            influenza_risk = recommendation_result.get('influenza_risk', False)
+                            influenza_reason = recommendation_result.get('influenza_reason', '')
+                            
+                            personalized_advice = generate_personalized_advice(
+                                user_attrs,
+                                recommended_medicines,
+                                symptoms,
+                                recommendation_client,
+                                influenza_risk=influenza_risk,
+                                influenza_reason=influenza_reason
+                            )
+                            
+                            personalized_section = f"""
     <div style="background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
         <h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>
         <p style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;">{personalized_advice}</p>
     </div>
 """
-                            except Exception as e:
-                                logger.error(f"❌ 個別説明生成エラー: {e}")
-                            
-                            # 再分析フラグをリセット
-                            session.pop('is_reanalysis', None)
-                            session.pop('reanalysis_attributes', None)
+                        except Exception as e:
+                            logger.error(f"❌ 個別説明生成エラー: {e}")
+                            # エラー時はインフルエンザリスク情報のみ表示
+                            influenza_risk = recommendation_result.get('influenza_risk', False)
+                            influenza_reason = recommendation_result.get('influenza_reason', '')
+                            if influenza_risk:
+                                personalized_section = f"""
+    <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+        <h4 style="color: #f57c00; margin-top: 0;">⚠️ インフルエンザの可能性について</h4>
+        <p style="margin: 5px 0; line-height: 1.6;">{influenza_reason}。インフルエンザの可能性がある場合は、アスピリンを含む医薬品の使用を避け、早めに医療機関を受診することをお勧めします。</p>
+    </div>
+"""
+                        
+                        # critical_questionsを優先表示（質問→推奨→アドバイスの順）
+                        critical_questions_section = ""
+                        critical_questions = recommendation_result.get('critical_questions', [])
+                        if critical_questions:
+                            critical_questions_section = f"""
+    <div style="background: #ffebee; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+        <h4 style="color: #c62828; margin-top: 0;">❓ より適切な推奨のため、以下について教えてください（優先度: 必須）</h4>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+"""
+                            for question in critical_questions:
+                                critical_questions_section += f"            <li style='margin: 5px 0;'>{question}</li>\n"
+                            critical_questions_section += """
+        </ul>
+        <button onclick="openAttributeModal()" class="answer-questions-btn">📝 回答する</button>
+    </div>
+"""
                         
                         bot_content = f"""
 <div class="recommendation-result">
-{personalized_section}
+{critical_questions_section}{personalized_section}
     <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
     <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
     <p><strong>医薬品の種類:</strong> {medicine_type}</p>
@@ -1794,11 +1857,23 @@ def index():
                                     
                                     rank = medicine.get('rank', 1)
                                     
+                                    # リスク警告の表示
+                                    risk_warning_display = ""
+                                    if medicine.get('risk_warning'):
+                                        risk_warning_display = f'<p style="margin: 5px 0; color: #d32f2f;"><strong>⚠️ 注意:</strong> {medicine.get("risk_warning")}</p>'
+                                    
+                                    # 低スコア警告の表示
+                                    low_score_warning_display = ""
+                                    if medicine.get('low_score_warning'):
+                                        low_score_warning_display = '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に医師または薬剤師にご相談ください。</p>'
+                                    
                                     bot_content += f"""
         <div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">
             <h5 style="margin: 0 0 10px 0;">🏆 {rank}位: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
             <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
             {age_restriction_display}
+            {risk_warning_display}
+            {low_score_warning_display}
             <p style="margin: 5px 0;"><strong>効能効果:</strong> {medicine.get('efficacy', '')}</p>
         </div>
 """
@@ -2299,9 +2374,20 @@ def index():
     logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages")
     return render_template('index.html', messages=messages, version=VERSION, username=session['username'])
 
-def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client) -> str:
+def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, influenza_risk: bool = False, influenza_reason: str = "") -> str:
     """
-    ユーザー属性に基づいた個別アドバイスをChatGPTで生成
+    ユーザー属性に基づいた個別アドバイスをChatGPTで生成（インフルエンザリスク対応含む）
+    
+    Args:
+        user_attrs: ユーザー属性情報
+        medicines: 推奨医薬品リスト
+        symptoms: 症状リスト
+        client: OpenAIクライアント
+        influenza_risk: インフルエンザリスクの有無
+        influenza_reason: インフルエンザリスクの理由
+    
+    Returns:
+        個別アドバイステキスト
     """
     # ユーザー属性を文章化
     attr_text = []
@@ -2328,31 +2414,46 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
     
     attr_summary = '、'.join(attr_text) if attr_text else '情報なし'
     
-    # 推奨医薬品の名前リスト
-    medicine_names = [m.get('product_name', '') for m in medicines[:3]]
+    # 推奨医薬品の名前リストとリスク警告を収集
+    medicine_names = [m.get('product_name', '') or m.get('name', '') for m in medicines[:3]]
+    risk_warnings = []
+    for m in medicines[:3]:
+        if m.get('risk_warning'):
+            risk_warnings.append(f"{m.get('product_name', '') or m.get('name', '')}: {m.get('risk_warning')}")
+    
+    # インフルエンザリスク情報を追加
+    influenza_info = ""
+    if influenza_risk:
+        influenza_info = f"\n\n【重要】インフルエンザの可能性: {influenza_reason}\nインフルエンザの可能性がある場合は、アスピリンを含む医薬品の使用は避け、早めに医療機関を受診することをお勧めします。"
+    
+    # リスク成分警告情報を追加
+    risk_warning_info = ""
+    if risk_warnings:
+        risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば医師または薬剤師にご相談ください。"
     
     prompt = f"""
-あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100字程度で生成してください。
+あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100-150字程度で生成してください。
 
 【ユーザー情報】
 {attr_summary}
 
 【症状】
-{', '.join(symptoms)}
+{', '.join(symptoms) if symptoms else '症状情報なし'}
 
 【推奨医薬品】
-{', '.join(medicine_names)}
+{', '.join(medicine_names) if medicine_names else '推奨医薬品なし'}{influenza_info}{risk_warning_info}
 
 【生成するアドバイス】
 - ユーザーの年齢、性別、妊娠状態などを考慮
 - 推奨医薬品がこのユーザーに適している理由
 - 特に注意すべきポイント
+- インフルエンザリスクがある場合はその注意喚起を含める
 - 温かく、分かりやすい言葉で
 
 例：
 「19歳女性で妊娠中とのこと。妊娠中は薬の選択に特に注意が必要です。推奨した医薬品は妊娠中でも安全に使用できるものを選んでいます。服用前に必ず添付文書を確認し、不安な点があれば医師にご相談ください。」
 
-100字程度で、このユーザーに合わせた温かいアドバイスを生成してください。
+100-150字程度で、このユーザーに合わせた温かいアドバイスを生成してください。
 """
     
     try:
@@ -3703,12 +3804,40 @@ def set_language():
         logger.error(f"言語設定エラー: {e}")
         return jsonify({'error': 'Failed to set language'}), 500
 
+def find_free_port(start_port=5000, max_attempts=100):
+    """利用可能なポートを見つける"""
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('', port))
+                return port
+        except OSError:
+            continue
+    raise RuntimeError(f"利用可能なポートが見つかりませんでした ({start_port}-{start_port + max_attempts - 1})")
+
+def is_port_in_use(port):
+    """ポートが使用中かどうかをチェック"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('', port))
+            return False
+        except OSError:
+            return True
+
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
     
     # 最小限のログ出力で起動時間を短縮
-    port = int(os.getenv('PORT', 5000))
+    requested_port = int(os.getenv('PORT', 5000))
     debug_mode = os.getenv('FLASK_ENV') != 'production'
+    
+    # ポートが使用中の場合は、利用可能なポートを探す
+    if is_port_in_use(requested_port):
+        logger.warning(f"⚠️ Port {requested_port} is already in use. Finding alternative port...")
+        port = find_free_port(requested_port + 1)
+        logger.info(f"✅ Found available port: {port}")
+    else:
+        port = requested_port
     
     logger.info(f"🌐 Starting Flask server on port {port} (debug={debug_mode})...")
     app.run(debug=debug_mode, port=port, host='0.0.0.0')

@@ -14,3 +14,19 @@ node_modules/
 dist/
 build/
 *.egg-info/
+
+# iOS
+xcuserdata/
+build/
+DerivedData/
+*.xcworkspace
+!*.xcworkspace
+*.pbxuser
+!default.pbxuser
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+user_interface_state.xcuserstate
+*.xcuserstate
