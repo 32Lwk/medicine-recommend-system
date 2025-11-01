@@ -446,7 +446,7 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         
     except Exception as e:
         print(f"使用上の注意生成エラー: {e}")
-        return "使用上の注意の生成に失敗しました。医師または薬剤師にご相談ください。"
+        return "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。"
 
 # テキストを整形して見やすくする関数
 def format_text_for_display(text):
@@ -1781,7 +1781,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
             if detected_medicines:
                 medicine_info = ""
                 for i, med in enumerate(detected_medicines[:3], 1):
-                    medicine_info += f"\n💊 **{i}位: {med['product_name']}** ({med['manufacturer']})\n"
+                    medicine_info += f"\n💊 **{i}つ目: {med['product_name']}** ({med['manufacturer']})\n"
                     medicine_info += f"**効能効果:** {med['efficacy']}\n"
                     medicine_info += f"**成分:** {med['ingredients']}\n"
                     if med['age_restriction']:

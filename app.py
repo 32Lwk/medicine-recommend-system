@@ -1490,7 +1490,7 @@ def index():
                                                 medicine_with_details,
                                                 user_info
                                             )
-                                            if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。医師または薬剤師にご相談ください。":
+                                            if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。":
                                                 generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
                                         except Exception as e:
                                             logger.warning(f"使用上の注意生成エラー: {e}")
@@ -1913,11 +1913,11 @@ def index():
                                     # 低スコア警告の表示
                                     low_score_warning_display = ""
                                     if medicine.get('low_score_warning'):
-                                        low_score_warning_display = '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に医師または薬剤師にご相談ください。</p>'
+                                        low_score_warning_display = '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に薬剤師または登録販売者にご相談ください。</p>'
                                     
                                     bot_content += f"""
         <div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">
-            <h5 style="margin: 0 0 10px 0;">🏆 {rank}位: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
+            <h5 style="margin: 0 0 10px 0;">🏆 {rank}つ目: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
             <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
             {age_restriction_display}
             {risk_warning_display}
@@ -1937,7 +1937,7 @@ def index():
                                     
                                     bot_content += f"""
     <div class="medicine-item">
-        <h5>🏆 {medicine.get('number', '')}位: {medicine.get('product_name', '')}</h5>
+        <h5>🏆 {medicine.get('number', '')}つ目: {medicine.get('product_name', '')}</h5>
         <p><strong>メーカー:</strong> {medicine.get('manufacturer', '')}</p>
         <p><strong>推奨理由:</strong> {medicine.get('reason', '')}</p>
         <p><strong>効能効果:</strong> {efficacy}</p>
@@ -2435,7 +2435,7 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
     # リスク成分警告情報を追加
     risk_warning_info = ""
     if risk_warnings:
-        risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば医師または薬剤師にご相談ください。"
+        risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば薬剤師または登録販売者にご相談ください。"
     
     prompt = f"""
 あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100-150字程度で生成してください。
