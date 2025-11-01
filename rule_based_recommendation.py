@@ -377,7 +377,7 @@ RISK_INGREDIENTS_EXCLUDE = {
         "name": "ヒマシ油",
         "aliases": ["ヒマシ油", "加香ヒマシ油", "カストル油"],
         "penalty_score": -0.4,
-        "warning": "ヒマシ油が含まれています。腸の炎症、激しい腹痛、吐き気・嘔吐、妊娠中の方は使用できません。使用前に必ず医師または薬剤師にご相談ください。"
+        "warning": "ヒマシ油が含まれています。腸の炎症、激しい腹痛、吐き気・嘔吐、妊娠中の方は使用できません。使用前に必ず薬剤師または登録販売者にご相談ください。"
     },
     "センナ": {
         "name": "センナ",
@@ -1453,6 +1453,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
 def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> float:
     """
     症状特異性に基づくペナルティを計算
+    効能特異性に応じてペナルティを緩和する
     
     Args:
         candidate: 候補医薬品情報
@@ -1468,6 +1469,10 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
     symptom_names = [s.get("name") for s in symptoms]
     medicine_type = candidate.get("medicine_type", "")
     
+    # 効能特異性スコアを計算（外部関数を使用）
+    from scoring_utils import calculate_efficacy_specificity_score
+    efficacy_specificity = calculate_efficacy_specificity_score(candidate, nlu_result)
+    
     # 単一症状の場合
     if len(symptom_names) == 1:
         symptom_name = symptom_names[0]
@@ -1476,8 +1481,15 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
         if symptom_name in SYMPTOM_CATEGORY_PENALTY:
             penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
             if medicine_type in penalty_table:
-                penalty = penalty_table[medicine_type]
-                print(f"症状特異性ペナルティ: {symptom_name} + {medicine_type} = {penalty}")
+                base_penalty = penalty_table[medicine_type]
+                # 効能特異性に応じてペナルティを緩和
+                if efficacy_specificity >= 0.95:
+                    penalty = base_penalty * 0.17  # -0.3 * 0.17 ≈ -0.05
+                elif efficacy_specificity >= 0.8:
+                    penalty = base_penalty * 0.5   # -0.3 * 0.5 = -0.15
+                else:
+                    penalty = base_penalty
+                print(f"症状特異性ペナルティ: {symptom_name} + {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
                 return penalty
         
         # 複合薬識別パターンによるチェック
@@ -1487,9 +1499,16 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             required_count = compound_info.get("required_symptoms_count", 2)
             if len(symptom_names) < required_count:
                 # デフォルトペナルティ（カテゴリ間優先表にない場合）
-                default_penalty = -0.3
-                print(f"複合薬ペナルティ: 単一症状({symptom_name})に対して複合薬({medicine_type}) = {default_penalty}")
-                return default_penalty
+                base_penalty = -0.3
+                # 効能特異性に応じてペナルティを緩和
+                if efficacy_specificity >= 0.95:
+                    penalty = base_penalty * 0.17
+                elif efficacy_specificity >= 0.8:
+                    penalty = base_penalty * 0.5
+                else:
+                    penalty = base_penalty
+                print(f"複合薬ペナルティ: 単一症状({symptom_name})に対して複合薬({medicine_type}) = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
+                return penalty
     
     # 複数症状の場合
     elif len(symptom_names) >= 2:
@@ -1504,10 +1523,17 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
         
         if penalties:
             # 最悪のペナルティを採用（最も適切でない組み合わせ）
-            max_penalty = max(penalties)
-            if max_penalty < 0:
-                print(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {max_penalty}")
-                return max_penalty
+            base_penalty = max(penalties)
+            if base_penalty < 0:
+                # 複数症状の場合も効能特異性で緩和
+                if efficacy_specificity >= 0.95:
+                    penalty = base_penalty * 0.17
+                elif efficacy_specificity >= 0.8:
+                    penalty = base_penalty * 0.5
+                else:
+                    penalty = base_penalty
+                print(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
+                return penalty
     
     return 0.0
 
@@ -1594,11 +1620,11 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
     # 2. リスク成分の再チェック
     validated = _recheck_risk_ingredients(validated, nlu_result)
     
-    # 3. スコアが0.5未満の候補を警告付きで残す（完全には除外しない）
+    # 3. スコアが0.3未満の候補を警告付きで残す（完全には除外しない）
     final_candidates = []
     for candidate in validated:
         score = candidate.get('final_score', 0.0)
-        if score < 0.5:
+        if score < 0.3:
             candidate['low_score_warning'] = True
             print(f"⚠️ 低スコア警告: {candidate.get('product_name', '')} (スコア: {score:.3f})")
         final_candidates.append(candidate)
@@ -2123,7 +2149,7 @@ def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict,
     
     # 低スコア警告
     if candidate.get('low_score_warning'):
-        explanation_parts.append("⚠️ 推奨スコアが低めです。使用前に医師または薬剤師にご相談ください。")
+        explanation_parts.append("⚠️ 推奨スコアが低めです。使用前に薬剤師または登録販売者にご相談ください。")
     
     # 警告がある場合
     if safety_result.get("warnings"):
