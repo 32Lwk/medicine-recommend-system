@@ -404,32 +404,12 @@ RISK_INGREDIENTS_EXCLUDE = {
         "penalty_score": -0.5,  # インフルエンザ時は除外
         "warning": "アスピリンが含まれています。インフルエンザや水痘の患者、特に小児ではライ症候群のリスクがあるため使用できません。"
     },
-    # 麻薬性鎮咳薬（依存性リスク）
-    "コデイン": {
-        "name": "コデイン",
-        "aliases": ["コデイン", "リン酸コデイン", "コデインリン酸塩"],
-        "penalty_score": -0.4,
-        "warning": "コデインが含まれています。依存性の可能性があるため、長期連用は避けてください。15歳未満、妊娠中・授乳中の方は使用できません。"
-    },
     "トラマドール": {
         "name": "トラマドール",
         "aliases": ["トラマドール", "トラマドール塩酸塩"],
         "penalty_score": -0.4,
         "warning": "トラマドールが含まれています。依存性の可能性があるため、長期連用は避けてください。15歳未満、妊娠中・授乳中の方は使用できません。"
     },
-    # 覚醒剤原料関連（制限あり）
-    "エフェドリン": {
-        "name": "エフェドリン",
-        "aliases": ["エフェドリン", "エフェドリン塩酸塩"],
-        "penalty_score": -0.3,
-        "warning": "エフェドリンが含まれています。高血圧、心臓病、甲状腺機能亢進症の方は使用できません。"
-    },
-    "プソイドエフェドリン": {
-        "name": "プソイドエフェドリン",
-        "aliases": ["プソイドエフェドリン", "プソイドエフェドリン塩酸塩"],
-        "penalty_score": -0.3,
-        "warning": "プソイドエフェドリンが含まれています。高血圧、心臓病、甲状腺機能亢進症の方は使用できません。"
-    }
 }
 
 # 特殊用途医薬品パターン（効能効果が特定の用途に限定されている）
@@ -1878,12 +1858,15 @@ def rule_based_recommendation(
         print(f"不足情報検出（優先度: {priority}）")
         print(f"不足フィールド: {missing_info_result['missing_fields']}")
         
-        # criticalレベルの情報が欠けている場合は推奨を中断
-        if priority == "critical":
-            print(f"[警告] 必須情報が不足しているため推奨を中断します")
+        # 症状が検出されていない場合のみ推奨を中断
+        # 曖昧症状の質問だけがcriticalの場合は推奨を継続
+        missing_fields = missing_info_result.get('missing_fields', [])
+        if "symptoms" in missing_fields:
+            # 症状が検出されていない場合のみ推奨を中断
+            print(f"[警告] 症状が検出されていないため推奨を中断します")
             return {
                 "status": "missing_critical_info",
-                "reason": "必須情報が不足しています",
+                "reason": "症状が検出されていません",
                 "missing_fields": missing_info_result['missing_fields'],
                 "questions": missing_info_result['questions'],
                 "critical_questions": missing_info_result.get('critical_questions', []),
@@ -1893,6 +1876,7 @@ def rule_based_recommendation(
                 "timestamp": datetime.now().isoformat()
             }
         else:
+            # 曖昧症状の質問がある場合でも推奨は継続
             print(f"推奨は続行しますが、追加質問も表示します")
     
     # ステップ2: インフルエンザリスク検出
