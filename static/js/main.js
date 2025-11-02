@@ -1,0 +1,3433 @@
+    // 多言語翻訳データ
+    const translations = {
+        ja: {
+            title: "💊 チャット型医薬品相談ツール",
+            description: "症状を教えてください。適切な市販薬と注意点をご案内します。",
+            userInfoBtn: "👤 ユーザー情報登録",
+            clearBtn: "🗑️ 履歴クリア",
+            newSessionBtn: "🔄 新セッション",
+            adminRequestBtn: "👨‍⚕️ 薬剤師要請",
+            placeholder: "症状を入力してください...",
+            send: "送信",
+            processing: "AI処理中です",
+            recommendedMedicines: "推奨医薬品",
+            usageNotes: "使用上の注意",
+            doctorConsultation: "医師にご相談ください",
+            feedbackPositive: "👍 適切",
+            feedbackNegative: "👎 不適切",
+            reportBug: "🐛 不具合報告",
+            age: "年齢",
+            gender: "性別",
+            male: "男性",
+            female: "女性",
+            pregnant: "妊娠中",
+            breastfeeding: "授乳中",
+            allergies: "アレルギー",
+            currentMedications: "服用中の薬",
+            medicalHistory: "既往症",
+            otherInfo: "その他情報",
+            save: "保存",
+            cancel: "キャンセル",
+            
+            // 初期メッセージ
+            initialGreeting: "こんにちは！どのような症状でお困りでしょうか？",
+            initialExamples: "例：「頭痛がする」「喉が痛い」「熱がある」など",
+            
+            // システムメッセージ
+            chatEnded: "チャットを終了しました。不明点がございましたら、お気軽にお近くの登録販売者にご相談ください。",
+            aiPaused: "申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。",
+            
+            // エラーメッセージ
+            systemError: "申し訳ございません。システムエラーが発生しました",
+            processingError: "処理中にエラーが発生しました",
+            networkError: "ネットワークエラーが発生しました",
+            loadError: "メッセージ読み込みエラー",
+            
+            // 確認メッセージ
+            confirmClearChat: "チャット履歴をクリアしますか？",
+            confirmNewSession: "新しいセッションを開始しますか？現在の会話は保存されません。",
+            
+            // 評価・フィードバック
+            feedbackQuestion: "この回答はいかがでしたか？",
+            feedbackQuestionRecommendation: "この推奨結果はいかがでしたか？",
+            feedbackQuestionNotice: "この重要な注意事項はいかがでしたか？",
+            feedbackThankYou: "フィードバックありがとうございます！",
+            
+            // 不具合報告
+            bugReportPrompt: "不具合の内容を詳しく説明してください",
+            bugReportSubmitted: "不具合報告を送信しました",
+            bugReportFailed: "不具合報告の送信に失敗しました",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "あなたの気持ちを大切に思っています",
+            crisisSupportMessage: "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。",
+            crisisEmergency: "緊急の場合は、すぐに119番（救急）または110番（警察）に連絡してください。",
+            
+            // モーダル関連
+            infoButton: "アプリ情報",
+            appInfo: "アプリ概要",
+            appInfoDesc: "アプリの機能と特徴について",
+            disclaimer: "免責事項・利用規約",
+            disclaimerDesc: "利用規約と免責事項について",
+            privacy: "プライバシーポリシー",
+            privacyDesc: "個人情報の取り扱いについて",
+            usage: "使い方",
+            usageDesc: "アプリの使い方と安全に利用するための注意",
+            consultation: "医薬品相談先",
+            consultationDesc: "公的機関の相談窓口情報",
+            back: "← 戻る",
+            close: "×"
+        },
+        en: {
+            title: "💊 Chat Pharmaceutical Consultation Tool",
+            description: "Please tell us your symptoms. We will recommend appropriate OTC medicines and precautions.",
+            userInfoBtn: "👤 User Info",
+            clearBtn: "🗑️ Clear History",
+            newSessionBtn: "🔄 New Session",
+            adminRequestBtn: "👨‍⚕️ Request Pharmacist",
+            placeholder: "Please enter your symptoms...",
+            send: "Send",
+            processing: "AI is processing...",
+            recommendedMedicines: "Recommended Medicines",
+            usageNotes: "Usage Notes",
+            doctorConsultation: "Please consult a doctor",
+            feedbackPositive: "👍 Appropriate",
+            feedbackNegative: "👎 Inappropriate",
+            reportBug: "🐛 Report Bug",
+            age: "Age",
+            gender: "Gender",
+            male: "Male",
+            female: "Female",
+            pregnant: "Pregnant",
+            breastfeeding: "Breastfeeding",
+            allergies: "Allergies",
+            currentMedications: "Current Medications",
+            medicalHistory: "Medical History",
+            otherInfo: "Other Information",
+            save: "Save",
+            cancel: "Cancel",
+            
+            // 初期メッセージ
+            initialGreeting: "Hello! What symptoms are you experiencing?",
+            initialExamples: "Examples: \"I have a headache\", \"My throat hurts\", \"I have a fever\"",
+            
+            // システムメッセージ
+            chatEnded: "Chat ended. If you have any questions, please feel free to consult your local pharmacist.",
+            aiPaused: "We apologize. AI auto-response is currently paused. We will respond once confirmed by staff.",
+            
+            // エラーメッセージ
+            systemError: "We apologize. A system error has occurred",
+            processingError: "An error occurred during processing",
+            networkError: "A network error occurred",
+            loadError: "Error loading messages",
+            
+            // 確認メッセージ
+            confirmClearChat: "Clear chat history?",
+            confirmNewSession: "Start a new session? Current conversation will not be saved.",
+            
+            // 評価・フィードバック
+            feedbackQuestion: "How was this response?",
+            feedbackQuestionRecommendation: "How was this recommendation?",
+            feedbackQuestionNotice: "How was this important notice?",
+            feedbackThankYou: "Thank you for your feedback!",
+            
+            // 不具合報告
+            bugReportPrompt: "Please describe the issue in detail",
+            bugReportSubmitted: "Bug report submitted",
+            bugReportFailed: "Failed to submit bug report",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "Your feelings matter",
+            crisisSupportMessage: "Professional support is available. Please contact a crisis counselor.",
+            crisisEmergency: "In emergency, call 119 (ambulance) or 110 (police) immediately.",
+            
+            // モーダル関連
+            infoButton: "App Info",
+            appInfo: "App Overview",
+            appInfoDesc: "About app features and characteristics",
+            disclaimer: "Disclaimer & Terms",
+            disclaimerDesc: "About terms of use and disclaimers",
+            privacy: "Privacy Policy",
+            privacyDesc: "About personal information handling",
+            usage: "How to Use",
+            usageDesc: "App usage and safety precautions",
+            consultation: "Consultation Info",
+            consultationDesc: "Public institution consultation information",
+            back: "← Back",
+            close: "×"
+        },
+        ko: {
+            title: "💊 채팅형 의약품 상담 도구",
+            description: "증상을 알려주세요. 적절한 일반의약품과 주의사항을 안내해드립니다.",
+            userInfoBtn: "👤 사용자 정보",
+            clearBtn: "🗑️ 기록 삭제",
+            newSessionBtn: "🔄 새 세션",
+            adminRequestBtn: "👨‍⚕️ 약사 요청",
+            placeholder: "증상을 입력해주세요...",
+            send: "전송",
+            processing: "AI 처리 중입니다",
+            recommendedMedicines: "추천 의약품",
+            usageNotes: "사용상 주의사항",
+            doctorConsultation: "의사와 상담하세요",
+            feedbackPositive: "👍 적절함",
+            feedbackNegative: "👎 부적절함",
+            reportBug: "🐛 버그 신고",
+            age: "나이",
+            gender: "성별",
+            male: "남성",
+            female: "여성",
+            pregnant: "임신 중",
+            breastfeeding: "수유 중",
+            allergies: "알레르기",
+            currentMedications: "복용 중인 약",
+            medicalHistory: "병력",
+            otherInfo: "기타 정보",
+            save: "저장",
+            cancel: "취소",
+            
+            // 初期メッセージ
+            initialGreeting: "안녕하세요! 어떤 증상으로 고민이 있으신가요?",
+            initialExamples: "예: \"두통이 있어요\", \"목이 아파요\", \"열이 나요\"",
+            
+            // システムメッセージ
+            chatEnded: "채팅이 종료되었습니다. 궁금하신 점이 있으시면 가까운 약사에게 상담하세요.",
+            aiPaused: "죄송합니다. 현재 AI 자동 응답이 일시 중지되었습니다. 담당자 확인 후 답변드리겠습니다.",
+            
+            // エラーメッセージ
+            systemError: "죄송합니다. 시스템 오류가 발생했습니다",
+            processingError: "처리 중 오류가 발생했습니다",
+            networkError: "네트워크 오류가 발생했습니다",
+            loadError: "메시지 로드 오류",
+            
+            // 確認メッセージ
+            confirmClearChat: "채팅 기록을 지우시겠습니까?",
+            confirmNewSession: "새 세션을 시작하시겠습니까? 현재 대화는 저장되지 않습니다.",
+            
+            // 評価・フィードバック
+            feedbackQuestion: "이 답변은 어떠셨나요?",
+            feedbackQuestionRecommendation: "이 추천 결과는 어떠셨나요?",
+            feedbackQuestionNotice: "이 중요한 주의사항은 어떠셨나요?",
+            feedbackThankYou: "피드백 감사합니다!",
+            
+            // 不具合報告
+            bugReportPrompt: "문제를 자세히 설명해주세요",
+            bugReportSubmitted: "버그 신고가 제출되었습니다",
+            bugReportFailed: "버그 신고 제출에 실패했습니다",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "당신의 마음을 소중히 생각합니다",
+            crisisSupportMessage: "전문 상담사가 도움을 드릴 수 있습니다. 위기 상담원에게 연락하세요.",
+            crisisEmergency: "응급상황 시 즉시 119(구급차) 또는 110(경찰)에 연락하세요.",
+            
+            // モーダル関連
+            infoButton: "앱 정보",
+            appInfo: "앱 개요",
+            appInfoDesc: "앱 기능 및 특징에 대해",
+            disclaimer: "약관 및 면책 조항",
+            disclaimerDesc: "이용약관 및 면책조항에 대해",
+            privacy: "개인정보 취급방침",
+            privacyDesc: "개인정보 처리에 대해",
+            usage: "사용 방법",
+            usageDesc: "앱 사용 방법 및 안전하게 이용하기 위한 주의사항",
+            consultation: "의약품 상담 정보",
+            consultationDesc: "공공기관 상담창구 정보",
+            back: "← 뒤로",
+            close: "×"
+        },
+        zh: {
+            title: "💊 聊天式药品咨询工具",
+            description: "请告诉我们您的症状。我们将推荐合适的非处方药和注意事项。",
+            userInfoBtn: "👤 用户信息",
+            clearBtn: "🗑️ 清除历史",
+            newSessionBtn: "🔄 新会话",
+            adminRequestBtn: "👨‍⚕️ 请求药师",
+            placeholder: "请输入您的症状...",
+            send: "发送",
+            processing: "AI正在处理中...",
+            recommendedMedicines: "推荐药品",
+            usageNotes: "使用注意事项",
+            doctorConsultation: "请咨询医生",
+            feedbackPositive: "👍 合适",
+            feedbackNegative: "👎 不合适",
+            reportBug: "🐛 报告错误",
+            age: "年龄",
+            gender: "性别",
+            male: "男性",
+            female: "女性",
+            pregnant: "怀孕中",
+            breastfeeding: "哺乳中",
+            allergies: "过敏",
+            currentMedications: "正在服用的药物",
+            medicalHistory: "病史",
+            otherInfo: "其他信息",
+            save: "保存",
+            cancel: "取消",
+            
+            // 初期メッセージ
+            initialGreeting: "您好！您有什么症状需要咨询吗？",
+            initialExamples: "例如：「头痛」「喉咙痛」「发烧」等",
+            
+            // システムメッセージ
+            chatEnded: "聊天已结束。如有疑问，请随时咨询附近的药剂师。",
+            aiPaused: "抱歉，AI自动回复暂时暂停。确认后我们会回复。",
+            
+            // エラーメッセージ
+            systemError: "抱歉，发生系统错误",
+            processingError: "处理过程中发生错误",
+            networkError: "发生网络错误",
+            loadError: "消息加载错误",
+            
+            // 確認メッセージ
+            confirmClearChat: "清除聊天记录？",
+            confirmNewSession: "开始新会话？当前对话将不会保存。",
+            
+            // 評価・フィードバック
+            feedbackQuestion: "这个回答怎么样？",
+            feedbackQuestionRecommendation: "这个推荐结果怎么样？",
+            feedbackQuestionNotice: "这个重要提示怎么样？",
+            feedbackThankYou: "感谢您的反馈！",
+            
+            // 不具合報告
+            bugReportPrompt: "请详细说明问题",
+            bugReportSubmitted: "错误报告已提交",
+            bugReportFailed: "错误报告提交失败",
+            
+            // 危機対応メッセージ
+            crisisSupportTitle: "我们关心您的感受",
+            crisisSupportMessage: "专业支持服务可用。请联系危机咨询师。",
+            crisisEmergency: "紧急情况请立即拨打119（救护车）或110（警察）。",
+            
+            // モーダル関連
+            infoButton: "应用信息",
+            appInfo: "应用概述",
+            appInfoDesc: "关于应用功能和特点",
+            disclaimer: "免责声明和使用条款",
+            disclaimerDesc: "关于使用条款和免责声明",
+            privacy: "隐私政策",
+            privacyDesc: "关于个人信息处理",
+            usage: "使用方法",
+            usageDesc: "应用使用方法和安全使用的注意事项",
+            consultation: "药品咨询信息",
+            consultationDesc: "公共机构咨询窗口信息",
+            back: "返回",
+            close: "×"
+        }
+    };
+
+    // 現在の言語設定
+    let currentLanguage = sessionStorage.getItem('language') || 'ja';
+    
+    // モーダル管理
+    let currentModalPage = 'list';
+    const modalPages = {
+        'app-overview': {
+            title: 'アプリ概要',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>📱 アプリ概要</h3>
+                        <p>本アプリは、ユーザーの症状・体調・生活状況に基づいて、一般用医薬品（OTC薬）をチャット形式で提案するAI支援型医薬品相談ツールです。</p>
+                        <p>独自のアルゴリズムと大規模言語モデルを組み合わせることで、症状に適した市販薬を安全かつ柔軟に提案し、誰もが安心してセルフメディケーションを行える環境の実現を目指します。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 開発背景</h3>
+                        <p>少子高齢化や訪日外国人観光客の増加、ECサイトの普及により、セルフメディケーションの需要は年々高まっている。しかし、言語の壁や人材不足により、利用者が適切な医薬品を選べず、安全性が懸念されているのが現状である。私自身もドラッグストアで勤務しており、高齢者の聴力・理解力の差や外国人の言語障壁に直面している。これらの課題を解決するために、大規模言語モデルと薬学的知識を組み合わせた独自のチャット型相談ツールを開発した。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 利用目的</h3>
+                        <p>本アプリは、利用者が自身の症状を正しく理解し、適切な一般用医薬品を安全に選択できるよう支援することを目的としています。</p>
+                        <p>チャット形式による対話を通じて、症状に合った市販薬の候補や受診の目安を提示し、セルフメディケーションの推進を図ります。</p>
+                        <p>また、薬局来店前やオンライン購入前の参考情報として活用できるよう設計されており、医療機関への早期受診判断を助ける役割も担います。</p>
+                        <p>本アプリは医師・薬剤師の診断や指導を代替するものではなく、利用者が安全に判断できる環境を補助するツールとして位置づけられています。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 対象者</h3>
+                        <ul>
+                            <li>どの薬を選べばよいかわからない一般消費者</li>
+                            <li>忙しくて薬局に行けない人や過疎地域の住民</li>
+                            <li>言語の壁で相談が難しい訪日外国人</li>
+                            <li>高齢者や聴覚・理解力に個人差のある方</li>
+                            <li>ECサイトやオンライン薬局で購入を検討する利用者</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 主な特徴</h3>
+                        <ol>
+                            <li><strong>自然なチャット形式での相談</strong><br>専門知識がなくても、会話形式で症状を入力するだけで薬の候補を提示します。</li>
+                            <li><strong>AI × 薬学知識による安全性の担保</strong><br>医薬品データベース・薬学的知識・AIモデルを組み合わせ、誤情報を抑制した安全設計。</li>
+                            <li><strong>受診勧奨システムの導入</strong><br>危険な症状や重篤な疾患が疑われる場合には、AIが自動的に医療機関受診を推奨します。</li>
+                            <li><strong>多言語・多環境対応</strong><br>日本語・英語・中国語などの多言語対応を予定。<br>スマートフォン、タブレット、PCなど、あらゆる端末・環境（iOS / Android / Windows / macOS / Chrome / Safari など）から利用可能です。</li>
+                            <li><strong>データの安全管理</strong><br>入力情報は匿名化され、薬提案以外の目的では利用しません。<br>ユーザーのプライバシーを最優先に設計されています。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 アプリの強み・差別化ポイント</h3>
+                        <ul>
+                            <li>AIと独自アルゴリズムの併用による、安全性と柔軟性の両立</li>
+                            <li>薬学的根拠に基づく提案と、自然言語理解（LLM）の対話力の融合</li>
+                            <li>人手不足・言語の壁・情報格差など、現場で顕在化している課題を直接解決</li>
+                            <li>UI設計の簡潔さ・導入の容易さにより、誰でも迷わず利用できる操作性</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 独自のアルゴリズム</h3>
+                        <p>本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。</p>
+                        <p>これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。また、AIによる回答には常に「出典情報」や「注意喚起」を付与し、利用者が自ら判断できる設計としています。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 開発環境・使用ツール</h3>
+                        <ul>
+                            <li><strong>プログラミング言語・フレームワーク:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
+                            <li><strong>AI・自然言語処理:</strong> OpenAI GPT-4o-mini、ルールベースNLU（正規表現・症状辞書）、MeCab</li>
+                            <li><strong>データベース:</strong> PostgreSQL（フィードバック保存用）</li>
+                            <li><strong>フロントエンド:</strong> HTML/CSS、JavaScript、TailwindCSS（UI軽量化）、Chart.js（解析表示）</li>
+                            <li><strong>開発・デバッグツール:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
+                            <li><strong>監視・ログ管理:</strong> psutil、SocketIOログ配信、JSONL形式でアクセス・セキュリティ・性能記録</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 今後の展望</h3>
+                        <p>今後は薬局・医療機関・自治体などとの連携を強化し、地域医療のデジタル支援基盤としての活用を目指します。</p>
+                        <p>また、ECサイトとの統合や服薬指導支援機能など、利用者と販売者双方に価値を提供する拡張も予定しています。</p>
+                        <p>最終的には、「誰もがどこでも安心して薬を選べる社会」を実現することが本アプリの目標です。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>📚 医薬品データベース出典元</h3>
+                        <p>本アプリで使用している医薬品情報は、以下の公的機関のデータベースを参照しています：</p>
+                        <ul>
+                            <li><a href="http://www.fpmaj.gr.jp" target="_blank" rel="noopener noreferrer">日本製薬団体連合会</a> (http://www.fpmaj.gr.jp)</li>
+                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">(一般財団法人)日本医薬情報センター</a> (https://www.japic.or.jp)</li>
+                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">(独立行政法人)医薬品医療機器総合機構</a> (https://www.pmda.go.jp)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 重要な注意事項</strong><br>
+                        本アプリは情報提供のみを目的とし、医療アドバイスではありません。医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👤 運営者情報</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本情報</h4>
+                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年</p>
+                            <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>連絡先</h4>
+                            <p><strong>連絡先メール：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技術情報</h4>
+                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公開目的</h4>
+                            <p>一般用医薬品の選定支援、安全でわかりやすい薬選びを促すこと</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>📱 App Overview</h3>
+                        <p>This app is an AI-assisted pharmaceutical consultation tool that recommends over-the-counter (OTC) medicines in a chat format based on users' symptoms, physical condition, and lifestyle.</p>
+                        <p>By combining proprietary algorithms with large language models, we aim to safely and flexibly recommend appropriate over-the-counter medicines for symptoms, creating an environment where everyone can practice self-medication with confidence.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Development Background</h3>
+                        <p>With aging population, increasing foreign tourists, and the spread of e-commerce sites, the demand for self-medication is growing year by year. However, language barriers and staff shortages prevent users from selecting appropriate medicines, raising safety concerns. Having worked at a drugstore myself, I have faced challenges with elderly people's varying hearing and comprehension abilities and language barriers for foreigners. To solve these issues, I developed a unique chat-based consultation tool that combines large language models with pharmaceutical knowledge.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Purpose</h3>
+                        <p>This app aims to help users correctly understand their symptoms and safely select appropriate over-the-counter medicines.</p>
+                        <p>Through chat-based dialogue, we present over-the-counter medicine candidates and consultation guidelines for symptoms to promote self-medication.</p>
+                        <p>It is also designed to be used as reference information before visiting pharmacies or making online purchases, and plays a role in helping with early medical consultation decisions.</p>
+                        <p>This app does not replace diagnosis or guidance by doctors or pharmacists, but is positioned as a tool to assist users in making safe decisions.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 Target Users</h3>
+                        <ul>
+                            <li>General consumers who don't know which medicine to choose</li>
+                            <li>People who are too busy to visit pharmacies or residents of remote areas</li>
+                            <li>Foreign visitors who have difficulty consulting due to language barriers</li>
+                            <li>Elderly people and those with varying hearing and comprehension abilities</li>
+                            <li>Users considering purchases on e-commerce sites or online pharmacies</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 Key Features</h3>
+                        <ol>
+                            <li><strong>Natural Chat-based Consultation</strong><br>Even without specialized knowledge, simply input symptoms in conversation format to get medicine recommendations.</li>
+                            <li><strong>Safety Assurance through AI × Pharmaceutical Knowledge</strong><br>Combines pharmaceutical databases, pharmaceutical knowledge, and AI models for safe design that suppresses misinformation.</li>
+                            <li><strong>Medical Consultation Recommendation System</strong><br>When dangerous symptoms or serious diseases are suspected, AI automatically recommends medical consultation.</li>
+                            <li><strong>Multi-language and Multi-environment Support</strong><br>Planned support for Japanese, English, Chinese, and other languages.<br>Available on smartphones, tablets, PCs, and all devices and environments (iOS/Android/Windows/macOS/Chrome/Safari, etc.).</li>
+                            <li><strong>Secure Data Management</strong><br>Input information is anonymized and not used for purposes other than medicine recommendations.<br>User privacy is the top priority in design.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 App Strengths & Differentiators</h3>
+                        <ul>
+                            <li>Balance of safety and flexibility through combined use of AI and proprietary algorithms</li>
+                            <li>Fusion of evidence-based recommendations and natural language understanding (LLM) dialogue capabilities</li>
+                            <li>Direct solution to on-site challenges such as staff shortages, language barriers, and information gaps</li>
+                            <li>Operability that anyone can use without confusion through simple UI design and easy introduction</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ Proprietary Algorithm</h3>
+                        <p>The "Medicine Selection Algorithm," which is the heart of this app, consists of a proprietary algorithm that flexibly understands language through large language models and comprehensively evaluates elements such as drug efficacy, contraindications, user attribute information, and symptoms.</p>
+                        <p>This enables evidence-based medicine selection rather than simple AI responses. AI responses always include "source information" and "warnings" to allow users to make their own judgments.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ Development Environment & Tools</h3>
+                        <ul>
+                            <li><strong>Programming Languages & Frameworks:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
+                            <li><strong>AI & Natural Language Processing:</strong> OpenAI GPT-4o-mini, Rule-based NLU (regex & symptom dictionary), MeCab</li>
+                            <li><strong>Database:</strong> PostgreSQL (for feedback storage)</li>
+                            <li><strong>Frontend:</strong> HTML/CSS, JavaScript, TailwindCSS (UI optimization), Chart.js (analytics display)</li>
+                            <li><strong>Development & Debug Tools:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
+                            <li><strong>Monitoring & Log Management:</strong> psutil, SocketIO log distribution, JSONL format for access, security, and performance records</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 Future Outlook</h3>
+                        <p>We aim to strengthen collaboration with pharmacies, medical institutions, and local governments to utilize this as a digital support platform for regional healthcare.</p>
+                        <p>We also plan expansions such as e-commerce site integration and medication guidance support functions to provide value to both users and sellers.</p>
+                        <p>Ultimately, the goal of this app is to realize a society where "everyone can safely choose medicines anywhere."</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>📚 Pharmaceutical Database Sources</h3>
+                        <p>The pharmaceutical information used in this app references databases from the following public institutions:</p>
+                        <ul>
+                            <li><a href="http://www.fpmaj.gr.jp" target="_blank" rel="noopener noreferrer">Japan Pharmaceutical Manufacturers Association</a> (http://www.fpmaj.gr.jp)</li>
+                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">Japan Pharmaceutical Information Center (JAPIC)</a> (https://www.japic.or.jp)</li>
+                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">Pharmaceuticals and Medical Devices Agency (PMDA)</a> (https://www.pmda.go.jp)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ Important Notice</strong><br>
+                        This app is for informational purposes only and is not medical advice. Please consult with a pharmacist or doctor when using medicines.
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👤 Operator Information</h3>
+                        
+                        <div class="contact-info">
+                            <h4>Basic Information</h4>
+                            <p><strong>Operator Name:</strong> Kawashima Yuto</p>
+                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics, 2nd Year</p>
+                            <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Contact Information</h4>
+                            <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Technical Information</h4>
+                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Publication Purpose</h4>
+                            <p>To support over-the-counter medicine selection and promote safe and easy medicine selection</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>📱 앱 개요</h3>
+                        <p>이 앱은 사용자의 증상, 체조건, 생활 상황을 바탕으로 일반의약품(OTC 약품)을 채팅 형태로 제안하는 AI 지원 의약품 상담 도구입니다.</p>
+                        <p>독자적인 알고리즘과 대규모 언어 모델을 결합하여 증상에 적합한 일반의약품을 안전하고 유연하게 제안하며, 누구나 안심하고 셀프메디케이션을 할 수 있는 환경 구현을 목표로 합니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 개발 배경</h3>
+                        <p>저출산 고령화와 방일 외국인 관광객 증가, EC 사이트 보급으로 셀프메디케이션 수요가 해마다 증가하고 있습니다. 하지만 언어의 벽과 인력 부족으로 이용자가 적절한 의약품을 선택하지 못하고 안전성에 대한 우려가 현재 상황입니다. 저도 드럭스토어에서 근무하며 고령자의 청력·이해력 차이와 외국인의 언어 장벽을 직면했습니다. 이러한 과제를 해결하기 위해 대규모 언어 모델과 약학 지식을 결합한 독자적인 채팅형 상담 도구를 개발했습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 이용 목적</h3>
+                        <p>이 앱은 이용자가 자신의 증상을 올바르게 이해하고 적절한 일반의약품을 안전하게 선택할 수 있도록 지원하는 것을 목적으로 합니다.</p>
+                        <p>채팅 형태의 대화를 통해 증상에 맞는 일반의약품 후보나 진료 기준을 제시하여 셀프메디케이션 촉진을 도모합니다.</p>
+                        <p>또한 약국 방문 전이나 온라인 구매 전 참고 정보로 활용할 수 있도록 설계되어 있으며, 의료기관 조기 진료 판단을 돕는 역할도 담당합니다.</p>
+                        <p>이 앱은 의사·약사진의 진단이나 지도를 대체하는 것이 아니라, 이용자가 안전하게 판단할 수 있는 환경을 보조하는 도구로 위치하고 있습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 대상자</h3>
+                        <ul>
+                            <li>어떤 약을 선택해야 할지 모르는 일반 소비자</li>
+                            <li>바빠서 약국에 갈 수 없는 사람이나 과소지역 주민</li>
+                            <li>언어의 벽으로 상담이 어려운 방일 외국인</li>
+                            <li>고령자나 청각·이해력에 개인차가 있는 분</li>
+                            <li>EC 사이트나 온라인 약국에서 구매를 검토하는 이용자</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 주요 특징</h3>
+                        <ol>
+                            <li><strong>자연스러운 채팅 형태의 상담</strong><br>전문 지식이 없어도 대화 형태로 증상을 입력하기만 하면 약 후보를 제시합니다.</li>
+                            <li><strong>AI × 약학 지식에 의한 안전성 보장</strong><br>의약품 데이터베이스·약학 지식·AI 모델을 결합하여 오정보를 억제한 안전 설계.</li>
+                            <li><strong>진료 권장 시스템 도입</strong><br>위험한 증상이나 중증 질환이 의심되는 경우 AI가 자동으로 의료기관 진료를 권장합니다.</li>
+                            <li><strong>다국어·다환경 대응</strong><br>일본어·영어·중국어 등의 다국어 대응을 예정.<br>스마트폰, 태블릿, PC 등 모든 단말·환경(iOS/Android/Windows/macOS/Chrome/Safari 등)에서 이용 가능합니다.</li>
+                            <li><strong>데이터의 안전 관리</strong><br>입력 정보는 익명화되어 약 제안 외의 목적으로는 이용하지 않습니다.<br>이용자의 프라이버시를 최우선으로 설계되어 있습니다.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 앱의 강점·차별화 포인트</h3>
+                        <ul>
+                            <li>AI와 독자 알고리즘의 병용에 의한 안전성과 유연성의 양립</li>
+                            <li>약학적 근거에 기반한 제안과 자연어 이해(LLM)의 대화력 융합</li>
+                            <li>인력 부족·언어의 벽·정보 격차 등 현장에서 현저화되는 과제를 직접 해결</li>
+                            <li>UI 설계의 간결함·도입의 용이함에 의해 누구나 혼란 없이 이용할 수 있는 조작성</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 독자적인 알고리즘</h3>
+                        <p>이 앱의 심장부가 되는 "의약품 선정 알고리즘"은 대규모 언어 모델에 의한 유연한 언어 이해와 약효·금기·이용자 속성 정보·증상 등의 요소를 통합적으로 평가하는 독자적인 알고리즘으로 구성되어 있습니다.</p>
+                        <p>이에 의해 단순한 AI 응답이 아닌 근거에 기반한 약 선택을 실현하고 있습니다. 또한 AI에 의한 답변에는 항상 "출전 정보"나 "주의 환기"를 부여하여 이용자가 스스로 판단할 수 있는 설계로 하고 있습니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 개발 환경·사용 도구</h3>
+                        <ul>
+                            <li><strong>프로그래밍 언어·프레임워크:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
+                            <li><strong>AI·자연어 처리:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(정규표현·증상 사전), MeCab</li>
+                            <li><strong>데이터베이스:</strong> PostgreSQL(피드백 저장용)</li>
+                            <li><strong>프론트엔드:</strong> HTML/CSS, JavaScript, TailwindCSS(UI 경량화), Chart.js(분석 표시)</li>
+                            <li><strong>개발·디버그 도구:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
+                            <li><strong>모니터링·로그 관리:</strong> psutil, SocketIO 로그 배송, JSONL 형태로 액세스·보안·성능 기록</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 향후 전망</h3>
+                        <p>향후 약국·의료기관·자치단체 등과의 연계를 강화하여 지역 의료의 디지털 지원 기반으로서의 활용을 목표로 합니다.</p>
+                        <p>또한 EC 사이트와의 통합이나 복용 지도 지원 기능 등 이용자와 판매자 양쪽에 가치를 제공하는 확장도 예정하고 있습니다.</p>
+                        <p>궁극적으로는 "누구나 어디서나 안심하고 약을 선택할 수 있는 사회"를 실현하는 것이 이 앱의 목표입니다.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>📚 의약품 데이터베이스 출전원</h3>
+                        <p>이 앱에서 사용하는 의약품 정보는 다음 공공 기관의 데이터베이스를 참조하고 있습니다:</p>
+                        <ul>
+                            <li><a href="http://www.fpmaj.gr.jp" target="_blank" rel="noopener noreferrer">일본제약단체연합회</a> (http://www.fpmaj.gr.jp)</li>
+                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">(일반재단법인)일본의약정보센터</a> (https://www.japic.or.jp)</li>
+                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">(독립행정법인)의약품의료기기종합기구</a> (https://www.pmda.go.jp)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 중요한 주의사항</strong><br>
+                        이 앱은 정보 제공만을 목적으로 하며 의료 조언이 아닙니다. 의약품 사용 시에는 반드시 약사 또는 의사에게 상담하세요.
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👤 운영자 정보</h3>
+                        
+                        <div class="contact-info">
+                            <h4>기본 정보</h4>
+                            <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
+                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과 2학년</p>
+                            <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>연락처</h4>
+                            <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>기술 정보</h4>
+                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>공개 목적</h4>
+                            <p>일반의약품 선정 지원, 안전하고 이해하기 쉬운 약 선택을 촉진</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>📱 应用概述</h3>
+                        <p>本应用是基于用户症状、身体状况、生活情况，以聊天形式推荐非处方药（OTC药品）的AI辅助药品咨询工具。</p>
+                        <p>通过结合独创算法和大规模语言模型，安全灵活地推荐适合症状的非处方药，旨在实现任何人都能安心进行自我药疗的环境。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 开发背景</h3>
+                        <p>随着少子老龄化、访日外国游客增加、电商网站普及，自我药疗需求逐年增长。然而，语言障碍和人员不足导致用户无法选择适当的药品，安全性令人担忧。我本人也在药店工作，面临老年人听力理解力差异和外国人语言障碍。为了解决这些课题，开发了结合大规模语言模型和药学知识的独创聊天式咨询工具。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 使用目的</h3>
+                        <p>本应用旨在帮助用户正确理解自身症状，安全选择适当的非处方药。</p>
+                        <p>通过聊天形式对话，提供适合症状的非处方药候选和就诊标准，促进自我药疗。</p>
+                        <p>同时设计为可在药店访问前或在线购买前作为参考信息使用，也承担帮助医疗机构早期就诊判断的作用。</p>
+                        <p>本应用不替代医生·药师的诊断或指导，而是定位为辅助用户安全判断环境的工具。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👥 目标用户</h3>
+                        <ul>
+                            <li>不知道选择哪种药品的一般消费者</li>
+                            <li>忙碌无法去药店的人或偏远地区居民</li>
+                            <li>因语言障碍难以咨询的访日外国人</li>
+                            <li>老年人和听力理解力存在个人差异的人</li>
+                            <li>考虑在电商网站或在线药店购买的用户</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🎯 主要特点</h3>
+                        <ol>
+                            <li><strong>自然聊天形式咨询</strong><br>即使没有专业知识，只需以对话形式输入症状即可提供药品候选。</li>
+                            <li><strong>AI × 药学知识保障安全性</strong><br>结合药品数据库·药学知识·AI模型，抑制错误信息的安全设计。</li>
+                            <li><strong>引入就诊推荐系统</strong><br>当怀疑危险症状或严重疾病时，AI自动推荐医疗机构就诊。</li>
+                            <li><strong>多语言·多环境对应</strong><br>计划支持日语·英语·中文等多语言。<br>可在智能手机、平板、PC等所有终端·环境（iOS/Android/Windows/macOS/Chrome/Safari等）使用。</li>
+                            <li><strong>数据安全管理</strong><br>输入信息匿名化，除药品推荐外不用于其他目的。<br>用户隐私优先设计。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>💪 应用优势·差异化要点</h3>
+                        <ul>
+                            <li>通过AI和独创算法并用，实现安全性和灵活性的平衡</li>
+                            <li>基于药学依据的推荐与自然语言理解（LLM）对话能力融合</li>
+                            <li>直接解决现场显现的人员不足·语言障碍·信息差距等课题</li>
+                            <li>通过UI设计简洁·导入容易，实现任何人都能无困惑使用的操作性</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>⚙️ 独创算法</h3>
+                        <p>作为本应用核心的"药品选择算法"，由通过大规模语言模型灵活理解语言，综合评估药效·禁忌·用户属性信息·症状等要素的独创算法构成。</p>
+                        <p>由此实现基于依据的药品选择而非简单AI回答。同时AI回答始终附加"出处信息"和"注意提醒"，让用户能够自主判断。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🛠️ 开发环境·使用工具</h3>
+                        <ul>
+                            <li><strong>编程语言·框架:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
+                            <li><strong>AI·自然语言处理:</strong> OpenAI GPT-4o-mini、规则基础NLU（正则表达式·症状词典）、MeCab</li>
+                            <li><strong>数据库:</strong> PostgreSQL（反馈保存用）</li>
+                            <li><strong>前端:</strong> HTML/CSS、JavaScript、TailwindCSS（UI轻量化）、Chart.js（分析显示）</li>
+                            <li><strong>开发·调试工具:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
+                            <li><strong>监控·日志管理:</strong> psutil、SocketIO日志分发、JSONL格式访问·安全·性能记录</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🚀 未来展望</h3>
+                        <p>今后将加强与药店·医疗机构·自治体等的合作，作为地区医疗数字支持平台活用。</p>
+                        <p>同时计划电商网站整合、用药指导支持功能等为用户和销售者双方提供价值的扩展。</p>
+                        <p>最终目标是实现"任何人都能安心选择药品的社会"。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>📚 药品数据库出处</h3>
+                        <p>本应用使用的药品信息参考以下公共机构数据库：</p>
+                        <ul>
+                            <li><a href="http://www.fpmaj.gr.jp" target="_blank" rel="noopener noreferrer">日本制药团体联合会</a> (http://www.fpmaj.gr.jp)</li>
+                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">(一般财团法人)日本医药信息中心</a> (https://www.japic.or.jp)</li>
+                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">(独立行政法人)药品医疗器械综合机构</a> (https://www.pmda.go.jp)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ 重要注意事项</strong><br>
+                        本应用仅用于信息提供，非医疗建议。使用药品时请务必咨询药师或医生。
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>👤 运营者信息</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本信息</h4>
+                            <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年级</p>
+                            <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>联系方式</h4>
+                            <p><strong>联系邮箱：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>故障·咨询表单：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技术信息</h4>
+                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公开目的</h4>
+                            <p>支持非处方药选择，促进安全易懂的药品选择</p>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        
+        usage: {
+            title: '使い方',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>📖 アプリの使い方</h3>
+                        
+                        <div class="info-section">
+                            <h4>ステップ1: 症状を入力</h4>
+                            <p>感じている症状をテキストで入力するか、🎤ボタンをクリックして音声入力してください。</p>
+                            <p>例：「頭が痛い」「咳が止まらない」「熱がある」など</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>ステップ2: AI回答を確認</h4>
+                            <p>AIが症状に適した市販薬の候補を提案します。各医薬品の推奨理由、使用上の注意、副作用情報などを確認してください。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>ステップ3: 薬剤師要請（必要に応じて）</h4>
+                            <p>さらに詳しく知りたい場合や、より専門的な相談が必要な場合は、👨‍⚕️ボタンをクリックして薬剤師に直接相談できます。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <strong>⚠️ 安全に利用するための注意</strong>
+                            <ul style="margin-top: 10px;">
+                                <li>本アプリは情報提供のみを目的とし、医療アドバイスではありません</li>
+                                <li>症状が重篤な場合や緊急を要する場合は、速やかに医療機関を受診してください</li>
+                                <li>医薬品の使用に際しては、必ず薬剤師または医師にご相談ください</li>
+                                <li>アレルギーや持病がある場合は、必ずその情報を入力してください</li>
+                                <li>現在服用している薬がある場合は、併用前に薬剤師に相談してください</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>📖 How to Use the App</h3>
+                        
+                        <div class="info-section">
+                            <h4>Step 1: Enter Your Symptoms</h4>
+                            <p>Enter your symptoms in text or click the 🎤 button for voice input.</p>
+                            <p>Examples: "I have a headache", "My cough won't stop", "I have a fever", etc.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>Step 2: Review AI Response</h4>
+                            <p>The AI will suggest over-the-counter medicines suitable for your symptoms. Review the recommendation reasons, usage instructions, and side effect information for each medicine.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>Step 3: Request Pharmacist Consultation (If Needed)</h4>
+                            <p>If you need more detailed information or professional consultation, click the 👨‍⚕️ button to consult directly with a pharmacist.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <strong>⚠️ Safety Precautions</strong>
+                            <ul style="margin-top: 10px;">
+                                <li>This app is for informational purposes only and is not medical advice</li>
+                                <li>If symptoms are severe or require emergency care, seek medical attention immediately</li>
+                                <li>Please consult with a pharmacist or doctor when using medicines</li>
+                                <li>If you have allergies or chronic conditions, be sure to enter that information</li>
+                                <li>If you are currently taking medications, consult with a pharmacist before combining them</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>📖 앱 사용 방법</h3>
+                        
+                        <div class="info-section">
+                            <h4>1단계: 증상 입력</h4>
+                            <p>느끼는 증상을 텍스트로 입력하거나 🎤 버튼을 클릭하여 음성 입력하세요.</p>
+                            <p>예: "머리가 아프다", "기침이 멈추지 않는다", "열이 있다" 등</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>2단계: AI 답변 확인</h4>
+                            <p>AI가 증상에 적합한 일반의약품 후보를 제안합니다. 각 의약품의 권장 이유, 사용상 주의사항, 부작용 정보 등을 확인하세요.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>3단계: 약사 요청 (필요한 경우)</h4>
+                            <p>더 자세히 알고 싶거나 더 전문적인 상담이 필요한 경우 👨‍⚕️ 버튼을 클릭하여 약사에게 직접 상담할 수 있습니다.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <strong>⚠️ 안전하게 이용하기 위한 주의사항</strong>
+                            <ul style="margin-top: 10px;">
+                                <li>본 앱은 정보 제공만을 목적으로 하며 의료 조언이 아닙니다</li>
+                                <li>증상이 중증이거나 응급을 요하는 경우 신속히 의료기관을 방문하세요</li>
+                                <li>의약품 사용 시에는 반드시 약사 또는 의사에게 상담하세요</li>
+                                <li>알레르기나 기저질환이 있는 경우 반드시 그 정보를 입력하세요</li>
+                                <li>현재 복용 중인 약이 있는 경우 병용 전에 약사에게 상담하세요</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>📖 应用使用方法</h3>
+                        
+                        <div class="info-section">
+                            <h4>步骤1: 输入症状</h4>
+                            <p>用文本输入感受到的症状，或点击🎤按钮进行语音输入。</p>
+                            <p>示例："头痛"、"咳嗽不停"、"发烧"等</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>步骤2: 查看AI回答</h4>
+                            <p>AI会建议适合症状的非处方药候选。请确认各药品的推荐理由、使用注意事项、副作用信息等。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>步骤3: 请求药师咨询（必要时）</h4>
+                            <p>如需更详细信息或需要更专业的咨询，可点击👨‍⚕️按钮直接咨询药师。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <strong>⚠️ 安全使用的注意事项</strong>
+                            <ul style="margin-top: 10px;">
+                                <li>本应用仅用于信息提供，非医疗建议</li>
+                                <li>症状严重或需要紧急处理时，请迅速前往医疗机构就诊</li>
+                                <li>使用药品时请务必咨询药师或医生</li>
+                                <li>如有过敏或既往症，请务必输入该信息</li>
+                                <li>如正在服用其他药物，合并使用前请咨询药师</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        
+        disclaimer: {
+            title: '免責事項・利用規約',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>🧾 免責事項・利用規約（試験運用版）</h3>
+                        
+                        <h4>第1条（目的と適用範囲）</h4>
+                        <p>本アプリ「チャット型医薬品相談ツール」（以下、「本アプリ」といいます。）は、一般用医薬品を症状に基づいて参考提示するシステムです。現在はテスター限定の試験運用（β版）として公開されており、正式な医療サービスではありません。本アプリを利用することにより、利用者は本規約に同意したものとみなします。</p>
+                        
+                        <h4>第2条（試験運用について）</h4>
+                        <ol>
+                            <li>本アプリは、動作確認・機能検証・改善提案を目的として、一部のテスターに限定公開しています。</li>
+                            <li>本アプリは試験段階にあるため、表示内容の正確性・安全性・安定性について保証できません。</li>
+                            <li>テスト期間中に収集された利用データは、サービス改善のために匿名的かつ統計的に利用されます。</li>
+                        </ol>
+                        
+                        <h4>第3条（免責事項）</h4>
+                        <ol>
+                            <li>本アプリの情報は、あくまで一般的な参考情報であり、医師・薬剤師・登録販売者など専門家の判断を代替するものではありません。</li>
+                            <li>利用者が本アプリの情報に基づいて行った行動や判断により生じた損害について、運営者は一切の責任を負いません。</li>
+                            <li>本アプリの機能停止、障害、改変、削除等により利用者に不利益が生じても、運営者は責任を負いません。</li>
+                        </ol>
+                        
+                        <h4>第4条（禁止事項）</h4>
+                        <p>テスターは、次の行為を行ってはなりません。</p>
+                        <ol>
+                            <li>他者にURLを転送し、非許可の第三者に利用させる行為</li>
+                            <li>不正アクセスやリバースエンジニアリング行為</li>
+                            <li>本アプリの内容を外部に無断公開・転載する行為</li>
+                            <li>虚偽の情報を入力する行為</li>
+                            <li>本アプリを商業目的で不正利用する行為</li>
+                            <li>本アプリの運営を妨げる行為</li>
+                            <li>法令または公序良俗に反する行為</li>
+                        </ol>
+                        
+                        <h4>第5条（試験内容の変更・終了）</h4>
+                        <p>運営者は、事前通知なく本アプリの内容を変更・停止・終了することがあります。</p>
+                        
+                        <h4>第6条（知的財産権）</h4>
+                        <p>本アプリに関する著作権、プログラム、デザインなどの知的財産権は、運営者または正当な権利者に帰属します。</p>
+                        
+                        <h4>第7条（連絡先）</h4>
+                        <p>本アプリの不具合や問い合わせは、以下のフォームまたはメールにてご連絡ください。</p>
+                        <ul>
+                            <li>不具合報告フォーム：<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>連絡先メールアドレス：weary-scoots.7y@icloud.com</li>
+                            <li>運営者ホームページ：<a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>第8条（準拠法・管轄）</h4>
+                        <p>本規約の解釈および運営者とテスター間の紛争については、日本法を準拠法、同法に従って解釈されるものとします。本アプリに関して紛争が生じた場合には、運営者所在地を管轄する地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>🧾 Disclaimer & Terms of Use (Beta Version)</h3>
+                        
+                        <h4>Article 1 (Purpose and Scope of Application)</h4>
+                        <p>This app "Chat-based Medicine Consultation Tool" (hereinafter referred to as "this app") is a system that provides reference information for over-the-counter medicines based on symptoms. It is currently released as a limited beta test for testers only and is not an official medical service. By using this app, users are deemed to have agreed to these terms.</p>
+                        
+                        <h4>Article 2 (About Beta Testing)</h4>
+                        <ol>
+                            <li>This app is limited to a select group of testers for the purpose of operation verification, function testing, and improvement proposals.</li>
+                            <li>Since this app is in the testing phase, we cannot guarantee the accuracy, safety, or stability of the displayed content.</li>
+                            <li>Usage data collected during the testing period will be used anonymously and statistically for service improvement.</li>
+                        </ol>
+                        
+                        <h4>Article 3 (Disclaimer)</h4>
+                        <ol>
+                            <li>The information in this app is for general reference only and does not replace the judgment of medical professionals such as doctors, pharmacists, or registered sellers.</li>
+                            <li>The operator assumes no responsibility for any damages arising from actions or judgments made by users based on information from this app.</li>
+                            <li>The operator is not responsible for any disadvantages to users due to app suspension, malfunctions, modifications, or deletion.</li>
+                        </ol>
+                        
+                        <h4>Article 4 (Prohibited Activities)</h4>
+                        <p>Testers must not engage in the following activities:</p>
+                        <ol>
+                            <li>Forwarding URLs to others and allowing unauthorized third parties to use the app</li>
+                            <li>Unauthorized access or reverse engineering</li>
+                            <li>Unauthorized publication or reproduction of app content externally</li>
+                            <li>Inputting false information</li>
+                            <li>Misusing the app for commercial purposes</li>
+                            <li>Activities that interfere with app operation</li>
+                            <li>Activities that violate laws or public order and morals</li>
+                        </ol>
+                        
+                        <h4>Article 5 (Changes and Termination of Beta Content)</h4>
+                        <p>The operator may change, suspend, or terminate the app content without prior notice.</p>
+                        
+                        <h4>Article 6 (Intellectual Property Rights)</h4>
+                        <p>Intellectual property rights such as copyrights, programs, and designs related to this app belong to the operator or rightful owners.</p>
+                        
+                        <h4>Article 7 (Contact Information)</h4>
+                        <p>Please contact us through the following form or email for app issues or inquiries:</p>
+                        <ul>
+                            <li>Bug Report Form: <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>Contact Email: weary-scoots.7y@icloud.com</li>
+                            <li>Operator Homepage: <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>Article 8 (Governing Law and Jurisdiction)</h4>
+                        <p>These terms shall be interpreted in accordance with Japanese law. Any disputes arising from this app shall be subject to the exclusive jurisdiction of the district court with jurisdiction over the operator's location as the court of first instance.</p>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>🧾 면책조항·이용약관 (시험운용판)</h3>
+                        
+                        <h4>제1조 (목적 및 적용범위)</h4>
+                        <p>본 앱 "채팅형 의약품 상담 도구"(이하 "본 앱"이라 함)는 증상에 따라 일반의약품을 참고 제시하는 시스템입니다. 현재는 테스터 한정 시험운용(β판)으로 공개되어 있으며, 정식 의료 서비스가 아닙니다. 본 앱을 이용함으로써 이용자는 본 약관에 동의한 것으로 간주됩니다.</p>
+                        
+                        <h4>제2조 (시험운용에 대해)</h4>
+                        <ol>
+                            <li>본 앱은 동작 확인·기능 검증·개선 제안을 목적으로 일부 테스터에게 한정 공개하고 있습니다.</li>
+                            <li>본 앱은 시험 단계에 있으므로 표시 내용의 정확성·안전성·안정성에 대해 보장할 수 없습니다.</li>
+                            <li>테스트 기간 중 수집된 이용 데이터는 서비스 개선을 위해 익명적이고 통계적으로 이용됩니다.</li>
+                        </ol>
+                        
+                        <h4>제3조 (면책사항)</h4>
+                        <ol>
+                            <li>본 앱의 정보는 어디까지나 일반적인 참고 정보이며, 의사·약사·등록판매자 등 전문가의 판단을 대체하는 것이 아닙니다.</li>
+                            <li>이용자가 본 앱의 정보에 기반하여 행한 행동이나 판단으로 인해 발생한 손해에 대해 운영자는 일체의 책임을 지지 않습니다.</li>
+                            <li>본 앱의 기능 정지, 장애, 개변, 삭제 등으로 이용자에게 불이익이 발생해도 운영자는 책임을 지지 않습니다.</li>
+                        </ol>
+                        
+                        <h4>제4조 (금지사항)</h4>
+                        <p>테스터는 다음 행위를 해서는 안 됩니다.</p>
+                        <ol>
+                            <li>타인에게 URL을 전송하여 비허가 제3자에게 이용시키는 행위</li>
+                            <li>부정 접근이나 리버스 엔지니어링 행위</li>
+                            <li>본 앱의 내용을 외부에 무단 공개·전재하는 행위</li>
+                            <li>허위 정보를 입력하는 행위</li>
+                            <li>본 앱을 상업 목적으로 부정 이용하는 행위</li>
+                            <li>본 앱의 운영을 방해하는 행위</li>
+                            <li>법령 또는 공서양속에 반하는 행위</li>
+                        </ol>
+                        
+                        <h4>제5조 (시험 내용의 변경·종료)</h4>
+                        <p>운영자는 사전 통지 없이 본 앱의 내용을 변경·중지·종료할 수 있습니다.</p>
+                        
+                        <h4>제6조 (지적재산권)</h4>
+                        <p>본 앱에 관한 저작권, 프로그램, 디자인 등의 지적재산권은 운영자 또는 정당한 권리자에 귀속됩니다.</p>
+                        
+                        <h4>제7조 (연락처)</h4>
+                        <p>본 앱의 불구나 문의는 다음 폼 또는 메일로 연락해 주세요.</p>
+                        <ul>
+                            <li>불구 신고 폼: <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>연락처 메일 주소: weary-scoots.7y@icloud.com</li>
+                            <li>운영자 홈페이지: <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>제8조 (준거법·관할)</h4>
+                        <p>본 약관의 해석 및 운영자와 테스터 간의 분쟁에 대해서는 일본법을 준거법으로 하여 동법에 따라 해석되는 것으로 합니다. 본 앱에 관해 분쟁이 발생한 경우에는 운영자 소재지를 관할하는 지방법원을 제1심의 전속적 합의 관할 법원으로 합니다.</p>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>🧾 免责声明和使用条款（测试版）</h3>
+                        
+                        <h4>第1条（目的和适用范围）</h4>
+                        <p>本应用"聊天式药品咨询工具"（以下简称"本应用"）是基于症状提供非处方药参考信息的系统。目前作为测试者限定的测试运营（β版）公开，非正式医疗服务。使用本应用即视为用户同意本条款。</p>
+                        
+                        <h4>第2条（关于测试运营）</h4>
+                        <ol>
+                            <li>本应用为动作确认·功能验证·改进提案目的，限定向部分测试者公开。</li>
+                            <li>本应用处于测试阶段，无法保证显示内容的准确性·安全性·稳定性。</li>
+                            <li>测试期间收集的使用数据将匿名且统计性地用于服务改进。</li>
+                        </ol>
+                        
+                        <h4>第3条（免责事项）</h4>
+                        <ol>
+                            <li>本应用信息仅为一般参考信息，不替代医生·药师·注册销售者等专家的判断。</li>
+                            <li>用户基于本应用信息采取的行动或判断造成的损害，运营者不承担任何责任。</li>
+                            <li>因本应用功能停止、故障、修改、删除等对用户造成不利影响，运营者不承担责任。</li>
+                        </ol>
+                        
+                        <h4>第4条（禁止事项）</h4>
+                        <p>测试者不得进行以下行为：</p>
+                        <ol>
+                            <li>向他人转发URL，让未授权第三方使用</li>
+                            <li>非法访问或逆向工程行为</li>
+                            <li>未经授权对外公开·转载本应用内容</li>
+                            <li>输入虚假信息</li>
+                            <li>为商业目的非法使用本应用</li>
+                            <li>妨碍本应用运营的行为</li>
+                            <li>违反法令或公序良俗的行为</li>
+                        </ol>
+                        
+                        <h4>第5条（测试内容变更·终止）</h4>
+                        <p>运营者可无事先通知变更·停止·终止本应用内容。</p>
+                        
+                        <h4>第6条（知识产权）</h4>
+                        <p>本应用相关的著作权、程序、设计等知识产权归运营者或正当权利人所有。</p>
+                        
+                        <h4>第7条（联系方式）</h4>
+                        <p>本应用故障或咨询请通过以下表单或邮件联系：</p>
+                        <ul>
+                            <li>故障报告表单：<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                            <li>联系邮箱：weary-scoots.7y@icloud.com</li>
+                            <li>运营者主页：<a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
+                        </ul>
+                        
+                        <h4>第8条（准据法·管辖）</h4>
+                        <p>本条款解释及运营者与测试者间争议以日本法为准据法，按该法解释。本应用相关争议发生时，以运营者所在地管辖地方法院为第一审专属合意管辖法院。</p>
+                    </div>
+                `
+            }
+        },
+        
+        privacy: {
+            title: 'プライバシーポリシー',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>🔒 プライバシーポリシー（試験運用版）</h3>
+                        
+                        <h4>第1条（基本方針）</h4>
+                        <p>本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、テスターから得られた情報を適切に取り扱い、個人情報保護法および関連法令を遵守します。テスターのプライバシーを尊重し、安全で信頼できる環境の提供に努めます。</p>
+                        
+                        <h4>第2条（取得する情報）</h4>
+                        <p>本アプリでは、試験運用の目的で以下の情報を収集する場合があります。</p>
+                        <ol>
+                            <li>ユーザー入力情報（症状、年齢層、性別など）</li>
+                            <li>利用履歴・アクセスログ・利用日時・エラー情報等</li>
+                            <li>アンケートやフィードバックフォームへの回答内容</li>
+                        </ol>
+                        <p><strong>※いずれの情報も、氏名や住所など「個人を直接特定できる情報」は収集しません。</strong></p>
+                        
+                        <h4>第3条（利用目的）</h4>
+                        <p>収集した情報は、次の目的に限り利用します。</p>
+                        <ul>
+                            <li>本アプリの精度向上・不具合修正・機能改善のため</li>
+                            <li>テスト結果の分析および開発報告資料の作成のため</li>
+                            <li>運営上必要な連絡（バグ報告、改善依頼など）のため</li>
+                        </ul>
+                        
+                        <h4>第4条（第三者提供）</h4>
+                        <p>運営者は、以下の場合を除き、取得情報を第三者に提供しません。</p>
+                        <ul>
+                            <li>法令に基づく場合</li>
+                            <li>本人の明確な同意がある場合</li>
+                        </ul>
+                        
+                        <h4>第5条（情報の管理と削除）</h4>
+                        <p>取得情報は安全な環境で管理し、第三者が不正にアクセスできないよう適切な措置を講じます。</p>
+                        <ol>
+                            <li>取得情報は安全な環境で管理し、不正アクセス・漏洩・改ざん等が起こらないよう適切な技術的・組織的措置を講じます。</li>
+                            <li>テスト期間終了後、個人を特定できる情報は速やかに削除または匿名化します。</li>
+                        </ol>
+                        
+                        <h4>第6条（匿名加工情報の取り扱い）</h4>
+                        <ol>
+                            <li>運営者は、利用者から取得した情報のうち、個人を特定できないように加工した「匿名加工情報」を作成する場合があります。</li>
+                            <li>匿名加工情報は、個人を特定できない形式で統計処理・サービス改善・学術的検討などの目的で利用することがあります。</li>
+                            <li>匿名加工情報を第三者に提供する場合は、再識別できない形式を維持し、適切な安全管理措置を講じます。</li>
+                            <li>匿名加工情報の作成および提供に関する方針が変更された場合には、本ポリシー内で速やかに公表します。</li>
+                        </ol>
+                        
+                        <h4>第7条（テスターの権利）</h4>
+                        <p>テスターは、自身に関する情報の開示・訂正・削除を運営者に請求できます。希望する場合は、以下の連絡先までお問い合わせください。</p>
+                        <ul>
+                            <li>運営者名：川嶋 宥翔（Kawashima Yuto）</li>
+                            <li>メールアドレス：weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>第8条（改定）</h4>
+                        <p>本ポリシーは、必要に応じて内容を変更する場合があります。改定後の内容は、本アプリ上に掲示された時点から効力を有します。</p>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>🔒 Privacy Policy (Beta Version)</h3>
+                        
+                        <h4>Article 1 (Basic Policy)</h4>
+                        <p>This app "Chat-based Medicine Consultation Tool" appropriately handles information obtained from testers during the beta testing phase, complying with the Personal Information Protection Act and related laws. We respect tester privacy and strive to provide a safe and trustworthy environment.</p>
+                        
+                        <h4>Article 2 (Information Collected)</h4>
+                        <p>This app may collect the following information for beta testing purposes:</p>
+                        <ol>
+                            <li>User input information (symptoms, age group, gender, etc.)</li>
+                            <li>Usage history, access logs, usage times, error information, etc.</li>
+                            <li>Survey and feedback form responses</li>
+                        </ol>
+                        <p><strong>※We do not collect "personally identifiable information" such as names or addresses.</strong></p>
+                        
+                        <h4>Article 3 (Purpose of Use)</h4>
+                        <p>Collected information is used only for the following purposes:</p>
+                        <ul>
+                            <li>To improve app accuracy, fix bugs, and enhance functionality</li>
+                            <li>To analyze test results and create development reports</li>
+                            <li>For necessary operational communications (bug reports, improvement requests, etc.)</li>
+                        </ul>
+                        
+                        <h4>Article 4 (Third-Party Disclosure)</h4>
+                        <p>The operator will not provide collected information to third parties except in the following cases:</p>
+                        <ul>
+                            <li>When required by law</li>
+                            <li>When there is clear consent from the individual</li>
+                        </ul>
+                        
+                        <h4>Article 5 (Information Management and Deletion)</h4>
+                        <p>Collected information is managed in a secure environment with appropriate measures to prevent unauthorized access by third parties.</p>
+                        <ol>
+                            <li>We implement appropriate technical and organizational measures to manage collected information securely and prevent unauthorized access, leakage, or tampering.</li>
+                            <li>After the testing period ends, personally identifiable information is promptly deleted or anonymized.</li>
+                        </ol>
+                        
+                        <h4>Article 6 (Handling of Anonymized Information)</h4>
+                        <ol>
+                            <li>The operator may create "anonymized information" by processing information obtained from users so that individuals cannot be identified.</li>
+                            <li>Anonymized information may be used for statistical processing, service improvement, academic research, and other purposes in a format that cannot identify individuals.</li>
+                            <li>When providing anonymized information to third parties, we maintain a format that cannot be re-identified and implement appropriate security management measures.</li>
+                            <li>When policies regarding the creation and provision of anonymized information change, we will promptly announce them within this policy.</li>
+                        </ol>
+                        
+                        <h4>Article 7 (Tester Rights)</h4>
+                        <p>Testers can request disclosure, correction, or deletion of their information from the operator. Please contact us at the following address if you wish to do so:</p>
+                        <ul>
+                            <li>Operator Name: Kawashima Yuto</li>
+                            <li>Email Address: weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>Article 8 (Revisions)</h4>
+                        <p>This policy may be revised as necessary. Revised content takes effect from the time it is posted on this app.</p>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>🔒 개인정보 취급방침 (시험운용판)</h3>
+                        
+                        <h4>제1조 (기본방침)</h4>
+                        <p>본 앱 "채팅형 의약품 상담 도구"는 시험운용(β테스트) 단계에서 테스터로부터 얻은 정보를 적절히 취급하며, 개인정보보호법 및 관련 법령을 준수합니다. 테스터의 프라이버시를 존중하고 안전하고 신뢰할 수 있는 환경 제공에 노력합니다.</p>
+                        
+                        <h4>제2조 (수집하는 정보)</h4>
+                        <p>본 앱에서는 시험운용 목적으로 다음 정보를 수집할 수 있습니다.</p>
+                        <ol>
+                            <li>사용자 입력 정보 (증상, 연령층, 성별 등)</li>
+                            <li>이용 이력·접근 로그·이용 일시·오류 정보 등</li>
+                            <li>설문이나 피드백 폼에 대한 답변 내용</li>
+                        </ol>
+                        <p><strong>※어떤 정보도 성명이나 주소 등 "개인을 직접 특정할 수 있는 정보"는 수집하지 않습니다.</strong></p>
+                        
+                        <h4>제3조 (이용 목적)</h4>
+                        <p>수집한 정보는 다음 목적으로만 이용합니다.</p>
+                        <ul>
+                            <li>본 앱의 정확도 향상·불구 수정·기능 개선을 위해</li>
+                            <li>테스트 결과 분석 및 개발 보고 자료 작성을 위해</li>
+                            <li>운영상 필요한 연락 (버그 신고, 개선 요청 등)을 위해</li>
+                        </ul>
+                        
+                        <h4>제4조 (제3자 제공)</h4>
+                        <p>운영자는 다음 경우를 제외하고 수집 정보를 제3자에게 제공하지 않습니다.</p>
+                        <ul>
+                            <li>법령에 근거한 경우</li>
+                            <li>본인의 명확한 동의가 있는 경우</li>
+                        </ul>
+                        
+                        <h4>제5조 (정보의 관리와 삭제)</h4>
+                        <p>수집 정보는 안전한 환경에서 관리하며, 제3자가 부정하게 접근할 수 없도록 적절한 조치를 취합니다.</p>
+                        <ol>
+                            <li>수집 정보는 안전한 환경에서 관리하며, 부정 접근·누설·변조 등이 일어나지 않도록 적절한 기술적·조직적 조치를 취합니다.</li>
+                            <li>테스트 기간 종료 후, 개인을 특정할 수 있는 정보는 신속히 삭제하거나 익명화합니다.</li>
+                        </ol>
+                        
+                        <h4>제6조 (익명가공정보의 취급)</h4>
+                        <ol>
+                            <li>운영자는 이용자로부터 얻은 정보 중 개인을 특정할 수 없도록 가공한 "익명가공정보"를 작성할 수 있습니다.</li>
+                            <li>익명가공정보는 개인을 특정할 수 없는 형태로 통계 처리·서비스 개선·학술적 검토 등의 목적으로 이용할 수 있습니다.</li>
+                            <li>익명가공정보를 제3자에게 제공하는 경우, 재식별할 수 없는 형태를 유지하고 적절한 안전 관리 조치를 취합니다.</li>
+                            <li>익명가공정보의 작성 및 제공에 관한 방침이 변경된 경우에는 본 정책 내에서 신속히 공표합니다.</li>
+                        </ol>
+                        
+                        <h4>제7조 (테스터의 권리)</h4>
+                        <p>테스터는 자신에 관한 정보의 공개·정정·삭제를 운영자에게 요청할 수 있습니다. 희망하는 경우 다음 연락처로 문의해 주세요.</p>
+                        <ul>
+                            <li>운영자명: 가와시마 유토 (Kawashima Yuto)</li>
+                            <li>메일 주소: weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>제8조 (개정)</h4>
+                        <p>본 정책은 필요에 따라 내용을 변경할 수 있습니다. 개정된 내용은 본 앱에 게시된 시점부터 효력을 가집니다.</p>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>🔒 隐私政策（测试版）</h3>
+                        
+                        <h4>第1条（基本方针）</h4>
+                        <p>本应用"聊天式药品咨询工具"在测试运营（β测试）阶段适当处理从测试者获得的信息，遵守个人信息保护法及相关法令。尊重测试者隐私，努力提供安全可信的环境。</p>
+                        
+                        <h4>第2条（收集信息）</h4>
+                        <p>本应用可能为测试运营目的收集以下信息：</p>
+                        <ol>
+                            <li>用户输入信息（症状、年龄层、性别等）</li>
+                            <li>使用历史·访问日志·使用时间·错误信息等</li>
+                            <li>问卷调查和反馈表单的回答内容</li>
+                        </ol>
+                        <p><strong>※任何信息都不收集姓名或地址等"可直接识别个人的信息"。</strong></p>
+                        
+                        <h4>第3条（使用目的）</h4>
+                        <p>收集的信息仅用于以下目的：</p>
+                        <ul>
+                            <li>提高应用准确性·修复故障·功能改进</li>
+                            <li>分析测试结果及制作开发报告资料</li>
+                            <li>运营必要联系（故障报告、改进请求等）</li>
+                        </ul>
+                        
+                        <h4>第4条（第三方提供）</h4>
+                        <p>运营者除以下情况外不向第三方提供收集信息：</p>
+                        <ul>
+                            <li>基于法令的情况</li>
+                            <li>本人明确同意的情况</li>
+                        </ul>
+                        
+                        <h4>第5条（信息管理与删除）</h4>
+                        <p>收集信息在安全环境中管理，采取适当措施防止第三方非法访问。</p>
+                        <ol>
+                            <li>在安全环境中管理收集信息，采取适当技术·组织措施防止非法访问·泄露·篡改等。</li>
+                            <li>测试期间结束后，可识别个人的信息将迅速删除或匿名化。</li>
+                        </ol>
+                        
+                        <h4>第6条（匿名加工信息处理）</h4>
+                        <ol>
+                            <li>运营者可能将用户获得的信息加工为无法识别个人的"匿名加工信息"。</li>
+                            <li>匿名加工信息可能以无法识别个人的形式用于统计处理·服务改进·学术研究等目的。</li>
+                            <li>向第三方提供匿名加工信息时，维持无法重新识别的形式，采取适当安全管理措施。</li>
+                            <li>匿名加工信息制作及提供相关方针变更时，将在本政策内迅速公布。</li>
+                        </ol>
+                        
+                        <h4>第7条（测试者权利）</h4>
+                        <p>测试者可向运营者请求自身相关信息的公开·订正·删除。希望时请通过以下联系方式咨询：</p>
+                        <ul>
+                            <li>运营者名：川嶋宥翔（Kawashima Yuto）</li>
+                            <li>邮箱地址：weary-scoots.7y@icloud.com</li>
+                        </ul>
+                        
+                        <h4>第8条（修订）</h4>
+                        <p>本政策可能根据需要变更内容。修订后内容自在本应用上公布时起生效。</p>
+                    </div>
+                `
+            }
+        },
+        
+        operator: {
+            title: '運営者情報',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>👤 運営者情報</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本情報</h4>
+                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年</p>
+                            <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>連絡先</h4>
+                            <p><strong>連絡先メール：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技術情報</h4>
+                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公開目的</h4>
+                            <p>一般用医薬品の選定支援、安全でわかりやすい薬選びを促すこと</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>👤 Operator Information</h3>
+                        
+                        <div class="contact-info">
+                            <h4>Basic Information</h4>
+                            <p><strong>Operator Name:</strong> Kawashima Yuto</p>
+                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics, 2nd Year</p>
+                            <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Contact Information</h4>
+                            <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Technical Information</h4>
+                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Publication Purpose</h4>
+                            <p>To support over-the-counter medicine selection and promote safe and easy medicine selection</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>👤 운영자 정보</h3>
+                        
+                        <div class="contact-info">
+                            <h4>기본 정보</h4>
+                            <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
+                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과 2학년</p>
+                            <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>연락처</h4>
+                            <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>기술 정보</h4>
+                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>공개 목적</h4>
+                            <p>일반의약품 선정 지원, 안전하고 이해하기 쉬운 약 선택을 촉진</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>👤 运营者信息</h3>
+                        
+                        <div class="contact-info">
+                            <h4>基本信息</h4>
+                            <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年级</p>
+                            <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>联系方式</h4>
+                            <p><strong>联系邮箱：</strong> weary-scoots.7y@icloud.com</p>
+                            <p><strong>故障·咨询表单：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>技术信息</h4>
+                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>公开目的</h4>
+                            <p>支持非处方药选择，促进安全易懂的药品选择</p>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        
+        consultation: {
+            title: '医薬品相談先',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>💊 医薬品・健康相談窓口（公的情報）</h3>
+                        <p>以下の公的機関の情報も参考にしてください。</p>
+                        
+                        <div class="contact-info">
+                            <h4>独立行政法人 医薬品医療機器総合機構（PMDA）</h4>
+                            <ul>
+                                <li><strong>一般用医薬品の安全性や副作用情報</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>副作用情報</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>添付文書検索（OTC医薬品）</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>厚生労働省</h4>
+                            <ul>
+                                <li><strong>「要指導・一般用医薬品」情報</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>医薬品等安全性関連情報</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>救急安心センター（#7119）</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>医療機関・薬局検索（医療情報ネット）</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 緊急時</h4>
+                            <p><strong>救急車:</strong> 119番</p>
+                            <p><strong>救急安心センター:</strong> #7119</p>
+                            <p>症状が重篤な場合や緊急を要する場合は、速やかに医療機関を受診してください。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 重要な注意</h4>
+                            <p>本アプリは情報提供のみを目的としており、医療アドバイスではありません。医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>💊 Medicine & Health Consultation Services (Public Information)</h3>
+                        <p>Please also refer to the following public institution information.</p>
+                        
+                        <div class="contact-info">
+                            <h4>Pharmaceuticals and Medical Devices Agency (PMDA)</h4>
+                            <ul>
+                                <li><strong>Over-the-counter Medicine Safety and Side Effect Information</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>Side Effect Information</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>Package Insert Search (OTC Medicines)</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>Ministry of Health, Labour and Welfare</h4>
+                            <ul>
+                                <li><strong>"Guidance-Required and Over-the-Counter Medicines" Information</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>Medicine Safety-Related Information</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>Emergency Consultation Center (#7119)</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>Medical Institution & Pharmacy Search (Medical Information Network)</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 Emergency</h4>
+                            <p><strong>Ambulance:</strong> 119</p>
+                            <p><strong>Emergency Consultation Center:</strong> #7119</p>
+                            <p>If symptoms are severe or require emergency care, please seek medical attention immediately.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ Important Notice</h4>
+                            <p>This app is for informational purposes only and is not medical advice. Please consult with a pharmacist or doctor when using medicines.</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>💊 의약품·건강 상담 창구 (공공 정보)</h3>
+                        <p>다음 공공기관 정보도 참고해 주세요.</p>
+                        
+                        <div class="contact-info">
+                            <h4>독립행정법인 의약품의료기기총합기구 (PMDA)</h4>
+                            <ul>
+                                <li><strong>일반의약품의 안전성 및 부작용 정보</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>부작용 정보</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>첨부문서 검색 (OTC 의약품)</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>후생노동성</h4>
+                            <ul>
+                                <li><strong>"요지도·일반의약품" 정보</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>의약품 등 안전성 관련 정보</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>응급안심센터 (#7119)</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>의료기관·약국 검색 (의료정보넷)</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 응급시</h4>
+                            <p><strong>구급차:</strong> 119번</p>
+                            <p><strong>응급안심센터:</strong> #7119</p>
+                            <p>증상이 중증이거나 응급을 요하는 경우 신속히 의료기관을 방문하세요.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 중요한 주의사항</h4>
+                            <p>본 앱은 정보 제공만을 목적으로 하며 의료 조언이 아닙니다. 의약품 사용 시에는 반드시 약사 또는 의사에게 상담하세요.</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>💊 药品·健康咨询窗口（公共信息）</h3>
+                        <p>请参考以下公共机构信息。</p>
+                        
+                        <div class="contact-info">
+                            <h4>独立行政法人 药品医疗器械综合机构（PMDA）</h4>
+                            <ul>
+                                <li><strong>非处方药安全性和副作用信息</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/index.html" target="_blank">https://www.pmda.go.jp/index.html</a></li>
+                                <li><strong>副作用信息</strong><br>
+                                    🔗 <a href="https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp" target="_blank">https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp</a></li>
+                                <li><strong>说明书检索（OTC药品）</strong><br>
+                                    🔗 <a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank">https://www.pmda.go.jp/PmdaSearch/otcSearch/</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <h4>厚生劳动省</h4>
+                            <ul>
+                                <li><strong>"需指导·非处方药"信息</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000092787.html</a></li>
+                                <li><strong>药品等安全性相关信息</strong><br>
+                                    🔗 <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html" target="_blank">https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/iyakuhin/iyaku/index.html</a></li>
+                                <li><strong>急救安心中心（#7119）</strong><br>
+                                    🔗 <a href="https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html" target="_blank">https://kakarikata.mhlw.go.jp/kakaritsuke/7119.html</a></li>
+                                <li><strong>医疗机构·药店检索（医疗信息网）</strong><br>
+                                    🔗 <a href="https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize" target="_blank">https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2300/initialize</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-box">
+                            <h4>🚨 紧急时</h4>
+                            <p><strong>救护车：</strong> 119号</p>
+                            <p><strong>急救安心中心：</strong> #7119</p>
+                            <p>症状严重或需要紧急处理时，请迅速前往医疗机构就诊。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>⚠️ 重要注意事项</h4>
+                            <p>本应用仅用于信息提供，非医疗建议。使用药品时请务必咨询药师或医生。</p>
+                        </div>
+                    </div>
+                `
+            }
+        }
+    };
+    
+    // モーダルを開く
+    function openInfoModal() {
+        document.getElementById('infoModal').style.display = 'block';
+        showListPage();
+    }
+
+    // モーダルを閉じる
+    function closeInfoModal() {
+        document.getElementById('infoModal').style.display = 'none';
+        currentModalPage = 'list';
+    }
+
+    // 一覧ページを表示
+    function showListPage() {
+        currentModalPage = 'list';
+        const t = translations[currentLanguage];
+        document.getElementById('modalTitle').textContent = t.appInfo;
+        document.getElementById('listPage').style.display = 'block';
+        document.getElementById('detailPage').style.display = 'none';
+    }
+
+    // 詳細ページを表示
+    function showDetailPage(pageId) {
+        currentModalPage = pageId;
+        const page = modalPages[pageId];
+        
+        if (!page) return;
+        
+        // タイトル更新（翻訳対応）
+        const t = translations[currentLanguage];
+        let translatedTitle = page.title;
+        if (pageId === 'app-overview') translatedTitle = t.appInfo;
+        else if (pageId === 'usage') translatedTitle = t.usage || '使い方';
+        else if (pageId === 'disclaimer') translatedTitle = t.disclaimer;
+        else if (pageId === 'privacy') translatedTitle = t.privacy;
+        else if (pageId === 'consultation') translatedTitle = t.consultation;
+        
+        document.getElementById('modalTitle').textContent = translatedTitle;
+        
+        // 一覧ページを非表示、詳細ページを表示
+        document.getElementById('listPage').style.display = 'none';
+        document.getElementById('detailPage').style.display = 'block';
+        
+        // 詳細コンテンツ更新（言語対応）
+        let content = page.content;
+        if (typeof content === 'object' && content[currentLanguage]) {
+            content = content[currentLanguage];
+        }
+        document.getElementById('detailContent').innerHTML = content;
+    }
+
+    // モーダル外クリックで閉じる
+    window.onclick = function(event) {
+        const modal = document.getElementById('infoModal');
+        if (event.target === modal) {
+            closeInfoModal();
+        }
+    }
+
+    // ESCキーでモーダルを閉じる
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeInfoModal();
+        }
+    });
+
+    // 言語切り替え機能
+    function toggleLanguageMenu() {
+        const dropdown = document.getElementById('langDropdown');
+        const toggle = document.querySelector('.lang-toggle');
+        
+        if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+            toggle.classList.remove('open');
+        } else {
+            dropdown.classList.add('show');
+            toggle.classList.add('open');
+        }
+    }
+    
+    // 言語選択
+    function selectLanguage(lang) {
+        currentLanguage = lang;
+        sessionStorage.setItem('language', lang);
+        
+        // サーバーに言語設定を送信
+        fetch('/api/set_language', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                language: lang
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log(`Language set to ${lang}`);
+            } else {
+                console.error('Failed to set language:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error setting language:', error);
+        });
+        
+        // UI更新
+        updateUI();
+        
+        // ドロップダウンを閉じる
+        const dropdown = document.getElementById('langDropdown');
+        const toggle = document.querySelector('.lang-toggle');
+        dropdown.classList.remove('show');
+        toggle.classList.remove('open');
+        
+        // アクティブな言語オプションを更新
+        document.querySelectorAll('.lang-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+        
+        // フラグを更新
+        const flag = document.querySelector(`[data-lang="${lang}"]`).dataset.flag;
+        document.getElementById('currentFlag').textContent = flag;
+    }
+    
+    // 初期メッセージを更新する関数
+    function updateInitialMessage() {
+        const t = translations[currentLanguage];
+        
+        const greetingElement = document.getElementById('initial-greeting');
+        const examplesElement = document.getElementById('initial-examples');
+        
+        if (greetingElement) {
+            greetingElement.textContent = t.initialGreeting;
+        }
+        if (examplesElement) {
+            examplesElement.textContent = t.initialExamples;
+        }
+    }
+    
+    // UI要素の更新
+    function updateUI() {
+        const t = translations[currentLanguage];
+        
+        // ヘッダー要素の更新
+        document.getElementById('appTitle').textContent = t.title;
+        document.getElementById('appDescription').textContent = t.description;
+        document.getElementById('userInfoBtn').textContent = t.userInfoBtn;
+        document.getElementById('clearBtn').textContent = t.clearBtn;
+        document.getElementById('new-session-btn').textContent = t.newSessionBtn;
+        document.getElementById('admin-request-btn').textContent = t.adminRequestBtn;
+        
+        // 情報ボタンのタイトル更新
+        document.getElementById('infoBtn').title = t.infoButton;
+        
+        // モーダル内の一覧項目の翻訳更新
+        updateModalListItems();
+        
+        // 戻るボタンの翻訳更新
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.textContent = t.back;
+        }
+        
+        // 入力フィールドの更新
+        document.getElementById('messageInput').placeholder = t.placeholder;
+        document.querySelector('button[type="submit"]').textContent = t.send;
+        
+        // 初期メッセージの更新（新規追加）
+        updateInitialMessage();
+    }
+    
+    // モーダル内の一覧項目を翻訳
+    function updateModalListItems() {
+        const t = translations[currentLanguage];
+        
+        // 各項目のタイトルと説明を更新
+        const items = [
+            { id: 'app-overview', title: t.appInfo, desc: t.appInfoDesc },
+            { id: 'usage', title: t.usage || '使い方', desc: t.usageDesc || 'アプリの使い方と安全に利用するための注意' },
+            { id: 'disclaimer', title: t.disclaimer, desc: t.disclaimerDesc },
+            { id: 'privacy', title: t.privacy, desc: t.privacyDesc },
+            { id: 'consultation', title: t.consultation, desc: t.consultationDesc }
+        ];
+        
+        items.forEach(item => {
+            const titleElement = document.getElementById(`list-${item.id}-title`);
+            const descElement = document.getElementById(`list-${item.id}-desc`);
+            
+            if (titleElement) titleElement.textContent = item.title;
+            if (descElement) descElement.textContent = item.desc;
+        });
+    }
+    
+    // クイックスタートガイドの制御
+    function showQuickStartGuide() {
+        const guideElement = document.getElementById('quick-start-guide');
+        if (guideElement) {
+            guideElement.style.display = 'block';
+        }
+    }
+    
+    function closeQuickStartGuide() {
+        const guideElement = document.getElementById('quick-start-guide');
+        if (guideElement) {
+            guideElement.style.display = 'none';
+            // sessionStorageに閉じたことを記録（二度と表示しない）
+            sessionStorage.setItem('quickStartGuideClosed', 'true');
+        }
+    }
+    
+    // ページ読み込み時に言語設定を適用
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUI();
+        
+        // クイックスタートガイドの表示制御（初回アクセス時のみ）
+        if (!sessionStorage.getItem('quickStartGuideClosed')) {
+            showQuickStartGuide();
+        }
+        
+        // 言語オプションにイベントリスナーを追加
+        document.querySelectorAll('.lang-option').forEach(option => {
+            option.addEventListener('click', function() {
+                selectLanguage(this.dataset.lang);
+            });
+        });
+        
+        // ドロップダウン外をクリックしたら閉じる
+        document.addEventListener('click', function(e) {
+            const selector = document.querySelector('.language-selector');
+            if (!selector.contains(e.target)) {
+                const dropdown = document.getElementById('langDropdown');
+                const toggle = document.querySelector('.lang-toggle');
+                dropdown.classList.remove('show');
+                toggle.classList.remove('open');
+            }
+        });
+        
+        // ユーザー情報モーダルの性別変更イベントを設定
+        const userGenderSelect = document.getElementById('user_gender');
+        if (userGenderSelect) {
+            userGenderSelect.addEventListener('change', toggleUserPregnancyFields);
+        }
+    });
+    
+    // 送信中フラグ（グローバル変数）
+    let isSubmitting = false;
+    
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+        try {
+            e.preventDefault();
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message === '') {
+                return;
+            }
+            
+            // 送信処理中の場合
+            if (isSubmitting) {
+                showProcessingMessage();
+                return;
+            }
+            
+            // 送信処理開始
+            isSubmitting = true;
+            
+            // 送信ボタンを無効化
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ 処理中...';
+            submitBtn.style.background = '#6c757d';
+            submitBtn.style.cursor = 'not-allowed';
+            
+            // 入力フィールドを無効化
+            input.disabled = true;
+            input.placeholder = 'AI処理中です。しばらくお待ちください...';
+
+            // 直近のユーザーメッセージを保存（重複防止の補助や評価用）
+            try {
+                sessionStorage.setItem('lastUserMessage', message);
+            } catch (e) {}
+            
+            // 入力フィールドをクリア
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // ユーザーメッセージを即座に表示
+            addUserMessage(message);
+            
+            // タイピングインジケーターを表示
+            addTypingIndicator();
+            
+            // チャットを最下部にスクロール
+            scrollToBottom();
+            
+            // フォームを送信
+            submitForm(message);
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Form submit error:', error);
+            }
+            // 送信中フラグをリセット
+            isSubmitting = false;
+            restoreSubmitButton();
+        }
+    });
+
+    // Alt+Enterで送信、通常のEnterは改行（エラーハンドリング付き）
+    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+        try {
+            if (e.key === 'Enter' && e.altKey) {
+                e.preventDefault();
+                const form = document.getElementById('chatForm');
+                form.dispatchEvent(new Event('submit'));
+            }
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Keydown event error:', error);
+            }
+        }
+    });
+
+    // textareaの高さを自動調整（エラーハンドリング付き）
+    document.getElementById('messageInput').addEventListener('input', function() {
+        try {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        } catch (error) {
+            // Chrome拡張機能関連のエラーを無視
+            if (!error.message || !error.message.includes('chrome-extension')) {
+                console.log('Input event error:', error);
+            }
+        }
+    });
+
+    // ユーザーメッセージをチャット画面に追加
+    function addUserMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user';
+        messageDiv.setAttribute('data-temporary', 'true'); // 一時的なマーク
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(message)}</div>
+        `;
+        chatMessages.appendChild(messageDiv);
+    }
+
+    // ボットメッセージをチャット画面に追加
+    function addMessage(message, type, timestamp) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">${escapeHtml(message)}</div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 危機対応相談先情報を表示する関数
+    function displayCrisisSupportResources(message) {
+        if (!message.crisis_support || !message.resources) {
+            return '';
+        }
+        
+        const t = translations[currentLanguage];
+        let resourcesHtml = `
+            <div class="crisis-support-card">
+                <div class="crisis-support-title">${message.crisis_title || t.crisisSupportTitle}</div>
+                <div class="crisis-support-message">${message.content || t.crisisSupportMessage}</div>
+                <div class="crisis-support-message">信頼できる相談先をご紹介します：</div>
+        `;
+        
+        message.resources.forEach(resource => {
+            resourcesHtml += `
+                <div class="resource-item">
+                    <div class="resource-name">${resource.name}</div>
+                    <div class="resource-org">${resource.organization}</div>
+            `;
+            
+            if (resource.phone) {
+                resourcesHtml += `<div class="resource-contact">📞 ${resource.phone}</div>`;
+            }
+            if (resource.line) {
+                resourcesHtml += `<div class="resource-contact">💬 <a href="${resource.line}" target="_blank" class="resource-link">LINEで相談する</a></div>`;
+            }
+            if (resource.line_qr) {
+                resourcesHtml += `<div class="resource-contact" style="margin-top: 10px;">
+                    <div style="font-size: 14px; margin-bottom: 5px;">📱 QRコードで追加:</div>
+                    <img src="${resource.line_qr}" alt="LINE QRコード" style="width: 120px; height: 120px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>`;
+            }
+            if (resource.website) {
+                resourcesHtml += `<div class="resource-contact">🌐 <a href="${resource.website}" target="_blank" class="resource-link">ウェブサイト</a></div>`;
+            }
+            if (resource.hours) {
+                resourcesHtml += `<div class="resource-contact">⏰ ${resource.hours}</div>`;
+            }
+            
+            resourcesHtml += `<div class="resource-description">${resource.description}</div></div>`;
+        });
+        
+        if (message.emergency_message) {
+            resourcesHtml += `<div class="emergency-message">${message.emergency_message}</div>`;
+        }
+        
+        resourcesHtml += '</div>';
+        return resourcesHtml;
+    }
+
+    // メッセージを再読み込み（初回ロード用）
+    function loadMessages() {
+        fetch('/api/sessions?v={{ version }}', {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.messages) {
+                    renderChatMessages(data.messages);
+                }
+            })
+            .catch(error => {
+                const t = translations[currentLanguage];
+                console.error(t.loadError + ':', error);
+                // エラーが発生してもアプリケーションを継続
+            });
+    }
+
+    // 送信ボタンを元の状態に復元
+    function restoreSubmitButton() {
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const input = document.getElementById('messageInput');
+        
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '送信';
+        submitBtn.style.background = '';
+        submitBtn.style.cursor = '';
+        
+        input.disabled = false;
+        input.placeholder = '症状を入力してください...';
+    }
+
+    // 処理中メッセージを表示する関数
+    function showProcessingMessage() {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存の処理中メッセージを削除
+        const existingMessage = document.getElementById('processingMessage');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // 新しい処理中メッセージを作成
+        const processingDiv = document.createElement('div');
+        processingDiv.id = 'processingMessage';
+        processingDiv.className = 'message bot processing-message';
+        processingDiv.innerHTML = `
+            <div class="message-content" style="background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; padding: 15px; border-radius: 8px; position: relative;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="spinner" style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div>
+                        <strong>⏳ AI処理中です</strong><br>
+                        <span style="font-size: 14px; color: #666;">少々お待ちください。処理が完了するまで新しいメッセージは送信できません。</span>
+                    </div>
+                </div>
+                <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">処理に時間がかかっている場合は報告してください</p>
+                    <button class="report-bug-btn" 
+                        onclick="reportProcessingIssue()" 
+                        style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                        🐛 不具合報告
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(processingDiv);
+        scrollToBottom();
+    }
+
+    // 処理中メッセージを削除
+    function removeProcessingMessage() {
+        const processingMessage = document.getElementById('processingMessage');
+        if (processingMessage) {
+            processingMessage.remove();
+        }
+    }
+
+    // 処理中の不具合報告機能
+    function reportProcessingIssue() {
+        const reportData = {
+            user_message: sessionStorage.getItem('lastUserMessage') || '',
+            ai_response: 'AI処理が長時間実行中',
+            report_type: 'processing_timeout',
+            feedback_text: 'AI処理に時間がかかりすぎています'
+        };
+        
+        currentFeedbackData = reportData;
+        document.getElementById('feedbackModal').style.display = 'block';
+        document.getElementById('feedbackText').focus();
+    }
+
+    // タイピングインジケーターを追加
+    function addTypingIndicator() {
+        // 処理中メッセージが既に表示されている場合は追加しない
+        if (document.getElementById('processingMessage')) {
+            return;
+        }
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'currentTypingIndicator';
+        typingDiv.innerHTML = `
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="spinner" style="width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <span>AIが診断中...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(typingDiv);
+        scrollToBottom();
+    }
+
+    // HTMLエスケープ関数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // エラーメッセージを表示
+    function showErrorMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存のエラーメッセージを削除
+        const existingErrors = chatMessages.querySelectorAll('.error-message');
+        existingErrors.forEach(error => error.remove());
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'message bot error-message';
+        errorDiv.innerHTML = `
+            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; position: relative;">
+                <strong>⚠️ エラー</strong><br>
+                ${escapeHtml(message)}
+                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer;">×</button>
+            </div>
+            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーについて報告しますか？</p>
+                <button class="report-bug-btn" 
+                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
+                    data-ai-response="${escapeHtml(message)}" 
+                    data-security-score="0"
+                    onclick="handleSecurityReportFromButton(this)" 
+                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                    不具合を報告する
+                </button>
+            </div>
+        `;
+        chatMessages.appendChild(errorDiv);
+        scrollToBottom();
+        
+        // エラーメッセージを永続化（自動削除しない）
+        console.log('Error message displayed:', message);
+        
+        // エラーメッセージの永続化を強化
+        errorDiv.setAttribute('data-persistent', 'true');
+        errorDiv.style.display = 'block';
+    }
+    
+    // 警告メッセージを表示
+    function showWarningMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // 既存の警告メッセージを削除
+        const existingWarnings = chatMessages.querySelectorAll('.warning-message');
+        existingWarnings.forEach(warning => warning.remove());
+        
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'message bot warning-message';
+        warningDiv.innerHTML = `
+            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 2px solid #dc3545; padding: 15px; border-radius: 8px; position: relative; font-weight: bold;">
+                <strong>🚨 セキュリティ警告</strong><br>
+                ${escapeHtml(message)}
+                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer; font-weight: bold;">×</button>
+            </div>
+            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この警告について報告しますか？</p>
+                <button class="report-bug-btn" 
+                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
+                    data-ai-response="${escapeHtml(message)}" 
+                    data-security-score="0"
+                    onclick="handleSecurityReportFromButton(this)" 
+                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
+                    不具合を報告する
+                </button>
+            </div>
+        `;
+        chatMessages.appendChild(warningDiv);
+        
+        scrollToBottom();
+        
+        // 警告メッセージを永続化（自動削除しない）
+        console.log('Warning message displayed:', message);
+        
+        // 警告メッセージの永続化を強化
+        warningDiv.setAttribute('data-persistent', 'true');
+        warningDiv.style.display = 'block';
+    }
+
+    // フォームを送信
+    function submitForm(message) {
+        const formData = new FormData();
+        formData.append('message', message);
+        
+        fetch('/?v={{ version }}', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        })
+        .then(response => {
+            console.log('POST response status:', response.status, response.statusText);
+            console.log('POST response content-type:', response.headers.get('content-type'));
+            
+            if (!response.ok) {
+                console.error('POST failed:', response.status, response.statusText);
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+            
+            // Content-Typeがapplication/jsonかどうかを確認
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                // HTMLやその他の形式の場合
+                console.error('Unexpected content-type:', contentType);
+                return response.text().then(text => {
+                    console.error('Response body:', text.substring(0, 500));
+                    throw new Error('サーバーから予期しない形式のレスポンスが返されました');
+                });
+            }
+        })
+        .then((data) => {
+            console.log('POST response:', data);
+            
+            // エラーまたは警告のチェック
+            if (data.error) {
+                console.error('Server error:', data.response);
+                removeTypingIndicator();
+                removeProcessingMessage();
+                showErrorMessage(data.response);
+                restoreSubmitButton();
+                return;
+            }
+            
+            if (data.warning) {
+                console.warn('Server warning:', data.response);
+                removeTypingIndicator();
+                removeProcessingMessage();
+                showWarningMessage(data.response);
+                restoreSubmitButton();
+                return;
+            }
+            
+            // 少し待ってから最新のメッセージを取得（サーバー処理完了を待つ）
+            // 最大3回リトライ（合計1.5秒）に短縮
+            let retryCount = 0;
+            const maxRetries = 3;
+            const retryInterval = 500;
+            
+            const fetchMessages = () => {
+                // タイムアウト処理を追加
+                const timeoutId = setTimeout(() => {
+                    console.warn('Fetch timeout, retrying...');
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`Timeout retry... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        console.error('Max retries reached after timeout');
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        restoreSubmitButton();
+                    }
+                }, 2000); // 2秒でタイムアウト
+                
+                fetch('/api/sessions?v={{ version }}', {
+                    credentials: 'include',
+                    headers: { 'Cache-Control': 'no-cache' }
+                })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(sessionData => {
+                    clearTimeout(timeoutId);
+                    console.log(`Session data received (attempt ${retryCount + 1}):`, sessionData);
+                    console.log('Messages count:', sessionData?.messages?.length);
+                    console.log('Expected message count:', data.message_count);
+                    
+                    if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
+                        // メッセージが存在する場合は表示（厳密な数値比較を緩和）
+                        console.log('✓ All messages loaded, rendering...');
+                        removeTypingIndicator();
+                        
+                        // 最新のAI応答をセッションストレージに保存（評価ボタン用）
+                        const latestMessage = sessionData.messages[sessionData.messages.length - 1];
+                        if (latestMessage && latestMessage.type === 'bot') {
+                            // 既存のメッセージIDを確認または新規生成
+                            let messageId = latestMessage.message_id;
+                            if (!messageId) {
+                                messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                            }
+                            const messageData = {
+                                user_message: sessionStorage.getItem('lastUserMessage') || '',
+                                ai_response: latestMessage.content || '',
+                                security_score: null,
+                                message_id: messageId
+                            };
+                            sessionStorage.setItem(`message_${messageId}`, JSON.stringify(messageData));
+                        }
+                        
+                        renderChatMessages(sessionData.messages);
+                        removeProcessingMessage();
+                        restoreSubmitButton();
+                    } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
+                        // 新規セッションまたは非アクティブセッションの場合、リトライ不要
+                        console.log('✓ New session or inactive session, no retry needed');
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        restoreSubmitButton();
+                    } else if (retryCount < maxRetries) {
+                        // リトライ
+                        retryCount++;
+                        console.log(`Retrying... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        // 最大リトライ回数に達した
+                        console.error('Max retries reached, showing error');
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        restoreSubmitButton();
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(timeoutId);
+                    console.error('Session fetch error:', error);
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`Error retry... (${retryCount}/${maxRetries})`);
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
+                        restoreSubmitButton();
+                    }
+                });
+            };
+            
+            // 最初の取得を500ms後に開始
+            setTimeout(fetchMessages, retryInterval);
+        })
+        .catch(error => {
+            console.error('POST Error details:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            
+            // エラー時はタイピングインジケーターを削除
+            removeTypingIndicator();
+            removeProcessingMessage();
+            // 送信完了フラグを解除
+            restoreSubmitButton();
+            
+            // エラーメッセージを表示
+            let errorMsg = '申し訳ございません。送信中にエラーが発生しました。';
+            if (error.message.includes('Failed to fetch')) {
+                errorMsg += '\nサーバーに接続できません。サーバーが起動しているか確認してください。';
+            } else {
+                errorMsg += `\nエラー詳細: ${error.message}`;
+            }
+            showErrorMessage(errorMsg);
+        });
+    }
+
+    // タイピングインジケーターを削除
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    // チャットを最下部にスクロール
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        // iOS Safariのキーボード表示時の高さ計算遅延に対応
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }, 200);
+    }
+
+    // ページ読み込み時の初期化
+    window.onload = function() {
+        const input = document.getElementById('messageInput');
+        if (input) {
+            const pending = sessionStorage.getItem('pendingMessage');
+            if (pending) {
+                input.value = pending;
+            }
+        }
+        scrollToBottom();
+        // 初回ロード時にAPIから現在の履歴を取得
+        loadMessages();
+    };
+
+    // チャット履歴をクリアする関数
+    function clearChat() {
+        const t = translations[currentLanguage];
+        if (confirm(t.confirmClearChat)) {
+            fetch('/clear?v={{ version }}', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            }).then(() => {
+                location.reload();
+            });
+        }
+    }
+
+    // 新しいセッションを開始する関数
+    document.getElementById('new-session-btn').onclick = function() {
+        const t = translations[currentLanguage];
+        if (confirm(t.confirmNewSession)) {
+            fetch('/new_session?v={{ version }}', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('新しいセッションの開始に失敗しました');
+                }
+            })
+            .catch(() => {
+                alert('通信エラーが発生しました');
+            });
+        }
+    };
+
+    // 薬剤師対応を要請ボタン
+    document.getElementById('admin-request-btn').onclick = function() {
+        if (confirm('薬剤師対応を要請しますか？')) {
+            fetch('/api/request_admin', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => {
+                console.log('薬剤師要請レスポンス:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('薬剤師要請データ:', data);
+                if (data.status === 'ok') {
+                    // サーバーからメッセージを再取得して表示（永続化されたメッセージを表示）
+                    setTimeout(() => {
+                        loadMessages();
+                    }, 100);
+                } else {
+                    console.error('薬剤師要請エラー:', data);
+                    alert('薬剤師対応の要請に失敗しました: ' + (data.message || '不明なエラー'));
+                }
+            })
+            .catch(error => {
+                console.error('薬剤師要請通信エラー:', error);
+                alert('通信エラーが発生しました: ' + error.message);
+            });
+        }
+    };
+
+    function renderChatMessages(messages) {
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            console.error('chatMessages element not found');
+            return;
+        }
+        
+        // 一時的なユーザーメッセージは、新規メッセージ反映後に安全に除去する
+        
+        // タイピングインジケーターの状態を保存
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        const hasTypingIndicator = typingIndicator !== null;
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('hasTypingIndicator:', hasTypingIndicator);
+        
+        // 既存メッセージのインデックスをチェック（重複防止）
+        const existingMessages = chatMessages.querySelectorAll('[data-message-index]');
+        const existingIndices = new Set();
+        existingMessages.forEach(msg => {
+            const index = msg.getAttribute('data-message-index');
+            if (index) existingIndices.add(parseInt(index));
+        });
+        
+        // レイアウトの安定性を向上させるため、一括更新
+        const fragment = document.createDocumentFragment();
+        
+        // 初期メッセージの重複チェック
+        const hasInitialMessage = chatMessages.querySelector('[data-initial-message="true"]');
+        if (!hasInitialMessage) {
+            const t = translations[currentLanguage];
+            const initialMessage = document.createElement('div');
+            initialMessage.className = 'message bot';
+            initialMessage.setAttribute('data-initial-message', 'true');
+            initialMessage.innerHTML = `
+                <div class="message-content">
+                    <span id="initial-greeting">${t.initialGreeting}</span><br>
+                    <span id="initial-examples">${t.initialExamples}</span>
+                </div>
+            `;
+            fragment.appendChild(initialMessage);
+        }
+        
+        messages.forEach((message, index) => {
+            // 既存メッセージの場合はスキップ（重複防止）
+            if (existingIndices.has(index)) {
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.setAttribute('data-message-index', index);
+            
+            if (message.type === 'user') {
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML = `<div class="message-content">${escapeHtml(message.content)}</div>`;
+            } else if (message.type === 'bot') {
+                messageDiv.className = 'message bot';
+                
+                // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
+                if (message.content && (message.content.includes('<div class="recommendation-result">') || 
+                                       message.content.includes('<div class="chat-response">'))) {
+                    // 診断結果の場合は詳細を表示し、評価ボタンも表示
+                    // 管理画面専用のスコア情報を除去
+                    let cleanedContent = message.content;
+                    
+                    // 管理画面専用の要素を除去
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = cleanedContent;
+                    
+                    // admin-score-displayクラスを含む要素を除去
+                    const adminScoreElements = tempDiv.querySelectorAll('.admin-score-display');
+                    adminScoreElements.forEach(el => el.remove());
+                    
+                    // score-breakdownクラスを含む要素を除去（スコア内訳）
+                    const scoreBreakdownElements = tempDiv.querySelectorAll('.score-breakdown');
+                    scoreBreakdownElements.forEach(el => el.remove());
+                    
+                    // score-itemクラスを含む要素を除去（個別スコア項目）
+                    const scoreItemElements = tempDiv.querySelectorAll('.score-item');
+                    scoreItemElements.forEach(el => el.remove());
+                    
+                    // 推奨理由から詳細スコア情報を除去
+                    const reasonElements = tempDiv.querySelectorAll('em');
+                    reasonElements.forEach(el => {
+                        if (el.textContent.includes('✅') || el.textContent.includes('⚠️') || el.textContent.includes('|')) {
+                            // 詳細なスコア情報を含む推奨理由を簡潔化
+                            el.textContent = '症状に適した医薬品です';
+                        }
+                    });
+                    
+                    // 管理者専用のスコア表示を除去
+                    const adminScoreDisplayElements = tempDiv.querySelectorAll('[style*="background-color: #f8f9fa"]');
+                    adminScoreDisplayElements.forEach(el => {
+                        if (el.textContent.includes('スコア内訳') || el.textContent.includes('症状適合') || el.textContent.includes('効能特異性')) {
+                            el.remove();
+                        }
+                    });
+                    
+                    cleanedContent = tempDiv.innerHTML;
+                    
+                    messageDiv.innerHTML = cleanedContent;
+                }
+                // 危機対応メッセージの特別表示
+                else if (message.crisis_support) {
+                    messageDiv.innerHTML = displayCrisisSupportResources(message);
+                }
+                // 従来の形式
+                else {
+                    let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}${message.style_class ? ' ' + message.style_class : ''}">`;
+                    
+                    if (message.manual_reply) {
+                        content += `<span class="manual-reply-indicator">👤 薬剤師 川嶋 返信</span><br><br>`;
+                    }
+                    
+                    // 新しい推奨結果の形式に対応
+                    if (message.diagnosis) {
+                    // 医薬品相談回答の場合
+                    if (message.diagnosis.is_question && message.diagnosis.chat_response) {
+                        const chatResponse = message.diagnosis.chat_response;
+                        content += `<div class="chat-response"><h4>💬 医薬品相談回答</h4>`;
+                        content += `<div class="answer-section"><strong>回答:</strong><br>${chatResponse.answer || '回答を取得できませんでした'}</div>`;
+                        content += `<div class="details-section">`;
+                        content += `<h5>📋 医薬品詳細</h5><p>${chatResponse.medicine_details || '詳細情報を取得できませんでした'}</p>`;
+                        content += `<h5>💊 飲み合わせ・相互作用</h5><p>${chatResponse.interactions || '飲み合わせ情報を取得できませんでした'}</p>`;
+                        content += `<h5>🏃 ドーピング規制チェック</h5><p>${chatResponse.doping_check || 'ドーピング規制の確認ができませんでした'}</p>`;
+                        content += `<h5>⚠️ 副作用・注意点</h5><p>${chatResponse.side_effects || '副作用情報を取得できませんでした'}</p>`;
+                        content += `<h5>🏥 医師相談のアドバイス</h5><p>${chatResponse.consultation_advice || '医師にご相談ください'}</p>`;
+                        content += `</div></div>`;
+                    }
+                    // 従来の推奨結果の場合
+                    else if (message.diagnosis.symptoms) {
+                        content += `<div class="diagnosis-result"><strong>🔍 推定された症状:</strong><br>${message.diagnosis.symptoms.join(', ')}</div>`;
+                    }
+                    if (message.diagnosis.recommended_medicines && message.diagnosis.recommended_medicines.length > 0) {
+                        content += `<div class="medicine-list"><strong>💊 推奨医薬品:</strong><br>`;
+                        message.diagnosis.recommended_medicines.forEach(medicine => {
+                            content += `<div class="medicine-summary"><strong>${(() => {
+    if (medicine.number === 1) return '1つ目';
+    else if (medicine.number === 2) return '2つ目';
+    else if (medicine.number === 3) return '3つ目';
+    else return medicine.number + 'つ目';
+})()}:</strong> ${medicine.product_name}<br><em>推奨理由:</em> ${medicine.reason}</div>`;
+                        });
+                        content += `</div>`;
+                    }
+                    if (message.diagnosis.usage_notes) {
+                        content += `<div class="caution-box"><strong>⚠️ 使用上の注意:</strong><div class="caution-content" style="white-space: pre-line;">${message.diagnosis.usage_notes}</div></div>`;
+                    }
+                    if (message.diagnosis.doctor_consultation) {
+                        content += `<div class="advice-box"><strong>🏥 医師の受診が必要な場合:</strong><br><div class="advice-content">${message.diagnosis.doctor_consultation}</div></div>`;
+                    }
+                    
+                    // 追加質問の表示
+                    if (message.diagnosis.additional_questions && message.diagnosis.additional_questions.length > 0) {
+                        const priorityLabel = message.diagnosis.missing_priority === 'critical' ? '必須' :
+                                             message.diagnosis.missing_priority === 'important' ? '重要' : '任意';
+                        const priorityMessage = message.diagnosis.missing_priority === 'critical' ? 
+                            'より適切な医薬品をご提案するため、以下の情報を教えてください：' :
+                            message.diagnosis.missing_priority === 'important' ?
+                            '安全のため、以下の情報を教えてください：' :
+                            'より安全な使用のため、可能であれば以下の情報を教えてください：';
+                        
+                        content += `<div class="question-box" style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 10px 0;">
+                            <strong>❓ 追加でお伺いしたいこと</strong>
+                            <span style="color: #ff9800; font-weight: bold;">（優先度: ${priorityLabel}）</span><br>
+                            <p style="margin: 5px 0;">${priorityMessage}</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">`;
+                        
+                        message.diagnosis.additional_questions.forEach(question => {
+                            content += `<li>${question}</li>`;
+                        });
+                        
+                        content += `</ul></div>`;
+                    }
+                    
+                    if (message.diagnosis.symptoms && !message.diagnosis.error) {
+                        content += `<div class="question-prompt"><strong>❓ 他にご質問はありますか？</strong><br>薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。</div>`;
+                    }
+                    } else {
+                        content += message.content;
+                    }
+                    content += `</div>`;
+                    messageDiv.innerHTML = content;
+                }
+            }
+            fragment.appendChild(messageDiv);
+        });
+        
+        // レイアウトの安定性を向上させるため、一括更新と固定レイアウト
+        const currentScrollTop = chatMessages.scrollTop;
+        const currentScrollHeight = chatMessages.scrollHeight;
+        const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 10;
+        
+        // 永続化された警告メッセージを保持
+        const persistentWarnings = chatMessages.querySelectorAll('[data-persistent="true"]');
+        const warningElements = Array.from(persistentWarnings);
+        
+        // 新規メッセージのみ追加（既存メッセージは保持）
+        if (fragment.children.length > 0) {
+            chatMessages.appendChild(fragment);
+            // 新規メッセージが反映できた場合のみ、仮表示のユーザーメッセージを除去
+            const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
+            tempMessages.forEach(msg => msg.remove());
+        }
+        
+        // 永続化された警告メッセージを復元
+        warningElements.forEach(warning => {
+            chatMessages.appendChild(warning);
+        });
+        
+        // 評価ボタンを追加（削除済み - HTMLに直接組み込み）
+        
+        // タイピングインジケーターを復元
+        if (hasTypingIndicator) {
+            const existingTypingIndicator = document.getElementById('currentTypingIndicator');
+            if (!existingTypingIndicator) {
+                const newTypingDiv = document.createElement('div');
+                newTypingDiv.className = 'message bot';
+                newTypingDiv.id = 'currentTypingIndicator';
+                newTypingDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            AIが診断中...
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(newTypingDiv);
+            }
+        }
+        
+        // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
+        
+        // スクロール位置を安定化
+        requestAnimationFrame(() => {
+            if (isAtBottom) {
+                scrollToBottom();
+            } else {
+                // スクロール位置を維持
+                const newScrollHeight = chatMessages.scrollHeight;
+                const heightDifference = newScrollHeight - currentScrollHeight;
+                chatMessages.scrollTop = currentScrollTop + heightDifference;
+            }
+        });
+    }
+
+    // 定期的にメッセージ部分だけAPIで取得して再描画（間隔10秒）
+    setInterval(function refreshMessagesPeriodically() {
+        // 送信中は定期更新をスキップ（タイピングインジケーターを保護）
+        if (isSubmitting) {
+            console.log('⏭️ Skipping periodic update - form is submitting');
+            return;
+        }
+        
+        // タイピングインジケーターが表示されている場合もスキップ
+        if (document.getElementById('currentTypingIndicator')) {
+            console.log('⏭️ Skipping periodic update - typing indicator is shown');
+            return;
+        }
+        
+        // ログ出力を削減（デバッグ時のみ有効）
+        // console.log('🔄 Periodic update - fetching messages');
+        fetch('/api/sessions?v={{ version }}', {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.messages) {
+                // メッセージがある場合のみログ出力
+                if (data.messages.length > 0) {
+                    console.log('🔄 Periodic update - rendering', data.messages.length, 'messages');
+                }
+                renderChatMessages(data.messages);
+            }
+        })
+        .catch(error => {
+            // エラーログを削減
+            // console.log('Session update error:', error);
+        });
+    }, 10000);
+    
+    // モーダル関連の関数
+    function openAttributeModal() {
+        // 今日の日付をmaxに設定
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('attr_duration_date').max = today;
+        
+        // セッション情報から既存のユーザー属性を取得してフォームに設定
+        fetch('/api/sessions')
+            .then(response => response.json())
+            .then(data => {
+                const attrs = data.user_attributes || {};
+                
+                // 年齢を設定
+                if (attrs.age) {
+                    document.getElementById('attr_age').value = attrs.age;
+                }
+                
+                // 性別を設定
+                if (attrs.gender) {
+                    document.getElementById('attr_gender').value = attrs.gender;
+                    togglePregnancyFields(); // 性別に応じて妊娠・授乳フィールドを表示
+                    
+                    // 妊娠・授乳状態を設定（女性の場合のみ）
+                    if (attrs.gender === '女性') {
+                        if (attrs.pregnant !== undefined && attrs.pregnant !== null) {
+                            document.getElementById('attr_pregnant').value = attrs.pregnant ? 'yes' : 'no';
+                        }
+                        if (attrs.breastfeeding !== undefined && attrs.breastfeeding !== null) {
+                            document.getElementById('attr_breastfeeding').value = attrs.breastfeeding ? 'yes' : 'no';
+                        }
+                    }
+                }
+                
+                // アレルギーを設定
+                if (attrs.allergies && Array.isArray(attrs.allergies) && attrs.allergies.length > 0) {
+                    document.getElementById('attr_allergies').value = attrs.allergies.join('、');
+                } else if (attrs.allergies && typeof attrs.allergies === 'string') {
+                    document.getElementById('attr_allergies').value = attrs.allergies;
+                }
+                
+                // 服用中の薬を設定
+                if (attrs.current_medications && Array.isArray(attrs.current_medications) && attrs.current_medications.length > 0) {
+                    document.getElementById('attr_has_medications').value = 'yes';
+                    toggleMedicationsField(); // 服用中の薬の詳細フィールドを表示
+                    document.getElementById('attr_medications').value = attrs.current_medications.join('、');
+                } else if (attrs.current_medications && typeof attrs.current_medications === 'string' && attrs.current_medications.trim()) {
+                    document.getElementById('attr_has_medications').value = 'yes';
+                    toggleMedicationsField();
+                    document.getElementById('attr_medications').value = attrs.current_medications;
+                } else {
+                    document.getElementById('attr_has_medications').value = 'no';
+                    toggleMedicationsField();
+                }
+                
+                // 症状期間を設定（symptom_duration_daysから日付を逆算）
+                if (attrs.symptom_duration_days !== undefined && attrs.symptom_duration_days !== null) {
+                    const days = attrs.symptom_duration_days;
+                    if (days > 0) {
+                        const startDate = new Date();
+                        startDate.setDate(startDate.getDate() - days);
+                        const dateStr = startDate.toISOString().split('T')[0];
+                        document.getElementById('attr_duration_date').value = dateStr;
+                    }
+                }
+                
+                // その他情報を設定
+                if (attrs.other_info) {
+                    document.getElementById('attr_other').value = attrs.other_info;
+                }
+            })
+            .catch(error => {
+                console.error('セッション情報の取得エラー:', error);
+                // エラーが発生してもモーダルは開く
+            });
+        
+        document.getElementById('attributeModal').style.display = 'block';
+    }
+    
+    function closeAttributeModal() {
+        document.getElementById('attributeModal').style.display = 'none';
+    }
+    
+    // モーダル外をクリックで閉じる
+    window.onclick = function(event) {
+        const modal = document.getElementById('attributeModal');
+        if (event.target === modal) {
+            closeAttributeModal();
+        }
+    }
+    
+    // 性別選択時に妊娠・授乳の表示を切り替え
+    function togglePregnancyFields() {
+        const gender = document.getElementById('attr_gender').value;
+        const pregnancyGroup = document.getElementById('pregnancy_group');
+        const breastfeedingGroup = document.getElementById('breastfeeding_group');
+        
+        if (gender === '女性') {
+            pregnancyGroup.style.display = 'block';
+            breastfeedingGroup.style.display = 'block';
+        } else {
+            pregnancyGroup.style.display = 'none';
+            breastfeedingGroup.style.display = 'none';
+            document.getElementById('attr_pregnant').value = '';
+            document.getElementById('attr_breastfeeding').value = '';
+        }
+    }
+    
+    // 服用中の薬の詳細表示を切り替え
+    function toggleMedicationsField() {
+        const hasMedications = document.getElementById('attr_has_medications').value;
+        const medicationsDetailGroup = document.getElementById('medications_detail_group');
+        
+        if (hasMedications === 'yes') {
+            medicationsDetailGroup.style.display = 'block';
+        } else {
+            medicationsDetailGroup.style.display = 'none';
+            document.getElementById('attr_medications').value = '';
+        }
+    }
+    
+    // 属性フォームの送信
+    function submitAttributes() {
+        const age = document.getElementById('attr_age').value;
+        const gender = document.getElementById('attr_gender').value;
+        const pregnant = document.getElementById('attr_pregnant').value;
+        const breastfeeding = document.getElementById('attr_breastfeeding').value;
+        const allergies = document.getElementById('attr_allergies').value;
+        const hasMedications = document.getElementById('attr_has_medications').value;
+        const medications = document.getElementById('attr_medications').value;
+        const durationDate = document.getElementById('attr_duration_date').value;
+        const other = document.getElementById('attr_other').value;
+        
+        // 日付から期間を計算
+        let duration = '';
+        if (durationDate) {
+            const startDate = new Date(durationDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                duration = '今日から';
+            } else if (diffDays === 1) {
+                duration = '昨日から';
+            } else if (diffDays < 7) {
+                duration = `${diffDays}日前から`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                duration = `${diffWeeks}週間前から`;
+            }
+        }
+        
+        // 回答を組み立てる
+        let response = [];
+        if (age) response.push(`${age}歳です`);
+        if (gender) response.push(`${gender}です`);
+        if (gender === '女性') {
+            if (pregnant === 'no') response.push('妊娠していません');
+            else if (pregnant === 'yes') response.push('妊娠中です');
+            if (breastfeeding === 'no') response.push('授乳していません');
+            else if (breastfeeding === 'yes') response.push('授乳中です');
+        }
+        if (allergies) response.push(`アレルギーは${allergies}です`);
+        else response.push('アレルギーはありません');
+        
+        // 服用中の薬
+        if (hasMedications === 'yes' && medications) {
+            response.push(`現在${medications}を服用しています`);
+        } else if (hasMedications === 'no') {
+            response.push('他に服用している薬はありません');
+        }
+        
+        if (duration) response.push(`症状は${duration}続いています`);
+        if (other) response.push(other);
+        
+        const message = response.join('。') + '。';
+        
+        console.log('属性フォーム送信:', message);
+        
+        // モーダルを閉じる
+        closeAttributeModal();
+        
+        // フォームをリセット
+        document.getElementById('attributeForm').reset();
+        togglePregnancyFields(); // 妊娠・授乳フィールドを非表示に戻す
+        
+        // メッセージとして送信
+        const input = document.getElementById('messageInput');
+        input.value = message;
+        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    }
+
+    // ユーザー情報登録モーダル制御
+    function openUserInfoModal() {
+        document.getElementById('userInfoModal').style.display = 'flex';
+        loadExistingUserInfo();
+    }
+    
+    function closeUserInfoModal() {
+        document.getElementById('userInfoModal').style.display = 'none';
+    }
+    
+    // 既存のユーザー情報を読み込む
+    function loadExistingUserInfo() {
+        fetch('/api/sessions', {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                const attrs = data.user_attributes || {};
+                
+                // 年齢を設定
+                if (attrs.age) {
+                    document.getElementById('user_age').value = attrs.age;
+                }
+                
+                // 性別を設定
+                if (attrs.gender) {
+                    document.getElementById('user_gender').value = attrs.gender;
+                    toggleUserPregnancyFields(); // 性別に応じて妊娠・授乳フィールドを表示
+                    
+                    // 妊娠・授乳状態を設定（女性の場合のみ）
+                    if (attrs.gender === '女性') {
+                        if (attrs.pregnant !== undefined && attrs.pregnant !== null) {
+                            document.getElementById('user_pregnant').value = attrs.pregnant ? 'true' : 'false';
+                        }
+                        if (attrs.breastfeeding !== undefined && attrs.breastfeeding !== null) {
+                            document.getElementById('user_breastfeeding').value = attrs.breastfeeding ? 'true' : 'false';
+                        }
+                    }
+                }
+                
+                // アレルギーを設定
+                if (attrs.allergies) {
+                    if (Array.isArray(attrs.allergies)) {
+                        document.getElementById('user_allergies').value = attrs.allergies.join('、');
+                    } else if (typeof attrs.allergies === 'string') {
+                        document.getElementById('user_allergies').value = attrs.allergies;
+                    }
+                }
+                
+                // 服用中の薬を設定
+                if (attrs.current_medications) {
+                    if (Array.isArray(attrs.current_medications)) {
+                        document.getElementById('user_medications').value = attrs.current_medications.join('、');
+                    } else if (typeof attrs.current_medications === 'string') {
+                        document.getElementById('user_medications').value = attrs.current_medications;
+                    }
+                }
+                
+                // 既往症を設定
+                if (attrs.medical_history) {
+                    if (Array.isArray(attrs.medical_history)) {
+                        document.getElementById('user_medical_history').value = attrs.medical_history.join('、');
+                    } else if (typeof attrs.medical_history === 'string') {
+                        document.getElementById('user_medical_history').value = attrs.medical_history;
+                    }
+                }
+                
+                // その他情報を設定
+                if (attrs.other_info) {
+                    document.getElementById('user_other_info').value = attrs.other_info;
+                }
+            })
+            .catch(error => {
+                console.error('セッション情報の取得エラー:', error);
+                // エラーが発生してもモーダルは開く
+            });
+    }
+    
+    // 性別選択時に妊娠・授乳フィールドを表示/非表示
+    function toggleUserPregnancyFields() {
+        const gender = document.getElementById('user_gender');
+        if (!gender) return;
+        
+        const genderValue = gender.value;
+        const pregnancyFields = document.getElementById('user_pregnancy_fields');
+        
+        if (genderValue === '女性' && pregnancyFields) {
+            pregnancyFields.style.display = 'block';
+        } else if (pregnancyFields) {
+            pregnancyFields.style.display = 'none';
+            const pregnantSelect = document.getElementById('user_pregnant');
+            const breastfeedingSelect = document.getElementById('user_breastfeeding');
+            if (pregnantSelect) pregnantSelect.value = '';
+            if (breastfeedingSelect) breastfeedingSelect.value = '';
+        }
+    }
+    
+    // ユーザー情報を保存
+    function saveUserInfo() {
+        const age = document.getElementById('user_age').value;
+        const gender = document.getElementById('user_gender').value;
+        const pregnant = document.getElementById('user_pregnant')?.value === 'true';
+        const breastfeeding = document.getElementById('user_breastfeeding')?.value === 'true';
+        const allergies = document.getElementById('user_allergies').value;
+        const medications = document.getElementById('user_medications').value;
+        const medicalHistory = document.getElementById('user_medical_history').value;
+        const otherInfo = document.getElementById('user_other_info').value;
+        
+        // 必須項目のチェック
+        if (!age || !gender) {
+            alert('年齢と性別は必須項目です。');
+            return;
+        }
+        
+        // ユーザー属性を構築
+        const userAttributes = {
+            age: parseInt(age),
+            gender: gender,
+            allergies: allergies ? allergies.split('、').map(a => a.trim()).filter(a => a) : [],
+            current_medications: medications ? medications.split('、').map(m => m.trim()).filter(m => m) : [],
+            medical_history: medicalHistory ? medicalHistory.split('、').map(h => h.trim()).filter(h => h) : [],
+            other_info: otherInfo || ''
+        };
+        
+        // 女性の場合のみ妊娠・授乳情報を追加
+        if (gender === '女性') {
+            userAttributes.pregnant = pregnant;
+            userAttributes.breastfeeding = breastfeeding;
+        }
+        
+        // サーバーに送信
+        fetch('/api/sessions', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({
+                user_attributes: userAttributes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert('ユーザー情報を保存しました。');
+                closeUserInfoModal();
+                // ページをリロードして情報を反映
+                location.reload();
+            } else {
+                alert('保存に失敗しました: ' + (data.message || '不明なエラー'));
+            }
+        })
+        .catch(error => {
+            console.error('ユーザー情報保存エラー:', error);
+            alert('通信エラーが発生しました。もう一度お試しください。');
+        });
+    }
+    
+    // 音声入力機能
+    let voiceRecognition = null;
+    let isVoiceRecording = false;
+    let voicePreviousValue = ''; // 音声認識開始時の既存値を保持
+    
+    function initVoiceRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            console.log('音声認識APIはこのブラウザではサポートされていません');
+            alert('このブラウザは音声認識に対応していません。Chrome、Edge、Safariなど対応ブラウザをご利用ください。');
+            return false;
+        }
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        voiceRecognition = new SpeechRecognition();
+        
+        // 現在の言語設定に応じて言語を設定
+        const langMap = {
+            'ja': 'ja-JP',
+            'en': 'en-US',
+            'ko': 'ko-KR',
+            'zh': 'zh-CN'
+        };
+        voiceRecognition.lang = langMap[currentLanguage] || 'ja-JP';
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true; // 中間結果も取得してリアルタイム表示
+        
+        voiceRecognition.onresult = (event) => {
+            const messageInput = document.getElementById('messageInput');
+            if (!messageInput) {
+                console.error('messageInput要素が見つかりません');
+                return;
+            }
+            
+            let finalTranscript = '';
+            let interimTranscript = '';
+            
+            // すべての結果を処理
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            // 最終結果がある場合は確定
+            if (finalTranscript) {
+                messageInput.value = (voicePreviousValue + ' ' + finalTranscript).trim();
+                voicePreviousValue = messageInput.value; // 次の認識用に保存
+                console.log('音声認識結果（確定）:', finalTranscript);
+            } else if (interimTranscript) {
+                // 中間結果は一時表示（確定部分 + 中間結果）
+                messageInput.value = (voicePreviousValue + ' ' + interimTranscript).trim();
+            }
+            
+            // textareaの高さを調整
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+            
+            // inputイベントを発火して他のリスナーにも通知
+            const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+            messageInput.dispatchEvent(inputEvent);
+        };
+        
+        voiceRecognition.onerror = (event) => {
+            console.error('音声認識エラー:', event.error);
+            stopVoiceInput();
+            
+            let errorMessage = '';
+            switch(event.error) {
+                case 'not-allowed':
+                    errorMessage = 'マイクの使用が許可されていません。ブラウザの設定からマイクを許可してください。';
+                    break;
+                case 'no-speech':
+                    // 無音の場合は自動停止のみ（メッセージは表示しない）
+                    return;
+                case 'audio-capture':
+                    errorMessage = 'マイクが見つかりません。マイクが接続されているか確認してください。';
+                    break;
+                case 'network':
+                    errorMessage = 'ネットワークエラーが発生しました。';
+                    break;
+                default:
+                    errorMessage = '音声認識エラー: ' + event.error;
+            }
+            alert(errorMessage);
+        };
+        
+        voiceRecognition.onend = () => {
+            // 自動停止（1回の認識が終了したら）
+            if (isVoiceRecording) {
+                isVoiceRecording = false;
+                const micBtn = document.getElementById('micBtn');
+                if (micBtn) {
+                    micBtn.classList.remove('recording');
+                    micBtn.title = '音声入力';
+                }
+                
+                // 最後の結果を確実に反映
+                const messageInput = document.getElementById('messageInput');
+                if (messageInput) {
+                    // 値を正規化（余分な空白を削除）
+                    messageInput.value = messageInput.value.trim();
+                    voicePreviousValue = messageInput.value; // 値を更新
+                    // inputイベントを発火
+                    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        };
+        
+        return true;
+    }
+    
+    function toggleVoiceInput() {
+        try {
+            if (!voiceRecognition) {
+                if (!initVoiceRecognition()) {
+                    return;
+                }
+            }
+            
+            if (isVoiceRecording) {
+                stopVoiceInput();
+            } else {
+                startVoiceInput();
+            }
+        } catch (error) {
+            console.error('音声入力切替エラー:', error);
+            alert('音声入力の切り替えに失敗しました: ' + error.message);
+        }
+    }
+    
+    function startVoiceInput() {
+        try {
+            if (!voiceRecognition) {
+                if (!initVoiceRecognition()) {
+                    return;
+                }
+            }
+            
+            // 既存の値を保持するために、認識開始時に現在の値を取得
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                voicePreviousValue = messageInput.value || '';
+            }
+            
+            voiceRecognition.start();
+            isVoiceRecording = true;
+            
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.classList.add('recording');
+                micBtn.title = '録音中... (クリックで停止)';
+            }
+        } catch (error) {
+            console.error('音声認識開始エラー:', error);
+            isVoiceRecording = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.classList.remove('recording');
+                micBtn.title = '音声入力';
+            }
+            alert('音声認識の開始に失敗しました: ' + error.message);
+        }
+    }
+    
+    function stopVoiceInput() {
+        if (voiceRecognition) {
+            try {
+                voiceRecognition.stop();
+            } catch (error) {
+                console.error('音声認識停止エラー:', error);
+            }
+        }
+        isVoiceRecording = false;
+        
+        const micBtn = document.getElementById('micBtn');
+        if (micBtn) {
+            micBtn.classList.remove('recording');
+            micBtn.title = '音声入力';
+        }
+    }
+    

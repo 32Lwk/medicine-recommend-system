@@ -1,0 +1,1884 @@
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            height: 100dvh;
+            text-align: left;
+            -webkit-text-size-adjust: 100%;
+        }
+        .chat-container { 
+            width: 100%;
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: #fff; 
+            min-height: 100dvh;
+            height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            html, body {
+                height: -webkit-fill-available;
+            }
+        }
+        .chat-header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .chat-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        /* Language Selector Styles */
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        
+        .lang-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+        
+        .lang-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .lang-toggle.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 150px;
+            display: none;
+            z-index: 1001;
+        }
+        
+        .lang-dropdown.show {
+            display: block;
+        }
+        
+        .lang-option {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .lang-option:hover {
+            background: #f5f5f5;
+        }
+        
+        .lang-option.active {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .chat-messages { 
+            flex: 1;
+            overflow-y: auto; 
+            padding: 20px;
+            padding-bottom: 120px;
+            background: #f5f5f5;
+            text-align: left;
+            min-height: 0;
+            position: relative;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: block;
+            width: 100%;
+        }
+        .message.user {
+            text-align: right;
+        }
+        .message.bot {
+            text-align: left;
+            display: block !important;
+        }
+        .message.bot > div {
+            display: inline-block;
+            max-width: 85%;
+            vertical-align: top;
+        }
+        .message.bot > div.recommendation-result,
+        .message.bot > div[style*="background: #e3f2fd"] {
+            display: block;
+            max-width: 95%;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+            display: inline-block;
+            overflow-x: hidden;
+        }
+        .message.user .message-content {
+            background: #4CAF50;
+            color: white;
+        }
+        .message.bot .message-content {
+            background: white;
+            color: #000;
+            border: 1px solid #ddd;
+            text-align: left;
+            display: inline-block;
+            max-width: 85%;
+            width: auto;
+        }
+        .message.bot .message-content.manual-reply {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+        }
+        .message.bot .message-content.admin-request {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+            font-weight: bold;
+        }
+        
+        /* AI応答内の推奨結果セクションのテキスト色を明示的に設定 */
+        .message.bot .message-content .recommendation-result,
+        .message.bot .message-content .recommendation-result *,
+        .message.bot .message-content .recommendation-result p,
+        .message.bot .message-content .recommendation-result div,
+        .message.bot .message-content .recommendation-result span,
+        .message.bot .message-content .recommendation-result h1,
+        .message.bot .message-content .recommendation-result h2,
+        .message.bot .message-content .recommendation-result h3,
+        .message.bot .message-content .recommendation-result h4,
+        .message.bot .message-content .recommendation-result h5,
+        .message.bot .message-content .recommendation-result h6,
+        .message.bot .message-content .recommendation-result strong,
+        .message.bot .message-content .recommendation-result em,
+        .message.bot .message-content .recommendation-result li,
+        .message.bot .message-content .recommendation-result ul,
+        .message.bot .message-content .recommendation-result ol {
+            color: #000 !important;
+        }
+        .chat-input { 
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input, .chat-input textarea { 
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: inherit;
+            box-sizing: border-box;
+            width: 100%;
+            line-height: 1.4;
+        }
+        .chat-input input:focus, .chat-input textarea:focus {
+            border-color: #4CAF50;
+        }
+        .chat-input button { 
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover {
+            background: #45a049;
+        }
+        .mic-btn {
+            background: #3498db !important;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            padding: 0 !important;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .mic-btn:hover {
+            background: #2980b9 !important;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+        .mic-btn.recording {
+            background: #e74c3c !important;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .diagnosis-result {
+            background: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .medicine-list {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .caution-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 6px;
+            margin: 3px 0;
+            border-radius: 8px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            text-align: left;
+            text-indent: 0;
+            white-space: pre-line;
+            min-height: 24px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .advice-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            text-align: left;
+            text-indent: 0;
+            white-space: pre-line;
+            min-height: 50px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .typing-indicator {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .question-prompt {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-style: italic;
+            text-align: left;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        .caution-box strong,
+        .advice-box strong,
+        .diagnosis-result strong,
+        .medicine-list strong {
+            text-align: left;
+            display: inline;
+            margin-right: 8px;
+            margin-left: 0;
+            padding-left: 0;
+            text-indent: 0;
+        }
+        
+        .caution-box div,
+        .advice-box div,
+        .diagnosis-result div,
+        .medicine-list div {
+            text-align: left;
+            text-indent: 0;
+            margin-left: 0;
+            padding-left: 0;
+        }
+        
+        /* 注意点とアドバイスの内容を強制的に左寄りにする */
+        .caution-box p,
+        .advice-box p {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        
+        /* 最初の段落を特に強制的に左寄りにする */
+        .caution-box p:first-of-type,
+        .advice-box p:first-of-type {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+        
+        /* 注意点とアドバイスの内容コンテナを強制的に左寄りにする */
+        .caution-content,
+        .advice-content {
+            text-align: left !important;
+            text-indent: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            white-space: pre-line !important;
+            min-height: 30px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .manual-reply-indicator {
+            display: inline-block;
+            background: #ffc107;
+            color: #212529;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        /* 新しい推奨結果のスタイル */
+        .recommendation-result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            min-height: 100px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .recommendation-result h4 {
+            color: #000;
+            margin: 10px 0 5px 0;
+            font-size: 16px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+        
+        .medicine-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .medicine-item h5 {
+            color: #4CAF50;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+        
+        .medicine-item p {
+            margin: 5px 0;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #000;
+        }
+        
+        .medicine-item strong {
+            color: #000;
+        }
+        
+        .medicine-summary {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 13px;
+            min-height: 20px;
+            box-sizing: border-box;
+        }
+        
+        .medicine-summary em {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* 医薬品相談回答のスタイル */
+        .chat-response {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            min-height: 100px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .chat-response h4 {
+            color: #000;
+            margin: 10px 0 5px 0;
+            font-size: 16px;
+            border-bottom: 2px solid #17a2b8;
+            padding-bottom: 5px;
+        }
+        
+        .answer-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            color: #000;
+            box-sizing: border-box;
+        }
+        
+        .details-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 20px;
+            box-sizing: border-box;
+            color: #000;
+        }
+        
+        .details-section h5 {
+            color: #17a2b8;
+            margin: 8px 0 5px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 3px;
+        }
+        
+        .details-section p {
+            margin: 5px 0;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #000;
+        }
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #2e7d32;
+        }
+        
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        
+        .submit-attributes-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .submit-attributes-btn:hover {
+            background: #45a049;
+        }
+        
+        .answer-questions-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .answer-questions-btn:hover {
+            background: #45a049;
+        }
+        
+        /* フィードバックボタンスタイル */
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: flex-start;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .feedback-btn-positive {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            font-weight: 500;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .feedback-btn-positive:hover {
+            background: #45a049;
+        }
+        
+        .feedback-btn-positive:active {
+            background: #3d8b40;
+        }
+        
+        .feedback-btn-negative {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            font-weight: 500;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .feedback-btn-negative:hover {
+            background: #d32f2f;
+        }
+        
+        .feedback-btn-negative:active {
+            background: #c62828;
+        }
+        
+        .report-bug-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .report-bug-btn:hover {
+            background: #f57c00;
+        }
+        
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-body textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .modal-btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #45a049;
+        }
+        
+        .modal-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .modal-btn-link {
+            background: #007bff;
+            color: white;
+        }
+        
+        .modal-btn-link:hover {
+            background: #0056b3;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* 成功モーダル */
+        .success-modal {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .success-modal .modal-title {
+            color: #155724;
+        }
+        
+        /* デスクトップ版の基本スタイル（768px以上） */
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+        }
+        
+        .button-group button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            line-height: 1.2;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        .button-group button::before {
+            content: none !important;
+        }
+        
+        /* レスポンシブデザイン - スマホ・タブレット対応 */
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+                height: 100vh;
+                height: 100dvh; /* モバイルブラウザのアドレスバーを考慮 */
+                overflow: visible !important; /* 入力欄を表示 */
+            }
+            
+            /* スマホでの表示を強制 */
+            .chat-input {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 999 !important;
+                padding: 10px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+            
+            .chat-header {
+                padding: 8px 5px;
+            }
+            
+            .chat-header h1 {
+                font-size: 16px;
+            }
+            
+            .chat-header p {
+                font-size: 11px;
+                line-height: 1.2;
+                margin: 3px 0;
+            }
+            
+            .button-group {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 5px !important;
+                margin-bottom: 8px !important;
+                flex-wrap: wrap !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .button-group button {
+                flex: 1 !important;
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+                min-height: 36px !important;
+                min-width: calc(50% - 5px) !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 4px !important;
+                border-radius: 8px !important;
+                position: relative !important;
+                white-space: nowrap !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
+            
+            .button-group button::before {
+                content: none !important;
+            }
+            
+            .chat-messages {
+                padding: 8px;
+                max-height: calc(100vh - 200px);
+                min-height: calc(100vh - 200px);
+                overflow-y: auto;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            
+            .message.bot .message-content {
+                max-width: 90%;
+            }
+            
+            .chat-input {
+                padding: 10px calc(5vw + env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) calc(5vw + env(safe-area-inset-right)) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                background: white !important;
+                margin: 0 !important;
+                min-height: auto !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 999 !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .input-group {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 8px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+            
+            #user-input {
+                flex: 1;
+                font-size: 14px;
+                min-height: 40px;
+                padding: 10px 12px;
+                border: 2px solid #ddd;
+                border-radius: 20px;
+            }
+            
+            .mic-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+                flex-shrink: 0;
+            }
+            
+            button[type="submit"] {
+                width: 60px;
+                height: 32px;
+                padding: 4px 8px;
+                font-size: 11px;
+                flex-shrink: 0;
+            }
+            
+            .clear-btn,
+            .pharmacist-request-btn,
+            .answer-questions-btn {
+                padding: 8px;
+                font-size: 11px;
+                min-height: 28px;
+            }
+            
+            .recommendation-result,
+            .medicine-item,
+            .diagnosis-box {
+                max-width: 100% !important;
+                font-size: 13px;
+            }
+            
+            .medicine-header {
+                font-size: 14px;
+            }
+            
+            .medicine-info {
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* より小さな画面での表示を強制 */
+            .chat-input {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: sticky !important;
+                bottom: 0 !important;
+                z-index: 999 !important;
+                background: white !important;
+            }
+            
+            .button-group {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                flex-wrap: wrap !important;
+                overflow-x: auto !important;
+            }
+            
+            .chat-header {
+                padding: 15px 10px;
+            }
+            
+            .chat-header h1 {
+                font-size: clamp(12px, calc((100vw - 140px) / 10), 18px);
+                margin-top: 0;
+                position: absolute;
+                top: 30px;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                white-space: nowrap;
+                z-index: 999;
+                max-width: calc(100% - 140px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .chat-header p {
+                font-size: 11px;
+                line-height: 1.4;
+                white-space: normal;
+                text-align: center;
+                margin-top: 50px;
+                padding: 0 20px;
+            }
+            
+            .message-content {
+                max-width: 90%;
+                font-size: 13px;
+            }
+            
+            .chat-messages {
+                padding: 8px;
+            }
+            
+            /* ボタンエリアの改善 */
+            .button-group {
+                display: flex;
+                flex-direction: row;
+                gap: 4px;
+                margin-bottom: 10px;
+                flex-wrap: wrap !important;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto !important;
+            }
+            
+            .button-group button {
+                flex: 1 !important;
+                font-size: 11px !important;
+                padding: 6px 10px !important;
+                border-radius: 8px !important;
+                margin-left: 0 !important;
+                min-height: 32px !important;
+                min-width: calc(50% - 4px) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 3px !important;
+                position: relative !important;
+                white-space: nowrap !important;
+                line-height: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
+            
+            .button-group button::before {
+                content: none !important;
+            }
+            
+            /* チャット入力エリアの改善 */
+            .chat-input {
+                padding: 8px calc(5vw + env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) calc(5vw + env(safe-area-inset-right)) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 999 !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                background: white !important;
+            }
+            
+            .input-group {
+                display: flex !important;
+                align-items: center;
+                gap: 6px;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .mic-btn {
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+            
+            #messageInput {
+                flex: 1;
+                font-size: 14px;
+                padding: 10px 12px;
+                min-height: 35px;
+                max-height: 80px;
+            }
+            
+            .chat-input button[type="submit"] {
+                padding: 10px 16px;
+                font-size: 14px;
+                border-radius: 18px;
+                flex-shrink: 0;
+            }
+        }
+        
+        /* 横向き（ランドスケープ）モード対応 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .chat-header {
+                padding: 10px;
+            }
+            
+            .chat-header h1 {
+                font-size: 14px;
+            }
+            
+            .chat-input {
+                padding: 8px;
+            }
+        }
+        
+        /* スピナーアニメーション */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 処理中メッセージのスタイル */
+        .processing-message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .processing-message .message-content {
+            border-left: 4px solid #1976d2;
+        }
+        
+        /* 無効化された送信ボタンのスタイル */
+        button[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            background: #6c757d !important;
+        }
+        
+        /* 無効化された入力フィールドのスタイル */
+        #messageInput:disabled {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* スピナーのスタイル */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1976d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 情報ボタンスタイル */
+        .info-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .info-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .info-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: none;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .modal-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .modal-nav {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .nav-button.active {
+            background: #4CAF50;
+        }
+
+        .nav-button.back {
+            background: #17a2b8;
+        }
+
+        /* コンテンツスタイル */
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h4 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+        }
+
+        /* 医薬品相談先のURL折り返し対応 */
+        .info-section a,
+        .contact-info a {
+            word-break: break-all;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        @media (max-width: 768px) {
+            .info-section a,
+            .contact-info a {
+                word-break: break-all;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                display: inline-block;
+                max-width: 100%;
+            }
+        }
+        
+        .contact-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .emergency-box {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        /* 危機対応相談先カードのスタイル */
+        .crisis-support-card {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid #2196f3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+            width: 100%;
+            min-height: 200px;
+            box-sizing: border-box;
+        }
+
+        .crisis-support-title {
+            color: #1565c0;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .crisis-support-message {
+            color: #1976d2;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .resource-item {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .resource-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .resource-org {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .resource-contact {
+            color: #1976d2;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .resource-description {
+            color: #34495e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .emergency-message {
+            background: #1976d2;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .resource-link {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+
+        /* 一覧ページスタイル */
+        .list-page {
+            padding: 20px;
+        }
+        
+        .list-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .list-item:hover {
+            background: #e9ecef;
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .list-item-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .list-item-content {
+            flex: 1;
+        }
+        
+        .list-item-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        
+        .list-item-description {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+        
+        .list-item-arrow {
+            font-size: 18px;
+            color: #4CAF50;
+            transition: transform 0.3s ease;
+        }
+        
+        .list-item:hover .list-item-arrow {
+            transform: translateX(5px);
+        }
+        
+        /* 詳細ページスタイル */
+        .detail-page {
+            display: none;
+        }
+        
+        .detail-page.active {
+            display: block;
+        }
+        
+        /* 戻るボタン */
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                max-height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 15px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .list-page {
+                padding: 15px;
+            }
+            
+            .list-item {
+                padding: 12px 15px;
+                margin-bottom: 8px;
+            }
+            
+            .list-item-title {
+                font-size: 15px;
+            }
+            
+            .list-item-description {
+                font-size: 11px;
+            }
+            
+            .list-item-icon {
+                font-size: 20px;
+                margin-right: 12px;
+            }
+            
+            .back-button {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            /* スマホでの言語選択アイコンの位置調整 */
+            .language-selector {
+                top: 5px;
+                left: 5px;
+                z-index: 1000;
+            }
+            
+            .lang-toggle {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 50px;
+            }
+            
+            /* titleをlanguage-selectorとinfo-selectorの間に配置 */
+            .chat-header h1 {
+                margin-top: 0;
+                font-size: clamp(14px, calc((100vw - 140px) / 9), 20px);
+                position: absolute;
+                top: 30px;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                white-space: nowrap;
+                z-index: 999;
+                max-width: calc(100% - 140px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .chat-header p {
+                margin-top: 50px;
+                padding: 0 30px;
+                text-align: center;
+                white-space: normal;
+                line-height: 1.4;
+            }
+            
+            .info-selector {
+                top: 10px;
+                right: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 98%;
+                margin: 2% auto;
+                max-height: 95vh;
+            }
+            
+            .list-item {
+                padding: 10px 12px;
+                margin-bottom: 6px;
+            }
+            
+            .list-item-title {
+                font-size: 14px;
+            }
+            
+            .list-item-description {
+                font-size: 10px;
+            }
+            
+            /* より小さなスマホでの調整 */
+            .language-selector {
+                top: 3px;
+                left: 3px;
+            }
+            
+            .lang-toggle {
+                padding: 5px 8px;
+                font-size: 11px;
+                min-width: 45px;
+            }
+            
+            .chat-header h1 {
+                margin-top: 0;
+                font-size: clamp(11px, calc((100vw - 113px) / 11), 16px);
+                position: absolute;
+                top: 23px;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                white-space: nowrap;
+                z-index: 999;
+                max-width: calc(100% - 113px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .chat-header p {
+                font-size: 11px;
+                margin-top: 45px;
+                padding: 0 20px;
+                text-align: center;
+                white-space: normal;
+                line-height: 1.4;
+            }
+            
+            .info-selector {
+                top: 3px;
+                right: 3px;
+            }
+        }
+
+        /* ===== 入力モーダルの可読性改善（左右余白の拡大） ===== */
+        #userInfoModal .modal-content,
+        #attributeModal .modal-content {
+            padding: 0 0 24px 0; /* ヘッダーをモーダル幅いっぱいに、上下のみ余白 */
+            max-height: 80vh; /* 高さ制限を設定して下部余白を抑制 */
+            overflow-y: auto; /* 内容が多い場合はスクロール可能 */
+        }
+
+        /* コンテンツ本体に内側余白を付与（ヘッダーは余白なしでフル幅） */
+        #userInfoModal form,
+        #attributeModal form {
+            padding: 24px 28px;
+        }
+
+        /* 入力要素の内側余白と角丸を強化 */
+        #userInfoModal .form-group input,
+        #userInfoModal .form-group select,
+        #userInfoModal .form-group textarea,
+        #attributeModal .form-group input,
+        #attributeModal .form-group select,
+        #attributeModal .form-group textarea {
+            padding-left: 16px;
+            padding-right: 16px;
+            border-radius: 10px;
+        }
+
+        /* モーダルヘッダーの緑色背景を大きく（アプリ概要モーダルと同様のスタイル） */
+        #userInfoModal .modal-header,
+        #attributeModal .modal-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0; /* デフォルトのmarginをリセット */
+            border-radius: 15px 15px 0 0; /* 上部の角丸を維持 */
+            /* スクロールバーによる角の角ばりを防ぐ */
+            position: relative;
+            z-index: 1;
+        }
+
+        #userInfoModal .modal-header h3,
+        #attributeModal .modal-header h3 {
+            margin: 0;
+            font-size: 20px; /* アプリ概要モーダルと同じサイズ */
+            font-weight: bold; /* アプリ概要モーダルと同じウェイト */
+        }
+
+        /* モバイル時の余白最適化（はみ出し防止） */
+        @media (max-width: 480px) {
+            #userInfoModal .modal-content,
+            #attributeModal .modal-content {
+                width: 95%;
+                padding: 14px 16px; /* 端末幅が狭いときは少し控えめに */
+                max-height: 85vh; /* モバイルでは少し高めに設定 */
+            }
+            
+            #userInfoModal .modal-header,
+            #attributeModal .modal-header {
+                padding: 15px; /* モバイルでは少し控えめに */
+            }
+        }

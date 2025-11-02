@@ -6,7 +6,7 @@
 
 ## 🚀 主要機能
 
-### ✨ ハイブリッド推奨システム（2025年11月1日更新）
+### ✨ ハイブリッド推奨システム（2025年11月2日更新）
 - **ルールベース推奨**: 全医薬品種類に対して透明性の高いルールベースアルゴリズムを適用（SYMPTOM_DICTIONARYから動的判定）
 - **AI推奨**: ChatGPTによる柔軟なフォールバック機能（confidence < 0.4 の場合のみ）
 - **自動判定**: 症状から最適な推奨方式を自動選択
@@ -41,7 +41,7 @@
 
 詳細なセキュリティ実装については [SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md) および**セキュリティ機能詳細**セクションを参照してください。
 
-### 💬 インテリジェント質問機能（2025年11月1日更新）
+### 💬 インテリジェント質問機能（2025年11月2日更新）
 - **不足情報の自動検出**: 年齢・性別・妊娠状態などの重要情報が不足している場合に質問
 - **優先度別質問**: Critical → Important → Optional の順で段階的に質問
 - **曖昧症状の質問生成**: 腹痛、頭痛、咳などの曖昧な症状に対して具体的な質問を自動生成
@@ -80,6 +80,15 @@
   - **セッション管理**: 自動セッション管理
 - **コンパクトなUI**: 4つのボタンを1行に配置、チャット画面を最大化
 - **中央寄せレイアウト**: チャット入力欄のバランス調整
+
+### 🎨 UI/UX改善（2025年11月2日更新）
+- **リソース分割**: CSS/JavaScriptを外部ファイルに分割し、初期表示速度を改善
+  - クリティカルCSSのみインラインに保持
+  - 非クリティカルリソースの非同期読み込み
+- **クイックスタートガイド**: 初回アクセス時に使用方法を表示（sessionStorageで制御）
+- **使い方モーダル**: ステップ図付きの使い方説明を追加
+- **レスポンシブ改善**: モバイルでのパディング最適化とキーボード対応
+- **URL折り返し対応**: 長いURLが適切に折り返されるよう改善
 
 ### 🌍 多言語対応
 - **自動言語検出**: 日本語・英語・中国語・韓国語の自動検出
@@ -1199,7 +1208,7 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `debug_logger.py`: ログ管理モジュール
 
 ### データファイル
-- `otc_medicine_data.csv`: 市販薬データベース（283件）
+- `otc_medicine_data.csv`: 市販薬データベース（7283件）
 - `summarized_efficacy_data.csv`: 効能要約データ
 - `medicine_side_effects.csv`: 副作用データ
 - `medicine_interactions.csv`: 相互作用データ
@@ -1233,6 +1242,10 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `docs/drowio/enhanced_sequence_diagram.drawio`: シーケンス図
 - `docs/drowio/enhanced_er_diagram.drawio`: ERダイアグラム
 - `docs/drowio/enhanced_flowchart.drawio`: フローチャート
+
+### 静的ファイル
+- `static/css/main.css`: メインCSSスタイルシート
+- `static/js/main.js`: メインJavaScriptファイル
 
 ### ログ
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
@@ -1442,6 +1455,7 @@ POST /api/admin_mode      # 管理者モード切り替え
 - **データベース**: PostgreSQL（フィードバック永続化）
 - **データ処理**: Pandas 2.2.3, NumPy
 - **フロントエンド**: HTML5, CSS3, JavaScript（ES6+）
+  - **リソース最適化**: CSS/JavaScriptの外部分割、クリティカルパス最適化
 - **セッション管理**: Flask Session（自動復旧機能）
 - **ログ**: JSONL形式（構造化ログ）
 - **監視機能**: アクセス分析、パフォーマンス監視、セキュリティ監視
