@@ -2692,11 +2692,43 @@ def api_logs():
         # エラーの場合も空配列を返す
         return jsonify([])
 
-@app.route('/api/sessions')
+@app.route('/api/sessions', methods=['GET', 'POST'])
 def api_sessions():
-    """セッション情報を返す"""
+    """セッション情報を返す（GET）またはユーザー属性を保存（POST）"""
     try:
         sid = session.get('_id', 'unknown')
+        
+        # POSTリクエストの場合：ユーザー属性を保存
+        if request.method == 'POST':
+            data = request.get_json()
+            user_attributes = data.get('user_attributes', {})
+            
+            if not sid or sid == 'unknown':
+                sid = str(int(time.time() * 1000000))
+                session['_id'] = sid
+                session['username'] = f'ユーザー{get_next_user_number()}'
+            
+            # セッションとALL_SESSIONSの両方にuser_attributesを保存
+            session['user_attributes'] = user_attributes
+            session.modified = True
+            
+            if sid not in ALL_SESSIONS:
+                ALL_SESSIONS[sid] = {
+                    'session_id': sid,
+                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                    'messages': [],
+                    'session_active': True,
+                    'last_activity': time.time(),
+                    'user_attributes': user_attributes
+                }
+            else:
+                ALL_SESSIONS[sid]['user_attributes'] = user_attributes
+                ALL_SESSIONS[sid]['last_activity'] = time.time()
+            
+            logger.info(f"💾 ユーザー属性を保存: {sid}")
+            return jsonify({'status': 'ok', 'message': 'ユーザー情報を保存しました'})
+        
+        # GETリクエストの場合：セッション情報を返す
         logger.info(f"🔍 /api/sessions called - Session ID: {sid}")
         logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
         
