@@ -16,6 +16,7 @@ build/
 *.egg-info/
 
 # iOS
+ios/
 xcuserdata/
 build/
 DerivedData/
@@ -30,3 +31,7 @@ DerivedData/
 *.dSYM
 user_interface_state.xcuserstate
 *.xcuserstate
+
+# Logs
+log/
+*.jsonl
