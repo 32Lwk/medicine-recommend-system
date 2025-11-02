@@ -41,13 +41,13 @@ def parse_user_agent(user_agent: str) -> Dict:
         'Opera': r'OPR/(\d+\.\d+)'
     }
     
-    # OS検出パターン
+    # OS検出パターン（より具体的なパターンを先に配置）
     os_patterns = {
+        'Android': r'Android (\d+\.\d+)',
+        'iOS': r'iPhone OS (\d+_\d+)',
         'Windows': r'Windows NT (\d+\.\d+)',
         'macOS': r'Mac OS X (\d+[._]\d+)',
-        'Linux': r'Linux',
-        'Android': r'Android (\d+\.\d+)',
-        'iOS': r'iPhone OS (\d+_\d+)'
+        'Linux': r'Linux'
     }
     
     # デバイス種類の判定
@@ -92,8 +92,15 @@ def parse_user_agent(user_agent: str) -> Dict:
                 os_version = f"Android {match.group(1)}"
             elif os_type == 'iOS':
                 os_version = f"iOS {match.group(1).replace('_', '.')}"
+            elif os_type == 'Linux':
+                # Linuxパターンにはキャプチャグループがない
+                os_version = 'Linux'
             else:
-                os_version = match.group(1)
+                # キャプチャグループが存在する場合のみgroup(1)を使用
+                if match.groups():
+                    os_version = match.group(1)
+                else:
+                    os_version = os_type
             break
     
     return {
