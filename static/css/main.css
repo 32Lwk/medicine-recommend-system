@@ -867,21 +867,49 @@
         
         /* フィードバックモーダルの余白調整 */
         #feedbackModal .modal-content {
-            padding: 15px;
+            padding: 0 0 20px 0; /* ヘッダーをモーダル幅いっぱいに、下のみ余白 */
             margin: 10% auto;
+            border-radius: 10px; /* 全体の角丸 */
+            overflow: hidden; /* ヘッダーの角丸を適用 */
         }
         
         #feedbackModal .modal-header {
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0; /* デフォルトのmarginをリセット */
+            border-radius: 10px 10px 0 0; /* 上部の角丸 */
+            position: relative;
+            z-index: 1;
+        }
+        
+        #feedbackModal .modal-header .modal-title {
+            margin: 0;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        #feedbackModal .modal-header .close {
+            color: white;
+            font-size: 28px;
+            line-height: 1;
+        }
+        
+        #feedbackModal .modal-header .close:hover {
+            color: rgba(255, 255, 255, 0.8);
         }
         
         #feedbackModal .modal-body {
-            margin-bottom: 12px;
+            padding: 15px 20px;
+            margin-bottom: 0;
         }
         
         #feedbackModal .modal-body p {
-            margin: 0 0 8px 0;
+            margin: 0 0 10px 0;
             font-size: 14px;
         }
         
@@ -891,8 +919,8 @@
         }
         
         #feedbackModal .modal-footer {
+            padding: 10px 20px 0;
             margin-top: 0;
-            padding-top: 8px;
             gap: 8px;
         }
         
@@ -1181,7 +1209,7 @@
                 padding: 15px 10px 8px;
             }
             
-            .chat-header h1 {
+            #appTitle {
                 font-size: clamp(12px, calc((100vw - 140px) / 10), 18px);
                 margin-top: 0;
                 position: absolute;
@@ -1193,15 +1221,19 @@
                 max-width: calc(100% - 140px);
                 overflow: hidden;
                 text-overflow: ellipsis;
+                line-height: 1.2;
             }
             
-            .chat-header p {
+            #appDescription {
                 font-size: 11px;
                 line-height: 1.4;
                 white-space: normal;
                 text-align: center;
-                margin-top: 40px;
+                margin-top: 47px;
                 padding: 0 20px;
+                position: relative;
+                z-index: 998;
+                display: block;
             }
             
             .message-content {
@@ -1759,22 +1791,20 @@
             
             /* フィードバックモーダルのスマホ向け調整 */
             #feedbackModal .modal-content {
-                padding: 12px;
+                padding: 0 0 15px 0;
                 margin: 8% auto;
             }
             
             #feedbackModal .modal-header {
-                padding: 10px;
-                margin-bottom: 10px;
+                padding: 12px 15px;
             }
             
             #feedbackModal .modal-body {
-                padding: 0;
-                margin-bottom: 10px;
+                padding: 12px 15px;
             }
             
             #feedbackModal .modal-footer {
-                padding-top: 6px;
+                padding: 8px 15px 0;
             }
             
             /* 成功モーダルのスマホ向け調整 */
@@ -1834,7 +1864,7 @@
             }
             
             /* titleをlanguage-selectorとinfo-selectorの間に配置 */
-            .chat-header h1 {
+            #appTitle {
                 margin-top: 0;
                 font-size: clamp(14px, calc((100vw - 140px) / 9), 20px);
                 position: absolute;
@@ -1846,14 +1876,19 @@
                 max-width: calc(100% - 140px);
                 overflow: hidden;
                 text-overflow: ellipsis;
+                line-height: 1.2;
             }
             
-            .chat-header p {
-                margin-top: 55px;
+            #appDescription {
+                font-size: 11px;
+                margin-top: 50px;
                 padding: 0 30px;
                 text-align: center;
                 white-space: normal;
                 line-height: 1.4;
+                position: relative;
+                z-index: 998;
+                display: block;
             }
             
             .info-selector {
@@ -1871,21 +1906,24 @@
             
             /* フィードバックモーダルの小さなスマホ向け調整 */
             #feedbackModal .modal-content {
-                padding: 10px;
+                padding: 0 0 12px 0;
                 margin: 5% auto;
             }
             
             #feedbackModal .modal-header {
-                padding: 8px;
-                margin-bottom: 8px;
+                padding: 10px 12px;
+            }
+            
+            #feedbackModal .modal-header .modal-title {
+                font-size: 16px;
             }
             
             #feedbackModal .modal-body {
-                margin-bottom: 8px;
+                padding: 10px 12px;
             }
             
             #feedbackModal .modal-body p {
-                margin: 0 0 6px 0;
+                margin: 0 0 8px 0;
                 font-size: 13px;
             }
             
@@ -1896,6 +1934,7 @@
             }
             
             #feedbackModal .modal-footer {
+                padding: 6px 12px 0;
                 flex-wrap: wrap;
                 gap: 6px;
             }
@@ -1952,7 +1991,7 @@
                 min-width: 45px;
             }
             
-            .chat-header h1 {
+            #appTitle {
                 margin-top: 0;
                 font-size: clamp(11px, calc((100vw - 113px) / 11), 16px);
                 position: absolute;
@@ -1964,15 +2003,19 @@
                 max-width: calc(100% - 113px);
                 overflow: hidden;
                 text-overflow: ellipsis;
+                line-height: 1.2;
             }
             
-            .chat-header p {
+            #appDescription {
                 font-size: 11px;
-                margin-top: 52px;
+                margin-top: 42px;
                 padding: 0 20px;
                 text-align: center;
                 white-space: normal;
                 line-height: 1.4;
+                position: relative;
+                z-index: 998;
+                display: block;
             }
             
             .info-selector {
