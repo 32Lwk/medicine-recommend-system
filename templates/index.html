@@ -124,21 +124,6 @@
                 <span id="initial-greeting"></span><br>
                 <span id="initial-examples"></span>
             </div>
-            <!-- クイックスタートガイド -->
-            <div id="quick-start-guide" style="display: none; margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 10px; border-left: 4px solid #2196F3;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0; color: #1976D2; font-size: 16px;">📚 クイックスタートガイド</h4>
-                    <button onclick="closeQuickStartGuide()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">&times;</button>
-                </div>
-                <div style="color: #333; font-size: 14px; line-height: 1.6;">
-                    <p style="margin: 8px 0;"><strong>ステップ1:</strong> 症状を入力</p>
-                    <p style="margin: 8px 0;">「頭が痛い」「咳が止まらない」など、感じている症状をテキストまたは🎤ボタンで音声入力してください。</p>
-                    <p style="margin: 8px 0;"><strong>ステップ2:</strong> AI回答を確認</p>
-                    <p style="margin: 8px 0;">AIが症状に適した市販薬の候補と注意点を提案します。詳細を確認してください。</p>
-                    <p style="margin: 8px 0;"><strong>ステップ3:</strong> 薬剤師要請（必要に応じて）</p>
-                    <p style="margin: 8px 0;">さらに詳しく知りたい場合は、👨‍⚕️ボタンで薬剤師に直接相談できます。</p>
-                </div>
-            </div>
         </div>
         
         {% if false %}
@@ -547,6 +532,15 @@
     </div>
 </div>
 
+<!-- オンボーディングモーダル -->
+<div id="onboarding-overlay" class="onboarding-overlay hidden" aria-hidden="true">
+    <div class="onboarding-container" role="dialog" aria-modal="true" tabindex="-1">
+        <button type="button" class="onboarding-skip" id="onboarding-skip-btn" onclick="skipOnboarding()" aria-label="スキップして始める">スキップ</button>
+        <div id="onboarding-slides"></div>
+        <div id="slide-indicator" class="slide-indicator" aria-label="オンボーディングの進行状況"></div>
+    </div>
+</div>
+
 
 </body>
-</html> 
+</html>

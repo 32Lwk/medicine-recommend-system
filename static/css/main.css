@@ -1544,6 +1544,18 @@
             color: #333;
             margin-top: 25px;
             margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .info-section h5 {
+            color: #4CAF50;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+            font-weight: 600;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
         }
 
         .info-section ul {
@@ -1553,6 +1565,17 @@
 
         .info-section li {
             margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .info-section p {
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .info-section strong {
+            color: #2e7d32;
+            font-weight: 600;
         }
 
         /* 医薬品相談先のURL折り返し対応 */
@@ -1583,10 +1606,34 @@
 
         .warning-box {
             background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            border: 2px solid #ffc107;
+            border-left: 5px solid #ff9800;
             border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        }
+
+        .warning-box h4 {
+            color: #f57c00;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .warning-box h5 {
+            color: #e65100;
+            border-left-color: #ff9800;
+            margin-top: 15px;
+        }
+
+        .warning-box p {
+            color: #856404;
+            margin-bottom: 12px;
+        }
+
+        .warning-box strong {
+            color: #e65100;
         }
 
         .emergency-box {
@@ -2087,3 +2134,409 @@
                 padding: 15px; /* モバイルでは少し控えめに */
             }
         }
+
+/* =============================== */
+/* Onboarding Overlay Styles       */
+/* =============================== */
+
+.hidden {
+    display: none !important;
+}
+
+body.onboarding-open {
+    overflow: hidden;
+}
+
+.onboarding-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 11000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    pointer-events: none; /* オーバーレイ自体はクリックを透過 */
+}
+
+/* オーバーレイ内のコンテナはクリック可能に */
+.onboarding-container {
+    pointer-events: auto;
+}
+
+/* ステップ1（症状入力画面）では入力エリアの部分を透過 */
+.onboarding-overlay[data-step="1"] {
+    background: 
+        radial-gradient(
+            ellipse 600px 140px at 50% calc(100% - 85px),
+            transparent 0%,
+            transparent 42%,
+            rgba(255, 255, 255, 0.15) 47%,
+            rgba(255, 255, 255, 0.5) 63%
+        );
+}
+
+/* ステップ0では言語選択ボタンは操作可能 */
+body.onboarding-open[data-onboarding-step="0"] .language-selector,
+body.onboarding-open[data-onboarding-step="0"] .lang-toggle {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+/* ステップ1では入力エリアと関連ボタンは操作可能 */
+body.onboarding-open[data-onboarding-step="1"] .input-group,
+body.onboarding-open[data-onboarding-step="1"] #micBtn,
+body.onboarding-open[data-onboarding-step="1"] #messageInput,
+body.onboarding-open[data-onboarding-step="1"] #chatForm button[type="submit"],
+body.onboarding-open[data-onboarding-step="1"] #chatForm {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+body.onboarding-open[data-onboarding-step="1"] #messageInput {
+    cursor: text !important;
+}
+
+/* オンボーディング中の要素強調 */
+.onboarding-highlight {
+    position: relative;
+    z-index: 11001 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5), 
+                0 0 20px 8px rgba(76, 175, 80, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    animation: onboardingPulse 2s ease-in-out infinite;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.onboarding-highlight:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.7), 
+                0 0 24px 10px rgba(76, 175, 80, 0.4),
+                0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+@keyframes onboardingPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5), 
+                    0 0 20px 8px rgba(76, 175, 80, 0.3),
+                    0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(76, 175, 80, 0.6), 
+                    0 0 24px 10px rgba(76, 175, 80, 0.4),
+                    0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* ℹ️ボタンの強調を他のボタンと同様にする */
+.info-selector .onboarding-highlight,
+.info-toggle.onboarding-highlight {
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5), 
+                0 0 20px 8px rgba(76, 175, 80, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 50% !important;
+    animation: onboardingPulse 2s ease-in-out infinite;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.info-selector .onboarding-highlight:hover,
+.info-toggle.onboarding-highlight:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.7), 
+                0 0 24px 10px rgba(76, 175, 80, 0.4),
+                0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 言語選択ボタンの強調を他のボタンと同様にする */
+.language-selector .onboarding-highlight,
+.lang-toggle.onboarding-highlight {
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5), 
+                0 0 20px 8px rgba(76, 175, 80, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 20px !important;
+    animation: onboardingPulse 2s ease-in-out infinite;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.language-selector .onboarding-highlight:hover,
+.lang-toggle.onboarding-highlight:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.7), 
+                0 0 24px 10px rgba(76, 175, 80, 0.4),
+                0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* オンボーディング時にinfo-selectorのz-indexを上げる（位置は維持） */
+body.onboarding-open .info-selector {
+    z-index: 11002 !important;
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+}
+
+/* オンボーディング時にinfo-selectorが強調対象の場合 */
+.info-selector.onboarding-highlight-parent {
+    z-index: 11002 !important;
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+}
+
+.info-selector.onboarding-highlight-parent .info-toggle.onboarding-highlight {
+    position: relative;
+    z-index: 11003 !important;
+}
+
+/* オンボーディング時にlanguage-selectorのz-indexを上げる（位置は維持） */
+body.onboarding-open .language-selector {
+    z-index: 11002 !important;
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+}
+
+/* オンボーディング時にlanguage-selectorが強調対象の場合 */
+.language-selector.onboarding-highlight-parent {
+    z-index: 11002 !important;
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+}
+
+.language-selector.onboarding-highlight-parent .lang-toggle.onboarding-highlight {
+    position: relative;
+    z-index: 11003 !important;
+}
+
+.onboarding-container {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 480px;
+    width: 90%;
+    animation: fadeInUp 0.4s ease;
+    position: relative;
+}
+
+.onboarding-visual {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.onboarding-title {
+    font-size: 1.6rem;
+    margin: 0 0 0.5rem;
+    color: #2c3e50;
+}
+
+.onboarding-subtitle {
+    font-size: 1rem;
+    color: #4f6b95;
+    margin: 0 0 1rem;
+}
+
+.onboarding-desc {
+    text-align: left;
+}
+
+.onboarding-desc p {
+    margin: 0 0 0.75rem;
+    color: #424242;
+    line-height: 1.6;
+}
+
+.onboarding-desc ul {
+    margin: 0 0 1rem 1.25rem;
+    padding: 0;
+    color: #424242;
+    line-height: 1.6;
+}
+
+.onboarding-slide {
+    display: none;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.onboarding-slide.active {
+    display: block;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.onboarding-btn {
+    background: #4CAF50;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.6rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.onboarding-btn:hover,
+.onboarding-btn:focus {
+    background: #43a047;
+    transform: translateY(-1px);
+}
+
+.onboarding-btn:focus-visible,
+.onboarding-skip:focus-visible,
+.slide-indicator button:focus-visible {
+    outline: 2px solid #2196F3;
+    outline-offset: 2px;
+}
+
+.onboarding-btn:disabled {
+    background: #9e9e9e;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.onboarding-btn-primary {
+    width: 100%;
+}
+
+.onboarding-skip {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    color: #4f6b95;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0.25rem 0.5rem;
+}
+
+.onboarding-skip:hover,
+.onboarding-skip:focus {
+    color: #388e3c;
+}
+
+.slide-indicator {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.slide-indicator button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    margin: 0 4px;
+    color: #bdbdbd;
+    cursor: pointer;
+}
+
+.slide-indicator button.active,
+.slide-indicator button[aria-current="step"] {
+    color: #4CAF50;
+    cursor: default;
+}
+
+.onboarding-details {
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.onboarding-details summary {
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.onboarding-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.onboarding-details summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 0.5rem;
+    transition: transform 0.2s ease;
+    color: #4CAF50;
+}
+
+.onboarding-details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.onboarding-details ul {
+    margin: 0.75rem 0 0 1.25rem;
+}
+
+.onboarding-details-content {
+    margin-top: 0.75rem;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.onboarding-details-content .info-section {
+    margin-bottom: 1.5rem;
+}
+
+.onboarding-details-content ul,
+.onboarding-details-content ol {
+    margin-left: 1.25rem;
+}
+
+.onboarding-agree {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: #424242;
+    margin-top: 1rem;
+}
+
+.onboarding-agree input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #4CAF50;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .onboarding-container {
+        padding: 1.5rem;
+        max-width: 95%;
+    }
+
+    .onboarding-title {
+        font-size: 1.4rem;
+    }
+
+    .onboarding-btn {
+        width: 100%;
+    }
+
+    .onboarding-skip {
+        font-size: 0.85rem;
+    }
+}
