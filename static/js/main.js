@@ -1,7 +1,7 @@
     // 多言語翻訳データ
     const translations = {
         ja: {
-            title: "💊 チャット型医薬品相談ツール",
+            title: "💊 チャット型医薬品相談ツール(β版)",
             description: "症状を教えてください。適切な市販薬と注意点をご案内します。",
             userInfoBtn: "👤 ユーザー情報登録",
             clearBtn: "🗑️ 履歴クリア",
@@ -65,18 +65,96 @@
             
             // モーダル関連
             infoButton: "アプリ情報",
-            appInfo: "アプリ概要",
+            appInfo: "アプリ概要・運営者情報",
             appInfoDesc: "アプリの機能と特徴について",
             disclaimer: "免責事項・利用規約",
             disclaimerDesc: "利用規約と免責事項について",
             privacy: "プライバシーポリシー",
             privacyDesc: "個人情報の取り扱いについて",
-            usage: "使い方",
+            usage: "使い方・FAQ",
             usageDesc: "アプリの使い方と安全に利用するための注意",
             consultation: "医薬品相談先",
             consultationDesc: "公的機関の相談窓口情報",
+            faq: "よくある質問（FAQ）",
+            faqDesc: "よくある質問と回答",
             back: "← 戻る",
-            close: "×"
+            close: "×",
+            skipOnboarding: "スキップして始める",
+            onboarding: [
+                {
+                    title: "チャット型医薬品相談ツール(β版)",
+                    visual: "🤝💊",
+                    visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
+                    body: [
+                        "「チャット型医薬品相談ツール」へようこそ。",
+                        "症状を入力または話すだけで、AIがあなたに合った市販薬候補・成分・効能・受診の目安をまとめてお伝えします。"
+                    ],
+                    buttonText: "次へ",
+                    buttonAria: "次のステップへ進む"
+                },
+                {
+                    title: "🩺 ステップ1：今の症状を伝える",
+                    visual: "💬🎤",
+                    visualAlt: "症状入力のUIを表すアイコン",
+                    body: [
+                        "「頭が痛い」「咳が止まらない」など、感じている症状を自由に入力してください。",
+                        "テキストと音声入力に対応し、左上のボタンから英語・中国語・韓国語へ切り替えられます。",
+                        "※返信の自動翻訳機能はβ版のため現在停止しています。"
+                    ],
+                    buttonText: "次へ",
+                    buttonAria: "ステップ2へ進む"
+                },
+                {
+                    title: "👤 ステップ2：あなたに合わせた回答を",
+                    visual: "🧬✨",
+                    visualAlt: "パーソナライズされた回答を表すアイコン",
+                    body: [
+                        "「ユーザー情報登録」でアレルギーや服薬歴を登録すると、AIがあなたの体質や状況を考慮した回答を行います。",
+                        "状況確認のために、追加で質問をさせていただくことがあります。"
+                    ],
+                    buttonText: "次へ",
+                    buttonAria: "ステップ3へ進む"
+                },
+                {
+                    title: "👩‍⚕️ ステップ3：専門家とつながる安心を",
+                    visual: "📞👨‍⚕️",
+                    visualAlt: "薬剤師とつながることを表すアイコン",
+                    body: [
+                        "AIの回答に迷ったら「薬剤師要請」から専門家に直接相談できます。",
+                        "右上の ℹ️ ボタンから使い方ガイドやFAQをいつでも確認できます。"
+                    ],
+                    buttonText: "次へ",
+                    buttonAria: "最終ステップへ進む"
+                },
+                {
+                    title: "⚠️ ご利用前の大切なお知らせ",
+                    visual: "⚠️",
+                    visualAlt: "注意アイコン",
+                    body: [
+                        "利用を開始する前に、以下の注意事項をご確認ください。"
+                    ],
+                    bullets: [
+                        "本ツールは医療行為（診断）を行うものではありません。",
+                        "市販薬の選択をサポートする情報提供ツールです。",
+                        "重い症状や判断に迷う場合は、必ず医療機関を受診してください。"
+                    ],
+                    details: [
+                        {
+                            summary: "📄 免責事項・利用規約を表示",
+                            description: "詳しい利用条件はこちらをご確認ください。",
+                            policyKey: 'disclaimer'
+                        },
+                        {
+                            summary: "🔒 プライバシーポリシーを表示",
+                            description: "個人情報の取り扱いについてはこちらをご確認ください。",
+                            policyKey: 'privacy'
+                        }
+                    ],
+                    checkboxLabel: "上記に同意する",
+                    startButtonText: "上記に同意して利用を開始",
+                    startButtonAria: "同意してチャットを開始する"
+                }
+            ]
         },
         en: {
             title: "💊 Chat Pharmaceutical Consultation Tool",
@@ -153,8 +231,85 @@
             usageDesc: "App usage and safety precautions",
             consultation: "Consultation Info",
             consultationDesc: "Public institution consultation information",
+            faq: "FAQ",
+            faqDesc: "Frequently asked questions and answers",
             back: "← Back",
-            close: "×"
+            close: "×",
+            skipOnboarding: "Skip onboarding",
+            onboarding: [
+                {
+                    title: "Welcome to the Chat-based OTC Assistant (Beta)",
+                    visual: "🤝💊",
+                    visualAlt: "Illustration of a pharmacist supporting via smartphone",
+                    body: [
+                        "Welcome to the Chat-based Pharmaceutical Consultation Tool.",
+                        "Simply type or speak about how you feel and the AI summarizes suitable OTC options, ingredients, effects, and guidance on when to visit a doctor."
+                    ],
+                    buttonText: "Next",
+                    buttonAria: "Go to the next step"
+                },
+                {
+                    title: "Step 1: Describe your symptoms",
+                    visual: "💬🎤",
+                    visualAlt: "Icons representing symptom input",
+                    body: [
+                        "Tell us anything such as “I have a headache” or “I can't stop coughing.”",
+                        "Both text and voice input are supported. Use the button in the upper left to switch between Japanese, English, Chinese, and Korean."
+                    ],
+                    buttonText: "Next",
+                    buttonAria: "Go to step 2"
+                },
+                {
+                    title: "Step 2: Get answers tailored to you",
+                    visual: "🧬✨",
+                    visualAlt: "Icons representing personalized answers",
+                    body: [
+                        "Register allergies and current medications via “User Info” so the AI can personalize advice.",
+                        "The assistant may ask follow-up questions to make sure the suggestions fit your situation."
+                    ],
+                    buttonText: "Next",
+                    buttonAria: "Go to step 3"
+                },
+                {
+                    title: "Step 3: Reach a pharmacist when needed",
+                    visual: "📞👨‍⚕️",
+                    visualAlt: "Icons showing a call with a pharmacist",
+                    body: [
+                        "If you are unsure about the AI's reply, tap “Request Pharmacist” to speak with a professional.",
+                        "Use the ℹ️ button in the top right to open guides and FAQs whenever you like."
+                    ],
+                    buttonText: "Next",
+                    buttonAria: "Go to the final step"
+                },
+                {
+                    title: "Important information before you start",
+                    visual: "⚠️",
+                    visualAlt: "Warning icon",
+                    body: [
+                        "Before we start, please review the notices below."
+                    ],
+                    bullets: [
+                        "This tool does not provide medical diagnosis.",
+                        "It offers information to support your OTC medicine selection.",
+                        "If symptoms are severe or you are unsure, please consult a medical institution."
+                    ],
+                    details: [
+                        {
+                            summary: "📄 View Disclaimer & Terms",
+                            description: "Please check the detailed terms of use before continuing.",
+                            policyKey: 'disclaimer'
+                        },
+                        {
+                            summary: "🔒 View Privacy Policy",
+                            description: "Review how we handle your information.",
+                            policyKey: 'privacy'
+                        }
+                    ],
+                    checkboxLabel: "I agree to the above",
+                    startButtonText: "Agree and start using",
+                    startButtonAria: "Agree and start the consultation"
+                }
+            ]
         },
         ko: {
             title: "💊 채팅형 의약품 상담 도구",
@@ -231,8 +386,85 @@
             usageDesc: "앱 사용 방법 및 안전하게 이용하기 위한 주의사항",
             consultation: "의약품 상담 정보",
             consultationDesc: "공공기관 상담창구 정보",
+            faq: "자주 묻는 질문 (FAQ)",
+            faqDesc: "자주 묻는 질문과 답변",
             back: "← 뒤로",
-            close: "×"
+            close: "×",
+            skipOnboarding: "넘기고 시작하기",
+            onboarding: [
+                {
+                    title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
+                    visual: "🤝💊",
+                    visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
+                    body: [
+                        "증상을 입력하거나 말하기만 하면 필요한 일반의약품 정보를 제공합니다.",
+                        "AI가 추천 의약품 후보, 성분, 효능, 병원 방문 시점을 한눈에 정리해 드립니다."
+                    ],
+                    buttonText: "다음",
+                    buttonAria: "다음 단계로 이동"
+                },
+                {
+                    title: "🩺 스텝 1: 현재 증상을 알려주세요",
+                    visual: "💬🎤",
+                    visualAlt: "증상 입력을 상징하는 아이콘",
+                    body: [
+                        "“머리가 아파요”, “기침이 멈추지 않아요”와 같이 자유롭게 입력하세요.",
+                        "텍스트와 음성 입력을 모두 지원하며, 왼쪽 상단 버튼으로 일본어·영어·중국어·한국어를 전환할 수 있습니다."
+                    ],
+                    buttonText: "다음",
+                    buttonAria: "스텝 2로 이동"
+                },
+                {
+                    title: "👤 스텝 2: 당신에게 맞춘 답변",
+                    visual: "🧬✨",
+                    visualAlt: "맞춤형 답변을 상징하는 아이콘",
+                    body: [
+                        "“사용자 정보 등록”에서 알레르기와 복용 중인 약을 입력하면 AI가 체질과 상황을 고려합니다.",
+                        "필요하면 상황을 더 정확히 파악하기 위해 추가 질문을 드릴 수 있습니다."
+                    ],
+                    buttonText: "다음",
+                    buttonAria: "스텝 3로 이동"
+                },
+                {
+                    title: "👩‍⚕️ 스텝 3: 전문가와 연결되는 안심",
+                    visual: "📞👨‍⚕️",
+                    visualAlt: "약사와 연결되는 모습을 나타내는 아이콘",
+                    body: [
+                        "AI 답변이 불확실하다면 “약사 요청”을 통해 전문가와 직접 상담하세요.",
+                        "오른쪽 상단의 ℹ️ 버튼에서 언제든지 이용 가이드와 FAQ를 확인할 수 있습니다."
+                    ],
+                    buttonText: "다음",
+                    buttonAria: "마지막 단계로 이동"
+                },
+                {
+                    title: "⚠️ 시작 전 꼭 확인해주세요",
+                    visual: "⚠️",
+                    visualAlt: "주의 아이콘",
+                    body: [
+                        "서비스 이용 전에 아래 안내 사항을 확인해 주세요."
+                    ],
+                    bullets: [
+                        "본 도구는 의료 행위(진단)을 제공하지 않습니다.",
+                        "일반의약품 선택을 돕기 위한 정보 제공 도구입니다.",
+                        "증상이 심하거나 판단이 어려울 경우 반드시 의료기관을 방문하세요."
+                    ],
+                    details: [
+                        {
+                            summary: "📄 면책 조항·이용약관 보기",
+                            description: "자세한 이용 조건을 확인해 주세요.",
+                            policyKey: 'disclaimer'
+                        },
+                        {
+                            summary: "🔒 개인정보 처리방침 보기",
+                            description: "개인정보 취급 방법을 확인해 주세요.",
+                            policyKey: 'privacy'
+                        }
+                    ],
+                    checkboxLabel: "위 내용에 동의합니다",
+                    startButtonText: "동의하고 이용을 시작하기",
+                    startButtonAria: "동의하고 상담을 시작하기"
+                }
+            ]
         },
         zh: {
             title: "💊 聊天式药品咨询工具",
@@ -309,10 +541,654 @@
             usageDesc: "应用使用方法和安全使用的注意事项",
             consultation: "药品咨询信息",
             consultationDesc: "公共机构咨询窗口信息",
+            faq: "常见问题 (FAQ)",
+            faqDesc: "常见问题与回答",
             back: "返回",
-            close: "×"
+            close: "×",
+            skipOnboarding: "跳过并开始",
+            onboarding: [
+                {
+                    title: "欢迎使用聊天式药品咨询工具（测试版）",
+                    visual: "🤝💊",
+                    visualAlt: "药师通过手机提供咨询的示意图",
+                    body: [
+                        "只需输入或说出您的症状，即可获取所需的非处方药信息。",
+                        "AI 会为您整理适合的药品候选、成分、功效以及就医建议。"
+                    ],
+                    buttonText: "下一步",
+                    buttonAria: "前往下一步"
+                },
+                {
+                    title: "🩺 步骤1：告诉我们当前症状",
+                    visual: "💬🎤",
+                    visualAlt: "症状输入界面的图示",
+                    body: [
+                        "例如“头很痛”“咳嗽停不下来”等，可自由描述。",
+                        "支持文字和语音输入，可通过左上角按钮切换日语、英语、韩语、中文。"
+                    ],
+                    buttonText: "下一步",
+                    buttonAria: "前往步骤2"
+                },
+                {
+                    title: "👤 步骤2：获得专属回答",
+                    visual: "🧬✨",
+                    visualAlt: "个性化回答的图示",
+                    body: [
+                        "通过“用户信息”登记过敏和正在服用的药物，AI 会综合您的体质与状况。",
+                        "必要时会提出追问，让建议更符合您的情况。"
+                    ],
+                    buttonText: "下一步",
+                    buttonAria: "前往步骤3"
+                },
+                {
+                    title: "👩‍⚕️ 步骤3：随时联系药师",
+                    visual: "📞👨‍⚕️",
+                    visualAlt: "与药师沟通的图示",
+                    body: [
+                        "如果对 AI 的回答仍感到不确定，可点击“请求药师”与专业人士对话。",
+                        "右上角的 ℹ️ 按钮可以随时打开使用指南和常见问题。"
+                    ],
+                    buttonText: "下一步",
+                    buttonAria: "前往最后一步"
+                },
+                {
+                    title: "⚠️ 开始使用前的重点提醒",
+                    visual: "⚠️",
+                    visualAlt: "注意图示",
+                    body: [
+                        "开始前，请先阅读以下注意事项。"
+                    ],
+                    bullets: [
+                        "本工具不提供医疗行为（诊断）。",
+                        "它是辅助选择非处方药的信息服务。",
+                        "若症状严重或无法判断，请务必就医。"
+                    ],
+                    details: [
+                        {
+                            summary: "📄 查看免责声明与使用条款",
+                            description: "继续前请确认详细条款。",
+                            policyKey: 'disclaimer'
+                        },
+                        {
+                            summary: "🔒 查看隐私政策",
+                            description: "了解我们如何处理您的信息。",
+                            policyKey: 'privacy'
+                        }
+                    ],
+                    checkboxLabel: "我同意以上内容",
+                    startButtonText: "同意并开始使用",
+                    startButtonAria: "同意并开始咨询"
+                }
+            ]
         }
     };
+
+    const DEFAULT_LANGUAGE = 'ja';
+    const ONBOARDING_SWIPE_THRESHOLD = 48;
+
+    let onboardingState = {
+        initialized: false,
+        currentSlide: 0,
+        totalSlides: 0,
+        touchStartX: 0
+    };
+
+    function getActiveTranslations() {
+        return translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
+    }
+
+    function getOnboardingData(lang) {
+        const locale = translations[lang];
+        if (locale && Array.isArray(locale.onboarding) && locale.onboarding.length > 0) {
+            return locale.onboarding;
+        }
+        const fallback = translations[DEFAULT_LANGUAGE];
+        if (fallback && Array.isArray(fallback.onboarding)) {
+            return fallback.onboarding;
+        }
+        return [];
+    }
+
+    function updateOnboardingSkipLabel() {
+        const skipBtn = document.getElementById('onboarding-skip-btn');
+        if (!skipBtn) {
+            return;
+        }
+        const t = getActiveTranslations();
+        if (t && t.skipOnboarding) {
+            skipBtn.textContent = t.skipOnboarding;
+            skipBtn.setAttribute('aria-label', t.skipOnboarding);
+        }
+    }
+
+    function getOnboardingDetailContent(detail) {
+        if (!detail) {
+            return '';
+        }
+
+        if (detail.policyKey && typeof modalPages !== 'undefined') {
+            const policy = modalPages[detail.policyKey];
+            if (policy && policy.content) {
+                const localized = policy.content[currentLanguage] || policy.content[DEFAULT_LANGUAGE];
+                if (localized) {
+                    return localized;
+                }
+            }
+        }
+
+        if (detail.content) {
+            return detail.content;
+        }
+
+        return '';
+    }
+
+    function createOnboardingDetailsMarkup(slide) {
+        if (!slide || !Array.isArray(slide.details) || !slide.details.length) {
+            return '';
+        }
+
+        return slide.details.map(detail => {
+            const summary = detail.summary || '';
+            const description = detail.description ? `<p>${detail.description}</p>` : '';
+            const content = getOnboardingDetailContent(detail);
+            const contentHtml = content ? `<div class="onboarding-details-content">${content}</div>` : '';
+
+            return `
+                <details class="onboarding-details">
+                    <summary>${summary}</summary>
+                    ${description}
+                    ${contentHtml}
+                </details>
+            `;
+        }).join('');
+    }
+
+    function createOnboardingFinalActions(slide) {
+        if (!slide || !slide.startButtonText) {
+            return '';
+        }
+        const checkbox = slide.checkboxLabel
+            ? `<label class="onboarding-agree"><input type="checkbox" id="agreeCheckbox" onchange="toggleAgreeButton()"> ${slide.checkboxLabel}</label>`
+            : '';
+        return `
+            ${checkbox}
+            <button type="button" class="onboarding-btn onboarding-btn-primary" id="startButton" onclick="completeOnboarding()" disabled aria-label="${slide.startButtonAria || slide.startButtonText}">${slide.startButtonText}</button>
+        `;
+    }
+
+    function renderOnboardingSlides(activeIndex = 0) {
+        const slidesContainer = document.getElementById('onboarding-slides');
+        if (!slidesContainer) {
+            return;
+        }
+        const slidesData = getOnboardingData(currentLanguage);
+        if (!slidesData.length) {
+            slidesContainer.innerHTML = '';
+            onboardingState.totalSlides = 0;
+            onboardingState.currentSlide = 0;
+            const indicator = document.getElementById('slide-indicator');
+            if (indicator) {
+                indicator.innerHTML = '';
+            }
+            return;
+        }
+        let targetIndex = Math.max(0, Math.min(activeIndex, slidesData.length - 1));
+        onboardingState.totalSlides = slidesData.length;
+        onboardingState.currentSlide = targetIndex;
+        const html = slidesData.map((slide, index) => {
+            const isActive = index === targetIndex;
+            const bodyHtml = Array.isArray(slide.body)
+                ? slide.body.map(text => `<p>${text}</p>`).join('')
+                : (slide.body || '');
+            const listHtml = Array.isArray(slide.list)
+                ? `<ul>${slide.list.map(item => `<li>${item}</li>`).join('')}</ul>`
+                : '';
+            const bulletsHtml = Array.isArray(slide.bullets)
+                ? `<ul>${slide.bullets.map(item => `<li>${item}</li>`).join('')}</ul>`
+                : '';
+            const detailsHtml = createOnboardingDetailsMarkup(slide);
+            const actionsHtml = (index === slidesData.length - 1)
+                ? createOnboardingFinalActions(slide)
+                : `<button type="button" class="onboarding-btn" onclick="nextOnboardingSlide()" aria-label="${slide.buttonAria || slide.buttonText}">${slide.buttonText}</button>`;
+            const subtitleHtml = slide.subtitle ? `<p class="onboarding-subtitle">${slide.subtitle}</p>` : '';
+            const visualHtml = slide.visual ? `<div class="onboarding-visual" role="img" aria-label="${slide.visualAlt || ''}">${slide.visual}</div>` : '';
+            return `
+                <div class="onboarding-slide${isActive ? ' active' : ''}" role="tabpanel" data-slide-index="${index}" aria-hidden="${isActive ? 'false' : 'true'}">
+                    ${visualHtml}
+                    <h2 class="onboarding-title">${slide.title}</h2>
+                    ${subtitleHtml}
+                    <div class="onboarding-desc">
+                        ${bodyHtml}
+                        ${listHtml}
+                        ${bulletsHtml}
+                    </div>
+                    ${detailsHtml}
+                    ${actionsHtml}
+                </div>
+            `;
+        }).join('');
+        slidesContainer.innerHTML = html;
+        updateOnboardingIndicator(targetIndex);
+        updateOnboardingSkipLabel();
+        onboardingState.touchStartX = 0;
+        // 初期表示時にも要素を強調し、制御を設定
+        setTimeout(function() {
+            highlightOnboardingElements(targetIndex);
+            setOnboardingStepControls(targetIndex);
+        }, 100);
+    }
+
+    function updateOnboardingIndicator(activeIndex) {
+        const indicator = document.getElementById('slide-indicator');
+        if (!indicator) {
+            return;
+        }
+        const total = onboardingState.totalSlides;
+        indicator.innerHTML = '';
+        if (!total) {
+            return;
+        }
+        for (let i = 0; i < total; i++) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'slide-indicator-dot' + (i === activeIndex ? ' active' : '');
+            dot.textContent = i === activeIndex ? '●' : '○';
+            dot.setAttribute('aria-label', `${i + 1} / ${total}`);
+            if (i === activeIndex) {
+                dot.setAttribute('aria-current', 'step');
+                dot.disabled = true;
+            } else {
+                dot.addEventListener('click', function() {
+                    goToOnboardingSlide(i);
+                });
+            }
+            indicator.appendChild(dot);
+        }
+    }
+
+    function highlightOnboardingElements(slideIndex) {
+        // すべての強調を解除
+        document.querySelectorAll('.onboarding-highlight').forEach(el => {
+            el.classList.remove('onboarding-highlight');
+        });
+        document.querySelectorAll('.onboarding-highlight-parent').forEach(el => {
+            el.classList.remove('onboarding-highlight-parent');
+        });
+
+        // 各ステップに応じて要素を強調
+        switch(slideIndex) {
+            case 0: // ステップ0: 言語選択ボタン
+                const langToggle0 = document.querySelector('.lang-toggle');
+                const languageSelector0 = document.querySelector('.language-selector');
+                
+                if (langToggle0) {
+                    langToggle0.classList.add('onboarding-highlight');
+                    // 親要素も強調対象にする（z-indexを確実に適用するため）
+                    if (languageSelector0) {
+                        languageSelector0.classList.add('onboarding-highlight-parent');
+                    }
+                }
+                break;
+            
+            case 1: // ステップ1: 入力欄、マイクボタン、言語選択ボタン
+                const messageInput = document.getElementById('messageInput');
+                const micBtn = document.getElementById('micBtn');
+                const langToggle = document.querySelector('.lang-toggle');
+                const languageSelector = document.querySelector('.language-selector');
+                
+                if (messageInput) {
+                    const inputGroup = messageInput.closest('.input-group');
+                    if (inputGroup) {
+                        inputGroup.classList.add('onboarding-highlight');
+                    } else {
+                        messageInput.classList.add('onboarding-highlight');
+                    }
+                }
+                if (micBtn) {
+                    micBtn.classList.add('onboarding-highlight');
+                }
+                if (langToggle) {
+                    langToggle.classList.add('onboarding-highlight');
+                    // 親要素も強調対象にする（z-indexを確実に適用するため）
+                    if (languageSelector) {
+                        languageSelector.classList.add('onboarding-highlight-parent');
+                    }
+                }
+                break;
+            
+            case 2: // ステップ2: ユーザー情報登録ボタン
+                const userInfoBtn = document.getElementById('userInfoBtn');
+                if (userInfoBtn) {
+                    userInfoBtn.classList.add('onboarding-highlight');
+                }
+                break;
+            
+            case 3: // ステップ3: 薬剤師要請ボタン、ℹ️ボタン
+                const adminRequestBtn = document.getElementById('admin-request-btn');
+                const infoBtn = document.getElementById('infoBtn');
+                const infoSelector = document.querySelector('.info-selector');
+                
+                if (adminRequestBtn) {
+                    adminRequestBtn.classList.add('onboarding-highlight');
+                }
+                if (infoBtn) {
+                    infoBtn.classList.add('onboarding-highlight');
+                    // 親要素も強調対象にする（z-indexを確実に適用するため）
+                    if (infoSelector) {
+                        infoSelector.classList.add('onboarding-highlight-parent');
+                    }
+                }
+                break;
+            
+            default:
+                // ステップ4（免責事項）では強調なし
+                break;
+        }
+    }
+
+    function setOnboardingStepControls(index) {
+        // すべてのボタンを一旦無効化
+        const disabledButtons = [
+            '#infoBtn',
+            '#micBtn',
+            '#chatForm button[type="submit"]',
+            '#userInfoBtn',
+            '#clearBtn',
+            '#new-session-btn',
+            '#admin-request-btn'
+        ];
+        const disabledElements = [
+            '#chatForm',
+            '#messageInput'
+        ];
+
+        // すべての要素を無効化
+        disabledButtons.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.6';
+                el.style.cursor = 'not-allowed';
+            });
+        });
+
+        disabledElements.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.6';
+                if (selector === '#messageInput') {
+                    el.style.cursor = 'not-allowed';
+                }
+            });
+        });
+
+        // ステップに応じて要素を有効化
+        switch(index) {
+            case 0: // ステップ0: 言語選択ボタンのみ操作可能
+                const langToggle = document.querySelector('.lang-toggle');
+                const languageSelector = document.querySelector('.language-selector');
+                if (langToggle) {
+                    langToggle.style.pointerEvents = 'auto';
+                    langToggle.style.opacity = '1';
+                    langToggle.style.cursor = 'pointer';
+                }
+                if (languageSelector) {
+                    languageSelector.style.pointerEvents = 'auto';
+                }
+                break;
+            
+            case 1: // ステップ1: メッセージ入力エリア、送信ボタン、🎤ボタンを操作可能
+                const messageInput = document.getElementById('messageInput');
+                const micBtn = document.getElementById('micBtn');
+                const sendButton = document.querySelector('#chatForm button[type="submit"]');
+                const chatForm = document.getElementById('chatForm');
+                
+                if (messageInput) {
+                    messageInput.style.pointerEvents = 'auto';
+                    messageInput.style.opacity = '1';
+                    messageInput.style.cursor = 'text';
+                }
+                if (micBtn) {
+                    micBtn.style.pointerEvents = 'auto';
+                    micBtn.style.opacity = '1';
+                    micBtn.style.cursor = 'pointer';
+                }
+                if (sendButton) {
+                    sendButton.style.pointerEvents = 'auto';
+                    sendButton.style.opacity = '1';
+                    sendButton.style.cursor = 'pointer';
+                }
+                if (chatForm) {
+                    chatForm.style.pointerEvents = 'auto';
+                }
+                // 入力エリアのコンテナも有効化
+                const inputGroup = document.querySelector('.input-group');
+                if (inputGroup) {
+                    inputGroup.style.pointerEvents = 'auto';
+                }
+                break;
+        }
+
+        // オーバーレイとbodyにステップ情報を追加
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) {
+            overlay.setAttribute('data-step', index);
+        }
+        document.body.setAttribute('data-onboarding-step', index);
+    }
+
+    function goToOnboardingSlide(index) {
+        if (!onboardingState.initialized) {
+            return;
+        }
+        if (index < 0 || index >= onboardingState.totalSlides) {
+            return;
+        }
+        const slides = document.querySelectorAll('.onboarding-slide');
+        slides.forEach(function(slide, idx) {
+            if (idx === index) {
+                slide.classList.add('active');
+                slide.setAttribute('aria-hidden', 'false');
+            } else {
+                slide.classList.remove('active');
+                slide.setAttribute('aria-hidden', 'true');
+            }
+        });
+        onboardingState.currentSlide = index;
+        updateOnboardingIndicator(index);
+        highlightOnboardingElements(index);
+        setOnboardingStepControls(index);
+    }
+
+    function nextOnboardingSlide() {
+        if (!onboardingState.initialized) {
+            return;
+        }
+        const nextIndex = onboardingState.currentSlide + 1;
+        if (nextIndex < onboardingState.totalSlides) {
+            goToOnboardingSlide(nextIndex);
+            return;
+        }
+        const startButton = document.getElementById('startButton');
+        if (startButton && startButton.disabled) {
+            const checkbox = document.getElementById('agreeCheckbox');
+            if (checkbox) {
+                checkbox.focus({ preventScroll: true });
+            }
+            return;
+        }
+        completeOnboarding();
+    }
+
+    function previousOnboardingSlide() {
+        if (!onboardingState.initialized) {
+            return;
+        }
+        const prevIndex = onboardingState.currentSlide - 1;
+        if (prevIndex >= 0) {
+            goToOnboardingSlide(prevIndex);
+        }
+    }
+
+    function toggleAgreeButton() {
+        const checkbox = document.getElementById('agreeCheckbox');
+        const button = document.getElementById('startButton');
+        if (!button) {
+            return;
+        }
+        button.disabled = !(checkbox && checkbox.checked);
+    }
+
+    function hideOnboardingOverlay() {
+        const overlay = document.getElementById('onboarding-overlay');
+        const slidesContainer = document.getElementById('onboarding-slides');
+        if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.removeAttribute('data-step');
+            overlay.removeEventListener('keydown', handleOnboardingKeydown);
+        }
+        document.body.removeAttribute('data-onboarding-step');
+        if (slidesContainer) {
+            slidesContainer.removeEventListener('touchstart', handleOnboardingTouchStart);
+            slidesContainer.removeEventListener('touchend', handleOnboardingTouchEnd);
+        }
+        // すべての強調を解除
+        document.querySelectorAll('.onboarding-highlight').forEach(el => {
+            el.classList.remove('onboarding-highlight');
+        });
+        document.querySelectorAll('.onboarding-highlight-parent').forEach(el => {
+            el.classList.remove('onboarding-highlight-parent');
+        });
+        // すべての要素の制限を解除
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(el => {
+            if (el.style.pointerEvents === 'none' || el.style.opacity === '0.6') {
+                el.style.pointerEvents = '';
+                el.style.opacity = '';
+                el.style.cursor = '';
+            }
+        });
+        document.body.classList.remove('onboarding-open');
+        onboardingState.initialized = false;
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.focus({ preventScroll: true });
+        }
+    }
+
+    function completeOnboarding() {
+        try {
+            localStorage.setItem('onboardingCompleted', 'true');
+        } catch (error) {
+            console.warn('Failed to persist onboarding completion:', error);
+        }
+        hideOnboardingOverlay();
+    }
+
+    function skipOnboarding() {
+        try {
+            localStorage.setItem('onboardingCompleted', 'true');
+        } catch (error) {
+            console.warn('Failed to persist onboarding skip:', error);
+        }
+        try {
+            sessionStorage.setItem('quickStartGuideClosed', 'true');
+        } catch (error) {
+            console.warn('Failed to persist quick start preference:', error);
+        }
+        hideOnboardingOverlay();
+    }
+
+    function initOnboarding() {
+        const overlay = document.getElementById('onboarding-overlay');
+        const container = overlay ? overlay.querySelector('.onboarding-container') : null;
+        if (!overlay || !container) {
+            return;
+        }
+        onboardingState.initialized = true;
+        onboardingState.currentSlide = 0;
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.setAttribute('data-step', '0');
+        document.body.classList.add('onboarding-open');
+        document.body.setAttribute('data-onboarding-step', '0');
+        renderOnboardingSlides(0);
+        overlay.addEventListener('keydown', handleOnboardingKeydown);
+        const slidesContainer = document.getElementById('onboarding-slides');
+        if (slidesContainer) {
+            slidesContainer.addEventListener('touchstart', handleOnboardingTouchStart, { passive: true });
+            slidesContainer.addEventListener('touchend', handleOnboardingTouchEnd);
+        }
+        updateOnboardingSkipLabel();
+        setTimeout(function() {
+            const skipBtn = document.getElementById('onboarding-skip-btn');
+            if (skipBtn) {
+                skipBtn.focus({ preventScroll: true });
+            } else {
+                container.focus({ preventScroll: true });
+            }
+        }, 0);
+    }
+
+    function handleOnboardingTouchStart(event) {
+        if (!event.changedTouches || !event.changedTouches.length) {
+            return;
+        }
+        onboardingState.touchStartX = event.changedTouches[0].clientX;
+    }
+
+    function handleOnboardingTouchEnd(event) {
+        if (!event.changedTouches || !event.changedTouches.length) {
+            return;
+        }
+        const endX = event.changedTouches[0].clientX;
+        const diff = endX - onboardingState.touchStartX;
+        if (Math.abs(diff) < ONBOARDING_SWIPE_THRESHOLD) {
+            return;
+        }
+        if (diff < 0) {
+            nextOnboardingSlide();
+        } else {
+            previousOnboardingSlide();
+        }
+    }
+
+    function handleOnboardingKeydown(event) {
+        if (!onboardingState.initialized) {
+            return;
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            nextOnboardingSlide();
+        } else if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            previousOnboardingSlide();
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            skipOnboarding();
+        }
+    }
+
+    function updateOnboardingLanguage() {
+        updateOnboardingSkipLabel();
+        if (!onboardingState.initialized) {
+            return;
+        }
+        const slidesData = getOnboardingData(currentLanguage);
+        let targetIndex = onboardingState.currentSlide;
+        if (targetIndex >= slidesData.length) {
+            targetIndex = slidesData.length ? slidesData.length - 1 : 0;
+        }
+        renderOnboardingSlides(targetIndex);
+    }
+
+    window.skipOnboarding = skipOnboarding;
+    window.nextOnboardingSlide = nextOnboardingSlide;
+    window.completeOnboarding = completeOnboarding;
+    window.toggleAgreeButton = toggleAgreeButton;
 
     // 現在の言語設定
     let currentLanguage = sessionStorage.getItem('language') || 'ja';
@@ -324,30 +1200,47 @@
     let currentModalPage = 'list';
     const modalPages = {
         'app-overview': {
-            title: 'アプリ概要',
+            title: 'アプリ概要・運営者情報',
             content: {
                 ja: `
                     <div class="info-section">
-                        <h3>📱 アプリ概要</h3>
-                        <p>本アプリは、ユーザーの症状・体調・生活状況に基づいて、一般用医薬品（OTC薬）をチャット形式で提案するAI支援型医薬品相談ツールです。</p>
-                        <p>独自のアルゴリズムと大規模言語モデルを組み合わせることで、症状に適した市販薬を安全かつ柔軟に提案し、誰もが安心してセルフメディケーションを行える環境の実現を目指します。</p>
+                        <h3>📱 アプリ概要（β版・限定公開）</h3>
+                        <p>本アプリは現在、研究開発中のβ版（試験運用版）として運用されています。<br>
+                        対象は、企業・行政関係者・薬剤師・登録販売者など、限られた専門関係者に限定されており、非営利かつ学術的な目的で公開しています。</p>
+                        <p>独自のアルゴリズムと大規模言語モデルを組み合わせることで、ユーザーの症状・体調・生活状況に基づいて、一般用医薬品（OTC薬）をチャット形式で安全かつ柔軟に提案し、誰もが安心してセルフメディケーションを行える環境の実現を目指し、本研究ではその有効性を検証します。</p>
                     </div>
                     
                     <div class="info-section">
                         <h3>🎯 開発背景</h3>
-                        <p>少子高齢化や訪日外国人観光客の増加、ECサイトの普及により、セルフメディケーションの需要は年々高まっている。しかし、言語の壁や人材不足により、利用者が適切な医薬品を選べず、安全性が懸念されているのが現状である。私自身もドラッグストアで勤務しており、高齢者の聴力・理解力の差や外国人の言語障壁に直面している。これらの課題を解決するために、大規模言語モデルと薬学的知識を組み合わせた独自のチャット型相談ツールを開発した。</p>
+                        <p>少子高齢化や訪日外国人観光客の増加、ECサイトの普及により、セルフメディケーションの需要は年々高まっています。しかし、言語の壁や人材不足により、利用者が適切な医薬品を選べず、安全性が懸念されているのが現状です。</p>
+                        <p>開発者自身がドラッグストア勤務の経験から、高齢者の聴力・理解力の差や外国人との言語障壁に直面したことをきっかけに、薬学的知識と大規模言語モデル(NLU)を融合したチャット型相談ツールとして本システムを構想しました。</p>
+                        <p>本β版は、これらの課題解決に向けた実証的研究・検証を目的とした限定的運用です。</p>
                     </div>
                     
                     <div class="info-section">
                         <h3>🎯 利用目的</h3>
-                        <p>本アプリは、利用者が自身の症状を正しく理解し、適切な一般用医薬品を安全に選択できるよう支援することを目的としています。</p>
-                        <p>チャット形式による対話を通じて、症状に合った市販薬の候補や受診の目安を提示し、セルフメディケーションの推進を図ります。</p>
-                        <p>また、薬局来店前やオンライン購入前の参考情報として活用できるよう設計されており、医療機関への早期受診判断を助ける役割も担います。</p>
-                        <p>本アプリは医師・薬剤師の診断や指導を代替するものではなく、利用者が安全に判断できる環境を補助するツールとして位置づけられています。</p>
+                        <p><strong>【本β版の目的】</strong> 本β版は、AIを用いた医薬品相談のUI/UXや、本ツールに実装された独自の選定アルゴリズムの有効性について、開発にご協力いただく専門家の皆様からフィードバックをいただくことを目的としています。</p>
+                        <p>本アプリは、利用者が自身の症状を正しく理解し、適切な一般用医薬品を安全に選択できるよう支援することを目的としています。<br>
+                        チャット形式による対話を通じて、症状に合った市販薬の候補や受診の目安を提示し、セルフメディケーションの推進を図ります。</p>
+                        <p>また、薬局来店前やオンライン購入前の参考情報としての活用を目的とし、医療機関への早期受診判断を助ける機能を持ちます。<br>
+                        本アプリは医師・薬剤師の診断や指導を代替するものではなく、利用者の安全な判断を補助するための情報提供ツールです。</p>
                     </div>
                     
                     <div class="info-section">
                         <h3>👥 対象者</h3>
+                        <p><strong>【本β版の対象者（テスター）】</strong></p>
+                        <ul>
+                            <li>薬剤師・登録販売者などの医薬専門職</li>
+                            <li>医療・行政・研究機関に所属する関係者</li>
+                            <li>医薬品販売やセルフメディケーション支援に関心のある企業担当者</li>
+                        </ul>
+                        
+                        <p style="margin-top: 20px;"><strong>【ユーザーヒアリングの実施について】</strong></p>
+                        <p>本β版の専門家向けテストとは別に、研究の一環として、将来の想定利用者（一般消費者、訪日外国人の方など）の一部に対しても、別途ユーザーヒアリングのご協力を依頼する場合がございます。<br>
+                        （これは本β版システムを一般公開するものではなく、あくまで開発プロセスにおけるインタビュー調査等を想定しています）</p>
+                        
+                        <p style="margin-top: 20px;"><strong>【将来的な（本実装時の）想定利用者】</strong><br>
+                        （※本研究が実用化された場合、以下のような方々の支援を想定しています）</p>
                         <ul>
                             <li>どの薬を選べばよいかわからない一般消費者</li>
                             <li>忙しくて薬局に行けない人や過疎地域の住民</li>
@@ -371,51 +1264,63 @@
                     <div class="info-section">
                         <h3>💪 アプリの強み・差別化ポイント</h3>
                         <ul>
-                            <li>AIと独自アルゴリズムの併用による、安全性と柔軟性の両立</li>
-                            <li>薬学的根拠に基づく提案と、自然言語理解（LLM）の対話力の融合</li>
-                            <li>人手不足・言語の壁・情報格差など、現場で顕在化している課題を直接解決</li>
-                            <li>UI設計の簡潔さ・導入の容易さにより、誰でも迷わず利用できる操作性</li>
+                            <li>AIと独自アルゴリズムの併用による安全性と柔軟性の両立</li>
+                            <li>薬学的根拠に基づいた提案と自然言語理解の融合</li>
+                            <li>現場課題（人手不足・言語の壁・情報格差）への直接的アプローチ</li>
+                            <li>誰でも使いやすいUI設計による導入の容易さ</li>
                         </ul>
                     </div>
                     
                     <div class="info-section">
                         <h3>⚙️ 独自のアルゴリズム</h3>
-                        <p>本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。</p>
-                        <p>これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。また、AIによる回答には常に「出典情報」や「注意喚起」を付与し、利用者が自ら判断できる設計としています。</p>
+                        <p>本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。<br>
+                        これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。また、AIによる回答には常に「出典情報」や「注意喚起」を付与し、利用者が自ら判断できる設計としています。</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3>🧩 開発・運用体制（β版）</h3>
+                        <ul>
+                            <li><strong>運用形態：</strong>非営利・学術研究目的</li>
+                            <li><strong>公開範囲：</strong>医療・行政・研究機関・薬剤師などの限られた関係者(一部ユーザーヒアリングを行う)</li>
+                            <li><strong>目的：</strong>実証実験・検証・フィードバック収集</li>
+                            <li><strong>将来的展開：</strong>一般公開に向けた改良検討</li>
+                        </ul>
                     </div>
                     
                     <div class="info-section">
                         <h3>🛠️ 開発環境・使用ツール</h3>
                         <ul>
-                            <li><strong>プログラミング言語・フレームワーク:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
-                            <li><strong>AI・自然言語処理:</strong> OpenAI GPT-4o-mini、ルールベースNLU（正規表現・症状辞書）、MeCab</li>
+                            <li><strong>バックエンド:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
+                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, MeCab, ルールベースNLU</li>
                             <li><strong>データベース:</strong> PostgreSQL（フィードバック保存用）</li>
-                            <li><strong>フロントエンド:</strong> HTML/CSS、JavaScript、TailwindCSS（UI軽量化）、Chart.js（解析表示）</li>
-                            <li><strong>開発・デバッグツール:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
-                            <li><strong>監視・ログ管理:</strong> psutil、SocketIOログ配信、JSONL形式でアクセス・セキュリティ・性能記録</li>
+                            <li><strong>フロントエンド:</strong> HTML/CSS, JavaScript, TailwindCSS, Chart.js</li>
+                            <li><strong>監視・ログ:</strong> psutil, SocketIOログ配信, JSONL形式記録</li>
                         </ul>
                     </div>
                     
                     <div class="info-section">
                         <h3>🚀 今後の展望</h3>
                         <p>今後は薬局・医療機関・自治体などとの連携を強化し、地域医療のデジタル支援基盤としての活用を目指します。</p>
-                        <p>また、ECサイトとの統合や服薬指導支援機能など、利用者と販売者双方に価値を提供する拡張も予定しています。</p>
-                        <p>最終的には、「誰もがどこでも安心して薬を選べる社会」を実現することが本アプリの目標です。</p>
+                        <p>また、ECサイトとの統合やLINEとの連携など、利用者と販売者双方に価値を提供する拡張も予定しています。</p>
+                        <p>最終的には、<strong>「誰もがどこでも安心して薬を選べる社会」</strong>を実現することが本アプリの目標です。</p>
                     </div>
                     
                     <div class="info-section">
                         <h3>📚 医薬品データベース出典元</h3>
-                        <p>本アプリで使用している医薬品情報は、以下の公的機関のデータベースを参照しています：</p>
                         <ul>
                             <li><a href="http://www.fpmaj.gr.jp" target="_blank" rel="noopener noreferrer">日本製薬団体連合会</a> (http://www.fpmaj.gr.jp)</li>
-                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">(一般財団法人)日本医薬情報センター</a> (https://www.japic.or.jp)</li>
-                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">(独立行政法人)医薬品医療機器総合機構</a> (https://www.pmda.go.jp)</li>
+                            <li><a href="https://www.japic.or.jp" target="_blank" rel="noopener noreferrer">日本医薬情報センター</a> (https://www.japic.or.jp)</li>
+                            <li><a href="https://www.pmda.go.jp" target="_blank" rel="noopener noreferrer">医薬品医療機器総合機構</a> (https://www.pmda.go.jp)</li>
                         </ul>
                     </div>
                     
                     <div class="warning-box">
-                        <strong>⚠️ 重要な注意事項</strong><br>
-                        本アプリは情報提供のみを目的とし、医療アドバイスではありません。医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。
+                        <h4>⚠️ 重要な注意事項</h4>
+                        <ul style="margin-top: 10px;">
+                            <li>本アプリはβ版の研究・検証目的であり、医療行為・商用利用を目的としていません。</li>
+                            <li>提供する内容は医療アドバイスではなく、情報提供に限られます。</li>
+                            <li>医薬品の使用に際しては、必ず薬剤師または医師にご相談ください。</li>
+                        </ul>
                     </div>
                     
                     <div class="info-section">
@@ -814,33 +1719,87 @@
             content: {
                 ja: `
                     <div class="info-section">
-                        <h3>📖 アプリの使い方</h3>
+                        <h3>📖 使い方ガイド</h3>
+                        <p>「チャット型医薬品相談ツール」のご利用ありがとうございます。このガイドでは、アプリの詳しい使い方と機能についてご説明します。</p>
                         
                         <div class="info-section">
-                            <h4>ステップ1: 症状を入力</h4>
-                            <p>感じている症状をテキストで入力するか、🎤ボタンをクリックして音声入力してください。</p>
-                            <p>例：「頭が痛い」「咳が止まらない」「熱がある」など</p>
+                            <h4 style="color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 8px; margin-bottom: 20px;">1. 基本的な使い方</h4>
+                            
+                            <h5>① 症状を入力する</h5>
+                            <p>画面下の入力欄に、「頭が痛い」「咳が止まらない」など、お困りの症状を具体的にお話しください。</p>
+                            <p>🎤 マイクアイコンをタップすると、音声での入力も可能です。</p>
+                            
+                            <h5>② AIの回答を確認する</h5>
+                            <p>症状を送信すると、AIが分析結果を返します。</p>
+                            <ul>
+                                <li><strong>おすすめの市販薬候補:</strong> 最大3件の候補を表示します。</li>
+                                <li><strong>成分・効能:</strong> 各候補の詳しい情報を確認できます。</li>
+                                <li><strong>注意点と受診の目安:</strong> 安全にご利用いただくための情報や、医療機関の受診を推奨する基準をご案内します。</li>
+                            </ul>
+                            
+                            <h5>③ さらに詳しく相談する</h5>
+                            <p>AIがより詳しい情報を必要とする場合（例：腹痛や頭痛など、原因が多岐にわたる場合）は、AIから追加の質問をすることがあります。</p>
+                            <p>また、AIの回答に対して、あなたが疑問に思うことをそのままチャットで聞き返すこともできます。</p>
                         </div>
                         
                         <div class="info-section">
-                            <h4>ステップ2: AI回答を確認</h4>
-                            <p>AIが症状に適した市販薬の候補を提案します。各医薬品の推奨理由、使用上の注意、副作用情報などを確認してください。</p>
+                            <h4 style="color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 8px; margin-bottom: 20px;">2. より便利に使うための機能</h4>
+                            
+                            <h5>👤 ユーザー情報の登録</h5>
+                            <p>「ユーザー情報登録」ボタンから、年齢、性別、アレルギー、既往歴、妊娠・授乳の有無などをあらかじめ登録できます。</p>
+                            <p>この情報を登録することで、AIがそれらを考慮した、より安全で精度の高い提案を行います。（入力後もメニューから更新可能です）</p>
+                            
+                            <h5>👨‍⚕️ 薬剤師への相談</h5>
+                            <p>AIの回答だけでは不安な場合や、専門家（薬剤師）に直接判断を仰ぎたい場合は、「薬剤師要請」ボタンをご利用ください。</p>
+                            <p>専門家（薬剤師）にチャット相談を引き継ぐことができます。</p>
+
+                            <p>※「薬剤師要請」機能は、将来的な実装を想定したデモ機能であり、実際に薬剤師が応答・返信する体制は現在稼働しておりません。そのため、ボタンを押しても実際の相談員には繋がりませんことを、あらかじめご了承ください。</p>
+                            
+                            <h5>🌏 多言語対応</h5>
+                            <p>画面左上の国旗ボタン（または言語ボタン）から、表示言語を切り替えられます。</p>
+                            <p>日本語、英語、韓国語、中国語に対応しています。</p>
+                            <p>※現在β版の制限により、AIの返信は日本語のみとなっています。</p>
+                            
+                            <h5>会話の管理</h5>
+                            <ul>
+                                <li><strong>🔄 新セッション:</strong> 現在の会話をリセットし、新しい相談を開始します。</li>
+                                <li><strong>🗑️ 履歴クリア:</strong> 過去の会話履歴をすべて消去します。別の症状について相談を始める際にご利用ください。なお、ユーザー情報のリセットは行われません。</li>
+                            </ul>
                         </div>
                         
                         <div class="info-section">
-                            <h4>ステップ3: 薬剤師要請（必要に応じて）</h4>
-                            <p>さらに詳しく知りたい場合や、より専門的な相談が必要な場合は、👨‍⚕️ボタンをクリックして薬剤師に直接相談できます。</p>
+                            <h4 style="color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 8px; margin-bottom: 20px;">3. アプリの主な特徴</h4>
+                            
+                            <h5>🔬 ハイブリッド推奨と安全性</h5>
+                            <p>このアプリは、独自のアルゴリズムと大規模言語モデルによる柔軟な回答を組み合わせ、最適な候補を自動で選択します。</p>
+                            <p><strong>例：</strong>高熱がありインフルエンザが疑われる場合、アスピリン系の薬剤を除外するなど</p>
+                            <p>また、ご登録いただいたユーザー情報（年齢制限、アレルギー、妊娠・授乳など）や、医薬品の相互作用（飲み合わせ）をAIが自動でチェックし、該当する場合は警告表示や医師の受診を促します。</p>
+                            <p><strong>年齢に応じた薬の選択：</strong>年齢に応じた薬の選択も自動で行います。</p>
+                            <p><strong>例：</strong>15歳未満のお子様には小児用の薬を優先的に提案します。</p>
+
+                            <h5>📝 フィードバック</h5>
+                            <p>AIの回答の品質向上のため、回答の評価（👍 👎 など）やフィードバックフォームからの改善要望にご協力をお願いいたします。</p>
                         </div>
                         
                         <div class="warning-box">
-                            <strong>⚠️ 安全に利用するための注意</strong>
-                            <ul style="margin-top: 10px;">
-                                <li>本アプリは情報提供のみを目的とし、医療アドバイスではありません</li>
-                                <li>症状が重篤な場合や緊急を要する場合は、速やかに医療機関を受診してください</li>
-                                <li>医薬品の使用に際しては、必ず薬剤師または医師にご相談ください</li>
-                                <li>アレルギーや持病がある場合は、必ずその情報を入力してください</li>
-                                <li>現在服用している薬がある場合は、併用前に薬剤師に相談してください</li>
-                            </ul>
+                            <h4>4. ⚠️ 安全に使うために（必ずお読みください）</h4>
+                            
+                            <h5>🚫 本ツールは医療行為ではありません</h5>
+                            <p>本ツール（AIおよび薬剤師の回答を含む）は、診断、治療、または医療的アドバイスを行うものではありません。</p>
+                            <p>提供する情報は、あくまで市販薬を選択する上での参考情報です。</p>
+                            <p><strong>症状が重い、長引いている、または判断に迷う場合は、ご自身の判断で市販薬を使用せず、必ず医療機関（医師）の診察を受けてください。</strong></p>
+                            
+                            <h5>🆘 危機対応について</h5>
+                            <p>深刻な精神的危機を示す表現をAIが検出した場合、本ツールは直ちに医薬品推奨を停止し、専門の相談窓口（公的機関など）の情報を案内し、薬剤師や医療機関への連絡を強く促します。</p>
+                            
+                            <h5>🔒 個人情報の管理</h5>
+                            <p>ご登録いただいた個人情報は、推奨の品質向上と安全確認の目的のみに利用します。</p>
+                            <p>個人情報の管理について、より詳しくは <a href="javascript:void(0);" onclick="closeInfoModal(); setTimeout(function(){openInfoModal(); showDetailPage('privacy');}, 100);" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">ℹ️ ボタン内の「🔒 プライバシーポリシー」</a> をご確認ください。</p>
+                        </div>
+                        
+                        <div class="info-section" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                            <h4>💬 よくある質問（FAQ）</h4>
+                            <p>ご不明な点がございましたら、<a href="javascript:void(0);" onclick="closeInfoModal(); setTimeout(function(){openInfoModal(); showDetailPage('faq');}, 100);" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">こちら</a>からよくある質問をご確認ください。</p>
                         </div>
                     </div>
                 `,
@@ -948,7 +1907,7 @@
             content: {
                 ja: `
                     <div class="info-section">
-                        <h3>🧾 免責事項・利用規約（試験運用版）</h3>
+                        <h3>🧾 免責事項・利用規約（β版）</h3>
                         
                         <h4>第1条（目的と適用範囲）</h4>
                         <p>本アプリ「チャット型医薬品相談ツール」（以下、「本アプリ」といいます。）は、一般用医薬品を症状に基づいて参考提示するシステムです。現在はテスター限定の試験運用（β版）として公開されており、正式な医療サービスではありません。本アプリを利用することにより、利用者は本規約に同意したものとみなします。</p>
@@ -1158,7 +2117,7 @@
             content: {
                 ja: `
                     <div class="info-section">
-                        <h3>🔒 プライバシーポリシー（試験運用版）</h3>
+                        <h3>🔒 プライバシーポリシー（β版）</h3>
                         
                         <h4>第1条（基本方針）</h4>
                         <p>本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、テスターから得られた情報を適切に取り扱い、個人情報保護法および関連法令を遵守します。テスターのプライバシーを尊重し、安全で信頼できる環境の提供に努めます。</p>
@@ -1509,6 +2468,309 @@
             }
         },
         
+        faq: {
+            title: 'よくある質問（FAQ）',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>💬 よくある質問（FAQ）</h3>
+                        <p>本アプリについてよくいただく質問と回答をまとめました。ご不明な点がございましたら、こちらをご確認ください。</p>
+                        
+                        <div class="info-section">
+                            <h4>🎤 機能・操作について</h4>
+                            
+                            <h5>Q1. 音声入力が動作しません</h5>
+                            <p><strong>A:</strong> ブラウザのマイクアクセス許可を確認してください。ChromeやSafariでは、URLバーの左側のアイコンからマイクの許可状態を確認できます。また、HTTPS接続（またはlocalhost）でのみ音声入力が利用可能です。</p>
+                            
+                            <h5>Q2. 言語切替ボタンで表示言語を変えても、AIの返信が日本語のままです</h5>
+                            <p><strong>A:</strong> 現在β版の制限により、AIの返信の自動翻訳機能は停止しています。表示言語はUIの表示のみに影響します。現在、翻訳精度向上のため、改善を進めています。</p>
+                            
+                            <h5>Q3. 複数の症状を同時に相談できますか？</h5>
+                            <p><strong>A:</strong> はい、可能です。「頭が痛くて、咳も出る」のように、複数の症状を一度に入力できます。AIが総合的に判断して、適切な市販薬を提案します。</p>
+                            
+                            <h5>Q4. ユーザー情報を登録した後、変更したい場合はどうすればよいですか？</h5>
+                            <p><strong>A:</strong> 「ユーザー情報登録」ボタンからいつでも情報を更新できます。変更内容は即座に反映され、以降のAIの提案に反映されます。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>👨‍⚕️ 薬剤師要請について</h4>
+                            
+                            <h5>Q5. 「薬剤師要請」ボタンを押しても応答がありません。</h5>
+                            <p><strong>A:</strong> ありがとうございます。本アプリは現在、非営利・学術的な研究目的で、企業や行政、薬剤師の皆様といった専門家向けに限定公開しているβ版です。</p>
+                            <p>「薬剤師要請」機能は、将来的な実装を想定したデモ機能であり、実際に薬剤師が応答・返信する体制は現在稼働しておりません。そのため、ボタンを押しても実際の相談員には繋がりませんことを、あらかじめご了承ください。</p>
+                            
+                            <h5>Q6. 薬剤師要請機能の目的は何ですか？</h5>
+                            <p><strong>A:</strong> 本機能は、AIによる回答で不安が残る場合に、専門家（薬剤師）へシームレスに相談を引き継ぐUI/UXの検証を目的として設置されています。β版の運用期間中、本機能を通じた実際の応答・課金は一切発生いたしません。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>💊 薬の推奨について</h4>
+                            
+                            <h5>Q7. 年齢制限がある薬は自動で除外されますか？</h5>
+                            <p><strong>A:</strong> はい、15歳未満のお子様には小児用の薬を優先的に提案し、年齢制限のある薬は自動で除外されます。また、ユーザー情報に年齢を登録いただくと、より適切な提案が可能になります。</p>
+                            
+                            <h5>Q8. 薬の相互作用（飲み合わせ）は自動でチェックされますか？</h5>
+                            <p><strong>A:</strong> ユーザー情報に現在服用中の薬を登録していただくと、AIが自動で相互作用をチェックします。ただし、本機能はβ版であり、すべての相互作用を網羅・保証するものではありません。該当する場合は警告表示がされますが、最終的な服用の判断は、必ず医師や薬剤師にご相談ください。</p>
+                            
+                            <h5>Q9. アレルギーがある場合、該当する成分を含む薬は提案されませんか？</h5>
+                            <p><strong>A:</strong> ユーザー情報にアレルギーを登録していただくと、該当する成分を含む薬は自動で除外され、警告表示がされます。ただし、本機能もβ版であり、情報の完璧性を保証するものではありません。市販薬をご利用の際は、ご自身でも必ず成分表をご確認ください。アレルギー情報がない場合は除外されないため、必ず事前に登録してください。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>📱 データ・プライバシーについて</h4>
+                            
+                            <h5>Q10. 会話履歴は保存されますか？</h5>
+                            <p><strong>A:</strong> セッション中は会話履歴が保持されますが、ブラウザを閉じると削除されます。</p>
+                            
+                            <h5>Q11. 個人情報は安全に管理されていますか？</h5>
+                            <p><strong>A:</strong> はい、個人情報は匿名化され、推奨の品質向上と安全確認の目的のみに利用されます。詳細は <a href="javascript:void(0);" onclick="closeInfoModal(); setTimeout(function(){openInfoModal(); showDetailPage('privacy');}, 100);" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">ℹ️ ボタン内の「🔒 プライバシーポリシー」</a> をご確認ください。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>⚠️ エラー・不具合について</h4>
+                            
+                            <h5>Q12. エラーメッセージが表示されました</h5>
+                            <p><strong>A:</strong> ページを再読み込みして再度お試しください。それでも解決しない場合は、「<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">不具合報告ボタン</a>」から不具合報告フォームにご報告いただくか、運営者までご連絡ください。</p>
+                            
+                            <h5>Q13. AIの回答が適切でないと感じます</h5>
+                            <p><strong>A:</strong> フィードバック機能（👍👎ボタン）からご意見をお寄せください。（本アプリはβ版です。皆様からのフィードバックが改善の助けとなります。）また、より詳細な報告が必要な場合は、「<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank" style="color: #4CAF50; text-decoration: underline; font-weight: bold;">不具合報告フォーム</a>」からご報告いただけます。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>📞 お問い合わせ</h4>
+                            <p>上記で解決しない場合は、以下の連絡先までお問い合わせください。</p>
+                            <ul>
+                                <li><strong>不具合報告フォーム:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                                <li><strong>メールアドレス:</strong> weary-scoots.7y@icloud.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>💬 Frequently Asked Questions (FAQ)</h3>
+                        <p>Here are common questions and answers about this app. Please check here if you have any questions.</p>
+                        
+                        <div class="info-section">
+                            <h4>🎤 About Functions & Operations</h4>
+                            
+                            <h5>Q1. Voice input is not working</h5>
+                            <p><strong>A:</strong> Please check your browser's microphone permission. In Chrome or Safari, you can check the microphone permission status from the icon on the left side of the URL bar. Also, voice input is only available on HTTPS connections (or localhost).</p>
+                            
+                            <h5>Q2. Even after changing the display language with the language toggle button, the AI's reply remains in Japanese</h5>
+                            <p><strong>A:</strong> Currently, due to beta version limitations, the automatic translation function for AI replies is disabled. The display language only affects the UI display. We are working on improvements to enhance translation accuracy.</p>
+                            
+                            <h5>Q3. Can I consult about multiple symptoms at the same time?</h5>
+                            <p><strong>A:</strong> Yes, you can. You can input multiple symptoms at once, such as "I have a headache and a cough." The AI will comprehensively evaluate and suggest appropriate over-the-counter medicines.</p>
+                            
+                            <h5>Q4. How can I update my user information after registering it?</h5>
+                            <p><strong>A:</strong> You can update your information at any time from the "User Info" button. Changes are reflected immediately and will be included in subsequent AI recommendations.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>👨‍⚕️ About Pharmacist Consultation</h4>
+                            
+                            <h5>Q5. There is no response from the pharmacist request</h5>
+                            <p><strong>A:</strong> Pharmacists will reply during weekday business hours. If urgent, please consult a medical institution or visit a nearby pharmacy. For emergencies, please call 119 or #7119 (Emergency Consultation Center).</p>
+                            
+                            <h5>Q6. Is the pharmacist consultation free?</h5>
+                            <p><strong>A:</strong> Yes, it is currently free to use in the beta version. However, due to test operations, response time and content may be limited.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>💊 About Medicine Recommendations</h4>
+                            
+                            <h5>Q7. Are medicines with age restrictions automatically excluded?</h5>
+                            <p><strong>A:</strong> Yes, medicines for children under 15 years old are prioritized, and medicines with age restrictions are automatically excluded. Also, registering your age in user information enables more appropriate recommendations.</p>
+                            
+                            <h5>Q8. Are drug interactions (drug combinations) automatically checked?</h5>
+                            <p><strong>A:</strong> Yes, if you register your current medications in user information, the AI will automatically check for interactions. If applicable, a warning will be displayed and you will be prompted to consult a doctor.</p>
+                            
+                            <h5>Q9. If I have allergies, will medicines containing those ingredients not be recommended?</h5>
+                            <p><strong>A:</strong> If you register your allergies in user information, medicines containing those ingredients will be automatically excluded and a warning will be displayed. However, if allergy information is not registered, they may not be excluded, so please register in advance.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>📱 About Data & Privacy</h4>
+                            
+                            <h5>Q10. Is conversation history saved?</h5>
+                            <p><strong>A:</strong> Conversation history is maintained during the session, but is deleted when you close the browser. User information (age, gender, allergies, etc.) is saved in the browser's local storage and can be used on your next visit.</p>
+                            
+                            <h5>Q11. Is personal information managed securely?</h5>
+                            <p><strong>A:</strong> Yes, personal information is anonymized and used only for the purpose of improving recommendation quality and safety checks. For details, please check the "🔒 Privacy Policy" in the ℹ️ button.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>⚠️ About Errors & Issues</h4>
+                            
+                            <h5>Q12. An error message was displayed</h5>
+                            <p><strong>A:</strong> Please reload the page and try again. If the problem persists, please report it using the 🐛 bug report form or contact us at weary-scoots.7y@icloud.com.</p>
+                            
+                            <h5>Q13. I feel the AI's response is inappropriate</h5>
+                            <p><strong>A:</strong> Please share your feedback using the feedback function (👍👎 buttons). If more detailed reporting is needed, you can report it through the bug report form.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>📞 Contact</h4>
+                            <p>If the above does not resolve your issue, please contact us at the following:</p>
+                            <ul>
+                                <li><strong>Bug Report Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                                <li><strong>Email Address:</strong> weary-scoots.7y@icloud.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>💬 자주 묻는 질문 (FAQ)</h3>
+                        <p>본 앱에 대한 자주 묻는 질문과 답변을 정리했습니다. 궁금한 점이 있으시면 여기를 확인해 주세요.</p>
+                        
+                        <div class="info-section">
+                            <h4>🎤 기능·조작에 대해</h4>
+                            
+                            <h5>Q1. 음성 입력이 작동하지 않습니다</h5>
+                            <p><strong>A:</strong> 브라우저의 마이크 액세스 허용을 확인해 주세요. Chrome이나 Safari에서는 URL 바의 왼쪽 아이콘에서 마이크 허용 상태를 확인할 수 있습니다. 또한 HTTPS 연결(또는 localhost)에서만 음성 입력을 사용할 수 있습니다.</p>
+                            
+                            <h5>Q2. 언어 전환 버튼으로 표시 언어를 바꿔도 AI의 답변이 일본어로 남아 있습니다</h5>
+                            <p><strong>A:</strong> 현재 β판의 제한으로 인해 AI 답변의 자동 번역 기능은 중지되어 있습니다. 표시 언어는 UI 표시에만 영향을 줍니다. 번역 정확도 향상을 위해 개선을 진행하고 있습니다.</p>
+                            
+                            <h5>Q3. 여러 증상을 동시에 상담할 수 있나요?</h5>
+                            <p><strong>A:</strong> 네, 가능합니다. "머리가 아프고 기침도 나온다"와 같이 여러 증상을 한 번에 입력할 수 있습니다. AI가 종합적으로 판단하여 적절한 일반의약품을 제안합니다.</p>
+                            
+                            <h5>Q4. 사용자 정보를 등록한 후 변경하고 싶은 경우 어떻게 해야 하나요?</h5>
+                            <p><strong>A:</strong> "사용자 정보 등록" 버튼에서 언제든지 정보를 업데이트할 수 있습니다. 변경 내용은 즉시 반영되며 이후 AI 제안에 반영됩니다.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>👨‍⚕️ 약사 요청에 대해</h4>
+                            
+                            <h5>Q5. 약사 요청의 응답이 없습니다</h5>
+                            <p><strong>A:</strong> 약사는 평일 영업 시간 내에 답변합니다. 급한 경우 의료기관을 방문하거나 가까운 약국에 직접 상담하세요. 응급의 경우 119번 또는 #7119(구급 상담 센터)를 이용하세요.</p>
+                            
+                            <h5>Q6. 약사 요청은 무료인가요?</h5>
+                            <p><strong>A:</strong> 네, 현재 β판에서는 무료로 이용할 수 있습니다. 다만 시험 운영 중이므로 응답 시간이나 대응 내용은 제한적일 수 있습니다.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>💊 약 추천에 대해</h4>
+                            
+                            <h5>Q7. 연령 제한이 있는 약은 자동으로 제외되나요?</h5>
+                            <p><strong>A:</strong> 네, 15세 미만의 어린이에게는 소아용 약을 우선적으로 제안하며, 연령 제한이 있는 약은 자동으로 제외됩니다. 또한 사용자 정보에 연령을 등록하시면 더 적절한 제안이 가능합니다.</p>
+                            
+                            <h5>Q8. 약의 상호작용(복용 조합)은 자동으로 확인되나요?</h5>
+                            <p><strong>A:</strong> 네, 사용자 정보에 현재 복용 중인 약을 등록하시면 AI가 자동으로 상호작용을 확인합니다. 해당하는 경우 경고 표시가 되며 의사의 진찰을 권하는 메시지가 표시됩니다.</p>
+                            
+                            <h5>Q9. 알레르기가 있는 경우 해당 성분을 포함한 약은 제안되지 않나요?</h5>
+                            <p><strong>A:</strong> 사용자 정보에 알레르기를 등록하시면 해당 성분을 포함한 약은 자동으로 제외되고 경고 표시가 됩니다. 다만 알레르기 정보가 없는 경우 제외되지 않을 수 있으므로 반드시 사전에 등록하세요.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>📱 데이터·프라이버시에 대해</h4>
+                            
+                            <h5>Q10. 대화 기록은 저장되나요?</h5>
+                            <p><strong>A:</strong> 세션 중에는 대화 기록이 유지되지만 브라우저를 닫으면 삭제됩니다. 사용자 정보(연령, 성별, 알레르기 등)는 브라우저의 로컬 스토리지에 저장되어 다음 접속 시에도 이용할 수 있습니다.</p>
+                            
+                            <h5>Q11. 개인정보는 안전하게 관리되나요?</h5>
+                            <p><strong>A:</strong> 네, 개인정보는 익명화되어 추천 품질 향상과 안전 확인 목적으로만 이용됩니다. 자세한 내용은 ℹ️ 버튼 내의 "🔒 개인정보 처리방침"을 확인해 주세요.</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>⚠️ 오류·불구에 대해</h4>
+                            
+                            <h5>Q12. 오류 메시지가 표시되었습니다</h5>
+                            <p><strong>A:</strong> 페이지를 다시 로드하여 다시 시도해 주세요. 그래도 해결되지 않으면 🐛 버튼에서 불구 신고 양식에 보고하거나 weary-scoots.7y@icloud.com로 연락해 주세요.</p>
+                            
+                            <h5>Q13. AI의 답변이 적절하지 않다고 느껴집니다</h5>
+                            <p><strong>A:</strong> 피드백 기능(👍👎 버튼)에서 의견을 보내 주세요. 또한 더 자세한 보고가 필요한 경우 불구 신고 양식에서 보고할 수 있습니다.</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>📞 문의</h4>
+                            <p>위에서 해결되지 않는 경우 다음 연락처로 문의해 주세요.</p>
+                            <ul>
+                                <li><strong>불구 신고 양식:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                                <li><strong>메일 주소:</strong> weary-scoots.7y@icloud.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>💬 常见问题 (FAQ)</h3>
+                        <p>这里整理了关于本应用的常见问题与回答。如有疑问，请查看此处。</p>
+                        
+                        <div class="info-section">
+                            <h4>🎤 关于功能与操作</h4>
+                            
+                            <h5>Q1. 语音输入无法使用</h5>
+                            <p><strong>A:</strong> 请检查浏览器的麦克风访问权限。Chrome或Safari中，可从地址栏左侧图标确认麦克风权限状态。另外，语音输入仅在HTTPS连接（或localhost）下可用。</p>
+                            
+                            <h5>Q2. 即使通过语言切换按钮更改显示语言，AI的回复仍然是日语</h5>
+                            <p><strong>A:</strong> 由于测试版限制，AI回复的自动翻译功能目前暂停。显示语言仅影响UI显示。我们正在改进以提高翻译精度。</p>
+                            
+                            <h5>Q3. 可以同时咨询多个症状吗？</h5>
+                            <p><strong>A:</strong> 可以。您可以一次输入多个症状，例如“头痛且咳嗽”。AI会综合判断并推荐合适的非处方药。</p>
+                            
+                            <h5>Q4. 注册用户信息后如何修改？</h5>
+                            <p><strong>A:</strong> 可随时通过“用户信息”按钮更新信息。更改会立即生效，并在后续AI推荐中反映。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>👨‍⚕️ 关于药师咨询</h4>
+                            
+                            <h5>Q5. 药师请求没有回复</h5>
+                            <p><strong>A:</strong> 药师会在工作日营业时间内回复。如紧急，请就医或前往附近药房咨询。紧急情况请拨打119或#7119（急救咨询中心）。</p>
+                            
+                            <h5>Q6. 药师咨询免费吗？</h5>
+                            <p><strong>A:</strong> 是的，测试版目前可免费使用。但由于测试运行，回复时间和内容可能有限。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>💊 关于药品推荐</h4>
+                            
+                            <h5>Q7. 有年龄限制的药品会自动排除吗？</h5>
+                            <p><strong>A:</strong> 是的，15岁以下儿童会优先推荐儿童用药，有年龄限制的药品会自动排除。在用户信息中登记年龄后，可获得更合适的推荐。</p>
+                            
+                            <h5>Q8. 药品相互作用（配伍）会自动检查吗？</h5>
+                            <p><strong>A:</strong> 是的，在用户信息中登记当前正在服用的药物后，AI会自动检查相互作用。如存在，会显示警告并提示咨询医生。</p>
+                            
+                            <h5>Q9. 如果有过敏，包含该成分的药品不会被推荐吗？</h5>
+                            <p><strong>A:</strong> 在用户信息中登记过敏后，包含该成分的药品会自动排除并显示警告。但如未登记过敏信息，可能不会被排除，请务必事先登记。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>📱 关于数据与隐私</h4>
+                            
+                            <h5>Q10. 对话历史会被保存吗？</h5>
+                            <p><strong>A:</strong> 会话期间会保留对话历史，但关闭浏览器后会删除。用户信息（年龄、性别、过敏等）保存在浏览器本地存储中，下次访问时仍可使用。</p>
+                            
+                            <h5>Q11. 个人信息是否安全管理？</h5>
+                            <p><strong>A:</strong> 是的，个人信息会被匿名化，仅用于提高推荐质量和安全确认。详情请查看 ℹ️ 按钮内的“🔒 隐私政策”。</p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4>⚠️ 关于错误与故障</h4>
+                            
+                            <h5>Q12. 显示了错误消息</h5>
+                            <p><strong>A:</strong> 请刷新页面后重试。如仍未解决，请通过🐛错误报告表单报告，或联系weary-scoots.7y@icloud.com。</p>
+                            
+                            <h5>Q13. 感觉AI的回答不恰当</h5>
+                            <p><strong>A:</strong> 请通过反馈功能（👍👎按钮）提供意见。如需更详细的报告，可通过错误报告表单报告。</p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4>📞 联系</h4>
+                            <p>如上述方法无法解决，请通过以下方式联系我们：</p>
+                            <ul>
+                                <li><strong>错误报告表单:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
+                                <li><strong>电子邮件地址:</strong> weary-scoots.7y@icloud.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            }
+        },
+        
         consultation: {
             title: '医薬品相談先',
             content: {
@@ -1728,6 +2990,7 @@
         else if (pageId === 'disclaimer') translatedTitle = t.disclaimer;
         else if (pageId === 'privacy') translatedTitle = t.privacy;
         else if (pageId === 'consultation') translatedTitle = t.consultation;
+        else if (pageId === 'faq') translatedTitle = t.faq || 'よくある質問（FAQ）';
         
         document.getElementById('modalTitle').textContent = translatedTitle;
         
@@ -1741,6 +3004,29 @@
             content = content[currentLanguage];
         }
         document.getElementById('detailContent').innerHTML = content;
+        
+        // スクロール位置を一番上にリセット
+        const detailPage = document.getElementById('detailPage');
+        const modalBody = detailPage.closest('.modal-body');
+        const modalContent = detailPage.closest('.modal-content');
+        
+        // コンテンツ更新後に少し遅延を入れてスクロール位置をリセット
+        setTimeout(() => {
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+            if (modalContent) {
+                modalContent.scrollTop = 0;
+            }
+            if (detailPage) {
+                detailPage.scrollTop = 0;
+            }
+            // モーダル全体のスクロール位置もリセット（親要素も含む）
+            const detailContent = document.getElementById('detailContent');
+            if (detailContent) {
+                detailContent.scrollTop = 0;
+            }
+        }, 10);
     }
 
     // モーダル外クリックで閉じる
@@ -1864,6 +3150,9 @@
         
         // 初期メッセージの更新（新規追加）
         updateInitialMessage();
+
+        // オンボーディングの言語更新
+        updateOnboardingLanguage();
     }
     
     // モーダル内の一覧項目を翻訳
@@ -1873,7 +3162,7 @@
         // 各項目のタイトルと説明を更新
         const items = [
             { id: 'app-overview', title: t.appInfo, desc: t.appInfoDesc },
-            { id: 'usage', title: t.usage || '使い方', desc: t.usageDesc || 'アプリの使い方と安全に利用するための注意' },
+            { id: 'usage', title: t.usage || '使い方・FAQ', desc: t.usageDesc || 'アプリの使い方と安全に利用するための注意' },
             { id: 'disclaimer', title: t.disclaimer, desc: t.disclaimerDesc },
             { id: 'privacy', title: t.privacy, desc: t.privacyDesc },
             { id: 'consultation', title: t.consultation, desc: t.consultationDesc }
@@ -1888,30 +3177,19 @@
         });
     }
     
-    // クイックスタートガイドの制御
-    function showQuickStartGuide() {
-        const guideElement = document.getElementById('quick-start-guide');
-        if (guideElement) {
-            guideElement.style.display = 'block';
-        }
-    }
-    
-    function closeQuickStartGuide() {
-        const guideElement = document.getElementById('quick-start-guide');
-        if (guideElement) {
-            guideElement.style.display = 'none';
-            // sessionStorageに閉じたことを記録（二度と表示しない）
-            sessionStorage.setItem('quickStartGuideClosed', 'true');
-        }
-    }
-    
     // ページ読み込み時に言語設定を適用
     document.addEventListener('DOMContentLoaded', function() {
         updateUI();
         
-        // クイックスタートガイドの表示制御（初回アクセス時のみ）
-        if (!sessionStorage.getItem('quickStartGuideClosed')) {
-            showQuickStartGuide();
+        let onboardingCompleted = null;
+        try {
+            onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        } catch (error) {
+            console.warn('Onboarding storage access failed:', error);
+        }
+
+        if (!onboardingCompleted) {
+            initOnboarding();
         }
         
         // 言語オプションにイベントリスナーを追加
@@ -2830,6 +4108,12 @@
             })
             .then(response => {
                 if (response.ok) {
+                    // オンボーディングガイドを再表示するため、localStorageから削除
+                    try {
+                        localStorage.removeItem('onboardingCompleted');
+                    } catch (error) {
+                        console.warn('Failed to remove onboarding completion flag:', error);
+                    }
                     location.reload();
                 } else {
                     alert('新しいセッションの開始に失敗しました');
@@ -2843,7 +4127,8 @@
 
     // 薬剤師対応を要請ボタン
     document.getElementById('admin-request-btn').onclick = function() {
-        if (confirm('薬剤師対応を要請しますか？')) {
+        const message = '薬剤師対応を要請しますか？\n\n「薬剤師要請」機能は、将来的な実装を想定したデモ機能あり、実際に薬剤師が応答・返信する体制は現在稼働しておりません。そのため、ボタンを押しても実際の相談員には繋がりませんことを、あらかじめご了承ください。';
+        if (confirm(message)) {
             fetch('/api/request_admin', {
                 method: 'POST',
                 credentials: 'include',
