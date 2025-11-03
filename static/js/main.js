@@ -316,7 +316,10 @@
 
     // 現在の言語設定
     let currentLanguage = sessionStorage.getItem('language') || 'ja';
-    
+    const GOOGLE_FORM_URL = 'https://forms.gle/UB8kZHd4VHenmRUN6';
+    let currentFeedbackData = null;
+    let feedbackTriggerElement = null;
+
     // モーダル管理
     let currentModalPage = 'list';
     const modalPages = {
@@ -2202,9 +2205,262 @@
         };
         
         currentFeedbackData = reportData;
-        document.getElementById('feedbackModal').style.display = 'block';
-        document.getElementById('feedbackText').focus();
+        feedbackTriggerElement = window.event ? (window.event.currentTarget || window.event.target) : null;
+        openFeedbackModal();
     }
+
+    function prepareFeedbackPayload(source, defaultReportType) {
+        const payload = {
+            report_type: defaultReportType,
+            user_message: sessionStorage.getItem('lastUserMessage') || '',
+            ai_response: '',
+            security_score: null,
+            feedback_text: '',
+            is_google_form: false
+        };
+
+        if (typeof source === 'string') {
+            const stored = sessionStorage.getItem(`message_${source}`);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.user_message) {
+                        payload.user_message = decodeHtmlEntities(parsed.user_message);
+                    }
+                    if (parsed.ai_response) {
+                        payload.ai_response = decodeHtmlEntities(parsed.ai_response);
+                    }
+                    if (Object.prototype.hasOwnProperty.call(parsed, 'security_score')) {
+                        payload.security_score = parsed.security_score;
+                    }
+                } catch (error) {
+                    console.error('Failed to parse stored message payload:', error);
+                }
+            }
+            payload.message_id = source;
+        } else if (source && typeof source === 'object') {
+            if (Object.prototype.hasOwnProperty.call(source, 'user_message')) {
+                payload.user_message = decodeHtmlEntities(source.user_message);
+            }
+            if (Object.prototype.hasOwnProperty.call(source, 'ai_response')) {
+                payload.ai_response = decodeHtmlEntities(source.ai_response);
+            }
+            if (Object.prototype.hasOwnProperty.call(source, 'security_score')) {
+                const score = Number(source.security_score);
+                payload.security_score = Number.isFinite(score) ? score : null;
+            }
+            if (Object.prototype.hasOwnProperty.call(source, 'report_type') && source.report_type) {
+                payload.report_type = source.report_type;
+            }
+            if (Object.prototype.hasOwnProperty.call(source, 'feedback_text')) {
+                payload.feedback_text = decodeHtmlEntities(source.feedback_text);
+            }
+        }
+
+        if (!payload.ai_response) {
+            const lastBotMessage = document.querySelector('#chatMessages .message.bot:last-of-type .message-content');
+            if (lastBotMessage) {
+                payload.ai_response = lastBotMessage.innerText.trim();
+            }
+        }
+
+        return payload;
+    }
+
+    function submitFeedbackPayload(payload, options = {}) {
+        const { showThankYou = true } = options;
+        const requestBody = {
+            report_type: payload.report_type,
+            user_message: payload.user_message || '',
+            ai_response: payload.ai_response || '',
+            security_score: payload.security_score,
+            feedback_text: payload.feedback_text || '',
+            is_google_form: payload.is_google_form || false
+        };
+
+        return fetch('/api/submit_feedback', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify(requestBody)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status !== 'success') {
+                throw new Error(data.error || 'feedback_submission_failed');
+            }
+            if (showThankYou) {
+                showSuccessModal(translations[currentLanguage].feedbackThankYou || 'フィードバックありがとうございます！');
+            }
+            return data;
+        });
+    }
+
+    function markFeedbackCompleted(triggerElement, message) {
+        if (!triggerElement) {
+            return;
+        }
+        const container = triggerElement.closest('.feedback-buttons');
+        if (!container) {
+            return;
+        }
+        container.querySelectorAll('button').forEach(button => {
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            button.style.cursor = 'not-allowed';
+        });
+
+        if (message) {
+            let notice = container.querySelector('.feedback-complete-message');
+            if (!notice) {
+                notice = document.createElement('p');
+                notice.className = 'feedback-complete-message';
+                notice.style.margin = '10px 0 0';
+                notice.style.fontWeight = 'bold';
+                notice.style.color = '#28a745';
+                container.appendChild(notice);
+            }
+            notice.textContent = message;
+        }
+    }
+
+    function handlePositiveFeedback(source) {
+        try {
+            const trigger = window.event ? (window.event.currentTarget || window.event.target) : null;
+            feedbackTriggerElement = trigger;
+            const payload = prepareFeedbackPayload(source, 'positive_feedback');
+            submitFeedbackPayload(payload)
+                .then(() => {
+                    markFeedbackCompleted(trigger, translations[currentLanguage].feedbackThankYou || 'フィードバックありがとうございます！');
+                })
+                .catch(error => {
+                    console.error('Positive feedback submission failed:', error);
+                    alert('フィードバックの送信に失敗しました。時間をおいて再度お試しください。');
+                })
+                .finally(() => {
+                    feedbackTriggerElement = null;
+                });
+        } catch (error) {
+            console.error('handlePositiveFeedback error:', error);
+        }
+    }
+
+    function handleNegativeFeedback(source) {
+        try {
+            feedbackTriggerElement = window.event ? (window.event.currentTarget || window.event.target) : null;
+            currentFeedbackData = prepareFeedbackPayload(source, 'negative_feedback');
+            openFeedbackModal();
+        } catch (error) {
+            console.error('handleNegativeFeedback error:', error);
+        }
+    }
+
+    function handleSecurityReportFromButton(button) {
+        try {
+            feedbackTriggerElement = button;
+            const payloadSource = {
+                user_message: button?.dataset?.userMessage || '',
+                ai_response: button?.dataset?.aiResponse || '',
+                security_score: button?.dataset?.securityScore || null,
+                report_type: 'bug_report'
+            };
+            currentFeedbackData = prepareFeedbackPayload(payloadSource, 'bug_report');
+            openFeedbackModal();
+        } catch (error) {
+            console.error('handleSecurityReportFromButton error:', error);
+        }
+    }
+
+    function openFeedbackModal() {
+        const modal = document.getElementById('feedbackModal');
+        if (!modal) {
+            return;
+        }
+        const textarea = document.getElementById('feedbackText');
+        if (textarea) {
+            textarea.value = currentFeedbackData && currentFeedbackData.feedback_text ? currentFeedbackData.feedback_text : '';
+            textarea.placeholder = translations[currentLanguage].bugReportPrompt || textarea.placeholder;
+            textarea.focus();
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeFeedbackModal(resetState = true) {
+        const modal = document.getElementById('feedbackModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        const textarea = document.getElementById('feedbackText');
+        if (textarea) {
+            textarea.value = '';
+        }
+        if (resetState) {
+            currentFeedbackData = null;
+            feedbackTriggerElement = null;
+        }
+    }
+
+    function submitFeedback() {
+        if (!currentFeedbackData) {
+            alert('送信対象のフィードバック情報が見つかりません。');
+            return;
+        }
+
+        const textarea = document.getElementById('feedbackText');
+        const feedbackText = textarea ? textarea.value.trim() : '';
+        const payload = {
+            ...currentFeedbackData,
+            feedback_text: feedbackText
+        };
+
+        submitFeedbackPayload(payload)
+            .then(() => {
+                closeFeedbackModal(false);
+                markFeedbackCompleted(feedbackTriggerElement, translations[currentLanguage].feedbackThankYou || 'フィードバックありがとうございます！');
+                currentFeedbackData = null;
+                feedbackTriggerElement = null;
+                if (textarea) {
+                    textarea.value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Feedback submission failed:', error);
+                alert('フィードバックの送信に失敗しました。時間をおいて再度お試しください。');
+            });
+    }
+
+    function openGoogleForm() {
+        window.open(GOOGLE_FORM_URL, '_blank', 'noopener');
+    }
+
+    function showSuccessModal(message) {
+        const modal = document.getElementById('successModal');
+        const messageElement = document.getElementById('successMessage');
+        if (!modal || !messageElement) {
+            return;
+        }
+        messageElement.textContent = message;
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 2000);
+    }
+
+    window.handlePositiveFeedback = handlePositiveFeedback;
+    window.handleNegativeFeedback = handleNegativeFeedback;
+    window.handleSecurityReportFromButton = handleSecurityReportFromButton;
+    window.openFeedbackModal = openFeedbackModal;
+    window.closeFeedbackModal = closeFeedbackModal;
+    window.submitFeedback = submitFeedback;
+    window.openGoogleForm = openGoogleForm;
 
     // タイピングインジケーターを追加
     function addTypingIndicator() {
@@ -2236,6 +2492,15 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    function decodeHtmlEntities(text) {
+        if (!text) {
+            return '';
+        }
+        const div = document.createElement('textarea');
+        div.innerHTML = text;
+        return div.value;
     }
     
     // エラーメッセージを表示
