@@ -922,6 +922,29 @@
             color: #155724;
         }
         
+        /* 成功モーダルのサイズ調整 */
+        #successModal .modal-content {
+            padding: 15px;
+            margin: 10% auto;
+            max-width: 400px;
+        }
+        
+        #successModal .modal-header {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+        }
+        
+        #successModal .modal-body {
+            padding: 10px 15px;
+            margin-bottom: 0;
+        }
+        
+        #successModal .modal-body p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
         /* デスクトップ版の基本スタイル（768px以上） */
         .chat-input {
             padding: 20px;
@@ -1754,6 +1777,22 @@
                 padding-top: 6px;
             }
             
+            /* 成功モーダルのスマホ向け調整 */
+            #successModal .modal-content {
+                padding: 12px;
+                margin: 8% auto;
+                max-width: 90%;
+            }
+            
+            #successModal .modal-header {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            
+            #successModal .modal-body {
+                padding: 8px 10px;
+            }
+            
             .list-page {
                 padding: 15px;
             }
@@ -1868,6 +1907,26 @@
                 min-width: calc(50% - 3px);
             }
             
+            /* 成功モーダルの小さなスマホ向け調整 */
+            #successModal .modal-content {
+                padding: 10px;
+                margin: 5% auto;
+                max-width: 95%;
+            }
+            
+            #successModal .modal-header {
+                padding: 8px;
+                margin-bottom: 6px;
+            }
+            
+            #successModal .modal-body {
+                padding: 6px 8px;
+            }
+            
+            #successModal .modal-body p {
+                font-size: 13px;
+            }
+            
             .list-item {
                 padding: 10px 12px;
                 margin-bottom: 6px;
@@ -1909,7 +1968,7 @@
             
             .chat-header p {
                 font-size: 11px;
-                margin-top: 45px;
+                margin-top: 52px;
                 padding: 0 20px;
                 text-align: center;
                 white-space: normal;
