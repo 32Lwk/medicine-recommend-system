@@ -29,7 +29,7 @@
         .chat-header {
             background: #4CAF50;
             color: white;
-            padding: 20px;
+            padding: 20px 20px 12px;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
@@ -37,6 +37,14 @@
         .chat-header h1 {
             margin: 0;
             font-size: 28px;
+        }
+        #appTitle {
+            margin: 0;
+            margin-bottom: 6px;
+        }
+        #appDescription {
+            margin: 6px 0 12px;
+            line-height: 1.4;
         }
         
         /* Language Selector Styles */
@@ -897,7 +905,7 @@
         .button-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             flex-wrap: wrap;
             overflow-x: auto;
         }
@@ -945,7 +953,7 @@
             }
             
             .chat-header {
-                padding: 8px 5px;
+                padding: 8px 5px 6px;
             }
             
             .chat-header h1 {
@@ -955,14 +963,14 @@
             .chat-header p {
                 font-size: 11px;
                 line-height: 1.2;
-                margin: 3px 0;
+                margin: 2px 0 6px;
             }
             
             .button-group {
                 display: flex !important;
                 flex-direction: row !important;
                 gap: 5px !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 4px !important;
                 flex-wrap: wrap !important;
                 width: 100% !important;
                 max-width: 100% !important;
@@ -1110,7 +1118,7 @@
             }
             
             .chat-header {
-                padding: 15px 10px;
+                padding: 15px 10px 8px;
             }
             
             .chat-header h1 {
@@ -1132,7 +1140,7 @@
                 line-height: 1.4;
                 white-space: normal;
                 text-align: center;
-                margin-top: 50px;
+                margin-top: 40px;
                 padding: 0 20px;
             }
             
@@ -1150,7 +1158,7 @@
                 display: flex;
                 flex-direction: row;
                 gap: 4px;
-                margin-bottom: 10px;
+                margin-bottom: 5px;
                 flex-wrap: wrap !important;
                 width: 100%;
                 max-width: 100%;
@@ -1232,7 +1240,7 @@
         /* 横向き（ランドスケープ）モード対応 */
         @media (max-height: 500px) and (orientation: landscape) {
             .chat-header {
-                padding: 10px;
+                padding: 10px 10px 6px;
             }
             
             .chat-header h1 {
@@ -1745,7 +1753,7 @@
             }
             
             .chat-header p {
-                margin-top: 50px;
+                margin-top: 38px;
                 padding: 0 30px;
                 text-align: center;
                 white-space: normal;
@@ -1806,7 +1814,7 @@
             
             .chat-header p {
                 font-size: 11px;
-                margin-top: 45px;
+                margin-top: 34px;
                 padding: 0 20px;
                 text-align: center;
                 white-space: normal;
