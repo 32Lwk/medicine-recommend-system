@@ -1730,7 +1730,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
         client = OpenAI(api_key=api_key)
     
     # システム紹介質問を検出
-    system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能']
+    system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能','自己紹介','自己紹介して','自己紹介してください']
     is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
     
     if is_system_intro and not recommended_medicines:
