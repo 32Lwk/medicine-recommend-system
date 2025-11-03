@@ -865,6 +865,42 @@
             background: #0056b3;
         }
         
+        /* フィードバックモーダルの余白調整 */
+        #feedbackModal .modal-content {
+            padding: 15px;
+            margin: 10% auto;
+        }
+        
+        #feedbackModal .modal-header {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+        
+        #feedbackModal .modal-body {
+            margin-bottom: 12px;
+        }
+        
+        #feedbackModal .modal-body p {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+        
+        #feedbackModal .modal-body textarea {
+            min-height: 80px;
+            max-height: 150px;
+        }
+        
+        #feedbackModal .modal-footer {
+            margin-top: 0;
+            padding-top: 8px;
+            gap: 8px;
+        }
+        
+        #feedbackModal .modal-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -958,12 +994,13 @@
             
             .chat-header h1 {
                 font-size: 16px;
+                margin-bottom: 6px;
             }
             
             .chat-header p {
                 font-size: 11px;
                 line-height: 1.2;
-                margin: 2px 0 6px;
+                margin: 8px 0 6px;
             }
             
             .button-group {
@@ -1697,6 +1734,26 @@
                 padding: 15px;
             }
             
+            /* フィードバックモーダルのスマホ向け調整 */
+            #feedbackModal .modal-content {
+                padding: 12px;
+                margin: 8% auto;
+            }
+            
+            #feedbackModal .modal-header {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            #feedbackModal .modal-body {
+                padding: 0;
+                margin-bottom: 10px;
+            }
+            
+            #feedbackModal .modal-footer {
+                padding-top: 6px;
+            }
+            
             .list-page {
                 padding: 15px;
             }
@@ -1753,7 +1810,7 @@
             }
             
             .chat-header p {
-                margin-top: 38px;
+                margin-top: 55px;
                 padding: 0 30px;
                 text-align: center;
                 white-space: normal;
@@ -1771,6 +1828,44 @@
                 width: 98%;
                 margin: 2% auto;
                 max-height: 95vh;
+            }
+            
+            /* フィードバックモーダルの小さなスマホ向け調整 */
+            #feedbackModal .modal-content {
+                padding: 10px;
+                margin: 5% auto;
+            }
+            
+            #feedbackModal .modal-header {
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+            
+            #feedbackModal .modal-body {
+                margin-bottom: 8px;
+            }
+            
+            #feedbackModal .modal-body p {
+                margin: 0 0 6px 0;
+                font-size: 13px;
+            }
+            
+            #feedbackModal .modal-body textarea {
+                min-height: 70px;
+                max-height: 120px;
+                padding: 10px;
+            }
+            
+            #feedbackModal .modal-footer {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            #feedbackModal .modal-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                flex: 1;
+                min-width: calc(50% - 3px);
             }
             
             .list-item {
@@ -1814,7 +1909,7 @@
             
             .chat-header p {
                 font-size: 11px;
-                margin-top: 34px;
+                margin-top: 45px;
                 padding: 0 20px;
                 text-align: center;
                 white-space: normal;
