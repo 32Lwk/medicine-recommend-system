@@ -213,12 +213,13 @@ class DatabaseManager:
                        ai_response, security_score=None, feedback_text=None, 
                        is_google_form=False):
         """フィードバックをデータベースに保存"""
-        if not self.connection:
+        conn = self.get_connection()
+        if not conn:
             logger.error("❌ No database connection")
             return False
             
         try:
-            cursor = self.connection.cursor()
+            cursor = conn.cursor()
             
             insert_sql = """
             INSERT INTO feedback_reports 
@@ -234,24 +235,29 @@ class DatabaseManager:
             ))
             
             feedback_id = cursor.fetchone()[0]
-            self.connection.commit()
+            conn.commit()
             cursor.close()
+            self.put_connection(conn)
             
             logger.info(f"✅ Feedback saved with ID: {feedback_id}")
             return feedback_id
             
         except Exception as e:
             logger.error(f"❌ Failed to save feedback: {str(e)}")
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
             return False
     
     def get_feedback_reports(self, limit=100, unresolved_only=False):
         """フィードバック報告一覧を取得"""
-        if not self.connection:
+        conn = self.get_connection()
+        if not conn:
             logger.error("❌ No database connection")
             return []
             
         try:
-            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             
             where_clause = "WHERE resolved = FALSE" if unresolved_only else ""
             limit_clause = f"LIMIT {limit}"
@@ -266,6 +272,7 @@ class DatabaseManager:
             cursor.execute(select_sql)
             results = cursor.fetchall()
             cursor.close()
+            self.put_connection(conn)
             
             # RealDictCursorの結果を辞書のリストに変換
             reports = []
@@ -281,16 +288,19 @@ class DatabaseManager:
             
         except Exception as e:
             logger.error(f"❌ Failed to get feedback reports: {str(e)}")
+            if conn:
+                self.put_connection(conn)
             return []
     
     def resolve_feedback(self, feedback_id):
         """フィードバックを解決済みにマーク"""
-        if not self.connection:
+        conn = self.get_connection()
+        if not conn:
             logger.error("❌ No database connection")
             return False
             
         try:
-            cursor = self.connection.cursor()
+            cursor = conn.cursor()
             
             update_sql = """
             UPDATE feedback_reports 
@@ -299,24 +309,29 @@ class DatabaseManager:
             """
             
             cursor.execute(update_sql, (feedback_id,))
-            self.connection.commit()
+            conn.commit()
             cursor.close()
+            self.put_connection(conn)
             
             logger.info(f"✅ Feedback {feedback_id} marked as resolved")
             return True
             
         except Exception as e:
             logger.error(f"❌ Failed to resolve feedback: {str(e)}")
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
             return False
 
     def delete_feedback(self, feedback_id):
         """フィードバックを削除"""
-        if not self.connection:
+        conn = self.get_connection()
+        if not conn:
             logger.error("❌ No database connection")
             return False
 
         try:
-            cursor = self.connection.cursor()
+            cursor = conn.cursor()
 
             delete_sql = """
             DELETE FROM feedback_reports
@@ -324,14 +339,18 @@ class DatabaseManager:
             """
 
             cursor.execute(delete_sql, (feedback_id,))
-            self.connection.commit()
+            conn.commit()
             cursor.close()
+            self.put_connection(conn)
 
             logger.info(f"🗑️ Feedback {feedback_id} deleted")
             return True
 
         except Exception as e:
             logger.error(f"❌ Failed to delete feedback: {str(e)}")
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
             return False
     
     def save_session(self, session_id, data):
