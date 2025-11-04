@@ -17,6 +17,12 @@
 
 ## 🚀 主要機能
 
+### 🔄 マルチインスタンス対応（2025年11月5日追加）
+- **PostgreSQLベースのセッション管理**: 複数インスタンス間でセッションデータを共有
+- **グローバル状態の同期**: AI_AUTO_REPLY、ADMIN_MODE、MANUAL_REPLY_QUEUEをDBで管理
+- **Render Manual Scaling対応**: 2-3台のインスタンスで同時接続15台に対応
+- **自動フォールバック**: DB接続失敗時はメモリベースの動作にフォールバック
+
 ### ✨ ハイブリッド推奨システム（2025年11月2日更新）
 - **ルールベース推奨**: 全医薬品種類に対して透明性の高いルールベースアルゴリズムを適用（SYMPTOM_DICTIONARYから動的判定）
 - **AI推奨**: ChatGPTによる柔軟なフォールバック機能（confidence < 0.4 の場合のみ）
@@ -73,9 +79,16 @@
 - **年齢制限**: 個別の医薬品ごとに年齢制限を明示
 - **使用上の注意**: データベース情報を活用した詳細な注意事項
 
-### 👨‍⚕️ 管理者機能
+### 👨‍⚕️ 管理者機能（2025年11月5日更新）
 - **手動介入モード**: AIの自動応答を停止し、管理者が手動で返信
 - **セッション管理**: 複数ユーザーのセッションを一元管理
+  - **セッション管理ボタン**: /adminページに「📋 セッション管理」ボタンを追加
+  - **セッション一覧表示**: 全セッション情報を確認可能（ユーザー名、セッションID、アクティブ状態、メッセージ数、最終アクティビティ、IPアドレスなど）
+  - **セッション検索**: セッションID/ユーザー名で検索・フィルタリング
+  - **個別削除**: 各セッションを個別に削除可能
+  - **全削除**: 全セッションを一括削除（二重確認付き）
+  - **セッション編集**: ユーザー名とアクティブ状態の変更
+  - **自動クリーンアップ**: 期限切れセッションの自動削除（アクティブセッション: 10分、終了セッション: 5分）
 - **ログ監視**: 推奨履歴とユーザーの活動をリアルタイムで監視
 - **監視ダッシュボード**: リアルタイムシステム監視機能
   - アクセス統計（ブラウザ・OS・デバイス分布）
@@ -150,9 +163,9 @@ source ~/.bashrc
 OPENAI_API_KEY=your-api-key-here
 ```
 
-### 3. データベースの設定（PostgreSQL、オプション）
+### 3. データベースの設定（PostgreSQL、推奨）
 
-フィードバック機能を使用する場合：
+**フィードバック機能とセッション管理を使用する場合（マルチインスタンス対応に必須）:**
 
 ```bash
 # PostgreSQLのインストール（Ubuntu/Debian）
@@ -164,6 +177,14 @@ sudo -u postgres createdb medicine_feedback
 # 環境変数の設定
 export DATABASE_URL="postgresql://username:password@localhost/medicine_feedback"
 ```
+
+**データベーススキーマ**:
+- `feedback_reports`テーブル: フィードバックデータの保存
+- `sessions`テーブル: セッションデータの保存（マルチインスタンス対応）
+- `global_state`テーブル: グローバル状態の保存（AI_AUTO_REPLY、ADMIN_MODE、MANUAL_REPLY_QUEUE）
+
+**初期化**:
+- アプリケーション起動時に`init_database()`が自動実行され、必要なテーブルが自動作成されます
 
 ### 4. データファイルの確認
 
@@ -787,30 +808,55 @@ Layer 5: 最終判定
    - 適切/不適切の評価を収集
 ```
 
-### 11. セッション管理と属性継承
+### 11. セッション管理と属性継承（2025年11月5日更新）
 
-#### 11.1 セッション情報の保存
+#### 11.1 セッション情報の保存（PostgreSQLベース）
+**マルチインスタンス対応のため、セッションデータをPostgreSQLに保存:**
+
 ```python
-session['user_attributes'] = {
-    'age': int,           # 年齢
-    'gender': str,        # 性別
-    'pregnant': bool,     # 妊娠中
-    'breastfeeding': bool, # 授乳中
-    'allergies': list,     # アレルギーリスト
-    'current_medications': list,  # 服用中の薬
-    'medical_history': list,      # 既往症
-    'symptom_duration_days': int, # 症状期間
-    'other_info': str            # その他情報
+# PostgreSQL sessionsテーブルに保存
+{
+    'session_id': str,           # セッションID（PRIMARY KEY）
+    'username': str,             # ユーザー名
+    'messages': list,            # 会話履歴（JSONB）
+    'user_attributes': {
+        'age': int,              # 年齢
+        'gender': str,           # 性別
+        'pregnant': bool,        # 妊娠中
+        'breastfeeding': bool,   # 授乳中
+        'allergies': list,       # アレルギーリスト
+        'current_medications': list,  # 服用中の薬
+        'medical_history': list,      # 既往症
+        'symptom_duration_days': int,  # 症状期間
+        'other_info': str             # その他情報
+    },
+    'last_activity': datetime,   # 最終アクティビティ時刻
+    'client_ip': str,           # クライアントIP
+    'user_agent': str,          # ユーザーエージェント
+    'created_at': datetime      # 作成日時
 }
 ```
+
+**グローバル状態もPostgreSQLに保存（`global_state`テーブル）:**
+- `AI_AUTO_REPLY`: AI自動応答のON/OFF状態
+- `ADMIN_MODE`: 管理者モードの有効/無効状態
+- `MANUAL_REPLY_QUEUE`: 手動返信キュー（JSONB配列）
 
 #### 11.2 属性の更新プロセス
 1. 初回入力時に属性抽出
 2. 追加の質問に回答した場合に属性更新
 3. セッション全体で属性を継承
 4. 一度回答された質問は繰り返さない
+5. **PostgreSQLに保存され、マルチインスタンス間で共有**
 
-### 12. パフォーマンス最適化
+#### 11.3 マルチインスタンス対応（2025年11月5日追加）
+- **セッションデータの共有**: PostgreSQLを使用して複数インスタンス間でセッションデータを共有
+- **グローバル状態の共有**: AI_AUTO_REPLY、ADMIN_MODE、MANUAL_REPLY_QUEUEをDBで管理
+- **自動フォールバック**: DB接続失敗時はメモリベースの動作にフォールバック（警告表示）
+- **セッションクリーンアップ**: 期限切れセッション（SESSION_TIMEOUT: 600秒）の自動削除
+- **接続プール**: psycopg2.poolによる接続管理と再利用
+
+### 12. パフォーマンス最適化（2025年11月5日更新）
 
 #### 12.1 キャッシュ機構
 ```
@@ -835,6 +881,36 @@ NLUキャッシュ:
 - グローバル変数でキャッシュ
 - 初回読み込み後は即座にアクセス
 ```
+
+#### 12.3 マルチインスタンス対応とスケーリング最適化（2025年11月5日追加）
+**目標**: Render Manual Scalingで2-3台のインスタンスに対応し、同時接続15台で確実に返信可能に
+
+**実装内容**:
+1. **セッションデータのPostgreSQL移行**
+   - `ALL_SESSIONS`辞書からPostgreSQL `sessions`テーブルへ移行
+   - 複数インスタンス間でセッションデータを共有
+   - セッション取得/保存/削除のDB操作を統一
+
+2. **グローバル状態のPostgreSQL移行**
+   - `AI_AUTO_REPLY`, `ADMIN_MODE`, `MANUAL_REPLY_QUEUE`を`global_state`テーブルに保存
+   - 全インスタンス間で状態を同期
+
+3. **接続プールの最適化**
+   - psycopg2.poolによる接続管理
+   - 接続の再利用とタイムアウト設定の最適化
+
+4. **セッションクリーンアップの最適化**
+   - 期限切れセッション（SESSION_TIMEOUT: 600秒）の自動削除
+   - バックグラウンドタスクによる定期クリーンアップ
+
+5. **フォールバック機能**
+   - DB接続失敗時はメモリベースの動作にフォールバック
+   - アプリケーションの継続動作を保証
+
+**Render設定**:
+- RenderダッシュボードでManual Scalingを2-3台に設定可能
+- 各インスタンスが同じPostgreSQLデータベースを共有
+- ロードバランサーによる自動分散
 
 ### 13. ログと監査
 
@@ -1226,7 +1302,7 @@ safe_json_parse(result, schema='medicine_recommendation')
 ### コアモジュール
 - `medicine_logic.py`: 医薬品推奨ロジック（多言語対応・医薬品検索）
 - `rule_based_recommendation.py`: ルールベースアルゴリズム（全医薬品種類対応）
-- `database.py`: PostgreSQLデータベース管理（フィードバック保存）
+- `database.py`: PostgreSQLデータベース管理（フィードバック保存・セッション管理・グローバル状態管理・マルチインスタンス対応）
 - `scoring_utils.py`: スコアリングユーティリティ
 - `enhanced_safety_checker.py`: 安全性チェック強化モジュール
 - `json_validator.py`: JSON検証モジュール
@@ -1420,6 +1496,24 @@ gunicorn -c gunicorn_config.py app:app
 gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 300 app:app
 ```
 
+### Render環境でのマルチインスタンス設定（2025年11月5日追加）
+
+**Manual Scaling設定手順**:
+1. Renderダッシュボードでサービスを選択
+2. Settings → Manual Scaling セクションへ移動
+3. Instance Count を 1 → 2 または 3 に変更
+4. Save Changes をクリック
+
+**環境変数の確認**:
+- `DATABASE_URL`: 全インスタンスで正しく設定されているか確認
+- セッションデータとグローバル状態はPostgreSQLで共有されます
+
+**マルチインスタンス対応のメリット**:
+- 同時接続数の増加に対応（目標: 15台）
+- インスタンス間でセッションデータを共有
+- グローバル状態（AI_AUTO_REPLY等）の同期
+- ロードバランサーによる自動分散
+
 ### ログの確認
 
 ```bash
@@ -1486,7 +1580,7 @@ POST /api/admin_mode      # 管理者モード切り替え
 
 - **バックエンド**: Python 3.9+, Flask 3.0.0
 - **AI**: OpenAI GPT-4o-mini, 多言語対応
-- **データベース**: PostgreSQL（フィードバック永続化）
+- **データベース**: PostgreSQL（フィードバック永続化・セッション管理・グローバル状態管理・マルチインスタンス対応）
 - **データ処理**: Pandas 2.2.3, NumPy
 - **フロントエンド**: HTML5, CSS3, JavaScript（ES6+）
   - **リソース最適化**: CSS/JavaScriptの外部分割、クリティカルパス最適化
@@ -1538,3 +1632,52 @@ POST /api/admin_mode      # 管理者モード切り替え
 - 連絡先: weary-scoots.7y@icloud.com
 - 不具合報告フォーム: https://forms.gle/UB8kZHd4VHenmRUN6
 - 開発リポジトリ: https://github.com/32Lwk
+
+## 📝 最近の更新履歴
+
+### 2025年11月5日
+- **セッション管理機能の追加**
+  - /adminページに「📋 セッション管理」ボタンを追加
+  - セッション一覧表示、検索、個別削除、全削除、編集機能を実装
+  - セッション情報の詳細表示（ユーザー名、ID、アクティブ状態、メッセージ数、最終アクティビティ、IPアドレスなど）
+
+- **テストスイートの作成**
+  - 単体テスト（test_unit.py）: 17個のテストケース（100%成功）
+  - 統合テスト（test_integration.py）: ユーザー側と管理者側の統合的な動作をテスト
+  - 包括的デプロイテスト（test_comprehensive_deployment.py）: デプロイ前の包括的な動作確認
+  - 全テスト実行スクリプト（test_run_all.py）を作成
+  - データベースモックを使用したテスト環境を構築
+
+- **エラー修正**
+  - `UnboundLocalError: cannot access local variable 'datetime'` を修正（明示的なインポート追加）
+  - JSONシリアライゼーションエラーを修正（Mockオブジェクトの検出と処理）
+  - セッションデータのnullチェックを追加
+  - セッションmodified属性の存在チェックを追加
+  - `cleanup_expired_sessions`の戻り値チェックを追加
+
+- **コード品質向上**
+  - エラーハンドリングの強化
+  - 型安全性の向上
+  - テストカバレッジの向上
+
+### 2025年11月4日
+- **マルチインスタンス対応**
+  - PostgreSQLベースのセッション管理を実装
+  - グローバル状態の同期機能を追加
+  - Render Manual Scaling対応（2-3台のインスタンスで同時接続15台に対応）
+  - 自動フォールバック機能を実装
+
+### 2025年11月2日
+- **ハイブリッド推奨システムの更新**
+  - ルールベース推奨の精度向上
+  - AI推奨のフォールバック機能を改善
+  - インフルエンザ検出機能の追加
+  - 症状特異性ペナルティの実装
+  - リスク成分フィルタリングの強化
+  - 曖昧症状の質問生成機能の追加
+
+- **UI/UX改善**
+  - リソース分割による初期表示速度の改善
+  - オンボーディングガイドの追加
+  - 使い方ガイド・FAQの追加
+  - レスポンシブデザインの改善
