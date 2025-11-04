@@ -375,7 +375,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
             return
     
     db = get_database()
-    if db and db.connection:
+    if db and db.connection and hasattr(db, 'cleanup_expired_sessions'):
         # 現在のセッションIDを取得（削除から除外するため）
         exclude_session_ids = []
         if exclude_current_session:
@@ -383,19 +383,24 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
             if current_sid:
                 exclude_session_ids.append(current_sid)
         
-        # DBから期限切れセッションを削除
-        # - アクティブなセッション: SESSION_TIMEOUT秒以上アクティブでない場合
-        # - チャット終了済みセッション: CHAT_END_TIMEOUT秒以上経過した場合
-        deleted_count = db.cleanup_expired_sessions(
-            SESSION_TIMEOUT, 
-            exclude_session_ids=exclude_session_ids if exclude_session_ids else None,
-            chat_end_timeout_seconds=CHAT_END_TIMEOUT
-        )
-        # deleted_countが整数の場合のみチェック
-        if isinstance(deleted_count, int) and deleted_count > 0:
-            logger.info(f"🧹 セッションクリーンアップ完了: {deleted_count}件削除")
-        LAST_CLEANUP_TIME = current_time
-        return
+        try:
+            # DBから期限切れセッションを削除
+            # - アクティブなセッション: SESSION_TIMEOUT秒以上アクティブでない場合
+            # - チャット終了済みセッション: CHAT_END_TIMEOUT秒以上経過した場合
+            deleted_count = db.cleanup_expired_sessions(
+                SESSION_TIMEOUT, 
+                exclude_session_ids=exclude_session_ids if exclude_session_ids else None,
+                chat_end_timeout_seconds=CHAT_END_TIMEOUT
+            )
+            # deleted_countが整数の場合のみチェック
+            if isinstance(deleted_count, int) and deleted_count > 0:
+                logger.info(f"🧹 セッションクリーンアップ完了: {deleted_count}件削除")
+            LAST_CLEANUP_TIME = current_time
+            return
+        except AttributeError as e:
+            logger.warning(f"⚠️ cleanup_expired_sessions メソッドが利用できません: {e}。フォールバック処理に進みます。")
+        except Exception as e:
+            logger.error(f"❌ セッションクリーンアップ中にエラーが発生しました: {e}。フォールバック処理に進みます。")
     
     # フォールバック: メモリベースのクリーンアップ
     current_time = time.time()
