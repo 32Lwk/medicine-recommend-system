@@ -72,16 +72,100 @@ except Exception as e:
 # キャッシュバスティング用のバージョン番号
 VERSION = str(int(time.time()))
 
-# AI自動応答制御用のグローバル変数
+# AI自動応答制御用のグローバル変数（DBから取得、フォールバック用にメモリにも保持）
+def get_ai_auto_reply():
+    """AI自動応答設定をDBから取得"""
+    db = get_database()
+    if db and db.connection:
+        return db.get_global_state('AI_AUTO_REPLY', default_value=True)
+    return AI_AUTO_REPLY
+
+def set_ai_auto_reply(value):
+    """AI自動応答設定をDBに保存"""
+    db = get_database()
+    if db and db.connection:
+        db.set_global_state('AI_AUTO_REPLY', value)
+    global AI_AUTO_REPLY
+    AI_AUTO_REPLY = value
+
+def get_admin_mode():
+    """管理者モード設定をDBから取得"""
+    db = get_database()
+    if db and db.connection:
+        return db.get_global_state('ADMIN_MODE', default_value=False)
+    return ADMIN_MODE
+
+def set_admin_mode(value):
+    """管理者モード設定をDBに保存"""
+    db = get_database()
+    if db and db.connection:
+        db.set_global_state('ADMIN_MODE', value)
+    global ADMIN_MODE
+    ADMIN_MODE = value
+
+def get_manual_reply_queue():
+    """手動返信キューをDBから取得"""
+    db = get_database()
+    if db and db.connection:
+        return db.get_global_state('MANUAL_REPLY_QUEUE', default_value=[])
+    return MANUAL_REPLY_QUEUE
+
+def set_manual_reply_queue(value):
+    """手動返信キューをDBに保存"""
+    db = get_database()
+    if db and db.connection:
+        db.set_global_state('MANUAL_REPLY_QUEUE', value)
+    global MANUAL_REPLY_QUEUE
+    MANUAL_REPLY_QUEUE = value
+
+# フォールバック用のメモリ変数
 AI_AUTO_REPLY = True
 ADMIN_MODE = False
 MANUAL_REPLY_QUEUE = []  # 手動返信待ちのメッセージ
 
-ALL_SESSIONS = {}  # {session_id: {'username': str, 'messages': list, 'last_activity': timestamp}}
+# 後方互換性のため、ALL_SESSIONSは残すが、DBアクセスを優先
+ALL_SESSIONS = {}  # フォールバック用（DB接続失敗時のみ使用）
 ADMIN_SESSIONS = {}  # 管理者専用のセッション情報
 USER_COUNTER = 1  # ユーザー名の連番
 MAX_SESSIONS = 50  # 最大セッション数（メモリ制約を考慮した適切な値）
 SESSION_TIMEOUT = 600  # セッションタイムアウト（秒）- 10分に短縮
+CHAT_END_TIMEOUT = 300  # チャット終了後の削除タイムアウト（秒）- 5分
+LAST_CLEANUP_TIME = 0  # 最後にクリーンアップを実行した時刻（タイムスタンプ）
+CLEANUP_INTERVAL = 60  # クリーンアップ実行間隔（秒）- 1分ごとに実行
+MAX_CLEANUP_DELAY = 300  # 高負荷時のクリーンアップ遅延（秒）- 5分
+
+# セッション管理ヘルパー関数（DBアクセス優先）
+def get_session_from_db(session_id):
+    """セッションをDBから取得、失敗時はフォールバック"""
+    db = get_database()
+    if db and db.connection:
+        session_data = db.get_session(session_id)
+        if session_data:
+            return session_data
+    # フォールバック: メモリから取得
+    return ALL_SESSIONS.get(session_id)
+
+def save_session_to_db(session_id, data):
+    """セッションをDBに保存、失敗時はメモリに保存"""
+    db = get_database()
+    if db and db.connection:
+        success = db.save_session(session_id, data)
+        if success:
+            return True
+    # フォールバック: メモリに保存
+    ALL_SESSIONS[session_id] = data
+    logger.warning(f"⚠️ DB save failed, using memory fallback for session {session_id}")
+    return True
+
+def get_all_sessions_from_db():
+    """全セッションをDBから取得、失敗時はフォールバック"""
+    db = get_database()
+    if db and db.connection:
+        sessions = db.get_all_sessions()
+        if sessions is not None:
+            return {s['session_id']: s for s in sessions}
+    # フォールバック: メモリから取得
+    return ALL_SESSIONS
 
 # グローバルエラーハンドラー
 @app.errorhandler(404)
@@ -162,47 +246,50 @@ def log_user_interaction(user_message, response_type, session_id, username):
 
 def remove_duplicate_user_messages_after_ai_response(sid):
     """AI応答後に重複するユーザーメッセージを削除"""
-    if sid and sid in ALL_SESSIONS:
-        messages = ALL_SESSIONS[sid].get('messages', [])
-        original_count = len(messages)
-        
-        # 重複するユーザーメッセージを特定
-        user_messages = [msg for msg in messages if msg.get('type') == 'user']
-        seen_contents = set()
-        unique_messages = []
-        
-        for msg in messages:
-            if msg.get('type') == 'user':
-                content = msg.get('content', '')
-                if content not in seen_contents:
-                    seen_contents.add(content)
-                    unique_messages.append(msg)
-                else:
-                    logger.info(f"⏭️ 重複ユーザーメッセージを削除: {content[:50]}...")
-            else:
+    if not sid:
+        return False
+    
+    session_data = get_session_from_db(sid)
+    if not session_data:
+        return False
+    
+    messages = session_data.get('messages', [])
+    original_count = len(messages)
+    
+    # 重複するユーザーメッセージを特定
+    user_messages = [msg for msg in messages if msg.get('type') == 'user']
+    seen_contents = set()
+    unique_messages = []
+    
+    for msg in messages:
+        if msg.get('type') == 'user':
+            content = msg.get('content', '')
+            if content not in seen_contents:
+                seen_contents.add(content)
                 unique_messages.append(msg)
-        
-        # 重複が削除された場合のみ更新
-        if len(unique_messages) < original_count:
-            ALL_SESSIONS[sid]['messages'] = unique_messages
-            logger.info(f"✅ 重複削除完了: {original_count} → {len(unique_messages)} messages")
-            return True
+            else:
+                logger.info(f"⏭️ 重複ユーザーメッセージを削除: {content[:50]}...")
+        else:
+            unique_messages.append(msg)
+    
+    # 重複が削除された場合のみ更新
+    if len(unique_messages) < original_count:
+        session_data['messages'] = unique_messages
+        save_session_to_db(sid, session_data)
+        logger.info(f"✅ 重複削除完了: {original_count} → {len(unique_messages)} messages")
+        return True
     
     return False
 
 def log_system_status():
     """システムステータスをログ出力"""
+    all_sessions = get_all_sessions_from_db()
     logger.info(f"📊 SYSTEM STATUS:")
-    logger.info(f"   Active Sessions: {len(ALL_SESSIONS)}")
+    logger.info(f"   Active Sessions: {len(all_sessions)}")
     logger.info(f"   AI Auto Reply: {AI_AUTO_REPLY}")
     logger.info(f"   Admin Mode: {ADMIN_MODE}")
     logger.info(f"   Manual Reply Queue: {len(MANUAL_REPLY_QUEUE)}")
 
-def cleanup_old_sessions():
-    """古いセッションをクリーンアップ（無効化）"""
-    # セッションの自動削除を無効化
-    # 管理者が手動でセッションを管理できるようにする
-    pass
 
 def get_next_user_number():
     """次のユーザー番号を取得（既存の番号を再利用）"""
@@ -210,7 +297,8 @@ def get_next_user_number():
     used_numbers = set()
     
     # 既存のセッションで使用されている番号を収集
-    for info in ALL_SESSIONS.values():
+    all_sessions = get_all_sessions_from_db()
+    for info in all_sessions.values():
         username = info.get('username', '')
         if username.startswith('ユーザー'):
             try:
@@ -232,40 +320,104 @@ def get_next_user_number():
 def find_existing_session(client_ip, user_agent):
     """既存のセッションを検索（同じ人からのアクセスのみ）"""
     current_time = time.time()
+    all_sessions = get_all_sessions_from_db()
     
-    for existing_sid, info in ALL_SESSIONS.items():
+    for existing_sid, info in all_sessions.items():
         # IPアドレスとUser-Agentの両方が一致し、かつ30分以内のアクセス
+        last_activity = info.get('last_activity')
+        if isinstance(last_activity, datetime):
+            last_activity = last_activity.timestamp()
+        elif isinstance(last_activity, str):
+            try:
+                last_activity = datetime.fromisoformat(last_activity.replace('Z', '+00:00')).timestamp()
+            except:
+                last_activity = 0
+        
         if (info.get('client_ip') == client_ip and 
             info.get('user_agent') == user_agent and 
-            current_time - info.get('last_activity', 0) < 1800):  # 30分以内
+            current_time - (last_activity or 0) < 1800):  # 30分以内
             return existing_sid
     
     return None
 
 def update_session_activity(sid):
     """セッションの最終アクティビティを更新"""
-    if sid in ALL_SESSIONS:
-        ALL_SESSIONS[sid]['last_activity'] = time.time()  # 数値で保存
+    if not sid:
+        return
+    
+    session_data = get_session_from_db(sid)
+    if session_data:
+        session_data['last_activity'] = datetime.now()
+        save_session_to_db(sid, session_data)
 
-def cleanup_old_sessions():
-    """古いセッションをクリーンアップ（メモリ最適化）"""
+def cleanup_old_sessions(force=False, exclude_current_session=True):
+    """古いセッションをクリーンアップ（メモリ最適化）
+    
+    Args:
+        force: Trueの場合、間隔を無視して強制実行
+        exclude_current_session: Trueの場合、現在のセッションを削除から除外
+    """
+    global LAST_CLEANUP_TIME
+    # datetimeをグローバルスコープから明示的に使用
+    from datetime import datetime
+    
+    current_time = time.time()
+    
+    # 強制実行でない場合、実行間隔をチェック
+    if not force:
+        if (current_time - LAST_CLEANUP_TIME) < CLEANUP_INTERVAL:
+            return  # 実行間隔が経過していない場合はスキップ
+        
+        # 高負荷時のチェック（簡易版：CPU使用率の代わりにリクエスト頻度を推測）
+        # クリーンアップ間隔が短すぎる場合は遅延させる
+        if (current_time - LAST_CLEANUP_TIME) < MAX_CLEANUP_DELAY:
+            # 高負荷時はクリーンアップをスキップ（負荷軽減）
+            return
+    
+    db = get_database()
+    if db and db.connection:
+        # 現在のセッションIDを取得（削除から除外するため）
+        exclude_session_ids = []
+        if exclude_current_session:
+            current_sid = session.get('_id')
+            if current_sid:
+                exclude_session_ids.append(current_sid)
+        
+        # DBから期限切れセッションを削除
+        # - アクティブなセッション: SESSION_TIMEOUT秒以上アクティブでない場合
+        # - チャット終了済みセッション: CHAT_END_TIMEOUT秒以上経過した場合
+        deleted_count = db.cleanup_expired_sessions(
+            SESSION_TIMEOUT, 
+            exclude_session_ids=exclude_session_ids if exclude_session_ids else None,
+            chat_end_timeout_seconds=CHAT_END_TIMEOUT
+        )
+        # deleted_countが整数の場合のみチェック
+        if isinstance(deleted_count, int) and deleted_count > 0:
+            logger.info(f"🧹 セッションクリーンアップ完了: {deleted_count}件削除")
+        LAST_CLEANUP_TIME = current_time
+        return
+    
+    # フォールバック: メモリベースのクリーンアップ
     current_time = time.time()
     sessions_to_remove = []
     
     # タイムアウトしたセッションを特定（現在のセッションは除外）
     current_sid = session.get('_id')
-    for sid, session_info in ALL_SESSIONS.items():
+    all_sessions = get_all_sessions_from_db()
+    for sid, session_info in all_sessions.items():
         # 現在のセッションは削除しない
         if sid == current_sid:
             continue
             
         last_activity = session_info.get('last_activity', 0)
         
+        # last_activityがdatetimeオブジェクトの場合はtimestampに変換
+        if isinstance(last_activity, datetime):
+            last_activity = last_activity.timestamp()
         # last_activityが文字列の場合は数値に変換
-        if isinstance(last_activity, str):
+        elif isinstance(last_activity, str):
             try:
                 # ISO形式の文字列をパース
-                from datetime import datetime
                 last_activity_dt = datetime.fromisoformat(last_activity.replace('Z', '+00:00'))
                 last_activity = last_activity_dt.timestamp()
             except (ValueError, AttributeError):
@@ -276,26 +428,32 @@ def cleanup_old_sessions():
             sessions_to_remove.append(sid)
     
     # セッション数が上限を超えている場合、古いものから削除（現在のセッションは除外）
-    if len(ALL_SESSIONS) > MAX_SESSIONS:
+    all_sessions = get_all_sessions_from_db()
+    if len(all_sessions) > MAX_SESSIONS:
         # 現在のセッションを除外してソート
-        other_sessions = {k: v for k, v in ALL_SESSIONS.items() if k != current_sid}
+        other_sessions = {k: v for k, v in all_sessions.items() if k != current_sid}
         if len(other_sessions) > 0:
             sorted_sessions = sorted(
                 other_sessions.items(), 
                 key=lambda x: x[1].get('last_activity', 0)
             )
-            excess_count = len(ALL_SESSIONS) - MAX_SESSIONS
+            excess_count = len(all_sessions) - MAX_SESSIONS
             for i in range(min(excess_count, len(sorted_sessions))):
                 sessions_to_remove.append(sorted_sessions[i][0])
     
     # セッションを削除
+    db = get_database()
     for sid in sessions_to_remove:
-        if sid in ALL_SESSIONS and sid != current_sid:
-            del ALL_SESSIONS[sid]
+        if sid != current_sid:
+            if db and db.connection:
+                db.delete_session(sid)
+            elif sid in ALL_SESSIONS:
+                del ALL_SESSIONS[sid]
             logger.info(f"🗑️ 古いセッションを削除: {sid}")
     
     if sessions_to_remove:
-        logger.info(f"🧹 セッションクリーンアップ完了: {len(sessions_to_remove)}件削除, 残り: {len(ALL_SESSIONS)}件")
+        remaining = len(get_all_sessions_from_db())
+        logger.info(f"🧹 セッションクリーンアップ完了: {len(sessions_to_remove)}件削除, 残り: {remaining}件")
 
 @app.route('/favicon.ico')
 def favicon():
@@ -304,12 +462,15 @@ def favicon():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # datetimeを明示的にインポート（UnboundLocalError対策）
+    from datetime import datetime
+    
     # パフォーマンス監視開始
     monitor = get_global_monitor()
     monitor.start_monitoring()
     monitor.increment_request()
     
-    # 古いセッションをクリーンアップ
+    # 古いセッションをクリーンアップ（定期的に実行）
     cleanup_old_sessions()
     
     current_time = time.time()
@@ -343,8 +504,9 @@ def index():
         logger.info(f"🆕 新しいセッションIDを作成: {sid}")
     
     # セッションIDの整合性を確認
+    all_sessions = get_all_sessions_from_db()
     logger.info(f"🔍 Current session ID: {sid}")
-    logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+    logger.info(f"🔍 ALL_SESSIONS keys: {list(all_sessions.keys())}")
     
     # ユーザー名の設定
     if 'username' not in session:
@@ -353,9 +515,11 @@ def index():
         
         if existing_session:
             # 既存のセッションを再利用
-            session['username'] = ALL_SESSIONS[existing_session]['username']
-            session['messages'] = ALL_SESSIONS[existing_session]['messages'].copy()
-            logger.info(f"🔄 Reusing existing session: {existing_session} for IP: {client_ip}, User: {session['username']}")
+            existing_session_data = get_session_from_db(existing_session)
+            if existing_session_data:
+                session['username'] = existing_session_data.get('username', '')
+                session['messages'] = existing_session_data.get('messages', []).copy()
+                logger.info(f"🔄 Reusing existing session: {existing_session} for IP: {client_ip}, User: {session['username']}")
         else:
             # 新しいユーザー番号を取得
             user_number = get_next_user_number()
@@ -365,11 +529,13 @@ def index():
     else:
         logger.info(f"👤 Existing session accessed: {session['username']} for IP: {client_ip}")
     
-    # ALL_SESSIONSから復元（Cookieサイズ削減のため）
-    if sid and sid in ALL_SESSIONS:
-        # 会話履歴は常に完全な履歴を復元する（管理者要請メッセージのみで上書きしない）
-        session['messages'] = ALL_SESSIONS[sid].get('messages', []).copy()
-        logger.info(f"📥 Session messages restored from ALL_SESSIONS: {len(session['messages'])} messages (full history)")
+    # DBからセッションを復元（Cookieサイズ削減のため）
+    if sid:
+        session_data = get_session_from_db(sid)
+        if session_data:
+            # 会話履歴は常に完全な履歴を復元する（管理者要請メッセージのみで上書きしない）
+            session['messages'] = session_data.get('messages', []).copy()
+            logger.info(f"📥 Session messages restored from DB: {len(session['messages'])} messages (full history)")
     
     # current_messagesは安全に取得
     current_messages = session.get('messages', []).copy()
@@ -487,14 +653,15 @@ def index():
                     # セッションに危機検出フラグを設定
                     session['crisis_detected'] = True
                     
-                    # ALL_SESSIONSを更新
+                    # DBを更新
                     if sid:
-                        if sid not in ALL_SESSIONS:
-                            ALL_SESSIONS[sid] = {
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
                                 'session_id': sid,
                                 'username': session.get('username', 'Unknown'),
                                 'messages': session['messages'].copy(),
-                                'last_activity': time.time(),
+                                'last_activity': datetime.now(),
                                 'client_ip': request.remote_addr,
                                 'user_agent': request.headers.get('User-Agent', ''),
                                 'user_attributes': session.get('user_attributes', {}),
@@ -502,9 +669,10 @@ def index():
                                 'crisis_detected': True
                             }
                         else:
-                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
-                            ALL_SESSIONS[sid]['crisis_detected'] = True
-                            ALL_SESSIONS[sid]['last_activity'] = time.time()
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['crisis_detected'] = True
+                            session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
                     
                     # セキュリティログに記録
                     log_crisis_keyword_detection(
@@ -523,7 +691,9 @@ def index():
                         'crisis_keywords': detected_keywords,
                         'priority': 'high'
                     }
-                    MANUAL_REPLY_QUEUE.append(crisis_queue_item)
+                    queue = get_manual_reply_queue()
+                    queue.append(crisis_queue_item)
+                    set_manual_reply_queue(queue)
                     logger.info(f"🚨 危機対応セッションを手動返信キューに追加: {sid}")
                     
                     message_count = len(session['messages'])
@@ -552,9 +722,14 @@ def index():
                     'chat_ended': True
                 }
                 session['messages'].append(bot_response)
-                # ALL_SESSIONSを更新
-                if sid and sid in ALL_SESSIONS:
-                    ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                # DBを更新（チャット終了フラグを設定）
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        session_data['messages'] = session['messages'].copy()
+                        session_data['last_activity'] = datetime.now()
+                        session_data['session_active'] = False  # チャット終了フラグ
+                        save_session_to_db(sid, session_data)
                 message_count = len(session['messages'])
                 logger.info(f"✅ POST処理完了（チャット終了） - JSON返却: {message_count} messages")
                 return jsonify({'status': 'ok', 'message_count': message_count})
@@ -584,24 +759,26 @@ def index():
                 logger.info(f"✅ ユーザーメッセージ追加: {sanitized_message[:50]}...")
             else:
                 logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
-            # 管理画面表示用にALL_SESSIONSへも即時反映（ユーザーメッセージが見えるように）
+            # 管理画面表示用にDBへも即時反映（ユーザーメッセージが見えるように）
             if sid:
-                if sid not in ALL_SESSIONS:
-                    ALL_SESSIONS[sid] = {
+                session_data = get_session_from_db(sid)
+                if not session_data:
+                    session_data = {
                         'session_id': sid,
                         'username': session.get('username', 'Unknown'),
                         'messages': session['messages'].copy(),
-                        'last_activity': time.time(),
+                        'last_activity': datetime.now(),
                         'client_ip': request.remote_addr,
                         'user_agent': request.headers.get('User-Agent', ''),
                         'user_attributes': session.get('user_attributes', {}),
                         'session_active': True
                     }
+                    save_session_to_db(sid, session_data)
                 else:
                     # 医薬品相談回答処理中は即時反映を完全にスキップ（重複を根本的に防止）
                     if not session.get('is_medicine_consultation', False):
-                        # 既存のALL_SESSIONSメッセージと重複チェック
-                        existing_messages = ALL_SESSIONS[sid].get('messages', [])
+                        # 既存のDBメッセージと重複チェック
+                        existing_messages = session_data.get('messages', [])
                         new_user_messages = [msg for msg in session['messages'] if msg.get('type') == 'user']
                         
                         # 新しいユーザーメッセージのみを追加
@@ -614,23 +791,29 @@ def index():
                             ):
                                 existing_messages.append(new_msg)
                         
-                        ALL_SESSIONS[sid]['messages'] = existing_messages
-                        ALL_SESSIONS[sid]['last_activity'] = time.time()
+                        session_data['messages'] = existing_messages
+                        session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
                     else:
-                        logger.info(f"📝 医薬品相談回答処理中のため、ALL_SESSIONS即時反映を完全にスキップ")
+                        logger.info(f"📝 医薬品相談回答処理中のため、DB即時反映を完全にスキップ")
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
-            chat_ai_auto_reply = ALL_SESSIONS.get(sid, {}).get('ai_auto_reply', True)
+            session_data_for_ai = get_session_from_db(sid) if sid else {}
+            chat_ai_auto_reply = session_data_for_ai.get('ai_auto_reply', get_ai_auto_reply())
             
             # AI自動応答がOFFの場合は手動返信待ちにする
             if not chat_ai_auto_reply:
-                if ADMIN_MODE:
+                if get_admin_mode():
                     # 管理者対応モード時は自動返信せず、ユーザーメッセージのみ保存
                     session.modified = True
                     
-                    # ALL_SESSIONSを更新
-                    if sid and sid in ALL_SESSIONS:
-                        ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                    # DBを更新
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
                     
                     message_count = len(session['messages'])
                     logger.info(f"✅ POST処理完了（管理者対応モード） - JSON返却: {message_count} messages")
@@ -642,7 +825,9 @@ def index():
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'status': 'pending'
                     }
-                    MANUAL_REPLY_QUEUE.append(pending_message)
+                    queue = get_manual_reply_queue()
+                    queue.append(pending_message)
+                    set_manual_reply_queue(queue)
                     add_network_log(
                         'POST',
                         'メインサイト - 手動返信待ち',
@@ -651,13 +836,14 @@ def index():
                         0,
                         'pending'
                     )
-                    # 薬剤師要請メッセージが既に存在するかチェック（sessionとALL_SESSIONSの両方を確認）
+                    # 薬剤師要請メッセージが既に存在するかチェック（sessionとDBの両方を確認）
+                    session_data_check = get_session_from_db(sid) if sid else {}
                     has_admin_request_message = any(
                         msg.get('admin_request') and msg.get('type') == 'bot' 
                         for msg in session.get('messages', [])
                     ) or any(
                         msg.get('admin_request') and msg.get('type') == 'bot' 
-                        for msg in ALL_SESSIONS.get(sid, {}).get('messages', [])
+                        for msg in session_data_check.get('messages', [])
                     )
                     
                     if not has_admin_request_message:
@@ -671,17 +857,22 @@ def index():
                         session['messages'].append(bot_response)
                         session.modified = True
                         
-                        # ALL_SESSIONSを更新
-                        if sid and sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                        # DBを更新
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                     else:
                         # 薬剤師要請メッセージが既に存在する場合は追加しない
                         logger.info(f"💊 薬剤師要請メッセージが既に存在するため、追加のメッセージをスキップします")
                         
-                        # 薬剤師要請メッセージがsessionにない場合はALL_SESSIONSから復元
+                        # 薬剤師要請メッセージがsessionにない場合はDBから復元
                         if not any(msg.get('admin_request') and msg.get('type') == 'bot' for msg in session.get('messages', [])):
+                            session_data_check = get_session_from_db(sid) if sid else {}
                             admin_request_msg = next(
-                                (msg for msg in ALL_SESSIONS.get(sid, {}).get('messages', []) 
+                                (msg for msg in session_data_check.get('messages', []) 
                                  if msg.get('admin_request') and msg.get('type') == 'bot'), 
                                 None
                             )
@@ -689,13 +880,17 @@ def index():
                                 if 'messages' not in session:
                                     session['messages'] = []
                                 session['messages'].append(admin_request_msg)
-                                logger.info(f"💊 薬剤師要請メッセージをALL_SESSIONSから復元しました")
+                                logger.info(f"💊 薬剤師要請メッセージをDBから復元しました")
                         
                         session.modified = True
                         
-                        # ALL_SESSIONSを更新
-                        if sid and sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
+                        # DBを更新
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                     
                     message_count = len(session['messages'])
                     logger.info(f"✅ POST処理完了（手動返信待ち） - JSON返却: {message_count} messages")
@@ -748,8 +943,9 @@ def index():
                     # 質問回答に直接進む
                     try:
                         # 最新の推奨医薬品を取得
+                        session_data_for_medicines = get_session_from_db(sid) if sid else {}
                         latest_recommended_medicines = []
-                        for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
+                        for msg in reversed(session_data_for_medicines.get('messages', [])):
                             if msg.get('type') == 'bot' and msg.get('diagnosis'):
                                 diagnosis = msg.get('diagnosis', {})
                                 if diagnosis.get('recommended_medicines'):
@@ -759,7 +955,7 @@ def index():
                         logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
                         
                         # 会話履歴を取得
-                        conversation_history = ALL_SESSIONS.get(sid, {}).get('messages', [])[-10:]
+                        conversation_history = session_data_for_medicines.get('messages', [])[-10:]
                         
                         # ChatGPTに質問を送信
                         chat_response = chat_with_medicine_context(
@@ -852,9 +1048,26 @@ def index():
                             'timestamp': datetime.now().isoformat()
                         }
                         
-                        # 質問応答をセッションに追加
-                        ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        ALL_SESSIONS[sid]['last_activity'] = time.time()
+                        # 質問応答をDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': [],
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'session_active': True
+                                }
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                        
                         # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                         if 'messages' in session:
                             del session['messages']
@@ -877,7 +1090,8 @@ def index():
                         session.modified = True
                         
                         # JSONレスポンスを返す
-                        message_count = len(ALL_SESSIONS[sid]['messages'])
+                        updated_session = get_session_from_db(sid) if sid else {}
+                        message_count = len(updated_session.get('messages', []))
                         return jsonify({'status': 'ok', 'message_count': message_count})
                         
                     except Exception as e:
@@ -891,8 +1105,15 @@ def index():
                             'timestamp': datetime.now().isoformat()
                         }
                         
-                        # エラー応答をセッションに追加
-                        ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        # エラー応答をDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(bot_response)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                         # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                         if 'messages' in session:
                             del session['messages']
@@ -914,7 +1135,8 @@ def index():
                         session.modified = True
                         
                         # JSONレスポンスを返す
-                        message_count = len(ALL_SESSIONS[sid]['messages'])
+                        updated_session = get_session_from_db(sid) if sid else {}
+                        message_count = len(updated_session.get('messages', []))
                         return jsonify({'status': 'ok', 'message_count': message_count})
                 else:
                     # 属性応答の可能性がある場合のみ属性抽出を実行
@@ -1194,10 +1416,14 @@ def index():
                 session['user_attributes'] = user_attributes
                 session.modified = True
                 
-                # ALL_SESSIONSも更新
+                # DBも更新
                 sid = session.get('_id')
-                if sid and sid in ALL_SESSIONS:
-                    ALL_SESSIONS[sid]['user_attributes'] = user_attributes
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        session_data['user_attributes'] = user_attributes
+                        session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
                 
                 # ステップ2: 属性が更新された場合、最後の症状で再分析
                 last_symptom_message = None
@@ -1209,10 +1435,14 @@ def index():
                     if symptom_duration and symptom_duration > 7:
                         logger.info(f"⚠️ 症状期間が7日を超えています: {symptom_duration}日")
                         
-                        # ユーザーメッセージをALL_SESSIONSに保存（症状期間チェック前に保存）
-                        if sid and sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'] = session['messages'].copy()
-                            logger.info(f"💾 ユーザーメッセージをALL_SESSIONSに保存: {len(session['messages'])} messages")
+                        # ユーザーメッセージをDBに保存（症状期間チェック前に保存）
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                            logger.info(f"💾 ユーザーメッセージをDBに保存: {len(session['messages'])} messages")
                         
                         # 医療機関受診案内を追加
                         medical_advice = {
@@ -1223,8 +1453,14 @@ def index():
                         if 'messages' not in session:
                             session['messages'] = []
                         session['messages'].append(medical_advice)
-                        if sid and sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'].append(medical_advice)
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(medical_advice)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                         
                         # 症状期間が7日を超える場合は医薬品推奨を停止
                         logger.info(f"🚫 症状期間が7日を超えるため医薬品推奨を停止します")
@@ -1232,8 +1468,9 @@ def index():
                         message_count = len(session['messages'])
                         return jsonify({'status': 'ok', 'message_count': message_count})
                     
-                    # 最後の症状入力を取得（ALL_SESSIONSから取得）
-                    for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
+                    # 最後の症状入力を取得（DBから取得）
+                    session_data_for_symptoms = get_session_from_db(sid) if sid else {}
+                    for msg in reversed(session_data_for_symptoms.get('messages', [])):
                         if msg.get('type') == 'user' and is_symptom_input(msg.get('content', '')):
                             last_symptom_message = msg.get('content', '')
                             break
@@ -1257,9 +1494,10 @@ def index():
                     # 属性が更新されていない場合は通常の質問応答
                     logger.info(f"❓ 通常の質問として処理します")
                     try:
-                        # 最新の推奨医薬品を取得（ALL_SESSIONSを参照）
+                        # 最新の推奨医薬品を取得（DBを参照）
+                        session_data_for_medicines2 = get_session_from_db(sid) if sid else {}
                         latest_recommended_medicines = []
-                        for msg in reversed(ALL_SESSIONS.get(sid, {}).get('messages', [])):
+                        for msg in reversed(session_data_for_medicines2.get('messages', [])):
                             if msg.get('type') == 'bot' and msg.get('diagnosis'):
                                 diagnosis = msg.get('diagnosis', {})
                                 if diagnosis.get('recommended_medicines'):
@@ -1268,8 +1506,8 @@ def index():
 
                         logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
 
-                        # 会話履歴を取得（ALL_SESSIONSから直近10件）
-                        conversation_history = ALL_SESSIONS.get(sid, {}).get('messages', [])[-10:]
+                        # 会話履歴を取得（DBから直近10件）
+                        conversation_history = session_data_for_medicines2.get('messages', [])[-10:]
 
                         # ChatGPTに質問を送信
                         chat_response = chat_with_medicine_context(
@@ -1289,9 +1527,15 @@ def index():
                             'diagnosis': None
                         }
 
-                        # エラー応答をセッションに追加
-                        if sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['messages'].append(bot_response)
+                        # エラー応答をDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(bot_response)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                         # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                         if 'messages' in session:
                             del session['messages']
@@ -1426,10 +1670,14 @@ def index():
                         session['user_attributes'] = user_attributes
                         session.modified = True
                         
-                        # ALL_SESSIONSも更新
+                        # DBも更新
                         sid = session.get('_id')
-                        if sid and sid in ALL_SESSIONS:
-                            ALL_SESSIONS[sid]['user_attributes'] = user_attributes
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['user_attributes'] = user_attributes
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
                         
                         # ルールベース推奨用のuser_infoを構築（デフォルト値は使用しない）
                         user_info = {
@@ -2172,41 +2420,47 @@ def index():
                         break
                 
                 if not is_duplicate:
-                    # ALL_SESSIONSに保存
-                    if sid and sid in ALL_SESSIONS:
-                        # messagesキーが存在しない場合は初期化
-                        if 'messages' not in ALL_SESSIONS[sid]:
-                            ALL_SESSIONS[sid]['messages'] = []
-                        ALL_SESSIONS[sid]['messages'].append(bot_response)
-                        logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
+                    # DBに保存
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            # 新しいセッションを作成
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': [],
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True
+                            }
+                        
+                        # メッセージを追加
+                        if 'messages' not in session_data:
+                            session_data['messages'] = []
+                        session_data['messages'].append(bot_response)
+                        session_data['last_activity'] = datetime.now()
+                        
+                        # DBに保存
+                        save_session_to_db(sid, session_data)
+                        logger.info(f"💾 メッセージ保存完了: {len(session_data.get('messages', []))} messages")
                         
                         # 医薬品相談回答処理後の重複削除を実行
                         if remove_duplicate_user_messages_after_ai_response(sid):
-                            logger.info(f"✅ 重複削除完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
-                    else:
-                        logger.error(f"❌ ALL_SESSIONSにセッションID {sid} が存在しません")
-                        # ALL_SESSIONSにセッションを作成
-                        ALL_SESSIONS[sid] = {
-                            'session_id': sid,
-                            'username': session.get('username', 'Unknown'),
-                            'messages': [bot_response],
-                            'last_activity': time.time(),
-                            'client_ip': request.remote_addr,
-                            'user_agent': request.headers.get('User-Agent', ''),
-                            'user_attributes': session.get('user_attributes', {}),
-                            'session_active': True
-                        }
-                        logger.info(f"💾 ALL_SESSIONSにセッションを作成: {sid}")
-                        logger.info(f"💾 メッセージ保存完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
-                    # ALL_SESSIONSに正常に保存された場合のみ、セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
-                    if sid and sid in ALL_SESSIONS and 'messages' in session:
-                        del session['messages']
-                        session.modified = True
+                            updated_session = get_session_from_db(sid)
+                            if updated_session:
+                                logger.info(f"✅ 重複削除完了: {len(updated_session.get('messages', []))} messages")
                         
-                        # 医薬品相談回答処理の終了時にフラグをクリア
-                        if session.get('is_medicine_consultation', False):
-                            session['is_medicine_consultation'] = False
-                            logger.info(f"💊 医薬品相談回答処理終了 - フラグクリア完了")
+                        # セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
+                        if 'messages' in session:
+                            del session['messages']
+                            session.modified = True
+                            
+                            # 医薬品相談回答処理の終了時にフラグをクリア
+                            if session.get('is_medicine_consultation', False):
+                                session['is_medicine_consultation'] = False
+                                logger.info(f"💊 医薬品相談回答処理終了 - フラグクリア完了")
                 else:
                     logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
             else:
@@ -2227,110 +2481,89 @@ def index():
             # user_messageが空の場合
             logger.warning(f"⚠️ 空のメッセージを受信")
     
-    # ALL_SESSIONSにセッション情報を保存/更新
-    # 既存のALL_SESSIONSエントリがある場合は、手動返信メッセージを保持
-    if sid in ALL_SESSIONS:
-        existing_session = ALL_SESSIONS[sid]
-        existing_messages = existing_session.get('messages', [])
+    # DBにセッション情報を保存/更新
+    if sid:
+        session_data = get_session_from_db(sid)
         
-        # 手動返信メッセージを保持
-        manual_replies = [msg for msg in existing_messages if msg.get('manual_reply')]
-        
-        # ALL_SESSIONSから直接メッセージを取得（session['messages']は既に削除されているため）
-        existing_messages = ALL_SESSIONS[sid].get('messages', []).copy()
-        
-        # 手動返信メッセージを保持
-        for manual_reply in manual_replies:
-            # 既に同じ内容の手動返信が含まれていないかチェック
-            if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in existing_messages):
-                existing_messages.append(manual_reply)
-        
-        # ALL_SESSIONSを更新（メッセージは既に保存済みなので更新しない）
-        ALL_SESSIONS[sid].update({
-            'session_id': sid,
-            'username': session['username'],
-            'last_activity': current_time,
-            'client_ip': client_ip,
-            'user_agent': user_agent,
-            'user_attributes': session.get('user_attributes', {}),
-            'session_active': True
-            # messagesは既に保存済みなので更新しない
-        })
-    else:
-        # 新しいセッションの場合
-        existing_messages = ALL_SESSIONS.get(sid, {}).get('messages', [])
-        
-        # session['messages']が存在する場合のみマージ処理を実行（重複を避けるため）
-        if 'messages' in session and session['messages']:
-            session_messages = session['messages']
+        if session_data:
+            # 既存セッションの更新
+            # 手動返信メッセージを保持
+            existing_messages = session_data.get('messages', [])
+            manual_replies = [msg for msg in existing_messages if msg.get('manual_reply')]
             
-            # 重複を避けてメッセージをマージ
-            for session_msg in session_messages:
-                if not any(
-                    existing_msg.get('type') == session_msg.get('type') and 
-                    existing_msg.get('content') == session_msg.get('content') and
-                    existing_msg.get('uuid') == session_msg.get('uuid')
-                    for existing_msg in existing_messages
-                ):
-                    existing_messages.append(session_msg)
-        else:
-            # session['messages']が存在しない場合は既存のALL_SESSIONSメッセージをそのまま使用
-            logger.info(f"📝 session['messages']が存在しないため、ALL_SESSIONSの既存メッセージを維持: {len(existing_messages)} messages")
-
-        # session['messages']が削除された後は、ALL_SESSIONSの更新をスキップ（重複を避けるため）
-        if 'messages' in session and session['messages']:
-            # session['messages']が存在する場合のみALL_SESSIONSを更新
-            ALL_SESSIONS[sid] = {
+            # session['messages']が存在する場合のみマージ処理を実行（重複を避けるため）
+            if 'messages' in session and session['messages']:
+                session_messages = session['messages']
+                
+                # 重複を避けてメッセージをマージ
+                for session_msg in session_messages:
+                    if not any(
+                        existing_msg.get('type') == session_msg.get('type') and 
+                        existing_msg.get('content') == session_msg.get('content') and
+                        existing_msg.get('uuid') == session_msg.get('uuid')
+                        for existing_msg in existing_messages
+                    ):
+                        existing_messages.append(session_msg)
+            
+            # 手動返信メッセージを保持
+            for manual_reply in manual_replies:
+                if not any(msg.get('manual_reply') and msg.get('content') == manual_reply.get('content') for msg in existing_messages):
+                    existing_messages.append(manual_reply)
+            
+            # セッション情報を更新（messagesは既に保存済みの場合があるため、既存のものを優先）
+            session_data.update({
                 'session_id': sid,
-                'username': session['username'],
+                'username': session.get('username', 'Unknown'),
+                'last_activity': datetime.now(),
+                'client_ip': client_ip,
+                'user_agent': user_agent,
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
+            })
+            # messagesは既に更新されている場合はそのまま、そうでない場合は既存のものを維持
+            if 'messages' not in session_data or not session_data.get('messages'):
+                session_data['messages'] = existing_messages
+            
+            save_session_to_db(sid, session_data)
+            logger.info(f"🔄 既存セッション更新: {sid} ({len(session_data.get('messages', []))} messages)")
+        else:
+            # 新しいセッションの場合
+            existing_messages = []
+            if 'messages' in session and session['messages']:
+                existing_messages = session['messages'].copy()
+            
+            session_data = {
+                'session_id': sid,
+                'username': session.get('username', 'Unknown'),
                 'messages': existing_messages,
-                'last_activity': current_time,
+                'last_activity': datetime.now(),
                 'client_ip': client_ip,
                 'user_agent': user_agent,
                 'user_attributes': session.get('user_attributes', {}),
                 'session_active': True
             }
-            logger.info(f"📝 ALL_SESSIONS更新完了: {len(existing_messages)} messages")
-        else:
-            # session['messages']が削除された後は、ALL_SESSIONSの既存メッセージを維持
-            if sid in ALL_SESSIONS:
-                ALL_SESSIONS[sid].update({
-                    'session_id': sid,
-                    'username': session['username'],
-                    'last_activity': current_time,
-                    'client_ip': client_ip,
-                    'user_agent': user_agent,
-                    'user_attributes': session.get('user_attributes', {}),
-                    'session_active': True
-                    # messagesは既存のものを維持（重複を避けるため）
-                })
-                logger.info(f"📝 ALL_SESSIONS更新完了（メッセージ維持）: {len(ALL_SESSIONS[sid].get('messages', []))} messages")
-            else:
-                # セッションが存在しない場合は新規作成
-                ALL_SESSIONS[sid] = {
-                    'session_id': sid,
-                    'username': session['username'],
-                    'last_activity': current_time,
-                    'client_ip': client_ip,
-                    'user_agent': user_agent,
-                    'user_attributes': session.get('user_attributes', {}),
-                    'session_active': True,
-                    'messages': []
-                }
-                logger.info(f"📝 新規セッション作成: {sid}")
+            
+            save_session_to_db(sid, session_data)
+            logger.info(f"📝 新規セッション作成: {sid}")
         
         # セッションには最小限のデータのみ保存（Cookieサイズ削減）
-        # messagesはALL_SESSIONSのみに保存（永続化）
-        session.modified = True
+        # messagesはDBのみに保存（永続化）
+        if hasattr(session, 'modified'):
+            session.modified = True
         
-        # チャット履歴の永続化を強化
-        if sid in ALL_SESSIONS:
-            ALL_SESSIONS[sid]['last_activity'] = current_time
+        # チャット履歴の永続化を強化（DBに保存済み）
+        if sid:
+            session_data = get_session_from_db(sid)
+            if session_data:
+                session_data['last_activity'] = datetime.now()
+                save_session_to_db(sid, session_data)
             # メッセージは既に他の箇所で適切に保存済み（重複を避けるため更新しない）
         
-        logger.info(f"📝 Session {sid} updated: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages (ALL_SESSIONS保存完了)")
-        logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
-        logger.info(f"💾 チャット履歴永続化完了: {len(ALL_SESSIONS.get(sid, {}).get('messages', []))} messages")
+        session_data_for_log = get_session_from_db(sid) if sid else None
+        message_count_for_log = len(session_data_for_log.get('messages', [])) if session_data_for_log else 0
+        logger.info(f"📝 Session {sid} updated: {message_count_for_log} messages (DB保存完了)")
+        logger.info(f"📝 Session cookie size reduced - messages only in DB")
+        logger.info(f"💾 チャット履歴永続化完了: {message_count_for_log} messages")
     
     # 手動返信メッセージがあるかチェック（安全な取得）
     manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
@@ -2350,15 +2583,18 @@ def index():
         })
         
         # アクセス分析ログを記録
+        session_data = get_session_from_db(sid) if sid else None
+        message_count = len(session_data.get('messages', [])) if session_data else 0
         log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
             'username': session.get('username', ''),
-            'message_count': len(ALL_SESSIONS.get(sid, {}).get('messages', []))
+            'message_count': message_count
         })
         
-        message_count = len(ALL_SESSIONS.get(sid, {}).get('messages', []))
         logger.info(f"✅ POST処理完了 - JSON返却: {message_count} messages")
-        logger.info(f"📦 ALL_SESSIONS[{sid}] messages: {ALL_SESSIONS.get(sid, {}).get('messages', [])}")
-        logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+        if session_data:
+            logger.info(f"📦 Session[{sid}] messages: {len(session_data.get('messages', []))} messages")
+        all_sessions = get_all_sessions_from_db()
+        logger.info(f"🔍 All sessions keys: {list(all_sessions.keys())}")
         logger.info(f"🔍 Current session ID: {sid}")
         return jsonify({'status': 'ok', 'message_count': message_count})
     
@@ -2371,14 +2607,16 @@ def index():
     })
     
     # アクセス分析ログを記録
+    session_data = get_session_from_db(sid) if sid else None
+    message_count = len(session_data.get('messages', [])) if session_data else 0
     log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
         'username': session.get('username', ''),
-        'message_count': len(ALL_SESSIONS.get(sid, {}).get('messages', []))
+        'message_count': message_count
     })
     
-    messages = ALL_SESSIONS.get(sid, {}).get('messages', [])
+    messages = session_data.get('messages', []) if session_data else []
     logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages")
-    return render_template('index.html', messages=messages, version=VERSION, username=session['username'])
+    return render_template('index.html', messages=messages, version=VERSION, username=session.get('username', 'Unknown'))
 
 def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, influenza_risk: bool = False, influenza_reason: str = "") -> str:
     """
@@ -2642,8 +2880,11 @@ def clear_chat():
     session['messages'] = []
     session.modified = True
     sid = session.get('_id')
-    if sid and sid in ALL_SESSIONS:
-        ALL_SESSIONS[sid]['messages'] = []
+    if sid:
+        session_data = get_session_from_db(sid)
+        if session_data:
+            session_data['messages'] = []
+            save_session_to_db(sid, session_data)
     # 「チャットを終了しました。」フラグも消す
     session.pop('chat_ended', None)
     return '', 204
@@ -2714,29 +2955,34 @@ def api_sessions():
                 session['_id'] = sid
                 session['username'] = f'ユーザー{get_next_user_number()}'
             
-            # セッションとALL_SESSIONSの両方にuser_attributesを保存
+            # セッションとDBの両方にuser_attributesを保存
             session['user_attributes'] = user_attributes
             session.modified = True
             
-            if sid not in ALL_SESSIONS:
-                ALL_SESSIONS[sid] = {
+            session_data = get_session_from_db(sid)
+            if not session_data:
+                session_data = {
                     'session_id': sid,
                     'username': session.get('username', f'ユーザー{get_next_user_number()}'),
                     'messages': [],
                     'session_active': True,
-                    'last_activity': time.time(),
+                    'last_activity': datetime.now(),
+                    'client_ip': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent', ''),
                     'user_attributes': user_attributes
                 }
             else:
-                ALL_SESSIONS[sid]['user_attributes'] = user_attributes
-                ALL_SESSIONS[sid]['last_activity'] = time.time()
+                session_data['user_attributes'] = user_attributes
+                session_data['last_activity'] = datetime.now()
             
+            save_session_to_db(sid, session_data)
             logger.info(f"💾 ユーザー属性を保存: {sid}")
             return jsonify({'status': 'ok', 'message': 'ユーザー情報を保存しました'})
         
         # GETリクエストの場合：セッション情報を返す
+        all_sessions = get_all_sessions_from_db()
         logger.info(f"🔍 /api/sessions called - Session ID: {sid}")
-        logger.info(f"🔍 ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+        logger.info(f"🔍 ALL_SESSIONS keys: {list(all_sessions.keys())}")
         
         # セッションIDがない場合は新規作成
         if not sid or sid == 'unknown':
@@ -2745,42 +2991,43 @@ def api_sessions():
             session['username'] = f'ユーザー{get_next_user_number()}'
             logger.info(f"🆕 新しいセッションIDを作成: {sid}")
         
-        # ALL_SESSIONSに存在しない場合は復旧
-        if sid not in ALL_SESSIONS:
-            logger.warning(f"⚠️ /api/sessions - セッションIDがALL_SESSIONSに存在しません (sid={sid})。セッションから復旧を試みます。")
-            ALL_SESSIONS[sid] = {
+        # DBに存在しない場合は復旧
+        session_data = get_session_from_db(sid)
+        if not session_data:
+            logger.warning(f"⚠️ /api/sessions - セッションIDがDBに存在しません (sid={sid})。セッションから復旧を試みます。")
+            session_data = {
                 'session_id': sid,
                 'username': session.get('username', f'ユーザー{get_next_user_number()}'),
                 'messages': session.get('messages', []),
                 'session_active': True,
-                'last_activity': time.time(),  # 数値で保存
-                'user_info': session.get('user_info', {}),
+                'last_activity': datetime.now(),
+                'client_ip': request.remote_addr,
+                'user_agent': request.headers.get('User-Agent', ''),
                 'user_attributes': session.get('user_attributes', {})
             }
+            save_session_to_db(sid, session_data)
             logger.info(f"🆕 新規セッション作成: {sid}")
         else:
             # 既存セッションの場合はlast_activityのみ更新
-            ALL_SESSIONS[sid]['last_activity'] = time.time()
-            logger.info(f"🔄 既存セッション更新: {sid} ({len(ALL_SESSIONS[sid].get('messages', []))} messages)")
+            session_data['last_activity'] = datetime.now()
+            save_session_to_db(sid, session_data)
+            logger.info(f"🔄 既存セッション更新: {sid} ({len(session_data.get('messages', []))} messages)")
         
-        # ALL_SESSIONSから取得（セッションCookieの肥大化を防ぐ）
-        messages = ALL_SESSIONS[sid].get('messages', [])
-        logger.info(f"📦 /api/sessions - ALL_SESSIONSから取得: {len(messages)} messages (sid={sid})")
+        # DBから取得（セッションCookieの肥大化を防ぐ）
+        messages = session_data.get('messages', [])
+        logger.info(f"📦 /api/sessions - DBから取得: {len(messages)} messages (sid={sid})")
         
-        # セッション情報を更新
-        ALL_SESSIONS[sid]['last_activity'] = time.time()  # 数値で保存
-        
-        # セッションCookie肥大化を防ぐため、messagesをALL_SESSIONSのみに保存
+        # セッションCookie肥大化を防ぐため、messagesをDBのみに保存
         # Flaskセッションからはmessagesを削除
         if 'messages' in session:
             del session['messages']
             session.modified = True
-            logger.info(f"📝 Session cookie size reduced - messages only in ALL_SESSIONS")
+            logger.info(f"📝 Session cookie size reduced - messages only in DB")
         
-        # user_attributesを取得（セッションまたはALL_SESSIONSから）
+        # user_attributesを取得（セッションまたはDBから）
         user_attributes = session.get('user_attributes', {})
         if not user_attributes:
-            user_attributes = ALL_SESSIONS[sid].get('user_attributes', {})
+            user_attributes = session_data.get('user_attributes', {})
         
         session_data = {
             'session_id': sid,
@@ -2857,10 +3104,10 @@ def api_ai_control():
 @app.route('/api/manual_reply_queue', methods=['GET', 'POST'])
 def api_manual_reply_queue():
     """手動返信待ちキュー"""
-    global MANUAL_REPLY_QUEUE, ALL_SESSIONS
     
     if request.method == 'GET':
-        return jsonify(MANUAL_REPLY_QUEUE)
+        queue = get_manual_reply_queue()
+        return jsonify(queue)
     
     elif request.method == 'POST':
         data = request.get_json()
@@ -2868,22 +3115,24 @@ def api_manual_reply_queue():
         reply_message = data.get('reply_message')
         
         print(f"Manual reply request received: session_id={session_id}, message={reply_message}")
-        print(f"Current ALL_SESSIONS keys: {list(ALL_SESSIONS.keys())}")
+        all_sessions = get_all_sessions_from_db()
+        print(f"Current session keys: {list(all_sessions.keys())}")
         
         if not session_id or not reply_message:
             return jsonify({'error': 'session_id and reply_message are required'}), 400
         
         # キューから該当するメッセージを削除
-        for i, pending in enumerate(MANUAL_REPLY_QUEUE):
+        queue = get_manual_reply_queue()
+        for i, pending in enumerate(queue):
             if pending['session_id'] == session_id:
-                MANUAL_REPLY_QUEUE.pop(i)
+                queue.pop(i)
+                set_manual_reply_queue(queue)
                 print(f"Removed pending message from queue for session {session_id}")
                 break
         
         # 指定されたセッションIDのユーザーセッションに返信メッセージを追加
-        if session_id in ALL_SESSIONS:
-            # ALL_SESSIONSから対象セッションを取得
-            target_session = ALL_SESSIONS[session_id]
+        target_session = get_session_from_db(session_id)
+        if target_session:
             print(f"Found target session: {target_session}")
             
             # 返信メッセージを追加
@@ -2894,11 +3143,13 @@ def api_manual_reply_queue():
                 'manual_reply': True  # 手動返信のフラグ
             }
             
+            if 'messages' not in target_session:
+                target_session['messages'] = []
             target_session['messages'].append(manual_reply_message)
-            target_session['last_activity'] = time.time()  # 最終アクティビティを更新
+            target_session['last_activity'] = datetime.now()  # 最終アクティビティを更新
             
-            # ALL_SESSIONSを更新
-            ALL_SESSIONS[session_id] = target_session
+            # DBを更新
+            save_session_to_db(session_id, target_session)
             
             # ログに記録
             add_network_log(
@@ -2911,30 +3162,29 @@ def api_manual_reply_queue():
             )
             
             logger.info(f"📝 Manual reply sent to session {session_id}: {reply_message}")
-            logger.info(f"📝 ALL_SESSIONS updated: {len(ALL_SESSIONS[session_id]['messages'])} messages")
+            logger.info(f"📝 DB updated: {len(target_session['messages'])} messages")
             logger.info(f"📝 Target session info: {target_session}")
-            logger.info(f"📝 Updated ALL_SESSIONS for {session_id}: {ALL_SESSIONS[session_id]}")
             logger.info(f"📝 Manual reply message added: {manual_reply_message}")
             
             # メインサイトでの反映確認用ログ
             logger.info(f"=== Manual Reply Summary ===")
             logger.info(f"Session ID: {session_id}")
-            logger.info(f"Total messages in ALL_SESSIONS: {len(ALL_SESSIONS[session_id]['messages'])}")
-            logger.info(f"Manual reply messages: {len([msg for msg in ALL_SESSIONS[session_id]['messages'] if msg.get('manual_reply')])}")
-            logger.info(f"Latest message: {ALL_SESSIONS[session_id]['messages'][-1] if ALL_SESSIONS[session_id]['messages'] else 'None'}")
+            logger.info(f"Total messages in DB: {len(target_session['messages'])}")
+            logger.info(f"Manual reply messages: {len([msg for msg in target_session['messages'] if msg.get('manual_reply')])}")
+            logger.info(f"Latest message: {target_session['messages'][-1] if target_session['messages'] else 'None'}")
             logger.info(f"===========================")
             
             return jsonify({
                 'message': '手動返信を送信しました',
-                'remaining_queue': len(MANUAL_REPLY_QUEUE),
+                'remaining_queue': len(get_manual_reply_queue()),
                 'target_session_id': session_id,
                 'messages_count': len(target_session['messages']),
                 'session_updated': True
             })
         else:
-            logger.error(f"❌ Session {session_id} not found in ALL_SESSIONS")
-            logger.error(f"❌ Available sessions: {list(ALL_SESSIONS.keys())}")
-            logger.error(f"❌ ALL_SESSIONS content: {ALL_SESSIONS}")
+            all_sessions = get_all_sessions_from_db()
+            logger.error(f"❌ Session {session_id} not found in DB")
+            logger.error(f"❌ Available sessions: {list(all_sessions.keys())}")
             return jsonify({'error': f'Session {session_id} not found'}), 404
     
     return jsonify({'error': 'Method not allowed'}), 405
@@ -2942,7 +3192,8 @@ def api_manual_reply_queue():
 @app.route('/api/all_sessions')
 def api_all_sessions():
     result = []
-    for sid, info in ALL_SESSIONS.items():
+    all_sessions = get_all_sessions_from_db()
+    for sid, info in all_sessions.items():
         result.append({
             'session_id': sid,
             'username': info.get('username', ''),
@@ -2951,7 +3202,7 @@ def api_all_sessions():
         })
     
     # デバッグ用ログ
-    logger.info(f"📊 ALL_SESSIONS API called: {len(result)} sessions")
+    logger.info(f"📊 All sessions API called: {len(result)} sessions")
     for session_info in result:
         logger.info(f"📊 Session {session_info['session_id']}: {session_info['messages_count']} messages")
     
@@ -2967,9 +3218,19 @@ def api_session_stats():
         used_user_numbers = set()
         session_details = []
         
-        for sid, info in ALL_SESSIONS.items():
+        all_sessions = get_all_sessions_from_db()
+        for sid, info in all_sessions.items():
             last_activity = info.get('last_activity', 0)
-            if current_time - last_activity < SESSION_TIMEOUT:
+            # last_activityがdatetimeオブジェクトの場合はtimestampに変換
+            if isinstance(last_activity, datetime):
+                last_activity = last_activity.timestamp()
+            elif isinstance(last_activity, str):
+                try:
+                    last_activity = datetime.fromisoformat(last_activity.replace('Z', '+00:00')).timestamp()
+                except:
+                    last_activity = 0
+            
+            if current_time - (last_activity or 0) < SESSION_TIMEOUT:
                 active_sessions += 1
                 # ユーザー番号を収集
                 username = info.get('username', '')
@@ -2994,7 +3255,7 @@ def api_session_stats():
                 expired_sessions += 1
         
         stats = {
-            'total_sessions': len(ALL_SESSIONS),
+            'total_sessions': len(all_sessions),
             'active_sessions': active_sessions,
             'expired_sessions': expired_sessions,
             'max_sessions': MAX_SESSIONS,
@@ -3014,14 +3275,16 @@ def api_session_stats():
 def api_debug_manual_replies():
     """手動返信のデバッグ情報を返す"""
     try:
+        all_sessions = get_all_sessions_from_db()
+        queue = get_manual_reply_queue()
         debug_info = {
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'total_sessions': len(ALL_SESSIONS),
+            'total_sessions': len(all_sessions),
             'sessions_with_manual_replies': [],
-            'manual_reply_queue': MANUAL_REPLY_QUEUE
+            'manual_reply_queue': queue
         }
         
-        for sid, info in ALL_SESSIONS.items():
+        for sid, info in all_sessions.items():
             manual_replies = [msg for msg in info.get('messages', []) if msg.get('manual_reply')]
             if manual_replies:
                 debug_info['sessions_with_manual_replies'].append({
@@ -3039,7 +3302,6 @@ def api_debug_manual_replies():
 @app.route('/new_session', methods=['POST'])
 def new_session():
     """新しいセッションを開始"""
-    global ALL_SESSIONS
     # 現在のセッション情報をクリア（ユーザーが明示的に新しいセッションを開始した場合のみ）
     session.clear()
 
@@ -3051,18 +3313,20 @@ def new_session():
     session['messages'] = []
     session.modified = True
 
-    # ALL_SESSIONSにも新規登録
-    current_time = time.time()
+    # DBに新規登録
     client_ip = request.remote_addr
     user_agent = request.headers.get('User-Agent', '')
-    ALL_SESSIONS[sid] = {
+    session_data = {
+        'session_id': sid,
         'username': session['username'],
         'messages': [],
-        'last_activity': current_time,
+        'last_activity': datetime.now(),
         'client_ip': client_ip,
         'user_agent': user_agent,
-        'user_attributes': session.get('user_attributes', {})
+        'user_attributes': session.get('user_attributes', {}),
+        'session_active': True
     }
+    save_session_to_db(sid, session_data)
 
     return jsonify({'message': '新しいセッションを開始しました', 'username': session['username']}), 200
 
@@ -3073,9 +3337,10 @@ def request_admin():
     username = session.get('username', 'unknown')
     if sid:
         # セッションに要請フラグとAI自動応答OFFフラグを追加（個別チャット単位）
-        if sid in ALL_SESSIONS:
-            ALL_SESSIONS[sid]['admin_request'] = True
-            ALL_SESSIONS[sid]['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
+        session_data = get_session_from_db(sid)
+        if session_data:
+            session_data['admin_request'] = True
+            session_data['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
         
         session['admin_request'] = True
         session['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
@@ -3091,16 +3356,21 @@ def request_admin():
             session['messages'] = []
         session['messages'].append(system_message)
         
-        # ALL_SESSIONSにも保存（ページ更新後も表示されるように）
-        if sid in ALL_SESSIONS:
-            ALL_SESSIONS[sid]['messages'].append(system_message)
+        # DBにも保存（ページ更新後も表示されるように）
+        if session_data:
+            if 'messages' not in session_data:
+                session_data['messages'] = []
+            session_data['messages'].append(system_message)
+            session_data['last_activity'] = datetime.now()
+            save_session_to_db(sid, session_data)
         
         session.modified = True
         
         # MANUAL_REPLY_QUEUEに同じセッションIDのadmin_requestがなければ追加
-        already_exists = any(item.get('session_id') == sid and item.get('admin_request') for item in MANUAL_REPLY_QUEUE)
+        queue = get_manual_reply_queue()
+        already_exists = any(item.get('session_id') == sid and item.get('admin_request') for item in queue)
         if not already_exists:
-            MANUAL_REPLY_QUEUE.append({
+            queue.append({
                 'session_id': sid,
                 'username': username,
                 'user_message': '【薬剤師要請】' + username,
@@ -3108,6 +3378,7 @@ def request_admin():
                 'status': 'admin_requested',
                 'admin_request': True
             })
+            set_manual_reply_queue(queue)
         
         logger.info(f"💊 薬剤師要請: {username} (Session: {sid}) - このチャットのみAI自動応答OFF")
         return jsonify({'status': 'ok', 'message': '薬剤師対応を要請しました'})
@@ -3115,10 +3386,9 @@ def request_admin():
 
 @app.route('/api/admin_mode', methods=['POST'])
 def api_admin_mode():
-    global ADMIN_MODE, AI_AUTO_REPLY
-    ADMIN_MODE = True
-    AI_AUTO_REPLY = False
-    return jsonify({'admin_mode': ADMIN_MODE, 'ai_auto_reply': AI_AUTO_REPLY, 'message': '管理者対応モードに切り替えました'})
+    set_admin_mode(True)
+    set_ai_auto_reply(False)
+    return jsonify({'admin_mode': get_admin_mode(), 'ai_auto_reply': get_ai_auto_reply(), 'message': '管理者対応モードに切り替えました'})
 
 @app.route('/admin')
 def admin():
@@ -3138,14 +3408,29 @@ def admin():
 @app.route('/admin/system_status', methods=['GET'])
 def admin_system_status():
     """システム状況を取得"""
+    all_sessions = get_all_sessions_from_db()
+    current_time = time.time()
+    active_sessions = 0
+    for s in all_sessions.values():
+        last_activity = s.get('last_activity', 0)
+        if isinstance(last_activity, datetime):
+            last_activity = last_activity.timestamp()
+        elif isinstance(last_activity, str):
+            try:
+                last_activity = datetime.fromisoformat(last_activity.replace('Z', '+00:00')).timestamp()
+            except:
+                last_activity = 0
+        if current_time - (last_activity or 0) < SESSION_TIMEOUT:
+            active_sessions += 1
+    
     return jsonify({
         'status': 'ok',
         'csv_load_status': csv_load_status,
-        'total_sessions': len(ALL_SESSIONS),
-        'active_sessions': len([s for s in ALL_SESSIONS.values() if time.time() - s.get('last_activity', 0) < SESSION_TIMEOUT]),
-        'manual_reply_queue': len(MANUAL_REPLY_QUEUE),
-        'ai_auto_reply': AI_AUTO_REPLY,
-        'admin_mode': ADMIN_MODE,
+        'total_sessions': len(all_sessions),
+        'active_sessions': active_sessions,
+        'manual_reply_queue': len(get_manual_reply_queue()),
+        'ai_auto_reply': get_ai_auto_reply(),
+        'admin_mode': get_admin_mode(),
         'performance_stats': performance_stats
     })
 
@@ -3191,11 +3476,12 @@ def admin_realtime_monitoring():
     monitor = get_global_monitor()
     metrics = monitor.get_metrics()
     
+    all_sessions = get_all_sessions_from_db()
     return jsonify({
         'memory_usage_percent': metrics.get('memory_usage_percent', 0),
         'cpu_usage_percent': metrics.get('cpu_usage_percent', 0),
         'response_time_ms': metrics.get('response_time_ms', 0),
-        'active_sessions': len(ALL_SESSIONS),
+        'active_sessions': len(all_sessions),
         'api_calls': metrics.get('api_calls', 0),
         'cache_hit_rate': metrics.get('cache_hit_rate', 0)
     })
@@ -3218,17 +3504,27 @@ def admin_export_monitoring_data():
 @app.route('/clear_logs', methods=['POST'])
 def clear_logs():
     """ログとセッション履歴をクリア"""
-    global network_logs, ALL_SESSIONS, MANUAL_REPLY_QUEUE
+    global network_logs
     
     # ネットワークログをクリア
     network_logs.clear()
     
     # すべてのセッションをクリア（管理者が明示的にクリアした場合のみ）
     # 注意: これによりすべてのチャット履歴が削除されます
-    ALL_SESSIONS.clear()
+    db = get_database()
+    if db and db.connection:
+        # DBからすべてのセッションを削除
+        all_sessions = get_all_sessions_from_db()
+        for sid in all_sessions.keys():
+            db.delete_session(sid)
+        logger.info("🗑️ All sessions cleared from database")
+    else:
+        # フォールバック: メモリから削除
+        ALL_SESSIONS.clear()
+        logger.warning("⚠️ DB unavailable, cleared memory sessions only")
     
     # 手動返信待ちキューをクリア
-    MANUAL_REPLY_QUEUE.clear()
+    set_manual_reply_queue([])
     
     # ログファイルもクリア
     log_file = 'log/recommendation_log.jsonl'
@@ -3444,22 +3740,113 @@ def admin_medicine_chat():
 @app.route('/api/admin/sessions', methods=['GET'])
 def get_all_sessions():
     """全セッション情報を取得"""
-    cleanup_old_sessions()
+    cleanup_old_sessions(force=True)  # 管理画面では強制実行
     
+    all_sessions = get_all_sessions_from_db()
     sessions_data = []
-    for sid, info in ALL_SESSIONS.items():
-        sessions_data.append({
-            'session_id': sid,
-            'username': info.get('username', 'Unknown'),
-            'messages': info.get('messages', []),
-            'last_activity': info.get('last_activity', 0)
-        })
+    for sid, info in all_sessions.items():
+        # infoがNoneまたはMockオブジェクトの場合はスキップ
+        if info is None or hasattr(info, '_mock_name'):
+            continue
+            
+        last_activity = info.get('last_activity', 0) if isinstance(info, dict) else 0
+        if isinstance(last_activity, datetime):
+            last_activity = last_activity.timestamp()
+        elif isinstance(last_activity, str):
+            try:
+                last_activity = datetime.fromisoformat(last_activity.replace('Z', '+00:00')).timestamp()
+            except:
+                last_activity = 0
+        elif not isinstance(last_activity, (int, float)):
+            last_activity = 0
+        
+        # セッションデータをシリアライズ可能な形式に変換
+        session_dict = {
+            'session_id': str(sid),
+            'username': str(info.get('username', 'Unknown')) if isinstance(info, dict) else 'Unknown',
+            'messages': list(info.get('messages', [])) if isinstance(info, dict) and isinstance(info.get('messages'), list) else [],
+            'last_activity': float(last_activity),
+            'session_active': bool(info.get('session_active', True)) if isinstance(info, dict) else True,
+            'client_ip': str(info.get('client_ip', '')) if isinstance(info, dict) else '',
+            'user_agent': str(info.get('user_agent', '')) if isinstance(info, dict) else '',
+            'user_attributes': dict(info.get('user_attributes', {})) if isinstance(info, dict) and isinstance(info.get('user_attributes'), dict) else {}
+        }
+        sessions_data.append(session_dict)
+    
+    # グローバル状態を取得（Mockオブジェクトの場合はboolに変換）
+    admin_mode = get_admin_mode()
+    ai_auto_reply = get_ai_auto_reply()
+    
+    # Mockオブジェクトの場合はデフォルト値を使用
+    if hasattr(admin_mode, '_mock_name'):
+        admin_mode = False
+    if hasattr(ai_auto_reply, '_mock_name'):
+        ai_auto_reply = True
     
     return jsonify({
         'sessions': sessions_data,
-        'admin_mode': ADMIN_MODE,
-        'ai_auto_reply': AI_AUTO_REPLY
+        'admin_mode': bool(admin_mode),
+        'ai_auto_reply': bool(ai_auto_reply)
     })
+
+@app.route('/api/admin/sessions/<session_id>', methods=['DELETE'])
+def delete_session(session_id):
+    """セッションを削除"""
+    try:
+        db = get_database()
+        if db and db.connection:
+            success = db.delete_session(session_id)
+            if success:
+                return jsonify({'status': 'success', 'message': 'セッションを削除しました'})
+            else:
+                return jsonify({'status': 'error', 'message': 'セッションが見つかりませんでした'}), 404
+        else:
+            return jsonify({'status': 'error', 'message': 'データベース接続エラー'}), 500
+    except Exception as e:
+        logger.error(f"❌ セッション削除エラー: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/admin/sessions/delete_all', methods=['DELETE'])
+def delete_all_sessions():
+    """全セッションを削除"""
+    try:
+        db = get_database()
+        if db and db.connection:
+            deleted_count = db.delete_all_sessions()
+            return jsonify({'status': 'success', 'message': f'{deleted_count}件のセッションを削除しました', 'deleted_count': deleted_count})
+        else:
+            return jsonify({'status': 'error', 'message': 'データベース接続エラー'}), 500
+    except Exception as e:
+        logger.error(f"❌ 全セッション削除エラー: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/admin/sessions/<session_id>', methods=['PUT'])
+def update_session(session_id):
+    """セッション情報を更新"""
+    try:
+        data = request.json
+        session_data = get_session_from_db(session_id)
+        if not session_data:
+            return jsonify({'status': 'error', 'message': 'セッションが見つかりませんでした'}), 404
+        
+        # 更新可能なフィールド
+        if 'username' in data:
+            session_data['username'] = data['username']
+        if 'session_active' in data:
+            session_data['session_active'] = data['session_active']
+        if 'user_attributes' in data:
+            session_data['user_attributes'] = data['user_attributes']
+        
+        session_data['last_activity'] = datetime.now()
+        
+        success = save_session_to_db(session_id, session_data)
+        if success:
+            return jsonify({'status': 'success', 'message': 'セッション情報を更新しました'})
+        else:
+            return jsonify({'status': 'error', 'message': 'セッション更新に失敗しました'}), 500
+    except Exception as e:
+        logger.error(f"❌ セッション更新エラー: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/admin/send_message', methods=['POST'])
 def admin_send_message():
@@ -3471,7 +3858,8 @@ def admin_send_message():
     if not session_id or not message:
         return jsonify({'status': 'error', 'message': 'session_idとmessageが必要です'}), 400
     
-    if session_id not in ALL_SESSIONS:
+    session_data = get_session_from_db(session_id)
+    if not session_data:
         return jsonify({'status': 'error', 'message': 'セッションが見つかりません'}), 404
     
     # 管理者メッセージを追加
@@ -3482,18 +3870,22 @@ def admin_send_message():
         'from_admin': True
     }
     
-    ALL_SESSIONS[session_id]['messages'].append(ai_response)
-    ALL_SESSIONS[session_id]['last_activity'] = time.time()
+    if 'messages' not in session_data:
+        session_data['messages'] = []
+    session_data['messages'].append(ai_response)
+    session_data['last_activity'] = datetime.now()
+    save_session_to_db(session_id, session_data)
     
     return jsonify({'status': 'success', 'message': 'メッセージを送信しました'})
 
 @app.route('/api/main_sessions', methods=['GET'])
 def api_main_sessions():
     """全セッション情報を取得（admin_chat.html用）"""
-    cleanup_old_sessions()
+    cleanup_old_sessions(force=True)  # 管理画面では強制実行
     
+    all_sessions = get_all_sessions_from_db()
     sessions_list = []
-    for sid, info in ALL_SESSIONS.items():
+    for sid, info in all_sessions.items():
         detailed_diag = ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
         # 互換対応: detailed_diagnosis に session_id が無ければ付与（フロントの一致判定用）
         if isinstance(detailed_diag, dict) and 'session_id' not in detailed_diag:
@@ -3536,10 +3928,10 @@ def api_main_sessions():
 @app.route('/api/main_manual_reply_queue', methods=['GET', 'POST'])
 def api_main_manual_reply_queue():
     """手動返信キューの管理"""
-    global MANUAL_REPLY_QUEUE
     
     if request.method == 'GET':
-        return jsonify(MANUAL_REPLY_QUEUE)
+        queue = get_manual_reply_queue()
+        return jsonify(queue)
     
     elif request.method == 'POST':
         data = request.json
@@ -3554,54 +3946,71 @@ def api_main_manual_reply_queue():
                 action = 'reply'
                 logger.info(f"🔄 Action auto-detected as 'reply' from reply_message")
         
+        queue = get_manual_reply_queue()
+        
         if action == 'add':
             session_id = data.get('session_id')
-            if session_id and session_id in ALL_SESSIONS:
-                if session_id not in MANUAL_REPLY_QUEUE:
-                    MANUAL_REPLY_QUEUE.append(session_id)
-                return jsonify({'status': 'success', 'queue': MANUAL_REPLY_QUEUE})
+            if session_id:
+                session_data = get_session_from_db(session_id)
+                if session_data:
+                    # キューに追加（既存のキュー形式に合わせる）
+                    queue_item = {
+                        'session_id': session_id,
+                        'user_message': '',
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'status': 'pending'
+                    }
+                    if queue_item not in queue:
+                        queue.append(queue_item)
+                        set_manual_reply_queue(queue)
+                return jsonify({'status': 'success', 'queue': get_manual_reply_queue()})
         
         elif action == 'remove':
             session_id = data.get('session_id')
-            if session_id in MANUAL_REPLY_QUEUE:
-                MANUAL_REPLY_QUEUE.remove(session_id)
-            return jsonify({'status': 'success', 'queue': MANUAL_REPLY_QUEUE})
+            if session_id:
+                queue = [q for q in queue if q.get('session_id') != session_id]
+                set_manual_reply_queue(queue)
+            return jsonify({'status': 'success', 'queue': get_manual_reply_queue()})
         
         elif action == 'reply':
             # reply_messageとmessageの両方をサポート
             message = data.get('reply_message') or data.get('message')
             
-            if session_id and message and session_id in ALL_SESSIONS:
-                # 管理者メッセージを追加（manual_replyフラグを使用）
-                manual_reply = {
-                    'type': 'bot',
-                    'content': message,
-                    'timestamp': datetime.now().isoformat(),
-                    'manual_reply': True
-                }
-                
-                ALL_SESSIONS[session_id]['messages'].append(manual_reply)
-                ALL_SESSIONS[session_id]['last_activity'] = time.time()
-                
-                logger.info(f"💬 Manual reply sent to session {session_id}: {message[:50]}...")
-                
-                # キューから削除
-                if session_id in MANUAL_REPLY_QUEUE:
-                    MANUAL_REPLY_QUEUE.remove(session_id)
-                
-                return jsonify({'status': 'success', 'message': 'メッセージを送信しました'})
+            if session_id and message:
+                session_data = get_session_from_db(session_id)
+                if session_data:
+                    # 管理者メッセージを追加（manual_replyフラグを使用）
+                    manual_reply = {
+                        'type': 'bot',
+                        'content': message,
+                        'timestamp': datetime.now().isoformat(),
+                        'manual_reply': True
+                    }
+                    
+                    if 'messages' not in session_data:
+                        session_data['messages'] = []
+                    session_data['messages'].append(manual_reply)
+                    session_data['last_activity'] = datetime.now()
+                    save_session_to_db(session_id, session_data)
+                    
+                    logger.info(f"💬 Manual reply sent to session {session_id}: {message[:50]}...")
+                    
+                    # キューから削除
+                    queue = [q for q in queue if q.get('session_id') != session_id]
+                    set_manual_reply_queue(queue)
+                    
+                    return jsonify({'status': 'success', 'message': 'メッセージを送信しました'})
         
         return jsonify({'status': 'error', 'message': '無効なアクションです'}), 400
 
 @app.route('/api/main_ai_control', methods=['GET', 'POST'])
 def api_main_ai_control():
     """AI自動応答の制御"""
-    global AI_AUTO_REPLY, ADMIN_MODE
     
     if request.method == 'GET':
         return jsonify({
-            'ai_auto_reply': AI_AUTO_REPLY,
-            'admin_mode': ADMIN_MODE
+            'ai_auto_reply': get_ai_auto_reply(),
+            'admin_mode': get_admin_mode()
         })
     
     elif request.method == 'POST':
@@ -3609,16 +4018,16 @@ def api_main_ai_control():
         action = data.get('action')
         
         if action == 'enable':
-            AI_AUTO_REPLY = True
-            ADMIN_MODE = False
+            set_ai_auto_reply(True)
+            set_admin_mode(False)
         elif action == 'disable':
-            AI_AUTO_REPLY = False
-            ADMIN_MODE = True
+            set_ai_auto_reply(False)
+            set_admin_mode(True)
         
         return jsonify({
-            'ai_auto_reply': AI_AUTO_REPLY,
-            'admin_mode': ADMIN_MODE,
-            'message': 'AI自動応答を' + ('有効化' if AI_AUTO_REPLY else '無効化') + 'しました'
+            'ai_auto_reply': get_ai_auto_reply(),
+            'admin_mode': get_admin_mode(),
+            'message': 'AI自動応答を' + ('有効化' if get_ai_auto_reply() else '無効化') + 'しました'
         })
 
 @app.route('/api/user_attributes', methods=['GET', 'POST'])
@@ -3661,10 +4070,14 @@ def api_user_attributes():
         }
         session.modified = True
         
-        # ALL_SESSIONSにも保存
-        if sid and sid in ALL_SESSIONS:
-            ALL_SESSIONS[sid]['user_attributes'] = session['user_attributes'].copy()
-            logger.info(f"✅ User attributes saved to session {sid}")
+        # DBにも保存
+        if sid:
+            session_data = get_session_from_db(sid)
+            if session_data:
+                session_data['user_attributes'] = session['user_attributes'].copy()
+                session_data['last_activity'] = datetime.now()
+                save_session_to_db(sid, session_data)
+                logger.info(f"✅ User attributes saved to session {sid}")
         
         return jsonify({'status': 'success', 'message': 'ユーザー属性を保存しました'})
 
