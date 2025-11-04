@@ -76,14 +76,14 @@ VERSION = str(int(time.time()))
 def get_ai_auto_reply():
     """AI自動応答設定をDBから取得"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         return db.get_global_state('AI_AUTO_REPLY', default_value=True)
     return AI_AUTO_REPLY
 
 def set_ai_auto_reply(value):
     """AI自動応答設定をDBに保存"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         db.set_global_state('AI_AUTO_REPLY', value)
     global AI_AUTO_REPLY
     AI_AUTO_REPLY = value
@@ -91,14 +91,14 @@ def set_ai_auto_reply(value):
 def get_admin_mode():
     """管理者モード設定をDBから取得"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         return db.get_global_state('ADMIN_MODE', default_value=False)
     return ADMIN_MODE
 
 def set_admin_mode(value):
     """管理者モード設定をDBに保存"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         db.set_global_state('ADMIN_MODE', value)
     global ADMIN_MODE
     ADMIN_MODE = value
@@ -106,14 +106,14 @@ def set_admin_mode(value):
 def get_manual_reply_queue():
     """手動返信キューをDBから取得"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         return db.get_global_state('MANUAL_REPLY_QUEUE', default_value=[])
     return MANUAL_REPLY_QUEUE
 
 def set_manual_reply_queue(value):
     """手動返信キューをDBに保存"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         db.set_global_state('MANUAL_REPLY_QUEUE', value)
     global MANUAL_REPLY_QUEUE
     MANUAL_REPLY_QUEUE = value
@@ -138,7 +138,7 @@ MAX_CLEANUP_DELAY = 300  # 高負荷時のクリーンアップ遅延（秒）- 
 def get_session_from_db(session_id):
     """セッションをDBから取得、失敗時はフォールバック"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         session_data = db.get_session(session_id)
         if session_data:
             return session_data
@@ -148,7 +148,7 @@ def get_session_from_db(session_id):
 def save_session_to_db(session_id, data):
     """セッションをDBに保存、失敗時はメモリに保存"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         success = db.save_session(session_id, data)
         if success:
             return True
@@ -160,7 +160,7 @@ def save_session_to_db(session_id, data):
 def get_all_sessions_from_db():
     """全セッションをDBから取得、失敗時はフォールバック"""
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         sessions = db.get_all_sessions()
         if sessions is not None:
             return {s['session_id']: s for s in sessions}
@@ -375,7 +375,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
             return
     
     db = get_database()
-    if db and db.connection and hasattr(db, 'cleanup_expired_sessions'):
+    if db and (db.connection or db.connection_pool) and hasattr(db, 'cleanup_expired_sessions'):
         # 現在のセッションIDを取得（削除から除外するため）
         exclude_session_ids = []
         if exclude_current_session:
@@ -450,7 +450,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
     db = get_database()
     for sid in sessions_to_remove:
         if sid != current_sid:
-            if db and db.connection:
+            if db and (db.connection or db.connection_pool):
                 db.delete_session(sid)
             elif sid in ALL_SESSIONS:
                 del ALL_SESSIONS[sid]
@@ -3517,7 +3517,7 @@ def clear_logs():
     # すべてのセッションをクリア（管理者が明示的にクリアした場合のみ）
     # 注意: これによりすべてのチャット履歴が削除されます
     db = get_database()
-    if db and db.connection:
+    if db and (db.connection or db.connection_pool):
         # DBからすべてのセッションを削除
         all_sessions = get_all_sessions_from_db()
         for sid in all_sessions.keys():
@@ -3799,7 +3799,7 @@ def delete_session(session_id):
     """セッションを削除"""
     try:
         db = get_database()
-        if db and db.connection:
+        if db and (db.connection or db.connection_pool):
             success = db.delete_session(session_id)
             if success:
                 return jsonify({'status': 'success', 'message': 'セッションを削除しました'})
@@ -3816,7 +3816,7 @@ def delete_all_sessions():
     """全セッションを削除"""
     try:
         db = get_database()
-        if db and db.connection:
+        if db and (db.connection or db.connection_pool):
             deleted_count = db.delete_all_sessions()
             return jsonify({'status': 'success', 'message': f'{deleted_count}件のセッションを削除しました', 'deleted_count': deleted_count})
         else:
@@ -4096,7 +4096,7 @@ def submit_feedback():
         
         # データベース接続確認
         db = get_database()
-        if not db.connection:
+        if not (db and (db.connection or db.connection_pool)):
             return jsonify({'error': 'Database not available'}), 500
         
         # 必須フィールドの検証
@@ -4147,7 +4147,7 @@ def get_feedback_reports():
     """フィードバック報告一覧を取得（管理画面用）"""
     try:
         db = get_database()
-        if not db.connection:
+        if not (db and (db.connection or db.connection_pool)):
             return jsonify({'error': 'Database not available'}), 500
         
         # クエリパラメータ
@@ -4168,7 +4168,7 @@ def resolve_feedback(feedback_id):
     """フィードバックを解決済みにマーク"""
     try:
         db = get_database()
-        if not db.connection:
+        if not (db and (db.connection or db.connection_pool)):
             return jsonify({'error': 'Database not available'}), 500
         
         success = db.resolve_feedback(feedback_id)
@@ -4188,7 +4188,7 @@ def delete_feedback(feedback_id):
     """フィードバックを削除"""
     try:
         db = get_database()
-        if not db.connection:
+        if not (db and (db.connection or db.connection_pool)):
             return jsonify({'error': 'Database not available'}), 500
 
         success = db.delete_feedback(feedback_id)
