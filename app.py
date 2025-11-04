@@ -80,8 +80,8 @@ MANUAL_REPLY_QUEUE = []  # 手動返信待ちのメッセージ
 ALL_SESSIONS = {}  # {session_id: {'username': str, 'messages': list, 'last_activity': timestamp}}
 ADMIN_SESSIONS = {}  # 管理者専用のセッション情報
 USER_COUNTER = 1  # ユーザー名の連番
-MAX_SESSIONS = 10  # 最大セッション数（Render無料プラン用に大幅削減）
-SESSION_TIMEOUT = 900  # セッションタイムアウト（秒）- 15分に短縮
+MAX_SESSIONS = 50  # 最大セッション数（メモリ制約を考慮した適切な値）
+SESSION_TIMEOUT = 600  # セッションタイムアウト（秒）- 10分に短縮
 
 # グローバルエラーハンドラー
 @app.errorhandler(404)
