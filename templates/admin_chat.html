@@ -1701,6 +1701,7 @@
                             <button class="btn btn-success" id="ai-on-btn" onclick="setAIMode('on')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答ON</button>
                             <button class="btn btn-danger" id="ai-off-btn" onclick="setAIMode('off')" style="padding: 8px 12px; font-size: 0.85em;">AI自動応答OFF</button>
                             <button class="btn btn-warning" id="admin-mode-btn" onclick="setAIMode('admin')" style="padding: 8px 12px; font-size: 0.85em;">薬剤師対応</button>
+                            <button class="btn btn-info" id="session-manage-btn" onclick="openSessionManagement()" style="padding: 8px 12px; font-size: 0.85em;">📋 セッション管理</button>
                         </div>
                     </div>
 
@@ -1825,6 +1826,29 @@
         </div>
     </div>
     
+    <!-- セッション管理モーダル -->
+    <div id="sessionManagementModal" class="admin-modal">
+        <div class="admin-modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <span class="close" onclick="closeSessionManagement()" style="float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2 style="margin-bottom: 20px;">📋 セッション管理</h2>
+            
+            <!-- 操作ボタン -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn btn-info" onclick="refreshSessionManagement()" style="padding: 8px 16px; font-size: 0.9em;">🔄 更新</button>
+                <button class="btn btn-danger" onclick="deleteAllSessions()" style="padding: 8px 16px; font-size: 0.9em;">🗑️ 全削除</button>
+                <input type="text" id="session-search-input" placeholder="🔍 セッションID/ユーザー名で検索" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;" onkeyup="filterSessionManagement()">
+            </div>
+            
+            <!-- セッション一覧 -->
+            <div id="session-management-list" style="max-height: 500px; overflow-y: auto;">
+                <div style="text-align: center; padding: 50px; color: #888;">
+                    <div style="font-size: 3em;">📋</div>
+                    <p style="margin-top: 10px;">セッション情報を読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="medicineChatModal" class="admin-modal">
         <div class="admin-modal-content">
             <span class="close">&times;</span>
@@ -4346,6 +4370,177 @@
             document.getElementById('scoreModal').style.display = 'block';
         }
 
+        // セッション管理機能
+        function openSessionManagement() {
+            document.getElementById('sessionManagementModal').style.display = 'block';
+            refreshSessionManagement();
+        }
+        
+        function closeSessionManagement() {
+            document.getElementById('sessionManagementModal').style.display = 'none';
+        }
+        
+        function refreshSessionManagement() {
+            const listContainer = document.getElementById('session-management-list');
+            listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">読み込み中...</div>';
+            
+            fetch('/api/admin/sessions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sessions && data.sessions.length > 0) {
+                        renderSessionManagementList(data.sessions);
+                    } else {
+                        listContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #888;"><div style="font-size: 3em;">📭</div><p style="margin-top: 10px;">セッションがありません</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sessions:', error);
+                    listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">エラー: セッション情報の読み込みに失敗しました</div>';
+                });
+        }
+        
+        function renderSessionManagementList(sessions) {
+            const listContainer = document.getElementById('session-management-list');
+            let html = '<div style="display: grid; gap: 10px;">';
+            
+            sessions.forEach(session => {
+                const lastActivity = session.last_activity ? new Date(session.last_activity * 1000).toLocaleString('ja-JP') : '不明';
+                const sessionActive = session.session_active !== false ? '✅ アクティブ' : '❌ 終了';
+                const messageCount = session.messages ? session.messages.length : 0;
+                
+                html += `
+                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">${escapeHtml(session.username || 'Unknown')}</div>
+                                <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">ID: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${escapeHtml(session.session_id)}</code></div>
+                                <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${sessionActive} | メッセージ数: ${messageCount}</div>
+                                <div style="font-size: 0.85em; color: #666;">最終アクティビティ: ${lastActivity}</div>
+                                ${session.client_ip ? `<div style="font-size: 0.85em; color: #666;">IP: ${escapeHtml(session.client_ip)}</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 5px; flex-direction: column;">
+                                <button class="btn btn-danger" onclick="deleteSession('${session.session_id}')" style="padding: 5px 10px; font-size: 0.8em;">🗑️ 削除</button>
+                                <button class="btn btn-info" onclick="editSession('${session.session_id}')" style="padding: 5px 10px; font-size: 0.8em;">✏️ 編集</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            listContainer.innerHTML = html;
+        }
+        
+        function filterSessionManagement() {
+            const searchInput = document.getElementById('session-search-input').value.toLowerCase();
+            const sessionItems = document.querySelectorAll('#session-management-list > div > div');
+            
+            sessionItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchInput)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        function deleteSession(sessionId) {
+            if (!confirm(`セッション「${sessionId}」を削除してもよろしいですか？`)) {
+                return;
+            }
+            
+            fetch(`/api/admin/sessions/${sessionId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('✅ ' + data.message);
+                        refreshSessionManagement();
+                    } else {
+                        alert('❌ エラー: ' + (data.message || '削除に失敗しました'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting session:', error);
+                    alert('❌ 通信エラーが発生しました');
+                });
+        }
+        
+        function deleteAllSessions() {
+            if (!confirm('⚠️ すべてのセッションを削除してもよろしいですか？\nこの操作は取り消せません。')) {
+                return;
+            }
+            
+            if (!confirm('⚠️ 本当に削除しますか？')) {
+                return;
+            }
+            
+            fetch('/api/admin/sessions/delete_all', {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`✅ ${data.deleted_count || 0}件のセッションを削除しました`);
+                        refreshSessionManagement();
+                    } else {
+                        alert('❌ エラー: ' + (data.message || '削除に失敗しました'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting all sessions:', error);
+                    alert('❌ 通信エラーが発生しました');
+                });
+        }
+        
+        function editSession(sessionId) {
+            // セッション編集機能（簡易版）
+            fetch(`/api/admin/sessions`)
+                .then(response => response.json())
+                .then(data => {
+                    const session = data.sessions.find(s => s.session_id === sessionId);
+                    if (!session) {
+                        alert('セッションが見つかりません');
+                        return;
+                    }
+                    
+                    const newUsername = prompt('新しいユーザー名を入力してください:', session.username || 'Unknown');
+                    if (newUsername === null) return;
+                    
+                    const newActive = confirm('セッションをアクティブにしますか？\n（OK: アクティブ、キャンセル: 終了）');
+                    
+                    fetch(`/api/admin/sessions/${sessionId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: newUsername,
+                            session_active: newActive
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('✅ ' + data.message);
+                                refreshSessionManagement();
+                            } else {
+                                alert('❌ エラー: ' + (data.message || '更新に失敗しました'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating session:', error);
+                            alert('❌ 通信エラーが発生しました');
+                        });
+                })
+                .catch(error => {
+                    console.error('Error loading session:', error);
+                    alert('❌ セッション情報の読み込みに失敗しました');
+                });
+        }
+        
         function closeScoreModal() {
             document.getElementById('scoreModal').style.display = 'none';
         }
