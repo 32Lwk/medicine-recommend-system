@@ -533,12 +533,11 @@
 </div>
 
 <!-- オンボーディングモーダル -->
-<div id="onboarding-overlay" class="onboarding-overlay hidden" aria-hidden="true">
-    <div class="onboarding-container" role="dialog" aria-modal="true" tabindex="-1">
-        <button type="button" class="onboarding-skip" id="onboarding-skip-btn" onclick="skipOnboarding()" aria-label="スキップして始める">スキップ</button>
-        <div id="onboarding-slides"></div>
-        <div id="slide-indicator" class="slide-indicator" aria-label="オンボーディングの進行状況"></div>
-    </div>
+<div id="onboarding-overlay" class="onboarding-overlay hidden" aria-hidden="true"></div>
+<div class="onboarding-container hidden" id="onboarding-container" role="dialog" aria-modal="true" tabindex="-1">
+    <button type="button" class="onboarding-skip" id="onboarding-skip-btn" onclick="skipOnboarding()" aria-label="スキップして始める">スキップ</button>
+    <div id="onboarding-slides"></div>
+    <div id="slide-indicator" class="slide-indicator" aria-label="オンボーディングの進行状況"></div>
 </div>
 
 
