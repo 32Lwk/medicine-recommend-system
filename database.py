@@ -166,7 +166,7 @@ class DatabaseManager:
             """
             cursor.execute(create_global_state_table_sql)
             
-            self.connection.commit()
+            conn.commit()
             
             # インデックスを作成（パフォーマンス向上）
             index_sql = """
