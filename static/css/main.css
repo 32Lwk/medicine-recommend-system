@@ -2155,17 +2155,18 @@ body.onboarding-open {
     height: 100%;
     background: rgba(255, 255, 255, 0.5);
     z-index: 11000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     padding: 20px;
     overflow-y: auto;
     pointer-events: none; /* オーバーレイ自体はクリックを透過 */
+    box-sizing: border-box;
 }
 
 /* オーバーレイ内のコンテナはクリック可能に */
 .onboarding-container {
     pointer-events: auto;
+    position: fixed !important;
+    z-index: 11020 !important;
+    isolation: isolate !important;
 }
 
 /* ステップ1（症状入力画面）では入力エリアの部分を透過 */
@@ -2206,7 +2207,7 @@ body.onboarding-open[data-onboarding-step="1"] #messageInput {
 /* オンボーディング中の要素強調 */
 .onboarding-highlight {
     position: relative;
-    z-index: 11001 !important;
+    z-index: 11002 !important;
     box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5), 
                 0 0 20px 8px rgba(76, 175, 80, 0.3),
                 0 4px 12px rgba(0, 0, 0, 0.15) !important;
@@ -2323,7 +2324,15 @@ body.onboarding-open .language-selector {
     max-width: 480px;
     width: 90%;
     animation: fadeInUp 0.4s ease;
-    position: relative;
+    position: fixed !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(0) !important;
+    z-index: 11020 !important;
+    isolation: isolate !important;
+    will-change: transform;
+    box-sizing: border-box;
+    margin: 0;
 }
 
 .onboarding-visual {
@@ -2365,6 +2374,8 @@ body.onboarding-open .language-selector {
     opacity: 0;
     transform: translateX(20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .onboarding-slide.active {
@@ -2420,6 +2431,7 @@ body.onboarding-open .language-selector {
     cursor: pointer;
     text-decoration: underline;
     padding: 0.25rem 0.5rem;
+    z-index: 11021;
 }
 
 .onboarding-skip:hover,
@@ -2514,18 +2526,27 @@ body.onboarding-open .language-selector {
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translate(-50%, calc(-50% + 12px)) translateZ(0);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate(-50%, -50%) translateZ(0);
     }
 }
 
 @media (max-width: 768px) {
+    .onboarding-overlay {
+        padding: 10px;
+    }
+
     .onboarding-container {
         padding: 1.5rem;
-        max-width: 95%;
+        max-width: calc(100% - 20px);
+        width: calc(100% - 20px);
+        margin: 0;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) translateZ(0);
     }
 
     .onboarding-title {
@@ -2538,5 +2559,29 @@ body.onboarding-open .language-selector {
 
     .onboarding-skip {
         font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .onboarding-overlay {
+        padding: 8px;
+    }
+
+    .onboarding-container {
+        padding: 1.25rem;
+        max-width: calc(100% - 16px);
+        width: calc(100% - 16px);
+        margin: 0;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) translateZ(0);
+    }
+
+    .onboarding-title {
+        font-size: 1.25rem;
+    }
+
+    .onboarding-visual {
+        font-size: 2.5rem;
     }
 }

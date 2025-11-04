@@ -1043,13 +1043,19 @@
 
     function hideOnboardingOverlay() {
         const overlay = document.getElementById('onboarding-overlay');
+        const container = document.getElementById('onboarding-container');
         const slidesContainer = document.getElementById('onboarding-slides');
         if (overlay) {
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');
             overlay.removeAttribute('data-step');
-            overlay.removeEventListener('keydown', handleOnboardingKeydown);
         }
+        if (container) {
+            container.classList.add('hidden');
+            container.setAttribute('aria-hidden', 'true');
+            container.removeEventListener('keydown', handleOnboardingKeydown);
+        }
+        document.body.classList.remove('onboarding-open');
         document.body.removeAttribute('data-onboarding-step');
         if (slidesContainer) {
             slidesContainer.removeEventListener('touchstart', handleOnboardingTouchStart);
@@ -1104,7 +1110,7 @@
 
     function initOnboarding() {
         const overlay = document.getElementById('onboarding-overlay');
-        const container = overlay ? overlay.querySelector('.onboarding-container') : null;
+        const container = document.getElementById('onboarding-container');
         if (!overlay || !container) {
             return;
         }
@@ -1113,10 +1119,12 @@
         overlay.classList.remove('hidden');
         overlay.setAttribute('aria-hidden', 'false');
         overlay.setAttribute('data-step', '0');
+        container.classList.remove('hidden');
+        container.setAttribute('aria-hidden', 'false');
         document.body.classList.add('onboarding-open');
         document.body.setAttribute('data-onboarding-step', '0');
         renderOnboardingSlides(0);
-        overlay.addEventListener('keydown', handleOnboardingKeydown);
+        container.addEventListener('keydown', handleOnboardingKeydown);
         const slidesContainer = document.getElementById('onboarding-slides');
         if (slidesContainer) {
             slidesContainer.addEventListener('touchstart', handleOnboardingTouchStart, { passive: true });
