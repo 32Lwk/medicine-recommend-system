@@ -1984,16 +1984,28 @@ def rule_based_recommendation(
         logger.info("ステップ5: スコアリング開始")
     
     # ステップ5.1: 簡易スコアリング（高速）
-    def calculate_quick_score(candidate: Dict, nlu_result: Dict) -> float:
-        """簡易スコア（症状マッチと効能特異性のみ）"""
+    def calculate_quick_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
+        """簡易スコア（症状マッチ、効能特異性、年齢適合性を含む）"""
         from scoring_utils import calculate_efficacy_specificity_score
         symptom_score = calculate_symptom_match_score(candidate, nlu_result)
         efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
-        return (symptom_score * 0.6 + efficacy_score * 0.4)
+        age_score = calculate_age_fit_score(candidate, user_info)
+        # 年齢適合性も含めて精度向上（重みは症状:効能:年齢 = 0.5:0.3:0.2）
+        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2)
     
-    # 簡易スコアで上位N×5件を選別
-    quick_scores = [(calculate_quick_score(c, nlu_result), c) for c in candidates]
-    top_candidates_for_scoring = sorted(quick_scores, key=lambda x: x[0], reverse=True)[:top_n * 5]
+    # 簡易スコアで上位N×10件を選別（精度向上のため15件から30件に増加）
+    # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
+    selection_count = min(top_n * 10, len(candidates))
+    quick_scores = [(calculate_quick_score(c, nlu_result, user_info), c) for c in candidates]
+    quick_scores_sorted = sorted(quick_scores, key=lambda x: x[0], reverse=True)
+    top_candidates_for_scoring = quick_scores_sorted[:selection_count]
+    
+    # 簡易スコアが0.3以上の場合も含める（閾値ベースの選別）
+    threshold_candidates = [(score, c) for score, c in quick_scores if score >= 0.3]
+    if len(threshold_candidates) > selection_count:
+        # 閾値を超える候補が多い場合は、それらも含める
+        top_candidates_for_scoring = sorted(threshold_candidates, key=lambda x: x[0], reverse=True)
+        logger.info(f"閾値ベース選別: 簡易スコア0.3以上の候補 {len(top_candidates_for_scoring)}件を選別")
     
     logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
     
