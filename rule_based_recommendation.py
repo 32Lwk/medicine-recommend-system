@@ -10,9 +10,14 @@ import pandas as pd
 import os
 import json
 import re
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
+
+# ロガー設定
+logger = logging.getLogger(__name__)
+DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
 # ================================================================================
 # 1. データ構造と定数定義
@@ -592,13 +597,14 @@ def set_cached_nlu_result(user_text: str, nlu_result: Dict, session_id: str = No
     
     cache_key = f"{session_id}:{hash(user_text)}"
     _nlu_cache[cache_key] = nlu_result
-    print(f"NLUキャッシュに保存: {cache_key}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"NLUキャッシュに保存: {cache_key}")
 
 def clear_nlu_cache():
     """NLUキャッシュをクリア"""
     global _nlu_cache
     _nlu_cache.clear()
-    print("NLUキャッシュをクリアしました")
+    logger.info("NLUキャッシュをクリアしました")
 
 def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     """
@@ -769,11 +775,12 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     needs_escalation = len(red_flags) > 0
     escalation_reason = f"重症疑い症状が検出されました: {', '.join(red_flags)}" if needs_escalation else ""
     
-    print(f"=== 強化NLU結果 ===")
-    print(f"検出された症状: {[s['name'] for s in detected_symptoms]}")
-    print(f"重症疑い: {red_flags}")
-    print(f"エスカレーション必要: {needs_escalation}")
-    print(f"信頼度スコア: {confidence_score:.2f}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"=== 強化NLU結果 ===")
+        logger.debug(f"検出された症状: {[s['name'] for s in detected_symptoms]}")
+        logger.debug(f"重症疑い: {red_flags}")
+        logger.debug(f"エスカレーション必要: {needs_escalation}")
+        logger.debug(f"信頼度スコア: {confidence_score:.2f}")
     
     return {
         "symptoms": detected_symptoms,
@@ -799,11 +806,13 @@ def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, sessi
     # 1. キャッシュチェック
     cached_result = get_cached_nlu_result(user_text, session_id)
     if cached_result:
-        print("NLUキャッシュから結果を取得")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug("NLUキャッシュから結果を取得")
         return cached_result
     
     # 2. ルールベースNLUを実行
-    print("ルールベースNLUを実行")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug("ルールベースNLUを実行")
     rule_based_result = simple_pattern_matching_nlu(user_text, user_info)
     
     # 3. 信頼度チェック
@@ -812,14 +821,16 @@ def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, sessi
     
     # 信頼度が低い場合（症状0個または信頼度0.3未満）のみChatGPT APIを呼び出し
     if symptoms_count == 0 or confidence_score < 0.3:
-        print(f"ルールベースNLUの信頼度が低いため、ChatGPT APIを呼び出し（信頼度: {confidence_score:.2f}）")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"ルールベースNLUの信頼度が低いため、ChatGPT APIを呼び出し（信頼度: {confidence_score:.2f}）")
         gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
         
         # 結果をキャッシュに保存
         set_cached_nlu_result(user_text, gpt_result, session_id)
         return gpt_result
     else:
-        print(f"ルールベースNLUの信頼度が十分（信頼度: {confidence_score:.2f}）")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"ルールベースNLUの信頼度が十分（信頼度: {confidence_score:.2f}）")
         # 結果をキャッシュに保存
         set_cached_nlu_result(user_text, rule_based_result, session_id)
         return rule_based_result
@@ -858,7 +869,8 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
     
     # ブロック判定
     if should_block_input(risk_score):
-        print(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
         return {
             "symptoms": [],
             "red_flags": ["入力検証エラー"],
@@ -868,7 +880,8 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
     
     # 高リスク入力の場合は症状抽出を停止
     if risk_score >= 80:
-        print(f"⚠️ 高リスク入力のため症状抽出を停止: リスクスコア {risk_score}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"⚠️ 高リスク入力のため症状抽出を停止: リスクスコア {risk_score}")
         return {
             "symptoms": [],
             "red_flags": ["高リスク入力"],
@@ -949,7 +962,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
         try:
             parsed_result = safe_json_parse(result, schema='symptom_analysis')
         except Exception as e:
-            print(f"JSON解析エラー: {e}")
+            logger.warning(f"JSON解析エラー: {e}")
             return {
                 "symptoms": [],
                 "red_flags": [],
@@ -957,16 +970,17 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
                 "escalation_reason": ""
             }
         
-        print(f"=== NLU結果 ===")
-        print(f"抽出された症状: {parsed_result.get('symptoms', [])}")
-        print(f"重症疑い: {parsed_result.get('red_flags', [])}")
-        print(f"エスカレーション必要: {parsed_result.get('needs_escalation', False)}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"=== NLU結果 ===")
+            logger.debug(f"抽出された症状: {parsed_result.get('symptoms', [])}")
+            logger.debug(f"重症疑い: {parsed_result.get('red_flags', [])}")
+            logger.debug(f"エスカレーション必要: {parsed_result.get('needs_escalation', False)}")
         
         return parsed_result
             
     except Exception as e:
-        print(f"NLU処理エラー: {e}")
-        print(f"フォールバック: 簡易パターンマッチングに切り替えます")
+        logger.warning(f"NLU処理エラー: {e}")
+        logger.info(f"フォールバック: 簡易パターンマッチングに切り替えます")
         
         # フォールバック: 簡易パターンマッチング
         return simple_pattern_matching_nlu(user_text, user_info)
@@ -1192,7 +1206,7 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             types = SYMPTOM_DICTIONARY[symptom_name]["medicine_types"]
             medicine_types.update(types)
     
-    print(f"推定された医薬品の種類: {medicine_types}")
+    logger.info(f"推定された医薬品の種類: {medicine_types}")
     
     # 該当する医薬品を抽出
     candidates = []
@@ -1211,7 +1225,8 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
                     required_symptoms = pattern_info.get("required_symptoms", [])
                     if required_symptoms and not all(req in symptom_names for req in required_symptoms):
                         should_exclude = True
-                        print(f"特殊用途医薬品を除外: {row.get('製品名', '')} (パターン: {pattern_name}, 症状不足)")
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"特殊用途医薬品を除外: {row.get('製品名', '')} (パターン: {pattern_name}, 症状不足)")
                         break
             
             if should_exclude:
@@ -1221,14 +1236,16 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             if influenza_risk:
                 contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
                 if contains_aspirin and "アスピリン" in ingredients:
-                    print(f"インフルエンザリスクのためアスピリン含有医薬品を除外: {row.get('製品名', '')}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"インフルエンザリスクのためアスピリン含有医薬品を除外: {row.get('製品名', '')}")
                     continue
             
             # リスク成分のチェック（単一症状の場合は除外、複数症状の場合は減点のみ）
             contains_risk, risk_name, risk_info = _contains_risk_ingredient(ingredients)
             if contains_risk and is_single_symptom:
                 # 単一症状の場合はリスク成分を含む医薬品を除外
-                print(f"単一症状のためリスク成分含有医薬品を除外: {row.get('製品名', '')} (成分: {risk_name})")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"単一症状のためリスク成分含有医薬品を除外: {row.get('製品名', '')} (成分: {risk_name})")
                 continue
             
             # CSVのG列（インデックス6）から年齢制限を取得
@@ -1283,7 +1300,7 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             
             candidates.append(candidate)
     
-    print(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
+    logger.info(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
     return candidates
 
 def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
@@ -1412,7 +1429,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     risk_penalty = 0.0
     if candidate.get('risk_ingredient'):
         risk_penalty = candidate.get('risk_penalty', -0.3)
-        print(f"リスク成分ペナルティ: {candidate.get('risk_ingredient')} = {risk_penalty}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"リスク成分ペナルティ: {candidate.get('risk_ingredient')} = {risk_penalty}")
     
     # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティを追加）
     total_score = (
@@ -1489,7 +1507,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     penalty = base_penalty * 0.5   # -0.3 * 0.5 = -0.15
                 else:
                     penalty = base_penalty
-                print(f"症状特異性ペナルティ: {symptom_name} + {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状特異性ペナルティ: {symptom_name} + {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
                 return penalty
         
         # 複合薬識別パターンによるチェック
@@ -1507,7 +1526,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     penalty = base_penalty * 0.5
                 else:
                     penalty = base_penalty
-                print(f"複合薬ペナルティ: 単一症状({symptom_name})に対して複合薬({medicine_type}) = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"複合薬ペナルティ: 単一症状({symptom_name})に対して複合薬({medicine_type}) = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
                 return penalty
     
     # 複数症状の場合
@@ -1532,7 +1552,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     penalty = base_penalty * 0.5
                 else:
                     penalty = base_penalty
-                print(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
                 return penalty
     
     return 0.0
@@ -1595,7 +1616,8 @@ def _check_influenza_compatibility(candidates: List[Dict], influenza_risk: bool)
         contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
         
         if contains_aspirin and "アスピリン" in ingredients:
-            print(f"検証処理: インフルエンザリスクのためアスピリン含有医薬品を除外: {candidate.get('product_name', '')}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"検証処理: インフルエンザリスクのためアスピリン含有医薬品を除外: {candidate.get('product_name', '')}")
             continue  # インフルエンザ時はアスピリン含有医薬品を除外
         
         validated.append(candidate)
@@ -1626,7 +1648,8 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
         score = candidate.get('final_score', 0.0)
         if score < 0.3:
             candidate['low_score_warning'] = True
-            print(f"⚠️ 低スコア警告: {candidate.get('product_name', '')} (スコア: {score:.3f})")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"⚠️ 低スコア警告: {candidate.get('product_name', '')} (スコア: {score:.3f})")
         final_candidates.append(candidate)
     
     return final_candidates
@@ -1859,37 +1882,41 @@ def rule_based_recommendation(
     Returns:
         推奨結果
     """
-    print(f"\n{'='*80}")
-    print(f"ルールベース医薬品推奨システム 開始")
-    print(f"{'='*80}")
-    print(f"症状文: {user_text}")
-    print(f"ユーザー情報: {user_info}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n{'='*80}")
+        logger.debug(f"ルールベース医薬品推奨システム 開始")
+        logger.debug(f"{'='*80}")
+        logger.debug(f"症状文: {user_text}")
+        logger.debug(f"ユーザー情報: {user_info}")
     
     # ステップ1: NLU（症状抽出）
-    print(f"\n--- ステップ1: NLU（症状抽出） ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
     nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
     # confidenceチェック（0.4未満の場合はGPTフォールバックを検討）
     confidence_score = nlu_result.get('confidence_score', 0.0)
     symptoms_count = len(nlu_result.get("symptoms", []))
     
-    print(f"NLU信頼度スコア: {confidence_score:.2f}, 検出症状数: {symptoms_count}")
+    logger.info(f"NLU信頼度スコア: {confidence_score:.2f}, 検出症状数: {symptoms_count}")
     
     # ステップ1.5: 不足情報のチェック
-    print(f"\n--- ステップ1.5: 不足情報のチェック ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ1.5: 不足情報のチェック ---")
     missing_info_result = check_missing_information(user_info, nlu_result)
     
     if missing_info_result["has_missing_info"]:
         priority = missing_info_result["priority"]
-        print(f"不足情報検出（優先度: {priority}）")
-        print(f"不足フィールド: {missing_info_result['missing_fields']}")
+        logger.info(f"不足情報検出（優先度: {priority}）")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"不足フィールド: {missing_info_result['missing_fields']}")
         
         # 症状が検出されていない場合のみ推奨を中断
         # 曖昧症状の質問だけがcriticalの場合は推奨を継続
         missing_fields = missing_info_result.get('missing_fields', [])
         if "symptoms" in missing_fields:
             # 症状が検出されていない場合のみ推奨を中断
-            print(f"[警告] 症状が検出されていないため推奨を中断します")
+            logger.warning(f"症状が検出されていないため推奨を中断します")
             return {
                 "status": "missing_critical_info",
                 "reason": "症状が検出されていません",
@@ -1903,22 +1930,25 @@ def rule_based_recommendation(
             }
         else:
             # 曖昧症状の質問がある場合でも推奨は継続
-            print(f"推奨は続行しますが、追加質問も表示します")
+            logger.info(f"推奨は続行しますが、追加質問も表示します")
     
     # ステップ2: インフルエンザリスク検出
-    print(f"\n--- ステップ2: インフルエンザリスク検出 ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ2: インフルエンザリスク検出 ---")
     influenza_risk, influenza_reason = detect_influenza_risk(nlu_result, user_text)
     if influenza_risk:
-        print(f"[警告] インフルエンザの可能性: {influenza_reason}")
+        logger.warning(f"インフルエンザの可能性: {influenza_reason}")
     else:
-        print(f"インフルエンザリスク: なし")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"インフルエンザリスク: なし")
     
     # ステップ3: 安全性チェック
-    print(f"\n--- ステップ3: 安全性チェック ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ3: 安全性チェック ---")
     safety_result = check_safety_contraindications(user_info, nlu_result)
     
     if safety_result["requires_escalation"]:
-        print(f"[警告] エスカレーション必要: {safety_result['escalation_reason']}")
+        logger.warning(f"エスカレーション必要: {safety_result['escalation_reason']}")
         return {
             "status": "escalation_required",
             "reason": safety_result["escalation_reason"],
@@ -1931,11 +1961,12 @@ def rule_based_recommendation(
         }
     
     # ステップ4: 候補医薬品取得（インフルエンザリスクを考慮）
-    print(f"\n--- ステップ4: 候補医薬品取得 ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
     candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
     
     if not candidates:
-        print("該当する候補医薬品が見つかりませんでした")
+        logger.warning("該当する候補医薬品が見つかりませんでした")
         return {
             "status": "no_candidates",
             "reason": "該当する医薬品が見つかりませんでした",
@@ -1946,9 +1977,28 @@ def rule_based_recommendation(
             "timestamp": datetime.now().isoformat()
         }
     
-    # ステップ5: スコアリング
-    print(f"\n--- ステップ5: スコアリング ---")
-    for candidate in candidates:
+    # ステップ5: 二段階スコアリング（高速化）
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ5: スコアリング（二段階方式） ---")
+    else:
+        logger.info("ステップ5: スコアリング開始")
+    
+    # ステップ5.1: 簡易スコアリング（高速）
+    def calculate_quick_score(candidate: Dict, nlu_result: Dict) -> float:
+        """簡易スコア（症状マッチと効能特異性のみ）"""
+        from scoring_utils import calculate_efficacy_specificity_score
+        symptom_score = calculate_symptom_match_score(candidate, nlu_result)
+        efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
+        return (symptom_score * 0.6 + efficacy_score * 0.4)
+    
+    # 簡易スコアで上位N×5件を選別
+    quick_scores = [(calculate_quick_score(c, nlu_result), c) for c in candidates]
+    top_candidates_for_scoring = sorted(quick_scores, key=lambda x: x[0], reverse=True)[:top_n * 5]
+    
+    logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
+    
+    # ステップ5.2: 詳細スコアリング（選別された候補のみ）
+    for score, candidate in top_candidates_for_scoring:
         score_result = calculate_final_score(candidate, nlu_result, user_info)
         candidate['final_score'] = score_result['total_score']
         candidate['score_breakdown'] = score_result['score_breakdown']
@@ -1956,20 +2006,24 @@ def rule_based_recommendation(
             candidate['allergy_warning'] = score_result['allergy_warning']
         if 'interaction_warnings' in score_result:
             candidate['interaction_warnings'] = score_result['interaction_warnings']
-        print(f"{candidate['product_name']}: {candidate['final_score']:.3f}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"{candidate['product_name']}: {candidate['final_score']:.3f}")
     
-    # スコア順にソート
-    candidates_sorted = sorted(candidates, key=lambda x: x['final_score'], reverse=True)
-    
-    # 上位N件を選択
+    # ステップ5.3: 詳細スコアで上位N件を選択
+    candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
+                              key=lambda x: x['final_score'], reverse=True)
     top_candidates = candidates_sorted[:top_n]
     
+    logger.info(f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択")
+    
     # ステップ5.5: 推奨後の検証処理
-    print(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
     validated_candidates = _finalize_recommendations(top_candidates, nlu_result, influenza_risk)
     
     # ステップ6: 説明生成
-    print(f"\n--- ステップ6: 説明生成 ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ6: 説明生成 ---")
     recommendations = []
     for i, candidate in enumerate(validated_candidates, 1):
         explanation = generate_explanation(candidate, nlu_result, safety_result, user_info)
@@ -2006,14 +2060,15 @@ def rule_based_recommendation(
         recommendations.append(recommendation_item)
     
     # ステップ7: 使用上の注意と医師相談アドバイスをChatGPTで生成
-    print(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
     usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
         recommendations, nlu_result, user_info, client
     )
     
-    print(f"\n{'='*80}")
-    print(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
-    print(f"{'='*80}\n")
+    logger.info(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"{'='*80}")
     
     # score_breakdownのJSON出力（デバッグ・トレース用）
     score_breakdown_json = None
@@ -2021,9 +2076,10 @@ def rule_based_recommendation(
         try:
             score_breakdowns = [r.get('score_breakdown', {}) for r in recommendations]
             score_breakdown_json = json.dumps(score_breakdowns, ensure_ascii=False, indent=2)
-            print(f"📊 Score Breakdown JSON:\n{score_breakdown_json}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"📊 Score Breakdown JSON:\n{score_breakdown_json}")
         except Exception as e:
-            print(f"⚠️ Score breakdown JSON化エラー: {e}")
+            logger.warning(f"Score breakdown JSON化エラー: {e}")
     
     # 不足情報の質問を追加（すべての優先度で表示）
     additional_questions = []
@@ -2219,7 +2275,7 @@ def generate_individual_usage_notes_with_gpt(
         return result.strip()
         
     except Exception as e:
-        print(f"個別使用上の注意生成エラー: {e}")
+        logger.warning(f"個別使用上の注意生成エラー: {e}")
         # フォールバック - CSVデータから完全な情報を取得
         notes = []
         
@@ -2317,53 +2373,191 @@ def generate_usage_notes_and_consultation_with_gpt(
     選択された医薬品のCSVデータをChatGPTに渡して、
     使用上の注意と医師相談が必要な場合のアドバイスを生成
     
-    各医薬品ごとに個別の使用上の注意を生成
+    3件まとめて1回のAPI呼び出しで処理（高速化）
     """
-    # 各医薬品の個別の使用上の注意を生成
-    individual_notes = []
+    import math
     
+    # 3件の医薬品情報を構造化してプロンプトに含める
+    medicines_info = []
     for i, med in enumerate(recommended_medicines, 1):
-        # ChatGPTで個別の使用上の注意を生成
-        individual_note = generate_individual_usage_notes_with_gpt(med, client)
-        
-        # 年齢制限の表示（G列から）
         age_restriction = med.get('age_restriction', '')
-        age_restriction_display = ''
-        
-        import math
         if isinstance(age_restriction, float) and math.isnan(age_restriction):
             age_restriction = ''
         
-        if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-            if '15歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
-            elif '7歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
-            elif '12歳未満' in age_restriction:
-                age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
-            else:
-                import re
-                match = re.search(r'(\d+)歳', age_restriction)
-                if match:
-                    age_val = match.group(1)
-                    age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-        elif isinstance(age_restriction, (int, float)):
-            if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
-                try:
-                    age_val = int(age_restriction)
-                    age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-                except (ValueError, OverflowError):
-                    pass
-        
-        # 個別の注意を整形
-        note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
-        if age_restriction_display:
-            note_text += f"\n{age_restriction_display}"
-        
-        individual_notes.append(note_text)
+        medicines_info.append({
+            "number": i,
+            "product_name": med.get('product_name', ''),
+            "efficacy": med.get('efficacy', ''),
+            "usage": med.get('usage', ''),
+            "age_restriction": age_restriction if isinstance(age_restriction, str) else str(age_restriction) if age_restriction else '',
+            "doping_prohibited": med.get('doping_prohibited', '')
+        })
     
-    # 個別の使用上の注意を結合
-    usage_notes_individual = '\n\n'.join(individual_notes)
+    # バッチ処理用のプロンプト
+    prompt = f"""
+あなたは登録販売者です。以下の3つの医薬品について、それぞれの使用上の注意を簡潔に生成してください。
+
+【医薬品情報】
+
+"""
+    
+    for med_info in medicines_info:
+        prompt += f"""
+{med_info['number']}つ目：{med_info['product_name']}
+効能効果: {med_info['efficacy']}
+用法用量: {med_info['usage']}
+年齢制限: {med_info['age_restriction'] if med_info['age_restriction'] else 'なし'}
+禁止物質: {med_info['doping_prohibited'] if med_info['doping_prohibited'] else 'なし'}
+
+"""
+    
+    prompt += """
+【生成ルール】
+1. 各医薬品ごとに「{number}つ目：{product_name}」として明確に分離してください
+2. 効能: 効能効果を全文記載（省略しない）
+3. 用法用量の注意: 用法用量から重要な注意を2〜3項目、100字以内に要約
+   - 「用法用量を厳守」は他で記載済みなので省略
+   - 小児・乳幼児への注意など、この医薬品特有の注意のみ記載
+   - 箇条書き形式
+4. 年齢制限: 年齢制限がある場合のみ記載
+5. ドーピング: 禁止物質がある場合のみ記載
+
+【出力形式】
+以下のJSON形式で回答してください：
+{
+  "medicines": [
+    {{
+      "number": 1,
+      "product_name": "製品名",
+      "usage_notes": "効能: [全文]\\n\\n用法用量の注意:\\n・[注意1]\\n・[注意2]\\n\\n年齢制限: [ある場合のみ]\\n\\nドーピング: [ある場合のみ]"
+    }},
+    {{
+      "number": 2,
+      "product_name": "製品名",
+      "usage_notes": "..."
+    }},
+    {{
+      "number": 3,
+      "product_name": "製品名",
+      "usage_notes": "..."
+    }}
+  ]
+}
+
+注意：
+- 各医薬品の情報は必ず分離してください
+- JSON形式で正確に出力してください
+"""
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "あなたは登録販売者です。効能は詳細に、用法用量の注意は簡潔に要約してください。JSON形式で正確に出力してください。"},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            max_tokens=1200,
+            response_format={"type": "json_object"}
+        )
+        
+        result_text = response.choices[0].message.content
+        result_json = json.loads(result_text)
+        
+        # 個別の使用上の注意を整形
+        individual_notes = []
+        medicines_dict = {m['number']: m for m in result_json.get('medicines', [])}
+        
+        for i, med in enumerate(recommended_medicines, 1):
+            med_result = medicines_dict.get(i)
+            if med_result:
+                individual_note = med_result.get('usage_notes', '')
+            else:
+                # フォールバック: 個別生成関数を使用
+                individual_note = generate_individual_usage_notes_with_gpt(med, client)
+            
+            # 年齢制限の表示（G列から）
+            age_restriction = med.get('age_restriction', '')
+            age_restriction_display = ''
+            
+            if isinstance(age_restriction, float) and math.isnan(age_restriction):
+                age_restriction = ''
+            
+            if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+                if '15歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
+                elif '7歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
+                elif '12歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
+                else:
+                    import re
+                    match = re.search(r'(\d+)歳', age_restriction)
+                    if match:
+                        age_val = match.group(1)
+                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+            elif isinstance(age_restriction, (int, float)):
+                if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
+                    try:
+                        age_val = int(age_restriction)
+                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                    except (ValueError, OverflowError):
+                        pass
+            
+            # 個別の注意を整形
+            note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
+            if age_restriction_display and age_restriction_display not in individual_note:
+                note_text += f"\n{age_restriction_display}"
+            
+            individual_notes.append(note_text)
+        
+        # 個別の使用上の注意を結合
+        usage_notes_individual = '\n\n'.join(individual_notes)
+        
+    except Exception as e:
+        logger.warning(f"バッチ処理エラー: {e}。フォールバック: 個別処理に切り替えます")
+        # フォールバック: 個別処理
+        individual_notes = []
+        for i, med in enumerate(recommended_medicines, 1):
+            individual_note = generate_individual_usage_notes_with_gpt(med, client)
+            
+            # 年齢制限の表示（G列から）
+            age_restriction = med.get('age_restriction', '')
+            age_restriction_display = ''
+            
+            import math
+            if isinstance(age_restriction, float) and math.isnan(age_restriction):
+                age_restriction = ''
+            
+            if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+                if '15歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
+                elif '7歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
+                elif '12歳未満' in age_restriction:
+                    age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
+                else:
+                    import re
+                    match = re.search(r'(\d+)歳', age_restriction)
+                    if match:
+                        age_val = match.group(1)
+                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+            elif isinstance(age_restriction, (int, float)):
+                if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
+                    try:
+                        age_val = int(age_restriction)
+                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                    except (ValueError, OverflowError):
+                        pass
+            
+            # 個別の注意を整形
+            note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
+            if age_restriction_display:
+                note_text += f"\n{age_restriction_display}"
+            
+            individual_notes.append(note_text)
+        
+        usage_notes_individual = '\n\n'.join(individual_notes)
     
     # 全体の使用上の注意を生成（共通の禁忌事項）
     general_notes = generate_default_usage_notes_and_consultation(recommended_medicines, user_info)
@@ -2372,8 +2566,7 @@ def generate_usage_notes_and_consultation_with_gpt(
     usage_notes_combined = usage_notes_individual + '\n\n' + general_notes['usage_notes']
     doctor_consultation = general_notes['doctor_consultation']
     
-    print(f"=== 使用上の注意生成完了 ===")
-    print(f"個別の注意: {len(individual_notes)}件")
+    logger.info(f"使用上の注意生成完了: {len(individual_notes)}件")
     
     return {
         "usage_notes": usage_notes_combined,
@@ -2469,7 +2662,8 @@ def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, lo
     with open(log_path, 'a', encoding='utf-8') as f:
         f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
     
-    print(f"ログ保存完了: {log_path}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"ログ保存完了: {log_path}")
 
 # ================================================================================
 # 7. ラッパー関数（app.pyから呼び出し用）
