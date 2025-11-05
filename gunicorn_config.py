@@ -6,8 +6,8 @@ workers = 2
 # ワーカークラス（同期処理で安定性重視）
 worker_class = 'sync'
 
-# タイムアウト（秒）- Renderの制約に合わせて短縮
-timeout = 120
+# タイムアウト（秒）- 処理時間を考慮して増加
+timeout = 180
 
 # バインドするアドレスとポート
 import os
