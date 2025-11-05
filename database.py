@@ -15,6 +15,7 @@ except Exception as e:
     _logging.getLogger(__name__).warning(f"psycopg2 not available: {e}. Database features disabled.")
 import logging
 import json
+import math
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -353,6 +354,17 @@ class DatabaseManager:
                 self.put_connection(conn)
             return False
     
+    def _convert_nan_to_null(self, obj):
+        """NaN値をnullに変換する再帰関数（JSONシリアライズ対応）"""
+        if isinstance(obj, dict):
+            return {k: self._convert_nan_to_null(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._convert_nan_to_null(item) for item in obj]
+        elif isinstance(obj, float) and math.isnan(obj):
+            return None
+        else:
+            return obj
+    
     def save_session(self, session_id, data):
         """セッションをデータベースに保存"""
         conn = self.get_connection()
@@ -363,9 +375,12 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             
-            # messagesとuser_attributesをJSONBに変換
-            messages_json = json.dumps(data.get('messages', []), ensure_ascii=False)
-            user_attributes_json = json.dumps(data.get('user_attributes', {}), ensure_ascii=False)
+            # NaN値をnullに変換してからJSONBに変換
+            messages_data = self._convert_nan_to_null(data.get('messages', []))
+            user_attributes_data = self._convert_nan_to_null(data.get('user_attributes', {}))
+            
+            messages_json = json.dumps(messages_data, ensure_ascii=False)
+            user_attributes_json = json.dumps(user_attributes_data, ensure_ascii=False)
             
             insert_sql = """
             INSERT INTO sessions 
@@ -703,8 +718,9 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             
-            # valueをJSONBに変換
-            value_json = json.dumps(value, ensure_ascii=False)
+            # NaN値をnullに変換してからJSONBに変換
+            value_data = self._convert_nan_to_null(value)
+            value_json = json.dumps(value_data, ensure_ascii=False)
             
             insert_sql = """
             INSERT INTO global_state (key, value, updated_at)
