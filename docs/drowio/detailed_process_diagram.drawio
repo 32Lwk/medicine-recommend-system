@@ -1,0 +1,470 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="詳細プロセス図" id="detailed-process">
+    <mxGraphModel dx="1422" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- タイトル -->
+        <mxCell id="title" value="医薬品推奨システム - 詳細プロセス図" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="20" width="1720" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- 開始 -->
+        <mxCell id="start" value="開始" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="860" y="80" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- ユーザー入力受付 -->
+        <mxCell id="user-input" value="ユーザー症状入力" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="820" y="150" width="160" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- セッション確認 -->
+        <mxCell id="session-check" value="セッション確認&#xa;&#xa;• セッションID取得/生成&#xa;• 既存セッション検索&#xa;• DBから復元" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="820" y="240" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- セキュリティ検証 -->
+        <mxCell id="security-validation" value="セキュリティ検証&#xa;&#xa;• 入力検証&#xa;• リスクスコア算出&#xa;• サニタイズ処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="820" y="370" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- ブロック判定 -->
+        <mxCell id="block-check" value="ブロック判定" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="820" y="480" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 危機キーワード検出 -->
+        <mxCell id="crisis-check" value="危機キーワード検出" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="820" y="590" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 終了ワード検出 -->
+        <mxCell id="end-word-check" value="終了ワード検出" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="820" y="700" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 入力内容判定 -->
+        <mxCell id="input-check" value="入力内容判定&#xa;&#xa;• 症状入力？&#xa;• 質問？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="820" y="810" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 属性抽出 -->
+        <mxCell id="attribute-extraction" value="属性抽出&#xa;(ChatGPT NLU)&#xa;&#xa;• 年齢・性別&#xa;• 妊娠・授乳&#xa;• アレルギー&#xa;• 服用中薬&#xa;• 既往症" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="810" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- 症状分析 -->
+        <mxCell id="symptom-analysis" value="症状分析&#xa;(ChatGPT NLU)&#xa;&#xa;• 症状抽出&#xa;• 重症度推定&#xa;• 期間抽出&#xa;• Red Flag検出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="960" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- 医薬品種類判定 -->
+        <mxCell id="medicine-type-judge" value="医薬品種類判定&#xa;(ChatGPT)&#xa;&#xa;• 風邪薬&#xa;• 解熱鎮痛薬&#xa;• 鼻炎用薬&#xa;• その他" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="1110" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- ルールベース推奨 -->
+        <mxCell id="rule-based" value="ルールベース推奨&#xa;&#xa;• NLU処理&#xa;• 候補抽出&#xa;• スコアリング&#xa;• 推奨理由生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="600" y="1110" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- AI推奨 -->
+        <mxCell id="ai-recommendation" value="AI推奨&#xa;(ChatGPT)&#xa;&#xa;• 症状分析&#xa;• 医薬品選択&#xa;• 使用上の注意&#xa;• 推奨理由生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1480" y="1110" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- NLU処理 -->
+        <mxCell id="nlu-processing" value="NLU処理&#xa;(ルールベース)&#xa;&#xa;• 正規表現マッチング&#xa;• 症状抽出&#xa;• 重症度推定&#xa;• 期間抽出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="600" y="960" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- スコアリング -->
+        <mxCell id="scoring" value="スコアリング&#xa;&#xa;• 効能効果マッチング&#xa;• 症状適合度&#xa;• 安全性スコア&#xa;• 総合スコア算出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="600" y="810" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- 安全性チェック -->
+        <mxCell id="safety-check" value="安全性チェック&#xa;&#xa;• Red Flag検出&#xa;• 年齢制限確認&#xa;• 妊娠・授乳チェック&#xa;• アレルギー確認&#xa;• 薬物相互作用&#xa;• 症状期間確認" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1240" y="1110" width="160" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- エスカレーション判定 -->
+        <mxCell id="escalation-check" value="エスカレーション必要？&#xa;&#xa;• 医師相談判定&#xa;• 危険性評価&#xa;• 緊急度判定" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1240" y="1280" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 医師相談推奨 -->
+        <mxCell id="doctor-recommend" value="医師相談推奨&#xa;&#xa;• 緊急度判定&#xa;• 相談先情報&#xa;• 推奨メッセージ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="1280" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 質問応答処理 -->
+        <mxCell id="question-handler" value="質問応答処理&#xa;(ChatGPT)&#xa;&#xa;• 会話履歴管理&#xa;• コンテキスト理解&#xa;• 医薬品相談&#xa;• 回答生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="600" y="960" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- 不足情報チェック -->
+        <mxCell id="missing-info-check" value="不足情報チェック&#xa;&#xa;• 必須情報確認&#xa;• 追加質問生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1040" y="1410" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- 応答生成 -->
+        <mxCell id="response-generation" value="応答生成&#xa;&#xa;• 推奨医薬品フォーマット&#xa;• 使用上の注意&#xa;• 推奨理由&#xa;• 医師相談推奨" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="820" y="1410" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- ログ記録 -->
+        <mxCell id="logging" value="ログ記録&#xa;&#xa;• 推奨履歴&#xa;• パフォーマンス統計&#xa;• エラーログ&#xa;• セキュリティログ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="600" y="1410" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- 終了 -->
+        <mxCell id="end" value="終了" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="860" y="1560" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- 危機対応 -->
+        <mxCell id="crisis-response" value="危機対応&#xa;&#xa;• 特別メッセージ&#xa;• 相談先情報&#xa;• 手動返信キュー追加" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="600" y="590" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- ブロック応答 -->
+        <mxCell id="block-response" value="ブロック応答&#xa;&#xa;• 警告メッセージ&#xa;• 入力ガイド" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="600" y="480" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- チャット終了 -->
+        <mxCell id="chat-end" value="チャット終了&#xa;&#xa;• 終了メッセージ&#xa;• セッション非アクティブ化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="600" y="700" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- フロー -->
+        <mxCell id="flow1" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="start" target="user-input">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="120" as="sourcePoint" />
+            <mxPoint x="900" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow2" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="user-input" target="session-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="210" as="sourcePoint" />
+            <mxPoint x="900" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow3" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="session-check" target="security-validation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="340" as="sourcePoint" />
+            <mxPoint x="900" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow4" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="security-validation" target="block-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="450" as="sourcePoint" />
+            <mxPoint x="900" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow5" value="ブロック" style="endArrow=classic;html=1;rounded=0;strokeColor=#f44336;strokeWidth=2;" edge="1" parent="1" source="block-check" target="block-response">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="780" y="520" as="sourcePoint" />
+            <mxPoint x="760" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow6" value="通過" style="endArrow=classic;html=1;rounded=0;strokeColor=#4caf50;strokeWidth=2;" edge="1" parent="1" source="block-check" target="crisis-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="520" as="sourcePoint" />
+            <mxPoint x="900" y="590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow7" value="検出" style="endArrow=classic;html=1;rounded=0;strokeColor=#f44336;strokeWidth=2;" edge="1" parent="1" source="crisis-check" target="crisis-response">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="780" y="630" as="sourcePoint" />
+            <mxPoint x="760" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow8" value="未検出" style="endArrow=classic;html=1;rounded=0;strokeColor=#4caf50;strokeWidth=2;" edge="1" parent="1" source="crisis-check" target="end-word-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="630" as="sourcePoint" />
+            <mxPoint x="900" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow9" value="終了" style="endArrow=classic;html=1;rounded=0;strokeColor=#f44336;strokeWidth=2;" edge="1" parent="1" source="end-word-check" target="chat-end">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="780" y="740" as="sourcePoint" />
+            <mxPoint x="760" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow10" value="継続" style="endArrow=classic;html=1;rounded=0;strokeColor=#4caf50;strokeWidth=2;" edge="1" parent="1" source="end-word-check" target="input-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="900" y="740" as="sourcePoint" />
+            <mxPoint x="900" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow11" value="症状" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="input-check" target="attribute-extraction">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="980" y="860" as="sourcePoint" />
+            <mxPoint x="1040" y="870" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow12" value="質問" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="input-check" target="question-handler">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="860" as="sourcePoint" />
+            <mxPoint x="760" y="1020" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow13" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="attribute-extraction" target="symptom-analysis">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1120" y="930" as="sourcePoint" />
+            <mxPoint x="1120" y="960" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow14" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="symptom-analysis" target="medicine-type-judge">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1120" y="1080" as="sourcePoint" />
+            <mxPoint x="1120" y="1110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow15" value="風邪薬・解熱鎮痛薬・鼻炎用薬" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="medicine-type-judge" target="rule-based">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1040" y="1170" as="sourcePoint" />
+            <mxPoint x="760" y="1170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow16" value="その他" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="medicine-type-judge" target="ai-recommendation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1200" y="1170" as="sourcePoint" />
+            <mxPoint x="1480" y="1170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow17" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="rule-based" target="nlu-processing">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="1230" as="sourcePoint" />
+            <mxPoint x="680" y="1080" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow18" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="nlu-processing" target="scoring">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="960" as="sourcePoint" />
+            <mxPoint x="680" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow19" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="rule-based" target="safety-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="760" y="1170" as="sourcePoint" />
+            <mxPoint x="1240" y="1180" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="760" y="1180" />
+              <mxPoint x="1000" y="1180" />
+              <mxPoint x="1000" y="1180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow20" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="ai-recommendation" target="safety-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1480" y="1170" as="sourcePoint" />
+            <mxPoint x="1400" y="1180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow21" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="safety-check" target="escalation-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1320" y="1250" as="sourcePoint" />
+            <mxPoint x="1320" y="1280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow22" value="必要" style="endArrow=classic;html=1;rounded=0;strokeColor=#f44336;strokeWidth=2;" edge="1" parent="1" source="escalation-check" target="doctor-recommend">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1240" y="1330" as="sourcePoint" />
+            <mxPoint x="1200" y="1330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow23" value="不要" style="endArrow=classic;html=1;rounded=0;strokeColor=#4caf50;strokeWidth=2;" edge="1" parent="1" source="escalation-check" target="missing-info-check">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1320" y="1330" as="sourcePoint" />
+            <mxPoint x="1120" y="1450" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1320" y="1380" />
+              <mxPoint x="1120" y="1380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow24" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="missing-info-check" target="response-generation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1040" y="1450" as="sourcePoint" />
+            <mxPoint x="980" y="1470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow25" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="question-handler" target="response-generation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="1020" as="sourcePoint" />
+            <mxPoint x="900" y="1470" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="1470" />
+              <mxPoint x="900" y="1470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow26" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="doctor-recommend" target="response-generation">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1040" y="1330" as="sourcePoint" />
+            <mxPoint x="980" y="1470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow27" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="response-generation" target="logging">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="820" y="1470" as="sourcePoint" />
+            <mxPoint x="760" y="1470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow28" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="logging" target="end">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="1470" as="sourcePoint" />
+            <mxPoint x="900" y="1560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="1580" />
+              <mxPoint x="900" y="1580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow29" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="block-response" target="end">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="520" as="sourcePoint" />
+            <mxPoint x="900" y="1560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="1580" />
+              <mxPoint x="900" y="1580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow30" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="crisis-response" target="end">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="640" as="sourcePoint" />
+            <mxPoint x="900" y="1560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="1580" />
+              <mxPoint x="900" y="1580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow31" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="chat-end" target="end">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="740" as="sourcePoint" />
+            <mxPoint x="900" y="1560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="680" y="1580" />
+              <mxPoint x="900" y="1580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 凡例 -->
+        <mxCell id="legend-title" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="80" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-process" value="プロセス" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="100" y="120" width="100" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-decision" value="判定" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="100" y="180" width="100" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-start" value="開始" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="100" y="260" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-end" value="終了" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="100" y="320" width="80" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- 色分け凡例 -->
+        <mxCell id="color-legend" value="色分け凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="380" width="120" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-user" value="ユーザー操作" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="100" y="410" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-input" value="入力処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="100" y="450" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-ai" value="AI処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="100" y="490" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-rule" value="ルールベース" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="100" y="530" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-safety" value="安全性処理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="100" y="570" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="color-backend" value="バックエンド" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="100" y="610" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- フロー色分け -->
+        <mxCell id="flow-legend-title" value="フロー色分け" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="100" y="660" width="120" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="flow-normal" value="通常フロー" style="endArrow=classic;html=1;rounded=0;strokeColor=#1976d2;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="690" as="sourcePoint" />
+            <mxPoint x="200" y="690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-yes" value="Yes" style="endArrow=classic;html=1;rounded=0;strokeColor=#4caf50;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="720" as="sourcePoint" />
+            <mxPoint x="200" y="720" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="flow-no" value="No" style="endArrow=classic;html=1;rounded=0;strokeColor=#f44336;strokeWidth=2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="750" as="sourcePoint" />
+            <mxPoint x="200" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+
