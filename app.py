@@ -2580,28 +2580,34 @@ def index():
     
     # POSTリクエストの場合はJSON形式で成功を返す
     if request.method == 'POST':
-        # パフォーマンスメトリクスをログに記録
-        metrics = monitor.get_metrics()
-        log_performance_metrics(monitor, sid, 'POST_request', {
-            'user_agent': user_agent,
-            'client_ip': client_ip
-        })
+        # レスポンスを先に準備（最小限のDB読み取りのみ）
+        # メッセージ数は既にsessionに保存されているため、DB読み取りを最小限に
+        message_count = len(session.get('messages', []))
+        response_data = {'status': 'ok', 'message_count': message_count}
+        response = jsonify(response_data)
         
-        # アクセス分析ログを記録
-        session_data = get_session_from_db(sid) if sid else None
-        message_count = len(session_data.get('messages', [])) if session_data else 0
-        log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
-            'username': session.get('username', ''),
-            'message_count': message_count
-        })
+        # レスポンス返却後にログ出力（非同期化）
+        try:
+            # パフォーマンスメトリクスをログに記録
+            metrics = monitor.get_metrics()
+            log_performance_metrics(monitor, sid, 'POST_request', {
+                'user_agent': user_agent,
+                'client_ip': client_ip
+            })
+            
+            # アクセス分析ログを記録（DB読み取りは最小限に）
+            session_data = get_session_from_db(sid) if sid else None
+            actual_message_count = len(session_data.get('messages', [])) if session_data else message_count
+            log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
+                'username': session.get('username', ''),
+                'message_count': actual_message_count
+            })
+            
+            logger.info(f"✅ POST処理完了 - JSON返却: {actual_message_count} messages")
+        except Exception as e:
+            logger.warning(f"ログ出力エラー（無視）: {e}")
         
-        logger.info(f"✅ POST処理完了 - JSON返却: {message_count} messages")
-        if session_data:
-            logger.info(f"📦 Session[{sid}] messages: {len(session_data.get('messages', []))} messages")
-        all_sessions = get_all_sessions_from_db()
-        logger.info(f"🔍 All sessions keys: {list(all_sessions.keys())}")
-        logger.info(f"🔍 Current session ID: {sid}")
-        return jsonify({'status': 'ok', 'message_count': message_count})
+        return response
     
     # GET処理（初期表示）
     # パフォーマンスメトリクスをログに記録
