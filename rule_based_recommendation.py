@@ -577,8 +577,8 @@ SYMPTOM_CATEGORY_PENALTY = {
 # 複数症状の組み合わせによる調整（ボーナス/ペナルティ）
 MULTI_SYMPTOM_COMBINATIONS = {
     frozenset({"のどの痛み", "発熱"}): {
-        "風邪薬": 0.35,
-        "解熱鎮痛薬": -0.37  # -0.25 + のど痛追加ペナルティ-0.12
+        "風邪薬": 0.25,  # 総合感冒薬を優先するが、過度なボーナスは避ける
+        "解熱鎮痛薬": 0.0  # ペナルティなし（効能特異性の差で自然に順位が決まる）
     },
     frozenset({"発熱", "咳"}): {
         "風邪薬": 0.15,
@@ -762,26 +762,47 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         }
     }
     
-    # 症状辞書から同義語でマッチング（強化版）
+    # 症状辞書から同義語でマッチング（強化版・活用形対応）
     for symptom_name, symptom_data in SYMPTOM_DICTIONARY.items():
+        matched = False
+        
         # 正規化名でチェック
-        if symptom_data["canonical_name"] in user_text:
+        canonical = symptom_data["canonical_name"]
+        if canonical in user_text:
+            matched = True
+        
+        # 同義語でチェック（完全一致）
+        if not matched:
+            for synonym in symptom_data["synonyms"]:
+                if synonym in user_text:
+                    matched = True
+                    break
+        
+        # 部分一致チェック（活用形対応）
+        if not matched:
+            # canonical_nameの語幹でチェック（例: "のどの痛み" → "のど", "痛"）
+            if "痛み" in canonical or "痛い" in canonical:
+                # "痛" を含むか確認（"痛い", "痛く", "痛む" などに対応）
+                base_symptom = canonical.replace("の痛み", "").replace("痛み", "").replace("が痛い", "")
+                if base_symptom and base_symptom in user_text and "痛" in user_text:
+                    matched = True
+            
+            # 同義語も活用形チェック
+            if not matched:
+                for synonym in symptom_data["synonyms"]:
+                    if "痛い" in synonym:
+                        # "○○が痛い" → "○○が痛" で部分一致チェック
+                        base_syn = synonym.replace("が痛い", "").replace("痛い", "")
+                        if base_syn and base_syn in user_text and "痛" in user_text:
+                            matched = True
+                            break
+        
+        if matched:
             detected_symptoms.append({
                 "name": symptom_name,
                 "severity": "中等度",  # デフォルト
                 "duration_days": None
             })
-            continue
-        
-        # 同義語でチェック（部分一致も含む）
-        for synonym in symptom_data["synonyms"]:
-            if synonym in user_text:
-                detected_symptoms.append({
-                    "name": symptom_name,
-                    "severity": "中等度",
-                    "duration_days": None
-                })
-                break
     
     # 重症疑い症状のチェック（強化版）
     for flag_name, flag_keywords in RED_FLAG_SYMPTOMS.items():
@@ -1291,15 +1312,29 @@ def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
 
 
 def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similarity_threshold: float = 0.5) -> List[Dict]:
-    """主要成分が重複しすぎないように候補を再選別する"""
+    """主要成分が重複しすぎないように候補を再選別する（剤形多様性も考慮）"""
     if len(candidates) <= top_n:
         return candidates
+
+    # 液剤を最初に1件確保（剤形多様性）
+    liquid_candidate = None
+    for candidate in candidates:
+        if _candidate_has_throat_liquid_signature(candidate):
+            liquid_candidate = candidate
+            break
 
     selected: List[Dict] = []
     selected_sets: List[set] = []
     fallback: List[Tuple[Dict, set]] = []
 
+    # 液剤が見つかった場合は最後に追加するために保留
+    reserved_liquid = liquid_candidate
+
     for candidate in candidates:
+        # 保留中の液剤はスキップ
+        if reserved_liquid and candidate == reserved_liquid:
+            continue
+
         main_ingredients = set(extract_main_ingredients(candidate.get("ingredients", "")))
 
         overlap = False
@@ -1314,11 +1349,16 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                 overlap = True
                 break
 
-        if not overlap and len(selected) < top_n:
+        if not overlap and len(selected) < (top_n - 1 if reserved_liquid else top_n):
             selected.append(candidate)
             selected_sets.append(main_ingredients)
         else:
             fallback.append((candidate, main_ingredients))
+
+    # 液剤を最後に追加（成分重複に関わらず）
+    if reserved_liquid and len(selected) < top_n:
+        selected.append(reserved_liquid)
+        selected_sets.append(set(extract_main_ingredients(reserved_liquid.get("ingredients", ""))))
 
     # まだ不足している場合は重複を許容して埋める
     if len(selected) < top_n:
@@ -1851,7 +1891,7 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
         # 喉症状で液剤シグナル検出時のボーナス（MULTI_SYMPTOM_COMBINATIONSとは独立）
         if len(symptom_names) >= 2 and "のどの痛み" in symptom_names:
             if _candidate_has_throat_liquid_signature(candidate):
-                total_adjustment += 0.18
+                total_adjustment += 0.22  # 液剤を明確に優先するため増強
 
         if total_adjustment != 0.0:
             return total_adjustment
@@ -2309,17 +2349,32 @@ def rule_based_recommendation(
     
     # ステップ5.1: 簡易スコアリング（高速）
     def calculate_quick_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
-        """簡易スコア（症状マッチ、効能特異性、年齢適合性を含む）"""
+        """簡易スコア（症状マッチ、効能特異性、年齢適合性、症状特異性ペナルティを含む）"""
         from scoring_utils import calculate_efficacy_specificity_score
         symptom_score = calculate_symptom_match_score(candidate, nlu_result)
         efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
         age_score = calculate_age_fit_score(candidate, user_info)
+        
+        # 簡易版の症状特異性ペナルティ（複数症状時の薬効調整）
+        symptom_penalty = 0.0
+        symptoms = nlu_result.get("symptoms", [])
+        symptom_names = [s.get("name") for s in symptoms]
+        medicine_type = candidate.get("medicine_type", "")
+        
+        if len(symptom_names) >= 2:
+            # のどの痛み + 発熱のパターン
+            if "のどの痛み" in symptom_names and "発熱" in symptom_names:
+                if "解熱鎮痛薬" in medicine_type:
+                    symptom_penalty = 0.0
+                elif "風邪薬" in medicine_type:
+                    symptom_penalty = 0.25
+        
         # 年齢適合性も含めて精度向上（重みは症状:効能:年齢 = 0.5:0.3:0.2）
-        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2)
+        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty)
     
-    # 簡易スコアで上位N×10件を選別（精度向上のため15件から30件に増加）
+    # 簡易スコアで上位N×250件を選別（異なる薬効カテゴリの多様性確保）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
-    selection_count = min(top_n * 30, len(candidates))
+    selection_count = min(top_n * 250, len(candidates))
     quick_scores = [(calculate_quick_score(c, nlu_result, scoring_user_info), c) for c in candidates]
     quick_scores_sorted = sorted(quick_scores, key=lambda x: x[0], reverse=True)
     top_candidates_for_scoring = quick_scores_sorted[:selection_count]
