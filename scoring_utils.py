@@ -6,6 +6,7 @@
 import pandas as pd
 import re
 import os
+import unicodedata
 from typing import Dict, List, Optional, Tuple
 
 # CSVファイルのパス
@@ -16,6 +17,35 @@ INTERACTIONS_CSV = os.path.join(BASE_DIR, "medicine_interactions.csv")
 # 副作用・相互作用データのキャッシュ
 _side_effects_df = None
 _interactions_df = None
+
+
+def normalize_text(text: str) -> str:
+    """文字列をNFKC正規化・小文字化し、空白や記号を除去"""
+    if not text or not isinstance(text, str):
+        return ""
+
+    normalized = unicodedata.normalize('NFKC', text)
+    normalized = normalized.lower()
+    # 空白と記号を除去（数字・アルファベット・日本語は残す）
+    normalized = re.sub(r'[\s\u3000]+', '', normalized)
+    normalized = re.sub(r"[^\wぁ-んァ-ン一-龥]+", '', normalized)
+    return normalized
+
+
+BROAD_EFFICACY_KEYWORDS = {
+    "滋養強壮": {
+        "require_any": {"倦怠感", "疲労感", "虚弱体質", "肉体疲労", "病後"},
+        "penalty": 0.45
+    },
+    "栄養補給": {
+        "require_any": {"栄養障害", "食欲不振", "病後", "産前産後"},
+        "penalty": 0.35
+    },
+    "疲労回復": {
+        "require_any": {"疲労感", "倦怠感", "肉体疲労"},
+        "penalty": 0.3
+    }
+}
 
 def load_side_effects_data():
     """副作用データを読み込み"""
@@ -61,28 +91,40 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     
     # 症状名のリストを作成
     symptom_names = [s.get('name', '') for s in symptoms if s.get('name')]
-    
-    # 効能効果テキストの長さ
-    efficacy_length = len(efficacy_text)
-    
-    # 症状マッチ数をカウント
-    match_count = 0
-    for symptom_name in symptom_names:
-        if symptom_name in efficacy_text:
-            match_count += 1
-    
-    # 効能特異性スコア = 症状マッチ数 / 症状数
-    if len(symptom_names) == 0:
+    if not symptom_names:
         return 0.0
-    
-    specificity_ratio = match_count / len(symptom_names)
-    
+
+    normalized_efficacy = normalize_text(efficacy_text)
+    if not normalized_efficacy:
+        return 0.0
+
+    normalized_symptoms = [normalize_text(name) for name in symptom_names]
+    normalized_symptom_set = {name for name in normalized_symptoms if name}
+
+    if not normalized_symptom_set:
+        return 0.0
+
+    match_count = sum(1 for name in normalized_symptom_set if name in normalized_efficacy)
+    specificity_ratio = match_count / len(normalized_symptom_set)
+
     # 効能効果の長さによる調整（短いほど特化している）
-    length_penalty = min(1.0, efficacy_length / 100)  # 100文字を基準
-    
-    # 最終スコア = 特異性比率 × 長さペナルティ
-    final_score = specificity_ratio * (1.0 - length_penalty * 0.3)
-    
+    efficacy_length = len(normalized_efficacy)
+    length_penalty = min(1.0, efficacy_length / 120)  # 正規化後のテキスト長を基準
+
+    final_score = specificity_ratio * (1.0 - length_penalty * 0.25)
+
+    # 広域効能（滋養強壮など）の場合は症状との整合性を確認
+    penalty_factor = 1.0
+    for keyword, rule in BROAD_EFFICACY_KEYWORDS.items():
+        normalized_keyword = normalize_text(keyword)
+        if normalized_keyword and normalized_keyword in normalized_efficacy:
+            required_set = {normalize_text(req) for req in rule.get("require_any", set())}
+            if required_set and not any(req in normalized_symptom_set for req in required_set):
+                penalty = max(0.0, min(1.0, rule.get("penalty", 0.2)))
+                penalty_factor *= (1.0 - penalty)
+
+    final_score *= penalty_factor
+
     return min(1.0, max(0.0, final_score))
 
 def calculate_side_effect_risk_score(candidate: Dict, user_info: Dict) -> float:
