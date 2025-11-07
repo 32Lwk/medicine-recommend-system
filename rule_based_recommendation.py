@@ -14,6 +14,7 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
+from scoring_utils import normalize_text
 
 # ロガー設定
 logger = logging.getLogger(__name__)
@@ -565,8 +566,55 @@ MULTI_SYMPTOM_COMBINATIONS = {
     frozenset({"発熱", "鼻水"}): {
         "風邪薬": 0.15,
         "解熱鎮痛薬": -0.1
+    },
+    frozenset({"咳", "痰"}): {
+        "風邪薬": 0.18,
+        "解熱鎮痛薬": -0.1
+    },
+    frozenset({"鼻水", "鼻づまり"}): {
+        "鼻炎用薬": 0.2,
+        "風邪薬": 0.1
+    },
+    frozenset({"のどの痛み", "咳"}): {
+        "風邪薬": 0.18,
+        "解熱鎮痛薬": -0.1
+    },
+    frozenset({"咳", "鼻水"}): {
+        "風邪薬": 0.15,
+        "鼻炎用薬": 0.1
+    },
+    frozenset({"頭痛", "発熱"}): {
+        "解熱鎮痛薬": 0.12,
+        "風邪薬": 0.15
+    },
+    frozenset({"腹痛", "下痢"}): {
+        "胃腸薬": 0.2,
+        "風邪薬": -0.1
+    },
+    frozenset({"吐き気", "腹痛"}): {
+        "胃腸薬": 0.18,
+        "風邪薬": -0.1
     }
 }
+
+THROAT_SYMPTOM_TOKENS = {normalize_text(term) for term in [
+    "のどの痛み",
+    "喉の痛み",
+    "咽頭痛",
+    "のどの不快感",
+    "声がれ"
+]}
+
+THROAT_KEYWORD_TOKENS = {normalize_text(term) for term in [
+    "のど",
+    "喉",
+    "咽頭",
+    "トローチ",
+    "うがい",
+    "うがい薬",
+    "含嗽",
+    "声がれ"
+]}
 
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
@@ -1384,8 +1432,8 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
     # のどの痛みがある場合は局所治療薬も候補に追加
     has_throat_pain = "のどの痛み" in symptom_names
     if has_throat_pain:
-        throat_keyword_pattern = r"(のど|喉|咽頭)"
-        product_keyword_pattern = r"(のど|喉|咽|トローチ|スプレー|うがい|キャンディ|飴)"
+        throat_keyword_pattern = r"(?:のど|喉|咽頭)"
+        product_keyword_pattern = r"(?:のど|喉|咽|トローチ|スプレー|うがい|キャンディ|飴)"
 
         throat_mask = (
             medicine_df['効能効果'].astype(str).str.contains(throat_keyword_pattern, na=False) |
@@ -1410,15 +1458,26 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
     if 症状数 == 0:
         return 0.0
     
-    efficacy_text = candidate.get('efficacy', '').lower()
+    efficacy_text = normalize_text(candidate.get('efficacy', ''))
+    if not efficacy_text:
+        return 0.0
     
     for symptom in nlu_result.get("symptoms", []):
         symptom_name = symptom.get("name")
+        if not symptom_name:
+            continue
+        normalized_symptom = normalize_text(symptom_name)
+        if not normalized_symptom:
+            continue
+        synonym_set = {normalized_symptom}
+        dictionary_entry = SYMPTOM_DICTIONARY.get(symptom_name, {})
+        for synonym in dictionary_entry.get("synonyms", []):
+            normalized_synonym = normalize_text(synonym)
+            if normalized_synonym:
+                synonym_set.add(normalized_synonym)
         
-        # 効能効果テキストに症状名が含まれるかチェック
-        if symptom_name and symptom_name in efficacy_text:
-            # 症状辞書の重みを使用
-            weight = SYMPTOM_DICTIONARY.get(symptom_name, {}).get("weight", 0.5)
+        if any(token in efficacy_text for token in synonym_set):
+            weight = dictionary_entry.get("weight", 0.5)
             症状スコア += weight
     
     return 症状スコア / 症状数
@@ -1428,38 +1487,47 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
     年齢適合性スコアを計算
     """
     age = user_info.get('age')
-    if age is None:
-        # 年齢不明の場合は成人として扱う（スコアリングのみ）
-        age = 30
-        return 0.5  # 年齢不明の場合は中立スコア
-    
     age_restriction = candidate.get('age_restriction', '')
-    
-    # NaN（欠損値）のチェック
+
     import math
     if isinstance(age_restriction, float) and math.isnan(age_restriction):
         age_restriction = ''
-    
-    # 年齢制限が数値の場合は文字列に変換
     if isinstance(age_restriction, (int, float)):
         try:
             age_restriction = str(int(age_restriction))
         except (ValueError, OverflowError):
             age_restriction = ''
-    
-    # 年齢制限が文字列でない場合は空文字列に
     if not isinstance(age_restriction, str):
         age_restriction = ''
-    
-    # 年齢制限の解析（簡易版）
-    if '15歳未満' in age_restriction and age < 15:
-        return 0.0  # 服用不可
-    elif '7歳未満' in age_restriction and age < 7:
-        return 0.0  # 服用不可
-    elif age >= 15:
-        return 1.0  # 成人は問題なし
-    else:
-        return 0.7  # 小児は減点
+
+    min_age_allowed = None
+    if age_restriction:
+        match = re.search(r'(\d+)', age_restriction)
+        if match:
+            try:
+                min_age_allowed = int(match.group(1))
+            except ValueError:
+                min_age_allowed = None
+
+    if age is None:
+        base_score = 0.5
+        if min_age_allowed is None:
+            base_score += 0.1
+        elif min_age_allowed <= 6:
+            base_score += 0.15
+        elif min_age_allowed <= 12:
+            base_score += 0.08
+        elif min_age_allowed >= 15:
+            base_score -= 0.05
+        return max(0.0, min(1.0, base_score))
+
+    if min_age_allowed is not None and age < min_age_allowed:
+        return 0.0
+
+    if age < 15:
+        return 0.8 if min_age_allowed and min_age_allowed <= age else 0.6
+
+    return 1.0
 
 def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> Dict:
     """
@@ -1529,6 +1597,17 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"リスク成分ペナルティ: {candidate.get('risk_ingredient')} = {risk_penalty}")
     
+    throat_bonus = 0.0
+    symptoms = nlu_result.get("symptoms", [])
+    has_throat_symptom = any(normalize_text(symptom.get("name", "")) in THROAT_SYMPTOM_TOKENS for symptom in symptoms)
+    if has_throat_symptom:
+        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + candidate.get('medicine_type', '')
+        normalized_combined = normalize_text(combined_text)
+        if any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
+            throat_bonus = 0.12
+        elif '外用薬' in candidate.get('medicine_type', ''):
+            throat_bonus = 0.12
+
     # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティを追加）
     total_score = (
         SCORING_WEIGHTS["症状適合度"] * symptom_score +
@@ -1538,7 +1617,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         SCORING_WEIGHTS["副作用リスク"] * side_effect_score +
         SCORING_WEIGHTS["相互作用リスク"] * interaction_score +
         symptom_specificity_penalty +  # 症状特異性ペナルティ
-        risk_penalty  # リスク成分ペナルティ
+        risk_penalty +  # リスク成分ペナルティ
+        throat_bonus
     )
     
     result = {
@@ -1551,7 +1631,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "side_effect_risk": side_effect_score,
             "interaction_risk": interaction_score,
             "symptom_specificity_penalty": symptom_specificity_penalty,  # スコア内訳に追加
-            "risk_ingredient_penalty": risk_penalty  # リスク成分ペナルティ
+            "risk_ingredient_penalty": risk_penalty,
+            "throat_bonus": throat_bonus
         }
     }
     
@@ -1639,6 +1720,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             if symptom_name in SYMPTOM_CATEGORY_PENALTY:
                 penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
                 if medicine_type in penalty_table:
+                    if '風邪薬' in medicine_type:
+                        continue
                     penalties.append(penalty_table[medicine_type])
 
         if penalties:
@@ -1665,6 +1748,9 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     logger.debug(
                         f"複数症状ボーナス: {combo_key} × {medicine_type} = {adjustment:+.2f}"
                     )
+
+        if len(symptom_names) >= 2 and medicine_type and '風邪薬' in medicine_type:
+            total_adjustment += 0.15
 
         if total_adjustment != 0.0:
             return total_adjustment
