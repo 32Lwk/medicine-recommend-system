@@ -578,7 +578,7 @@ SYMPTOM_CATEGORY_PENALTY = {
 MULTI_SYMPTOM_COMBINATIONS = {
     frozenset({"のどの痛み", "発熱"}): {
         "風邪薬": 0.35,
-        "解熱鎮痛薬": -0.25
+        "解熱鎮痛薬": -0.37  # -0.25 + のど痛追加ペナルティ-0.12
     },
     frozenset({"発熱", "咳"}): {
         "風邪薬": 0.15,
@@ -1848,9 +1848,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             overlap_count = len(common_cold_set & core_cold_tokens)
             total_adjustment += 0.12 + 0.03 * max(0, overlap_count - 1)
 
+        # 喉症状で液剤シグナル検出時のボーナス（MULTI_SYMPTOM_COMBINATIONSとは独立）
         if len(symptom_names) >= 2 and "のどの痛み" in symptom_names:
-            if '解熱鎮痛薬' in medicine_type:
-                total_adjustment -= 0.12
             if _candidate_has_throat_liquid_signature(candidate):
                 total_adjustment += 0.18
 
