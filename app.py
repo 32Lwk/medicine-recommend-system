@@ -3348,14 +3348,27 @@ def request_admin():
     username = session.get('username', 'unknown')
     if sid:
         # セッションに要請フラグとAI自動応答OFFフラグを追加（個別チャット単位）
-        session_data = get_session_from_db(sid)
-        if session_data:
-            session_data['admin_request'] = True
-            session_data['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
-        
+        session_data = get_session_from_db(sid) or {}
+
+        # 既存セッションが存在しない場合は基本情報を補完
+        if not session_data:
+            session_data = {
+                'session_id': sid,
+                'username': username,
+                'messages': session.get('messages', []).copy(),
+                'last_activity': datetime.now(),
+                'client_ip': request.remote_addr,
+                'user_agent': request.headers.get('User-Agent', ''),
+                'user_attributes': session.get('user_attributes', {}),
+                'session_active': True
+            }
+
+        session_data['admin_request'] = True
+        session_data['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
+
         session['admin_request'] = True
         session['ai_auto_reply'] = False  # このチャットのみAI自動応答OFF
-        
+
         # システムメッセージを追加
         system_message = {
             'type': 'bot',
@@ -3366,15 +3379,14 @@ def request_admin():
         if 'messages' not in session:
             session['messages'] = []
         session['messages'].append(system_message)
-        
+
         # DBにも保存（ページ更新後も表示されるように）
-        if session_data:
-            if 'messages' not in session_data:
-                session_data['messages'] = []
-            session_data['messages'].append(system_message)
-            session_data['last_activity'] = datetime.now()
-            save_session_to_db(sid, session_data)
-        
+        messages_for_db = session_data.get('messages') or []
+        messages_for_db.append(system_message)
+        session_data['messages'] = messages_for_db
+        session_data['last_activity'] = datetime.now()
+        save_session_to_db(sid, session_data)
+
         session.modified = True
         
         # MANUAL_REPLY_QUEUEに同じセッションIDのadmin_requestがなければ追加
