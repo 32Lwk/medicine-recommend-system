@@ -2880,13 +2880,23 @@ def is_symptom_input(message):
     has_attribute_keyword = any(keyword in text for keyword in attribute_keywords)
     ends_with_question_mark = text.endswith('？') or text.endswith('?') or lower_text.endswith('?')
 
-    # 症状キーワードが含まれている場合は症状入力と判定
-    if has_symptom_keyword:
-        return True
-
+    # 【修正】属性キーワードと症状キーワードの数を比較
+    # 追加質問への回答（属性情報が多く含まれる）を正しく判定するため
+    attribute_count = sum(1 for keyword in attribute_keywords if keyword in text)
+    symptom_count = sum(1 for keyword in symptom_keywords if keyword in text)
+    
+    # 属性キーワードが3つ以上含まれており、症状キーワードより多い場合は属性応答として優先
+    # 例: "19歳です。女性です。妊娠中です。授乳していません。アレルギーはなしです。現在ビタミン剤を服用しています。症状は昨日から続いています。"
+    if attribute_count >= 3 and attribute_count > symptom_count:
+        return False
+    
     # 質問キーワードまたは疑問符が含まれる場合は質問として扱う
     if has_question_keyword or ends_with_question_mark:
         return False
+    
+    # 症状キーワードが含まれている場合は症状入力と判定
+    if has_symptom_keyword:
+        return True
 
     # 明確な症状キーワードがなく、属性情報のみの場合は症状入力とみなさない
     if has_attribute_keyword:
