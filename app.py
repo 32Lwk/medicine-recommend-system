@@ -804,7 +804,17 @@ def index():
             
             # 個別チャット単位でAI自動応答のON/OFFを確認（デフォルトはTrue）
             session_data_for_ai = get_session_from_db(sid) if sid else {}
-            chat_ai_auto_reply = session_data_for_ai.get('ai_auto_reply', get_ai_auto_reply())
+
+            chat_ai_auto_reply = session_data_for_ai.get('ai_auto_reply') if session_data_for_ai else None
+            if chat_ai_auto_reply is None:
+                chat_ai_auto_reply = session.get('ai_auto_reply')
+            if chat_ai_auto_reply is None:
+                chat_ai_auto_reply = get_ai_auto_reply()
+
+            if isinstance(chat_ai_auto_reply, str):
+                chat_ai_auto_reply = chat_ai_auto_reply.lower() == 'true'
+            else:
+                chat_ai_auto_reply = bool(chat_ai_auto_reply)
             
             # AI自動応答がOFFの場合は手動返信待ちにする
             if not chat_ai_auto_reply:
