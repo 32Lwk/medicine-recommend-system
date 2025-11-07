@@ -616,6 +616,15 @@ THROAT_KEYWORD_TOKENS = {normalize_text(term) for term in [
     "声がれ"
 ]}
 
+THROAT_LIQUID_TOKENS = {normalize_text(term) for term in [
+    "シロップ",
+    "液",
+    "内服液",
+    "ドリンク",
+    "鎮咳液",
+    "咳止め液"
+]}
+
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
@@ -1601,9 +1610,11 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     symptoms = nlu_result.get("symptoms", [])
     has_throat_symptom = any(normalize_text(symptom.get("name", "")) in THROAT_SYMPTOM_TOKENS for symptom in symptoms)
     if has_throat_symptom:
-        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + candidate.get('medicine_type', '')
+        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + candidate.get('medicine_type', '') + candidate.get('usage', '')
         normalized_combined = normalize_text(combined_text)
-        if any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
+        if any(token in normalized_combined for token in THROAT_LIQUID_TOKENS):
+            throat_bonus = 0.14
+        elif any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
             throat_bonus = 0.12
         elif '外用薬' in candidate.get('medicine_type', ''):
             throat_bonus = 0.12
@@ -1750,7 +1761,10 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     )
 
         if len(symptom_names) >= 2 and medicine_type and '風邪薬' in medicine_type:
-            total_adjustment += 0.15
+            common_cold_set = {normalize_text(name) for name in symptom_names}
+            core_cold_tokens = {normalize_text(term) for term in ["発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "悪寒"]}
+            overlap_count = len(common_cold_set & core_cold_tokens)
+            total_adjustment += 0.12 + 0.03 * max(0, overlap_count - 1)
 
         if total_adjustment != 0.0:
             return total_adjustment
@@ -2220,7 +2234,7 @@ def rule_based_recommendation(
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"{candidate['product_name']}: {candidate['final_score']:.3f}")
     
-    # ステップ5.3: 詳細スコアで上位N件を選択
+    # ステップ5.3: 詳細スコアリング（選別された候補のみ）
     candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
                               key=lambda x: x['final_score'], reverse=True)
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n)
