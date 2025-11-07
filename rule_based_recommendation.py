@@ -11,6 +11,7 @@ import os
 import json
 import re
 import logging
+import math
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
@@ -19,6 +20,26 @@ from scoring_utils import normalize_text
 # ロガー設定
 logger = logging.getLogger(__name__)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+
+DEFAULT_ADULT_AGE = 20
+
+PEDIATRIC_KEYWORDS = [
+    "小児",
+    "小児用",
+    "こども",
+    "子ども",
+    "子供",
+    "キッズ",
+    "ジュニア",
+    "ベビー"
+]
+
+PEDIATRIC_USAGE_KEYWORDS = [
+    "坐剤",
+    "座剤",
+    "坐薬",
+    "座薬"
+]
 
 # ================================================================================
 # 1. データ構造と定数定義
@@ -556,8 +577,8 @@ SYMPTOM_CATEGORY_PENALTY = {
 # 複数症状の組み合わせによる調整（ボーナス/ペナルティ）
 MULTI_SYMPTOM_COMBINATIONS = {
     frozenset({"のどの痛み", "発熱"}): {
-        "風邪薬": 0.2,
-        "解熱鎮痛薬": -0.1
+        "風邪薬": 0.35,
+        "解熱鎮痛薬": -0.25
     },
     frozenset({"発熱", "咳"}): {
         "風邪薬": 0.15,
@@ -1311,6 +1332,85 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
 
     return selected[:top_n]
 
+
+def _extract_min_age_value(age_restriction) -> Optional[int]:
+    """年齢制限から最小年齢を抽出"""
+    if age_restriction is None:
+        return None
+
+    if isinstance(age_restriction, (int, float)):
+        if isinstance(age_restriction, float) and math.isnan(age_restriction):
+            return None
+        try:
+            return int(age_restriction)
+        except (ValueError, OverflowError):
+            return None
+
+    if isinstance(age_restriction, str) and age_restriction.strip():
+        match = re.search(r'(\d+)', age_restriction)
+        if match:
+            try:
+                return int(match.group(1))
+            except ValueError:
+                return None
+
+    return None
+
+
+def _candidate_has_throat_liquid_signature(candidate: Dict) -> bool:
+    """候補が喉向け液剤かどうかを判定"""
+    combined_text = normalize_text(
+        ''.join(
+            filter(
+                None,
+                [
+                    candidate.get('product_name', ''),
+                    candidate.get('efficacy', ''),
+                    candidate.get('usage', ''),
+                    candidate.get('medicine_type', '')
+                ]
+            )
+        )
+    )
+
+    if not combined_text:
+        return False
+
+    return any(token in combined_text for token in THROAT_LIQUID_TOKENS)
+
+
+def _is_pediatric_specific(candidate: Dict) -> bool:
+    """小児専用製品を判定（年齢不明時の除外用）"""
+    min_age_allowed = _extract_min_age_value(candidate.get('age_restriction', ''))
+    if min_age_allowed is None or min_age_allowed >= 13:
+        return False
+
+    text_fields = ''.join(
+        filter(
+            None,
+            [
+                candidate.get('product_name', ''),
+                candidate.get('efficacy', ''),
+                candidate.get('medicine_type', '')
+            ]
+        )
+    )
+
+    if text_fields and any(keyword in text_fields for keyword in PEDIATRIC_KEYWORDS):
+        return True
+
+    usage_text = candidate.get('usage', '') or ''
+    if usage_text:
+        if '肛門' in usage_text and min_age_allowed <= 12:
+            return True
+        if any(keyword in usage_text for keyword in PEDIATRIC_KEYWORDS) and any(
+            form in usage_text for form in PEDIATRIC_USAGE_KEYWORDS
+        ):
+            return True
+
+    return False
+
+
 def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_text: str = "", influenza_risk: bool = False) -> List[Dict]:
     """
     症状に基づいて候補医薬品を取得（フィルタリング機能付き）
@@ -1498,25 +1598,7 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
     age = user_info.get('age')
     age_restriction = candidate.get('age_restriction', '')
 
-    import math
-    if isinstance(age_restriction, float) and math.isnan(age_restriction):
-        age_restriction = ''
-    if isinstance(age_restriction, (int, float)):
-        try:
-            age_restriction = str(int(age_restriction))
-        except (ValueError, OverflowError):
-            age_restriction = ''
-    if not isinstance(age_restriction, str):
-        age_restriction = ''
-
-    min_age_allowed = None
-    if age_restriction:
-        match = re.search(r'(\d+)', age_restriction)
-        if match:
-            try:
-                min_age_allowed = int(match.group(1))
-            except ValueError:
-                min_age_allowed = None
+    min_age_allowed = _extract_min_age_value(age_restriction)
 
     if age is None:
         base_score = 0.5
@@ -1765,6 +1847,12 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             core_cold_tokens = {normalize_text(term) for term in ["発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "悪寒"]}
             overlap_count = len(common_cold_set & core_cold_tokens)
             total_adjustment += 0.12 + 0.03 * max(0, overlap_count - 1)
+
+        if len(symptom_names) >= 2 and "のどの痛み" in symptom_names:
+            if '解熱鎮痛薬' in medicine_type:
+                total_adjustment -= 0.12
+            if _candidate_has_throat_liquid_signature(candidate):
+                total_adjustment += 0.18
 
         if total_adjustment != 0.0:
             return total_adjustment
@@ -2173,6 +2261,12 @@ def rule_based_recommendation(
             "timestamp": datetime.now().isoformat()
         }
     
+    scoring_user_info = dict(user_info)
+    age_imputed = False
+    if scoring_user_info.get('age') is None:
+        scoring_user_info['age'] = DEFAULT_ADULT_AGE
+        age_imputed = True
+
     # ステップ4: 候補医薬品取得（インフルエンザリスクを考慮）
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
@@ -2189,6 +2283,24 @@ def rule_based_recommendation(
             "confidence_score": confidence_score,  # confidence_scoreを追加
             "timestamp": datetime.now().isoformat()
         }
+
+    if age_imputed:
+        before_filter = len(candidates)
+        candidates = [c for c in candidates if not _is_pediatric_specific(c)]
+        after_filter = len(candidates)
+        if after_filter == 0:
+            logger.warning("年齢未入力のため、小児専用製品を除外した結果、候補がなくなりました")
+            return {
+                "status": "no_candidates",
+                "reason": "年齢未入力のため適切な医薬品が見つかりませんでした",
+                "warnings": safety_result["warnings"],
+                "recommended_medicines": [],
+                "nlu_result": nlu_result,
+                "confidence_score": confidence_score,
+                "timestamp": datetime.now().isoformat()
+            }
+        elif before_filter != after_filter:
+            logger.info(f"年齢未入力のため小児専用製品を{before_filter - after_filter}件除外しました")
     
     # ステップ5: 二段階スコアリング（高速化）
     if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2209,7 +2321,7 @@ def rule_based_recommendation(
     # 簡易スコアで上位N×10件を選別（精度向上のため15件から30件に増加）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
     selection_count = min(top_n * 30, len(candidates))
-    quick_scores = [(calculate_quick_score(c, nlu_result, user_info), c) for c in candidates]
+    quick_scores = [(calculate_quick_score(c, nlu_result, scoring_user_info), c) for c in candidates]
     quick_scores_sorted = sorted(quick_scores, key=lambda x: x[0], reverse=True)
     top_candidates_for_scoring = quick_scores_sorted[:selection_count]
     
@@ -2224,7 +2336,7 @@ def rule_based_recommendation(
     
     # ステップ5.2: 詳細スコアリング（選別された候補のみ）
     for score, candidate in top_candidates_for_scoring:
-        score_result = calculate_final_score(candidate, nlu_result, user_info)
+        score_result = calculate_final_score(candidate, nlu_result, scoring_user_info)
         candidate['final_score'] = score_result['total_score']
         candidate['score_breakdown'] = score_result['score_breakdown']
         if 'allergy_warning' in score_result:
@@ -2253,7 +2365,7 @@ def rule_based_recommendation(
         logger.debug(f"\n--- ステップ6: 説明生成 ---")
     recommendations = []
     for i, candidate in enumerate(validated_candidates, 1):
-        explanation = generate_explanation(candidate, nlu_result, safety_result, user_info)
+        explanation = generate_explanation(candidate, nlu_result, safety_result, scoring_user_info)
         
         recommendation_item = {
             "rank": i,
@@ -2290,7 +2402,7 @@ def rule_based_recommendation(
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
     usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
-        recommendations, nlu_result, user_info, client
+        recommendations, nlu_result, scoring_user_info, client
     )
     
     logger.info(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
