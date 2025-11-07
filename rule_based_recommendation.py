@@ -44,7 +44,7 @@ SYMPTOM_DICTIONARY = {
         "canonical_name": "のどの痛み",
         "synonyms": ["喉が痛い", "喉の痛み", "のどが痛い", "咽頭痛", "喉の腫れ"],
         "severity_tags": ["軽度", "中等度", "重度"],
-        "medicine_types": ["風邪薬"],
+        "medicine_types": ["風邪薬", "外用薬（のど）"],
         "weight": 0.9
     },
     "咳": {
@@ -549,6 +549,22 @@ SYMPTOM_CATEGORY_PENALTY = {
         "胃腸薬": 0.0,
         "風邪薬": -0.5,
         "解熱鎮痛薬": -0.5
+    }
+}
+
+# 複数症状の組み合わせによる調整（ボーナス/ペナルティ）
+MULTI_SYMPTOM_COMBINATIONS = {
+    frozenset({"のどの痛み", "発熱"}): {
+        "風邪薬": 0.2,
+        "解熱鎮痛薬": -0.1
+    },
+    frozenset({"発熱", "咳"}): {
+        "風邪薬": 0.15,
+        "解熱鎮痛薬": -0.1
+    },
+    frozenset({"発熱", "鼻水"}): {
+        "風邪薬": 0.15,
+        "解熱鎮痛薬": -0.1
     }
 }
 
@@ -1178,6 +1194,66 @@ def _contains_risk_ingredient(ingredients: str) -> Tuple[bool, Optional[str], Op
     
     return False, None, None
 
+
+def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
+    """成分表から主要成分を抽出し、比較用に正規化する"""
+    if not ingredients or not isinstance(ingredients, str):
+        return []
+
+    parts = re.split(r"[\n、,/，／・]+", ingredients)
+    normalized = []
+    for part in parts:
+        token = part.strip()
+        if not token:
+            continue
+        normalized.append(token.lower())
+        if len(normalized) >= max_count:
+            break
+    return normalized
+
+
+def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similarity_threshold: float = 0.5) -> List[Dict]:
+    """主要成分が重複しすぎないように候補を再選別する"""
+    if len(candidates) <= top_n:
+        return candidates
+
+    selected: List[Dict] = []
+    selected_sets: List[set] = []
+    fallback: List[Tuple[Dict, set]] = []
+
+    for candidate in candidates:
+        main_ingredients = set(extract_main_ingredients(candidate.get("ingredients", "")))
+
+        overlap = False
+        for existing_set in selected_sets:
+            if not existing_set or not main_ingredients:
+                continue
+            intersection = existing_set & main_ingredients
+            if not intersection:
+                continue
+            overlap_ratio = len(intersection) / float(min(len(existing_set), len(main_ingredients)))
+            if overlap_ratio >= similarity_threshold:
+                overlap = True
+                break
+
+        if not overlap and len(selected) < top_n:
+            selected.append(candidate)
+            selected_sets.append(main_ingredients)
+        else:
+            fallback.append((candidate, main_ingredients))
+
+    # まだ不足している場合は重複を許容して埋める
+    if len(selected) < top_n:
+        for candidate, ingredient_set in fallback:
+            if candidate in selected:
+                continue
+            selected.append(candidate)
+            selected_sets.append(ingredient_set)
+            if len(selected) >= top_n:
+                break
+
+    return selected[:top_n]
+
 def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_text: str = "", influenza_risk: bool = False) -> List[Dict]:
     """
     症状に基づいて候補医薬品を取得（フィルタリング機能付き）
@@ -1207,99 +1283,120 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             medicine_types.update(types)
     
     logger.info(f"推定された医薬品の種類: {medicine_types}")
-    
-    # 該当する医薬品を抽出
-    candidates = []
+
+    def _sanitize_text(value) -> str:
+        if value is None:
+            return ''
+        text = str(value)
+        if text.lower() == 'nan':
+            return ''
+        return text
+
+    candidates: List[Dict] = []
+    existing_keys: set = set()
+
+    def append_candidate(row: pd.Series):
+        product_name = _sanitize_text(row.get('製品名', ''))
+        manufacturer = _sanitize_text(row.get('メーカー名', ''))
+        key = (product_name, manufacturer)
+
+        if not product_name and not manufacturer:
+            return
+        if key in existing_keys:
+            return
+
+        efficacy = row.get('効能効果', '')
+        ingredients = row.get('成分', '')
+
+        # 特殊用途医薬品のチェック
+        for pattern_name in SPECIFIC_USE_PATTERNS.keys():
+            if _is_symptom_matching_specific_use(efficacy, symptoms, pattern_name):
+                pattern_info = SPECIFIC_USE_PATTERNS[pattern_name]
+                required_symptoms = pattern_info.get("required_symptoms", [])
+                if required_symptoms and not all(req in symptom_names for req in required_symptoms):
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"特殊用途医薬品を除外: {product_name} (パターン: {pattern_name}, 症状不足)"
+                        )
+                    return
+
+        # インフルエンザ時のアスピリン除外
+        if influenza_risk:
+            contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
+            if contains_aspirin and "アスピリン" in ingredients:
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"インフルエンザリスクのためアスピリン含有医薬品を除外: {product_name}")
+                return
+
+        # リスク成分のチェック（単一症状の場合は除外、複数症状の場合は減点のみ）
+        contains_risk, risk_name, risk_info = _contains_risk_ingredient(ingredients)
+        if contains_risk and is_single_symptom:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"単一症状のためリスク成分含有医薬品を除外: {product_name} (成分: {risk_name})")
+            return
+
+        # 年齢制限の整形
+        age_restriction = row.get('年齢制限', '')
+        if not age_restriction and hasattr(row, 'iloc') and len(row) > 6:
+            age_restriction = row.iloc[6]
+        if age_restriction and isinstance(age_restriction, str):
+            age_match = re.search(r'(\d+)歳', age_restriction)
+            if age_match:
+                age_restriction = f"{age_match.group(1)}歳以上"
+
+        usage_full = row.get('用法用量', '') or ''
+        usage_notes = ''
+        if '注意' in usage_full or '＜' in usage_full:
+            parts = usage_full.split('\n')
+            note_parts = [p for p in parts if '注意' in p or '＜' in p or '用法' in p]
+            usage_notes = '\n'.join(note_parts[:3])
+
+        candidate = {
+            'medicine_id': len(candidates),
+            'product_name': product_name,
+            'manufacturer': manufacturer,
+            'medicine_type': _sanitize_text(row.get('医薬品の種類', '')),
+            'classification': _sanitize_text(row.get('分類', '')),
+            'efficacy': efficacy,
+            'usage': row.get('用法用量', ''),
+            'age_restriction': age_restriction,
+            'ingredients': ingredients,
+            'doping_prohibited': _sanitize_text(row.get('禁止物質あり', '')),
+            'competition_category': _sanitize_text(row.get('競技会区分', '')),
+            'conditions': _sanitize_text(row.get('条件', '')),
+            'usage_notes': usage_notes if usage_notes else '用法用量を守ってご使用ください。',
+            'base_score': 0.0
+        }
+
+        if contains_risk and risk_info:
+            candidate['risk_ingredient'] = risk_name
+            candidate['risk_warning'] = risk_info.get("warning", "")
+            candidate['risk_penalty'] = risk_info.get("penalty_score", -0.3)
+
+        candidates.append(candidate)
+        existing_keys.add(key)
+
     for medicine_type in medicine_types:
         matched = medicine_df[medicine_df['医薬品の種類'] == medicine_type]
         for _, row in matched.iterrows():
-            efficacy = row.get('効能効果', '')
-            ingredients = row.get('成分', '')
-            
-            # 特殊用途医薬品のチェック
-            should_exclude = False
-            for pattern_name in SPECIFIC_USE_PATTERNS.keys():
-                if _is_symptom_matching_specific_use(efficacy, symptoms, pattern_name):
-                    # 症状が特殊用途と完全に一致しない場合は除外
-                    pattern_info = SPECIFIC_USE_PATTERNS[pattern_name]
-                    required_symptoms = pattern_info.get("required_symptoms", [])
-                    if required_symptoms and not all(req in symptom_names for req in required_symptoms):
-                        should_exclude = True
-                        if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"特殊用途医薬品を除外: {row.get('製品名', '')} (パターン: {pattern_name}, 症状不足)")
-                        break
-            
-            if should_exclude:
-                continue
-            
-            # インフルエンザ時のアスピリン除外
-            if influenza_risk:
-                contains_aspirin, _, _ = _contains_risk_ingredient(ingredients)
-                if contains_aspirin and "アスピリン" in ingredients:
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"インフルエンザリスクのためアスピリン含有医薬品を除外: {row.get('製品名', '')}")
-                    continue
-            
-            # リスク成分のチェック（単一症状の場合は除外、複数症状の場合は減点のみ）
-            contains_risk, risk_name, risk_info = _contains_risk_ingredient(ingredients)
-            if contains_risk and is_single_symptom:
-                # 単一症状の場合はリスク成分を含む医薬品を除外
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"単一症状のためリスク成分含有医薬品を除外: {row.get('製品名', '')} (成分: {risk_name})")
-                continue
-            
-            # CSVのG列（インデックス6）から年齢制限を取得
-            age_restriction = row.get('年齢制限', '')
-            
-            # インデックスでも取得を試みる（バックアップ）
-            if not age_restriction and len(row) > 6:
-                age_restriction = row.iloc[6] if hasattr(row, 'iloc') else ''
-            
-            # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
-            if age_restriction and isinstance(age_restriction, str):
-                # 数値のみを抽出（例：「15歳以上」→「15」）
-                age_match = re.search(r'(\d+)歳', age_restriction)
-                if age_match:
-                    age_num = age_match.group(1)
-                    age_restriction = f"{age_num}歳以上"
-                else:
-                    # 数値が見つからない場合は元の値を保持
-                    pass
-            
-            # 用法用量から使用上の注意部分を抽出
-            usage_full = row.get('用法用量', '')
-            usage_notes = ''
-            if '注意' in usage_full or '＜' in usage_full:
-                # 注意書き部分を抽出
-                parts = usage_full.split('\n')
-                note_parts = [p for p in parts if '注意' in p or '＜' in p or '用法' in p]
-                usage_notes = '\n'.join(note_parts[:3])  # 最初の3行まで
-            
-            candidate = {
-                'medicine_id': len(candidates),
-                'product_name': row.get('製品名', ''),  # A列
-                'manufacturer': row.get('メーカー名', ''),  # B列
-                'medicine_type': row.get('医薬品の種類', ''),  # D列
-                'classification': row.get('分類', ''),  # C列
-                'efficacy': efficacy,  # E列
-                'usage': row.get('用法用量', ''),  # F列
-                'age_restriction': age_restriction,  # G列
-                'ingredients': ingredients,  # H列
-                'doping_prohibited': row.get('禁止物質あり', ''),  # I列
-                'competition_category': row.get('競技会区分', ''),  # J列
-                'conditions': row.get('条件', ''),  # K列
-                'usage_notes': usage_notes if usage_notes else '用法用量を守ってご使用ください。',
-                'base_score': 0.0
-            }
-            
-            # リスク成分情報を追加（減点用）
-            if contains_risk and risk_info:
-                candidate['risk_ingredient'] = risk_name
-                candidate['risk_warning'] = risk_info.get("warning", "")
-                candidate['risk_penalty'] = risk_info.get("penalty_score", -0.3)
-            
-            candidates.append(candidate)
-    
+            append_candidate(row)
+
+    # のどの痛みがある場合は局所治療薬も候補に追加
+    has_throat_pain = "のどの痛み" in symptom_names
+    if has_throat_pain:
+        throat_keyword_pattern = r"(のど|喉|咽頭)"
+        product_keyword_pattern = r"(のど|喉|咽|トローチ|スプレー|うがい|キャンディ|飴)"
+
+        throat_mask = (
+            medicine_df['効能効果'].astype(str).str.contains(throat_keyword_pattern, na=False) |
+            medicine_df['製品名'].astype(str).str.contains(product_keyword_pattern, na=False) |
+            medicine_df['医薬品の種類'].astype(str).str.contains(throat_keyword_pattern, na=False)
+        )
+
+        throat_candidates = medicine_df[throat_mask]
+        for _, row in throat_candidates.iterrows():
+            append_candidate(row)
+
     logger.info(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
     return candidates
 
@@ -1532,30 +1629,46 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
     
     # 複数症状の場合
     elif len(symptom_names) >= 2:
+        from itertools import combinations
+
+        total_adjustment = 0.0
+
         # 複数症状がある場合は、症状カテゴリ間優先表から最も適切なペナルティを適用
-        # 各症状について、該当する医薬品種類のペナルティを確認
         penalties = []
         for symptom_name in symptom_names:
             if symptom_name in SYMPTOM_CATEGORY_PENALTY:
                 penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
                 if medicine_type in penalty_table:
                     penalties.append(penalty_table[medicine_type])
-        
+
         if penalties:
-            # 最悪のペナルティを採用（最も適切でない組み合わせ）
             base_penalty = max(penalties)
             if base_penalty < 0:
-                # 複数症状の場合も効能特異性で緩和
                 if efficacy_specificity >= 0.95:
-                    penalty = base_penalty * 0.17
+                    base_penalty *= 0.17
                 elif efficacy_specificity >= 0.8:
-                    penalty = base_penalty * 0.5
-                else:
-                    penalty = base_penalty
+                    base_penalty *= 0.5
+                total_adjustment += base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"症状特異性ペナルティ（複数症状）: {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f})")
-                return penalty
-    
+                    logger.debug(
+                        f"症状特異性ペナルティ（複数症状）: {medicine_type} = {penalties} → {base_penalty:.2f} (効能特異性{efficacy_specificity:.2f})"
+                    )
+
+        # 複数症状の組み合わせによるボーナス/ペナルティ
+        for combo in combinations(symptom_names, 2):
+            combo_key = frozenset(combo)
+            adjustments = MULTI_SYMPTOM_COMBINATIONS.get(combo_key)
+            if adjustments and medicine_type in adjustments:
+                adjustment = adjustments[medicine_type]
+                total_adjustment += adjustment
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(
+                        f"複数症状ボーナス: {combo_key} × {medicine_type} = {adjustment:+.2f}"
+                    )
+
+        if total_adjustment != 0.0:
+            return total_adjustment
+
     return 0.0
 
 # ================================================================================
@@ -1995,7 +2108,7 @@ def rule_based_recommendation(
     
     # 簡易スコアで上位N×10件を選別（精度向上のため15件から30件に増加）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
-    selection_count = min(top_n * 10, len(candidates))
+    selection_count = min(top_n * 30, len(candidates))
     quick_scores = [(calculate_quick_score(c, nlu_result, user_info), c) for c in candidates]
     quick_scores_sorted = sorted(quick_scores, key=lambda x: x[0], reverse=True)
     top_candidates_for_scoring = quick_scores_sorted[:selection_count]
@@ -2024,9 +2137,11 @@ def rule_based_recommendation(
     # ステップ5.3: 詳細スコアで上位N件を選択
     candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
                               key=lambda x: x['final_score'], reverse=True)
-    top_candidates = candidates_sorted[:top_n]
+    top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n)
     
-    logger.info(f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択")
+    logger.info(
+        f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択（成分多様性考慮）"
+    )
     
     # ステップ5.5: 推奨後の検証処理
     if DEBUG_MODE or logger.level <= logging.DEBUG:
