@@ -439,6 +439,33 @@ RISK_INGREDIENTS_EXCLUDE = {
     },
 }
 
+# 下痢止め成分インジケーター（腹痛単独時には慎重に扱う）
+ANTIDIARRHEAL_INGREDIENTS = [
+    "ロートエキス",
+    "ロートエキス散",
+    "タンニン酸アルブミン",
+    "タンニン酸ベルベリン",
+    "ベルベリン",
+    "ベルベリン塩酸塩",
+    "ベルベリン硫酸塩",
+    "ロペラミド",
+    "ロペラミド塩酸塩",
+    "ブチルスコポラミン",
+    "ブチルスコポラミン臭化物"
+]
+
+ANTIDIARRHEAL_KEYWORDS = [
+    "止瀉薬",
+    "止瀉剤",
+    "下痢止め",
+    "下痢を抑える",
+    "止瀉作用",
+    "止瀉効果"
+]
+
+MIN_SYMPTOM_MATCH_SINGLE = 0.35
+MIN_SYMPTOM_MATCH_MULTI = 0.2
+
 # 特殊用途医薬品パターン（効能効果が特定の用途に限定されている）
 SPECIFIC_USE_PATTERNS = {
     "食あたり": {
@@ -1301,6 +1328,100 @@ def _contains_risk_ingredient(ingredients: str) -> Tuple[bool, Optional[str], Op
     return False, None, None
 
 
+def _has_antidiarrheal_signal(candidate: Dict) -> bool:
+    """
+    止瀉薬系の成分やテキストシグナルが含まれているかを判定
+    """
+    ingredients = candidate.get('ingredients', '') or ''
+    combined_text_parts = [
+        candidate.get('product_name', ''),
+        candidate.get('efficacy', ''),
+        candidate.get('usage', ''),
+        candidate.get('classification', ''),
+        candidate.get('medicine_type', '')
+    ]
+    combined_text = ''.join(part for part in combined_text_parts if part)
+    
+    for token in ANTIDIARRHEAL_INGREDIENTS:
+        if token and token in ingredients:
+            return True
+    for keyword in ANTIDIARRHEAL_KEYWORDS:
+        if keyword and keyword in combined_text:
+            return True
+    
+    return False
+
+
+def _filter_antidiarrheal_without_diarrhea(
+    candidates: List[Dict],
+    nlu_result: Dict
+) -> List[Dict]:
+    """
+    下痢症状が確認できない腹痛単独相談で止瀉薬系候補を除外
+    """
+    if not candidates:
+        return candidates
+    
+    symptoms = nlu_result.get("symptoms", []) or []
+    symptom_names = {s.get("name") for s in symptoms if s.get("name")}
+    
+    if not symptom_names:
+        return candidates
+    
+    # 下痢・軟便などが確認できる場合は除外しない
+    diarrhea_related = {"下痢", "軟便", "水様便"}
+    if symptom_names & diarrhea_related:
+        return candidates
+    
+    # 腹痛のみの場合に限定
+    abdominal_only = symptom_names == {"腹痛"}
+    if not abdominal_only:
+        return candidates
+    
+    filtered: List[Dict] = []
+    for candidate in candidates:
+        if _has_antidiarrheal_signal(candidate):
+            if logger.level <= logging.INFO:
+                logger.info(
+                    f"🚫 下痢症状が未確認の腹痛相談のため止瀉薬候補を除外: {candidate.get('product_name', '')}"
+                )
+            continue
+        filtered.append(candidate)
+    
+    return filtered
+
+
+def _enforce_symptom_match_threshold(
+    candidates: List[Dict],
+    nlu_result: Dict
+) -> List[Dict]:
+    """
+    症状適合度スコアの最低閾値を適用し、症状との関連が乏しい候補を除外
+    """
+    if not candidates:
+        return candidates
+    
+    symptoms = nlu_result.get("symptoms", []) or []
+    symptom_names = {s.get("name") for s in symptoms if s.get("name")}
+    is_single_symptom = len(symptom_names) == 1
+    threshold = MIN_SYMPTOM_MATCH_SINGLE if is_single_symptom else MIN_SYMPTOM_MATCH_MULTI
+    
+    filtered: List[Dict] = []
+    for candidate in candidates:
+        score_breakdown = candidate.get('score_breakdown', {}) or {}
+        symptom_match = score_breakdown.get('symptom_match')
+        if symptom_match is not None and symptom_match < threshold:
+            if logger.level <= logging.INFO:
+                logger.info(
+                    f"🚫 症状適合度が閾値未満のため候補を除外 (score={symptom_match:.2f}, threshold={threshold:.2f}): "
+                    f"{candidate.get('product_name', '')}"
+                )
+            continue
+        filtered.append(candidate)
+    
+    return filtered
+
+
 def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
     """成分表から主要成分を抽出し、比較用に正規化する"""
     if not ingredients or not isinstance(ingredients, str):
@@ -2013,8 +2134,14 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
     
     # 2. リスク成分の再チェック
     validated = _recheck_risk_ingredients(validated, nlu_result)
+
+    # 3. 下痢情報がない腹痛単独相談では止瀉薬候補を除外
+    validated = _filter_antidiarrheal_without_diarrhea(validated, nlu_result)
+
+    # 4. 症状適合度スコアの最低閾値を適用
+    validated = _enforce_symptom_match_threshold(validated, nlu_result)
     
-    # 3. スコアが0.3未満の候補を警告付きで残す（完全には除外しない）
+    # 5. スコアが0.3未満の候補を警告付きで残す（完全には除外しない）
     final_candidates = []
     for candidate in validated:
         score = candidate.get('final_score', 0.0)
