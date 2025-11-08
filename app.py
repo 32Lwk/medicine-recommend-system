@@ -930,18 +930,32 @@ def index():
                 has_question_keyword = False
                 question_keywords = [
                     'ですか', 'でしょうか', 'ですか？', 'でしょうか？',
-                    'ドーピング', '禁止', '違反', '大丈夫', '安全', '危険',
+                    'ますか', 'できますか', '利用できますか', '使用できますか', '使えますか',
+                    '飲めますか', '飲んでも大丈夫ですか', '使用しても大丈夫ですか', '利用しても大丈夫ですか',
+                    '服用できますか', '服用しても大丈夫ですか', '摂取できますか',
+                    'ドーピング', '禁止', '禁止物質', '違反', '大丈夫', '安全', '危険',
+                    '大会前', '競技', 'レース', '試合前', '試合で', 'アンチドーピング', '陽性',
                     '当たる', '当たります', '対象', '含まれる', '使える',
                     '副作用', '飲み方', '効果', '効き目',
                     '教えて', '教えてください', '知りたい', '聞きたい'
                 ]
+                question_suffixes = [
+                    'ですか', 'でしょうか', 'ますか', 'できますか', '利用できますか',
+                    '使用できますか', '使えますか', '飲めますか', '飲んでも大丈夫ですか',
+                    '使用しても大丈夫ですか', '利用しても大丈夫ですか', '服用できますか',
+                    '服用しても大丈夫ですか', '摂取できますか'
+                ]
+                message_stripped = user_message.strip()
+                has_question_suffix = any(message_stripped.endswith(suffix) for suffix in question_suffixes)
+                ends_with_question_mark = message_stripped.endswith('?') or message_stripped.endswith('？')
                 for keyword in question_keywords:
                     if keyword in user_message:
                         has_question_keyword = True
                         break
                 
-                # システム紹介、医薬品検索、または明確な質問の場合は質問回答に進む
-                if is_system_intro or is_medicine_search or has_question_keyword:
+                # システム紹介、医薬品検索、明確な質問、または語尾・記号から質問と判断できる場合は質問回答に進む
+                if (is_system_intro or is_medicine_search or has_question_keyword or
+                    has_question_suffix or ends_with_question_mark):
                     logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
                     
                     # ユーザーメッセージは既に1回目の保存処理で保存済み（重複を避けるため削除）
@@ -1440,11 +1454,12 @@ def index():
                         session_data['last_activity'] = datetime.now()
                         save_session_to_db(sid, session_data)
                 
-                # ステップ2: 属性が更新された場合、最後の症状で再分析
-                last_symptom_message = None
+                # ステップ2: 属性が更新された場合の追加処理
                 if updated:
-                    logger.info(f"✅ 属性データが更新されました。再分析を実行します。")
-                    
+                    logger.info("✅ 属性データが更新されました。再分析は行わず、現在の質問で医薬品相談を続行します。")
+                    session.pop('is_reanalysis', None)
+                    session.pop('reanalysis_attributes', None)
+
                     # 症状期間が7日を超える場合の医療機関受診案内をチェック
                     symptom_duration = user_attributes.get('symptom_duration_days')
                     if symptom_duration and symptom_duration > 7:
@@ -1482,29 +1497,7 @@ def index():
                         session.modified = True
                         message_count = len(session['messages'])
                         return jsonify({'status': 'ok', 'message_count': message_count})
-                    
-                    # 最後の症状入力を取得（DBから取得）
-                    session_data_for_symptoms = get_session_from_db(sid) if sid else {}
-                    for msg in reversed(session_data_for_symptoms.get('messages', [])):
-                        if msg.get('type') == 'user' and is_symptom_input(msg.get('content', '')):
-                            last_symptom_message = msg.get('content', '')
-                            break
-                    
-                    if last_symptom_message:
-                        logger.info(f"🔄 最後の症状で再分析: {last_symptom_message}")
-                        # 再分析フラグを立てる
-                        session['is_reanalysis'] = True
-                        session['reanalysis_attributes'] = user_attributes.copy()
-                        # 症状分析処理に進む（is_questionをFalseにして症状分析を強制実行）
-                        is_question = False
-                        user_message = last_symptom_message  # 症状メッセージで再分析
-                    else:
-                        # 症状が見つからない場合は、属性更新のみの確認メッセージ
-                        bot_response = {
-                            'type': 'bot',
-                            'content': f'情報を更新しました。ありがとうございます。',
-                            'diagnosis': None
-                        }
+                    # 属性更新後も現在のユーザー入力で処理を継続
                 else:
                     # 属性が更新されていない場合は通常の質問応答
                     logger.info(f"❓ 通常の質問として処理します")
