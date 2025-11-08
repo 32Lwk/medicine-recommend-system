@@ -1099,6 +1099,21 @@ class SecurityValidator:
     def _calculate_risk_score(self, text: str) -> int:
         """危険度スコア算出（0-100）"""
         risk_score = 0
+        total_danger_matches = 0
+
+        critical_categories = {
+            'role_manipulation',
+            'instruction_override',
+            'prompt_injection',
+            'dangerous_requests',
+            'system_commands',
+            'data_extraction'
+        }
+        high_risk_categories = {
+            'command_injection',
+            'sql_injection',
+            'path_traversal'
+        }
         
         # 各危険カテゴリのスコア計算
         for category, patterns in self.danger_patterns.items():
@@ -1106,6 +1121,10 @@ class SecurityValidator:
             for pattern in patterns:
                 if pattern.search(text):
                     category_score += 1
+            if category_score == 0:
+                continue
+
+            total_danger_matches += category_score
             
             # カテゴリ別重み付け（医療用語スコアとの相互作用最適化版）
             if category == 'role_manipulation':
@@ -1126,9 +1145,13 @@ class SecurityValidator:
                 risk_score += category_score * 25  # 40から25に減少（パターン数増加のため）
             elif category == 'path_traversal':
                 risk_score += category_score * 35  # 30から35に増加（パストラバーサル強化）
+
+            if category in critical_categories:
+                risk_score = max(risk_score, 80)
+            elif category in high_risk_categories:
+                risk_score = max(risk_score, 70)
         
         # 複数の危険パターンが同時出現した場合のボーナス
-        total_danger_matches = sum(len([p for p in patterns if p.search(text)]) for patterns in self.danger_patterns.values())
         if total_danger_matches > 3:
             risk_score += 20
         

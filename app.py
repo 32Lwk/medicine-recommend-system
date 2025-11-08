@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, jsonify
+from flask import Flask, render_template, request, session as flask_session, jsonify, has_request_context
 from flask_cors import CORS
 from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
@@ -17,6 +17,102 @@ import random
 import logging
 import re
 import socket
+from collections.abc import MutableMapping
+from threading import local
+
+
+class RequestSafeSession(MutableMapping):
+    """Flaskセッションをリクエストコンテキスト外でも安全に扱うためのラッパー"""
+
+    def __init__(self):
+        self._storage = local()
+
+    def _use_real_session(self) -> bool:
+        return has_request_context()
+
+    def _fallback_store(self):
+        if not hasattr(self._storage, 'data'):
+            self._storage.data = {}
+            self._storage.modified = False
+        return self._storage
+
+    def __getitem__(self, key):
+        if self._use_real_session():
+            return flask_session[key]
+        store = self._fallback_store()
+        return store.data[key]
+
+    def __setitem__(self, key, value):
+        if self._use_real_session():
+            flask_session[key] = value
+        else:
+            store = self._fallback_store()
+            store.data[key] = value
+            store.modified = True
+
+    def __delitem__(self, key):
+        if self._use_real_session():
+            del flask_session[key]
+        else:
+            store = self._fallback_store()
+            del store.data[key]
+            store.modified = True
+
+    def __iter__(self):
+        if self._use_real_session():
+            return iter(flask_session)
+        return iter(self._fallback_store().data)
+
+    def __len__(self):
+        if self._use_real_session():
+            return len(flask_session)
+        return len(self._fallback_store().data)
+
+    def get(self, key, default=None):
+        if self._use_real_session():
+            return flask_session.get(key, default)
+        return self._fallback_store().data.get(key, default)
+
+    def setdefault(self, key, default=None):
+        if self._use_real_session():
+            return flask_session.setdefault(key, default)
+        store = self._fallback_store()
+        if key not in store.data:
+            store.data[key] = default
+            store.modified = True
+        return store.data[key]
+
+    def pop(self, key, default=None):
+        if self._use_real_session():
+            return flask_session.pop(key, default)
+        store = self._fallback_store()
+        store.modified = True
+        return store.data.pop(key, default)
+
+    def clear(self):
+        if self._use_real_session():
+            flask_session.clear()
+        else:
+            store = self._fallback_store()
+            store.data.clear()
+            store.modified = True
+
+    @property
+    def modified(self):
+        if self._use_real_session():
+            return flask_session.modified
+        return self._fallback_store().modified
+
+    @modified.setter
+    def modified(self, value: bool):
+        if self._use_real_session():
+            flask_session.modified = value
+        else:
+            store = self._fallback_store()
+            store.modified = bool(value)
+
+
+session = RequestSafeSession()
 
 # ログ設定
 logging.basicConfig(
@@ -375,13 +471,15 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
             return
     
     db = get_database()
+    current_sid = None
+    if exclude_current_session and has_request_context():
+        current_sid = session.get('_id')
+
     if db and (db.connection or db.connection_pool) and hasattr(db, 'cleanup_expired_sessions'):
         # 現在のセッションIDを取得（削除から除外するため）
         exclude_session_ids = []
-        if exclude_current_session:
-            current_sid = session.get('_id')
-            if current_sid:
-                exclude_session_ids.append(current_sid)
+        if current_sid:
+            exclude_session_ids.append(current_sid)
         
         try:
             # DBから期限切れセッションを削除
@@ -407,7 +505,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True):
     sessions_to_remove = []
     
     # タイムアウトしたセッションを特定（現在のセッションは除外）
-    current_sid = session.get('_id')
+    current_sid = session.get('_id') if has_request_context() else None
     all_sessions = get_all_sessions_from_db()
     for sid, session_info in all_sessions.items():
         # 現在のセッションは削除しない
@@ -3958,8 +4056,8 @@ def api_main_sessions():
             return obj
     
     sessions_list = convert_nan_to_null(sessions_list)
-    
-    return jsonify(sessions_list)
+
+    return jsonify({'sessions': sessions_list})
 
 @app.route('/api/main_manual_reply_queue', methods=['GET', 'POST'])
 def api_main_manual_reply_queue():
