@@ -1170,7 +1170,7 @@ def get_medicines_by_type(medicine_type, df=None):
         print("CSVに医薬品の種類カラムがありません")
         return []
 
-def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=None, max_retries=3):
+def recommend_medicines_with_retry(user_text, symptoms, medicine_list, user_info=None, client=None, max_retries=3):
     """
     症状と医薬品リストをChatGPTに渡して推奨医薬品を3つ選び、
     使用上の注意を要約して返す。適した医薬品が返ってこなければ再試行
@@ -1225,6 +1225,8 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
         medicine_text += f"   成分: {medicine['成分']}\n"
         medicine_text += f"   使用上の注意: {usage_notes}\n\n"
     
+    user_context = user_info if user_info else {}
+
     for attempt in range(max_retries):
         print(f"=== 医薬品推奨試行 {attempt + 1}/{max_retries} ===")
         
@@ -1236,6 +1238,9 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, client=No
 
 【症状文】
 {sanitized_text}
+
+【ユーザー情報】
+{user_context if user_context else '情報なし'}
 
 【選択可能な医薬品】
 {medicine_text}
@@ -1518,7 +1523,7 @@ def get_medicine_details(recommended_medicines, medicine_list):
     
     return detailed_medicines
 
-def comprehensive_medicine_recommendation(user_text, client=None):
+def comprehensive_medicine_recommendation(user_text, user_info=None, client=None):
     """
     包括的な医薬品推奨システムのメイン関数
     """
@@ -1548,7 +1553,7 @@ def comprehensive_medicine_recommendation(user_text, client=None):
     
     # ステップ3: ChatGPTに推奨医薬品を選択させる
     recommendation_result = recommend_medicines_with_retry(
-        user_text, symptoms, medicine_list, client
+        user_text, symptoms, medicine_list, user_info=user_info, client=client
     )
     
     # ステップ4: 推奨医薬品の詳細情報を取得
