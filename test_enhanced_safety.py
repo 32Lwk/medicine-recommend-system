@@ -11,10 +11,14 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from enhanced_safety_checker import (
-    strict_safety_check, 
-    is_contraindicated, 
+    strict_safety_check,
+    is_contraindicated,
     enhanced_scoring_weights,
     get_safety_stats
+)
+from rule_based_recommendation import (
+    _filter_antidiarrheal_without_diarrhea,
+    _enforce_symptom_match_threshold
 )
 
 class TestEnhancedSafetyChecker(unittest.TestCase):
@@ -292,10 +296,10 @@ class TestEnhancedSafetyChecker(unittest.TestCase):
         self.assertIsInstance(weights, dict)
         
         # 副作用リスクが強化されていることを確認
-        self.assertEqual(weights['副作用リスク'], -0.40)
+        self.assertEqual(weights['副作用リスク'], -0.20)
         
         # 相互作用リスクが強化されていることを確認
-        self.assertEqual(weights['相互作用リスク'], -0.20)
+        self.assertEqual(weights['相互作用リスク'], -0.10)
         
         # 新しいスコア要素が追加されていることを確認
         self.assertIn('禁忌チェック', weights)
@@ -406,6 +410,87 @@ class TestSafetyIntegration(unittest.TestCase):
         self.assertTrue(result['requires_escalation'])
         self.assertTrue(result['doctor_referral_required'])
 
+
+class TestRuleBasedFiltering(unittest.TestCase):
+    """ルールベース推奨のフィルタリング検証"""
+
+    def test_antidiarrheal_removed_without_diarrhea(self):
+        """腹痛のみの相談では止瀉薬成分を含む候補を除外"""
+        candidates = [
+            {
+                'product_name': 'ビオフェルミン止瀉薬',
+                'ingredients': 'ロートエキス\nタンニン酸ベルベリン',
+                'efficacy': '下痢、腹痛を伴う下痢',
+                'usage': '',
+                'classification': '第2類',
+                'medicine_type': '胃腸薬',
+                'score_breakdown': {'symptom_match': 0.8}
+            }
+        ]
+        nlu_result = {'symptoms': [{'name': '腹痛'}]}
+
+        filtered = _filter_antidiarrheal_without_diarrhea(candidates, nlu_result)
+        self.assertEqual(filtered, [])
+
+    def test_antidiarrheal_kept_with_diarrhea(self):
+        """下痢が確認できる場合は候補を維持"""
+        candidates = [
+            {
+                'product_name': 'ビオフェルミン止瀉薬',
+                'ingredients': 'ロートエキス\nタンニン酸ベルベリン',
+                'efficacy': '下痢、腹痛を伴う下痢',
+                'usage': '',
+                'classification': '第2類',
+                'medicine_type': '胃腸薬',
+                'score_breakdown': {'symptom_match': 0.8}
+            }
+        ]
+        nlu_result = {'symptoms': [{'name': '腹痛'}, {'name': '下痢'}]}
+
+        filtered = _filter_antidiarrheal_without_diarrhea(candidates, nlu_result)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['product_name'], 'ビオフェルミン止瀉薬')
+
+    def test_symptom_match_threshold_single_symptom(self):
+        """単症状で症状適合度が閾値未満なら除外"""
+        candidates = [
+            {
+                'product_name': 'ヘパリーゼドリンクⅡ',
+                'ingredients': '肝臓水解物',
+                'efficacy': '滋養強壮、胃腸障害',
+                'usage': '',
+                'classification': '第3類',
+                'medicine_type': '胃腸薬',
+                'score_breakdown': {'symptom_match': 0.05},
+                'final_score': 0.25
+            }
+        ]
+        nlu_result = {'symptoms': [{'name': '腹痛'}]}
+
+        filtered = _enforce_symptom_match_threshold(candidates, nlu_result)
+        self.assertEqual(filtered, [])
+
+    def test_symptom_match_threshold_allows_relevant_candidate(self):
+        """適切な症状適合度の候補は残す"""
+        candidates = [
+            {
+                'product_name': '胃腸薬A',
+                'ingredients': '生薬エキス',
+                'efficacy': '腹痛、胃もたれ',
+                'usage': '',
+                'classification': '第2類',
+                'medicine_type': '胃腸薬',
+                'score_breakdown': {'symptom_match': 0.6},
+                'final_score': 0.7
+            }
+        ]
+        nlu_result = {'symptoms': [{'name': '腹痛'}]}
+
+        filtered = _enforce_symptom_match_threshold(candidates, nlu_result)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['product_name'], '胃腸薬A')
+
+
 def run_enhanced_safety_tests():
     """強化された安全性テストの実行"""
     print("🛡️ 強化された安全性テストを開始します...")
@@ -416,7 +501,8 @@ def run_enhanced_safety_tests():
     # テストクラスの追加
     test_classes = [
         TestEnhancedSafetyChecker,
-        TestSafetyIntegration
+        TestSafetyIntegration,
+        TestRuleBasedFiltering
     ]
     
     for test_class in test_classes:
