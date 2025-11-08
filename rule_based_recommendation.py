@@ -542,6 +542,13 @@ SYMPTOM_CATEGORY_PENALTY = {
         "解熱鎮痛薬": 0.0,  # 単一症状の場合は特化薬を優先
         "鼻炎用薬": -0.5  # 発熱のみでは鼻炎薬は不適切
     },
+    "のどの痛み": {
+        "外用薬（のど）": 0.15,  # のど専用外用薬を最優先
+        "外用薬（皮膚）": 0.10,  # のどスプレー等が含まれる可能性
+        "解熱鎮痛薬": 0.0,  # のど痛に効果がある
+        "風邪薬": -0.15,  # 単一症状では総合感冒薬は過剰
+        "鼻炎用薬": -0.4  # のど痛のみでは鼻炎薬は不適切
+    },
     "咳": {
         "風邪薬": -0.2,  # 咳のみの場合は総合感冒薬より鎮咳薬を優先
         "解熱鎮痛薬": -0.5,
@@ -1548,11 +1555,18 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             note_parts = [p for p in parts if '注意' in p or '＜' in p or '用法' in p]
             usage_notes = '\n'.join(note_parts[:3])
 
+        # 医薬品種類の補正（のど向け外用薬が「皮膚」に分類されている場合）
+        medicine_type = _sanitize_text(row.get('医薬品の種類', ''))
+        if medicine_type == '外用薬（皮膚）':
+            # 効能にのど関連キーワードがあれば「外用薬（のど）」に補正
+            if efficacy and any(keyword in efficacy for keyword in ['のどの痛み', 'のどの', 'のど', '喉', '咽頭', '声がれ']):
+                medicine_type = '外用薬（のど）'
+        
         candidate = {
             'medicine_id': len(candidates),
             'product_name': product_name,
             'manufacturer': manufacturer,
-            'medicine_type': _sanitize_text(row.get('医薬品の種類', '')),
+            'medicine_type': medicine_type,
             'classification': _sanitize_text(row.get('分類', '')),
             'efficacy': efficacy,
             'usage': row.get('用法用量', ''),
@@ -1730,16 +1744,34 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     
     throat_bonus = 0.0
     symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name") for s in symptoms]
     has_throat_symptom = any(normalize_text(symptom.get("name", "")) in THROAT_SYMPTOM_TOKENS for symptom in symptoms)
+    medicine_type = candidate.get('medicine_type', '')
+    
     if has_throat_symptom:
-        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + candidate.get('medicine_type', '') + candidate.get('usage', '')
+        # 単一のど症状の場合、剤形ごとの優先度を明確化
+        if len(symptom_names) == 1 and "のどの痛み" in symptom_names:
+            if '外用薬（のど）' in medicine_type:
+                throat_bonus = 0.25  # 局所治療薬を最優先
+            elif '外用薬' in medicine_type:
+                throat_bonus = 0.20
+            elif '解熱鎮痛薬' in medicine_type:
+                throat_bonus = 0.08
+            elif '風邪薬' in medicine_type:
+                throat_bonus = 0.05
+
+        # 通常のthroat_bonus（複数症状や液剤検出時）
+        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + medicine_type + candidate.get('usage', '')
         normalized_combined = normalize_text(combined_text)
+        detection_bonus = 0.0
         if any(token in normalized_combined for token in THROAT_LIQUID_TOKENS):
-            throat_bonus = 0.14
+            detection_bonus = 0.18
         elif any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
-            throat_bonus = 0.12
-        elif '外用薬' in candidate.get('medicine_type', ''):
-            throat_bonus = 0.12
+            detection_bonus = 0.08
+        elif '外用薬' in medicine_type:
+            detection_bonus = 0.12
+
+        throat_bonus = max(throat_bonus, detection_bonus)
 
     # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティを追加）
     total_score = (
