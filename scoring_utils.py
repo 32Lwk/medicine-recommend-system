@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import os
 import unicodedata
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 # CSVファイルのパス
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -433,3 +433,704 @@ def check_drug_interactions(candidate: Dict, user_info: Dict) -> Tuple[bool, Lis
                 warnings.append(warning_msg)
     
     return len(warnings) > 0, warnings
+
+def _contains_ingredient(ingredients_text: str, ingredient_keywords: List[str]) -> bool:
+    """
+    成分テキストに指定された成分が含まれているかチェック
+    
+    Args:
+        ingredients_text: 成分テキスト
+        ingredient_keywords: 検索する成分キーワードのリスト
+    
+    Returns:
+        含まれている場合True
+    """
+    if not ingredients_text:
+        return False
+    
+    ingredients_lower = str(ingredients_text).lower()
+    for keyword in ingredient_keywords:
+        if keyword.lower() in ingredients_lower:
+            return True
+    return False
+
+def _is_kampo_or_herbal_medicine(candidate: Dict) -> bool:
+    """
+    漢方薬または生薬製剤かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        漢方薬または生薬製剤の場合True
+    """
+    product_name = str(candidate.get('product_name', '')).lower()
+    ingredients = str(candidate.get('ingredients', '')).lower()
+    medicine_type = str(candidate.get('medicine_type', '')).lower()
+    
+    # 漢方・生薬のキーワード
+    kampo_keywords = ["漢方", "生薬", "エキス", "湯", "散", "丸", "膏", "桂枝", "茯苓", "釣藤", "葛根"]
+    
+    # 製品名または医薬品の種類に漢方のキーワードが含まれているか
+    if any(kw in product_name or kw in medicine_type for kw in kampo_keywords):
+        return True
+    
+    # 成分に生薬エキスが含まれているか
+    herbal_keywords = ["エキス", "乾燥エキス", "エキス末", "エキス顆粒"]
+    if any(kw in ingredients for kw in herbal_keywords):
+        return True
+    
+    return False
+
+def _parse_kampo_efficacy(efficacy_text: str) -> Dict[str, Any]:
+    """
+    漢方薬の効能効果を解析（柔軟性向上版）
+    証の条件、主要適応症状、条件付き症状を抽出
+    
+    Args:
+        efficacy_text: 効能効果テキスト
+    
+    Returns:
+        {
+            "has_sho_condition": bool,  # 証の条件があるか
+            "sho_condition": str,      # 証の条件テキスト
+            "primary_symptoms": List[str],  # 主要適応症状
+            "conditional_symptoms": List[str],  # 条件付き症状（例：「高血圧に伴う随伴症状」）
+            "is_conditional": bool,  # 条件付きの効能かどうか
+            "is_robust_type": bool,  # 実証向け（体力充実）か
+            "requires_constipation": bool  # 便秘が前提か
+        }
+    """
+    result = {
+        "has_sho_condition": False,
+        "sho_condition": "",
+        "primary_symptoms": [],
+        "conditional_symptoms": [],
+        "is_conditional": False,
+        "is_robust_type": False,
+        "requires_constipation": False,
+        "age_restriction": None  # "middle_aged_or_older", "elderly", "young", None
+    }
+    
+    if not efficacy_text:
+        return result
+    
+    # 1. 証（Sho）の抽出
+    # パターンを拡張し、句読点までの長さを制限して誤爆を防ぐ
+    sho_patterns = [
+        r'^体力[^、。]{2,20}[、。][^。]*もの',
+        r'^比較的体力[^、。]{2,20}[、。][^。]*もの',
+        r'^虚弱体質[^、。]*もの',
+        r'^胃腸[^、。]*もの',
+    ]
+    
+    for pattern in sho_patterns:
+        match = re.search(pattern, efficacy_text)
+        if match:
+            result["has_sho_condition"] = True
+            result["sho_condition"] = match.group(0)
+            
+            # 実証（体力充実）判定
+            if "充実" in result["sho_condition"] or "比較的体力があり" in result["sho_condition"]:
+                result["is_robust_type"] = True
+            # 便秘前提判定
+            if "便秘" in result["sho_condition"]:
+                result["requires_constipation"] = True
+            break
+    
+    # 2. 主要適応症状の抽出（フォールバック付き）
+    symptoms_source = ""
+    
+    # パターンA: 明示的な区切りがある場合
+    split_keywords = [r'次の諸症[：:]', r'次の症状[：:]', r'に伴う次の諸症', r'適応症']
+    for kw in split_keywords:
+        parts = re.split(kw, efficacy_text)
+        if len(parts) > 1:
+            symptoms_source = parts[-1]
+            break
+    
+    # パターンB: 区切りがない場合、「証」の部分を除去した残りを症状とする
+    if not symptoms_source and result["has_sho_condition"]:
+        symptoms_source = efficacy_text.replace(result["sho_condition"], "")
+        # 先頭の「の」「、」などを掃除
+        symptoms_source = re.sub(r'^[の、,：\s]+', '', symptoms_source)
+    
+    # 症状テキストをリスト化
+    if symptoms_source:
+        # カッコ書き（例：「...痛み（...を除く）」）の処理などは簡易的に無視
+        clean_text = re.sub(r'（[^）]*）', '', symptoms_source)
+        # 区切り文字で分割
+        symptoms = re.split(r'[、,，。]', clean_text)
+        result["primary_symptoms"] = [s.strip() for s in symptoms if s.strip()]
+    
+    # 3. 条件付き症状（原因）の抽出
+    # 「高血圧に伴う」「更年期障害による」など
+    conditional_patterns = [
+        r'([^、。]+)に伴う',
+        r'([^、。]+)による',
+    ]
+    for pattern in conditional_patterns:
+        matches = re.findall(pattern, efficacy_text)
+        if matches:
+            result["is_conditional"] = True
+            # 「～の～」などの修飾語を掃除してシンプルにする処理を入れるとベター
+            result["conditional_symptoms"].extend(matches)
+    
+    # 4. 年齢条件の検出
+    age_patterns = [
+        (r'中年以降', "middle_aged_or_older"),
+        (r'中年', "middle_aged_or_older"),
+        (r'高齢', "elderly"),
+        (r'若年', "young"),
+        (r'(\d+)歳以上', "age_min"),  # 将来の拡張用
+        (r'(\d+)歳未満', "age_max"),  # 将来の拡張用
+    ]
+    
+    for pattern, restriction_type in age_patterns:
+        match = re.search(pattern, efficacy_text)
+        if match:
+            if restriction_type in ["middle_aged_or_older", "elderly", "young"]:
+                result["age_restriction"] = restriction_type
+            # 数値パターンの場合は将来の拡張用（今回は実装しない）
+            break
+    
+    # 補完的な年齢条件の検出（「高血圧の傾向のあるもの」なども中年以降の可能性が高い）
+    if result["age_restriction"] is None:
+        # 釣藤散など、「高血圧の傾向」や「慢性頭痛で中年以降」のような表現を検出
+        if "高血圧の傾向" in efficacy_text and "慢性" in efficacy_text:
+            # 慢性頭痛で高血圧の傾向があるものは、実質的に中年以降向け
+            result["age_restriction"] = "middle_aged_or_older"
+    
+    return result
+
+def _check_kampo_symptom_match(candidate: Dict, symptom_names: List[str], user_info: Dict) -> Tuple[bool, float]:
+    """
+    漢方薬の適合性判定（胃腸虚弱チェック追加版）
+    証の条件と適応症状を考慮して、適切な使用かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品
+        symptom_names: ユーザーの症状名リスト
+        user_info: ユーザー情報
+    
+    Returns:
+        (is_appropriate: bool, penalty: float)
+        is_appropriate: 適切な使用かどうか
+        penalty: ペナルティ値（0.0-1.0、不適切な場合は正の値）
+    """
+    efficacy = str(candidate.get('efficacy', ''))
+    if not efficacy:
+        return True, 0.0
+    
+    # 漢方薬でない場合はスキップ
+    if not _is_kampo_or_herbal_medicine(candidate):
+        return True, 0.0
+    
+    parsed = _parse_kampo_efficacy(efficacy)
+    user_symptoms_str = " ".join(symptom_names)
+    user_age = user_info.get('age')
+    
+    # --- 年齢条件のチェック ---
+    if user_age is not None and parsed.get("age_restriction"):
+        age_restriction = parsed["age_restriction"]
+        # 40歳未満のユーザーに対して「中年以降」向け漢方にペナルティ
+        if age_restriction == "middle_aged_or_older" and user_age < 40:
+            return False, 0.35  # 若年層への中年向け漢方のペナルティ（0.25から0.35に強化）
+        # 将来の拡張: 65歳以上のユーザーに対して「若年」向け漢方にペナルティ
+        # if age_restriction == "young" and user_age >= 65:
+        #     return False, 0.25
+    
+    # --- 安全装置: 胃腸虚弱ユーザーへの実証薬チェック ---
+    # ユーザーが「胃が弱い」「下痢」などを訴えている場合
+    weak_stomach_keywords = ["胃が弱", "胃腸が弱", "下痢", "軟便", "食欲不振"]
+    is_user_weak_stomach = any(kw in user_symptoms_str for kw in weak_stomach_keywords)
+    
+    if is_user_weak_stomach:
+        # 「体力充実」「便秘しがち（＝瀉下作用あり）」な薬は危険
+        if parsed["is_robust_type"] or parsed["requires_constipation"] or "桃核承気湯" in candidate.get('product_name', ''):
+            return False, 0.5  # 強いペナルティ（使用非推奨レベル）
+    
+    # --- 証・随伴症状のマッチング ---
+    if parsed["has_sho_condition"]:
+        # A. 必須条件（便秘）のチェック
+        if parsed["requires_constipation"] and "便秘" not in user_symptoms_str:
+            return False, 0.3  # 便秘がないのに便秘向け漢方は不適切
+        
+        # B. 主要適応症状のマッチング
+        if parsed["primary_symptoms"]:
+            # 症状リストのいずれかが、主要症状に含まれているか（部分一致許容）
+            # 例: User「肩こり」 vs Primary「肩こり、頭痛」 -> OK
+            has_match = any(
+                any(ps in us or us in ps for ps in parsed["primary_symptoms"])
+                for us in symptom_names
+            )
+            
+            if not has_match:
+                # 全くかすっていない場合
+                return False, 0.3
+        
+        # C. 条件付き症状（高血圧など）のチェック
+        if parsed["is_conditional"]:
+            # 条件（原因）がユーザー入力にあるか、または主症状がマッチしているか
+            # 通常、OTCでは原因（高血圧）まで入力しないことも多いので、
+            # 「主症状がマッチしていれば条件は不問」とするのが現実的かもしれません。
+            # ここでは「主症状も条件もマッチしない」場合のみペナルティとします。
+            
+            has_condition_match = any(
+                any(cs in us or us in cs for cs in parsed["conditional_symptoms"])
+                for us in symptom_names
+            )
+            
+            # 主症状マッチ判定（上記Bの結果を利用、なければ再計算）
+            has_match = any(
+                any(ps in us or us in ps for ps in parsed["primary_symptoms"])
+                for us in symptom_names
+            ) if parsed["primary_symptoms"] else False
+            
+            # 条件も主症状も一致しないなら不適切
+            if not has_match and not has_condition_match:
+                return False, 0.4
+    
+    return True, 0.0
+
+def calculate_inappropriate_kampo_penalty(candidate: Dict, symptom_names: List[str], user_info: Dict) -> float:
+    """
+    不適切な漢方薬の使用に対するペナルティを計算
+    
+    Args:
+        candidate: 候補医薬品
+        symptom_names: ユーザーの症状名リスト
+        user_info: ユーザー情報
+    
+    Returns:
+        ペナルティ値（0.0-1.0、負の値として使用）
+    """
+    product_name = str(candidate.get('product_name', ''))
+    efficacy = str(candidate.get('efficacy', ''))
+    
+    # 特定の漢方薬に対する特別なルール（kanpo_medicine.csvより統合）
+    inappropriate_kampo_rules = {
+        # --- 風邪・呼吸器系 ---
+        "葛根湯": {
+            "primary_symptoms": ["感冒の初期", "鼻かぜ", "鼻炎", "頭痛", "肩こり", "筋肉痛", "手や肩の痛み"],
+            "inappropriate_symptoms": ["発汗", "著しい虚弱", "体力が弱い"],  # 「汗をかいていないもの」という規定に反するため
+            "penalty": 0.3
+        },
+        "麻黄湯": {
+            "primary_symptoms": ["感冒", "鼻かぜ", "気管支炎", "鼻づまり"],
+            "inappropriate_symptoms": ["発汗", "虚弱体質", "微熱"],  # 「体力充実」「汗が出ていない」規定に反するため
+            "penalty": 0.4
+        },
+        "小青竜湯": {
+            "primary_symptoms": ["気管支炎", "気管支ぜんそく", "鼻炎", "アレルギー性鼻炎", "むくみ", "感冒", "花粉症"],
+            "inappropriate_symptoms": ["黄色い痰", "濃い鼻汁"],  # 「うすい水様のたん」という規定に反するため（熱証には不適）
+            "penalty": 0.3
+        },
+        "麦門冬湯": {
+            "primary_symptoms": ["からぜき", "気管支炎", "気管支ぜんそく", "咽頭炎", "しわがれ声"],
+            "inappropriate_symptoms": ["多量の痰", "水っぽい鼻水"],  # 乾燥感（燥証）に対応する薬のため湿証には不適
+            "penalty": 0.2
+        },
+        "五虎湯": {
+            "primary_symptoms": ["せき", "気管支ぜんそく", "気管支炎", "小児ぜんそく", "感冒", "痔の痛み"],
+            "inappropriate_symptoms": ["虚弱体質", "湿性の咳"],
+            "penalty": 0.3
+        },
+        "参蘇飲": {
+            "primary_symptoms": ["感冒", "せき"],
+            "inappropriate_symptoms": ["体力充実", "高熱"],
+            "penalty": 0.2
+        },
+        
+        # --- 消化器系 ---
+        "安中散": {
+            "primary_symptoms": ["神経性胃炎", "慢性胃炎", "胃腸虚弱"],
+            "inappropriate_symptoms": ["胃熱", "炎症性の激しい痛み"],
+            "penalty": 0.2
+        },
+        "六君子湯": {
+            "primary_symptoms": ["胃炎", "胃腸虚弱", "胃下垂", "消化不良", "食欲不振", "胃痛", "嘔吐"],
+            "inappropriate_symptoms": ["体力充実", "のぼせ"],
+            "penalty": 0.2
+        },
+        "半夏瀉心湯": {
+            "primary_symptoms": ["急・慢性胃腸炎", "下痢・軟便", "消化不良", "胃下垂", "神経性胃炎", "胃弱", "二日酔", "げっぷ", "胸やけ", "口内炎", "神経症"],
+            "inappropriate_symptoms": ["便秘", "腹痛（冷えによるもの）"],
+            "penalty": 0.3
+        },
+        "大建中湯": {
+            "primary_symptoms": ["下腹部痛", "腹部膨満感"],
+            "inappropriate_symptoms": ["発熱", "炎症性の腹痛", "暑がり"],
+            "penalty": 0.3
+        },
+        "平胃散": {
+            "primary_symptoms": ["食べ過ぎによる胃のもたれ", "急・慢性胃炎", "消化不良", "食欲不振"],
+            "inappropriate_symptoms": ["著しい虚弱", "空腹時の胃痛"],
+            "penalty": 0.2
+        },
+        "五苓散": {
+            "primary_symptoms": ["水様性下痢", "急性胃腸炎", "暑気あたり", "頭痛", "むくみ", "二日酔"],
+            "inappropriate_symptoms": ["しぶり腹", "尿量が多い"],  # 文中で明確に「しぶり腹のものには使用しないこと」とあるため
+            "penalty": 0.5
+        },
+        
+        # --- 婦人科・血の道症 ---
+        "当帰芍薬散": {
+            "primary_symptoms": ["月経不順", "月経異常", "月経痛", "更年期障害", "産前産後あるいは流産による障害", "めまい・立ちくらみ", "頭重", "肩こり", "腰痛", "足腰の冷え症", "しもやけ", "むくみ", "しみ", "耳鳴り"],
+            "inappropriate_symptoms": ["胃腸虚弱（著しい）", "のぼせ"],
+            "penalty": 0.2
+        },
+        "加味逍遙散": {
+            "primary_symptoms": ["冷え症", "虚弱体質", "月経不順", "月経困難", "更年期障害", "血の道症", "不眠症"],
+            "inappropriate_symptoms": ["無気力（うつ状態）", "著しい冷え"],
+            "penalty": 0.2
+        },
+        "桂枝茯苓丸": {
+            "primary_symptoms": ["月経不順", "月経異常", "月経痛", "更年期障害", "血の道症", "肩こり", "めまい", "頭重", "打ち身", "しもやけ", "しみ", "湿疹・皮膚炎", "にきび"],
+            "inappropriate_symptoms": ["著しい虚弱", "出血傾向"],
+            "penalty": 0.3
+        },
+        "桃核承気湯": {
+            "primary_symptoms": ["月経不順", "月経困難症", "月経痛", "月経時や産後の精神不安", "腰痛", "便秘", "高血圧の随伴症状", "痔疾", "打撲症"],
+            "inappropriate_symptoms": ["下痢", "胃腸虚弱", "体力がない", "肩こり", "筋肉痛"],  # 単独では不適切
+            "penalty": 0.3
+        },
+        "当帰四逆加呉茱萸生姜湯": {
+            "required_symptoms": ["冷え", "手足", "しもやけ", "冷え性", "手足の冷え", "下肢の冷え"],  # 必須症状
+            "primary_symptoms": ["冷え症", "しもやけ", "頭痛", "下腹部痛", "腰痛", "下痢", "月経痛"],
+            "inappropriate_symptoms": ["頭痛", "のぼせ", "ほてり"],  # 単独では不適切（冷え性の症状がない場合）
+            "penalty": 0.4  # 強いペナルティ（一般的な頭痛には不適切）
+        },
+        
+        # --- 精神・神経系 ---
+        "半夏厚朴湯": {
+            "primary_symptoms": ["不安神経症", "神経性胃炎", "つわり", "せき", "しわがれ声", "のどのつかえ感"],
+            "inappropriate_symptoms": ["高熱", "脱水"],
+            "penalty": 0.2
+        },
+        "抑肝散": {
+            "primary_symptoms": ["神経症", "不眠症", "小児夜泣き", "小児疳症", "歯ぎしり", "更年期障害", "血の道症"],
+            "inappropriate_symptoms": ["無気力", "抑うつ"],
+            "penalty": 0.3
+        },
+        "柴胡加竜骨牡蛎湯": {
+            "primary_symptoms": ["高血圧の随伴症状", "神経症", "更年期神経症", "小児夜泣き", "便秘"],
+            "inappropriate_symptoms": ["下痢", "虚弱体質"],  # 便秘などを伴うとあるため下痢は不適
+            "penalty": 0.3
+        },
+        "酸棗仁湯": {
+            "primary_symptoms": ["不眠症", "神経症"],
+            "inappropriate_symptoms": ["体力充実", "日中の眠気"],
+            "penalty": 0.2
+        },
+        "釣藤散": {
+            "primary_symptoms": ["慢性頭痛", "神経症", "高血圧の傾向のあるもの"],
+            "inappropriate_symptoms": ["急性頭痛", "冷えによる頭痛"],  # 「慢性に経過する」とあるため
+            "age_restriction": "middle_aged_or_older",  # 中年以降向け
+            "inappropriate_for_young": True,  # 若年層には不適切
+            "penalty": 0.35  # 若年層（40歳未満）へのペナルティ
+        },
+        
+        # --- 痛み・こむらがえり・泌尿器 ---
+        "芍薬甘草湯": {
+            "primary_symptoms": ["こむらがえり", "筋肉のけいれん", "腹痛", "腰痛"],
+            "inappropriate_symptoms": ["慢性の鈍痛", "むくみ"],  # 甘草による副作用リスク考慮（長期連用不適）
+            "penalty": 0.5
+        },
+        "八味地黄丸": {
+            "primary_symptoms": ["下肢痛", "腰痛", "しびれ", "高齢者のかすみ目", "かゆみ", "排尿困難", "残尿感", "夜間尿", "頻尿", "むくみ", "高血圧に伴う随伴症状", "軽い尿漏れ"],
+            "inappropriate_symptoms": ["胃腸虚弱", "下痢", "のぼせ"],  # 地黄を含むため胃腸障害に注意
+            "penalty": 0.3
+        },
+        "牛車腎気丸": {
+            "primary_symptoms": ["下肢痛", "腰痛", "しびれ", "高齢者のかすみ目", "かゆみ", "排尿困難", "頻尿", "むくみ", "高血圧に伴う随伴症状"],
+            "inappropriate_symptoms": ["胃腸虚弱", "下痢"],
+            "penalty": 0.3
+        },
+        "猪苓湯": {
+            "primary_symptoms": ["排尿困難", "排尿痛", "残尿感", "頻尿", "むくみ"],
+            "inappropriate_symptoms": ["尿量過多"],
+            "penalty": 0.2
+        },
+        "疎経活血湯": {
+            "primary_symptoms": ["関節痛", "神経痛", "腰痛", "筋肉痛"],
+            "inappropriate_symptoms": ["胃腸虚弱", "食欲不振"],
+            "penalty": 0.3
+        },
+        
+        # --- 皮膚 ---
+        "十味敗毒湯": {
+            "primary_symptoms": ["化膿性皮膚疾患", "急性皮膚疾患の初期", "じんましん", "湿疹・皮膚炎", "水虫"],
+            "inappropriate_symptoms": ["陰性の皮膚疾患", "慢性化膿症"],
+            "penalty": 0.2
+        },
+        "防風通聖散": {
+            "primary_symptoms": ["高血圧や肥満に伴う動悸・肩こり・のぼせ・むくみ・便秘", "蓄膿症", "湿疹・皮膚炎", "ふきでもの", "肥満症"],
+            "inappropriate_symptoms": ["下痢", "胃腸虚弱", "体力虚弱"],
+            "penalty": 0.4
+        },
+        "黄連解毒湯": {
+            "primary_symptoms": ["鼻出血", "不眠症", "神経症", "胃炎", "二日酔", "血の道症", "めまい", "動悸", "更年期障害", "湿疹・皮膚炎", "皮膚のかゆみ", "口内炎"],
+            "inappropriate_symptoms": ["冷え症", "低血圧", "虚弱体質"],
+            "penalty": 0.3
+        },
+        "消風散": {
+            "primary_symptoms": ["湿疹・皮膚炎", "じんましん", "水虫", "あせも"],
+            "inappropriate_symptoms": ["乾燥性の皮膚疾患", "分泌物が少ない"],
+            "penalty": 0.2
+        },
+        
+        # --- その他（疲労・全身） ---
+        "補中益気湯": {
+            "primary_symptoms": ["虚弱体質", "疲労倦怠", "病後・術後の衰弱", "食欲不振", "ねあせ", "感冒"],
+            "inappropriate_symptoms": ["発熱（高熱）", "体力充実"],
+            "penalty": 0.2
+        },
+        "十全大補湯": {
+            "primary_symptoms": ["病後・術後の体力低下", "疲労倦怠", "食欲不振", "ねあせ", "手足の冷え", "貧血"],
+            "inappropriate_symptoms": ["胃腸虚弱（著しい）", "高血圧"],  # 地黄などを含むため
+            "penalty": 0.3
+        },
+        "人参養栄湯": {
+            "primary_symptoms": ["病後・術後などの体力低下", "疲労倦怠", "食欲不振", "ねあせ", "手足の冷え", "貧血"],
+            "inappropriate_symptoms": ["消化不良", "のぼせ"],
+            "penalty": 0.3
+        }
+    }
+    
+    # 漢方薬名をチェック
+    for kampo_name, rule in inappropriate_kampo_rules.items():
+        if kampo_name in product_name:
+            # 当帰四逆加呉茱萸生姜湯の特別処理
+            if kampo_name == "当帰四逆加呉茱萸生姜湯":
+                # 必須症状（冷え、手足、しもやけなど）があるか確認
+                user_symptoms_str = " ".join(symptom_names)
+                has_required = any(
+                    rs in user_symptoms_str for rs in rule.get("required_symptoms", [])
+                )
+                
+                # 必須症状がない場合、不適切な症状（頭痛のみ）がある場合はペナルティ
+                if not has_required:
+                    has_inappropriate = any(
+                        ins in symptom_names for ins in rule.get("inappropriate_symptoms", [])
+                    )
+                    if has_inappropriate:
+                        return rule["penalty"]
+            # 釣藤散の特別処理（年齢ペナルティ）
+            elif kampo_name == "釣藤散":
+                user_age = user_info.get('age')
+                if user_age is not None and user_age < 40:
+                    # 40歳未満の若年層には不適切
+                    if rule.get("inappropriate_for_young", False):
+                        return rule["penalty"]
+                # 急性頭痛には不適切（慢性頭痛向け）
+                if "急性頭痛" in " ".join(symptom_names) or any("急性" in sn and "頭痛" in sn for sn in symptom_names):
+                    if any(ins in " ".join(symptom_names) for ins in rule.get("inappropriate_symptoms", [])):
+                        return rule["penalty"]
+            else:
+                # その他の漢方薬の処理
+                # required_symptomsがある場合のチェック（当帰四逆加呉茱萸生姜湯と同様の処理）
+                if rule.get("required_symptoms"):
+                    user_symptoms_str = " ".join(symptom_names)
+                    has_required = any(
+                        rs in user_symptoms_str for rs in rule.get("required_symptoms", [])
+                    )
+                    
+                    # 必須症状がない場合、不適切な症状がある場合はペナルティ
+                    if not has_required:
+                        has_inappropriate = any(
+                            ins in user_symptoms_str for ins in rule.get("inappropriate_symptoms", [])
+                        )
+                        if has_inappropriate:
+                            return rule["penalty"]
+                else:
+                    # primary_symptomsとinappropriate_symptomsの組み合わせチェック
+                    has_primary = any(
+                        any(ps in sn or sn in ps for ps in rule.get("primary_symptoms", []))
+                        for sn in symptom_names
+                    )
+                    
+                    # 不適切な症状のみの場合、または主要症状がない場合に不適切な症状がある場合
+                    user_symptoms_str = " ".join(symptom_names)
+                    has_inappropriate = any(
+                        ins in user_symptoms_str for ins in rule.get("inappropriate_symptoms", [])
+                    )
+                    
+                    if has_inappropriate and not has_primary:
+                        return rule["penalty"]
+    
+    # 一般的な漢方薬の判定（証の条件を考慮）
+    is_appropriate, penalty = _check_kampo_symptom_match(candidate, symptom_names, user_info)
+    if not is_appropriate:
+        return penalty
+    
+    return 0.0
+
+def calculate_symptom_specific_boost(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
+    """
+    症状に特化した医薬品にブーストを付与
+    
+    Args:
+        candidate: 候補医薬品の情報
+        nlu_result: NLU解析結果
+        user_info: ユーザー情報
+    
+    Returns:
+        ブーストスコア（0.0-1.0の範囲）
+    """
+    product_name = str(candidate.get('product_name', ''))
+    efficacy = str(candidate.get('efficacy', ''))
+    medicine_type = str(candidate.get('medicine_type', ''))
+    ingredients = str(candidate.get('ingredients', ''))
+    target_text = (product_name + efficacy).lower()
+    
+    symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name", "") for s in symptoms]
+    gender = user_info.get('gender', '')
+    
+    boost = 0.0
+    
+    # 喉の痛み特化医薬品（ブースト強化、部分一致も含める）
+    if "のどの痛み" in symptom_names:
+        throat_specific_keywords = ["ベンザブロック", "ルルアタック", "トラネキサム"]
+        # 部分一致も検出（例: "ベンザブロックL" や "ルルアタックEX" など）
+        product_name_upper = product_name.upper()
+        product_name_normalized = normalize_text(product_name)
+        
+        # キーワードが製品名に含まれているかチェック（大文字小文字を無視、部分一致）
+        for keyword in throat_specific_keywords:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in product_name_normalized or keyword.upper() in product_name_upper:
+                boost += 0.35  # 0.30から0.35に微調整
+                break
+        
+        # 効能効果に「のどの痛み」が含まれ、かつ製品名に「のど」「喉」が含まれる場合もブースト
+        if boost == 0.0:  # まだブーストが適用されていない場合
+            efficacy_normalized = normalize_text(efficacy)
+            if "のど" in efficacy_normalized or "喉" in efficacy_normalized:
+                if "のど" in product_name_normalized or "喉" in product_name_normalized:
+                    boost += 0.20  # 0.15から0.20に強化
+    
+    # 頭痛のみの場合 → 風邪薬にペナルティ、即効性のあるNSAIDsにブースト（重大な改善点）
+    # 頭痛のみで他の風邪症状（発熱、のどの痛み、咳、鼻水、鼻づまり、くしゃみ）がない場合
+    cold_symptoms = ["発熱", "のどの痛み", "咳", "鼻水", "鼻づまり", "くしゃみ", "悪寒"]
+    has_only_headache = "頭痛" in symptom_names and not any(s in symptom_names for s in cold_symptoms)
+    
+    if has_only_headache:
+        # 風邪薬にペナルティを付与（不要な成分による副作用リスクを回避）
+        # 製品名に「かぜ」「風邪」が含まれる場合もペナルティ
+        if "風邪薬" in medicine_type or "かぜ" in product_name or "風邪" in product_name:
+            boost -= 0.50  # 風邪薬への強力なペナルティ（0.35から0.50に強化）
+        
+        # 即効性のあるNSAIDs成分が含まれる製品に大きなブースト
+        fast_acting_nsaids = [
+            "アセトアミノフェン", "パラセタモール", "タイレノール",
+            "イブプロフェン", "イブ", "ブルフェン",
+            "ロキソプロフェン", "ロキソニン"
+        ]
+        if _contains_ingredient(ingredients, fast_acting_nsaids):
+            boost += 0.40  # 即効性のあるNSAIDsへの大幅ブースト
+        
+        # 漢方・生薬製剤はユーザーが希望しない限り優先度を下げる
+        if _is_kampo_or_herbal_medicine(candidate):
+            # 漢方希望のフラグがない場合はペナルティ
+            if not user_info.get('prefers_kampo', False):
+                boost -= 0.25  # 漢方薬へのペナルティ（急性頭痛には即効性が重要）
+        
+        # 解熱鎮痛薬にブーストを付与（成分によるブーストがない場合）
+        elif "解熱鎮痛薬" in medicine_type:
+            boost += 0.15  # 解熱鎮痛薬への基本ブースト（成分ブーストがない場合）
+    
+    # 女性の頭痛 → 胃に優しい医薬品（ブースト強化）
+    if "頭痛" in symptom_names and gender == "女性":
+        stomach_friendly_keywords = ["イブクイック", "バファリン", "酸化マグネシウム"]
+        if any(kw in target_text for kw in stomach_friendly_keywords):
+            boost += 0.25  # 0.20から0.25に微調整
+    
+    # 肩こり → 外用薬（テープ・パップ）（成分ランク付けによるブースト）
+    if "肩こり" in symptom_names or "筋肉痛" in symptom_names:
+        if "外用" in medicine_type:
+            # 最適解の製品名を優先（製品名による判定を最初に行う）
+            optimal_topical_keywords = ["フェイタス", "バンテリン", "サロンパス"]
+            product_name_normalized = normalize_text(product_name)
+            found_optimal_by_name = False
+            
+            for keyword in optimal_topical_keywords:
+                keyword_normalized = normalize_text(keyword)
+                if keyword_normalized in product_name_normalized or keyword in product_name:
+                    boost += 0.70  # 最適解への大幅ブースト（0.50から0.70に強化）
+                    found_optimal_by_name = True
+                    break
+            
+            # 製品名による判定がない場合、成分による判定を行う
+            if not found_optimal_by_name:
+                # 第2世代鎮痛成分（高ランク）: フェルビナク、インドメタシン、ジクロフェナク
+                second_gen_analgesics = [
+                    "フェルビナク", "フェルビナクナトリウム", "フェルビナクナトリウム水和物",
+                    "インドメタシン", "インダシン", "インドメタシン水和物",
+                    "ジクロフェナク", "ジクロフェナクナトリウム", "ボルタレン", "ジクロフェナクナトリウム水和物"
+                ]
+                if _contains_ingredient(ingredients, second_gen_analgesics):
+                    boost += 0.45  # 第2世代鎮痛成分への高ランクボーナス
+                
+                # サリチル酸メチル（中ランク）: サロンパス等
+                elif _contains_ingredient(ingredients, ["サリチル酸メチル", "サリチル酸グリコール"]):
+                    boost += 0.30  # サリチル酸メチルへの中ランクボーナス
+                
+                # 生薬配合のみ（低ランク）: 中黄膏など
+                elif _is_kampo_or_herbal_medicine(candidate):
+                    boost += 0.10  # 生薬配合のみへの低ランクボーナス
+                
+                # その他の外用薬
+                elif any(kw in product_name for kw in ["ロキソニン", "テープ", "パップ"]):
+                    boost += 0.15  # その他の外用薬への基本ブースト
+    
+    # 乗り物酔い → 乗り物酔い薬（ブースト強化、最適解を優先）
+    if "乗り物酔い" in symptom_names:
+        # 最適解の乗り物酔い薬を優先（アネロン「ニスキャップ」）
+        optimal_motion_sickness_keywords = ["アネロン", "ニスキャップ", "キャップ"]
+        product_name_normalized = normalize_text(product_name)
+        found_optimal = False
+        
+        for keyword in optimal_motion_sickness_keywords:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in product_name_normalized or keyword in product_name:
+                boost += 0.60  # 最適解への大幅ブースト（0.50から0.60に強化）
+                found_optimal = True
+                
+                # 持続性（1日1回）や指定第2類医薬品のキーワードをチェック
+                usage = str(candidate.get('usage', '')).lower()
+                efficacy_lower = efficacy.lower()
+                classification = str(candidate.get('classification', '')).lower()
+                if any(kw in usage or kw in efficacy_lower or kw in classification for kw in ["1日1回", "1回", "持続", "長時間", "指定第2類", "第2類"]):
+                    boost += 0.20  # 持続性・指定第2類への追加ブースト（0.15から0.20に強化）
+                break
+        
+        # その他の乗り物酔い薬
+        if not found_optimal:
+            if any(kw in product_name for kw in ["ソラシドン", "センパア", "トリブラ", "トラベルミン"]):
+                boost += 0.25  # その他の乗り物酔い薬へのブースト
+    
+    # 不適切な漢方のペナルティ（改善版）
+    penalty = calculate_inappropriate_kampo_penalty(candidate, symptom_names, user_info)
+    if penalty > 0:
+        boost -= penalty
+    
+    # 大人（15歳以上）や年齢未入力の場合にシロップ系形状を推奨しないロジック
+    user_age = user_info.get('age')
+    if user_age is None or user_age >= 15:
+        product_name_lower = product_name.lower()
+        # シロップ系の形状を検出
+        syrup_keywords = ["シロップ", "ドライシロップ"]
+        has_syrup = any(kw in product_name_lower for kw in syrup_keywords)
+        
+        if has_syrup:
+            # 小児向けキーワードが含まれていない場合（大人向けシロップ剤の可能性があるが、一般的には小児向け）
+            pediatric_keywords_in_name = ["小児", "こども", "子供", "キッズ", "ジュニア", "ベビー"]
+            has_pediatric_keyword = any(kw in product_name_lower for kw in pediatric_keywords_in_name)
+            
+            if not has_pediatric_keyword:
+                # 大人向けシロップ剤の可能性もあるが、一般的には小児向けとして認識されるため軽めのペナルティ
+                boost -= 0.20  # シロップ系形状へのペナルティ
+    
+    return boost

@@ -31,7 +31,8 @@ PEDIATRIC_KEYWORDS = [
     "子供",
     "キッズ",
     "ジュニア",
-    "ベビー"
+    "ベビー",
+    "ドライシロップ",  # ドライシロップは小児向け形状
 ]
 
 PEDIATRIC_USAGE_KEYWORDS = [
@@ -291,6 +292,13 @@ SYMPTOM_DICTIONARY = {
         "severity_tags": ["軽度", "中等度", "重度"],
         "medicine_types": ["精神症状"],
         "weight": 0.8
+    },
+    "乗り物酔い": {
+        "canonical_name": "乗り物酔い",
+        "synonyms": ["乗り物酔い", "車酔い", "船酔い", "バス酔い", "酔い", "乗り物に酔う", "車に乗ると気持ち悪い", "船に乗ると気持ち悪い", "乗物酔い", "乗物に酔う"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["解熱鎮痛薬"],  # データベース上では解熱鎮痛薬カテゴリに分類されている
+        "weight": 0.95
     },
     "疲労感": {
         "canonical_name": "疲労感",
@@ -1079,8 +1087,11 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
     "escalation_reason": "エスカレーションが必要な理由"
 }}
 
-注意：
+【重要な注意事項】
 - 症状名は必ず上記のリストから選択してください
+- 「目がかゆい」「目もかゆい」「目の痒み」などは必ず「目のかゆみ」として抽出してください（「かゆみ」ではありません）
+- 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
+- 「のどが痛い」「喉が痛い」は「のどの痛み」として抽出してください
 - 重症疑い症状がある場合は必ず needs_escalation を true にしてください
 - 情報が不明な場合は null を使用してください
 - インフルエンザの可能性がある場合（高熱38.5度以上+複数の風邪症状）は、red_flagsに「インフルエンザ疑い」を追加してください
@@ -1093,7 +1104,13 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
             messages=[
                 {"role": "system", "content": """あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。
 
-重要な注意事項：
+【最重要ルール - 症状名の正確な抽出】
+1. 「目がかゆい」「目もかゆい」「目の痒み」「目かゆい」「目が痒い」→必ず「目のかゆみ」として抽出（「かゆみ」ではない）
+2. 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
+3. 「鼻水+くしゃみ+目のかゆみ」の組み合わせはアレルギー性鼻炎の可能性が高い
+4. 「のどが痛い」「喉が痛い」→「のどの痛み」として抽出
+
+【その他の重要な注意事項】
 - 高熱（38.5度以上）と複数の風邪症状がある場合は、red_flagsに「インフルエンザ疑い」を追加してください
 - 体温情報を正確に抽出し、38.5度以上の場合は「高熱」として扱ってください
 - 症状名は必ずSYMPTOM_DICTIONARYに定義されている症状名から選択してください
@@ -1101,7 +1118,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=800
+            max_tokens=1000
         )
         
         result = response.choices[0].message.content
@@ -1549,34 +1566,140 @@ def _candidate_has_throat_liquid_signature(candidate: Dict) -> bool:
 
 def _is_pediatric_specific(candidate: Dict) -> bool:
     """小児専用製品を判定（年齢不明時の除外用）"""
-    min_age_allowed = _extract_min_age_value(candidate.get('age_restriction', ''))
-    if min_age_allowed is None or min_age_allowed >= 13:
-        return False
-
-    text_fields = ''.join(
-        filter(
-            None,
-            [
-                candidate.get('product_name', ''),
-                candidate.get('efficacy', ''),
-                candidate.get('medicine_type', '')
-            ]
-        )
-    )
-
-    if text_fields and any(keyword in text_fields for keyword in PEDIATRIC_KEYWORDS):
+    # NaN処理を安全にするため、str()でキャスト
+    def safe_str(value) -> str:
+        if value is None:
+            return ''
+        if isinstance(value, float) and math.isnan(value):
+            return ''
+        return str(value)
+    
+    p_name = safe_str(candidate.get('product_name', ''))
+    efficacy = safe_str(candidate.get('efficacy', ''))
+    m_type = safe_str(candidate.get('medicine_type', ''))
+    usage_text = safe_str(candidate.get('usage', ''))
+    
+    # 製品名・タイプに小児専用キーワードがある場合は小児専用と判定
+    target_text = p_name + m_type
+    has_pediatric_keyword = any(k in target_text for k in PEDIATRIC_KEYWORDS)
+    
+    # 用法チェック（補助的）
+    has_pediatric_usage = False
+    if any(k in usage_text for k in PEDIATRIC_KEYWORDS) and \
+       any(f in usage_text for f in PEDIATRIC_USAGE_KEYWORDS):
+        has_pediatric_usage = True
+    
+    # キーワードで判定できた場合は、年齢制限に関係なく小児専用と判定
+    if has_pediatric_keyword or has_pediatric_usage:
         return True
-
-    usage_text = candidate.get('usage', '') or ''
-    if usage_text:
-        if '肛門' in usage_text and min_age_allowed <= 12:
-            return True
-        if any(keyword in usage_text for keyword in PEDIATRIC_KEYWORDS) and any(
-            form in usage_text for form in PEDIATRIC_USAGE_KEYWORDS
-        ):
-            return True
-
+    
+    # 年齢制限のチェック（キーワードがない場合のみ）
+    raw_age = candidate.get('age_restriction')
+    min_age_allowed = _extract_min_age_value(raw_age)
+    
+    if min_age_allowed is None:
+        return False  # 年齢不明、かつキーワードもなし → 大人用とみなしてFalse
+    
+    if min_age_allowed >= 13:
+        return False
+    
+    
     return False
+
+
+def _is_motion_sickness_medicine(candidate: Dict) -> bool:
+    """
+    乗り物酔い薬（鎮暈薬）かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        乗り物酔い薬の場合True
+    """
+    product_name = str(candidate.get('product_name', '')).lower()
+    efficacy = str(candidate.get('efficacy', '')).lower()
+    medicine_type = str(candidate.get('medicine_type', '')).lower()
+    target_text = product_name + efficacy + medicine_type
+    
+    # 乗り物酔い薬のキーワード（アネロン「ニスキャップ」を追加）
+    motion_sickness_keywords = ["酔い", "めまい", "乗り物", "船酔い", "車酔い", "鎮暈", "トラベルミン", "トリブラ", "アネロン", "ニスキャップ", "ソラシドン", "センパア"]
+    return any(kw in target_text for kw in motion_sickness_keywords)
+
+def _has_motion_sickness_symptom(nlu_result: Dict, user_text: str) -> bool:
+    """
+    ユーザーの症状に乗り物酔い関連の症状があるか判定
+    
+    Args:
+        nlu_result: NLU解析結果
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        乗り物酔い関連の症状がある場合True
+    """
+    symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name", "") for s in symptoms]
+    
+    # 乗り物酔い関連の症状キーワード
+    motion_sickness_symptoms = ["乗り物酔い", "車酔い", "船酔い", "酔い"]
+    
+    # 症状名でチェック
+    if any(s in symptom_names for s in motion_sickness_symptoms):
+        return True
+    
+    # ユーザー入力テキストでチェック（より広範囲に検出）
+    user_text_lower = user_text.lower()
+    motion_sickness_text_keywords = ["乗り物酔い", "車酔い", "船酔い", "酔い", "車に乗ると", "船に乗ると", "バスで", "旅行で", "バス酔い", "船酔い"]
+    if any(kw in user_text_lower for kw in motion_sickness_text_keywords):
+        return True
+    
+    return False
+
+def _expand_search_categories(symptom_names: List[str], medicine_types: set) -> set:
+    """
+    症状に基づいて検索対象カテゴリを拡張する
+    例: "肩こり"なら "解熱鎮痛薬" に加えて "外用薬（皮膚）" も検索対象にする
+    
+    Args:
+        symptom_names: 検出された症状名のリスト
+        medicine_types: 既に決定された医薬品種類のセット
+    
+    Returns:
+        拡張された医薬品種類のセット
+    """
+    expanded_types = set(medicine_types)  # 既存の種類をコピー
+    
+    # アレルギー症状の検出（目のかゆみ + くしゃみ/鼻水）
+    allergy_symptoms = ["目のかゆみ"]
+    allergy_indicators = ["くしゃみ", "鼻水", "鼻づまり"]
+    
+    has_eye_itch = any(s in symptom_names for s in allergy_symptoms)
+    has_allergy_indicator = any(s in symptom_names for s in allergy_indicators)
+    
+    if has_eye_itch and has_allergy_indicator:
+        # アレルギー性鼻炎の可能性が高い
+        if "鼻炎用薬" not in expanded_types:
+            expanded_types.add("鼻炎用薬")
+        # アレルギー症状が検出された場合、鼻炎用薬を優先的に検索するため、フラグを設定
+        logger.info("アレルギー症状（目のかゆみ + くしゃみ/鼻水）を検出。鼻炎用薬カテゴリを追加しました")
+    
+    # 整形外科的症状のキーワード
+    musculoskeletal_symptoms = ["肩こり", "筋肉痛", "関節痛", "腰痛", "打撲", "捻挫"]
+    
+    # 症状リストのいずれかが上記に該当する場合
+    if any(s in symptom_names for s in musculoskeletal_symptoms):
+        # データベース上の正確なカテゴリ名: "外用薬（皮膚）"
+        topical_category = "外用薬（皮膚）"
+        oral_category = "解熱鎮痛薬"
+        
+        # 外用薬を追加
+        expanded_types.add(topical_category)
+        
+        # もし元々の判定が「筋肉痛」のような曖昧なカテゴリだった場合、内服薬も明示的に追加
+        if "筋肉痛" in expanded_types and oral_category not in expanded_types:
+            expanded_types.add(oral_category)
+    
+    return expanded_types
 
 
 def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_text: str = "", influenza_risk: bool = False) -> List[Dict]:
@@ -1607,7 +1730,58 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             types = SYMPTOM_DICTIONARY[symptom_name]["medicine_types"]
             medicine_types.update(types)
     
-    logger.info(f"推定された医薬品の種類: {medicine_types}")
+    # アレルギー症状フラグの設定（後続のスコアリングで使用）
+    # NLU結果とユーザー入力テキストの両方から検出（より確実に）
+    allergy_symptoms = ["目のかゆみ", "かゆみ"]  # 「かゆみ」も含める（NLUが「目のかゆみ」を「かゆみ」として抽出する場合がある）
+    allergy_indicators = ["くしゃみ", "鼻水", "鼻づまり"]
+    has_eye_itch = any(s in symptom_names for s in allergy_symptoms)
+    has_allergy_indicator = any(s in symptom_names for s in allergy_indicators)
+    
+    # ユーザー入力テキストからも直接検出（NLUが抽出し損ねた場合のフォールバック）
+    user_text_lower = user_text.lower() if user_text else ""
+    if not has_eye_itch:
+        # 「目のかゆみ」「目がかゆい」「目の痒み」「目かゆ」「目痒」などを直接検出
+        eye_itch_keywords = ["目のかゆみ", "目がかゆい", "目の痒み", "目かゆ", "目痒", "目もかゆ", "目も痒"]
+        has_eye_itch = any(kw in user_text_lower for kw in eye_itch_keywords)
+    
+    if not has_allergy_indicator:
+        # くしゃみ、鼻水、鼻づまりを直接検出
+        allergy_indicator_keywords = ["くしゃみ", "鼻水", "鼻づまり", "鼻詰まり", "鼻が詰まる"]
+        has_allergy_indicator = any(kw in user_text_lower for kw in allergy_indicator_keywords)
+    
+    # 「かゆみ」が検出された場合、ユーザー入力テキストで「目」が含まれているか確認
+    if "かゆみ" in symptom_names and not has_eye_itch:
+        # 「目」が含まれているか、または「目もかゆい」などの表現があるか確認
+        if "目" in user_text_lower or "眼" in user_text_lower:
+            has_eye_itch = True
+            logger.info("「かゆみ」+「目」の組み合わせから目のかゆみを検出しました")
+        # 「目もかゆい」などの表現を直接チェック
+        elif any(kw in user_text_lower for kw in ["目もかゆ", "目も痒", "目がかゆ", "目が痒"]):
+            has_eye_itch = True
+            logger.info("「目もかゆい」などの表現から目のかゆみを検出しました")
+    
+    is_allergy_case = has_eye_itch and has_allergy_indicator
+    
+    # アレルギー症状が検出された場合の詳細ログ
+    if is_allergy_case:
+        logger.info(f"アレルギー症状を検出: 目のかゆみ={has_eye_itch}, アレルギー指標={has_allergy_indicator}, ユーザー入力={user_text[:100]}")
+    
+    # 拡張ロジックを適用（肩こり・筋肉痛の場合に外用薬を追加、アレルギー症状の場合は鼻炎用薬を追加）
+    medicine_types = _expand_search_categories(symptom_names, medicine_types)
+    
+    # アレルギー症状が検出された場合、鼻炎用薬カテゴリを強制的に追加
+    if is_allergy_case:
+        if "鼻炎用薬" not in medicine_types:
+            medicine_types.add("鼻炎用薬")
+            logger.info("アレルギー症状が検出されました（ユーザー入力テキストからも検出）。鼻炎用薬カテゴリを追加しました")
+        # 風邪薬カテゴリを削除または優先度を下げる（アレルギー症状の場合は風邪薬は不適切）
+        if "風邪薬" in medicine_types and len(medicine_types) > 1:
+            # 風邪薬は残すが、優先度は下がる（ペナルティで対応）
+            logger.info("アレルギー症状が検出されたため、風邪薬へのペナルティを適用します")
+    
+    logger.info(f"推定された医薬品の種類（拡張後）: {medicine_types}")
+    if is_allergy_case:
+        logger.info(f"アレルギー症状が検出されました（目のかゆみ: {has_eye_itch}, アレルギー指標: {has_allergy_indicator}）。鼻炎用薬を優先します")
 
     def _sanitize_text(value) -> str:
         if value is None:
@@ -1697,8 +1871,21 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             'competition_category': _sanitize_text(row.get('競技会区分', '')),
             'conditions': _sanitize_text(row.get('条件', '')),
             'usage_notes': usage_notes if usage_notes else '用法用量を守ってご使用ください。',
-            'base_score': 0.0
+            'base_score': 0.0,
+            'is_allergy_case': is_allergy_case  # アレルギー症状フラグ
         }
+
+        # アレルギー症状が検出された場合、風邪薬カテゴリにペナルティを適用
+        if is_allergy_case and '風邪薬' in medicine_type:
+            candidate['allergy_penalty'] = -0.35  # 風邪薬へのペナルティ（さらに強化）
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"アレルギー症状検出: 風邪薬 {product_name} にペナルティ -0.35 を適用")
+        
+        # アレルギー症状が検出された場合、鼻炎用薬カテゴリに大幅ブーストを適用
+        if is_allergy_case and '鼻炎用薬' in medicine_type:
+            candidate['allergy_boost'] = 0.40  # 鼻炎用薬への大幅ブースト（さらに強化）
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"アレルギー症状検出: 鼻炎用薬 {product_name} にブースト +0.40 を適用")
 
         if contains_risk and risk_info:
             candidate['risk_ingredient'] = risk_name
@@ -1718,16 +1905,78 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
     if has_throat_pain:
         throat_keyword_pattern = r"(?:のど|喉|咽頭)"
         product_keyword_pattern = r"(?:のど|喉|咽|トローチ|スプレー|うがい|キャンディ|飴)"
+        
+        # 喉の痛み特化医薬品を明示的に検索（ベンザブロック、ルルアタックなど）
+        throat_specific_keywords = ["ベンザブロック", "ルルアタック", "トラネキサム"]
+        throat_specific_mask = medicine_df['製品名'].astype(str).str.contains(
+            '|'.join(throat_specific_keywords), na=False, case=False, regex=True
+        )
 
         throat_mask = (
             medicine_df['効能効果'].astype(str).str.contains(throat_keyword_pattern, na=False) |
             medicine_df['製品名'].astype(str).str.contains(product_keyword_pattern, na=False) |
-            medicine_df['医薬品の種類'].astype(str).str.contains(throat_keyword_pattern, na=False)
+            medicine_df['医薬品の種類'].astype(str).str.contains(throat_keyword_pattern, na=False) |
+            throat_specific_mask  # 喉の痛み特化医薬品も含める
         )
 
         throat_candidates = medicine_df[throat_mask]
         for _, row in throat_candidates.iterrows():
             append_candidate(row)
+        
+        if throat_specific_mask.any():
+            logger.info(f"喉の痛み特化医薬品を検出しました: {throat_specific_mask.sum()}件")
+
+    # VIP成分枠：肩こり・筋肉痛の場合、第2世代鎮痛成分を含む製品を強制的に候補に追加
+    has_musculoskeletal_symptom = any(s in symptom_names for s in ["肩こり", "筋肉痛", "関節痛", "腰痛"])
+    if has_musculoskeletal_symptom:
+        # 第2世代鎮痛成分のキーワード
+        vip_ingredients = [
+            "フェルビナク", "フェルビナクナトリウム", "フェルビナクナトリウム水和物",
+            "インドメタシン", "インダシン", "インドメタシン水和物",
+            "ジクロフェナク", "ジクロフェナクナトリウム", "ボルタレン", "ジクロフェナクナトリウム水和物"
+        ]
+        
+        # VIP成分を含む製品を検索（外用薬に限定）
+        vip_mask = (
+            medicine_df['医薬品の種類'].astype(str).str.contains('外用', na=False) &
+            medicine_df['成分'].astype(str).str.contains('|'.join(vip_ingredients), na=False, case=False, regex=True)
+        )
+        
+        vip_candidates = medicine_df[vip_mask]
+        vip_count = 0
+        for _, row in vip_candidates.iterrows():
+            # 既に候補に含まれているかチェック
+            product_name = _sanitize_text(row.get('製品名', ''))
+            manufacturer = _sanitize_text(row.get('メーカー名', ''))
+            key = (product_name, manufacturer)
+            
+            if key not in existing_keys:
+                append_candidate(row)
+                vip_count += 1
+        
+        if vip_count > 0:
+            logger.info(f"VIP成分枠: 第2世代鎮痛成分含有の外用薬を{vip_count}件追加しました")
+        
+        # 最適解の製品名も強制的に追加（フェイタス、バンテリン、サロンパス）
+        optimal_product_keywords = ["フェイタス", "バンテリン", "サロンパス"]
+        optimal_mask = (
+            medicine_df['医薬品の種類'].astype(str).str.contains('外用', na=False) &
+            medicine_df['製品名'].astype(str).str.contains('|'.join(optimal_product_keywords), na=False, case=False, regex=True)
+        )
+        
+        optimal_candidates = medicine_df[optimal_mask]
+        optimal_count = 0
+        for _, row in optimal_candidates.iterrows():
+            product_name = _sanitize_text(row.get('製品名', ''))
+            manufacturer = _sanitize_text(row.get('メーカー名', ''))
+            key = (product_name, manufacturer)
+            
+            if key not in existing_keys:
+                append_candidate(row)
+                optimal_count += 1
+        
+        if optimal_count > 0:
+            logger.info(f"VIP製品名枠: 最適解の外用薬を{optimal_count}件追加しました（フェイタス、バンテリン、サロンパス）")
 
     logger.info(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
     return candidates
@@ -1819,7 +2068,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         calculate_interaction_risk_score,
         calculate_usage_convenience_score,
         check_allergy_contraindication,
-        check_drug_interactions
+        check_drug_interactions,
+        calculate_symptom_specific_boost
     )
     
     # 各スコアを計算
@@ -1829,6 +2079,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     usage_score = calculate_usage_convenience_score(candidate)
     side_effect_score = calculate_side_effect_risk_score(candidate, user_info)
     interaction_score = calculate_interaction_risk_score(candidate, user_info)
+    
+    # 症状特化型ブーストを計算
+    symptom_boost = calculate_symptom_specific_boost(candidate, nlu_result, user_info)
     
     # アレルギー成分チェック
     is_allergic, allergy_ingredient = check_allergy_contraindication(candidate, user_info)
@@ -1894,7 +2147,11 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
 
         throat_bonus = max(throat_bonus, detection_bonus)
 
-    # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティを追加）
+    # アレルギーペナルティとブースト（アレルギー症状が検出された場合）
+    allergy_penalty = candidate.get('allergy_penalty', 0.0)
+    allergy_boost = candidate.get('allergy_boost', 0.0)
+    
+    # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティ、症状特化型ブースト、アレルギーペナルティ/ブーストを追加）
     total_score = (
         SCORING_WEIGHTS["症状適合度"] * symptom_score +
         SCORING_WEIGHTS["効能特異性"] * efficacy_specificity_score +
@@ -1904,8 +2161,23 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         SCORING_WEIGHTS["相互作用リスク"] * interaction_score +
         symptom_specificity_penalty +  # 症状特異性ペナルティ
         risk_penalty +  # リスク成分ペナルティ
-        throat_bonus
+        throat_bonus +
+        symptom_boost +  # 症状特化型ブースト
+        allergy_penalty +  # アレルギーペナルティ（風邪薬への減点）
+        allergy_boost  # アレルギーブースト（鼻炎用薬への加点）
     )
+    
+    # 漢方薬・生薬製剤の優先度調整（ユーザーが希望しない限り係数を0.8倍にする）
+    from scoring_utils import _is_kampo_or_herbal_medicine
+    if _is_kampo_or_herbal_medicine(candidate):
+        if not user_info.get('prefers_kampo', False):
+            # 漢方希望がない場合は係数を0.8倍にする（西洋薬を優先）
+            total_score *= 0.8
+            kampo_adjustment = -0.2  # スコア内訳用
+        else:
+            kampo_adjustment = 0.0
+    else:
+        kampo_adjustment = 0.0
     
     result = {
         "total_score": max(0.0, min(1.0, total_score)),  # 0.0-1.0の範囲に制限
@@ -1918,7 +2190,11 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "interaction_risk": interaction_score,
             "symptom_specificity_penalty": symptom_specificity_penalty,  # スコア内訳に追加
             "risk_ingredient_penalty": risk_penalty,
-            "throat_bonus": throat_bonus
+            "throat_bonus": throat_bonus,
+            "symptom_specific_boost": symptom_boost,  # 症状特化型ブースト
+            "allergy_penalty": allergy_penalty,  # アレルギーペナルティ（風邪薬への減点）
+            "allergy_boost": allergy_boost,  # アレルギーブースト（鼻炎用薬への加点）
+            "kampo_adjustment": kampo_adjustment  # 漢方薬優先度調整（西洋薬優先の場合-0.2）
         }
     }
     
@@ -2388,6 +2664,62 @@ def rule_based_recommendation(
         logger.debug(f"症状文: {user_text}")
         logger.debug(f"ユーザー情報: {user_info}")
     
+    # 入力検証: 空入力・意味のない文字列のチェック
+    if not user_text or not user_text.strip():
+        logger.warning("空の入力が検出されました")
+        return {
+            "status": "error",
+            "reason": "症状を入力してください",
+            "recommended_medicines": [],
+            "error_message": "症状を入力してください"
+        }
+    
+    # 意味のない文字列のチェック
+    user_text_stripped = user_text.strip()
+    
+    # 極端に短い文字列（3文字未満）
+    if len(user_text_stripped) < 3:
+        logger.warning(f"極端に短い入力が検出されました: {user_text_stripped}")
+        return {
+            "status": "error",
+            "reason": "症状を詳しく入力してください",
+            "recommended_medicines": [],
+            "error_message": "症状を詳しく入力してください（3文字以上）"
+        }
+    
+    # 繰り返し文字のみのチェック（例: 「あああ」「テストテスト」）
+    if len(set(user_text_stripped)) <= 2 and len(user_text_stripped) >= 3:
+        # 同じ文字が3回以上繰り返されている場合
+        char_counts = {}
+        for char in user_text_stripped:
+            char_counts[char] = char_counts.get(char, 0) + 1
+        if max(char_counts.values()) >= 3:
+            logger.warning(f"繰り返し文字のみの入力が検出されました: {user_text_stripped}")
+            return {
+                "status": "error",
+                "reason": "症状を入力してください",
+                "recommended_medicines": [],
+                "error_message": "症状を入力してください"
+            }
+    
+    # 医療関連キーワードが一切含まれていない場合のチェック（簡易版）
+    # 注: より厳密なチェックはNLU結果に依存するため、ここでは基本的なチェックのみ
+    medical_keywords = [
+        "痛", "熱", "咳", "鼻", "喉", "頭", "胃", "下痢", "便秘", "吐", "めまい",
+        "かゆ", "発疹", "不眠", "疲労", "症状", "病気", "薬", "医", "病"
+    ]
+    has_medical_keyword = any(keyword in user_text_stripped for keyword in medical_keywords)
+    
+    # 医療キーワードがなく、かつ短い文字列の場合
+    if not has_medical_keyword and len(user_text_stripped) < 10:
+        logger.warning(f"医療関連キーワードが含まれていない入力が検出されました: {user_text_stripped}")
+        return {
+            "status": "error",
+            "reason": "症状を入力してください",
+            "recommended_medicines": [],
+            "error_message": "症状を入力してください（例: 頭痛、発熱、のどの痛みなど）"
+        }
+    
     # ステップ1: NLU（症状抽出）
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
@@ -2482,7 +2814,28 @@ def rule_based_recommendation(
             "timestamp": datetime.now().isoformat()
         }
 
-    if age_imputed:
+    # 小児用医薬品フィルタリング（15歳以上のユーザーにも適用）
+    user_age = scoring_user_info.get('age')
+    if user_age is not None and user_age >= 15:
+        # 15歳以上のユーザーには小児専用製品を除外
+        before_filter = len(candidates)
+        candidates = [c for c in candidates if not _is_pediatric_specific(c)]
+        after_filter = len(candidates)
+        if after_filter == 0:
+            logger.warning("15歳以上のユーザーのため、小児専用製品を除外した結果、候補がなくなりました")
+            return {
+                "status": "no_candidates",
+                "reason": "適切な医薬品が見つかりませんでした",
+                "warnings": safety_result["warnings"],
+                "recommended_medicines": [],
+                "nlu_result": nlu_result,
+                "confidence_score": confidence_score,
+                "timestamp": datetime.now().isoformat()
+            }
+        elif before_filter != after_filter:
+            logger.info(f"15歳以上のユーザーのため小児専用製品を{before_filter - after_filter}件除外しました")
+    elif age_imputed:
+        # 年齢未入力の場合も従来通り除外
         before_filter = len(candidates)
         candidates = [c for c in candidates if not _is_pediatric_specific(c)]
         after_filter = len(candidates)
@@ -2499,6 +2852,32 @@ def rule_based_recommendation(
             }
         elif before_filter != after_filter:
             logger.info(f"年齢未入力のため小児専用製品を{before_filter - after_filter}件除外しました")
+    
+    # 乗り物酔い薬のフィルタリング（乗り物酔いの症状がない場合は除外）
+    if candidates:
+        has_motion_sickness = _has_motion_sickness_symptom(nlu_result, user_text)
+        before_motion_filter = len(candidates)
+        if not has_motion_sickness:
+            # 乗り物酔いの症状がない場合は、乗り物酔い薬を除外
+            candidates = [c for c in candidates if not _is_motion_sickness_medicine(c)]
+            after_motion_filter = len(candidates)
+            if before_motion_filter != after_motion_filter:
+                logger.info(f"乗り物酔い症状がないため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
+        else:
+            logger.info("乗り物酔い症状が検出されたため、乗り物酔い薬も推奨対象に含めます")
+        
+        # フィルタリング後に候補がなくなった場合の処理
+        if not candidates:
+            logger.warning("フィルタリング後、候補医薬品がなくなりました")
+            return {
+                "status": "no_candidates",
+                "reason": "該当する医薬品が見つかりませんでした",
+                "warnings": safety_result["warnings"],
+                "recommended_medicines": [],
+                "nlu_result": nlu_result,
+                "confidence_score": confidence_score,
+                "timestamp": datetime.now().isoformat()
+            }
     
     # ステップ5: 二段階スコアリング（高速化）
     if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2562,6 +2941,53 @@ def rule_based_recommendation(
     # ステップ5.3: 詳細スコアリング（選別された候補のみ）
     candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
                               key=lambda x: x['final_score'], reverse=True)
+    
+    # スコア差が僅差（0.1以内）の場合、指定第2類医薬品を優先するソートロジック（乗り物酔い薬の場合）
+    symptom_names = [s.get("name") for s in nlu_result.get("symptoms", [])]
+    if len(candidates_sorted) >= 2 and "乗り物酔い" in symptom_names:
+        # 上位2件のスコア差を確認
+        top_score = candidates_sorted[0].get('final_score', 0.0)
+        second_score = candidates_sorted[1].get('final_score', 0.0)
+        score_diff = top_score - second_score
+        
+        # スコア差が0.1以内の場合、指定第2類を優先
+        if score_diff <= 0.1:
+            top_classification = str(candidates_sorted[0].get('classification', '')).lower()
+            second_classification = str(candidates_sorted[1].get('classification', '')).lower()
+            
+            # 2位が指定第2類で、1位が指定第2類でない場合、入れ替え
+            if '指定第2類' in second_classification and '指定第2類' not in top_classification:
+                candidates_sorted[0], candidates_sorted[1] = candidates_sorted[1], candidates_sorted[0]
+                logger.info(f"スコア差が僅差（{score_diff:.3f}）のため、指定第2類医薬品を優先しました")
+    
+    # 肩こり・筋肉痛の場合、最適解の外用薬（フェイタス、バンテリン、サロンパス）を優先するソートロジック
+    has_musculoskeletal_symptom = any(s in symptom_names for s in ["肩こり", "筋肉痛", "関節痛", "腰痛"])
+    if has_musculoskeletal_symptom and len(candidates_sorted) >= 2:
+        optimal_keywords = ["フェイタス", "バンテリン", "サロンパス"]
+        
+        # 最適解の製品を探す
+        optimal_indices = []
+        for i, candidate in enumerate(candidates_sorted):
+            product_name = str(candidate.get('product_name', '')).lower()
+            if any(kw.lower() in product_name for kw in optimal_keywords):
+                optimal_indices.append(i)
+        
+        # 最適解が見つかり、1位でない場合、優先的に上位に移動
+        if optimal_indices:
+            for idx in optimal_indices:
+                if idx > 0:  # 1位でない場合
+                    # スコア差が0.2以内の場合、最適解を優先
+                    optimal_score = candidates_sorted[idx].get('final_score', 0.0)
+                    top_score = candidates_sorted[0].get('final_score', 0.0)
+                    score_diff = top_score - optimal_score
+                    
+                    if score_diff <= 0.2:
+                        # 最適解を1位に移動
+                        optimal_candidate = candidates_sorted.pop(idx)
+                        candidates_sorted.insert(0, optimal_candidate)
+                        logger.info(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f})")
+                        break
+    
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n)
     
     logger.info(
