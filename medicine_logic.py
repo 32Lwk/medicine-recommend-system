@@ -482,17 +482,39 @@ def format_text_for_display(text):
     return text
 
 # .envファイルから環境変数を読み込み（オプショナル）
+# load_dotenv関数をグローバルスコープで利用できるようにする
+load_dotenv_func = None
 try:
     from dotenv import load_dotenv
-    # スクリプトのディレクトリを基準に.envファイルを読み込む
+    load_dotenv_func = load_dotenv  # グローバル変数として保存
+    # スクリプトのディレクトリを基準に.envファイルを読み込む（BASE_DIRはプロジェクトルート）
     env_path = os.path.join(BASE_DIR, '.env')
-    load_dotenv(env_path)
-    print("dotenvを使用して.envファイルから環境変数を読み込みました。")
-    # デバッグ用: .envファイルの存在確認
+    
+    # デバッグ情報
+    print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
+    print(f"[DEBUG] 現在の作業ディレクトリ: {os.getcwd()}")
+    print(f"[DEBUG] .envファイルのパス（BASE_DIR）: {env_path}")
+    print(f"[DEBUG] .envファイル存在確認（BASE_DIR）: {os.path.exists(env_path)}")
+    
+    # まず引数なしでload_dotenvを呼び出し、現在の作業ディレクトリから上位ディレクトリを自動検索
+    loaded = load_dotenv(override=True)  # override=Trueで確実に読み込む
+    print(f"[DEBUG] load_dotenv() (引数なし) 結果: {loaded}")
+    
+    # 明示的なパスも試す（存在する場合は読み込む）
+    env_loaded = False
     if os.path.exists(env_path):
-        print(f".envファイルのパス: {env_path}")
+        env_loaded = load_dotenv(env_path, override=True)  # override=Trueで確実に読み込む
+        print(f"[DEBUG] load_dotenv({env_path}) 結果: {env_loaded}")
     else:
-        print(f"警告: .envファイルが見つかりません: {env_path}")
+        # 現在の作業ディレクトリから.envファイルを確認
+        cwd_env = os.path.join(os.getcwd(), '.env')
+        print(f"[DEBUG] .envファイルのパス（現在の作業ディレクトリ）: {cwd_env}")
+        print(f"[DEBUG] .envファイル存在確認（CWD）: {os.path.exists(cwd_env)}")
+        if os.path.exists(cwd_env):
+            env_loaded = load_dotenv(cwd_env, override=True)  # override=Trueで確実に読み込む
+            print(f"[DEBUG] load_dotenv({cwd_env}) 結果: {env_loaded}")
+    
+    print("dotenvを使用して.envファイルから環境変数を読み込みました。")
 except ImportError:
     print("python-dotenvがインストールされていません。環境変数のみを使用します。")
 
@@ -856,8 +878,106 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         {"role": "user", "content": prompt}
     ]
     
+    # クライアントが指定されていない場合、api_keyから初期化
     if client is None:
-        client = OpenAI(api_key=api_key)
+        # まず環境変数から直接取得を試みる（最新の値を取得）
+        current_api_key = os.getenv('OPENAI_API_KEY')
+        
+        # 環境変数にない場合、.envファイルを再読み込みしてから再取得
+        if current_api_key is None:
+            print("[DEBUG] api_keyがNoneのため、環境変数から再取得を試みます...")
+            # .envファイルを再読み込み（明示的なパスを指定）
+            env_path = os.path.join(BASE_DIR, '.env')
+            print(f"[DEBUG] .envファイル再読み込み試行: {env_path}")
+            
+            # グローバル変数として保存されたload_dotenv_funcを使用、または直接インポート
+            try:
+                # まずグローバル変数を試す
+                dotenv_func = load_dotenv_func
+                if dotenv_func is None:
+                    # グローバル変数がNoneの場合、直接インポートを試みる
+                    print("[DEBUG] load_dotenv_funcがNoneのため、直接インポートを試みます...")
+                    from dotenv import load_dotenv
+                    dotenv_func = load_dotenv
+                    print("[DEBUG] load_dotenvの直接インポートに成功しました")
+                
+                # BASE_DIRの.envファイルを試す
+                if os.path.exists(env_path):
+                    loaded = dotenv_func(env_path, override=True)  # override=Trueで強制的に読み込む
+                    print(f"[DEBUG] .envファイル再読み込み結果: {loaded}")
+                else:
+                    # 現在の作業ディレクトリからも試す
+                    cwd_env = os.path.join(os.getcwd(), '.env')
+                    print(f"[DEBUG] .envファイル再読み込み試行（CWD）: {cwd_env}")
+                    if os.path.exists(cwd_env):
+                        loaded = dotenv_func(cwd_env, override=True)
+                        print(f"[DEBUG] .envファイル再読み込み結果（CWD）: {loaded}")
+                    # 引数なしでも試す（自動検索）
+                    dotenv_func(override=True)
+                
+                # 再読み込み後に環境変数から再取得
+                current_api_key = os.getenv('OPENAI_API_KEY')
+            except ImportError as e:
+                print(f"[DEBUG] python-dotenvのインポートに失敗: {e}")
+                # .envファイルを直接読み込む方法を試す
+                if os.path.exists(env_path):
+                    print("[DEBUG] .envファイルを直接読み込みます...")
+                    try:
+                        with open(env_path, 'r', encoding='utf-8') as f:
+                            for line in f:
+                                line = line.strip()
+                                if line and not line.startswith('#') and '=' in line:
+                                    key, value = line.split('=', 1)
+                                    key = key.strip()
+                                    value = value.strip().strip('"').strip("'")
+                                    if key == 'OPENAI_API_KEY':
+                                        os.environ[key] = value
+                                        current_api_key = value
+                                        print(f"[DEBUG] .envファイルから直接環境変数を設定しました（長さ: {len(value)}文字）")
+                                        break
+                    except Exception as file_error:
+                        print(f"[DEBUG] .envファイル直接読み込みエラー: {file_error}")
+            except Exception as e:
+                print(f"[DEBUG] .envファイル読み込みエラー: {e}")
+                import traceback
+                traceback.print_exc()
+                # エラーが発生しても環境変数から再取得を試みる
+                current_api_key = os.getenv('OPENAI_API_KEY')
+            
+            if current_api_key:
+                print(f"[DEBUG] APIキー再取得成功（長さ: {len(current_api_key)}文字）")
+            else:
+                print("[DEBUG] APIキー再取得失敗")
+                # 最後の手段として、グローバル変数のapi_keyも確認
+                if api_key:
+                    current_api_key = api_key
+                    print(f"[DEBUG] グローバル変数api_keyを使用（長さ: {len(current_api_key)}文字）")
+        
+        if current_api_key is None:
+            error_msg = "OPENAI_API_KEYが環境変数に設定されていません。.envファイルまたは環境変数を確認してください。"
+            print(f"❌ {error_msg}")
+            print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
+            print(f"[DEBUG] 現在の作業ディレクトリ: {os.getcwd()}")
+            env_check_path = os.path.join(BASE_DIR, '.env')
+            print(f"[DEBUG] .envファイル存在確認: {os.path.exists(env_check_path)}")
+            # .envファイルの内容を確認（最初の1行のみ、セキュリティのため）
+            if os.path.exists(env_check_path):
+                try:
+                    with open(env_check_path, 'r', encoding='utf-8') as f:
+                        first_line = f.readline().strip()
+                        if 'OPENAI_API_KEY' in first_line:
+                            print(f"[DEBUG] .envファイルにOPENAI_API_KEYが含まれています: {first_line[:20]}...")
+                        else:
+                            print("[DEBUG] .envファイルの最初の行にOPENAI_API_KEYが含まれていません")
+                except Exception as e:
+                    print(f"[DEBUG] .envファイル読み込みエラー: {e}")
+            return {
+                'status': 'error',
+                'symptoms': [],
+                'message': error_msg
+            }
+        
+        client = OpenAI(api_key=current_api_key)
     
     print("ユーザー入力:", user_text)
     
@@ -1008,7 +1128,7 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
         print(f"ChatGPT応答: {result}")
         if not result:
             print("ChatGPTからの応答が空です")
-            return {"symptoms": [], "medicine_type": "その他"}
+            return {"symptoms": [], "medicine_type": None}
         # JSON形式の回答を解析
         import json
         try:
@@ -1019,13 +1139,16 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
                 json_str = result[json_start:json_end]
                 parsed_result = json.loads(json_str)
                 print(f"解析結果: {parsed_result}")
+                # 医薬品種類が「その他」の場合はNoneに変換
+                if parsed_result.get('medicine_type') == 'その他':
+                    parsed_result['medicine_type'] = None
                 return parsed_result
             else:
                 print("JSON形式が見つかりませんでした")
-                return {"symptoms": [], "medicine_type": "その他"}
+                return {"symptoms": [], "medicine_type": None}
         except json.JSONDecodeError as e:
             print(f"JSON解析エラー: {e}")
-            return {"symptoms": [], "medicine_type": "その他"}
+            return {"symptoms": [], "medicine_type": None}
             
     except Exception as e:
         print(f"ChatGPT API呼び出しエラー: {e}")

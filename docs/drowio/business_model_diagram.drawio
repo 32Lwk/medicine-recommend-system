@@ -1,0 +1,117 @@
+<mxfile host="app.diagrams.net" modified="2025-11-10T00:00:00.000Z" agent="GPT-5 Codex" version="22.1.8" type="device">
+  <diagram id="businessModel" name="ビジネスモデル図">
+    <mxGraphModel dx="1560" dy="880" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="customer" value="お客様" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;fontSize=18;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="520" y="60" width="60" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="store" value="ドラッグストア&#xa;店舗" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="300" y="220" width="160" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="hq" value="ドラッグストア&#xa;会社" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="300" y="420" width="160" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="ec" value="ECサイト企業" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="220" width="160" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="gov" value="行政" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="920" y="60" width="140" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="smartphone" value="スマホ利用" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="520" y="200" width="120" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="app" value="アプリ運営" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="420" width="160" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="ereceipt" value="電子レシート" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="360" width="160" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="valueNote" value="仕入れの参考値データ獲得" style="whiteSpace=wrap;html=1;fontSize=14;dashed=1;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="100" y="420" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="moneyBox1" value="￥" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#c89b00;fillColor=#fbe5ab;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="450" y="210" width="40" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="goodsBox1" value="モノ" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#77933c;fillColor=#c4d79b;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="360" y="140" width="50" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoBox1" value="情報" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#1a4e9a;fillColor=#cfe2f3;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="620" y="150" width="50" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="valueBox1" value="価値" style="whiteSpace=wrap;html=1;fontSize=16;strokeColor=#5e5e5e;fillColor=#ededed;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="540" y="330" width="50" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="moneyFlowCustomerStore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#c89b00;strokeWidth=2;" edge="1" parent="1" source="customer" target="store">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="110" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="goodsFlowStoreCustomer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#77933c;strokeWidth=2;" edge="1" parent="1" source="store" target="customer">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="140" as="sourcePoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="infoFlowStoreApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="store" target="app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="valueFlowAppCustomer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#5e5e5e;strokeWidth=2;" edge="1" parent="1" source="app" target="customer">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="550" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="moneyFlowHqApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#c89b00;strokeWidth=2;" edge="1" parent="1" source="hq" target="app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowAppHq" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="app" target="hq">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowAppValue" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="app" target="ereceipt">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="valueFlowReceiptCustomer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#5e5e5e;strokeWidth=2;" edge="1" parent="1" source="ereceipt" target="customer">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="660" y="340" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="moneyFlowCustomerEc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#c89b00;strokeWidth=2;" edge="1" parent="1" source="customer" target="ec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="goodsFlowEcCustomer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#77933c;strokeWidth=2;" edge="1" parent="1" source="ec" target="customer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowCustomerApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="customer" target="app">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="580" y="260" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="regulationFlowGovApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#5e5e5e;strokeWidth=2;dashed=1;" edge="1" parent="1" source="gov" target="app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowAppGov" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="app" target="gov">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="moneyFlowEcApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#c89b00;strokeWidth=2;" edge="1" parent="1" source="ec" target="app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowAppEc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="app" target="ec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowAppSmartphone" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;" edge="1" parent="1" source="app" target="smartphone">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="feedbackFlowSmartphoneApp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;dashed=1;" edge="1" parent="1" source="smartphone" target="app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="valueFlowHqStore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#5e5e5e;strokeWidth=2;" edge="1" parent="1" source="hq" target="store">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="infoFlowStoreValueNote" style="edgeStyle=orthogonalEdgeStyle;rounded=0;jettySize=auto;html=1;strokeColor=#1a4e9a;strokeWidth=2;dashed=1;" edge="1" parent="1" source="store" target="valueNote">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+
