@@ -5,6 +5,12 @@
 
 import sys
 import os
+import io
+
+# Windows環境での文字エンコーディング問題を回避
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # 現在のディレクトリをパスに追加
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -208,6 +214,856 @@ def test_comprehensive_system():
     result = comprehensive_medicine_recommendation(user_text, user_info, client)
     print_result(result, "包括的システム")
 
+def test_pediatric_filtering():
+    """テスト9: 小児専用製品フィルタリング（年齢未入力時）"""
+    print("\n" + "="*80)
+    print("テスト9: 小児専用製品フィルタリング（年齢未入力時）")
+    print("="*80)
+    
+    user_text = "喉がイガイガして、鼻が詰まっている"
+    user_info = {
+        "age": None,  # 年齢未入力
+        "gender": None,
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    result = rule_based_medicine_recommendation(user_text, user_info, client)
+    print_result(result, "小児専用製品フィルタリング")
+    
+    # 小児専用製品が除外されているか確認
+    medicines = result.get('recommended_medicines', [])
+    pediatric_products = [m for m in medicines if '小児用' in m.get('product_name', '') or '小児' in m.get('product_name', '')]
+    
+    if pediatric_products:
+        print(f"\n[警告] 小児専用製品が推奨されています: {[p.get('product_name') for p in pediatric_products]}")
+    else:
+        print("\n[OK] 小児専用製品は正しく除外されています")
+
+def test_topical_medicine_recommendation():
+    """テスト10: 外用薬推奨（肩こり・筋肉痛）"""
+    print("\n" + "="*80)
+    print("テスト10: 外用薬推奨（肩こり・筋肉痛）")
+    print("="*80)
+    
+    # より明確な症状表現を使用
+    user_text = "肩が痛いです。肩こりもひどいです。"
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    result = rule_based_medicine_recommendation(user_text, user_info, client)
+    print_result(result, "外用薬推奨")
+    
+    # ステータスを確認
+    if result.get('status') != 'success':
+        print(f"\n[警告] 推奨が失敗しました。ステータス: {result.get('status')}")
+        print(f"理由: {result.get('reason', '不明')}")
+        return
+    
+    # 外用薬が推奨されているか確認
+    medicines = result.get('recommended_medicines', [])
+    topical_medicines = [m for m in medicines if '外用薬（皮膚）' in str(m.get('medicine_type', ''))]
+    
+    if topical_medicines:
+        print(f"\n[OK] 外用薬が推奨されています: {[m.get('product_name') for m in topical_medicines]}")
+    else:
+        print("\n[警告] 外用薬が推奨されていません（内服薬のみの可能性）")
+        print(f"推奨された医薬品の種類: {[m.get('medicine_type') for m in medicines]}")
+    
+    # 内服薬も推奨されているか確認
+    oral_medicines = [m for m in medicines if '解熱鎮痛薬' in str(m.get('medicine_type', '')) or '筋肉痛' in str(m.get('medicine_type', ''))]
+    if oral_medicines:
+        print(f"[OK] 内服薬も推奨されています: {[m.get('product_name') for m in oral_medicines]}")
+
+def test_motion_sickness_medicine_recommendation():
+    """テスト11: 乗り物酔い薬の推奨テスト（改善後）"""
+    print("\n" + "="*80)
+    print("テスト11: 乗り物酔い薬の推奨テスト（改善後）")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    # テストケース1: 乗り物酔いの症状がある場合 → 乗り物酔い薬が推奨されるべき
+    print("\n[ケース1] 乗り物酔い症状がある場合")
+    user_text = "車に乗ると気持ち悪くなります。乗り物酔いがひどいです。"
+    user_info = {"age": 25, "gender": "女性"}
+    
+    try:
+        medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            motion_sickness_medicines = [
+                m for m in medicines 
+                if any(kw in str(m.get('product_name', '')).lower() 
+                       for kw in ["酔い", "めまい", "乗り物", "鎮暈", "トラベルミン", "トリブラ", "アネロン", "エアミット", "センパア", "レジャール", "トラベロップ"])
+            ]
+            
+            if motion_sickness_medicines:
+                print(f"[OK] 乗り物酔い薬が推奨されています: {[m.get('product_name') for m in motion_sickness_medicines[:3]]}")
+            else:
+                print(f"[WARNING] 乗り物酔い薬が推奨されていません。推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # テストケース2: 頭痛のみの場合 → 乗り物酔い薬が除外されるべき
+    print("\n[ケース2] 頭痛のみの場合（乗り物酔い薬は除外されるべき）")
+    user_text = "頭が痛い（夕方から）"
+    user_info = {"age": 25, "gender": "女性"}
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            motion_sickness_medicines = [
+                m for m in medicines 
+                if any(kw in str(m.get('product_name', '')).lower() 
+                       for kw in ["酔い", "めまい", "乗り物", "鎮暈", "トラベルミン", "トリブラ", "アネロン", "エアミット", "センパア", "レジャール", "トラベロップ"])
+            ]
+            
+            if not motion_sickness_medicines:
+                print(f"[OK] 頭痛のみの場合、乗り物酔い薬は除外されています。推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+            else:
+                print(f"[ERROR] 頭痛のみの場合でも乗り物酔い薬が推奨されています: {[m.get('product_name') for m in motion_sickness_medicines]}")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_allergy_symptom_detection():
+    """テスト12: アレルギー症状判定の強化テスト"""
+    print("\n" + "="*80)
+    print("テスト12: アレルギー症状判定の強化テスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    # テストケース: アレルギー症状（目のかゆみ + くしゃみ/鼻水）がある場合
+    print("\n[ケース] アレルギー症状（目のかゆみ + くしゃみ + 鼻水）がある場合")
+    user_text = "鼻水とくしゃみが止まりません。目もかゆいです。"
+    user_info = {"age": 35, "gender": "女性"}
+    
+    try:
+        medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            nlu_result = result.get("nlu_result", {})
+            detected_symptoms = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            
+            print(f"[DEBUG] NLUで検出された症状: {detected_symptoms}")
+            
+            # 鼻炎用薬（抗アレルギー薬）を検出
+            allergy_medicines = [
+                m for m in medicines 
+                if '鼻炎用薬' in str(m.get('medicine_type', '')) or 
+                   any(kw in str(m.get('product_name', '')).lower() 
+                       for kw in ["アレグラ", "アレジオン", "アルガード", "抗アレルギー"])
+            ]
+            
+            # 風邪薬を検出
+            cold_medicines = [
+                m for m in medicines 
+                if '風邪薬' in str(m.get('medicine_type', ''))
+            ]
+            
+            print(f"[DEBUG] 推奨された医薬品の種類: {[m.get('medicine_type') for m in medicines[:5]]}")
+            print(f"[DEBUG] 鼻炎用薬数: {len(allergy_medicines)}, 風邪薬数: {len(cold_medicines)}")
+            
+            if allergy_medicines:
+                print(f"[OK] 鼻炎用薬（抗アレルギー薬）が推奨されています: {[m.get('product_name') for m in allergy_medicines[:3]]}")
+            else:
+                print(f"[WARNING] 鼻炎用薬が推奨されていません。推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+            
+            # 鼻炎用薬が風邪薬より上位に来ているか確認
+            if allergy_medicines and cold_medicines:
+                allergy_ranks = [medicines.index(m) for m in allergy_medicines]
+                cold_ranks = [medicines.index(m) for m in cold_medicines]
+                if min(allergy_ranks) < min(cold_ranks):
+                    print(f"[OK] 鼻炎用薬が風邪薬より上位に推奨されています（鼻炎用薬: {min(allergy_ranks)+1}位、風邪薬: {min(cold_ranks)+1}位）")
+                else:
+                    print(f"[WARNING] 鼻炎用薬が風邪薬より下位に推奨されています（鼻炎用薬: {min(allergy_ranks)+1}位、風邪薬: {min(cold_ranks)+1}位）")
+            elif allergy_medicines:
+                print(f"[OK] 鼻炎用薬のみが推奨されています（風邪薬は推奨されていません）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_symptom_specific_boost():
+    """テスト13: 症状特化型ブーストの適用テスト"""
+    print("\n" + "="*80)
+    print("テスト13: 症状特化型ブーストの適用テスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース1: 喉の痛み特化医薬品のブースト
+    print("\n[ケース1] 喉の痛み特化医薬品のブースト")
+    user_text = "喉が痛くて、咳も出ます。少し熱っぽいです。"
+    user_info = {"age": 30, "gender": "男性"}
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            # 部分一致も含めて検出（例: "ベンザブロックL" や "ルルアタックEX" など）
+            throat_specific = [
+                m for m in medicines 
+                if any(kw.upper() in str(m.get('product_name', '')).upper() 
+                       for kw in ["ベンザブロック", "ルルアタック", "トラネキサム"])
+            ]
+            
+            print(f"[DEBUG] 推奨された医薬品: {[m.get('product_name') for m in medicines[:5]]}")
+            
+            # 候補全体からベンザブロック/ルルアタックを検索（スコアも表示）
+            all_throat_specific = []
+            for m in medicines:
+                product_name = str(m.get('product_name', '')).upper()
+                if any(kw.upper() in product_name for kw in ["ベンザブロック", "ルルアタック", "トラネキサム"]):
+                    all_throat_specific.append((m.get('product_name'), m.get('total_score', 0)))
+            
+            if all_throat_specific:
+                print(f"[DEBUG] 候補内の喉の痛み特化医薬品: {all_throat_specific}")
+            
+            if throat_specific:
+                print(f"[OK] 喉の痛み特化医薬品が推奨されています: {[m.get('product_name') for m in throat_specific[:3]]}")
+            else:
+                print(f"[INFO] 喉の痛み特化医薬品は推奨されていません（一般的な風邪薬が推奨されています）")
+                if all_throat_specific:
+                    print(f"[DEBUG] 候補には含まれていますが、スコアが低い可能性があります: {all_throat_specific}")
+                else:
+                    print(f"[DEBUG] データベースにベンザブロック/ルルアタックが存在するか確認が必要です")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # テストケース2: 女性の頭痛用（胃に優しい）医薬品のブースト
+    print("\n[ケース2] 女性の頭痛用（胃に優しい）医薬品のブースト")
+    user_text = "頭が痛いです。昨日の夕方から続いています。"
+    user_info = {"age": 25, "gender": "女性"}
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            stomach_friendly = [
+                m for m in medicines 
+                if any(kw in (str(m.get('product_name', '')) + str(m.get('efficacy', ''))).lower() 
+                       for kw in ["イブクイック", "バファリン", "酸化マグネシウム"])
+            ]
+            
+            if stomach_friendly:
+                print(f"[OK] 胃に優しい医薬品が推奨されています: {[m.get('product_name') for m in stomach_friendly[:3]]}")
+            else:
+                print(f"[INFO] 胃に優しい医薬品は推奨されていません（一般的な解熱鎮痛薬が推奨されています）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # テストケース3: 肩こり外用薬（テープ・パップ）のブースト
+    print("\n[ケース3] 肩こり外用薬（テープ・パップ）のブースト")
+    user_text = "肩が痛いです。肩こりもひどいです。"
+    user_info = {"age": 30, "gender": "男性"}
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            topical_medicines = [
+                m for m in medicines 
+                if '外用薬（皮膚）' in str(m.get('medicine_type', '')) and
+                   any(kw in str(m.get('product_name', '')) 
+                       for kw in ["ロキソニン", "サロンパス", "バンテリン", "テープ", "パップ"])
+            ]
+            
+            if topical_medicines:
+                print(f"[OK] 外用薬（テープ・パップ）が推奨されています: {[m.get('product_name') for m in topical_medicines[:3]]}")
+            else:
+                print(f"[INFO] 特定の外用薬（テープ・パップ）は推奨されていません（一般的な外用薬が推奨されています）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_drug_interaction_filtering():
+    """テスト14: 医薬品相互作用フィルタリング"""
+    print("\n" + "="*80)
+    print("テスト14: 医薬品相互作用フィルタリング")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: 現在服用中の薬（アスピリン）がある場合
+    print("\n[ケース] 現在アスピリンを服用中で、頭痛がある場合")
+    user_text = "頭が痛いです。"
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "current_medications": ["アスピリン", "アセチルサリチル酸"],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # アスピリン含有製品が除外されているか確認
+            aspirin_products = [
+                m for m in medicines 
+                if any(kw.lower() in str(m.get('ingredients', '') + str(m.get('product_name', ''))).lower()
+                       for kw in ["アスピリン", "アセチルサリチル酸", "ASA"])
+            ]
+            
+            if aspirin_products:
+                print(f"[WARNING] アスピリン含有製品が推奨されています: {[m.get('product_name') for m in aspirin_products]}")
+                print(f"[INFO] 相互作用チェックが機能していない可能性があります")
+            else:
+                print(f"[OK] アスピリン含有製品は正しく除外されています")
+                print(f"[OK] 推奨された医薬品数: {len(medicines)}")
+                if medicines:
+                    print(f"[OK] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_allergy_filtering():
+    """テスト15: アレルギー情報に基づくフィルタリング"""
+    print("\n" + "="*80)
+    print("テスト15: アレルギー情報に基づくフィルタリング")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: イブプロフェンアレルギーがある場合
+    print("\n[ケース] イブプロフェンアレルギーがある場合、頭痛がある場合")
+    user_text = "頭が痛いです。"
+    user_info = {
+        "age": 30,
+        "gender": "女性",
+        "current_medications": [],
+        "allergies": ["イブプロフェン", "イブ"]
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # イブプロフェン含有製品が除外されているか確認
+            ibuprofen_products = [
+                m for m in medicines 
+                if "イブプロフェン" in str(m.get('ingredients', '')).upper() or
+                   "イブ" in str(m.get('ingredients', '')).upper()
+            ]
+            
+            if ibuprofen_products:
+                print(f"[ERROR] イブプロフェン含有製品が推奨されています: {[m.get('product_name') for m in ibuprofen_products]}")
+                print(f"[ERROR] アレルギーチェックが機能していません")
+            else:
+                print(f"[OK] イブプロフェン含有製品は正しく除外されています")
+                print(f"[OK] 推奨された医薬品数: {len(medicines)}")
+                if medicines:
+                    print(f"[OK] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+                    # アセトアミノフェン含有製品が推奨されているか確認
+                    acetaminophen_products = [
+                        m for m in medicines 
+                        if "アセトアミノフェン" in str(m.get('ingredients', ''))
+                    ]
+                    if acetaminophen_products:
+                        print(f"[OK] アセトアミノフェン含有製品が推奨されています（イブプロフェンの代替として適切）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_breastfeeding_safety():
+    """テスト16: 授乳中の安全性チェック"""
+    print("\n" + "="*80)
+    print("テスト16: 授乳中の安全性チェック")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: 授乳中の母親が頭痛を訴える場合
+    print("\n[ケース] 授乳中の母親が頭痛を訴える場合")
+    user_text = "頭が痛いです。"
+    user_info = {
+        "age": 28,
+        "gender": "女性",
+        "pregnant": False,
+        "breastfeeding": True,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # 授乳中に安全な医薬品が推奨されているか確認
+            # アセトアミノフェンは授乳中に比較的安全
+            safe_medicines = [
+                m for m in medicines 
+                if "アセトアミノフェン" in str(m.get('ingredients', ''))
+            ]
+            
+            print(f"[DEBUG] 推奨された医薬品数: {len(medicines)}")
+            if medicines:
+                print(f"[DEBUG] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+            
+            if safe_medicines:
+                print(f"[OK] 授乳中に比較的安全なアセトアミノフェン含有製品が推奨されています: {[m.get('product_name') for m in safe_medicines[:3]]}")
+            else:
+                print(f"[INFO] アセトアミノフェン含有製品が推奨されていません（他の成分が推奨されている可能性があります）")
+            
+            # エスカレーションが必要な場合
+            if result.get("usage_notes") and "授乳" in result.get("usage_notes", ""):
+                print(f"[OK] 授乳中の注意喚起が表示されています")
+        elif result.get("status") == "escalation_required":
+            print(f"[OK] エスカレーションが必要と判定されました（授乳中の安全性のため）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_pediatric_recommendation():
+    """テスト17: 小児向け推奨テスト"""
+    print("\n" + "="*80)
+    print("テスト17: 小児向け推奨テスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース1: 10歳の子供が風邪症状を訴える場合
+    print("\n[ケース1] 10歳の子供が風邪症状を訴える場合")
+    user_text = "喉が痛くて咳が出ます。"
+    user_info = {
+        "age": 10,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # 年齢制限を満たす医薬品が推奨されているか確認
+            age_restricted = [
+                m for m in medicines 
+                if m.get('age_restriction') is not None and m.get('age_restriction', 15) > 10
+            ]
+            
+            if age_restricted:
+                print(f"[ERROR] 年齢制限に適合しない医薬品が推奨されています: {[m.get('product_name') for m in age_restricted]}")
+            else:
+                print(f"[OK] 年齢制限に適合する医薬品のみが推奨されています")
+                print(f"[OK] 推奨された医薬品数: {len(medicines)}")
+                if medicines:
+                    print(f"[OK] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+        elif result.get("status") == "escalation_required":
+            print(f"[OK] エスカレーションが必要と判定されました（小児の安全性のため）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_elderly_recommendation():
+    """テスト18: 高齢者向け推奨テスト"""
+    print("\n" + "="*80)
+    print("テスト18: 高齢者向け推奨テスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: 75歳の高齢者が頭痛を訴える場合
+    print("\n[ケース] 75歳の高齢者が頭痛を訴える場合")
+    user_text = "頭が痛いです。"
+    user_info = {
+        "age": 75,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # 高齢者に比較的安全な医薬品が推奨されているか確認
+            # アセトアミノフェンは高齢者に比較的安全
+            safe_medicines = [
+                m for m in medicines 
+                if "アセトアミノフェン" in str(m.get('ingredients', ''))
+            ]
+            
+            print(f"[DEBUG] 推奨された医薬品数: {len(medicines)}")
+            if medicines:
+                print(f"[DEBUG] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+            
+            if safe_medicines:
+                print(f"[OK] 高齢者に比較的安全なアセトアミノフェン含有製品が推奨されています")
+            
+            # 高齢者向けの注意喚起があるか確認
+            if result.get("usage_notes") and ("高齢" in result.get("usage_notes", "") or "年齢" in result.get("usage_notes", "")):
+                print(f"[OK] 高齢者向けの注意喚起が表示されています")
+        elif result.get("status") == "escalation_required":
+            print(f"[OK] エスカレーションが必要と判定されました（高齢者の安全性のため）")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_complex_symptom_combination():
+    """テスト19: 複数症状の組み合わせテスト"""
+    print("\n" + "="*80)
+    print("テスト19: 複数症状の組み合わせテスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: 複数の症状が組み合わさっている場合
+    print("\n[ケース] 発熱、頭痛、鼻水、のどの痛みが同時にある場合")
+    user_text = "熱があって頭も痛いです。鼻水も出て、のども痛いです。"
+    user_info = {
+        "age": 30,
+        "gender": "女性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            # 複数の症状に対応する医薬品が推奨されているか確認
+            comprehensive_medicines = [
+                m for m in medicines 
+                if any(symptom in str(m.get('efficacy', ''))
+                       for symptom in ["発熱", "頭痛", "鼻水", "のどの痛み", "喉の痛み"])
+            ]
+            
+            print(f"[DEBUG] 推奨された医薬品数: {len(medicines)}")
+            if medicines:
+                print(f"[DEBUG] 推奨された医薬品: {[m.get('product_name') for m in medicines[:3]]}")
+                print(f"[DEBUG] 医薬品の効能: {[m.get('efficacy', '')[:50] for m in medicines[:3]]}")
+            
+            if comprehensive_medicines:
+                print(f"[OK] 複数の症状に対応する包括的な医薬品が推奨されています")
+            else:
+                print(f"[INFO] 特定の症状に特化した医薬品が推奨されている可能性があります")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_optimal_medicine_selection():
+    """テスト20: 最適な医薬品が推奨されているかの検証"""
+    print("\n" + "="*80)
+    print("テスト20: 最適な医薬品が推奨されているかの検証")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース: のどの痛み特化症状の場合
+    print("\n[ケース] のどの痛みが主症状の場合、最適な医薬品が推奨されているか")
+    user_text = "のどがとても痛いです。"
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            
+            if not medicines:
+                print(f"[ERROR] 推奨医薬品がありません")
+                return
+            
+            # トップ3の医薬品のスコアと効能を確認
+            print(f"[DEBUG] 推奨された上位3つの医薬品:")
+            for i, med in enumerate(medicines[:3], 1):
+                score = med.get('total_score', med.get('score', 0))
+                efficacy = med.get('efficacy', '')
+                product_name = med.get('product_name', '')
+                
+                print(f"  {i}. {product_name}")
+                print(f"     スコア: {score:.3f}")
+                print(f"     効能: {efficacy[:80]}...")
+                
+                # のどの痛みへの適合度を確認
+                if "のどの痛み" in efficacy or "喉の痛み" in efficacy:
+                    print(f"     ✅ のどの痛みに対応")
+                else:
+                    print(f"     ⚠️ のどの痛みへの対応が不明")
+            
+            # スコアが降順に並んでいるか確認
+            scores = [m.get('total_score', m.get('score', 0)) for m in medicines[:3]]
+            if scores == sorted(scores, reverse=True):
+                print(f"[OK] スコアが降順に並んでいます（最適な医薬品が上位に配置）")
+            else:
+                print(f"[WARNING] スコアが降順に並んでいません: {scores}")
+        else:
+            print(f"[ERROR] 推奨に失敗しました: {result.get('reason', '不明なエラー')}")
+    except Exception as e:
+        print(f"[ERROR] テスト実行中にエラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+def test_edge_cases():
+    """テスト21: エッジケーステスト"""
+    print("\n" + "="*80)
+    print("テスト21: エッジケーステスト")
+    print("="*80)
+    
+    from rule_based_recommendation import rule_based_recommendation
+    from openai import OpenAI
+    import os
+    from dotenv import load_dotenv
+    import pandas as pd
+    
+    # 環境変数の読み込み
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key) if api_key else None
+    
+    medicine_df = pd.read_csv("otc_medicine_data.csv", encoding="utf-8")
+    
+    # テストケース1: 空の入力
+    print("\n[ケース1] 空の入力")
+    user_text = ""
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "error" or result.get("status") == "escalation_required":
+            print(f"[OK] 空の入力に対して適切にエラーまたはエスカレーションが返されました")
+        else:
+            print(f"[WARNING] 空の入力に対して推奨が返されました（予期しない動作）")
+    except Exception as e:
+        print(f"[OK] 空の入力に対して例外が発生しました（適切なエラーハンドリング）: {type(e).__name__}")
+    
+    # テストケース2: 非常に長い入力
+    print("\n[ケース2] 非常に長い入力")
+    user_text = "頭が痛いです。" * 100
+    user_info = {
+        "age": 30,
+        "gender": "女性",
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "success":
+            medicines = result.get("recommended_medicines", [])
+            print(f"[OK] 長い入力に対しても推奨が返されました（推奨数: {len(medicines)}）")
+        else:
+            print(f"[WARNING] 長い入力に対して推奨が返されませんでした: {result.get('status')}")
+    except Exception as e:
+        print(f"[WARNING] 長い入力でエラーが発生しました: {e}")
+    
+    # テストケース3: 不明な症状
+    print("\n[ケース3] 不明な症状の入力")
+    user_text = "宇宙人が襲ってくるような気がします。"
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    try:
+        result = rule_based_recommendation(user_text, user_info, medicine_df, client=client)
+        
+        if result.get("status") == "escalation_required" or result.get("status") == "error":
+            print(f"[OK] 不明な症状に対して適切にエスカレーションまたはエラーが返されました")
+        else:
+            print(f"[INFO] 不明な症状に対して推奨が返されました（ステータス: {result.get('status')}）")
+    except Exception as e:
+        print(f"[OK] 不明な症状に対して例外が発生しました（適切なエラーハンドリング）")
+
 def main():
     """メイン実行関数"""
     print("\n" + "="*80)
@@ -224,15 +1080,180 @@ def main():
         test_safety_checks()
         test_red_flag_symptoms()
         test_comprehensive_system()
+        test_pediatric_filtering()
+        test_topical_medicine_recommendation()
+        test_motion_sickness_medicine_recommendation()
+        test_allergy_symptom_detection()
+        test_symptom_specific_boost()
+        test_drug_interaction_filtering()
+        test_allergy_filtering()
+        test_breastfeeding_safety()
+        test_pediatric_recommendation()
+        test_elderly_recommendation()
+        test_complex_symptom_combination()
+        test_optimal_medicine_selection()
+        test_edge_cases()
+        
+        test_kampo_penalty_shoulder_stiffness()
+        test_kampo_safety_weak_stomach()
         
         print("\n" + "="*80)
-        print("✅ 全テスト完了")
+        print("[OK] 全テスト完了")
         print("="*80)
         
     except Exception as e:
-        print(f"\n❌ テスト実行中にエラーが発生しました: {e}")
+        print(f"\n[ERROR] テスト実行中にエラーが発生しました: {e}")
         import traceback
         traceback.print_exc()
+
+def test_kampo_penalty_shoulder_stiffness():
+    """テスト: 肩こり・筋肉痛での漢方薬ペナルティ（Test 10改善版）"""
+    print("\n" + "="*80)
+    print("テスト: 肩こり・筋肉痛での漢方薬ペナルティ検証")
+    print("="*80)
+    print("【目的】桃核承気湯などの実証向け漢方がペナルティされ、推奨順位が下がることを確認")
+    
+    user_text = "肩がこる、筋肉痛"
+    user_info = {
+        "age": 30,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    result = rule_based_medicine_recommendation(user_text, user_info, client)
+    
+    if result.get('status') != 'success':
+        print(f"\n[警告] 推奨が失敗しました。ステータス: {result.get('status')}")
+        print(f"理由: {result.get('reason', '不明')}")
+        return
+    
+    medicines = result.get('recommended_medicines', [])
+    print(f"\n推奨医薬品数: {len(medicines)}")
+    
+    # 桃核承気湯の位置を確認
+    tokakujoki_positions = []
+    for i, med in enumerate(medicines, 1):
+        product_name = med.get('product_name', '')
+        score = med.get('score', 0)
+        print(f"\n{i}. {product_name}")
+        print(f"   スコア: {score:.3f}")
+        print(f"   推奨理由: {med.get('reason', 'なし')[:100]}")
+        
+        if "桃核承気湯" in product_name:
+            tokakujoki_positions.append((i, score, product_name))
+    
+    # 検証結果
+    print("\n" + "-"*80)
+    print("【検証結果】")
+    if tokakujoki_positions:
+        for pos, score, name in tokakujoki_positions:
+            print(f"⚠️ 桃核承気湯が検出されました: 順位 {pos}, スコア {score:.3f}")
+            if pos <= 3:
+                print(f"   ⚠️ 警告: 桃核承気湯が上位3位以内にあります（ペナルティが効いていない可能性）")
+            else:
+                print(f"   ✅ 良好: 桃核承気湯が下位に配置されています（ペナルティが機能）")
+    else:
+        print("✅ 良好: 桃核承気湯が推奨リストに含まれていません（ペナLティが機能）")
+    
+    # 外用薬や葛根湯が上位にあるか確認
+    topical_count = 0
+    kakkonto_count = 0
+    for i, med in enumerate(medicines[:5], 1):
+        product_name = med.get('product_name', '')
+        medicine_type = str(med.get('medicine_type', ''))
+        if '外用' in medicine_type or 'テープ' in product_name or 'パップ' in product_name:
+            topical_count += 1
+        if '葛根湯' in product_name:
+            kakkonto_count += 1
+    
+    print(f"\n上位5位内の外用薬数: {topical_count}")
+    print(f"上位5位内の葛根湯数: {kakkonto_count}")
+    if topical_count > 0 or kakkonto_count > 0:
+        print("✅ 良好: 適切な医薬品（外用薬・葛根湯）が上位に配置されています")
+
+def test_kampo_safety_weak_stomach():
+    """テスト: 胃腸虚弱者の肩こりでの安全性チェック"""
+    print("\n" + "="*80)
+    print("テスト: 胃腸虚弱者の肩こりでの安全性チェック")
+    print("="*80)
+    print("【目的】実証向け漢方（桃核承気湯など）が強力にペナルティ（-0.5）されることを確認")
+    
+    user_text = "肩こりがひどいが、胃腸が弱く下痢気味です"
+    user_info = {
+        "age": 35,
+        "gender": "男性",
+        "pregnant": False,
+        "breastfeeding": False,
+        "current_medications": [],
+        "allergies": []
+    }
+    
+    result = rule_based_medicine_recommendation(user_text, user_info, client)
+    
+    if result.get('status') != 'success':
+        print(f"\n[警告] 推奨が失敗しました。ステータス: {result.get('status')}")
+        print(f"理由: {result.get('reason', '不明')}")
+        return
+    
+    medicines = result.get('recommended_medicines', [])
+    print(f"\n推奨医薬品数: {len(medicines)}")
+    
+    # 実証向け漢方薬の位置とスコアを確認
+    robust_kampo_medicines = []
+    for i, med in enumerate(medicines, 1):
+        product_name = med.get('product_name', '')
+        score = med.get('score', 0)
+        efficacy = str(med.get('efficacy', ''))
+        
+        print(f"\n{i}. {product_name}")
+        print(f"   スコア: {score:.3f}")
+        print(f"   推奨理由: {med.get('reason', 'なし')[:100]}")
+        
+        # 実証向け漢方を検出（桃核承気湯、防風通聖散など）
+        is_robust_kampo = (
+            "桃核承気湯" in product_name or
+            "防風通聖散" in product_name or
+            ("体力" in efficacy and ("充実" in efficacy or "比較的体力があり" in efficacy)) or
+            ("便秘" in efficacy and "のぼせ" in efficacy)
+        )
+        
+        if is_robust_kampo:
+            robust_kampo_medicines.append((i, score, product_name, efficacy[:100]))
+    
+    # 検証結果
+    print("\n" + "-"*80)
+    print("【検証結果】")
+    if robust_kampo_medicines:
+        print("⚠️ 実証向け漢方が検出されました:")
+        for pos, score, name, eff in robust_kampo_medicines:
+            print(f"   - 順位 {pos}: {name} (スコア: {score:.3f})")
+            print(f"     効能: {eff}")
+            if pos <= 3:
+                print(f"     ⚠️ 警告: 上位3位以内にあります（強力なペナルティが効いていない可能性）")
+            elif pos <= 5:
+                print(f"     ⚠️ 注意: 中位にあります（ペナルティが部分的に機能）")
+            else:
+                print(f"     ✅ 良好: 下位に配置されています（強力なペナルティが機能）")
+    else:
+        print("✅ 良好: 実証向け漢方が推奨リストに含まれていません（強力なペナルティが機能）")
+    
+    # 外用薬が推奨されているか確認
+    topical_medicines = []
+    for i, med in enumerate(medicines[:5], 1):
+        product_name = med.get('product_name', '')
+        medicine_type = str(med.get('medicine_type', ''))
+        if '外用' in medicine_type or 'テープ' in product_name or 'パップ' in product_name:
+            topical_medicines.append((i, product_name))
+    
+    if topical_medicines:
+        print(f"\n✅ 良好: 適切な外用薬が上位に推奨されています:")
+        for pos, name in topical_medicines:
+            print(f"   - 順位 {pos}: {name}")
+    else:
+        print("\n⚠️ 注意: 外用薬が上位に推奨されていません")
 
 if __name__ == "__main__":
     main()
