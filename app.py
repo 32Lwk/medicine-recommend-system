@@ -1,13 +1,5 @@
 from flask import Flask, render_template, request, session as flask_session, jsonify, has_request_context
 from flask_cors import CORS
-from medicine_logic import get_medicines_by_symptom, csv_load_status
-from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
-from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
-from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
-from debug_logger import performance_stats, network_logs, add_network_log
-from analytics import log_access_analytics, get_access_statistics
-from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
-from database import init_database, get_database
 from typing import Dict, List
 import json
 import time
@@ -19,6 +11,53 @@ import re
 import socket
 from collections.abc import MutableMapping
 from threading import local
+
+# .envファイルから環境変数を読み込み（medicine_logic.pyより前に実行）
+try:
+    from dotenv import load_dotenv
+    # 明示的なパスを指定（app.pyと同じディレクトリの.envファイル）
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(base_dir, '.env')
+    
+    # デバッグ情報
+    print(f"[DEBUG app.py] base_dir: {base_dir}")
+    print(f"[DEBUG app.py] .envファイルのパス: {env_path}")
+    print(f"[DEBUG app.py] .envファイル存在確認: {os.path.exists(env_path)}")
+    
+    # まず明示的なパスで読み込む（存在する場合）
+    loaded = False
+    if os.path.exists(env_path):
+        loaded = load_dotenv(env_path, override=True)  # override=Trueで確実に読み込む
+        print(f"[DEBUG app.py] load_dotenv({env_path}) 結果: {loaded}")
+    
+    # 引数なしでも試す（自動検索、override=Trueで上書き）
+    if not loaded:
+        loaded = load_dotenv(override=True)
+        print(f"[DEBUG app.py] load_dotenv() (引数なし) 結果: {loaded}")
+    
+    # 環境変数の確認
+    api_key_check = os.getenv('OPENAI_API_KEY')
+    if api_key_check:
+        print(f"[DEBUG app.py] OPENAI_API_KEY読み込み成功（長さ: {len(api_key_check)}文字）")
+    else:
+        print("[DEBUG app.py] WARNING: OPENAI_API_KEYが環境変数に設定されていません")
+    
+    print("app.py: .envファイルから環境変数を読み込みました。")
+except ImportError:
+    print("app.py: python-dotenvがインストールされていません。環境変数のみを使用します。")
+except Exception as e:
+    print(f"app.py: .envファイル読み込みエラー: {e}")
+    import traceback
+    traceback.print_exc()
+
+from medicine_logic import get_medicines_by_symptom, csv_load_status
+from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
+from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
+from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
+from debug_logger import performance_stats, network_logs, add_network_log
+from analytics import log_access_analytics, get_access_statistics
+from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
+from database import init_database, get_database
 
 
 class RequestSafeSession(MutableMapping):
@@ -1266,6 +1305,40 @@ def index():
                         message_count = len(updated_session.get('messages', []))
                         return jsonify({'status': 'ok', 'message_count': message_count})
                 else:
+                    # 操作指示の検出（セキュリティ検証の後）
+                    if is_operation_command(user_message):
+                        logger.info(f"🔄 操作指示を検出: {user_message}")
+                        
+                        # セッションから過去の症状文を取得
+                        session_messages = session.get('messages', [])
+                        previous_symptom_text = None
+                        
+                        # 過去のメッセージから症状文を探す（最初のユーザーメッセージ）
+                        for msg in session_messages:
+                            if msg.get('type') == 'user':
+                                previous_symptom_text = msg.get('content', '')
+                                break
+                        
+                        # 症状文が見つからない場合は、現在のメッセージを症状として扱う
+                        if not previous_symptom_text:
+                            previous_symptom_text = user_message
+                        
+                        # ユーザー属性情報を取得
+                        user_attributes = session.get('user_attributes', {})
+                        
+                        # 推奨医薬品の再分析を実行
+                        # 既存の医薬品推奨処理を再利用するため、user_messageを一時的にprevious_symptom_textに置き換える
+                        original_user_message = user_message
+                        user_message = previous_symptom_text
+                        # sanitized_messageも更新（再分析用）
+                        sanitized_message = previous_symptom_text
+                        
+                        # 再分析フラグを設定
+                        session['is_reanalysis'] = True
+                        is_question = False  # 症状分析を強制実行
+                        
+                        logger.info(f"🔄 再分析を実行: 症状文={previous_symptom_text[:50]}...")
+                    
                     # 属性応答の可能性がある場合のみ属性抽出を実行
                     logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
                     
@@ -1554,7 +1627,7 @@ def index():
                 
                 # ステップ2: 属性が更新された場合の追加処理
                 if updated:
-                    logger.info("✅ 属性データが更新されました。再分析は行わず、現在の質問で医薬品相談を続行します。")
+                    logger.info("✅ 属性データが更新されました。前回の症状に対して再推奨を実行します。")
                     session.pop('is_reanalysis', None)
                     session.pop('reanalysis_attributes', None)
 
@@ -1595,7 +1668,83 @@ def index():
                         session.modified = True
                         message_count = len(session['messages'])
                         return jsonify({'status': 'ok', 'message_count': message_count})
-                    # 属性更新後も現在のユーザー入力で処理を継続
+                    
+                    # 属性更新後、前回の症状メッセージを取得して再推奨を実行
+                    logger.info(f"🔄 属性更新後、前回の症状に対して再推奨を実行します")
+                    
+                    # セッションから前回の症状メッセージを取得
+                    previous_symptom_message = None
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            messages = session_data.get('messages', [])
+                            # ユーザーメッセージの中で症状を述べているものを逆順で検索
+                            for msg in reversed(messages):
+                                if msg.get('type') == 'user':
+                                    content = msg.get('content', '')
+                                    # 症状キーワードを含むメッセージを探す
+                                    symptom_keywords = ['痛い', '痛み', '熱', '咳', '鼻水', '頭痛', '発熱', 'のど', '喉', '寒気', 'だるい', '疲れ']
+                                    if any(keyword in content for keyword in symptom_keywords):
+                                        previous_symptom_message = content
+                                        logger.info(f"📋 前回の症状メッセージを取得: {content[:50]}...")
+                                        break
+                    
+                    # 前回の症状が見つかった場合、更新された属性情報で再推奨を実行
+                    if previous_symptom_message:
+                        logger.info(f"💊 更新された属性情報で再推奨を開始: {previous_symptom_message[:50]}...")
+                        # 症状メッセージとして扱うため、is_questionをFalseに設定
+                        user_message = previous_symptom_message
+                        is_question = False
+                        # 医薬品相談処理を実行するためにフラグを設定
+                        session['is_medicine_consultation'] = True
+                        session['is_reanalysis_with_updated_attributes'] = True
+                    else:
+                        # 前回の症状が見つからない場合、属性更新の確認メッセージのみ返す
+                        logger.warning(f"⚠️ 前回の症状メッセージが見つかりません。属性更新の確認のみ返します。")
+                        bot_response = {
+                            'type': 'bot',
+                            'content': f"✅ 属性情報を更新しました。\n\n年齢: {user_attributes.get('age', '未入力')}\n性別: {user_attributes.get('gender', '未入力')}\nアレルギー: {', '.join(user_attributes.get('allergies', [])) if user_attributes.get('allergies') else 'なし'}\n服用中の薬: {', '.join(user_attributes.get('current_medications', [])) if user_attributes.get('current_medications') else 'なし'}\n\n症状について教えていただければ、更新された情報をもとに適切な医薬品をご提案いたします。",
+                            'diagnosis': None,
+                            'attribute_update_confirmation': True
+                        }
+                        
+                        # ユーザーメッセージをDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': [],
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': user_attributes,
+                                    'session_active': True
+                                }
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                            logger.info(f"💾 属性更新確認メッセージを保存: {len(session_data.get('messages', []))} messages")
+                        
+                        # Cookieサイズ削減（メッセージはDBのみに保存）
+                        if 'messages' in session:
+                            del session['messages']
+                            session.modified = True
+                            logger.info(f"📝 Session cookie size reduced - messages only in DB")
+                        
+                        # セッションの他の大きなデータも最小限に
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session_data.get('messages', [])) if sid and session_data else 0
+                        logger.info(f"✅ POST処理完了 - 属性更新確認メッセージ返却: {message_count} messages")
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                 else:
                     # 属性が更新されていない場合は通常の質問応答
                     logger.info(f"❓ 通常の質問として処理します")
@@ -1692,8 +1841,92 @@ def index():
                 try:
                     logger.info(f"🔍 Step 1: Analyzing medicine type with ChatGPT...")
                     analysis_result = analyze_symptoms_and_medicine_type(user_message, recommendation_client)
-                    medicine_type = analysis_result.get('medicine_type', 'その他')
+                    medicine_type = analysis_result.get('medicine_type')
                     symptoms = analysis_result.get('symptoms', [])
+                    
+                    # 医薬品種類が判定できない場合（Noneまたは「その他」）はエラーメッセージを返す
+                    if not medicine_type or medicine_type == 'その他':
+                        logger.warning(f"⚠️ 医薬品種類が判定できませんでした: {medicine_type}")
+                        
+                        # エラーメッセージの内容
+                        error_message = '正常に処理が行われなかったので改めて送信してください。'
+                        
+                        # 評価ボタン用のデータを準備（HTMLエスケープ処理）
+                        import json
+                        import html
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_error_message = html.escape(error_message)
+                        
+                        feedback_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_error_message,
+                            'security_score': None,
+                            'error_type': 'medicine_type_detection_failed'
+                        }
+                        
+                        # JSONエンコードしてHTMLエスケープ
+                        feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                        
+                        # 不具合報告用のデータ属性を準備
+                        bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_error_message}" data-security-score=""'
+                        
+                        # エラーメッセージに評価ボタンと不具合報告ボタンを追加
+                        bot_content = f"""
+<div class="chat-response" style="padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+    <h4 style="margin: 0 0 10px 0; color: #856404;">⚠️ エラー</h4>
+    <p style="margin: 0; color: #856404;">{escaped_error_message}</p>
+    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーメッセージはいかがでしたか？</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                適切
+            </button>
+            <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                不適切
+            </button>
+            <button class="bug-report-btn" onclick="handleSecurityReportFromButton(this)" {bug_report_data_attrs} style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                🐛 不具合報告
+            </button>
+        </div>
+    </div>
+</div>"""
+                        
+                        bot_response = {
+                            'type': 'bot',
+                            'content': bot_content,
+                            'diagnosis': None,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # DBにも保存
+                        sid = session.get('_id')
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': [],
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'session_active': True
+                                }
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                     
                     logger.info(f"📋 Detected medicine type: {medicine_type}")
                     logger.info(f"📋 Detected symptoms: {symptoms}")
@@ -2204,8 +2437,45 @@ def index():
     </div>
 """
                         
+                        # 属性更新による再推奨の場合、確認メッセージを追加
+                        attribute_update_message = ""
+                        if session.get('is_reanalysis_with_updated_attributes'):
+                            user_attrs = session.get('user_attributes', {})
+                            attribute_info = []
+                            if user_attrs.get('age'):
+                                attribute_info.append(f"年齢: {user_attrs['age']}歳")
+                            if user_attrs.get('gender'):
+                                attribute_info.append(f"性別: {user_attrs['gender']}")
+                            if user_attrs.get('allergies'):
+                                allergies_str = ', '.join(user_attrs['allergies']) if user_attrs['allergies'] else 'なし'
+                                attribute_info.append(f"アレルギー: {allergies_str}")
+                            if user_attrs.get('current_medications'):
+                                meds_str = ', '.join(user_attrs['current_medications']) if user_attrs['current_medications'] else 'なし'
+                                attribute_info.append(f"服用中の薬: {meds_str}")
+                            
+                            attribute_update_message = f"""
+    <div style="background: #e1f5fe; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #0277bd;">
+        <h4 style="color: #01579b; margin-top: 0;">✅ 属性情報を更新しました</h4>
+        <p style="margin: 5px 0; line-height: 1.6;">{' | '.join(attribute_info) if attribute_info else '属性情報が更新されました'}</p>
+        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">更新された情報をもとに、より適切な医薬品を再推奨いたします。</p>
+    </div>
+"""
+                            # アレルギー警告を追加
+                            if user_attrs.get('allergies') and user_attrs['allergies'] != ['なし']:
+                                allergies_list = [a for a in user_attrs['allergies'] if a != 'なし']
+                                if allergies_list:
+                                    attribute_update_message += f"""
+    <div style="background: #fff3e0; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+        <h4 style="color: #e65100; margin-top: 0;">⚠️ アレルギー情報について</h4>
+        <p style="margin: 5px 0; line-height: 1.6;">アレルギー: <strong>{', '.join(allergies_list)}</strong></p>
+        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">推奨医薬品の成分をご確認いただき、アレルギー反応の可能性がある成分が含まれていないかご注意ください。不明な点がある場合は薬剤師にご相談ください。</p>
+    </div>
+"""
+                            session.pop('is_reanalysis_with_updated_attributes', None)
+                        
                         bot_content = f"""
 <div class="recommendation-result">
+{attribute_update_message}
 {personalized_section}
     <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
     <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
@@ -2915,6 +3185,51 @@ def check_missing_attributes(user_attributes):
         missing_questions.append('持病や既往歴はありますか？')
     
     return missing_questions, missing_priority
+
+def is_operation_command(user_message: str) -> bool:
+    """
+    操作指示を検出（誤検出を防ぐための厳密な検出ロジック）
+    
+    セキュリティ対策:
+    - 操作指示キーワードが文脈的に操作指示として使われているかを確認
+    - 命令形（「更新して」「更新してください」など）を含む場合のみ検出
+    - 症状記述（例: 「症状が更新されました」）は誤検出しない
+    """
+    import re
+    
+    # 操作指示のパターン（命令形を含む）
+    operation_patterns = [
+        r'情報を(足しました|追加しました).*更新',
+        r'更新して(ください|くれ)',
+        r'再読み込み(してください|してくれ)',
+        r'リロード(してください|してくれ)',
+        r'reload',
+        r'refresh',
+        r'更新(してください|してくれ|しろ|せよ)',
+        r'情報を更新',
+        r'ページを更新',
+        r'画面を更新'
+    ]
+    
+    # 症状記述として使われる可能性のあるパターン（除外）
+    symptom_patterns = [
+        r'症状が更新',
+        r'状態が更新',
+        r'体調が更新',
+        r'痛みが更新'
+    ]
+    
+    # 症状記述パターンにマッチする場合は除外
+    for pattern in symptom_patterns:
+        if re.search(pattern, user_message):
+            return False
+    
+    # 操作指示パターンにマッチする場合は検出
+    for pattern in operation_patterns:
+        if re.search(pattern, user_message, re.IGNORECASE):
+            return True
+    
+    return False
 
 def is_symptom_input(message):
     """メッセージが症状入力かどうかを判定"""
