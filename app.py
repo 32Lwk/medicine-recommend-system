@@ -2468,7 +2468,7 @@ def index():
     <div style="background: #fff3e0; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
         <h4 style="color: #e65100; margin-top: 0;">⚠️ アレルギー情報について</h4>
         <p style="margin: 5px 0; line-height: 1.6;">アレルギー: <strong>{', '.join(allergies_list)}</strong></p>
-        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">推奨医薬品の成分をご確認いただき、アレルギー反応の可能性がある成分が含まれていないかご注意ください。不明な点がある場合は薬剤師にご相談ください。</p>
+        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">アレルギーについて不明な点がある場合はお近くの薬剤師にご相談ください。</p>
     </div>
 """
                             session.pop('is_reanalysis_with_updated_attributes', None)
