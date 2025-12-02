@@ -1049,10 +1049,40 @@ def index():
                     return jsonify({'status': 'ok', 'message_count': message_count})
             
             # AI自動応答がONの場合の通常処理
+            # まず挨拶を検出（症状検出の前に実行）
+            greeting_keywords = [
+                'こんにちは', 'こんばんは', 'おはよう', 'おはようございます',
+                'はじめまして', '初めまして', 'よろしく', 'よろしくお願いします',
+                'お疲れ様', 'おつかれさま', 'おつかれ', 'ご苦労様',
+                'さようなら', 'さよなら', 'バイバイ', 'またね',
+                'ありがとう', 'ありがとうございます', 'どうも', 'どうもありがとう',
+                'すみません', 'すいません', 'ごめんなさい', 'ごめん',
+                'hello', 'hi', 'good morning', 'good evening', 'good night',
+                'thanks', 'thank you', 'bye', 'goodbye'
+            ]
+            
+            # 症状キーワード（is_symptom_input関数と同じリストを使用）
+            symptom_keywords = [
+                '痛い', '痛み', '熱', '発熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '嘔吐', '下痢', '便秘',
+                '痒い', 'かゆい', '腫れ', '炎症', '発疹', '湿疹', 'めまい', 'だるい', '倦怠感', '疲れ', '不調', '症状',
+                '喉', 'のど', '胃', '腸', '目', '耳', '鼻', '皮膚', '関節', '筋肉', '肩こり', '腰痛', '風邪', 'インフルエンザ',
+                '寒気', '寒気がする', '寒気がします', '寒気があります', '寒気があり', '寒気が',
+                '痺れ', 'しびれ', 'むくみ', '倦怠', '倦怠感', 'だるさ'
+            ]
+            
+            # 挨拶キーワードが含まれているかチェック
+            has_greeting = any(greeting in user_message for greeting in greeting_keywords)
+            # 症状キーワードが含まれているかチェック
+            has_symptom = any(symptom in user_message for symptom in symptom_keywords)
+            
             # 質問か症状入力かを判定
             is_question = not is_symptom_input(user_message)
             add_reanalysis_message = False  # 再分析メッセージフラグ
             original_user_message = None  # 元のユーザーメッセージ
+            
+            # 挨拶のみで症状キーワードが含まれていない場合は質問処理に進む
+            if has_greeting and not has_symptom:
+                is_question = True
             
             if is_question:
                 # システム紹介質問を検出
@@ -1089,6 +1119,70 @@ def index():
                     if keyword in user_message:
                         has_question_keyword = True
                         break
+                
+                # 挨拶のみの場合は挨拶への返答を生成
+                if has_greeting and not has_symptom and not (is_system_intro or is_medicine_search or has_question_keyword or
+                    has_question_suffix or ends_with_question_mark):
+                    logger.info(f"👋 GREETING DETECTED: {user_message}")
+                    
+                    # 挨拶への返答を生成
+                    greeting_responses = {
+                        'こんにちは': 'こんにちは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'こんばんは': 'こんばんは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'おはよう': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'おはようございます': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'はじめまして': 'はじめまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        '初めまして': '初めまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'よろしく': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'よろしくお願いします': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
+                        'ありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
+                        'ありがとうございます': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
+                        'どうも': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
+                        'どうもありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
+                        'hello': 'Hello! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
+                        'hi': 'Hi! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
+                        'thanks': "You're welcome! If you have any other questions or symptoms, please feel free to let me know.",
+                        'thank you': "You're welcome! If you have any other questions or symptoms, please feel free to let me know."
+                    }
+                    
+                    # 挨拶に応じた返答を選択（デフォルトは汎用挨拶）
+                    greeting_response = 'こんにちは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。'
+                    for greeting_key, response in greeting_responses.items():
+                        if greeting_key in user_message.lower():
+                            greeting_response = response
+                            break
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': greeting_response,
+                        'diagnosis': None
+                    }
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # DB保存処理
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True
+                            }
+                            save_session_to_db(sid, session_data)
+                        else:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ POST処理完了（挨拶返答） - JSON返却: {message_count} messages")
+                    return jsonify({'status': 'ok', 'message_count': message_count})
                 
                 # システム紹介、医薬品検索、明確な質問、または語尾・記号から質問と判断できる場合は質問回答に進む
                 if (is_system_intro or is_medicine_search or has_question_keyword or
@@ -1820,6 +1914,41 @@ def index():
                         {"matched_symptoms": matched_symptoms},
                         execution_time
                     )
+                    
+                    # No symptoms detectedの場合は早期リターン
+                    if matched_symptoms.get('status') == 'success' and matched_symptoms.get('message') == 'No symptoms detected':
+                        logger.warning(f"⚠️ 症状が検出できませんでした: {user_message}")
+                        bot_response = {
+                            'type': 'bot',
+                            'content': '申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、具体的な症状を入力してください。',
+                            'diagnosis': None
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # DB保存処理
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': session['messages'].copy(),
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'session_active': True
+                                }
+                                save_session_to_db(sid, session_data)
+                            else:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        logger.info(f"✅ POST処理完了（症状検出失敗） - JSON返却: {message_count} messages")
+                        return jsonify({'status': 'ok', 'message_count': message_count})
                 except Exception as e:
                     logger.error(f"❌ select_symptoms_via_gpt実行時エラー: {e}")
                 
