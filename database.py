@@ -73,10 +73,31 @@ class DatabaseManager:
         """接続プールから接続を取得、または単一接続を返す"""
         if self.connection_pool:
             try:
-                return self.connection_pool.getconn()
+                conn = self.connection_pool.getconn()
+                # 接続の有効性をチェック
+                if conn:
+                    try:
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT 1")
+                        cursor.close()
+                    except Exception as e:
+                        logger.warning(f"⚠️ Connection validation failed: {str(e)}, reconnecting...")
+                        try:
+                            conn.close()
+                        except:
+                            pass
+                        # 再接続を試行
+                        self.connect()
+                        conn = self.connection_pool.getconn()
+                return conn
             except Exception as e:
                 logger.error(f"❌ Failed to get connection from pool: {str(e)}")
-                return None
+                # 再接続を試行
+                try:
+                    self.connect()
+                    return self.connection_pool.getconn()
+                except:
+                    return None
         elif self.connection:
             return self.connection
         else:
@@ -661,9 +682,33 @@ class DatabaseManager:
             return sessions
             
         except Exception as e:
-            logger.error(f"❌ Failed to get all sessions: {str(e)}")
+            error_msg = str(e)
+            logger.error(f"❌ Failed to get all sessions: {error_msg}")
+            import traceback
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+            
+            # SSLエラーの場合は接続を閉じて再接続を試行
+            if "SSL" in error_msg or "decryption" in error_msg or "bad record mac" in error_msg:
+                logger.warning("⚠️ SSL error detected, attempting to reconnect...")
+                if conn:
+                    try:
+                        conn.close()
+                    except:
+                        pass
+                # 再接続を試行
+                try:
+                    self.connect()
+                    conn = self.get_connection()
+                    if conn:
+                        logger.info("✅ Database reconnected successfully")
+                except Exception as reconnect_error:
+                    logger.error(f"❌ Reconnection failed: {str(reconnect_error)}")
+            
             if conn:
-                self.put_connection(conn)
+                try:
+                    self.put_connection(conn)
+                except:
+                    pass
             return []
     
     def get_global_state(self, key, default_value=None):
