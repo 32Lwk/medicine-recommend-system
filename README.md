@@ -1489,6 +1489,45 @@ safe_json_parse(result, schema='medicine_recommendation')
 3. タイムアウト設定を確認（現在300秒に設定）
 4. ログでワーカーの再起動状況を確認
 
+### WORKER TIMEOUTエラーが発生した場合
+
+**問題**: `gunicorn_config.py`で`timeout = 180`（3分）に設定されているが、実際には約30秒でタイムアウトしている。
+
+**原因**: Renderなどのホスティングサービスでは、プラットフォーム側のタイムアウト設定が優先される場合があります。
+
+**解決方法**:
+
+1. **Renderダッシュボードでの設定確認**:
+   - Renderダッシュボードにログイン
+   - 該当するWebサービスを選択
+   - Settings → Environment セクションを確認
+   - 環境変数に`WEB_SERVICE_TIMEOUT`などのタイムアウト設定がないか確認
+
+2. **Renderのサービス設定を確認**:
+   - Settings → Advanced セクション
+   - 「Health Check Path」や「Health Check Timeout」の設定を確認
+   - 必要に応じてタイムアウト値を増加
+
+3. **環境変数の設定**:
+   ```bash
+   # Renderの環境変数に追加（例）
+   GUNICORN_TIMEOUT=180
+   ```
+
+4. **gunicorn_config.pyの確認**:
+   ```python
+   # gunicorn_config.py
+   timeout = 180  # 3分（秒単位）
+   ```
+   この設定が正しく読み込まれているか確認
+
+5. **ログの確認**:
+   - Renderのログで「WORKER TIMEOUT」エラーが発生している時間を確認
+   - 実際のタイムアウト時間を記録
+   - 処理が長時間かかっている原因を特定（ChatGPT API呼び出し、データベースクエリなど）
+
+**注意**: Renderの無料プランでは、タイムアウトが30秒に制限されている場合があります。有料プランへのアップグレードが必要な場合があります。
+
 ### セッション管理エラーが発生した場合
 1. ブラウザのCookieをクリア
 2. ページを再読み込み
