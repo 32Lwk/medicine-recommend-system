@@ -2075,10 +2075,13 @@
                     console.log('✅ Initial data loaded successfully');
                     renderQueue(queueData);
                     updateStats(queueData);
-                    renderCurrentSession(sessionsData);
+                    
+                    // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                    const sessionsArray = sessionsData.sessions || (Array.isArray(sessionsData) ? sessionsData : []);
+                    renderCurrentSession(sessionsArray.length > 0 ? sessionsArray[0] : null);
                     
                     // セッション一覧も更新
-                    allSessions = Array.isArray(sessionsData) ? sessionsData : [];
+                    allSessions = sessionsArray;
                     renderSessionList(allSessions);
                     document.getElementById('total-sessions').textContent = allSessions.length;
                 })
@@ -2111,10 +2114,13 @@
             .then(([queueData, sessionsData]) => {
                 renderQueue(queueData);
                 updateStats(queueData);
-                renderCurrentSession(sessionsData);
+                
+                // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                const sessionsArray = sessionsData.sessions || (Array.isArray(sessionsData) ? sessionsData : []);
+                renderCurrentSession(sessionsArray.length > 0 ? sessionsArray[0] : null);
                 
                 // セッション一覧も更新
-                allSessions = Array.isArray(sessionsData) ? sessionsData : [];
+                allSessions = sessionsArray;
                 renderSessionList(allSessions);
                 document.getElementById('total-sessions').textContent = allSessions.length;
                 
@@ -2243,7 +2249,9 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    renderCurrentSession(data);
+                    // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                    const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+                    renderCurrentSession(sessionsArray.length > 0 ? sessionsArray[0] : null);
                 })
                 .catch(error => {
                     console.error('Current session error:', error);
@@ -2369,9 +2377,11 @@
                 .then(data => {
                     console.log('All sessions data:', data);
                     
+                    // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                    const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+                    
                     // 指定されたセッションIDのデータを探す
-                    const targetSession = Array.isArray(data) ? 
-                        data.find(session => session.session_id === sessionId) : null;
+                    const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
                     
                     if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
                         // 管理者専用の詳細診断を保持（推奨薬ごとのscore/score_breakdownを含む）
@@ -3466,13 +3476,15 @@
                             .then(res => res.json())
                             .then(sessionsData => {
                                 console.log('Updated sessions data after reply:', sessionsData);
-                                const targetSession = sessionsData.find(s => s.session_id === currentSessionId);
+                                // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                                const sessionsArray = sessionsData.sessions || (Array.isArray(sessionsData) ? sessionsData : []);
+                                const targetSession = sessionsArray.find(s => s.session_id === currentSessionId);
                                 if (targetSession) {
                                     console.log('Target session after reply:', targetSession);
                                     renderChatMessages(targetSession.messages);
                                     
                                     // セッション一覧も更新
-                                    allSessions = Array.isArray(sessionsData) ? sessionsData : [];
+                                    allSessions = sessionsArray;
                                     renderSessionList(allSessions);
                                     document.getElementById('total-sessions').textContent = allSessions.length;
                                 }
@@ -3510,9 +3522,11 @@
                 .then(res => res.json())
                 .then(data => {
                     console.log('Sessions data received:', data);
-                    console.log('Sessions count:', Array.isArray(data) ? data.length : 'Not an array');
+                    // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
+                    const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+                    console.log('Sessions count:', sessionsArray.length);
                     
-                    allSessions = Array.isArray(data) ? data : [];
+                    allSessions = sessionsArray;
                     
                     // 各セッションの詳細をログ出力
                     allSessions.forEach((session, index) => {
