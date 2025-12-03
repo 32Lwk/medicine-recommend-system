@@ -245,6 +245,33 @@ def get_manual_reply_queue():
         return db.get_global_state('MANUAL_REPLY_QUEUE', default_value=[])
     return MANUAL_REPLY_QUEUE
 
+def get_manual_reply_message():
+    """手動返信時の自動メッセージを取得"""
+    default_message = '申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。'
+    
+    # globals()に保存されている場合はそれを優先（最新の値が確実に取得できる）
+    if hasattr(globals(), 'MANUAL_REPLY_MESSAGE'):
+        return globals()['MANUAL_REPLY_MESSAGE']
+    
+    # データベースから読み込み（データベース接続がある場合）
+    db = get_database()
+    if db and (db.connection or db.connection_pool):
+        db_value = db.get_global_state('MANUAL_REPLY_MESSAGE', default_value=None)
+        if db_value is not None:
+            # データベースから取得した値をglobals()にも保存（次回のアクセスを高速化）
+            globals()['MANUAL_REPLY_MESSAGE'] = db_value
+            return db_value
+    
+    # デフォルト値を返す
+    return default_message
+
+def set_manual_reply_message(value):
+    """手動返信時の自動メッセージを保存"""
+    db = get_database()
+    if db and (db.connection or db.connection_pool):
+        db.set_global_state('MANUAL_REPLY_MESSAGE', value)
+    globals()['MANUAL_REPLY_MESSAGE'] = value
+
 def set_manual_reply_queue(value):
     """手動返信キューをDBに保存"""
     db = get_database()
@@ -955,22 +982,11 @@ def index():
             
             # AI自動応答がOFFの場合は手動返信待ちにする
             if not chat_ai_auto_reply:
-                if get_admin_mode():
-                    # 管理者対応モード時は自動返信せず、ユーザーメッセージのみ保存
-                    session.modified = True
-                    
-                    # DBを更新
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            session_data['messages'] = session['messages'].copy()
-                            session_data['last_activity'] = datetime.now()
-                            save_session_to_db(sid, session_data)
-                    
-                    message_count = len(session['messages'])
-                    logger.info(f"✅ POST処理完了（管理者対応モード） - JSON返却: {message_count} messages")
-                    return jsonify({'status': 'ok', 'message_count': message_count})
-                else:
+                logger.info(f"⚠️ AI自動応答OFF検出 - セッションID: {sid}, 管理者モード: {get_admin_mode()}")
+                
+                # 管理者モードでない場合のみ手動返信待ちキューに追加
+                if not get_admin_mode():
+                    # 手動返信待ちキューに追加
                     pending_message = {
                         'session_id': session.get('_id', 'unknown'),
                         'user_message': user_message,
@@ -980,6 +996,8 @@ def index():
                     queue = get_manual_reply_queue()
                     queue.append(pending_message)
                     set_manual_reply_queue(queue)
+                    logger.info(f"📋 手動返信キューに追加: セッションID {session.get('_id', 'unknown')}")
+                    
                     add_network_log(
                         'POST',
                         'メインサイト - 手動返信待ち',
@@ -988,65 +1006,79 @@ def index():
                         0,
                         'pending'
                     )
-                    # 薬剤師要請メッセージが既に存在するかチェック（sessionとDBの両方を確認）
-                    session_data_check = get_session_from_db(sid) if sid else {}
-                    has_admin_request_message = any(
-                        msg.get('admin_request') and msg.get('type') == 'bot' 
-                        for msg in session.get('messages', [])
-                    ) or any(
-                        msg.get('admin_request') and msg.get('type') == 'bot' 
-                        for msg in session_data_check.get('messages', [])
-                    )
+                
+                # 管理者モードでもカスタムメッセージを送信する（ユーザーに通知するため）
+                # 最新のメッセージがユーザーメッセージかどうかを確認
+                # ユーザーメッセージの直後にbotメッセージがない場合のみ追加
+                session_messages = session.get('messages', [])
+                last_message = session_messages[-1] if session_messages else None
+                should_add_custom_message = False
+                
+                # 最新のメッセージがユーザーメッセージで、その直前にbotメッセージがない場合は追加
+                if last_message and last_message.get('type') == 'user':
+                    # 最新のbotメッセージを確認（最後から逆順に検索）
+                    has_recent_bot_message = False
+                    for msg in reversed(session_messages[:-1]):  # 最後のユーザーメッセージは除外
+                        if msg.get('type') == 'bot':
+                            has_recent_bot_message = True
+                            break
+                    should_add_custom_message = not has_recent_bot_message
+                elif not last_message or last_message.get('type') != 'bot':
+                    # メッセージがない、または最後がbotメッセージでない場合
+                    should_add_custom_message = True
+                
+                if should_add_custom_message:
+                    # カスタムメッセージを取得
+                    custom_message = get_manual_reply_message()
+                    admin_mode_status = "管理者モード" if get_admin_mode() else "通常モード"
+                    logger.info(f"💬 カスタムメッセージ送信（{admin_mode_status}）: {custom_message[:50]}...")
                     
-                    if not has_admin_request_message:
-                        bot_response = {
-                            'type': 'bot',
-                            'content': '申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。',
-                            'diagnosis': None
-                        }
-                        if 'messages' not in session:
-                            session['messages'] = []
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        
-                        # DBを更新
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if session_data:
-                                session_data['messages'] = session['messages'].copy()
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
+                    bot_response = {
+                        'type': 'bot',
+                        'content': custom_message,
+                        'admin_request': True,  # 管理者対応フラグ
+                        'diagnosis': None,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # DBを更新（確実に反映させるため）
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            session_data['ai_auto_reply'] = False  # セッションにも設定を反映
+                            save_session_to_db(sid, session_data)
+                            logger.info(f"💾 DB更新完了（{admin_mode_status}）: セッションID {sid}, メッセージ数 {len(session_data['messages'])}")
                     else:
-                        # 薬剤師要請メッセージが既に存在する場合は追加しない
-                        logger.info(f"💊 薬剤師要請メッセージが既に存在するため、追加のメッセージをスキップします")
-                        
-                        # 薬剤師要請メッセージがsessionにない場合はDBから復元
-                        if not any(msg.get('admin_request') and msg.get('type') == 'bot' for msg in session.get('messages', [])):
-                            session_data_check = get_session_from_db(sid) if sid else {}
-                            admin_request_msg = next(
-                                (msg for msg in session_data_check.get('messages', []) 
-                                 if msg.get('admin_request') and msg.get('type') == 'bot'), 
-                                None
-                            )
-                            if admin_request_msg:
-                                if 'messages' not in session:
-                                    session['messages'] = []
-                                session['messages'].append(admin_request_msg)
-                                logger.info(f"💊 薬剤師要請メッセージをDBから復元しました")
-                        
-                        session.modified = True
-                        
-                        # DBを更新
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if session_data:
+                        logger.warning(f"⚠️ セッションIDが取得できませんでした")
+                else:
+                    # 既にbotメッセージが存在する場合はスキップ
+                    logger.info(f"💊 既にbotメッセージが存在するため、追加のメッセージをスキップします")
+                    
+                    # sessionとDBを同期（メッセージがsessionにない場合はDBから復元）
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            # sessionのメッセージ数がDBより少ない場合はDBから復元
+                            if len(session_messages) < len(session_data.get('messages', [])):
+                                session['messages'] = session_data['messages'].copy()
+                                session.modified = True
+                                logger.info(f"💊 メッセージをDBから復元しました（{len(session['messages'])} messages）")
+                            else:
+                                # DBを更新
                                 session_data['messages'] = session['messages'].copy()
                                 session_data['last_activity'] = datetime.now()
                                 save_session_to_db(sid, session_data)
-                    
-                    message_count = len(session['messages'])
-                    logger.info(f"✅ POST処理完了（手動返信待ち） - JSON返却: {message_count} messages")
-                    return jsonify({'status': 'ok', 'message_count': message_count})
+                
+                message_count = len(session['messages'])
+                admin_mode_status = "管理者モード" if get_admin_mode() else "手動返信待ち"
+                logger.info(f"✅ POST処理完了（AI自動応答OFF - {admin_mode_status}） - JSON返却: {message_count} messages")
+                return jsonify({'status': 'ok', 'message_count': message_count})
             
             # AI自動応答がONの場合の通常処理
             # まず挨拶を検出（症状検出の前に実行）
@@ -4588,24 +4620,67 @@ def api_main_ai_control():
     if request.method == 'GET':
         return jsonify({
             'ai_auto_reply': get_ai_auto_reply(),
-            'admin_mode': get_admin_mode()
+            'admin_mode': get_admin_mode(),
+            'manual_reply_message': get_manual_reply_message()
         })
     
     elif request.method == 'POST':
         data = request.json
         action = data.get('action')
+        mode = data.get('mode')  # 'auto'/'manual' または 'on'/'off' に対応
         
-        if action == 'enable':
+        # 'on'/'off'を'auto'/'manual'に変換（後方互換性のため）
+        if mode == 'on':
+            mode = 'auto'
+        elif mode == 'off':
+            mode = 'manual'
+        
+        # modeパラメータがある場合はそれを使用（後方互換性のためactionも対応）
+        if mode == 'auto' or action == 'enable':
             set_ai_auto_reply(True)
             set_admin_mode(False)
-        elif action == 'disable':
+            message = 'AI自動応答を有効化しました'
+        elif mode == 'manual' or action == 'disable':
             set_ai_auto_reply(False)
             set_admin_mode(True)
+            message = 'AI自動応答を無効化しました'
+        else:
+            return jsonify({'error': '無効なパラメータです'}), 400
         
         return jsonify({
             'ai_auto_reply': get_ai_auto_reply(),
             'admin_mode': get_admin_mode(),
-            'message': 'AI自動応答を' + ('有効化' if get_ai_auto_reply() else '無効化') + 'しました'
+            'message': message,
+            'manual_reply_message': get_manual_reply_message()
+        })
+
+@app.route('/api/manual_reply_message', methods=['GET', 'POST'])
+def api_manual_reply_message():
+    """手動返信時の自動メッセージの取得・保存"""
+    
+    if request.method == 'GET':
+        return jsonify({
+            'message': get_manual_reply_message()
+        })
+    
+    elif request.method == 'POST':
+        data = request.json
+        message = data.get('message', '').strip()
+        
+        if not message:
+            return jsonify({'error': 'メッセージが空です'}), 400
+        
+        # メッセージを保存
+        set_manual_reply_message(message)
+        logger.info(f"💾 手動返信メッセージを更新 (長さ: {len(message)}): {message[:50]}...")
+        
+        # 保存した値を確実に取得（globals()から直接取得、なければ保存したmessageを使用）
+        saved_message = globals().get('MANUAL_REPLY_MESSAGE', message)
+        logger.info(f"💾 保存したメッセージを取得 (長さ: {len(saved_message)}): {saved_message[:50]}...")
+        
+        return jsonify({
+            'message': 'メッセージを保存しました',
+            'manual_reply_message': saved_message
         })
 
 @app.route('/api/user_attributes', methods=['GET', 'POST'])
