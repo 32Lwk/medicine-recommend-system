@@ -1301,6 +1301,7 @@
                             <li><strong>バックエンド:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
                             <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, MeCab, ルールベースNLU</li>
                             <li><strong>データベース:</strong> PostgreSQL（フィードバック保存用）</li>
+                            <li><strong>データ処理:</strong> Pandas, NumPy</li>
                             <li><strong>フロントエンド:</strong> HTML/CSS, JavaScript, TailwindCSS, Chart.js</li>
                             <li><strong>監視・ログ:</strong> psutil, SocketIOログ配信, JSONL形式記録</li>
                         </ul>
@@ -1349,7 +1350,7 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -1423,6 +1424,7 @@
                             <li><strong>Programming Languages & Frameworks:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
                             <li><strong>AI & Natural Language Processing:</strong> OpenAI GPT-4o-mini, Rule-based NLU (regex & symptom dictionary), MeCab</li>
                             <li><strong>Database:</strong> PostgreSQL (for feedback storage)</li>
+                            <li><strong>Data Processing:</strong> Pandas, NumPy</li>
                             <li><strong>Frontend:</strong> HTML/CSS, JavaScript, TailwindCSS (UI optimization), Chart.js (analytics display)</li>
                             <li><strong>Development & Debug Tools:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
                             <li><strong>Monitoring & Log Management:</strong> psutil, SocketIO log distribution, JSONL format for access, security, and performance records</li>
@@ -1469,7 +1471,7 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -1543,6 +1545,7 @@
                             <li><strong>프로그래밍 언어·프레임워크:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
                             <li><strong>AI·자연어 처리:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(정규표현·증상 사전), MeCab</li>
                             <li><strong>데이터베이스:</strong> PostgreSQL(피드백 저장용)</li>
+                            <li><strong>데이터 처리:</strong> Pandas, NumPy</li>
                             <li><strong>프론트엔드:</strong> HTML/CSS, JavaScript, TailwindCSS(UI 경량화), Chart.js(분석 표시)</li>
                             <li><strong>개발·디버그 도구:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
                             <li><strong>모니터링·로그 관리:</strong> psutil, SocketIO 로그 배송, JSONL 형태로 액세스·보안·성능 기록</li>
@@ -1589,7 +1592,7 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -1663,6 +1666,7 @@
                             <li><strong>编程语言·框架:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
                             <li><strong>AI·自然语言处理:</strong> OpenAI GPT-4o-mini、规则基础NLU（正则表达式·症状词典）、MeCab</li>
                             <li><strong>数据库:</strong> PostgreSQL（反馈保存用）</li>
+                            <li><strong>数据处理:</strong> Pandas、NumPy</li>
                             <li><strong>前端:</strong> HTML/CSS、JavaScript、TailwindCSS（UI轻量化）、Chart.js（分析显示）</li>
                             <li><strong>开发·调试工具:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
                             <li><strong>监控·日志管理:</strong> psutil、SocketIO日志分发、JSONL格式访问·安全·性能记录</li>
@@ -1709,7 +1713,7 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -2376,7 +2380,7 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -2405,7 +2409,7 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -2434,7 +2438,7 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
@@ -2463,7 +2467,7 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Plamo / MeCab</p>
+                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                         </div>
                         
