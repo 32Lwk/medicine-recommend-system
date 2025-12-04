@@ -51,22 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 管理ボタンのイベントリスナー
-    // モーダル制御（互換性のため両方のスタイルに対応）
-    const showModal = function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'flex';
-            modal.classList.add('show');
-        }
-    };
-    
-    const hideModal = function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-            modal.classList.remove('show');
-        }
-    };
+    // グローバルスコープのshowModal関数を使用（関数宣言はホイスティングされるため直接呼び出し可能）
     
     document.getElementById('aiControlBtn').addEventListener('click', function() {
         showModal('aiControlModal');
@@ -94,10 +79,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    document.getElementById('feedbackReportsBtn').addEventListener('click', function() {
-        showModal('feedbackReportsModal');
-        loadFeedbackReports();
-    });
+    // 不具合報告ボタンのイベントリスナー
+    const feedbackReportsBtn = document.getElementById('feedbackReportsBtn');
+    if (feedbackReportsBtn) {
+        feedbackReportsBtn.addEventListener('click', function() {
+            console.log('🔵 feedbackReportsBtn clicked');
+            showModal('feedbackReportsModal');
+            // モーダルが表示された後にデータを読み込む
+            setTimeout(() => {
+                loadFeedbackReports();
+            }, 100);
+        });
+    }
+    
+    // モバイルメニューの不具合報告ボタン
+    const feedbackReportsBtnMobile = document.getElementById('feedbackReportsBtnMobile');
+    if (feedbackReportsBtnMobile) {
+        feedbackReportsBtnMobile.addEventListener('click', function() {
+            console.log('🔵 feedbackReportsBtnMobile clicked');
+            showModal('feedbackReportsModal');
+            toggleMobileMenu();
+            // モーダルが表示された後にデータを読み込む
+            setTimeout(() => {
+                loadFeedbackReports();
+            }, 100);
+        });
+    }
     
     // ユーザー属性ボタンのイベントリスナー
     const userAttributesBtn = document.getElementById('userAttributesBtn');
@@ -344,6 +351,8 @@ function stopResize() {
 
 // モーダル表示関数（グローバル）
 function showModal(modalId) {
+    console.log('🔵 showModal called with modalId:', modalId);
+    
     // 他のモーダルを閉じる
     const allModals = document.querySelectorAll('.admin-modal, .modal');
     allModals.forEach(modal => {
@@ -355,10 +364,42 @@ function showModal(modalId) {
     
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'flex';
+        // モーダルをbodyの直接の子要素として移動（確実にレンダリングされるように）
+        if (modal.parentElement !== document.body) {
+            console.log('🔵 Moving modal to body');
+            document.body.appendChild(modal);
+        }
+        
+        // 既存のインラインスタイルをクリアしてCSSに任せる
+        modal.style.cssText = '';
+        
+        // showクラスを追加（CSSで #feedbackReportsModal.show のスタイルが適用される）
         modal.classList.add('show');
+        
+        // 強制的にレイアウトを再計算
+        modal.offsetHeight;
+        
+        console.log('🔵 Modal shown:', modalId);
+        console.log('🔵 Modal classes:', modal.className);
+        console.log('🔵 Modal parent:', modal.parentElement.tagName);
+        
+        // 少し遅延してサイズを確認
+        setTimeout(() => {
+            const rect = modal.getBoundingClientRect();
+            const computed = window.getComputedStyle(modal);
+            console.log('🔵 Modal rect:', rect);
+            console.log('🔵 Modal computed display:', computed.display);
+            console.log('🔵 Modal computed width:', computed.width);
+            console.log('🔵 Modal computed height:', computed.height);
+        }, 50);
+    } else {
+        console.error('❌ Modal element not found:', modalId);
     }
 }
+
+// グローバルスコープに明示的に割り当て（onclick属性から呼び出せるように）
+// DOMContentLoadedの前に設定するため、即座に実行
+window.showModal = showModal;
 
 // メニュー外クリックで閉じる
 document.addEventListener('click', function(event) {
@@ -2756,7 +2797,31 @@ window.addEventListener('unhandledrejection', function(event) {
 
 // 不具合報告関連の関数
 function loadFeedbackReports() {
-    const unresolvedOnly = document.getElementById('unresolvedOnly').checked;
+    const unresolvedOnly = document.getElementById('unresolvedOnly') ? document.getElementById('unresolvedOnly').checked : false;
+    const contentElement = document.getElementById('feedbackReportsContent');
+    
+    if (!contentElement) {
+        console.error('❌ feedbackReportsContent element not found');
+        return;
+    }
+    
+    // 読み込み中メッセージを表示
+    contentElement.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>';
+    
+    // エラーメッセージを表示するヘルパー関数
+    const showError = (errorMessage) => {
+        try {
+            updateFeedbackStats([]);
+        } catch (e) {
+            console.error('❌ updateFeedbackStats error:', e);
+        }
+        contentElement.innerHTML = 
+            `<div style="padding: 20px; text-align: center;">
+                <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ データベースに接続できません</p>
+                <p style="color: #666; font-size: 0.9rem;">${errorMessage}</p>
+                <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">ローカル環境ではデータベース接続が必要です。</p>
+            </div>`;
+    };
     
     // 統計用に常に全データを取得
     fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}` , {
@@ -2765,16 +2830,37 @@ function loadFeedbackReports() {
             'Pragma': 'no-cache'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        // HTTPステータスコードをチェック
+        if (!response.ok) {
+            return response.json().catch(() => {
+                // JSON解析に失敗した場合
+                return { error: `HTTP ${response.status}: ${response.statusText}` };
+            }).then(errData => {
+                showError(errData.error || `HTTP ${response.status}: ${response.statusText}`);
+                // エラーを投げずに、処理を停止するための特別な値を返す
+                return { _stopProcessing: true };
+            });
+        }
+        return response.json();
+    })
     .then(allData => {
+        // エラーで処理が停止された場合は何もしない
+        if (!allData || allData._stopProcessing) {
+            return null;
+        }
+        
         if (allData.error) {
-            document.getElementById('feedbackReportsContent').innerHTML = 
-                `<p style="color: red; text-align: center; padding: 20px;">エラー: ${allData.error}</p>`;
-            return;
+            showError(allData.error);
+            return null;
         }
         
         // 統計は全データから計算
-        updateFeedbackStats(allData.reports || []);
+        try {
+            updateFeedbackStats(allData.reports || []);
+        } catch (e) {
+            console.error('❌ updateFeedbackStats error:', e);
+        }
         
         // 表示用データを取得
         const displayUrl = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}&t=${Date.now()}`;
@@ -2785,23 +2871,71 @@ function loadFeedbackReports() {
             }
         });
     })
-    .then(response => response.json())
+    .then(response => {
+        // 前の処理でエラーが発生した場合は何もしない
+        if (!response) {
+            return null;
+        }
+        
+        // HTTPステータスコードをチェック
+        if (!response.ok) {
+            return response.json().catch(() => {
+                // JSON解析に失敗した場合
+                return { error: `HTTP ${response.status}: ${response.statusText}` };
+            }).then(errData => {
+                contentElement.innerHTML = 
+                    `<div style="padding: 20px; text-align: center;">
+                        <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ エラーが発生しました</p>
+                        <p style="color: #666; font-size: 0.9rem;">${errData.error || `HTTP ${response.status}: ${response.statusText}`}</p>
+                    </div>`;
+                // エラーを投げずに、処理を停止するための特別な値を返す
+                return { _stopProcessing: true };
+            });
+        }
+        return response.json();
+    })
     .then(data => {
+        // データがない場合、またはエラーで処理が停止された場合は何もしない
+        if (!data || data._stopProcessing) {
+            return;
+        }
+        
         if (data.error) {
-            document.getElementById('feedbackReportsContent').innerHTML = 
-                `<p style="color: red; text-align: center; padding: 20px;">エラー: ${data.error}</p>`;
+            contentElement.innerHTML = 
+                `<div style="padding: 20px; text-align: center;">
+                    <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ エラーが発生しました</p>
+                    <p style="color: #666; font-size: 0.9rem;">${data.error}</p>
+                </div>`;
             return;
         }
         
         const reports = data.reports || [];
         // 不具合報告のみを表示（ai_positiveは除外）
         const filteredReports = reports.filter(report => report.report_type !== 'ai_positive');
-        renderFeedbackReports(filteredReports);
+        try {
+            renderFeedbackReports(filteredReports);
+        } catch (e) {
+            console.error('❌ renderFeedbackReports error:', e);
+            contentElement.innerHTML = 
+                `<div style="padding: 20px; text-align: center;">
+                    <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ 表示エラー</p>
+                    <p style="color: #666; font-size: 0.9rem;">データの表示に失敗しました</p>
+                </div>`;
+        }
     })
     .catch(error => {
-        console.error('Feedback reports fetch error:', error);
-        document.getElementById('feedbackReportsContent').innerHTML = 
-            `<p style="color: red; text-align: center; padding: 20px;">通信エラー: ${error.message}</p>`;
+        console.error('❌ Feedback reports fetch error:', error);
+        // エラーでも統計を初期化して表示
+        try {
+            updateFeedbackStats([]);
+        } catch (e) {
+            console.error('❌ updateFeedbackStats error:', e);
+        }
+        contentElement.innerHTML = 
+            `<div style="padding: 20px; text-align: center;">
+                <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ 通信エラー</p>
+                <p style="color: #666; font-size: 0.9rem;">${error.message || 'データの取得に失敗しました'}</p>
+            </div>`;
     });
 }
 
