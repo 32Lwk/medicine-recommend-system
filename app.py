@@ -4808,8 +4808,11 @@ def get_feedback_reports():
         return jsonify({'reports': reports})
         
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         logger.error(f"❌ Get feedback reports error: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+        logger.error(f"❌ Traceback: {error_trace}")
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 @app.route('/api/resolve_feedback/<int:feedback_id>', methods=['POST'])
 def resolve_feedback(feedback_id):

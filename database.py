@@ -277,6 +277,10 @@ class DatabaseManager:
         if not conn:
             logger.error("❌ No database connection")
             return []
+        
+        if RealDictCursor is None:
+            logger.error("❌ RealDictCursor not available")
+            return []
             
         try:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -299,17 +303,31 @@ class DatabaseManager:
             # RealDictCursorの結果を辞書のリストに変換
             reports = []
             for row in results:
-                report = dict(row)
-                # datetimeオブジェクトを文字列に変換
-                if report['created_at']:
-                    report['created_at'] = report['created_at'].isoformat()
-                reports.append(report)
+                try:
+                    # RealDictCursorの結果は既に辞書形式
+                    report = dict(row) if not isinstance(row, dict) else row
+                    # datetimeオブジェクトを文字列に変換
+                    if 'created_at' in report and report['created_at']:
+                        if hasattr(report['created_at'], 'isoformat'):
+                            report['created_at'] = report['created_at'].isoformat()
+                        elif isinstance(report['created_at'], str):
+                            # 既に文字列の場合はそのまま
+                            pass
+                    reports.append(report)
+                except Exception as row_error:
+                    logger.error(f"❌ Error processing feedback report row: {str(row_error)}")
+                    import traceback
+                    logger.error(f"❌ Row error traceback: {traceback.format_exc()}")
+                    continue
             
             logger.info(f"✅ Retrieved {len(reports)} feedback reports")
             return reports
             
         except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
             logger.error(f"❌ Failed to get feedback reports: {str(e)}")
+            logger.error(f"❌ Traceback: {error_trace}")
             if conn:
                 self.put_connection(conn)
             return []
