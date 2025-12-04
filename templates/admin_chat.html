@@ -36,7 +36,7 @@
                         <i class="fa-solid fa-vial"></i>
                         <span>テスト</span>
                     </button>
-                    <button class="header-control-btn" id="feedbackReportsBtn" onclick="showModal('feedbackReportsModal'); loadFeedbackReports();" title="不具合報告">
+                    <button class="header-control-btn" id="feedbackReportsBtn" title="不具合報告">
                         <i class="fa-solid fa-bug"></i>
                         <span>不具合</span>
                     </button>
@@ -78,7 +78,7 @@
                 <i class="fa-solid fa-vial"></i>
                 <span>医薬品相談テスト</span>
             </button>
-            <button class="control-btn-mobile" onclick="showModal('feedbackReportsModal'); loadFeedbackReports(); toggleMobileMenu();">
+            <button class="control-btn-mobile" id="feedbackReportsBtnMobile" onclick="toggleMobileMenu();">
                 <i class="fa-solid fa-bug"></i>
                 <span>不具合報告</span>
             </button>
@@ -452,20 +452,20 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='js/admin_chat.js') }}"></script>
-
     <!-- 不具合報告モーダル -->
-    <div id="feedbackReportsModal" class="admin-modal">
-        <div class="admin-modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
-            <span class="close">&times;</span>
-            <h2>🐛 不具合報告一覧</h2>
+    <div id="feedbackReportsModal" class="admin-modal modal">
+        <div class="admin-modal-content modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 class="modal-title">🐛 不具合報告一覧</h2>
+                <button class="close-btn close" onclick="this.closest('.modal').classList.remove('show');">&times;</button>
+            </div>
+            <div class="modal-body">
             <div style="margin-bottom: 20px;">
                 <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
                 <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
                 <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; overflow-x: auto;">
                     <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;">
-                        <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()"> 未解決のみ表示
+                        <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()" style="transform: scale(0.33);"> 未解決のみ表示
                     </label>
                 </div>
             </div>
@@ -500,6 +500,7 @@
             <div id="feedbackReportsContent">
                 <p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>
             </div>
+            </div>
         </div>
     </div>
 
@@ -525,5 +526,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/admin_chat.js') }}"></script>
 </body>
 </html>
