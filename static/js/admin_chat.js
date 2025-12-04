@@ -1420,6 +1420,36 @@ function loadUserAttributes(sessionId) {
     }
 }
 
+// 正規化後のスコアを計算する関数（グローバル）
+// medicine.scoreは既に正規化後のスコア、raw_scoreが存在する場合はそれから計算
+function calculateNormalizedScore(medicine) {
+        // normalization_infoが存在する場合は、既に正規化済みのスコアを使用
+        const normalizationInfo = medicine.normalization_info || (medicine.scores || medicine.score_breakdown || {}).normalization_info;
+        if (normalizationInfo && medicine.score !== undefined && medicine.score !== null) {
+            return Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+        }
+        
+        // raw_scoreが存在する場合は、それから正規化計算を行う
+        if (medicine.raw_score !== undefined && medicine.raw_score !== null) {
+            const rawScore = parseFloat(medicine.raw_score) || 0.0;
+            if (rawScore <= 0.5) {
+                return 0.0;
+            } else if (normalizationInfo && normalizationInfo.score_range > 0) {
+                // Min-Max正規化: (raw_score - min) / (max - min)
+                const minMaxNormalized = (rawScore - normalizationInfo.min_raw_score) / normalizationInfo.score_range;
+                return Math.min(1.0, Math.sqrt(minMaxNormalized));
+            } else {
+                // フォールバック: 旧方式
+                const normalizedRange = (rawScore - 0.5) / 0.5;
+                const sqrtResult = Math.sqrt(normalizedRange);
+                return Math.min(1.0, sqrtResult);
+            }
+        } else {
+            // raw_scoreが存在しない場合は、medicine.scoreが既に正規化後のスコアとして使用
+            return Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+        }
+}
+
 // HTMLコンテンツにスコアリングを追加（管理者画面用）
 function addScoringToHtmlContent(htmlContent, medicines) {
     if (!medicines || medicines.length === 0) {
@@ -1431,8 +1461,8 @@ function addScoringToHtmlContent(htmlContent, medicines) {
     // 各医薬品のスコアリングを追加（推奨医薬品セクションのみ）
     medicines.forEach((medicine, index) => {
         if (medicine.score !== undefined && medicine.score !== null) {
-            // スコアを0.0-1.0の範囲に制限
-            const normalizedScore = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+            // 正規化後のスコアを計算
+            const normalizedScore = calculateNormalizedScore(medicine);
             const scoreClass = normalizedScore >= 0.7 ? 'admin-score-high' : normalizedScore >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
             const scoreText = normalizedScore >= 0.7 ? '高' : normalizedScore >= 0.5 ? '中' : '低';
             const scoringHtml = `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(normalizedScore * 100).toFixed(0)}% (${scoreText})</span>`;
@@ -1598,10 +1628,10 @@ function renderChatMessages(messages) {
 
                     // --- スコアリングラベルとツールチップ（簡略表示） ---
                     if (medicine.score !== undefined && medicine.score !== null) {
-                        // スコアを0.0-1.0の範囲に制限
-                        const score = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
-                        const scoreClass = score >= 0.7 ? 'admin-score-high' : score >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
-                        const scoreText = score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低';
+                        // 正規化後のスコアを計算
+                        const normalizedScore = calculateNormalizedScore(medicine);
+                        const scoreClass = normalizedScore >= 0.7 ? 'admin-score-high' : normalizedScore >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
+                        const scoreText = normalizedScore >= 0.7 ? '高' : normalizedScore >= 0.5 ? '中' : '低';
                         const breakdown = medicine.scores || medicine.score_breakdown || {};
 
                         // スコア計算ヘルパー
@@ -1622,7 +1652,7 @@ function renderChatMessages(messages) {
                         const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
                         const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
 
-                        messageContentHtml += `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(score * 100).toFixed(0)}% (${scoreText})</span>`;
+                        messageContentHtml += `<span class="admin-score-display ${scoreClass}" style="font-size: 0.75em;">📊 最適度: ${(normalizedScore * 100).toFixed(0)}% (${scoreText})</span>`;
                     }
 
                     messageContentHtml += `<span style="color: #666; font-size: 0.9em;"> (${escapeHtml(medicine.manufacturer || '')})</span></h5>`;
@@ -1990,9 +2020,24 @@ function sendMedicineChat() {
                                 ${recommendation.recommended_medicines.slice(0, 5).map((med, index) => {
                                     const medName = med.product_name || med.name || med['商品名'] || 'N/A';
                                     const manufacturer = med.manufacturer || med['メーカー名'] || '';
-                                    const normalizedScore = (med.score !== undefined && med.score !== null) 
-                                        ? Math.max(0.0, Math.min(1.0, parseFloat(med.score) || 0.0))
-                                        : null;
+                                    // 正規化後のスコアを計算
+                                    let normalizedScore = null;
+                                    if (med.score !== undefined && med.score !== null) {
+                                        if (med.raw_score !== undefined && med.raw_score !== null) {
+                                            // raw_scoreが存在する場合は、それから正規化計算を行う
+                                            const rawScore = parseFloat(med.raw_score) || 0.0;
+                                            if (rawScore <= 0.5) {
+                                                normalizedScore = 0.0;
+                                            } else {
+                                                const normalizedRange = (rawScore - 0.5) / 0.5;
+                                                const sqrtResult = Math.sqrt(normalizedRange);
+                                                normalizedScore = Math.min(1.0, sqrtResult);
+                                            }
+                                        } else {
+                                            // raw_scoreが存在しない場合は、med.scoreが既に正規化後のスコアとして使用
+                                            normalizedScore = Math.max(0.0, Math.min(1.0, parseFloat(med.score) || 0.0));
+                                        }
+                                    }
                                     const score = normalizedScore !== null ? ` (スコア: ${(normalizedScore * 100).toFixed(0)}%)` : '';
                                     return `<li style="margin-bottom: 8px; color: #333;">
                                         <strong style="color: #1976d2;">${index + 1}. ${medName}</strong>
@@ -2116,9 +2161,23 @@ function formatDiagnosisMessage(diagnosis) {
                 content += `<div style="font-weight: bold; color: #2c3e50;">${index + 1}. ${medicine.product_name || '製品名不明'}</div>`;
                 // スコアリング表示（管理者画面のみ）
                 if (medicine.score !== undefined && medicine.score !== null) {
-                    // スコアを0.0-1.0の範囲に制限
-                    const normalizedScore = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
-                    console.log('🔍 Medicine score:', normalizedScore, 'for', medicine.product_name);
+                    // 正規化後のスコアを計算
+                    let normalizedScore;
+                    if (medicine.raw_score !== undefined && medicine.raw_score !== null) {
+                        // raw_scoreが存在する場合は、それから正規化計算を行う
+                        const rawScore = parseFloat(medicine.raw_score) || 0.0;
+                        if (rawScore <= 0.5) {
+                            normalizedScore = 0.0;
+                        } else {
+                            const normalizedRange = (rawScore - 0.5) / 0.5;
+                            const sqrtResult = Math.sqrt(normalizedRange);
+                            normalizedScore = Math.min(1.0, sqrtResult);
+                        }
+                    } else {
+                        // raw_scoreが存在しない場合は、medicine.scoreが既に正規化後のスコアとして使用
+                        normalizedScore = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+                    }
+                    console.log('🔍 Medicine score:', normalizedScore, 'raw:', medicine.raw_score, 'for', medicine.product_name);
                     const scoreClass = normalizedScore >= 0.7 ? 'admin-score-high' : normalizedScore >= 0.5 ? 'admin-score-medium' : 'admin-score-low';
                     const scoreText = normalizedScore >= 0.7 ? '高' : normalizedScore >= 0.5 ? '中' : '低';
                     content += `<div class="admin-score-display ${scoreClass}">
@@ -3488,10 +3547,9 @@ function generateScoreDetailHtml(medicine) {
     }
     
     const breakdown = medicine.scores || medicine.score_breakdown || {};
-    // スコアを0.0-1.0の範囲に制限
+    // スコアを0.0-1.0の範囲に制限（表示用、正規化後のスコアは後で計算）
     const score = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
     const relativeScore = medicine.relative_score !== undefined ? medicine.relative_score : score;
-    const scoreClass = score >= 0.7 ? 'high' : score >= 0.5 ? 'medium' : 'low';
     
     // スコア計算ヘルパー
     const pct = (v) => {
@@ -3524,6 +3582,7 @@ function generateScoreDetailHtml(medicine) {
     const riskIngredientPenalty = breakdown.risk_ingredient_penalty ?? 0;
     const throatBonus = breakdown.throat_bonus ?? 0;
     const symptomBoost = breakdown.symptom_specific_boost ?? 0;
+    const multiSymptomBonus = breakdown.multi_symptom_bonus ?? 0;  // MULTI_SYMPTOM_COMBINATIONSのボーナス
     const allergyPenalty = breakdown.allergy_penalty ?? 0;
     const allergyBoost = breakdown.allergy_boost ?? 0;
     const kampoAdjustment = breakdown.kampo_adjustment ?? 0;
@@ -3552,7 +3611,9 @@ function generateScoreDetailHtml(medicine) {
     const weightedInterRisk = interRisk * weights.interRisk;
     const calculatedBaseScore = weightedSymptom + weightedEfficacy + weightedAge + weightedUsage + weightedSideRisk + weightedInterRisk;
     
-    // 調整スコアの計算
+    // 調整スコアの計算（MULTI_SYMPTOM_COMBINATIONSのボーナスを分離）
+    // symptomBoostにはmultiSymptomBonusが含まれているので、表示用に分離
+    const symptomBoostWithoutMulti = symptomBoost - multiSymptomBonus;
     const calculatedAdjustment = symptomSpecificityPenalty + riskIngredientPenalty + throatBonus + symptomBoost + allergyPenalty + allergyBoost;
     
     // 最終スコアの計算過程
@@ -3566,8 +3627,11 @@ function generateScoreDetailHtml(medicine) {
         calculationSteps.push(`調整後の基本スコア = ${formatValue(adjustedBaseScore)}（底上げ/補間適用）`);
     }
     
-    calculationSteps.push(`調整スコア = 症状特異性ペナルティ + リスク成分ペナルティ + のどボーナス + 症状特化型ブースト + アレルギーペナルティ + アレルギーブースト`);
-    calculationSteps.push(`= ${formatValue(symptomSpecificityPenalty)} + ${formatValue(riskIngredientPenalty)} + ${formatValue(throatBonus)} + ${formatValue(symptomBoost)} + ${formatValue(allergyPenalty)} + ${formatValue(allergyBoost)}`);
+    calculationSteps.push(`調整スコア = 症状特異性ペナルティ + リスク成分ペナルティ + のどボーナス + 症状特化型ブースト + 複数症状ボーナス + アレルギーペナルティ + アレルギーブースト`);
+    calculationSteps.push(`= ${formatValue(symptomSpecificityPenalty)} + ${formatValue(riskIngredientPenalty)} + ${formatValue(throatBonus)} + ${formatValue(symptomBoostWithoutMulti)} + ${formatValue(multiSymptomBonus)} + ${formatValue(allergyPenalty)} + ${formatValue(allergyBoost)}`);
+    if (multiSymptomBonus > 0) {
+        calculationSteps.push(`= ${formatValue(symptomSpecificityPenalty + riskIngredientPenalty + throatBonus + symptomBoostWithoutMulti)} + ${formatValue(multiSymptomBonus)}（複数症状ボーナス） + ${formatValue(allergyPenalty + allergyBoost)}`);
+    }
     calculationSteps.push(`= ${formatValue(calculatedAdjustment)}`);
     
     if (kampoAdjustment !== 0) {
@@ -3579,12 +3643,67 @@ function generateScoreDetailHtml(medicine) {
     const totalBeforeKampo = (adjustedBaseScore !== undefined ? adjustedBaseScore : finalScore) + finalAdjustment;
     const totalAfterKampo = kampoAdjustment !== 0 ? totalBeforeKampo * 0.8 : totalBeforeKampo;
     
+    // rawScoreは計算された値を使用（medicine.raw_scoreが存在する場合はそれを使用）
+    const rawScore = medicine.raw_score !== undefined ? medicine.raw_score : totalAfterKampo;
+    
+    // 正規化情報を取得（Min-Max正規化用）
+    const normalizationInfo = medicine.normalization_info || breakdown.normalization_info;
+    const minRawScore = normalizationInfo?.min_raw_score;
+    const maxRawScore = normalizationInfo?.max_raw_score;
+    const scoreRange = normalizationInfo?.score_range;
+    
+    // 正規化後のスコアを計算（rawScoreから）
+    // medicine.scoreが既に正規化済みの場合はそれを使用、そうでない場合は計算
+    let normalizedScore;
+    if (medicine.score !== undefined && medicine.score !== null && normalizationInfo === undefined) {
+        // normalization_infoが存在しない場合は、既に正規化済みのスコアを使用
+        normalizedScore = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+    } else if (rawScore <= 0.5) {
+        normalizedScore = 0.0;
+    } else if (normalizationInfo && scoreRange > 0) {
+        // Min-Max正規化: (raw_score - min) / (max - min)
+        const minMaxNormalized = (rawScore - minRawScore) / scoreRange;
+        // 非線形変換（平方根）で差を拡大
+        normalizedScore = Math.min(1.0, Math.sqrt(minMaxNormalized));
+    } else {
+        // フォールバック: 旧方式
+        const normalizedRange = (rawScore - 0.5) / 0.5;
+        const sqrtResult = Math.sqrt(normalizedRange);
+        normalizedScore = Math.min(1.0, sqrtResult);
+    }
+    
+    // scoreClassも正規化後のスコアで判定
+    const scoreClass = normalizedScore >= 0.7 ? 'high' : normalizedScore >= 0.5 ? 'medium' : 'low';
+    
     calculationSteps.push(`最終スコア = ${formatValue(adjustedBaseScore !== undefined ? adjustedBaseScore : finalScore)} + ${formatValue(finalAdjustment)}`);
     if (kampoAdjustment !== 0) {
         calculationSteps.push(`= ${formatValue(totalBeforeKampo)} × 0.8（漢方薬調整）`);
     }
     calculationSteps.push(`= ${formatValue(totalAfterKampo)}`);
-    calculationSteps.push(`クリップ後 = ${formatValue(score)}（0.0-1.0の範囲に制限）`);
+    calculationSteps.push(`元のスコア（クリップ前） = ${formatValue(rawScore)}`);
+    
+    // 正規化と非線形変換の説明（表示用、normalizedScoreは既に計算済み）
+    if (rawScore <= 0.5) {
+        calculationSteps.push(`正規化変換 = ${formatValue(rawScore)} ≤ 0.5 のため 0.0 にマッピング`);
+        calculationSteps.push(`最終スコア（正規化後） = ${formatValue(normalizedScore)}（推奨対象外）`);
+    } else if (normalizationInfo && scoreRange > 0) {
+        // Min-Max正規化の説明
+        const minMaxNormalized = (rawScore - minRawScore) / scoreRange;
+        const sqrtResult = Math.sqrt(minMaxNormalized);
+        calculationSteps.push(`Min-Max正規化 = (${formatValue(rawScore)} - ${formatValue(minRawScore)}) / ${formatValue(scoreRange)} = ${formatValue(minMaxNormalized)}`);
+        calculationSteps.push(`非線形変換（平方根） = √${formatValue(minMaxNormalized)} = ${formatValue(sqrtResult)}`);
+        calculationSteps.push(`最終スコア（正規化後） = ${formatValue(normalizedScore)}（範囲: [${formatValue(minRawScore)}, ${formatValue(maxRawScore)}] → [0.0, 1.0]）`);
+    } else {
+        // フォールバック: 旧方式
+        const normalizedRange = (rawScore - 0.5) / 0.5;
+        const sqrtResult = Math.sqrt(normalizedRange);
+        calculationSteps.push(`正規化変換 = (${formatValue(rawScore)} - 0.5) / 0.5 = ${formatValue(normalizedRange)}`);
+        calculationSteps.push(`非線形変換（平方根） = √${formatValue(normalizedRange)} = ${formatValue(sqrtResult)}`);
+        if (sqrtResult > 1.0) {
+            calculationSteps.push(`クリップ処理 = ${formatValue(sqrtResult)} > 1.0 のため 1.0 に制限`);
+        }
+        calculationSteps.push(`最終スコア（正規化後） = ${formatValue(normalizedScore)}（0.5超の範囲を0.0-1.0に非線形変換）`);
+    }
 
     return `
         <div class="score-detail" style="padding: 20px;">
@@ -3595,10 +3714,11 @@ function generateScoreDetailHtml(medicine) {
             <!-- 総合スコア表示 -->
             <div class="overall-score" style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
                 <div class="score-circle ${scoreClass}" style="width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 36px; font-weight: bold; border: 4px solid white;">
-                    ${(score * 100).toFixed(0)}%
+                    ${(normalizedScore * 100).toFixed(0)}%
                 </div>
-                <p style="margin-top: 15px; font-size: 20px; font-weight: bold;">最適度: ${score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低'}</p>
-                ${relativeScore !== score ? `<p style="margin-top: 5px; font-size: 14px; opacity: 0.9;">相対スコア: ${(relativeScore * 100).toFixed(1)}%</p>` : ''}
+                <p style="margin-top: 15px; font-size: 20px; font-weight: bold;">最適度: ${normalizedScore >= 0.7 ? '高' : normalizedScore >= 0.5 ? '中' : '低'}</p>
+                ${rawScore !== normalizedScore ? `<p style="margin-top: 5px; font-size: 14px; opacity: 0.9;">元のスコア: ${(rawScore * 100).toFixed(1)}% → 正規化後: ${(normalizedScore * 100).toFixed(1)}%</p>` : ''}
+                ${relativeScore !== normalizedScore ? `<p style="margin-top: 5px; font-size: 14px; opacity: 0.9;">相対スコア: ${(relativeScore * 100).toFixed(1)}%</p>` : ''}
             </div>
             
             <!-- 基本6要素スコアリング -->
@@ -3674,10 +3794,16 @@ function generateScoreDetailHtml(medicine) {
                                     <span style="font-weight: bold; color: #4CAF50;">+${formatValue(throatBonus)}</span>
                                 </div>
                             ` : ''}
-                            ${symptomBoost !== 0 ? `
+                            ${symptomBoostWithoutMulti !== 0 ? `
                                 <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
                                     <span style="font-size: 0.9em;">症状特化型ブースト</span>
-                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(symptomBoost)}</span>
+                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(symptomBoostWithoutMulti)}</span>
+                                </div>
+                            ` : ''}
+                            ${multiSymptomBonus !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">複数症状ボーナス（MULTI_SYMPTOM_COMBINATIONS）</span>
+                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(multiSymptomBonus)}</span>
                                 </div>
                             ` : ''}
                             ${allergyBoost !== 0 ? `
@@ -3686,7 +3812,7 @@ function generateScoreDetailHtml(medicine) {
                                     <span style="font-weight: bold; color: #4CAF50;">+${formatValue(allergyBoost)}</span>
                                 </div>
                             ` : ''}
-                            ${(throatBonus === 0 && symptomBoost === 0 && allergyBoost === 0) ? '<div style="color: #999; font-size: 0.9em;">ボーナスなし</div>' : ''}
+                            ${(throatBonus === 0 && symptomBoostWithoutMulti === 0 && multiSymptomBonus === 0 && allergyBoost === 0) ? '<div style="color: #999; font-size: 0.9em;">ボーナスなし</div>' : ''}
                         </div>
                     </div>
                     <!-- ペナルティ -->

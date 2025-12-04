@@ -2083,6 +2083,27 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     # 症状特化型ブーストを計算
     symptom_boost = calculate_symptom_specific_boost(candidate, nlu_result, user_info)
     
+    # 複数症状の組み合わせによるボーナス（MULTI_SYMPTOM_COMBINATIONSから）
+    multi_symptom_bonus = 0.0
+    symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name") for s in symptoms]
+    if len(symptom_names) >= 2:
+        from itertools import combinations
+        medicine_type = candidate.get("medicine_type", "")
+        for combo in combinations(symptom_names, 2):
+            combo_key = frozenset(combo)
+            adjustments = MULTI_SYMPTOM_COMBINATIONS.get(combo_key)
+            if adjustments and medicine_type in adjustments:
+                adjustment = adjustments[medicine_type]
+                # ボーナス（正の値）のみを適用
+                if adjustment > 0.0:
+                    multi_symptom_bonus += adjustment
+                    symptom_boost += adjustment
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"複数症状ボーナス: {combo_key} × {medicine_type} = {adjustment:+.2f}"
+                        )
+    
     # アレルギー成分チェック
     is_allergic, allergy_ingredient = check_allergy_contraindication(candidate, user_info)
     if is_allergic:
@@ -2179,8 +2200,12 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     else:
         kampo_adjustment = 0.0
     
+    # raw_scoreを保持（正規化は詳細スコアリング完了後に一括で行う）
+    raw_score = total_score  # クリップ前の元のスコアを保持
+    
     result = {
-        "total_score": max(0.0, min(1.0, total_score)),  # 0.0-1.0の範囲に制限
+        "total_score": raw_score,  # 一時的にraw_scoreを返す（後で正規化される）
+        "raw_score": raw_score,  # 元のスコア（表示用）
         "score_breakdown": {
             "symptom_match": symptom_score,
             "efficacy_specificity": efficacy_specificity_score,
@@ -2191,7 +2216,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "symptom_specificity_penalty": symptom_specificity_penalty,  # スコア内訳に追加
             "risk_ingredient_penalty": risk_penalty,
             "throat_bonus": throat_bonus,
-            "symptom_specific_boost": symptom_boost,  # 症状特化型ブースト
+            "symptom_specific_boost": symptom_boost,  # 症状特化型ブースト（MULTI_SYMPTOM_COMBINATIONS含む）
+            "multi_symptom_bonus": multi_symptom_bonus,  # MULTI_SYMPTOM_COMBINATIONSのボーナス（表示用）
             "allergy_penalty": allergy_penalty,  # アレルギーペナルティ（風邪薬への減点）
             "allergy_boost": allergy_boost,  # アレルギーブースト（鼻炎用薬への加点）
             "kampo_adjustment": kampo_adjustment  # 漢方薬優先度調整（西洋薬優先の場合-0.2）
@@ -2299,31 +2325,26 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                         f"症状特異性ペナルティ（複数症状）: {medicine_type} = {penalties} → {base_penalty:.2f} (効能特異性{efficacy_specificity:.2f})"
                     )
 
-        # 複数症状の組み合わせによるボーナス/ペナルティ
+        # 複数症状の組み合わせによるペナルティのみを適用（ボーナスはcalculate_symptom_specific_boostで処理）
         for combo in combinations(symptom_names, 2):
             combo_key = frozenset(combo)
             adjustments = MULTI_SYMPTOM_COMBINATIONS.get(combo_key)
             if adjustments and medicine_type in adjustments:
                 adjustment = adjustments[medicine_type]
-                total_adjustment += adjustment
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(
-                        f"複数症状ボーナス: {combo_key} × {medicine_type} = {adjustment:+.2f}"
-                    )
+                # ペナルティ（負の値）のみを適用
+                if adjustment < 0.0:
+                    total_adjustment += adjustment
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"複数症状ペナルティ: {combo_key} × {medicine_type} = {adjustment:.2f}"
+                        )
+                # ボーナス（正の値）は無視（calculate_symptom_specific_boostで処理される）
 
-        if len(symptom_names) >= 2 and medicine_type and '風邪薬' in medicine_type:
-            common_cold_set = {normalize_text(name) for name in symptom_names}
-            core_cold_tokens = {normalize_text(term) for term in ["発熱", "咳", "鼻水", "鼻づまり", "のどの痛み", "悪寒"]}
-            overlap_count = len(common_cold_set & core_cold_tokens)
-            total_adjustment += 0.12 + 0.03 * max(0, overlap_count - 1)
-
-        # 喉症状で液剤シグナル検出時のボーナス（MULTI_SYMPTOM_COMBINATIONSとは独立）
-        if len(symptom_names) >= 2 and "のどの痛み" in symptom_names:
-            if _candidate_has_throat_liquid_signature(candidate):
-                total_adjustment += 0.22  # 液剤を明確に優先するため増強
-
+        # ペナルティのみを返す（負の値または0）
+        # この関数はペナルティのみを返し、ボーナスは別途calculate_symptom_specific_boostで処理される
         if total_adjustment != 0.0:
-            return total_adjustment
+            # 負の値のみを返す（正の値が含まれている場合は0を返す）
+            return min(0.0, total_adjustment)
 
     return 0.0
 
@@ -2930,13 +2951,51 @@ def rule_based_recommendation(
     for score, candidate in top_candidates_for_scoring:
         score_result = calculate_final_score(candidate, nlu_result, scoring_user_info)
         candidate['final_score'] = score_result['total_score']
+        candidate['raw_score'] = score_result.get('raw_score', score_result['total_score'])
         candidate['score_breakdown'] = score_result['score_breakdown']
         if 'allergy_warning' in score_result:
             candidate['allergy_warning'] = score_result['allergy_warning']
         if 'interaction_warnings' in score_result:
             candidate['interaction_warnings'] = score_result['interaction_warnings']
         if DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug(f"{candidate['product_name']}: {candidate['final_score']:.3f}")
+            logger.debug(f"{candidate['product_name']}: raw={candidate['raw_score']:.3f}, final={candidate['final_score']:.3f}")
+    
+    # ステップ5.2.5: Min-Max正規化のための最大値・最小値を計算
+    raw_scores = [c.get('raw_score', 0.0) for c in [c for _, c in top_candidates_for_scoring]]
+    if raw_scores:
+        min_raw_score = min(raw_scores)
+        max_raw_score = max(raw_scores)
+        score_range = max_raw_score - min_raw_score
+        
+        # 各候補に対してMin-Max正規化を適用
+        import math
+        for _, candidate in top_candidates_for_scoring:
+            raw_score = candidate.get('raw_score', 0.0)
+            
+            # 0.5以下のスコアは0.0にマッピング
+            if raw_score <= 0.5:
+                normalized_score = 0.0
+            else:
+                # Min-Max正規化: (raw_score - min) / (max - min)
+                if score_range > 0:
+                    min_max_normalized = (raw_score - min_raw_score) / score_range
+                else:
+                    # 全て同じスコアの場合、1.0に設定
+                    min_max_normalized = 1.0 if raw_score > 0.5 else 0.0
+                
+                # 非線形変換（平方根）で差を拡大
+                normalized_score = math.sqrt(min_max_normalized) if min_max_normalized >= 0.0 else 0.0
+                # 0.0-1.0の範囲にクリップ
+                normalized_score = min(1.0, max(0.0, normalized_score))
+            
+            candidate['final_score'] = normalized_score
+            candidate['normalization_info'] = {
+                'min_raw_score': min_raw_score,
+                'max_raw_score': max_raw_score,
+                'score_range': score_range
+            }
+        
+        logger.info(f"Min-Max正規化適用: raw_score範囲 [{min_raw_score:.3f}, {max_raw_score:.3f}], 範囲幅: {score_range:.3f}")
     
     # ステップ5.3: 詳細スコアリング（選別された候補のみ）
     candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
@@ -3022,6 +3081,8 @@ def rule_based_recommendation(
             "conditions": candidate.get('conditions', ''),  # K列
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
+            "raw_score": candidate.get('raw_score', candidate['final_score']),  # 正規化前のスコア（表示用）
+            "normalization_info": candidate.get('normalization_info', {}),  # 正規化情報（Min-Max正規化用）
             "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
             "reason": explanation,  # ChatGPTベース互換性のため追加
