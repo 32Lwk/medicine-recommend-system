@@ -3490,6 +3490,7 @@ function generateScoreDetailHtml(medicine) {
     const breakdown = medicine.scores || medicine.score_breakdown || {};
     // スコアを0.0-1.0の範囲に制限
     const score = Math.max(0.0, Math.min(1.0, parseFloat(medicine.score) || 0.0));
+    const relativeScore = medicine.relative_score !== undefined ? medicine.relative_score : score;
     const scoreClass = score >= 0.7 ? 'high' : score >= 0.5 ? 'medium' : 'low';
     
     // スコア計算ヘルパー
@@ -3501,72 +3502,269 @@ function generateScoreDetailHtml(medicine) {
         if (v === undefined || v === null || isNaN(v)) return 100;
         return Math.max(0, Math.min(100, Math.round((1 + v) * 100)));
     };
+    const formatValue = (v) => {
+        if (v === undefined || v === null || isNaN(v)) return '0.000';
+        return v.toFixed(3);
+    };
+    const formatPercent = (v) => {
+        if (v === undefined || v === null || isNaN(v)) return '0.0';
+        return (v * 100).toFixed(1);
+    };
 
-    // 各スコア抽出
+    // 各スコア抽出（基本6要素）
     const symptom = breakdown.symptom_match ?? breakdown.symptom_match_score ?? 0;
     const efficacy = breakdown.efficacy_specificity ?? breakdown.efficacy_specificity_score ?? 0;
     const age = breakdown.age_fit ?? breakdown.age_suitability_score ?? 0;
     const usage = breakdown.usage_convenience ?? breakdown.dosage_convenience_score ?? 0;
     const sideRisk = breakdown.side_effect_risk ?? breakdown.side_effect_risk_score ?? 0;
     const interRisk = breakdown.interaction_risk ?? breakdown.interaction_risk_score ?? 0;
+    
+    // ボーナス/ペナルティ抽出
+    const symptomSpecificityPenalty = breakdown.symptom_specificity_penalty ?? 0;
+    const riskIngredientPenalty = breakdown.risk_ingredient_penalty ?? 0;
+    const throatBonus = breakdown.throat_bonus ?? 0;
+    const symptomBoost = breakdown.symptom_specific_boost ?? 0;
+    const allergyPenalty = breakdown.allergy_penalty ?? 0;
+    const allergyBoost = breakdown.allergy_boost ?? 0;
+    const kampoAdjustment = breakdown.kampo_adjustment ?? 0;
+    
+    // 計算過程のスコア
+    const baseScore = breakdown.base_score;
+    const adjustedBaseScore = breakdown.adjusted_base_score;
+    const adjustmentScore = breakdown.adjustment_score;
+    
+    // 重み付け（ENHANCED_SCORING_WEIGHTSから）
+    const weights = {
+        symptom: 0.30,
+        efficacy: 0.20,
+        age: 0.12,
+        usage: 0.03,
+        sideRisk: -0.10,
+        interRisk: -0.05
+    };
+    
+    // 基本スコアの計算（重み付け適用）
+    const weightedSymptom = symptom * weights.symptom;
+    const weightedEfficacy = efficacy * weights.efficacy;
+    const weightedAge = age * weights.age;
+    const weightedUsage = usage * weights.usage;
+    const weightedSideRisk = sideRisk * weights.sideRisk;
+    const weightedInterRisk = interRisk * weights.interRisk;
+    const calculatedBaseScore = weightedSymptom + weightedEfficacy + weightedAge + weightedUsage + weightedSideRisk + weightedInterRisk;
+    
+    // 調整スコアの計算
+    const calculatedAdjustment = symptomSpecificityPenalty + riskIngredientPenalty + throatBonus + symptomBoost + allergyPenalty + allergyBoost;
+    
+    // 最終スコアの計算過程
+    let calculationSteps = [];
+    calculationSteps.push(`基本スコア = 症状適合度×${weights.symptom} + 効能特異性×${weights.efficacy} + 年齢適合性×${weights.age} + 用法簡便性×${weights.usage} + 副作用リスク×${weights.sideRisk} + 相互作用リスク×${weights.interRisk}`);
+    calculationSteps.push(`= ${formatValue(symptom)}×${weights.symptom} + ${formatValue(efficacy)}×${weights.efficacy} + ${formatValue(age)}×${weights.age} + ${formatValue(usage)}×${weights.usage} + ${formatValue(sideRisk)}×${weights.sideRisk} + ${formatValue(interRisk)}×${weights.interRisk}`);
+    calculationSteps.push(`= ${formatValue(weightedSymptom)} + ${formatValue(weightedEfficacy)} + ${formatValue(weightedAge)} + ${formatValue(weightedUsage)} + ${formatValue(weightedSideRisk)} + ${formatValue(weightedInterRisk)}`);
+    calculationSteps.push(`= ${formatValue(calculatedBaseScore)}`);
+    
+    if (adjustedBaseScore !== undefined && adjustedBaseScore !== calculatedBaseScore) {
+        calculationSteps.push(`調整後の基本スコア = ${formatValue(adjustedBaseScore)}（底上げ/補間適用）`);
+    }
+    
+    calculationSteps.push(`調整スコア = 症状特異性ペナルティ + リスク成分ペナルティ + のどボーナス + 症状特化型ブースト + アレルギーペナルティ + アレルギーブースト`);
+    calculationSteps.push(`= ${formatValue(symptomSpecificityPenalty)} + ${formatValue(riskIngredientPenalty)} + ${formatValue(throatBonus)} + ${formatValue(symptomBoost)} + ${formatValue(allergyPenalty)} + ${formatValue(allergyBoost)}`);
+    calculationSteps.push(`= ${formatValue(calculatedAdjustment)}`);
+    
+    if (kampoAdjustment !== 0) {
+        calculationSteps.push(`漢方薬調整 = ${formatValue(kampoAdjustment)}（係数0.8倍適用）`);
+    }
+    
+    const finalScore = baseScore !== undefined ? baseScore : calculatedBaseScore;
+    const finalAdjustment = adjustmentScore !== undefined ? adjustmentScore : calculatedAdjustment;
+    const totalBeforeKampo = (adjustedBaseScore !== undefined ? adjustedBaseScore : finalScore) + finalAdjustment;
+    const totalAfterKampo = kampoAdjustment !== 0 ? totalBeforeKampo * 0.8 : totalBeforeKampo;
+    
+    calculationSteps.push(`最終スコア = ${formatValue(adjustedBaseScore !== undefined ? adjustedBaseScore : finalScore)} + ${formatValue(finalAdjustment)}`);
+    if (kampoAdjustment !== 0) {
+        calculationSteps.push(`= ${formatValue(totalBeforeKampo)} × 0.8（漢方薬調整）`);
+    }
+    calculationSteps.push(`= ${formatValue(totalAfterKampo)}`);
+    calculationSteps.push(`クリップ後 = ${formatValue(score)}（0.0-1.0の範囲に制限）`);
 
     return `
-        <div class="score-detail">
-            <h4>${escapeHtml(medicine.product_name || medicine.name || 'N/A')}</h4>
-            <div class="overall-score">
-                <div class="score-circle ${scoreClass}">
+        <div class="score-detail" style="padding: 20px;">
+            <h4 style="margin-bottom: 20px; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
+                ${escapeHtml(medicine.product_name || medicine.name || 'N/A')}
+            </h4>
+            
+            <!-- 総合スコア表示 -->
+            <div class="overall-score" style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+                <div class="score-circle ${scoreClass}" style="width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 36px; font-weight: bold; border: 4px solid white;">
                     ${(score * 100).toFixed(0)}%
                 </div>
-                <p style="margin-top: 10px; font-size: 18px;">最適度: ${score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低'}</p>
+                <p style="margin-top: 15px; font-size: 20px; font-weight: bold;">最適度: ${score >= 0.7 ? '高' : score >= 0.5 ? '中' : '低'}</p>
+                ${relativeScore !== score ? `<p style="margin-top: 5px; font-size: 14px; opacity: 0.9;">相対スコア: ${(relativeScore * 100).toFixed(1)}%</p>` : ''}
             </div>
             
-            <div class="score-breakdown">
-                <h5>6要素スコアリング詳細</h5>
-                <div class="score-items">
-                    <div class="score-item">
-                        <span class="score-label">症状適合度</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${pct(symptom)}%; background: #4CAF50;"></div>
+            <!-- 基本6要素スコアリング -->
+            <div class="score-breakdown" style="margin-bottom: 30px;">
+                <h5 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+                    📊 基本6要素スコアリング
+                </h5>
+                <div class="score-items" style="display: grid; gap: 15px;">
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">症状適合度</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden; position: relative;">
+                            <div class="score-fill" style="width: ${pct(symptom)}%; height: 100%; background: linear-gradient(90deg, #4CAF50, #66BB6A); transition: width 0.3s;"></div>
                         </div>
-                        <span class="score-value">${pct(symptom)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #4CAF50;">${pct(symptom)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.symptom} → ${formatValue(weightedSymptom)}</span>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">効能特異性</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${pct(efficacy)}%; background: #2196F3;"></div>
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">効能特異性</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                            <div class="score-fill" style="width: ${pct(efficacy)}%; height: 100%; background: linear-gradient(90deg, #2196F3, #42A5F5);"></div>
                         </div>
-                        <span class="score-value">${pct(efficacy)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #2196F3;">${pct(efficacy)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.efficacy} → ${formatValue(weightedEfficacy)}</span>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">年齢適合性</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${pct(age)}%; background: #9C27B0;"></div>
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">年齢適合性</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                            <div class="score-fill" style="width: ${pct(age)}%; height: 100%; background: linear-gradient(90deg, #9C27B0, #BA68C8);"></div>
                         </div>
-                        <span class="score-value">${pct(age)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #9C27B0;">${pct(age)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.age} → ${formatValue(weightedAge)}</span>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">用法簡便性</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${pct(usage)}%; background: #FF9800;"></div>
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">用法簡便性</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                            <div class="score-fill" style="width: ${pct(usage)}%; height: 100%; background: linear-gradient(90deg, #FF9800, #FFB74D);"></div>
                         </div>
-                        <span class="score-value">${pct(usage)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #FF9800;">${pct(usage)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.usage} → ${formatValue(weightedUsage)}</span>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">副作用リスク</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${riskToPct(sideRisk)}%; background: #F44336;"></div>
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">副作用リスク</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                            <div class="score-fill" style="width: ${riskToPct(sideRisk)}%; height: 100%; background: linear-gradient(90deg, #F44336, #EF5350);"></div>
                         </div>
-                        <span class="score-value">${riskToPct(sideRisk)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #F44336;">${riskToPct(sideRisk)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.sideRisk} → ${formatValue(weightedSideRisk)}</span>
                     </div>
-                    <div class="score-item">
-                        <span class="score-label">相互作用リスク</span>
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${riskToPct(interRisk)}%; background: #795548;"></div>
+                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                        <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">相互作用リスク</span>
+                        <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                            <div class="score-fill" style="width: ${riskToPct(interRisk)}%; height: 100%; background: linear-gradient(90deg, #795548, #A1887F);"></div>
                         </div>
-                        <span class="score-value">${riskToPct(interRisk)}%</span>
+                        <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #795548;">${riskToPct(interRisk)}%</span>
+                        <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.interRisk} → ${formatValue(weightedInterRisk)}</span>
                     </div>
                 </div>
             </div>
+            
+            <!-- ボーナス/ペナルティ表示 -->
+            <div class="bonus-penalty-section" style="margin-bottom: 30px;">
+                <h5 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #FF9800; border-radius: 4px;">
+                    ⚡ ボーナス・ペナルティ
+                </h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <!-- ボーナス -->
+                    <div style="padding: 15px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4CAF50;">
+                        <h6 style="margin: 0 0 10px 0; color: #2e7d32; font-size: 14px; font-weight: bold;">✅ ボーナス</h6>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            ${throatBonus !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">のどボーナス</span>
+                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(throatBonus)}</span>
+                                </div>
+                            ` : ''}
+                            ${symptomBoost !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">症状特化型ブースト</span>
+                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(symptomBoost)}</span>
+                                </div>
+                            ` : ''}
+                            ${allergyBoost !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">アレルギーブースト</span>
+                                    <span style="font-weight: bold; color: #4CAF50;">+${formatValue(allergyBoost)}</span>
+                                </div>
+                            ` : ''}
+                            ${(throatBonus === 0 && symptomBoost === 0 && allergyBoost === 0) ? '<div style="color: #999; font-size: 0.9em;">ボーナスなし</div>' : ''}
+                        </div>
+                    </div>
+                    <!-- ペナルティ -->
+                    <div style="padding: 15px; background: #ffebee; border-radius: 8px; border-left: 4px solid #F44336;">
+                        <h6 style="margin: 0 0 10px 0; color: #c62828; font-size: 14px; font-weight: bold;">⚠️ ペナルティ</h6>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            ${symptomSpecificityPenalty !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">症状特異性ペナルティ</span>
+                                    <span style="font-weight: bold; color: #F44336;">${formatValue(symptomSpecificityPenalty)}</span>
+                                </div>
+                            ` : ''}
+                            ${riskIngredientPenalty !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">リスク成分ペナルティ</span>
+                                    <span style="font-weight: bold; color: #F44336;">${formatValue(riskIngredientPenalty)}</span>
+                                </div>
+                            ` : ''}
+                            ${allergyPenalty !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">アレルギーペナルティ</span>
+                                    <span style="font-weight: bold; color: #F44336;">${formatValue(allergyPenalty)}</span>
+                                </div>
+                            ` : ''}
+                            ${kampoAdjustment !== 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 6px; background: white; border-radius: 4px;">
+                                    <span style="font-size: 0.9em;">漢方薬優先度調整</span>
+                                    <span style="font-weight: bold; color: #F44336;">${formatValue(kampoAdjustment)}</span>
+                                </div>
+                            ` : ''}
+                            ${(symptomSpecificityPenalty === 0 && riskIngredientPenalty === 0 && allergyPenalty === 0 && kampoAdjustment === 0) ? '<div style="color: #999; font-size: 0.9em;">ペナルティなし</div>' : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 計算過程表示 -->
+            <div class="calculation-process" style="margin-bottom: 20px;">
+                <h5 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #9C27B0; border-radius: 4px;">
+                    🧮 スコア計算過程
+                </h5>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em; line-height: 1.8;">
+                    ${calculationSteps.map((step, index) => `
+                        <div style="padding: 4px 0; ${index === calculationSteps.length - 1 ? 'font-weight: bold; color: #9C27B0; border-top: 2px solid #9C27B0; margin-top: 8px; padding-top: 8px;' : ''}">
+                            ${index < calculationSteps.length - 1 ? '→ ' : '= '}${step}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <!-- 中間スコア表示 -->
+            ${(baseScore !== undefined || adjustedBaseScore !== undefined || adjustmentScore !== undefined) ? `
+            <div class="intermediate-scores" style="margin-bottom: 20px;">
+                <h5 style="color: #333; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #607D8B; border-radius: 4px;">
+                    📈 中間スコア（デバッグ用）
+                </h5>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    ${baseScore !== undefined ? `
+                        <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 6px;">
+                            <div style="font-size: 0.85em; color: #666; margin-bottom: 4px;">基本スコア</div>
+                            <div style="font-size: 1.2em; font-weight: bold; color: #333;">${formatValue(baseScore)}</div>
+                        </div>
+                    ` : ''}
+                    ${adjustedBaseScore !== undefined ? `
+                        <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 6px;">
+                            <div style="font-size: 0.85em; color: #666; margin-bottom: 4px;">調整後基本スコア</div>
+                            <div style="font-size: 1.2em; font-weight: bold; color: #333;">${formatValue(adjustedBaseScore)}</div>
+                        </div>
+                    ` : ''}
+                    ${adjustmentScore !== undefined ? `
+                        <div style="padding: 10px; background: white; border: 1px solid #ddd; border-radius: 6px;">
+                            <div style="font-size: 0.85em; color: #666; margin-bottom: 4px;">調整スコア</div>
+                            <div style="font-size: 1.2em; font-weight: bold; color: ${adjustmentScore >= 0 ? '#4CAF50' : '#F44336'};">${adjustmentScore >= 0 ? '+' : ''}${formatValue(adjustmentScore)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            ` : ''}
         </div>
     `;
 }
