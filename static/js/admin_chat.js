@@ -3234,13 +3234,29 @@ function openAiResponseModal(buttonEl) {
     const modal = document.getElementById('aiFullTextModal');
     const body = document.getElementById('aiFullTextBody');
     if (modal && body) {
+        // モーダルをbodyの直接の子要素として移動（確実にレンダリングされるように）
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
         body.textContent = fullText; // プレーンテキストとして安全に表示
-        modal.style.display = 'block';
+        
+        // 既存のインラインスタイルをクリアしてCSSに任せる
+        modal.style.cssText = '';
+        
+        // showクラスを追加（CSSで .admin-modal.show のスタイルが適用される）
+        modal.classList.add('show');
+        
+        // 強制的にレイアウトを再計算
+        modal.offsetHeight;
     }
 }
 function closeAiResponseModal() {
     const modal = document.getElementById('aiFullTextModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    }
 }
 
 // スコア詳細モーダル関連の関数
@@ -3261,10 +3277,21 @@ function showScoreModal(medicineId, medicineIndex) {
     // モーダルに表示
     const modal = document.getElementById('scoreModal');
     if (modal) {
+        // モーダルをbodyの直接の子要素として移動（確実にレンダリングされるように）
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
         document.getElementById('scoreModalContent').innerHTML = scoreHtml;
-        // インラインスタイルを削除してからshowクラスを追加
-        modal.style.display = 'flex';
+        
+        // 既存のインラインスタイルをクリアしてCSSに任せる
+        modal.style.cssText = '';
+        
+        // showクラスを追加（CSSで .admin-modal.show のスタイルが適用される）
         modal.classList.add('show');
+        
+        // 強制的にレイアウトを再計算
+        modal.offsetHeight;
     }
 }
 
