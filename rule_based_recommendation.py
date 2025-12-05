@@ -2160,7 +2160,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         normalized_combined = normalize_text(combined_text)
         detection_bonus = 0.0
         if any(token in normalized_combined for token in THROAT_LIQUID_TOKENS):
-            detection_bonus = 0.18
+            detection_bonus = 0.12  # 0.18から0.12に調整（液状への加点を適正化）
         elif any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
             detection_bonus = 0.08
         elif '外用薬' in medicine_type:
@@ -2172,21 +2172,69 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     allergy_penalty = candidate.get('allergy_penalty', 0.0)
     allergy_boost = candidate.get('allergy_boost', 0.0)
     
-    # 最終スコア計算（症状特異性ペナルティとリスク成分ペナルティ、症状特化型ブースト、アレルギーペナルティ/ブーストを追加）
-    total_score = (
+    # ボーナス/ペナルティの影響を制限（スコアのばらつきを確保しつつ、特化医薬品の優位性を保つ）
+    # 特化医薬品のボーナスは最大0.25まで許可（症状特化型ブースト、throat_bonus）
+    # 不適切な医薬品のペナルティは最大-0.30まで許可（症状特異性ペナルティ、リスク成分ペナルティ）
+    # アレルギー関連は中程度の影響（-0.20から+0.20）
+    limited_throat_bonus = max(-0.20, min(0.25, throat_bonus))  # 特化医薬品の優位性を保つ
+    limited_symptom_boost = max(-0.20, min(0.25, symptom_boost))  # 特化医薬品の優位性を保つ
+    limited_allergy_penalty = max(-0.20, min(0.0, allergy_penalty))  # 中程度のペナルティ
+    limited_allergy_boost = max(0.0, min(0.20, allergy_boost))  # 中程度のボーナス
+    limited_symptom_specificity_penalty = max(-0.30, min(0.0, symptom_specificity_penalty))  # 不適切な医薬品を確実に下げる
+    limited_risk_penalty = max(-0.30, min(0.0, risk_penalty))  # リスク成分のペナルティを強化
+    
+    # 基本スコア（重み付けによる基本スコア）
+    base_score = (
         SCORING_WEIGHTS["症状適合度"] * symptom_score +
         SCORING_WEIGHTS["効能特異性"] * efficacy_specificity_score +
         SCORING_WEIGHTS["年齢適合性"] * age_score +
         SCORING_WEIGHTS["用法簡便性"] * usage_score +
         SCORING_WEIGHTS["副作用リスク"] * side_effect_score +
-        SCORING_WEIGHTS["相互作用リスク"] * interaction_score +
-        symptom_specificity_penalty +  # 症状特異性ペナルティ
-        risk_penalty +  # リスク成分ペナルティ
-        throat_bonus +
-        symptom_boost +  # 症状特化型ブースト
-        allergy_penalty +  # アレルギーペナルティ（風邪薬への減点）
-        allergy_boost  # アレルギーブースト（鼻炎用薬への加点）
+        SCORING_WEIGHTS["相互作用リスク"] * interaction_score
     )
+    
+    # 調整スコア（ボーナス/ペナルティを制限付きで追加）
+    adjustment_score = (
+        limited_symptom_specificity_penalty +
+        limited_risk_penalty +
+        limited_throat_bonus +
+        limited_symptom_boost +
+        limited_allergy_penalty +
+        limited_allergy_boost
+    )
+    
+    # 最終スコア（基本スコア + 調整スコア）
+    # スコアの分散を確保しつつ、最大スコアを0.98程度に設定
+    # 調整スコアの影響を-0.3から+0.25の範囲に制限
+    # これにより、基本スコア0.73 + 調整スコア0.25 = 0.98が最大値となる
+    scaled_adjustment = max(-0.30, min(0.25, adjustment_score))
+    
+    # 改善案1: 基本スコアの底上げ（推奨される医薬品の多くが0.7-0.98に収まるように）
+    # 基本スコアが0.45未満の場合は、0.5に底上げしてから調整スコアを追加
+    # これにより、推奨される医薬品の多くが0.7-0.98の範囲に収まる
+    adjusted_base_score = base_score  # デフォルト値
+    if base_score < 0.45:
+        # 低スコア領域（0.45未満）は0.5に底上げ
+        # ただし、調整スコアが負の場合は、その分を減算
+        # これにより、不適切な医薬品は0.5 - 0.3 = 0.2程度まで下がる
+        adjusted_base_score = 0.5
+    elif base_score < 0.5:
+        # 0.45-0.5の範囲は、0.5に近づけるように補間
+        # これにより、より滑らかなスコア分布を実現
+        adjusted_base_score = 0.5 + (base_score - 0.45) * 0.5 / 0.05
+    
+    # 改善案2: スコアの分散を確保するための非線形変換
+    # 高スコア領域（0.5以上）では、より細かい差別化を行う
+    if adjusted_base_score >= 0.5:
+        # 0.5-0.73の範囲を0.5-0.73に拡大（より細かい差別化のため）
+        # 平方根（0.85乗）を使用して、より細かい差別化を実現
+        # 最大スコアが0.98以下になるように、拡大範囲を0.23に制限
+        normalized_base = (adjusted_base_score - 0.5) / 0.23  # 0.5-0.73を0-1に正規化
+        expanded_base = 0.5 + (normalized_base ** 0.85) * 0.23  # 0.5-0.73に拡大（非線形変換、最大0.98以下を保証）
+        total_score = expanded_base + scaled_adjustment
+    else:
+        # 低スコア領域（0.5未満）はそのまま使用
+        total_score = adjusted_base_score + scaled_adjustment
     
     # 漢方薬・生薬製剤の優先度調整（ユーザーが希望しない限り係数を0.8倍にする）
     from scoring_utils import _is_kampo_or_herbal_medicine
@@ -2213,13 +2261,16 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "usage_convenience": usage_score,
             "side_effect_risk": side_effect_score,
             "interaction_risk": interaction_score,
-            "symptom_specificity_penalty": symptom_specificity_penalty,  # スコア内訳に追加
-            "risk_ingredient_penalty": risk_penalty,
-            "throat_bonus": throat_bonus,
-            "symptom_specific_boost": symptom_boost,  # 症状特化型ブースト（MULTI_SYMPTOM_COMBINATIONS含む）
+            "symptom_specificity_penalty": limited_symptom_specificity_penalty,  # 制限後の症状特異性ペナルティ
+            "risk_ingredient_penalty": limited_risk_penalty,  # 制限後のリスク成分ペナルティ
+            "throat_bonus": limited_throat_bonus,  # 制限後のthroat_bonus
+            "symptom_specific_boost": limited_symptom_boost,  # 制限後の症状特化型ブースト
             "multi_symptom_bonus": multi_symptom_bonus,  # MULTI_SYMPTOM_COMBINATIONSのボーナス（表示用）
-            "allergy_penalty": allergy_penalty,  # アレルギーペナルティ（風邪薬への減点）
-            "allergy_boost": allergy_boost,  # アレルギーブースト（鼻炎用薬への加点）
+            "allergy_penalty": limited_allergy_penalty,  # 制限後のアレルギーペナルティ
+            "allergy_boost": limited_allergy_boost,  # 制限後のアレルギーブースト
+            "base_score": base_score,  # 基本スコア（デバッグ用）
+            "adjusted_base_score": adjusted_base_score,  # 調整後の基本スコア（デバッグ用）
+            "adjustment_score": adjustment_score,  # 調整スコア（デバッグ用）
             "kampo_adjustment": kampo_adjustment  # 漢方薬優先度調整（西洋薬優先の場合-0.2）
         }
     }
@@ -2266,11 +2317,11 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
             if medicine_type in penalty_table:
                 base_penalty = penalty_table[medicine_type]
-                # 効能特異性に応じてペナルティを緩和
+                # 効能特異性に応じてペナルティを緩和（緩和率を調整してペナルティを強化）
                 if efficacy_specificity >= 0.95:
-                    penalty = base_penalty * 0.17  # -0.3 * 0.17 ≈ -0.05
+                    penalty = base_penalty * 0.25  # 0.17から0.25に変更（緩和を減らす）
                 elif efficacy_specificity >= 0.8:
-                    penalty = base_penalty * 0.5   # -0.3 * 0.5 = -0.15
+                    penalty = base_penalty * 0.6   # 0.5から0.6に変更
                 else:
                     penalty = base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2285,11 +2336,11 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             if len(symptom_names) < required_count:
                 # デフォルトペナルティ（カテゴリ間優先表にない場合）
                 base_penalty = -0.3
-                # 効能特異性に応じてペナルティを緩和
+                # 効能特異性に応じてペナルティを緩和（緩和率を調整してペナルティを強化）
                 if efficacy_specificity >= 0.95:
-                    penalty = base_penalty * 0.17
+                    penalty = base_penalty * 0.25  # 0.17から0.25に変更
                 elif efficacy_specificity >= 0.8:
-                    penalty = base_penalty * 0.5
+                    penalty = base_penalty * 0.6   # 0.5から0.6に変更
                 else:
                     penalty = base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2316,9 +2367,9 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
             base_penalty = max(penalties)
             if base_penalty < 0:
                 if efficacy_specificity >= 0.95:
-                    base_penalty *= 0.17
+                    base_penalty *= 0.25  # 0.17から0.25に変更
                 elif efficacy_specificity >= 0.8:
-                    base_penalty *= 0.5
+                    base_penalty *= 0.6   # 0.5から0.6に変更
                 total_adjustment += base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(
@@ -2725,9 +2776,120 @@ def rule_based_recommendation(
     
     # 医療関連キーワードが一切含まれていない場合のチェック（簡易版）
     # 注: より厳密なチェックはNLU結果に依存するため、ここでは基本的なチェックのみ
+    # 重要: SYMPTOM_DICTIONARYに登録されているすべての症状に対応するキーワードを網羅的に追加
+    # これにより、考慮漏れによって推奨処理が停止することを防ぐ
     medical_keywords = [
+        # 基本キーワード（必須）
         "痛", "熱", "咳", "鼻", "喉", "頭", "胃", "下痢", "便秘", "吐", "めまい",
-        "かゆ", "発疹", "不眠", "疲労", "症状", "病気", "薬", "医", "病"
+        "かゆ", "発疹", "不眠", "疲労", "症状", "病気", "薬", "医", "病",
+        
+        # 風邪関連症状（SYMPTOM_DICTIONARYから抽出）
+        "発熱", "熱がある", "熱っぽい", "高熱", "微熱", "体温", "熱",
+        "頭痛", "頭が痛い", "ズキズキ", "頭が重い", "偏頭痛",
+        "のど", "喉", "咽頭", "声がれ", "のどの痛み", "喉の痛み", "喉の腫れ",
+        "せき", "咳", "咳が出る", "咳込む", "空咳",
+        "痰", "たん", "痰が絡む", "痰が出る",
+        "鼻水", "鼻みず", "鼻汁", "鼻が出る", "水っぽい",
+        "鼻づまり", "鼻詰まり", "鼻が詰まる", "鼻閉",
+        "くしゃみ", "クシャミ",
+        "悪寒", "寒気", "さむけ", "ゾクゾク",
+        "関節痛", "関節の痛み", "節々", "関節が痛い",
+        "筋肉痛", "筋肉の痛み", "体が痛い", "筋肉が痛い",
+        
+        # 解熱鎮痛薬関連症状
+        "生理痛", "月経痛", "生理の痛み", "下腹部痛", "生理", "月経",
+        "歯痛", "歯が痛い", "歯の痛み", "歯",
+        
+        # 鼻炎用薬関連症状
+        "鼻汁過多", "鼻水が多い", "鼻水がとまらない",
+        "なみだ目", "涙目", "涙",
+        
+        # 胃腸薬関連症状
+        "胃痛", "胃が痛い", "胃の痛み", "胃部痛", "みぞおち",
+        "腹痛", "お腹が痛い", "腹部痛", "おなかが痛い", "腹が痛い", "お腹",
+        "軟便", "水様便", "便がゆるい", "便",
+        "便が出ない", "便通がない", "便が硬い",
+        "吐き気", "むかつき", "気持ち悪い", "嘔吐感", "嘔吐",
+        "胸やけ", "胸焼け", "胃もたれ", "胃の重い感じ", "消化が悪い", "胃の不快感",
+        
+        # 外用薬関連症状
+        "かゆみ", "かゆい", "痒み", "皮膚のかゆみ",
+        "ブツブツ", "赤い斑点", "皮膚の異常",
+        "湿疹", "皮膚炎", "かぶれ", "皮膚の炎症", "皮膚",
+        "水虫", "白癬", "足の水虫", "指の間",
+        "打撲", "打ち身", "青あざ", "内出血",
+        "捻挫", "くじいた", "靭帯損傷",
+        "肩こり", "肩の凝り", "肩の痛み", "首肩", "肩", "こり",
+        "腰痛", "腰", "腰の痛み",
+        
+        # 目薬関連症状
+        "目の充血", "目が赤い", "充血", "目の血走り", "目", "眼",
+        "目の疲れ", "眼精疲労", "目が疲れる", "目の重い感じ", "疲れ",
+        "目のかゆみ", "目がかゆい", "目の痒み",
+        
+        # 睡眠・精神関連症状
+        "不眠", "眠れない", "睡眠不足", "寝つきが悪い", "眠", "睡眠",
+        "眩暈", "ふらつき", "立ちくらみ",
+        "乗り物酔い", "車酔い", "船酔い", "バス酔い", "酔い", "乗り物に酔う", "乗物酔い",
+        "疲労感", "疲れ", "だるい", "倦怠感", "倦怠",
+        "イライラ", "いらいら", "焦燥感", "落ち着かない",
+        "不安", "心配", "憂鬱", "落ち込み",
+        "ストレス", "緊張", "プレッシャー",
+        
+        # 重症疑い症状（RED_FLAG_SYMPTOMS）
+        "呼吸困難", "呼吸が苦しい", "息苦しい", "息ができない", "息切れ",
+        "38.5度以上", "39度", "40度", "熱が下がらない",
+        "胸痛", "胸が痛い", "胸の痛み", "胸部痛", "心臓が痛い", "胸が締め付けられる",
+        "意識障害", "意識がもうろう", "意識がない", "気を失う", "意識不明", "ぼーっと",
+        "激しい頭痛", "突然の頭痛", "今まで経験したことのない頭痛", "頭が割れる", "耐えられない頭痛",
+        "血便", "便に血が混じる", "黒い便", "タール便",
+        "喀血", "血を吐く", "吐血",
+        "激しい腹痛", "お腹が痛くて動けない", "耐えられない腹痛",
+        "顔面麻痺", "顔が動かない", "口が曲がる", "顔の半分が動かない",
+        "手足の麻痺", "手足が動かない", "力が入らない", "しびれが続く", "しびれ",
+        "持続する嘔吐", "何度も吐く", "止まらない嘔吐", "嘔吐が続く",
+        
+        # その他の一般的な医療関連キーワード
+        "耳", "耳の痛み", "耳鳴り",
+        "口内炎", "口", "口の中",
+        "喉頭", "気管", "気管支",
+        "消化", "食欲", "食欲不振",
+        "血圧", "血圧が高い", "血圧が低い",
+        "動悸", "心拍", "脈",
+        "発汗", "汗", "多汗",
+        "冷え", "冷え性", "冷える",
+        "むくみ", "浮腫",
+        "しこり", "腫れ", "腫れる",
+        "炎症", "感染", "菌",
+        "ウイルス", "細菌",
+        "アレルギー", "アレルギー症状",
+        "かぶれ", "接触性皮膚炎",
+        "やけど", "火傷", "熱傷",
+        "切り傷", "擦り傷", "傷",
+        "骨折", "骨",
+        "筋肉", "筋",
+        "神経", "神経痛",
+        "リウマチ", "関節リウマチ",
+        "痛風",
+        "貧血", "貧血気味",
+        "低血糖", "高血糖", "血糖",
+        "コレステロール",
+        "脂質",
+        "肝臓", "肝機能",
+        "腎臓", "腎機能",
+        "膀胱", "尿", "排尿",
+        "月経", "生理", "月経不順",
+        "更年期", "ホルモン",
+        "妊娠", "妊婦",
+        "授乳", "母乳",
+        "小児", "子供", "こども", "幼児", "乳児",
+        "高齢者", "老人",
+        "処方", "処方箋",
+        "副作用", "効能", "効果",
+        "用法", "用量", "服用", "飲む", "飲み",
+        "錠剤", "カプセル", "粉薬", "シロップ", "液剤",
+        "軟膏", "クリーム", "ローション", "スプレー",
+        "点眼", "点鼻", "点耳"
     ]
     has_medical_keyword = any(keyword in user_text_stripped for keyword in medical_keywords)
     
@@ -3053,6 +3215,23 @@ def rule_based_recommendation(
         f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択（成分多様性考慮）"
     )
     
+    # ステップ5.4: 相対スコア化（最高スコアを100%として正規化）
+    if top_candidates:
+        max_score = top_candidates[0].get('final_score', 0.0)
+        if max_score > 0:
+            for candidate in top_candidates:
+                relative_score = candidate['final_score'] / max_score
+                candidate['relative_score'] = relative_score
+                # スコア帯の判定（高/中/低）
+                if relative_score >= 0.9:
+                    candidate['score_level'] = '高'
+                elif relative_score >= 0.7:
+                    candidate['score_level'] = '中'
+                else:
+                    candidate['score_level'] = '低'
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"相対スコア: {candidate.get('product_name', '')} = {relative_score:.3f} ({candidate.get('score_level', '')})")
+    
     # ステップ5.5: 推奨後の検証処理
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
@@ -3081,8 +3260,13 @@ def rule_based_recommendation(
             "conditions": candidate.get('conditions', ''),  # K列
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
+<<<<<<< Updated upstream
             "raw_score": candidate.get('raw_score', candidate['final_score']),  # 正規化前のスコア（表示用）
             "normalization_info": candidate.get('normalization_info', {}),  # 正規化情報（Min-Max正規化用）
+=======
+            "relative_score": candidate.get('relative_score', candidate['final_score']),  # 相対スコア（最高スコアを1.0として正規化）
+            "score_level": candidate.get('score_level', '中'),  # スコア帯（高/中/低）
+>>>>>>> Stashed changes
             "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
             "reason": explanation,  # ChatGPTベース互換性のため追加
