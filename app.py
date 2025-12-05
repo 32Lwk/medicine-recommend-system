@@ -2325,61 +2325,53 @@ def index():
                                 'escalation': True,
                                 'algorithm': 'rule_based'
                             }
-                        elif recommendation_result.get('status') == 'no_candidates' and recommendation_result.get('confidence_score', 1.0) < 0.4:
-                            # confidence < 0.4 の場合のみGPTフォールバック
+                        elif recommendation_result.get('status') == 'no_candidates':
+                            # 候補医薬品が見つからない場合 - エラーメッセージを表示
                             monitor.increment_error()
-                            logger.warning(f"⚠️ Rule-based algorithm: low confidence ({recommendation_result.get('confidence_score', 0):.2f}) and no candidates, falling back to ChatGPT")
-                            recommendation_result = comprehensive_medicine_recommendation(user_message)
-                            recommendation_result['algorithm'] = 'chatgpt_fallback'
-                            
-                            # GPT出力を検証（簡易チェック）
-                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                            if recommended_medicines:
-                                logger.info(f"✅ ChatGPTフォールバック: {len(recommended_medicines)}件の医薬品を推奨")
-                            else:
-                                logger.warning(f"⚠️ ChatGPTフォールバック: 推奨医薬品が0件")
+                            confidence_score = recommendation_result.get('confidence_score', 0.0)
+                            logger.warning(f"⚠️ Rule-based algorithm: no candidates found (confidence: {confidence_score:.2f})")
+                            # エラー情報を保持して後続のエラー表示処理で使用
+                            recommendation_result['error'] = True
+                            recommendation_result['error_type'] = 'no_candidates'
+                            recommendation_result['error_details'] = {
+                                'confidence_score': confidence_score,
+                                'reason': recommendation_result.get('reason', '該当する医薬品が見つかりませんでした'),
+                                'technical_details': f"信頼度スコア: {confidence_score:.2f}, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
+                            }
+                        elif recommendation_result.get('status') == 'error':
+                            # ルールベース推奨エラー - エラーメッセージを表示
+                            monitor.increment_error()
+                            logger.warning(f"⚠️ Rule-based algorithm error: {recommendation_result.get('reason', 'unknown error')}")
+                            recommendation_result['error'] = True
+                            recommendation_result['error_type'] = 'rule_based_error'
+                            recommendation_result['error_details'] = {
+                                'reason': recommendation_result.get('reason', 'ルールベース推奨でエラーが発生しました'),
+                                'error_message': recommendation_result.get('error_message', ''),
+                                'technical_details': f"ステータス: error, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
+                            }
+                        elif recommendation_result.get('status') == 'missing_critical_info':
+                            # 必須情報不足 - エラーメッセージを表示
+                            monitor.increment_error()
+                            logger.warning(f"⚠️ Rule-based algorithm: missing critical information")
+                            recommendation_result['error'] = True
+                            recommendation_result['error_type'] = 'missing_critical_info'
+                            recommendation_result['error_details'] = {
+                                'reason': recommendation_result.get('reason', '症状が検出されていません'),
+                                'missing_fields': recommendation_result.get('missing_fields', []),
+                                'technical_details': f"ステータス: missing_critical_info, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
+                            }
                         else:
-                            # その他のエラーの場合もChatGPTベースにフォールバック
+                            # その他のエラーの場合 - エラーメッセージを表示
                             monitor.increment_error()
-                            logger.warning(f"⚠️ Rule-based algorithm failed (status: {recommendation_result.get('status', 'unknown')}), falling back to ChatGPT")
-                            recommendation_result = comprehensive_medicine_recommendation(user_message)
-                            recommendation_result['algorithm'] = 'chatgpt_fallback'
-                            
-                            # ChatGPTフォールバックでも使用上の注意を生成
-                            recommended_medicines = recommendation_result.get('recommended_medicines', [])
-                            if recommended_medicines:
-                                try:
-                                    from medicine_logic import generate_usage_notes
-                                    generated_notes = []
-                                    for medicine in recommended_medicines[:3]:  # 上位3つのみ
-                                        try:
-                                            # CSVデータから追加情報を取得
-                                            medicine_with_details = medicine.copy()
-                                            # 年齢制限とドーピング情報を追加
-                                            if 'age_restriction' not in medicine_with_details:
-                                                medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
-                                            if 'doping_prohibited' not in medicine_with_details:
-                                                medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
-                                            if 'competition_category' not in medicine_with_details:
-                                                medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
-                                            if 'conditions' not in medicine_with_details:
-                                                medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
-                                            
-                                            medicine_notes = generate_usage_notes(
-                                                medicine.get('name', ''),
-                                                medicine_with_details,
-                                                user_info
-                                            )
-                                            if medicine_notes:
-                                                generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
-                                        except Exception as e:
-                                            logger.warning(f"使用上の注意生成エラー: {e}")
-                                            continue
-                                    
-                                    if generated_notes:
-                                        recommendation_result['usage_notes'] = '<br><br>'.join(generated_notes)
-                                except Exception as e:
-                                    logger.warning(f"使用上の注意生成エラー: {e}")
+                            status = recommendation_result.get('status', 'unknown')
+                            logger.warning(f"⚠️ Rule-based algorithm failed (status: {status})")
+                            recommendation_result['error'] = True
+                            recommendation_result['error_type'] = 'unknown_error'
+                            recommendation_result['error_details'] = {
+                                'reason': recommendation_result.get('reason', f'ルールベース推奨でエラーが発生しました（ステータス: {status}）'),
+                                'status': status,
+                                'technical_details': f"ステータス: {status}, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
+                            }
                     else:
                         # ChatGPTベースのアルゴリズムを使用
                         logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
@@ -2480,8 +2472,118 @@ def index():
                     usage_notes = recommendation_result.get('usage_notes', '')
                     doctor_consultation = recommendation_result.get('doctor_consultation', '')
                     
+                    # ルールベース推奨失敗時のエラー表示処理
+                    if recommendation_result.get('error'):
+                        import json
+                        import html
+                        
+                        error_type = recommendation_result.get('error_type', 'unknown')
+                        error_details = recommendation_result.get('error_details', {})
+                        reason = error_details.get('reason', 'ルールベース推奨でエラーが発生しました')
+                        technical_details = error_details.get('technical_details', '')
+                        
+                        # エラータイプに応じたメッセージを生成
+                        error_messages = {
+                            'no_candidates': {
+                                'title': '⚠️ 医薬品が見つかりませんでした',
+                                'main_message': '入力された症状に対して、適切な市販薬が見つかりませんでした。',
+                                'recommendations': [
+                                    '症状をより具体的に記述してください（例：痛みの部位、程度、継続期間など）',
+                                    '症状が1週間以上続いている場合は、医療機関を受診することをお勧めします',
+                                    '重症の症状がある場合は、速やかに医師の診察を受けてください'
+                                ]
+                            },
+                            'rule_based_error': {
+                                'title': '⚠️ 推奨システムエラー',
+                                'main_message': '症状の解析中にエラーが発生しました。',
+                                'recommendations': [
+                                    '症状を別の表現で入力し直してください',
+                                    '具体的な症状名（例：頭痛、発熱、のどの痛みなど）を含めて記述してください',
+                                    '症状が続く場合は、医療機関を受診することをお勧めします'
+                                ]
+                            },
+                            'missing_critical_info': {
+                                'title': '⚠️ 症状が検出されませんでした',
+                                'main_message': '入力されたテキストから症状を検出できませんでした。',
+                                'recommendations': [
+                                    '具体的な症状名を含めて記述してください（例：「頭が痛い」「熱がある」など）',
+                                    '症状の部位や程度も記述すると、より適切な推奨が可能です',
+                                    '症状が続く場合は、医療機関を受診することをお勧めします'
+                                ]
+                            },
+                            'unknown_error': {
+                                'title': '⚠️ システムエラー',
+                                'main_message': '推奨システムでエラーが発生しました。',
+                                'recommendations': [
+                                    '症状を再度入力してください',
+                                    '症状が続く場合は、医療機関を受診することをお勧めします',
+                                    '問題が解決しない場合は、薬剤師または登録販売者にご相談ください'
+                                ]
+                            }
+                        }
+                        
+                        error_info = error_messages.get(error_type, error_messages['unknown_error'])
+                        
+                        # HTMLエスケープ処理
+                        escaped_user_message = html.escape(user_message)
+                        escaped_reason = html.escape(reason)
+                        escaped_technical = html.escape(technical_details)
+                        
+                        error_content = f"""
+<div class="recommendation-result error" style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 15px 0;">
+    <h4 style="color: #856404; margin-top: 0;">{error_info['title']}</h4>
+    <p style="color: #856404; font-weight: bold; margin: 10px 0;">{error_info['main_message']}</p>
+    <p style="color: #856404; margin: 10px 0;"><strong>エラー理由:</strong> {escaped_reason}</p>
+    
+    <h5 style="color: #856404; margin-top: 20px; margin-bottom: 10px;">📋 推奨される対応</h5>
+    <ul style="color: #856404; margin: 10px 0; padding-left: 20px;">
+"""
+                        for rec in error_info['recommendations']:
+                            error_content += f"        <li>{rec}</li>\n"
+                        
+                        error_content += f"""    </ul>
+    
+    <h5 style="color: #856404; margin-top: 20px; margin-bottom: 10px;">🏥 医師への相談をお勧めします</h5>
+    <p style="color: #856404; margin: 10px 0;">
+        以下の場合は、速やかに医療機関（病院・クリニック）を受診してください：
+    </p>
+    <ul style="color: #856404; margin: 10px 0; padding-left: 20px;">
+        <li>症状が1週間以上続いている場合</li>
+        <li>症状が悪化している場合</li>
+        <li>高熱（38.5度以上）が続く場合</li>
+        <li>重症の症状がある場合（激しい痛み、呼吸困難、意識障害など）</li>
+        <li>妊娠中・授乳中の場合</li>
+        <li>7歳未満のお子様の場合</li>
+    </ul>
+    
+    <details style="margin-top: 20px; padding: 10px; background: #fff; border-radius: 4px; border: 1px solid #dee2e6;">
+        <summary style="color: #856404; cursor: pointer; font-weight: bold;">技術的な詳細（デバッグ用）</summary>
+        <pre style="color: #856404; margin: 10px 0; font-size: 0.9em; white-space: pre-wrap; word-wrap: break-word;">{escaped_technical}</pre>
+    </details>
+</div>"""
+                        
+                        error_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': error_content,
+                            'security_score': None,
+                            'error_type': error_type
+                        }
+                        
+                        error_json = html.escape(json.dumps(error_data, ensure_ascii=False))
+                        
+                        bot_content = error_content + f"""
+    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーメッセージはいかがでしたか？</p>
+        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({error_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            適切
+        </button>
+        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({error_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            不適切
+        </button>
+    </div>
+"""
                     # エスカレーションが必要な場合の特別処理
-                    if recommendation_result.get('escalation'):
+                    elif recommendation_result.get('escalation'):
                         # 重要な注意事項用のデータを準備（HTMLエスケープ処理）
                         import json
                         import html
