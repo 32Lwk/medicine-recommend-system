@@ -183,3 +183,19 @@
 {"timestamp": "2025-12-03T06:01:18.249965", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
 {"timestamp": "2025-12-03T06:04:48.033708", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-03T06:04:48.034321", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "乗り物酔いの薬が欲しいです。"}}
+{"timestamp": "2025-12-04T12:10:03.338816", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T12:10:03.339891", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛いです。"}}
+{"timestamp": "2025-12-04T13:17:48.954913", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T13:17:48.955471", "event_type": "input_validation", "user_id": "medicine_recommendation", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛くて咳が出ます。少し熱もあります。"}}
+{"timestamp": "2025-12-04T13:17:56.530236", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T13:17:56.530476", "event_type": "input_validation", "user_id": "unknown", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉がイガイガして、鼻が詰まっている"}}
+{"timestamp": "2025-12-04T13:43:00.280146", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T13:43:00.280646", "event_type": "input_validation", "user_id": "unknown", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "鼻が詰まっています。"}}
+{"timestamp": "2025-12-04T14:25:33.241824", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T14:25:33.242526", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
+{"timestamp": "2025-12-04T14:25:35.980093", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T14:25:35.980609", "event_type": "input_validation", "user_id": "unknown", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
+{"timestamp": "2025-12-04T14:35:47.155530", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T14:35:47.156651", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
+{"timestamp": "2025-12-04T14:35:49.910313", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-04T14:35:49.910642", "event_type": "input_validation", "user_id": "unknown", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
