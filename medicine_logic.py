@@ -850,6 +850,28 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         "口内炎", "目の疲れ", "目のかゆみ", "目の充血", "耳鳴り", "動悸"
     ]
     
+    # 一般的な表現から典型的な症状を推測する前処理
+    user_text_lower = user_text.lower()
+    inferred_symptoms = []
+    
+    # 風邪関連のキーワード検出
+    cold_keywords = ["風邪", "かぜ", "風邪をひ", "風邪気味", "風邪っぽい", "風邪の症状"]
+    if any(kw in user_text_lower for kw in cold_keywords):
+        # 風邪の典型的な症状を追加
+        inferred_symptoms.extend(["頭痛", "発熱", "咳", "鼻水", "のどの痛み"])
+    
+    # インフルエンザ関連のキーワード検出
+    flu_keywords = ["インフルエンザ", "インフル", "インフルエンザの症状", "インフルエンザっぽい"]
+    if any(kw in user_text_lower for kw in flu_keywords):
+        # インフルエンザの典型的な症状を追加
+        inferred_symptoms.extend(["発熱", "頭痛", "関節痛", "筋肉痛", "悪寒", "咳"])
+    
+    # 胃腸炎関連のキーワード検出
+    gastroenteritis_keywords = ["胃腸炎", "胃腸の調子", "お腹の調子", "お腹を壊"]
+    if any(kw in user_text_lower for kw in gastroenteritis_keywords):
+        # 胃腸炎の典型的な症状を追加
+        inferred_symptoms.extend(["腹痛", "下痢", "吐き気"])
+    
     # 症状抽出のプロンプトを改善
     prompt = f"""
 あなたは医薬品推奨システムです。ユーザーの症状文から該当する症状を正確に抽出してください。
@@ -860,11 +882,14 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
 【抽出すべき症状リスト】
 {', '.join(comprehensive_symptom_list)}
 
-【指示】
-1. ユーザーの症状文から該当する症状のみを抽出してください
-2. 症状文に明示的に書かれていない症状は含めないでください
-3. 症状文が曖昧な場合は、最も可能性の高い症状のみを選択してください
-4. 「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
+【重要な指示】
+1. ユーザーの症状文から該当する症状を抽出してください
+2. **一般的な表現から典型的な症状を推測してください**：
+   - 「風邪をひいています」→ 頭痛、発熱、咳、鼻水、のどの痛みなどの典型的な風邪症状を推測
+   - 「インフルエンザです」→ 発熱、頭痛、関節痛、筋肉痛、悪寒などの典型的なインフルエンザ症状を推測
+   - 「胃腸炎です」→ 腹痛、下痢、吐き気などの典型的な胃腸炎症状を推測
+3. 症状文に明示的に書かれていない症状でも、一般的な表現から推測できる典型的な症状は含めてください
+4. ただし、症状文が「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
 
 【回答形式】
 該当する症状を以下の形式で出力してください：
@@ -874,7 +899,12 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
 """
     
     messages = [
-        {"role": "system", "content": "あなたは医薬品推奨システムです。ユーザーの症状文から正確に症状を抽出してください。"},
+        {"role": "system", "content": """あなたは医薬品推奨システムです。ユーザーの症状文から正確に症状を抽出してください。
+
+重要な注意事項：
+- 「風邪をひいています」のような一般的な表現からも、典型的な症状（頭痛、発熱、咳、鼻水、のどの痛みなど）を推測して抽出してください
+- 「インフルエンザです」のような表現からも、典型的な症状（発熱、頭痛、関節痛、筋肉痛、悪寒など）を推測して抽出してください
+- 症状文に明示的に書かれていない症状でも、一般的な表現から推測できる典型的な症状は含めてください"""},
         {"role": "user", "content": prompt}
     ]
     
@@ -999,20 +1029,29 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     print("ChatGPT返答:\n", content.strip())
     
     # 症状抽出の結果を処理
-    if "なし" in content or "症状なし" in content or not content.strip():
-        return {
-            'status': 'success',
-            'symptoms': [],
-            'message': 'No symptoms detected'
-        }
-    
-    # カンマ区切りで症状を抽出
     symptoms = []
-    if "," in content:
-        symptoms = [s.strip() for s in content.split(",") if s.strip()]
+    if "なし" in content or "症状なし" in content or not content.strip():
+        # ChatGPTが「なし」と返答した場合でも、前処理で推測した症状があれば使用
+        if inferred_symptoms:
+            symptoms = inferred_symptoms
+            print(f"前処理で推測した症状を使用: {symptoms}")
+        else:
+            return {
+                'status': 'success',
+                'symptoms': [],
+                'message': 'No symptoms detected'
+            }
     else:
-        # 改行区切りの場合
-        symptoms = [line.strip(" ・-0123456789.") for line in content.splitlines() if line.strip()]
+        # カンマ区切りで症状を抽出
+        if "," in content:
+            symptoms = [s.strip() for s in content.split(",") if s.strip()]
+        else:
+            # 改行区切りの場合
+            symptoms = [line.strip(" ・-0123456789.") for line in content.splitlines() if line.strip()]
+        
+        # 前処理で推測した症状とマージ（重複を除去）
+        all_symptoms = list(set(symptoms + inferred_symptoms))
+        symptoms = all_symptoms
     
     # 症状リストと照合して正規化
     matched_symptoms = []
