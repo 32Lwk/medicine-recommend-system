@@ -514,63 +514,27 @@ COMPOUND_MEDICINE_INDICATORS = {
     }
 }
 
-# 曖昧症状リスト（詳細情報が必要な症状）
-AMBIGUOUS_SYMPTOMS = {
-    "腹痛": {
-        "canonical_name": "腹痛",
-        "clarification_questions": [
-            "痛みの場所を教えてください（例：みぞおち、下腹部、全体など）",
-            "痛みのきっかけはありますか？（例：食後、空腹時、下痢を伴うなど）",
-            "他に症状はありますか？（例：下痢、便秘、発熱、吐き気など）"
-        ],
-        "priority": "critical"
+# 部位特異的製品のキーワード辞書
+BODY_PART_SPECIFIC_KEYWORDS = {
+    "delicate_area": {  # デリケート部位
+        "product_name_keywords": ["カブレーナ", "デリケート", "おりもの", "ナプキン"],
+        "efficacy_keywords": ["おむつかぶれ", "蒸れ", "デリケート部位", "おりもの"],
+        "usage_keywords": ["デリケート部位", "蒸れ", "おりもの"]
     },
-    "頭痛": {
-        "canonical_name": "頭痛",
-        "clarification_questions": [
-            "頭痛の種類を教えてください（例：ズキズキする、締めつけられる、重い感じなど）",
-            "頭痛のきっかけはありますか？（例：緊張時、生理中、風邪の初期症状など）",
-            "他に症状はありますか？（例：発熱、吐き気、めまいなど）"
-        ],
-        "priority": "critical"
+    "scalp": {  # 頭皮
+        "product_name_keywords": ["頭皮", "フケ", "スカルプ"],
+        "efficacy_keywords": ["頭皮", "フケ", "頭のかゆみ"],
+        "usage_keywords": ["頭皮", "頭部"]
     },
-    "咳": {
-        "canonical_name": "咳",
-        "clarification_questions": [
-            "咳の種類を教えてください（例：乾いた咳、痰がからむ、夜間に出るなど）",
-            "咳はいつから続いていますか？",
-            "他に症状はありますか？（例：発熱、のどの痛み、鼻水など）"
-        ],
-        "priority": "important"
-    },
-    "のどの痛み": {
-        "canonical_name": "のどの痛み",
-        "clarification_questions": [
-            "のどのどのあたりが痛みますか？",
-            "発熱や咳はありますか？",
-            "他に症状はありますか？（例：鼻水、頭痛など）"
-        ],
-        "priority": "important"
-    },
-    "胸やけ": {
-        "canonical_name": "胸やけ",
-        "clarification_questions": [
-            "胸やけのきっかけはありますか？（例：食後、脂っこい食事後など）",
-            "他に症状はありますか？（例：胃もたれ、胃痛など）"
-        ],
-        "priority": "optional"
-    },
-    "胃もたれ": {
-        "canonical_name": "胃もたれ",
-        "clarification_questions": [
-            "胃もたれのきっかけはありますか？（例：食後、食べ過ぎなど）",
-            "他に症状はありますか？（例：胸やけ、胃痛など）"
-        ],
-        "priority": "optional"
+    "throat": {  # のど
+        "product_name_keywords": ["のど", "喉", "トローチ"],
+        "efficacy_keywords": ["のどの痛み", "喉の痛み"],
+        "usage_keywords": ["のど", "喉"]
     }
 }
 
 # 症状カテゴリ間優先表（症状×医薬品種類のペナルティ設定）
+# 注意: AMBIGUOUS_SYMPTOMSは削除されました。症状詳細質問はChatGPTで生成します。
 SYMPTOM_CATEGORY_PENALTY = {
     "発熱": {
         "風邪薬": -0.3,  # 単一症状の場合は複合薬にペナルティ
@@ -1518,6 +1482,71 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     return selected[:top_n]
 
 
+def _detect_body_part_specificity(candidate: Dict) -> Optional[str]:
+    """
+    候補医薬品の部位特異性を検出
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        部位名（"delicate_area", "scalp", "throat"など）、またはNone
+    """
+    product_name = str(candidate.get('product_name', '')).lower()
+    efficacy = str(candidate.get('efficacy', '')).lower()
+    usage = str(candidate.get('usage', '')).lower()
+    
+    # 各部位についてキーワードをチェック
+    for body_part, keywords_dict in BODY_PART_SPECIFIC_KEYWORDS.items():
+        # 製品名のキーワードをチェック
+        if any(kw.lower() in product_name for kw in keywords_dict.get("product_name_keywords", [])):
+            return body_part
+        
+        # 効能効果のキーワードをチェック
+        if any(kw.lower() in efficacy for kw in keywords_dict.get("efficacy_keywords", [])):
+            return body_part
+        
+        # 用法のキーワードをチェック
+        if any(kw.lower() in usage for kw in keywords_dict.get("usage_keywords", [])):
+            return body_part
+    
+    return None
+
+
+def _extract_body_part_from_user_text(user_text: str, symptom_name: str) -> Optional[str]:
+    """
+    ユーザー入力テキストから部位情報を抽出
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        symptom_name: 検出された症状名
+    
+    Returns:
+        部位名（"delicate_area", "scalp", "throat"など）、またはNone
+    """
+    if not user_text or not symptom_name:
+        return None
+    
+    user_text_lower = user_text.lower()
+    
+    # 頭皮関連のキーワード
+    scalp_keywords = ["頭", "頭皮", "頭部", "フケ"]
+    if any(kw in user_text_lower for kw in scalp_keywords) and symptom_name in ["かゆみ", "発疹", "湿疹"]:
+        return "scalp"
+    
+    # デリケート部位関連のキーワード
+    delicate_keywords = ["デリケート", "おりもの", "ナプキン", "蒸れ", "おむつ"]
+    if any(kw in user_text_lower for kw in delicate_keywords):
+        return "delicate_area"
+    
+    # のど関連のキーワード
+    throat_keywords = ["のど", "喉", "咽頭"]
+    if any(kw in user_text_lower for kw in throat_keywords) and symptom_name in ["のどの痛み", "かゆみ"]:
+        return "throat"
+    
+    return None
+
+
 def _extract_min_age_value(age_restriction) -> Optional[int]:
     """年齢制限から最小年齢を抽出"""
     if age_restriction is None:
@@ -2044,6 +2073,41 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
 
     return 1.0
 
+def calculate_body_part_match_score(candidate: Dict, user_body_part: Optional[str]) -> float:
+    """
+    部位マッチングスコアを計算
+    
+    Args:
+        candidate: 候補医薬品の情報
+        user_body_part: ユーザーの症状部位（"delicate_area", "scalp", "throat"など）
+    
+    Returns:
+        部位マッチングスコア
+        - 部位が一致する場合: 1.0
+        - 部位が不一致の場合: -0.5（大幅減点）
+        - 部位情報がない場合: 0.0（ペナルティなし）
+    """
+    if not user_body_part:
+        return 0.0
+    
+    candidate_body_part = _detect_body_part_specificity(candidate)
+    
+    if not candidate_body_part:
+        # 候補に部位情報がない場合はペナルティなし
+        return 0.0
+    
+    if candidate_body_part == user_body_part:
+        # 部位が一致する場合
+        return 1.0
+    else:
+        # 部位が不一致の場合、大幅減点
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(
+                f"部位不一致: 候補={candidate_body_part}, ユーザー={user_body_part}, "
+                f"製品={candidate.get('product_name', '')}"
+            )
+        return -0.5
+
 def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> Dict:
     """
     最終スコアを計算（全スコアを統合）
@@ -2079,6 +2143,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     usage_score = calculate_usage_convenience_score(candidate)
     side_effect_score = calculate_side_effect_risk_score(candidate, user_info)
     interaction_score = calculate_interaction_risk_score(candidate, user_info)
+    
+    # 部位マッチングスコアを計算
+    user_body_part = nlu_result.get("user_body_part")
+    body_part_score = calculate_body_part_match_score(candidate, user_body_part)
     
     # 症状特化型ブーストを計算
     symptom_boost = calculate_symptom_specific_boost(candidate, nlu_result, user_info)
@@ -2193,6 +2261,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         SCORING_WEIGHTS["相互作用リスク"] * interaction_score
     )
     
+    # 部位マッチングスコアの制限（-0.5から+1.0の範囲）
+    limited_body_part_score = max(-0.5, min(1.0, body_part_score))
+    
     # 調整スコア（ボーナス/ペナルティを制限付きで追加）
     adjustment_score = (
         limited_symptom_specificity_penalty +
@@ -2200,7 +2271,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         limited_throat_bonus +
         limited_symptom_boost +
         limited_allergy_penalty +
-        limited_allergy_boost
+        limited_allergy_boost +
+        limited_body_part_score
     )
     
     # 最終スコア（基本スコア + 調整スコア）
@@ -2257,6 +2329,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         "score_breakdown": {
             "symptom_match": symptom_score,
             "efficacy_specificity": efficacy_specificity_score,
+            "body_part_match": body_part_score,
             "age_fit": age_score,
             "usage_convenience": usage_score,
             "side_effect_risk": side_effect_score,
@@ -2574,7 +2647,128 @@ def detect_influenza_risk(nlu_result: Dict, user_text: str = "") -> Tuple[bool, 
 # 5. 不足情報のチェックと質問生成
 # ================================================================================
 
-def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
+def generate_symptom_detail_questions_with_gpt(
+    user_text: str,
+    nlu_result: Dict,
+    user_info: Dict,
+    client: OpenAI
+) -> List[Dict[str, str]]:
+    """
+    ChatGPTを使用して症状詳細に関する追加質問を生成
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        nlu_result: NLU解析結果
+        user_info: ユーザー情報
+        client: OpenAI client
+    
+    Returns:
+        質問リスト（各質問は{"question": str, "priority": str}の形式）
+    """
+    if not client:
+        return []
+    
+    symptoms = nlu_result.get("symptoms", [])
+    if not symptoms:
+        return []
+    
+    symptom_names = [s.get("name", "") for s in symptoms if s.get("name")]
+    if not symptom_names:
+        return []
+    
+    # 基本情報の質問を除外するための情報
+    basic_info_covered = {
+        "age": user_info.get('age') is not None,
+        "gender": user_info.get('gender') is not None,
+        "pregnant": user_info.get('pregnant') is not None or user_info.get('breastfeeding') is not None,
+        "allergies": user_info.get('allergies') is not None and len(user_info.get('allergies', [])) > 0,
+        "medications": user_info.get('current_medications') is not None and len(user_info.get('current_medications', [])) > 0,
+        "duration": any(s.get('duration_days') is not None for s in symptoms) or user_info.get('symptom_duration_days') is not None
+    }
+    
+    # プロンプトの構築
+    prompt = f"""ユーザーの症状に関する追加質問を生成してください。
+
+【ユーザーの入力】
+{user_text}
+
+【検出された症状】
+{', '.join(symptom_names)}
+
+【既に回答済みの基本情報】
+- 年齢: {'回答済み' if basic_info_covered['age'] else '未回答'}
+- 性別: {'回答済み' if basic_info_covered['gender'] else '未回答'}
+- 妊娠・授乳状態: {'回答済み' if basic_info_covered['pregnant'] else '未回答'}
+- アレルギー: {'回答済み' if basic_info_covered['allergies'] else '未回答'}
+- 服用中薬: {'回答済み' if basic_info_covered['medications'] else '未回答'}
+- 症状の期間: {'回答済み' if basic_info_covered['duration'] else '未回答'}
+
+【指示】
+1. 症状の詳細（部位、原因、程度、経過など）に関する質問を生成してください
+2. 基本情報（年齢、性別、妊娠状態、アレルギー、服用中薬、期間）に関する質問は生成しないでください
+3. 各質問に優先度（critical, important, optional）を付与してください
+4. 質問数は適切な数（3-5問程度）にしてください
+5. JSON形式で返してください
+
+【出力形式】
+[
+    {{"question": "質問文", "priority": "critical|important|optional"}},
+    ...
+]
+"""
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "あなたは医薬品推奨システムの質問生成アシスタントです。症状の詳細を把握するための適切な質問を生成してください。"
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+        
+        result = response.choices[0].message.content.strip()
+        
+        # JSONブロックを除去
+        if result.startswith('```json'):
+            result = result[7:]
+        if result.startswith('```'):
+            result = result[3:]
+        if result.endswith('```'):
+            result = result[:-3]
+        result = result.strip()
+        
+        # JSONをパース
+        import json
+        questions = json.loads(result)
+        
+        # 形式を検証
+        validated_questions = []
+        for q in questions:
+            if isinstance(q, dict) and "question" in q and "priority" in q:
+                priority = q.get("priority", "optional")
+                if priority not in ["critical", "important", "optional"]:
+                    priority = "optional"
+                validated_questions.append({
+                    "question": q.get("question", ""),
+                    "priority": priority
+                })
+        
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"ChatGPTで生成された症状詳細質問: {len(validated_questions)}件")
+        
+        return validated_questions
+        
+    except Exception as e:
+        logger.warning(f"ChatGPTによる質問生成でエラーが発生しました: {e}")
+        return []
+
+
+def check_missing_information(user_info: Dict, nlu_result: Dict, user_text: str = "", client: Optional[OpenAI] = None) -> Dict:
     """
     不足している情報をチェックし、追加質問を生成（あいまい症状対応を含む）
     
@@ -2594,28 +2788,6 @@ def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
         "critical_questions": [],  # 新規追加
         "priority": "optional"
     }
-    
-    # あいまい症状のチェック
-    symptoms = nlu_result.get('symptoms', [])
-    for symptom in symptoms:
-        symptom_name = symptom.get("name", "")
-        if symptom_name in AMBIGUOUS_SYMPTOMS:
-            ambiguous_info = AMBIGUOUS_SYMPTOMS[symptom_name]
-            questions = ambiguous_info.get("clarification_questions", [])
-            priority = ambiguous_info.get("priority", "important")
-            
-            missing_info["has_missing_info"] = True
-            missing_info["missing_fields"].append(f"ambiguous_symptom_{symptom_name}")
-            
-            # 優先度に応じて分類
-            if priority == "critical":
-                missing_info["critical_questions"].extend(questions)
-                if missing_info["priority"] != "critical":
-                    missing_info["priority"] = "critical"
-            else:
-                missing_info["questions"].extend(questions)
-                if missing_info["priority"] not in ["critical", "important"] and priority == "important":
-                    missing_info["priority"] = "important"
     
     # 1. 年齢チェック（重要だが推奨は継続）
     if user_info.get('age') is None:
@@ -2694,6 +2866,37 @@ def check_missing_information(user_info: Dict, nlu_result: Dict) -> Dict:
         missing_info["questions"].append("薬や食品のアレルギーはありますか？（ある場合は具体的に教えてください）")
         if missing_info["priority"] not in ["critical", "important"]:
             missing_info["priority"] = "optional"
+    
+    # ChatGPTによる症状詳細質問の生成
+    if client and user_text and symptoms:
+        try:
+            symptom_detail_questions = generate_symptom_detail_questions_with_gpt(
+                user_text, nlu_result, user_info, client
+            )
+            
+            # 質問を優先度に応じて分類
+            for q_dict in symptom_detail_questions:
+                question = q_dict.get("question", "")
+                priority = q_dict.get("priority", "optional")
+                
+                if question:
+                    missing_info["has_missing_info"] = True
+                    missing_info["missing_fields"].append("symptom_detail")
+                    
+                    if priority == "critical":
+                        missing_info["critical_questions"].append(question)
+                        if missing_info["priority"] != "critical":
+                            missing_info["priority"] = "critical"
+                    elif priority == "important":
+                        missing_info["questions"].append(question)
+                        if missing_info["priority"] not in ["critical", "important"]:
+                            missing_info["priority"] = "important"
+                    else:
+                        missing_info["questions"].append(question)
+                        if missing_info["priority"] == "optional":
+                            missing_info["priority"] = "optional"
+        except Exception as e:
+            logger.warning(f"症状詳細質問生成でエラーが発生しました: {e}")
     
     return missing_info
 
@@ -2908,6 +3111,19 @@ def rule_based_recommendation(
         logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
     nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
+    # 部位情報の抽出
+    symptoms = nlu_result.get("symptoms", [])
+    user_body_part = None
+    if symptoms:
+        # 最初の症状から部位情報を抽出
+        first_symptom = symptoms[0]
+        symptom_name = first_symptom.get("name", "")
+        user_body_part = _extract_body_part_from_user_text(user_text, symptom_name)
+        if user_body_part:
+            nlu_result["user_body_part"] = user_body_part
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"部位情報を抽出: {user_body_part} (症状: {symptom_name})")
+    
     # confidenceチェック（0.4未満の場合はGPTフォールバックを検討）
     confidence_score = nlu_result.get('confidence_score', 0.0)
     symptoms_count = len(nlu_result.get("symptoms", []))
@@ -2917,7 +3133,7 @@ def rule_based_recommendation(
     # ステップ1.5: 不足情報のチェック
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ1.5: 不足情報のチェック ---")
-    missing_info_result = check_missing_information(user_info, nlu_result)
+    missing_info_result = check_missing_information(user_info, nlu_result, user_text, client)
     
     if missing_info_result["has_missing_info"]:
         priority = missing_info_result["priority"]
@@ -3260,13 +3476,8 @@ def rule_based_recommendation(
             "conditions": candidate.get('conditions', ''),  # K列
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
-<<<<<<< Updated upstream
-            "raw_score": candidate.get('raw_score', candidate['final_score']),  # 正規化前のスコア（表示用）
-            "normalization_info": candidate.get('normalization_info', {}),  # 正規化情報（Min-Max正規化用）
-=======
             "relative_score": candidate.get('relative_score', candidate['final_score']),  # 相対スコア（最高スコアを1.0として正規化）
             "score_level": candidate.get('score_level', '中'),  # スコア帯（高/中/低）
->>>>>>> Stashed changes
             "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
             "reason": explanation,  # ChatGPTベース互換性のため追加
