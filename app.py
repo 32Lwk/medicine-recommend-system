@@ -1543,9 +1543,24 @@ def index():
                                         logger.info(f"📝 症状期間を更新: {user_attributes['symptom_duration_days']}日")
                                         updated = True
                                     elif key == 'other_info' and isinstance(value, str):
-                                        user_attributes['other_info'] = value
-                                        logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
-                                        updated = True
+                                        # 薬に関する情報はother_infoに入れない（current_medicationsに反映される）
+                                        medication_patterns = [
+                                            r'他に服用.*薬.*(?:あり|なし|ありません|ない)',
+                                            r'服用.*薬.*(?:あり|なし|ありません|ない)',
+                                            r'薬.*服用.*(?:あり|なし|ありません|ない)',
+                                            r'服用.*(?:あり|なし|ありません|ない)',
+                                            r'薬.*(?:あり|なし|ありません|ない)',
+                                            r'服用している薬.*(?:あり|なし|ありません|ない)',
+                                            r'他に服用.*(?:あり|なし|ありません|ない)'
+                                        ]
+                                        is_medication_info = any(re.search(pattern, value, re.IGNORECASE) for pattern in medication_patterns)
+                                        
+                                        if not is_medication_info:
+                                            user_attributes['other_info'] = value
+                                            logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
+                                            updated = True
+                                        else:
+                                            logger.info(f"📝 薬に関する情報のためother_infoには設定しません: {value}")
                         
                         except Exception as e:
                             logger.error(f"多言語属性抽出エラー: {e}")
@@ -1715,13 +1730,22 @@ def index():
                                 break
                 
                 # その他伝えたいことの抽出（日本語と英語）
-                if ('その他' in user_message or '伝えたい' in user_message or '他に' in user_message or
+                # 薬に関する情報（「他に服用している薬はありません」など）を除外
+                medication_exclusion_patterns = [
+                    r'他に服用.*薬.*(?:あり|なし|ありません|ない)',
+                    r'服用.*薬.*(?:あり|なし|ありません|ない)',
+                    r'薬.*服用.*(?:あり|なし|ありません|ない)',
+                    r'服用.*(?:あり|なし|ありません|ない)',
+                    r'薬.*(?:あり|なし|ありません|ない)'
+                ]
+                is_medication_message = any(re.search(pattern, user_message, re.IGNORECASE) for pattern in medication_exclusion_patterns)
+                
+                if not is_medication_message and ('その他' in user_message or '伝えたい' in user_message or 
                     'want to know' in user_message.lower() or 'ask about' in user_message.lower() or 'tell you' in user_message.lower()):
-                    # その他の情報を抽出
+                    # その他の情報を抽出（「他に」は薬に関する情報の可能性があるため除外）
                     other_patterns = [
                         r'その他[はが]?([^。、\n]+)',
                         r'伝えたいこと[はが]?([^。、\n]+)',
-                        r'他に[はが]?([^。、\n]+)',
                         # 英語のパターン
                         r'want to know about\s+([^,\n]+)',
                         r'ask about\s+([^,\n]+)',
@@ -1733,10 +1757,23 @@ def index():
                         if match:
                             other_info = match.group(1).strip()
                             if other_info:
-                                user_attributes['other_info'] = other_info
-                                logger.info(f"📝 その他情報を抽出: {other_info}")
-                                updated = True
-                                break
+                                # 薬に関する情報はother_infoに入れない（current_medicationsに反映される）
+                                medication_patterns = [
+                                    r'服用.*薬.*(?:あり|なし|ありません|ない)',
+                                    r'薬.*服用.*(?:あり|なし|ありません|ない)',
+                                    r'服用.*(?:あり|なし|ありません|ない)',
+                                    r'薬.*(?:あり|なし|ありません|ない)'
+                                ]
+                                is_medication_info = any(re.search(pattern, other_info, re.IGNORECASE) for pattern in medication_patterns)
+                                
+                                if not is_medication_info:
+                                    user_attributes['other_info'] = other_info
+                                    logger.info(f"📝 その他情報を抽出: {other_info}")
+                                    updated = True
+                                    break
+                                else:
+                                    logger.info(f"📝 薬に関する情報のためother_infoには設定しません: {other_info}")
+                                    break
                 
                 # セッションに保存
                 session['user_attributes'] = user_attributes
@@ -1808,8 +1845,13 @@ def index():
                             for msg in reversed(messages):
                                 if msg.get('type') == 'user':
                                     content = msg.get('content', '')
-                                    # 症状キーワードを含むメッセージを探す
-                                    symptom_keywords = ['痛い', '痛み', '熱', '咳', '鼻水', '頭痛', '発熱', 'のど', '喉', '寒気', 'だるい', '疲れ']
+                                    # 症状キーワードを含むメッセージを探す（拡張版）
+                                    symptom_keywords = [
+                                        '痛い', '痛み', '熱', '咳', '鼻水', '頭痛', '発熱', 'のど', '喉', '寒気', 'だるい', '疲れ',
+                                        'かゆい', 'かゆみ', '痒い', '痒み', 'かぶれ', '発疹', '湿疹', 'じんましん',
+                                        '下痢', '便秘', '腹痛', '胃痛', '吐き気', '嘔吐', '胸やけ', '胃もたれ',
+                                        'めまい', '不眠', '肩こり', '腰痛', '関節痛', '筋肉痛'
+                                    ]
                                     if any(keyword in content for keyword in symptom_keywords):
                                         previous_symptom_message = content
                                         logger.info(f"📋 前回の症状メッセージを取得: {content[:50]}...")

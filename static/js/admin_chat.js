@@ -1306,7 +1306,12 @@ function loadUserAttributes(sessionId) {
         }
         
         // 属性情報を表示
+        // current_medicationsは空の場合でも表示するため、フィルタリングから除外
         const attributeKeys = Object.keys(allAttributes).filter(key => {
+            // current_medicationsは常に表示する
+            if (key === 'current_medications') {
+                return true;
+            }
             const value = allAttributes[key];
             return value !== null && value !== undefined && value !== '' && 
                    !(Array.isArray(value) && value.length === 0);
@@ -1327,6 +1332,26 @@ function loadUserAttributes(sessionId) {
                                    'current_medications', 'symptom_duration_days', 'medical_history', 'other_info'];
             
             priorityFields.forEach(key => {
+                // current_medicationsは空の場合でも「なし」と表示する
+                if (key === 'current_medications') {
+                    let displayValue = 'なし';
+                    if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
+                        const medications = allAttributes[key];
+                        if (Array.isArray(medications) && medications.length > 0) {
+                            displayValue = medications.join('、');
+                        } else if (typeof medications === 'string' && medications.trim()) {
+                            displayValue = medications;
+                        }
+                    }
+                    html += `
+                        <div class="attribute-card">
+                            <div class="attribute-label">${escapeHtml(getAttributeLabel(key))}</div>
+                            <div class="attribute-value">${escapeHtml(displayValue)}</div>
+                        </div>
+                    `;
+                    return; // 次のフィールドへ
+                }
+                
                 if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
                     let displayValue = formatAttributeValue(allAttributes[key]);
                     
