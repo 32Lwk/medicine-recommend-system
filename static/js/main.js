@@ -4348,7 +4348,11 @@
                             content += `<li>${question}</li>`;
                         });
                         
-                        content += `</ul></div>`;
+                        content += `</ul>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                💡 上記の質問への回答や、その他伝えたいことがあれば、下の入力欄からお送りください。
+                            </p>
+                        </div>`;
                     }
                     
                     if (message.diagnosis.symptoms && !message.diagnosis.error) {
