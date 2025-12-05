@@ -876,22 +876,77 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
             combination_boost = boost + (optional_matched * 0.05)
             break
     
-    # 症状の信頼度を計算（強化版）
+    # 症状の信頼度を計算（最適化版）
     confidence_score = 0.0
     if detected_symptoms:
-        # 症状数による信頼度
+        # 1. 症状数による信頼度（基本スコア）
         confidence_score += min(len(detected_symptoms) * 0.3, 0.6)
         
-        # 重症度の明確性による信頼度
+        # 2. 重症度の明確性による信頼度（改善：中等度でも軽微な加点）
         severity_specificity = sum(1 for s in detected_symptoms if s["severity"] != "中等度")
         confidence_score += severity_specificity * 0.1
+        # 中等度でも症状が検出されたこと自体に軽微な加点
+        if severity_specificity == 0 and len(detected_symptoms) > 0:
+            confidence_score += 0.05
         
-        # 期間の明確性による信頼度
+        # 3. 期間の明確性による信頼度
         if duration_days is not None:
             confidence_score += 0.2
         
-        # 症状組み合わせによる信頼度向上
+        # 4. 症状組み合わせによる信頼度向上
         confidence_score += combination_boost
+        
+        # 5. 部位情報の明確性による信頼度向上（新規追加）
+        # 部位情報を抽出（症状名を使用）
+        first_symptom_name = detected_symptoms[0].get("name", "") if detected_symptoms else ""
+        body_part = _extract_body_part_from_user_text(user_text, first_symptom_name)
+        if body_part:
+            confidence_score += 0.1
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"部位情報検出による信頼度向上: {body_part}")
+        
+        # 6. 症状名の明確性による信頼度向上（新規追加）
+        # SYMPTOM_DICTIONARYに完全一致する症状がある場合
+        symptom_dict_matches = 0
+        for symptom in detected_symptoms:
+            symptom_name = symptom.get("name", "")
+            if symptom_name in SYMPTOM_DICTIONARY:
+                symptom_dict_matches += 1
+        if symptom_dict_matches > 0:
+            # 完全一致する症状がある場合、1つにつき0.05加点（最大0.15）
+            confidence_score += min(symptom_dict_matches * 0.05, 0.15)
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状名の明確性による信頼度向上: {symptom_dict_matches}個の症状がSYMPTOM_DICTIONARYに完全一致")
+        
+        # 7. 入力テキストの詳細度による信頼度向上（新規追加）
+        # より詳細な記述がある場合（文字数や情報量で判断）
+        text_length = len(user_text.strip())
+        if text_length > 15:  # 最低限の詳細度
+            confidence_score += 0.05
+        if text_length > 30:  # より詳細な記述
+            confidence_score += 0.05
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"入力テキストの詳細度: {text_length}文字")
+        
+        # 8. 症状の記述方法の明確性（新規追加）
+        # 「○○が△△」のような明確な記述パターンがある場合
+        explicit_patterns = [
+            r'[がは]かゆ',  # 「腕がかゆい」「頭はかゆい」
+            r'[がは]痛',    # 「頭が痛い」「お腹は痛い」
+            r'[がは]熱',    # 「熱がある」「熱が高い」
+            r'[がは]咳',    # 「咳が出る」「咳が止まらない」
+        ]
+        explicit_count = sum(1 for pattern in explicit_patterns if re.search(pattern, user_text))
+        if explicit_count > 0:
+            confidence_score += min(explicit_count * 0.03, 0.1)
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"明確な記述パターン検出: {explicit_count}個")
+        
+        # 信頼度スコアを0.0-1.0の範囲に制限
+        confidence_score = min(confidence_score, 1.0)
+    else:
+        # 症状が検出されていない場合、body_partはNone
+        body_part = None
     
     needs_escalation = len(red_flags) > 0
     escalation_reason = f"重症疑い症状が検出されました: {', '.join(red_flags)}" if needs_escalation else ""
@@ -901,6 +956,7 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         logger.debug(f"検出された症状: {[s['name'] for s in detected_symptoms]}")
         logger.debug(f"重症疑い: {red_flags}")
         logger.debug(f"エスカレーション必要: {needs_escalation}")
+        logger.debug(f"部位情報: {body_part if body_part else 'なし'}")
         logger.debug(f"信頼度スコア: {confidence_score:.2f}")
     
     return {
@@ -908,7 +964,8 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         "red_flags": red_flags,
         "needs_escalation": needs_escalation,
         "escalation_reason": escalation_reason,
-        "confidence_score": confidence_score
+        "confidence_score": confidence_score,
+        "user_body_part": body_part  # 部位情報を返り値に含める
     }
 
 def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, session_id: str = None) -> Dict:
@@ -1515,34 +1572,61 @@ def _detect_body_part_specificity(candidate: Dict) -> Optional[str]:
 
 def _extract_body_part_from_user_text(user_text: str, symptom_name: str) -> Optional[str]:
     """
-    ユーザー入力テキストから部位情報を抽出
+    ユーザー入力テキストから部位情報を抽出（拡張版）
     
     Args:
         user_text: ユーザーの入力テキスト
         symptom_name: 検出された症状名
     
     Returns:
-        部位名（"delicate_area", "scalp", "throat"など）、またはNone
+        部位名（"scalp", "throat", "arm", "leg", "hand", "eye", "nose", "chest", "stomach", "back", "delicate_area"など）、またはNone
     """
-    if not user_text or not symptom_name:
+    if not user_text:
         return None
     
     user_text_lower = user_text.lower()
     
+    # 優先度の高い特殊部位（症状名との組み合わせを考慮）
     # 頭皮関連のキーワード
-    scalp_keywords = ["頭", "頭皮", "頭部", "フケ"]
-    if any(kw in user_text_lower for kw in scalp_keywords) and symptom_name in ["かゆみ", "発疹", "湿疹"]:
-        return "scalp"
+    scalp_keywords = ["頭", "頭皮", "頭部", "フケ", "頭頂部", "後頭部"]
+    if any(kw in user_text_lower for kw in scalp_keywords):
+        if symptom_name in ["かゆみ", "発疹", "湿疹"] or "かゆ" in user_text_lower or "フケ" in user_text_lower:
+            return "scalp"
     
     # デリケート部位関連のキーワード
-    delicate_keywords = ["デリケート", "おりもの", "ナプキン", "蒸れ", "おむつ"]
+    delicate_keywords = ["デリケート", "おりもの", "ナプキン", "蒸れ", "おむつ", "陰部", "股間"]
     if any(kw in user_text_lower for kw in delicate_keywords):
         return "delicate_area"
     
     # のど関連のキーワード
-    throat_keywords = ["のど", "喉", "咽頭"]
-    if any(kw in user_text_lower for kw in throat_keywords) and symptom_name in ["のどの痛み", "かゆみ"]:
-        return "throat"
+    throat_keywords = ["のど", "喉", "咽頭", "喉頭", "声帯"]
+    if any(kw in user_text_lower for kw in throat_keywords):
+        if symptom_name in ["のどの痛み", "かゆみ", "咳"] or "痛" in user_text_lower or "かゆ" in user_text_lower:
+            return "throat"
+    
+    # 一般的な部位の検出（優先度順）
+    general_body_parts = {
+        'arm': ['腕', 'うで', '上腕', '前腕', '二の腕', 'ひじ', '肘'],
+        'leg': ['足', '脚', 'あし', '下肢', '太もも', 'ふともも', 'もも', 'すね', '脛', 'ふくらはぎ', '膝', 'ひざ'],
+        'hand': ['手', 'て', '手首', '手のひら', '手の甲', '指', '親指', '人差し指', '中指', '薬指', '小指'],
+        'foot': ['足首', 'くるぶし', '足の裏', '足の甲', 'つま先', 'かかと'],
+        'eye': ['目', '眼', 'まぶた', '眼球', '白目', '黒目', '瞳', '目頭', '目尻'],
+        'nose': ['鼻', 'はな', '鼻腔', '鼻の穴', '鼻先', '鼻筋'],
+        'ear': ['耳', 'みみ', '耳たぶ', '耳の穴', '耳の奥'],
+        'mouth': ['口', 'くち', '口腔', '唇', 'くちびる', '歯茎', '歯', '舌', 'した'],
+        'chest': ['胸', '胸部', '乳房', 'おっぱい', '乳首'],
+        'stomach': ['お腹', '腹部', '胃', 'みぞおち', 'へそ', 'おへそ', '下腹部', 'わき腹', '脇腹'],
+        'back': ['背中', '腰', '腰部', '腰椎', '背骨', '脊椎'],
+        'shoulder': ['肩', 'かた', '肩甲骨', '肩こり'],
+        'neck': ['首', 'くび', '首筋', 'うなじ'],
+        'face': ['顔', 'かお', '頬', 'ほほ', 'ほっぺ', 'あご', '顎', '額', 'ひたい', 'こめかみ'],
+        'skin': ['皮膚', '肌', 'はだ', '表皮']
+    }
+    
+    # 部位を優先度順にチェック（より具体的な部位を優先）
+    for part_name, keywords in general_body_parts.items():
+        if any(kw in user_text_lower for kw in keywords):
+            return part_name
     
     return None
 
@@ -2946,7 +3030,8 @@ def rule_based_recommendation(
             "status": "error",
             "reason": "症状を入力してください",
             "recommended_medicines": [],
-            "error_message": "症状を入力してください"
+            "error_message": "症状を入力してください。具体的な症状名（例：頭痛、発熱、のどの痛みなど）を含めて記述してください。",
+            "technical_details": f"入力テキスト: '{user_text}', 空文字列または空白のみ"
         }
     
     # 意味のない文字列のチェック
@@ -2959,7 +3044,8 @@ def rule_based_recommendation(
             "status": "error",
             "reason": "症状を詳しく入力してください",
             "recommended_medicines": [],
-            "error_message": "症状を詳しく入力してください（3文字以上）"
+            "error_message": "症状を詳しく入力してください（3文字以上）。具体的な症状名を含めて記述してください（例：「頭が痛い」「熱がある」など）。",
+            "technical_details": f"入力テキスト: '{user_text_stripped}', 文字数: {len(user_text_stripped)}（3文字未満）"
         }
     
     # 繰り返し文字のみのチェック（例: 「あああ」「テストテスト」）
@@ -2974,7 +3060,8 @@ def rule_based_recommendation(
                 "status": "error",
                 "reason": "症状を入力してください",
                 "recommended_medicines": [],
-                "error_message": "症状を入力してください"
+                "error_message": "症状を入力してください。具体的な症状名を含めて記述してください（例：「頭が痛い」「熱がある」など）。",
+                "technical_details": f"入力テキスト: '{user_text_stripped}', 文字数: {len(user_text_stripped)}, 繰り返し文字パターン検出"
             }
     
     # 医療関連キーワードが一切含まれていない場合のチェック（簡易版）
@@ -3016,7 +3103,7 @@ def rule_based_recommendation(
         "胸やけ", "胸焼け", "胃もたれ", "胃の重い感じ", "消化が悪い", "胃の不快感",
         
         # 外用薬関連症状
-        "かゆみ", "かゆい", "痒み", "皮膚のかゆみ",
+        "かゆみ", "かゆい", "痒み", "痒い", "痒", "皮膚のかゆみ",
         "ブツブツ", "赤い斑点", "皮膚の異常",
         "湿疹", "皮膚炎", "かぶれ", "皮膚の炎症", "皮膚",
         "水虫", "白癬", "足の水虫", "指の間",
@@ -3096,20 +3183,25 @@ def rule_based_recommendation(
     ]
     has_medical_keyword = any(keyword in user_text_stripped for keyword in medical_keywords)
     
-    # 医療キーワードがなく、かつ短い文字列の場合
-    if not has_medical_keyword and len(user_text_stripped) < 10:
-        logger.warning(f"医療関連キーワードが含まれていない入力が検出されました: {user_text_stripped}")
+    # ステップ1: NLU（症状抽出）- キーワードチェックの前に実行して、症状が検出される場合はキーワードチェックをスキップ
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
+    nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
+    
+    # NLU結果を確認し、症状が検出されている場合はキーワードチェックをスキップ
+    symptoms_detected = nlu_result.get("symptoms", [])
+    has_detected_symptoms = len(symptoms_detected) > 0
+    
+    # 医療キーワードがなく、かつ短い文字列の場合、かつ症状も検出されていない場合のみエラー
+    if not has_medical_keyword and len(user_text_stripped) < 10 and not has_detected_symptoms:
+        logger.warning(f"医療関連キーワードが含まれていない入力が検出されました（症状も検出されませんでした）: {user_text_stripped}")
         return {
             "status": "error",
             "reason": "症状を入力してください",
             "recommended_medicines": [],
-            "error_message": "症状を入力してください（例: 頭痛、発熱、のどの痛みなど）"
+            "error_message": "症状を入力してください（例: 頭痛、発熱、のどの痛みなど）。より具体的な症状名を含めて記述してください。",
+            "technical_details": f"入力テキスト: {user_text_stripped}, 文字数: {len(user_text_stripped)}, 医療キーワード検出: {has_medical_keyword}, 症状検出: {has_detected_symptoms}"
         }
-    
-    # ステップ1: NLU（症状抽出）
-    if DEBUG_MODE or logger.level <= logging.DEBUG:
-        logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
-    nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
     # 部位情報の抽出
     symptoms = nlu_result.get("symptoms", [])
@@ -3147,6 +3239,7 @@ def rule_based_recommendation(
         if "symptoms" in missing_fields:
             # 症状が検出されていない場合のみ推奨を中断
             logger.warning(f"症状が検出されていないため推奨を中断します")
+            symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
             return {
                 "status": "missing_critical_info",
                 "reason": "症状が検出されていません",
@@ -3156,6 +3249,8 @@ def rule_based_recommendation(
                 "recommended_medicines": [],
                 "nlu_result": nlu_result,
                 "confidence_score": confidence_score,
+                "error_message": "入力されたテキストから症状を検出できませんでした。具体的な症状名（例：頭痛、発熱、のどの痛み、かゆみなど）を含めて記述してください。",
+                "technical_details": f"入力テキスト: '{user_text}', 検出された症状: {symptom_names}, 信頼度スコア: {confidence_score:.2f}, 不足フィールド: {missing_fields}",
                 "timestamp": datetime.now().isoformat()
             }
         else:
@@ -3203,13 +3298,16 @@ def rule_based_recommendation(
     
     if not candidates:
         logger.warning("該当する候補医薬品が見つかりませんでした")
+        symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
         return {
             "status": "no_candidates",
             "reason": "該当する医薬品が見つかりませんでした",
             "warnings": safety_result["warnings"],
             "recommended_medicines": [],
             "nlu_result": nlu_result,
-            "confidence_score": confidence_score,  # confidence_scoreを追加
+            "confidence_score": confidence_score,
+            "error_message": f"検出された症状（{', '.join(symptom_names) if symptom_names else 'なし'}）に対して、適切な市販薬が見つかりませんでした。症状をより具体的に記述するか、医療機関を受診することをお勧めします。",
+            "technical_details": f"検出症状: {symptom_names}, 医薬品の種類: {nlu_result.get('medicine_type', '不明')}, 信頼度スコア: {confidence_score:.2f}, インフルエンザリスク: {influenza_risk}",
             "timestamp": datetime.now().isoformat()
         }
 
@@ -3222,6 +3320,7 @@ def rule_based_recommendation(
         after_filter = len(candidates)
         if after_filter == 0:
             logger.warning("15歳以上のユーザーのため、小児専用製品を除外した結果、候補がなくなりました")
+            symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
             return {
                 "status": "no_candidates",
                 "reason": "適切な医薬品が見つかりませんでした",
@@ -3229,6 +3328,8 @@ def rule_based_recommendation(
                 "recommended_medicines": [],
                 "nlu_result": nlu_result,
                 "confidence_score": confidence_score,
+                "error_message": f"15歳以上のユーザーのため、小児専用製品を除外した結果、検出された症状（{', '.join(symptom_names) if symptom_names else 'なし'}）に対して適切な医薬品が見つかりませんでした。医療機関を受診することをお勧めします。",
+                "technical_details": f"ユーザー年齢: {user_age}歳, 検出症状: {symptom_names}, フィルタ前候補数: {before_filter}, フィルタ後候補数: {after_filter}, 信頼度スコア: {confidence_score:.2f}",
                 "timestamp": datetime.now().isoformat()
             }
         elif before_filter != after_filter:
@@ -3240,6 +3341,7 @@ def rule_based_recommendation(
         after_filter = len(candidates)
         if after_filter == 0:
             logger.warning("年齢未入力のため、小児専用製品を除外した結果、候補がなくなりました")
+            symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
             return {
                 "status": "no_candidates",
                 "reason": "年齢未入力のため適切な医薬品が見つかりませんでした",
@@ -3247,6 +3349,8 @@ def rule_based_recommendation(
                 "recommended_medicines": [],
                 "nlu_result": nlu_result,
                 "confidence_score": confidence_score,
+                "error_message": f"年齢未入力のため、小児専用製品を除外した結果、検出された症状（{', '.join(symptom_names) if symptom_names else 'なし'}）に対して適切な医薬品が見つかりませんでした。年齢を入力するか、医療機関を受診することをお勧めします。",
+                "technical_details": f"年齢: 未入力（デフォルト年齢{scoring_user_info.get('age')}歳で評価）, 検出症状: {symptom_names}, フィルタ前候補数: {before_filter}, フィルタ後候補数: {after_filter}, 信頼度スコア: {confidence_score:.2f}",
                 "timestamp": datetime.now().isoformat()
             }
         elif before_filter != after_filter:
@@ -3268,6 +3372,7 @@ def rule_based_recommendation(
         # フィルタリング後に候補がなくなった場合の処理
         if not candidates:
             logger.warning("フィルタリング後、候補医薬品がなくなりました")
+            symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
             return {
                 "status": "no_candidates",
                 "reason": "該当する医薬品が見つかりませんでした",
@@ -3275,6 +3380,8 @@ def rule_based_recommendation(
                 "recommended_medicines": [],
                 "nlu_result": nlu_result,
                 "confidence_score": confidence_score,
+                "error_message": f"フィルタリング後、検出された症状（{', '.join(symptom_names) if symptom_names else 'なし'}）に対して適切な医薬品が見つかりませんでした。症状をより具体的に記述するか、医療機関を受診することをお勧めします。",
+                "technical_details": f"検出症状: {symptom_names}, 乗り物酔い症状: {has_motion_sickness}, フィルタ前候補数: {before_motion_filter}, フィルタ後候補数: {after_motion_filter}, 信頼度スコア: {confidence_score:.2f}",
                 "timestamp": datetime.now().isoformat()
             }
     
