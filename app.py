@@ -2690,6 +2690,18 @@ def index():
                                     
                                     rank = medicine.get('rank', 1)
                                     
+                                    # スコア表示の生成（相対スコアとスコア帯）
+                                    score_display = ""
+                                    relative_score = medicine.get('relative_score')
+                                    score_level = medicine.get('score_level', '中')
+                                    if relative_score is not None:
+                                        score_percent = relative_score * 100
+                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent:.1f}% <span style="color: #666;">({score_level})</span></p>'
+                                    elif medicine.get('score') is not None:
+                                        # 相対スコアがない場合は絶対スコアを表示（フォールバック）
+                                        score_percent = medicine.get('score', 0) * 100
+                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent:.1f}%</p>'
+                                    
                                     # リスク警告の表示
                                     risk_warning_display = ""
                                     if medicine.get('risk_warning'):
@@ -2703,6 +2715,7 @@ def index():
                                     bot_content += f"""
         <div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">
             <h5 style="margin: 0 0 10px 0;">🏆 {rank}つ目: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
+            {score_display}
             <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
             {age_restriction_display}
             {risk_warning_display}
