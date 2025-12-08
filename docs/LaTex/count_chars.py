@@ -19,9 +19,10 @@ def count_chars():
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # 本文部分を抽出（はじめにからおわりにまで）
+        # 本文部分を抽出（はじめにからおわりにまで、参考文献は除外）
+        # 参考文献（thebibliography環境）より前までを抽出
         body_match = re.search(
-            r'\\section\{はじめに\}(.*?)\\section\{おわりに\}(.*?)\\end\{document\}',
+            r'\\section\{はじめに\}(.*?)\\section\{おわりに\}(.*?)(?:% 図表ページ|\\begin\{thebibliography\}|\\end\{document\})',
             content,
             re.DOTALL
         )
