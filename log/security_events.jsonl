@@ -199,3 +199,17 @@
 {"timestamp": "2025-12-04T14:35:47.156651", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
 {"timestamp": "2025-12-04T14:35:49.910313", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-04T14:35:49.910642", "event_type": "input_validation", "user_id": "unknown", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩が痛いです。"}}
+{"timestamp": "2025-12-05T20:55:51.446057", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T20:55:51.446502", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腕がかゆいです。"}}
+{"timestamp": "2025-12-05T21:11:07.837758", "original_length": 1, "sanitized_length": 1, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:11:07.838267", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 1, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腕"}}
+{"timestamp": "2025-12-05T21:11:36.890587", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:11:36.891171", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "かぜ"}}
+{"timestamp": "2025-12-05T21:12:41.893706", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:12:41.894274", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪をひいています"}}
+{"timestamp": "2025-12-05T21:14:11.106595", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:14:11.107123", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腕がかゆい"}}
+{"timestamp": "2025-12-05T21:17:33.741061", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:17:33.741564", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "かぜ"}}
+{"timestamp": "2025-12-05T21:18:59.898403", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-05T21:18:59.898943", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです。"}}
