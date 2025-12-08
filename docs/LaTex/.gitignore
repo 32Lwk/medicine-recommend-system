@@ -1,0 +1,25 @@
+# LaTeX中間ファイル
+*.aux
+*.log
+*.dvi
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+
+# バックアップファイル
+*~
+*.bak
+*.swp
+
+# 一時ファイル
+*.tmp
+
