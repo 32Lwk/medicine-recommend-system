@@ -12,6 +12,17 @@ import socket
 from collections.abc import MutableMapping
 from threading import local
 
+# ログ設定（早期に設定）
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # ターミナルに出力
+        logging.FileHandler('app.log', encoding='utf-8')  # ファイルにも出力
+    ]
+)
+logger = logging.getLogger(__name__)
+
 # .envファイルから環境変数を読み込み（medicine_logic.pyより前に実行）
 try:
     from dotenv import load_dotenv
@@ -19,34 +30,38 @@ try:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     env_path = os.path.join(base_dir, '.env')
     
-    # デバッグ情報
-    print(f"[DEBUG app.py] base_dir: {base_dir}")
-    print(f"[DEBUG app.py] .envファイルのパス: {env_path}")
-    print(f"[DEBUG app.py] .envファイル存在確認: {os.path.exists(env_path)}")
+    # デバッグ情報（DEBUG_MODE時のみ）
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        logger.debug(f"[DEBUG app.py] base_dir: {base_dir}")
+        logger.debug(f"[DEBUG app.py] .envファイルのパス: {env_path}")
+        logger.debug(f"[DEBUG app.py] .envファイル存在確認: {os.path.exists(env_path)}")
     
     # まず明示的なパスで読み込む（存在する場合）
     loaded = False
     if os.path.exists(env_path):
         loaded = load_dotenv(env_path, override=True)  # override=Trueで確実に読み込む
-        print(f"[DEBUG app.py] load_dotenv({env_path}) 結果: {loaded}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"[DEBUG app.py] load_dotenv({env_path}) 結果: {loaded}")
     
     # 引数なしでも試す（自動検索、override=Trueで上書き）
     if not loaded:
         loaded = load_dotenv(override=True)
-        print(f"[DEBUG app.py] load_dotenv() (引数なし) 結果: {loaded}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"[DEBUG app.py] load_dotenv() (引数なし) 結果: {loaded}")
     
     # 環境変数の確認
     api_key_check = os.getenv('OPENAI_API_KEY')
     if api_key_check:
-        print(f"[DEBUG app.py] OPENAI_API_KEY読み込み成功（長さ: {len(api_key_check)}文字）")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"[DEBUG app.py] OPENAI_API_KEY読み込み成功（長さ: {len(api_key_check)}文字）")
     else:
-        print("[DEBUG app.py] WARNING: OPENAI_API_KEYが環境変数に設定されていません")
+        logger.warning("[DEBUG app.py] WARNING: OPENAI_API_KEYが環境変数に設定されていません")
     
-    print("app.py: .envファイルから環境変数を読み込みました。")
+    logger.info("app.py: .envファイルから環境変数を読み込みました。")
 except ImportError:
-    print("app.py: python-dotenvがインストールされていません。環境変数のみを使用します。")
+    logger.info("app.py: python-dotenvがインストールされていません。環境変数のみを使用します。")
 except Exception as e:
-    print(f"app.py: .envファイル読み込みエラー: {e}")
+    logger.warning(f"app.py: .envファイル読み込みエラー: {e}")
     import traceback
     traceback.print_exc()
 
@@ -152,18 +167,6 @@ class RequestSafeSession(MutableMapping):
 
 
 session = RequestSafeSession()
-
-# ログ設定
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # ターミナルに出力
-        logging.FileHandler('app.log', encoding='utf-8')  # ファイルにも出力
-    ]
-)
-
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
@@ -669,7 +672,7 @@ def index():
         session['_id'] = sid
         # 言語設定を初期化
         session['ui_language'] = 'ja'  # UI言語（デフォルトは日本語）
-        session['detected_language'] = 'ja'  # 検出された言語
+        session['detected_language'] = 'ja'  # 検出された言語（デフォルトは日本語）
         logger.info(f"🆕 新しいセッションIDを作成: {sid}")
     
     # セッションIDの整合性を確認
@@ -1468,6 +1471,11 @@ def index():
                     # 属性応答の可能性がある場合のみ属性抽出を実行
                     logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
                     
+                    # 言語を検出（すべての入力に対して実行）
+                    detected_language = detect_language(user_message)
+                    session['detected_language'] = detected_language
+                    logger.info(f"🌍 検出された言語: {detected_language}")
+                    
                     # 初回チャットで症状入力の場合は属性抽出をスキップして症状分析に進む
                     if len(session.get('messages', [])) <= 1 and is_symptom_input(user_message):
                         logger.info(f"🔄 初回症状入力のため属性抽出をスキップして症状分析に進みます")
@@ -1486,12 +1494,7 @@ def index():
                             'other_info': None
                         })
                         
-                        # 言語を検出
-                        detected_language = detect_language(user_message)
-                        session['detected_language'] = detected_language
-                        logger.info(f"🌍 検出された言語: {detected_language}")
-                        
-                        # 多言語対応の属性抽出を実行
+                        # 多言語対応の属性抽出を実行（言語検出は既に上で実行済み）
                         try:
                             extracted_attrs = extract_user_attributes_multilingual(
                                 user_message, 
@@ -1967,6 +1970,11 @@ def index():
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
             if not is_question:
+                # 言語を検出（症状入力時にも実行）
+                detected_language = detect_language(user_message)
+                session['detected_language'] = detected_language
+                logger.info(f"🌍 検出された言語: {detected_language}")
+                
                 # 医薬品相談回答処理の開始時にフラグを設定
                 session['is_medicine_consultation'] = True
                 logger.info(f"🏥 SYMPTOM INPUT DETECTED: {user_message}")
@@ -2985,10 +2993,40 @@ def index():
         <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
         <p style="margin: 5px 0;">{doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'}</p>
     </div>
-{questions_section_before}
 """
                         
                         # 表示順序: アドバイス → 推奨 → 質問（アドバイスを一番上に表示）
+                        
+                        # 多言語対応: 入力言語に応じて翻訳（フィードバックボタン追加前）
+                        detected_language = session.get('detected_language', 'ja')
+                        if detected_language != 'ja' and bot_content:
+                            try:
+                                logger.info(f"🌍 翻訳開始: {detected_language}")
+                                translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client)
+                                if translated_content and translated_content != bot_content:
+                                    bot_content = translated_content
+                                    logger.info(f"✅ 翻訳完了: {detected_language}")
+                                else:
+                                    logger.info(f"⚠️ 翻訳スキップ: 翻訳結果が空または同じ")
+                            except Exception as e:
+                                logger.error(f"❌ 翻訳エラー: {e}")
+                                # 翻訳に失敗した場合は元のコンテンツを使用
+                        
+                        # 質問セクションを翻訳して追加（翻訳処理の後）
+                        if questions_section_before:
+                            if detected_language != 'ja':
+                                try:
+                                    logger.info(f"🌍 質問セクションの翻訳開始: {detected_language}")
+                                    translated_questions_section = translate_medicine_recommendation(questions_section_before, detected_language, recommendation_client)
+                                    if translated_questions_section and translated_questions_section != questions_section_before:
+                                        questions_section_before = translated_questions_section
+                                        logger.info(f"✅ 質問セクションの翻訳完了: {detected_language}")
+                                    else:
+                                        logger.info(f"⚠️ 質問セクションの翻訳スキップ: 翻訳結果が空または同じ")
+                                except Exception as e:
+                                    logger.warning(f"⚠️ 質問セクションの翻訳エラー: {e}")
+                                    # 翻訳に失敗した場合は元のコンテンツを使用
+                            bot_content += questions_section_before
                         
                         # 評価ボタン用のデータを準備（HTMLエスケープ処理）
                         import json
@@ -3007,34 +3045,37 @@ def index():
                         # JSONエンコードしてHTMLエスケープ
                         feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
                         
+                        # フィードバックボタンのテキストも翻訳
+                        feedback_text = "この推奨結果はいかがでしたか？"
+                        feedback_positive = "適切"
+                        feedback_negative = "不適切"
+                        if detected_language != 'ja':
+                            try:
+                                feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client)
+                                feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client)
+                                feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client)
+                                if feedback_text_translated and feedback_text_translated != feedback_text:
+                                    feedback_text = feedback_text_translated
+                                if feedback_positive_translated and feedback_positive_translated != feedback_positive:
+                                    feedback_positive = feedback_positive_translated
+                                if feedback_negative_translated and feedback_negative_translated != feedback_negative:
+                                    feedback_negative = feedback_negative_translated
+                            except Exception as e:
+                                logger.warning(f"⚠️ フィードバックボタンの翻訳エラー: {e}")
+                        
                         bot_content += f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この推奨結果はいかがでしたか？</p>
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">{feedback_text}</p>
         <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            適切
+            {feedback_positive}
         </button>
         <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            不適切
+            {feedback_negative}
         </button>
     </div>
 </div>"""
                     
                         bot_diag = recommendation_result
-                        
-                        # 多言語対応: UI言語に応じて翻訳
-                        ui_language = session.get('ui_language', 'ja')
-                        if ui_language != 'ja' and bot_content:
-                            try:
-                                logger.info(f"🌍 翻訳開始: {ui_language}")
-                                translated_content = translate_medicine_recommendation(bot_content, ui_language, client)
-                                if translated_content and translated_content != bot_content:
-                                    bot_content = translated_content
-                                    logger.info(f"✅ 翻訳完了: {ui_language}")
-                                else:
-                                    logger.info(f"⚠️ 翻訳スキップ: 翻訳結果が空または同じ")
-                            except Exception as e:
-                                logger.error(f"❌ 翻訳エラー: {e}")
-                                # 翻訳に失敗した場合は元のコンテンツを使用
                     
                 except Exception as e:
                     logger.error(f"❌ 包括的医薬品推奨システム実行時エラー: {e}")
@@ -3263,9 +3304,10 @@ def index():
     manual_replies = [msg for msg in session.get('messages', []) if msg.get('manual_reply')]
     if manual_replies:
         logger.info(f"📝 Manual replies preserved: {len(manual_replies)} messages")
-        print(f"Manual replies found in session {sid}: {len(manual_replies)} messages")
-        for i, reply in enumerate(manual_replies):
-            print(f"  Manual reply {i+1}: {reply.get('content', '')[:50]}...")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"Manual replies found in session {sid}: {len(manual_replies)} messages")
+            for i, reply in enumerate(manual_replies):
+                logger.debug(f"  Manual reply {i+1}: {reply.get('content', '')[:50]}...")
     
     # POSTリクエストの場合はJSON形式で成功を返す
     if request.method == 'POST':
@@ -3869,9 +3911,10 @@ def api_manual_reply_queue():
         session_id = data.get('session_id')
         reply_message = data.get('reply_message')
         
-        print(f"Manual reply request received: session_id={session_id}, message={reply_message}")
+        logger.info(f"Manual reply request received: session_id={session_id}, message={reply_message[:50] if reply_message else None}...")
         all_sessions = get_all_sessions_from_db()
-        print(f"Current session keys: {list(all_sessions.keys())}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"Current session keys: {list(all_sessions.keys())}")
         
         if not session_id or not reply_message:
             return jsonify({'error': 'session_id and reply_message are required'}), 400
@@ -3882,13 +3925,14 @@ def api_manual_reply_queue():
             if pending['session_id'] == session_id:
                 queue.pop(i)
                 set_manual_reply_queue(queue)
-                print(f"Removed pending message from queue for session {session_id}")
+                logger.info(f"Removed pending message from queue for session {session_id}")
                 break
         
         # 指定されたセッションIDのユーザーセッションに返信メッセージを追加
         target_session = get_session_from_db(session_id)
         if target_session:
-            print(f"Found target session: {target_session}")
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+                logger.debug(f"Found target session: {target_session.get('session_id', 'unknown')}")
             
             # 返信メッセージを追加
             manual_reply_message = {
