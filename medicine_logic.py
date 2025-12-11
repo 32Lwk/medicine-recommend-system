@@ -297,6 +297,17 @@ def translate_medicine_recommendation(text, target_language, client=None):
     if not text or target_language == 'ja':
         return text  # 日本語の場合は翻訳不要
     
+    # .envファイルから環境変数を読み込む（念のため）
+    try:
+        from dotenv import load_dotenv
+        env_path = os.path.join(BASE_DIR, '.env')
+        if os.path.exists(env_path):
+            load_dotenv(env_path, override=True)
+    except ImportError:
+        pass  # python-dotenvがインストールされていない場合はスキップ
+    except Exception:
+        pass  # エラーが発生した場合はスキップ
+    
     try:
         import deepl
     except ImportError:
