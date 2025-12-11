@@ -867,16 +867,18 @@
         
         /* フィードバックモーダルの余白調整 */
         #feedbackModal .modal-content {
-            padding: 0 0 20px 0; /* ヘッダーをモーダル幅いっぱいに、下のみ余白 */
-            margin: 10% auto;
+            padding: 0; /* パディングを削除してコンテンツに応じた高さに */
+            margin: auto; /* 縦方向の余白を最小限に */
             border-radius: 10px; /* 全体の角丸 */
             overflow: hidden; /* ヘッダーの角丸を適用 */
+            max-height: none; /* 最大高さの制限を解除 */
+            height: auto; /* コンテンツに応じた高さ */
         }
         
         #feedbackModal .modal-header {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px; /* パディングを削減 */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -904,12 +906,12 @@
         }
         
         #feedbackModal .modal-body {
-            padding: 15px 20px;
+            padding: 12px 20px; /* パディングを削減 */
             margin-bottom: 0;
         }
         
         #feedbackModal .modal-body p {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0; /* マージンを削減 */
             font-size: 14px;
         }
         
@@ -919,7 +921,7 @@
         }
         
         #feedbackModal .modal-footer {
-            padding: 10px 20px 0;
+            padding: 8px 20px 12px; /* パディングを削減 */
             margin-top: 0;
             gap: 8px;
         }
@@ -1838,20 +1840,20 @@
             
             /* フィードバックモーダルのスマホ向け調整 */
             #feedbackModal .modal-content {
-                padding: 0 0 15px 0;
-                margin: 8% auto;
+                padding: 0; /* パディングを削除 */
+                margin: auto; /* 縦方向の余白を最小限に */
             }
             
             #feedbackModal .modal-header {
-                padding: 12px 15px;
+                padding: 10px 15px; /* パディングを削減 */
             }
             
             #feedbackModal .modal-body {
-                padding: 12px 15px;
+                padding: 10px 15px; /* パディングを削減 */
             }
             
             #feedbackModal .modal-footer {
-                padding: 8px 15px 0;
+                padding: 6px 15px 10px; /* パディングを削減 */
             }
             
             /* 成功モーダルのスマホ向け調整 */
@@ -1953,12 +1955,12 @@
             
             /* フィードバックモーダルの小さなスマホ向け調整 */
             #feedbackModal .modal-content {
-                padding: 0 0 12px 0;
-                margin: 5% auto;
+                padding: 0; /* パディングを削除 */
+                margin: auto; /* 縦方向の余白を最小限に */
             }
             
             #feedbackModal .modal-header {
-                padding: 10px 12px;
+                padding: 8px 12px; /* パディングを削減 */
             }
             
             #feedbackModal .modal-header .modal-title {
@@ -1966,11 +1968,11 @@
             }
             
             #feedbackModal .modal-body {
-                padding: 10px 12px;
+                padding: 8px 12px; /* パディングを削減 */
             }
             
             #feedbackModal .modal-body p {
-                margin: 0 0 8px 0;
+                margin: 0 0 6px 0; /* マージンを削減 */
                 font-size: 13px;
             }
             
@@ -1981,7 +1983,7 @@
             }
             
             #feedbackModal .modal-footer {
-                padding: 6px 12px 0;
+                padding: 6px 12px 8px; /* パディングを削減 */
                 flex-wrap: wrap;
                 gap: 6px;
             }
