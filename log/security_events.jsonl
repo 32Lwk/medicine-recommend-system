@@ -295,3 +295,15 @@
 {"timestamp": "2025-12-12T00:55:58.155944", "event_type": "input_validation", "user_id": "unknown", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
 {"timestamp": "2025-12-12T01:09:55.715630", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-12T01:09:55.716216", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
+{"timestamp": "2025-12-12T01:24:44.680561", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T01:24:44.681006", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
+{"timestamp": "2025-12-12T01:24:48.028095", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T01:24:48.028526", "event_type": "input_validation", "user_id": "unknown", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
+{"timestamp": "2025-12-12T01:53:54.794033", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T01:53:54.794715", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛"}}
+{"timestamp": "2025-12-12T01:59:38.663319", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T01:59:38.663906", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
+{"timestamp": "2025-12-12T01:59:41.013638", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T01:59:41.014120", "event_type": "input_validation", "user_id": "unknown", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
+{"timestamp": "2025-12-12T02:00:20.084143", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-12T02:00:20.084753", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです。"}}
