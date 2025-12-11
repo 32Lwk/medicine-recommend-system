@@ -7,7 +7,10 @@ workers = 2
 worker_class = 'sync'
 
 # タイムアウト（秒）- 処理時間を考慮して増加
-timeout = 180
+# 医薬品推奨処理（最大30秒）+ 翻訳処理（最大10秒）+ バッファ
+timeout = 120
+# グレースフル・タイムアウト（workerの再起動時間）
+graceful_timeout = 30
 
 # バインドするアドレスとポート
 import os
@@ -34,5 +37,14 @@ max_requests_jitter = 50
 worker_memory_limit = 512
 
 # Keep-aliveタイムアウト（短縮して接続効率を向上）
-keepalive = 2
+keepalive = 5
+
+# ワーカーの応答時間を監視
+worker_timeout = 120
+
+# プリロード（メモリ効率化）
+preload_app = False  # Falseにすることで各workerが独立して動作
+
+# ログフォーマット
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
