@@ -1777,6 +1777,16 @@ POST /api/admin_mode      # 管理者モード切り替え
 
 ## 📝 最近の更新履歴
 
+### 2025年12月12日（後半）
+- **プロジェクトの整理とクリーンアップ**
+  - **不要ファイルの削除**: 一時的な分析・評価ファイル、ベンチマーク関連ファイル、分析ドキュメント、一時的な出力ファイルを削除
+    - 削除したファイル: `analyze_test_results.py`, `detailed_recommendation_evaluation.py`, `evaluate_final_improvements.py`, `evaluate_final_results.py`, `final_evaluation_summary.py`, `test_output.txt`
+    - ベンチマーク関連: `benchmark_keyword_check.py`, `benchmark_translation.py`, `benchmark_*.json`, `BENCHMARK_README.md`, `run_benchmark.sh`
+    - 分析ドキュメント: `IMPROVEMENT_ANALYSIS.md`, `KEYWORD_PERFORMANCE_ANALYSIS.md`, `MEDICAL_KEYWORD_ISSUE_ANALYSIS.md`, `SCORING_SYSTEM_DETAILED_ANALYSIS.md`, `SCORING_SYSTEM_ISSUES_ANALYSIS.md`, `TRANSLATION_RECOMMENDATION.md`, `log_analysis_2025-12-06.md`
+    - その他: `get_recommended_medicines.py`, `mediscine_test.csv`, `recommended_medicines_detail.json`, `__pycache__/`ディレクトリ
+  - **C_OPTIMIZATION_ANALYSIS.mdの復元**: Git履歴からC言語化による高速化分析ドキュメントを復元
+  - **効果**: プロジェクト構造の整理とメンテナンス性の向上
+
 ### 2025年12月12日
 - **特殊用途医薬品フィルタリングの強化**
   - **ホルモン剤・性器専用医薬品の除外機能を実装**: 一般的な症状には不適切な特殊用途医薬品を自動除外
