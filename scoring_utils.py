@@ -94,14 +94,19 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     if not symptom_names:
         return 0.0
 
-    normalized_efficacy = normalize_text(efficacy_text)
-    if not normalized_efficacy:
-        return 0.0
-
     normalized_symptoms = [normalize_text(name) for name in symptom_names]
     normalized_symptom_set = {name for name in normalized_symptoms if name}
 
     if not normalized_symptom_set:
+        return 0.0
+    
+    # 効能テキストを句読点で分割してから正規化
+    import re
+    efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text)
+    efficacy_parts = [normalize_text(p) for p in efficacy_parts_raw if p.strip()]
+    efficacy_parts = [p for p in efficacy_parts if p]
+    
+    if not efficacy_parts:
         return 0.0
 
     # 単語境界を考慮したマッチング関数
@@ -117,6 +122,14 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         if token not in text:
             return False
         
+        # 日本語文字の判定関数（助詞・記号を除く）
+        def is_japanese_word_char(c: str) -> bool:
+            if not c:
+                return False
+            # 漢字、カタカナのみを単語文字とみなす（ひらがな助詞は境界）
+            return ('\u30A0' <= c <= '\u30FF' or  # カタカナ
+                    '\u4E00' <= c <= '\u9FFF')    # 漢字
+        
         # 症状名の出現位置をすべて取得
         start_positions = []
         start = 0
@@ -127,7 +140,7 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
             start_positions.append(pos)
             start = pos + 1
         
-        # 各出現位置で、前後が別の文字であることを確認
+        # 各出現位置で、前後が日本語文字でないことを確認
         for pos in start_positions:
             # 前の文字（存在する場合）
             prev_char = text[pos - 1] if pos > 0 else ''
@@ -135,18 +148,24 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
             next_pos = pos + len(token)
             next_char = text[next_pos] if next_pos < len(text) else ''
             
-            # 前後が別の文字であることを確認
-            # 前が文の始まり、または前の文字が症状名の一部でない
-            # 後が文の終わり、または後の文字が症状名の一部でない
-            is_valid_start = (pos == 0) or (prev_char not in token)
-            is_valid_end = (next_pos >= len(text)) or (next_char not in token)
+            # 前後が日本語単語文字でないことを確認
+            # （前が文の始まりまたは非単語文字）AND（後が文の終わりまたは非単語文字）
+            # ひらがな助詞（の、が、を、に、は、など）や記号（、。）は境界とみなす
+            is_valid_start = (pos == 0) or not is_japanese_word_char(prev_char)
+            is_valid_end = (next_pos >= len(text)) or not is_japanese_word_char(next_char)
             
             if is_valid_start and is_valid_end:
                 return True
         
         return False
     
-    match_count = sum(1 for name in normalized_symptom_set if is_word_match(name, normalized_efficacy))
+    # 各効能パート内でマッチングをカウント
+    match_count = 0
+    for name in normalized_symptom_set:
+        for part in efficacy_parts:
+            if is_word_match(name, part):
+                match_count += 1
+                break  # 一度マッチしたら次の症状へ
     
     # 症状が効能に全く含まれていない場合は大幅減点
     if match_count == 0:
@@ -155,7 +174,9 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     specificity_ratio = match_count / len(normalized_symptom_set)
 
     # 効能効果の長さによる調整（短いほど特化している）
-    efficacy_length = len(normalized_efficacy)
+    # 全パートを結合して長さを計算
+    combined_efficacy = ''.join(efficacy_parts)
+    efficacy_length = len(combined_efficacy)
     length_penalty = min(1.0, efficacy_length / 120)  # 正規化後のテキスト長を基準
 
     final_score = specificity_ratio * (1.0 - length_penalty * 0.25)
@@ -164,7 +185,7 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     penalty_factor = 1.0
     for keyword, rule in BROAD_EFFICACY_KEYWORDS.items():
         normalized_keyword = normalize_text(keyword)
-        if normalized_keyword and normalized_keyword in normalized_efficacy:
+        if normalized_keyword and normalized_keyword in combined_efficacy:
             required_set = {normalize_text(req) for req in rule.get("require_any", set())}
             if required_set and not any(req in normalized_symptom_set for req in required_set):
                 penalty = max(0.0, min(1.0, rule.get("penalty", 0.2)))
