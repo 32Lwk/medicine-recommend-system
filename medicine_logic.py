@@ -282,9 +282,31 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
         logger.error(f"ChatGPT API呼び出しエラー: {e}")
         return {"detected_language": detected_language}
 
+# 翻訳キャッシュ（グローバル）
+_translation_cache_global = {}
+_max_translation_cache_size = 200
+
+def get_cached_translation(text: str, target_language: str):
+    """翻訳キャッシュから結果を取得"""
+    cache_key = f"{target_language}:{hash(text)}"
+    return _translation_cache_global.get(cache_key)
+
+def set_cached_translation(text: str, target_language: str, translated_text: str):
+    """翻訳キャッシュに結果を保存"""
+    global _translation_cache_global
+    
+    # キャッシュサイズ制限
+    if len(_translation_cache_global) >= _max_translation_cache_size:
+        # 古いエントリを削除（FIFO）
+        oldest_key = next(iter(_translation_cache_global))
+        del _translation_cache_global[oldest_key]
+    
+    cache_key = f"{target_language}:{hash(text)}"
+    _translation_cache_global[cache_key] = translated_text
+
 def translate_medicine_recommendation(text, target_language, client=None):
     """
-    AI応答（医薬品推奨）を翻訳（DeepL API使用）
+    AI応答（医薬品推奨）を翻訳（DeepL API使用、キャッシュ機能付き）
     
     Args:
         text (str): 翻訳対象のテキスト
@@ -296,6 +318,12 @@ def translate_medicine_recommendation(text, target_language, client=None):
     """
     if not text or target_language == 'ja':
         return text  # 日本語の場合は翻訳不要
+    
+    # キャッシュをチェック
+    cached_result = get_cached_translation(text, target_language)
+    if cached_result:
+        logger.debug(f"翻訳キャッシュヒット: {target_language}, テキスト長: {len(text)}")
+        return cached_result
     
     # .envファイルから環境変数を読み込む（念のため）
     try:
@@ -351,6 +379,10 @@ def translate_medicine_recommendation(text, target_language, client=None):
             logger.warning(f"⚠️ 翻訳結果が不完全の可能性があります。元のテキスト長: {len(text)}, 翻訳後: {len(translated_text)}")
         
         logger.info(f"✅ DeepL翻訳完了 ({target_language}): {elapsed_time:.2f}秒, {len(translated_text)}文字")
+        
+        # キャッシュに保存
+        set_cached_translation(text, target_language, translated_text)
+        
         return translated_text
         
     except deepl.exceptions.QuotaExceededException:

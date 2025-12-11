@@ -27,6 +27,8 @@ class DatabaseManager:
         self.database_url = os.getenv('DATABASE_URL')
         self.min_connections = 2
         self.max_connections = 10
+        self.reconnect_retries = 3
+        self.reconnect_backoff = 1  # 秒
         
     def connect(self):
         """データベースに接続または接続プールを作成"""
@@ -40,12 +42,26 @@ class DatabaseManager:
             
             # 接続プールを作成
             try:
+                # SSLモードを環境変数から取得（デフォルトはrequire）
+                sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+                
+                # 接続パラメータを構築
+                connect_kwargs = {
+                    'connect_timeout': 5,  # 10秒から5秒に短縮（早期エラー検出）
+                    'application_name': "medicine-recommend-system"
+                }
+                
+                # DATABASE_URLにsslmodeが含まれていない場合のみ追加
+                if 'sslmode=' not in self.database_url.lower():
+                    # DATABASE_URLにsslmodeパラメータを追加
+                    separator = '&' if '?' in self.database_url else '?'
+                    self.database_url = f"{self.database_url}{separator}sslmode={sslmode}"
+                
                 self.connection_pool = pool.ThreadedConnectionPool(
                     self.min_connections,
                     self.max_connections,
                     self.database_url,
-                    connect_timeout=10,
-                    application_name="medicine-recommend-system"
+                    **connect_kwargs
                 )
                 logger.info(f"✅ PostgreSQL connection pool created (min: {self.min_connections}, max: {self.max_connections})")
                 # 初期接続をテスト
@@ -57,10 +73,20 @@ class DatabaseManager:
             except Exception as pool_error:
                 logger.warning(f"⚠️ Connection pool creation failed, using single connection: {str(pool_error)}")
                 # フォールバック: 単一接続
+                sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+                connect_kwargs = {
+                    'connect_timeout': 5,  # 10秒から5秒に短縮
+                    'application_name': "medicine-recommend-system"
+                }
+                # DATABASE_URLにsslmodeが含まれていない場合のみ追加
+                db_url = self.database_url
+                if 'sslmode=' not in db_url.lower():
+                    separator = '&' if '?' in db_url else '?'
+                    db_url = f"{db_url}{separator}sslmode={sslmode}"
+                
                 self.connection = psycopg2.connect(
-                    self.database_url,
-                    connect_timeout=10,
-                    application_name="medicine-recommend-system"
+                    db_url,
+                    **connect_kwargs
                 )
                 logger.info("✅ PostgreSQL connection established (fallback mode)")
                 return True
@@ -68,6 +94,40 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"❌ Database connection failed: {str(e)}")
             return False
+    
+    def _is_ssl_error(self, error_msg: str) -> bool:
+        """SSLエラーかどうかを判定"""
+        ssl_keywords = ["SSL", "ssl", "decryption", "bad record mac", "ssl connection", "certificate"]
+        return any(keyword in error_msg for keyword in ssl_keywords)
+    
+    def _reconnect_with_retry(self):
+        """リトライ付き再接続"""
+        for attempt in range(self.reconnect_retries):
+            try:
+                # バックオフ: 試行回数に応じて待機時間を増やす
+                if attempt > 0:
+                    import time
+                    wait_time = self.reconnect_backoff * (2 ** (attempt - 1))
+                    logger.info(f"⏳ Reconnection attempt {attempt + 1}/{self.reconnect_retries}, waiting {wait_time}s...")
+                    time.sleep(wait_time)
+                
+                # 接続プールを閉じて再初期化
+                if self.connection_pool:
+                    try:
+                        self.connection_pool.closeall()
+                    except:
+                        pass
+                    self.connection_pool = None
+                
+                # 再接続を試行
+                if self.connect():
+                    logger.info(f"✅ Reconnection successful (attempt {attempt + 1})")
+                    return True
+            except Exception as e:
+                logger.warning(f"⚠️ Reconnection attempt {attempt + 1} failed: {str(e)}")
+        
+        logger.error(f"❌ All reconnection attempts failed")
+        return False
     
     def get_connection(self):
         """接続プールから接続を取得、または単一接続を返す"""
@@ -77,29 +137,81 @@ class DatabaseManager:
                 # 接続の有効性をチェック
                 if conn:
                     try:
+                        # 接続状態をチェック（SELECT 1だけでなく、接続の状態も確認）
+                        if conn.closed:
+                            raise Exception("Connection is closed")
+                        
                         cursor = conn.cursor()
                         cursor.execute("SELECT 1")
                         cursor.close()
+                        
+                        # 接続が正常であることを確認
+                        if conn.status != psycopg2.extensions.STATUS_READY:
+                            raise Exception(f"Connection status is not ready: {conn.status}")
+                            
                     except Exception as e:
-                        logger.warning(f"⚠️ Connection validation failed: {str(e)}, reconnecting...")
+                        error_msg = str(e)
+                        logger.warning(f"⚠️ Connection validation failed: {error_msg}, reconnecting...")
+                        
+                        # 接続を閉じる
                         try:
                             conn.close()
                         except:
                             pass
-                        # 再接続を試行
-                        self.connect()
-                        conn = self.connection_pool.getconn()
+                        
+                        # SSLエラーの場合は再接続を試行
+                        if self._is_ssl_error(error_msg):
+                            logger.warning("⚠️ SSL error detected, reconnecting...")
+                            if self._reconnect_with_retry():
+                                conn = self.connection_pool.getconn()
+                            else:
+                                return None
+                        else:
+                            # その他のエラーの場合も再接続を試行
+                            if self._reconnect_with_retry():
+                                conn = self.connection_pool.getconn()
+                            else:
+                                return None
                 return conn
             except Exception as e:
-                logger.error(f"❌ Failed to get connection from pool: {str(e)}")
-                # 再接続を試行
-                try:
-                    self.connect()
-                    return self.connection_pool.getconn()
-                except:
-                    return None
+                error_msg = str(e)
+                logger.error(f"❌ Failed to get connection from pool: {error_msg}")
+                
+                # SSLエラーの場合は再接続を試行
+                if self._is_ssl_error(error_msg):
+                    if self._reconnect_with_retry():
+                        try:
+                            return self.connection_pool.getconn()
+                        except:
+                            return None
+                else:
+                    # その他のエラーの場合も再接続を試行
+                    if self._reconnect_with_retry():
+                        try:
+                            return self.connection_pool.getconn()
+                        except:
+                            return None
+                return None
         elif self.connection:
-            return self.connection
+            # 単一接続の場合も検証
+            try:
+                if self.connection.closed:
+                    logger.warning("⚠️ Single connection is closed, reconnecting...")
+                    if self._reconnect_with_retry():
+                        return self.connection
+                    return None
+                
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT 1")
+                cursor.close()
+                return self.connection
+            except Exception as e:
+                error_msg = str(e)
+                logger.warning(f"⚠️ Single connection validation failed: {error_msg}")
+                if self._is_ssl_error(error_msg):
+                    if self._reconnect_with_retry():
+                        return self.connection
+                return None
         else:
             logger.error("❌ No database connection available")
             return None
@@ -706,21 +818,18 @@ class DatabaseManager:
             logger.debug(f"Traceback: {traceback.format_exc()}")
             
             # SSLエラーの場合は接続を閉じて再接続を試行
-            if "SSL" in error_msg or "decryption" in error_msg or "bad record mac" in error_msg:
+            if self._is_ssl_error(error_msg):
                 logger.warning("⚠️ SSL error detected, attempting to reconnect...")
                 if conn:
                     try:
                         conn.close()
                     except:
                         pass
-                # 再接続を試行
-                try:
-                    self.connect()
+                # 再接続を試行（リトライ付き）
+                if self._reconnect_with_retry():
                     conn = self.get_connection()
                     if conn:
                         logger.info("✅ Database reconnected successfully")
-                except Exception as reconnect_error:
-                    logger.error(f"❌ Reconnection failed: {str(reconnect_error)}")
             
             if conn:
                 try:
