@@ -29,6 +29,7 @@ class DatabaseManager:
         self.max_connections = 10
         self.reconnect_retries = 3
         self.reconnect_backoff = 1  # 秒
+        self._reconnecting = False  # 再帰防止フラグ
         
     def connect(self):
         """データベースに接続または接続プールを作成"""
@@ -64,11 +65,22 @@ class DatabaseManager:
                     **connect_kwargs
                 )
                 logger.info(f"✅ PostgreSQL connection pool created (min: {self.min_connections}, max: {self.max_connections})")
-                # 初期接続をテスト
-                test_conn = self.get_connection()
-                if test_conn:
-                    self.put_connection(test_conn)
-                    return True
+                # 初期接続をテスト（再帰を防ぐため直接接続プールから取得）
+                try:
+                    test_conn = self.connection_pool.getconn()
+                    if test_conn:
+                        cursor = test_conn.cursor()
+                        cursor.execute("SELECT 1")
+                        cursor.close()
+                        self.connection_pool.putconn(test_conn)
+                        return True
+                except Exception as test_error:
+                    logger.warning(f"⚠️ Initial connection test failed: {str(test_error)}")
+                    try:
+                        if test_conn:
+                            self.connection_pool.putconn(test_conn)
+                    except:
+                        pass
                 return False
             except Exception as pool_error:
                 logger.warning(f"⚠️ Connection pool creation failed, using single connection: {str(pool_error)}")
@@ -101,33 +113,54 @@ class DatabaseManager:
         return any(keyword in error_msg for keyword in ssl_keywords)
     
     def _reconnect_with_retry(self):
-        """リトライ付き再接続"""
-        for attempt in range(self.reconnect_retries):
-            try:
-                # バックオフ: 試行回数に応じて待機時間を増やす
-                if attempt > 0:
-                    import time
-                    wait_time = self.reconnect_backoff * (2 ** (attempt - 1))
-                    logger.info(f"⏳ Reconnection attempt {attempt + 1}/{self.reconnect_retries}, waiting {wait_time}s...")
-                    time.sleep(wait_time)
-                
-                # 接続プールを閉じて再初期化
-                if self.connection_pool:
-                    try:
-                        self.connection_pool.closeall()
-                    except:
-                        pass
-                    self.connection_pool = None
-                
-                # 再接続を試行
-                if self.connect():
-                    logger.info(f"✅ Reconnection successful (attempt {attempt + 1})")
-                    return True
-            except Exception as e:
-                logger.warning(f"⚠️ Reconnection attempt {attempt + 1} failed: {str(e)}")
+        """リトライ付き再接続（再帰防止付き）"""
+        # 既に再接続中の場合は再帰を防ぐ
+        if self._reconnecting:
+            logger.warning("⚠️ Reconnection already in progress, skipping recursive call")
+            return False
         
-        logger.error(f"❌ All reconnection attempts failed")
-        return False
+        self._reconnecting = True
+        try:
+            for attempt in range(self.reconnect_retries):
+                try:
+                    # バックオフ: 試行回数に応じて待機時間を増やす
+                    if attempt > 0:
+                        import time
+                        wait_time = self.reconnect_backoff * (2 ** (attempt - 1))
+                        logger.info(f"⏳ Reconnection attempt {attempt + 1}/{self.reconnect_retries}, waiting {wait_time}s...")
+                        time.sleep(wait_time)
+                    
+                    # 接続プールを閉じて再初期化
+                    if self.connection_pool:
+                        try:
+                            self.connection_pool.closeall()
+                        except:
+                            pass
+                        self.connection_pool = None
+                    
+                    # 単一接続も閉じる
+                    if self.connection:
+                        try:
+                            self.connection.close()
+                        except:
+                            pass
+                        self.connection = None
+                    
+                    # 再接続を試行（再帰フラグを一時的に解除してconnect()を呼ぶ）
+                    self._reconnecting = False
+                    try:
+                        if self.connect():
+                            logger.info(f"✅ Reconnection successful (attempt {attempt + 1})")
+                            return True
+                    finally:
+                        self._reconnecting = True
+                except Exception as e:
+                    logger.warning(f"⚠️ Reconnection attempt {attempt + 1} failed: {str(e)}")
+            
+            logger.error(f"❌ All reconnection attempts failed")
+            return False
+        finally:
+            self._reconnecting = False
     
     def get_connection(self):
         """接続プールから接続を取得、または単一接続を返す"""
@@ -159,38 +192,35 @@ class DatabaseManager:
                         except:
                             pass
                         
-                        # SSLエラーの場合は再接続を試行
-                        if self._is_ssl_error(error_msg):
-                            logger.warning("⚠️ SSL error detected, reconnecting...")
-                            if self._reconnect_with_retry():
-                                conn = self.connection_pool.getconn()
-                            else:
+                        # 再接続を試行（再帰防止フラグにより安全）
+                        if self._reconnect_with_retry():
+                            try:
+                                if self.connection_pool:
+                                    conn = self.connection_pool.getconn()
+                                else:
+                                    return None
+                            except Exception as get_error:
+                                logger.error(f"❌ Failed to get connection after reconnect: {str(get_error)}")
                                 return None
                         else:
-                            # その他のエラーの場合も再接続を試行
-                            if self._reconnect_with_retry():
-                                conn = self.connection_pool.getconn()
-                            else:
-                                return None
+                            return None
                 return conn
             except Exception as e:
                 error_msg = str(e)
                 logger.error(f"❌ Failed to get connection from pool: {error_msg}")
                 
-                # SSLエラーの場合は再接続を試行
-                if self._is_ssl_error(error_msg):
-                    if self._reconnect_with_retry():
-                        try:
+                # 再接続を試行（再帰防止フラグにより安全）
+                if self._reconnect_with_retry():
+                    try:
+                        if self.connection_pool:
                             return self.connection_pool.getconn()
-                        except:
+                        elif self.connection:
+                            return self.connection
+                        else:
                             return None
-                else:
-                    # その他のエラーの場合も再接続を試行
-                    if self._reconnect_with_retry():
-                        try:
-                            return self.connection_pool.getconn()
-                        except:
-                            return None
+                    except Exception as get_error:
+                        logger.error(f"❌ Failed to get connection after reconnect: {str(get_error)}")
+                        return None
                 return None
         elif self.connection:
             # 単一接続の場合も検証
@@ -208,9 +238,9 @@ class DatabaseManager:
             except Exception as e:
                 error_msg = str(e)
                 logger.warning(f"⚠️ Single connection validation failed: {error_msg}")
-                if self._is_ssl_error(error_msg):
-                    if self._reconnect_with_retry():
-                        return self.connection
+                # 再接続を試行（再帰防止フラグにより安全）
+                if self._reconnect_with_retry():
+                    return self.connection
                 return None
         else:
             logger.error("❌ No database connection available")
