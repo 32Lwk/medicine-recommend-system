@@ -3,17 +3,21 @@ from openai import OpenAI
 import os
 import re
 import time
+import logging
 from debug_logger import add_network_log, performance_stats
 from datetime import datetime
 # from typing import List
 # from openai.types.chat import ChatCompletionMessageParam ←不要なので削除
 
+# ログ設定
+logger = logging.getLogger(__name__)
+
 # このファイルのあるディレクトリを基準にCSVファイルの絶対パスを取得
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(BASE_DIR, "otc_medicine_data.csv")
 
-print('CSVファイル絶対パス:', CSV_PATH)
-print('ファイル存在:', os.path.exists(CSV_PATH))
+logger.info(f'CSVファイル絶対パス: {CSV_PATH}')
+logger.info(f'ファイル存在: {os.path.exists(CSV_PATH)}')
 
 def detect_language(text):
     """
@@ -28,17 +32,25 @@ def detect_language(text):
     if not text or not isinstance(text, str):
         return 'ja'  # デフォルトは日本語
     
-    # 日本語の文字が含まれているかチェック（ひらがな、カタカナ、漢字）
-    if re.search(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]', text):
-        return 'ja'
-    
-    # 韓国語の文字が含まれているかチェック（ハングル）
+    # 韓国語の文字が含まれているかチェック（ハングル）- 最初にチェック（重複がないため）
     if re.search(r'[\uAC00-\uD7AF]', text):
         return 'ko'
     
-    # 中国語の文字が含まれているかチェック（簡体字・繁体字）
-    if re.search(r'[\u4E00-\u9FFF]', text):
-        return 'zh'
+    # 中国語の文字が含まれているかチェック（簡体字・繁体字）- 日本語より先にチェック
+    # 中国語特有の文字パターンをチェック
+    chinese_chars = re.search(r'[\u4E00-\u9FFF]', text)
+    if chinese_chars:
+        # ひらがなやカタカナが含まれていれば日本語、そうでなければ中国語
+        if re.search(r'[\u3040-\u309F\u30A0-\u30FF]', text):
+            # ひらがな・カタカナが含まれている場合は日本語
+            return 'ja'
+        else:
+            # 漢字のみの場合は中国語
+            return 'zh'
+    
+    # 日本語の文字が含まれているかチェック（ひらがな、カタカナ）
+    if re.search(r'[\u3040-\u309F\u30A0-\u30FF]', text):
+        return 'ja'
     
     # デフォルトは英語
     return 'en'
@@ -228,7 +240,6 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
     
     # 言語を自動検出
     detected_language = detect_language(user_text)
-    print(f"検出された言語: {detected_language}")
     
     # 言語に応じたプロンプトを作成
     prompt = create_multilingual_attribute_extraction_prompt(user_text, detected_language, user_info)
@@ -245,7 +256,8 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
         )
         
         result = response.choices[0].message.content
-        print(f"ChatGPT属性抽出応答 ({detected_language}): {result}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+            logger.debug(f"ChatGPT属性抽出応答 ({detected_language}): {result}")
         
         # JSON形式の回答を解析
         import json
@@ -263,21 +275,21 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
             else:
                 return {"detected_language": detected_language}
         except json.JSONDecodeError as e:
-            print(f"JSON解析エラー: {e}")
+            logger.error(f"JSON解析エラー: {e}")
             return {"detected_language": detected_language}
             
     except Exception as e:
-        print(f"ChatGPT API呼び出しエラー: {e}")
+        logger.error(f"ChatGPT API呼び出しエラー: {e}")
         return {"detected_language": detected_language}
 
 def translate_medicine_recommendation(text, target_language, client=None):
     """
-    AI応答（医薬品推奨）を翻訳
+    AI応答（医薬品推奨）を翻訳（DeepL API使用）
     
     Args:
         text (str): 翻訳対象のテキスト
-        target_language (str): 翻訳先言語コード
-        client: OpenAIクライアント
+        target_language (str): 翻訳先言語コード ('en', 'ko', 'zh')
+        client: 後方互換性のためのパラメータ（使用されません）
     
     Returns:
         str: 翻訳されたテキスト
@@ -285,49 +297,59 @@ def translate_medicine_recommendation(text, target_language, client=None):
     if not text or target_language == 'ja':
         return text  # 日本語の場合は翻訳不要
     
-    if client is None:
-        from openai import OpenAI
-        api_key = os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            return text
-        client = OpenAI(api_key=api_key)
+    try:
+        import deepl
+    except ImportError:
+        logger.error("deeplライブラリがインストールされていません。'pip install deepl'でインストールしてください。")
+        return text
     
-    # 言語名のマッピング
-    language_names = {
-        'en': 'English',
-        'ko': 'Korean',
-        'zh': 'Chinese'
-    }
-    
-    target_lang_name = language_names.get(target_language, 'English')
+    api_key = os.getenv('DEEPL_API_KEY')
+    if not api_key:
+        logger.error("DEEPL_API_KEYが設定されていません。.envファイルにDEEPL_API_KEYを設定してください。")
+        return text
     
     try:
-        prompt = f"""
-以下の医薬品推奨情報を{target_lang_name}に翻訳してください。
-医療専門用語は正確に翻訳し、医薬品名は適切に翻訳してください。
-
-翻訳対象テキスト:
-{text}
-
-翻訳:
-"""
+        translator = deepl.Translator(api_key)
         
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.1,
-            max_tokens=2000
+        # DeepLの言語コードに変換（ENは非推奨のためEN-USを使用）
+        deepl_lang_map = {
+            'en': 'EN-US',  # EN-GB（イギリス英語）またはEN-US（アメリカ英語）を指定
+            'ko': 'KO',
+            'zh': 'ZH'
+        }
+        deepl_target = deepl_lang_map.get(target_language, 'EN-US')
+        
+        # HTMLタグを保護して翻訳
+        start_time = time.time()
+        result = translator.translate_text(
+            text,
+            source_lang='JA',
+            target_lang=deepl_target,
+            tag_handling='html'  # HTMLタグを保護
         )
+        elapsed_time = time.time() - start_time
         
-        translated_text = response.choices[0].message.content.strip()
-        print(f"翻訳完了 ({target_language}): {translated_text[:100]}...")
+        translated_text = result.text
+        
+        # 翻訳結果を検証：重要なセクションが含まれているか確認
+        important_keywords = ['医師', '受診', '質問', '追加', 'お伺い', 'doctor', 'consultation', 'question', 'additional']
+        has_important_sections = any(keyword in translated_text for keyword in important_keywords)
+        
+        if not has_important_sections and len(translated_text) < len(text) * 0.5:
+            # 翻訳結果が短すぎる、または重要なセクションが欠けている場合は警告
+            logger.warning(f"⚠️ 翻訳結果が不完全の可能性があります。元のテキスト長: {len(text)}, 翻訳後: {len(translated_text)}")
+        
+        logger.info(f"✅ DeepL翻訳完了 ({target_language}): {elapsed_time:.2f}秒, {len(translated_text)}文字")
         return translated_text
         
+    except deepl.exceptions.QuotaExceededException:
+        logger.error("❌ DeepL APIのクォータを超過しました。")
+        return text
+    except deepl.exceptions.AuthorizationException:
+        logger.error("❌ DeepL APIキーが無効です。")
+        return text
     except Exception as e:
-        print(f"翻訳エラー: {e}")
+        logger.error(f"❌ DeepL翻訳エラー: {e}")
         return text  # 翻訳に失敗した場合は元のテキストを返す
 
 # Markdown太文字をHTML太文字に変換する関数
@@ -368,7 +390,8 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         
         # キャッシュから取得を試行
         if cache_key in _usage_notes_cache:
-            print(f"📋 使用上の注意をキャッシュから取得: {medicine_name}")
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+                logger.debug(f"📋 使用上の注意をキャッシュから取得: {medicine_name}")
             return _usage_notes_cache[cache_key]
         
         # ユーザー情報の準備
@@ -440,12 +463,13 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         # キャッシュに保存（最大100件まで）
         if len(_usage_notes_cache) < 100:
             _usage_notes_cache[cache_key] = usage_notes
-            print(f"💾 使用上の注意をキャッシュに保存: {medicine_name}")
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+                logger.debug(f"💾 使用上の注意をキャッシュに保存: {medicine_name}")
         
         return usage_notes
         
     except Exception as e:
-        print(f"使用上の注意生成エラー: {e}")
+        logger.error(f"使用上の注意生成エラー: {e}")
         return "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。"
 
 # テキストを整形して見やすくする関数
@@ -490,33 +514,38 @@ try:
     # スクリプトのディレクトリを基準に.envファイルを読み込む（BASE_DIRはプロジェクトルート）
     env_path = os.path.join(BASE_DIR, '.env')
     
-    # デバッグ情報
-    print(f"[DEBUG] BASE_DIR: {BASE_DIR}")
-    print(f"[DEBUG] 現在の作業ディレクトリ: {os.getcwd()}")
-    print(f"[DEBUG] .envファイルのパス（BASE_DIR）: {env_path}")
-    print(f"[DEBUG] .envファイル存在確認（BASE_DIR）: {os.path.exists(env_path)}")
+    # デバッグ情報（DEBUG_MODE時のみ）
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        logger.debug(f"[DEBUG] BASE_DIR: {BASE_DIR}")
+        logger.debug(f"[DEBUG] 現在の作業ディレクトリ: {os.getcwd()}")
+        logger.debug(f"[DEBUG] .envファイルのパス（BASE_DIR）: {env_path}")
+        logger.debug(f"[DEBUG] .envファイル存在確認（BASE_DIR）: {os.path.exists(env_path)}")
     
     # まず引数なしでload_dotenvを呼び出し、現在の作業ディレクトリから上位ディレクトリを自動検索
     loaded = load_dotenv(override=True)  # override=Trueで確実に読み込む
-    print(f"[DEBUG] load_dotenv() (引数なし) 結果: {loaded}")
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        logger.debug(f"[DEBUG] load_dotenv() (引数なし) 結果: {loaded}")
     
     # 明示的なパスも試す（存在する場合は読み込む）
     env_loaded = False
     if os.path.exists(env_path):
         env_loaded = load_dotenv(env_path, override=True)  # override=Trueで確実に読み込む
-        print(f"[DEBUG] load_dotenv({env_path}) 結果: {env_loaded}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"[DEBUG] load_dotenv({env_path}) 結果: {env_loaded}")
     else:
         # 現在の作業ディレクトリから.envファイルを確認
         cwd_env = os.path.join(os.getcwd(), '.env')
-        print(f"[DEBUG] .envファイルのパス（現在の作業ディレクトリ）: {cwd_env}")
-        print(f"[DEBUG] .envファイル存在確認（CWD）: {os.path.exists(cwd_env)}")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"[DEBUG] .envファイルのパス（現在の作業ディレクトリ）: {cwd_env}")
+            logger.debug(f"[DEBUG] .envファイル存在確認（CWD）: {os.path.exists(cwd_env)}")
         if os.path.exists(cwd_env):
             env_loaded = load_dotenv(cwd_env, override=True)  # override=Trueで確実に読み込む
-            print(f"[DEBUG] load_dotenv({cwd_env}) 結果: {env_loaded}")
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+                logger.debug(f"[DEBUG] load_dotenv({cwd_env}) 結果: {env_loaded}")
     
-    print("dotenvを使用して.envファイルから環境変数を読み込みました。")
+    logger.info("dotenvを使用して.envファイルから環境変数を読み込みました。")
 except ImportError:
-    print("python-dotenvがインストールされていません。環境変数のみを使用します。")
+    logger.info("python-dotenvがインストールされていません。環境変数のみを使用します。")
 
 # --- OpenAI APIキー設定 ---
 # 環境変数からAPIキーを取得
@@ -524,21 +553,23 @@ api_key = os.getenv('OPENAI_API_KEY')
 
 # デバッグ用: 環境変数の確認（値の一部のみ表示）
 if api_key:
-    print(f"APIキーが読み込まれました（長さ: {len(api_key)}文字）")
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        logger.debug(f"APIキーが読み込まれました（長さ: {len(api_key)}文字）")
 else:
-    print("WARNING: OpenAI API keyが環境変数に設定されていません。")
-    print("環境変数 OPENAI_API_KEY を設定してください。")
+    logger.warning("WARNING: OpenAI API keyが環境変数に設定されていません。")
+    logger.warning("環境変数 OPENAI_API_KEY を設定してください。")
 
 # --- OpenAIクライアント初期化 ---
 client = None
 if api_key:
     try:
         client = OpenAI(api_key=api_key)
-        print("OpenAI client initialized successfully.")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug("OpenAI client initialized successfully.")
     except Exception as e:
-        print(f"Error initializing OpenAI client: {e}")
+        logger.error(f"Error initializing OpenAI client: {e}")
 else:
-    print("Error: OpenAI API key not found. Please set it in environment variables or .env file.")
+    logger.error("Error: OpenAI API key not found. Please set it in environment variables or .env file.")
 
 # --- CSVファイルの読み込み ---
 df = None
@@ -561,22 +592,23 @@ for encoding in encodings:
         csv_load_status["row_count"] = len(df)
         csv_load_status["col_count"] = len(df.columns)
         csv_load_status["columns"] = list(df.columns)
-        print(f"CSVファイルを正常に読み込みました（エンコーディング: {encoding}）。")
+        logger.info(f"CSVファイルを正常に読み込みました（エンコーディング: {encoding}）。")
         break
     except UnicodeDecodeError:
-        print(f"エンコーディング {encoding} で読み込みに失敗しました。")
+        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+            logger.debug(f"エンコーディング {encoding} で読み込みに失敗しました。")
         continue
     except FileNotFoundError:
         csv_load_status["error"] = "FileNotFoundError"
-        print("エラー: otc_medicine_data.csvファイルが見つかりません。")
+        logger.error("エラー: otc_medicine_data.csvファイルが見つかりません。")
         break
     except Exception as e:
         csv_load_status["error"] = str(e)
-        print(f"CSVファイルの読み込みエラー: {e}")
+        logger.error(f"CSVファイルの読み込みエラー: {e}")
         break
 
 if not csv_load_status["success"]:
-    print("すべてのエンコーディングでCSVファイルの読み込みに失敗しました。")
+    logger.error("すべてのエンコーディングでCSVファイルの読み込みに失敗しました。")
 
 def get_medicines_by_symptom(symptom_text, df=None):
     if df is None:
@@ -623,7 +655,8 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
         temperature=0
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
-    print("ChatGPT返答:\n", content.strip())
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{content.strip()}")
     # 改行やカンマ区切りで分割
     symptoms = [s.strip() for s in re.split(r'[\n,、]', content) if s.strip()]
     return symptoms
@@ -658,7 +691,8 @@ def gpt_select_best_otc(user_text, candidates, client=None):
         temperature=0
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
-    print("ChatGPT返答:\n", content.strip())
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{content.strip()}")
     return content.strip()
 
 def recommend_otc_medicines_via_gpt(user_text, symptom_csv_path=None, otc_csv_path=None, max_candidates=20, client=None):
@@ -686,7 +720,8 @@ def recommend_otc_medicines_via_gpt(user_text, symptom_csv_path=None, otc_csv_pa
         return "該当する市販薬情報が見つかりませんでした。"
     # 3. ChatGPTで最適薬3つ選定
     result = gpt_select_best_otc(user_text, candidates, client=client)
-    print("ChatGPT返答:\n", result)
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{result}")
     return result
 
 def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None, max_candidates=20, client=None):
@@ -777,7 +812,8 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
         temperature=0
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
-    print("ChatGPT返答:\n", content.strip())
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{content.strip()}")
     return content.strip() 
 
 def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_candidates=30, client=None):
@@ -816,7 +852,8 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
         temperature=0
     )
     content = response.choices[0].message.content if response.choices[0].message.content else ""
-    print("ChatGPT返答:\n", content.strip())
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{content.strip()}")
     # リスト形式で返す
     selected = [line.strip(" ・-0123456789.") for line in content.splitlines() if line.strip()]
     # 元の効能効果リストと突合して正規化
@@ -1020,13 +1057,14 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         )
         content = response.choices[0].message.content if response.choices[0].message.content else ""
     except Exception as e:
-        print(f"ChatGPT API エラー: {e}")
+        logger.error(f"ChatGPT API エラー: {e}")
         return {
             'status': 'error',
             'symptoms': [],
             'message': f'ChatGPT API エラー: {e}'
         }
-    print("ChatGPT返答:\n", content.strip())
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+        logger.debug(f"ChatGPT返答:\n{content.strip()}")
     
     # 症状抽出の結果を処理
     symptoms = []
