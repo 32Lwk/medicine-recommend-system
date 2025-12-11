@@ -2175,7 +2175,7 @@
                         <p>テスターは、自身に関する情報の開示・訂正・削除を運営者に請求できます。希望する場合は、以下の連絡先までお問い合わせください。</p>
                         <ul>
                             <li>運営者名：川嶋（Kawashima ）</li>
-                            <<p><strong>お問い合わせ：</strong> <a href="https://forms.gle/myzACX7eT59dkrLx8" target="_blank">https://forms.gle/myzACX7eT59dkrLx8</a></p>
+                            <li><strong>お問い合わせ：</strong> <a href="https://forms.gle/myzACX7eT59dkrLx8" target="_blank">https://forms.gle/myzACX7eT59dkrLx8</a></li>
                         </ul>
                         
                         <h4>第8条（改定）</h4>
