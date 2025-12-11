@@ -1337,14 +1337,13 @@
                         
                         <div class="contact-info">
                             <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年</p>
+                            <p><strong>運営者名：</strong> 川嶋 （Kawashima ）</p>
+                            <p><strong>所属：</strong> 名古屋大学</p>
                             <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
                         </div>
                         
                         <div class="contact-info">
                             <h4>連絡先</h4>
-                            <p><strong>連絡先メール：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
@@ -1957,10 +1956,9 @@
                         <p>本アプリに関する著作権、プログラム、デザインなどの知的財産権は、運営者または正当な権利者に帰属します。</p>
                         
                         <h4>第7条（連絡先）</h4>
-                        <p>本アプリの不具合や問い合わせは、以下のフォームまたはメールにてご連絡ください。</p>
+                        <p>本アプリの不具合や問い合わせは、以下のフォームにてご連絡ください。</p>
                         <ul>
                             <li>不具合報告フォーム：<a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
-                            <li>連絡先メールアドレス：weary-scoots.7y@icloud.com</li>
                             <li>運営者ホームページ：<a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></li>
                         </ul>
                         
@@ -2176,8 +2174,8 @@
                         <h4>第7条（テスターの権利）</h4>
                         <p>テスターは、自身に関する情報の開示・訂正・削除を運営者に請求できます。希望する場合は、以下の連絡先までお問い合わせください。</p>
                         <ul>
-                            <li>運営者名：川嶋 宥翔（Kawashima Yuto）</li>
-                            <li>メールアドレス：weary-scoots.7y@icloud.com</li>
+                            <li>運営者名：川嶋（Kawashima ）</li>
+                            <<p><strong>お問い合わせ：</strong> <a href="https://forms.gle/myzACX7eT59dkrLx8" target="_blank">https://forms.gle/myzACX7eT59dkrLx8</a></p>
                         </ul>
                         
                         <h4>第8条（改定）</h4>
@@ -2367,14 +2365,13 @@
                         
                         <div class="contact-info">
                             <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年</p>
+                            <p><strong>運営者名：</strong> 川嶋 （Kawashima ）</p>
+                            <p><strong>所属：</strong>   </p>
                             <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
                         </div>
                         
                         <div class="contact-info">
                             <h4>連絡先</h4>
-                            <p><strong>連絡先メール：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
@@ -2553,7 +2550,7 @@
                             <p>上記で解決しない場合は、以下の連絡先までお問い合わせください。</p>
                             <ul>
                                 <li><strong>不具合報告フォーム:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></li>
-                                <li><strong>メールアドレス:</strong> weary-scoots.7y@icloud.com</li>
+                                <li><strong>お問い合わせフォーム：</strong> <a href="https://forms.gle/myzACX7eT59dkrLx8" target="_blank">https://forms.gle/myzACX7eT59dkrLx8</a></li>
                             </ul>
                         </div>
                     </div>
