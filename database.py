@@ -169,30 +169,13 @@ class DatabaseManager:
                 conn = self.connection_pool.getconn()
                 # 接続の有効性をチェック
                 if conn:
-                    try:
-                        # 接続状態をチェック（SELECT 1だけでなく、接続の状態も確認）
-                        if conn.closed:
-                            raise Exception("Connection is closed")
-                        
-                        cursor = conn.cursor()
-                        cursor.execute("SELECT 1")
-                        cursor.close()
-                        
-                        # 接続が正常であることを確認
-                        if conn.status != psycopg2.extensions.STATUS_READY:
-                            raise Exception(f"Connection status is not ready: {conn.status}")
-                            
-                    except Exception as e:
-                        error_msg = str(e)
-                        logger.warning(f"⚠️ Connection validation failed: {error_msg}, reconnecting...")
-                        
-                        # 接続を閉じる
+                    # 接続が閉じている場合は再接続
+                    if conn.closed:
+                        logger.warning("⚠️ Connection is closed, reconnecting...")
                         try:
                             conn.close()
                         except:
                             pass
-                        
-                        # 再接続を試行（再帰防止フラグにより安全）
                         if self._reconnect_with_retry():
                             try:
                                 if self.connection_pool:
@@ -204,6 +187,32 @@ class DatabaseManager:
                                 return None
                         else:
                             return None
+                    else:
+                        # 接続が開いている場合、簡単なクエリで有効性を確認
+                        try:
+                            cursor = conn.cursor()
+                            cursor.execute("SELECT 1")
+                            cursor.close()
+                            # SELECT 1が成功すれば接続は有効
+                        except Exception as e:
+                            # クエリ実行に失敗した場合のみ再接続
+                            error_msg = str(e)
+                            logger.warning(f"⚠️ Connection validation failed: {error_msg}, reconnecting...")
+                            try:
+                                conn.close()
+                            except:
+                                pass
+                            if self._reconnect_with_retry():
+                                try:
+                                    if self.connection_pool:
+                                        conn = self.connection_pool.getconn()
+                                    else:
+                                        return None
+                                except Exception as get_error:
+                                    logger.error(f"❌ Failed to get connection after reconnect: {str(get_error)}")
+                                    return None
+                            else:
+                                return None
                 return conn
             except Exception as e:
                 error_msg = str(e)
