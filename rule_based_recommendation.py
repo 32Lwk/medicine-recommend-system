@@ -516,10 +516,10 @@ COMPOUND_MEDICINE_INDICATORS = {
 
 # 部位特異的製品のキーワード辞書
 BODY_PART_SPECIFIC_KEYWORDS = {
-    "delicate_area": {  # デリケート部位
-        "product_name_keywords": ["カブレーナ", "デリケート", "おりもの", "ナプキン"],
-        "efficacy_keywords": ["おむつかぶれ", "蒸れ", "デリケート部位", "おりもの"],
-        "usage_keywords": ["デリケート部位", "蒸れ", "おりもの"]
+    "delicate_area": {  # デリケート部位（性器周辺を含む）
+        "product_name_keywords": ["カブレーナ", "デリケート", "おりもの", "ナプキン", "性器", "陰部", "局部"],
+        "efficacy_keywords": ["おむつかぶれ", "蒸れ", "デリケート部位", "おりもの", "性器", "陰部", "局部", "陰茎"],
+        "usage_keywords": ["デリケート部位", "蒸れ", "おりもの", "性器", "陰部", "局部"]
     },
     "scalp": {  # 頭皮
         "product_name_keywords": ["頭皮", "フケ", "スカルプ"],
@@ -656,38 +656,57 @@ THROAT_LIQUID_TOKENS = {normalize_text(term) for term in [
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
 
-# NLUキャッシュ（セッションごとの症状抽出結果を保存）
+# NLUキャッシュ（セッション間でも共有可能なキャッシュ）
 _nlu_cache = {}
-_max_cache_size = 50  # 最大50セッション分を保持
+_max_cache_size = 100  # 50から100に拡張（セッション間共有のため）
+
+# 医薬品タイプ判定キャッシュ
+_medicine_type_cache = {}
+_max_medicine_type_cache_size = 50
+
+# 翻訳キャッシュ
+_translation_cache = {}
+_max_translation_cache_size = 200
 
 def get_cached_nlu_result(user_text: str, session_id: str = None) -> Optional[Dict]:
     """
-    NLUキャッシュから結果を取得
+    NLUキャッシュから結果を取得（セッション間でも共有可能）
     
     Args:
         user_text: ユーザーの症状入力
-        session_id: セッションID（オプション）
+        session_id: セッションID（オプション、セッション間共有のため必須ではない）
     
     Returns:
         キャッシュされたNLU結果、またはNone
     """
-    if not session_id:
-        return None
+    # セッションIDがなくても、テキストのハッシュで検索可能
+    text_hash = hash(user_text)
     
-    cache_key = f"{session_id}:{hash(user_text)}"
-    return _nlu_cache.get(cache_key)
+    # セッションIDがある場合はセッション固有のキーを優先
+    if session_id:
+        cache_key = f"{session_id}:{text_hash}"
+        if cache_key in _nlu_cache:
+            return _nlu_cache[cache_key]
+    
+    # セッション間共有キャッシュを検索（テキストハッシュのみで検索）
+    for key, value in _nlu_cache.items():
+        if key.endswith(f":{text_hash}"):
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"NLUキャッシュヒット（セッション間共有）: {key}")
+            return value
+    
+    return None
 
 def set_cached_nlu_result(user_text: str, nlu_result: Dict, session_id: str = None):
     """
-    NLUキャッシュに結果を保存
+    NLUキャッシュに結果を保存（セッション間でも共有可能）
     
     Args:
         user_text: ユーザーの症状入力
         nlu_result: NLU結果
         session_id: セッションID（オプション）
     """
-    if not session_id:
-        return
+    text_hash = hash(user_text)
     
     # キャッシュサイズ制限
     if len(_nlu_cache) >= _max_cache_size:
@@ -695,7 +714,13 @@ def set_cached_nlu_result(user_text: str, nlu_result: Dict, session_id: str = No
         oldest_key = next(iter(_nlu_cache))
         del _nlu_cache[oldest_key]
     
-    cache_key = f"{session_id}:{hash(user_text)}"
+    # セッションIDがある場合はセッション固有のキーを使用
+    if session_id:
+        cache_key = f"{session_id}:{text_hash}"
+    else:
+        # セッションIDがない場合はテキストハッシュのみを使用（セッション間共有）
+        cache_key = f"shared:{text_hash}"
+    
     _nlu_cache[cache_key] = nlu_result
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"NLUキャッシュに保存: {cache_key}")
@@ -705,6 +730,76 @@ def clear_nlu_cache():
     global _nlu_cache
     _nlu_cache.clear()
     logger.info("NLUキャッシュをクリアしました")
+
+def get_cached_medicine_type(user_text: str) -> Optional[str]:
+    """
+    医薬品タイプ判定キャッシュから結果を取得
+    
+    Args:
+        user_text: ユーザーの症状入力
+    
+    Returns:
+        キャッシュされた医薬品タイプ、またはNone
+    """
+    text_hash = hash(user_text)
+    return _medicine_type_cache.get(text_hash)
+
+def set_cached_medicine_type(user_text: str, medicine_type: str):
+    """
+    医薬品タイプ判定キャッシュに結果を保存
+    
+    Args:
+        user_text: ユーザーの症状入力
+        medicine_type: 医薬品タイプ
+    """
+    global _medicine_type_cache
+    
+    # キャッシュサイズ制限
+    if len(_medicine_type_cache) >= _max_medicine_type_cache_size:
+        # 古いエントリを削除（FIFO）
+        oldest_key = next(iter(_medicine_type_cache))
+        del _medicine_type_cache[oldest_key]
+    
+    text_hash = hash(user_text)
+    _medicine_type_cache[text_hash] = medicine_type
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"医薬品タイプキャッシュに保存: {medicine_type}")
+
+def get_cached_translation(text: str, target_language: str) -> Optional[str]:
+    """
+    翻訳キャッシュから結果を取得
+    
+    Args:
+        text: 翻訳対象テキスト
+        target_language: 翻訳先言語
+    
+    Returns:
+        キャッシュされた翻訳結果、またはNone
+    """
+    cache_key = f"{target_language}:{hash(text)}"
+    return _translation_cache.get(cache_key)
+
+def set_cached_translation(text: str, target_language: str, translated_text: str):
+    """
+    翻訳キャッシュに結果を保存
+    
+    Args:
+        text: 翻訳対象テキスト
+        target_language: 翻訳先言語
+        translated_text: 翻訳結果
+    """
+    global _translation_cache
+    
+    # キャッシュサイズ制限
+    if len(_translation_cache) >= _max_translation_cache_size:
+        # 古いエントリを削除（FIFO）
+        oldest_key = next(iter(_translation_cache))
+        del _translation_cache[oldest_key]
+    
+    cache_key = f"{target_language}:{hash(text)}"
+    _translation_cache[cache_key] = translated_text
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"翻訳キャッシュに保存: {cache_key[:50]}...")
 
 def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     """
@@ -1243,6 +1338,21 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
             # 65歳以上: 注意が必要
             safety_result["warnings"].append(f"{age}歳の高齢者は市販薬使用に注意が必要です。副作用に特に注意してください。")
     
+    # 2.5. 性器周辺症状のチェック（医師受診強く推奨）
+    user_body_part = nlu_result.get("user_body_part")
+    if user_body_part == "delicate_area":
+        # 性器周辺の症状は性感染症や皮膚疾患の可能性があるため、医師受診を強く推奨
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。"
+        safety_result["warnings"].append("性器周辺の症状は、性感染症や皮膚疾患の可能性があります。医師の診察を受けることを強く推奨します。")
+        safety_result["referral_reasons"].append({
+            "description": "性器周辺の症状",
+            "message": "性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。",
+            "priority": "high"
+        })
+        # 注意: 推奨は続行するが、医師受診を強く推奨する
+    
     # 3. 妊娠中チェック（医師受診必須）
     if user_info.get('pregnant', False):
         safety_result["is_safe"] = False
@@ -1593,10 +1703,32 @@ def _extract_body_part_from_user_text(user_text: str, symptom_name: str) -> Opti
         if symptom_name in ["かゆみ", "発疹", "湿疹"] or "かゆ" in user_text_lower or "フケ" in user_text_lower:
             return "scalp"
     
-    # デリケート部位関連のキーワード
-    delicate_keywords = ["デリケート", "おりもの", "ナプキン", "蒸れ", "おむつ", "陰部", "股間"]
-    if any(kw in user_text_lower for kw in delicate_keywords):
-        return "delicate_area"
+    # デリケート部位関連のキーワード（多言語対応）
+    # 日本語
+    delicate_keywords_jp = ["デリケート", "おりもの", "ナプキン", "蒸れ", "おむつ", "陰部", "股間", 
+                            "ペニス", "性器", "生殖器", "局部", "私部", "陰茎", "陰嚢", "亀頭"]
+    # 中国語（繁体字・簡体字）
+    delicate_keywords_zh = ["陰莖", "陰茎", "生殖器", "性器", "私處", "私处", "私部", "局部", 
+                            "陰部", "股間", "股间", "陰囊", "陰囊", "龜頭", "龟头", "阴茎"]
+    # 英語
+    delicate_keywords_en = ["penis", "genital", "private area", "genitalia", "genitals", 
+                           "private parts", "intimate area", "groin", "pubic", "scrotum", 
+                           "glans", "foreskin"]
+    
+    # すべてのキーワードを統合
+    delicate_keywords = delicate_keywords_jp + delicate_keywords_zh + delicate_keywords_en
+    
+    # ユーザー入力テキストを正規化（大文字小文字、空白を除去）
+    normalized_text = user_text_lower.replace(" ", "").replace("\t", "").replace("\n", "")
+    
+    # キーワードマッチング（部分一致も含む）
+    for kw in delicate_keywords:
+        kw_lower = kw.lower()
+        # 完全一致または部分一致をチェック
+        if kw_lower in user_text_lower or kw_lower in normalized_text:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"デリケート部位を検出: キーワード='{kw}', 入力テキスト='{user_text[:50]}...'")
+            return "delicate_area"
     
     # のど関連のキーワード
     throat_keywords = ["のど", "喉", "咽頭", "喉頭", "声帯"]
@@ -2169,13 +2301,50 @@ def calculate_body_part_match_score(candidate: Dict, user_body_part: Optional[st
         部位マッチングスコア
         - 部位が一致する場合: 1.0
         - 部位が不一致の場合: -0.5（大幅減点）
-        - 部位情報がない場合: 0.0（ペナルティなし）
+        - 部位情報がない場合: 0.0（ペナルティなし、ただし性器周辺の場合は軽いペナルティ）
     """
     if not user_body_part:
         return 0.0
     
     candidate_body_part = _detect_body_part_specificity(candidate)
+    medicine_type = str(candidate.get('medicine_type', '')).lower()
     
+    # 性器周辺（delicate_area）の症状に対する特別な処理
+    if user_body_part == "delicate_area":
+        if candidate_body_part == "delicate_area":
+            # 性器専用の医薬品は最優先
+            return 1.0
+        elif candidate_body_part:
+            # 他の部位専用の医薬品は大幅減点
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(
+                    f"性器周辺症状に不適切な部位専用医薬品: 候補={candidate_body_part}, "
+                    f"製品={candidate.get('product_name', '')}"
+                )
+            return -0.7  # 通常の-0.5より強いペナルティ
+        else:
+            # 部位情報がない場合でも、一般的な外用薬（皮膚）には軽いペナルティ
+            # 性器周辺は特別な注意が必要なため
+            if "外用薬（皮膚）" in medicine_type or "外用" in medicine_type:
+                # 刺激の強い成分が含まれている可能性があるため、軽いペナルティ
+                ingredients = str(candidate.get('ingredients', '')).lower()
+                # 刺激の強い成分のキーワード
+                strong_ingredients = ["メントール", "カンフル", "アンモニア", "サリチル酸"]
+                has_strong_ingredient = any(ing in ingredients for ing in strong_ingredients)
+                
+                if has_strong_ingredient:
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"性器周辺症状に刺激の強い外用薬: 製品={candidate.get('product_name', '')}"
+                        )
+                    return -0.3  # 刺激の強い成分がある場合はペナルティ
+                else:
+                    return -0.1  # 一般的な外用薬には軽いペナルティ
+            else:
+                # 外用薬以外の場合はペナルティなし（内服薬など）
+                return 0.0
+    
+    # その他の部位の処理（既存のロジック）
     if not candidate_body_part:
         # 候補に部位情報がない場合はペナルティなし
         return 0.0
@@ -2646,6 +2815,42 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
     # 4. 症状適合度スコアの最低閾値を適用
     validated = _enforce_symptom_match_threshold(validated, nlu_result)
     
+    # 4.5. 性器周辺症状の場合、刺激の強い外用薬を除外
+    user_body_part = nlu_result.get("user_body_part")
+    if user_body_part == "delicate_area":
+        filtered_candidates = []
+        for candidate in validated:
+            medicine_type = str(candidate.get('medicine_type', '')).lower()
+            ingredients = str(candidate.get('ingredients', '')).lower()
+            
+            # 刺激の強い成分のキーワード
+            strong_ingredients = ["メントール", "カンフル", "アンモニア", "サリチル酸", "メントール", "dl-カンフル", "l-メントール"]
+            has_strong_ingredient = any(ing in ingredients for ing in strong_ingredients)
+            
+            # 性器専用の医薬品は優先
+            candidate_body_part = _detect_body_part_specificity(candidate)
+            if candidate_body_part == "delicate_area":
+                filtered_candidates.append(candidate)
+            # 刺激の強い外用薬は除外
+            elif "外用薬（皮膚）" in medicine_type or "外用" in medicine_type:
+                if has_strong_ingredient:
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"性器周辺症状: 刺激の強い外用薬を除外: {candidate.get('product_name', '')}"
+                        )
+                    continue  # この候補を除外
+                else:
+                    # 刺激の強い成分がない場合は残すが、警告を追加
+                    candidate['delicate_area_warning'] = True
+                    filtered_candidates.append(candidate)
+            else:
+                # 外用薬以外は残す
+                filtered_candidates.append(candidate)
+        
+        validated = filtered_candidates
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"性器周辺症状: {len(validated)}件の候補をフィルタリング後")
+    
     # 5. スコアが0.3未満の候補を警告付きで残す（完全には除外しない）
     final_candidates = []
     for candidate in validated:
@@ -2812,7 +3017,7 @@ def generate_symptom_detail_questions_with_gpt(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=500
+            max_tokens=300  # 300トークンに削減（処理時間短縮）
         )
         
         result = response.choices[0].message.content.strip()
@@ -2951,36 +3156,46 @@ def check_missing_information(user_info: Dict, nlu_result: Dict, user_text: str 
         if missing_info["priority"] not in ["critical", "important"]:
             missing_info["priority"] = "optional"
     
-    # ChatGPTによる症状詳細質問の生成
+    # ChatGPTによる症状詳細質問の生成（簡略化版：必須情報のみ）
+    # 症状が検出され、かつ必須情報（年齢、性別）が不足している場合のみGPT呼び出し
     if client and user_text and symptoms:
-        try:
-            symptom_detail_questions = generate_symptom_detail_questions_with_gpt(
-                user_text, nlu_result, user_info, client
-            )
-            
-            # 質問を優先度に応じて分類
-            for q_dict in symptom_detail_questions:
-                question = q_dict.get("question", "")
-                priority = q_dict.get("priority", "optional")
+        # 必須情報の不足をチェック
+        has_critical_missing = (
+            user_info.get('age') is None or 
+            user_info.get('gender') is None or
+            (user_info.get('gender') == '女性' and user_info.get('pregnant') is None)
+        )
+        
+        # 必須情報が不足している場合のみGPT呼び出し（処理時間短縮）
+        if has_critical_missing:
+            try:
+                symptom_detail_questions = generate_symptom_detail_questions_with_gpt(
+                    user_text, nlu_result, user_info, client
+                )
                 
-                if question:
-                    missing_info["has_missing_info"] = True
-                    missing_info["missing_fields"].append("symptom_detail")
+                # 質問を優先度に応じて分類
+                for q_dict in symptom_detail_questions:
+                    question = q_dict.get("question", "")
+                    priority = q_dict.get("priority", "optional")
                     
-                    if priority == "critical":
-                        missing_info["critical_questions"].append(question)
-                        if missing_info["priority"] != "critical":
-                            missing_info["priority"] = "critical"
-                    elif priority == "important":
-                        missing_info["questions"].append(question)
-                        if missing_info["priority"] not in ["critical", "important"]:
-                            missing_info["priority"] = "important"
-                    else:
-                        missing_info["questions"].append(question)
-                        if missing_info["priority"] == "optional":
-                            missing_info["priority"] = "optional"
-        except Exception as e:
-            logger.warning(f"症状詳細質問生成でエラーが発生しました: {e}")
+                    if question:
+                        missing_info["has_missing_info"] = True
+                        missing_info["missing_fields"].append("symptom_detail")
+                        
+                        if priority == "critical":
+                            missing_info["critical_questions"].append(question)
+                            if missing_info["priority"] != "critical":
+                                missing_info["priority"] = "critical"
+                        elif priority == "important":
+                            missing_info["questions"].append(question)
+                            if missing_info["priority"] not in ["critical", "important"]:
+                                missing_info["priority"] = "important"
+                        else:
+                            missing_info["questions"].append(question)
+                            if missing_info["priority"] == "optional":
+                                missing_info["priority"] = "optional"
+            except Exception as e:
+                logger.warning(f"症状詳細質問生成でエラーが発生しました: {e}")
     
     return missing_info
 
@@ -3430,7 +3645,12 @@ def rule_based_recommendation(
         top_candidates_for_scoring = sorted(threshold_candidates, key=lambda x: x[0], reverse=True)
         logger.info(f"閾値ベース選別: 簡易スコア0.3以上の候補 {len(top_candidates_for_scoring)}件を選別")
     
-    logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
+    # より積極的に候補を絞り込む（750件から500件に削減）
+    if len(top_candidates_for_scoring) > 500:
+        top_candidates_for_scoring = top_candidates_for_scoring[:500]
+        logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別（500件に削減）")
+    else:
+        logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
     
     # ステップ5.2: 詳細スコアリング（選別された候補のみ）
     for score, candidate in top_candidates_for_scoring:
@@ -3809,7 +4029,7 @@ def generate_individual_usage_notes_with_gpt(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=400
+            max_tokens=300  # 400から300に削減（処理時間短縮）
         )
         
         result = response.choices[0].message.content
@@ -3998,7 +4218,7 @@ def generate_usage_notes_and_consultation_with_gpt(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=1200,
+            max_tokens=800,  # 1200から800に削減（処理時間短縮）
             response_format={"type": "json_object"}
         )
         
@@ -4101,11 +4321,23 @@ def generate_usage_notes_and_consultation_with_gpt(
         usage_notes_individual = '\n\n'.join(individual_notes)
     
     # 全体の使用上の注意を生成（共通の禁忌事項）
-    general_notes = generate_default_usage_notes_and_consultation(recommended_medicines, user_info)
+    # user_infoにuser_body_partを追加（性器周辺症状の特別な注意書きのため）
+    enhanced_user_info = user_info.copy()
+    user_body_part = nlu_result.get("user_body_part")
+    if user_body_part:
+        enhanced_user_info['user_body_part'] = user_body_part
+    
+    general_notes = generate_default_usage_notes_and_consultation(recommended_medicines, enhanced_user_info)
+    
+    # 性器周辺症状の場合、特別な注意書きを追加
+    if user_body_part == "delicate_area":
+        delicate_area_note = "\n\n【性器周辺の症状について】\n性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。特に、以下の場合はすぐに医師にご相談ください：\n・症状が3日以上続く場合\n・症状が悪化する場合\n・発疹、水ぶくれ、ただれなどの症状がある場合\n・性行為のパートナーにも症状がある場合"
+        doctor_consultation = general_notes['doctor_consultation'] + delicate_area_note
+    else:
+        doctor_consultation = general_notes['doctor_consultation']
     
     # 個別の注意 + 共通の注意を結合
     usage_notes_combined = usage_notes_individual + '\n\n' + general_notes['usage_notes']
-    doctor_consultation = general_notes['doctor_consultation']
     
     logger.info(f"使用上の注意生成完了: {len(individual_notes)}件")
     
@@ -4173,6 +4405,11 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
     
     if user_info.get('pregnant') or user_info.get('breastfeeding'):
         doctor_consultation_parts.insert(1, "・妊娠中・授乳中の方は事前に医師にご相談ください")
+    
+    # 性器周辺症状の特別な注意書き（user_infoから取得可能な場合）
+    if user_info.get('user_body_part') == "delicate_area":
+        doctor_consultation_parts.insert(1, "・性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。")
+        doctor_consultation_parts.insert(2, "・性器周辺のかゆみ、発疹、痛みなどの症状が続く場合は、早めに医師にご相談ください。")
     
     return {
         "usage_notes": '\n'.join(usage_notes_parts),
