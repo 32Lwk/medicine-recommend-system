@@ -2990,7 +2990,7 @@ def index():
     </div>
 """
                         
-                        # 「医師の受診が必要な場合」セクションを準備（翻訳処理の後に追加）
+                        # 「医師の受診が必要な場合」セクションを準備（翻訳処理の前に追加）
                         doctor_consultation_section = ""
                         if doctor_consultation or True:  # 常に表示
                             doctor_consultation_text = doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'
@@ -3000,10 +3000,15 @@ def index():
         <p style="margin: 5px 0;">{doctor_consultation_text}</p>
     </div>
 """
+                            bot_content += doctor_consultation_section
                         
-                        # 表示順序: アドバイス → 推奨 → 質問（アドバイスを一番上に表示）
+                        # 質問セクションを追加（翻訳処理の前に追加）
+                        if questions_section_before:
+                            bot_content += questions_section_before
                         
-                        # 多言語対応: 入力言語に応じて翻訳（フィードバックボタン追加前）
+                        # 表示順序: アドバイス → 推奨 → 使用上の注意 → 医師の受診 → 質問
+                        
+                        # 多言語対応: 入力言語に応じて翻訳（すべてのセクション追加後、フィードバックボタン追加前）
                         detected_language = session.get('detected_language', 'ja')
                         if detected_language != 'ja' and bot_content:
                             try:
@@ -3017,38 +3022,6 @@ def index():
                             except Exception as e:
                                 logger.error(f"❌ 翻訳エラー: {e}")
                                 # 翻訳に失敗した場合は元のコンテンツを使用
-                        
-                        # 「医師の受診が必要な場合」セクションを翻訳して追加（翻訳処理の後）
-                        if doctor_consultation_section:
-                            if detected_language != 'ja':
-                                try:
-                                    logger.info(f"🌍 医師の受診セクションの翻訳開始: {detected_language}")
-                                    translated_doctor_section = translate_medicine_recommendation(doctor_consultation_section, detected_language, recommendation_client)
-                                    if translated_doctor_section and translated_doctor_section != doctor_consultation_section:
-                                        doctor_consultation_section = translated_doctor_section
-                                        logger.info(f"✅ 医師の受診セクションの翻訳完了: {detected_language}")
-                                    else:
-                                        logger.info(f"⚠️ 医師の受診セクションの翻訳スキップ: 翻訳結果が空または同じ")
-                                except Exception as e:
-                                    logger.warning(f"⚠️ 医師の受診セクションの翻訳エラー: {e}")
-                                    # 翻訳に失敗した場合は元のコンテンツを使用
-                            bot_content += doctor_consultation_section
-                        
-                        # 質問セクションを翻訳して追加（翻訳処理の後）
-                        if questions_section_before:
-                            if detected_language != 'ja':
-                                try:
-                                    logger.info(f"🌍 質問セクションの翻訳開始: {detected_language}")
-                                    translated_questions_section = translate_medicine_recommendation(questions_section_before, detected_language, recommendation_client)
-                                    if translated_questions_section and translated_questions_section != questions_section_before:
-                                        questions_section_before = translated_questions_section
-                                        logger.info(f"✅ 質問セクションの翻訳完了: {detected_language}")
-                                    else:
-                                        logger.info(f"⚠️ 質問セクションの翻訳スキップ: 翻訳結果が空または同じ")
-                                except Exception as e:
-                                    logger.warning(f"⚠️ 質問セクションの翻訳エラー: {e}")
-                                    # 翻訳に失敗した場合は元のコンテンツを使用
-                            bot_content += questions_section_before
                         
                         # 評価ボタン用のデータを準備（HTMLエスケープ処理）
                         import json
