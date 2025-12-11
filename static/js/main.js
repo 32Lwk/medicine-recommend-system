@@ -1338,7 +1338,7 @@
                         <div class="contact-info">
                             <h4>基本情報</h4>
                             <p><strong>運営者名：</strong> 川嶋 （Kawashima ）</p>
-                            <p><strong>所属：</strong> 名古屋大学</p>
+                            <p><strong>所属：</strong> 　　　　　　　</p>
                             <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
                         </div>
                         
