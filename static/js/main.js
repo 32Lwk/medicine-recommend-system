@@ -1291,6 +1291,10 @@
                             <li><strong>運用形態：</strong>非営利・学術研究目的</li>
                             <li><strong>公開範囲：</strong>医療・行政・研究機関・薬剤師などの限られた関係者(一部ユーザーヒアリングを行う)</li>
                             <li><strong>目的：</strong>実証実験・検証・フィードバック収集</li>
+                            <li><strong>バージョン管理：</strong>Git（GitHub）</li>
+                            <li><strong>CI/CD：</strong>現状未実装（手動デプロイ）</li>
+                            <li><strong>ログ管理：</strong>JSONL形式の構造化ログ、リアルタイム監視機能</li>
+                            <li><strong>運用監視：</strong>アクセス分析、パフォーマンス監視、セキュリティ監視</li>
                             <li><strong>将来的展開：</strong>一般公開に向けた改良検討</li>
                         </ul>
                     </div>
@@ -1298,12 +1302,15 @@
                     <div class="info-section">
                         <h3>🛠️ 開発環境・使用ツール</h3>
                         <ul>
-                            <li><strong>バックエンド:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
-                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, MeCab, ルールベースNLU</li>
-                            <li><strong>データベース:</strong> PostgreSQL（フィードバック保存用）</li>
-                            <li><strong>データ処理:</strong> Pandas, NumPy</li>
-                            <li><strong>フロントエンド:</strong> HTML/CSS, JavaScript, TailwindCSS, Chart.js</li>
-                            <li><strong>監視・ログ:</strong> psutil, SocketIOログ配信, JSONL形式記録</li>
+                            <li><strong>バックエンド:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
+                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, ルールベースNLU（ハイブリッド推奨システム）</li>
+                            <li><strong>翻訳API:</strong> DeepL API（多言語対応：日本語・英語・中国語・韓国語、高速翻訳）</li>
+                            <li><strong>データベース:</strong> PostgreSQL（フィードバック永続化・セッション管理・マルチインスタンス対応）</li>
+                            <li><strong>データ処理:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>フロントエンド:</strong> HTML5, CSS3, JavaScript（ES6+）、バニラJavaScript（フレームワーク不使用）、レスポンシブデザイン</li>
+                            <li><strong>デプロイ環境:</strong> Render（本番環境）、Gunicorn（WSGIサーバー）</li>
+                            <li><strong>監視・ログ:</strong> psutil, JSONL形式記録（構造化ログ）、アクセス分析、パフォーマンス監視</li>
+                            <li><strong>バージョン管理:</strong> Git（GitHub）</li>
                         </ul>
                     </div>
                     
@@ -1349,8 +1356,9 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>デプロイ環境：</strong> Render (本番環境) / Gunicorn (WSGIサーバー)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1420,13 +1428,15 @@
                     <div class="info-section">
                         <h3>🛠️ Development Environment & Tools</h3>
                         <ul>
-                            <li><strong>Programming Languages & Frameworks:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
-                            <li><strong>AI & Natural Language Processing:</strong> OpenAI GPT-4o-mini, Rule-based NLU (regex & symptom dictionary), MeCab</li>
-                            <li><strong>Database:</strong> PostgreSQL (for feedback storage)</li>
-                            <li><strong>Data Processing:</strong> Pandas, NumPy</li>
-                            <li><strong>Frontend:</strong> HTML/CSS, JavaScript, TailwindCSS (UI optimization), Chart.js (analytics display)</li>
-                            <li><strong>Development & Debug Tools:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
-                            <li><strong>Monitoring & Log Management:</strong> psutil, SocketIO log distribution, JSONL format for access, security, and performance records</li>
+                            <li><strong>Backend:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
+                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, Rule-based NLU (Hybrid Recommendation System)</li>
+                            <li><strong>Translation API:</strong> DeepL API (Multi-language support: Japanese, English, Chinese, Korean, high-speed translation)</li>
+                            <li><strong>Database:</strong> PostgreSQL (Feedback persistence, session management, multi-instance support)</li>
+                            <li><strong>Data Processing:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>Frontend:</strong> HTML5, CSS3, JavaScript (ES6+), Vanilla JavaScript (no framework), Responsive Design</li>
+                            <li><strong>Deployment:</strong> Render (Production), Gunicorn (WSGI Server)</li>
+                            <li><strong>Monitoring & Logging:</strong> psutil, JSONL format (structured logs), access analysis, performance monitoring</li>
+                            <li><strong>Version Control:</strong> Git (GitHub)</li>
                         </ul>
                     </div>
                     
@@ -1470,8 +1480,9 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>Deployment:</strong> Render (Production) / Gunicorn (WSGI Server)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1541,13 +1552,15 @@
                     <div class="info-section">
                         <h3>🛠️ 개발 환경·사용 도구</h3>
                         <ul>
-                            <li><strong>프로그래밍 언어·프레임워크:</strong> Python 3.11, Flask, SocketIO, Jinja2</li>
-                            <li><strong>AI·자연어 처리:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(정규표현·증상 사전), MeCab</li>
-                            <li><strong>데이터베이스:</strong> PostgreSQL(피드백 저장용)</li>
-                            <li><strong>데이터 처리:</strong> Pandas, NumPy</li>
-                            <li><strong>프론트엔드:</strong> HTML/CSS, JavaScript, TailwindCSS(UI 경량화), Chart.js(분석 표시)</li>
-                            <li><strong>개발·디버그 도구:</strong> PyCharm, Visual Studio Code, Postman, pytest</li>
-                            <li><strong>모니터링·로그 관리:</strong> psutil, SocketIO 로그 배송, JSONL 형태로 액세스·보안·성능 기록</li>
+                            <li><strong>백엔드:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
+                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(하이브리드 추천 시스템)</li>
+                            <li><strong>번역 API:</strong> DeepL API(다국어 지원: 일본어·영어·중국어·한국어, 고속 번역)</li>
+                            <li><strong>데이터베이스:</strong> PostgreSQL(피드백 영속화·세션 관리·멀티 인스턴스 지원)</li>
+                            <li><strong>데이터 처리:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>프론트엔드:</strong> HTML5, CSS3, JavaScript(ES6+), 바닐라 JavaScript(프레임워크 미사용), 반응형 디자인</li>
+                            <li><strong>배포 환경:</strong> Render(프로덕션), Gunicorn(WSGI 서버)</li>
+                            <li><strong>모니터링·로그:</strong> psutil, JSONL 형태 기록(구조화 로그), 액세스 분석, 성능 모니터링</li>
+                            <li><strong>버전 관리:</strong> Git(GitHub)</li>
                         </ul>
                     </div>
                     
@@ -1591,8 +1604,9 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>배포 환경:</strong> Render (프로덕션) / Gunicorn (WSGI 서버)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1662,13 +1676,15 @@
                     <div class="info-section">
                         <h3>🛠️ 开发环境·使用工具</h3>
                         <ul>
-                            <li><strong>编程语言·框架:</strong> Python 3.11、Flask、SocketIO、Jinja2</li>
-                            <li><strong>AI·自然语言处理:</strong> OpenAI GPT-4o-mini、规则基础NLU（正则表达式·症状词典）、MeCab</li>
-                            <li><strong>数据库:</strong> PostgreSQL（反馈保存用）</li>
-                            <li><strong>数据处理:</strong> Pandas、NumPy</li>
-                            <li><strong>前端:</strong> HTML/CSS、JavaScript、TailwindCSS（UI轻量化）、Chart.js（分析显示）</li>
-                            <li><strong>开发·调试工具:</strong> PyCharm、Visual Studio Code、Postman、pytest</li>
-                            <li><strong>监控·日志管理:</strong> psutil、SocketIO日志分发、JSONL格式访问·安全·性能记录</li>
+                            <li><strong>后端:</strong> Python 3.9+、Flask 3.0.0、Jinja2</li>
+                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini、规则基础NLU（混合推荐系统）</li>
+                            <li><strong>翻译API:</strong> DeepL API（多语言支持：日语·英语·中文·韩语、高速翻译）</li>
+                            <li><strong>数据库:</strong> PostgreSQL（反馈持久化·会话管理·多实例支持）</li>
+                            <li><strong>数据处理:</strong> Pandas 2.2.3、NumPy</li>
+                            <li><strong>前端:</strong> HTML5、CSS3、JavaScript（ES6+）、纯JavaScript（无框架）、响应式设计</li>
+                            <li><strong>部署环境:</strong> Render（生产环境）、Gunicorn（WSGI服务器）</li>
+                            <li><strong>监控·日志:</strong> psutil、JSONL格式记录（结构化日志）、访问分析、性能监控</li>
+                            <li><strong>版本管理:</strong> Git（GitHub）</li>
                         </ul>
                     </div>
                     
@@ -1712,8 +1728,9 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>部署环境：</strong> Render (生产环境) / Gunicorn (WSGI服务器)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2377,8 +2394,9 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>デプロイ環境：</strong> Render (本番環境) / Gunicorn (WSGIサーバー)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2406,8 +2424,9 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>Deployment:</strong> Render (Production) / Gunicorn (WSGI Server)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2435,8 +2454,9 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>배포 환경:</strong> Render (프로덕션) / Gunicorn (WSGI 서버)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2464,8 +2484,9 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python / Flask / ChatGPT / Pandas / MeCab / PostgreSQL / NumPy</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
+                            <p><strong>部署环境：</strong> Render (生产环境) / Gunicorn (WSGI服务器)</p>
                         </div>
                         
                         <div class="contact-info">
