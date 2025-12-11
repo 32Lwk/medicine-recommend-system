@@ -328,7 +328,7 @@ python debug_app.py
 セッション更新（PostgreSQL） + 推奨結果返却
 ```
 
-**注意**: ルールベース推奨が失敗した場合（status: 'error', 'no_candidates', 'missing_critical_info'など）は、エラーメッセージを表示し、ChatGPTフォールバックは使用されません（2025年12月5日の更新により、ChatGPTフォールバック機能は廃止されました）。
+**注意**: ルールベース推奨が失敗した場合（status: 'error', 'no_candidates', 'missing_critical_info'など）は、エラーメッセージを表示し、ChatGPTフォールバックは使用されません（2025年12月5日の更新により、ChatGPTフォールバック機能は完全に廃止されました）。
 
 ### ルールベーススコアリング（2025年11月1日更新）
 
