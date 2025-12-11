@@ -104,7 +104,54 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     if not normalized_symptom_set:
         return 0.0
 
-    match_count = sum(1 for name in normalized_symptom_set if name in normalized_efficacy)
+    # 単語境界を考慮したマッチング関数
+    def is_word_match(token: str, text: str) -> bool:
+        """
+        単語境界を考慮したマッチング
+        日本語の単語境界を考慮（症状名が独立した単語として存在するかチェック）
+        """
+        if not token or not text:
+            return False
+        
+        # 症状名が効能テキスト内に存在するかチェック
+        if token not in text:
+            return False
+        
+        # 症状名の出現位置をすべて取得
+        start_positions = []
+        start = 0
+        while True:
+            pos = text.find(token, start)
+            if pos == -1:
+                break
+            start_positions.append(pos)
+            start = pos + 1
+        
+        # 各出現位置で、前後が別の文字であることを確認
+        for pos in start_positions:
+            # 前の文字（存在する場合）
+            prev_char = text[pos - 1] if pos > 0 else ''
+            # 後の文字（存在する場合）
+            next_pos = pos + len(token)
+            next_char = text[next_pos] if next_pos < len(text) else ''
+            
+            # 前後が別の文字であることを確認
+            # 前が文の始まり、または前の文字が症状名の一部でない
+            # 後が文の終わり、または後の文字が症状名の一部でない
+            is_valid_start = (pos == 0) or (prev_char not in token)
+            is_valid_end = (next_pos >= len(text)) or (next_char not in token)
+            
+            if is_valid_start and is_valid_end:
+                return True
+        
+        return False
+    
+    match_count = sum(1 for name in normalized_symptom_set if is_word_match(name, normalized_efficacy))
+    
+    # 症状が効能に全く含まれていない場合は大幅減点
+    if match_count == 0:
+        return 0.0
+    
     specificity_ratio = match_count / len(normalized_symptom_set)
 
     # 効能効果の長さによる調整（短いほど特化している）

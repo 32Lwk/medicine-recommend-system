@@ -495,6 +495,40 @@ SPECIFIC_USE_PATTERNS = {
     }
 }
 
+# 特殊用途医薬品の除外キーワード（一般的な症状には不適切な特殊用途医薬品）
+SPECIFIC_USE_EXCLUSION_KEYWORDS = {
+    "ホルモン": ["ホルモン", "テストステロン", "エストロゲン", "プロゲステロン", "メチルテストステロン"],
+    "男性器": ["男性器", "ペニス", "陰茎", "性器", "オットピン", "内股"],
+    "女性器": ["女性器", "膣", "おりもの", "デリケートゾーン"],
+    "特殊用途": ["勃起", "性機能", "更年期障害", "ホルモン補充", "記憶力減退"]
+}
+
+def is_specific_use_medicine(candidate: Dict) -> bool:
+    """
+    特殊用途医薬品かどうかを判定
+    ホルモン剤、男性器塗布剤などの特殊用途医薬品を検出
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        特殊用途医薬品の場合True
+    """
+    product_name = str(candidate.get('product_name', '')).lower()
+    efficacy = str(candidate.get('efficacy', '')).lower()
+    usage = str(candidate.get('usage', '')).lower()
+    ingredients = str(candidate.get('ingredients', '')).lower()
+    
+    combined_text = product_name + efficacy + usage + ingredients
+    
+    for category, keywords in SPECIFIC_USE_EXCLUSION_KEYWORDS.items():
+        if any(kw in combined_text for kw in keywords):
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"特殊用途医薬品を検出: {candidate.get('product_name', '')} (カテゴリ: {category})")
+            return True
+    
+    return False
+
 # 複合薬識別パターン（複数の効能を持つ医薬品）
 COMPOUND_MEDICINE_INDICATORS = {
     "風邪薬": {
@@ -1592,9 +1626,23 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     if len(candidates) <= top_n:
         return candidates
 
+    # スコアフィルタリング: スコア0の候補を除外
+    filtered_candidates = [c for c in candidates if c.get('final_score', 0.0) > 0.0]
+    if len(filtered_candidates) < top_n:
+        # スコア0以外の候補が不足する場合は、スコア0.3以上の候補を追加
+        additional_candidates = [c for c in candidates if c.get('final_score', 0.0) >= 0.3 and c not in filtered_candidates]
+        filtered_candidates.extend(additional_candidates)
+    
+    # フィルタリング後の候補が不足する場合は元の候補リストを使用
+    if len(filtered_candidates) < top_n:
+        filtered_candidates = candidates
+    
+    if len(filtered_candidates) <= top_n:
+        return filtered_candidates[:top_n]
+
     # 液剤を最初に1件確保（剤形多様性）
     liquid_candidate = None
-    for candidate in candidates:
+    for candidate in filtered_candidates:
         if _candidate_has_throat_liquid_signature(candidate):
             liquid_candidate = candidate
             break
@@ -1606,7 +1654,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     # 液剤が見つかった場合は最後に追加するために保留
     reserved_liquid = liquid_candidate
 
-    for candidate in candidates:
+    for candidate in filtered_candidates:
         # 保留中の液剤はスキップ
         if reserved_liquid and candidate == reserved_liquid:
             continue
@@ -2079,6 +2127,25 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
                 logger.debug(f"単一症状のためリスク成分含有医薬品を除外: {product_name} (成分: {risk_name})")
             return
 
+        # 特殊用途医薬品の除外チェック（ホルモン剤、男性器塗布剤など）
+        candidate_dict = {
+            'product_name': product_name,
+            'efficacy': efficacy,
+            'usage': row.get('用法用量', ''),
+            'ingredients': ingredients
+        }
+        if is_specific_use_medicine(candidate_dict):
+            # ユーザーの症状が特殊用途に該当するかチェック
+            user_symptoms_str = " ".join(symptom_names).lower()
+            specific_symptom_keywords = ["性器", "ホルモン", "勃起", "更年期", "記憶力", "男性器", "女性器", "ペニス", "陰茎"]
+            is_specific_symptom = any(kw in user_symptoms_str for kw in specific_symptom_keywords)
+            
+            if not is_specific_symptom:
+                # 特殊用途の症状がない場合は除外
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"特殊用途医薬品を除外: {product_name} (症状: {symptom_names})")
+                return
+
         # 年齢制限の整形
         age_restriction = row.get('年齢制限', '')
         if not age_restriction and hasattr(row, 'iloc') and len(row) > 6:
@@ -2230,6 +2297,71 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
     """
     症状適合度スコアを計算
     """
+    import re
+    
+    def is_word_match(token: str, text: str) -> bool:
+        """
+        単語境界を考慮したマッチング
+        日本語の単語境界を考慮（症状名が独立した単語として存在するかチェック）
+        """
+        if not token or not text:
+            return False
+        
+        # 症状名が効能テキスト内に存在するかチェック
+        if token not in text:
+            return False
+        
+        # 症状名の出現位置をすべて取得
+        start_positions = []
+        start = 0
+        while True:
+            pos = text.find(token, start)
+            if pos == -1:
+                break
+            start_positions.append(pos)
+            start = pos + 1
+        
+        # 各出現位置で、前後が別の文字であることを確認
+        for pos in start_positions:
+            # 前の文字（存在する場合）
+            prev_char = text[pos - 1] if pos > 0 else ''
+            # 後の文字（存在する場合）
+            next_pos = pos + len(token)
+            next_char = text[next_pos] if next_pos < len(text) else ''
+            
+            # 前後が別の文字であることを確認
+            # 前が文の始まり、または前の文字が症状名の一部でない
+            # 後が文の終わり、または後の文字が症状名の一部でない
+            # さらに、前後の文字が症状名と結合して別の単語になっていないことを確認
+            is_valid_start = (pos == 0) or (prev_char not in token)
+            is_valid_end = (next_pos >= len(text)) or (next_char not in token)
+            
+            # 追加チェック: 前後の文字列が症状名を含む別の単語になっていないか
+            # 例: 「頭痛」が「咽頭痛」に含まれている場合を除外
+            if pos > 0 and next_pos < len(text):
+                # 前後の文字を含めた部分文字列をチェック
+                context_start = max(0, pos - len(token))
+                context_end = min(len(text), next_pos + len(token))
+                context = text[context_start:context_end]
+                # 症状名が別の単語の一部でないことを確認
+                # 前後の文字列に症状名が含まれているが、症状名の前後が別の文字であることを確認
+                if token in context and context != token:
+                    # 前後の文字列が症状名を含む別の単語の可能性がある
+                    # 症状名の前後が別の文字であることを再確認
+                    token_pos_in_context = context.find(token)
+                    if token_pos_in_context > 0 and token_pos_in_context + len(token) < len(context):
+                        # 前後の文字が症状名の一部でないことを確認
+                        prev_in_context = context[token_pos_in_context - 1]
+                        next_in_context = context[token_pos_in_context + len(token)]
+                        if prev_in_context in token or next_in_context in token:
+                            # 症状名が別の単語の一部である可能性が高い
+                            continue
+            
+            if is_valid_start and is_valid_end:
+                return True
+        
+        return False
+    
     症状スコア = 0.0
     症状数 = len(nlu_result.get("symptoms", []))
     
@@ -2254,9 +2386,19 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             if normalized_synonym:
                 synonym_set.add(normalized_synonym)
         
-        if any(token in efficacy_text for token in synonym_set):
+        # 単語境界を考慮したマッチング
+        if any(is_word_match(token, efficacy_text) for token in synonym_set):
             weight = dictionary_entry.get("weight", 0.5)
             症状スコア += weight
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                matched_token = next((token for token in synonym_set if is_word_match(token, efficacy_text)), None)
+                logger.debug(f"症状マッチ: {symptom_name} ({matched_token}) が効能に含まれています")
+        elif DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"症状マッチなし: {symptom_name} は効能に含まれていません")
+    
+    # 症状が効能に含まれていない場合は0.0を返す
+    if 症状スコア == 0.0:
+        return 0.0
     
     return 症状スコア / 症状数
 
@@ -2634,6 +2776,14 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
     from scoring_utils import calculate_efficacy_specificity_score
     efficacy_specificity = calculate_efficacy_specificity_score(candidate, nlu_result)
     
+    # 効能特異性が0.0の場合（症状が効能に全く含まれていない場合）は強いペナルティを適用
+    if efficacy_specificity == 0.0:
+        # 単一症状の場合、効能に症状が含まれていない場合は大幅減点
+        if len(symptom_names) == 1:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状特異性ペナルティ: 効能に症状が含まれていないため大幅減点 (効能特異性{efficacy_specificity:.2f})")
+            return -0.5  # 効能に症状が含まれていない場合は強いペナルティ
+    
     # 単一症状の場合
     if len(symptom_names) == 1:
         symptom_name = symptom_names[0]
@@ -2648,6 +2798,9 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     penalty = base_penalty * 0.25  # 0.17から0.25に変更（緩和を減らす）
                 elif efficacy_specificity >= 0.8:
                     penalty = base_penalty * 0.6   # 0.5から0.6に変更
+                elif efficacy_specificity == 0.0:
+                    # 効能特異性が0.0の場合は、ベースペナルティを強化
+                    penalty = base_penalty * 1.5  # ペナルティを1.5倍に強化
                 else:
                     penalty = base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2667,6 +2820,9 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     penalty = base_penalty * 0.25  # 0.17から0.25に変更
                 elif efficacy_specificity >= 0.8:
                     penalty = base_penalty * 0.6   # 0.5から0.6に変更
+                elif efficacy_specificity == 0.0:
+                    # 効能特異性が0.0の場合は、ベースペナルティを強化
+                    penalty = base_penalty * 1.5  # ペナルティを1.5倍に強化
                 else:
                     penalty = base_penalty
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -2851,10 +3007,15 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"性器周辺症状: {len(validated)}件の候補をフィルタリング後")
     
-    # 5. スコアが0.3未満の候補を警告付きで残す（完全には除外しない）
+    # 5. スコアが0.0の候補を除外、0.3未満の候補を警告付きで残す
     final_candidates = []
     for candidate in validated:
         score = candidate.get('final_score', 0.0)
+        # スコア0の候補を完全に除外
+        if score <= 0.0:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"⚠️ スコア0の候補を除外: {candidate.get('product_name', '')} (スコア: {score:.3f})")
+            continue
         if score < 0.3:
             candidate['low_score_warning'] = True
             if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -3759,21 +3920,28 @@ def rule_based_recommendation(
     )
     
     # ステップ5.4: 相対スコア化（最高スコアを100%として正規化）
+    # ensure_ingredient_diversity実行後、relative_scoreを再計算
     if top_candidates:
         max_score = top_candidates[0].get('final_score', 0.0)
         if max_score > 0:
             for candidate in top_candidates:
-                relative_score = candidate['final_score'] / max_score
-                candidate['relative_score'] = relative_score
-                # スコア帯の判定（高/中/低）
-                if relative_score >= 0.9:
-                    candidate['score_level'] = '高'
-                elif relative_score >= 0.7:
-                    candidate['score_level'] = '中'
-                else:
+                final_score = candidate.get('final_score', 0.0)
+                # final_scoreが0.0の場合はrelative_scoreも0.0に設定
+                if final_score <= 0.0:
+                    candidate['relative_score'] = 0.0
                     candidate['score_level'] = '低'
+                else:
+                    relative_score = final_score / max_score
+                    candidate['relative_score'] = relative_score
+                    # スコア帯の判定（高/中/低）
+                    if relative_score >= 0.9:
+                        candidate['score_level'] = '高'
+                    elif relative_score >= 0.7:
+                        candidate['score_level'] = '中'
+                    else:
+                        candidate['score_level'] = '低'
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"相対スコア: {candidate.get('product_name', '')} = {relative_score:.3f} ({candidate.get('score_level', '')})")
+                    logger.debug(f"相対スコア: {candidate.get('product_name', '')} = {candidate.get('relative_score', 0.0):.3f} ({candidate.get('score_level', '')})")
     
     # ステップ5.5: 推奨後の検証処理
     if DEBUG_MODE or logger.level <= logging.DEBUG:
