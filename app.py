@@ -3172,6 +3172,10 @@ def index():
                         session_data['messages'].append(bot_response)
                         session_data['last_activity'] = datetime.now()
                         
+                        # detailed_diagnosisをDBにも保存（ADMIN_SESSIONSから取得）
+                        if sid in ADMIN_SESSIONS and 'detailed_diagnosis' in ADMIN_SESSIONS[sid]:
+                            session_data['detailed_diagnosis'] = ADMIN_SESSIONS[sid]['detailed_diagnosis']
+                        
                         # DBに保存
                         save_session_to_db(sid, session_data)
                         logger.info(f"💾 メッセージ保存完了: {len(session_data.get('messages', []))} messages")
@@ -3254,6 +3258,10 @@ def index():
             if 'messages' not in session_data or not session_data.get('messages'):
                 session_data['messages'] = existing_messages
             
+            # detailed_diagnosisをDBにも保存（ADMIN_SESSIONSから取得、既にDBにある場合は上書きしない）
+            if sid in ADMIN_SESSIONS and 'detailed_diagnosis' in ADMIN_SESSIONS[sid]:
+                session_data['detailed_diagnosis'] = ADMIN_SESSIONS[sid]['detailed_diagnosis']
+            
             save_session_to_db(sid, session_data)
             logger.info(f"🔄 既存セッション更新: {sid} ({len(session_data.get('messages', []))} messages)")
         else:
@@ -3272,6 +3280,10 @@ def index():
                 'user_attributes': session.get('user_attributes', {}),
                 'session_active': True
             }
+            
+            # detailed_diagnosisをDBにも保存（ADMIN_SESSIONSから取得）
+            if sid in ADMIN_SESSIONS and 'detailed_diagnosis' in ADMIN_SESSIONS[sid]:
+                session_data['detailed_diagnosis'] = ADMIN_SESSIONS[sid]['detailed_diagnosis']
             
             save_session_to_db(sid, session_data)
             logger.info(f"📝 新規セッション作成: {sid}")
@@ -4566,6 +4578,18 @@ def get_all_sessions():
         elif not isinstance(last_activity, (int, float)):
             last_activity = 0
         
+        # 詳細診断情報を取得（DBから優先、なければADMIN_SESSIONSから）
+        detailed_diag = info.get('detailed_diagnosis') if isinstance(info, dict) else None
+        if not detailed_diag:
+            detailed_diag = ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
+        # 互換対応: detailed_diagnosis に session_id が無ければ付与
+        if isinstance(detailed_diag, dict) and 'session_id' not in detailed_diag:
+            try:
+                detailed_diag = dict(detailed_diag)
+                detailed_diag['session_id'] = str(sid)
+            except Exception:
+                pass
+        
         # セッションデータをシリアライズ可能な形式に変換
         session_dict = {
             'session_id': str(sid),
@@ -4575,7 +4599,8 @@ def get_all_sessions():
             'session_active': bool(info.get('session_active', True)) if isinstance(info, dict) else True,
             'client_ip': str(info.get('client_ip', '')) if isinstance(info, dict) else '',
             'user_agent': str(info.get('user_agent', '')) if isinstance(info, dict) else '',
-            'user_attributes': dict(info.get('user_attributes', {})) if isinstance(info, dict) and isinstance(info.get('user_attributes'), dict) else {}
+            'user_attributes': dict(info.get('user_attributes', {})) if isinstance(info, dict) and isinstance(info.get('user_attributes'), dict) else {},
+            'detailed_diagnosis': detailed_diag
         }
         sessions_data.append(session_dict)
     
@@ -4692,7 +4717,10 @@ def api_main_sessions():
     all_sessions = get_all_sessions_from_db()
     sessions_list = []
     for sid, info in all_sessions.items():
-        detailed_diag = ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
+        # まずDBから詳細診断情報を取得、なければADMIN_SESSIONSから取得
+        detailed_diag = info.get('detailed_diagnosis') if isinstance(info, dict) else None
+        if not detailed_diag:
+            detailed_diag = ADMIN_SESSIONS.get(sid, {}).get('detailed_diagnosis')
         # 互換対応: detailed_diagnosis に session_id が無ければ付与（フロントの一致判定用）
         if isinstance(detailed_diag, dict) and 'session_id' not in detailed_diag:
             try:

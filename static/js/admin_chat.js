@@ -14,6 +14,7 @@ console.log('📄 Script loaded successfully');
 let currentSessionId = null;
 let allSessions = [];
 let currentDetailedDiagnosis = null; // 管理APIからの詳細診断（スコア内訳含む）
+let currentMessages = []; // 現在のセッションのメッセージ（診断情報のフォールバック用）
 let socket = null;
 
 // ページ読み込み時の初期化
@@ -849,8 +850,11 @@ function loadChatHistory(sessionId) {
             if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
                 // 管理者専用の詳細診断を保持（推奨薬ごとのscore/score_breakdownを含む）
                 currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
+                // メッセージも保持（診断情報のフォールバック用）
+                currentMessages = targetSession.messages || [];
                 renderChatMessages(targetSession.messages);
             } else {
+                currentMessages = [];
                 renderChatMessages([]);
             }
         })
@@ -3346,16 +3350,46 @@ function closeAiResponseModal() {
 // スコア詳細モーダル関連の関数
 function showScoreModal(medicineId, medicineIndex) {
     // 現在のセッションの詳細診断データを取得
-    const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+    let adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
         ? currentDetailedDiagnosis
         : null;
     
+    // currentDetailedDiagnosisがない場合、messagesから最新の診断情報を取得
+    if (!adminDiag && currentMessages && currentMessages.length > 0) {
+        // 最新のbotメッセージでdiagnosisがあるものを探す
+        for (let i = currentMessages.length - 1; i >= 0; i--) {
+            const msg = currentMessages[i];
+            if (msg.type === 'bot' && msg.diagnosis && msg.diagnosis.recommended_medicines && Array.isArray(msg.diagnosis.recommended_medicines)) {
+                // session_idを付与（フロントの一致判定用）
+                adminDiag = Object.assign({}, msg.diagnosis, { session_id: currentSessionId });
+                console.log('📋 メッセージから診断情報を取得しました:', adminDiag);
+                break;
+            }
+        }
+    }
+    
     if (!adminDiag || !adminDiag.recommended_medicines || !adminDiag.recommended_medicines[medicineIndex]) {
         alert('スコア情報が見つかりません。');
+        console.error('❌ スコア情報が見つかりません:', {
+            hasAdminDiag: !!adminDiag,
+            hasRecommendedMedicines: !!(adminDiag && adminDiag.recommended_medicines),
+            medicineIndex: medicineIndex,
+            recommendedMedicinesLength: adminDiag ? adminDiag.recommended_medicines.length : 0,
+            currentSessionId: currentSessionId,
+            currentDetailedDiagnosis: currentDetailedDiagnosis,
+            currentMessagesLength: currentMessages.length
+        });
         return;
     }
     
     const medicine = adminDiag.recommended_medicines[medicineIndex];
+    
+    // スコア情報が存在するか確認
+    if (medicine.score === undefined && medicine.score === null && !medicine.scores && !medicine.score_breakdown) {
+        alert('この医薬品にはスコア情報がありません。');
+        return;
+    }
+    
     const scoreHtml = generateScoreDetailHtml(medicine);
     
     // モーダルに表示
