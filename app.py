@@ -2988,10 +2988,16 @@ def index():
         <h4 style="color: #e65100; margin-top: 0;">⚠️ 使用上の注意</h4>
         {formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'}
     </div>
-    
+"""
+                        
+                        # 「医師の受診が必要な場合」セクションを準備（翻訳処理の後に追加）
+                        doctor_consultation_section = ""
+                        if doctor_consultation or True:  # 常に表示
+                            doctor_consultation_text = doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'
+                            doctor_consultation_section = f"""
     <div style="background: #ffebee; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
         <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
-        <p style="margin: 5px 0;">{doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'}</p>
+        <p style="margin: 5px 0;">{doctor_consultation_text}</p>
     </div>
 """
                         
@@ -3011,6 +3017,22 @@ def index():
                             except Exception as e:
                                 logger.error(f"❌ 翻訳エラー: {e}")
                                 # 翻訳に失敗した場合は元のコンテンツを使用
+                        
+                        # 「医師の受診が必要な場合」セクションを翻訳して追加（翻訳処理の後）
+                        if doctor_consultation_section:
+                            if detected_language != 'ja':
+                                try:
+                                    logger.info(f"🌍 医師の受診セクションの翻訳開始: {detected_language}")
+                                    translated_doctor_section = translate_medicine_recommendation(doctor_consultation_section, detected_language, recommendation_client)
+                                    if translated_doctor_section and translated_doctor_section != doctor_consultation_section:
+                                        doctor_consultation_section = translated_doctor_section
+                                        logger.info(f"✅ 医師の受診セクションの翻訳完了: {detected_language}")
+                                    else:
+                                        logger.info(f"⚠️ 医師の受診セクションの翻訳スキップ: 翻訳結果が空または同じ")
+                                except Exception as e:
+                                    logger.warning(f"⚠️ 医師の受診セクションの翻訳エラー: {e}")
+                                    # 翻訳に失敗した場合は元のコンテンツを使用
+                            bot_content += doctor_consultation_section
                         
                         # 質問セクションを翻訳して追加（翻訳処理の後）
                         if questions_section_before:
