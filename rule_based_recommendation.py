@@ -2311,6 +2311,14 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
         if token not in text:
             return False
         
+        # 日本語文字の判定関数（助詞・記号を除く）
+        def is_japanese_word_char(c: str) -> bool:
+            if not c:
+                return False
+            # 漢字、カタカナのみを単語文字とみなす（ひらがな助詞は境界）
+            return ('\u30A0' <= c <= '\u30FF' or  # カタカナ
+                    '\u4E00' <= c <= '\u9FFF')    # 漢字
+        
         # 症状名の出現位置をすべて取得
         start_positions = []
         start = 0
@@ -2321,7 +2329,7 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             start_positions.append(pos)
             start = pos + 1
         
-        # 各出現位置で、前後が別の文字であることを確認
+        # 各出現位置で、前後が日本語文字でないことを確認
         for pos in start_positions:
             # 前の文字（存在する場合）
             prev_char = text[pos - 1] if pos > 0 else ''
@@ -2329,36 +2337,19 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             next_pos = pos + len(token)
             next_char = text[next_pos] if next_pos < len(text) else ''
             
-            # 前後が別の文字であることを確認
-            # 前が文の始まり、または前の文字が症状名の一部でない
-            # 後が文の終わり、または後の文字が症状名の一部でない
-            # さらに、前後の文字が症状名と結合して別の単語になっていないことを確認
-            is_valid_start = (pos == 0) or (prev_char not in token)
-            is_valid_end = (next_pos >= len(text)) or (next_char not in token)
-            
-            # 追加チェック: 前後の文字列が症状名を含む別の単語になっていないか
-            # 例: 「頭痛」が「咽頭痛」に含まれている場合を除外
-            if pos > 0 and next_pos < len(text):
-                # 前後の文字を含めた部分文字列をチェック
-                context_start = max(0, pos - len(token))
-                context_end = min(len(text), next_pos + len(token))
-                context = text[context_start:context_end]
-                # 症状名が別の単語の一部でないことを確認
-                # 前後の文字列に症状名が含まれているが、症状名の前後が別の文字であることを確認
-                if token in context and context != token:
-                    # 前後の文字列が症状名を含む別の単語の可能性がある
-                    # 症状名の前後が別の文字であることを再確認
-                    token_pos_in_context = context.find(token)
-                    if token_pos_in_context > 0 and token_pos_in_context + len(token) < len(context):
-                        # 前後の文字が症状名の一部でないことを確認
-                        prev_in_context = context[token_pos_in_context - 1]
-                        next_in_context = context[token_pos_in_context + len(token)]
-                        if prev_in_context in token or next_in_context in token:
-                            # 症状名が別の単語の一部である可能性が高い
-                            continue
+            # 前後が日本語単語文字でないことを確認
+            # （前が文の始まりまたは非単語文字）AND（後が文の終わりまたは非単語文字）
+            # ひらがな助詞（の、が、を、に、は、など）や記号（、。）は境界とみなす
+            is_valid_start = (pos == 0) or not is_japanese_word_char(prev_char)
+            is_valid_end = (next_pos >= len(text)) or not is_japanese_word_char(next_char)
             
             if is_valid_start and is_valid_end:
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"✅ 単語境界マッチ: '{token}' found at position {pos} in '{text}'")
                 return True
+            else:
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"❌ 単語境界除外: '{token}' at position {pos} (前:'{prev_char}', 後:'{next_char}')")
         
         return False
     
@@ -2368,9 +2359,17 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
     if 症状数 == 0:
         return 0.0
     
-    efficacy_text = normalize_text(candidate.get('efficacy', ''))
-    if not efficacy_text:
+    # 効能テキストを取得
+    efficacy_text_raw = candidate.get('efficacy', '')
+    if not efficacy_text_raw:
         return 0.0
+    
+    # 効能テキストを句読点で分割してから正規化
+    # 「激しい咳、咽頭痛の緩解」→ 「激しい咳」「咽頭痛の緩解」
+    import re
+    efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text_raw)
+    efficacy_parts = [normalize_text(p) for p in efficacy_parts_raw if p.strip()]
+    efficacy_parts = [p for p in efficacy_parts if p]
     
     for symptom in nlu_result.get("symptoms", []):
         symptom_name = symptom.get("name")
@@ -2386,15 +2385,20 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             if normalized_synonym:
                 synonym_set.add(normalized_synonym)
         
-        # 単語境界を考慮したマッチング
-        if any(is_word_match(token, efficacy_text) for token in synonym_set):
+        # 各効能パート内でマッチングを試行
+        matched = False
+        for part in efficacy_parts:
+            if any(is_word_match(token, part) for token in synonym_set):
+                matched = True
+                break
+        
+        if matched:
             weight = dictionary_entry.get("weight", 0.5)
             症状スコア += weight
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                matched_token = next((token for token in synonym_set if is_word_match(token, efficacy_text)), None)
-                logger.debug(f"症状マッチ: {symptom_name} ({matched_token}) が効能に含まれています")
+                logger.debug(f"✅ 症状マッチ: {symptom_name} が効能に含まれています (効能: {efficacy_text_raw})")
         elif DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug(f"症状マッチなし: {symptom_name} は効能に含まれていません")
+            logger.debug(f"❌ 症状マッチなし: {symptom_name} は効能に含まれていません (効能: {efficacy_text_raw})")
     
     # 症状が効能に含まれていない場合は0.0を返す
     if 症状スコア == 0.0:
@@ -4322,71 +4326,41 @@ def generate_usage_notes_and_consultation_with_gpt(
             "doping_prohibited": med.get('doping_prohibited', '')
         })
     
-    # バッチ処理用のプロンプト
-    prompt = f"""
-あなたは登録販売者です。以下の3つの医薬品について、それぞれの使用上の注意を簡潔に生成してください。
-
-【医薬品情報】
-
-"""
+    # バッチ処理用のプロンプト（簡潔化で処理時間短縮）
+    prompt = "医薬品情報:\n\n"
     
     for med_info in medicines_info:
-        prompt += f"""
-{med_info['number']}つ目：{med_info['product_name']}
-効能効果: {med_info['efficacy']}
-用法用量: {med_info['usage']}
-年齢制限: {med_info['age_restriction'] if med_info['age_restriction'] else 'なし'}
-禁止物質: {med_info['doping_prohibited'] if med_info['doping_prohibited'] else 'なし'}
-
-"""
+        prompt += f"{med_info['number']}. {med_info['product_name']}\n"
+        prompt += f"効能: {med_info['efficacy']}\n"
+        prompt += f"用法: {med_info['usage'][:200]}\n"  # 用法は200文字まで（処理時間短縮）
+        if med_info['age_restriction']:
+            prompt += f"年齢制限: {med_info['age_restriction']}\n"
+        if med_info['doping_prohibited']:
+            prompt += f"禁止物質: {med_info['doping_prohibited']}\n"
+        prompt += "\n"
     
-    prompt += """
-【生成ルール】
-1. 各医薬品ごとに「{number}つ目：{product_name}」として明確に分離してください
-2. 効能: 効能効果を全文記載（省略しない）
-3. 用法用量の注意: 用法用量から重要な注意を2〜3項目、100字以内に要約
-   - 「用法用量を厳守」は他で記載済みなので省略
-   - 小児・乳幼児への注意など、この医薬品特有の注意のみ記載
-   - 箇条書き形式
-4. 年齢制限: 年齢制限がある場合のみ記載
-5. ドーピング: 禁止物質がある場合のみ記載
-
-【出力形式】
-以下のJSON形式で回答してください：
+    prompt += """JSON形式で出力:
 {
   "medicines": [
-    {{
+    {
       "number": 1,
       "product_name": "製品名",
-      "usage_notes": "効能: [全文]\\n\\n用法用量の注意:\\n・[注意1]\\n・[注意2]\\n\\n年齢制限: [ある場合のみ]\\n\\nドーピング: [ある場合のみ]"
-    }},
-    {{
-      "number": 2,
-      "product_name": "製品名",
-      "usage_notes": "..."
-    }},
-    {{
-      "number": 3,
-      "product_name": "製品名",
-      "usage_notes": "..."
-    }}
+      "usage_notes": "効能: [全文]\\n\\n用法用量の注意:\\n・[重要な注意2項目以内]\\n\\n[年齢制限・ドーピング情報]"
+    }
   ]
 }
 
-注意：
-- 各医薬品の情報は必ず分離してください
-- JSON形式で正確に出力してください
-"""
+ルール: 効能は全文、用法用量注意は2項目以内、重要情報のみ記載。"""
     
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは登録販売者です。効能は詳細に、用法用量の注意は簡潔に要約してください。JSON形式で正確に出力してください。"},
+                {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。JSON形式で出力。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2,
-            max_tokens=800,  # 1200から800に削減（処理時間短縮）
+            temperature=0.1,  # 0.2から0.1に削減（より決定論的で高速）
+            max_tokens=600,  # 800から600に削減（処理時間短縮）
             response_format={"type": "json_object"}
         )
         
