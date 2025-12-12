@@ -1,4 +1,4 @@
-﻿// グローバルエラーハンドラー
+// グローバルエラーハンドラー
 window.addEventListener('error', function(event) {
     console.error('🔴 Global error:', event.error);
     console.error('🔴 Error message:', event.message);
@@ -2998,8 +2998,12 @@ function loadFeedbackReports() {
         }
         
         const reports = data.reports || [];
-        // 不具合報告のみを表示（ai_positiveは除外）
-        const filteredReports = reports.filter(report => report.report_type !== 'ai_positive');
+        // negative_feedbackとbug_reportのみを表示
+        const filteredReports = reports.filter(report => 
+            report.report_type === 'negative_feedback' || 
+            report.report_type === 'bug_report' ||
+            report.report_type === 'ai_negative'  // 後方互換性のため
+        );
         try {
             renderFeedbackReports(filteredReports);
         } catch (e) {
@@ -3057,6 +3061,8 @@ function renderFeedbackReports(reports) {
         const reportTypeText = {
             'ai_positive': 'AI評価（適切）',
             'ai_negative': 'AI評価（不適切）',
+            'negative_feedback': 'AI評価（不適切）',
+            'bug_report': '不具合報告',
             'security_warning': 'セキュリティ警告'
         }[report.report_type] || report.report_type;
         
@@ -3108,11 +3114,15 @@ function renderFeedbackReports(reports) {
                     </div>
                     ${isLong ? 
                         `<div style="display:flex; align-items:center; justify-content:center; min-height:40px;">
-                            <button onclick="openAiResponseModal(this)" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}" class="admin-btn" style="padding: 6px 12px; font-size: 0.8em; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">詳細を表示</button>
+                            <button onclick="openAiResponseModal(this)" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}" data-security-score="${report.security_score !== null && report.security_score !== undefined ? report.security_score.toFixed(1) : ''}" class="admin-btn" style="padding: 6px 12px; font-size: 0.8em; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">詳細を表示</button>
                          </div>`
                     : ''}
                 </td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.security_score ? report.security_score.toFixed(1) : '-'}</td>
+                <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">
+                    ${report.security_score !== null && report.security_score !== undefined 
+                        ? report.security_score.toFixed(1) 
+                        : '-'}
+                </td>
                 <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
                 <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
                 <td style="padding: 10px; border: 1px solid #dee2e6;">
@@ -3130,20 +3140,31 @@ function renderFeedbackReports(reports) {
 }
 
 function updateFeedbackStats(reports) {
-    // 不具合報告のみを対象（ai_positive は統計から除外）
-    const bugReports = (reports || []).filter(r => r.report_type !== 'ai_positive');
+    // negative_feedbackとbug_reportのみを対象（テーブル表示と一致させるため）
+    const bugReports = (reports || []).filter(r => 
+        r.report_type === 'negative_feedback' || 
+        r.report_type === 'bug_report' ||
+        r.report_type === 'ai_negative'  // 後方互換性のため
+    );
     
-    // 全報告数（テーブル表示と一致させるため不具合報告のみ）
+    // 全報告数（テーブル表示と一致させるため）
     const totalReports = bugReports.length;
     
-    // 解決済み・未解決の数（不具合報告のみ）
+    // 解決済み・未解決の数
     const resolvedCount = bugReports.filter(r => r.resolved === true).length;
     const unresolvedCount = totalReports - resolvedCount;
     
-    // 適切・不適切の数（ai_positiveとai_negativeのみ）
+    // 適切・不適切の数（全データからai_positiveとai_negative/negative_feedbackをカウント）
     const positiveCount = reports.filter(r => r.report_type === 'ai_positive').length;
-    const negativeCount = reports.filter(r => r.report_type === 'ai_negative').length;
+    const negativeCount = reports.filter(r => 
+        r.report_type === 'ai_negative' || r.report_type === 'negative_feedback'
+    ).length;
     const totalFeedback = positiveCount + negativeCount;
+    
+    // デバッグログ（開発時のみ）
+    if (totalFeedback > 0) {
+        console.log(`📊 適切率計算: 適切=${positiveCount}, 不適切=${negativeCount}, 合計=${totalFeedback}`);
+    }
     
     // 適切率・不適切率の計算（適切もカウントに含める）
     const positiveRatio = totalFeedback > 0 ? ((positiveCount / totalFeedback) * 100).toFixed(1) : '0.0';
@@ -3283,6 +3304,8 @@ function generateCSV(reports) {
         const reportTypeText = {
             'ai_positive': 'AI評価（適切）',
             'ai_negative': 'AI評価（不適切）',
+            'negative_feedback': 'AI評価（不適切）',
+            'bug_report': '不具合報告',
             'security_warning': 'セキュリティ警告'
         }[report.report_type] || report.report_type;
         
@@ -3319,6 +3342,7 @@ function downloadCSV(content, filename) {
 // 不具合報告: AI応答全文モーダル
 function openAiResponseModal(buttonEl) {
     const fullText = buttonEl.getAttribute('data-full-text') || '';
+    const securityScore = buttonEl.getAttribute('data-security-score') || '';
     const modal = document.getElementById('aiFullTextModal');
     const body = document.getElementById('aiFullTextBody');
     if (modal && body) {
@@ -3327,7 +3351,13 @@ function openAiResponseModal(buttonEl) {
             document.body.appendChild(modal);
         }
         
-        body.textContent = fullText; // プレーンテキストとして安全に表示
+        // セキュリティスコアがある場合は表示
+        let displayText = fullText;
+        if (securityScore && securityScore !== '' && securityScore !== 'null' && securityScore !== 'undefined') {
+            displayText = `セキュリティスコア: ${securityScore}\n\n${fullText}`;
+        }
+        
+        body.textContent = displayText; // プレーンテキストとして安全に表示
         
         // 既存のインラインスタイルをクリアしてCSSに任せる
         modal.style.cssText = '';
