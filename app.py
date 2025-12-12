@@ -743,7 +743,8 @@ def index():
                     logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
                     return jsonify({
                         'error': True,
-                        'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
+                        'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。',
+                        'risk_score': risk_score
                     })
                 
                 # Phase 1でも高リスクの場合は警告表示
@@ -751,7 +752,8 @@ def index():
                     logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
                     return jsonify({
                         'warning': True,
-                        'response': '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
+                        'response': '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。',
+                        'risk_score': risk_score
                     })
                 
                 # ユーザーインタラクションをログ出力
