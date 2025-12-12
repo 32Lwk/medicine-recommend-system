@@ -1356,7 +1356,7 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / MeCab / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>デプロイ環境：</strong> Render (本番環境) / Gunicorn (WSGIサーバー)</p>
                         </div>
