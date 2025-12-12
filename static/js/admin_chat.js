@@ -3687,8 +3687,8 @@ function generateScoreDetailHtml(medicine) {
         efficacy: 0.20,
         age: 0.12,
         usage: 0.03,
-        sideRisk: -0.10,
-        interRisk: -0.05
+        sideRisk: 0.10,   // 正の値（リスクスコアが負なので、掛け算で負の値になる）
+        interRisk: 0.05   // 正の値（リスクスコアが負なので、掛け算で負の値になる）
     };
     
     // 基本スコアの計算（重み付け適用）
