@@ -3674,10 +3674,20 @@
     function handleSecurityReportFromButton(button) {
         try {
             feedbackTriggerElement = button;
+            // security_scoreを取得（空文字列の場合はnullに変換）
+            let securityScore = button?.dataset?.securityScore;
+            if (securityScore === '' || securityScore === undefined) {
+                securityScore = null;
+            } else if (securityScore !== null) {
+                // 数値に変換を試みる
+                const score = Number(securityScore);
+                securityScore = Number.isFinite(score) ? score : null;
+            }
+            
             const payloadSource = {
                 user_message: button?.dataset?.userMessage || '',
                 ai_response: button?.dataset?.aiResponse || '',
-                security_score: button?.dataset?.securityScore || null,
+                security_score: securityScore,
                 report_type: 'bug_report'
             };
             currentFeedbackData = prepareFeedbackPayload(payloadSource, 'bug_report');
@@ -3812,12 +3822,25 @@
     }
     
     // エラーメッセージを表示
-    function showErrorMessage(message) {
+    function showErrorMessage(message, riskScore = null) {
         const chatMessages = document.getElementById('chatMessages');
         
         // 既存のエラーメッセージを削除
         const existingErrors = chatMessages.querySelectorAll('.error-message');
         existingErrors.forEach(error => error.remove());
+        
+        // risk_scoreがnullまたはundefinedの場合は、セッションストレージから取得を試みる
+        let securityScore = riskScore;
+        if (securityScore === null || securityScore === undefined) {
+            // セッションストレージから最後のリスクスコアを取得
+            const lastRiskScore = sessionStorage.getItem('lastRiskScore');
+            if (lastRiskScore) {
+                securityScore = parseFloat(lastRiskScore);
+            }
+        } else {
+            // セッションストレージに保存
+            sessionStorage.setItem('lastRiskScore', securityScore.toString());
+        }
         
         const errorDiv = document.createElement('div');
         errorDiv.className = 'message bot error-message';
@@ -3832,7 +3855,7 @@
                 <button class="report-bug-btn" 
                     data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
                     data-ai-response="${escapeHtml(message)}" 
-                    data-security-score="0"
+                    data-security-score="${securityScore !== null && securityScore !== undefined ? securityScore : ''}"
                     onclick="handleSecurityReportFromButton(this)" 
                     style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
                     不具合を報告する
@@ -3851,12 +3874,25 @@
     }
     
     // 警告メッセージを表示
-    function showWarningMessage(message) {
+    function showWarningMessage(message, riskScore = null) {
         const chatMessages = document.getElementById('chatMessages');
         
         // 既存の警告メッセージを削除
         const existingWarnings = chatMessages.querySelectorAll('.warning-message');
         existingWarnings.forEach(warning => warning.remove());
+        
+        // risk_scoreがnullまたはundefinedの場合は、セッションストレージから取得を試みる
+        let securityScore = riskScore;
+        if (securityScore === null || securityScore === undefined) {
+            // セッションストレージから最後のリスクスコアを取得
+            const lastRiskScore = sessionStorage.getItem('lastRiskScore');
+            if (lastRiskScore) {
+                securityScore = parseFloat(lastRiskScore);
+            }
+        } else {
+            // セッションストレージに保存
+            sessionStorage.setItem('lastRiskScore', securityScore.toString());
+        }
         
         const warningDiv = document.createElement('div');
         warningDiv.className = 'message bot warning-message';
@@ -3871,7 +3907,7 @@
                 <button class="report-bug-btn" 
                     data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
                     data-ai-response="${escapeHtml(message)}" 
-                    data-security-score="0"
+                    data-security-score="${securityScore !== null && securityScore !== undefined ? securityScore : ''}"
                     onclick="handleSecurityReportFromButton(this)" 
                     style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
                     不具合を報告する
@@ -3933,7 +3969,7 @@
                 console.error('Server error:', data.response);
                 removeTypingIndicator();
                 removeProcessingMessage();
-                showErrorMessage(data.response);
+                showErrorMessage(data.response, data.risk_score);
                 restoreSubmitButton();
                 return;
             }
@@ -3942,7 +3978,7 @@
                 console.warn('Server warning:', data.response);
                 removeTypingIndicator();
                 removeProcessingMessage();
-                showWarningMessage(data.response);
+                showWarningMessage(data.response, data.risk_score);
                 restoreSubmitButton();
                 return;
             }
