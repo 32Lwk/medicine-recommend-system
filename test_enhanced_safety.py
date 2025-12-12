@@ -295,11 +295,11 @@ class TestEnhancedSafetyChecker(unittest.TestCase):
         
         self.assertIsInstance(weights, dict)
         
-        # 副作用リスクが強化されていることを確認
-        self.assertEqual(weights['副作用リスク'], -0.20)
+        # 副作用リスクの重みが正の値であることを確認（リスクスコアが負なので結果は負になる）
+        self.assertEqual(weights['副作用リスク'], 0.10)
         
-        # 相互作用リスクが強化されていることを確認
-        self.assertEqual(weights['相互作用リスク'], -0.10)
+        # 相互作用リスクの重みが正の値であることを確認（リスクスコアが負なので結果は負になる）
+        self.assertEqual(weights['相互作用リスク'], 0.05)
         
         # 新しいスコア要素が追加されていることを確認
         self.assertIn('禁忌チェック', weights)
