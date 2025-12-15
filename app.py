@@ -885,6 +885,453 @@ def index():
                 logger.error(f"❌ 危機対応機能でエラー: {e}")
                 # 機能をスキップして通常処理を続行
 
+            # ユーザーメッセージをセッションに追加（通常フロー）
+            # 危機検出や心臓緊急チェックで早期リターンする場合は既に追加済み
+            if 'messages' not in session:
+                session['messages'] = []
+            
+            from datetime import datetime
+            import uuid
+            
+            # 重複チェック
+            user_message_exists = any(
+                msg.get('type') == 'user' and 
+                msg.get('content') == sanitized_message and
+                msg.get('uuid')
+                for msg in session.get('messages', [])
+            )
+            
+            if not user_message_exists:
+                session['messages'].append({
+                    'type': 'user',
+                    'content': sanitized_message,
+                    'timestamp': datetime.now().isoformat(),
+                    'uuid': str(uuid.uuid4())
+                })
+                session.modified = True
+
+            # ステップ0.5: 「心臓」「動悸」「不整脈」を含む入力の緊急チェック（最優先・安全弁強化版）
+            try:
+                from llm_triage import check_heart_emergency
+                if check_heart_emergency(sanitized_message):
+                    logger.warning(f"🚨 心臓関連キーワード検出: {sanitized_message}")
+                    
+                    # 緊急対応メッセージを生成
+                    emergency_message = """
+⚠️ 緊急対応が必要な症状の可能性があります。
+
+特に「心臓が痛い」という症状は、心臓疾患の可能性があります。
+速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
+
+市販薬での対応は推奨できません。医師の診断を受けてください。
+"""
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': emergency_message,
+                        'emergency': True,
+                        'medical_consultation': 'urgent',
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # DBを更新
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True
+                            }
+                            save_session_to_db(sid, session_data)
+                        else:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 緊急対応完了: {message_count} messages")
+                    return jsonify({'status': 'ok', 'message_count': message_count})
+            except ImportError as e:
+                logger.warning(f"⚠️ 心臓緊急チェック機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ 心臓緊急チェック機能でエラー: {e}")
+            
+            # ステップ1: LLMトリアージ（セキュリティ検証後）
+            triage_result = None
+            try:
+                from llm_triage import llm_triage
+                from triage_analytics import log_triage_result, log_confidence_check
+                
+                # OpenAIクライアントを取得
+                recommendation_client = client  # medicine_logicからインポート済み
+                
+                # トリアージ実行
+                start_time = time.time()
+                triage_result = llm_triage(sanitized_message, recommendation_client)
+                processing_time = (time.time() - start_time) * 1000  # ミリ秒
+                
+                # トリアージ結果をログに保存
+                log_triage_result(
+                    session_id=sid,
+                    user_input=user_message,
+                    triage_result=triage_result,
+                    sanitized_input=sanitized_message,
+                    processing_time_ms=processing_time
+                )
+                
+                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
+                
+            except ImportError as e:
+                logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ LLMトリアージ機能でエラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # ステップ2: カウンセリングモード中かチェック
+            counseling_mode = session.get('counseling_mode', {})
+            if counseling_mode.get('active'):
+                try:
+                    from counseling_response import handle_user_input_in_counseling_mode
+                    from triage_analytics import log_topic_shift_detection
+                    
+                    # カウンセリングモード中の処理（話題転換を自動検知）
+                    response = handle_user_input_in_counseling_mode(
+                        sanitized_message, session, recommendation_client
+                    )
+                    
+                    # 話題転換が検知された場合の処理
+                    if response.get('type') == 'topic_shift':
+                        topic_shift_result = response.get('topic_shift_result', {})
+                        # 話題転換検知結果をログに保存
+                        log_topic_shift_detection(
+                            session_id=sid,
+                            user_input=sanitized_message,
+                            topic_shift_result=topic_shift_result,
+                            current_counseling_topic=counseling_mode.get('symptom_type', ''),
+                            conversation_history_length=len(session.get('messages', [])),
+                            was_topic_shifted=True
+                        )
+                        
+                        # 新しいカテゴリに応じて処理を分岐（後続処理で実装）
+                        new_category = response.get('new_category')
+                        if new_category == 'Emergency':
+                            # 緊急対応フローへ
+                            emergency_message = """
+⚠️ 緊急対応が必要な症状の可能性があります。
+速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
+"""
+                            bot_response = {
+                                'type': 'bot',
+                                'content': emergency_message,
+                                'emergency': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session['messages'].copy()
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            return jsonify({'status': 'ok', 'message_count': message_count})
+                        elif new_category == 'Physical':
+                            # Physicalカテゴリの処理は後続処理で実装
+                            # ここではカウンセリングモードを終了して通常フローへ
+                            pass
+                    
+                    # カウンセリング応答を処理
+                    if response.get('type') == 'counseling_question':
+                        bot_response = {
+                            'type': 'bot',
+                            'content': response.get('content', ''),
+                            'counseling': True,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                    elif response.get('type') == 'counseling_summary':
+                        bot_response = {
+                            'type': 'bot',
+                            'content': response.get('content', ''),
+                            'counseling_completed': True,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # カウンセリング完了ログを保存
+                        if response.get('completion_reason'):
+                            from triage_analytics import log_counseling_completion
+                            log_counseling_completion(
+                                session_id=sid,
+                                counseling_mode=counseling_mode,
+                                completion_reason=response.get('completion_reason', 'normal'),
+                                total_questions=len(counseling_mode.get('question_history', [])),
+                                collected_info_count=len(counseling_mode.get('collected_info', {}))
+                            )
+                    elif response.get('type') == 'crisis_support':
+                        bot_response = {
+                            'type': 'bot',
+                            'content': response.get('content', ''),
+                            'crisis_support': True,
+                            'resources': response.get('resources', []),
+                            'emergency_message': response.get('emergency_message', ''),
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                    
+                    # DBを更新
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            if 'counseling_mode' in session:
+                                session_data['counseling_mode'] = session['counseling_mode']
+                            save_session_to_db(sid, session_data)
+                    
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ カウンセリング処理完了: {message_count} messages")
+                    return jsonify({'status': 'ok', 'message_count': message_count})
+                    
+                except ImportError as e:
+                    logger.warning(f"⚠️ カウンセリング機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ カウンセリング機能でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # ステップ3: confidenceスコアをチェック（Emergency例外処理を含む）
+            if triage_result:
+                try:
+                    from triage_analytics import log_confidence_check
+                    
+                    category = triage_result.get('category', 'Other')
+                    confidence = triage_result.get('confidence', 1.0)
+                    
+                    # Emergencyカテゴリの例外処理
+                    if category == 'Emergency':
+                        # 緊急性が疑われる場合、確信度が低くても安全側に倒す
+                        if confidence < 0.5:
+                            # 非常に低い確信度の場合は確認を求める（ただし緊急を強調）
+                            emergency_message = """
+⚠️ 緊急症状の可能性がありますが、確信度が低いため確認が必要です。
+
+心臓の痛みや呼吸困難などの緊急症状はありますか？
+緊急の場合は119番（救急）に連絡してください。
+"""
+                            bot_response = {
+                                'type': 'bot',
+                                'content': emergency_message,
+                                'emergency_warning': True,
+                                'requires_confirmation': True,
+                                'triage_result': triage_result,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # confidenceチェックのログ
+                            log_confidence_check(
+                                session_id=sid,
+                                user_input=sanitized_message,
+                                triage_result=triage_result,
+                                confidence_threshold=0.5,
+                                was_confirmation_requested=True
+                            )
+                            
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session['messages'].copy()
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            return jsonify({'status': 'ok', 'message_count': message_count})
+                        else:
+                            # 0.5以上なら緊急対応フローへ（通常のconfidenceチェックをスキップ）
+                            emergency_message = """
+⚠️ 緊急対応が必要な症状の可能性があります。
+速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
+市販薬での対応は推奨できません。医師の診断を受けてください。
+"""
+                            bot_response = {
+                                'type': 'bot',
+                                'content': emergency_message,
+                                'emergency': True,
+                                'medical_consultation': 'urgent',
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session['messages'].copy()
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            return jsonify({'status': 'ok', 'message_count': message_count})
+                    
+                    # その他のカテゴリの通常処理
+                    if confidence < 0.7:
+                        # 確信度が低い場合は確認を求める
+                        from counseling_response import generate_counseling_response, detect_emotional_symptom_type
+                        
+                        # 確認メッセージを生成
+                        if category == 'Emotional':
+                            symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
+                            confirmation_message = generate_counseling_response(
+                                symptom_type, sanitized_message, recommendation_client
+                            )
+                        else:
+                            confirmation_message = f"「{sanitized_message}」について、{category}カテゴリと判定しましたが、確信度が低いため確認が必要です。もう少し詳しく教えていただけますか？"
+                        
+                        bot_response = {
+                            'type': 'bot',
+                            'content': confirmation_message,
+                            'requires_confirmation': True,
+                            'triage_result': triage_result,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # confidenceチェックのログ
+                        log_confidence_check(
+                            session_id=sid,
+                            user_input=sanitized_message,
+                            triage_result=triage_result,
+                            confidence_threshold=0.7,
+                            was_confirmation_requested=True
+                        )
+                        
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        return jsonify({'status': 'ok', 'message_count': message_count})
+                    
+                except ImportError as e:
+                    logger.warning(f"⚠️ confidenceスコア処理機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ confidenceスコア処理機能でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # ステップ4: カテゴリに応じて処理を分岐
+            if triage_result:
+                category = triage_result.get('category', 'Other')
+                
+                if category == 'Emotional':
+                    # カウンセリングフロー開始
+                    try:
+                        from counseling_response import (
+                            detect_emotional_symptom_type,
+                            generate_counseling_response,
+                            generate_follow_up_questions,
+                            start_counseling_mode
+                        )
+                        
+                        symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
+                        initial_response = generate_counseling_response(
+                            symptom_type, sanitized_message, recommendation_client
+                        )
+                        initial_questions = generate_follow_up_questions(
+                            symptom_type, {}, recommendation_client
+                        )
+                        
+                        # カウンセリングモードを開始
+                        start_counseling_mode(session, symptom_type, initial_questions)
+                        
+                        # 初期応答と最初の質問を送信
+                        bot_response = {
+                            'type': 'bot',
+                            'content': initial_response,
+                            'counseling': True,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        
+                        if initial_questions:
+                            first_question = initial_questions[0]
+                            # 質問履歴に追加
+                            session['counseling_mode']['question_history'].append({
+                                'question': first_question,
+                                'asked_at': datetime.now().isoformat(),
+                                'question_type': 'initial'
+                            })
+                            
+                            question_response = {
+                                'type': 'bot',
+                                'content': first_question,
+                                'counseling': True,
+                                'counseling_question': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(question_response)
+                        
+                        session.modified = True
+                        
+                        # DBを更新
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                session_data['counseling_mode'] = session['counseling_mode']
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        logger.info(f"✅ カウンセリングフロー開始: {message_count} messages")
+                        return jsonify({'status': 'ok', 'message_count': message_count})
+                        
+                    except ImportError as e:
+                        logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
+                    except Exception as e:
+                        logger.error(f"❌ カウンセリングフロー機能でエラー: {e}")
+                        import traceback
+                        traceback.print_exc()
+                
+                elif category == 'Physical':
+                    # Physicalカテゴリの場合は従来の薬推奨フローへ
+                    # （既存の処理を継続）
+                    pass
+                
+                elif category == 'Ask':
+                    # 医薬品質問フロー
+                    # （既存の処理を継続）
+                    pass
+                
+                elif category == 'Other':
+                    # 汎用応答フロー
+                    # （既存の処理を継続）
+                    pass
+            
             # 「終了」ワード検知（サニタイズされたメッセージでチェック）
             if sanitized_message in ['終了', 'end', 'おわり', '終わり', 'quit', 'exit']:
                 logger.info(f"🔚 CHAT ENDED by user: {session.get('username', 'unknown')}")
