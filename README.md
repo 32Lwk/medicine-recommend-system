@@ -1678,6 +1678,69 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `C_OPTIMIZATION_ANALYSIS.md`: C言語化による高速化分析ドキュメント
 - `TEST_RESULTS_SUMMARY.md`: テスト結果サマリー
 
+## プロジェクト統計
+
+### コード行数と言語別の割合（2025年12月16日時点）
+
+| 言語 | ファイル数 | 行数 | 割合 |
+|------|-----------|------|------|
+| **CSV** | 5 | 108,178 | 65.74% |
+| **Python** | 35 | 27,565 | 16.75% |
+| **Markdown** | 17 | 11,706 | 7.11% |
+| **JavaScript** | 2 | 9,038 | 5.49% |
+| **CSS** | 2 | 5,332 | 3.24% |
+| **HTML** | 4 | 2,522 | 1.53% |
+| **Other** | 9 | 195 | 0.12% |
+| **Config** | 2 | 14 | 0.01% |
+| **合計** | **76** | **164,550** | **100.00%** |
+
+#### 主要ファイル（各言語の上位5ファイル）
+
+**CSVファイル:**
+- `otc_medicine_data.csv` - 93,829行（市販薬データベース）
+- `summarized_efficacy_data.csv` - 13,995行（効能要約データ）
+- `kanpo_medicine.csv` - 220行（漢方薬データ）
+- `medicine_interactions.csv` - 83行（相互作用データ）
+- `medicine_side_effects.csv` - 51行（副作用データ）
+
+**Pythonファイル:**
+- `app.py` - 5,635行（メインアプリケーション）
+- `rule_based_recommendation.py` - 4,637行（ルールベース推奨アルゴリズム）
+- `medicine_logic.py` - 2,336行（医薬品推奨ロジック）
+- `test_comprehensive.py` - 1,789行（包括的テストスイート）
+- `security_validator.py` - 1,282行（セキュリティ検証モジュール）
+
+**Markdownファイル:**
+- `会社向け概要書類.md` - 3,342行
+- `README.md` - 2,373行（このファイル）
+- `report.md` - 1,553行
+- `ASYNC_IMPLEMENTATION_GUIDE.md` - 1,045行
+- `企業向け簡略版概要資料.md` - 717行
+
+**JavaScriptファイル:**
+- `static/js/main.js` - 5,053行（メインJavaScript）
+- `static/js/admin_chat.js` - 3,985行（管理者チャットJavaScript）
+
+**CSSファイル:**
+- `static/css/admin_chat.css` - 2,743行（管理者チャットCSS）
+- `static/css/main.css` - 2,589行（メインCSS）
+
+**HTMLファイル:**
+- `templates/debug_index.html` - 1,375行（デバッグUI）
+- `templates/index.html` - 548行（メインチャットUI）
+- `templates/admin_chat.html` - 541行（管理者チャットUI）
+- `templates/username_input.html` - 58行（ユーザー名入力UI）
+
+#### 統計のまとめ
+
+- **合計行数**: 164,550行
+- **合計ファイル数**: 76ファイル
+- **最大の言語**: CSV（65.74%）—主に医薬品データベース
+- **コード言語**: Python（16.75%）—アプリケーションの主要ロジック
+- **フロントエンド**: JavaScript（5.49%）+ CSS（3.24%）+ HTML（1.53%）= 約10.26%
+
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
+
 ## セキュリティと安全性
 
 ### APIキーの安全な管理
