@@ -910,14 +910,66 @@ def index():
                 })
                 session.modified = True
 
-            # ステップ0.5: 「心臓」「動悸」「不整脈」を含む入力の緊急チェック（最優先・安全弁強化版）
+            # ステップ1: LLMトリアージ（セキュリティ検証後）
+            triage_result = None
             try:
-                from llm_triage import check_heart_emergency
-                if check_heart_emergency(sanitized_message):
-                    logger.warning(f"🚨 心臓関連キーワード検出: {sanitized_message}")
+                from llm_triage import llm_triage
+                from triage_analytics import log_triage_result, log_confidence_check
+                
+                # OpenAIクライアントを取得
+                recommendation_client = client  # medicine_logicからインポート済み
+                
+                # トリアージ実行
+                start_time = time.time()
+                triage_result = llm_triage(sanitized_message, recommendation_client)
+                processing_time = (time.time() - start_time) * 1000  # ミリ秒
+                
+                # トリアージ結果をログに保存
+                log_triage_result(
+                    session_id=sid,
+                    user_input=user_message,
+                    triage_result=triage_result,
+                    sanitized_input=sanitized_message,
+                    processing_time_ms=processing_time
+                )
+                
+                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
+                
+            except ImportError as e:
+                logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ LLMトリアージ機能でエラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # ステップ1.5: 文脈考慮型心臓緊急チェック（LLMトリアージの後）
+            try:
+                from llm_triage import check_heart_emergency_with_context
+                emergency_result = check_heart_emergency_with_context(
+                    sanitized_message,
+                    triage_result=triage_result,
+                    counseling_mode=session.get('counseling_mode', {}),
+                    client=recommendation_client
+                )
+                
+                if emergency_result.get('is_emergency'):
+                    logger.warning(f"🚨 心臓関連キーワード検出（文脈考慮）: {sanitized_message}")
+                    logger.info(f"   判定結果: {emergency_result.get('reasoning')}")
                     
-                    # 緊急対応メッセージを生成
-                    emergency_message = """
+                    # 緊急対応メッセージを生成（文脈を考慮）
+                    if emergency_result.get('context_type') in ['romantic', 'nervous', 'exercise']:
+                        # 文脈を考慮した統合メッセージ
+                        emergency_message = f"""
+⚠️ 緊急対応が必要な症状の可能性があります。
+
+{emergency_result.get('reasoning', '')}
+
+念のため、医療機関の受診も検討してください。
+緊急の場合は119番（救急）に連絡してください。
+"""
+                    else:
+                        # 実際の緊急事態
+                        emergency_message = """
 ⚠️ 緊急対応が必要な症状の可能性があります。
 
 特に「心臓が痛い」という症状は、心臓疾患の可能性があります。
@@ -931,6 +983,7 @@ def index():
                         'content': emergency_message,
                         'emergency': True,
                         'medical_consultation': 'urgent',
+                        'context_type': emergency_result.get('context_type'),
                         'timestamp': datetime.now().isoformat()
                     }
                     
@@ -966,36 +1019,6 @@ def index():
                 logger.warning(f"⚠️ 心臓緊急チェック機能のインポートに失敗: {e}")
             except Exception as e:
                 logger.error(f"❌ 心臓緊急チェック機能でエラー: {e}")
-            
-            # ステップ1: LLMトリアージ（セキュリティ検証後）
-            triage_result = None
-            try:
-                from llm_triage import llm_triage
-                from triage_analytics import log_triage_result, log_confidence_check
-                
-                # OpenAIクライアントを取得
-                recommendation_client = client  # medicine_logicからインポート済み
-                
-                # トリアージ実行
-                start_time = time.time()
-                triage_result = llm_triage(sanitized_message, recommendation_client)
-                processing_time = (time.time() - start_time) * 1000  # ミリ秒
-                
-                # トリアージ結果をログに保存
-                log_triage_result(
-                    session_id=sid,
-                    user_input=user_message,
-                    triage_result=triage_result,
-                    sanitized_input=sanitized_message,
-                    processing_time_ms=processing_time
-                )
-                
-                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
-                
-            except ImportError as e:
-                logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ LLMトリアージ機能でエラー: {e}")
                 import traceback
                 traceback.print_exc()
             
@@ -1005,6 +1028,9 @@ def index():
                 try:
                     from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
                     from triage_analytics import log_topic_shift_detection
+                    
+                    # カウンセリングモード中の心臓緊急チェック（既にステップ1.5で実行済み）
+                    # 緊急チェックで中断されなかった場合、カウンセリングを継続
                     
                     # カウンセリングモード中の処理（話題転換を自動検知）
                     # 会話履歴を取得（直近10件）
@@ -1068,8 +1094,43 @@ def index():
                             # ここではカウンセリングモードを終了して通常フローへ
                             pass
                     
-                    # カウンセリング応答を処理
-                    if response.get('type') == 'counseling_question':
+                    # カウンセリング応答を処理（改善版：返信と質問を分離）
+                    if response.get('type') == 'counseling_response_with_question':
+                        # 返信を先に追加
+                        counseling_response = response.get('counseling_response', '')
+                        if counseling_response:
+                            bot_response = {
+                                'type': 'bot',
+                                'content': counseling_response,
+                                'counseling': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                        
+                        # 質問を追加
+                        question = response.get('question', '')
+                        if question:
+                            question_response = {
+                                'type': 'bot',
+                                'content': question,
+                                'counseling': True,
+                                'counseling_question': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(question_response)
+                            session.modified = True
+                    elif response.get('type') == 'counseling_response':
+                        # 返信のみ（質問をスキップ）
+                        bot_response = {
+                            'type': 'bot',
+                            'content': response.get('content', ''),
+                            'counseling': True,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                    elif response.get('type') == 'counseling_question':
                         bot_response = {
                             'type': 'bot',
                             'content': response.get('content', ''),
@@ -1089,6 +1150,20 @@ def index():
                             counseling_mode=counseling_mode
                         )
                     elif response.get('type') == 'counseling_summary':
+                        # カウンセリング完了時も返信を含める場合がある
+                        counseling_response = response.get('counseling_response')
+                        if counseling_response:
+                            # 返信を先に追加
+                            bot_response = {
+                                'type': 'bot',
+                                'content': counseling_response,
+                                'counseling': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                        
+                        # サマリーを追加
                         bot_response = {
                             'type': 'bot',
                             'content': response.get('content', ''),
