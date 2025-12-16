@@ -945,11 +945,25 @@ def index():
             # ステップ1.5: 文脈考慮型心臓緊急チェック（LLMトリアージの後）
             try:
                 from llm_triage import check_heart_emergency_with_context
+                
+                # 会話履歴を取得（最大20メッセージ）
+                conversation_history = []
+                if 'messages' in session:
+                    conversation_history = session.get('messages', [])[-20:] if len(session.get('messages', [])) > 20 else session.get('messages', [])
+                elif sid:
+                    # DBから会話履歴を取得
+                    session_data = get_session_from_db(sid)
+                    if session_data and 'messages' in session_data:
+                        conversation_history = session_data.get('messages', [])[-20:] if len(session_data.get('messages', [])) > 20 else session_data.get('messages', [])
+                
+                logger.debug(f"   会話履歴取得: {len(conversation_history)}メッセージ")
+                
                 emergency_result = check_heart_emergency_with_context(
                     sanitized_message,
                     triage_result=triage_result,
                     counseling_mode=session.get('counseling_mode', {}),
-                    client=recommendation_client
+                    client=recommendation_client,
+                    conversation_history=conversation_history
                 )
                 
                 if emergency_result.get('is_emergency'):
@@ -1005,7 +1019,13 @@ def index():
                     logger.info(f"   緊急チェック結果: is_emergency={emergency_result.get('is_emergency')}, "
                               f"context_type={emergency_result.get('context_type')}, "
                               f"confidence={emergency_result.get('confidence'):.2f}, "
+                              f"threshold={emergency_result.get('threshold_used', 0.6):.2f}, "
                               f"reasoning={emergency_result.get('reasoning')}")
+                    if emergency_result.get('metaphor_detection'):
+                        metaphor_info = emergency_result.get('metaphor_detection')
+                        logger.info(f"   比喩的表現検出: is_metaphorical={metaphor_info.get('is_metaphorical')}, "
+                                  f"type={metaphor_info.get('detected_type')}, "
+                                  f"confidence={metaphor_info.get('confidence'):.2f}")
                     return jsonify({'status': 'ok', 'message_count': message_count})
             except ImportError as e:
                 logger.warning(f"⚠️ 心臓緊急チェック機能のインポートに失敗: {e}")
