@@ -135,18 +135,23 @@ def llm_triage(user_text: str, client: OpenAI) -> Dict:
         }
 
 
-def check_pain_keywords_override(user_text: str) -> Dict:
+def check_pain_keywords_override(user_text: str, context_type: str = None) -> Dict:
     """
-    痛み関連キーワードのオーバーライドチェック
+    痛み関連キーワードのオーバーライドチェック（文脈考慮版）
     
     痛み関連キーワードが心臓関連キーワードと併用されている場合、
-    文脈に関わらず強制的に緊急度を上げる。
+    文脈を考慮して緊急度を判定する。
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        context_type: 文脈タイプ（"romantic", "exercise", "nervous", "metaphorical", "actual_emergency"）
     
     Returns:
         {
             "has_pain_keywords": bool,
             "override_emergency": bool,
-            "detected_pain_keywords": List[str]
+            "detected_pain_keywords": List[str],
+            "context_mitigation": float  # 文脈による緊急度の緩和（0.0-1.0）
         }
     """
     pain_keywords = [
@@ -159,6 +164,12 @@ def check_pain_keywords_override(user_text: str) -> Dict:
         "心臓が", "心臓も", "心臓に", "心臓を", "胸", "胸部"
     ]
     
+    # 恋愛文脈キーワード
+    romantic_keywords = [
+        "失恋", "好きな人", "恋愛", "恋", "ときめき", "ドキドキ", "バクバク",
+        "好き", "片思い", "両思い", "告白", "振られた", "別れた"
+    ]
+    
     detected_pain = []
     has_heart_keyword = any(keyword in user_text for keyword in heart_keywords)
     
@@ -167,12 +178,35 @@ def check_pain_keywords_override(user_text: str) -> Dict:
             detected_pain.append(keyword)
     
     has_pain_keywords = len(detected_pain) > 0
-    override_emergency = has_pain_keywords and has_heart_keyword
+    
+    # 文脈による緊急度の緩和を計算
+    context_mitigation = 0.0
+    
+    # 恋愛文脈が明確な場合、緊急度を緩和（ただし完全には無視しない）
+    if context_type == "romantic" or any(keyword in user_text for keyword in romantic_keywords):
+        # 恋愛文脈が明確な場合、緊急度を0.5下げる（注意喚起レベルに）
+        context_mitigation = 0.5
+        # ただし、「心臓が痛い」のように直接的な表現の場合は緩和を減らす
+        if "心臓" in user_text and any(p in user_text for p in ["痛い", "痛み"]):
+            context_mitigation = 0.3  # より慎重に
+    
+    # オーバーライド判定（文脈緩和を考慮）
+    # 恋愛文脈が明確な場合は、オーバーライドを緩和（緊急対応ではなく注意喚起レベル）
+    if has_pain_keywords and has_heart_keyword:
+        if context_mitigation >= 0.5:
+            # 恋愛文脈が明確な場合、オーバーライドを緩和
+            override_emergency = False  # 緊急対応ではなく、注意喚起レベル
+        else:
+            # 文脈が不明確または実際の緊急の可能性がある場合
+            override_emergency = True
+    else:
+        override_emergency = False
     
     return {
         "has_pain_keywords": has_pain_keywords,
         "override_emergency": override_emergency,
-        "detected_pain_keywords": detected_pain
+        "detected_pain_keywords": detected_pain,
+        "context_mitigation": context_mitigation
     }
 
 
@@ -322,19 +356,39 @@ def check_heart_emergency_with_context(
             "should_interrupt_counseling": bool
         }
     """
-    # ステップ1: ルールベース安全性層（最優先）
-    pain_check = check_pain_keywords_override(user_text)
+    # ステップ0: 事前に文脈を判定（痛みキーワードオーバーライドの前に）
+    # 恋愛文脈が明確な場合は、痛みキーワードのオーバーライドを緩和するため
+    preliminary_context = None
+    romantic_keywords = ["失恋", "好きな人", "恋愛", "恋", "ときめき", "ドキドキ", "バクバク", "好き", "片思い", "両思い", "告白", "振られた", "別れた"]
+    if any(keyword in user_text for keyword in romantic_keywords):
+        preliminary_context = "romantic"
+    elif triage_result and triage_result.get("category") == "Emotional":
+        subcategory = triage_result.get("subcategory", "").lower()
+        if "romantic" in subcategory or "romantic_concern" in subcategory:
+            preliminary_context = "romantic"
+    
+    # ステップ1: ルールベース安全性層（文脈を考慮）
+    pain_check = check_pain_keywords_override(user_text, context_type=preliminary_context)
     negative_check = check_negative_expressions(user_text)
     exclusion_check = check_exclusion_patterns(user_text)
     
-    # 痛み関連キーワードのオーバーライド（最優先）
+    # 痛み関連キーワードのオーバーライド（文脈を考慮）
     if pain_check["override_emergency"]:
         return {
             "is_emergency": True,
             "confidence": 0.9,
             "context_type": "actual_emergency",
-            "reasoning": f"痛み関連キーワード（{', '.join(pain_check['detected_pain_keywords'])}）が検出されました。文脈に関わらず緊急対応が必要です。",
+            "reasoning": f"痛み関連キーワード（{', '.join(pain_check['detected_pain_keywords'])}）が検出されました。緊急対応が必要です。",
             "should_interrupt_counseling": True
+        }
+    elif pain_check["has_pain_keywords"] and pain_check.get("context_mitigation", 0.0) >= 0.5:
+        # 恋愛文脈が明確で痛みキーワードがある場合、注意喚起レベル（緊急対応ではない）
+        return {
+            "is_emergency": False,
+            "confidence": 0.4,
+            "context_type": "romantic",
+            "reasoning": f"恋愛文脈が明確ですが、痛み関連キーワード（{', '.join(pain_check['detected_pain_keywords'])}）も検出されました。念のため医療機関の受診も検討してください。",
+            "should_interrupt_counseling": False
         }
     
     # ステップ2: キーワードマッチング
@@ -431,4 +485,165 @@ def check_heart_emergency_with_context(
         "reasoning": reasoning,
         "should_interrupt_counseling": should_interrupt
     }
+
+
+def detect_heart_context_pattern(
+    user_text: str,
+    triage_result: Dict = None,
+    client: OpenAI = None
+) -> Dict:
+    """
+    心臓関連キーワードの文脈パターンを判定
+    
+    判定パターン:
+    - romantic: 恋愛・ロマンチックな文脈
+    - exercise: 運動・身体活動後の文脈
+    - nervous: 緊張・不安による文脈
+    - metaphorical: 比喩的表現
+    - actual_emergency: 実際の緊急事態
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        triage_result: LLMトリアージ結果（オプション）
+        client: OpenAIクライアントインスタンス（オプション）
+    
+    Returns:
+        {
+            "context_type": str,
+            "confidence": float,
+            "reasoning": str
+        }
+    """
+    # トリアージ結果から文脈を推測
+    if triage_result:
+        category = triage_result.get("category", "")
+        subcategory = triage_result.get("subcategory", "").lower()
+        confidence = triage_result.get("confidence", 0.5)
+        
+        if category == "Emergency" and confidence >= 0.8:
+            return {
+                "context_type": "actual_emergency",
+                "confidence": 0.9,
+                "reasoning": "トリアージ結果がEmergency（高確信度）"
+            }
+        elif category == "Emotional":
+            if "romantic" in subcategory or "romantic_concern" in subcategory:
+                return {
+                    "context_type": "romantic",
+                    "confidence": 0.8,
+                    "reasoning": "トリアージ結果がEmotional（恋愛関連）"
+                }
+            elif "anxiety" in subcategory or "nervous" in subcategory:
+                return {
+                    "context_type": "nervous",
+                    "confidence": 0.7,
+                    "reasoning": "トリアージ結果がEmotional（不安・緊張）"
+                }
+            else:
+                return {
+                    "context_type": "metaphorical",
+                    "confidence": 0.6,
+                    "reasoning": "トリアージ結果がEmotional"
+                }
+    
+    # キーワードベースの簡易判定（フォールバック）
+    romantic_keywords = ["好き", "恋", "恋愛", "ドキドキ", "バクバク", "ときめき"]
+    exercise_keywords = ["運動", "走", "階段", "登", "上が", "トレーニング", "ジョギング"]
+    nervous_keywords = ["緊張", "不安", "プレッシャー", "ストレス", "心配"]
+    
+    if any(keyword in user_text for keyword in romantic_keywords):
+        return {
+            "context_type": "romantic",
+            "confidence": 0.6,
+            "reasoning": "恋愛関連キーワードが検出されました"
+        }
+    elif any(keyword in user_text for keyword in exercise_keywords):
+        return {
+            "context_type": "exercise",
+            "confidence": 0.6,
+            "reasoning": "運動関連キーワードが検出されました"
+        }
+    elif any(keyword in user_text for keyword in nervous_keywords):
+        return {
+            "context_type": "nervous",
+            "confidence": 0.6,
+            "reasoning": "緊張・不安関連キーワードが検出されました"
+        }
+    
+    # デフォルト: 実際の緊急事態の可能性
+    return {
+        "context_type": "actual_emergency",
+        "confidence": 0.5,
+        "reasoning": "文脈が不明確なため、安全側に倒して緊急事態の可能性として判定"
+    }
+
+
+def generate_contextual_emergency_message(
+    user_text: str,
+    emergency_result: Dict,
+    counseling_mode: Dict = None,
+    triage_result: Dict = None
+) -> str:
+    """
+    文脈を考慮した緊急メッセージを生成
+    
+    例:
+    - 恋愛文脈: "恋愛による動悸の可能性が高いですが、念のため医療機関の受診も検討してください"
+    - 実際の緊急: "緊急対応が必要な症状の可能性があります。速やかに医療機関を受診..."
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        emergency_result: 緊急チェック結果
+        counseling_mode: カウンセリングモード状態（オプション）
+        triage_result: LLMトリアージ結果（オプション）
+    
+    Returns:
+        文脈に応じた緊急メッセージ
+    """
+    context_type = emergency_result.get('context_type', 'actual_emergency')
+    reasoning = emergency_result.get('reasoning', '')
+    
+    # カウンセリング中の場合は、カウンセリングの文脈を考慮
+    if counseling_mode and counseling_mode.get('active'):
+        symptom_type = counseling_mode.get('symptom_type', '')
+        if symptom_type == 'romantic_concern' and context_type == 'romantic':
+            return f"""
+お気持ちをお聞かせいただき、ありがとうございます。
+
+恋愛による動悸の可能性が高いですが、念のため医療機関の受診も検討してください。
+特に痛みや息苦しさがある場合は、速やかに医療機関を受診することをお勧めします。
+
+緊急の場合は119番（救急）に連絡してください。
+"""
+    
+    # 文脈タイプに応じたメッセージ生成
+    if context_type in ['romantic', 'nervous', 'exercise']:
+        context_messages = {
+            'romantic': '恋愛による動悸の可能性が高いですが、',
+            'nervous': '緊張や不安による動悸の可能性が高いですが、',
+            'exercise': '運動後の動悸の可能性が高いですが、'
+        }
+        context_message = context_messages.get(context_type, '')
+        
+        return f"""
+⚠️ 緊急対応が必要な症状の可能性があります。
+
+{context_message}
+念のため、医療機関の受診も検討してください。
+
+{reasoning}
+
+特に痛みや息苦しさがある場合は、速やかに医療機関を受診するか、
+緊急の場合は119番（救急）に連絡してください。
+"""
+    else:
+        # 実際の緊急事態
+        return """
+⚠️ 緊急対応が必要な症状の可能性があります。
+
+特に「心臓が痛い」という症状は、心臓疾患の可能性があります。
+速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
+
+市販薬での対応は推奨できません。医師の診断を受けてください。
+"""
 
