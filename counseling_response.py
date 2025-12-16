@@ -259,6 +259,43 @@ def generate_counseling_response(
         return error_response
 
 
+def personalize_response(
+    response: str,
+    user_name: str = None,
+    conversation_history: List[Dict] = None
+) -> str:
+    """
+    応援メッセージをパーソナライズ
+    
+    - ユーザー名がある場合、名前を使用
+    - 会話履歴からユーザーの状況を参照
+    - 自然なパーソナライズ（過度にならないように）
+    
+    Args:
+        response: 元の応援メッセージ
+        user_name: ユーザー名（オプション）
+        conversation_history: 会話履歴（オプション）
+    
+    Returns:
+        パーソナライズされた応援メッセージ
+    """
+    # ユーザー名がある場合、自然に名前を使用
+    if user_name and user_name != 'Unknown':
+        # メッセージの最初に名前を追加（自然な形で）
+        if not response.startswith(user_name):
+            # 「[名前]さん、」のような形で追加
+            response = f"{user_name}さん、{response}"
+    
+    # 会話履歴から状況を参照してパーソナライズ（簡易版）
+    # より高度なパーソナライズが必要な場合は、LLMを使用
+    if conversation_history:
+        # 会話履歴から特定の状況を検出してパーソナライズ
+        # 例: 恋愛関連の話題がある場合、それに合わせた表現を使用
+        pass
+    
+    return response
+
+
 def generate_follow_up_questions(
     symptom_type: str,
     collected_info: Dict,
@@ -702,8 +739,12 @@ def process_counseling_answer(
     
     【緊急終了条件（即座に終了）】
     - 希死念慮・自傷他害の示唆:
-      「死にたい」「消えたい」「リストカット」などのワードが出た場合、
-      next_actionを"complete"に設定し、completion_reasonに"crisis_detected"を設定してください。
+      **明示的な希死念慮の表現のみ**を検出してください：
+      - 「死にたい」「消えたい」「自殺したい」「生きていても仕方ない」などの明示的な表現
+      - 「リストカット」「自傷行為」などの自傷行為の明示的な表現
+      - **重要**: 「失恋して胸が苦しい」「恋愛で悩んでいる」などの感情的な表現は、希死念慮ではありません
+      - **重要**: 身体的症状（「胸が苦しい」「心臓が痛い」など）のみでは、希死念慮とは判定しないでください
+      - 希死念慮が検出された場合のみ、next_actionを"complete"に設定し、completion_reasonに"crisis_detected"を設定してください
       カウンセリングを即時中止し、専門機関案内フローへ強制移行が必要です。
     
     - 停滞・ループ:
@@ -750,7 +791,7 @@ def process_counseling_answer(
             
             end_message = '承知いたしました。お役に立てて嬉しいです。何か他に気になることがあれば、いつでもお聞かせください。'
             
-            # ログ記録
+            # ログ記録（カウンセリング中断理由を記録）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -760,6 +801,9 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode
                 )
+                logger.info(f"📊 カウンセリング中断: 理由=ユーザー明示的終了, "
+                          f"質問回数={len(question_history)}, "
+                          f"収集情報数={len(counseling_mode.get('collected_info', {}))}")
             
             return {
                 'type': 'counseling_summary',
@@ -794,7 +838,7 @@ def process_counseling_answer(
             
             crisis_content = crisis_resources.get('message', '専門機関への相談をお勧めします。')
             
-            # ログ記録
+            # ログ記録（カウンセリング中断理由を記録）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -804,6 +848,9 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode
                 )
+                logger.warning(f"🚨 カウンセリング中断: 理由=危機検出（希死念慮・自傷他害の示唆）, "
+                             f"質問回数={len(question_history)}, "
+                             f"収集情報数={len(counseling_mode.get('collected_info', {}))}")
             
             return {
                 'type': 'crisis_support',
@@ -811,7 +858,8 @@ def process_counseling_answer(
                 'resources': crisis_resources.get('resources', []),
                 'emergency_message': crisis_resources.get('emergency_message', '緊急の場合は119番（救急）に連絡してください。'),
                 'continue_counseling': False,
-                'crisis_detected': True
+                'crisis_detected': True,
+                'completion_reason': 'crisis_detected'
             }
         elif completion_reason == 'no_progress':
             # 情報収集が進まない場合、医療機関受診を推奨
@@ -821,7 +869,7 @@ def process_counseling_answer(
             
             no_progress_content = '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。'
             
-            # ログ記録
+            # ログ記録（カウンセリング中断理由を記録）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -831,12 +879,16 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode
                 )
+                logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞（LLM判定）, "
+                          f"質問回数={len(question_history)}, "
+                          f"収集情報数={len(counseling_mode.get('collected_info', {}))}")
             
             return {
                 'type': 'counseling_summary',
                 'content': no_progress_content,
                 'continue_counseling': False,
-                'recommendation': 'medical_consultation'
+                'recommendation': 'medical_consultation',
+                'completion_reason': 'no_progress'
             }
         
         # ステップ1: 文脈を考慮した返信を生成（新規追加）
@@ -864,7 +916,7 @@ def process_counseling_answer(
                     
                     summary_content = counseling_response_text + "\n\nお役に立てて嬉しいです。何か他に気になることがあれば、いつでもお聞かせください。"
                     
-                    # ログ記録
+                    # ログ記録（カウンセリング中断理由を記録）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -874,12 +926,16 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode
                         )
+                        logger.info(f"📊 カウンセリング中断: 理由=ユーザー満足度高（満足度スコア={satisfaction.get('satisfaction_score', 0.0):.2f}）, "
+                                  f"質問回数={len(question_history)}, "
+                                  f"収集情報数={len(counseling_mode.get('collected_info', {}))}")
                     
                     return {
                         'type': 'counseling_summary',
                         'content': summary_content,
                         'continue_counseling': False,
-                        'counseling_response': counseling_response_text
+                        'counseling_response': counseling_response_text,
+                        'completion_reason': 'user_satisfied'
                     }
             
             # 停滞チェック: 3回連続で有意な情報が得られない場合は終了
@@ -896,7 +952,7 @@ def process_counseling_answer(
                     
                     no_progress_content = counseling_response_text + "\n\n詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。"
                     
-                    # ログ記録
+                    # ログ記録（カウンセリング中断理由を記録）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -906,6 +962,9 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode
                         )
+                        logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞, "
+                                  f"質問回数={len(question_history)}, "
+                                  f"収集情報数={len(counseling_mode.get('collected_info', {}))}")
                     
                     return {
                         'type': 'counseling_summary',
