@@ -957,26 +957,14 @@ def index():
                     logger.info(f"   判定結果: {emergency_result.get('reasoning')}")
                     
                     # 緊急対応メッセージを生成（文脈を考慮）
-                    if emergency_result.get('context_type') in ['romantic', 'nervous', 'exercise']:
-                        # 文脈を考慮した統合メッセージ
-                        emergency_message = f"""
-⚠️ 緊急対応が必要な症状の可能性があります。
-
-{emergency_result.get('reasoning', '')}
-
-念のため、医療機関の受診も検討してください。
-緊急の場合は119番（救急）に連絡してください。
-"""
-                    else:
-                        # 実際の緊急事態
-                        emergency_message = """
-⚠️ 緊急対応が必要な症状の可能性があります。
-
-特に「心臓が痛い」という症状は、心臓疾患の可能性があります。
-速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
-
-市販薬での対応は推奨できません。医師の診断を受けてください。
-"""
+                    # 文脈を考慮した統合メッセージを生成
+                    from llm_triage import generate_contextual_emergency_message
+                    emergency_message = generate_contextual_emergency_message(
+                        sanitized_message,
+                        emergency_result,
+                        counseling_mode=session.get('counseling_mode', {}),
+                        triage_result=triage_result
+                    )
                     
                     bot_response = {
                         'type': 'bot',
@@ -1014,6 +1002,10 @@ def index():
                     
                     message_count = len(session['messages'])
                     logger.info(f"✅ 緊急対応完了: {message_count} messages")
+                    logger.info(f"   緊急チェック結果: is_emergency={emergency_result.get('is_emergency')}, "
+                              f"context_type={emergency_result.get('context_type')}, "
+                              f"confidence={emergency_result.get('confidence'):.2f}, "
+                              f"reasoning={emergency_result.get('reasoning')}")
                     return jsonify({'status': 'ok', 'message_count': message_count})
             except ImportError as e:
                 logger.warning(f"⚠️ 心臓緊急チェック機能のインポートに失敗: {e}")
@@ -1021,6 +1013,13 @@ def index():
                 logger.error(f"❌ 心臓緊急チェック機能でエラー: {e}")
                 import traceback
                 traceback.print_exc()
+                # エラー時もログに記録（誤検出ケースの追跡のため）
+                try:
+                    logger.error(f"   エラー発生時の入力: {sanitized_message[:100] if 'sanitized_message' in locals() else 'N/A'}")
+                    logger.error(f"   トリアージ結果: {triage_result if 'triage_result' in locals() else 'N/A'}")
+                    logger.error(f"   カウンセリングモード: {session.get('counseling_mode', {})}")
+                except:
+                    pass
             
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})

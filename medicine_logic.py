@@ -2223,12 +2223,14 @@ def detect_crisis_keywords(user_message):
         '死に場所', '死を考えている', '命を終わらせたい', '死ぬ準備',
         '終わりにしたい', '倒れたい', '死ぬしかない',
         
-        # 感情・心理状態
+        # 感情・心理状態（身体的症状の文脈では検出しない）
         '生きたくない', 'もう終わりたい', '生きるのがつらい', '限界',
-        '助けて', '誰にも言えない', '苦しい', 'いなくなりたい',
+        '助けて', '誰にも言えない', 'いなくなりたい',
         '誰も理解してくれない', 'どうでもいい', '生きる意味', '価値がない',
         '自分が嫌い', '存在したくない', '消えてしまいたい', 'もう無理',
         'もういいや', '終わらせたい',
+        # 注意: '苦しい'は身体的症状の文脈（「胸が苦しい」「息が苦しい」など）でも使われるため、
+        # 明示的な希死念慮の文脈でのみ検出する（後続の処理で文脈を考慮）
         
         # 英語の危険ワード
         'suicide', 'kill myself', 'want to die', 'end my life', 'overdose'
@@ -2237,9 +2239,33 @@ def detect_crisis_keywords(user_message):
     # 大文字小文字を区別せずに検索
     user_message_lower = user_message.lower()
     
+    # 身体的症状の文脈を検出（危機キーワードの誤検出を防ぐため）
+    physical_symptom_patterns = [
+        r'胸.*(?:が|の).*苦しい',
+        r'息.*(?:が|の).*苦しい',
+        r'呼吸.*(?:が|の).*苦しい',
+        r'苦しい.*(?:胸|息|呼吸)',
+        r'胸.*(?:が|の).*痛い',
+        r'心臓.*(?:が|の).*苦しい',
+        r'失恋.*(?:して|で).*苦しい',
+        r'恋愛.*(?:で|の).*苦しい',
+    ]
+    
+    # 恋愛文脈キーワード
+    romantic_keywords = ['失恋', '好きな人', '恋愛', '恋', 'ときめき', 'ドキドキ', 'バクバク', '好き', '片思い', '両思い', '告白', '振られた', '別れた']
+    has_romantic_context = any(keyword in user_message for keyword in romantic_keywords)
+    
+    # 身体的症状の文脈かどうかを判定
+    has_physical_context = any(re.search(pattern, user_message, re.IGNORECASE) for pattern in physical_symptom_patterns)
+    
     detected_keywords = []
     for keyword in crisis_keywords:
         if keyword.lower() in user_message_lower:
+            # 「苦しい」は身体的症状の文脈では検出しない
+            if keyword == '苦しい':
+                # 身体的症状の文脈または恋愛文脈の場合は検出しない
+                if has_physical_context or has_romantic_context:
+                    continue
             detected_keywords.append(keyword)
     
     return len(detected_keywords) > 0, detected_keywords
