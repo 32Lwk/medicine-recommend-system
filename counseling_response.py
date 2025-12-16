@@ -5,11 +5,65 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 from typing import Dict, List, Optional
 from openai import OpenAI
 
 logger = logging.getLogger(__name__)
+
+
+def log_counseling_response(
+    session_id: str,
+    response_content: str,
+    response_type: str,
+    category: str = None,
+    confidence: float = None,
+    counseling_mode: Dict = None
+) -> None:
+    """
+    カウンセリング返信をログに記録
+    
+    Args:
+        session_id: セッションID
+        response_content: 返信内容
+        response_type: 返信タイプ（counseling_question, counseling_summary, counseling_response等）
+        category: トリアージカテゴリ（オプション）
+        confidence: トリアージconfidence（オプション）
+        counseling_mode: カウンセリングモード状態（オプション）
+    """
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "session_id": session_id,
+        "response_type": response_type,
+        "response_content": response_content[:200] + "..." if len(response_content) > 200 else response_content,
+        "response_length": len(response_content)
+    }
+    
+    if category is not None:
+        log_entry["category"] = category
+    if confidence is not None:
+        log_entry["confidence"] = confidence
+    if counseling_mode:
+        log_entry["counseling_mode"] = {
+            "symptom_type": counseling_mode.get('symptom_type'),
+            "active": counseling_mode.get('active'),
+            "question_count": len(counseling_mode.get('question_history', [])),
+            "collected_info_count": len(counseling_mode.get('collected_info', {}))
+        }
+    
+    # ログディレクトリの作成
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # ログファイルに保存
+    log_file = os.path.join(log_dir, 'counseling_responses.jsonl')
+    try:
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        logger.info(f"📝 カウンセリング返信ログ記録: {response_type} (session_id: {session_id})")
+    except Exception as e:
+        logger.error(f"❌ カウンセリング返信ログ記録エラー: {e}")
 
 
 def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
@@ -40,7 +94,9 @@ def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
 def generate_counseling_response(
     symptom_type: str,
     user_text: str,
-    client: OpenAI
+    client: OpenAI,
+    conversation_history: List[Dict] = None,
+    session_id: str = None
 ) -> str:
     """
     カウンセリング的返信を生成
@@ -49,14 +105,28 @@ def generate_counseling_response(
         symptom_type: 感情的症状タイプ
         user_text: ユーザーの入力テキスト
         client: OpenAIクライアントインスタンス
+        conversation_history: 会話履歴（直近10件まで使用）
+        session_id: セッションID（ログ記録用）
     
     Returns:
         カウンセリング的返信テキスト
     """
+    # 会話履歴の準備（直近10件）
+    history_context = ""
+    if conversation_history:
+        recent_history = conversation_history[-10:]  # 直近10件
+        history_text = format_conversation_history(recent_history)
+        if history_text.strip():
+            history_context = f"""
+    
+    【会話履歴（文脈理解のため）】
+    {history_text}
+    """
+    
     prompt = f"""
     あなたは薬剤師兼カウンセラーです。ユーザーの感情的症状に対して、
     共感的でバランスの取れた返信を生成してください。
-    
+    {history_context}
     【ユーザーの入力】
     {user_text}
     
@@ -68,6 +138,7 @@ def generate_counseling_response(
     - 医療的なアドバイスと心理的なサポートのバランスを取る
     - 必要に応じて医療機関受診を推奨する
     - 市販薬の推奨は慎重に行う（感情的症状の場合、薬だけでは解決しないことが多い）
+    - 会話履歴がある場合は、文脈を考慮した返信を生成する
     
     【返信を生成してください】
     """
@@ -76,23 +147,50 @@ def generate_counseling_response(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。共感的でバランスの取れた返信を生成してください。返信は100文字以内に収めてください。"},
+                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。共感的でバランスの取れた返信を生成してください。返信は200文字以内に収めてください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=100  # 100文字に制限（日本語は1文字≈1トークン）
+            max_tokens=200  # 200文字に制限（日本語は1文字≈1トークン）
         )
         
         response_text = response.choices[0].message.content.strip()
         
-        # 100文字を超える場合は切り詰める
-        if len(response_text) > 100:
-            response_text = response_text[:100] + "..."
+        # 200文字を超える場合は切り詰める
+        if len(response_text) > 200:
+            response_text = response_text[:200] + "..."
+        
+        # ログ記録
+        if session_id:
+            log_counseling_response(
+                session_id=session_id,
+                response_content=response_text,
+                response_type="counseling_response",
+                category=None,
+                confidence=None,
+                counseling_mode=None
+            )
         
         return response_text
     except Exception as e:
         logger.error(f"カウンセリング返信生成エラー: {e}")
-        return "お気持ちをお聞かせいただき、ありがとうございます。詳しくお話を伺いたいので、もう少し詳しく教えていただけますか？"
+        error_response = "お気持ちをお聞かせいただき、ありがとうございます。詳しくお話を伺いたいので、もう少し詳しく教えていただけますか？"
+        
+        # エラー時もログ記録を試みる
+        if session_id:
+            try:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=error_response,
+                    response_type="counseling_response_error",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=None
+                )
+            except:
+                pass
+        
+        return error_response
 
 
 def generate_follow_up_questions(
@@ -212,7 +310,8 @@ def process_counseling_answer(
     user_text: str,
     session: Dict,
     conversation_history: List[Dict],
-    client: OpenAI
+    client: OpenAI,
+    session_id: str = None
 ) -> Dict:
     """
     カウンセリングモード中にユーザーが回答した場合の処理
@@ -243,22 +342,37 @@ def process_counseling_answer(
         last_question = question_history[-1].get('question', '')
     
     # ChatGPTで回答を解釈（終了条件を明記）
+    # 会話履歴から文脈をより詳細に理解するための情報を追加
+    recent_messages = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history
+    context_summary = ""
+    if len(recent_messages) > 1:
+        # 直前の質問とその前の会話の流れを要約
+        context_summary = "\n".join([
+            f"{'ユーザー' if msg.get('type') == 'user' else 'ボット'}: {msg.get('content', '')[:100]}"
+            for msg in recent_messages[-5:]  # 直近5件の要約
+        ])
+    
     prompt = f"""
     あなたは薬剤師兼カウンセラーです。以下の会話履歴を基に、ユーザーの最新の回答を解釈してください。
     
-    【会話履歴】
+    【会話履歴（全文）】
     {history_text}
     
+    【直近の会話の流れ】
+    {context_summary if context_summary else "（会話履歴が短いため、上記の会話履歴を参照してください）"}
+    
     【直前の質問】
-    {last_question}
+    {last_question if last_question else "（質問履歴がありません）"}
     
     【ユーザーの回答】
     {user_text}
     
     【解釈すべき内容】
-    1. 直前の質問に対する回答内容
+    1. 直前の質問に対する回答内容（質問への回答として解釈できるか）
     2. 回答から抽出できる情報（場所、程度、期間など）
     3. 次の質問が必要かどうか
+    4. 「勉強中」「英語の勉強中」のような短い入力も、文脈から質問への回答として解釈できるか判断する
+    5. 会話の流れから、ユーザーが何を伝えようとしているかを推測する
     
     【カウンセリング終了条件】
     以下のいずれかの場合、next_actionを"complete"に設定してください：
@@ -334,9 +448,22 @@ def process_counseling_answer(
             session['counseling_mode'] = counseling_mode
             session.modified = True
             
+            crisis_content = crisis_resources.get('message', '専門機関への相談をお勧めします。')
+            
+            # ログ記録
+            if session_id:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=crisis_content,
+                    response_type="crisis_support",
+                    category="Emergency",
+                    confidence=None,
+                    counseling_mode=counseling_mode
+                )
+            
             return {
                 'type': 'crisis_support',
-                'content': crisis_resources.get('message', '専門機関への相談をお勧めします。'),
+                'content': crisis_content,
                 'resources': crisis_resources.get('resources', []),
                 'emergency_message': crisis_resources.get('emergency_message', '緊急の場合は119番（救急）に連絡してください。'),
                 'continue_counseling': False,
@@ -348,9 +475,22 @@ def process_counseling_answer(
             session['counseling_mode'] = counseling_mode
             session.modified = True
             
+            no_progress_content = '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。'
+            
+            # ログ記録
+            if session_id:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=no_progress_content,
+                    response_type="counseling_summary_no_progress",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=counseling_mode
+                )
+            
             return {
                 'type': 'counseling_summary',
-                'content': '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。',
+                'content': no_progress_content,
                 'continue_counseling': False,
                 'recommendation': 'medical_consultation'
             }
@@ -369,9 +509,22 @@ def process_counseling_answer(
                     session['counseling_mode'] = counseling_mode
                     session.modified = True
                     
+                    no_progress_content = '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。'
+                    
+                    # ログ記録
+                    if session_id:
+                        log_counseling_response(
+                            session_id=session_id,
+                            response_content=no_progress_content,
+                            response_type="counseling_summary_no_progress",
+                            category=None,
+                            confidence=None,
+                            counseling_mode=counseling_mode
+                        )
+                    
                     return {
                         'type': 'counseling_summary',
-                        'content': '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。',
+                        'content': no_progress_content,
                         'continue_counseling': False,
                         'recommendation': 'medical_consultation'
                     }
@@ -396,25 +549,57 @@ def process_counseling_answer(
                 session['counseling_mode'] = counseling_mode
                 session.modified = True
                 
-                return {
-                    'type': 'counseling_question',
-                    'content': next_question,
-                    'continue_counseling': True
-                }
+            result = {
+                'type': 'counseling_question',
+                'content': next_question,
+                'continue_counseling': True
+            }
+            
+            # ログ記録
+            if session_id:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=next_question,
+                    response_type="counseling_question",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=counseling_mode
+                )
+            
+            return result
             else:
                 # 質問が生成できない場合は完了
                 counseling_mode['active'] = False
                 session['counseling_mode'] = counseling_mode
                 session.modified = True
                 
+                summary_content = 'お話を伺えました。ありがとうございます。'
+                
+                # ログ記録
+                if session_id:
+                    log_counseling_response(
+                        session_id=session_id,
+                        response_content=summary_content,
+                        response_type="counseling_summary",
+                        category=None,
+                        confidence=None,
+                        counseling_mode=counseling_mode
+                    )
+                
                 return {
                     'type': 'counseling_summary',
-                    'content': 'お話を伺えました。ありがとうございます。',
+                    'content': summary_content,
                     'continue_counseling': False
                 }
         else:
             # カウンセリングを完了し、総合的な返信を生成
-            summary = generate_counseling_summary(counseling_mode, interpretation, client)
+            summary = generate_counseling_summary(
+                counseling_mode, 
+                interpretation, 
+                client,
+                conversation_history=conversation_history,
+                session_id=session_id
+            )
             # カウンセリングモードを終了
             counseling_mode['active'] = False
             session['counseling_mode'] = counseling_mode
@@ -430,9 +615,25 @@ def process_counseling_answer(
         logger.error(f"カウンセリング回答処理エラー: {e}")
         import traceback
         traceback.print_exc()
+        error_content = 'エラーが発生しました。もう一度お試しください。'
+        
+        # エラー時もログ記録を試みる
+        if session_id:
+            try:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=error_content,
+                    response_type="counseling_error",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=session.get('counseling_mode')
+                )
+            except:
+                pass
+        
         return {
             'type': 'error',
-            'content': 'エラーが発生しました。もう一度お試しください。',
+            'content': error_content,
             'continue_counseling': False
         }
 
@@ -440,7 +641,9 @@ def process_counseling_answer(
 def generate_counseling_summary(
     counseling_mode: Dict,
     interpretation: Dict,
-    client: OpenAI
+    client: OpenAI,
+    conversation_history: List[Dict] = None,
+    session_id: str = None
 ) -> str:
     """
     カウンセリングの総合的な返信を生成
@@ -449,6 +652,8 @@ def generate_counseling_summary(
         counseling_mode: カウンセリングモードの状態
         interpretation: 解釈結果
         client: OpenAIクライアントインスタンス
+        conversation_history: 会話履歴（直近10件まで使用）
+        session_id: セッションID（ログ記録用）
     
     Returns:
         総合的な返信テキスト
@@ -456,10 +661,22 @@ def generate_counseling_summary(
     collected_info = counseling_mode.get('collected_info', {})
     symptom_type = counseling_mode.get('symptom_type', 'general_emotional')
     
+    # 会話履歴の準備（直近10件）
+    history_context = ""
+    if conversation_history:
+        recent_history = conversation_history[-10:]  # 直近10件
+        history_text = format_conversation_history(recent_history)
+        if history_text.strip():
+            history_context = f"""
+    
+    【会話履歴（文脈理解のため）】
+    {history_text}
+    """
+    
     prompt = f"""
     あなたは薬剤師兼カウンセラーです。カウンセリングで収集した情報を基に、
     総合的な返信を生成してください。
-    
+    {history_context}
     【収集した情報】
     {json.dumps(collected_info, ensure_ascii=False, indent=2)}
     
@@ -471,6 +688,7 @@ def generate_counseling_summary(
     - 適切なアドバイスを提供する
     - 必要に応じて医療機関受診を推奨する
     - 共感的で温かいトーンを保つ
+    - 会話履歴がある場合は、文脈を考慮した返信を生成する
     
     【返信を生成してください】
     """
@@ -479,23 +697,50 @@ def generate_counseling_summary(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。総合的な返信を生成してください。返信は100文字以内に収めてください。"},
+                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。総合的な返信を生成してください。返信は200文字以内に収めてください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=100  # 100文字に制限（日本語は1文字≈1トークン）
+            max_tokens=200  # 200文字に制限（日本語は1文字≈1トークン）
         )
         
         response_text = response.choices[0].message.content.strip()
         
-        # 100文字を超える場合は切り詰める
-        if len(response_text) > 100:
-            response_text = response_text[:100] + "..."
+        # 200文字を超える場合は切り詰める
+        if len(response_text) > 200:
+            response_text = response_text[:200] + "..."
+        
+        # ログ記録
+        if session_id:
+            log_counseling_response(
+                session_id=session_id,
+                response_content=response_text,
+                response_type="counseling_summary",
+                category=None,
+                confidence=None,
+                counseling_mode=counseling_mode
+            )
         
         return response_text
     except Exception as e:
         logger.error(f"カウンセリング要約生成エラー: {e}")
-        return "お話を伺えました。ありがとうございます。必要に応じて医療機関にご相談されることをお勧めします。"
+        error_response = "お話を伺えました。ありがとうございます。必要に応じて医療機関にご相談されることをお勧めします。"
+        
+        # エラー時もログ記録を試みる
+        if session_id:
+            try:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=error_response,
+                    response_type="counseling_summary_error",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=counseling_mode
+                )
+            except:
+                pass
+        
+        return error_response
 
 
 def detect_topic_shift(
@@ -563,8 +808,9 @@ def detect_topic_shift(
     }}
     
     【重要な判定ルール】
-    - relation_to_current_topicが0.5以上の場合、話題転換と判定しない
-    - 新しいカテゴリがPhysical/Emergency かつ relation_to_current_topicが0.3未満の場合のみ、話題転換と判定
+    - relation_to_current_topicが0.5以上の場合、話題転換と判定しない（カウンセリングの続きとして処理）
+    - カウンセリング中の質問への回答として解釈しやすい入力（「勉強中」「英語の勉強中」など）は、話題転換と判定しない
+    - 新しいカテゴリがPhysical/Emergency かつ relation_to_current_topicが0.5未満の場合のみ、話題転換と判定
     """
     
     try:
@@ -597,7 +843,8 @@ def detect_topic_shift(
 def handle_user_input_in_counseling_mode(
     user_text: str,
     session: Dict,
-    client: OpenAI
+    client: OpenAI,
+    session_id: str = None
 ) -> Dict:
     """
     カウンセリングモード中にユーザーが入力した場合の処理（改善版）
@@ -628,9 +875,9 @@ def handle_user_input_in_counseling_mode(
     is_topic_shift = topic_shift_result.get('is_topic_shift', False)
     new_category = topic_shift_result.get('new_topic_category')
     
-    # 話題転換の判定条件を厳格化
+    # 話題転換の判定条件を調整（閾値を0.3から0.5に緩和）
     if (is_topic_shift and 
-        relation_score < 0.3 and 
+        relation_score < 0.5 and 
         new_category in ['Physical', 'Emergency']):
         # 話題転換が検知され、関連性が低く、新しいカテゴリがPhysical/Emergencyの場合のみ転換
         # カウンセリングを一時中断し、新しい話題を処理
@@ -648,5 +895,5 @@ def handle_user_input_in_counseling_mode(
         }
     
     # 話題転換がない場合、カウンセリングの続きとして処理
-    return process_counseling_answer(user_text, session, session.get('messages', []), client)
+    return process_counseling_answer(user_text, session, session.get('messages', []), client, session_id=session_id)
 
