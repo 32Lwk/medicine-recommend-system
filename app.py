@@ -1003,12 +1003,15 @@ def index():
             counseling_mode = session.get('counseling_mode', {})
             if counseling_mode.get('active'):
                 try:
-                    from counseling_response import handle_user_input_in_counseling_mode
+                    from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
                     from triage_analytics import log_topic_shift_detection
                     
                     # カウンセリングモード中の処理（話題転換を自動検知）
+                    # 会話履歴を取得（直近10件）
+                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                    
                     response = handle_user_input_in_counseling_mode(
-                        sanitized_message, session, recommendation_client
+                        sanitized_message, session, recommendation_client, session_id=sid
                     )
                     
                     # 話題転換が検知された場合の処理
@@ -1041,6 +1044,16 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
+                            # ログ記録
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=emergency_message.strip(),
+                                response_type="emergency_response",
+                                category="Emergency",
+                                confidence=None,
+                                counseling_mode=counseling_mode
+                            )
+                            
                             if sid:
                                 session_data = get_session_from_db(sid)
                                 if session_data:
@@ -1065,6 +1078,16 @@ def index():
                         }
                         session['messages'].append(bot_response)
                         session.modified = True
+                        
+                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        log_counseling_response(
+                            session_id=sid,
+                            response_content=response.get('content', ''),
+                            response_type="counseling_question",
+                            category=None,
+                            confidence=None,
+                            counseling_mode=counseling_mode
+                        )
                     elif response.get('type') == 'counseling_summary':
                         bot_response = {
                             'type': 'bot',
@@ -1074,6 +1097,16 @@ def index():
                         }
                         session['messages'].append(bot_response)
                         session.modified = True
+                        
+                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        log_counseling_response(
+                            session_id=sid,
+                            response_content=response.get('content', ''),
+                            response_type="counseling_summary",
+                            category=None,
+                            confidence=None,
+                            counseling_mode=counseling_mode
+                        )
                         
                         # カウンセリング完了ログを保存
                         if response.get('completion_reason'):
@@ -1096,6 +1129,16 @@ def index():
                         }
                         session['messages'].append(bot_response)
                         session.modified = True
+                        
+                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        log_counseling_response(
+                            session_id=sid,
+                            response_content=response.get('content', ''),
+                            response_type="crisis_support",
+                            category="Emergency",
+                            confidence=None,
+                            counseling_mode=counseling_mode
+                        )
                     
                     # DBを更新
                     if sid:
@@ -1148,6 +1191,17 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
+                            # ログ記録
+                            from counseling_response import log_counseling_response
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=emergency_message.strip(),
+                                response_type="emergency_low_confidence_confirmation",
+                                category="Emergency",
+                                confidence=confidence,
+                                counseling_mode=None
+                            )
+                            
                             # confidenceチェックのログ
                             log_confidence_check(
                                 session_id=sid,
@@ -1183,6 +1237,17 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
+                            # ログ記録
+                            from counseling_response import log_counseling_response
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=emergency_message.strip(),
+                                response_type="emergency_response",
+                                category="Emergency",
+                                confidence=confidence,
+                                counseling_mode=None
+                            )
+                            
                             if sid:
                                 session_data = get_session_from_db(sid)
                                 if session_data:
@@ -1196,16 +1261,31 @@ def index():
                     # その他のカテゴリの通常処理
                     if confidence < 0.7:
                         # 確信度が低い場合は確認を求める
-                        from counseling_response import generate_counseling_response, detect_emotional_symptom_type
+                        from counseling_response import generate_counseling_response, detect_emotional_symptom_type, log_counseling_response
+                        
+                        # 会話履歴を取得（直近10件）
+                        conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
                         
                         # 確認メッセージを生成
                         if category == 'Emotional':
                             symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
                             confirmation_message = generate_counseling_response(
-                                symptom_type, sanitized_message, recommendation_client
+                                symptom_type, sanitized_message, recommendation_client,
+                                conversation_history=conversation_history,
+                                session_id=sid
                             )
                         else:
                             confirmation_message = f"「{sanitized_message}」について、{category}カテゴリと判定しましたが、確信度が低いため確認が必要です。もう少し詳しく教えていただけますか？"
+                            
+                            # Otherカテゴリの場合もログ記録
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=confirmation_message,
+                                response_type="low_confidence_confirmation",
+                                category=category,
+                                confidence=confidence,
+                                counseling_mode=None
+                            )
                         
                         bot_response = {
                             'type': 'bot',
@@ -1258,8 +1338,14 @@ def index():
                         )
                         
                         symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
+                        
+                        # 会話履歴を取得（直近10件）
+                        conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                        
                         initial_response = generate_counseling_response(
-                            symptom_type, sanitized_message, recommendation_client
+                            symptom_type, sanitized_message, recommendation_client,
+                            conversation_history=conversation_history,
+                            session_id=sid
                         )
                         initial_questions = generate_follow_up_questions(
                             symptom_type, {}, recommendation_client
@@ -1276,6 +1362,17 @@ def index():
                             'timestamp': datetime.now().isoformat()
                         }
                         session['messages'].append(bot_response)
+                        
+                        # 初期返信のログ記録
+                        from counseling_response import log_counseling_response
+                        log_counseling_response(
+                            session_id=sid,
+                            response_content=initial_response,
+                            response_type="counseling_initial_response",
+                            category=category,
+                            confidence=confidence,
+                            counseling_mode=session.get('counseling_mode')
+                        )
                         
                         if initial_questions:
                             first_question = initial_questions[0]
@@ -1294,6 +1391,16 @@ def index():
                                 'timestamp': datetime.now().isoformat()
                             }
                             session['messages'].append(question_response)
+                            
+                            # 初期質問のログ記録
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=first_question,
+                                response_type="counseling_initial_question",
+                                category=category,
+                                confidence=confidence,
+                                counseling_mode=session.get('counseling_mode')
+                            )
                         
                         session.modified = True
                         
