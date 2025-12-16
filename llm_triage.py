@@ -135,6 +135,126 @@ def llm_triage(user_text: str, client: OpenAI) -> Dict:
         }
 
 
+def check_pain_keywords_override(user_text: str) -> Dict:
+    """
+    痛み関連キーワードのオーバーライドチェック
+    
+    痛み関連キーワードが心臓関連キーワードと併用されている場合、
+    文脈に関わらず強制的に緊急度を上げる。
+    
+    Returns:
+        {
+            "has_pain_keywords": bool,
+            "override_emergency": bool,
+            "detected_pain_keywords": List[str]
+        }
+    """
+    pain_keywords = [
+        "痛い", "痛み", "苦しい", "締め付けられる", "締め付け",
+        "圧迫感", "圧迫", "重い", "重圧感", "息苦しい"
+    ]
+    
+    heart_keywords = [
+        "心臓", "心臓部", "心臓部分", "心臓付近", "心臓のあたり",
+        "心臓が", "心臓も", "心臓に", "心臓を", "胸", "胸部"
+    ]
+    
+    detected_pain = []
+    has_heart_keyword = any(keyword in user_text for keyword in heart_keywords)
+    
+    for keyword in pain_keywords:
+        if keyword in user_text:
+            detected_pain.append(keyword)
+    
+    has_pain_keywords = len(detected_pain) > 0
+    override_emergency = has_pain_keywords and has_heart_keyword
+    
+    return {
+        "has_pain_keywords": has_pain_keywords,
+        "override_emergency": override_emergency,
+        "detected_pain_keywords": detected_pain
+    }
+
+
+def check_negative_expressions(user_text: str) -> Dict:
+    """
+    否定表現の検知
+    
+    「心臓は痛くない」「心臓に問題はない」などの否定表現を検知。
+    
+    Returns:
+        {
+            "has_negative": bool,
+            "negative_score": float,  # 0.0-1.0、高いほど緊急度を下げる
+            "detected_negations": List[str]
+        }
+    """
+    import re
+    
+    negative_patterns = [
+        r"心臓.*(?:痛くない|問題.*ない|異常.*ない|大丈夫|平気)",
+        r"(?:痛くない|問題.*ない|異常.*ない|大丈夫|平気).*心臓",
+        r"心臓.*(?:は|が).*(?:痛くない|問題.*ない|異常.*ない)",
+        r"胸.*(?:痛くない|問題.*ない|異常.*ない|大丈夫|平気)",
+    ]
+    
+    detected_negations = []
+    for pattern in negative_patterns:
+        matches = re.findall(pattern, user_text)
+        if matches:
+            detected_negations.extend(matches)
+    
+    has_negative = len(detected_negations) > 0
+    # 否定表現がある場合、緊急度を0.5下げる
+    negative_score = 0.5 if has_negative else 0.0
+    
+    return {
+        "has_negative": has_negative,
+        "negative_score": negative_score,
+        "detected_negations": detected_negations
+    }
+
+
+def check_exclusion_patterns(user_text: str) -> Dict:
+    """
+    除外キーワード（Negative Lookahead）のチェック
+    
+    明らかに比喩・否定であるパターンを検知し、スコアを下げる。
+    
+    Returns:
+        {
+            "has_exclusion": bool,
+            "exclusion_score_reduction": float,  # 0.0-1.0、緊急度スコアから減算
+            "detected_patterns": List[str]
+        }
+    """
+    import re
+    
+    exclusion_patterns = [
+        (r"心臓に毛が生え", 0.8),
+        (r"心臓が止まるかと思った", 0.7),  # 驚きの表現
+        (r"心臓が飛び出", 0.7),  # 驚きの表現
+        (r"心臓が.*(?:飛び出|止まる).*と思った", 0.7),
+        (r"心臓.*(?:ドキドキ|バクバク).*だけ", 0.3),  # 「心臓がドキドキするだけ」など
+    ]
+    
+    detected_patterns = []
+    max_reduction = 0.0
+    
+    for pattern, reduction in exclusion_patterns:
+        if re.search(pattern, user_text):
+            detected_patterns.append(pattern)
+            max_reduction = max(max_reduction, reduction)
+    
+    has_exclusion = len(detected_patterns) > 0
+    
+    return {
+        "has_exclusion": has_exclusion,
+        "exclusion_score_reduction": max_reduction,
+        "detected_patterns": detected_patterns
+    }
+
+
 def check_heart_emergency(user_text: str) -> bool:
     """
     「心臓」「動悸」「不整脈」を含む入力を検出し、緊急対応が必要か判定
@@ -157,6 +277,9 @@ def check_heart_emergency(user_text: str) -> bool:
     - 「胸が苦しい」「胸の圧迫感」は循環器系の可能性もあるが、
       精神的な場合も多いため、LLMトリアージ（Emergency vs Emotional）に任せる
     - ステップ0では「心臓」「動悸」「不整脈」といった臓器・現象名のみをチェック
+    
+    【後方互換性のため残す】
+    新しいcheck_heart_emergency_with_context関数を使用することを推奨
     """
     heart_keywords = [
         "心臓", "心臓部", "心臓部分", "心臓付近", "心臓のあたり",
@@ -173,4 +296,139 @@ def check_heart_emergency(user_text: str) -> bool:
         any(keyword in user_text for keyword in heart_keywords) or
         any(keyword in user_text for keyword in arrhythmia_keywords)
     )
+
+
+def check_heart_emergency_with_context(
+    user_text: str,
+    triage_result: Dict = None,
+    counseling_mode: Dict = None,
+    client: OpenAI = None
+) -> Dict:
+    """
+    文脈を考慮した心臓緊急チェック
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        triage_result: LLMトリアージ結果（オプション）
+        counseling_mode: カウンセリングモード状態（オプション）
+        client: OpenAIクライアントインスタンス（オプション、追加判定が必要な場合）
+    
+    Returns:
+        {
+            "is_emergency": bool,
+            "confidence": float,  # 0.0-1.0
+            "context_type": str,  # "romantic", "exercise", "nervous", "metaphorical", "actual_emergency"
+            "reasoning": str,
+            "should_interrupt_counseling": bool
+        }
+    """
+    # ステップ1: ルールベース安全性層（最優先）
+    pain_check = check_pain_keywords_override(user_text)
+    negative_check = check_negative_expressions(user_text)
+    exclusion_check = check_exclusion_patterns(user_text)
+    
+    # 痛み関連キーワードのオーバーライド（最優先）
+    if pain_check["override_emergency"]:
+        return {
+            "is_emergency": True,
+            "confidence": 0.9,
+            "context_type": "actual_emergency",
+            "reasoning": f"痛み関連キーワード（{', '.join(pain_check['detected_pain_keywords'])}）が検出されました。文脈に関わらず緊急対応が必要です。",
+            "should_interrupt_counseling": True
+        }
+    
+    # ステップ2: キーワードマッチング
+    heart_keywords = [
+        "心臓", "心臓部", "心臓部分", "心臓付近", "心臓のあたり",
+        "心臓が", "心臓も", "心臓に", "心臓を"
+    ]
+    
+    arrhythmia_keywords = [
+        "動悸", "ドキドキが止まらない", "脈が飛ぶ", "不整脈",
+        "脈が", "脈が速い", "脈が遅い", "脈が不規則"
+    ]
+    
+    has_heart_keyword = any(keyword in user_text for keyword in heart_keywords)
+    has_arrhythmia_keyword = any(keyword in user_text for keyword in arrhythmia_keywords)
+    
+    if not (has_heart_keyword or has_arrhythmia_keyword):
+        return {
+            "is_emergency": False,
+            "confidence": 0.0,
+            "context_type": "none",
+            "reasoning": "心臓関連キーワードが検出されませんでした。",
+            "should_interrupt_counseling": False
+        }
+    
+    # 初期スコア（キーワードが検出された場合）
+    emergency_score = 0.7
+    context_type = "actual_emergency"
+    reasoning_parts = []
+    
+    # ステップ3: LLMトリアージ結果の活用
+    if triage_result:
+        category = triage_result.get("category", "")
+        subcategory = triage_result.get("subcategory", "").lower()
+        confidence = triage_result.get("confidence", 0.5)
+        
+        if category == "Emergency" and confidence >= 0.8:
+            emergency_score = 0.95
+            context_type = "actual_emergency"
+            reasoning_parts.append("トリアージ結果がEmergency（高確信度）")
+        elif category == "Emotional":
+            if "romantic" in subcategory or "romantic_concern" in subcategory:
+                emergency_score = 0.3
+                context_type = "romantic"
+                reasoning_parts.append("トリアージ結果がEmotional（恋愛関連）")
+            elif "anxiety" in subcategory or "nervous" in subcategory:
+                emergency_score = 0.4
+                context_type = "nervous"
+                reasoning_parts.append("トリアージ結果がEmotional（不安・緊張）")
+            else:
+                emergency_score = 0.5
+                context_type = "metaphorical"
+                reasoning_parts.append("トリアージ結果がEmotional")
+        elif confidence < 0.7:
+            # 低確信度の場合は追加判定が必要
+            emergency_score = 0.6
+            reasoning_parts.append("トリアージ結果の確信度が低い")
+    
+    # ステップ4: 除外パターンの適用
+    if exclusion_check["has_exclusion"]:
+        emergency_score -= exclusion_check["exclusion_score_reduction"]
+        reasoning_parts.append(f"除外パターン検出（{exclusion_check['exclusion_score_reduction']:.1f}減点）")
+    
+    # ステップ5: 否定表現の適用（痛みキーワードがない場合のみ）
+    if negative_check["has_negative"] and not pain_check["has_pain_keywords"]:
+        emergency_score -= negative_check["negative_score"]
+        reasoning_parts.append(f"否定表現検出（{negative_check['negative_score']:.1f}減点）")
+    
+    # スコアを0.0-1.0の範囲に制限
+    emergency_score = max(0.0, min(1.0, emergency_score))
+    
+    # ステップ6: カウンセリングモード中の判定
+    should_interrupt = True
+    if counseling_mode and counseling_mode.get('active'):
+        symptom_type = counseling_mode.get('symptom_type', '')
+        # カウンセリング中の症状タイプが恋愛関連の場合、より慎重に判定
+        if symptom_type == 'romantic_concern' and context_type == 'romantic':
+            emergency_score *= 0.7  # スコアを下げる
+            should_interrupt = emergency_score >= 0.6
+            reasoning_parts.append("カウンセリング中（恋愛関連）のため慎重に判定")
+    
+    # 最終判定
+    is_emergency = emergency_score >= 0.6
+    
+    if not reasoning_parts:
+        reasoning = "キーワードマッチングによる判定"
+    else:
+        reasoning = " | ".join(reasoning_parts)
+    
+    return {
+        "is_emergency": is_emergency,
+        "confidence": emergency_score,
+        "context_type": context_type,
+        "reasoning": reasoning,
+        "should_interrupt_counseling": should_interrupt
+    }
 
