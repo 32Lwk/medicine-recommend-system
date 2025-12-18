@@ -94,6 +94,16 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     if not symptom_names:
         return 0.0
 
+    # 二日酔い特別処理：効能に「二日酔」が明記されている場合
+    efficacy_lower = efficacy_text.lower()
+    hangover_keywords_in_efficacy = ["二日酔", "宿酔", "悪酔"]
+    has_hangover_efficacy = any(kw in efficacy_lower for kw in hangover_keywords_in_efficacy)
+    has_hangover_symptom = any("二日酔" in str(name) for name in symptom_names)
+    
+    # 二日酔い症状と二日酔い効能が一致する場合、高スコアを付与
+    if has_hangover_symptom and has_hangover_efficacy:
+        return 0.95  # 二日酔い特化医薬品には高い効能特異性スコア
+
     normalized_symptoms = [normalize_text(name) for name in symptom_names]
     normalized_symptom_set = {name for name in normalized_symptoms if name}
 
