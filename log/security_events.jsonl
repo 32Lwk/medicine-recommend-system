@@ -307,3 +307,35 @@
 {"timestamp": "2025-12-12T01:59:41.014120", "event_type": "input_validation", "user_id": "unknown", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "head pain"}}
 {"timestamp": "2025-12-12T02:00:20.084143", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-12T02:00:20.084753", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです。"}}
+{"timestamp": "2025-12-18T13:02:19.346173", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T13:02:19.347034", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T13:10:50.968859", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T13:10:50.970324", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T14:15:06.976236", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:15:06.977147", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T14:20:25.407103", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:20:25.407538", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "２日酔いです。"}}
+{"timestamp": "2025-12-18T14:21:04.541612", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:21:04.555360", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです"}}
+{"timestamp": "2025-12-18T14:22:35.841241", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:22:35.841780", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T14:24:47.044521", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:24:47.045305", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります"}}
+{"timestamp": "2025-12-18T14:26:03.580830", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:26:03.581948", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです。"}}
+{"timestamp": "2025-12-18T14:29:35.658997", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:29:35.660343", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります"}}
+{"timestamp": "2025-12-18T14:31:25.693413", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:31:25.694201", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです。"}}
+{"timestamp": "2025-12-18T14:45:49.103637", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:45:49.104071", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります"}}
+{"timestamp": "2025-12-18T14:46:57.833176", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:46:57.834499", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです"}}
+{"timestamp": "2025-12-18T14:50:43.086979", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:50:43.087927", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T14:51:25.704071", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:51:25.705018", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです"}}
+{"timestamp": "2025-12-18T14:57:07.487297", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:57:07.488147", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2025-12-18T14:57:48.140946", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-18T14:57:48.142259", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "2日酔いです"}}
