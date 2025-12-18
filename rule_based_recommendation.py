@@ -306,6 +306,27 @@ SYMPTOM_DICTIONARY = {
         "medicine_types": ["精神症状"],
         "weight": 0.7
     },
+    "だるさ": {
+        "canonical_name": "だるさ",
+        "synonyms": ["だるさ", "だるい", "体がだるい", "全身倦怠感", "倦怠感"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["精神症状", "胃腸薬", "抗アレルギー薬"],
+        "weight": 0.7
+    },
+    "むくみ": {
+        "canonical_name": "むくみ",
+        "synonyms": ["むくみ", "浮腫", "腫れぼったい", "パンパン", "顔のむくみ", "足のむくみ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["抗アレルギー薬", "胃腸薬"],
+        "weight": 0.75
+    },
+    "二日酔い": {
+        "canonical_name": "二日酔い",
+        "synonyms": ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["抗アレルギー薬", "胃腸薬", "解熱鎮痛薬"],
+        "weight": 0.95
+    },
     "イライラ": {
         "canonical_name": "イライラ",
         "synonyms": ["イライラ", "いらいら", "焦燥感", "落ち着かない"],
@@ -1769,10 +1790,23 @@ def _enforce_symptom_match_threshold(
     for candidate in candidates:
         score_breakdown = candidate.get('score_breakdown', {}) or {}
         symptom_match = score_breakdown.get('symptom_match')
-        if symptom_match is not None and symptom_match < threshold:
+        
+        # 二日酔いブーストがある医薬品は、症状適合度が低くても除外しない
+        hangover_boost = score_breakdown.get('hangover_boost', 0.0)
+        is_hangover_medicine = candidate.get('is_hangover', False)
+        
+        if hangover_boost > 0 or is_hangover_medicine:
+            # 二日酔い向け医薬品は閾値を下げる
+            adjusted_threshold = 0.0  # 二日酔いブーストがあれば症状適合度チェックをスキップ
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"二日酔い医薬品のため閾値を0.0に調整: {candidate.get('product_name', '')} (boost={hangover_boost:.3f})")
+        else:
+            adjusted_threshold = threshold
+        
+        if symptom_match is not None and symptom_match < adjusted_threshold:
             if logger.level <= logging.INFO:
                 logger.info(
-                    f"🚫 症状適合度が閾値未満のため候補を除外 (score={symptom_match:.2f}, threshold={threshold:.2f}): "
+                    f"🚫 症状適合度が閾値未満のため候補を除外 (score={symptom_match:.2f}, threshold={adjusted_threshold:.2f}): "
                     f"{candidate.get('product_name', '')}"
                 )
             continue
@@ -1833,9 +1867,49 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     if len(filtered_candidates) <= top_n:
         return filtered_candidates[:top_n]
 
+    # 二日酔い特化：五苓散とL-システイン含有医薬品を優先確保
+    reserved_goreisan = None
+    reserved_cysteine = None
+    
+    # 五苓散を最優先で確保
+    for candidate in filtered_candidates:
+        product_name = candidate.get('product_name', '')
+        efficacy = candidate.get('efficacy', '')
+        if "五苓散" in product_name or "五苓散" in efficacy:
+            reserved_goreisan = candidate
+            break
+    
+    # L-システイン含有医薬品を確保（二日酔い関連効能がある場合）
+    for candidate in filtered_candidates:
+        if candidate == reserved_goreisan:
+            continue
+        ingredients = str(candidate.get('ingredients', '')).lower()
+        efficacy = str(candidate.get('efficacy', '')).lower()
+        
+        # L-システイン含有で二日酔い関連効能がある場合
+        has_cysteine = "l-システイン" in ingredients or "システイン" in ingredients or "lシステイン" in ingredients
+        has_hangover_related = any(kw in efficacy for kw in ["倦怠", "疲労", "肝", "解毒", "二日酔", "宿酔"])
+        
+        # 美容主体（しみ・そばかす）を除外
+        is_beauty_primary = any(kw in efficacy[:50] for kw in ["しみ", "そばかす", "色素沈着", "美白"])
+        
+        if has_cysteine and has_hangover_related and not is_beauty_primary:
+            reserved_cysteine = candidate
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"L-システイン優先枠を確保: {candidate.get('product_name', '')}")
+            break
+    
+    # 美容主体でないL-システイン製品が見つからない場合でも、美容主体は推奨しない
+    # （二日酔い推奨として不適切なため）
+    if not reserved_cysteine:
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug("L-システイン優先枠: 美容主体でない製品が見つかりませんでした（美容主体は二日酔いに不適切なため除外）")
+    
     # 液剤を最初に1件確保（剤形多様性）
     liquid_candidate = None
     for candidate in filtered_candidates:
+        if candidate == reserved_goreisan or candidate == reserved_cysteine:
+            continue
         if _candidate_has_throat_liquid_signature(candidate):
             liquid_candidate = candidate
             break
@@ -1844,7 +1918,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     selected_sets: List[set] = []
     fallback: List[Tuple[Dict, set]] = []
 
-    # 液剤が見つかった場合は最後に追加するために保留
+    # 特別枠を保留
     reserved_liquid = liquid_candidate
 
     # 葛根湯系の同一成分グループを識別する関数
@@ -1853,10 +1927,24 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         kakkonto_keywords = ["カッコン", "カンゾウ", "ケイヒ", "タイソウ", "ショウキョウ", "シャクヤク", "マオウ"]
         ingredients_str = ' '.join(ingredients).lower()
         return any(kw.lower() in ingredients_str for kw in kakkonto_keywords)
+    
+    # 五苓散系の同一成分グループを識別する関数
+    def _is_goreisan_group(ingredients: set) -> bool:
+        """五苓散系の成分グループかどうかを判定"""
+        goreisan_keywords = ["タクシャ", "チョレイ", "ビャクジュツ", "ブクリョウ", "ケイヒ", "インチンコウ"]
+        ingredients_str = ' '.join(ingredients).lower()
+        # 五苓散の主要成分（タクシャ、チョレイ、ブクリョウ）のうち2つ以上含まれていれば五苓散系
+        core_ingredients = ["タクシャ", "チョレイ", "ブクリョウ"]
+        core_count = sum(1 for kw in core_ingredients if kw.lower() in ingredients_str)
+        return core_count >= 2
 
     for candidate in filtered_candidates:
-        # 保留中の液剤はスキップ
+        # 保留中の特別枠はスキップ
         if reserved_liquid and candidate == reserved_liquid:
+            continue
+        if reserved_goreisan and candidate == reserved_goreisan:
+            continue
+        if reserved_cysteine and candidate == reserved_cysteine:
             continue
 
         main_ingredients = set(extract_main_ingredients(candidate.get("ingredients", "")))
@@ -1865,21 +1953,29 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         for existing_set in selected_sets:
             if not existing_set or not main_ingredients:
                 continue
-            intersection = existing_set & main_ingredients
-            if not intersection:
-                # 葛根湯系の同一成分グループチェック
-                if _is_kakkonto_group(existing_set) and _is_kakkonto_group(main_ingredients):
-                    overlap = True
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"葛根湯系の同一成分グループとして重複を検出: {candidate.get('product_name', '')}")
-                    break
-                continue
-            overlap_ratio = len(intersection) / float(min(len(existing_set), len(main_ingredients)))
-            if overlap_ratio >= similarity_threshold:
+            
+            # 五苓散系・葛根湯系の同一成分グループチェック（最優先）
+            if _is_goreisan_group(existing_set) and _is_goreisan_group(main_ingredients):
                 overlap = True
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"成分重複を検出（重複率: {overlap_ratio:.2f}）: {candidate.get('product_name', '')}")
+                    logger.debug(f"五苓散系の同一成分グループとして重複を検出: {candidate.get('product_name', '')}")
                 break
+            
+            if _is_kakkonto_group(existing_set) and _is_kakkonto_group(main_ingredients):
+                overlap = True
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"葛根湯系の同一成分グループとして重複を検出: {candidate.get('product_name', '')}")
+                break
+            
+            # 通常の成分重複チェック
+            intersection = existing_set & main_ingredients
+            if intersection:
+                overlap_ratio = len(intersection) / float(min(len(existing_set), len(main_ingredients)))
+                if overlap_ratio >= similarity_threshold:
+                    overlap = True
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"成分重複を検出（重複率: {overlap_ratio:.2f}）: {candidate.get('product_name', '')}")
+                    break
 
         if not overlap and len(selected) < (top_n - 1 if reserved_liquid else top_n):
             selected.append(candidate)
@@ -1887,7 +1983,20 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         else:
             fallback.append((candidate, main_ingredients))
 
-    # 液剤を最後に追加（成分重複に関わらず）
+    # 特別枠を優先順位で追加
+    # 1. 五苓散（最優先）
+    if reserved_goreisan and len(selected) < top_n:
+        selected.insert(0, reserved_goreisan)  # 1位に挿入
+        selected_sets.insert(0, set(extract_main_ingredients(reserved_goreisan.get("ingredients", ""))))
+    
+    # 2. L-システイン含有医薬品（2番目の優先度）
+    if reserved_cysteine and len(selected) < top_n:
+        # 2位または3位に挿入（五苓散が既にある場合は2位）
+        insert_pos = min(1, len(selected))
+        selected.insert(insert_pos, reserved_cysteine)
+        selected_sets.insert(insert_pos, set(extract_main_ingredients(reserved_cysteine.get("ingredients", ""))))
+    
+    # 3. 液剤を最後に追加（成分重複に関わらず）
     if reserved_liquid and len(selected) < top_n:
         selected.append(reserved_liquid)
         selected_sets.append(set(extract_main_ingredients(reserved_liquid.get("ingredients", ""))))
@@ -2141,16 +2250,28 @@ def _has_motion_sickness_symptom(nlu_result: Dict, user_text: str) -> bool:
     symptoms = nlu_result.get("symptoms", [])
     symptom_names = [s.get("name", "") for s in symptoms]
     
-    # 乗り物酔い関連の症状キーワード
-    motion_sickness_symptoms = ["乗り物酔い", "車酔い", "船酔い", "酔い"]
+    # ユーザー入力テキストの小文字化
+    user_text_lower = user_text.lower()
+    
+    # 二日酔い関連のキーワードがある場合は乗り物酔いではない
+    hangover_keywords = ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ", "酒", "アルコール", "お酒"]
+    if any(kw in user_text_lower for kw in hangover_keywords):
+        return False
+    
+    # 乗り物酔い関連の症状キーワード（二日酔いは除外）
+    motion_sickness_symptoms = ["乗り物酔い", "車酔い", "船酔い"]
     
     # 症状名でチェック
     if any(s in symptom_names for s in motion_sickness_symptoms):
         return True
     
-    # ユーザー入力テキストでチェック（より広範囲に検出）
-    user_text_lower = user_text.lower()
-    motion_sickness_text_keywords = ["乗り物酔い", "車酔い", "船酔い", "酔い", "車に乗ると", "船に乗ると", "バスで", "旅行で", "バス酔い", "船酔い"]
+    # ユーザー入力テキストでチェック（より具体的なキーワードのみ）
+    # 注意：「酔い」単独は除外（二日酔いと誤認識されるため）
+    motion_sickness_text_keywords = [
+        "乗り物酔い", "車酔い", "船酔い", "バス酔い", "電車酔い",
+        "車に乗ると", "船に乗ると", "バスに乗ると", "電車に乗ると",
+        "乗り物で", "移動中", "旅行で", "ドライブで"
+    ]
     if any(kw in user_text_lower for kw in motion_sickness_text_keywords):
         return True
     
@@ -2280,9 +2401,51 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             # 風邪薬は残すが、優先度は下がる（ペナルティで対応）
             logger.info("アレルギー症状が検出されたため、風邪薬へのペナルティを適用します")
     
+    # 二日酔い検出（ユーザー入力テキストから）
+    hangover_keywords = ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ", "酒", "アルコール"]
+    is_hangover = any(kw in user_text_lower for kw in hangover_keywords)
+    
+    # 二日酔いの症状パターンからも検出
+    hangover_symptom_patterns = [
+        frozenset({"頭痛", "むくみ", "だるさ"}),
+        frozenset({"頭痛", "むくみ"}),
+        frozenset({"頭痛", "だるさ"}),
+        frozenset({"むくみ", "だるさ"}),
+        frozenset({"頭痛", "吐き気"}),
+        frozenset({"頭痛", "だるさ", "吐き気"}),
+        frozenset({"吐き気", "むくみ"}),
+        frozenset({"吐き気", "だるさ"}),
+    ]
+    
+    # 症状名の正規化（「疲労感」→「だるさ」など）
+    symptom_mapping_for_hangover = {
+        "疲労感": "だるさ",
+        "倦怠感": "だるさ",
+        "疲れ": "だるさ",
+        "だるい": "だるさ",
+    }
+    normalized_symptom_names_for_hangover = [symptom_mapping_for_hangover.get(name, name) for name in symptom_names]
+    normalized_symptom_set_for_hangover = frozenset(normalized_symptom_names_for_hangover)
+    
+    # 症状パターンマッチング
+    if not is_hangover:
+        for pattern in hangover_symptom_patterns:
+            if pattern.issubset(normalized_symptom_set_for_hangover):
+                is_hangover = True
+                logger.info(f"二日酔い症状パターンを検出: {pattern} ⊆ {normalized_symptom_set_for_hangover}")
+                break
+    
+    # 二日酔いが検出された場合、「抗アレルギー薬」カテゴリを追加（五苓散用）
+    if is_hangover:
+        if "抗アレルギー薬" not in medicine_types:
+            medicine_types.add("抗アレルギー薬")
+            logger.info("二日酔いが検出されました。抗アレルギー薬カテゴリを追加（五苓散対応）")
+    
     logger.info(f"推定された医薬品の種類（拡張後）: {medicine_types}")
     if is_allergy_case:
         logger.info(f"アレルギー症状が検出されました（目のかゆみ: {has_eye_itch}, アレルギー指標: {has_allergy_indicator}）。鼻炎用薬を優先します")
+    if is_hangover:
+        logger.info(f"二日酔いが検出されました（キーワードまたは症状パターン）。二日酔い向け医薬品を優先します")
 
     def _sanitize_text(value) -> str:
         if value is None:
@@ -2392,7 +2555,8 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             'conditions': _sanitize_text(row.get('条件', '')),
             'usage_notes': usage_notes if usage_notes else '用法用量を守ってご使用ください。',
             'base_score': 0.0,
-            'is_allergy_case': is_allergy_case  # アレルギー症状フラグ
+            'is_allergy_case': is_allergy_case,  # アレルギー症状フラグ
+            'is_hangover': is_hangover  # 二日酔いフラグ
         }
 
         # アレルギー症状が検出された場合、風邪薬カテゴリにペナルティを適用
@@ -2406,6 +2570,52 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             candidate['allergy_boost'] = 0.40  # 鼻炎用薬への大幅ブースト（さらに強化）
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"アレルギー症状検出: 鼻炎用薬 {product_name} にブースト +0.40 を適用")
+        
+        # 二日酔いが検出された場合、二日酔い関連医薬品にブーストを適用
+        if is_hangover:
+            # 症状に頭痛が含まれているか確認
+            has_headache = any("頭痛" in str(s.get("name", "")) for s in symptoms)
+            
+            # 五苓散系の医薬品（最優先）
+            if "五苓散" in product_name or "五苓散" in efficacy:
+                # 頭痛がある場合はさらにブースト強化
+                if has_headache:
+                    candidate['hangover_boost'] = 0.55  # 頭痛+二日酔いで五苓散を最優先
+                else:
+                    candidate['hangover_boost'] = 0.50  # 五苓散への非常に大幅なブースト（最優先）
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"二日酔い検出: 五苓散 {product_name} にブースト +{candidate['hangover_boost']:.2f} を適用")
+            # 効能効果に「二日酔い」が明記されている医薬品（次優先）
+            elif any(kw in efficacy.lower() for kw in ["二日酔", "宿酔", "悪酔"]):
+                # L-システイン含有で主効能が美容用途（しみ・そばかす）の場合はブースト減少
+                is_cysteine = "l-システイン" in ingredients.lower() or "システイン" in ingredients.lower()
+                is_beauty_primary = any(kw in efficacy.lower()[:50] for kw in ["しみ", "そばかす", "色素沈着", "美白"])
+                
+                if is_cysteine and is_beauty_primary:
+                    candidate['hangover_boost'] = 0.00  # 美容用途主体のL-システイン製品はブースト大幅減少
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"二日酔い検出: L-システイン（美容主体） {product_name} にブースト +0.00 を適用（大幅減少）")
+                else:
+                    candidate['hangover_boost'] = 0.38  # 二日酔い効能明記医薬品へのブースト
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"二日酔い検出: 二日酔い効能明記 {product_name} にブースト +0.38 を適用")
+            # L-システイン含有医薬品（二日酔い関連効能がある場合のみ）
+            elif ("l-システイン" in ingredients.lower() or "システイン" in ingredients.lower()) and \
+                 any(kw in efficacy.lower() for kw in ["倦怠", "疲労", "肝", "解毒"]):
+                candidate['hangover_boost'] = 0.32  # L-システイン含有医薬品へのブースト
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"二日酔い検出: L-システイン含有（二日酔い関連効能） {product_name} にブースト +0.32 を適用")
+            # 生薬配合の胃腸薬（吐き気・胃もたれ対応）- ブースト強化
+            elif '胃腸薬' in medicine_type and any(kw in efficacy.lower() for kw in ["生薬", "健胃", "消化"]):
+                # 効能に「二日酔のむかつき」「悪酔のむかつき」が含まれる場合はさらにブースト
+                if any(kw in efficacy.lower() for kw in ["二日酔のむかつき", "悪酔のむかつき"]):
+                    candidate['hangover_boost'] = 0.40  # 二日酔い専用胃腸薬へのブースト（強化）
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"二日酔い検出: 二日酔い専用胃腸薬 {product_name} にブースト +0.40 を適用")
+                else:
+                    candidate['hangover_boost'] = 0.28  # 生薬配合胃腸薬へのブースト
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"二日酔い検出: 生薬配合胃腸薬 {product_name} にブースト +0.28 を適用")
 
         # 総合感冒薬（喉向き）の識別
         throat_specificity_level = "none"
@@ -2538,6 +2748,87 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
         if optimal_count > 0:
             logger.info(f"VIP製品名枠: 最適解の外用薬を{optimal_count}件追加しました（フェイタス、バンテリン、サロンパス）")
 
+    # 二日酔い特化医薬品の追加（効能効果から直接検索）
+    # 注意: append_candidate内で二日酔いブーストが設定されるため、
+    # 二日酔い特化医薬品を追加する前に is_hangover フラグが必要
+    if is_hangover:
+        # 二日酔い関連のキーワードで効能効果を検索
+        hangover_efficacy_keywords = ["二日酔", "宿酔", "悪酔", "五苓散", "茵ちん五苓散"]
+        hangover_mask = medicine_df['効能効果'].astype(str).str.contains(
+            '|'.join(hangover_efficacy_keywords), na=False, case=False, regex=True
+        )
+        
+        hangover_candidates = medicine_df[hangover_mask]
+        hangover_count = 0
+        for _, row in hangover_candidates.iterrows():
+            product_name = _sanitize_text(row.get('製品名', ''))
+            manufacturer = _sanitize_text(row.get('メーカー名', ''))
+            key = (product_name, manufacturer)
+            
+            if key not in existing_keys:
+                append_candidate(row)
+                hangover_count += 1
+        
+        if hangover_count > 0:
+            logger.info(f"二日酔い特化医薬品を効能効果から{hangover_count}件追加しました")
+        
+        # L-システイン含有医薬品も追加検索
+        cysteine_keywords = ["l-システイン", "lシステイン", "システイン"]
+        cysteine_mask = medicine_df['成分'].astype(str).str.contains(
+            '|'.join(cysteine_keywords), na=False, case=False, regex=True
+        )
+        
+        cysteine_candidates = medicine_df[cysteine_mask]
+        cysteine_count = 0
+        for _, row in cysteine_candidates.iterrows():
+            product_name = _sanitize_text(row.get('製品名', ''))
+            manufacturer = _sanitize_text(row.get('メーカー名', ''))
+            key = (product_name, manufacturer)
+            
+            # 効能効果に「二日酔い」「肝臓」「解毒」などが含まれるか確認
+            efficacy = str(row.get('効能効果', '')).lower()
+            is_hangover_related = any(kw in efficacy for kw in ["二日酔", "宿酔", "悪酔", "肝", "解毒", "倦怠", "疲労"])
+            
+            if key not in existing_keys and is_hangover_related:
+                append_candidate(row)
+                cysteine_count += 1
+        
+        if cysteine_count > 0:
+            logger.info(f"L-システイン含有医薬品（二日酔い関連）を{cysteine_count}件追加しました")
+        
+        # 二日酔いブーストを後から適用（append_candidate内で設定されなかった場合のフォールバック）
+        for candidate in candidates:
+            if not candidate.get('hangover_boost'):  # まだ設定されていない場合
+                product_name = candidate.get('product_name', '')
+                efficacy = candidate.get('efficacy', '')
+                ingredients = str(candidate.get('ingredients', '')).lower()
+                medicine_type = candidate.get('medicine_type', '')
+                
+                # 五苓散系の医薬品（最優先）
+                if "五苓散" in product_name or "五苓散" in efficacy:
+                    candidate['hangover_boost'] = 0.50
+                # 効能効果に「二日酔い」が明記されている医薬品（次優先）
+                elif any(kw in efficacy.lower() for kw in ["二日酔", "宿酔", "悪酔"]):
+                    # L-システイン含有で主効能が美容用途の場合はブースト減少
+                    is_cysteine = "l-システイン" in ingredients or "システイン" in ingredients
+                    is_beauty_primary = any(kw in efficacy.lower()[:50] for kw in ["しみ", "そばかす", "色素沈着", "美白"])
+                    
+                    if is_cysteine and is_beauty_primary:
+                        candidate['hangover_boost'] = 0.10  # 美容主体は大幅減少
+                    else:
+                        candidate['hangover_boost'] = 0.38
+                # L-システイン含有医薬品（二日酔い関連効能がある場合）
+                elif ("l-システイン" in ingredients or "システイン" in ingredients) and \
+                     any(kw in efficacy.lower() for kw in ["倦怠", "疲労", "肝", "解毒"]):
+                    candidate['hangover_boost'] = 0.38
+                # 生薬配合の胃腸薬（吐き気・胃もたれ対応）- ブースト強化
+                elif '胃腸薬' in medicine_type and any(kw in efficacy.lower() for kw in ["生薬", "健胃", "消化"]):
+                    # 効能に「二日酔のむかつき」「悪酔のむかつき」が含まれる場合はさらにブースト
+                    if any(kw in efficacy.lower() for kw in ["二日酔のむかつき", "悪酔のむかつき"]):
+                        candidate['hangover_boost'] = 0.40
+                    else:
+                        candidate['hangover_boost'] = 0.28
+
     logger.info(f"候補医薬品数: {len(candidates)} (フィルタリング後)")
     return candidates
 
@@ -2611,6 +2902,22 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
     efficacy_text_raw = candidate.get('efficacy', '')
     if not efficacy_text_raw:
         return 0.0
+    
+    # 二日酔い特別処理：効能効果に「二日酔」「宿酔」「悪酔」が含まれている場合
+    efficacy_lower = efficacy_text_raw.lower()
+    hangover_keywords_in_efficacy = ["二日酔", "宿酔", "悪酔"]
+    has_hangover_efficacy = any(kw in efficacy_lower for kw in hangover_keywords_in_efficacy)
+    
+    # NLU結果に「二日酔い」症状が含まれているか確認
+    symptoms = nlu_result.get("symptoms", [])
+    symptom_names = [s.get("name") for s in symptoms]
+    has_hangover_symptom = any("二日酔" in str(name) for name in symptom_names)
+    
+    # 二日酔い症状と二日酔い効能が一致する場合、高スコアを付与
+    if has_hangover_symptom and has_hangover_efficacy:
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"✅ 二日酔い直接マッチ: {candidate.get('product_name', '')} (効能: {efficacy_text_raw[:100]}...)")
+        return 0.95  # 二日酔い特化医薬品には高スコア
     
     # 効能テキストを句読点で分割してから正規化
     # 「激しい咳、咽頭痛の緩解」→ 「激しい咳」「咽頭痛の緩解」
@@ -3112,6 +3419,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     allergy_penalty = candidate.get('allergy_penalty', 0.0)
     allergy_boost = candidate.get('allergy_boost', 0.0)
     
+    # 二日酔いブースト（二日酔いが検出された場合）
+    hangover_boost = candidate.get('hangover_boost', 0.0)
+    
     # ボーナス/ペナルティの影響を制限（スコアのばらつきを確保しつつ、特化医薬品の優位性を保つ）
     # 特化医薬品のボーナスは最大0.30まで許可（症状特化型ブースト、throat_bonus）- 総合感冒薬ボーナス強化のため上限を0.30に変更
     # 不適切な医薬品のペナルティは最大-0.30まで許可（症状特異性ペナルティ、リスク成分ペナルティ）
@@ -3131,6 +3441,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     
     limited_allergy_penalty = max(-0.20, min(0.0, allergy_penalty))  # 中程度のペナルティ
     limited_allergy_boost = max(0.0, min(0.20, allergy_boost))  # 中程度のボーナス
+    limited_hangover_boost = max(0.0, min(0.55, hangover_boost))  # 二日酔い医薬品への非常に大幅なブースト（五苓散+頭痛優先）
     limited_symptom_specificity_penalty = max(-0.30, min(0.0, symptom_specificity_penalty))  # 不適切な医薬品を確実に下げる
     limited_risk_penalty = max(-0.30, min(0.0, risk_penalty))  # リスク成分のペナルティを強化
     
@@ -3181,61 +3492,72 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
     # adjustment_scoreの計算前に実行する必要がある
     from scoring_utils import _is_kampo_or_herbal_medicine, _is_goreisan
     kampo_adjustment = 0.0
+    
+    # 二日酔いの場合、漢方薬ペナルティを無効化
+    is_hangover_case = candidate.get('is_hangover', False)
+    hangover_boost = candidate.get('hangover_boost', 0.0)
+    
     if _is_kampo_or_herbal_medicine(candidate):
-        # 症状パターンに基づく漢方薬ボーナス/ペナルティ
-        pattern_info = match_symptom_pattern(nlu_result)
-        product_name = candidate.get('product_name', '')
-        is_goreisan = _is_goreisan(candidate)
-        is_kakkonto = "葛根湯" in product_name
-        
-        # 症状パターンごとの特別な処理
-        if pattern_info:
-            # 「のど痛み+発熱」の場合、葛根湯には-0.10のペナルティを適用（西洋薬を優先）
-            if frozenset({"のどの痛み", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION:
-                if is_kakkonto:
+        # 二日酔いが検出されている場合、漢方薬ペナルティを適用しない
+        if is_hangover_case or hangover_boost > 0:
+            kampo_adjustment = 0.0
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"二日酔いのため漢方薬ペナルティを無効化: {candidate.get('product_name', '')}")
+        else:
+            # 症状パターンに基づく漢方薬ボーナス/ペナルティ
+            pattern_info = match_symptom_pattern(nlu_result)
+            product_name = candidate.get('product_name', '')
+            is_goreisan = _is_goreisan(candidate)
+            is_kakkonto = "葛根湯" in product_name
+            
+            # 症状パターンごとの特別な処理
+            if pattern_info:
+                # 「のど痛み+発熱」の場合、葛根湯には-0.10のペナルティを適用（西洋薬を優先）
+                if frozenset({"のどの痛み", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION:
+                    if is_kakkonto:
+                        kampo_adjustment = -0.10
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"のど痛み+発熱のため葛根湯にペナルティ: {product_name} = -0.10")
+                    else:
+                        # その他の漢方薬は既にpattern_bonusで処理済み
+                        kampo_adjustment = 0.0
+                # 単一症状（発熱のみ、のど痛みのみ）の場合、漢方薬は-0.10のペナルティ
+                elif len(symptom_names) == 1:
                     kampo_adjustment = -0.10
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"のど痛み+発熱のため葛根湯にペナルティ: {product_name} = -0.10")
-                else:
-                    # その他の漢方薬は既にpattern_bonusで処理済み
+                        logger.debug(f"単一症状のため漢方薬にペナルティ: {product_name} = -0.10")
+                # 風邪の初期症状（悪寒+発熱）の場合、葛根湯に+0.15のボーナス
+                elif frozenset({"悪寒", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION and is_kakkonto:
+                    # 既にpattern_bonusで処理済み
                     kampo_adjustment = 0.0
-            # 単一症状（発熱のみ、のど痛みのみ）の場合、漢方薬は-0.10のペナルティ
-            elif len(symptom_names) == 1:
-                kampo_adjustment = -0.10
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"単一症状のため漢方薬にペナルティ: {product_name} = -0.10")
-            # 風邪の初期症状（悪寒+発熱）の場合、葛根湯に+0.15のボーナス
-            elif frozenset({"悪寒", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION and is_kakkonto:
-                # 既にpattern_bonusで処理済み
-                kampo_adjustment = 0.0
-            # 二日酔い（頭痛+むくみ+だるさ）の場合、五苓散に+0.20のボーナス
-            elif is_goreisan and any(
-                pattern_key in SYMPTOM_PATTERN_OPTIMIZATION 
-                for pattern_key in [
-                    frozenset({"頭痛", "むくみ", "だるさ"}),
-                    frozenset({"頭痛", "むくみ"}),
-                    frozenset({"頭痛", "だるさ"}),
-                    frozenset({"むくみ", "だるさ"}),
-                    frozenset({"頭痛", "吐き気"}),
-                    frozenset({"頭痛", "だるさ", "吐き気"})
-                ]
-            ):
-                # 既にpattern_bonusで処理済み
-                kampo_adjustment = 0.0
-            # 胃腸症状（胃もたれ+むかつき）の場合、生薬配合の胃腸薬に+0.15のボーナス
-            elif frozenset({"吐き気", "胃もたれ", "むかつき"}) in SYMPTOM_PATTERN_OPTIMIZATION:
-                # 既にpattern_bonusで処理済み
-                kampo_adjustment = 0.0
-            # その他の症状パターン: 西洋薬を優先（漢方薬は-0.05のペナルティ）
+                # 二日酔い（頭痛+むくみ+だるさ）の場合、五苓散に+0.20のボーナス
+                elif is_goreisan and any(
+                    pattern_key in SYMPTOM_PATTERN_OPTIMIZATION 
+                    for pattern_key in [
+                        frozenset({"頭痛", "むくみ", "だるさ"}),
+                        frozenset({"頭痛", "むくみ"}),
+                        frozenset({"頭痛", "だるさ"}),
+                        frozenset({"むくみ", "だるさ"}),
+                        frozenset({"頭痛", "吐き気"}),
+                        frozenset({"頭痛", "だるさ", "吐き気"})
+                    ]
+                ):
+                    # 既にpattern_bonusで処理済み
+                    kampo_adjustment = 0.0
+                # 胃腸症状（胃もたれ+むかつき）の場合、生薬配合の胃腸薬に+0.15のボーナス
+                elif frozenset({"吐き気", "胃もたれ", "むかつき"}) in SYMPTOM_PATTERN_OPTIMIZATION:
+                    # 既にpattern_bonusで処理済み
+                    kampo_adjustment = 0.0
+                # その他の症状パターン: 西洋薬を優先（漢方薬は-0.05のペナルティ）
+                else:
+                    kampo_adjustment = -0.05
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"その他の症状パターンのため漢方薬にペナルティ: {product_name} = -0.05")
             else:
-                kampo_adjustment = -0.05
+                # 症状パターンがマッチしない場合、ペナルティを適用（西洋薬を優先）
+                kampo_adjustment = -0.2
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"その他の症状パターンのため漢方薬にペナルティ: {product_name} = -0.05")
-        else:
-            # 症状パターンがマッチしない場合、ペナルティを適用（西洋薬を優先）
-            kampo_adjustment = -0.2
-            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"症状パターンがマッチしないため漢方薬にペナルティ: {product_name} = -0.2")
+                    logger.debug(f"症状パターンがマッチしないため漢方薬にペナルティ: {product_name} = -0.2")
     else:
         kampo_adjustment = 0.0
     
@@ -3248,6 +3570,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         limited_symptom_boost +
         limited_allergy_penalty +
         limited_allergy_boost +
+        limited_hangover_boost +  # 二日酔いブーストを追加
         limited_body_part_score +
         limited_pattern_bonus +
         limited_dosage_form_bonus +
@@ -3315,6 +3638,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
             "multi_symptom_bonus": multi_symptom_bonus,  # MULTI_SYMPTOM_COMBINATIONSのボーナス（表示用）
             "allergy_penalty": limited_allergy_penalty,  # 制限後のアレルギーペナルティ
             "allergy_boost": limited_allergy_boost,  # 制限後のアレルギーブースト
+            "hangover_boost": limited_hangover_boost,  # 制限後の二日酔いブースト
             "base_score": base_score,  # 基本スコア（デバッグ用）
             "adjusted_base_score": adjusted_base_score,  # 調整後の基本スコア（デバッグ用）
             "adjustment_score": adjustment_score,  # 調整スコア（デバッグ用）
@@ -4315,12 +4639,21 @@ def rule_based_recommendation(
     if candidates:
         has_motion_sickness = _has_motion_sickness_symptom(nlu_result, user_text)
         before_motion_filter = len(candidates)
-        if not has_motion_sickness:
-            # 乗り物酔いの症状がない場合は、乗り物酔い薬を除外
+        
+        # 二日酔いが検出されている場合は、乗り物酔い薬を強制的に除外
+        user_text_lower = user_text.lower()
+        hangover_keywords = ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ"]
+        is_hangover_case = any(kw in user_text_lower for kw in hangover_keywords)
+        
+        if is_hangover_case or not has_motion_sickness:
+            # 二日酔いの場合、または乗り物酔いの症状がない場合は、乗り物酔い薬を除外
             candidates = [c for c in candidates if not _is_motion_sickness_medicine(c)]
             after_motion_filter = len(candidates)
             if before_motion_filter != after_motion_filter:
-                logger.info(f"乗り物酔い症状がないため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
+                if is_hangover_case:
+                    logger.info(f"二日酔いが検出されたため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
+                else:
+                    logger.info(f"乗り物酔い症状がないため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
         else:
             logger.info("乗り物酔い症状が検出されたため、乗り物酔い薬も推奨対象に含めます")
         
@@ -4389,9 +4722,12 @@ def rule_based_recommendation(
                 elif "風邪薬" in medicine_type:
                     symptom_penalty = 0.25
         
+        # 二日酔いブーストを簡易スコアにも適用
+        hangover_quick_boost = candidate.get('hangover_boost', 0.0)
+        
         # 年齢適合性も含めて精度向上（重みは症状:効能:年齢 = 0.5:0.3:0.2）
-        # 症状パターンボーナスも追加
-        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus)
+        # 症状パターンボーナスと二日酔いブーストも追加
+        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus + hangover_quick_boost)
     
     # 簡易スコアで上位N×250件を選別（異なる薬効カテゴリの多様性確保）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
@@ -4438,17 +4774,27 @@ def rule_based_recommendation(
         import math
         for _, candidate in top_candidates_for_scoring:
             raw_score = candidate.get('raw_score', 0.0)
+            score_breakdown = candidate.get('score_breakdown', {})
+            hangover_boost = score_breakdown.get('hangover_boost', 0.0)
+            is_hangover_medicine = candidate.get('is_hangover', False)
             
-            # 0.5以下のスコアは0.0にマッピング
-            if raw_score <= 0.5:
-                normalized_score = 0.0
+            # 二日酔い医薬品の場合、閾値を下げる
+            min_threshold = 0.3 if (hangover_boost > 0 or is_hangover_medicine) else 0.5
+            
+            # 閾値以下のスコアは0.0にマッピング
+            if raw_score <= min_threshold:
+                # 二日酔い医薬品で0.2以上の場合は、最低限のスコアを与える
+                if (hangover_boost > 0 or is_hangover_medicine) and raw_score >= 0.2:
+                    normalized_score = 0.4  # 最低限の推奨可能スコア
+                else:
+                    normalized_score = 0.0
             else:
                 # Min-Max正規化: (raw_score - min) / (max - min)
                 if score_range > 0:
                     min_max_normalized = (raw_score - min_raw_score) / score_range
                 else:
                     # 全て同じスコアの場合、1.0に設定
-                    min_max_normalized = 1.0 if raw_score > 0.5 else 0.0
+                    min_max_normalized = 1.0 if raw_score > min_threshold else 0.0
                 
                 # 非線形変換（平方根）で差を拡大
                 normalized_score = math.sqrt(min_max_normalized) if min_max_normalized >= 0.0 else 0.0
