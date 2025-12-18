@@ -536,8 +536,9 @@ def _is_kampo_or_herbal_medicine(candidate: Dict) -> bool:
     ingredients = str(candidate.get('ingredients', '')).lower()
     medicine_type = str(candidate.get('medicine_type', '')).lower()
     
-    # 漢方・生薬のキーワード
-    kampo_keywords = ["漢方", "生薬", "エキス", "湯", "散", "丸", "膏", "桂枝", "茯苓", "釣藤", "葛根"]
+    # 漢方・生薬のキーワード（拡張版）
+    kampo_keywords = ["漢方", "生薬", "エキス", "湯", "散", "丸", "膏", "桂枝", "茯苓", "釣藤", "葛根",
+                     "カッコン", "カンゾウ", "ケイヒ", "タイソウ", "ショウキョウ", "シャクヤク", "マオウ"]
     
     # 製品名または医薬品の種類に漢方のキーワードが含まれているか
     if any(kw in product_name or kw in medicine_type for kw in kampo_keywords):
@@ -549,6 +550,55 @@ def _is_kampo_or_herbal_medicine(candidate: Dict) -> bool:
         return True
     
     return False
+
+def _is_goreisan(candidate: Dict) -> bool:
+    """
+    五苓散かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        五苓散の場合True
+    """
+    product_name = str(candidate.get('product_name', '')).lower()
+    ingredients = str(candidate.get('ingredients', '')).lower()
+    
+    return "五苓散" in product_name or "五苓散" in ingredients
+
+def _contains_l_cysteine(candidate: Dict) -> bool:
+    """
+    L-システインを含む医薬品かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        L-システインを含む場合True
+    """
+    ingredients = str(candidate.get('ingredients', '')).lower()
+    
+    return "l-システイン" in ingredients or "システイン" in ingredients
+
+def _is_herbal_stomach_medicine(candidate: Dict) -> bool:
+    """
+    生薬配合の胃腸薬かどうかを判定
+    
+    Args:
+        candidate: 候補医薬品の情報
+    
+    Returns:
+        生薬配合の胃腸薬の場合True
+    """
+    medicine_type = str(candidate.get('medicine_type', '')).lower()
+    ingredients = str(candidate.get('ingredients', '')).lower()
+    
+    if '胃腸薬' not in medicine_type:
+        return False
+    
+    # 生薬成分のキーワード
+    herbal_ingredients = ["ショウキョウ", "オウバク", "サンショウ", "カンゾウ", "ケイヒ", "ニンジン", "ブクリョウ"]
+    return any(herb.lower() in ingredients for herb in herbal_ingredients)
 
 def _parse_kampo_efficacy(efficacy_text: str) -> Dict[str, Any]:
     """
