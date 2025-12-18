@@ -670,6 +670,153 @@ MULTI_SYMPTOM_COMBINATIONS = {
     }
 }
 
+# 症状パターンごとの最適化定義
+SYMPTOM_PATTERN_OPTIMIZATION = {
+    # のど痛み+発熱
+    frozenset({"のどの痛み", "発熱"}): {
+        "priority_order": ["総合感冒薬（喉向き）", "解熱鎮痛薬", "外用薬（のど）", "葛根湯"],
+        "bonuses": {
+            "総合感冒薬（喉向き・成分あり）": 0.25,
+            "総合感冒薬（喉向き・効能のみ）": 0.15,
+            "解熱鎮痛薬": 0.12,
+            "外用薬（のど）": 0.12,
+            "葛根湯": 0.0  # ペナルティなし
+        }
+    },
+    # 頭痛+発熱
+    frozenset({"頭痛", "発熱"}): {
+        "priority_order": ["解熱鎮痛薬", "総合感冒薬"],
+        "bonuses": {
+            "解熱鎮痛薬": 0.15,
+            "総合感冒薬": 0.10
+        }
+    },
+    # 咳+痰
+    frozenset({"咳", "痰"}): {
+        "priority_order": ["風邪薬（鎮咳去痰薬）", "総合感冒薬"],
+        "bonuses": {
+            "風邪薬": 0.20,
+            "総合感冒薬": 0.10
+        }
+    },
+    # 鼻水+鼻づまり
+    frozenset({"鼻水", "鼻づまり"}): {
+        "priority_order": ["鼻炎用薬", "総合感冒薬"],
+        "bonuses": {
+            "鼻炎用薬": 0.20,
+            "総合感冒薬": 0.10
+        }
+    },
+    # 胃痛+胸やけ
+    frozenset({"胃痛", "胸やけ"}): {
+        "priority_order": ["胃薬", "総合胃腸薬"],
+        "bonuses": {
+            "胃薬": 0.15,
+            "総合胃腸薬": 0.10
+        }
+    },
+    # 便秘（単一症状）
+    frozenset({"便秘"}): {
+        "priority_order": ["便秘薬"],
+        "bonuses": {
+            "便秘薬": 0.15
+        },
+        "penalties": {
+            "リスク成分（センナ、ヒマシ油）": -0.20
+        }
+    },
+    # 下痢（単一症状）
+    frozenset({"下痢"}): {
+        "priority_order": ["下痢止め薬"],
+        "bonuses": {
+            "下痢止め薬": 0.15
+        }
+    },
+    # ニキビ（単一症状）
+    frozenset({"ニキビ"}): {
+        "priority_order": ["外用薬（皮膚）", "内服薬"],
+        "bonuses": {
+            "外用薬（皮膚）": 0.20,
+            "内服薬": 0.05
+        }
+    },
+    # やけど（単一症状）
+    frozenset({"やけど"}): {
+        "priority_order": ["外用薬（皮膚）のやけど専用薬"],
+        "bonuses": {
+            "外用薬（皮膚）": 0.25
+        }
+    },
+    # 切り傷（単一症状）
+    frozenset({"切り傷"}): {
+        "priority_order": ["外用薬（皮膚）の創傷保護剤"],
+        "bonuses": {
+            "外用薬（皮膚）": 0.25
+        }
+    },
+    # 二日酔い（頭痛+むくみ+だるさ）
+    frozenset({"頭痛", "むくみ", "だるさ"}): {
+        "priority_order": ["五苓散", "L-システイン含有医薬品"],
+        "bonuses": {
+            "五苓散": 0.20,
+            "L-システイン含有医薬品": 0.15
+        }
+    },
+    # 二日酔い（吐き気+胃もたれ+むかつき）
+    frozenset({"吐き気", "胃もたれ", "むかつき"}): {
+        "priority_order": ["生薬配合の胃腸薬・健胃消化薬"],
+        "bonuses": {
+            "生薬配合の胃腸薬": 0.15
+        }
+    },
+    # 二日酔い（複数症状の組み合わせ）
+    frozenset({"頭痛", "むくみ"}): {
+        "priority_order": ["五苓散", "L-システイン含有医薬品"],
+        "bonuses": {
+            "五苓散": 0.20,
+            "L-システイン含有医薬品": 0.15
+        }
+    },
+    frozenset({"頭痛", "だるさ"}): {
+        "priority_order": ["五苓散", "L-システイン含有医薬品"],
+        "bonuses": {
+            "五苓散": 0.20,
+            "L-システイン含有医薬品": 0.15
+        }
+    },
+    frozenset({"むくみ", "だるさ"}): {
+        "priority_order": ["五苓散", "L-システイン含有医薬品"],
+        "bonuses": {
+            "五苓散": 0.20,
+            "L-システイン含有医薬品": 0.15
+        }
+    },
+    # 二日酔い（頭痛+吐き気）- よくある組み合わせ
+    frozenset({"頭痛", "吐き気"}): {
+        "priority_order": ["五苓散", "生薬配合の胃腸薬"],
+        "bonuses": {
+            "五苓散": 0.15,
+            "生薬配合の胃腸薬": 0.12
+        }
+    },
+    # 二日酔い（頭痛+だるさ+吐き気）- 複合症状
+    frozenset({"頭痛", "だるさ", "吐き気"}): {
+        "priority_order": ["五苓散", "生薬配合の胃腸薬"],
+        "bonuses": {
+            "五苓散": 0.18,
+            "生薬配合の胃腸薬": 0.12
+        }
+    },
+    # 風邪の初期症状（悪寒+発熱）
+    frozenset({"悪寒", "発熱"}): {
+        "priority_order": ["葛根湯", "総合感冒薬"],
+        "bonuses": {
+            "葛根湯": 0.15,
+            "総合感冒薬": 0.10
+        }
+    }
+}
+
 THROAT_SYMPTOM_TOKENS = {normalize_text(term) for term in [
     "のどの痛み",
     "喉の痛み",
@@ -698,6 +845,16 @@ THROAT_LIQUID_TOKENS = {normalize_text(term) for term in [
     "咳止め液"
 ]}
 
+# 喉向き総合感冒薬の識別用成分リスト
+THROAT_SPECIFIC_INGREDIENTS = [
+    "トラネキサム酸",
+    "カンゾウエキス",
+    "グリチルリチン酸",
+    "アズレンスルホン酸ナトリウム",
+    "アズレン",
+    "ポピドンヨード"
+]
+
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
@@ -713,6 +870,14 @@ _max_medicine_type_cache_size = 50
 # 翻訳キャッシュ
 _translation_cache = {}
 _max_translation_cache_size = 200
+
+# 症状パターンマッチングキャッシュ
+_symptom_pattern_cache = {}
+_max_symptom_pattern_cache_size = 200
+
+# 成分抽出キャッシュ
+_ingredient_extraction_cache = {}
+_max_ingredient_extraction_cache_size = 500
 
 def get_cached_nlu_result(user_text: str, session_id: str = None) -> Optional[Dict]:
     """
@@ -1617,9 +1782,16 @@ def _enforce_symptom_match_threshold(
 
 
 def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
-    """成分表から主要成分を抽出し、比較用に正規化する"""
+    """成分表から主要成分を抽出し、比較用に正規化する（キャッシュ対応）"""
     if not ingredients or not isinstance(ingredients, str):
         return []
+
+    # キャッシュキーを作成
+    cache_key = (ingredients, max_count)
+    
+    # キャッシュをチェック
+    if cache_key in _ingredient_extraction_cache:
+        return _ingredient_extraction_cache[cache_key]
 
     parts = re.split(r"[\n、,/，／・]+", ingredients)
     normalized = []
@@ -1630,10 +1802,19 @@ def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
         normalized.append(token.lower())
         if len(normalized) >= max_count:
             break
+    
+    # キャッシュに保存
+    if len(_ingredient_extraction_cache) >= _max_ingredient_extraction_cache_size:
+        # 最も古いエントリを削除（FIFO方式）
+        oldest_key = next(iter(_ingredient_extraction_cache))
+        del _ingredient_extraction_cache[oldest_key]
+    
+    _ingredient_extraction_cache[cache_key] = normalized
+    
     return normalized
 
 
-def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similarity_threshold: float = 0.5) -> List[Dict]:
+def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similarity_threshold: float = 0.3) -> List[Dict]:
     """主要成分が重複しすぎないように候補を再選別する（剤形多様性も考慮）"""
     if len(candidates) <= top_n:
         return candidates
@@ -1666,6 +1847,13 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     # 液剤が見つかった場合は最後に追加するために保留
     reserved_liquid = liquid_candidate
 
+    # 葛根湯系の同一成分グループを識別する関数
+    def _is_kakkonto_group(ingredients: set) -> bool:
+        """葛根湯系の成分グループかどうかを判定"""
+        kakkonto_keywords = ["カッコン", "カンゾウ", "ケイヒ", "タイソウ", "ショウキョウ", "シャクヤク", "マオウ"]
+        ingredients_str = ' '.join(ingredients).lower()
+        return any(kw.lower() in ingredients_str for kw in kakkonto_keywords)
+
     for candidate in filtered_candidates:
         # 保留中の液剤はスキップ
         if reserved_liquid and candidate == reserved_liquid:
@@ -1679,10 +1867,18 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                 continue
             intersection = existing_set & main_ingredients
             if not intersection:
+                # 葛根湯系の同一成分グループチェック
+                if _is_kakkonto_group(existing_set) and _is_kakkonto_group(main_ingredients):
+                    overlap = True
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"葛根湯系の同一成分グループとして重複を検出: {candidate.get('product_name', '')}")
+                    break
                 continue
             overlap_ratio = len(intersection) / float(min(len(existing_set), len(main_ingredients)))
             if overlap_ratio >= similarity_threshold:
                 overlap = True
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"成分重複を検出（重複率: {overlap_ratio:.2f}）: {candidate.get('product_name', '')}")
                 break
 
         if not overlap and len(selected) < (top_n - 1 if reserved_liquid else top_n):
@@ -2211,6 +2407,46 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"アレルギー症状検出: 鼻炎用薬 {product_name} にブースト +0.40 を適用")
 
+        # 総合感冒薬（喉向き）の識別
+        throat_specificity_level = "none"
+        if '風邪薬' in medicine_type:
+            has_throat_efficacy = efficacy and any(keyword in efficacy for keyword in ['のどの痛み', 'のどの', 'のど', '喉', '咽頭'])
+            if has_throat_efficacy:
+                # 成分をチェック
+                ingredients_lower = str(ingredients).lower() if ingredients else ""
+                ingredients_normalized = normalize_text(ingredients_lower)
+                has_throat_ingredient = any(
+                    normalize_text(ing) in ingredients_normalized 
+                    for ing in THROAT_SPECIFIC_INGREDIENTS
+                )
+                if has_throat_ingredient:
+                    throat_specificity_level = "component_and_efficacy"
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"総合感冒薬（喉向き・成分あり）を識別: {product_name} (成分: {[ing for ing in THROAT_SPECIFIC_INGREDIENTS if normalize_text(ing) in ingredients_normalized]})")
+                else:
+                    throat_specificity_level = "efficacy_only"
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"総合感冒薬（喉向き・効能のみ）を識別: {product_name} (成分なし)")
+            else:
+                # 効能にのど関連がない場合でも、製品名や成分から判断
+                product_name_lower = str(product_name).lower()
+                has_throat_keyword = any(keyword in product_name_lower for keyword in ['のど', '喉', '咽頭', 'トローチ', 'スプレー', 'うがい'])
+                if has_throat_keyword:
+                    ingredients_normalized = normalize_text(str(ingredients).lower() if ingredients else "")
+                    has_throat_ingredient = any(
+                        normalize_text(ing) in ingredients_normalized 
+                        for ing in THROAT_SPECIFIC_INGREDIENTS
+                    )
+                    if has_throat_ingredient:
+                        throat_specificity_level = "component_and_efficacy"
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"総合感冒薬（喉向き・成分あり）を識別（製品名から）: {product_name}")
+                    else:
+                        throat_specificity_level = "efficacy_only"
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"総合感冒薬（喉向き・効能のみ）を識別（製品名から）: {product_name}")
+        candidate['throat_specificity_level'] = throat_specificity_level
+
         if contains_risk and risk_info:
             candidate['risk_ingredient'] = risk_name
             candidate['risk_warning'] = risk_info.get("warning", "")
@@ -2519,6 +2755,69 @@ def calculate_body_part_match_score(candidate: Dict, user_body_part: Optional[st
             )
         return -0.5
 
+def match_symptom_pattern(nlu_result: Dict) -> Optional[Dict]:
+    """
+    症状パターンをマッチングして、最適化情報を返す（キャッシュ対応）
+    
+    Args:
+        nlu_result: NLU解析結果
+    
+    Returns:
+        マッチしたパターンの最適化情報、またはNone
+    """
+    symptoms = nlu_result.get("symptoms", [])
+    if not symptoms:
+        return None
+    
+    symptom_names = [s.get("name") for s in symptoms]
+    
+    # 症状名の正規化（「疲労感」→「だるさ」など）
+    normalized_symptom_names = []
+    symptom_mapping = {
+        "疲労感": "だるさ",
+        "倦怠感": "だるさ",
+        "疲れ": "だるさ",
+        "だるい": "だるさ",
+    }
+    for name in symptom_names:
+        normalized_name = symptom_mapping.get(name, name)
+        if normalized_name != name:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状名を正規化: {name} → {normalized_name}")
+        normalized_symptom_names.append(normalized_name)
+    
+    symptom_set = frozenset(normalized_symptom_names)
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"症状パターンマッチング: 元の症状={symptom_names}, 正規化後={list(symptom_set)}")
+    
+    # キャッシュキーを作成（正規化後の症状セットを使用）
+    cache_key = tuple(sorted(symptom_set))
+    
+    # キャッシュをチェック
+    if cache_key in _symptom_pattern_cache:
+        return _symptom_pattern_cache[cache_key]
+    
+    # 完全一致をチェック
+    if symptom_set in SYMPTOM_PATTERN_OPTIMIZATION:
+        result = SYMPTOM_PATTERN_OPTIMIZATION[symptom_set]
+    else:
+        # 部分一致をチェック（症状がパターンのサブセットの場合）
+        result = None
+        for pattern_symptoms, pattern_info in SYMPTOM_PATTERN_OPTIMIZATION.items():
+            if symptom_set.issubset(pattern_symptoms):
+                result = pattern_info
+                break
+    
+    # キャッシュに保存
+    if len(_symptom_pattern_cache) >= _max_symptom_pattern_cache_size:
+        # 最も古いエントリを削除（FIFO方式）
+        oldest_key = next(iter(_symptom_pattern_cache))
+        del _symptom_pattern_cache[oldest_key]
+    
+    _symptom_pattern_cache[cache_key] = result
+    
+    return result
+
 def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> Dict:
     """
     最終スコアを計算（全スコアを統合）
@@ -2616,47 +2915,220 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"リスク成分ペナルティ: {candidate.get('risk_ingredient')} = {risk_penalty}")
     
+    # 症状パターンマッチングによる最適化ボーナス/ペナルティ
+    pattern_bonus = 0.0
+    pattern_info = match_symptom_pattern(nlu_result)
+    if pattern_info:
+        bonuses = pattern_info.get("bonuses", {})
+        penalties = pattern_info.get("penalties", {})
+        product_name = candidate.get('product_name', '')
+        ingredients = str(candidate.get('ingredients', '')).lower()
+        medicine_type = candidate.get('medicine_type', '')
+        throat_specificity_level = candidate.get('throat_specificity_level', 'none')
+        
+        # 総合感冒薬（喉向き）のボーナス
+        if "総合感冒薬（喉向き・成分あり）" in bonuses and throat_specificity_level == "component_and_efficacy":
+            pattern_bonus += bonuses["総合感冒薬（喉向き・成分あり）"]
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状パターンボーナス（総合感冒薬・喉向き・成分あり）: {product_name} = +{bonuses['総合感冒薬（喉向き・成分あり）']}")
+        elif "総合感冒薬（喉向き・効能のみ）" in bonuses and throat_specificity_level == "efficacy_only":
+            pattern_bonus += bonuses["総合感冒薬（喉向き・効能のみ）"]
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状パターンボーナス（総合感冒薬・喉向き・効能のみ）: {product_name} = +{bonuses['総合感冒薬（喉向き・効能のみ）']}")
+        
+        # 五苓散の識別とボーナス
+        if "五苓散" in bonuses:
+            if "五苓散" in product_name or "五苓散" in ingredients:
+                pattern_bonus += bonuses["五苓散"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（五苓散）: {product_name} = +{bonuses['五苓散']}")
+        
+        # L-システイン含有医薬品の識別とボーナス
+        if "L-システイン含有医薬品" in bonuses:
+            if "l-システイン" in ingredients or "システイン" in ingredients:
+                pattern_bonus += bonuses["L-システイン含有医薬品"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（L-システイン含有）: {product_name} = +{bonuses['L-システイン含有医薬品']}")
+        
+        # 生薬配合の胃腸薬の識別とボーナス
+        if "生薬配合の胃腸薬" in bonuses:
+            if '胃腸薬' in medicine_type:
+                # 生薬成分のキーワード
+                herbal_ingredients = ["ショウキョウ", "オウバク", "サンショウ", "カンゾウ", "ケイヒ", "ニンジン", "ブクリョウ"]
+                has_herbal = any(herb.lower() in ingredients for herb in herbal_ingredients)
+                if has_herbal:
+                    pattern_bonus += bonuses["生薬配合の胃腸薬"]
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"症状パターンボーナス（生薬配合の胃腸薬）: {product_name} = +{bonuses['生薬配合の胃腸薬']}")
+        
+        # 葛根湯の識別とボーナス
+        if "葛根湯" in bonuses:
+            from scoring_utils import _is_kampo_or_herbal_medicine
+            if _is_kampo_or_herbal_medicine(candidate) and "葛根湯" in product_name:
+                pattern_bonus += bonuses["葛根湯"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（葛根湯）: {product_name} = +{bonuses['葛根湯']}")
+        
+        # 医薬品種類ごとのボーナス
+        for med_type, bonus_value in bonuses.items():
+            if med_type in medicine_type:
+                pattern_bonus += bonus_value
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（{med_type}）: {product_name} = +{bonus_value}")
+        
+        # リスク成分のペナルティ（便秘薬のセンナ、ヒマシ油など）
+        if "リスク成分（センナ、ヒマシ油）" in penalties:
+            if "センナ" in ingredients or "ヒマシ油" in ingredients or "カストル油" in ingredients:
+                risk_penalty += penalties["リスク成分（センナ、ヒマシ油）"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンペナルティ（リスク成分）: {product_name} = {penalties['リスク成分（センナ、ヒマシ油）']}")
+        
+        # 二日酔いの場合、乗り物酔い薬へのペナルティ
+        # 二日酔いの症状パターンがマッチした場合、乗り物酔い薬にペナルティを適用
+        hangover_patterns = [
+            frozenset({"頭痛", "むくみ", "だるさ"}),
+            frozenset({"頭痛", "むくみ"}),
+            frozenset({"頭痛", "だるさ"}),
+            frozenset({"むくみ", "だるさ"}),
+            frozenset({"頭痛", "吐き気"}),
+            frozenset({"頭痛", "だるさ", "吐き気"})
+        ]
+        symptom_list = [s.get("name") for s in nlu_result.get("symptoms", [])]
+        # 症状名の正規化（「疲労感」→「だるさ」など）
+        symptom_mapping = {
+            "疲労感": "だるさ",
+            "倦怠感": "だるさ",
+            "疲れ": "だるさ",
+            "だるい": "だるさ",
+        }
+        # 各症状を正規化してからセットに変換（重複を除去）
+        normalized_symptom_names = [symptom_mapping.get(name, name) for name in symptom_list]
+        normalized_symptom_set = frozenset(normalized_symptom_names)
+        
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"二日酔いパターンチェック: 元の症状={symptom_list}, 正規化後={list(normalized_symptom_set)}")
+        
+        # 二日酔いの症状パターンがマッチするかチェック
+        # パターンの症状がすべて正規化後の症状セットに含まれているか確認
+        is_hangover_pattern = False
+        matched_pattern = None
+        for pattern in hangover_patterns:
+            # パターンのすべての症状が正規化後の症状セットに含まれているか
+            if pattern.issubset(normalized_symptom_set):
+                is_hangover_pattern = True
+                matched_pattern = pattern
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"二日酔い症状パターンマッチ: {pattern} ⊆ {normalized_symptom_set}")
+                break
+        
+        if is_hangover_pattern:
+            # 二日酔いの症状パターンがマッチした場合
+            if _is_motion_sickness_medicine(candidate):
+                # 乗り物酔い薬にペナルティを適用
+                pattern_bonus -= 0.20  # 乗り物酔い薬へのペナルティ
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"二日酔い症状のため乗り物酔い薬にペナルティ: {product_name} = -0.20")
+    
     throat_bonus = 0.0
     symptoms = nlu_result.get("symptoms", [])
     symptom_names = [s.get("name") for s in symptoms]
     has_throat_symptom = any(normalize_text(symptom.get("name", "")) in THROAT_SYMPTOM_TOKENS for symptom in symptoms)
+    has_fever = "発熱" in symptom_names
     medicine_type = candidate.get('medicine_type', '')
+    throat_specificity_level = candidate.get('throat_specificity_level', 'none')
+    
+    # 「のど痛み+発熱」の症状パターンでの特別なボーナス
+    # 最初に葛根湯チェックを実行（すべてのthroat_bonus処理の前に）
+    from scoring_utils import _is_kampo_or_herbal_medicine
+    is_kampo = _is_kampo_or_herbal_medicine(candidate)
+    is_kakkonto = "葛根湯" in candidate.get('product_name', '')
+    is_kakkonto_medicine = is_kampo and is_kakkonto
+    
+    if has_throat_symptom and has_fever and len(symptom_names) >= 2:
+        # 葛根湯にはボーナスを適用しない（西洋薬を優先）
+        # 葛根湯の場合はスキップ
+        if not is_kakkonto_medicine:
+            if '風邪薬' in medicine_type:
+                if throat_specificity_level == "component_and_efficacy":
+                    # 総合感冒薬（喉向き・成分あり）に+0.30のボーナス（強化）
+                    throat_bonus = 0.30
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"総合感冒薬（喉向き・成分あり）ボーナス: {candidate.get('product_name', '')} = +0.30")
+                elif throat_specificity_level == "efficacy_only":
+                    # 総合感冒薬（喉向き・効能のみ）に+0.20のボーナス（強化）
+                    throat_bonus = 0.20
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"総合感冒薬（喉向き・効能のみ）ボーナス: {candidate.get('product_name', '')} = +0.20")
+                else:
+                    # 一般の総合感冒薬にも+0.10のボーナス（新規追加）
+                    throat_bonus = 0.10
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"一般の総合感冒薬ボーナス: {candidate.get('product_name', '')} = +0.10")
+            elif '解熱鎮痛薬' in medicine_type:
+                # 解熱鎮痛薬に+0.12のボーナス
+                throat_bonus = 0.12
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"解熱鎮痛薬ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.12")
+            elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and has_throat_symptom):
+                # 外用薬（喉スプレー・うがい薬）に+0.12のボーナス
+                throat_bonus = 0.12
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"外用薬（のど）ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.12")
     
     if has_throat_symptom:
+        # 葛根湯チェックは既に上で実行済み（is_kakkonto_medicineを使用）
+        
         # 単一のど症状の場合、剤形ごとの優先度を明確化
         if len(symptom_names) == 1 and "のどの痛み" in symptom_names:
-            if '外用薬（のど）' in medicine_type:
-                throat_bonus = 0.25  # 局所治療薬を最優先
-            elif '外用薬' in medicine_type:
-                throat_bonus = 0.20
-            elif '解熱鎮痛薬' in medicine_type:
-                throat_bonus = 0.08
-            elif '風邪薬' in medicine_type:
-                throat_bonus = 0.05
+            # 葛根湯の場合はスキップ
+            if not is_kakkonto_medicine:
+                if '外用薬（のど）' in medicine_type:
+                    throat_bonus = max(throat_bonus, 0.25)  # 局所治療薬を最優先
+                elif '外用薬' in medicine_type:
+                    throat_bonus = max(throat_bonus, 0.20)
+                elif '解熱鎮痛薬' in medicine_type:
+                    throat_bonus = max(throat_bonus, 0.08)
+                elif '風邪薬' in medicine_type:
+                    throat_bonus = max(throat_bonus, 0.05)
 
-        # 通常のthroat_bonus（複数症状や液剤検出時）
-        combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + medicine_type + candidate.get('usage', '')
-        normalized_combined = normalize_text(combined_text)
-        detection_bonus = 0.0
-        if any(token in normalized_combined for token in THROAT_LIQUID_TOKENS):
-            detection_bonus = 0.12  # 0.18から0.12に調整（液状への加点を適正化）
-        elif any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
-            detection_bonus = 0.08
-        elif '外用薬' in medicine_type:
-            detection_bonus = 0.12
+        # 通常のthroat_bonus（複数症状や液剤検出時、上記の特別ボーナスがない場合）
+        # ただし、葛根湯の場合はスキップ（西洋薬を優先）
+        if throat_bonus == 0.0:
+            # 葛根湯の場合はスキップ
+            if not is_kakkonto_medicine:
+                combined_text = candidate.get('product_name', '') + candidate.get('efficacy', '') + medicine_type + candidate.get('usage', '')
+                normalized_combined = normalize_text(combined_text)
+                detection_bonus = 0.0
+                if any(token in normalized_combined for token in THROAT_LIQUID_TOKENS):
+                    detection_bonus = 0.12  # 0.18から0.12に調整（液状への加点を適正化）
+                elif any(token in normalized_combined for token in THROAT_KEYWORD_TOKENS):
+                    detection_bonus = 0.08
+                elif '外用薬' in medicine_type:
+                    detection_bonus = 0.12
 
-        throat_bonus = max(throat_bonus, detection_bonus)
+                throat_bonus = max(throat_bonus, detection_bonus)
 
     # アレルギーペナルティとブースト（アレルギー症状が検出された場合）
     allergy_penalty = candidate.get('allergy_penalty', 0.0)
     allergy_boost = candidate.get('allergy_boost', 0.0)
     
     # ボーナス/ペナルティの影響を制限（スコアのばらつきを確保しつつ、特化医薬品の優位性を保つ）
-    # 特化医薬品のボーナスは最大0.25まで許可（症状特化型ブースト、throat_bonus）
+    # 特化医薬品のボーナスは最大0.30まで許可（症状特化型ブースト、throat_bonus）- 総合感冒薬ボーナス強化のため上限を0.30に変更
     # 不適切な医薬品のペナルティは最大-0.30まで許可（症状特異性ペナルティ、リスク成分ペナルティ）
     # アレルギー関連は中程度の影響（-0.20から+0.20）
-    limited_throat_bonus = max(-0.20, min(0.25, throat_bonus))  # 特化医薬品の優位性を保つ
+    limited_throat_bonus = max(-0.20, min(0.30, throat_bonus))  # 特化医薬品の優位性を保つ（総合感冒薬ボーナス強化のため上限を0.30に変更）
     limited_symptom_boost = max(-0.20, min(0.25, symptom_boost))  # 特化医薬品の優位性を保つ
+    
+    # symptom_specific_boostとmulti_symptom_bonusが両方適用される場合、合計が0.30を超えないように制限
+    # multi_symptom_bonusは既にsymptom_boostに含まれているため、重複を避ける
+    # ただし、multi_symptom_bonusは表示用に保持する
+    combined_boost = limited_symptom_boost  # symptom_boostには既にmulti_symptom_bonusが含まれている
+    if combined_boost > 0.30:
+        # 0.30を超える場合は、symptom_boostを0.30に制限
+        limited_symptom_boost = 0.30
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"symptom_boostが0.30を超えるため制限: {combined_boost:.3f} → 0.30")
+    
     limited_allergy_penalty = max(-0.20, min(0.0, allergy_penalty))  # 中程度のペナルティ
     limited_allergy_boost = max(0.0, min(0.20, allergy_boost))  # 中程度のボーナス
     limited_symptom_specificity_penalty = max(-0.30, min(0.0, symptom_specificity_penalty))  # 不適切な医薬品を確実に下げる
@@ -2672,10 +3144,103 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         SCORING_WEIGHTS["相互作用リスク"] * interaction_score
     )
     
-    # 部位マッチングスコアの制限（-0.5から+1.0の範囲）
-    limited_body_part_score = max(-0.5, min(1.0, body_part_score))
+    # 部位マッチングスコアの制限（-0.5から+0.3の範囲に変更：1.0は大きすぎる）
+    limited_body_part_score = max(-0.5, min(0.3, body_part_score))
+    
+    # 症状パターンボーナスの制限
+    limited_pattern_bonus = max(-0.20, min(0.25, pattern_bonus))
+    
+    # 剤形の優先順位調整（症状に応じた剤形ボーナス/ペナルティ）
+    dosage_form_bonus = 0.0
+    product_name = candidate.get('product_name', '')
+    usage = candidate.get('usage', '')
+    combined_dosage_text = (product_name + usage).lower()
+    
+    # のど痛みがある場合、液剤に+0.08、外用薬（のど）に+0.12のボーナス（既存ロジックを維持）
+    if has_throat_symptom:
+        if any(token in combined_dosage_text for token in ["液", "シロップ", "ドリンク", "内服液"]):
+            dosage_form_bonus = max(dosage_form_bonus, 0.08)
+        if '外用薬（のど）' in medicine_type:
+            dosage_form_bonus = max(dosage_form_bonus, 0.12)
+    
+    # 胃痛がある場合、錠剤・カプセルを優先（液剤は-0.05のペナルティ）
+    if "胃痛" in symptom_names:
+        if any(token in combined_dosage_text for token in ["錠", "カプセル", "錠剤"]):
+            dosage_form_bonus = max(dosage_form_bonus, 0.05)
+        elif any(token in combined_dosage_text for token in ["液", "シロップ", "ドリンク", "内服液"]):
+            dosage_form_bonus = min(dosage_form_bonus, -0.05)
+    
+    # 便秘の場合、錠剤・カプセルを優先
+    if "便秘" in symptom_names:
+        if any(token in combined_dosage_text for token in ["錠", "カプセル", "錠剤"]):
+            dosage_form_bonus = max(dosage_form_bonus, 0.05)
+    
+    limited_dosage_form_bonus = max(-0.10, min(0.12, dosage_form_bonus))
+    
+    # 漢方薬・生薬製剤の優先度調整（症状パターンごとに異なる処理）
+    # adjustment_scoreの計算前に実行する必要がある
+    from scoring_utils import _is_kampo_or_herbal_medicine, _is_goreisan
+    kampo_adjustment = 0.0
+    if _is_kampo_or_herbal_medicine(candidate):
+        # 症状パターンに基づく漢方薬ボーナス/ペナルティ
+        pattern_info = match_symptom_pattern(nlu_result)
+        product_name = candidate.get('product_name', '')
+        is_goreisan = _is_goreisan(candidate)
+        is_kakkonto = "葛根湯" in product_name
+        
+        # 症状パターンごとの特別な処理
+        if pattern_info:
+            # 「のど痛み+発熱」の場合、葛根湯には-0.10のペナルティを適用（西洋薬を優先）
+            if frozenset({"のどの痛み", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION:
+                if is_kakkonto:
+                    kampo_adjustment = -0.10
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"のど痛み+発熱のため葛根湯にペナルティ: {product_name} = -0.10")
+                else:
+                    # その他の漢方薬は既にpattern_bonusで処理済み
+                    kampo_adjustment = 0.0
+            # 単一症状（発熱のみ、のど痛みのみ）の場合、漢方薬は-0.10のペナルティ
+            elif len(symptom_names) == 1:
+                kampo_adjustment = -0.10
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"単一症状のため漢方薬にペナルティ: {product_name} = -0.10")
+            # 風邪の初期症状（悪寒+発熱）の場合、葛根湯に+0.15のボーナス
+            elif frozenset({"悪寒", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION and is_kakkonto:
+                # 既にpattern_bonusで処理済み
+                kampo_adjustment = 0.0
+            # 二日酔い（頭痛+むくみ+だるさ）の場合、五苓散に+0.20のボーナス
+            elif is_goreisan and any(
+                pattern_key in SYMPTOM_PATTERN_OPTIMIZATION 
+                for pattern_key in [
+                    frozenset({"頭痛", "むくみ", "だるさ"}),
+                    frozenset({"頭痛", "むくみ"}),
+                    frozenset({"頭痛", "だるさ"}),
+                    frozenset({"むくみ", "だるさ"}),
+                    frozenset({"頭痛", "吐き気"}),
+                    frozenset({"頭痛", "だるさ", "吐き気"})
+                ]
+            ):
+                # 既にpattern_bonusで処理済み
+                kampo_adjustment = 0.0
+            # 胃腸症状（胃もたれ+むかつき）の場合、生薬配合の胃腸薬に+0.15のボーナス
+            elif frozenset({"吐き気", "胃もたれ", "むかつき"}) in SYMPTOM_PATTERN_OPTIMIZATION:
+                # 既にpattern_bonusで処理済み
+                kampo_adjustment = 0.0
+            # その他の症状パターン: 西洋薬を優先（漢方薬は-0.05のペナルティ）
+            else:
+                kampo_adjustment = -0.05
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"その他の症状パターンのため漢方薬にペナルティ: {product_name} = -0.05")
+        else:
+            # 症状パターンがマッチしない場合、ペナルティを適用（西洋薬を優先）
+            kampo_adjustment = -0.2
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状パターンがマッチしないため漢方薬にペナルティ: {product_name} = -0.2")
+    else:
+        kampo_adjustment = 0.0
     
     # 調整スコア（ボーナス/ペナルティを制限付きで追加）
+    # kampo_adjustmentをadjustment_scoreに含める
     adjustment_score = (
         limited_symptom_specificity_penalty +
         limited_risk_penalty +
@@ -2683,14 +3248,24 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         limited_symptom_boost +
         limited_allergy_penalty +
         limited_allergy_boost +
-        limited_body_part_score
+        limited_body_part_score +
+        limited_pattern_bonus +
+        limited_dosage_form_bonus +
+        kampo_adjustment  # 漢方薬調整を追加
     )
     
     # 最終スコア（基本スコア + 調整スコア）
     # スコアの分散を確保しつつ、最大スコアを0.98程度に設定
-    # 調整スコアの影響を-0.3から+0.25の範囲に制限
+    # 調整スコアの影響を-0.3から+0.25の範囲に制限（より厳しく制限）
     # これにより、基本スコア0.73 + 調整スコア0.25 = 0.98が最大値となる
-    scaled_adjustment = max(-0.30, min(0.25, adjustment_score))
+    # ただし、adjustment_scoreが異常に高い場合は、より厳しく制限
+    if adjustment_score > 0.5:
+        # 異常に高い場合は0.25に制限
+        scaled_adjustment = 0.25
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"adjustment_scoreが異常に高いため制限: {adjustment_score:.3f} → 0.25")
+    else:
+        scaled_adjustment = max(-0.30, min(0.25, adjustment_score))
     
     # 改善案1: 基本スコアの底上げ（推奨される医薬品の多くが0.7-0.98に収まるように）
     # 基本スコアが0.45未満の場合は、0.5に底上げしてから調整スコアを追加
@@ -2719,18 +3294,6 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         # 低スコア領域（0.5未満）はそのまま使用
         total_score = adjusted_base_score + scaled_adjustment
     
-    # 漢方薬・生薬製剤の優先度調整（ユーザーが希望しない限り係数を0.8倍にする）
-    from scoring_utils import _is_kampo_or_herbal_medicine
-    if _is_kampo_or_herbal_medicine(candidate):
-        if not user_info.get('prefers_kampo', False):
-            # 漢方希望がない場合は係数を0.8倍にする（西洋薬を優先）
-            total_score *= 0.8
-            kampo_adjustment = -0.2  # スコア内訳用
-        else:
-            kampo_adjustment = 0.0
-    else:
-        kampo_adjustment = 0.0
-    
     # raw_scoreを保持（正規化は詳細スコアリング完了後に一括で行う）
     raw_score = total_score  # クリップ前の元のスコアを保持
     
@@ -2740,7 +3303,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict) ->
         "score_breakdown": {
             "symptom_match": symptom_score,
             "efficacy_specificity": efficacy_specificity_score,
-            "body_part_match": body_part_score,
+            "body_part_match": limited_body_part_score,  # 制限後のbody_part_scoreを保存
             "age_fit": age_score,
             "usage_convenience": usage_score,
             "side_effect_risk": side_effect_score,
@@ -3797,8 +4360,29 @@ def rule_based_recommendation(
         symptom_names = [s.get("name") for s in symptoms]
         medicine_type = candidate.get("medicine_type", "")
         
+        # 症状パターンマッチングによる最適化ボーナス
+        pattern_bonus = 0.0
+        pattern_info = match_symptom_pattern(nlu_result)
+        if pattern_info:
+            bonuses = pattern_info.get("bonuses", {})
+            product_name = candidate.get('product_name', '')
+            ingredients = str(candidate.get('ingredients', '')).lower()
+            throat_specificity_level = candidate.get('throat_specificity_level', 'none')
+            
+            # 「のど痛み+発熱」の場合、総合感冒薬（喉向き）にボーナス
+            if "のどの痛み" in symptom_names and "発熱" in symptom_names:
+                if '風邪薬' in medicine_type:
+                    if throat_specificity_level == "component_and_efficacy":
+                        pattern_bonus = 0.25
+                    elif throat_specificity_level == "efficacy_only":
+                        pattern_bonus = 0.15
+                elif '解熱鎮痛薬' in medicine_type:
+                    pattern_bonus = 0.12
+                elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and "のどの痛み" in symptom_names):
+                    pattern_bonus = 0.12
+        
         if len(symptom_names) >= 2:
-            # のどの痛み + 発熱のパターン
+            # のどの痛み + 発熱のパターン（既存ロジックは維持）
             if "のどの痛み" in symptom_names and "発熱" in symptom_names:
                 if "解熱鎮痛薬" in medicine_type:
                     symptom_penalty = 0.0
@@ -3806,7 +4390,8 @@ def rule_based_recommendation(
                     symptom_penalty = 0.25
         
         # 年齢適合性も含めて精度向上（重みは症状:効能:年齢 = 0.5:0.3:0.2）
-        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty)
+        # 症状パターンボーナスも追加
+        return (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus)
     
     # 簡易スコアで上位N×250件を選別（異なる薬効カテゴリの多様性確保）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
@@ -3937,8 +4522,11 @@ def rule_based_recommendation(
     
     # ステップ5.4: 相対スコア化（最高スコアを100%として正規化）
     # ensure_ingredient_diversity実行後、relative_scoreを再計算
+    # 注意: ensure_ingredient_diversityが順序を変更する可能性があるため、
+    # 実際の最高スコアを取得してから相対スコアを計算する
     if top_candidates:
-        max_score = top_candidates[0].get('final_score', 0.0)
+        # 実際の最高スコアを取得（順序に関係なく）
+        max_score = max(candidate.get('final_score', 0.0) for candidate in top_candidates)
         if max_score > 0:
             for candidate in top_candidates:
                 final_score = candidate.get('final_score', 0.0)
@@ -3948,6 +4536,8 @@ def rule_based_recommendation(
                     candidate['score_level'] = '低'
                 else:
                     relative_score = final_score / max_score
+                    # 1.0を超えないようにクリップ
+                    relative_score = min(1.0, relative_score)
                     candidate['relative_score'] = relative_score
                     # スコア帯の判定（高/中/低）
                     if relative_score >= 0.9:
@@ -3958,6 +4548,9 @@ def rule_based_recommendation(
                         candidate['score_level'] = '低'
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"相対スコア: {candidate.get('product_name', '')} = {candidate.get('relative_score', 0.0):.3f} ({candidate.get('score_level', '')})")
+        
+        # 相対スコア計算後、スコアの降順で再ソート（順位を最適度の降順に統一）
+        top_candidates = sorted(top_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
     
     # ステップ5.5: 推奨後の検証処理
     if DEBUG_MODE or logger.level <= logging.DEBUG:
