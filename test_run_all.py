@@ -41,6 +41,7 @@ def main():
         'test_unit.py',
         'test_integration.py',
         'test_comprehensive_deployment.py',
+        'test_scoring_improvements.py',  # スコアリング改善テスト
     ]
     
     results = {}
