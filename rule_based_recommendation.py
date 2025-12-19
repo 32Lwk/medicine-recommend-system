@@ -3316,7 +3316,8 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
     min_age_allowed = _extract_min_age_value(age_restriction)
     
     # デバッグログ（INFOレベルでも出力）
-    logger.info(f"年齢適合性スコア計算: age={age} (type={type(age)}), age_restriction={age_restriction}, min_age_allowed={min_age_allowed}, age is None={age is None}, product_name={candidate.get('product_name', '')}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"年齢適合性スコア計算: age={age} (type={type(age)}), age_restriction={age_restriction}, min_age_allowed={min_age_allowed}, age is None={age is None}, product_name={candidate.get('product_name', '')}")
 
     if age is None:
         # 年齢が不明な場合の処理を修正
@@ -3336,7 +3337,8 @@ def calculate_age_fit_score(candidate: Dict, user_info: Dict) -> float:
             base_score -= 0.05  # 0.45
         result_score = max(0.0, min(1.0, base_score))
         # INFOレベルでも出力（デバッグログが出力されない問題を解決）
-        logger.info(f"年齢適合性スコア（年齢不明）: min_age_allowed={min_age_allowed}, base_score={base_score}, result={result_score}, product_name={candidate.get('product_name', '')}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"年齢適合性スコア（年齢不明）: min_age_allowed={min_age_allowed}, base_score={base_score}, result={result_score}, product_name={candidate.get('product_name', '')}")
         return result_score
 
     if min_age_allowed is not None and age < min_age_allowed:
@@ -3904,7 +3906,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     throat_specificity_level = candidate.get('throat_specificity_level', 'none')
     
     # デバッグログ（has_throat_symptomとhas_feverの判定結果を確認）
-    logger.info(f"症状判定: has_throat_symptom={has_throat_symptom}, has_fever={has_fever}, symptom_names={symptom_names}, medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"症状判定: has_throat_symptom={has_throat_symptom}, has_fever={has_fever}, symptom_names={symptom_names}, medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}")
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"症状判定: has_throat_symptom={has_throat_symptom}, has_fever={has_fever}, symptom_names={symptom_names}, throat_specificity_level={throat_specificity_level}, product_name={candidate.get('product_name', '')}")
     
@@ -3955,9 +3958,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"葛根湯のためthroat_bonusを0.0に設定（のど痛み+発熱）: {product_name}")
     
-    # 「のど痛み+発熱」パターンのボーナス適用条件をログ出力
+    # 「のど痛み+発熱」パターンのボーナス適用条件をログ出力（DEBUGレベル）
     if has_throat_symptom and has_fever and len(symptom_names) >= 2:
-        logger.info(f"「のど痛み+発熱」パターン検出: product_name={candidate.get('product_name', '')}, medicine_type={medicine_type}, is_kakkonto={is_kakkonto_medicine}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"「のど痛み+発熱」パターン検出: product_name={candidate.get('product_name', '')}, medicine_type={medicine_type}, is_kakkonto={is_kakkonto_medicine}")
     
     if has_throat_symptom and has_fever and len(symptom_names) >= 2:
         # 葛根湯にはボーナスを適用しない（西洋薬を優先）
@@ -3982,13 +3986,15 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             elif '解熱鎮痛薬' in medicine_type:
                 # 解熱鎮痛薬に+0.45のボーナス（強化：2位優先のため、0.35から0.45に増加）
                 throat_bonus = 0.45
-                logger.info(f"解熱鎮痛薬ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"解熱鎮痛薬ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"解熱鎮痛薬ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
             elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and has_throat_symptom):
                 # 外用薬（喉スプレー・うがい薬）に+0.45のボーナス（強化：3位優先のため、0.35から0.45に増加）
                 throat_bonus = 0.45
-                logger.info(f"外用薬（のど）ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"外用薬（のど）ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"外用薬（のど）ボーナス（のど痛み+発熱）: {candidate.get('product_name', '')} = +0.45")
     
@@ -4485,7 +4491,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                         continue
                     penalty_value = penalty_table[medicine_type]
                     penalties.append(penalty_value)
-                    logger.info(f"症状特異性ペナルティ（複数症状）: symptom={symptom_name}, medicine_type={medicine_type}, penalty={penalty_value}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"症状特異性ペナルティ（複数症状）: symptom={symptom_name}, medicine_type={medicine_type}, penalty={penalty_value}")
 
         if penalties:
             base_penalty = max(penalties)
@@ -4495,7 +4502,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                 elif efficacy_specificity >= 0.8:
                     base_penalty *= 0.6   # 0.5から0.6に変更
                 total_adjustment += base_penalty
-                logger.info(f"症状特異性ペナルティ（複数症状・最終）: medicine_type={medicine_type}, penalties={penalties}, base_penalty={base_penalty:.2f}, total_adjustment={total_adjustment:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状特異性ペナルティ（複数症状・最終）: medicine_type={medicine_type}, penalties={penalties}, base_penalty={base_penalty:.2f}, total_adjustment={total_adjustment:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(
                         f"症状特異性ペナルティ（複数症状）: {medicine_type} = {penalties} → {base_penalty:.2f} (効能特異性{efficacy_specificity:.2f})"
@@ -5529,10 +5537,12 @@ def rule_based_recommendation(
                         pattern_bonus = 0.15
                 elif '解熱鎮痛薬' in medicine_type:
                     pattern_bonus = 0.45  # 0.35から0.45に増加（2位優先のため強化）
-                    logger.info(f"quick_score pattern_bonus適用: medicine_type=解熱鎮痛薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"quick_score pattern_bonus適用: medicine_type=解熱鎮痛薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
                 elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and "のどの痛み" in symptom_names):
                     pattern_bonus = 0.45  # 0.35から0.45に増加（3位優先のため強化）
-                    logger.info(f"quick_score pattern_bonus適用: medicine_type=外用薬（のど）, product_name={product_name}, pattern_bonus={pattern_bonus}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"quick_score pattern_bonus適用: medicine_type=外用薬（のど）, product_name={product_name}, pattern_bonus={pattern_bonus}")
         else:
             # pattern_infoがNoneの場合もログ出力
             if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
@@ -5648,9 +5658,16 @@ def rule_based_recommendation(
         if '外用薬（のど）' in medicine_type:
             throat_external_count += 1
     logger.info(f"詳細スコアリング対象: 解熱鎮痛薬={analgesic_count}件, 外用薬（のど）={throat_external_count}件（絞り込み前: 解熱鎮痛薬={analgesic_count_before}件, 外用薬（のど）={throat_external_count_before}件）")
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"詳細スコアリング対象: 解熱鎮痛薬={analgesic_count}件, 外用薬（のど）={throat_external_count}件（絞り込み前: 解熱鎮痛薬={analgesic_count_before}件, 外用薬（のど）={throat_external_count_before}件）")
     
     # ステップ5.2: 詳細スコアリング（選別された候補のみ）
-    for score, candidate in top_candidates_for_scoring:
+    # サマリーログ用のデータ収集
+    analgesic_scores = []
+    throat_external_scores = []
+    top_10_scores = []
+    
+    for idx, (score, candidate) in enumerate(top_candidates_for_scoring):
         score_result = calculate_final_score(candidate, nlu_result, scoring_user_info, user_text)
         candidate['final_score'] = score_result['total_score']
         candidate['raw_score'] = score_result.get('raw_score', score_result['total_score'])
@@ -5660,14 +5677,40 @@ def rule_based_recommendation(
         if 'interaction_warnings' in score_result:
             candidate['interaction_warnings'] = score_result['interaction_warnings']
         
-        # 解熱鎮痛薬と外用薬（のど）の詳細スコアリング結果をログ出力
+        # 上位10件のみ詳細ログ出力（本番環境ではDEBUGレベル）
         medicine_type = candidate.get('medicine_type', '')
-        if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
+        product_name = candidate.get('product_name', '')
+        raw_score = candidate['raw_score']
+        
+        if idx < 10:
             score_breakdown = score_result.get('score_breakdown', {})
-            logger.info(f"詳細スコアリング結果: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, raw_score={candidate['raw_score']:.3f}, base_score={score_breakdown.get('base_score', 0.0):.3f}, adjusted_base_score={score_breakdown.get('adjusted_base_score', 0.0):.3f}, throat_bonus={score_breakdown.get('throat_bonus', 0.0):.3f}, symptom_specific_boost={score_breakdown.get('symptom_specific_boost', 0.0):.3f}, multi_symptom_bonus={score_breakdown.get('multi_symptom_bonus', 0.0):.3f}, pattern_bonus={score_breakdown.get('pattern_bonus', 0.0):.3f}, adjustment_score={score_result.get('adjustment_score', 0.0):.3f}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"詳細スコアリング結果: medicine_type={medicine_type}, product_name={product_name}, raw_score={raw_score:.3f}, base_score={score_breakdown.get('base_score', 0.0):.3f}, adjusted_base_score={score_breakdown.get('adjusted_base_score', 0.0):.3f}, throat_bonus={score_breakdown.get('throat_bonus', 0.0):.3f}, symptom_specific_boost={score_breakdown.get('symptom_specific_boost', 0.0):.3f}, multi_symptom_bonus={score_breakdown.get('multi_symptom_bonus', 0.0):.3f}, pattern_bonus={score_breakdown.get('pattern_bonus', 0.0):.3f}, adjustment_score={score_result.get('adjustment_score', 0.0):.3f}")
+        
+        # サマリーログ用のデータ収集
+        if '解熱鎮痛薬' in medicine_type:
+            analgesic_scores.append((product_name, raw_score))
+        if '外用薬（のど）' in medicine_type:
+            throat_external_scores.append((product_name, raw_score))
+        if idx < 10:
+            top_10_scores.append((product_name, medicine_type, raw_score))
         
         if DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug(f"{candidate['product_name']}: raw={candidate['raw_score']:.3f}, final={candidate['final_score']:.3f}")
+            logger.debug(f"{product_name}: raw={raw_score:.3f}, final={candidate['final_score']:.3f}")
+    
+    # サマリーログ出力
+    if analgesic_scores:
+        max_analgesic = max(analgesic_scores, key=lambda x: x[1])
+        avg_analgesic = sum(s[1] for s in analgesic_scores) / len(analgesic_scores)
+        logger.info(f"解熱鎮痛薬スコアリングサマリー: {len(analgesic_scores)}件, 最高スコア={max_analgesic[1]:.3f} ({max_analgesic[0]}), 平均スコア={avg_analgesic:.3f}")
+    
+    if throat_external_scores:
+        max_throat = max(throat_external_scores, key=lambda x: x[1])
+        avg_throat = sum(s[1] for s in throat_external_scores) / len(throat_external_scores)
+        logger.info(f"外用薬（のど）スコアリングサマリー: {len(throat_external_scores)}件, 最高スコア={max_throat[1]:.3f} ({max_throat[0]}), 平均スコア={avg_throat:.3f}")
+    
+    if top_10_scores:
+        logger.info(f"詳細スコアリング上位10件: {', '.join([f'{s[0]}({s[2]:.3f})' for s in top_10_scores[:5]])}...")
     
     # ステップ5.2.5: Min-Max正規化のための最大値・最小値を計算
     raw_scores = [c.get('raw_score', 0.0) for c in [c for _, c in top_candidates_for_scoring]]
@@ -5763,7 +5806,8 @@ def rule_based_recommendation(
                         # 最適解を1位に移動
                         optimal_candidate = candidates_sorted.pop(idx)
                         candidates_sorted.insert(0, optimal_candidate)
-                        logger.info(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f})")
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f})")
                         break
     
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result)
