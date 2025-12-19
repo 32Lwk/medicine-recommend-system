@@ -177,8 +177,43 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
                 match_count += 1
                 break  # 一度マッチしたら次の症状へ
     
-    # 症状が効能に全く含まれていない場合は大幅減点
+    # 症状が効能に全く含まれていない場合の処理
     if match_count == 0:
+        # 解熱鎮痛薬の場合、発熱やのどの痛みなどの症状に対して一定のスコアを付与
+        medicine_type = candidate.get("medicine_type", "")
+        if "解熱鎮痛薬" in medicine_type:
+            # 解熱鎮痛薬は発熱、頭痛、のどの痛みなどに効果がある
+            fever_symptoms = ["発熱", "熱", "高熱", "微熱"]
+            throat_symptoms = ["のどの痛み", "咽頭痛", "喉の痛み", "のど痛"]
+            headache_symptoms = ["頭痛"]
+            
+            matched_symptom_count = 0
+            for name in normalized_symptom_set:
+                # 発熱関連症状
+                if any(fever in name for fever in fever_symptoms):
+                    matched_symptom_count += 1
+                # のど痛み関連症状
+                elif any(throat in name for throat in throat_symptoms):
+                    matched_symptom_count += 1
+                # 頭痛関連症状
+                elif any(headache in name for headache in headache_symptoms):
+                    matched_symptom_count += 1
+            
+            if matched_symptom_count > 0:
+                # 解熱鎮痛薬は発熱、のどの痛み、頭痛に効果があるため、一定のスコアを付与
+                specificity_ratio = matched_symptom_count / len(normalized_symptom_set)
+                # 解熱鎮痛薬の効能特異性は中程度（0.4-0.5程度）
+                return 0.45 * specificity_ratio
+        
+        # 外用薬（のど）の場合、のどの痛みに対して一定のスコアを付与
+        if "外用薬（のど）" in medicine_type or ("外用薬" in medicine_type and "のど" in medicine_type):
+            throat_symptoms = ["のどの痛み", "咽頭痛", "喉の痛み", "のど痛"]
+            
+            for name in normalized_symptom_set:
+                if any(throat in name for throat in throat_symptoms):
+                    # 外用薬（のど）はのどの痛みに効果があるため、一定のスコアを付与
+                    return 0.45
+        
         return 0.0
     
     specificity_ratio = match_count / len(normalized_symptom_set)
