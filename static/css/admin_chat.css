@@ -2398,6 +2398,32 @@ td .ai-response {
       overflow: hidden;
       margin: 0;
       padding: 0;
+      flex-direction: column;
+  }
+  
+  /* モバイルでcenter-panelが表示される場合のレイアウト */
+  #center-panel[style*="display: flex"] {
+      display: flex !important;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+  }
+  
+  #center-panel .panel-header {
+      flex-shrink: 0;
+  }
+  
+  #center-panel .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+  }
+  
+  #center-panel .chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
   }
   
   /* 中央パネルのリサイザーも非表示 */
@@ -2414,13 +2440,13 @@ td .ai-response {
   .mobile-content-area {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      flex: 1;
-      min-height: 0;
+      flex-shrink: 0;
       width: 100%;
       margin: 0;
       padding: 0;
+      overflow: visible;
+      /* mobile-queue-sliderの下端までの高さに制限（JavaScriptで動的に調整） */
+      height: auto;
   }
     
   /* 統計情報セクション */
@@ -2476,11 +2502,13 @@ td .ai-response {
       scrollbar-width: none;
       gap: var(--spacing-sm);
       padding: var(--spacing-xs) 60px;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       min-height: 100px;
       position: relative;
       z-index: 0;
+      /* 最初と最後のアイテムが中央に来るようにスクロールパディングを設定 */
+      scroll-padding: 0 calc((100vw - 120px) / 2);
   }
   
   .mobile-queue-slider::-webkit-scrollbar {
@@ -2498,7 +2526,7 @@ td .ai-response {
       border-radius: var(--radius-md);
       padding: var(--spacing-sm);
       box-shadow: var(--shadow-sm);
-      margin: 0 auto;
+      margin: 0;
     }
     
   /* 矢印ボタン */
@@ -2553,6 +2581,51 @@ td .ai-response {
       min-height: 0;
   } */
     
+  /* center-panelのレイアウト調整 */
+  #center-panel {
+      display: flex !important;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+      overflow: hidden;
+  }
+  
+  #center-panel .panel-header {
+      flex-shrink: 0;
+  }
+  
+  #center-panel .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+  }
+  
+  #center-panel .chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: var(--spacing-md);
+  }
+  
+  #center-panel .chat-input-area {
+      flex-shrink: 0;
+  }
+  
+  /* mobile-content-areaの下にcenter-panelを配置 */
+  main {
+      display: flex;
+      flex-direction: column;
+  }
+  
+  #center-panel {
+      order: 2; /* mobile-content-areaの後に表示 */
+  }
+  
+  .mobile-content-area {
+      order: 1; /* 最初に表示 */
+  }
+  
   .chat-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -2564,7 +2637,7 @@ td .ai-response {
       min-height: 44px;
       margin-bottom: 0;
       position: relative;
-    }
+  }
   
   .chat-card:active {
       background: var(--background);
@@ -2724,27 +2797,44 @@ td .ai-response {
   .mobile-chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--spacing-sm) var(--spacing-xs);
       min-height: 0;
   }
   
   .mobile-chat-messages .message {
       margin-bottom: 12px;
-      max-width: 90%;
-    }
+      max-width: 100%;
+      width: 100%;
+      display: flex;
+  }
   
   .mobile-chat-messages .message.user {
       justify-content: flex-start;
+      align-items: flex-start;
       margin-left: 0;
-    }
+      padding-left: 0;
+  }
   
   .mobile-chat-messages .message.bot {
       justify-content: flex-end;
+      align-items: flex-end;
       margin-right: 0;
-    }
+      padding-right: 0;
+  }
   
   .mobile-chat-messages .message-content {
-      max-width: 90% !important;
+      max-width: 85% !important;
+      width: auto;
+    }
+  
+  .mobile-chat-messages .message.user .message-content {
+      margin-left: 0;
+      margin-right: auto;
+    }
+  
+  .mobile-chat-messages .message.bot .message-content {
+      margin-right: 0;
+      margin-left: auto;
     }
   
   .mobile-chat-input-area {
@@ -2832,6 +2922,167 @@ td .ai-response {
         max-width: 95%;
         margin: var(--spacing-sm) auto;
         padding: var(--spacing-md);
+    }
+    
+    /* スコアモーダルのモバイル最適化 */
+    #scoreModal .admin-modal-content {
+        width: 95%;
+        max-width: 95%;
+        max-height: 90vh;
+        margin: var(--spacing-sm) auto;
+        padding: var(--spacing-sm);
+    }
+    
+    #scoreModal .modal-header {
+        padding: var(--spacing-md);
+        font-size: 0.9rem;
+    }
+    
+    #scoreModal .modal-body {
+        padding: var(--spacing-sm);
+    }
+    
+    #scoreModal .score-detail {
+        padding: var(--spacing-sm);
+    }
+    
+    #scoreModal .score-detail h4 {
+        font-size: 0.95rem;
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-xs);
+    }
+    
+    #scoreModal .overall-score {
+        margin: var(--spacing-md) 0;
+    }
+    
+    #scoreModal .score-circle {
+        width: 80px;
+        height: 80px;
+        font-size: var(--font-size-lg);
+    }
+    
+    #scoreModal .score-breakdown {
+        margin-top: var(--spacing-lg);
+    }
+    
+    #scoreModal .score-breakdown h5 {
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    #scoreModal .score-items {
+        gap: var(--spacing-md);
+    }
+    
+    #scoreModal .score-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        padding: var(--spacing-xs) var(--spacing-sm) !important;
+        border-left: 4px solid #007bff !important;
+        background: #f8f9fa !important;
+        border-radius: var(--radius-md) !important;
+        margin-bottom: var(--spacing-xs) !important;
+    }
+    
+    /* スコアアイテム内の要素をコンパクトに */
+    #scoreModal .score-item > * {
+        margin: 0 !important;
+    }
+    
+    /* スコアラベルのスタイル */
+    #scoreModal .score-item .score-label {
+        min-width: auto !important;
+        width: 100% !important;
+        flex: none !important;
+        font-size: 0.8rem !important;
+        font-weight: var(--font-weight-semibold) !important;
+        margin-bottom: 2px !important;
+        color: var(--color-dark) !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* スコアバーのスタイル */
+    #scoreModal .score-item .score-bar {
+        width: 100% !important;
+        height: 10px !important;
+        flex: none !important;
+        order: 3 !important;
+        margin-top: 4px !important;
+    }
+    
+    /* スコア値のスタイル */
+    #scoreModal .score-item .score-value {
+        min-width: auto !important;
+        width: 100% !important;
+        flex: none !important;
+        text-align: left !important;
+        font-size: 0.75rem !important;
+        order: 2 !important;
+        margin-bottom: 0 !important;
+        color: var(--text-sub) !important;
+        font-weight: var(--font-weight-normal) !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* スコア値の強調表示 */
+    #scoreModal .score-item .score-value strong {
+        font-size: 0.8rem !important;
+        font-weight: var(--font-weight-bold) !important;
+    }
+    
+    /* 重み表示のスタイル（最後のspan要素） */
+    #scoreModal .score-item > span:not(.score-label):not(.score-value) {
+        font-size: 0.7rem !important;
+        color: #666 !important;
+        order: 4 !important;
+        margin-top: 2px !important;
+        flex: none !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+    
+    /* 色分け：各スコアタイプに応じたボーダーカラー（デスクトップと同様） */
+    /* 症状適合度 - 緑 */
+    #scoreModal .score-item[data-score-type="symptom"] {
+        border-left-color: #4CAF50 !important;
+    }
+    
+    /* 効能特異性 - 青 */
+    #scoreModal .score-item[data-score-type="efficacy"] {
+        border-left-color: #2196F3 !important;
+    }
+    
+    /* 年齢適合性 - 紫 */
+    #scoreModal .score-item[data-score-type="age"] {
+        border-left-color: #9C27B0 !important;
+    }
+    
+    /* 用法簡便性 - オレンジ */
+    #scoreModal .score-item[data-score-type="usage"] {
+        border-left-color: #FF9800 !important;
+    }
+    
+    /* 副作用リスク - 赤 */
+    #scoreModal .score-item[data-score-type="side-effect"] {
+        border-left-color: #F44336 !important;
+    }
+    
+    /* 相互作用リスク - 茶色 */
+    #scoreModal .score-item[data-score-type="interaction"] {
+        border-left-color: #795548 !important;
+    }
+    
+    /* スコア詳細のテキストを読みやすく */
+    #scoreModal .score-detail p,
+    #scoreModal .score-detail div {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+    
+    #scoreModal .score-detail strong {
+        font-size: 0.9rem;
     }
     
     .notification {
