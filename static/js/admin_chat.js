@@ -725,7 +725,7 @@ function renderQueue(queue) {
                         <div class="reply-section" style="margin-top: 6px;">
                             <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..." style="width: 100%; padding: 6px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.8rem; resize: vertical; min-height: 50px; max-height: 100px;"></textarea>
                             <div style="display: flex; gap: 6px; margin-top: 6px;">
-                                <button class="reply-btn" onclick="sendReply('${item.session_id}', ${index}, event)" style="flex: 1; padding: 6px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                <button class="reply-btn" onclick="sendReplyFromQueue('${item.session_id}', ${index}, event)" style="flex: 1; padding: 6px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                     <i class="fa-solid fa-paper-plane"></i> 送信
                                 </button>
                                 <button class="btn btn-info" onclick="selectSession(event, '${item.session_id}', ${index}); event.stopPropagation();" style="flex: 1; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
@@ -2343,17 +2343,22 @@ function formatDiagnosisMessage(diagnosis) {
 function handleKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        sendReply();
+        sendReplyFromChat();
     }
 }
 
-function sendReply() {
+// 通常のチャット画面からの返信送信（グローバルスコープに公開）
+window.sendReplyFromChat = function() {
     if (!currentSessionId) {
         showNotification('セッションを選択してください', 'warning');
         return;
     }
     
     const chatInput = document.getElementById('chat-input');
+    if (!chatInput) {
+        showNotification('返信入力欄が見つかりません', 'error');
+        return;
+    }
     const replyMessage = chatInput.value.trim();
     
     if (!replyMessage) {
@@ -2695,7 +2700,7 @@ function openManualReply(messageIndex) {
 }
 
 // キューアイテムからの返信送信（グローバルスコープに配置）
-window.sendReply = function(sessionId, index, event) {
+window.sendReplyFromQueue = function(sessionId, index, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
