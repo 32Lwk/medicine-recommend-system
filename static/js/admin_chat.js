@@ -51,6 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ refreshSessionList error:', error);
     }
     
+    // レスポンシブ要素の初期化
+    try {
+        // 関数が定義されているか確認
+        if (typeof toggleMobileElements === 'function') {
+            toggleMobileElements();
+        }
+        if (typeof initPanelResize === 'function') {
+            initPanelResize();
+        }
+    } catch (error) {
+        console.error('❌ Responsive initialization error:', error);
+    }
+    
     // 管理ボタンのイベントリスナー
     // グローバルスコープのshowModal関数を使用（関数宣言はホイスティングされるため直接呼び出し可能）
     
@@ -639,16 +652,30 @@ function refreshQueue() {
         });
 }
 
+// 現在のセッション情報を保持する変数
+let currentSessionData = null;
+
 function renderQueue(queue) {
     const content = document.getElementById('manual-reply-queue');
     
+    if (!content) return;
+    
+    // 現在のセッション情報を保持
+    const existingCurrentSession = content.querySelector('.current-session');
+    const currentSessionHtml = existingCurrentSession ? existingCurrentSession.outerHTML : '';
+    
     if (!Array.isArray(queue) || queue.length === 0) {
-        content.innerHTML = `
-            <div class="empty-state">
-                <i class="fa-regular fa-inbox"></i>
-                <p>手動返信待ちのメッセージがありません</p>
-            </div>
-        `;
+        // 現在のセッション情報があれば表示
+        if (currentSessionHtml) {
+            content.innerHTML = currentSessionHtml;
+        } else {
+            content.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-regular fa-inbox"></i>
+                    <p>手動返信待ちのメッセージがありません</p>
+                </div>
+            `;
+        }
         return;
     }
     
@@ -661,13 +688,13 @@ function renderQueue(queue) {
         const accordionId = `queue-accordion-${index}`;
         const accordionContentId = `queue-accordion-content-${index}`;
         
-        // メッセージを短縮表示（50文字まで）
-        const shortMessage = item.user_message && item.user_message.length > 50 
-            ? item.user_message.substring(0, 50) + '...' 
+        // メッセージを短縮表示（30文字まで）
+        const shortMessage = item.user_message && item.user_message.length > 30 
+            ? item.user_message.substring(0, 30) + '...' 
             : (item.user_message || 'メッセージなし');
         
-        // セッションIDを短縮表示
-        const shortSessionId = item.session_id ? item.session_id.substring(0, 12) + '...' : '不明';
+        // セッションIDを短縮表示（8文字まで）
+        const shortSessionId = item.session_id ? item.session_id.substring(0, 8) + '...' : '不明';
         
         const crisisKeywords = isCrisisItem && item.crisis_keywords ? 
             `<div class="crisis-keywords" style="background: #ffebee; padding: 8px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c; font-size: 0.9em; color: #e74c3c;">
@@ -677,32 +704,32 @@ function renderQueue(queue) {
         html += `
             <div class="${itemClass} queue-accordion-item">
                 <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
-                    <div style="flex: 1;">
-                        <span class="session-id" style="font-size: 0.85rem; font-weight: 600;">${shortSessionId} ${crisisBadge}</span>
-                        <div style="font-size: 0.75rem; color: #666; margin-top: 2px;">${shortMessage}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${shortSessionId} ${crisisBadge}</span>
+                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${shortMessage}</div>
                     </div>
-                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon"></i>
+                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
                 </div>
                 <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
-                    <div style="padding: 12px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <div class="user-message" style="margin-bottom: 10px;">
+                    <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
+                        <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
                             <strong>👤 ユーザー:</strong> ${item.user_message || 'メッセージなし'}
                         </div>
                         ${crisisKeywords}
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>タイムスタンプ:</strong> ${item.timestamp || '不明'}
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666; margin-bottom: 6px;">
+                            <span><strong>🕐</strong> ${item.timestamp || '不明'}</span>
                         </div>
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>セッションID:</strong> ${item.session_id || '不明'}
+                        <div style="font-size: 0.65rem; color: #999; margin-bottom: 6px; word-break: break-all;">
+                            ID: ${item.session_id || '不明'}
                         </div>
-                        <div class="reply-section" style="margin-top: 10px;">
-                            <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力してください..." style="width: 100%; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.875rem; resize: vertical; min-height: 60px;"></textarea>
-                            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                                <button class="reply-btn" onclick="sendReply('${item.session_id}', ${index}, event)" style="flex: 1; padding: 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-paper-plane"></i> 返信送信
+                        <div class="reply-section" style="margin-top: 6px;">
+                            <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..." style="width: 100%; padding: 6px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.8rem; resize: vertical; min-height: 50px; max-height: 100px;"></textarea>
+                            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                                <button class="reply-btn" onclick="sendReply('${item.session_id}', ${index}, event)" style="flex: 1; padding: 6px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    <i class="fa-solid fa-paper-plane"></i> 送信
                                 </button>
-                                <button class="btn btn-info" onclick="selectSession(event, '${item.session_id}', ${index}); event.stopPropagation();" style="flex: 1; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-comments"></i> チャットに移動
+                                <button class="btn btn-info" onclick="selectSession(event, '${item.session_id}', ${index}); event.stopPropagation();" style="flex: 1; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    <i class="fa-solid fa-comments"></i> 移動
                                 </button>
                             </div>
                         </div>
@@ -712,7 +739,12 @@ function renderQueue(queue) {
         `;
     });
     
-    content.innerHTML = html;
+    // 現在のセッション情報があれば最初に追加
+    if (currentSessionHtml) {
+        content.innerHTML = currentSessionHtml + html;
+    } else {
+        content.innerHTML = html;
+    }
     
     // 危機対応セッションの数をカウントして表示
     const crisisCount = queue.filter(item => item.status === 'crisis_detected' || item.priority === 'high').length;
@@ -743,54 +775,66 @@ function toggleQueueAccordion(accordionId, contentId) {
 }
 
 function updateStats(queue) {
-    document.getElementById('queue-count').textContent = Array.isArray(queue) ? queue.length : 0;
+    const queueCount = Array.isArray(queue) ? queue.length : 0;
+    const queueCountEl = document.getElementById('queue-count');
+    if (queueCountEl) queueCountEl.textContent = queueCount;
+    
+    // モバイル用統計情報も更新
+    if (isMobile()) {
+        const mobileQueueCount = document.getElementById('mobile-queue-count');
+        if (mobileQueueCount) mobileQueueCount.textContent = queueCount;
+    }
+    
+    // タブレット/デスクトップ用統計情報も更新
+    const tabletQueueCount = document.getElementById('tablet-queue-count');
+    if (tabletQueueCount) tabletQueueCount.textContent = queueCount;
 }
 
 function renderCurrentSession(sessionData) {
     const content = document.getElementById('manual-reply-queue');
     
-    // 既存のキュー情報を保持
-    let existingContent = content.innerHTML;
+    if (!content) return;
+    
+    // セッションデータを保持
+    currentSessionData = sessionData;
+    
+    // 既存のキュー情報を保持（現在のセッション以外）
+    const existingQueueItems = Array.from(content.querySelectorAll('.queue-item:not(.current-session)'));
+    const existingQueueHtml = existingQueueItems.map(item => item.outerHTML).join('');
     
     // 現在のセッション情報を追加
     if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
         const accordionId = 'current-session-accordion';
         const accordionContentId = 'current-session-accordion-content';
         const lastMessage = sessionData.messages[sessionData.messages.length - 1]?.content || 'なし';
-        const shortMessage = lastMessage.length > 50 ? lastMessage.substring(0, 50) + '...' : lastMessage;
-        const shortSessionId = sessionData.session_id ? sessionData.session_id.substring(0, 12) + '...' : '不明';
+        const shortMessage = lastMessage.length > 30 ? lastMessage.substring(0, 30) + '...' : lastMessage;
+        const shortSessionId = sessionData.session_id ? sessionData.session_id.substring(0, 8) + '...' : '不明';
         
         const currentSessionHtml = `
             <div class="queue-item current-session queue-accordion-item">
                 <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
-                    <div style="flex: 1;">
-                        <span class="session-id" style="font-size: 0.85rem; font-weight: 600; color: #28a745;">
-                            📱 現在のセッション: ${shortSessionId}
-                            <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-left: 8px;">アクティブ</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; color: #28a745; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">
+                            📱 ${shortSessionId} <span style="background: #28a745; color: white; padding: 1px 4px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; margin-left: 4px;">アクティブ</span>
                         </span>
-                        <div style="font-size: 0.75rem; color: #666; margin-top: 2px;">${shortMessage}</div>
+                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${shortMessage}</div>
                     </div>
-                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon"></i>
+                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
                 </div>
                 <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
-                    <div style="padding: 12px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <div class="user-message" style="margin-bottom: 10px;">
-                            <strong>💬 最新メッセージ:</strong> ${lastMessage}
+                    <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
+                        <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
+                            <strong>💬 最新:</strong> ${lastMessage.length > 60 ? lastMessage.substring(0, 60) + '...' : lastMessage}
                         </div>
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>メッセージ数:</strong> ${sessionData.messages_count || sessionData.messages.length || 0}
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666;">
+                            <span><strong>📊 件数:</strong> ${sessionData.messages_count || sessionData.messages.length || 0}</span>
+                            <span><strong>${sessionData.session_active ? '✅' : '❌'}</strong> ${sessionData.session_active ? '有効' : '無効'}</span>
                         </div>
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>セッション有効:</strong> ${sessionData.session_active ? '✅ 有効' : '❌ 無効'}
+                        <div style="font-size: 0.65rem; color: #999; margin-top: 4px; word-break: break-all;">
+                            ID: ${sessionData.session_id || '不明'} | ${sessionData.last_activity || '不明'}
                         </div>
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>セッションID:</strong> ${sessionData.session_id || '不明'}
-                        </div>
-                        <div style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">
-                            <strong>最終活動:</strong> ${sessionData.last_activity || '不明'}
-                        </div>
-                        <div style="margin-top: 10px;">
-                            <button class="btn btn-info" onclick="selectSession(event, '${sessionData.session_id}', 'current'); event.stopPropagation();" style="width: 100%; padding: 8px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem;">
+                        <div style="margin-top: 6px;">
+                            <button class="btn btn-info" onclick="selectSession(event, '${sessionData.session_id}', 'current'); event.stopPropagation();" style="width: 100%; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                 <i class="fa-solid fa-comments"></i> チャットに移動
                             </button>
                         </div>
@@ -799,8 +843,13 @@ function renderCurrentSession(sessionData) {
             </div>
         `;
         
-        // 現在のセッションを最初に表示
-        content.innerHTML = currentSessionHtml + existingContent;
+        // 現在のセッションを最初に表示し、既存のキュー情報を保持
+        content.innerHTML = currentSessionHtml + existingQueueHtml;
+    } else {
+        // セッションデータがない場合は、既存のキュー情報のみ表示
+        if (existingQueueHtml) {
+            content.innerHTML = existingQueueHtml;
+        }
     }
 }
 
@@ -2420,8 +2469,25 @@ function refreshSessionList() {
             
             renderSessionList(allSessions);
             
+            // モバイルでcenter-panelにチャットカードを表示
+            if (isMobile() && !currentSessionId) {
+                renderMobileChatListInCenterPanel(allSessions);
+            }
+            
             // 統計情報も更新
-            document.getElementById('total-sessions').textContent = allSessions.length;
+            const totalSessions = allSessions.length;
+            const totalSessionsEl = document.getElementById('total-sessions');
+            if (totalSessionsEl) totalSessionsEl.textContent = totalSessions;
+            
+            // モバイル用統計情報も更新
+            if (isMobile()) {
+                const mobileTotalSessions = document.getElementById('mobile-total-sessions');
+                if (mobileTotalSessions) mobileTotalSessions.textContent = totalSessions;
+            }
+            
+            // タブレット/デスクトップ用統計情報も更新
+            const tabletTotalSessions = document.getElementById('tablet-total-sessions');
+            if (tabletTotalSessions) tabletTotalSessions.textContent = totalSessions;
             
             console.log('Session list refresh completed');
         })
@@ -2468,8 +2534,19 @@ function renderSessionList(sessions) {
         sessionCount.textContent = Array.isArray(sessions) ? sessions.length : 0;
     }
     
+    // モバイルの場合、center-panelにもチャットカードを表示
+    if (isMobile() && !currentSessionId) {
+        renderMobileChatListInCenterPanel(sessions);
+    }
+    
     if (!Array.isArray(sessions) || sessions.length === 0) {
         sidebar.innerHTML = '<div class="empty-state"><i class="fa-regular fa-users"></i><p>セッションがありません</p></div>';
+        if (isMobile() && !currentSessionId) {
+            const centerChatMessages = document.getElementById('chat-messages');
+            if (centerChatMessages) {
+                centerChatMessages.innerHTML = '<div class="empty-state"><i class="fa-regular fa-comments"></i><p>セッションがありません</p></div>';
+            }
+        }
         return;
     }
     
@@ -2559,6 +2636,15 @@ function renderSessionList(sessions) {
 }
 
 function selectSession(event, sessionId, username) {
+    // モバイル/タブレット判定
+    if (isMobile()) {
+        openMobileChat(sessionId);
+        return;
+    } else if (isTablet()) {
+        openTabletChat(sessionId);
+        return;
+    }
+    
     currentSessionId = sessionId;
     
     // 選択状態を更新（新しいDOM構造に対応）
@@ -2608,7 +2694,77 @@ function openManualReply(messageIndex) {
     }
 }
 
-// 手動返信を送信
+// キューアイテムからの返信送信（グローバルスコープに配置）
+window.sendReply = function(sessionId, index, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const replyInput = document.getElementById(`reply-${index}`);
+    if (!replyInput) {
+        showNotification('返信入力欄が見つかりません', 'error');
+        return;
+    }
+    
+    const replyMessage = replyInput.value.trim();
+    if (!replyMessage) {
+        showNotification('返信メッセージを入力してください', 'warning');
+        return;
+    }
+    
+    // ボタンを無効化
+    const replyBtn = event ? event.target.closest('.reply-btn') : null;
+    if (replyBtn) {
+        replyBtn.disabled = true;
+        replyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 送信中...';
+    }
+    
+    fetch('/api/main_manual_reply_queue', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'reply',
+            session_id: sessionId,
+            reply_message: replyMessage
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (replyBtn) {
+            replyBtn.disabled = false;
+            replyBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 返信送信';
+        }
+        
+        if (data.error || data.status === 'error') {
+            showNotification(`エラー: ${data.error || data.message || '送信に失敗しました'}`, 'error');
+        } else {
+            showNotification(`返信を送信しました`, 'success');
+            replyInput.value = '';
+            
+            // キューを更新
+            setTimeout(() => {
+                refreshQueue();
+            }, 500);
+        }
+    })
+    .catch(error => {
+        if (replyBtn) {
+            replyBtn.disabled = false;
+            replyBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 返信送信';
+        }
+        showNotification(`エラー: ${error.message}`, 'error');
+    });
+};
+
+// 手動返信を送信（チャットエリア用）
 function sendManualReply(replyMessage) {
     if (!currentSessionId) {
         showNotification('セッションを選択してください', 'warning');
@@ -3983,3 +4139,792 @@ function generateScoreDetailHtml(medicine) {
         </div>
     `;
 }
+
+// ============================================
+// レスポンシブ機能
+// ============================================
+
+// 画面サイズ検出関数
+function isMobile() {
+    return window.innerWidth <= 480;
+}
+
+function isTablet() {
+    return window.innerWidth > 480 && window.innerWidth <= 768;
+}
+
+function isDesktop() {
+    return window.innerWidth > 768;
+}
+
+// モバイル用要素の表示/非表示を切り替え
+function toggleMobileElements() {
+    const isMobileView = isMobile();
+    const mobileContentArea = document.getElementById('mobile-content-area');
+    const centerPanel = document.getElementById('center-panel');
+    
+    if (isMobileView) {
+        // モバイル表示
+        if (mobileContentArea) mobileContentArea.style.display = 'flex';
+        // セッションが選択されていない場合はcenter-panelを表示（チャットカードリスト用）
+        if (centerPanel) {
+            if (currentSessionId) {
+                centerPanel.style.display = 'flex';
+            } else {
+                centerPanel.style.display = 'flex';
+                // チャットカードリストを表示
+                if (allSessions.length > 0) {
+                    renderMobileChatListInCenterPanel(allSessions);
+                }
+            }
+        }
+    } else {
+        // デスクトップ/タブレット表示
+        if (mobileContentArea) mobileContentArea.style.display = 'none';
+        if (centerPanel && !isTablet()) {
+            centerPanel.style.display = 'flex';
+        }
+    }
+}
+
+// ウィンドウリサイズ時の処理
+window.addEventListener('resize', function() {
+    toggleMobileElements();
+    // タブレット/デスクトップに切り替わった場合、チャット一覧を復元
+    if (!isMobile() && currentSessionId) {
+        const centerPanel = document.getElementById('center-panel');
+        if (centerPanel) centerPanel.style.display = 'flex';
+    }
+});
+
+// モバイル用横スライダーのスクロール
+function scrollQueueSlider(direction) {
+    const slider = document.getElementById('mobile-queue-slider');
+    if (!slider) return;
+    
+    const itemWidth = slider.querySelector('.queue-slider-item')?.offsetWidth || slider.clientWidth * 0.7;
+    const gap = 8; // gap spacing
+    const scrollAmount = itemWidth + gap;
+    
+    slider.scrollBy({
+        left: scrollAmount * direction,
+        behavior: 'smooth'
+    });
+}
+
+// スワイプ検出（横スライダー用）
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileQueueSlider = document.getElementById('mobile-queue-slider');
+    if (mobileQueueSlider) {
+        mobileQueueSlider.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        mobileQueueSlider.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+    }
+});
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+        scrollQueueSlider(1); // 右にスクロール
+    } else if (touchEndX > touchStartX + swipeThreshold) {
+        scrollQueueSlider(-1); // 左にスクロール
+    }
+}
+
+// モバイル用チャット一覧をカード形式でレンダリング（削除：center-panelに統合）
+// function renderMobileChatList(sessions) {
+//     // この関数は削除されました。代わりにrenderMobileChatListInCenterPanelを使用してください。
+// }
+
+// モバイルでcenter-panelにチャットカードを表示
+function renderMobileChatListInCenterPanel(sessions) {
+    const centerChatMessages = document.getElementById('chat-messages');
+    if (!centerChatMessages || !isMobile() || currentSessionId) return;
+    
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+        centerChatMessages.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-regular fa-comments"></i>
+                <p>セッションがありません</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    sessions.forEach(session => {
+        let lastMessage = session.last_message || session.messages?.[session.messages.length - 1]?.content || 'メッセージなし';
+        
+        // HTMLタグを削除してテキストのみを抽出
+        if (typeof lastMessage === 'string') {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = lastMessage;
+            lastMessage = tempDiv.textContent || tempDiv.innerText || '';
+        }
+        
+        const shortMessage = lastMessage.length > 50 ? lastMessage.substring(0, 50) + '...' : lastMessage;
+        const username = session.username || '匿名';
+        const timeStr = session.last_activity ? new Date(session.last_activity).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        const messageCount = session.messages_count || session.messages?.length || 0;
+        
+        html += `
+            <div class="chat-card" onclick="openMobileChatModal('${session.session_id}', '${username.replace(/'/g, "\\'")}')" 
+                 role="button" tabindex="0" 
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMobileChatModal('${session.session_id}', '${username.replace(/'/g, "\\'")}')}">
+                <div class="chat-card-meta">
+                    <span>${escapeHtml(timeStr)}</span>
+                    <span>${messageCount}件</span>
+                </div>
+                <div class="session-user">${escapeHtml(username)}</div>
+                <div class="chat-card-preview">${escapeHtml(shortMessage)}</div>
+            </div>
+        `;
+    });
+    
+    centerChatMessages.innerHTML = html;
+}
+
+// モバイルでチャットをモーダルで開く
+function openMobileChatModal(sessionId, username) {
+    if (!isMobile()) {
+        // デスクトップ/タブレットの場合は通常のselectSessionを呼び出す
+        const session = allSessions.find(s => s.session_id === sessionId);
+        if (session) {
+            selectSession(null, sessionId, session.username);
+        } else {
+            selectSession(null, sessionId, username || 'ユーザー');
+        }
+        return;
+    }
+    
+    currentSessionId = sessionId;
+    const session = allSessions.find(s => s.session_id === sessionId);
+    const displayUsername = username || session?.username || 'ユーザー';
+    
+    // セッションの詳細情報を取得
+    const messageCount = session ? (session.messages_count || session.messages?.length || 0) : 0;
+    const lastActivity = session ? (session.last_activity || '不明') : '不明';
+    const lastMessage = session && session.messages && session.messages.length > 0 
+        ? session.messages[session.messages.length - 1].content || 'メッセージなし'
+        : 'メッセージなし';
+    
+    // HTMLタグを削除
+    let lastMessageText = lastMessage;
+    if (typeof lastMessage === 'string') {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = lastMessage;
+        lastMessageText = tempDiv.textContent || tempDiv.innerText || '';
+    }
+    const shortLastMessage = lastMessageText.length > 50 ? lastMessageText.substring(0, 50) + '...' : lastMessageText;
+    
+    // 日時をフォーマット
+    let formattedDate = '不明';
+    if (lastActivity && lastActivity !== '不明') {
+        try {
+            const date = new Date(lastActivity);
+            formattedDate = date.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            formattedDate = lastActivity;
+        }
+    }
+    
+    // モーダルを作成または取得
+    let modal = document.getElementById('mobile-chat-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mobile-chat-modal';
+        modal.className = 'admin-modal mobile-chat-modal';
+        document.body.appendChild(modal);
+    }
+    
+    // モーダルの内容を更新
+    modal.innerHTML = `
+        <div class="admin-modal-content mobile-chat-modal-content">
+            <div class="mobile-chat-header">
+                <button class="mobile-chat-close-btn" onclick="closeMobileChatModal()" aria-label="閉じる">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                <div class="mobile-chat-title-wrapper">
+                    <span class="mobile-chat-title" id="mobile-chat-title">${escapeHtml(displayUsername)}</span>
+                    <div class="mobile-chat-details" id="mobile-chat-details">
+                        <div class="mobile-chat-detail-item">
+                            <span class="detail-label">ID:</span>
+                            <span class="detail-value">${escapeHtml(sessionId)}</span>
+                        </div>
+                        <div class="mobile-chat-detail-item">
+                            <span class="detail-label">更新日時:</span>
+                            <span class="detail-value">${escapeHtml(formattedDate)}</span>
+                        </div>
+                        <div class="mobile-chat-detail-item">
+                            <span class="detail-label">メッセージ数:</span>
+                            <span class="detail-value">${messageCount}件</span>
+                        </div>
+                        <div class="mobile-chat-detail-item full-width">
+                            <span class="detail-label">最新メッセージ:</span>
+                            <span class="detail-value">${escapeHtml(shortLastMessage)}</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="mobile-chat-attributes-btn" onclick="showUserAttributesModal()" id="mobile-chat-attributes-btn" aria-label="ユーザー属性">
+                    <i class="fa-solid fa-user-circle"></i>
+                </button>
+            </div>
+            <div class="mobile-chat-messages" id="mobile-chat-messages"></div>
+            <div class="mobile-chat-input-area">
+                <textarea class="mobile-chat-input" id="mobile-chat-input" placeholder="メッセージを入力..." rows="1" onkeydown="handleMobileChatKeyDown(event)"></textarea>
+                <button class="mobile-chat-send-btn" id="mobile-chat-send-btn" onclick="sendMobileChatMessage()" aria-label="送信">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // モーダルを表示
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    
+    // チャット履歴を読み込む
+    loadMobileChatHistory(sessionId);
+}
+
+// モバイルチャット履歴を読み込む
+function loadMobileChatHistory(sessionId) {
+    const chatMessages = document.getElementById('mobile-chat-messages');
+    if (!chatMessages) return;
+    
+    chatMessages.innerHTML = `
+        <div class="empty-state">
+            <div>🔄</div>
+            <p>チャット履歴を読み込み中...</p>
+        </div>
+    `;
+    
+    fetch('/api/main_sessions', {
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+        const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
+        
+        if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
+            currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
+            currentMessages = targetSession.messages || [];
+            renderMobileChatMessages(targetSession.messages);
+        } else {
+            currentMessages = [];
+            renderMobileChatMessages([]);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading mobile chat history:', error);
+        chatMessages.innerHTML = `
+            <div class="empty-state">
+                <p>エラーが発生しました</p>
+            </div>
+        `;
+    });
+}
+
+// モバイルチャットメッセージをレンダリング（デスクトップと同じUI）
+function renderMobileChatMessages(messages) {
+    const chatMessages = document.getElementById('mobile-chat-messages');
+    if (!chatMessages) return;
+    
+    // デスクトップと同じrenderChatMessagesを使用
+    const originalChatMessages = document.getElementById('chat-messages');
+    if (originalChatMessages) {
+        originalChatMessages.id = 'chat-messages-temp';
+    }
+    
+    chatMessages.id = 'chat-messages';
+    renderChatMessages(messages);
+    chatMessages.id = 'mobile-chat-messages';
+    
+    if (originalChatMessages) {
+        originalChatMessages.id = 'chat-messages';
+    }
+}
+
+// モバイルチャットメッセージを送信
+function sendMobileChatMessage() {
+    const input = document.getElementById('mobile-chat-input');
+    if (!input || !input.value.trim() || !currentSessionId) return;
+    
+    const message = input.value.trim();
+    const sendBtn = document.getElementById('mobile-chat-send-btn');
+    
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+    
+    input.value = '';
+    
+    fetch('/api/main_manual_reply_queue', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'reply',
+            session_id: currentSessionId,
+            reply_message: message
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+        }
+        
+        if (data.success) {
+            // チャット履歴を再読み込み
+            loadMobileChatHistory(currentSessionId);
+            // キューを更新
+            refreshQueue();
+        } else {
+            showNotification(data.error || '送信に失敗しました', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending mobile chat message:', error);
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+        }
+        showNotification('送信エラーが発生しました', 'error');
+    });
+}
+
+// モバイルチャットのキーボードイベントハンドラ
+function handleMobileChatKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMobileChatMessage();
+    }
+    
+    // 入力に応じて送信ボタンの状態を更新
+    const sendBtn = document.getElementById('mobile-chat-send-btn');
+    if (sendBtn) {
+        sendBtn.disabled = !event.target.value.trim() || !currentSessionId;
+    }
+}
+
+// モバイルチャットモーダルを閉じる
+function closeMobileChatModal() {
+    const modal = document.getElementById('mobile-chat-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+    }
+    currentSessionId = null;
+}
+
+// モバイルでチャットを開く（インライン表示）- 後方互換性のため残す
+function openMobileChat(sessionId) {
+    const session = allSessions.find(s => s.session_id === sessionId);
+    const username = session ? session.username : 'ユーザー';
+    openMobileChatModal(sessionId, username);
+}
+
+// モバイル用戻るボタンの追加（チャット画面のpanel-header内、ユーザー名の左側）
+function addMobileBackButton() {
+    const panelHeader = document.querySelector('#center-panel .panel-header');
+    if (!panelHeader || panelHeader.querySelector('.mobile-chat-back-btn')) return;
+    
+    const chatTitle = document.getElementById('chat-title');
+    if (!chatTitle) return;
+    
+    const backBtn = document.createElement('button');
+    backBtn.className = 'mobile-chat-back-btn';
+    backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+    backBtn.onclick = closeMobileChat;
+    backBtn.title = '戻る';
+    backBtn.setAttribute('aria-label', 'チャット一覧に戻る');
+    backBtn.setAttribute('tabindex', '0');
+    
+    // ユーザー名の左側に挿入
+    panelHeader.insertBefore(backBtn, chatTitle);
+}
+
+// モバイルでチャットを閉じる
+function closeMobileChat() {
+    if (!isMobile()) return;
+    
+    // チャット画面を非表示にして、チャットカードリストを表示
+    const centerPanel = document.getElementById('center-panel');
+    if (centerPanel) {
+        centerPanel.style.display = 'flex';
+        // チャットカードリストを再表示
+        renderMobileChatListInCenterPanel(allSessions);
+    }
+    
+  // モバイルコンテンツエリアを表示
+  const mobileContentArea = document.getElementById('mobile-content-area');
+  if (mobileContentArea) mobileContentArea.style.display = 'flex';
+    
+    // 戻るボタンを削除
+    const backBtn = document.querySelector('.mobile-chat-back-btn');
+    if (backBtn) backBtn.remove();
+    
+    // ユーザー属性情報ボタンを非表示
+    const userAttributesBtn = document.getElementById('userAttributesBtn');
+    if (userAttributesBtn) {
+        userAttributesBtn.style.display = 'none';
+    }
+    
+    // チャット入力をクリア
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.value = '';
+        chatInput.disabled = true;
+        chatInput.placeholder = 'メッセージを入力...';
+    }
+    
+    // 送信ボタンを無効化
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+    
+    // チャットタイトルをリセット
+    const chatTitle = document.getElementById('chat-title');
+    if (chatTitle) {
+        chatTitle.textContent = 'セッションを選択';
+    }
+    
+    currentSessionId = null;
+}
+
+// モバイル用手動返信待ちキューのレンダリング
+function renderMobileQueueSlider(queue) {
+    const slider = document.getElementById('mobile-queue-slider');
+    if (!slider || !isMobile()) return;
+    
+    if (!Array.isArray(queue) || queue.length === 0) {
+        slider.innerHTML = '<div class="empty-state"><p>手動返信待ちなし</p></div>';
+        return;
+    }
+    
+    let html = '';
+    queue.forEach((item, index) => {
+        const isCrisisItem = item.status === 'crisis_detected' || item.priority === 'high';
+        const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
+        const shortSessionId = item.session_id ? item.session_id.substring(0, 8) + '...' : '不明';
+        const shortMessage = item.user_message && item.user_message.length > 30 
+            ? item.user_message.substring(0, 30) + '...' 
+            : (item.user_message || 'メッセージなし');
+        
+        // セッション情報を取得
+        const session = allSessions.find(s => s.session_id === item.session_id);
+        const username = session ? session.username : 'ユーザー';
+        
+        html += `
+            <div class="queue-slider-item" role="article" aria-label="手動返信待ちキューアイテム ${index + 1}" 
+                 onclick="event.stopPropagation(); openMobileChatModal('${item.session_id}', '${username.replace(/'/g, "\\'")}');" 
+                 style="cursor: pointer; touch-action: manipulation;">
+                <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">
+                    ${shortSessionId} ${crisisBadge}
+                </div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">
+                    ${shortMessage}
+                </div>
+                <div style="font-size: 0.7rem; color: #999;">
+                    ${username}
+                </div>
+            </div>
+        `;
+    });
+    
+    slider.innerHTML = html;
+}
+
+// タブレットでチャットを開く（左パネルを置き換え）
+function openTabletChat(sessionId) {
+    if (!isTablet()) {
+        // デスクトップの場合は通常のselectSessionを呼び出す
+        const session = allSessions.find(s => s.session_id === sessionId);
+        if (session) {
+            selectSession(null, sessionId, session.username);
+        } else {
+            selectSession(null, sessionId, 'ユーザー');
+        }
+        return;
+    }
+    
+    // セッション情報を取得
+    const session = allSessions.find(s => s.session_id === sessionId);
+    const username = session ? session.username : 'ユーザー';
+    
+    currentSessionId = sessionId;
+    
+    const leftPanel = document.getElementById('left-panel');
+    if (!leftPanel) return;
+    
+    // 左パネルの内容を保存
+    const originalContent = leftPanel.innerHTML;
+    leftPanel.dataset.originalContent = originalContent;
+    
+    // 左パネルをチャット画面に変更
+    leftPanel.innerHTML = `
+        <div class="panel-header">
+            <button class="action-btn" onclick="closeTabletChat()" title="戻る" style="min-width: 44px; min-height: 44px;" aria-label="チャット一覧に戻る">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <span class="panel-title" id="tablet-chat-title">${username} (${sessionId.substring(0, 8)}...)</span>
+            <button class="action-btn" id="tablet-user-attributes-btn" onclick="showUserAttributesModal()" title="ユーザー属性情報" style="min-width: 44px; min-height: 44px; margin-left: auto;" aria-label="ユーザー属性情報">
+                <i class="fa-solid fa-user-circle"></i>
+            </button>
+        </div>
+        <div class="chat-area">
+            <div class="chat-messages" id="tablet-chat-messages"></div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <textarea class="chat-input" id="tablet-chat-input" placeholder="${username} に返信メッセージを入力してください..." rows="1" onkeydown="handleTabletKeyDown(event)"></textarea>
+                    <button class="action-btn send-btn" onclick="sendTabletReply()" style="min-width: 44px; min-height: 44px;" id="tablet-send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // チャットを読み込む
+    loadTabletChatHistory(sessionId);
+}
+
+// タブレットでチャットを閉じる
+function closeTabletChat() {
+    if (!isTablet()) return;
+    
+    const leftPanel = document.getElementById('left-panel');
+    if (!leftPanel || !leftPanel.dataset.originalContent) return;
+    
+    // 元の内容を復元
+    leftPanel.innerHTML = leftPanel.dataset.originalContent;
+    delete leftPanel.dataset.originalContent;
+    
+    // セッション一覧を再読み込み
+    refreshSessionList();
+    
+    currentSessionId = null;
+}
+
+// タブレット用チャット履歴の読み込み
+function loadTabletChatHistory(sessionId) {
+    const chatMessages = document.getElementById('tablet-chat-messages');
+    if (!chatMessages) return;
+    
+    chatMessages.innerHTML = `
+        <div class="empty-state">
+            <div>🔄</div>
+            <p>チャット履歴を読み込み中...</p>
+        </div>
+    `;
+    
+    // デスクトップと同じAPIを使用
+    fetch('/api/main_sessions', {
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+        const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
+        
+        if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
+            // 管理者専用の詳細診断を保持
+            currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
+            currentMessages = targetSession.messages || [];
+            renderTabletChatMessages(targetSession.messages);
+            currentSessionId = sessionId;
+            
+            // 送信ボタンを有効化
+            const sendBtn = document.getElementById('tablet-send-btn');
+            if (sendBtn) sendBtn.disabled = false;
+        } else {
+            currentMessages = [];
+            renderTabletChatMessages([]);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading tablet chat history:', error);
+        chatMessages.innerHTML = `
+            <div class="empty-state">
+                <p>エラーが発生しました</p>
+            </div>
+        `;
+    });
+}
+
+// タブレット用チャットメッセージのレンダリング（デスクトップと同じUI）
+function renderTabletChatMessages(messages) {
+    // デスクトップと同じrenderChatMessagesを使用
+    // 一時的にchat-messagesのIDを変更して使用
+    const tabletChatMessages = document.getElementById('tablet-chat-messages');
+    if (!tabletChatMessages) return;
+    
+    // 一時的にchat-messagesのIDを保存
+    const originalChatMessages = document.getElementById('chat-messages');
+    if (originalChatMessages) {
+        originalChatMessages.id = 'chat-messages-temp';
+    }
+    
+    // tablet-chat-messagesをchat-messagesに変更
+    tabletChatMessages.id = 'chat-messages';
+    
+    // renderChatMessagesを呼び出し
+    renderChatMessages(messages);
+    
+    // IDを戻す
+    tabletChatMessages.id = 'tablet-chat-messages';
+    if (originalChatMessages) {
+        originalChatMessages.id = 'chat-messages';
+    }
+}
+
+// タブレット用返信送信
+function sendTabletReply() {
+    const input = document.getElementById('tablet-chat-input');
+    if (!input || !input.value.trim() || !currentSessionId) return;
+    
+    const message = input.value.trim();
+    const sendBtn = document.getElementById('tablet-send-btn');
+    
+    // ボタンを無効化
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+    
+    input.value = '';
+    
+    fetch('/api/main_manual_reply_queue', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'reply',
+            session_id: currentSessionId,
+            reply_message: message
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+        }
+        
+        if (data.success || data.status === 'success') {
+            loadTabletChatHistory(currentSessionId);
+            refreshQueue();
+            showNotification('返信を送信しました', 'success');
+        } else {
+            showNotification('返信の送信に失敗しました', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending tablet reply:', error);
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+        }
+        showNotification('返信の送信に失敗しました', 'error');
+    });
+}
+
+// タブレット用キーダウン処理
+function handleTabletKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendTabletReply();
+    }
+    
+    // 入力に応じて送信ボタンの状態を更新
+    const sendBtn = document.getElementById('tablet-send-btn');
+    if (sendBtn) {
+        sendBtn.disabled = !event.target.value.trim() || !currentSessionId;
+    }
+}
+
+// パネルリサイズ機能の条件付き無効化
+function initPanelResize() {
+    if (isMobile() || isTablet()) {
+        // モバイル/タブレットでは無効化
+        const resizers = document.querySelectorAll('.panel-resizer');
+        resizers.forEach(resizer => {
+            resizer.style.pointerEvents = 'none';
+            resizer.style.display = 'none';
+        });
+        
+        // パネルリサイズボタンも無効化
+        const resizeBtns = document.querySelectorAll('.panel-resize-btn');
+        resizeBtns.forEach(btn => {
+            btn.style.display = 'none';
+        });
+        return;
+    }
+    
+    // デスクトップでのみ有効化（既存のリサイズ機能を使用）
+    const resizers = document.querySelectorAll('.panel-resizer');
+    resizers.forEach(resizer => {
+        resizer.style.pointerEvents = 'auto';
+        resizer.style.display = 'block';
+    });
+    
+    const resizeBtns = document.querySelectorAll('.panel-resize-btn');
+    resizeBtns.forEach(btn => {
+        btn.style.display = 'flex';
+    });
+}
+
+// 既存のrenderQueue関数を拡張してモバイル用スライダーも更新
+const originalRenderQueue = renderQueue;
+renderQueue = function(queue) {
+    originalRenderQueue(queue);
+    renderMobileQueueSlider(queue);
+    
+    // モバイル用統計情報を更新
+    if (isMobile()) {
+        const queueCount = Array.isArray(queue) ? queue.length : 0;
+        const mobileQueueCount = document.getElementById('mobile-queue-count');
+        if (mobileQueueCount) mobileQueueCount.textContent = queueCount;
+    }
+};
+
+// 既存のrenderSessionList関数を拡張してモバイル用チャット一覧も更新（削除：center-panelに統合）
+// const originalRenderSessionList = renderSessionList;
+// renderSessionList = function(sessions) {
+//     originalRenderSessionList(sessions);
+//     // renderMobileChatList(sessions); // 削除：center-panelに統合
+//     
+//     // モバイル用統計情報を更新
+//     if (isMobile()) {
+//         const totalSessions = Array.isArray(sessions) ? sessions.length : 0;
+//         const mobileTotalSessions = document.getElementById('mobile-total-sessions');
+//         if (mobileTotalSessions) mobileTotalSessions.textContent = totalSessions;
+//     }
+// };
+
+// ページ読み込み時のモバイル要素の表示/非表示は、最初のDOMContentLoadedイベントリスナーで処理される
