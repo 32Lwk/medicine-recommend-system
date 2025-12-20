@@ -337,6 +337,9 @@ main {
 #right-panel .info-section {
     min-width: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 #right-panel .info-section h4,
@@ -359,7 +362,7 @@ main {
     flex: 1;
     overflow-y: auto;
     min-height: 200px;
-    max-height: 400px;
+    height: 0; /* flex: 1 を機能させるために必要 */
     margin: 0;
     padding: var(--spacing-xs) 0 0 0;
 }
@@ -764,6 +767,7 @@ main {
 #right-panel #manual-reply-queue {
     margin-bottom: 0;
     padding-bottom: 0;
+    height: 0; /* flex: 1 を機能させるために必要 */
 }
 
 .control-grid {
