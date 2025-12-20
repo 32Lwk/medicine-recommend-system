@@ -1,6 +1,6 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2025年12月20日（管理者画面のレスポンシブ改善とエラーハンドリング強化を追加）**
+**最終更新日: 2025年12月21日（管理者画面のモバイルレイアウト改善とスコアモーダルの最適化を追加）**
 
 ## ⚠️ β版（試験運用版）について
 
@@ -2112,6 +2112,46 @@ POST /api/admin_mode      # 管理者モード切り替え
 - 開発リポジトリ: https://github.com/32Lwk
 
 ## 📝 最近の更新履歴
+
+### 2025年12月21日
+- **管理者画面のモバイルレイアウト改善**
+  - **`mobile-content-area`のサイズ調整**: `mobile-queue-slider`の下端までの高さに制限
+    - `flex-shrink: 0`を設定し、JavaScriptで動的に高さを計算
+    - `mobile-stats`と`mobile-queue-slider-container`の高さを合計して設定
+  - **`panel-header`と`chat-messages`の配置改善**: `mobile-content-area`の下に`panel-header`、その下に`chat-messages`を配置
+    - CSSの`order`プロパティを使用してレイアウト順序を制御
+    - `center-panel`を`height: calc(100vh - 50px)`に設定し、`chat-messages`を画面下端まで伸ばす
+  - **`mobile-queue-slider`の左端アイテム表示修正**: 左端のアイテムが見えない問題を修正
+    - `justify-content: center`を`justify-content: flex-start`に変更
+    - パディングを`padding: var(--spacing-xs) 60px var(--spacing-xs) var(--spacing-xs)`に調整
+    - `scroll-snap-align: center`に戻し、スペーサー要素を追加して中央配置を実現
+  - **`queue-slider-item`の循環機能実装**: スライダーが循環するように改善
+    - 最後のアイテムを最初に、最初のアイテムを最後に複製
+    - `scrollQueueSlider`と`handleSwipe`で複製に到達した際に実際のアイテムにジャンプ
+    - すべての`scrollIntoView`呼び出しで`inline: 'center'`を使用
+  - **モバイルチャットモーダルの余白削減**: メッセージの左右の余白を削減
+    - `.mobile-chat-messages`のパディングを`var(--spacing-sm) var(--spacing-xs)`に削減
+    - `.message-content`の`max-width`を`85%`に調整
+    - ユーザーメッセージの左側、ボットメッセージの右側の余白を削減
+  - **効果**: モバイルでの管理者画面の使いやすさが大幅に向上し、スライダーが循環動作するようになった
+
+- **スコアモーダルのモバイルレイアウト最適化**
+  - **`score-item`のコンパクト化**: 無駄に大きい`score-item`を最適化
+    - パディングを`var(--spacing-xs) var(--spacing-sm)`に削減
+    - ギャップを`4px`に削減
+    - スコアバーの高さを`10px`に削減
+    - フォントサイズを調整（ラベル: 0.8rem、値: 0.75rem、重み表示: 0.7rem）
+  - **要素の順序調整**: ラベル → 値 → バー → 重み表示の順に配置
+  - **色分けの実装**: デスクトップと同様の色分けを実装
+    - JavaScriptで各スコアアイテムに`data-score-type`属性を追加
+    - CSSで`data-score-type`に基づいてボーダーカラーを設定
+      - 症状適合度: `#4CAF50`（緑）
+      - 効能特異性: `#2196F3`（青）
+      - 年齢適合性: `#9C27B0`（紫）
+      - 用法簡便性: `#FF9800`（オレンジ）
+      - 副作用リスク: `#F44336`（赤）
+      - 相互作用リスク: `#795548`（茶色）
+  - **効果**: モバイルでのスコアモーダルの見やすさが向上し、デスクトップと同様の色分けで視認性が向上
 
 ### 2025年12月20日（後半）
 - **管理者画面のレスポンシブ改善とエラーハンドリング強化**
