@@ -3207,9 +3207,57 @@
         });
     }
     
+    // 冬仕様の雪アニメーション
+    function createSnowAnimation() {
+        const snowContainer = document.getElementById('snowContainer');
+        if (!snowContainer) return;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // パフォーマンス最適化: 画面サイズに応じて雪の数を調整
+        const snowflakeCount = Math.min(30, Math.floor(window.innerWidth / 30));
+        const snowflakes = ['❄', '❅', '❆'];
+        
+        // 既存の雪をクリア
+        snowContainer.innerHTML = '';
+        
+        // 雪を生成
+        for (let i = 0; i < snowflakeCount; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+            
+            // ランダムな位置とアニメーション時間を設定
+            const left = Math.random() * 100;
+            const animationDuration = 10 + Math.random() * 20; // 10-30秒
+            const delay = Math.random() * 5; // 0-5秒の遅延
+            const drift = (Math.random() - 0.5) * 100; // -50px から 50px の横移動
+            
+            snowflake.style.left = left + '%';
+            snowflake.style.animationDuration = animationDuration + 's';
+            snowflake.style.animationDelay = delay + 's';
+            snowflake.style.setProperty('--drift', drift + 'px');
+            snowflake.style.fontSize = (0.5 + Math.random() * 0.5) + 'em'; // 0.5em - 1em
+            
+            snowContainer.appendChild(snowflake);
+        }
+    }
+    
+    // リサイズ時に雪を再生成（パフォーマンス最適化）
+    let resizeTimeout;
+    function handleResize() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(createSnowAnimation, 250);
+    }
+
     // ページ読み込み時に言語設定を適用
-    document.addEventListener('DOMContentLoaded', function() {
+    function initPage() {
         updateUI();
+        
+        // 冬仕様の雪アニメーションを開始
+        createSnowAnimation();
+        window.addEventListener('resize', handleResize);
         
         let onboardingCompleted = null;
         try {
@@ -3223,9 +3271,13 @@
         }
         
         // 言語オプションにイベントリスナーを追加
-        document.querySelectorAll('.lang-option').forEach(option => {
+        const langOptions = document.querySelectorAll('.lang-option');
+        langOptions.forEach(option => {
             option.addEventListener('click', function() {
-                selectLanguage(this.dataset.lang);
+                const lang = this.getAttribute('data-lang');
+                const flag = this.getAttribute('data-flag');
+                changeLanguage(lang, flag);
+                toggleLanguageMenu();
             });
         });
         
@@ -3245,7 +3297,16 @@
         if (userGenderSelect) {
             userGenderSelect.addEventListener('change', toggleUserPregnancyFields);
         }
-    });
+    }
+    
+    // DOMContentLoadedイベントが既に発火しているかチェック
+    if (document.readyState === 'loading') {
+        // DOMContentLoadedイベントがまだ発火していない場合
+        document.addEventListener('DOMContentLoaded', initPage);
+    } else {
+        // DOMContentLoadedイベントが既に発火している場合（defer属性で読み込まれた場合など）
+        initPage();
+    }
     
     // 送信中フラグ（グローバル変数）
     let isSubmitting = false;
