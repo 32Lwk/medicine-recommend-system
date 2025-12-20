@@ -3275,9 +3275,7 @@
         langOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const lang = this.getAttribute('data-lang');
-                const flag = this.getAttribute('data-flag');
-                changeLanguage(lang, flag);
-                toggleLanguageMenu();
+                selectLanguage(lang);
             });
         });
         
@@ -3833,6 +3831,8 @@
         }, 2000);
     }
 
+    window.toggleLanguageMenu = toggleLanguageMenu;
+    window.selectLanguage = selectLanguage;
     window.handlePositiveFeedback = handlePositiveFeedback;
     window.handleNegativeFeedback = handleNegativeFeedback;
     window.handleSecurityReportFromButton = handleSecurityReportFromButton;
