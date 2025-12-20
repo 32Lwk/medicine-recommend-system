@@ -208,7 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // セッション一覧も更新
             allSessions = sessionsArray;
             renderSessionList(allSessions);
-            document.getElementById('total-sessions').textContent = allSessions.length;
+            const totalSessionsEl = document.getElementById('total-sessions') || document.getElementById('session-count');
+            if (totalSessionsEl) {
+                totalSessionsEl.textContent = allSessions.length;
+            }
+            
+            // 初期データ読み込み後にmanual-reply-queueの高さを調整
+            setTimeout(() => {
+                adjustManualReplyQueueHeight();
+            }, 200);
         })
         .catch(error => {
             console.error('❌ Initial data load error:', error);
@@ -220,6 +228,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // パネルリサイザーの初期化
     initPanelResizers();
+    
+    // 初期化時にmanual-reply-queueの高さを調整
+    setTimeout(() => {
+        if (typeof adjustManualReplyQueueHeight === 'function') {
+            adjustManualReplyQueueHeight();
+        }
+    }, 500);
     
     // 統計情報アコーディオンをデフォルトで開く
     const statsAccordion = document.getElementById('stats-accordion');
@@ -265,7 +280,63 @@ function toggleAccordion(id) {
         if (icon) {
             icon.classList.toggle('rotated');
         }
+        
+        // アコーディオン開閉後にmanual-reply-queueの高さを調整
+        setTimeout(() => {
+            adjustManualReplyQueueHeight();
+        }, 350); // アニメーション完了を待つ（0.3s + 0.05s余裕）
     }
+}
+
+// manual-reply-queueの高さを調整する関数
+function adjustManualReplyQueueHeight() {
+    const rightPanel = document.getElementById('right-panel');
+    const manualReplyQueue = document.getElementById('manual-reply-queue');
+    const infoSection = manualReplyQueue?.closest('.info-section');
+    
+    if (!rightPanel || !manualReplyQueue || !infoSection) return;
+    
+    // 右パネルの高さを取得
+    const rightPanelHeight = rightPanel.clientHeight;
+    
+    // ヘッダーの高さを取得
+    const panelHeader = rightPanel.querySelector('.panel-header');
+    const headerHeight = panelHeader ? panelHeader.offsetHeight : 0;
+    
+    // アコーディオンの高さを取得
+    const accordion = rightPanel.querySelector('.accordion');
+    let accordionHeight = 0;
+    if (accordion) {
+        const accordionHeader = accordion.querySelector('.accordion-header');
+        const accordionContent = accordion.querySelector('.accordion-content');
+        accordionHeight = (accordionHeader ? accordionHeader.offsetHeight : 0) + 
+                         (accordionContent && accordionContent.classList.contains('open') ? accordionContent.scrollHeight : 0);
+    }
+    
+    // info-sectionの他の要素の高さを取得（タイトル、ボタンなど）
+    const infoSectionChildren = Array.from(infoSection.children);
+    let otherElementsHeight = 0;
+    infoSectionChildren.forEach(child => {
+        if (child !== manualReplyQueue) {
+            otherElementsHeight += child.offsetHeight;
+        }
+    });
+    
+    // paddingとborderを考慮
+    const paddingTop = parseFloat(getComputedStyle(infoSection).paddingTop) || 0;
+    const paddingBottom = parseFloat(getComputedStyle(infoSection).paddingBottom) || 0;
+    const borderBottom = parseFloat(getComputedStyle(infoSection).borderBottomWidth) || 0;
+    
+    // 利用可能な高さを計算
+    const availableHeight = rightPanelHeight - headerHeight - accordionHeight - otherElementsHeight - paddingTop - paddingBottom - borderBottom;
+    
+    // min-heightとmax-heightを考慮して設定
+    const minHeight = 200;
+    const calculatedHeight = Math.max(minHeight, availableHeight);
+    
+    // 高さを設定
+    manualReplyQueue.style.height = `${calculatedHeight}px`;
+    manualReplyQueue.style.maxHeight = 'none';
 }
 
 // パネルリサイズ機能
@@ -432,13 +503,23 @@ function manualRefresh() {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache'
             }
-        }).then(res => res.json()),
+        }).then(res => {
+            if (!res.ok) {
+                throw new Error(`キュー取得エラー: ${res.status} ${res.statusText}`);
+            }
+            return res.json();
+        }),
         fetch('/api/main_sessions', {
             headers: {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache'
             }
-        }).then(res => res.json())
+        }).then(res => {
+            if (!res.ok) {
+                throw new Error(`セッション取得エラー: ${res.status} ${res.statusText}`);
+            }
+            return res.json();
+        })
     ])
     .then(([queueData, sessionsData]) => {
         renderQueue(queueData);
@@ -451,13 +532,30 @@ function manualRefresh() {
         // セッション一覧も更新
         allSessions = sessionsArray;
         renderSessionList(allSessions);
-        document.getElementById('total-sessions').textContent = allSessions.length;
+        const totalSessionsEl = document.getElementById('total-sessions');
+        if (totalSessionsEl) {
+            totalSessionsEl.textContent = allSessions.length;
+        } else {
+            // session-countが存在する場合はそれを使用
+            const sessionCountEl = document.getElementById('session-count');
+            if (sessionCountEl) {
+                sessionCountEl.textContent = allSessions.length;
+            }
+        }
+        
+        // manual-reply-queueの高さを調整
+        setTimeout(() => {
+            if (typeof adjustManualReplyQueueHeight === 'function') {
+                adjustManualReplyQueueHeight();
+            }
+        }, 100);
         
         showNotification('データを更新しました', 'success');
     })
     .catch(error => {
         console.error('Manual refresh error:', error);
-        showNotification('更新エラーが発生しました', 'error');
+        const errorMessage = error.message || '更新エラーが発生しました';
+        showNotification(errorMessage, 'error');
     });
 }
 
@@ -629,6 +727,10 @@ function refreshQueue() {
         .then(data => {
             renderQueue(data);
             updateStats(data);
+            // キュー更新後に高さを調整
+            setTimeout(() => {
+                adjustManualReplyQueueHeight();
+            }, 100);
         })
         .catch(error => {
             showNotification('キュー取得エラー', 'error');
@@ -2198,8 +2300,10 @@ function clearAllLogs() {
         }
         
         // 統計情報を更新
-        document.getElementById('queue-count').textContent = '0';
-        document.getElementById('total-sessions').textContent = '0';
+        const queueCountEl = document.getElementById('queue-count');
+        if (queueCountEl) queueCountEl.textContent = '0';
+        const totalSessionsEl = document.getElementById('total-sessions') || document.getElementById('session-count');
+        if (totalSessionsEl) totalSessionsEl.textContent = '0';
     })
     .catch(error => {
         console.error('Error:', error);
@@ -2420,7 +2524,10 @@ window.sendReplyFromChat = function() {
                             // セッション一覧も更新
                             allSessions = sessionsArray;
                             renderSessionList(allSessions);
-                            document.getElementById('total-sessions').textContent = allSessions.length;
+                            const totalSessionsEl = document.getElementById('total-sessions') || document.getElementById('session-count');
+            if (totalSessionsEl) {
+                totalSessionsEl.textContent = allSessions.length;
+            }
                         }
                     })
                     .catch(error => {
@@ -4199,6 +4306,13 @@ window.addEventListener('resize', function() {
     if (!isMobile() && currentSessionId) {
         const centerPanel = document.getElementById('center-panel');
         if (centerPanel) centerPanel.style.display = 'flex';
+    }
+    
+    // デスクトップ表示時にmanual-reply-queueの高さを調整
+    if (!isMobile() && !isTablet()) {
+        setTimeout(() => {
+            adjustManualReplyQueueHeight();
+        }, 100);
     }
 });
 
