@@ -1770,49 +1770,49 @@ medicine-recommend/
 
 ## プロジェクト統計
 
-### コード行数と言語別の割合（2025年12月16日時点）
+### コード行数と言語別の割合（2025年12月21日時点）
 
 | 言語 | ファイル数 | 行数 | 割合 |
 |------|-----------|------|------|
-| **CSV** | 5 | 108,178 | 65.74% |
-| **Python** | 35 | 27,565 | 16.75% |
-| **Markdown** | 17 | 11,706 | 7.11% |
-| **JavaScript** | 2 | 9,038 | 5.49% |
-| **CSS** | 2 | 5,332 | 3.24% |
+| **CSV** | 5 | 108,168 | 65.74% |
+| **Python** | 23 | 27,565 | 16.75% |
+| **Markdown** | 20 | 11,706 | 7.11% |
+| **JavaScript** | 2 | 10,325 | 6.27% |
+| **CSS** | 2 | 6,235 | 3.79% |
 | **HTML** | 4 | 2,522 | 1.53% |
 | **Other** | 9 | 195 | 0.12% |
 | **Config** | 2 | 14 | 0.01% |
-| **合計** | **76** | **164,550** | **100.00%** |
+| **合計** | **67** | **164,630** | **100.00%** |
 
 #### 主要ファイル（各言語の上位5ファイル）
 
-**CSVファイル:**
-- `otc_medicine_data.csv` - 93,829行（市販薬データベース）
-- `summarized_efficacy_data.csv` - 13,995行（効能要約データ）
-- `kanpo_medicine.csv` - 220行（漢方薬データ）
-- `medicine_interactions.csv` - 83行（相互作用データ）
-- `medicine_side_effects.csv` - 51行（副作用データ）
+**CSVファイル（data/フォルダ）:**
+- `data/otc_medicine_data.csv` - 93,820行（市販薬データベース）
+- `data/summarized_efficacy_data.csv` - 13,994行（効能要約データ）
+- `data/kanpo_medicine.csv` - 220行（漢方薬データ）
+- `data/medicine_interactions.csv` - 83行（相互作用データ）
+- `data/medicine_side_effects.csv` - 51行（副作用データ）
 
 **Pythonファイル:**
-- `app.py` - 5,635行（メインアプリケーション）
-- `rule_based_recommendation.py` - 4,637行（ルールベース推奨アルゴリズム）
-- `medicine_logic.py` - 2,336行（医薬品推奨ロジック）
-- `test_comprehensive.py` - 1,789行（包括的テストスイート）
+- `app.py` - 5,836行（メインアプリケーション）
+- `rule_based_recommendation.py` - 6,581行（ルールベース推奨アルゴリズム）
+- `medicine_logic.py` - 2,377行（医薬品推奨ロジック）
+- `tools/test_comprehensive.py` - 1,789行（包括的テストスイート）
 - `security_validator.py` - 1,282行（セキュリティ検証モジュール）
 
-**Markdownファイル:**
-- `会社向け概要書類.md` - 3,342行
-- `README.md` - 2,373行（このファイル）
-- `report.md` - 1,553行
-- `ASYNC_IMPLEMENTATION_GUIDE.md` - 1,045行
-- `企業向け簡略版概要資料.md` - 717行
+**Markdownファイル（docs/フォルダ）:**
+- `docs/会社向け概要書類.md` - 3,342行
+- `README.md` - 2,735行（このファイル）
+- `docs/ASYNC_IMPLEMENTATION_GUIDE.md` - 1,045行
+- `docs/企業向け簡略版概要資料.md` - 717行
+- その他のドキュメントファイル
 
 **JavaScriptファイル:**
 - `static/js/main.js` - 5,053行（メインJavaScript）
-- `static/js/admin_chat.js` - 3,985行（管理者チャットJavaScript）
+- `static/js/admin_chat.js` - 5,272行（管理者チャットJavaScript）
 
 **CSSファイル:**
-- `static/css/admin_chat.css` - 2,743行（管理者チャットCSS）
+- `static/css/admin_chat.css` - 3,646行（管理者チャットCSS）
 - `static/css/main.css` - 2,589行（メインCSS）
 
 **HTMLファイル:**
@@ -1823,13 +1823,13 @@ medicine-recommend/
 
 #### 統計のまとめ
 
-- **合計行数**: 164,550行
-- **合計ファイル数**: 76ファイル
+- **合計行数**: 164,630行
+- **合計ファイル数**: 67ファイル（2025年12月21日のフォルダ構造整理後）
 - **最大の言語**: CSV（65.74%）—主に医薬品データベース
 - **コード言語**: Python（16.75%）—アプリケーションの主要ロジック
-- **フロントエンド**: JavaScript（5.49%）+ CSS（3.24%）+ HTML（1.53%）= 約10.26%
+- **フロントエンド**: JavaScript（6.27%）+ CSS（3.79%）+ HTML（1.53%）= 約11.59%
 
-**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。2025年12月21日にフォルダ構造を整理し、ファイルを`config/`、`data/`、`docs/`、`tools/`フォルダに分類しました。
 
 ## セキュリティと安全性
 
