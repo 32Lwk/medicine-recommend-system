@@ -1,6 +1,38 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2025年12月21日（管理者画面のモバイルレイアウト改善、アコーディオンメニューバグ修正、モバイルチャット送信機能修正を追加）**
+**最終更新日: 2025年12月21日（フォルダ構造の整理と最適化を実施）**
+
+## 📁 フォルダ構造の整理（2025年12月21日）
+
+プロジェクトの可読性とメンテナンス性を向上させるため、フォルダ構造を整理しました：
+
+### 実施した整理内容
+
+1. **設定ファイル** → `config/` フォルダ
+   - `gunicorn_config.py`
+   - `requirements.txt` (デプロイ用にルートにもコピーを保持)
+   - `runtime.txt` (デプロイ用にルートにもコピーを保持)
+
+2. **ドキュメントファイル** → `docs/` フォルダ
+   - 技術ドキュメント（ASYNC_IMPLEMENTATION_GUIDE.md、C_OPTIMIZATION_ANALYSIS.md など）
+   - 日本語ドキュメント（アプリ概要.md、プライバシーポリシー.md など）
+
+3. **データファイル（CSV）** → `data/` フォルダ
+   - すべてのCSVファイルを`data/`フォルダに移動
+   - `medicine_logic.py`と`scoring_utils.py`のパス参照を更新
+
+4. **ログファイル** → `log/` フォルダ
+   - `app.log`のパス参照を`log/app.log`に更新（次回起動時から適用）
+
+5. **ツール・スクリプト** → `tools/` フォルダ
+   - `auto_log_analyzer.py`（自動ログ分析ツール）
+   - `test_comprehensive.py`（包括的テストスイート）
+
+### 効果
+- プロジェクト構造の明確化
+- ファイル検索の容易化
+- メンテナンス性の向上
+- デプロイ時の設定ファイル管理の簡素化
 
 ## ⚠️ β版（試験運用版）について
 
@@ -1656,12 +1688,12 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `performance_monitor.py`: パフォーマンス監視モジュール
 - `debug_logger.py`: ログ管理モジュール
 
-### データファイル
-- `otc_medicine_data.csv`: 市販薬データベース（7495件）
-- `summarized_efficacy_data.csv`: 効能要約データ
-- `medicine_side_effects.csv`: 副作用データ
-- `medicine_interactions.csv`: 相互作用データ
-- `kanpo_medicine.csv`: 漢方薬データ（34種類の漢方薬に対する詳細なルールを含む）
+### データファイル（data/フォルダ）
+- `data/otc_medicine_data.csv`: 市販薬データベース（7495件）
+- `data/summarized_efficacy_data.csv`: 効能要約データ
+- `data/medicine_side_effects.csv`: 副作用データ
+- `data/medicine_interactions.csv`: 相互作用データ
+- `data/kanpo_medicine.csv`: 漢方薬データ（34種類の漢方薬に対する詳細なルールを含む）
 
 ### テンプレート
 - `templates/index.html`: メインチャットUI（評価ボタン・不具合報告機能統合）
@@ -1669,28 +1701,25 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `templates/username_input.html`: ユーザー名入力UI
 - `templates/debug_index.html`: デバッグUI
 
-### テストファイル
-- `test_comprehensive.py`: 包括的テストスイート
-- `test_comprehensive_security.py`: セキュリティ機能テスト
-- `test_comprehensive_deployment.py`: 包括的デプロイテスト
-- `test_enhanced_safety.py`: 安全性チェックテスト
-- `test_security_validator.py`: セキュリティ検証テスト
-- `test_integration.py`: 統合テスト
-- `test_unit.py`: 単体テスト
-- `test_scoring_fix.py`: スコアリング修正テスト
-- `test_system_performance.py`: システムパフォーマンステスト
-- `test_run_all.py`: 全テスト実行スクリプト
+### テスト・ツールファイル（tools/フォルダ）
+- `tools/test_comprehensive.py`: 包括的テストスイート（61個以上のテスト関数を含む）
+- `tools/auto_log_analyzer.py`: 自動ログ分析ツール（包括的なログ分析とMarkdown形式レポート生成）
 
-### ドキュメント
-- `README.md`: このファイル
-- `SECURITY_IMPLEMENTATION.md`: セキュリティ実装ドキュメント
-- `アプリ概要.md`: アプリケーションの詳細概要
-- `会社向け概要書類.md`: 企業向け詳細概要書類（3339行）
-- `企業向け簡略版概要資料.md`: 企業向け簡略版概要資料
-- `プライバシーポリシー.md`: プライバシーポリシー（β版）
-- `免責事項・利用規約.md`: 免責事項・利用規約（β版）
-- `医薬品相談先.md`: 公的機関の医薬品相談窓口情報
-- `運営者情報.md`: 運営者情報・連絡先
+### ドキュメント（docs/フォルダ）
+- `README.md`: このファイル（ルートに保持）
+- `docs/SECURITY_IMPLEMENTATION.md`: セキュリティ実装ドキュメント
+- `docs/ASYNC_IMPLEMENTATION_GUIDE.md`: 非同期処理実装ガイド
+- `docs/ASYNC_QUICK_START.md`: 非同期処理クイックスタートガイド
+- `docs/C_OPTIMIZATION_ANALYSIS.md`: C言語化による高速化分析ドキュメント
+- `docs/REGRESSION_TEST_GUIDE.md`: リグレッションテストガイド
+- `docs/SCALING_SETUP.md`: Render Manual Scaling設定ガイド
+- `docs/アプリ概要.md`: アプリケーションの詳細概要
+- `docs/会社向け概要書類.md`: 企業向け詳細概要書類（3339行）
+- `docs/企業向け簡略版概要資料.md`: 企業向け簡略版概要資料
+- `docs/プライバシーポリシー.md`: プライバシーポリシー（β版）
+- `docs/免責事項・利用規約.md`: 免責事項・利用規約（β版）
+- `docs/医薬品相談先.md`: 公的機関の医薬品相談窓口情報
+- `docs/運営者情報.md`: 運営者情報・連絡先
 
 ### 設計図・ダイアグラム（docs/フォルダ）
 - `docs/system_architecture.drawio`: システム全体アーキテクチャ
@@ -1705,7 +1734,7 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `static/css/main.css`: メインCSSスタイルシート
 - `static/js/main.js`: メインJavaScriptファイル
 
-### ログ
+### ログ（log/フォルダ）
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
 - `log/access_analytics.jsonl`: アクセス分析ログ
 - `log/performance_metrics.jsonl`: パフォーマンス監視ログ
@@ -1715,15 +1744,29 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `log/confidence_analytics.jsonl`: confidenceスコアチェックログ（2025年12月16日追加）
 - `log/counseling_analytics.jsonl`: カウンセリング完了ログ（2025年12月16日追加）
 - `log/counseling_responses.jsonl`: カウンセリング返信ログ（2025年12月16日追加）
-- `app.log`: アプリケーションログ（自動生成）
+- `log/app.log`: アプリケーションログ（自動生成、2025年12月21日からlog/フォルダに出力）
 
-### その他
-- `requirements.txt`: 依存パッケージリスト
-- `gunicorn_config.py`: Gunicorn設定ファイル
-- `runtime.txt`: Pythonランタイムバージョン
-- `SCALING_SETUP.md`: Render Manual Scaling設定ガイド
-- `C_OPTIMIZATION_ANALYSIS.md`: C言語化による高速化分析ドキュメント
-- `TEST_RESULTS_SUMMARY.md`: テスト結果サマリー
+### 設定ファイル（config/フォルダ）
+- `config/gunicorn_config.py`: Gunicorn設定ファイル
+- `config/requirements.txt`: 依存パッケージリスト（ルートにもコピーを保持）
+- `config/runtime.txt`: Pythonランタイムバージョン（ルートにもコピーを保持）
+
+### フォルダ構造（2025年12月21日整理）
+```
+medicine-recommend/
+├── config/          # 設定ファイル
+├── data/            # データファイル（CSV）
+├── docs/            # ドキュメント
+├── log/             # ログファイル
+├── tools/           # ツール・スクリプト
+├── static/          # 静的ファイル（CSS、JS）
+├── templates/       # テンプレート（HTML）
+├── examples/        # サンプルコード
+├── app.py           # メインアプリケーション
+├── requirements.txt # デプロイ用（ルートに保持）
+├── runtime.txt      # デプロイ用（ルートに保持）
+└── README.md        # メインドキュメント（ルートに保持）
+```
 
 ## プロジェクト統計
 
@@ -2542,6 +2585,23 @@ POST /api/admin_mode      # 管理者モード切り替え
     - 正規化情報が存在する場合は既に正規化済みのスコアを使用
     - フォールバック: 旧方式（0.5基準の正規化）もサポート
   - **効果**: 上位の医薬品間のスコア差が明確になり、最適な医薬品の選出精度が向上
+
+### 2025年12月21日
+- **フォルダ構造の整理と最適化**
+  - **設定ファイルの整理**: `config/`フォルダを作成し、設定ファイルを集約
+    - `gunicorn_config.py`、`requirements.txt`、`runtime.txt`を`config/`フォルダに移動
+    - デプロイ時の互換性のため、`requirements.txt`と`runtime.txt`はルートにもコピーを保持
+  - **データファイルの整理**: `data/`フォルダを作成し、すべてのCSVファイルを集約
+    - `otc_medicine_data.csv`、`kanpo_medicine.csv`、`medicine_interactions.csv`、`medicine_side_effects.csv`、`summarized_efficacy_data.csv`を`data/`フォルダに移動
+    - `medicine_logic.py`と`scoring_utils.py`のCSVパス参照を`data/`フォルダを参照するように更新
+  - **ドキュメントの整理**: 技術ドキュメントと日本語ドキュメントを`docs/`フォルダに集約
+    - `ASYNC_IMPLEMENTATION_GUIDE.md`、`ASYNC_QUICK_START.md`、`C_OPTIMIZATION_ANALYSIS.md`、`REGRESSION_TEST_GUIDE.md`、`SCALING_SETUP.md`、`SECURITY_IMPLEMENTATION.md`を移動
+    - 日本語ドキュメント（アプリ概要.md、プライバシーポリシー.md など）も`docs/`フォルダに移動
+  - **ツール・スクリプトの整理**: `tools/`フォルダを作成し、分析ツールとテストを集約
+    - `auto_log_analyzer.py`（自動ログ分析ツール）を`tools/`フォルダに移動
+    - `test_comprehensive.py`（包括的テストスイート）を`tools/`フォルダに移動
+  - **ログファイルの整理**: `app.log`のパス参照を`log/app.log`に更新（次回起動時から適用）
+  - **効果**: プロジェクト構造の明確化、ファイル検索の容易化、メンテナンス性の向上
 
 ### 2025年12月4日
 - **管理者画面の詳細スコアモーダルの大幅拡張**
