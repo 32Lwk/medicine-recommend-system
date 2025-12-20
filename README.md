@@ -2134,7 +2134,17 @@ POST /api/admin_mode      # 管理者モード切り替え
     - `.message-content`の`max-width`を`85%`に調整
     - ユーザーメッセージの左側、ボットメッセージの右側の余白を削減
   - **効果**: モバイルでの管理者画面の使いやすさが大幅に向上し、スライダーが循環動作するようになった
-
+  - **モバイルチャット送信機能の修正**: モバイルチャットモーダルでメッセージ送信が失敗する問題を修正
+    - `sendMobileChatMessage`関数で、`data.success || data.status === 'success'`の両方をチェックするように改善
+    - HTTPエラーのチェック（`res.ok`）を追加
+    - 成功時の通知メッセージを追加
+    - エラーメッセージの詳細化（`data.message`も含める）
+- **デスクトップ・タブレットレイアウトのアコーディオンメニューバグ修正**
+  - **HTMLタグの削除機能を追加**: `stripHtml`関数を追加し、メッセージからHTMLタグを削除してテキストのみを抽出
+  - **`renderCurrentSession`関数の改善**: 現在のセッション情報表示時にHTMLタグを削除し、すべての動的コンテンツに`escapeHtml`を適用
+  - **`renderQueue`関数の改善**: キューアイテム表示時にHTMLタグを削除し、すべての動的コンテンツに`escapeHtml`を適用
+  - **CSSの調整**: `queue-accordion-header`の`min-height`を`80px`から`60px`、`max-height`を`90px`から`70px`に削減し、`overflow: hidden`を追加
+  - **効果**: アコーディオンヘッダーにHTMLタグや詳細情報が表示されなくなり、簡潔で見やすい表示に改善
 - **スコアモーダルのモバイルレイアウト最適化**
   - **`score-item`のコンパクト化**: 無駄に大きい`score-item`を最適化
     - パディングを`var(--spacing-xs) var(--spacing-sm)`に削減
