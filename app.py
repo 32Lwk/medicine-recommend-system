@@ -18,7 +18,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),  # ターミナルに出力
-        logging.FileHandler('app.log', encoding='utf-8')  # ファイルにも出力
+        logging.FileHandler('log/app.log', encoding='utf-8')  # ファイルにも出力
     ]
 )
 logger = logging.getLogger(__name__)

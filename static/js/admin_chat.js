@@ -807,22 +807,22 @@ function renderQueue(queue) {
             <div class="${itemClass} queue-accordion-item">
                 <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
                     <div style="flex: 1; min-width: 0;">
-                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${shortSessionId} ${crisisBadge}</span>
-                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${shortMessage}</div>
+                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${escapeHtml(shortSessionId)} ${crisisBadge}</span>
+                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
                     </div>
                     <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
                 </div>
                 <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
                     <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
                         <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
-                            <strong>👤 ユーザー:</strong> ${item.user_message || 'メッセージなし'}
+                            <strong>👤 ユーザー:</strong> ${escapeHtml(item.user_message || 'メッセージなし')}
                         </div>
                         ${crisisKeywords}
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666; margin-bottom: 6px;">
-                            <span><strong>🕐</strong> ${item.timestamp || '不明'}</span>
+                            <span><strong>🕐</strong> ${escapeHtml(item.timestamp || '不明')}</span>
                         </div>
                         <div style="font-size: 0.65rem; color: #999; margin-bottom: 6px; word-break: break-all;">
-                            ID: ${item.session_id || '不明'}
+                            ID: ${escapeHtml(item.session_id || '不明')}
                         </div>
                         <div class="reply-section" style="margin-top: 6px;">
                             <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..." style="width: 100%; padding: 6px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.8rem; resize: vertical; min-height: 50px; max-height: 100px;"></textarea>
@@ -908,7 +908,9 @@ function renderCurrentSession(sessionData) {
     if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
         const accordionId = 'current-session-accordion';
         const accordionContentId = 'current-session-accordion-content';
-        const lastMessage = sessionData.messages[sessionData.messages.length - 1]?.content || 'なし';
+        const lastMessageRaw = sessionData.messages[sessionData.messages.length - 1]?.content || 'なし';
+        // HTMLタグを削除してテキストのみを抽出
+        const lastMessage = stripHtml(lastMessageRaw);
         const shortMessage = lastMessage.length > 30 ? lastMessage.substring(0, 30) + '...' : lastMessage;
         const shortSessionId = sessionData.session_id ? sessionData.session_id.substring(0, 8) + '...' : '不明';
         
@@ -917,26 +919,26 @@ function renderCurrentSession(sessionData) {
                 <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
                     <div style="flex: 1; min-width: 0;">
                         <span class="session-id" style="font-size: 0.8rem; font-weight: 600; color: #28a745; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">
-                            📱 ${shortSessionId} <span style="background: #28a745; color: white; padding: 1px 4px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; margin-left: 4px;">アクティブ</span>
+                            📱 ${escapeHtml(shortSessionId)} <span style="background: #28a745; color: white; padding: 1px 4px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; margin-left: 4px;">アクティブ</span>
                         </span>
-                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${shortMessage}</div>
+                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
                     </div>
                     <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
                 </div>
                 <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
                     <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
                         <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
-                            <strong>💬 最新:</strong> ${lastMessage.length > 60 ? lastMessage.substring(0, 60) + '...' : lastMessage}
+                            <strong>💬 最新:</strong> ${escapeHtml(lastMessage.length > 60 ? lastMessage.substring(0, 60) + '...' : lastMessage)}
                         </div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666;">
                             <span><strong>📊 件数:</strong> ${sessionData.messages_count || sessionData.messages.length || 0}</span>
                             <span><strong>${sessionData.session_active ? '✅' : '❌'}</strong> ${sessionData.session_active ? '有効' : '無効'}</span>
                         </div>
                         <div style="font-size: 0.65rem; color: #999; margin-top: 4px; word-break: break-all;">
-                            ID: ${sessionData.session_id || '不明'} | ${sessionData.last_activity || '不明'}
+                            ID: ${escapeHtml(sessionData.session_id || '不明')} | ${escapeHtml(sessionData.last_activity || '不明')}
                         </div>
                         <div style="margin-top: 6px;">
-                            <button class="btn btn-info" onclick="selectSession(event, '${sessionData.session_id}', 'current'); event.stopPropagation();" style="width: 100%; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                            <button class="btn btn-info" onclick="selectSession(event, '${escapeHtml(sessionData.session_id)}', 'current'); event.stopPropagation();" style="width: 100%; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                 <i class="fa-solid fa-comments"></i> チャットに移動
                             </button>
                         </div>
@@ -2632,6 +2634,14 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// HTMLタグを削除してテキストのみを抽出する関数
+function stripHtml(html) {
+    if (!html) return '';
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
 }
 
 function renderSessionList(sessions) {
@@ -4705,20 +4715,26 @@ function sendMobileChatMessage() {
             reply_message: message
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
     .then(data => {
         if (sendBtn) {
             sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
         }
         
-        if (data.success) {
+        if (data.success || data.status === 'success') {
             // チャット履歴を再読み込み
             loadMobileChatHistory(currentSessionId);
             // キューを更新
             refreshQueue();
+            showNotification('返信を送信しました', 'success');
         } else {
-            showNotification(data.error || '送信に失敗しました', 'error');
+            showNotification(data.error || data.message || '送信に失敗しました', 'error');
         }
     })
     .catch(error => {
@@ -4727,7 +4743,7 @@ function sendMobileChatMessage() {
             sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
         }
-        showNotification('送信エラーが発生しました', 'error');
+        showNotification('送信エラーが発生しました: ' + (error.message || error), 'error');
     });
 }
 

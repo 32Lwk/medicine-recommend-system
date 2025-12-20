@@ -11,8 +11,9 @@ from typing import Dict, List, Optional, Tuple, Any
 
 # CSVファイルのパス
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SIDE_EFFECTS_CSV = os.path.join(BASE_DIR, "medicine_side_effects.csv")
-INTERACTIONS_CSV = os.path.join(BASE_DIR, "medicine_interactions.csv")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+SIDE_EFFECTS_CSV = os.path.join(DATA_DIR, "medicine_side_effects.csv")
+INTERACTIONS_CSV = os.path.join(DATA_DIR, "medicine_interactions.csv")
 
 # 副作用・相互作用データのキャッシュ
 _side_effects_df = None
