@@ -4084,7 +4084,7 @@ function generateScoreDetailHtml(medicine) {
                     📊 基本6要素スコアリング
                 </h5>
                 <div class="score-items" style="display: grid; gap: 15px;">
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="symptom" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">症状適合度</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden; position: relative;">
                             <div class="score-fill" style="width: ${pct(symptom)}%; height: 100%; background: linear-gradient(90deg, #4CAF50, #66BB6A); transition: width 0.3s;"></div>
@@ -4092,7 +4092,7 @@ function generateScoreDetailHtml(medicine) {
                         <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #4CAF50;">${pct(symptom)}%</span>
                         <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.symptom} → ${formatValue(weightedSymptom)}</span>
                     </div>
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="efficacy" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">効能特異性</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
                             <div class="score-fill" style="width: ${pct(efficacy)}%; height: 100%; background: linear-gradient(90deg, #2196F3, #42A5F5);"></div>
@@ -4100,7 +4100,7 @@ function generateScoreDetailHtml(medicine) {
                         <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #2196F3;">${pct(efficacy)}%</span>
                         <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.efficacy} → ${formatValue(weightedEfficacy)}</span>
                     </div>
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="age" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">年齢適合性</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
                             <div class="score-fill" style="width: ${pct(age)}%; height: 100%; background: linear-gradient(90deg, #9C27B0, #BA68C8);"></div>
@@ -4108,7 +4108,7 @@ function generateScoreDetailHtml(medicine) {
                         <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #9C27B0;">${pct(age)}%</span>
                         <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.age} → ${formatValue(weightedAge)}</span>
                     </div>
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="usage" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">用法簡便性</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
                             <div class="score-fill" style="width: ${pct(usage)}%; height: 100%; background: linear-gradient(90deg, #FF9800, #FFB74D);"></div>
@@ -4116,7 +4116,7 @@ function generateScoreDetailHtml(medicine) {
                         <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #FF9800;">${pct(usage)}%</span>
                         <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.usage} → ${formatValue(weightedUsage)}</span>
                     </div>
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="side-effect" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">副作用リスク</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
                             <div class="score-fill" style="width: ${riskToPct(sideRisk)}%; height: 100%; background: linear-gradient(90deg, #F44336, #EF5350);"></div>
@@ -4124,7 +4124,7 @@ function generateScoreDetailHtml(medicine) {
                         <span class="score-value" style="flex: 0 0 80px; text-align: right; font-weight: bold; color: #F44336;">${riskToPct(sideRisk)}%</span>
                         <span style="flex: 0 0 100px; text-align: right; font-size: 0.85em; color: #666;">重み: ${weights.sideRisk} → ${formatValue(weightedSideRisk)}</span>
                     </div>
-                    <div class="score-item" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="score-item" data-score-type="interaction" style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
                         <span class="score-label" style="flex: 0 0 140px; font-weight: 500;">相互作用リスク</span>
                         <div class="score-bar" style="flex: 1; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
                             <div class="score-fill" style="width: ${riskToPct(interRisk)}%; height: 100%; background: linear-gradient(90deg, #795548, #A1887F);"></div>
@@ -4277,17 +4277,30 @@ function toggleMobileElements() {
     
     if (isMobileView) {
         // モバイル表示
-        if (mobileContentArea) mobileContentArea.style.display = 'flex';
+        if (mobileContentArea) {
+            mobileContentArea.style.display = 'flex';
+            mobileContentArea.style.flexShrink = '0';
+        }
         // セッションが選択されていない場合はcenter-panelを表示（チャットカードリスト用）
         if (centerPanel) {
+            centerPanel.style.display = 'flex';
+            centerPanel.style.flexDirection = 'column';
+            centerPanel.style.height = 'calc(100vh - 50px)';
+            
             if (currentSessionId) {
-                centerPanel.style.display = 'flex';
+                // チャット画面を表示
+                loadChatHistory(currentSessionId);
+                const chatInputArea = centerPanel.querySelector('.chat-input-area');
+                if (chatInputArea) chatInputArea.style.display = 'flex';
             } else {
-                centerPanel.style.display = 'flex';
                 // チャットカードリストを表示
                 if (allSessions.length > 0) {
                     renderMobileChatListInCenterPanel(allSessions);
                 }
+                const chatInputArea = centerPanel.querySelector('.chat-input-area');
+                if (chatInputArea) chatInputArea.style.display = 'none';
+                const chatTitle = document.getElementById('chat-title');
+                if (chatTitle) chatTitle.textContent = 'セッションを選択';
             }
         }
     } else {
@@ -4295,6 +4308,7 @@ function toggleMobileElements() {
         if (mobileContentArea) mobileContentArea.style.display = 'none';
         if (centerPanel && !isTablet()) {
             centerPanel.style.display = 'flex';
+            centerPanel.style.flexDirection = 'column';
         }
     }
 }
@@ -4321,14 +4335,51 @@ function scrollQueueSlider(direction) {
     const slider = document.getElementById('mobile-queue-slider');
     if (!slider) return;
     
-    const itemWidth = slider.querySelector('.queue-slider-item')?.offsetWidth || slider.clientWidth * 0.7;
+    const items = slider.querySelectorAll('.queue-slider-item');
+    if (items.length === 0) return;
+    
+    const itemWidth = items[0].offsetWidth;
     const gap = 8; // gap spacing
     const scrollAmount = itemWidth + gap;
+    const currentScroll = slider.scrollLeft;
+    const maxScroll = slider.scrollWidth - slider.clientWidth;
     
-    slider.scrollBy({
-        left: scrollAmount * direction,
-        behavior: 'smooth'
-    });
+    // 循環スクロールの実装
+    if (direction > 0) {
+        // 右にスクロール（最後の複製に到達した場合、最初の実際のアイテムにジャンプ）
+        slider.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+        
+        // スクロール完了後にチェック
+        setTimeout(() => {
+            if (slider.scrollLeft >= maxScroll - 10) {
+                const firstRealItem = slider.querySelector('.queue-slider-item[data-index="0"]');
+                if (firstRealItem) {
+                    firstRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+                }
+            }
+        }, 300);
+    } else {
+        // 左にスクロール（最初の複製に到達した場合、最後の実際のアイテムにジャンプ）
+        slider.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+        });
+        
+        // スクロール完了後にチェック
+        setTimeout(() => {
+            if (slider.scrollLeft <= 10) {
+                const items = slider.querySelectorAll('.queue-slider-item');
+                const lastRealIndex = items.length - 3; // 最後の複製を除く
+                const lastRealItem = slider.querySelector(`.queue-slider-item[data-index="${lastRealIndex}"]`);
+                if (lastRealItem) {
+                    lastRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+                }
+            }
+        }, 300);
+    }
 }
 
 // スワイプ検出（横スライダー用）
@@ -4351,11 +4402,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleSwipe() {
     const swipeThreshold = 50;
+    const slider = document.getElementById('mobile-queue-slider');
+    if (!slider) return;
+    
     if (touchEndX < touchStartX - swipeThreshold) {
         scrollQueueSlider(1); // 右にスクロール
     } else if (touchEndX > touchStartX + swipeThreshold) {
         scrollQueueSlider(-1); // 左にスクロール
     }
+    
+    // 循環チェック（スワイプ後）
+    setTimeout(() => {
+        const items = slider.querySelectorAll('.queue-slider-item');
+        if (items.length <= 2) return; // 複製がない場合はスキップ
+        
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (slider.scrollLeft >= maxScroll - 10) {
+            // 最後の複製に到達した場合、最初の実際のアイテムにジャンプ
+            const firstRealItem = slider.querySelector('.queue-slider-item[data-index="0"]');
+            if (firstRealItem) {
+                firstRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
+            }
+        } else if (slider.scrollLeft <= 10) {
+            // 最初の複製に到達した場合、最後の実際のアイテムにジャンプ
+            const lastRealIndex = items.length - 3;
+                const lastRealItem = slider.querySelector(`.queue-slider-item[data-index="${lastRealIndex}"]`);
+                if (lastRealItem) {
+                    lastRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+                }
+        }
+    }, 300);
+    
+    // 循環チェック（スワイプ後）
+    setTimeout(() => {
+        const items = slider.querySelectorAll('.queue-slider-item');
+        if (items.length <= 2) return; // 複製がない場合はスキップ
+        
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        if (slider.scrollLeft >= maxScroll - 10) {
+            // 最後の複製に到達した場合、最初の実際のアイテムにジャンプ
+            const firstRealItem = slider.querySelector('.queue-slider-item[data-index="0"]');
+            if (firstRealItem) {
+                firstRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
+            }
+        } else if (slider.scrollLeft <= 10) {
+            // 最初の複製に到達した場合、最後の実際のアイテムにジャンプ
+            const lastRealItem = slider.querySelector(`.queue-slider-item[data-index="${items.length - 3}"]`);
+            if (lastRealItem) {
+                lastRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
+            }
+        }
+    }, 300);
 }
 
 // モバイル用チャット一覧をカード形式でレンダリング（削除：center-panelに統合）
@@ -4742,8 +4839,52 @@ function renderMobileQueueSlider(queue) {
         return;
     }
     
+    // 循環スライダーのために、最後のアイテムを最初に、最初のアイテムを最後に複製
+    const itemsToRender = queue.length > 1 ? [...queue] : queue;
+    
     let html = '';
-    queue.forEach((item, index) => {
+    
+    // 最初のアイテムが中央に来るようにスペーサーを追加
+    // アイテム幅は最大300px、画面幅から120px（矢印ボタン用）を引いた値の小さい方
+    const viewportWidth = window.innerWidth || 400;
+    const itemMaxWidth = 300;
+    const itemWidth = Math.min(viewportWidth - 120, itemMaxWidth);
+    const spacerWidth = Math.max(0, (viewportWidth - itemWidth) / 2 - 60);
+    if (spacerWidth > 0) {
+        html += `<div class="slider-spacer" style="flex: 0 0 ${spacerWidth}px; min-width: ${spacerWidth}px; max-width: ${spacerWidth}px; scroll-snap-align: start;"></div>`;
+    }
+    
+    // 最後のアイテムを最初に複製（循環用）
+    if (itemsToRender.length > 1) {
+        const lastItem = itemsToRender[itemsToRender.length - 1];
+        const isCrisisItem = lastItem.status === 'crisis_detected' || lastItem.priority === 'high';
+        const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
+        const shortSessionId = lastItem.session_id ? lastItem.session_id.substring(0, 8) + '...' : '不明';
+        const shortMessage = lastItem.user_message && lastItem.user_message.length > 30 
+            ? lastItem.user_message.substring(0, 30) + '...' 
+            : (lastItem.user_message || 'メッセージなし');
+        const session = allSessions.find(s => s.session_id === lastItem.session_id);
+        const username = session ? session.username : 'ユーザー';
+        
+        html += `
+            <div class="queue-slider-item" data-clone="last" role="article" aria-label="手動返信待ちキューアイテム ${itemsToRender.length}" 
+                 onclick="event.stopPropagation(); openMobileChatModal('${lastItem.session_id}', '${username.replace(/'/g, "\\'")}');" 
+                 style="cursor: pointer; touch-action: manipulation;">
+                <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">
+                    ${shortSessionId} ${crisisBadge}
+                </div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">
+                    ${shortMessage}
+                </div>
+                <div style="font-size: 0.7rem; color: #999;">
+                    ${username}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 通常のアイテム
+    itemsToRender.forEach((item, index) => {
         const isCrisisItem = item.status === 'crisis_detected' || item.priority === 'high';
         const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
         const shortSessionId = item.session_id ? item.session_id.substring(0, 8) + '...' : '不明';
@@ -4756,7 +4897,7 @@ function renderMobileQueueSlider(queue) {
         const username = session ? session.username : 'ユーザー';
         
         html += `
-            <div class="queue-slider-item" role="article" aria-label="手動返信待ちキューアイテム ${index + 1}" 
+            <div class="queue-slider-item" data-index="${index}" role="article" aria-label="手動返信待ちキューアイテム ${index + 1}" 
                  onclick="event.stopPropagation(); openMobileChatModal('${item.session_id}', '${username.replace(/'/g, "\\'")}');" 
                  style="cursor: pointer; touch-action: manipulation;">
                 <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">
@@ -4772,7 +4913,73 @@ function renderMobileQueueSlider(queue) {
         `;
     });
     
+    // 最初のアイテムを最後に複製（循環用）
+    if (itemsToRender.length > 1) {
+        const firstItem = itemsToRender[0];
+        const isCrisisItem = firstItem.status === 'crisis_detected' || firstItem.priority === 'high';
+        const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
+        const shortSessionId = firstItem.session_id ? firstItem.session_id.substring(0, 8) + '...' : '不明';
+        const shortMessage = firstItem.user_message && firstItem.user_message.length > 30 
+            ? firstItem.user_message.substring(0, 30) + '...' 
+            : (firstItem.user_message || 'メッセージなし');
+        const session = allSessions.find(s => s.session_id === firstItem.session_id);
+        const username = session ? session.username : 'ユーザー';
+        
+        html += `
+            <div class="queue-slider-item" data-clone="first" role="article" aria-label="手動返信待ちキューアイテム 1" 
+                 onclick="event.stopPropagation(); openMobileChatModal('${firstItem.session_id}', '${username.replace(/'/g, "\\'")}');" 
+                 style="cursor: pointer; touch-action: manipulation;">
+                <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">
+                    ${shortSessionId} ${crisisBadge}
+                </div>
+                <div style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">
+                    ${shortMessage}
+                </div>
+                <div style="font-size: 0.7rem; color: #999;">
+                    ${username}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 最後のアイテムが中央に来るようにスペーサーを追加
+    if (spacerWidth > 0) {
+        html += `<div class="slider-spacer" style="flex: 0 0 ${spacerWidth}px; min-width: ${spacerWidth}px; max-width: ${spacerWidth}px; scroll-snap-align: end;"></div>`;
+    }
+    
     slider.innerHTML = html;
+    
+    // 最初の実際のアイテムにスクロール（複製をスキップ、中央に配置）
+    if (itemsToRender.length > 1) {
+        setTimeout(() => {
+            const firstRealItem = slider.querySelector('.queue-slider-item[data-index="0"]');
+            if (firstRealItem) {
+                firstRealItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+            }
+        }, 0);
+    } else if (itemsToRender.length === 1) {
+        // アイテムが1つの場合も中央に配置
+        setTimeout(() => {
+            const firstItem = slider.querySelector('.queue-slider-item[data-index="0"]');
+            if (firstItem) {
+                firstItem.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
+            }
+        }, 0);
+    }
+    
+    // mobile-content-areaの高さをmobile-queue-sliderの下端までに調整
+    setTimeout(() => {
+        const mobileContentArea = document.getElementById('mobile-content-area');
+        const mobileStats = document.getElementById('mobile-stats');
+        const mobileQueueSliderContainer = document.getElementById('mobile-queue-slider-container');
+        
+        if (mobileContentArea && mobileStats && mobileQueueSliderContainer) {
+            const statsHeight = mobileStats.offsetHeight;
+            const sliderContainerHeight = mobileQueueSliderContainer.offsetHeight;
+            const totalHeight = statsHeight + sliderContainerHeight;
+            mobileContentArea.style.height = `${totalHeight}px`;
+        }
+    }, 100);
 }
 
 // タブレットでチャットを開く（左パネルを置き換え）
