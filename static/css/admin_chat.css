@@ -356,6 +356,25 @@ main {
 #right-panel #manual-reply-queue {
     min-width: 0;
     overflow-x: hidden;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: 400px;
+    margin: 0;
+    padding: var(--spacing-xs) 0 0 0;
+}
+
+/* キューアイテムの余白を調整 */
+#right-panel #manual-reply-queue .queue-item,
+#right-panel #manual-reply-queue .queue-accordion-item {
+    margin-bottom: var(--spacing-xs);
+    margin-top: 0;
+    padding: 0;
+}
+
+#right-panel #manual-reply-queue .queue-item:last-child,
+#right-panel #manual-reply-queue .queue-accordion-item:last-child {
+    margin-bottom: 0;
 }
 
 #right-panel .queue-accordion-header {
@@ -713,10 +732,38 @@ main {
 .info-section {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .info-section:last-child {
     border-bottom: none;
+}
+
+/* 手動返信待ちキューセクションの余白を削除 */
+#right-panel .info-section {
+    padding-bottom: var(--spacing-md);
+}
+
+#right-panel .info-section:last-of-type {
+    padding-bottom: 0;
+}
+
+/* AI管理アコーディオンが閉じた際の余白を削除 */
+#right-panel .accordion-content:not(.open) {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+#right-panel .accordion-content.closed {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+#right-panel #manual-reply-queue {
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .control-grid {
@@ -1030,20 +1077,26 @@ main {
 
 /* キューアコーディオンメニュー */
 .queue-accordion-item {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    padding: 0;
 }
 
 .queue-accordion-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--color-gray-light);
     border: 1px solid var(--color-gray-border);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition-base);
     user-select: none;
+    gap: var(--spacing-xs);
+    min-height: 80px;
+    max-height: 90px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .queue-accordion-header:hover {
@@ -1072,6 +1125,13 @@ main {
 .queue-accordion-content {
     overflow: hidden;
     transition: max-height 0.3s ease;
+    margin-top: 0;
+    padding: 0;
+}
+
+.queue-accordion-content > div {
+    padding: var(--spacing-xs) var(--spacing-sm) !important;
+    margin: 0 !important;
 }
 
 .queue-header {
@@ -2251,65 +2311,515 @@ td .ai-response {
 @media (max-width: 480px) {
     :root {
         --spacing-base: 0.75rem;
+        --font-size-base: 14px;
     }
     
     body {
-        padding: var(--spacing-sm);
+        padding: 0;
     }
     
-    .container {
-        border-radius: var(--radius-lg);
+  /* ヘッダーのボタンを非表示 */
+  .header-system-controls {
+      display: none !important;
+  }
+  
+  /* ヘッダー固定 */
+  header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 50px;
+      min-height: 50px;
+      padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  /* ヘッダー固定時のコンテンツ調整 */
+  .container {
+      padding-top: 50px;
+  }
+  
+  /* ヘッダー内の要素をコンパクトに */
+  .brand-section {
+      gap: var(--spacing-xs);
+  }
+  
+  .brand {
+      font-size: 0.875rem;
+  }
+  
+  .header-controls {
+      gap: var(--spacing-xs);
+  }
+  
+  .status-badge {
+      font-size: 0.7rem;
+      padding: var(--spacing-xs);
+  }
+  
+  .action-btn {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+  }
+    
+  /* 3カラムレイアウトを無効化 */
+  main {
+      grid-template-columns: 1fr !important;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+      overflow: hidden;
+      position: relative;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+  }
+  
+  /* 左パネルと右パネルを非表示 */
+  #left-panel,
+  #right-panel {
+      display: none !important;
+  }
+  
+  /* 中央パネルを全幅表示 */
+  #center-panel {
+      grid-column: 1;
+      width: 100%;
+      display: none; /* 初期状態では非表示（モバイルチャット一覧を表示） */
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+  }
+  
+  /* 中央パネルのリサイザーも非表示 */
+  #center-resizer {
+      display: none !important;
+  }
+  
+  /* 左パネルと右パネルのリサイザーも非表示 */
+  #left-resizer {
+      display: none !important;
+  }
+  
+  /* モバイル用コンテンツエリア */
+  .mobile-content-area {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+  }
+    
+  /* 統計情報セクション */
+  .mobile-stats {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: var(--spacing-xs);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      margin: 0;
+      flex-shrink: 0;
+      min-height: 32px;
+      height: 32px;
+  }
+  
+  .mobile-stats .stat-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
+      padding: 0;
+  }
+  
+  .mobile-stats .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+  }
+  
+  .mobile-stats .stat-value {
+      font-size: 0.85rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--primary);
+      line-height: 1;
+  }
+    
+  /* 横スライダーコンテナ */
+  .mobile-queue-slider-container {
+      position: relative;
+      width: 100%;
+      margin: var(--spacing-xs) 0;
+      flex-shrink: 0;
+      z-index: 1;
+  }
+    
+  /* 横スライダー */
+  .mobile-queue-slider {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-xs) 60px;
+      justify-content: center;
+      align-items: center;
+      min-height: 100px;
+      position: relative;
+      z-index: 0;
+  }
+  
+  .mobile-queue-slider::-webkit-scrollbar {
+      display: none;
+  }
+  
+  /* スライダーアイテム */
+  .queue-slider-item {
+      flex: 0 0 auto;
+      width: calc(100vw - 120px);
+      max-width: 300px;
+      scroll-snap-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-sm);
+      box-shadow: var(--shadow-sm);
+      margin: 0 auto;
     }
     
-    .header {
-        padding: var(--spacing-md) var(--spacing-sm);
+  /* 矢印ボタン */
+  .slider-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      transition: var(--transition-base);
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
+  
+  .slider-arrow:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+  
+  .slider-arrow:active {
+      background: rgba(0, 0, 0, 0.9);
+      transform: translateY(-50%) scale(0.95);
+    }
+  
+  .slider-arrow-left {
+      left: 8px;
+  }
+  
+  .slider-arrow-right {
+      right: 8px;
+  }
+    
+  /* チャット一覧（カード形式）- 削除：center-panelに統合 */
+  /* .mobile-chat-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+  } */
+    
+  .chat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      padding: var(--spacing-sm) var(--spacing-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+      min-height: 44px;
+      margin-bottom: 0;
+      position: relative;
+    }
+  
+  .chat-card:active {
+      background: var(--background);
+  }
+  
+  .chat-card-header {
+      display: none;
+  }
+  
+  .chat-card-preview {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-bottom: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      line-height: 1.2;
+    }
+  
+  .chat-card-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.125rem;
+      font-size: 0.75rem;
+      color: var(--text-sub);
+    }
+  
+  .chat-card .session-user {
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      margin-bottom: 0.125rem;
+  }
+  
+  /* モバイルチャットモーダル */
+  .mobile-chat-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+  }
+  
+  .mobile-chat-modal-content {
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      max-height: 100%;
+      background: var(--background);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+  }
+  
+  .mobile-chat-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      min-height: 50px;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      position: relative;
+  }
+  
+  .mobile-chat-title-wrapper {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+  }
+  
+  .mobile-chat-title {
+      font-weight: var(--font-weight-semibold);
+      font-size: 0.9rem;
+      text-align: left;
+      margin: 0;
+  }
+  
+  .mobile-chat-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: var(--spacing-xs);
+  }
+  
+  .mobile-chat-detail-item {
+      display: flex;
+      gap: 4px;
+      align-items: flex-start;
+  }
+  
+  .mobile-chat-detail-item.full-width {
+      flex-direction: column;
+      gap: 2px;
+  }
+  
+  .mobile-chat-detail-item .detail-label {
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-sub);
+      white-space: nowrap;
+  }
+  
+  .mobile-chat-detail-item .detail-value {
+      color: var(--text-main);
+      word-break: break-word;
+  }
+  
+  .mobile-chat-header > .mobile-chat-close-btn,
+  .mobile-chat-header > .mobile-chat-attributes-btn {
+      position: absolute;
+      top: var(--spacing-md);
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border: none;
+      background: transparent;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      transition: var(--transition-base);
+      z-index: 10;
+  }
+  
+  .mobile-chat-close-btn {
+      left: var(--spacing-md);
+  }
+  
+  .mobile-chat-attributes-btn {
+      right: var(--spacing-md);
+  }
+  
+  .mobile-chat-close-btn:active,
+  .mobile-chat-attributes-btn:active {
+      background: var(--background);
+  }
+  
+  .mobile-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-sm) var(--spacing-md);
+      min-height: 0;
+  }
+  
+  .mobile-chat-messages .message {
+      margin-bottom: 12px;
+      max-width: 90%;
+    }
+  
+  .mobile-chat-messages .message.user {
+      justify-content: flex-start;
+      margin-left: 0;
+    }
+  
+  .mobile-chat-messages .message.bot {
+      justify-content: flex-end;
+      margin-right: 0;
+    }
+  
+  .mobile-chat-messages .message-content {
+      max-width: 90% !important;
+    }
+  
+  .mobile-chat-input-area {
+      display: flex;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+  }
+  
+  .mobile-chat-input {
+      flex: 1;
+      padding: var(--spacing-sm);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-base);
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+  }
+  
+  .mobile-chat-send-btn {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-base);
+  }
+  
+  .mobile-chat-send-btn:active {
+      background: var(--primary-dark);
+      transform: scale(0.95);
+  }
+  
+  .mobile-chat-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }
+    
+    /* チャット画面のpanel-header内戻るボタン */
+    #center-panel .panel-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
     }
     
-    .header h1 {
-        font-size: var(--font-size-lg);
-    }
-    
-    .header p {
-        font-size: 0.875rem;
-    }
-    
-    .admin-controls {
-        gap: var(--spacing-xs);
-    }
-    
-    .admin-btn {
-        font-size: 0.8125rem;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        min-height: 40px;
-    }
-    
-    .section {
-        padding: var(--spacing-sm);
-    }
-    
-    .section-title {
-        font-size: var(--font-size-lg);
-    }
-    
-    .controls button {
-        font-size: 0.875rem;
-        padding: var(--spacing-sm);
+    .mobile-chat-back-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
         min-height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: var(--text-main);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
     
-    .main-content {
-        flex-direction: column;
-        height: auto;
-        min-height: auto;
+    .mobile-chat-back-btn:active {
+        background: var(--background);
     }
     
-    .session-sidebar {
-        flex: 1 1 auto;
-        min-height: 300px;
-    }
-    
-    .chat-monitor {
-        min-height: 400px;
+    /* ユーザー属性情報ボタンの維持 */
+    #userAttributesBtn {
+        display: flex !important;
+        min-width: 44px;
+        min-height: 44px;
     }
     
     .admin-modal-content,
@@ -2330,34 +2840,131 @@ td .ai-response {
     .notification.show {
         transform: translateY(0);
     }
+    
+    /* タッチターゲットの確保 */
+    button, .action-btn, .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* キーボードフォーカス表示の改善 */
+    button:focus-visible,
+    .action-btn:focus-visible,
+    .btn:focus-visible,
+    .chat-card:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
 }
 
-/* Medium devices (tablets, 768px and down) */
-@media (max-width: 768px) {
+/* Medium devices (tablets, 481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    :root {
+        --font-size-base: 15px;
+    }
+    
     body {
         padding: 0;
     }
     
-    main {
-        grid-template-columns: 1fr !important;
+    /* ヘッダーのボタンを非表示 */
+    .header-system-controls {
+        display: none !important;
     }
     
+    /* 2カラムレイアウト */
+    main {
+        grid-template-columns: 1fr 4px 1fr !important;
+    }
+    
+    /* 左パネル（チャット一覧） */
+    #left-panel {
+        grid-column: 1;
+    }
+    
+    /* 中央パネルを非表示 */
+    #center-panel {
+        display: none !important;
+    }
+    
+    /* 中央パネルのリサイザーも非表示 */
+    #center-resizer {
+        display: none !important;
+    }
+    
+    /* 右パネル */
+    #right-panel {
+        grid-column: 3;
+    }
+    
+    /* パネルリサイザーを非表示 */
     .panel-resizer {
         display: none;
     }
     
-    .panel {
-        min-width: 100% !important;
-        max-width: 100% !important;
-        width: 100% !important;
+    /* session-listの下の余白を削除 */
+    #left-panel .session-list {
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
     
-    .header-system-controls {
-        display: none;
+    #left-panel #session-list {
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
     
-    .panel:first-child {
-        display: none;
+    #left-panel .session-item:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+    
+    #left-panel .search-box {
+        margin-bottom: 0;
+        padding-bottom: var(--spacing-sm);
+    }
+    
+    #left-panel .panel {
+        padding-bottom: 0;
+    }
+    
+    #left-panel .accordion {
+        margin-bottom: 0;
+    }
+    
+    #left-panel .accordion-content {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    /* タブレット統計情報（簡潔表示） */
+    .tablet-stats {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        margin: 0;
+        min-height: 32px;
+        height: 32px;
+    }
+    
+    .tablet-stat-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .tablet-stat-label {
+        font-size: 0.7rem;
+        color: var(--text-sub);
+    }
+    
+    .tablet-stat-value {
+        font-size: 0.85rem;
+        font-weight: var(--font-weight-bold);
+        color: var(--primary);
     }
     
     .panel-header {
@@ -2393,36 +3000,6 @@ td .ai-response {
         padding: var(--spacing-sm) var(--spacing-md);
     }
     
-    .main-content {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        height: auto;
-        min-height: auto;
-    }
-    
-    .session-sidebar {
-        flex: 1 1 auto;
-        min-height: 250px;
-    }
-    
-    .section {
-        padding: var(--spacing-md);
-    }
-    
-    .section-title {
-        font-size: var(--font-size-lg);
-    }
-    
-    .controls {
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-    
-    .controls button {
-        width: 100%;
-        min-height: 44px;
-    }
-    
     #session-search,
     input[type="text"],
     textarea {
@@ -2448,8 +3025,51 @@ td .ai-response {
         max-height: 300px;
     }
     
-    .chat-history {
-        max-height: 250px;
+    /* タッチターゲットの確保 */
+    button, .action-btn, .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* キーボードフォーカス表示の改善 */
+    button:focus-visible,
+    .action-btn:focus-visible,
+    .btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+}
+
+/* Desktop: Show tablet stats (same as tablet) */
+@media (min-width: 769px) {
+    .tablet-stats {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        margin: 0;
+        min-height: 32px;
+        height: 32px;
+    }
+    
+    .tablet-stat-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .tablet-stat-label {
+        font-size: 0.7rem;
+        color: var(--text-sub);
+    }
+    
+    .tablet-stat-value {
+        font-size: 0.85rem;
+        font-weight: var(--font-weight-bold);
+        color: var(--primary);
     }
 }
 
@@ -2466,6 +3086,33 @@ td .ai-response {
     .section {
         padding: var(--spacing-md);
     }
+}
+
+/* キーボードフォーカス表示の改善（全画面サイズ） */
+button:focus-visible,
+.action-btn:focus-visible,
+.btn:focus-visible,
+.chat-card:focus-visible,
+.slider-arrow:focus-visible,
+.mobile-chat-back-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* スキップリンク（アクセシビリティ） */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
 }
 
 /* Print Styles */
