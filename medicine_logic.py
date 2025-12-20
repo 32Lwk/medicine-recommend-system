@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 # このファイルのあるディレクトリを基準にCSVファイルの絶対パスを取得
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_PATH = os.path.join(BASE_DIR, "otc_medicine_data.csv")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+CSV_PATH = os.path.join(DATA_DIR, "otc_medicine_data.csv")
 
 logger.info(f'CSVファイル絶対パス: {CSV_PATH}')
 logger.info(f'ファイル存在: {os.path.exists(CSV_PATH)}')
@@ -746,8 +747,9 @@ def recommend_otc_medicines_via_gpt(user_text, symptom_csv_path=None, otc_csv_pa
     import os
     # CSV読み込み
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    symptom_csv = symptom_csv_path or os.path.join(base_dir, "症状-薬.csv")
-    otc_csv = otc_csv_path or os.path.join(base_dir, "otc_medicine_data.csv")
+    data_dir = os.path.join(base_dir, "data")
+    symptom_csv = symptom_csv_path or os.path.join(data_dir, "症状-薬.csv")
+    otc_csv = otc_csv_path or os.path.join(data_dir, "otc_medicine_data.csv")
     df_symptom = pd.read_csv(symptom_csv)
     df_otc = pd.read_csv(otc_csv)
     
@@ -780,7 +782,8 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     import re
     # CSV読み込み
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    summarized_csv = summarized_csv_path or os.path.join(base_dir, "summarized_efficacy_data.csv")
+    data_dir = os.path.join(base_dir, "data")
+    summarized_csv = summarized_csv_path or os.path.join(data_dir, "summarized_efficacy_data.csv")
     df = pd.read_csv(summarized_csv)
     
     # NaN値を適切に処理
@@ -2036,7 +2039,9 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     if not recommended_medicines:
         try:
             import pandas as pd
-            df = pd.read_csv('otc_medicine_data.csv')
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            data_dir = os.path.join(base_dir, "data")
+            df = pd.read_csv(os.path.join(data_dir, 'otc_medicine_data.csv'))
             detected_medicines = detect_medicine_name_in_query(user_message, df)
             if detected_medicines:
                 medicine_info = ""

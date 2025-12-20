@@ -1,6 +1,38 @@
 # チャ�?ト型医薬品相�?�?ール - 統合ドキュメン�?
 
-**�?終更新日: 2025年12�?21日?��管�?�?画面のモバイルレイアウト改�?、アコー�?ィオンメニューバグ修正、モバイルチャ�?ト�?�信機�?�修正を追�??�?**
+**�?終更新日: 2025年12�?21日?��フォル�?構�??の整�?と�?適化を実施?�?**
+
+## 📁 フォル�?構�??の整�??�?2025年12�?21日?�?
+
+プロジェクト�?�可読性とメン�?ナンス性を向上させるため、フォル�?構�??を整�?しました?�?
+
+### 実施した整�?�?容
+
+1. **設定ファイル** �? `config/` フォル�?
+   - `gunicorn_config.py`
+   - `requirements.txt` (�?プロイ用にルートにもコピ�?�を保持)
+   - `runtime.txt` (�?プロイ用にルートにもコピ�?�を保持)
+
+2. **ドキュメントファイル** �? `docs/` フォル�?
+   - �?術ドキュメント�?ASYNC_IMPLEMENTATION_GUIDE.md、C_OPTIMIZATION_ANALYSIS.md など?�?
+   - 日本語ドキュメント（アプリ概�?.md、�?�ライバシーポリシー.md など?�?
+
+3. **�?ータファイル?�?CSV?�?** �? `data/` フォル�?
+   - すべてのCSVファイルを`data/`フォル�?に移�?
+   - `medicine_logic.py`と`scoring_utils.py`のパス参�?�を更新
+
+4. **ログファイル** �? `log/` フォル�?
+   - `app.log`のパス参�?�を`log/app.log`に更新?��次回起動時から適用?�?
+
+5. **�?ール・スクリプト** �? `tools/` フォル�?
+   - `auto_log_analyzer.py`?���?�動ログ�?析ツール?�?
+   - `test_comprehensive.py`?��包括�?�?ストスイート�?
+
+### 効�?
+- プロジェクト構�??の明確�?
+- ファイル検索の容易化
+- メン�?ナンス性の向�?
+- �?プロイ時�?�設定ファイル管�?の簡�?�?
 
 ## �??�? β版（試験運用版）につ�?て
 
@@ -1656,12 +1688,12 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `performance_monitor.py`: パフォーマンス監視モジュール
 - `debug_logger.py`: ログ管�?モジュール
 
-### �?ータファイル
-- `otc_medicine_data.csv`: 市販薬�?ータベ�?�ス?�?7495件?�?
-- `summarized_efficacy_data.csv`: 効能要�?�?ータ
-- `medicine_side_effects.csv`: 副作用�?ータ
-- `medicine_interactions.csv`: 相互作用�?ータ
-- `kanpo_medicine.csv`: 漢方薬�?ータ?�?34種類�?�漢方薬に対する詳細なルールを含�??�?
+### �?ータファイル?�?data/フォル�??�?
+- `data/otc_medicine_data.csv`: 市販薬�?ータベ�?�ス?�?7495件?�?
+- `data/summarized_efficacy_data.csv`: 効能要�?�?ータ
+- `data/medicine_side_effects.csv`: 副作用�?ータ
+- `data/medicine_interactions.csv`: 相互作用�?ータ
+- `data/kanpo_medicine.csv`: 漢方薬�?ータ?�?34種類�?�漢方薬に対する詳細なルールを含�??�?
 
 ### �?ンプレー�?
 - `templates/index.html`: メインチャ�?�?UI?��評価ボタン・不�?�合�?�告機�?�統合�?
@@ -1669,28 +1701,25 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `templates/username_input.html`: ユーザー名�?�力UI
 - `templates/debug_index.html`: �?バッグUI
 
-### �?ストファイル
-- `test_comprehensive.py`: �?括�?�?ストスイー�?
-- `test_comprehensive_security.py`: セキュリ�?ィ機�?��?ス�?
-- `test_comprehensive_deployment.py`: �?括�?�?プロイ�?ス�?
-- `test_enhanced_safety.py`: 安�?�性チェ�?ク�?ス�?
-- `test_security_validator.py`: セキュリ�?ィ検証�?ス�?
-- `test_integration.py`: 統合テス�?
-- `test_unit.py`: 単体テス�?
-- `test_scoring_fix.py`: スコアリング修正�?ス�?
-- `test_system_performance.py`: シス�?�?パフォーマンス�?ス�?
-- `test_run_all.py`: 全�?スト実行スクリプト
+### �?スト�?��?ールファイル?�?tools/フォル�??�?
+- `tools/test_comprehensive.py`: �?括�?�?ストスイート�?61個以上�?��?スト関数を含�??�?
+- `tools/auto_log_analyzer.py`: 自動ログ�?析ツール?��包括�?なログ�?析とMarkdown形式レポ�?�ト生成�?
 
-### ドキュメン�?
-- `README.md`: こ�?�ファイル
-- `SECURITY_IMPLEMENTATION.md`: セキュリ�?ィ実�?ドキュメン�?
-- `アプリ概�?.md`: アプリケーションの詳細概�?
-- `会社向け概要書�?.md`: 企業向け詳細概要書類�?3339行�?
-- `企業向け簡略版概要�?�?.md`: 企業向け簡略版概要�?�?
-- `プライバシーポリシー.md`: プライバシーポリシー?��β版�?
-- `免責事�??・利用規�?.md`: 免責事�??・利用規�?��β版�?
-- `医薬品相�?�?.md`: 公�?機関の医薬品相�?窓口�?報
-- `運営�?�?報.md`: 運営�?�?報・連絡�?
+### ドキュメント�?docs/フォル�??�?
+- `README.md`: こ�?�ファイル?��ルートに保持?�?
+- `docs/SECURITY_IMPLEMENTATION.md`: セキュリ�?ィ実�?ドキュメン�?
+- `docs/ASYNC_IMPLEMENTATION_GUIDE.md`: 非同期�?��?実�?ガイ�?
+- `docs/ASYNC_QUICK_START.md`: 非同期�?��?クイ�?クスタートガイ�?
+- `docs/C_OPTIMIZATION_ANALYSIS.md`: C�?語化による高�?�化�?析ドキュメン�?
+- `docs/REGRESSION_TEST_GUIDE.md`: リグレ�?ション�?ストガイ�?
+- `docs/SCALING_SETUP.md`: Render Manual Scaling設定ガイ�?
+- `docs/アプリ概�?.md`: アプリケーションの詳細概�?
+- `docs/会社向け概要書�?.md`: 企業向け詳細概要書類�?3339行�?
+- `docs/企業向け簡略版概要�?�?.md`: 企業向け簡略版概要�?�?
+- `docs/プライバシーポリシー.md`: プライバシーポリシー?��β版�?
+- `docs/免責事�??・利用規�?.md`: 免責事�??・利用規�?��β版�?
+- `docs/医薬品相�?�?.md`: 公�?機関の医薬品相�?窓口�?報
+- `docs/運営�?�?報.md`: 運営�?�?報・連絡�?
 
 ### 設計図・�?イアグラ�??�?docs/フォル�??�?
 - `docs/system_architecture.drawio`: シス�?�?全体アーキ�?クチャ
@@ -1705,7 +1734,7 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `static/css/main.css`: メインCSSスタイルシー�?
 - `static/js/main.js`: メインJavaScriptファイル
 
-### ログ
+### ログ?�?log/フォル�??�?
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
 - `log/access_analytics.jsonl`: アクセス�?析ログ
 - `log/performance_metrics.jsonl`: パフォーマンス監視ログ
@@ -1715,15 +1744,29 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `log/confidence_analytics.jsonl`: confidenceスコアチェ�?クログ?�?2025年12�?16日追�??�?
 - `log/counseling_analytics.jsonl`: カウンセリング完�?ログ?�?2025年12�?16日追�??�?
 - `log/counseling_responses.jsonl`: カウンセリング返信ログ?�?2025年12�?16日追�??�?
-- `app.log`: アプリケーションログ?���?�動生成�?
+- `log/app.log`: アプリケーションログ?���?�動生成�??2025年12�?21日からlog/フォル�?に出力�?
 
-### そ�?��?
-- `requirements.txt`: 依存パ�?ケージリス�?
-- `gunicorn_config.py`: Gunicorn設定ファイル
-- `runtime.txt`: Pythonランタイ�?バ�?�ジョン
-- `SCALING_SETUP.md`: Render Manual Scaling設定ガイ�?
-- `C_OPTIMIZATION_ANALYSIS.md`: C�?語化による高�?�化�?析ドキュメン�?
-- `TEST_RESULTS_SUMMARY.md`: �?スト結果サマリー
+### 設定ファイル?�?config/フォル�??�?
+- `config/gunicorn_config.py`: Gunicorn設定ファイル
+- `config/requirements.txt`: 依存パ�?ケージリスト（ルートにもコピ�?�を保持?�?
+- `config/runtime.txt`: Pythonランタイ�?バ�?�ジョン?��ルートにもコピ�?�を保持?�?
+
+### フォル�?構�???�?2025年12�?21日整�??�?
+```
+medicine-recommend/
+├─�? config/          # 設定ファイル
+├─�? data/            # �?ータファイル?�?CSV?�?
+├─�? docs/            # ドキュメン�?
+├─�? log/             # ログファイル
+├─�? tools/           # �?ール・スクリプト
+├─�? static/          # 静的ファイル?�?CSS、JS?�?
+├─�? templates/       # �?ンプレート�?HTML?�?
+├─�? examples/        # サンプルコー�?
+├─�? app.py           # メインアプリケーション
+├─�? requirements.txt # �?プロイ用?��ルートに保持?�?
+├─�? runtime.txt      # �?プロイ用?��ルートに保持?�?
+└─�? README.md        # メインドキュメント（ルートに保持?�?
+```
 
 ## プロジェクト統�?
 
@@ -2542,6 +2585,23 @@ POST /api/admin_mode      # 管�?�?モード�??り替�?
     - 正規化�?報が存在する場合�?�既に正規化済みのスコアを使用
     - フォールバック: 旧方式�?0.5基準�?�正規化?��もサポ�?��?
   - **効�?**: 上位�?�医薬�?間�?�スコア差が�?�確になり�?�最適な医薬品�?�選出精度が向�?
+
+### 2025年12�?21日
+- **フォル�?構�??の整�?と�?適�?**
+  - **設定ファイルの整�?**: `config/`フォル�?を作�?�し、設定ファイルを集�?
+    - `gunicorn_config.py`、`requirements.txt`、`runtime.txt`を`config/`フォル�?に移�?
+    - �?プロイ時�?�互換性のため、`requirements.txt`と`runtime.txt`はルートにもコピ�?�を保持
+  - **�?ータファイルの整�?**: `data/`フォル�?を作�?�し、すべてのCSVファイルを集�?
+    - `otc_medicine_data.csv`、`kanpo_medicine.csv`、`medicine_interactions.csv`、`medicine_side_effects.csv`、`summarized_efficacy_data.csv`を`data/`フォル�?に移�?
+    - `medicine_logic.py`と`scoring_utils.py`のCSVパス参�?�を`data/`フォル�?を参照するように更新
+  - **ドキュメント�?�整�?**: �?術ドキュメントと日本語ドキュメントを`docs/`フォル�?に�?�?
+    - `ASYNC_IMPLEMENTATION_GUIDE.md`、`ASYNC_QUICK_START.md`、`C_OPTIMIZATION_ANALYSIS.md`、`REGRESSION_TEST_GUIDE.md`、`SCALING_SETUP.md`、`SECURITY_IMPLEMENTATION.md`を移�?
+    - 日本語ドキュメント（アプリ概�?.md、�?�ライバシーポリシー.md など?��も`docs/`フォル�?に移�?
+  - **�?ール・スクリプトの整�?**: `tools/`フォル�?を作�?�し、�?析ツールと�?ストを�?�?
+    - `auto_log_analyzer.py`?���?�動ログ�?析ツール?��を`tools/`フォル�?に移�?
+    - `test_comprehensive.py`?��包括�?�?ストスイート）を`tools/`フォル�?に移�?
+  - **ログファイルの整�?**: `app.log`のパス参�?�を`log/app.log`に更新?��次回起動時から適用?�?
+  - **効�?**: プロジェクト構�??の明確化�?�ファイル検索の容易化、メン�?ナンス性の向�?
 
 ### 2025年12�?4日
 - **管�?�?画面の詳細スコアモー�?ルの大�?拡張**
