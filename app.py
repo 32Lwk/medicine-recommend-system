@@ -902,13 +902,24 @@ def index():
             )
             
             if not user_message_exists:
-                session['messages'].append({
+                user_msg = {
                     'type': 'user',
                     'content': sanitized_message,
                     'timestamp': datetime.now().isoformat(),
                     'uuid': str(uuid.uuid4())
-                })
+                }
+                session['messages'].append(user_msg)
                 session.modified = True
+                
+                # ユーザーメッセージをDBに保存
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        if 'messages' not in session_data:
+                            session_data['messages'] = []
+                        session_data['messages'].append(user_msg)
+                        session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
 
             # ステップ1: LLMトリアージ（セキュリティ検証後）
             triage_result = None
@@ -2498,14 +2509,52 @@ def index():
                             for msg in reversed(messages):
                                 if msg.get('type') == 'user':
                                     content = msg.get('content', '')
-                                    # 症状キーワードを含むメッセージを探す（拡張版）
+                                    
+                                    # 属性情報のみのメッセージを除外（年齢、性別、妊娠、授乳、アレルギー、薬などのみのメッセージ）
+                                    # 症状キーワードを含むかチェック
                                     symptom_keywords = [
                                         '痛い', '痛み', '熱', '咳', '鼻水', '頭痛', '発熱', 'のど', '喉', '寒気', 'だるい', '疲れ',
                                         'かゆい', 'かゆみ', '痒い', '痒み', 'かぶれ', '発疹', '湿疹', 'じんましん',
                                         '下痢', '便秘', '腹痛', '胃痛', '吐き気', '嘔吐', '胸やけ', '胃もたれ',
-                                        'めまい', '不眠', '肩こり', '腰痛', '関節痛', '筋肉痛'
+                                        'めまい', '不眠', '肩こり', '腰痛', '関節痛', '筋肉痛',
+                                        '生理', '月経', 'つわり', '更年期',
+                                        '遅れ', '不順', '異常', '周期', '来ない', '来ていない'
                                     ]
-                                    if any(keyword in content for keyword in symptom_keywords):
+                                    has_symptom_keyword = any(keyword in content for keyword in symptom_keywords)
+                                    
+                                    # 属性情報のみのパターンをチェック
+                                    attribute_only_patterns = [
+                                        r'^\d+歳です?[。.]?$',
+                                        r'^(?:女性|男性|女|男)です?[。.]?$',
+                                        r'^(?:妊娠|授乳|アレルギー|薬).*(?:です|ありません|なし)[。.]?$',
+                                    ]
+                                    is_attribute_only = False
+                                    for pattern in attribute_only_patterns:
+                                        if re.match(pattern, content.strip()):
+                                            is_attribute_only = True
+                                            break
+                                    
+                                    # 複数の属性情報のみが含まれている場合も除外
+                                    if not is_attribute_only and not has_symptom_keyword:
+                                        attribute_count = 0
+                                        if re.search(r'\d+歳', content):
+                                            attribute_count += 1
+                                        if re.search(r'(?:女性|男性|女|男)', content):
+                                            attribute_count += 1
+                                        if re.search(r'(?:妊娠|授乳)', content):
+                                            attribute_count += 1
+                                        if re.search(r'(?:アレルギー|薬)', content):
+                                            attribute_count += 1
+                                        # 属性情報が2つ以上で、症状キーワードが含まれていない場合は属性情報のみと判断
+                                        if attribute_count >= 2:
+                                            is_attribute_only = True
+                                    
+                                    if is_attribute_only:
+                                        logger.info(f"⏭️ 属性情報のみのメッセージをスキップ: {content[:50]}...")
+                                        continue
+                                    
+                                    # 症状キーワードを含むメッセージを探す
+                                    if has_symptom_keyword:
                                         previous_symptom_message = content
                                         logger.info(f"📋 前回の症状メッセージを取得: {content[:50]}...")
                                         break
@@ -2697,47 +2746,759 @@ def index():
                     })
                 recommendation_client = OpenAI(api_key=api_key)
                 
-                # ステップ1: ChatGPTで医薬品の種類を判定
+                # ステップ0: ユーザー情報登録処理（NLU解析の前に実行）
+                # ユーザー属性データをセッションから取得
+                user_attributes = session.get('user_attributes', {
+                    'age': None,
+                    'gender': None,
+                    'pregnant': None,
+                    'breastfeeding': None,
+                    'current_medications': [],
+                    'allergies': [],
+                    'medical_history': [],
+                    'symptom_duration_days': None,
+                    'other_info': None
+                })
+                
+                # 登録された情報を追跡（通知メッセージ用）
+                registered_info = {
+                    'gender': {'registered': False, 'value': None, 'source': None, 'message': None},
+                    'age': {'registered': False, 'value': None, 'source': None, 'message': None},
+                    'pregnant': {'registered': False, 'value': None, 'source': None, 'message': None},
+                    'breastfeeding': {'registered': False, 'value': None, 'source': None, 'message': None},
+                    'allergies': {'registered': False, 'value': [], 'source': None, 'message': None},
+                    'current_medications': {'registered': False, 'value': [], 'source': None, 'message': None},
+                    'medical_history': {'registered': False, 'value': [], 'source': None, 'message': None},
+                    'symptom_duration_days': {'registered': False, 'value': None, 'source': None, 'message': None}
+                }
+                
+                # 情報登録処理を実行（エラーハンドリング強化）
+                logger.info(f"📝 ユーザー情報登録処理を開始: user_message={user_message[:50]}...")
+                info_registration_success = True
+                try:
+                    # 明示的な性別の言及を検出（最優先）
+                    try:
+                        explicit_gender = None
+                        explicit_gender_patterns = [
+                            (r'私は(?:女性|女)です', '女性'),
+                            (r'私は(?:男性|男)です', '男性'),
+                            (r'性別は(?:女性|女)', '女性'),
+                            (r'性別は(?:男性|男)', '男性'),
+                            (r'^(?:女性|女)です', '女性'),
+                            (r'^(?:男性|男)です', '男性'),
+                            (r'female', '女性'),
+                            (r'male', '男性'),
+                            (r'woman', '女性'),
+                            (r'man', '男性')
+                        ]
+                        for pattern, gender in explicit_gender_patterns:
+                            if re.search(pattern, user_message, re.IGNORECASE):
+                                explicit_gender = gender
+                                break
+                        
+                        if explicit_gender:
+                            current_gender = user_attributes.get('gender')
+                            if not current_gender or current_gender != explicit_gender:
+                                user_attributes['gender'] = explicit_gender
+                                registered_info['gender'] = {
+                                    'registered': True,
+                                    'value': explicit_gender,
+                                    'source': '明示的な言及',
+                                    'message': f'性別: {explicit_gender}（明示的な言及から登録）'
+                                }
+                                logger.info(f"👤 性別を明示的な言及から登録: {explicit_gender}")
+                    except Exception as e:
+                        logger.info(f"⚠️ 性別の明示的な言及の検出でエラー: {str(e)}")
+                    
+                    # 年齢の抽出・登録
+                    try:
+                        age_match = re.search(r'(\d+)歳', user_message)
+                        if age_match:
+                            age_value = int(age_match.group(1))
+                            if age_value > 0 and age_value < 150:
+                                if user_attributes.get('age') != age_value:
+                                    user_attributes['age'] = age_value
+                                    registered_info['age'] = {
+                                        'registered': True,
+                                        'value': age_value,
+                                        'source': '入力から抽出',
+                                        'message': f'年齢: {age_value}歳'
+                                    }
+                                    logger.info(f"📝 年齢を登録: {age_value}歳")
+                        else:
+                            # 英語の年齢パターン
+                            age_match_en = re.search(r'(\d+)\s*years?\s*old', user_message, re.IGNORECASE)
+                            if age_match_en:
+                                age_value = int(age_match_en.group(1))
+                                if age_value > 0 and age_value < 150:
+                                    if user_attributes.get('age') != age_value:
+                                        user_attributes['age'] = age_value
+                                        registered_info['age'] = {
+                                            'registered': True,
+                                            'value': age_value,
+                                            'source': '入力から抽出',
+                                            'message': f'年齢: {age_value}歳'
+                                        }
+                                        logger.info(f"📝 年齢を登録: {age_value}歳")
+                    except Exception as e:
+                        logger.info(f"⚠️ 年齢の抽出でエラー: {str(e)}")
+                    
+                    # アレルギーの抽出・登録
+                    try:
+                        if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
+                            if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
+                                'no allergy' in user_message.lower() or 'no allergies' in user_message.lower()):
+                                if user_attributes.get('allergies') != ['なし']:
+                                    user_attributes['allergies'] = ['なし']
+                                    registered_info['allergies'] = {
+                                        'registered': True,
+                                        'value': ['なし'],
+                                        'source': '入力から抽出',
+                                        'message': 'アレルギー: なし'
+                                    }
+                                    logger.info(f"📝 アレルギーを登録: なし")
+                            else:
+                                # 日本語のアレルギー抽出
+                                allergens = re.findall(r'([ぁ-んァ-ヶー]+)アレルギー', user_message)
+                                if allergens:
+                                    existing_allergies = user_attributes.get('allergies', [])
+                                    new_allergies = [a for a in allergens if a not in existing_allergies]
+                                    if new_allergies:
+                                        user_attributes['allergies'] = existing_allergies + new_allergies
+                                        registered_info['allergies'] = {
+                                            'registered': True,
+                                            'value': user_attributes['allergies'],
+                                            'source': '入力から抽出',
+                                            'message': f'アレルギー: {", ".join(user_attributes["allergies"])}'
+                                        }
+                                        logger.info(f"📝 アレルギーを登録: {user_attributes['allergies']}")
+                                else:
+                                    # 英語のアレルギー抽出
+                                    allergy_match = re.search(r'have\s+([^,\s]+)\s+allergy', user_message, re.IGNORECASE)
+                                    if allergy_match:
+                                        allergy_name = allergy_match.group(1)
+                                        existing_allergies = user_attributes.get('allergies', [])
+                                        if allergy_name not in existing_allergies:
+                                            user_attributes['allergies'] = existing_allergies + [allergy_name]
+                                            registered_info['allergies'] = {
+                                                'registered': True,
+                                                'value': user_attributes['allergies'],
+                                                'source': '入力から抽出',
+                                                'message': f'アレルギー: {", ".join(user_attributes["allergies"])}'
+                                            }
+                                            logger.info(f"📝 アレルギーを登録: {user_attributes['allergies']}")
+                    except Exception as e:
+                        logger.info(f"⚠️ アレルギーの抽出でエラー: {str(e)}")
+                    
+                    # 服用中の薬の抽出・登録
+                    try:
+                        if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
+                            'not taking' in user_message.lower() or 'no medication' in user_message.lower()):
+                            if user_attributes.get('current_medications') != []:
+                                user_attributes['current_medications'] = []
+                                registered_info['current_medications'] = {
+                                    'registered': True,
+                                    'value': [],
+                                    'source': '入力から抽出',
+                                    'message': '服用中の薬: なし'
+                                }
+                                logger.info(f"📝 服用中の薬を登録: なし")
+                        elif ('服用している' in user_message or '飲んでいる' in user_message or '薬を' in user_message or
+                              'taking' in user_message.lower() or 'medication' in user_message.lower() or 'medicine' in user_message.lower()):
+                            medication_patterns = [
+                                r'服用している薬[はが]?([^。、\n]+)',
+                                r'飲んでいる薬[はが]?([^。、\n]+)',
+                                r'薬[はが]?([^。、\n]+)',
+                                r'([^。、\n]*薬[^。、\n]*)',
+                                r'taking\s+([^,\s]+(?:\s+[^,\s]+)*)',
+                                r'medication[:\s]+([^,\n]+)',
+                                r'medicine[:\s]+([^,\n]+)'
+                            ]
+                            for pattern in medication_patterns:
+                                match = re.search(pattern, user_message)
+                                if match:
+                                    medication_name = match.group(1).strip()
+                                    if medication_name:
+                                        existing_medications = user_attributes.get('current_medications', [])
+                                        if medication_name not in existing_medications:
+                                            user_attributes['current_medications'] = existing_medications + [medication_name]
+                                            registered_info['current_medications'] = {
+                                                'registered': True,
+                                                'value': user_attributes['current_medications'],
+                                                'source': '入力から抽出',
+                                                'message': f'服用中の薬: {", ".join(user_attributes["current_medications"])}'
+                                            }
+                                            logger.info(f"📝 服用中の薬を登録: {medication_name}")
+                                            break
+                    except Exception as e:
+                        logger.info(f"⚠️ 服用中の薬の抽出でエラー: {str(e)}")
+                    
+                    # 既往歴の抽出・登録
+                    try:
+                        if ('既往症' in user_message or '病気' in user_message or '疾患' in user_message or
+                            'history' in user_message.lower() or 'disease' in user_message.lower() or 'condition' in user_message.lower()):
+                            history_patterns = [
+                                r'既往症[はが]?([^。、\n]+)',
+                                r'病気[はが]?([^。、\n]+)',
+                                r'疾患[はが]?([^。、\n]+)',
+                                r'([^。、\n]*病[^。、\n]*)',
+                                r'have\s+([^,\s]+(?:\s+[^,\s]+)*)\s+history',
+                                r'history\s+of\s+([^,\n]+)',
+                                r'disease[:\s]+([^,\n]+)',
+                                r'condition[:\s]+([^,\n]+)'
+                            ]
+                            for pattern in history_patterns:
+                                match = re.search(pattern, user_message)
+                                if match:
+                                    history_name = match.group(1).strip()
+                                    if history_name:
+                                        existing_history = user_attributes.get('medical_history', [])
+                                        if history_name not in existing_history:
+                                            user_attributes['medical_history'] = existing_history + [history_name]
+                                            registered_info['medical_history'] = {
+                                                'registered': True,
+                                                'value': user_attributes['medical_history'],
+                                                'source': '入力から抽出',
+                                                'message': f'既往歴: {", ".join(user_attributes["medical_history"])}'
+                                            }
+                                            logger.info(f"📝 既往歴を登録: {history_name}")
+                                            break
+                    except Exception as e:
+                        logger.info(f"⚠️ 既往歴の抽出でエラー: {str(e)}")
+                    
+                    # 妊娠状態の抽出・登録
+                    try:
+                        if '妊娠' in user_message or 'pregnant' in user_message.lower():
+                            if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message or 'not pregnant' in user_message.lower():
+                                if user_attributes.get('pregnant') != False:
+                                    user_attributes['pregnant'] = False
+                                    registered_info['pregnant'] = {
+                                        'registered': True,
+                                        'value': False,
+                                        'source': '入力から抽出',
+                                        'message': '妊娠状態: 妊娠していない'
+                                    }
+                                    logger.info(f"📝 妊娠状態を登録: False")
+                            elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message or 'pregnant' in user_message.lower():
+                                if user_attributes.get('pregnant') != True:
+                                    user_attributes['pregnant'] = True
+                                    registered_info['pregnant'] = {
+                                        'registered': True,
+                                        'value': True,
+                                        'source': '入力から抽出',
+                                        'message': '妊娠状態: 妊娠中'
+                                    }
+                                    logger.info(f"📝 妊娠状態を登録: True")
+                    except Exception as e:
+                        logger.info(f"⚠️ 妊娠状態の抽出でエラー: {str(e)}")
+                    
+                    # 授乳状態の抽出・登録
+                    try:
+                        if '授乳' in user_message or 'breastfeeding' in user_message.lower():
+                            if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message or 'not breastfeeding' in user_message.lower():
+                                if user_attributes.get('breastfeeding') != False:
+                                    user_attributes['breastfeeding'] = False
+                                    registered_info['breastfeeding'] = {
+                                        'registered': True,
+                                        'value': False,
+                                        'source': '入力から抽出',
+                                        'message': '授乳状態: 授乳していない'
+                                    }
+                                    logger.info(f"📝 授乳状態を登録: False")
+                            elif '授乳中です' in user_message or '授乳中' in user_message or '授乳しています' in user_message or 'breastfeeding' in user_message.lower():
+                                if user_attributes.get('breastfeeding') != True:
+                                    user_attributes['breastfeeding'] = True
+                                    registered_info['breastfeeding'] = {
+                                        'registered': True,
+                                        'value': True,
+                                        'source': '入力から抽出',
+                                        'message': '授乳状態: 授乳中'
+                                    }
+                                    logger.info(f"📝 授乳状態を登録: True")
+                    except Exception as e:
+                        logger.info(f"⚠️ 授乳状態の抽出でエラー: {str(e)}")
+                    
+                    # 症状期間の抽出・登録
+                    try:
+                        if ('続いています' in user_message or 'から' in user_message or 
+                                'started' in user_message.lower() or 'ago' in user_message.lower()):
+                            duration_patterns = [
+                                (r'(今日|きょう)から', 0),
+                                (r'(昨日|きのう)から', 1),
+                                (r'(\d+)日前から', None),
+                                (r'(\d+)週間前から', None),
+                                (r'(\d+)\s*days?\s*ago', None),
+                                (r'(\d+)\s*weeks?\s*ago', None),
+                                (r'(\d+)\s*months?\s*ago', None)
+                            ]
+                            for pattern, days in duration_patterns:
+                                match = re.search(pattern, user_message)
+                                if match:
+                                    if days is not None:
+                                        duration_days = days
+                                    else:
+                                        if '日前' in user_message:
+                                            num_match = re.search(r'(\d+)日前', user_message)
+                                            if num_match:
+                                                duration_days = int(num_match.group(1))
+                                        elif '週間前' in user_message:
+                                            num_match = re.search(r'(\d+)週間前', user_message)
+                                            if num_match:
+                                                duration_days = int(num_match.group(1)) * 7
+                                        elif 'days ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*days?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                duration_days = int(num_match.group(1))
+                                        elif 'weeks ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*weeks?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                duration_days = int(num_match.group(1)) * 7
+                                        elif 'months ago' in user_message.lower():
+                                            num_match = re.search(r'(\d+)\s*months?\s*ago', user_message, re.IGNORECASE)
+                                            if num_match:
+                                                duration_days = int(num_match.group(1)) * 30
+                                        else:
+                                            continue
+                                    
+                                    if user_attributes.get('symptom_duration_days') != duration_days:
+                                        user_attributes['symptom_duration_days'] = duration_days
+                                        registered_info['symptom_duration_days'] = {
+                                            'registered': True,
+                                            'value': duration_days,
+                                            'source': '入力から抽出',
+                                            'message': f'症状期間: {duration_days}日前から'
+                                        }
+                                        logger.info(f"📝 症状期間を登録: {duration_days}日前から")
+                                    break
+                    except Exception as e:
+                        logger.info(f"⚠️ 症状期間の抽出でエラー: {str(e)}")
+                    
+                    # セッションとDBに保存
+                    try:
+                        session['user_attributes'] = user_attributes
+                        session.modified = True
+                        
+                        sid = session.get('_id')
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['user_attributes'] = user_attributes
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                    except Exception as e:
+                        logger.info(f"⚠️ ユーザー属性の保存でエラー: {str(e)}")
+                    
+                except Exception as e:
+                    logger.info(f"⚠️ ユーザー情報登録処理でエラー: {str(e)}")
+                    info_registration_success = False
+                
+                # 登録された情報をまとめて通知（成功・失敗に関係なく）
+                logger.info(f"📢 通知メッセージ生成処理を開始")
+                try:
+                    registered_items = []
+                    for key, info in registered_info.items():
+                        if info['registered']:
+                            registered_items.append(info['message'])
+                        elif user_attributes.get(key) is not None:
+                            # 既に登録済みの情報も表示
+                            if key == 'gender':
+                                registered_items.append(f'性別: {user_attributes.get(key)}（既に登録済み）')
+                            elif key == 'age':
+                                registered_items.append(f'年齢: {user_attributes.get(key)}歳（既に登録済み）')
+                            elif key == 'pregnant':
+                                if user_attributes.get(key):
+                                    registered_items.append('妊娠状態: 妊娠中（既に登録済み）')
+                                else:
+                                    registered_items.append('妊娠状態: 妊娠していない（既に登録済み）')
+                            elif key == 'breastfeeding':
+                                if user_attributes.get(key):
+                                    registered_items.append('授乳状態: 授乳中（既に登録済み）')
+                                else:
+                                    registered_items.append('授乳状態: 授乳していない（既に登録済み）')
+                            elif key in ['allergies', 'current_medications', 'medical_history']:
+                                value = user_attributes.get(key, [])
+                                if value:
+                                    registered_items.append(f'{key}: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）')
+                    
+                    # 妊娠可能性が検出された場合、通知メッセージに追加
+                    pregnancy_possible_value = user_attributes.get('pregnancy_possible')
+                    if pregnancy_possible_value in ['high', 'low']:
+                        # 妊娠可能性が検出された場合、「可能性あり」として表示
+                        registered_items.append('妊娠状態: 可能性あり')
+                    
+                    # 登録された情報がある場合、またはエラーが発生した場合に通知メッセージを生成
+                    if registered_items or not info_registration_success:
+                        # 通知メッセージを生成
+                        if registered_items:
+                            info_message = "💡 以下の情報を登録しました：\n" + "\n".join([f"・{item}" for item in registered_items])
+                        else:
+                            info_message = "💡 情報登録を試行しましたが、新しい情報は検出されませんでした。"
+                        
+                        if not info_registration_success:
+                            info_message += "\n\n⚠️ 情報登録処理中にエラーが発生しましたが、医薬品推奨を続行します。"
+                        
+                        # 通知メッセージをセッションに追加（即座に表示されるように）
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        
+                        # 通常のメッセージと同じスタイルを使用
+                        import html
+                        escaped_info_message = html.escape(info_message)
+                        info_message_html = escaped_info_message.replace('\n', '<br>')
+                        info_bot_response = {
+                            'type': 'bot',
+                            'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000; white-space: pre-line;">{info_message_html}</p><button onclick="editUserInfo()" style="margin-top: 10px; padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">情報を修正</button></div>',
+                            'diagnosis': None,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        # ユーザーメッセージの直後に追加（最後のユーザーメッセージの後）
+                        user_msg_index = -1
+                        for i in range(len(session['messages']) - 1, -1, -1):
+                            if session['messages'][i].get('type') == 'user':
+                                user_msg_index = i
+                                break
+                        
+                        if user_msg_index >= 0:
+                            # ユーザーメッセージの直後に挿入
+                            session['messages'].insert(user_msg_index + 1, info_bot_response)
+                        else:
+                            # ユーザーメッセージが見つからない場合は最後に追加
+                            session['messages'].append(info_bot_response)
+                        session.modified = True
+                        logger.info(f"📢 情報登録通知メッセージを追加: {len(registered_items)}件の情報を登録（user_msg_index={user_msg_index}）")
+                        
+                        # DBにも保存
+                        sid = session.get('_id')
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                # DBでも同様にユーザーメッセージの直後に挿入
+                                user_msg_index_db = -1
+                                for i in range(len(session_data['messages']) - 1, -1, -1):
+                                    if session_data['messages'][i].get('type') == 'user':
+                                        user_msg_index_db = i
+                                        break
+                                
+                                if user_msg_index_db >= 0:
+                                    session_data['messages'].insert(user_msg_index_db + 1, info_bot_response)
+                                else:
+                                    session_data['messages'].append(info_bot_response)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                                logger.info(f"💾 情報登録通知メッセージをDBに保存（user_msg_index_db={user_msg_index_db}）")
+                except Exception as e:
+                    logger.info(f"⚠️ 通知メッセージの生成でエラー: {str(e)}")
+                
+                # ルールベース推奨用のuser_infoを構築（NLU解析後の最新のuser_attributesを使用）
+                # NLU解析で性別が自動登録された場合、user_attributesが更新されているため、再構築が必要
+                user_info = {
+                    'age': user_attributes.get('age'),
+                    'gender': user_attributes.get('gender'),
+                    'pregnant': user_attributes.get('pregnant'),
+                    'breastfeeding': user_attributes.get('breastfeeding'),
+                    'current_medications': user_attributes.get('current_medications', []),
+                    'allergies': user_attributes.get('allergies', []),
+                    'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                }
+                logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
+                
+                # ステップ1: NLU解析を常に実行（性別自動判定・妊娠可能性検出のため）
+                from rule_based_recommendation import hybrid_nlu_extraction
+                nlu_result = {}
+                try:
+                    logger.info(f"🔍 NLU解析を実行中: user_message={user_message[:50]}...")
+                    nlu_result = hybrid_nlu_extraction(
+                        user_message,
+                        user_info,
+                        recommendation_client,
+                        session_id=sid
+                    )
+                    logger.info(f"✅ NLU解析完了: nlu_result keys={list(nlu_result.keys())}")
+                    logger.info(f"✅ NLU解析完了: gender_detected={nlu_result.get('gender_detected')}, pregnancy_possible={nlu_result.get('pregnancy_possible')}")
+                except Exception as nlu_error:
+                    logger.info(f"⚠️ NLU解析エラー: {str(nlu_error)}")
+                    nlu_result = {
+                        'gender_detected': {'detected': False},
+                        'pregnancy_possible': {'detected': False}
+                    }
+                
+                # ステップ2: 性別自動判定と妊娠可能性検出の処理（常に実行）
+                gender_detected = nlu_result.get('gender_detected')
+                if gender_detected is None:
+                    gender_detected = {}
+                pregnancy_possible = nlu_result.get('pregnancy_possible')
+                if pregnancy_possible is None:
+                    pregnancy_possible = {}
+                nlu_symptoms = nlu_result.get('symptoms', [])
+                logger.info(f"📋 NLU解析結果: gender_detected={gender_detected}, pregnancy_possible={pregnancy_possible}, symptoms={nlu_symptoms}")
+                
+                # 性別自動判定の処理（既に性別が登録されている場合は上書きしない）
+                gender_auto_registered_from_nlu = False
+                gender_notification_message_from_nlu = None
+                try:
+                    # gender_detectedが空の辞書でない場合、かつdetectedがTrueの場合に処理
+                    logger.info(f"🔍 性別検出を確認: gender_detected={gender_detected}, type={type(gender_detected)}, len={len(gender_detected) if isinstance(gender_detected, dict) else 'N/A'}")
+                    if gender_detected and isinstance(gender_detected, dict) and len(gender_detected) > 0 and gender_detected.get('detected', False):
+                        detected_gender = gender_detected.get('gender')
+                        detected_symptoms = gender_detected.get('symptoms', [])
+                        reason = gender_detected.get('reason', '')
+                        logger.info(f"✅ 性別が検出されました: gender={detected_gender}, reason={reason}")
+                        
+                        current_gender = user_attributes.get('gender')
+                        logger.info(f"📋 現在の性別: {current_gender}")
+                        
+                        # 既に性別が登録されている場合は上書きしない
+                        if current_gender:
+                            if detected_gender == 'female' and current_gender == '男性':
+                                warning = gender_detected.get('warning', '')
+                                if warning:
+                                    gender_notification_message_from_nlu = f"⚠️ {warning}"
+                                    logger.warning(f"👤 性別自動判定の警告: {warning}")
+                        else:
+                            # 性別が未登録の場合のみ自動登録
+                            if detected_gender == 'female':
+                                user_attributes['gender'] = '女性'
+                                gender_auto_registered_from_nlu = True
+                                gender_notification_message_from_nlu = f"💡 {reason}。性別を女性として登録しました。"
+                                logger.info(f"👤 性別自動登録（NLU解析から）: {reason}")
+                                
+                                # セッションとDBに保存
+                                try:
+                                    session['user_attributes'] = user_attributes
+                                    session.modified = True
+                                    
+                                    sid = session.get('_id')
+                                    if sid:
+                                        session_data = get_session_from_db(sid)
+                                        if session_data:
+                                            session_data['user_attributes'] = user_attributes
+                                            session_data['last_activity'] = datetime.now()
+                                            save_session_to_db(sid, session_data)
+                                except Exception as e:
+                                    logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
+                                
+                                # 性別自動登録の通知を通常メッセージとして独立して表示
+                                try:
+                                    if 'messages' not in session:
+                                        session['messages'] = []
+                                    # 通常のメッセージと同じスタイルを使用
+                                    import html
+                                    escaped_gender_message = html.escape(gender_notification_message_from_nlu)
+                                    gender_bot_response = {
+                                        'type': 'bot',
+                                        'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000;">{escaped_gender_message}</p></div>',
+                                        'diagnosis': None,
+                                        'timestamp': datetime.now().isoformat()
+                                    }
+                                    session['messages'].append(gender_bot_response)
+                                    session.modified = True
+                                    
+                                    # DBにも保存
+                                    sid = session.get('_id')
+                                    if sid:
+                                        session_data = get_session_from_db(sid)
+                                        if session_data:
+                                            if 'messages' not in session_data:
+                                                session_data['messages'] = []
+                                            session_data['messages'].append(gender_bot_response)
+                                            session_data['last_activity'] = datetime.now()
+                                            save_session_to_db(sid, session_data)
+                                except Exception as e:
+                                    logger.info(f"⚠️ 性別自動登録の通知メッセージの保存でエラー: {str(e)}")
+                            elif detected_gender == 'male':
+                                user_attributes['gender'] = '男性'
+                                gender_auto_registered_from_nlu = True
+                                gender_notification_message_from_nlu = f"💡 {reason}。性別を男性として登録しました。"
+                                logger.info(f"👤 性別自動登録（NLU解析から）: {reason}")
+                                
+                                # セッションとDBに保存
+                                try:
+                                    session['user_attributes'] = user_attributes
+                                    session.modified = True
+                                    
+                                    sid = session.get('_id')
+                                    if sid:
+                                        session_data = get_session_from_db(sid)
+                                        if session_data:
+                                            session_data['user_attributes'] = user_attributes
+                                            session_data['last_activity'] = datetime.now()
+                                            save_session_to_db(sid, session_data)
+                                except Exception as e:
+                                    logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
+                                
+                                # 性別自動登録の通知を通常メッセージとして独立して表示
+                                try:
+                                    if 'messages' not in session:
+                                        session['messages'] = []
+                                    # 通常のメッセージと同じスタイルを使用
+                                    import html
+                                    escaped_gender_message = html.escape(gender_notification_message_from_nlu)
+                                    gender_bot_response = {
+                                        'type': 'bot',
+                                        'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000;">{escaped_gender_message}</p></div>',
+                                        'diagnosis': None,
+                                        'timestamp': datetime.now().isoformat()
+                                    }
+                                    session['messages'].append(gender_bot_response)
+                                    session.modified = True
+                                    
+                                    # DBにも保存
+                                    sid = session.get('_id')
+                                    if sid:
+                                        session_data = get_session_from_db(sid)
+                                        if session_data:
+                                            if 'messages' not in session_data:
+                                                session_data['messages'] = []
+                                            session_data['messages'].append(gender_bot_response)
+                                            session_data['last_activity'] = datetime.now()
+                                            save_session_to_db(sid, session_data)
+                                except Exception as e:
+                                    logger.info(f"⚠️ 性別自動登録の通知メッセージの保存でエラー: {str(e)}")
+                except Exception as e:
+                    logger.info(f"⚠️ 性別自動判定の処理でエラー: {str(e)}")
+                
+                # 性別が自動登録された場合、または既に「女性」として登録されている場合、妊娠可能性検出を再計算
+                current_gender = user_attributes.get('gender')
+                is_female = (gender_auto_registered_from_nlu or current_gender == '女性')
+                
+                try:
+                    if is_female and pregnancy_possible.get('detected', False):
+                        pregnancy_score = pregnancy_possible.get('score', 0.0)
+                        pregnancy_detected_symptoms = pregnancy_possible.get('symptoms', [])
+                        
+                        if pregnancy_score >= 2.0:
+                            pregnancy_possible = {
+                                "detected": True,
+                                "score": pregnancy_score,
+                                "symptoms": pregnancy_detected_symptoms,
+                                "confidence": "high",
+                                "gender": "female"
+                            }
+                            if gender_auto_registered_from_nlu:
+                                logger.info(f"🤰 妊娠可能性検出を再計算: 性別が女性として登録されたため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                            else:
+                                logger.info(f"🤰 妊娠可能性検出を再計算: 性別が既に女性として登録されているため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                        elif pregnancy_score > 0.0:
+                            pregnancy_possible = {
+                                "detected": True,
+                                "score": pregnancy_score,
+                                "symptoms": pregnancy_detected_symptoms,
+                                "confidence": "high",
+                                "gender": "female"
+                            }
+                            if gender_auto_registered_from_nlu:
+                                logger.info(f"🤰 妊娠可能性検出を再計算: 性別が女性として登録されたため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                            else:
+                                logger.info(f"🤰 妊娠可能性検出を再計算: 性別が既に女性として登録されているため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                except Exception as e:
+                    logger.info(f"⚠️ 妊娠可能性検出の再計算でエラー: {str(e)}")
+                
+                # ステップ3: ChatGPTで医薬品の種類を判定
                 start_time = time.time()
                 try:
-                    logger.info(f"🔍 Step 1: Analyzing medicine type with ChatGPT...")
+                    logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
                     analysis_result = analyze_symptoms_and_medicine_type(user_message, recommendation_client)
                     medicine_type = analysis_result.get('medicine_type')
                     symptoms = analysis_result.get('symptoms', [])
                     
-                    # 医薬品種類が判定できない場合（Noneまたは「その他」）はエラーメッセージを返す
+                    # 医薬品種類が判定できない場合（Noneまたは「その他」）の処理
                     if not medicine_type or medicine_type == 'その他':
                         logger.warning(f"⚠️ 医薬品種類が判定できませんでした: {medicine_type}")
                         
-                        # エラーメッセージの内容
-                        error_message = '正常に処理が行われなかったので改めて送信してください。'
-                        
-                        # 評価ボタン用のデータを準備（HTMLエスケープ処理）
-                        import json
-                        import html
-                        
-                        # HTMLエスケープ処理
-                        escaped_user_message = html.escape(user_message)
-                        escaped_error_message = html.escape(error_message)
-                        
-                        feedback_data = {
-                            'user_message': escaped_user_message,
-                            'ai_response': escaped_error_message,
-                            'security_score': None,
-                            'error_type': 'medicine_type_detection_failed'
-                        }
-                        
-                        # JSONエンコードしてHTMLエスケープ
-                        feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
-                        
-                        # 不具合報告用のデータ属性を準備
-                        bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_error_message}" data-security-score=""'
-                        
-                        # エラーメッセージに評価ボタンと不具合報告ボタンを追加
-                        bot_content = f"""
+                        # 「その他」の場合でも、NLU解析結果から症状を取得し、適切なmedicine_typeを推測
+                        if nlu_symptoms:
+                            from rule_based_recommendation import SYMPTOM_DICTIONARY
+                            
+                            # NLU解析結果から検出された症状に基づいてmedicine_typeを推測
+                            detected_medicine_types = set()
+                            for symptom_name in nlu_symptoms:
+                                symptom_data = SYMPTOM_DICTIONARY.get(symptom_name)
+                                if symptom_data:
+                                    medicine_types_for_symptom = symptom_data.get('medicine_types', [])
+                                    detected_medicine_types.update(medicine_types_for_symptom)
+                            
+                            if detected_medicine_types:
+                                # 最初に見つかったmedicine_typeを使用（優先順位は症状のweightに基づく）
+                                medicine_type = list(detected_medicine_types)[0]
+                                logger.info(f"🔍 NLU解析結果からmedicine_typeを推測: {medicine_type} (検出された症状: {nlu_symptoms})")
+                    
+                    # 妊娠の可能性が検出された場合の処理
+                    pregnancy_message = None
+                    try:
+                        if pregnancy_possible.get('detected', False):
+                            confidence = pregnancy_possible.get('confidence')
+                            score = pregnancy_possible.get('score', 0.0)
+                            detected_symptoms = pregnancy_possible.get('symptoms', [])
+                            gender = pregnancy_possible.get('gender', 'unknown')
+                            
+                            logger.info(f"🤰 妊娠の可能性検出: confidence={confidence}, score={score:.2f}, symptoms={detected_symptoms}, gender={gender}")
+                            
+                            if confidence == 'high':
+                                user_attributes['pregnancy_possible'] = 'high'
+                                user_info['pregnancy_possible'] = 'high'
+                                pregnancy_message = "⚠️ 妊娠の可能性があります。医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+                                logger.info(f"📋 妊娠の可能性（高信頼度）を設定: pregnancy_possible=high")
+                            elif confidence == 'low':
+                                user_attributes['pregnancy_possible'] = 'low'
+                                user_info['pregnancy_possible'] = 'low'
+                                pregnancy_message = "⚠️ 一部の症状は妊娠の可能性を示す場合がありますが、性別情報がないため確定できません。医師にご相談ください。"
+                                logger.info(f"📋 妊娠の可能性（低信頼度）を設定: pregnancy_possible=low")
+                    except Exception as e:
+                        logger.info(f"⚠️ 妊娠可能性検出の処理でエラー: {str(e)}")
+                    
+                    # 医薬品種類が判定できない場合（Noneまたは「その他」）の処理
+                    # 情報登録の成功・失敗に関係なく、医薬品推奨処理に移る
+                    if not medicine_type or medicine_type == 'その他':
+                            # メッセージの組み立て
+                            consultation_messages = []
+                            
+                            # 性別自動登録の通知は既に独立したメッセージとして表示されているため、エラーメッセージには含めない
+                            # if gender_notification_message:
+                            #     consultation_messages.append(gender_notification_message)
+                            
+                            if pregnancy_message:
+                                consultation_messages.append(pregnancy_message)
+                            
+                            # 医薬品推奨ができない場合のメッセージ
+                            if not medicine_type or medicine_type == 'その他':
+                                consultation_messages.append("⚠️ 医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。")
+                            
+                            doctor_consultation = '\n\n'.join(consultation_messages) if consultation_messages else "症状をより具体的に記述していただくか、医師にご相談ください。"
+                            
+                            # エラーメッセージの内容（NLU解析結果を含める）
+                            error_message = doctor_consultation if consultation_messages else '医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。'
+                            
+                            # 評価ボタン用のデータを準備（HTMLエスケープ処理）
+                            import json
+                            import html
+                            
+                            # HTMLエスケープ処理
+                            escaped_user_message = html.escape(user_message)
+                            escaped_error_message = html.escape(error_message)
+                            escaped_doctor_consultation = html.escape(doctor_consultation)
+                            
+                            feedback_data = {
+                                'user_message': escaped_user_message,
+                                'ai_response': escaped_error_message,
+                                'security_score': None,
+                                'error_type': 'medicine_type_detection_failed'
+                            }
+                            
+                            # JSONエンコードしてHTMLエスケープ
+                            feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                            
+                            # 不具合報告用のデータ属性を準備
+                            bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_error_message}" data-security-score=""'
+                            
+                            # エラーメッセージに評価ボタンと不具合報告ボタンを追加
+                            # doctor_consultationの内容を改行で表示
+                            doctor_consultation_html = escaped_doctor_consultation.replace('\n', '<br>')
+                            bot_content = f"""
 <div class="chat-response" style="padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
-    <h4 style="margin: 0 0 10px 0; color: #856404;">⚠️ エラー</h4>
-    <p style="margin: 0; color: #856404;">{escaped_error_message}</p>
+    <h4 style="margin: 0 0 10px 0; color: #856404;">⚠️ 医薬品種類が判定できませんでした</h4>
+    <div style="margin: 10px 0; color: #856404; white-space: pre-line;">{doctor_consultation_html}</div>
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーメッセージはいかがでしたか？</p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -2753,41 +3514,41 @@ def index():
         </div>
     </div>
 </div>"""
-                        
-                        bot_response = {
-                            'type': 'bot',
-                            'content': bot_content,
-                            'diagnosis': None,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        if 'messages' not in session:
-                            session['messages'] = []
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        
-                        # DBにも保存
-                        sid = session.get('_id')
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if not session_data:
-                                session_data = {
-                                    'session_id': sid,
-                                    'username': session.get('username', 'Unknown'),
-                                    'messages': [],
-                                    'last_activity': datetime.now(),
-                                    'client_ip': request.remote_addr,
-                                    'user_agent': request.headers.get('User-Agent', ''),
-                                    'user_attributes': session.get('user_attributes', {}),
-                                    'session_active': True
-                                }
-                            if 'messages' not in session_data:
-                                session_data['messages'] = []
-                            session_data['messages'].append(bot_response)
-                            session_data['last_activity'] = datetime.now()
-                            save_session_to_db(sid, session_data)
-                        
-                        message_count = len(session['messages'])
-                        return jsonify({'status': 'ok', 'message_count': message_count})
+                            
+                            bot_response = {
+                                'type': 'bot',
+                                'content': bot_content,
+                                'diagnosis': None,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # DBにも保存
+                            sid = session.get('_id')
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if not session_data:
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', 'Unknown'),
+                                        'messages': [],
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {}),
+                                        'session_active': True
+                                    }
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(bot_response)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            return jsonify({'status': 'ok', 'message_count': message_count})
                     
                     logger.info(f"📋 Detected medicine type: {medicine_type}")
                     logger.info(f"📋 Detected symptoms: {symptoms}")
@@ -2830,9 +3591,18 @@ def index():
                             logger.info(f"📋 Extracted age from message: {extracted_age}")
                         
                         # 性別の抽出
+                        previous_gender = user_attributes.get('gender')
                         if '女性' in user_message or '女' in user_message:
                             user_attributes['gender'] = '女性'
                             logger.info(f"📋 Detected gender: 女性")
+                            
+                            # 女性が登録された場合、妊娠の可能性について通知（初回のみ）
+                            if previous_gender != '女性' and not user_attributes.get('pregnancy_notified', False):
+                                user_attributes['pregnancy_notified'] = True
+                                # 通知メッセージを追加（後で表示）
+                                if 'pregnancy_notification' not in user_attributes:
+                                    user_attributes['pregnancy_notification'] = True
+                                logger.info(f"📋 女性登録時の妊娠可能性通知フラグを設定")
                         elif '男性' in user_message or '男' in user_message:
                             user_attributes['gender'] = '男性'
                             logger.info(f"📋 Detected gender: 男性")
@@ -2891,6 +3661,17 @@ def index():
                         }
                         
                         logger.info(f"📋 User info for recommendation: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
+                        # NLU解析で性別が自動登録された場合、user_attributesが更新されているため、user_infoを再構築
+                        user_info = {
+                            'age': user_attributes.get('age'),
+                            'gender': user_attributes.get('gender'),
+                            'pregnant': user_attributes.get('pregnant'),
+                            'breastfeeding': user_attributes.get('breastfeeding'),
+                            'current_medications': user_attributes.get('current_medications', []),
+                            'allergies': user_attributes.get('allergies', []),
+                            'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                        }
+                        logger.info(f"📋 User info for recommendation（再構築後）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                         
                         recommendation_result = rule_based_medicine_recommendation(
                             user_message, 
@@ -2901,6 +3682,108 @@ def index():
                         # ルールベース結果のデバッグログ
                         logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
                         logger.info(f"🔍 Rule-based medicines count: {len(recommendation_result.get('recommended_medicines', []))}")
+                        
+                        # NLU解析結果から性別自動判定と妊娠の可能性を取得
+                        nlu_result = recommendation_result.get('nlu_result', {})
+                        gender_detected = nlu_result.get('gender_detected', {})
+                        pregnancy_possible = nlu_result.get('pregnancy_possible', {})
+                        
+                        # 性別自動判定の処理
+                        gender_auto_registered = False
+                        gender_notification_message = None
+                        if gender_detected.get('detected', False):
+                            detected_gender = gender_detected.get('gender')
+                            detected_symptoms = gender_detected.get('symptoms', [])
+                            reason = gender_detected.get('reason', '')
+                            
+                            # 既存の性別を確認
+                            current_gender = user_attributes.get('gender')
+                            
+                            if detected_gender == 'female':
+                                if not current_gender or current_gender != '女性':
+                                    # 性別が未登録または女性以外の場合、自動登録
+                                    user_attributes['gender'] = '女性'
+                                    gender_auto_registered = True
+                                    gender_notification_message = f"💡 {reason}。性別を女性として登録しました。"
+                                    logger.info(f"👤 性別自動登録: {reason}")
+                                    
+                                    # セッションに保存
+                                    session['user_attributes'] = user_attributes
+                                    session.modified = True
+                                    
+                                    # DBも更新
+                                    sid = session.get('_id')
+                                    if sid:
+                                        session_data = get_session_from_db(sid)
+                                        if session_data:
+                                            session_data['user_attributes'] = user_attributes
+                                            session_data['last_activity'] = datetime.now()
+                                            save_session_to_db(sid, session_data)
+                                elif current_gender == '男性':
+                                    # 既存の性別が「男性」の場合は警告のみ
+                                    warning = gender_detected.get('warning', '')
+                                    if warning:
+                                        gender_notification_message = f"⚠️ {warning}"
+                                        logger.warning(f"👤 性別自動判定の警告: {warning}")
+                        
+                        # 性別が自動登録された場合、または既に「女性」として登録されている場合、妊娠可能性検出を再計算
+                        current_gender = user_attributes.get('gender')
+                        is_female = (gender_auto_registered or current_gender == '女性')
+                        
+                        if is_female and pregnancy_possible.get('detected', False):
+                            # 性別が「女性」として登録されているので、妊娠可能性検出を再計算
+                            # 妊娠可能性検出を再計算（閾値2.0で再判定）
+                            pregnancy_score = pregnancy_possible.get('score', 0.0)
+                            pregnancy_detected_symptoms = pregnancy_possible.get('symptoms', [])
+                            
+                            if pregnancy_score >= 2.0:
+                                # 閾値を超えている場合、高信頼度として再設定
+                                pregnancy_possible = {
+                                    "detected": True,
+                                    "score": pregnancy_score,
+                                    "symptoms": pregnancy_detected_symptoms,
+                                    "confidence": "high",  # 女性の場合は高信頼度
+                                    "gender": "female"
+                                }
+                                if gender_auto_registered:
+                                    logger.info(f"🤰 妊娠可能性検出を再計算: 性別が女性として登録されたため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                                else:
+                                    logger.info(f"🤰 妊娠可能性検出を再計算: 性別が既に女性として登録されているため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                            elif pregnancy_score > 0.0:
+                                # スコアが0より大きいが閾値未満の場合でも、女性の場合は高信頼度として設定
+                                pregnancy_possible = {
+                                    "detected": True,
+                                    "score": pregnancy_score,
+                                    "symptoms": pregnancy_detected_symptoms,
+                                    "confidence": "high",  # 女性の場合は高信頼度（閾値2.0未満でも検出）
+                                    "gender": "female"
+                                }
+                                if gender_auto_registered:
+                                    logger.info(f"🤰 妊娠可能性検出を再計算: 性別が女性として登録されたため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                                else:
+                                    logger.info(f"🤰 妊娠可能性検出を再計算: 性別が既に女性として登録されているため、高信頼度として再設定（score={pregnancy_score:.2f}）")
+                        
+                        # 妊娠の可能性が検出された場合の処理
+                        pregnancy_message = None
+                        if pregnancy_possible.get('detected', False):
+                            confidence = pregnancy_possible.get('confidence')
+                            score = pregnancy_possible.get('score', 0.0)
+                            detected_symptoms = pregnancy_possible.get('symptoms', [])
+                            gender = pregnancy_possible.get('gender', 'unknown')
+                            
+                            logger.info(f"🤰 妊娠の可能性検出: confidence={confidence}, score={score:.2f}, symptoms={detected_symptoms}, gender={gender}")
+                            
+                            # 性別に応じた処理
+                            if confidence == 'high':  # 女性の場合
+                                user_attributes['pregnancy_possible'] = 'high'
+                                user_info['pregnancy_possible'] = 'high'  # user_infoにも設定
+                                pregnancy_message = "⚠️ 妊娠の可能性があります。医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+                                logger.info(f"📋 妊娠の可能性（高信頼度）を設定: pregnancy_possible=high")
+                            elif confidence == 'low':  # 性別不明の場合
+                                user_attributes['pregnancy_possible'] = 'low'
+                                user_info['pregnancy_possible'] = 'low'  # user_infoにも設定
+                                pregnancy_message = "⚠️ 一部の症状は妊娠の可能性を示す場合がありますが、性別情報がないため確定できません。医師にご相談ください。"
+                                logger.info(f"📋 妊娠の可能性（低信頼度）を設定: pregnancy_possible=low")
                         
                         # ルールベース結果を従来の形式に変換
                         if recommendation_result.get('status') == 'success':
@@ -2954,6 +3837,26 @@ def index():
                                     usage_notes = '添付文書をよく読んでご使用ください。'
                             
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
+                            
+                            # メッセージの順序: 性別自動登録の通知 → 妊娠可能性の警告 → その他の医師相談メッセージ
+                            consultation_messages = []
+                            
+                            # 性別自動登録の通知メッセージを追加（最初に表示）
+                            if gender_notification_message:
+                                consultation_messages.append(gender_notification_message)
+                            
+                            # 妊娠の可能性が検出された場合、メッセージを追加
+                            if pregnancy_message:
+                                consultation_messages.append(pregnancy_message)
+                            
+                            # その他の医師相談メッセージを追加
+                            if doctor_consultation:
+                                consultation_messages.append(doctor_consultation)
+                            
+                            # メッセージを結合
+                            if consultation_messages:
+                                doctor_consultation = '\n\n'.join(consultation_messages)
+                            
                             additional_questions = recommendation_result.get('additional_questions', [])
                             critical_questions = recommendation_result.get('critical_questions', [])
                             influenza_risk = recommendation_result.get('influenza_risk', False)
@@ -3090,6 +3993,20 @@ def index():
                         recommendation_result['additional_questions'] = missing_questions
                         recommendation_result['missing_priority'] = missing_priority
                         logger.info(f"❓ Missing attributes detected: {len(missing_questions)} questions, priority: {missing_priority}")
+                    
+                    # 女性が登録された場合の妊娠可能性通知
+                    if user_attributes.get('pregnancy_notification', False):
+                        notification_message = "💡 女性として登録されました。妊娠の可能性がある場合は、医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+                        current_consultation = recommendation_result.get('doctor_consultation', '')
+                        if current_consultation:
+                            recommendation_result['doctor_consultation'] = notification_message + '\n\n' + current_consultation
+                        else:
+                            recommendation_result['doctor_consultation'] = notification_message
+                        # フラグをリセット（一度だけ表示）
+                        user_attributes['pregnancy_notification'] = False
+                        session['user_attributes'] = user_attributes
+                        session.modified = True
+                        logger.info(f"📋 女性登録時の妊娠可能性通知メッセージを表示")
                     
                     # medicine_logic.pyの呼び出しをログ出力
                     log_medicine_logic_call(
