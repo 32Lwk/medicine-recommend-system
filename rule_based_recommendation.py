@@ -45,6 +45,31 @@ PEDIATRIC_USAGE_KEYWORDS = [
 # 1. データ構造と定数定義
 # ================================================================================
 
+# 成分辞書（月経不順に効く成分）
+INGREDIENT_DICTIONARY = {
+    "当帰": {
+        "canonical_name": "当帰",
+        "synonyms": ["トウキ", "当帰", "とうき"],
+        "effects": ["血行改善", "冷え性改善", "生理痛緩和", "体力回復"],
+        "related_symptoms": ["月経不順", "生理痛", "冷え性"],
+        "medicine_types": ["解熱鎮痛薬", "漢方薬"]
+    },
+    "芍薬": {
+        "canonical_name": "芍薬",
+        "synonyms": ["シャクヤク", "芍薬", "しゃくやく"],
+        "effects": ["痛み緩和", "筋肉緊張緩和", "不安緩和"],
+        "related_symptoms": ["月経不順", "生理痛", "イライラ"],
+        "medicine_types": ["解熱鎮痛薬", "漢方薬"]
+    },
+    "当帰芍薬散": {
+        "canonical_name": "当帰芍薬散",
+        "synonyms": ["トウキシャクヤクサン", "当帰芍薬散", "とうきしゃくやくさん"],
+        "effects": ["血行改善", "生理痛緩和", "月経不順改善", "冷え性改善"],
+        "related_symptoms": ["月経不順", "生理痛", "冷え性"],
+        "medicine_types": ["漢方薬"]
+    }
+}
+
 # 症状辞書（全医薬品種類に対応）
 SYMPTOM_DICTIONARY = {
     # 風邪関連症状
@@ -133,6 +158,13 @@ SYMPTOM_DICTIONARY = {
         "medicine_types": ["解熱鎮痛薬"],
         "weight": 0.95
     },
+    "月経不順": {
+        "canonical_name": "月経不順",
+        "synonyms": ["月経不順", "生理不順", "月経異常", "生理周期が乱れている", "生理が遅れている", "月経が遅れている", "生理が来ていない", "月経が来ない", "生理が来ない"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["解熱鎮痛薬"],
+        "weight": 0.9
+    },
     "歯痛": {
         "canonical_name": "歯痛",
         "synonyms": ["歯が痛い", "歯の痛み"],
@@ -204,6 +236,27 @@ SYMPTOM_DICTIONARY = {
         "severity_tags": ["軽度", "中等度", "重度"],
         "medicine_types": ["胃腸薬"],
         "weight": 0.85
+    },
+    "つわり": {
+        "canonical_name": "つわり",
+        "synonyms": ["つわり", "悪阻", "吐き気", "嘔吐", "匂いに敏感", "匂いが気になる"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.9
+    },
+    "胸の張り": {
+        "canonical_name": "胸の張り",
+        "synonyms": ["胸が張る", "胸の張り", "乳房の張り", "胸が痛い", "胸が敏感", "乳房が痛い"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["解熱鎮痛薬"],
+        "weight": 0.8
+    },
+    "頻尿": {
+        "canonical_name": "頻尿",
+        "synonyms": ["頻尿", "トイレが近い", "おしっこが近い", "尿が近い", "トイレに行く回数が多い"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["胃腸薬"],
+        "weight": 0.8
     },
     # 外用薬関連症状
     "かゆみ": {
@@ -379,10 +432,112 @@ RED_FLAG_SYMPTOMS = {
 }
 
 # 医師受診推奨条件
+# 妊娠の可能性を示す症状辞書
+PREGNANCY_SYMPTOMS = {
+    "生理の遅れ": {
+        "weight": 3.0,  # 最高重み
+        "synonyms": [
+            "生理が遅れている", "月経が来ない", "生理が来ない", 
+            "予定日を過ぎた", "いつもより遅い", "生理が遅い",
+            "月経遅延", "生理不順", "月経不順", "生理が来ていない",
+            "月経が遅れている", "生理予定日を過ぎた"
+        ]
+    },
+    "つわり": {
+        "weight": 2.0,
+        "synonyms": ["つわり", "悪阻", "吐き気", "嘔吐", "匂いに敏感", "匂いが気になる"]
+    },
+    "だるさ": {
+        "weight": 1.0,
+        "synonyms": ["だるい", "倦怠感", "疲れやすい", "体がだるい", "全身倦怠感"]
+    },
+    "眠気": {
+        "weight": 1.0,
+        "synonyms": ["眠い", "眠気", "だるい", "眠たい", "眠気が強い", "いつも眠い"]
+    },
+    "胸の張り": {
+        "weight": 1.5,
+        "synonyms": ["胸が張る", "胸の張り", "乳房の張り", "胸が痛い", "胸が敏感", "乳房が痛い"]
+    },
+    "頻尿": {
+        "weight": 1.0,
+        "synonyms": ["頻尿", "トイレが近い", "おしっこが近い", "尿が近い", "トイレに行く回数が多い"]
+    },
+    "便秘": {
+        "weight": 0.5,  # 他の症状と組み合わせて判定
+        "synonyms": ["便秘", "便が出ない", "便通がない"]
+    },
+    "微熱": {
+        "weight": 0.5,  # 他の症状と組み合わせて判定
+        "synonyms": ["微熱", "微かな熱", "微熱が続く"]
+    },
+    "情緒不安定": {
+        "weight": 0.5,
+        "synonyms": ["情緒不安定", "イライラ", "不安", "気分が変わりやすい", "感情の起伏が激しい"]
+    },
+    "おりものの変化": {
+        "weight": 1.0,
+        "synonyms": ["おりもの", "おりものが増えた", "おりものが変わった", "おりものの量が増えた", "おりものの色が変わった"]
+    },
+    "着床出血": {
+        "weight": 1.5,
+        "synonyms": ["少量の出血", "着床出血", "軽い出血", "茶色いおりもの", "薄い出血", "軽い生理のような出血"]
+    }
+}
+
+# 女性特有の症状辞書（性別自動判定用）
+FEMALE_SPECIFIC_SYMPTOMS = {
+    "つわり": {
+        "confidence": "high",
+        "synonyms": ["つわり", "悪阻", "吐き気", "嘔吐", "匂いに敏感", "匂いが気になる"]
+    },
+    "生理の遅れ": {
+        "confidence": "high",
+        "synonyms": [
+            "生理が遅れている", "月経が来ない", "生理が来ない", 
+            "予定日を過ぎた", "いつもより遅い", "生理が遅い",
+            "月経遅延", "生理不順", "月経不順", "生理が来ていない",
+            "月経が遅れている", "生理予定日を過ぎた",
+            "最近生理が遅れています", "最近生理が遅れている", "最近生理が遅い",
+            "最近月経が遅れています", "最近月経が遅れている", "最近月経が遅い",
+            "生理が遅れています", "月経が遅れています"
+        ]
+    },
+    "生理痛": {
+        "confidence": "high",
+        "synonyms": ["生理痛", "月経痛", "生理の痛み", "下腹部痛", "生理痛が続く"]
+    },
+    "月経不順": {
+        "confidence": "high",
+        "synonyms": ["月経不順", "生理不順", "月経異常", "生理周期が乱れている"]
+    },
+    "更年期症状": {
+        "confidence": "high",
+        "synonyms": ["更年期", "更年期障害", "ホットフラッシュ", "のぼせ", "ほてり"]
+    },
+    "胸の張り": {
+        "confidence": "high",
+        "synonyms": ["胸が張る", "胸の張り", "乳房の張り", "胸が痛い", "胸が敏感", "乳房が痛い"]
+    },
+    "着床出血": {
+        "confidence": "high",
+        "synonyms": ["少量の出血", "着床出血", "軽い出血", "茶色いおりもの", "薄い出血", "軽い生理のような出血"]
+    },
+    "おりものの変化": {
+        "confidence": "high",
+        "synonyms": ["おりもの", "おりものが増えた", "おりものが変わった", "おりものの量が増えた", "おりものの色が変わった"]
+    }
+}
+
 DOCTOR_REFERRAL_CONDITIONS = {
     "pregnancy": {
         "description": "妊娠中",
         "message": "妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
+        "priority": "critical"
+    },
+    "pregnancy_possible": {
+        "description": "妊娠の可能性",
+        "message": "妊娠の可能性があります。医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
         "priority": "critical"
     },
     "breastfeeding": {
@@ -1426,6 +1581,182 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     else:
         overall_severity = "中等度"  # デフォルト
     
+    # 女性特有の症状から性別を自動判定
+    gender_detected_symptoms = []
+    gender_detected = None
+    current_gender = user_info.get('gender', '').strip() if user_info.get('gender') else ''
+    
+    # 既存の性別が「男性」の場合は警告のみで上書きしない
+    if current_gender == '男性':
+        gender_detected = {
+            "detected": False,
+            "gender": None,
+            "confidence": None,
+            "symptoms": [],
+            "reason": "既存の性別が男性のため、症状からの自動判定をスキップ",
+            "warning": "女性特有の症状が検出されましたが、既に性別が男性として登録されているため、性別は変更しませんでした。"
+        }
+    else:
+        # 女性特有の症状辞書から症状を検出
+        for symptom_name, symptom_data in FEMALE_SPECIFIC_SYMPTOMS.items():
+            confidence = symptom_data["confidence"]
+            synonyms = symptom_data["synonyms"]
+            
+            # 高信頼度の症状のみを対象
+            if confidence == "high":
+                # 同義語でマッチング（部分一致を確実にする）
+                matched = False
+                user_text_lower = user_text.lower()
+                for synonym in synonyms:
+                    synonym_lower = synonym.lower()
+                    # 部分一致を確認（より柔軟なマッチング）
+                    if synonym_lower in user_text_lower or user_text_lower in synonym_lower:
+                        matched = True
+                        break
+                    # 正規表現による柔軟なマッチングも試行
+                    import re
+                    # 「最近生理が遅れています」のようなパターンも検出
+                    pattern = re.escape(synonym_lower).replace(r'\ ', r'\s*')
+                    if re.search(pattern, user_text_lower):
+                        matched = True
+                        break
+                
+                if matched:
+                    gender_detected_symptoms.append(symptom_name)
+        
+        # 高信頼度の症状が1つでも検出された場合、性別を「女性」として自動判定
+        if len(gender_detected_symptoms) > 0:
+            gender_detected = {
+                "detected": True,
+                "gender": "female",
+                "confidence": "high",
+                "symptoms": gender_detected_symptoms,
+                "reason": f"{', '.join(gender_detected_symptoms)}の症状から女性と判定"
+            }
+            logger.info(f"👤 性別自動判定: {gender_detected['reason']}")
+        else:
+            gender_detected = {
+                "detected": False,
+                "gender": None,
+                "confidence": None,
+                "symptoms": [],
+                "reason": "女性特有の症状が検出されませんでした"
+            }
+    
+    # 妊娠の可能性を示す症状の検出
+    pregnancy_detected_symptoms = []
+    pregnancy_score = 0.0
+    # 性別自動判定の結果を優先（検出された場合はそれを使用、そうでなければ既存の性別を使用）
+    # gender_detectedのgenderは'female'/'male'/'unknown'なので、日本語に変換
+    if gender_detected and gender_detected.get('detected'):
+        detected_gender_en = gender_detected.get('gender')
+        if detected_gender_en == 'female':
+            gender = '女性'
+        elif detected_gender_en == 'male':
+            gender = '男性'
+        else:
+            gender = current_gender
+    else:
+        gender = current_gender
+    
+    # 男性の場合は検出しない
+    if gender == '男性':
+        pregnancy_possible = {
+            "detected": False,
+            "score": 0.0,
+            "symptoms": [],
+            "confidence": None,
+            "gender": "male"
+        }
+    else:
+        # 妊娠症状辞書から症状を検出
+        for symptom_name, symptom_data in PREGNANCY_SYMPTOMS.items():
+            weight = symptom_data["weight"]
+            synonyms = symptom_data["synonyms"]
+            
+            # 同義語でマッチング
+            matched = False
+            for synonym in synonyms:
+                if synonym in user_text:
+                    matched = True
+                    break
+            
+            if matched:
+                pregnancy_detected_symptoms.append(symptom_name)
+                pregnancy_score += weight
+        
+        # 性別に応じた閾値設定
+        if gender == '女性':
+            threshold = 2.0  # 女性: 閾値を低く設定
+        else:
+            threshold = 4.5  # 性別不明: 閾値を高く設定
+        
+        # 性別不明の場合の誤検出防止：複数の症状（3個以上）が必要
+        # ただし「生理の遅れ」は単独でも警告を出す（重み3.0で閾値4.5を超えるため）
+        # また、「つわり」などの重要な症状が検出された場合も警告を出す（推奨は継続）
+        if gender != '女性' and pregnancy_score >= threshold:
+            # 閾値を超えている場合
+            pregnancy_possible = {
+                "detected": True,
+                "score": pregnancy_score,
+                "symptoms": pregnancy_detected_symptoms,
+                "confidence": "low",  # 性別不明の場合は低信頼度
+                "gender": "unknown"
+            }
+        elif gender != '女性' and pregnancy_score > 0.0:
+            # 性別不明でスコアが0より大きいが閾値未満の場合
+            # 「つわり」「生理の遅れ」などの重要な症状が検出された場合は警告を出す（推奨は継続）
+            important_symptoms = ["つわり", "生理の遅れ", "着床出血", "胸の張り"]
+            has_important_symptom = any(symptom in important_symptoms for symptom in pregnancy_detected_symptoms)
+            
+            if has_important_symptom:
+                # 重要な症状が検出された場合は警告を出す（推奨は継続）
+                pregnancy_possible = {
+                    "detected": True,
+                    "score": pregnancy_score,
+                    "symptoms": pregnancy_detected_symptoms,
+                    "confidence": "low",  # 性別不明の場合は低信頼度
+                    "gender": "unknown"
+                }
+            else:
+                # 重要な症状がない場合は検出しない
+                pregnancy_possible = {
+                    "detected": False,
+                    "score": pregnancy_score,
+                    "symptoms": pregnancy_detected_symptoms,
+                    "confidence": None,
+                    "gender": "unknown"
+                }
+        elif gender == '女性' and pregnancy_score >= threshold:
+            # 女性で閾値を超えている場合
+            pregnancy_possible = {
+                "detected": True,
+                "score": pregnancy_score,
+                "symptoms": pregnancy_detected_symptoms,
+                "confidence": "high",  # 女性の場合は高信頼度
+                "gender": "female"
+            }
+        else:
+            # 閾値を超えていない場合
+            pregnancy_possible = {
+                "detected": False,
+                "score": pregnancy_score,
+                "symptoms": pregnancy_detected_symptoms,
+                "confidence": None,
+                "gender": gender if gender else "unknown"
+            }
+    
+    # 妊娠可能性検出のログ（検出された場合のみINFOレベルで出力、それ以外はDEBUG）
+    if pregnancy_possible.get('detected', False):
+        logger.info(f"🤰 妊娠の可能性検出: detected={pregnancy_possible['detected']}, score={pregnancy_possible['score']:.2f}, confidence={pregnancy_possible['confidence']}, symptoms={pregnancy_possible['symptoms']}, gender={pregnancy_possible.get('gender', 'unknown')}")
+    else:
+        # 検出されなかった場合でも、スコアが0より大きい場合はINFOレベルでログ出力（デバッグ用）
+        if pregnancy_possible.get('score', 0.0) > 0.0:
+            threshold = 2.0 if gender == '女性' else 4.5
+            logger.info(f"🤰 妊娠可能性検出（閾値未満）: score={pregnancy_possible['score']:.2f}, threshold={threshold}, symptoms={pregnancy_possible['symptoms']}, gender={pregnancy_possible.get('gender', 'unknown')}")
+        elif DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"妊娠可能性検出: detected={pregnancy_possible['detected']}, score={pregnancy_possible['score']:.2f}, confidence={pregnancy_possible['confidence']}, symptoms={pregnancy_possible['symptoms']}")
+    
     return {
         "symptoms": detected_symptoms,
         "red_flags": red_flags,
@@ -1433,7 +1764,9 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         "escalation_reason": escalation_reason,
         "confidence_score": confidence_score,
         "user_body_part": body_part,  # 部位情報を返り値に含める
-        "severity": overall_severity  # トップレベルの強度
+        "severity": overall_severity,  # トップレベルの強度
+        "pregnancy_possible": pregnancy_possible,  # 妊娠の可能性検出結果
+        "gender_detected": gender_detected  # 性別自動判定結果
     }
 
 def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, session_id: str = None) -> Dict:
@@ -1470,6 +1803,12 @@ def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, sessi
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"ルールベースNLUの信頼度が低いため、ChatGPT APIを呼び出し（信頼度: {confidence_score:.2f}）")
         gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
+        
+        # rule_based_resultからgender_detectedとpregnancy_possibleを取得してgpt_resultに追加
+        if 'gender_detected' in rule_based_result:
+            gpt_result['gender_detected'] = rule_based_result['gender_detected']
+        if 'pregnancy_possible' in rule_based_result:
+            gpt_result['pregnancy_possible'] = rule_based_result['pregnancy_possible']
         
         # 結果をキャッシュに保存
         set_cached_nlu_result(user_text, gpt_result, session_id)
@@ -1645,6 +1984,16 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
         else:
             parsed_result["severity"] = "中等度"  # デフォルト
         
+        # gender_detectedとpregnancy_possibleを追加（simple_pattern_matching_nluから取得）
+        try:
+            rule_based_result = simple_pattern_matching_nlu(user_text, user_info)
+            if 'gender_detected' in rule_based_result:
+                parsed_result['gender_detected'] = rule_based_result['gender_detected']
+            if 'pregnancy_possible' in rule_based_result:
+                parsed_result['pregnancy_possible'] = rule_based_result['pregnancy_possible']
+        except Exception as e:
+            logger.warning(f"性別・妊娠可能性検出の追加でエラー: {e}")
+        
         return parsed_result
             
     except Exception as e:
@@ -1757,6 +2106,32 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
                 safety_result["warnings"].append(f"妊娠中は{medicine_type}の使用に注意が必要です。")
         
         return safety_result
+    
+    # 3.5. 妊娠の可能性チェック（信頼度に応じた処理）
+    # user_infoから取得、なければnlu_resultから取得
+    pregnancy_possible = user_info.get('pregnancy_possible')
+    if not pregnancy_possible:
+        # nlu_resultからpregnancy_possibleを取得
+        nlu_pregnancy_possible = nlu_result.get('pregnancy_possible', {})
+        if nlu_pregnancy_possible.get('detected', False):
+            confidence = nlu_pregnancy_possible.get('confidence')
+            if confidence == 'high':
+                pregnancy_possible = 'high'
+            elif confidence == 'low':
+                pregnancy_possible = 'low'
+    
+    if pregnancy_possible == 'high':
+        # 高信頼度（女性+スコア2.0以上）: 推奨を停止し、医師受診のみを促す
+        safety_result["is_safe"] = False
+        safety_result["requires_escalation"] = True
+        safety_result["doctor_referral_required"] = True
+        safety_result["escalation_reason"] = "妊娠の可能性があります。医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
+        safety_result["referral_reasons"].append(DOCTOR_REFERRAL_CONDITIONS["pregnancy_possible"])
+        return safety_result
+    elif pregnancy_possible == 'low':
+        # 低信頼度（性別不明+スコア4.5以上）: 推奨は続行するが、一般的な警告メッセージを表示
+        safety_result["warnings"].append("一部の症状は妊娠の可能性を示す場合がありますが、性別情報がないため確定できません。医師にご相談ください。")
+        # 推奨は継続するため、is_safeはTrueのまま
     
     # 4. 授乳中チェック（医師受診必須）
     if user_info.get('breastfeeding', False):
@@ -5503,7 +5878,8 @@ def rule_based_recommendation(
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ5: スコアリング（二段階方式） ---")
     else:
-        logger.info("ステップ5: スコアリング開始")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug("ステップ5: スコアリング開始")
     
     # ステップ5.1: 簡易スコアリング（高速）
     def calculate_quick_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
@@ -5544,9 +5920,10 @@ def rule_based_recommendation(
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
                         logger.debug(f"quick_score pattern_bonus適用: medicine_type=外用薬（のど）, product_name={product_name}, pattern_bonus={pattern_bonus}")
         else:
-            # pattern_infoがNoneの場合もログ出力
+            # pattern_infoがNoneの場合もログ出力（DEBUGレベル）
             if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
-                logger.info(f"quick_score pattern_info=None: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_names={symptom_names}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"quick_score pattern_info=None: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_names={symptom_names}")
         
         if len(symptom_names) >= 2:
             # のどの痛み + 発熱のパターン（既存ロジックは維持）
@@ -5563,9 +5940,10 @@ def rule_based_recommendation(
         # 症状パターンボーナスと二日酔いブーストも追加
         quick_score_result = (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus + hangover_quick_boost)
         
-        # 解熱鎮痛薬と外用薬（のど）のquick_score計算の詳細をログ出力
+        # 解熱鎮痛薬と外用薬（のど）のquick_score計算の詳細をログ出力（DEBUGレベル）
         if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
-            logger.info(f"quick_score計算詳細: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_score={symptom_score:.3f}, efficacy_score={efficacy_score:.3f}, age_score={age_score:.3f}, symptom_penalty={symptom_penalty:.3f}, pattern_bonus={pattern_bonus:.3f}, hangover_boost={hangover_quick_boost:.3f}, quick_score={quick_score_result:.3f}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"quick_score計算詳細: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_score={symptom_score:.3f}, efficacy_score={efficacy_score:.3f}, age_score={age_score:.3f}, symptom_penalty={symptom_penalty:.3f}, pattern_bonus={pattern_bonus:.3f}, hangover_boost={hangover_quick_boost:.3f}, quick_score={quick_score_result:.3f}")
         
         return quick_score_result
     
@@ -5574,12 +5952,13 @@ def rule_based_recommendation(
     selection_count = min(top_n * 250, len(candidates))
     quick_scores = [(calculate_quick_score(c, nlu_result, scoring_user_info), c) for c in candidates]
     
-    # 解熱鎮痛薬と外用薬（のど）のquick_scoreをログ出力
+    # 解熱鎮痛薬と外用薬（のど）のquick_scoreをログ出力（DEBUGレベル）
     for score, candidate in quick_scores:
         medicine_type = candidate.get('medicine_type', '')
         product_name = candidate.get('product_name', '')
         if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
-            logger.info(f"quick_score: {score:.3f}, medicine_type={medicine_type}, product_name={product_name}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"quick_score: {score:.3f}, medicine_type={medicine_type}, product_name={product_name}")
     
     quick_scores_sorted = sorted(quick_scores, key=lambda x: x[0], reverse=True)
     top_candidates_for_scoring = quick_scores_sorted[:selection_count]
@@ -5589,7 +5968,8 @@ def rule_based_recommendation(
     if len(threshold_candidates) > selection_count:
         # 閾値を超える候補が多い場合は、それらも含める
         top_candidates_for_scoring = sorted(threshold_candidates, key=lambda x: x[0], reverse=True)
-        logger.info(f"閾値ベース選別: 簡易スコア0.3以上の候補 {len(top_candidates_for_scoring)}件を選別")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"閾値ベース選別: 簡易スコア0.3以上の候補 {len(top_candidates_for_scoring)}件を選別")
     
     # 解熱鎮痛薬と外用薬（のど）を優先的に詳細スコアリングに含める
     # 「のど痛み+発熱」パターンの場合、解熱鎮痛薬と外用薬（のど）を確実に含める
@@ -5614,7 +5994,8 @@ def rule_based_recommendation(
         
         # スコア順に再ソート
         top_candidates_for_scoring = sorted(top_candidates_for_scoring, key=lambda x: x[0], reverse=True)
-        logger.info(f"解熱鎮痛薬と外用薬（のど）を優先的に追加: 解熱鎮痛薬={len(top_analgesic)}件, 外用薬（のど）={len(top_throat_external)}件")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"解熱鎮痛薬と外用薬（のど）を優先的に追加: 解熱鎮痛薬={len(top_analgesic)}件, 外用薬（のど）={len(top_throat_external)}件")
     
     # 解熱鎮痛薬と外用薬（のど）が詳細スコアリングに進んでいるか確認（500件に絞り込む前）
     analgesic_count_before = 0
@@ -5644,9 +6025,11 @@ def rule_based_recommendation(
         
         # 統合して再ソート
         top_candidates_for_scoring = sorted(top_analgesic_included + top_throat_external_included + top_other_candidates, key=lambda x: x[0], reverse=True)
-        logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別（500件に削減、解熱鎮痛薬={len(top_analgesic_included)}件、外用薬（のど）={len(top_throat_external_included)}件を優先的に含む）")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別（500件に削減、解熱鎮痛薬={len(top_analgesic_included)}件、外用薬（のど）={len(top_throat_external_included)}件を優先的に含む）")
     else:
-        logger.info(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"簡易スコアリング完了: {len(candidates)}件 → 上位{len(top_candidates_for_scoring)}件を選別")
     
     # 解熱鎮痛薬と外用薬（のど）が詳細スコアリングに進んでいるか確認（500件に絞り込んだ後）
     analgesic_count = 0
@@ -5657,7 +6040,6 @@ def rule_based_recommendation(
             analgesic_count += 1
         if '外用薬（のど）' in medicine_type:
             throat_external_count += 1
-    logger.info(f"詳細スコアリング対象: 解熱鎮痛薬={analgesic_count}件, 外用薬（のど）={throat_external_count}件（絞り込み前: 解熱鎮痛薬={analgesic_count_before}件, 外用薬（のど）={throat_external_count_before}件）")
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"詳細スコアリング対象: 解熱鎮痛薬={analgesic_count}件, 外用薬（のど）={throat_external_count}件（絞り込み前: 解熱鎮痛薬={analgesic_count_before}件, 外用薬（のど）={throat_external_count_before}件）")
     
@@ -5702,15 +6084,18 @@ def rule_based_recommendation(
     if analgesic_scores:
         max_analgesic = max(analgesic_scores, key=lambda x: x[1])
         avg_analgesic = sum(s[1] for s in analgesic_scores) / len(analgesic_scores)
-        logger.info(f"解熱鎮痛薬スコアリングサマリー: {len(analgesic_scores)}件, 最高スコア={max_analgesic[1]:.3f} ({max_analgesic[0]}), 平均スコア={avg_analgesic:.3f}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"解熱鎮痛薬スコアリングサマリー: {len(analgesic_scores)}件, 最高スコア={max_analgesic[1]:.3f} ({max_analgesic[0]}), 平均スコア={avg_analgesic:.3f}")
     
     if throat_external_scores:
         max_throat = max(throat_external_scores, key=lambda x: x[1])
         avg_throat = sum(s[1] for s in throat_external_scores) / len(throat_external_scores)
-        logger.info(f"外用薬（のど）スコアリングサマリー: {len(throat_external_scores)}件, 最高スコア={max_throat[1]:.3f} ({max_throat[0]}), 平均スコア={avg_throat:.3f}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"外用薬（のど）スコアリングサマリー: {len(throat_external_scores)}件, 最高スコア={max_throat[1]:.3f} ({max_throat[0]}), 平均スコア={avg_throat:.3f}")
     
     if top_10_scores:
-        logger.info(f"詳細スコアリング上位10件: {', '.join([f'{s[0]}({s[2]:.3f})' for s in top_10_scores[:5]])}...")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"詳細スコアリング上位10件: {', '.join([f'{s[0]}({s[2]:.3f})' for s in top_10_scores[:5]])}...")
     
     # ステップ5.2.5: Min-Max正規化のための最大値・最小値を計算
     raw_scores = [c.get('raw_score', 0.0) for c in [c for _, c in top_candidates_for_scoring]]
@@ -5757,7 +6142,8 @@ def rule_based_recommendation(
                 'score_range': score_range
             }
         
-        logger.info(f"Min-Max正規化適用: raw_score範囲 [{min_raw_score:.3f}, {max_raw_score:.3f}], 範囲幅: {score_range:.3f}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"Min-Max正規化適用: raw_score範囲 [{min_raw_score:.3f}, {max_raw_score:.3f}], 範囲幅: {score_range:.3f}")
     
     # ステップ5.3: 詳細スコアリング（選別された候補のみ）
     candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
@@ -5812,17 +6198,19 @@ def rule_based_recommendation(
     
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result)
     
-    logger.info(
-        f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択（成分多様性考慮）"
-    )
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(
+            f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択（成分多様性考慮）"
+        )
     
-    # 最終推奨結果をログ出力（解熱鎮痛薬と外用薬（のど）の確認用）
+    # 最終推奨結果をログ出力（解熱鎮痛薬と外用薬（のど）の確認用、DEBUGレベル）
     for i, candidate in enumerate(top_candidates, 1):
         medicine_type = candidate.get('medicine_type', '')
         product_name = candidate.get('product_name', '')
         final_score = candidate.get('final_score', 0.0)
         raw_score = candidate.get('raw_score', 0.0)
-        logger.info(f"最終推奨結果 rank{i}: medicine_type={medicine_type}, product_name={product_name}, final_score={final_score:.3f}, raw_score={raw_score:.3f}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"最終推奨結果 rank{i}: medicine_type={medicine_type}, product_name={product_name}, final_score={final_score:.3f}, raw_score={raw_score:.3f}")
     
     # ステップ5.4: 相対スコア化（最高スコアを100%として正規化）
     # ensure_ingredient_diversity実行後、relative_scoreを再計算
