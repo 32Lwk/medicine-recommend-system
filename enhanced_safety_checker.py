@@ -155,6 +155,23 @@ class EnhancedSafetyChecker:
             safety_result.update(self._check_pregnancy_safety(medicine))
             return safety_result
         
+        # 2.5. 妊娠の可能性チェック（信頼度に応じた処理）
+        pregnancy_possible = user_info.get('pregnancy_possible')
+        if pregnancy_possible == 'high':
+            # 高信頼度（女性+スコア2.0以上）: 医師受診必須、推奨停止
+            safety_result.update({
+                "is_safe": False,
+                "requires_escalation": True,
+                "doctor_referral_required": True,
+                "escalation_reason": "妊娠の可能性があります。医師の診断を受けてください。市販薬の使用は医師にご相談ください。",
+                "referral_reasons": [self.doctor_referral_conditions["pregnancy"]]
+            })
+            return safety_result
+        elif pregnancy_possible == 'low':
+            # 低信頼度（性別不明+スコア4.5以上）: 警告のみ、推奨は継続
+            safety_result["warnings"].append("一部の症状は妊娠の可能性を示す場合がありますが、性別情報がないため確定できません。医師にご相談ください。")
+            # 推奨は継続するため、is_safeはTrueのまま
+        
         # 3. 授乳中チェック（絶対禁忌）
         if user_info.get('breastfeeding', False):
             safety_result.update(self._check_breastfeeding_safety(medicine))
