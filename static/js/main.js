@@ -1344,8 +1344,8 @@
                         
                         <div class="contact-info">
                             <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 （Kawashima ）</p>
-                            <p><strong>所属：</strong> 　　　　　　　</p>
+                            <p><strong>運営者名：</strong> 川嶋 宥翔 （Kawashima Yuto ）</p>
+                            <p><strong>所属：</strong> 名古屋大学理学部物理学科</p>
                             <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
                         </div>
                         
@@ -1468,7 +1468,7 @@
                         <div class="contact-info">
                             <h4>Basic Information</h4>
                             <p><strong>Operator Name:</strong> Kawashima Yuto</p>
-                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics, 2nd Year</p>
+                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics</p>
                             <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
                         </div>
                         
@@ -1592,7 +1592,7 @@
                         <div class="contact-info">
                             <h4>기본 정보</h4>
                             <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
-                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과 2학년</p>
+                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과</p>
                             <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
                         </div>
                         
@@ -1716,7 +1716,7 @@
                         <div class="contact-info">
                             <h4>基本信息</h4>
                             <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年级</p>
+                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科</p>
                             <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
                         </div>
                         
@@ -2191,7 +2191,7 @@
                         <h4>第7条（テスターの権利）</h4>
                         <p>テスターは、自身に関する情報の開示・訂正・削除を運営者に請求できます。希望する場合は、以下の連絡先までお問い合わせください。</p>
                         <ul>
-                            <li>運営者名：川嶋（Kawashima ）</li>
+                            <li>運営者名：川嶋 宥翔（Kawashima Yuto）</li>
                             <li><strong>お問い合わせ：</strong> <a href="https://forms.gle/myzACX7eT59dkrLx8" target="_blank">https://forms.gle/myzACX7eT59dkrLx8</a></li>
                         </ul>
                         
@@ -2382,7 +2382,7 @@
                         
                         <div class="contact-info">
                             <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 （Kawashima ）</p>
+                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
                             <p><strong>所属：</strong>   </p>
                             <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
                         </div>
@@ -4777,6 +4777,14 @@
     function closeUserInfoModal() {
         document.getElementById('userInfoModal').style.display = 'none';
     }
+    
+    // 情報を修正ボタン用の関数
+    function editUserInfo() {
+        openUserInfoModal();
+    }
+    
+    // グローバルスコープに公開
+    window.editUserInfo = editUserInfo;
     
     // 既存のユーザー情報を読み込む
     function loadExistingUserInfo() {

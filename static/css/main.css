@@ -135,18 +135,18 @@
             overflow-x: hidden; /* 横スクロールを防止 */
         }
         
-        /* 冬仕様の装飾画像 */
+        /* 冬仕様の装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
         .winter-decoration {
             position: absolute;
             pointer-events: none; /* クリックを無効化 */
-            z-index: 1; /* メッセージの下に配置 */
+            z-index: 1; /* メッセージ(z-index: 2)の下に配置 */
             will-change: transform; /* パフォーマンス最適化 */
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
         }
         
         .winter-decoration.christmas-tree {
-            bottom: 20px;
+            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             right: 20px;
             width: 120px;
             height: auto;
@@ -155,7 +155,7 @@
         }
         
         .winter-decoration.snowman {
-            bottom: 20px;
+            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             left: 20px;
             width: 100px;
             height: auto;
@@ -206,13 +206,13 @@
         @media (max-width: 768px) {
             .winter-decoration.christmas-tree {
                 width: 80px;
-                bottom: 10px;
+                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 right: 10px;
             }
             
             .winter-decoration.snowman {
                 width: 70px;
-                bottom: 10px;
+                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 left: 10px;
             }
         }
@@ -220,13 +220,13 @@
         @media (max-width: 480px) {
             .winter-decoration.christmas-tree {
                 width: 60px;
-                bottom: 5px;
+                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 right: 5px;
             }
             
             .winter-decoration.snowman {
                 width: 50px;
-                bottom: 5px;
+                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 left: 5px;
             }
         }
