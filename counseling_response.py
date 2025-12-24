@@ -75,9 +75,21 @@ def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
         triage_result: トリアージ結果
     
     Returns:
-        感情的症状タイプ（"heart_pain", "anxiety", "romantic_concern", "stress", "depression_like"）
+        感情的症状タイプ（"heart_pain", "anxiety", "romantic_concern", "stress", "depression_like", "insomnia"）
     """
     subcategory = triage_result.get("subcategory", "").lower()
+    user_text_lower = user_text.lower()
+    
+    # 不眠の検出（最優先）
+    insomnia_keywords = [
+        "不眠", "眠れない", "睡眠不足", "寝つきが悪い", "眠れません", "眠れないです", 
+        "眠れない", "睡眠", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
+        "寝れない", "寝れません", "寝れないです", "夜寝れない", "最近寝れない",
+        "眠れなくて", "眠れなく", "寝つけない", "寝つけません", "寝つけないです",
+        "不眠症", "不眠で", "不眠です", "不眠の", "不眠が"
+    ]
+    if any(keyword in user_text_lower for keyword in insomnia_keywords):
+        return "insomnia"
     
     if "heart" in subcategory or "心" in user_text:
         return "heart_pain"
@@ -103,6 +115,40 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
             "max_length": int
         }
     """
+    # 不眠専用のプロンプトテンプレート
+    if symptom_type == "insomnia":
+        return {
+            "system_message": "あなたは薬剤師兼カウンセラーです。不眠に関するカウンセリングを行い、代替療法を推奨し、薬のリスクを説明してください。「一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい」というメッセージは含めないでください（別途送信されます）。",
+            "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。不眠で悩むユーザーに対して、
+共感的で実践的なアドバイスを含む返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【症状タイプ】
+不眠
+
+【返信の要件】
+- **共感的なメッセージ**: 不眠で悩む気持ちに寄り添う（1-2文）
+- **代替療法の具体的な推奨**: 以下の方法を具体的に説明してください（必須）
+  * ハーブティー（カモミール、バレリアンなど）を就寝前に飲む
+  * ラベンダーのアロマオイルを枕元に置く、またはアロマディフューザーを使用
+  * 軽いストレッチや深呼吸を行う
+  * リラックスできる音楽を聴く
+  * 睡眠環境の改善（室温、照明、騒音対策など）
+- **薬のリスク説明**: 簡潔に説明してください（必須）
+  * 睡眠改善薬は一時的な不眠にのみ効果がある
+  * 常用化のリスクがある
+  * 不眠症と診断されている場合は医師にご相談ください
+- **応答長さ**: 200-300文字程度（簡潔に要点を押さえる）
+- **質問は最小限に**: 不必要な質問は避け、代替療法の推奨と薬のリスク説明を優先する
+- **重要**: 「一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい」というメッセージは含めないでください（別途送信されます）
+""",
+            "response_requirements": "代替療法の推奨と薬のリスク説明を含む、共感的で実践的な返信（200-300文字程度）。簡潔に要点を押さえる。",
+            "max_length": 300
+        }
+    
     # 医療関連の症状タイプ
     MEDICAL_SYMPTOM_TYPES = {'heart_pain', 'anxiety', 'depression_like'}
     
@@ -205,6 +251,9 @@ def generate_counseling_response(
     max_length = template.get("max_length", 200)
     
     try:
+        # 不眠の場合は長めの応答を許可（max_tokensを増やす）
+        max_tokens_value = max_length * 2 if symptom_type == "insomnia" else max_length
+        
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -212,14 +261,46 @@ def generate_counseling_response(
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=max_length
+            max_tokens=max_tokens_value
         )
         
         response_text = response.choices[0].message.content.strip()
         
-        # 文字数制限を超える場合は切り詰める
+        # 不眠の場合、カウンセリング応答から「一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい」を削除
+        # （別途app.pyで送信されるため）
+        if symptom_type == "insomnia":
+            # 切り替え案内のメッセージを削除
+            switch_patterns = [
+                "一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい",
+                "一時的な不眠で推奨される医薬品を知りたい場合は教えてください",
+                "医薬品を知りたい場合は教えて下さい",
+                "医薬品を知りたい場合は教えてください"
+            ]
+            for pattern in switch_patterns:
+                if pattern in response_text:
+                    # パターンを含む行を削除
+                    lines = response_text.split('\n')
+                    response_text = '\n'.join([line for line in lines if pattern not in line])
+                    break
+        
+        # 文字数制限を超える場合は切り詰める（不眠の場合は400文字まで許可）
         if len(response_text) > max_length:
-            response_text = response_text[:max_length] + "..."
+            # 文の途中で切らないように、最後の文を削除
+            if symptom_type == "insomnia" and max_length >= 300:
+                # 不眠の場合は、文の区切りで切る
+                sentences = response_text.split('。')
+                trimmed_text = ""
+                for sentence in sentences:
+                    if len(trimmed_text) + len(sentence) + 1 <= max_length:
+                        trimmed_text += sentence + "。"
+                    else:
+                        break
+                # 最後の「。」が重複しないように調整
+                if trimmed_text.endswith("。。"):
+                    trimmed_text = trimmed_text[:-1]
+                response_text = trimmed_text
+            else:
+                response_text = response_text[:max_length] + "..."
         
         # ログ記録
         if session_id:
@@ -236,11 +317,26 @@ def generate_counseling_response(
     except Exception as e:
         logger.error(f"カウンセリング返信生成エラー: {e}")
         # エラーメッセージも症状タイプに応じて変更
-        MEDICAL_SYMPTOM_TYPES = {'heart_pain', 'anxiety', 'depression_like'}
-        if symptom_type in MEDICAL_SYMPTOM_TYPES:
-            error_response = "お気持ちをお聞かせいただき、ありがとうございます。詳しくお話を伺いたいので、もう少し詳しく教えていただけますか？"
+        if symptom_type == "insomnia":
+            error_response = """不眠でお悩みですね。お気持ちお察しします。
+
+【代替療法の推奨】
+- ハーブティー（カモミール、バレリアンなど）を就寝前に飲む
+- ラベンダーのアロマオイルを枕元に置く、またはアロマディフューザーを使用
+- 軽いストレッチや深呼吸を行う
+- リラックスできる音楽を聴く
+- 睡眠環境の改善（室温、照明、騒音対策など）
+
+【薬について】
+睡眠改善薬は一時的な不眠にのみ効果があり、常用化のリスクがあります。不眠症と診断されている場合は医師にご相談ください。
+
+一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい。"""
         else:
-            error_response = "お気持ちをお聞かせいただき、ありがとうございます。応援しています。"
+            MEDICAL_SYMPTOM_TYPES = {'heart_pain', 'anxiety', 'depression_like'}
+            if symptom_type in MEDICAL_SYMPTOM_TYPES:
+                error_response = "お気持ちをお聞かせいただき、ありがとうございます。詳しくお話を伺いたいので、もう少し詳しく教えていただけますか？"
+            else:
+                error_response = "お気持ちをお聞かせいただき、ありがとうございます。応援しています。"
         
         # エラー時もログ記録を試みる
         if session_id:
@@ -312,6 +408,44 @@ def generate_follow_up_questions(
     Returns:
         フォローアップ質問のリスト
     """
+    # 不眠専用の質問生成
+    if symptom_type == "insomnia":
+        # 既に収集済みの情報を確認
+        has_duration = "duration" in collected_info or "期間" in str(collected_info)
+        has_cause = "cause" in collected_info or "原因" in str(collected_info)
+        has_relaxation = "relaxation" in collected_info or "リラックス" in str(collected_info)
+        
+        questions = []
+        
+        # 期間に関する質問（未収集の場合）
+        if not has_duration:
+            questions.append("どのくらいの期間、眠れない状態が続いていますか？")
+        
+        # 原因に関する質問（未収集の場合）
+        if not has_cause and len(questions) < 3:
+            questions.append("不眠の原因として、何か心配事やストレスがありますか？")
+        
+        # リラックス習慣に関する質問（未収集の場合）
+        if not has_relaxation and len(questions) < 3:
+            questions.append("就寝前に何かリラックスできる習慣はありますか？")
+        
+        # 質問が不足している場合、追加の質問を生成
+        if len(questions) < 2:
+            additional_questions = [
+                "どのような時間帯に眠れないことが多いですか？",
+                "不眠の影響で、日中の生活に支障はありますか？"
+            ]
+            for q in additional_questions:
+                if len(questions) < 3:
+                    questions.append(q)
+        
+        # 最低1つは質問を返す
+        if not questions:
+            questions = ["どのくらいの期間、眠れない状態が続いていますか？"]
+        
+        return questions[:3]  # 最大3つまで
+    
+    # その他の症状タイプの処理
     prompt = f"""
     あなたは薬剤師兼カウンセラーです。感情的症状について、より詳しい情報を収集するための
     フォローアップ質問を生成してください。
@@ -327,17 +461,20 @@ def generate_follow_up_questions(
     - ユーザーが話しやすい質問にする
     - 3つ程度の質問を生成する
     - 質問は自然な会話形式で
+    - 「もう少し詳しく教えていただけますか？」という質問は生成しない
     
     【回答形式】
-    JSON配列形式で質問を返してください：
-    ["質問1", "質問2", "質問3"]
+    JSON形式で回答してください：
+    {{
+        "questions": ["質問1", "質問2", "質問3"]
+    }}
     """
     
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。自然な会話形式のフォローアップ質問を生成してください。"},
+                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。自然な会話形式のフォローアップ質問を生成してください。「もう少し詳しく教えていただけますか？」という質問は生成しないでください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
@@ -354,13 +491,44 @@ def generate_follow_up_questions(
         elif isinstance(result, list):
             questions = result
         else:
-            # フォールバック: デフォルトの質問を返す
-            questions = ["もう少し詳しく教えていただけますか？"]
+            # フォールバック: 症状タイプに応じたデフォルト質問を返す
+            if symptom_type == "anxiety":
+                questions = ["どのような場面で不安を感じることが多いですか？"]
+            elif symptom_type == "stress":
+                questions = ["どのようなストレスを感じていますか？"]
+            elif symptom_type == "heart_pain":
+                questions = ["どのような状況で心の痛みを感じますか？"]
+            else:
+                questions = ["もう少し詳しく教えていただけますか？"]
+        
+        # 「もう少し詳しく教えていただけますか？」を除外
+        questions = [q for q in questions if "もう少し詳しく教えていただけますか？" not in q]
+        
+        # 質問が空の場合は、症状タイプに応じたデフォルト質問を返す
+        if not questions:
+            if symptom_type == "anxiety":
+                questions = ["どのような場面で不安を感じることが多いですか？"]
+            elif symptom_type == "stress":
+                questions = ["どのようなストレスを感じていますか？"]
+            elif symptom_type == "heart_pain":
+                questions = ["どのような状況で心の痛みを感じますか？"]
+            else:
+                questions = ["具体的にどのような症状がありますか？"]
         
         return questions if isinstance(questions, list) else [questions]
     except Exception as e:
         logger.error(f"フォローアップ質問生成エラー: {e}")
-        return ["もう少し詳しく教えていただけますか？"]
+        # エラー時のフォールバックも症状タイプに応じた質問を返す
+        if symptom_type == "insomnia":
+            return ["どのくらいの期間、眠れない状態が続いていますか？"]
+        elif symptom_type == "anxiety":
+            return ["どのような場面で不安を感じることが多いですか？"]
+        elif symptom_type == "stress":
+            return ["どのようなストレスを感じていますか？"]
+        elif symptom_type == "heart_pain":
+            return ["どのような状況で心の痛みを感じますか？"]
+        else:
+            return ["具体的にどのような症状がありますか？"]
 
 
 def start_counseling_mode(
@@ -891,15 +1059,67 @@ def process_counseling_answer(
                 'completion_reason': 'no_progress'
             }
         
-        # ステップ1: 文脈を考慮した返信を生成（新規追加）
+        # ステップ1: 文脈を考慮した返信を生成（不眠の場合は特別処理）
         symptom_type = counseling_mode.get('symptom_type', 'general_emotional')
-        counseling_response_text = generate_counseling_response(
-            symptom_type,
-            user_text,
-            client,
-            conversation_history=conversation_history,
-            session_id=session_id
-        )
+        
+        if symptom_type == "insomnia":
+            # 不眠の場合、ユーザーの回答に応じた簡潔な返信を生成
+            # 会話履歴を考慮して、既に説明した内容は繰り返さない
+            history_text = format_conversation_history(conversation_history[-10:])
+            
+            # ユーザーの回答から情報を抽出
+            answer_info = answer_extracted.get('info_value', '')
+            info_key = answer_extracted.get('info_key', '')
+            
+            # 不眠専用の簡潔な返信を生成
+            prompt = f"""
+あなたは薬剤師兼カウンセラーです。不眠で悩むユーザーに対して、会話の流れを考慮した簡潔な返信を生成してください。
+
+【会話履歴】
+{history_text}
+
+【直前の質問】
+{last_question}
+
+【ユーザーの回答】
+{user_text}
+
+【抽出された情報】
+{info_key}: {answer_info}
+
+【返信の要件】
+- **会話の流れを考慮**: 既に説明した代替療法や薬のリスクについては、繰り返さないでください
+- **ユーザーの回答に応じた返信**: ユーザーの回答（例：「昨日からです」）に応じた簡潔な返信を生成してください
+- **簡潔に**: 100-150文字程度で簡潔に返信してください
+- **共感的に**: ユーザーの状況に寄り添う返信をしてください
+- **重要**: 代替療法や薬のリスクの詳細な説明は既に最初の応答で説明済みなので、繰り返さないでください
+
+【返信を生成してください】
+"""
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。会話の流れを考慮した簡潔な返信を生成してください。"},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=200
+                )
+                counseling_response_text = response.choices[0].message.content.strip()
+            except Exception as e:
+                logger.error(f"不眠カウンセリング返信生成エラー: {e}")
+                # フォールバック: 簡潔な返信
+                counseling_response_text = f"了解しました。{user_text}とのことですね。"
+        else:
+            # その他の症状タイプは従来通り
+            counseling_response_text = generate_counseling_response(
+                symptom_type,
+                user_text,
+                client,
+                conversation_history=conversation_history,
+                session_id=session_id
+            )
         
         # ステップ2: 次のアクションを決定
         if interpretation.get('next_action') == 'continue':
@@ -1370,6 +1590,40 @@ def handle_user_input_in_counseling_mode(
     """
     counseling_mode = session.get('counseling_mode', {})
     current_topic = counseling_mode.get('symptom_type', '')
+    
+    # 不眠カウンセリング中に薬を希望した場合の検出
+    if current_topic == "insomnia":
+        user_text_lower = user_text.lower()
+        medicine_request_keywords = [
+            "薬を教えて", "睡眠薬を教えて", "医薬品を知りたい", "薬を知りたい",
+            "睡眠薬", "薬を", "医薬品を", "薬を教えて下さい", "薬を教えてください",
+            "睡眠薬を教えて下さい", "睡眠薬を教えてください", "医薬品を教えて",
+            "薬を推奨", "睡眠薬を推奨", "医薬品を推奨",
+            "教えて欲しい", "教えてください", "教えて下さい", "教えて",
+            "知りたい", "知りたいです", "知りたいです。", "知りたい。",
+            "推奨して", "推奨してください", "推奨して下さい", "推奨して欲しい"
+        ]
+        
+        if any(keyword in user_text_lower for keyword in medicine_request_keywords):
+            # カウンセリングモードを終了し、Physicalカテゴリの処理に移行
+            counseling_mode['active'] = False
+            session['counseling_mode'] = counseling_mode
+            session.modified = True
+            
+            logger.info(f"不眠カウンセリングから薬推奨への切り替え: ユーザーが薬を希望")
+            
+            return {
+                'type': 'topic_shift',
+                'new_category': 'Physical',
+                'topic_shift_result': {
+                    'is_topic_shift': True,
+                    'new_topic_category': 'Physical',
+                    'relation_to_current_topic': 0.0,
+                    'reasoning': 'ユーザーが薬を希望したため、カウンセリングから薬推奨に切り替え'
+                },
+                'continue_counseling': False,
+                'medicine_request': True
+            }
     
     # 話題転換を自動検知
     topic_shift_result = detect_topic_shift(
