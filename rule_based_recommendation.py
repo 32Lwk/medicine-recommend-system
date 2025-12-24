@@ -49,14 +49,14 @@ PEDIATRIC_USAGE_KEYWORDS = [
 INGREDIENT_DICTIONARY = {
     "当帰": {
         "canonical_name": "当帰",
-        "synonyms": ["トウキ", "当帰", "とうき"],
+        "synonyms": ["トウキ", "当帰", "とうき", "トウキ末", "トウキ流エキス", "トウキエキス", "トウキ乾燥エキス", "トウキ流エキスＳ", "トウキエキスＳ", "当帰末"],
         "effects": ["血行改善", "冷え性改善", "生理痛緩和", "体力回復"],
         "related_symptoms": ["月経不順", "生理痛", "冷え性"],
         "medicine_types": ["解熱鎮痛薬", "漢方薬"]
     },
     "芍薬": {
         "canonical_name": "芍薬",
-        "synonyms": ["シャクヤク", "芍薬", "しゃくやく"],
+        "synonyms": ["シャクヤク", "芍薬", "しゃくやく", "シャクヤク末", "シャクヤクエキス", "シャクヤク乾燥エキス", "芍薬エキス"],
         "effects": ["痛み緩和", "筋肉緊張緩和", "不安緩和"],
         "related_symptoms": ["月経不順", "生理痛", "イライラ"],
         "medicine_types": ["解熱鎮痛薬", "漢方薬"]
@@ -160,10 +160,10 @@ SYMPTOM_DICTIONARY = {
     },
     "月経不順": {
         "canonical_name": "月経不順",
-        "synonyms": ["月経不順", "生理不順", "月経異常", "生理周期が乱れている", "生理が遅れている", "月経が遅れている", "生理が来ていない", "月経が来ない", "生理が来ない"],
+        "synonyms": ["月経不順", "生理不順", "月経異常", "生理周期が乱れている", "生理が遅れている", "月経が遅れている", "生理が来ていない", "月経が来ない", "生理が来ない", "血の道症", "生理異常"],
         "severity_tags": ["軽度", "中等度", "重度"],
         "medicine_types": ["解熱鎮痛薬"],
-        "weight": 0.9
+        "weight": 0.95
     },
     "歯痛": {
         "canonical_name": "歯痛",
@@ -439,8 +439,9 @@ PREGNANCY_SYMPTOMS = {
         "synonyms": [
             "生理が遅れている", "月経が来ない", "生理が来ない", 
             "予定日を過ぎた", "いつもより遅い", "生理が遅い",
-            "月経遅延", "生理不順", "月経不順", "生理が来ていない",
+            "月経遅延", "生理が来ていない",
             "月経が遅れている", "生理予定日を過ぎた"
+            # 注意: "生理不順", "月経不順"は除外（妊娠以外の原因も多いため）
         ]
     },
     "つわり": {
@@ -990,6 +991,32 @@ SYMPTOM_PATTERN_OPTIMIZATION = {
             "葛根湯": 0.15,
             "総合感冒薬": 0.10
         }
+    },
+    # 月経不順+イライラ
+    frozenset({"月経不順", "イライラ"}): {
+        "priority_order": ["加味逍遙散", "命の母ホワイト", "ラムールQ"],
+        "bonuses": {
+            "加味逍遙散": 0.20,  # 0.15から0.20に増加
+            "命の母ホワイト": 0.20,  # 0.15から0.20に増加
+            "ラムールQ": 0.18,  # 新規追加
+            "解熱鎮痛薬": 0.10
+        }
+    },
+    # 月経不順+冷え症
+    frozenset({"月経不順", "冷え症"}): {
+        "priority_order": ["当帰芍薬散"],
+        "bonuses": {
+            "当帰芍薬散": 0.20,
+            "解熱鎮痛薬": 0.10
+        }
+    },
+    # 月経不順+ニキビ
+    frozenset({"月経不順", "ニキビ"}): {
+        "priority_order": ["桂枝茯苓丸"],
+        "bonuses": {
+            "桂枝茯苓丸": 0.15,
+            "解熱鎮痛薬": 0.10
+        }
     }
 }
 
@@ -1124,6 +1151,23 @@ ANALGESIC_PRIORITY = {
     "中優先度（効果高いが胃への影響あり）": {
         "ingredients": ["ロキソプロフェン", "ロキソニン", "ジクロフェナク", "ボルタレン"],
         "boost": 0.08
+    }
+}
+
+# 月経不順向け成分優先順位
+MENSTRUAL_MEDICINE_PRIORITY = {
+    "高優先度（当帰芍薬散）": {
+        "ingredients": ["当帰芍薬散", "トウキシャクヤクサン"],
+        "boost": 0.25
+    },
+    "高優先度（当帰+芍薬の組み合わせ）": {
+        "ingredients": ["当帰", "トウキ", "芍薬", "シャクヤク"],
+        "requires_both": True,  # 当帰と芍薬の両方が必要
+        "boost": 0.20
+    },
+    "中優先度（当帰または芍薬単独）": {
+        "ingredients": ["当帰", "トウキ", "芍薬", "シャクヤク"],
+        "boost": 0.15
     }
 }
 
@@ -1686,8 +1730,9 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
                 pregnancy_score += weight
         
         # 性別に応じた閾値設定
+        # 「生理不順」だけで妊娠可能性を判定するのは早計のため、閾値を上げる
         if gender == '女性':
-            threshold = 2.0  # 女性: 閾値を低く設定
+            threshold = 4.0  # 女性: 閾値を上げる（複数の明確な妊娠症状が必要）
         else:
             threshold = 4.5  # 性別不明: 閾値を高く設定
         
@@ -2121,7 +2166,7 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
                 pregnancy_possible = 'low'
     
     if pregnancy_possible == 'high':
-        # 高信頼度（女性+スコア2.0以上）: 推奨を停止し、医師受診のみを促す
+        # 高信頼度（女性+スコア4.0以上）: 推奨を停止し、医師受診のみを促す
         safety_result["is_safe"] = False
         safety_result["requires_escalation"] = True
         safety_result["doctor_referral_required"] = True
@@ -2325,11 +2370,34 @@ def _enforce_symptom_match_threshold(
         hangover_boost = score_breakdown.get('hangover_boost', 0.0)
         is_hangover_medicine = candidate.get('is_hangover', False)
         
+        # 月経不順症状で成分ブーストがある場合の閾値緩和
+        menstrual_symptoms = ["月経不順", "生理不順", "生理痛", "月経痛"]
+        symptom_names_set = {s.get("name") for s in symptoms if s.get("name")}
+        has_menstrual_symptom = any(symptom in symptom_names_set for symptom in menstrual_symptoms)
+        
+        # 成分ブーストの確認（当帰・芍薬を含む場合）
+        ingredients = str(candidate.get('ingredients', '')).lower()
+        has_ingredient_boost = False
+        if has_menstrual_symptom:
+            toki_keywords = ["トウキ", "当帰", "とうき", "トウキ末", "トウキ流エキス", "トウキエキス", "トウキ乾燥エキス"]
+            shakuyaku_keywords = ["シャクヤク", "芍薬", "しゃくやく", "シャクヤク末", "シャクヤクエキス", "シャクヤク乾燥エキス"]
+            has_toki = any(kw.lower() in ingredients for kw in toki_keywords)
+            has_shakuyaku = any(kw.lower() in ingredients for kw in shakuyaku_keywords)
+            product_name = str(candidate.get('product_name', '')).upper()
+            efficacy = str(candidate.get('efficacy', '')).upper()
+            has_toki_shakuyaku_san = "当帰芍薬散" in candidate.get('product_name', '') or "トウキシャクヤクサン" in product_name or "当帰芍薬散" in efficacy
+            has_ingredient_boost = (has_toki and has_shakuyaku) or has_toki_shakuyaku_san
+        
         if hangover_boost > 0 or is_hangover_medicine:
             # 二日酔い向け医薬品は閾値を下げる
             adjusted_threshold = 0.0  # 二日酔いブーストがあれば症状適合度チェックをスキップ
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"二日酔い医薬品のため閾値を0.0に調整: {candidate.get('product_name', '')} (boost={hangover_boost:.3f})")
+        elif has_menstrual_symptom and has_ingredient_boost:
+            # 月経不順症状で成分ブーストがある場合、閾値を緩和
+            adjusted_threshold = max(0.0, threshold - 0.15)  # 閾値を0.15下げる（例：0.35→0.20）
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"月経不順症状+成分ブーストのため閾値を{threshold:.2f}から{adjusted_threshold:.2f}に緩和: {candidate.get('product_name', '')}")
         else:
             adjusted_threshold = threshold
         
@@ -3598,9 +3666,36 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             if normalized_synonym:
                 synonym_set.add(normalized_synonym)
         
+        # 血の道症・月経異常の双方向マッピング（効能効果テキスト内の専門用語も認識）
+        if symptom_name == "月経不順" or "月経不順" in dictionary_entry.get("canonical_name", ""):
+            # 効能効果テキスト内の「血の道症」「月経異常」も「月経不順」として認識
+            synonym_set.add(normalize_text("血の道症"))
+            synonym_set.add(normalize_text("血の道"))
+            synonym_set.add(normalize_text("月経異常"))
+            synonym_set.add(normalize_text("生理異常"))
+        
+        # イライラ症状への対応強化（効能効果欄に「ヒステリー」「情緒不安定」「更年期神経症」などが含まれる場合）
+        if symptom_name == "イライラ" or "イライラ" in dictionary_entry.get("canonical_name", ""):
+            # 効能効果テキスト内の「ヒステリー」「情緒不安定」「更年期神経症」も「イライラ」として認識
+            synonym_set.add(normalize_text("ヒステリー"))
+            synonym_set.add(normalize_text("情緒不安定"))
+            synonym_set.add(normalize_text("更年期神経症"))
+            synonym_set.add(normalize_text("神経症状"))
+        
         # 各効能パート内でマッチングを試行
         matched = False
         for part in efficacy_parts:
+            # 効能効果テキスト内の「血の道症」「月経異常」もチェック（大文字小文字を区別しない）
+            part_lower = part.lower()
+            if symptom_name == "月経不順" or "月経不順" in dictionary_entry.get("canonical_name", ""):
+                if "血の道症" in part_lower or "血の道" in part_lower or "月経異常" in part_lower or "生理異常" in part_lower:
+                    matched = True
+                    break
+            # 効能効果テキスト内の「ヒステリー」「情緒不安定」などもチェック（大文字小文字を区別しない）
+            if symptom_name == "イライラ" or "イライラ" in dictionary_entry.get("canonical_name", ""):
+                if "ヒステリー" in part_lower or "情緒不安定" in part_lower or "更年期神経症" in part_lower or "神経症状" in part_lower:
+                    matched = True
+                    break
             if any(is_word_match(token, part) for token in synonym_set):
                 matched = True
                 break
@@ -3626,6 +3721,10 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
             symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
             matched_symptom_count = 0
             
+            # 月経不順・生理痛関連症状の定義
+            menstrual_symptoms = ["月経不順", "生理不順", "生理痛", "月経痛", "月経異常", "生理異常", "血の道症"]
+            menstrual_keywords = ["生理", "月経", "周期", "遅れ", "来ない", "来ていない", "乱れ", "不順", "異常"]
+            
             for symptom_name in symptom_names:
                 normalized_symptom = normalize_text(symptom_name)
                 # 発熱関連症状
@@ -3637,9 +3736,15 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
                 # 頭痛関連症状
                 elif any(headache in normalized_symptom or headache in symptom_name for headache in headache_symptoms):
                     matched_symptom_count += 1
+                # 月経不順・生理痛関連症状（新規追加）
+                elif any(menstrual in normalized_symptom or menstrual in symptom_name for menstrual in menstrual_symptoms):
+                    matched_symptom_count += 1
+                # 月経不順・生理痛のキーワードマッチ（「生理が遅れている」など）
+                elif any(keyword in normalized_symptom or keyword in symptom_name for keyword in menstrual_keywords):
+                    matched_symptom_count += 1
             
             if matched_symptom_count > 0:
-                # 解熱鎮痛薬は発熱、のどの痛み、頭痛に効果があるため、一定のスコアを付与
+                # 解熱鎮痛薬は発熱、のどの痛み、頭痛、月経不順・生理痛に効果があるため、一定のスコアを付与
                 base_score = 0.45  # 解熱鎮痛薬の基本スコア
                 return base_score * (matched_symptom_count / len(symptom_names))
         
@@ -4022,6 +4127,58 @@ def calculate_ingredient_based_boost(candidate: Dict, nlu_result: Dict, user_inf
                     logger.debug(f"切り傷剤形ボーナス: {candidate.get('product_name', '')} = +{WOUND_MEDICINE_PRIORITY['剤形']['boost']}")
                 break
     
+    # 月経不順・生理痛向けの成分優先順位（新規追加）
+    menstrual_symptoms = ["月経不順", "生理不順", "生理痛", "月経痛"]
+    has_menstrual_symptom = any(symptom in symptom_names for symptom in menstrual_symptoms)
+    
+    if has_menstrual_symptom and '解熱鎮痛薬' in medicine_type:
+        # ラムールQ、加味逍遙散、命の母ホワイトの製品名ベース識別（最高優先度）
+        product_name_lower = product_name.lower()
+        efficacy_lower = efficacy.lower()
+        
+        # ラムールQの識別
+        if "ラムールq" in product_name_lower or "ラムールｑ" in product_name_lower:
+            boost = max(boost, 0.25)  # ラムールQ専用ボーナス
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ラムールQ製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+        
+        # 加味逍遙散の識別
+        if "加味逍遙散" in product_name or "カミショウヨウサン" in product_name.upper():
+            boost = max(boost, 0.25)  # 加味逍遙散専用ボーナス
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"加味逍遙散製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+        
+        # 命の母ホワイトの識別
+        if "命の母ホワイト" in product_name or ("命の母" in product_name and "ホワイト" in product_name):
+            boost = max(boost, 0.25)  # 命の母ホワイト専用ボーナス
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"命の母ホワイト製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+        
+        # 当帰芍薬散を含む医薬品（最高優先度）
+        product_name_upper = product_name.upper()
+        efficacy_upper = efficacy.upper()
+        if "当帰芍薬散" in product_name or "トウキシャクヤクサン" in product_name_upper or "当帰芍薬散" in efficacy:
+            boost = max(boost, MENSTRUAL_MEDICINE_PRIORITY["高優先度（当帰芍薬散）"]["boost"])
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"当帰芍薬散ボーナス: {candidate.get('product_name', '')} = +{MENSTRUAL_MEDICINE_PRIORITY['高優先度（当帰芍薬散）']['boost']}")
+        else:
+            # 当帰と芍薬の両方が含まれる場合（高優先度）
+            toki_keywords = ["トウキ", "当帰", "とうき", "トウキ末", "トウキ流エキス", "トウキエキス", "トウキ乾燥エキス", "トウキ流エキスＳ", "トウキエキスＳ", "当帰末"]
+            shakuyaku_keywords = ["シャクヤク", "芍薬", "しゃくやく", "シャクヤク末", "シャクヤクエキス", "シャクヤク乾燥エキス", "芍薬エキス"]
+            
+            has_toki = any(kw.lower() in ingredients for kw in toki_keywords)
+            has_shakuyaku = any(kw.lower() in ingredients for kw in shakuyaku_keywords)
+            
+            if has_toki and has_shakuyaku:
+                boost = max(boost, MENSTRUAL_MEDICINE_PRIORITY["高優先度（当帰+芍薬の組み合わせ）"]["boost"])
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"当帰+芍薬組み合わせボーナス: {candidate.get('product_name', '')} = +{MENSTRUAL_MEDICINE_PRIORITY['高優先度（当帰+芍薬の組み合わせ）']['boost']}")
+            # 当帰または芍薬単独（中優先度）
+            elif has_toki or has_shakuyaku:
+                boost = max(boost, MENSTRUAL_MEDICINE_PRIORITY["中優先度（当帰または芍薬単独）"]["boost"])
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"当帰または芍薬単独ボーナス: {candidate.get('product_name', '')} = +{MENSTRUAL_MEDICINE_PRIORITY['中優先度（当帰または芍薬単独）']['boost']}")
+    
     return boost
 
 def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, user_text: str = "") -> Dict:
@@ -4134,9 +4291,11 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         bonuses = pattern_info.get("bonuses", {})
         penalties = pattern_info.get("penalties", {})
         product_name = candidate.get('product_name', '')
+        efficacy = str(candidate.get('efficacy', ''))
         ingredients = str(candidate.get('ingredients', '')).lower()
         medicine_type = candidate.get('medicine_type', '')
         throat_specificity_level = candidate.get('throat_specificity_level', 'none')
+        symptom_names = [s.get("name") for s in nlu_result.get("symptoms", [])]
         
         # 総合感冒薬（喉向き）のボーナス
         if "総合感冒薬（喉向き・成分あり）" in bonuses and throat_specificity_level == "component_and_efficacy":
@@ -4172,6 +4331,71 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                     pattern_bonus += bonuses["生薬配合の胃腸薬"]
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
                         logger.debug(f"症状パターンボーナス（生薬配合の胃腸薬）: {product_name} = +{bonuses['生薬配合の胃腸薬']}")
+        
+        # 加味逍遙散の識別とボーナス（月経不順+イライラ）
+        if "加味逍遙散" in bonuses:
+            product_name_upper = product_name.upper()
+            efficacy_lower = efficacy.lower()
+            if "加味逍遙散" in product_name or "カミショウヨウサン" in product_name_upper or "加味逍遙散" in efficacy_lower:
+                pattern_bonus += bonuses["加味逍遙散"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（加味逍遙散）: {product_name} = +{bonuses['加味逍遙散']}")
+        
+        # 命の母ホワイトの識別とボーナス（月経不順+イライラ）
+        if "命の母ホワイト" in bonuses:
+            # 製品名または効能効果欄に「命の母ホワイト」「命の母」が含まれる場合にボーナス適用
+            efficacy_lower = efficacy.lower()
+            if "命の母ホワイト" in product_name or "命の母" in product_name or "命の母" in efficacy_lower:
+                pattern_bonus += bonuses["命の母ホワイト"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（命の母ホワイト）: {product_name} = +{bonuses['命の母ホワイト']}")
+        
+        # 当帰芍薬散の識別とボーナス（月経不順+冷え症）
+        if "当帰芍薬散" in bonuses:
+            if "当帰芍薬散" in product_name or "トウキシャクヤクサン" in product_name.upper() or "当帰芍薬散" in efficacy:
+                pattern_bonus += bonuses["当帰芍薬散"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（当帰芍薬散）: {product_name} = +{bonuses['当帰芍薬散']}")
+        
+        # 桂枝茯苓丸の識別とボーナス（月経不順+ニキビ）
+        if "桂枝茯苓丸" in bonuses:
+            # 製品名または効能効果欄に「桂枝茯苓丸」が含まれる場合
+            has_keishibukuryogan_name = "桂枝茯苓丸" in product_name or "ケイシブクリョウガン" in product_name.upper()
+            has_keishibukuryogan_efficacy = "桂枝茯苓丸" in efficacy
+            # 効能に「月経不順」「血の道症」が含まれる製品を優先（「打撲症」のみの製品は除外）
+            has_menstrual_efficacy = "月経不順" in efficacy or "血の道症" in efficacy or "生理不順" in efficacy
+            only_daposho = "打撲症" in efficacy and not has_menstrual_efficacy
+            
+            if (has_keishibukuryogan_name or has_keishibukuryogan_efficacy) and not only_daposho:
+                # 月経不順・血の道症が含まれる場合は追加ボーナス
+                if has_menstrual_efficacy:
+                    pattern_bonus += bonuses["桂枝茯苓丸"] + 0.05  # 追加ボーナス
+                else:
+                    pattern_bonus += bonuses["桂枝茯苓丸"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（桂枝茯苓丸）: {product_name} = +{bonuses['桂枝茯苓丸']} (効能: {efficacy[:100]}...)")
+        
+        # ラムールQの識別とボーナス（月経不順+イライラ）
+        if "ラムールQ" in bonuses:
+            # 製品名に「ラムールQ」「ラムールＱ」が含まれる場合、または効能効果欄に「血の道症」「月経不順」「更年期障害」が含まれる場合にボーナス適用
+            has_ramuruq_name = "ラムールQ" in product_name or "ラムールＱ" in product_name or "ラムールq" in product_name.lower()
+            efficacy_lower = efficacy.lower()
+            has_ramuruq_efficacy = ("血の道症" in efficacy_lower or "血の道" in efficacy_lower) and ("月経不順" in efficacy_lower or "更年期障害" in efficacy_lower)
+            if has_ramuruq_name or has_ramuruq_efficacy:
+                pattern_bonus += bonuses["ラムールQ"]
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（ラムールQ）: {product_name} = +{bonuses['ラムールQ']}")
+        
+        # 「イライラ」症状への対応強化：効能効果欄に「ヒステリー」「情緒不安定」「更年期神経症」などのキーワードが含まれる医薬品にボーナス
+        if "月経不順" in symptom_names and "イライラ" in symptom_names:
+            irritability_keywords = ["ヒステリー", "情緒不安定", "更年期神経症", "更年期障害", "神経症状"]
+            efficacy_lower = efficacy.lower()
+            has_irritability_keyword = any(keyword in efficacy_lower for keyword in irritability_keywords)
+            if has_irritability_keyword:
+                irritability_boost = 0.12  # イライラ症状への対応ボーナス
+                pattern_bonus += irritability_boost
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"イライラ症状対応ボーナス: {product_name} = +{irritability_boost} (効能: {efficacy[:100]}...)")
         
         # 葛根湯の識別とペナルティ（「のどの痛み+発熱」の場合はペナルティを適用）
         if "葛根湯" in bonuses:
@@ -4507,6 +4731,62 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     ingredient_boost = calculate_ingredient_based_boost(candidate, nlu_result, user_info, user_text)
     limited_ingredient_boost = max(0.0, min(0.25, ingredient_boost))  # 最大0.25まで
     
+    # 月経不順症状で漢方薬かつ食前・食間への微小な加点（新規追加）
+    dosage_timing_boost = 0.0
+    menstrual_symptoms_list = ["月経不順", "生理不順", "生理痛", "月経痛"]
+    has_menstrual_symptom_list = any(symptom in symptom_names for symptom in menstrual_symptoms_list)
+    
+    if has_menstrual_symptom_list:
+        # 漢方薬の判定
+        from scoring_utils import _is_kampo_or_herbal_medicine
+        is_kampo = _is_kampo_or_herbal_medicine(candidate)
+        
+        if is_kampo:
+            # 用法用量テキストから「食前」「食間」「空腹時」のキーワードを抽出
+            usage_text = str(candidate.get('usage', '')).lower()
+            efficacy_text = str(candidate.get('efficacy', '')).lower()
+            combined_usage = usage_text + efficacy_text
+            
+            if any(kw in combined_usage for kw in ["食前", "食間", "空腹時", "空腹"]):
+                dosage_timing_boost = 0.02  # 微小な加点
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"月経不順症状+漢方薬+食前・食間のため加点: {candidate.get('product_name', '')} = +0.02")
+        
+        # ラムールQ、加味逍遙散、命の母ホワイトの優先ボーナス（製品名ベース）
+        product_name_lower = product_name.lower()
+        if "ラムールq" in product_name_lower or "ラムールｑ" in product_name_lower:
+            priority_boost = 0.10  # ラムールQ優先ボーナス
+            dosage_timing_boost += priority_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ラムールQ優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
+        elif "加味逍遙散" in product_name or "カミショウヨウサン" in product_name.upper():
+            priority_boost = 0.10  # 加味逍遙散優先ボーナス
+            dosage_timing_boost += priority_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"加味逍遙散優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
+        elif "命の母ホワイト" in product_name or ("命の母" in product_name and "ホワイト" in product_name):
+            priority_boost = 0.10  # 命の母ホワイト優先ボーナス
+            dosage_timing_boost += priority_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"命の母ホワイト優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
+        
+        # 錠剤タイプへの「飲みやすさ」ボーナス（月経不順症状がある場合）
+        if any(token in combined_dosage_text for token in ["錠", "錠剤"]):
+            tablet_convenience_boost = 0.08  # 飲みやすさボーナス
+            dosage_timing_boost += tablet_convenience_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"月経不順症状+錠剤タイプのため飲みやすさボーナス: {candidate.get('product_name', '')} = +{tablet_convenience_boost}")
+        
+        # ビタミン配合へのボーナス（月経不順症状がある場合）
+        ingredients = str(candidate.get('ingredients', '')).lower()
+        vitamin_keywords = ["ビタミン", "vitamin", "ビタミンe", "ビタミンb", "トコフェロール", "酢酸トコフェロール"]
+        has_vitamin = any(vitamin in ingredients for vitamin in vitamin_keywords)
+        if has_vitamin:
+            vitamin_boost = 0.08  # ビタミン配合ボーナス
+            dosage_timing_boost += vitamin_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"月経不順症状+ビタミン配合のためボーナス: {candidate.get('product_name', '')} = +{vitamin_boost}")
+    
     # タイブレーカー（成分重視型 vs 利便性重視型）
     tiebreaker_boost = 0.0
     nlu_severity = nlu_result.get("severity", None)
@@ -4542,6 +4822,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 tiebreaker_boost = max(tiebreaker_boost, 0.02)
     
     limited_tiebreaker_boost = max(0.0, min(0.10, tiebreaker_boost))  # 最大0.10まで
+    # 月経不順症状がある場合、錠剤ボーナスとビタミン配合ボーナスが追加されるため、上限を引き上げ
+    max_dosage_timing_boost = 0.20 if has_menstrual_symptom_list else 0.02
+    limited_dosage_timing_boost = max(0.0, min(max_dosage_timing_boost, dosage_timing_boost))
     
     # 漢方薬・生薬製剤の優先度調整（症状パターンごとに異なる処理）
     # adjustment_scoreの計算前に実行する必要がある
@@ -4673,6 +4956,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         limited_dosage_form_bonus +
         limited_ingredient_boost +  # 成分ベースのボーナスを追加
         limited_tiebreaker_boost +  # タイブレーカーボーナスを追加
+        limited_dosage_timing_boost +  # 用法用量タイミングボーナス（月経不順+漢方薬+食前・食間）を追加
         kampo_adjustment +  # 漢方薬調整を追加
         kakkonto_penalty  # 葛根湯の条件付き推奨ペナルティを追加
     )
@@ -4856,33 +5140,43 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
 
         total_adjustment = 0.0
 
-        # 複数症状がある場合は、症状カテゴリ間優先表から最も適切なペナルティを適用
-        penalties = []
-        for symptom_name in symptom_names:
-            if symptom_name in SYMPTOM_CATEGORY_PENALTY:
-                penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
-                if medicine_type in penalty_table:
-                    if '風邪薬' in medicine_type:
-                        continue
-                    penalty_value = penalty_table[medicine_type]
-                    penalties.append(penalty_value)
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"症状特異性ペナルティ（複数症状）: symptom={symptom_name}, medicine_type={medicine_type}, penalty={penalty_value}")
+        # 効能特異性が非常に低い場合（症状が効能に全く含まれていない、またはほとんど含まれていない場合）は強いペナルティを適用
+        # このペナルティは他のペナルティよりも優先される
+        if efficacy_specificity < 0.1:  # 0.0だけでなく、0.1未満も対象とする
+            # 複数症状の場合でも、効能に症状が全く含まれていない場合は大幅減点
+            unrelated_penalty = -0.4  # 効能が全く関係ない場合のペナルティ
+            total_adjustment += unrelated_penalty
+            logger.info(f"症状特異性ペナルティ（複数症状・効能無関係）: {candidate.get('product_name', '')} - 効能に症状が含まれていないため大幅減点 (効能特異性{efficacy_specificity:.2f}), penalty={unrelated_penalty:.2f}, total_adjustment={total_adjustment:.2f}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"症状特異性ペナルティ（複数症状・効能無関係）: 効能に症状が含まれていないため大幅減点 (効能特異性{efficacy_specificity:.2f}), penalty={unrelated_penalty:.2f}")
+        else:
+            # 効能特異性が0.1以上の場合は、症状カテゴリ間優先表からペナルティを適用
+            penalties = []
+            for symptom_name in symptom_names:
+                if symptom_name in SYMPTOM_CATEGORY_PENALTY:
+                    penalty_table = SYMPTOM_CATEGORY_PENALTY[symptom_name]
+                    if medicine_type in penalty_table:
+                        if '風邪薬' in medicine_type:
+                            continue
+                        penalty_value = penalty_table[medicine_type]
+                        penalties.append(penalty_value)
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"症状特異性ペナルティ（複数症状）: symptom={symptom_name}, medicine_type={medicine_type}, penalty={penalty_value}")
 
-        if penalties:
-            base_penalty = max(penalties)
-            if base_penalty < 0:
-                if efficacy_specificity >= 0.95:
-                    base_penalty *= 0.25  # 0.17から0.25に変更
-                elif efficacy_specificity >= 0.8:
-                    base_penalty *= 0.6   # 0.5から0.6に変更
-                total_adjustment += base_penalty
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"症状特異性ペナルティ（複数症状・最終）: medicine_type={medicine_type}, penalties={penalties}, base_penalty={base_penalty:.2f}, total_adjustment={total_adjustment:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(
-                        f"症状特異性ペナルティ（複数症状）: {medicine_type} = {penalties} → {base_penalty:.2f} (効能特異性{efficacy_specificity:.2f})"
-                    )
+            if penalties:
+                base_penalty = max(penalties)
+                if base_penalty < 0:
+                    if efficacy_specificity >= 0.95:
+                        base_penalty *= 0.25  # 0.17から0.25に変更
+                    elif efficacy_specificity >= 0.8:
+                        base_penalty *= 0.6   # 0.5から0.6に変更
+                    total_adjustment += base_penalty
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"症状特異性ペナルティ（複数症状・最終）: medicine_type={medicine_type}, penalties={penalties}, base_penalty={base_penalty:.2f}, total_adjustment={total_adjustment:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(
+                            f"症状特異性ペナルティ（複数症状）: {medicine_type} = {penalties} → {base_penalty:.2f} (効能特異性{efficacy_specificity:.2f})"
+                        )
 
         # 複数症状の組み合わせによるペナルティのみを適用（ボーナスはcalculate_symptom_specific_boostで処理）
         for combo in combinations(symptom_names, 2):
@@ -4900,11 +5194,43 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                         )
                 # ボーナス（正の値）は無視（calculate_symptom_specific_boostで処理される）
 
+        # 「生理痛」のみが効能の医薬品に対するペナルティ（月経不順が主訴の場合）
+        # 効能効果欄に「生理痛」のみが含まれ、かつ「月経不順」「月経異常」「血の道症」が含まれない場合にペナルティ適用
+        efficacy = str(candidate.get('efficacy', ''))
+        has_menstrual_irregularity = any(symptom in ['月経不順', '生理不順', '月経異常', '生理異常', '血の道症'] for symptom in symptom_names)
+        has_dysmenorrhea = any(symptom in ['生理痛', '月経痛'] for symptom in symptom_names)
+        
+        # 効能効果欄の確認（大文字小文字を区別しないチェック）
+        efficacy_lower = efficacy.lower()
+        has_dysmenorrhea_in_efficacy = '生理痛' in efficacy_lower or '月経痛' in efficacy_lower
+        has_menstrual_irregularity_in_efficacy = ('月経不順' in efficacy_lower or '生理不順' in efficacy_lower or 
+                                                   '月経異常' in efficacy_lower or '生理異常' in efficacy_lower or 
+                                                   '血の道症' in efficacy_lower or '血の道' in efficacy_lower)
+        
+        # 「生理痛」のみが効能で、月経不順が主訴の場合
+        # 効能特異性が0.1未満の場合でも、「生理痛」のみが効能の場合は追加でペナルティを適用
+        if has_dysmenorrhea_in_efficacy and not has_menstrual_irregularity_in_efficacy and has_menstrual_irregularity:
+            # 症状に「生理痛」が含まれていない場合のみペナルティを適用
+            if not has_dysmenorrhea:
+                # 「生理痛」のみが効能で、主訴が「月経不順」の場合、追加ペナルティを適用
+                # 効能特異性が0.1未満の場合は既に-0.4のペナルティが適用されているため、追加で-0.3のペナルティを適用（合計-0.7）
+                # 効能特異性が0.1以上の場合は-0.25のペナルティを適用
+                if efficacy_specificity < 0.1:
+                    dysmenorrhea_penalty = -0.3  # 効能特異性が0.1未満の場合は追加で-0.3のペナルティ
+                else:
+                    dysmenorrhea_penalty = -0.25  # 効能特異性が0.1以上の場合は-0.25のペナルティ
+                total_adjustment += dysmenorrhea_penalty
+                logger.info(f"「生理痛」のみが効能のペナルティ適用: {candidate.get('product_name', '')} (効能: {efficacy[:100]}...), penalty={dysmenorrhea_penalty:.2f}, efficacy_specificity={efficacy_specificity:.2f}, total_adjustment={total_adjustment:.2f}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"「生理痛」のみが効能のペナルティ適用: {candidate.get('product_name', '')} (効能: {efficacy[:100]}...), penalty={dysmenorrhea_penalty:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
+        
         # ペナルティのみを返す（負の値または0）
         # この関数はペナルティのみを返し、ボーナスは別途calculate_symptom_specific_boostで処理される
         if total_adjustment != 0.0:
+            final_penalty = min(0.0, total_adjustment)
+            logger.info(f"calculate_symptom_specificity_penalty最終結果: {candidate.get('product_name', '')} - total_adjustment={total_adjustment:.2f}, final_penalty={final_penalty:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
             # 負の値のみを返す（正の値が含まれている場合は0を返す）
-            return min(0.0, total_adjustment)
+            return final_penalty
 
     return 0.0
 
@@ -6472,6 +6798,8 @@ def generate_individual_usage_notes_with_gpt(
    - 小児・乳幼児への注意など、この医薬品特有の注意のみ記載
    - 箇条書き形式
 3. 年齢制限: G列にある場合のみ記載
+   - 年齢制限が複雑な表現（「1歳以下は1／12量以下」「15歳以下8歳まで：1／2量」など）を含む場合は、「年齢制限: 用法用量を参照してください」と記載してください
+   - 単純な表現（「15歳以上」「7歳以上」など）の場合は、そのまま記載してください
 4. ドーピング: I列に「禁止物質あり」がある場合のみ記載
 
 【出力形式】
@@ -6481,7 +6809,7 @@ def generate_individual_usage_notes_with_gpt(
 ・[この医薬品特有の注意1]
 ・[この医薬品特有の注意2]
 
-年齢制限: [ある場合のみ]
+年齢制限: [ある場合のみ、複雑な表現の場合は「年齢制限: 用法用量を参照してください」]
 
 ドーピング: [ある場合のみ]
 
@@ -6647,13 +6975,14 @@ def generate_usage_notes_and_consultation_with_gpt(
   ]
 }
 
-ルール: 効能は全文、用法用量注意は2項目以内、重要情報のみ記載。"""
+ルール: 効能は全文、用法用量注意は2項目以内、重要情報のみ記載。
+年齢制限が複雑な表現（「1歳以下は1／12量以下」「15歳以下8歳まで：1／2量」など）を含む場合は、「年齢制限: 用法用量を参照してください」と記載してください。"""
     
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。JSON形式で出力。"},
+                {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,  # 0.2から0.1に削減（より決定論的で高速）
@@ -6703,36 +7032,55 @@ def generate_usage_notes_and_consultation_with_gpt(
                 individual_note = generate_individual_usage_notes_with_gpt(med, client)
             
             # 年齢制限の表示（G列から）
+            # ChatGPTが生成した年齢制限情報を優先し、コード側で生成した年齢制限表示は複雑な表現の場合のみスキップ
             age_restriction = med.get('age_restriction', '')
             age_restriction_display = ''
             
             if isinstance(age_restriction, float) and math.isnan(age_restriction):
                 age_restriction = ''
             
+            # 複雑な表現かどうかを判定（分数表現、複数の年齢制限が含まれる場合など）
+            is_complex_age_restriction = False
             if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-                if '15歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
-                elif '7歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
-                elif '12歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
-                else:
-                    import re
-                    match = re.search(r'(\d+)歳', age_restriction)
-                    if match:
-                        age_val = match.group(1)
-                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-            elif isinstance(age_restriction, (int, float)):
-                if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
-                    try:
-                        age_val = int(age_restriction)
-                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-                    except (ValueError, OverflowError):
-                        pass
+                # 分数表現（1／12量、1/12量など）が含まれる場合は複雑と判定
+                import re
+                if re.search(r'\d+[／/]\d+量', age_restriction):
+                    is_complex_age_restriction = True
+                # 「歳以下」と「量」が同時に含まれている場合（「1歳以下は1／12量」など）
+                elif '歳以下' in age_restriction and '量' in age_restriction:
+                    is_complex_age_restriction = True
+                # 複数の年齢制限が含まれる場合（「15歳以下8歳まで：1／2量」など）
+                elif len(re.findall(r'\d+歳', age_restriction)) >= 2:
+                    is_complex_age_restriction = True
+            
+            # 複雑な表現でない場合のみ、コード側で年齢制限表示を生成
+            if not is_complex_age_restriction:
+                if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+                    if '15歳未満' in age_restriction:
+                        age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
+                    elif '7歳未満' in age_restriction:
+                        age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
+                    elif '12歳未満' in age_restriction:
+                        age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
+                    else:
+                        import re
+                        match = re.search(r'(\d+)歳', age_restriction)
+                        if match:
+                            age_val = match.group(1)
+                            age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                elif isinstance(age_restriction, (int, float)):
+                    if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
+                        try:
+                            age_val = int(age_restriction)
+                            age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                        except (ValueError, OverflowError):
+                            pass
             
             # 個別の注意を整形
             note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
-            if age_restriction_display and age_restriction_display not in individual_note:
+            # ChatGPTが生成した年齢制限情報が含まれていない場合のみ、コード側で生成した年齢制限表示を追加
+            # 複雑な表現の場合は、ChatGPTが生成した情報を優先（コード側の表示はスキップ）
+            if age_restriction_display and age_restriction_display not in individual_note and not is_complex_age_restriction:
                 note_text += f"\n{age_restriction_display}"
             
             individual_notes.append(note_text)
