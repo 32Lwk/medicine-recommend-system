@@ -119,6 +119,11 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     
     if not efficacy_parts:
         return 0.0
+    
+    # 効能効果欄の専門用語マッピング（月経不順関連）
+    efficacy_lower = efficacy_text.lower()
+    menstrual_efficacy_keywords = ["月経不順", "生理不順", "血の道症", "血の道", "月経異常", "生理異常"]
+    has_menstrual_efficacy = any(kw in efficacy_lower for kw in menstrual_efficacy_keywords)
 
     # 単語境界を考慮したマッチング関数
     def is_word_match(token: str, text: str) -> bool:
@@ -218,6 +223,20 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         return 0.0
     
     specificity_ratio = match_count / len(normalized_symptom_set)
+    
+    # 月経不順関連症状と効能のマッチング強化
+    if has_menstrual_efficacy:
+        # 効能効果欄に月経不順関連のキーワードが含まれている場合、症状とのマッチングを強化
+        menstrual_symptom_keywords = ["月経不順", "生理不順", "月経異常", "生理異常", "血の道症", "生理が遅れ", "月経が遅れ"]
+        symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_menstrual_symptom = any(
+            any(keyword in symptom_name or keyword in normalize_text(symptom_name) 
+                for keyword in menstrual_symptom_keywords)
+            for symptom_name in symptom_names
+        )
+        if has_menstrual_symptom:
+            # 月経不順関連症状と効能が一致する場合、特異性スコアを底上げ
+            specificity_ratio = max(specificity_ratio, 0.7)  # 最低0.7を保証
 
     # 効能効果の長さによる調整（短いほど特化している）
     # 全パートを結合して長さを計算
@@ -1296,5 +1315,44 @@ def calculate_symptom_specific_boost(candidate: Dict, nlu_result: Dict, user_inf
             if not has_pediatric_keyword:
                 # 大人向けシロップ剤の可能性もあるが、一般的には小児向けとして認識されるため軽めのペナルティ
                 boost -= 0.20  # シロップ系形状へのペナルティ
+    
+    # 月経不順・生理痛向けの成分ブースト（新規追加）
+    menstrual_symptoms = ["月経不順", "生理不順", "生理痛", "月経痛"]
+    has_menstrual_symptom = any(symptom in symptom_names for symptom in menstrual_symptoms)
+    
+    if has_menstrual_symptom:
+        ingredients_lower = ingredients.lower()
+        product_name_lower = product_name.lower()
+        efficacy_lower = efficacy.lower()
+        
+        # 当帰芍薬散を含む医薬品（最高優先度）
+        if "当帰芍薬散" in product_name or "トウキシャクヤクサン" in product_name_lower or "当帰芍薬散" in efficacy:
+            boost += 0.25
+        else:
+            # 当帰と芍薬の両方が含まれる場合（高優先度）
+            has_toki = any(kw in ingredients_lower for kw in ["トウキ", "当帰", "とうき"])
+            has_shakuyaku = any(kw in ingredients_lower for kw in ["シャクヤク", "芍薬", "しゃくやく"])
+            
+            if has_toki and has_shakuyaku:
+                boost += 0.20
+            # 当帰または芍薬単独（中優先度）
+            elif has_toki or has_shakuyaku:
+                boost += 0.10
+        
+        # 加味逍遙散（イライラ症状がある場合）
+        if "イライラ" in symptom_names:
+            if "加味逍遙散" in product_name or "カミショウヨウサン" in product_name_lower or "加味逍遙散" in efficacy:
+                boost += 0.15
+            # 命の母ホワイト
+            if "命の母ホワイト" in product_name or "命の母" in product_name:
+                boost += 0.15
+        
+        # 桂枝茯苓丸（ニキビ症状がある場合）
+        if "ニキビ" in symptom_names:
+            if "桂枝茯苓丸" in product_name or "ケイシブクリョウガン" in product_name_lower or "桂枝茯苓丸" in efficacy:
+                boost += 0.15
+            # 桃仁（トウニン）を含む場合
+            if "トウニン" in ingredients_lower or "桃仁" in ingredients:
+                boost += 0.10
     
     return boost
