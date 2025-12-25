@@ -501,3 +501,15 @@
 {"timestamp": "2025-12-25T12:04:30.254049", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "15日ほどです"}}
 {"timestamp": "2025-12-25T12:04:40.959308", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-25T12:04:40.960492", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品を教えて下さい"}}
+{"timestamp": "2025-12-26T02:22:12.402324", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:22:12.402768", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
+{"timestamp": "2025-12-26T02:23:13.400900", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:23:13.401353", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
+{"timestamp": "2025-12-26T02:23:36.603598", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:23:36.604058", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
+{"timestamp": "2025-12-26T02:38:06.821124", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:38:06.821547", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
+{"timestamp": "2025-12-26T02:38:25.698748", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:38:25.699210", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
+{"timestamp": "2025-12-26T02:40:00.619397", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-26T02:40:00.619855", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛く、熱があります。"}}
