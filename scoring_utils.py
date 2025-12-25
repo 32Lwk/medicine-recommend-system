@@ -111,6 +111,26 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     if not normalized_symptom_set:
         return 0.0
     
+    # 症状名の同義語マッピング（月経不順と生理不順を同義語として扱う）
+    symptom_synonyms = {
+        "生理不順": ["月経不順", "生理不順", "月経異常", "生理異常"],
+        "月経不順": ["月経不順", "生理不順", "月経異常", "生理異常"],
+        "イライラ": ["イライラ", "いらいら", "イラつき", "いらつき", "ストレス", "不安", "神経症状", "精神不安", "いらだち", "ヒステリー"]
+    }
+    
+    # 症状名の同義語を展開
+    expanded_symptom_set = set(normalized_symptom_set)
+    for symptom in normalized_symptom_set:
+        if symptom in symptom_synonyms:
+            for synonym in symptom_synonyms[symptom]:
+                expanded_symptom_set.add(normalize_text(synonym))
+        # 「月経不順」と「生理不順」を相互にマッピング
+        if normalize_text('月経不順') in symptom or normalize_text('生理不順') in symptom:
+            expanded_symptom_set.add(normalize_text('月経不順'))
+            expanded_symptom_set.add(normalize_text('生理不順'))
+    
+    normalized_symptom_set = expanded_symptom_set
+    
     # 効能テキストを句読点で分割してから正規化
     import re
     efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text)
@@ -177,11 +197,48 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     
     # 各効能パート内でマッチングをカウント
     match_count = 0
+    matched_symptoms = set()  # 既にマッチした症状を記録（重複カウントを防ぐ）
+    
     for name in normalized_symptom_set:
+        if name in matched_symptoms:
+            continue  # 既にマッチした症状はスキップ
+        
+        matched = False
         for part in efficacy_parts:
+            # 直接マッチング
             if is_word_match(name, part):
                 match_count += 1
-                break  # 一度マッチしたら次の症状へ
+                matched_symptoms.add(name)
+                matched = True
+                break
+            # 同義語マッチング（月経不順と生理不順を同義語として扱う）
+            if name in symptom_synonyms:
+                for synonym in symptom_synonyms[name]:
+                    normalized_synonym = normalize_text(synonym)
+                    if normalized_synonym and is_word_match(normalized_synonym, part):
+                        match_count += 1
+                        matched_symptoms.add(name)
+                        matched = True
+                        break
+                if matched:
+                    break
+        
+        # 効能テキストに「月経不順」や「生理不順」が含まれている場合、症状が「月経不順」または「生理不順」ならマッチ
+        if not matched:
+            # 症状名が「月経不順」または「生理不順」に関連する場合
+            is_menstrual_symptom = (
+                normalize_text('月経不順') in name or 
+                normalize_text('生理不順') in name or
+                name == normalize_text('月経不順') or
+                name == normalize_text('生理不順')
+            )
+            
+            if is_menstrual_symptom:
+                # 効能テキスト全体で月経不順関連キーワードをチェック
+                if has_menstrual_efficacy:
+                    match_count += 1
+                    matched_symptoms.add(name)
+                    matched = True
     
     # 症状が効能に全く含まれていない場合の処理
     if match_count == 0:
