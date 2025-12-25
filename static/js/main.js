@@ -4540,7 +4540,18 @@
                         content += `<div class="question-prompt"><strong>❓ 他にご質問はありますか？</strong><br>薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。</div>`;
                     }
                     } else {
-                        content += message.content;
+                        // 診断名の返信メッセージなど、改行を含むテキストを適切に表示
+                        if (message.content) {
+                            // 改行を含むメッセージの場合、white-space: pre-line;スタイルを適用して改行を表示
+                            if (message.content.includes('\n') || message.escalation_required) {
+                                // 改行を保持しつつHTMLタグをエスケープ
+                                const escapedContent = escapeHtml(message.content);
+                                content += `<div style="white-space: pre-line;">${escapedContent}</div>`;
+                            } else {
+                                // 改行がない場合は通常通り表示
+                                content += escapeHtml(message.content);
+                            }
+                        }
                     }
                     content += `</div>`;
                     messageDiv.innerHTML = content;
