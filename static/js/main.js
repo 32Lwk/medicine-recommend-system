@@ -3208,12 +3208,34 @@
     }
     
     // 冬仕様の雪アニメーション
+    // 雪のコンテナの高さを更新する関数
+    function updateSnowContainerHeight() {
+        const snowContainer = document.getElementById('snowContainer');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        if (!snowContainer || !chatMessages) return;
+        
+        // チャットメッセージの実際の高さ（スクロール可能な全高さ）を取得
+        const scrollHeight = chatMessages.scrollHeight;
+        const clientHeight = chatMessages.clientHeight;
+        
+        // スクロール可能な高さとビューポートの高さのうち、大きい方を使用
+        const containerHeight = Math.max(scrollHeight, clientHeight || window.innerHeight);
+        
+        // CSS変数として設定（px単位）
+        snowContainer.style.setProperty('--snow-container-height', containerHeight + 'px');
+        snowContainer.style.height = containerHeight + 'px';
+    }
+    
     function createSnowAnimation() {
         const snowContainer = document.getElementById('snowContainer');
         if (!snowContainer) return;
         
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) return;
+        
+        // 雪のコンテナの高さを更新
+        updateSnowContainerHeight();
         
         // パフォーマンス最適化: 画面サイズに応じて雪の数を調整
         const snowflakeCount = Math.min(30, Math.floor(window.innerWidth / 30));
@@ -3248,7 +3270,10 @@
     let resizeTimeout;
     function handleResize() {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(createSnowAnimation, 250);
+        resizeTimeout = setTimeout(() => {
+            createSnowAnimation();
+            updateSnowContainerHeight();
+        }, 250);
     }
 
     // ページ読み込み時に言語設定を適用
@@ -3258,6 +3283,23 @@
         // 冬仕様の雪アニメーションを開始
         createSnowAnimation();
         window.addEventListener('resize', handleResize);
+        
+        // MutationObserverでDOM変更を監視して、雪のコンテナの高さを自動更新
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            const observer = new MutationObserver(() => {
+                // DOM変更後、少し遅延させて高さを更新（レンダリング完了を待つ）
+                setTimeout(() => {
+                    updateSnowContainerHeight();
+                }, 100);
+            });
+            
+            observer.observe(chatMessages, {
+                childList: true,
+                subtree: true,
+                attributes: false
+            });
+        }
         
         let onboardingCompleted = null;
         try {
@@ -3409,6 +3451,8 @@
             <div class="message-content">${escapeHtml(message)}</div>
         `;
         chatMessages.appendChild(messageDiv);
+        // メッセージ追加後、雪のコンテナの高さを更新
+        updateSnowContainerHeight();
     }
 
     // ボットメッセージをチャット画面に追加
@@ -4186,6 +4230,8 @@
         setTimeout(() => {
             requestAnimationFrame(() => {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                // スクロール後、雪のコンテナの高さを更新
+                updateSnowContainerHeight();
             });
         }, 200);
     }
@@ -4537,6 +4583,8 @@
                 const heightDifference = newScrollHeight - currentScrollHeight;
                 chatMessages.scrollTop = currentScrollTop + heightDifference;
             }
+            // メッセージ追加後、雪のコンテナの高さを更新
+            updateSnowContainerHeight();
         });
     }
 
