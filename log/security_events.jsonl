@@ -411,3 +411,93 @@
 {"timestamp": "2025-12-21T04:24:37.611173", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "あなたについて教えて"}}
 {"timestamp": "2025-12-21T04:24:54.125328", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2025-12-21T04:24:54.125779", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛い"}}
+{"timestamp": "2025-12-24T11:08:51.728059", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:08:51.729224", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近、あまり眠れないです。"}}
+{"timestamp": "2025-12-24T11:09:21.346727", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:09:21.347210", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "睡眠薬を教えて下さい。"}}
+{"timestamp": "2025-12-24T11:10:12.203630", "original_length": 19, "sanitized_length": 19, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:10:12.204384", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 19, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "夜中にお布団に入っても不安で眠れません"}}
+{"timestamp": "2025-12-24T11:12:01.154937", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:12:01.155371", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T11:34:25.821652", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:34:25.822926", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T11:35:58.638950", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:35:58.639423", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "夜布団に入っても寝れないです。"}}
+{"timestamp": "2025-12-24T11:37:43.130243", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:37:43.132059", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて"}}
+{"timestamp": "2025-12-24T11:46:02.039047", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:46:02.039807", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "夜に眠れないほど咳が出ます。"}}
+{"timestamp": "2025-12-24T11:46:47.429800", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:46:47.430981", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "熱があり、最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T11:47:24.034634", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:47:24.035441", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T11:47:44.423466", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:47:44.423966", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "昨日からです。"}}
+{"timestamp": "2025-12-24T11:53:09.375133", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:53:09.376723", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて下さい。"}}
+{"timestamp": "2025-12-24T11:59:24.747452", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T11:59:24.748247", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T12:01:14.630467", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:01:14.632214", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "昨日からです。"}}
+{"timestamp": "2025-12-24T12:07:26.485456", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:07:26.489473", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて下さい。"}}
+{"timestamp": "2025-12-24T12:10:25.953011", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:10:25.953900", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近夜眠れないです。"}}
+{"timestamp": "2025-12-24T12:10:56.303572", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:10:56.304651", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "昨日から眠れないです。"}}
+{"timestamp": "2025-12-24T12:11:25.740487", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:11:25.740891", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて下さい。"}}
+{"timestamp": "2025-12-24T12:11:52.514399", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T12:11:52.514799", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "夜眠れないです。"}}
+{"timestamp": "2025-12-24T16:15:39.579541", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T16:15:39.585302", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて下さい。"}}
+{"timestamp": "2025-12-24T16:27:16.801751", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T16:27:16.802673", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近、夜寝れません。"}}
+{"timestamp": "2025-12-24T16:27:41.006782", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T16:27:41.007289", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "薬を教えて下さい"}}
+{"timestamp": "2025-12-24T20:30:49.650042", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T20:30:49.650754", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近眠れないです。"}}
+{"timestamp": "2025-12-24T20:31:31.735928", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-24T20:31:31.736598", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ2,3日ほどです。"}}
+{"timestamp": "2025-12-25T11:16:03.260858", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:16:03.261915", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近眠れないです。"}}
+{"timestamp": "2025-12-25T11:16:48.551138", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:16:48.551718", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近眠れないです。"}}
+{"timestamp": "2025-12-25T11:18:40.631389", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:18:40.632563", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ2,3日ほどです"}}
+{"timestamp": "2025-12-25T11:25:34.442581", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:25:34.443043", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ最近眠れないです"}}
+{"timestamp": "2025-12-25T11:26:25.807208", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:26:25.807963", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不眠症です"}}
+{"timestamp": "2025-12-25T11:26:53.879042", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:26:53.879686", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ2,3日ほどです"}}
+{"timestamp": "2025-12-25T11:31:12.322795", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:31:12.323713", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "一時的な不眠で、推奨される医薬品を知りたいです。"}}
+{"timestamp": "2025-12-25T11:38:11.271120", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:38:11.274493", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近眠れません"}}
+{"timestamp": "2025-12-25T11:39:49.646903", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:39:49.647334", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ2,3日です"}}
+{"timestamp": "2025-12-25T11:40:24.293993", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:40:24.294503", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "教えて下さい"}}
+{"timestamp": "2025-12-25T11:40:36.799947", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:40:36.800485", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品を教えて下さい"}}
+{"timestamp": "2025-12-25T11:44:51.645468", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:44:51.645959", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ最近眠れないです"}}
+{"timestamp": "2025-12-25T11:45:17.266557", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:45:17.267076", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ14日ほどです。"}}
+{"timestamp": "2025-12-25T11:47:17.694460", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:47:17.695342", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "妊娠中です"}}
+{"timestamp": "2025-12-25T11:51:41.518459", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:51:41.518937", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ最近眠れないです"}}
+{"timestamp": "2025-12-25T11:52:10.520433", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:52:10.521117", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "14日ほどです。"}}
+{"timestamp": "2025-12-25T11:53:18.861778", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:53:18.862636", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ15日ほどです。"}}
+{"timestamp": "2025-12-25T11:53:45.173739", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T11:53:45.174424", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "妊娠中です。"}}
+{"timestamp": "2025-12-25T12:04:13.412917", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T12:04:13.413479", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ここ最近眠れないです"}}
+{"timestamp": "2025-12-25T12:04:30.253302", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T12:04:30.254049", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "15日ほどです"}}
+{"timestamp": "2025-12-25T12:04:40.959308", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2025-12-25T12:04:40.960492", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品を教えて下さい"}}

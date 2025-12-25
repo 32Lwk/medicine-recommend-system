@@ -922,36 +922,47 @@ def index():
                         save_session_to_db(sid, session_data)
 
             # ステップ1: LLMトリアージ（セキュリティ検証後）
+            # カウンセリングモード中はLLMトリアージをスキップ（カウンセリングの質問への回答として処理するため）
             triage_result = None
-            try:
-                from llm_triage import llm_triage
-                from triage_analytics import log_triage_result, log_confidence_check
-                
-                # OpenAIクライアントを取得
+            counseling_mode = session.get('counseling_mode', {})
+            is_counseling_active = counseling_mode.get('active', False)
+            
+            if not is_counseling_active:
+                # カウンセリングモード中でない場合のみLLMトリアージを実行
+                try:
+                    from llm_triage import llm_triage
+                    from triage_analytics import log_triage_result, log_confidence_check
+                    
+                    # OpenAIクライアントを取得
+                    recommendation_client = client  # medicine_logicからインポート済み
+                    
+                    # トリアージ実行
+                    start_time = time.time()
+                    triage_result = llm_triage(sanitized_message, recommendation_client)
+                    processing_time = (time.time() - start_time) * 1000  # ミリ秒
+                    
+                    # トリアージ結果をログに保存
+                    log_triage_result(
+                        session_id=sid,
+                        user_input=user_message,
+                        triage_result=triage_result,
+                        sanitized_input=sanitized_message,
+                        processing_time_ms=processing_time
+                    )
+                    
+                    logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
+                    
+                except ImportError as e:
+                    logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ LLMトリアージ機能でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+            else:
+                # カウンセリングモード中はLLMトリアージをスキップ
+                logger.info(f"⏭️ カウンセリングモード中のためLLMトリアージをスキップ: {sanitized_message[:50]}...")
+                # OpenAIクライアントを取得（心臓緊急チェックで使用）
                 recommendation_client = client  # medicine_logicからインポート済み
-                
-                # トリアージ実行
-                start_time = time.time()
-                triage_result = llm_triage(sanitized_message, recommendation_client)
-                processing_time = (time.time() - start_time) * 1000  # ミリ秒
-                
-                # トリアージ結果をログに保存
-                log_triage_result(
-                    session_id=sid,
-                    user_input=user_message,
-                    triage_result=triage_result,
-                    sanitized_input=sanitized_message,
-                    processing_time_ms=processing_time
-                )
-                
-                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
-                
-            except ImportError as e:
-                logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ LLMトリアージ機能でエラー: {e}")
-                import traceback
-                traceback.print_exc()
             
             # ステップ1.5: 文脈考慮型心臓緊急チェック（LLMトリアージの後）
             try:
@@ -1054,8 +1065,12 @@ def index():
             
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})
-            if counseling_mode.get('active'):
+            is_counseling_active = counseling_mode.get('active', False)
+            logger.info(f"🔍 カウンセリングモードチェック: active={is_counseling_active}, counseling_mode={counseling_mode}")
+            
+            if is_counseling_active:
                 try:
+                    logger.info(f"✅ カウンセリングモード中: カウンセリング処理を開始")
                     from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
                     from triage_analytics import log_topic_shift_detection
                     
@@ -1066,9 +1081,11 @@ def index():
                     # 会話履歴を取得（直近10件）
                     conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
                     
+                    logger.info(f"📞 handle_user_input_in_counseling_modeを呼び出し: {sanitized_message[:50]}...")
                     response = handle_user_input_in_counseling_mode(
                         sanitized_message, session, recommendation_client, session_id=sid
                     )
+                    logger.info(f"📞 handle_user_input_in_counseling_modeの応答: type={response.get('type') if response else 'None'}")
                     
                     # 話題転換が検知された場合の処理
                     if response.get('type') == 'topic_shift':
@@ -1150,176 +1167,224 @@ def index():
                             # ステップ3以降で通常フロー（薬推奨）が実行される
                             # カウンセリング処理をスキップして後続処理に進む（returnしない）
                             pass
-                        else:
-                            # その他のカテゴリの場合、カウンセリング応答を処理
-                            # カウンセリング応答を処理（改善版：返信と質問を分離）
-                            if response.get('type') == 'counseling_response_with_question':
+                    
+                    # カウンセリング応答を処理
+                    # topic_shiftでnew_category == 'Physical'の場合は、後続の通常フロー（ステップ3以降）に進むため、ここでは処理しない
+                    if response.get('type') == 'topic_shift' and response.get('new_category') == 'Physical':
+                        # Physicalカテゴリへの切り替えは既に処理済み（1164行目でtriage_resultを設定済み）
+                        # 後続の通常フロー（ステップ3以降）に進むため、ここでは何もしない
+                        logger.info(f"✅ topic_shift (Physical) 処理完了: 後続の通常フローに進みます")
+                        pass
+                    elif response.get('type') != 'topic_shift' or (response.get('type') == 'topic_shift' and response.get('new_category') not in ['Emergency', 'Physical']):
+                        # カウンセリング応答を処理（改善版：返信と質問を分離）
+                        if response.get('type') == 'counseling_response_with_question':
+                            # 返信を先に追加
+                            counseling_response = response.get('counseling_response', '')
+                            if counseling_response:
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': counseling_response,
+                                    'counseling': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                            
+                            # 不眠の場合、薬推奨への切り替え案内を毎回送信
+                            current_symptom_type = counseling_mode.get('symptom_type', '')
+                            if current_symptom_type == "insomnia":
+                                switch_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
+                                switch_response = {
+                                    'type': 'bot',
+                                    'content': switch_message,
+                                    'counseling': True,
+                                    'medicine_switch_offer': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(switch_response)
+                                session.modified = True
+                                
+                                # 切り替え案内のログ記録
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=switch_message,
+                                    response_type="counseling_medicine_switch_offer",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode
+                                )
+                            
+                            # 質問を追加
+                            question = response.get('question', '')
+                            if question:
+                                question_response = {
+                                    'type': 'bot',
+                                    'content': question,
+                                    'counseling': True,
+                                    'counseling_question': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(question_response)
+                                session.modified = True
+                        elif response.get('type') == 'counseling_response':
+                            # 返信のみ（質問をスキップ）
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'counseling': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # 不眠の場合、薬推奨への切り替え案内を毎回送信
+                            current_symptom_type = counseling_mode.get('symptom_type', '')
+                            if current_symptom_type == "insomnia":
+                                switch_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
+                                switch_response = {
+                                    'type': 'bot',
+                                    'content': switch_message,
+                                    'counseling': True,
+                                    'medicine_switch_offer': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(switch_response)
+                                session.modified = True
+                                
+                                # 切り替え案内のログ記録
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=switch_message,
+                                    response_type="counseling_medicine_switch_offer",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode
+                                )
+                        elif response.get('type') == 'counseling_question':
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'counseling': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=response.get('content', ''),
+                                response_type="counseling_question",
+                                category=None,
+                                confidence=None,
+                                counseling_mode=counseling_mode
+                            )
+                        elif response.get('type') == 'counseling_summary':
+                            # カウンセリング完了時も返信を含める場合がある
+                            counseling_response = response.get('counseling_response')
+                            if counseling_response:
                                 # 返信を先に追加
-                                counseling_response = response.get('counseling_response', '')
-                                if counseling_response:
-                                    bot_response = {
-                                        'type': 'bot',
-                                        'content': counseling_response,
-                                        'counseling': True,
-                                        'timestamp': datetime.now().isoformat()
-                                    }
-                                    session['messages'].append(bot_response)
-                                    session.modified = True
-                                
-                                # 不眠の場合、薬推奨への切り替え案内を毎回送信
-                                current_symptom_type = counseling_mode.get('symptom_type', '')
-                                if current_symptom_type == "insomnia":
-                                    switch_message = "一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい。"
-                                    switch_response = {
-                                        'type': 'bot',
-                                        'content': switch_message,
-                                        'counseling': True,
-                                        'medicine_switch_offer': True,
-                                        'timestamp': datetime.now().isoformat()
-                                    }
-                                    session['messages'].append(switch_response)
-                                    session.modified = True
-                                    
-                                    # 切り替え案内のログ記録
-                                    log_counseling_response(
-                                        session_id=sid,
-                                        response_content=switch_message,
-                                        response_type="counseling_medicine_switch_offer",
-                                        category=None,
-                                        confidence=None,
-                                        counseling_mode=counseling_mode
-                                    )
-                                
-                                # 質問を追加
-                                question = response.get('question', '')
-                                if question:
-                                    question_response = {
-                                        'type': 'bot',
-                                        'content': question,
-                                        'counseling': True,
-                                        'counseling_question': True,
-                                        'timestamp': datetime.now().isoformat()
-                                    }
-                                    session['messages'].append(question_response)
-                                    session.modified = True
-                            elif response.get('type') == 'counseling_response':
-                                # 返信のみ（質問をスキップ）
                                 bot_response = {
                                     'type': 'bot',
-                                    'content': response.get('content', ''),
+                                    'content': counseling_response,
                                     'counseling': True,
                                     'timestamp': datetime.now().isoformat()
                                 }
                                 session['messages'].append(bot_response)
                                 session.modified = True
-                                
-                                # 不眠の場合、薬推奨への切り替え案内を毎回送信
-                                current_symptom_type = counseling_mode.get('symptom_type', '')
-                                if current_symptom_type == "insomnia":
-                                    switch_message = "一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい。"
-                                    switch_response = {
-                                        'type': 'bot',
-                                        'content': switch_message,
-                                        'counseling': True,
-                                        'medicine_switch_offer': True,
-                                        'timestamp': datetime.now().isoformat()
-                                    }
-                                    session['messages'].append(switch_response)
-                                    session.modified = True
-                                    
-                                    # 切り替え案内のログ記録
-                                    log_counseling_response(
-                                        session_id=sid,
-                                        response_content=switch_message,
-                                        response_type="counseling_medicine_switch_offer",
-                                        category=None,
-                                        confidence=None,
-                                        counseling_mode=counseling_mode
-                                    )
-                            elif response.get('type') == 'counseling_question':
-                                bot_response = {
+                            
+                            # サマリーを追加
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'counseling_completed': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=response.get('content', ''),
+                                response_type="counseling_summary",
+                                category=None,
+                                confidence=None,
+                                counseling_mode=counseling_mode
+                            )
+                            
+                            # カウンセリング完了ログを保存
+                            if response.get('completion_reason'):
+                                from triage_analytics import log_counseling_completion
+                                log_counseling_completion(
+                                    session_id=sid,
+                                    counseling_mode=counseling_mode,
+                                    completion_reason=response.get('completion_reason', 'normal'),
+                                    total_questions=len(counseling_mode.get('question_history', [])),
+                                    collected_info_count=len(counseling_mode.get('collected_info', {}))
+                                )
+                        elif response.get('type') == 'crisis_support':
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'crisis_support': True,
+                                'resources': response.get('resources', []),
+                                'emergency_message': response.get('emergency_message', ''),
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=response.get('content', ''),
+                                response_type="crisis_support",
+                                category="Emergency",
+                                confidence=None,
+                                counseling_mode=counseling_mode
+                            )
+                        
+                        # DBを更新
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                if 'counseling_mode' in session:
+                                    session_data['counseling_mode'] = session['counseling_mode']
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        logger.info(f"✅ カウンセリング処理完了: {message_count} messages")
+                        return jsonify({'status': 'ok', 'message_count': message_count})
+                    else:
+                        # 想定外のresponse typeの場合
+                        logger.warning(f"⚠️ 想定外のresponse type: {response.get('type') if response else 'None'}")
+                        # デフォルトのカウンセリング応答を処理
+                        if response and response.get('content'):
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'counseling': True,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # 不眠の場合、薬推奨への切り替え案内を毎回送信
+                            current_symptom_type = counseling_mode.get('symptom_type', '')
+                            if current_symptom_type == "insomnia":
+                                switch_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
+                                switch_response = {
                                     'type': 'bot',
-                                    'content': response.get('content', ''),
+                                    'content': switch_message,
                                     'counseling': True,
+                                    'medicine_switch_offer': True,
                                     'timestamp': datetime.now().isoformat()
                                 }
-                                session['messages'].append(bot_response)
+                                session['messages'].append(switch_response)
                                 session.modified = True
-                                
-                                # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                                log_counseling_response(
-                                    session_id=sid,
-                                    response_content=response.get('content', ''),
-                                    response_type="counseling_question",
-                                    category=None,
-                                    confidence=None,
-                                    counseling_mode=counseling_mode
-                                )
-                            elif response.get('type') == 'counseling_summary':
-                                # カウンセリング完了時も返信を含める場合がある
-                                counseling_response = response.get('counseling_response')
-                                if counseling_response:
-                                    # 返信を先に追加
-                                    bot_response = {
-                                        'type': 'bot',
-                                        'content': counseling_response,
-                                        'counseling': True,
-                                        'timestamp': datetime.now().isoformat()
-                                    }
-                                    session['messages'].append(bot_response)
-                                    session.modified = True
-                                
-                                # サマリーを追加
-                                bot_response = {
-                                    'type': 'bot',
-                                    'content': response.get('content', ''),
-                                    'counseling_completed': True,
-                                    'timestamp': datetime.now().isoformat()
-                                }
-                                session['messages'].append(bot_response)
-                                session.modified = True
-                                
-                                # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                                log_counseling_response(
-                                    session_id=sid,
-                                    response_content=response.get('content', ''),
-                                    response_type="counseling_summary",
-                                    category=None,
-                                    confidence=None,
-                                    counseling_mode=counseling_mode
-                                )
-                                
-                                # カウンセリング完了ログを保存
-                                if response.get('completion_reason'):
-                                    from triage_analytics import log_counseling_completion
-                                    log_counseling_completion(
-                                        session_id=sid,
-                                        counseling_mode=counseling_mode,
-                                        completion_reason=response.get('completion_reason', 'normal'),
-                                        total_questions=len(counseling_mode.get('question_history', [])),
-                                        collected_info_count=len(counseling_mode.get('collected_info', {}))
-                                    )
-                            elif response.get('type') == 'crisis_support':
-                                bot_response = {
-                                    'type': 'bot',
-                                    'content': response.get('content', ''),
-                                    'crisis_support': True,
-                                    'resources': response.get('resources', []),
-                                    'emergency_message': response.get('emergency_message', ''),
-                                    'timestamp': datetime.now().isoformat()
-                                }
-                                session['messages'].append(bot_response)
-                                session.modified = True
-                                
-                                # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                                log_counseling_response(
-                                    session_id=sid,
-                                    response_content=response.get('content', ''),
-                                    response_type="crisis_support",
-                                    category="Emergency",
-                                    confidence=None,
-                                    counseling_mode=counseling_mode
-                                )
                             
                             # DBを更新
                             if sid:
@@ -1332,7 +1397,7 @@ def index():
                                     save_session_to_db(sid, session_data)
                             
                             message_count = len(session['messages'])
-                            logger.info(f"✅ カウンセリング処理完了: {message_count} messages")
+                            logger.info(f"✅ カウンセリング処理完了（デフォルト）: {message_count} messages")
                             return jsonify({'status': 'ok', 'message_count': message_count})
                     
                 except ImportError as e:
@@ -1557,7 +1622,7 @@ def index():
                         
                         # 不眠の場合、薬推奨への切り替え案内を別途送信
                         if symptom_type == "insomnia":
-                            switch_message = "一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい。"
+                            switch_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
                             switch_response = {
                                 'type': 'bot',
                                 'content': switch_message,
