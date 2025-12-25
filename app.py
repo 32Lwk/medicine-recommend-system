@@ -73,6 +73,8 @@ from debug_logger import performance_stats, network_logs, add_network_log
 from analytics import log_access_analytics, get_access_statistics
 from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
 from database import init_database, get_database
+from season_manager import get_current_season, get_season_images
+import pytz
 
 
 class RequestSafeSession(MutableMapping):
@@ -5203,8 +5205,22 @@ def index():
     })
     
     messages = session_data.get('messages', []) if session_data else []
-    logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages")
-    return render_template('index.html', messages=messages, version=VERSION, username=session.get('username', 'Unknown'))
+    
+    # シーズン判定と装飾画像の取得
+    current_date = datetime.now(pytz.timezone('Asia/Tokyo'))
+    season_type = get_current_season(current_date)
+    decoration_images = get_season_images(season_type, current_date.year, session) if season_type else []
+    image_version = current_date.strftime('%Y%m%d')
+    
+    logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages, season: {season_type}")
+    return render_template('index.html', 
+        messages=messages, 
+        version=VERSION, 
+        username=session.get('username', 'Unknown'),
+        season_type=season_type,
+        decoration_images=decoration_images,
+        image_version=image_version
+    )
 
 def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, influenza_risk: bool = False, influenza_reason: str = "") -> str:
     """
