@@ -1802,6 +1802,44 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         elif DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"妊娠可能性検出: detected={pregnancy_possible['detected']}, score={pregnancy_possible['score']:.2f}, confidence={pregnancy_possible['confidence']}, symptoms={pregnancy_possible['symptoms']}")
     
+    # 不眠症診断・慢性的不眠のキーワード検出（新規追加）
+    insomnia_diagnosed = False
+    chronic_insomnia = False
+    
+    # 不眠症状が検出されている場合のみチェック
+    has_insomnia_symptom = any(s.get("name") == "不眠" for s in detected_symptoms)
+    
+    if has_insomnia_symptom:
+        # 不眠症診断キーワード
+        insomnia_diagnosis_keywords = [
+            "不眠症と診断", "不眠症と言われた", "不眠症の診断", "病院で不眠症", 
+            "医師から不眠症", "不眠症です", "不眠症と", "不眠症で", "不眠症の"
+        ]
+        for keyword in insomnia_diagnosis_keywords:
+            if keyword in user_text:
+                insomnia_diagnosed = True
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"不眠症診断キーワード検出: {keyword}")
+                break
+        
+        # 慢性的不眠キーワード
+        chronic_insomnia_keywords = [
+            "慢性的", "ずっと", "長期間", "何ヶ月も", "何年も", "継続的",
+            "ずっと続いている", "長い間", "ずっと続く", "慢性的に"
+        ]
+        for keyword in chronic_insomnia_keywords:
+            if keyword in user_text:
+                chronic_insomnia = True
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"慢性的不眠キーワード検出: {keyword}")
+                break
+        
+        # 期間による慢性的不眠の判定（1週間以上）
+        if duration_days is not None and duration_days >= 7:
+            chronic_insomnia = True
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"期間による慢性的不眠判定: {duration_days}日間")
+    
     return {
         "symptoms": detected_symptoms,
         "red_flags": red_flags,
@@ -1811,7 +1849,9 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
         "user_body_part": body_part,  # 部位情報を返り値に含める
         "severity": overall_severity,  # トップレベルの強度
         "pregnancy_possible": pregnancy_possible,  # 妊娠の可能性検出結果
-        "gender_detected": gender_detected  # 性別自動判定結果
+        "gender_detected": gender_detected,  # 性別自動判定結果
+        "insomnia_diagnosed": insomnia_diagnosed,  # 不眠症診断有無（新規追加）
+        "chronic_insomnia": chronic_insomnia  # 慢性的不眠状態（新規追加）
     }
 
 def hybrid_nlu_extraction(user_text: str, user_info: Dict, client: OpenAI, session_id: str = None) -> Dict:
@@ -2213,6 +2253,168 @@ def check_safety_contraindications(user_info: Dict, nlu_result: Dict) -> Dict:
             safety_result["warnings"].append(f"重度の{symptom.get('name')}が報告されています。症状が重い場合は医師の診察を推奨します。")
     
     return safety_result
+
+def check_sleep_medicine_safety(
+    user_text: str,
+    user_info: Dict,
+    nlu_result: Dict,
+    medicine_type: str
+) -> Dict:
+    """
+    睡眠改善薬専用の安全性チェック
+    
+    Args:
+        user_text: ユーザーの症状入力
+        user_info: ユーザー情報
+        nlu_result: NLU結果
+        medicine_type: 医薬品種類（"睡眠障害"の場合のみチェック）
+    
+    Returns:
+        {
+            "is_safe": bool,
+            "should_recommend": bool,
+            "warnings": List[str],
+            "requires_escalation": bool,
+            "escalation_reason": str,
+            "alternative_therapies": List[str],  # 代替療法の推奨
+            "critical_questions": List[str]  # 追加で確認すべき質問
+        }
+    """
+    result = {
+        "is_safe": True,
+        "should_recommend": True,
+        "warnings": [],
+        "requires_escalation": False,
+        "escalation_reason": "",
+        "alternative_therapies": [],
+        "critical_questions": []
+    }
+    
+    # 睡眠障害カテゴリでない場合はチェックをスキップ
+    if medicine_type != "睡眠障害":
+        return result
+    
+    # 1. 不眠症の診断有無チェック
+    insomnia_diagnosed = nlu_result.get("insomnia_diagnosed", False)
+    if insomnia_diagnosed:
+        result["is_safe"] = False
+        result["should_recommend"] = False
+        result["requires_escalation"] = True
+        result["escalation_reason"] = "不眠症と診断されている場合は、市販の睡眠改善薬ではなく、医師による治療を受けることをお勧めします。"
+        return result
+    
+    # 2. 慢性的な不眠状態の判定（1週間以上 + キーワード検出）
+    chronic_insomnia = nlu_result.get("chronic_insomnia", False)
+    if chronic_insomnia:
+        result["is_safe"] = False
+        result["should_recommend"] = False
+        result["requires_escalation"] = True
+        result["escalation_reason"] = "慢性的な不眠状態が続いている場合は、精神科や心療内科、睡眠専門の医療機関への受診をお勧めします。市販の睡眠改善薬は一時的な不眠にのみ効果があります。"
+        return result
+    
+    # 3. 15歳未満のチェック（推奨停止）
+    age = user_info.get('age')
+    if age is not None and age < 15:
+        result["is_safe"] = False
+        result["should_recommend"] = False
+        result["requires_escalation"] = True
+        result["escalation_reason"] = f"{age}歳の小児の不眠相談については、医師の診察を受けることをお勧めします。市販の睡眠改善薬は15歳以上が対象です。"
+        return result
+    
+    # 4. 緑内障・前立腺肥大の疾患チェック
+    # キーワード検出
+    glaucoma_keywords = ["緑内障", "眼圧", "視野狭窄"]
+    prostate_keywords = ["前立腺肥大", "前立腺", "排尿困難", "頻尿"]
+    
+    has_glaucoma = any(keyword in user_text for keyword in glaucoma_keywords)
+    has_prostate = any(keyword in user_text for keyword in prostate_keywords)
+    
+    if has_glaucoma:
+        result["is_safe"] = False
+        result["should_recommend"] = False
+        result["requires_escalation"] = True
+        result["escalation_reason"] = "緑内障の疾患がある方は、睡眠改善薬の成分である抗ヒスタミン薬の抗コリン作用により、症状が悪化する可能性があります。使用できません。"
+        return result
+    
+    if has_prostate:
+        result["is_safe"] = False
+        result["should_recommend"] = False
+        result["requires_escalation"] = True
+        result["escalation_reason"] = "前立腺肥大の疾患がある方は、睡眠改善薬の成分である抗ヒスタミン薬の抗コリン作用により、症状が悪化する可能性があります。使用できません。"
+        return result
+    
+    # 疾患が検出されていない場合は質問を追加
+    if not has_glaucoma:
+        result["critical_questions"].append("緑内障の疾患はありますか？")
+    if not has_prostate:
+        # 男性の場合のみ前立腺肥大の質問を追加
+        gender = user_info.get('gender', '')
+        if gender == '男性' or gender == '':
+            result["critical_questions"].append("前立腺肥大の疾患はありますか？")
+    
+    # 5. 併用医薬品チェック
+    # current_medicationsからチェック
+    current_medications = user_info.get('current_medications', [])
+    if current_medications:
+        medication_text = ' '.join(current_medications).lower()
+        # かぜ薬、解熱鎮痛薬、鎮咳去痰薬、抗ヒスタミン剤含有薬、睡眠薬のチェック
+        incompatible_keywords = [
+            "かぜ薬", "風邪薬", "総合感冒薬", "感冒薬",
+            "解熱鎮痛薬", "痛み止め", "熱冷まし", "鎮痛薬",
+            "咳止め", "痰切り", "鎮咳", "去痰",
+            "抗ヒスタミン", "アレルギー薬", "抗アレルギー",
+            "睡眠薬", "睡眠導入剤", "催眠薬"
+        ]
+        for keyword in incompatible_keywords:
+            if keyword in medication_text:
+                result["is_safe"] = False
+                result["should_recommend"] = False
+                result["requires_escalation"] = True
+                result["escalation_reason"] = f"現在服用中の薬（{keyword}を含む）と睡眠改善薬の併用はできません。成分が重なり、副作用などが強く出る恐れがあります。"
+                return result
+    
+    # ユーザー入力からキーワード検出
+    user_text_lower = user_text.lower()
+    incompatible_input_keywords = {
+        "かぜ薬": ["かぜ薬", "風邪薬", "総合感冒薬"],
+        "解熱鎮痛薬": ["解熱鎮痛薬", "痛み止め", "熱冷まし"],
+        "鎮咳去痰薬": ["咳止め", "痰切り", "鎮咳"],
+        "抗ヒスタミン剤": ["抗ヒスタミン", "アレルギー薬"],
+        "睡眠薬": ["睡眠薬", "処方された睡眠薬", "医師からもらった睡眠薬"]
+    }
+    
+    for med_type, keywords in incompatible_input_keywords.items():
+        for keyword in keywords:
+            if keyword in user_text_lower:
+                result["is_safe"] = False
+                result["should_recommend"] = False
+                result["requires_escalation"] = True
+                if med_type == "睡眠薬":
+                    result["escalation_reason"] = "睡眠薬との併用は避けなければなりません。睡眠改善薬は睡眠薬の代用にはなりません。医師による治療を妨げる恐れがあります。"
+                else:
+                    result["escalation_reason"] = f"{med_type}との併用はできません。成分が重なり、副作用などが強く出る恐れがあります。"
+                return result
+    
+    # 併用医薬品が検出されていない場合は質問を追加
+    if not current_medications:
+        result["critical_questions"].append("現在、かぜ薬、解熱鎮痛薬、鎮咳去痰薬、抗ヒスタミン剤含有薬、または睡眠薬を服用していますか？")
+    
+    # 6. アルコール併用警告（推奨は継続するが警告を追加）
+    result["warnings"].append("お酒とあわせた服用は危険です。アルコール摂取後は服用しないでください。")
+    
+    # 7. 常用化リスク警告（推奨は継続するが警告を追加）
+    result["warnings"].append("睡眠改善薬は一時的な不眠にのみ効果があります。常用化を避け、症状が続く場合は医師にご相談ください。")
+    result["warnings"].append("睡眠改善薬は医師による治療の代用にはなりません。不眠症と診断されている場合は医師にご相談ください。")
+    
+    # 8. 代替療法の推奨
+    result["alternative_therapies"] = [
+        "ハーブティー（カモミール、バレリアンなど）を就寝前に飲む",
+        "ラベンダーの香りを利用したリラックス効果",
+        "アロマテラピー（リラックス効果のある香り）",
+        "睡眠環境の改善（室温、照明、騒音対策など）"
+    ]
+    
+    return result
 
 # ================================================================================
 # 4. 候補薬取得とスコアリング
@@ -6102,6 +6304,47 @@ def rule_based_recommendation(
         logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
     candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
     
+    # 睡眠改善薬専用の安全性チェック（候補医薬品取得後、スコアリング前）
+    # 症状から医薬品種類を判定
+    medicine_type = None
+    symptoms = nlu_result.get("symptoms", [])
+    for symptom in symptoms:
+        symptom_name = symptom.get("name")
+        if symptom_name in SYMPTOM_DICTIONARY:
+            types = SYMPTOM_DICTIONARY[symptom_name].get("medicine_types", [])
+            if "睡眠障害" in types:
+                medicine_type = "睡眠障害"
+                break
+    
+    # 睡眠障害カテゴリの場合、専用の安全性チェックを実行
+    if medicine_type == "睡眠障害":
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"\n--- ステップ3.5: 睡眠改善薬専用安全性チェック ---")
+        sleep_safety_result = check_sleep_medicine_safety(user_text, user_info, nlu_result, medicine_type)
+        
+        if not sleep_safety_result["should_recommend"]:
+            # 推奨を停止し、医師受診を促す
+            logger.warning(f"睡眠改善薬の推奨を停止: {sleep_safety_result['escalation_reason']}")
+            return {
+                "status": "escalation_required",
+                "reason": sleep_safety_result["escalation_reason"],
+                "warnings": sleep_safety_result["warnings"],
+                "recommended_medicines": [],
+                "alternative_therapies": sleep_safety_result.get("alternative_therapies", []),
+                "critical_questions": sleep_safety_result.get("critical_questions", []),
+                "nlu_result": nlu_result,
+                "influenza_risk": influenza_risk,
+                "influenza_reason": influenza_reason,
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # 推奨は継続するが、警告と代替療法を保存
+        if sleep_safety_result.get("warnings"):
+            safety_result["warnings"].extend(sleep_safety_result["warnings"])
+        # alternative_therapiesとcritical_questionsは後で使用するため、nlu_resultに保存
+        nlu_result["sleep_alternative_therapies"] = sleep_safety_result.get("alternative_therapies", [])
+        nlu_result["sleep_critical_questions"] = sleep_safety_result.get("critical_questions", [])
+    
     if not candidates:
         logger.warning("該当する候補医薬品が見つかりませんでした")
         symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
@@ -6644,6 +6887,15 @@ def rule_based_recommendation(
         additional_questions = missing_info_result.get("questions", [])
         missing_priority = missing_info_result.get("priority")
     
+    # 代替療法の取得（睡眠改善薬の場合）
+    alternative_therapies = nlu_result.get("sleep_alternative_therapies", [])
+    sleep_critical_questions = nlu_result.get("sleep_critical_questions", [])
+    
+    # critical_questionsに睡眠改善薬の質問を追加
+    all_critical_questions = missing_info_result.get("critical_questions", [])
+    if sleep_critical_questions:
+        all_critical_questions.extend(sleep_critical_questions)
+    
     return {
         "status": "success",
         "recommended_medicines": recommendations,
@@ -6651,8 +6903,9 @@ def rule_based_recommendation(
         "usage_notes": usage_and_consultation.get('usage_notes', ''),
         "doctor_consultation": usage_and_consultation.get('doctor_consultation', ''),
         "additional_questions": additional_questions,
-        "critical_questions": missing_info_result.get("critical_questions", []),  # 新規追加
+        "critical_questions": all_critical_questions,  # 睡眠改善薬の質問も含める
         "missing_priority": missing_priority,
+        "alternative_therapies": alternative_therapies,  # 代替療法（睡眠改善薬の場合）
         "nlu_result": nlu_result,
         "influenza_risk": influenza_risk,  # 新規追加
         "influenza_reason": influenza_reason,  # 新規追加
@@ -7187,6 +7440,14 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
     """
     usage_notes_parts = []
     
+    # 睡眠改善薬かどうかを判定
+    is_sleep_medicine = False
+    for med in recommended_medicines:
+        medicine_type = med.get('medicine_type', '')
+        if '睡眠障害' in str(medicine_type):
+            is_sleep_medicine = True
+            break
+    
     # 使ってはいけない人の情報を追加（年齢制限は個別表示なので除く）
     contraindications_parts = ["【使ってはいけない人】"]
     
@@ -7211,6 +7472,11 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         "・高齢者の方（医師や薬剤師にご相談ください）"
     ])
     
+    # 睡眠改善薬の場合の特別な禁忌
+    if is_sleep_medicine:
+        contraindications_parts.append("・緑内障の疾患がある方（抗コリン作用により症状が悪化する可能性があります）")
+        contraindications_parts.append("・前立腺肥大の疾患がある方（抗コリン作用により症状が悪化する可能性があります）")
+    
     usage_notes_parts.extend(contraindications_parts)
     
     # 一般的な使用上の注意
@@ -7222,6 +7488,13 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         "・アレルギー体質の方は成分を確認してください",
         "・服用後、乗り物や機械の運転操作をしないでください（眠気が出る場合があります）"
     ])
+    
+    # 睡眠改善薬の場合の特別な注意
+    if is_sleep_medicine:
+        usage_notes_parts.append("・お酒とあわせた服用は危険です。アルコール摂取後は服用しないでください")
+        usage_notes_parts.append("・睡眠改善薬は一時的な不眠にのみ効果があります。常用化を避け、症状が続く場合は医師にご相談ください")
+        usage_notes_parts.append("・睡眠改善薬は医師による治療の代用にはなりません。不眠症と診断されている場合は医師にご相談ください")
+        usage_notes_parts.append("・かぜ薬、解熱鎮痛薬、鎮咳去痰薬、抗ヒスタミン剤含有薬、睡眠薬との併用はできません")
     
     if user_info.get('age') and user_info['age'] < 15:
         usage_notes_parts.append("・小児が服用する場合は保護者の監督のもとで服用してください")
@@ -7236,6 +7509,12 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         "・他の症状が現れた場合",
         "・長期連用する場合"
     ]
+    
+    # 睡眠改善薬の場合の特別な医師相談項目
+    if is_sleep_medicine:
+        doctor_consultation_parts.insert(1, "・不眠症と診断されている場合")
+        doctor_consultation_parts.insert(2, "・慢性的な不眠状態が続いている場合")
+        doctor_consultation_parts.insert(3, "・症状が1週間以上続いている場合")
     
     if user_info.get('pregnant') or user_info.get('breastfeeding'):
         doctor_consultation_parts.insert(1, "・妊娠中・授乳中の方は事前に医師にご相談ください")
