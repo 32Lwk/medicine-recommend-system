@@ -73,6 +73,8 @@ from debug_logger import performance_stats, network_logs, add_network_log
 from analytics import log_access_analytics, get_access_statistics
 from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
 from database import init_database, get_database
+from season_manager import get_current_season, get_season_images
+import pytz
 
 
 class RequestSafeSession(MutableMapping):
@@ -337,7 +339,32 @@ def get_all_sessions_from_db():
 def handle_404_error(e):
     """404エラーのハンドラー"""
     logger.warning(f"⚠️ 404 Not Found: {request.url}")
-    return render_template('index.html', messages=[], version=VERSION), 404
+    # 季節装飾画像の生成
+    try:
+        jst = pytz.timezone('Asia/Tokyo')
+        current_date = datetime.now(jst)
+        season_type = get_current_season(current_date)
+        year = current_date.year
+        
+        decoration_images = []
+        if season_type:
+            # エラーハンドラーではsessionが利用できない可能性があるため、Noneを渡す
+            try:
+                decoration_images = get_season_images(season_type, year, session)
+            except:
+                decoration_images = get_season_images(season_type, year, None)
+        
+        image_version = VERSION
+    except Exception as e:
+        logger.warning(f"⚠️ 季節画像の生成でエラー: {e}")
+        decoration_images = []
+        image_version = VERSION
+    
+    return render_template('index.html', 
+                         messages=[], 
+                         version=VERSION,
+                         decoration_images=decoration_images,
+                         image_version=image_version), 404
 
 @app.errorhandler(502)
 def handle_502_error(e):
@@ -352,7 +379,32 @@ def handle_502_error(e):
             'response': 'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。'
         }), 502
     else:
-        return render_template('index.html', messages=[], version=VERSION), 502
+        # 季節装飾画像の生成
+        try:
+            jst = pytz.timezone('Asia/Tokyo')
+            current_date = datetime.now(jst)
+            season_type = get_current_season(current_date)
+            year = current_date.year
+            
+            decoration_images = []
+            if season_type:
+                # エラーハンドラーではsessionが利用できない可能性があるため、Noneを渡す
+                try:
+                    decoration_images = get_season_images(season_type, year, session)
+                except:
+                    decoration_images = get_season_images(season_type, year, None)
+            
+            image_version = VERSION
+        except Exception as e:
+            logger.warning(f"⚠️ 季節画像の生成でエラー: {e}")
+            decoration_images = []
+            image_version = VERSION
+        
+        return render_template('index.html', 
+                             messages=[], 
+                             version=VERSION,
+                             decoration_images=decoration_images,
+                             image_version=image_version), 502
 
 @app.errorhandler(500)
 def handle_500_error(e):
@@ -3683,6 +3735,18 @@ def index():
                         }
                         logger.info(f"📋 User info for recommendation（再構築後）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                         
+                        # ユーザー要望を抽出してuser_infoに追加
+                        try:
+                            from medicine_logic import extract_user_preferences
+                            nlu_result_for_preferences = recommendation_result.get('nlu_result', {}) if 'recommendation_result' in locals() else {}
+                            user_preferences = extract_user_preferences(user_message, nlu_result_for_preferences, user_info)
+                            user_info['user_preferences'] = user_preferences
+                            user_info['user_message'] = user_message  # user_messageも追加（証判定などで使用）
+                            logger.info(f"📋 ユーザー要望を抽出: {user_preferences}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
+                            user_info['user_preferences'] = None
+                        
                         recommendation_result = rule_based_medicine_recommendation(
                             user_message, 
                             user_info, 
@@ -3847,6 +3911,27 @@ def index():
                                     usage_notes = '添付文書をよく読んでご使用ください。'
                             
                             doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
+                            
+                            # 症状の重症度による受診勧奨チェック
+                            try:
+                                from medicine_logic import detect_severity_escalation, generate_doctor_referral_message
+                                
+                                escalation_info = detect_severity_escalation(sanitized_message, nlu_result, user_info)
+                                if escalation_info.get("needs_escalation", False):
+                                    referral_message = generate_doctor_referral_message(escalation_info)
+                                    if referral_message:
+                                        # 緊急度に応じて表示位置を決定
+                                        urgency = escalation_info.get("urgency", "medium")
+                                        if urgency == "high":
+                                            # 緊急度が高い場合は推奨リストの前に表示
+                                            recommendation_result['severity_escalation'] = referral_message
+                                            recommendation_result['severity_escalation_priority'] = 'before_recommendations'
+                                        else:
+                                            # 緊急度が低い場合は推奨リストの後に表示
+                                            recommendation_result['severity_escalation'] = referral_message
+                                            recommendation_result['severity_escalation_priority'] = 'after_recommendations'
+                            except Exception as e:
+                                logger.warning(f"受診勧奨チェックでエラー: {e}")
                             
                             # メッセージの順序: 性別自動登録の通知 → 妊娠可能性の警告 → その他の医師相談メッセージ
                             consultation_messages = []
@@ -4941,8 +5026,31 @@ def index():
     })
     
     messages = session_data.get('messages', []) if session_data else []
-    logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages")
-    return render_template('index.html', messages=messages, version=VERSION, username=session.get('username', 'Unknown'))
+    
+    # 季節装飾画像の生成
+    try:
+        jst = pytz.timezone('Asia/Tokyo')
+        current_date = datetime.now(jst)
+        season_type = get_current_season(current_date)
+        year = current_date.year
+        
+        decoration_images = []
+        if season_type:
+            decoration_images = get_season_images(season_type, year, session)
+        
+        image_version = VERSION
+    except Exception as e:
+        logger.warning(f"⚠️ 季節画像の生成でエラー: {e}")
+        decoration_images = []
+        image_version = VERSION
+    
+    logger.info(f"✅ GET処理完了 - HTML返却: {len(messages)} messages, 装飾画像: {len(decoration_images)}枚")
+    return render_template('index.html', 
+                         messages=messages, 
+                         version=VERSION, 
+                         username=session.get('username', 'Unknown'),
+                         decoration_images=decoration_images,
+                         image_version=image_version)
 
 def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, influenza_risk: bool = False, influenza_reason: str = "") -> str:
     """
