@@ -4417,7 +4417,8 @@
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
                 if (message.content && (message.content.includes('<div class="recommendation-result') || 
-                                       message.content.includes('<div class="chat-response">'))) {
+                                       message.content.includes('class="chat-response') || 
+                                       message.content.includes("class='chat-response"))) {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示
                     // 管理画面専用のスコア情報を除去
                     let cleanedContent = message.content;
@@ -4457,8 +4458,20 @@
                     
                     cleanedContent = tempDiv.innerHTML;
                     
-                    // message-contentクラスでラップしてHTMLを正しくレンダリング
-                    messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
+                    // cleanedContentが既にrecommendation-resultやchat-responseを含んでいる場合、
+                    // それらは既に適切なコンテナなので、追加のmessage-contentラッパーは不要
+                    // ただし、最上位の要素を確認して、既にdivでラップされている場合はそのまま使用
+                    const firstElement = tempDiv.firstElementChild;
+                    if (firstElement && (
+                        firstElement.classList.contains('recommendation-result') || 
+                        firstElement.classList.contains('chat-response')
+                    )) {
+                        // 既に適切なコンテナがあるので、そのまま使用（message-contentラッパーは不要）
+                        messageDiv.innerHTML = cleanedContent;
+                    } else {
+                        // message-contentクラスでラップしてHTMLを正しくレンダリング
+                        messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
+                    }
                 }
                 // 危機対応メッセージの特別表示
                 else if (message.crisis_support) {
