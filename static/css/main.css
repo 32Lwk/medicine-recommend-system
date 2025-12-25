@@ -165,22 +165,15 @@
         
         /* 雪のアニメーション */
         .snow-container {
-            position: fixed;
+            position: absolute;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             width: 100%;
-            max-width: 900px;
-            height: 100vh;
-            height: 100dvh;
+            min-height: 100%;
+            height: var(--snow-container-height, 100%);
             pointer-events: none;
-            z-index: 0; /* 最も下に配置 */
+            z-index: -1; /* チャットメッセージの下に配置 */
             overflow: hidden;
-        }
-        @supports (-webkit-touch-callout: none) {
-            .snow-container {
-                height: -webkit-fill-available;
-            }
         }
         
         .snowflake {
@@ -205,7 +198,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(calc(100vh + 100px)) translateX(var(--drift)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift)) rotate(360deg);
                 opacity: 0;
             }
         }
