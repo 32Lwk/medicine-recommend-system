@@ -330,7 +330,7 @@ def generate_counseling_response(
 【薬について】
 睡眠改善薬は一時的な不眠にのみ効果があり、常用化のリスクがあります。不眠症と診断されている場合は医師にご相談ください。
 
-一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい。"""
+一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"""
         else:
             MEDICAL_SYMPTOM_TYPES = {'heart_pain', 'anxiety', 'depression_like'}
             if symptom_type in MEDICAL_SYMPTOM_TYPES:
@@ -1590,6 +1590,138 @@ def handle_user_input_in_counseling_mode(
     """
     counseling_mode = session.get('counseling_mode', {})
     current_topic = counseling_mode.get('symptom_type', '')
+    collected_info = counseling_mode.get('collected_info', {})
+    
+    # 期間や妊娠/授乳の情報をチェック（不眠カウンセリングの場合）
+    if current_topic == "insomnia":
+        # 妊娠/授乳の情報をチェック（期間のチェックより優先）
+        user_text_lower = user_text.lower()
+        pregnancy_keywords = ['妊娠', '妊娠中', '妊婦', '妊娠しています', '妊娠してます', '妊娠してる', '妊娠です']
+        breastfeeding_keywords = ['授乳', '授乳中', '授乳しています', '授乳してます', '授乳してる', '母乳', '母乳育児', '授乳です']
+        
+        is_pregnant = any(keyword in user_text_lower for keyword in pregnancy_keywords)
+        is_breastfeeding = any(keyword in user_text_lower for keyword in breastfeeding_keywords)
+        
+        if is_pregnant or is_breastfeeding:
+            # 妊娠/授乳中の場合、カウンセリングを中止して受診勧告
+            counseling_mode['active'] = False
+            session['counseling_mode'] = counseling_mode
+            session.modified = True
+            
+            if is_pregnant:
+                consultation_message = """
+妊娠中とのことですね。
+
+妊娠中は、市販の睡眠改善薬の使用は避けるべきです。
+胎児への影響を考慮し、必ず医師にご相談の上、適切な対処法を受けることをお勧めします。
+
+お近くの産婦人科や、かかりつけの医師にご相談されることをお勧めします。
+"""
+                reason = 'pregnant'
+            else:
+                consultation_message = """
+授乳中とのことですね。
+
+授乳中は、市販の睡眠改善薬の使用は避けるべきです。
+母乳を通じて赤ちゃんに影響を与える可能性があるため、必ず医師にご相談の上、適切な対処法を受けることをお勧めします。
+
+お近くの産婦人科や、かかりつけの医師にご相談されることをお勧めします。
+"""
+                reason = 'breastfeeding'
+            
+            logger.info(f"🚨 カウンセリング中止: 理由={'妊娠中' if is_pregnant else '授乳中'}, "
+                      f"質問回数={len(counseling_mode.get('question_history', []))}, "
+                      f"収集情報数={len(collected_info)}")
+            
+            if session_id:
+                log_counseling_response(
+                    session_id=session_id,
+                    response_content=consultation_message.strip(),
+                    response_type="counseling_summary_medical_consultation",
+                    category=None,
+                    confidence=None,
+                    counseling_mode=counseling_mode
+                )
+            
+            return {
+                'type': 'counseling_summary',
+                'content': consultation_message.strip(),
+                'continue_counseling': False,
+                'recommendation': 'medical_consultation',
+                'completion_reason': reason
+            }
+        
+        # 期間のチェック（2週間（14日）を超えている場合）
+        # まず、collected_infoから期間を取得
+        duration = collected_info.get('duration', '')
+        # ユーザーの入力からも期間を抽出（collected_infoにない場合、または最新の入力から確認）
+        import re
+        if not duration or '日' in user_text or '週間' in user_text or '週' in user_text:
+            # 「14日」「2,3日」「2週間」「14日ほどです」などのパターンを抽出
+            if '週間' in user_text or '週' in user_text:
+                weeks_match = re.search(r'(\d+)', user_text)
+                if weeks_match:
+                    weeks = int(weeks_match.group(1))
+                    duration = f"{weeks}週間"
+            elif '日' in user_text:
+                # 「14日」「14日ほどです」「ここ14日ほどです」などのパターンに対応
+                days_match = re.search(r'(\d+)', user_text.replace(',', '').replace('、', ''))
+                if days_match:
+                    days = int(days_match.group(1))
+                    duration = f"{days}日"
+        
+        if duration:
+            # 期間の文字列から日数を抽出
+            duration_days = None
+            # 「14日」「2,3日」「2週間」などのパターンを抽出
+            if '週間' in duration or '週' in duration:
+                # 週間の場合は日数に変換
+                weeks_match = re.search(r'(\d+)', duration)
+                if weeks_match:
+                    weeks = int(weeks_match.group(1))
+                    duration_days = weeks * 7
+            elif '日' in duration:
+                # 日数の場合は数値を抽出
+                days_match = re.search(r'(\d+)', duration.replace(',', '').replace('、', ''))
+                if days_match:
+                    duration_days = int(days_match.group(1))
+            
+            if duration_days and duration_days > 14:
+                # 2週間を超えている場合、カウンセリングを中止して受診勧告
+                counseling_mode['active'] = False
+                session['counseling_mode'] = counseling_mode
+                session.modified = True
+                
+                consultation_message = f"""
+不眠の症状が{duration_days}日間続いているとのことですね。
+
+2週間以上続く不眠は、一時的なものではなく、慢性的な不眠の可能性があります。
+市販薬での対処には限界があるため、一度お近くの医療機関（内科、精神科、心療内科など）にご相談されることをお勧めします。
+
+医療機関では、より適切な診断と治療を受けることができます。
+"""
+                
+                logger.info(f"🚨 カウンセリング中止: 理由=期間が2週間を超えている（{duration_days}日）, "
+                          f"質問回数={len(counseling_mode.get('question_history', []))}, "
+                          f"収集情報数={len(collected_info)}")
+                
+                if session_id:
+                    log_counseling_response(
+                        session_id=session_id,
+                        response_content=consultation_message.strip(),
+                        response_type="counseling_summary_medical_consultation",
+                        category=None,
+                        confidence=None,
+                        counseling_mode=counseling_mode
+                    )
+                
+                return {
+                    'type': 'counseling_summary',
+                    'content': consultation_message.strip(),
+                    'continue_counseling': False,
+                    'recommendation': 'medical_consultation',
+                    'completion_reason': 'duration_exceeded_2weeks'
+                }
     
     # 不眠カウンセリング中に薬を希望した場合の検出
     if current_topic == "insomnia":
