@@ -59,30 +59,27 @@
             position: relative;
             overflow-x: hidden; /* 横スクロールを防止 */
         }
-        /* 冬仕様の装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
-        .winter-decoration {
+        /* シーズン装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
+        .season-decoration {
             position: absolute;
             pointer-events: none;
             z-index: 1; /* メッセージ(z-index: 2)の下に配置 */
             will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            opacity: 0.7;
+            transform: translateZ(0);
+            height: auto;
         }
-        .winter-decoration.christmas-tree {
+        .season-decoration.position-right {
             bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             right: 20px;
             width: 120px;
-            height: auto;
-            opacity: 0.7;
-            transform: translateZ(0);
         }
-        .winter-decoration.snowman {
+        .season-decoration.position-left {
             bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             left: 20px;
             width: 100px;
-            height: auto;
-            opacity: 0.7;
-            transform: translateZ(0);
         }
         /* 雪のアニメーション */
         .snow-container {
@@ -124,24 +121,24 @@
             .chat-messages {
                 padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
             }
-            .winter-decoration.christmas-tree {
+            .season-decoration.position-right {
                 width: 80px;
                 bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 right: 10px;
             }
-            .winter-decoration.snowman {
+            .season-decoration.position-left {
                 width: 70px;
                 bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 left: 10px;
             }
         }
         @media (max-width: 480px) {
-            .winter-decoration.christmas-tree {
+            .season-decoration.position-right {
                 width: 60px;
                 bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 right: 5px;
             }
-            .winter-decoration.snowman {
+            .season-decoration.position-left {
                 width: 50px;
                 bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 left: 5px;
@@ -202,13 +199,14 @@
         </div>
     </div>
     
-    <!-- 冬仕様の装飾（chat-inputの上に固定） -->
-    <img src="{{ url_for('static', filename='img/winter/christmas_tree.png') }}" 
-         alt="クリスマスツリー" 
-         class="winter-decoration christmas-tree">
-    <img src="{{ url_for('static', filename='img/winter/snowman.png') }}" 
-         alt="雪だるま" 
-         class="winter-decoration snowman">
+    <!-- シーズン装飾（chat-inputの上に固定） -->
+    {% if decoration_images %}
+        {% for image in decoration_images %}
+            <img src="{{ url_for('static', filename=image.path) }}?v={{ image_version }}" 
+                 alt="{{ image.alt }}" 
+                 class="season-decoration {{ image.position_class }}">
+        {% endfor %}
+    {% endif %}
     
     <div class="chat-messages" id="chatMessages">
         <!-- 冬仕様の装飾 -->
