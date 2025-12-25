@@ -994,11 +994,14 @@ SYMPTOM_PATTERN_OPTIMIZATION = {
     },
     # 月経不順+イライラ
     frozenset({"月経不順", "イライラ"}): {
-        "priority_order": ["加味逍遙散", "命の母ホワイト", "ラムールQ"],
+        "priority_order": ["加味逍遙散", "命の母ホワイト", "ラムールQ", "ルナエール", "ルナフェミン", "桂枝茯苓丸"],
         "bonuses": {
-            "加味逍遙散": 0.20,  # 0.15から0.20に増加
-            "命の母ホワイト": 0.20,  # 0.15から0.20に増加
-            "ラムールQ": 0.18,  # 新規追加
+            "加味逍遙散": 0.30,  # 0.25から0.30に増加
+            "命の母ホワイト": 0.30,  # 0.25から0.30に増加
+            "ラムールQ": 0.28,  # 0.23から0.28に増加
+            "ルナエール": 0.25,  # 0.20から0.25に増加
+            "ルナフェミン": 0.25,  # 0.20から0.25に増加
+            "桂枝茯苓丸": 0.25,  # 新規追加
             "解熱鎮痛薬": 0.10
         }
     },
@@ -1012,9 +1015,10 @@ SYMPTOM_PATTERN_OPTIMIZATION = {
     },
     # 月経不順+ニキビ
     frozenset({"月経不順", "ニキビ"}): {
-        "priority_order": ["桂枝茯苓丸"],
+        "priority_order": ["桂枝茯苓丸", "命の母ホワイト"],
         "bonuses": {
-            "桂枝茯苓丸": 0.15,
+            "桂枝茯苓丸": 0.20,  # 0.15から0.20に増加
+            "命の母ホワイト": 0.20,  # 新規追加
             "解熱鎮痛薬": 0.10
         }
     }
@@ -2710,10 +2714,44 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug("L-システイン優先枠: 美容主体でない製品が見つかりませんでした（美容主体は二日酔いに不適切なため除外）")
     
+    # 月経不順+イライラの症状パターンで、期待される医薬品を優先確保
+    reserved_menstrual_medicines = []
+    if nlu_result:
+        symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        # 症状名の正規化（「生理不順」→「月経不順」）
+        normalized_symptom_names_list = []
+        symptom_mapping = {
+            "生理不順": "月経不順",
+            "生理異常": "月経不順",
+        }
+        for name in symptom_names_list:
+            normalized_name = symptom_mapping.get(name, name)
+            normalized_symptom_names_list.append(normalized_name)
+        
+        symptom_set = frozenset(normalized_symptom_names_list)
+        is_menstrual_irritability_pattern = symptom_set == frozenset({"月経不順", "イライラ"}) or symptom_set.issubset(frozenset({"月経不順", "イライラ"}))
+        
+        if is_menstrual_irritability_pattern:
+            # 期待される医薬品を優先確保
+            priority_medicine_names = ["ラムールQ", "ラムールＱ", "加味逍遙散", "命の母ホワイト", "ルナエール", "ルナフェミン", "桂枝茯苓丸"]
+            for candidate in filtered_candidates:
+                if candidate == reserved_goreisan or candidate == reserved_cysteine:
+                    continue
+                product_name = candidate.get('product_name', '')
+                # 製品名に期待される医薬品名が含まれているか確認
+                for priority_name in priority_medicine_names:
+                    if priority_name in product_name:
+                        reserved_menstrual_medicines.append(candidate)
+                        logger.info(f"⭐ 期待される医薬品を優先確保: {product_name}")
+                        break
+                # 最大3件まで確保
+                if len(reserved_menstrual_medicines) >= 3:
+                    break
+    
     # 液剤を最初に1件確保（剤形多様性）
     liquid_candidate = None
     for candidate in filtered_candidates:
-        if candidate == reserved_goreisan or candidate == reserved_cysteine:
+        if candidate == reserved_goreisan or candidate == reserved_cysteine or candidate in reserved_menstrual_medicines:
             continue
         if _candidate_has_throat_liquid_signature(candidate):
             liquid_candidate = candidate
@@ -2750,6 +2788,8 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         if reserved_goreisan and candidate == reserved_goreisan:
             continue
         if reserved_cysteine and candidate == reserved_cysteine:
+            continue
+        if candidate in reserved_menstrual_medicines:
             continue
 
         main_ingredients = set(extract_main_ingredients(candidate.get("ingredients", "")))
@@ -2799,15 +2839,24 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
             fallback.append((candidate, main_ingredients))
 
     # 特別枠を優先順位で追加
-    # 1. 五苓散（最優先）
-    if reserved_goreisan and len(selected) < top_n:
-        selected.insert(0, reserved_goreisan)  # 1位に挿入
-        selected_sets.insert(0, set(extract_main_ingredients(reserved_goreisan.get("ingredients", ""))))
+    # 1. 期待される医薬品（月経不順+イライラの症状パターン、最優先）
+    if reserved_menstrual_medicines:
+        for menstrual_medicine in reserved_menstrual_medicines:
+            if len(selected) < top_n:
+                selected.insert(0, menstrual_medicine)  # 最上位に挿入
+                selected_sets.insert(0, set(extract_main_ingredients(menstrual_medicine.get("ingredients", ""))))
+                logger.info(f"⭐ 期待される医薬品を最終推奨に追加: {menstrual_medicine.get('product_name', '')}")
     
-    # 2. L-システイン含有医薬品（2番目の優先度）
+    # 2. 五苓散（2番目の優先度）
+    if reserved_goreisan and len(selected) < top_n:
+        insert_pos = min(len(reserved_menstrual_medicines), len(selected))
+        selected.insert(insert_pos, reserved_goreisan)
+        selected_sets.insert(insert_pos, set(extract_main_ingredients(reserved_goreisan.get("ingredients", ""))))
+    
+    # 3. L-システイン含有医薬品（3番目の優先度）
     if reserved_cysteine and len(selected) < top_n:
-        # 2位または3位に挿入（五苓散が既にある場合は2位）
-        insert_pos = min(1, len(selected))
+        # 期待される医薬品と五苓散の後に挿入
+        insert_pos = min(len(reserved_menstrual_medicines) + (1 if reserved_goreisan else 0), len(selected))
         selected.insert(insert_pos, reserved_cysteine)
         selected_sets.insert(insert_pos, set(extract_main_ingredients(reserved_cysteine.get("ingredients", ""))))
     
@@ -4127,13 +4176,15 @@ def match_symptom_pattern(nlu_result: Dict) -> Optional[Dict]:
     
     symptom_names = [s.get("name") for s in symptoms]
     
-    # 症状名の正規化（「疲労感」→「だるさ」など）
+    # 症状名の正規化（「疲労感」→「だるさ」など、「生理不順」→「月経不順」など）
     normalized_symptom_names = []
     symptom_mapping = {
         "疲労感": "だるさ",
         "倦怠感": "だるさ",
         "疲れ": "だるさ",
         "だるい": "だるさ",
+        "生理不順": "月経不順",  # 生理不順を月経不順に正規化
+        "生理異常": "月経不順",  # 生理異常を月経不順に正規化
     }
     for name in symptom_names:
         normalized_name = symptom_mapping.get(name, name)
@@ -4143,6 +4194,7 @@ def match_symptom_pattern(nlu_result: Dict) -> Optional[Dict]:
         normalized_symptom_names.append(normalized_name)
     
     symptom_set = frozenset(normalized_symptom_names)
+    logger.info(f"🔍 症状パターンマッチング: 元の症状={symptom_names}, 正規化後={list(symptom_set)}")
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"症状パターンマッチング: 元の症状={symptom_names}, 正規化後={list(symptom_set)}")
     
@@ -4151,18 +4203,25 @@ def match_symptom_pattern(nlu_result: Dict) -> Optional[Dict]:
     
     # キャッシュをチェック
     if cache_key in _symptom_pattern_cache:
-        return _symptom_pattern_cache[cache_key]
+        result = _symptom_pattern_cache[cache_key]
+        if result:
+            logger.info(f"✅ 症状パターンマッチング（キャッシュ）: {list(symptom_set)} → マッチ")
+        return result
     
     # 完全一致をチェック
     if symptom_set in SYMPTOM_PATTERN_OPTIMIZATION:
         result = SYMPTOM_PATTERN_OPTIMIZATION[symptom_set]
+        logger.info(f"✅ 症状パターンマッチング（完全一致）: {list(symptom_set)} → マッチ")
     else:
         # 部分一致をチェック（症状がパターンのサブセットの場合）
         result = None
         for pattern_symptoms, pattern_info in SYMPTOM_PATTERN_OPTIMIZATION.items():
             if symptom_set.issubset(pattern_symptoms):
                 result = pattern_info
+                logger.info(f"✅ 症状パターンマッチング（部分一致）: {list(symptom_set)} ⊆ {list(pattern_symptoms)} → マッチ")
                 break
+        if result is None:
+            logger.info(f"❌ 症状パターンマッチング: {list(symptom_set)} → マッチなし")
     
     # キャッシュに保存
     if len(_symptom_pattern_cache) >= _max_symptom_pattern_cache_size:
@@ -4340,21 +4399,45 @@ def calculate_ingredient_based_boost(candidate: Dict, nlu_result: Dict, user_inf
         
         # ラムールQの識別
         if "ラムールq" in product_name_lower or "ラムールｑ" in product_name_lower:
-            boost = max(boost, 0.25)  # ラムールQ専用ボーナス
+            boost = max(boost, 0.30)  # ラムールQ専用ボーナス（0.25から0.30に増加）
+            logger.info(f"⭐ ラムールQ製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"ラムールQ製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+                logger.debug(f"ラムールQ製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
         
         # 加味逍遙散の識別
         if "加味逍遙散" in product_name or "カミショウヨウサン" in product_name.upper():
-            boost = max(boost, 0.25)  # 加味逍遙散専用ボーナス
+            boost = max(boost, 0.30)  # 加味逍遙散専用ボーナス（0.25から0.30に増加）
+            logger.info(f"⭐ 加味逍遙散製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"加味逍遙散製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+                logger.debug(f"加味逍遙散製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
         
         # 命の母ホワイトの識別
         if "命の母ホワイト" in product_name or ("命の母" in product_name and "ホワイト" in product_name):
-            boost = max(boost, 0.25)  # 命の母ホワイト専用ボーナス
+            boost = max(boost, 0.30)  # 命の母ホワイト専用ボーナス（0.25から0.30に増加）
+            logger.info(f"⭐ 命の母ホワイト製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"命の母ホワイト製品名ボーナス: {candidate.get('product_name', '')} = +0.25")
+                logger.debug(f"命の母ホワイト製品名ボーナス: {candidate.get('product_name', '')} = +0.30")
+        
+        # ルナエールの識別
+        if "ルナエール" in product_name or "ルナエール" in product_name.upper():
+            boost = max(boost, 0.28)  # ルナエール専用ボーナス
+            logger.info(f"⭐ ルナエール製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ルナエール製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
+        
+        # ルナフェミンの識別
+        if "ルナフェミン" in product_name or "ルナフェミン" in product_name.upper():
+            boost = max(boost, 0.28)  # ルナフェミン専用ボーナス
+            logger.info(f"⭐ ルナフェミン製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ルナフェミン製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
+        
+        # 桂枝茯苓丸の識別（月経不順+イライラの症状パターンでも推奨）
+        if "桂枝茯苓丸" in product_name or "ケイシブクリョウガン" in product_name.upper() or "桂枝茯苓丸" in efficacy:
+            boost = max(boost, 0.28)  # 桂枝茯苓丸専用ボーナス
+            logger.info(f"⭐ 桂枝茯苓丸製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"桂枝茯苓丸製品名ボーナス: {candidate.get('product_name', '')} = +0.28")
         
         # 当帰芍薬散を含む医薬品（最高優先度）
         product_name_upper = product_name.upper()
@@ -4540,6 +4623,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             efficacy_lower = efficacy.lower()
             if "加味逍遙散" in product_name or "カミショウヨウサン" in product_name_upper or "加味逍遙散" in efficacy_lower:
                 pattern_bonus += bonuses["加味逍遙散"]
+                logger.info(f"⭐ 症状パターンボーナス（加味逍遙散）: {product_name} = +{bonuses['加味逍遙散']}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（加味逍遙散）: {product_name} = +{bonuses['加味逍遙散']}")
         
@@ -4549,6 +4633,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             efficacy_lower = efficacy.lower()
             if "命の母ホワイト" in product_name or "命の母" in product_name or "命の母" in efficacy_lower:
                 pattern_bonus += bonuses["命の母ホワイト"]
+                logger.info(f"⭐ 症状パターンボーナス（命の母ホワイト）: {product_name} = +{bonuses['命の母ホワイト']}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（命の母ホワイト）: {product_name} = +{bonuses['命の母ホワイト']}")
         
@@ -4559,7 +4644,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（当帰芍薬散）: {product_name} = +{bonuses['当帰芍薬散']}")
         
-        # 桂枝茯苓丸の識別とボーナス（月経不順+ニキビ）
+        # 桂枝茯苓丸の識別とボーナス（月経不順+ニキビ、または月経不順+イライラ）
         if "桂枝茯苓丸" in bonuses:
             # 製品名または効能効果欄に「桂枝茯苓丸」が含まれる場合
             has_keishibukuryogan_name = "桂枝茯苓丸" in product_name or "ケイシブクリョウガン" in product_name.upper()
@@ -4572,8 +4657,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 # 月経不順・血の道症が含まれる場合は追加ボーナス
                 if has_menstrual_efficacy:
                     pattern_bonus += bonuses["桂枝茯苓丸"] + 0.05  # 追加ボーナス
+                    logger.info(f"⭐ 症状パターンボーナス（桂枝茯苓丸・月経不順あり）: {product_name} = +{bonuses['桂枝茯苓丸'] + 0.05}")
                 else:
                     pattern_bonus += bonuses["桂枝茯苓丸"]
+                    logger.info(f"⭐ 症状パターンボーナス（桂枝茯苓丸）: {product_name} = +{bonuses['桂枝茯苓丸']}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（桂枝茯苓丸）: {product_name} = +{bonuses['桂枝茯苓丸']} (効能: {efficacy[:100]}...)")
         
@@ -4585,8 +4672,25 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             has_ramuruq_efficacy = ("血の道症" in efficacy_lower or "血の道" in efficacy_lower) and ("月経不順" in efficacy_lower or "更年期障害" in efficacy_lower)
             if has_ramuruq_name or has_ramuruq_efficacy:
                 pattern_bonus += bonuses["ラムールQ"]
+                logger.info(f"⭐ 症状パターンボーナス（ラムールQ）: {product_name} = +{bonuses['ラムールQ']}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（ラムールQ）: {product_name} = +{bonuses['ラムールQ']}")
+        
+        # ルナエールの識別とボーナス（月経不順+イライラ、錠剤タイプ）
+        if "ルナエール" in bonuses:
+            if "ルナエール" in product_name or "ルナエール" in product_name.upper():
+                pattern_bonus += bonuses["ルナエール"]
+                logger.info(f"⭐ 症状パターンボーナス（ルナエール）: {product_name} = +{bonuses['ルナエール']}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（ルナエール）: {product_name} = +{bonuses['ルナエール']}")
+        
+        # ルナフェミンの識別とボーナス（月経不順+イライラ、錠剤タイプ）
+        if "ルナフェミン" in bonuses:
+            if "ルナフェミン" in product_name or "ルナフェミン" in product_name.upper():
+                pattern_bonus += bonuses["ルナフェミン"]
+                logger.info(f"⭐ 症状パターンボーナス（ルナフェミン）: {product_name} = +{bonuses['ルナフェミン']}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"症状パターンボーナス（ルナフェミン）: {product_name} = +{bonuses['ルナフェミン']}")
         
         # 「イライラ」症状への対応強化：効能効果欄に「ヒステリー」「情緒不安定」「更年期神経症」などのキーワードが含まれる医薬品にボーナス
         if "月経不順" in symptom_names and "イライラ" in symptom_names:
@@ -4954,23 +5058,33 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"月経不順症状+漢方薬+食前・食間のため加点: {candidate.get('product_name', '')} = +0.02")
         
-        # ラムールQ、加味逍遙散、命の母ホワイトの優先ボーナス（製品名ベース）
+        # ラムールQ、加味逍遙散、命の母ホワイト、ルナエール、ルナフェミンの優先ボーナス（製品名ベース）
         product_name_lower = product_name.lower()
         if "ラムールq" in product_name_lower or "ラムールｑ" in product_name_lower:
-            priority_boost = 0.10  # ラムールQ優先ボーナス
+            priority_boost = 0.15  # ラムールQ優先ボーナス（0.10から0.15に増加）
             dosage_timing_boost += priority_boost
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"ラムールQ優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
         elif "加味逍遙散" in product_name or "カミショウヨウサン" in product_name.upper():
-            priority_boost = 0.10  # 加味逍遙散優先ボーナス
+            priority_boost = 0.15  # 加味逍遙散優先ボーナス（0.10から0.15に増加）
             dosage_timing_boost += priority_boost
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"加味逍遙散優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
         elif "命の母ホワイト" in product_name or ("命の母" in product_name and "ホワイト" in product_name):
-            priority_boost = 0.10  # 命の母ホワイト優先ボーナス
+            priority_boost = 0.15  # 命の母ホワイト優先ボーナス（0.10から0.15に増加）
             dosage_timing_boost += priority_boost
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"命の母ホワイト優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
+        elif "ルナエール" in product_name or "ルナエール" in product_name.upper():
+            priority_boost = 0.12  # ルナエール優先ボーナス
+            dosage_timing_boost += priority_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ルナエール優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
+        elif "ルナフェミン" in product_name or "ルナフェミン" in product_name.upper():
+            priority_boost = 0.12  # ルナフェミン優先ボーナス
+            dosage_timing_boost += priority_boost
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ルナフェミン優先ボーナス: {candidate.get('product_name', '')} = +{priority_boost}")
         
         # 錠剤タイプへの「飲みやすさ」ボーナス（月経不順症状がある場合）
         if any(token in combined_dosage_text for token in ["錠", "錠剤"]):
@@ -5561,6 +5675,56 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
         validated = filtered_candidates
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"性器周辺症状: {len(validated)}件の候補をフィルタリング後")
+    
+    # 4.6. 効能特異性が非常に低い医薬品を除外（症状に合わない医薬品を除外）
+    from scoring_utils import calculate_efficacy_specificity_score
+    
+    filtered_by_efficacy = []
+    for candidate in validated:
+        # 効能特異性スコアを計算
+        efficacy_specificity = calculate_efficacy_specificity_score(candidate, nlu_result)
+        # 症状特異性ペナルティを計算
+        symptom_specificity_penalty = calculate_symptom_specificity_penalty(candidate, nlu_result)
+        
+        # 効能特異性が0.0または非常に低い（0.1未満）かつ症状特異性ペナルティが-0.6以下の医薬品を除外
+        # または、効能特異性が0.0で症状特異性ペナルティが-0.4以下かつ効能に「生理痛」のみが含まれる場合も除外
+        # または、大黄牡丹皮湯で便秘傾向がない場合も除外
+        efficacy = str(candidate.get('efficacy', '')).lower()
+        product_name_lower = str(candidate.get('product_name', '')).lower()
+        has_only_dysmenorrhea = ('生理痛' in efficacy or '月経痛' in efficacy) and not any(kw in efficacy for kw in ['月経不順', '生理不順', '月経異常', '生理異常', '血の道症', '血の道'])
+        
+        # 大黄牡丹皮湯の判定（便秘傾向がない場合に除外）
+        is_daioubotanpi = '大黄牡丹皮湯' in product_name_lower or 'だいおうぼたんぴとう' in product_name_lower or 'ダイオウボタンピトウ' in product_name_lower
+        # 効能に「便秘の傾向」「便秘傾向」「便秘」が含まれているか確認
+        has_constipation_efficacy = '便秘' in efficacy or '便通' in efficacy or '便秘の傾向' in efficacy or '便秘傾向' in efficacy
+        symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_constipation_symptom = '便秘' in symptom_names_list
+        
+        if is_daioubotanpi:
+            logger.info(f"🔍 大黄牡丹皮湯チェック: {candidate.get('product_name', '')}, 効能に便秘関連: {has_constipation_efficacy}, 症状に便秘: {has_constipation_symptom}, 効能: {efficacy[:150]}...")
+        
+        should_exclude = False
+        if efficacy_specificity < 0.1 and symptom_specificity_penalty <= -0.6:
+            should_exclude = True
+        elif efficacy_specificity == 0.0 and symptom_specificity_penalty <= -0.4 and has_only_dysmenorrhea:
+            # 「生理痛」のみが効能で、月経不順が主訴の場合も除外
+            should_exclude = True
+        elif is_daioubotanpi and not has_constipation_efficacy and not has_constipation_symptom:
+            # 大黄牡丹皮湯で便秘傾向がない場合も除外（下腹部痛を伴う月経不順・月経困難症、便秘、痔疾などに用いられるため）
+            should_exclude = True
+            logger.info(f"⚠️ 大黄牡丹皮湯を除外: {candidate.get('product_name', '')} (便秘傾向がないため、効能: {efficacy[:150]}...)")
+        
+        if should_exclude:
+            product_name = candidate.get('product_name', '')
+            efficacy = candidate.get('efficacy', '')
+            logger.info(f"⚠️ 効能特異性が低く症状に合わない医薬品を除外: {product_name} (効能特異性: {efficacy_specificity:.2f}, 症状特異性ペナルティ: {symptom_specificity_penalty:.2f}, 効能: {efficacy[:100]}...)")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"⚠️ 効能特異性が低く症状に合わない医薬品を除外: {product_name} (効能特異性: {efficacy_specificity:.2f}, 症状特異性ペナルティ: {symptom_specificity_penalty:.2f})")
+            continue
+        
+        filtered_by_efficacy.append(candidate)
+    
+    validated = filtered_by_efficacy
     
     # 5. スコアが0.0の候補を除外、0.3未満の候補を警告付きで残す
     final_candidates = []
@@ -6817,6 +6981,26 @@ def rule_based_recommendation(
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
     validated_candidates = _finalize_recommendations(top_candidates, nlu_result, influenza_risk)
+    
+    # 推奨医薬品が3件未満の場合、スコアが低い候補も含める（最低3件推奨するため）
+    if len(validated_candidates) < top_n and len(top_candidates) > len(validated_candidates):
+        # 除外された候補から、スコアが0.0より大きい候補を追加
+        excluded_candidates = [c for c in top_candidates if c not in validated_candidates]
+        excluded_candidates = [c for c in excluded_candidates if c.get('final_score', 0.0) > 0.0]
+        
+        # スコア順にソート
+        excluded_candidates = sorted(excluded_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
+        
+        # 不足分を追加
+        needed_count = top_n - len(validated_candidates)
+        for candidate in excluded_candidates[:needed_count]:
+            # 低スコア警告を追加
+            candidate['low_score_warning'] = True
+            validated_candidates.append(candidate)
+            logger.info(f"⚠️ 推奨医薬品が{top_n}件未満のため、低スコア候補を追加: {candidate.get('product_name', '')} (スコア: {candidate.get('final_score', 0.0):.3f})")
+        
+        # スコア順に再ソート
+        validated_candidates = sorted(validated_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
     
     # ステップ6: 説明生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
