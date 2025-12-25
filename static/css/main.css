@@ -135,32 +135,29 @@
             overflow-x: hidden; /* 横スクロールを防止 */
         }
         
-        /* 冬仕様の装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
-        .winter-decoration {
+        /* シーズン装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
+        .season-decoration {
             position: absolute;
             pointer-events: none; /* クリックを無効化 */
             z-index: 1; /* メッセージ(z-index: 2)の下に配置 */
             will-change: transform; /* パフォーマンス最適化 */
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            opacity: 0.7; /* チャットの邪魔にならないように透明度を設定 */
+            transform: translateZ(0); /* GPU加速 */
+            height: auto;
         }
         
-        .winter-decoration.christmas-tree {
+        .season-decoration.position-right {
             bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             right: 20px;
             width: 120px;
-            height: auto;
-            opacity: 0.7; /* チャットの邪魔にならないように透明度を設定 */
-            transform: translateZ(0); /* GPU加速 */
         }
         
-        .winter-decoration.snowman {
+        .season-decoration.position-left {
             bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
             left: 20px;
             width: 100px;
-            height: auto;
-            opacity: 0.7; /* チャットの邪魔にならないように透明度を設定 */
-            transform: translateZ(0); /* GPU加速 */
         }
         
         /* 雪のアニメーション */
@@ -205,13 +202,13 @@
         
         /* モバイル対応 */
         @media (max-width: 768px) {
-            .winter-decoration.christmas-tree {
+            .season-decoration.position-right {
                 width: 80px;
                 bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 right: 10px;
             }
             
-            .winter-decoration.snowman {
+            .season-decoration.position-left {
                 width: 70px;
                 bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
                 left: 10px;
@@ -219,13 +216,13 @@
         }
         
         @media (max-width: 480px) {
-            .winter-decoration.christmas-tree {
+            .season-decoration.position-right {
                 width: 60px;
                 bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 right: 5px;
             }
             
-            .winter-decoration.snowman {
+            .season-decoration.position-left {
                 width: 50px;
                 bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
                 left: 5px;
