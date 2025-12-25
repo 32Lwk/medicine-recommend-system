@@ -197,10 +197,14 @@ def get_season_images(season_type, year, session):
     
     # 左側画像（ランダム選択、セッション固定）
     if 'left' in config['images'] and config['images']['left']:
-        session_key = f'decoration_left_{season_type}'
-        if session_key not in session:
-            session[session_key] = random.choice(config['images']['left'])
-        left_img = session[session_key]
+        if session is not None:
+            session_key = f'decoration_left_{season_type}'
+            if session_key not in session:
+                session[session_key] = random.choice(config['images']['left'])
+            left_img = session[session_key]
+        else:
+            # セッションが利用できない場合は最初の画像を使用
+            left_img = config['images']['left'][0]
         
         images.append({
             'path': f"img/{config['base_path']}/{left_img}",

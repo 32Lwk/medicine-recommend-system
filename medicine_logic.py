@@ -727,6 +727,128 @@ else:
     logger.error("Error: OpenAI API key not found. Please set it in environment variables or .env file.")
 
 # --- CSVファイルの読み込み ---
+def clean_csv_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    CSVデータのクリーニング: 成分名の表記ゆれの統一、欠損値の補完、効能効果の正規化
+    
+    Args:
+        df: クリーニング前のDataFrame
+    
+    Returns:
+        クリーニング後のDataFrame
+    """
+    if df is None or df.empty:
+        logger.warning("CSVデータが空です。クリーニングをスキップします。")
+        return df
+    
+    logger.info("CSVデータのクリーニングを開始します...")
+    df_cleaned = df.copy()
+    
+    # 1. 成分名の表記ゆれの統一
+    if '成分' in df_cleaned.columns:
+        # INGREDIENT_DICTIONARYから正規化マッピングを作成
+        try:
+            from rule_based_recommendation import INGREDIENT_DICTIONARY
+            ingredient_mapping = {}
+            for canonical_name, info in INGREDIENT_DICTIONARY.items():
+                synonyms = info.get('synonyms', [])
+                for synonym in synonyms:
+                    ingredient_mapping[synonym.lower()] = canonical_name
+            
+            def normalize_ingredient_name(ingredients_str):
+                """成分名を正規化"""
+                if pd.isna(ingredients_str) or not isinstance(ingredients_str, str):
+                    return ingredients_str
+                
+                # 改行や区切り文字で分割
+                parts = re.split(r'[\n、,/，／・]+', ingredients_str)
+                normalized_parts = []
+                
+                for part in parts:
+                    part = part.strip()
+                    if not part:
+                        continue
+                    
+                    # 正規化マッピングを適用
+                    part_lower = part.lower()
+                    if part_lower in ingredient_mapping:
+                        normalized_parts.append(ingredient_mapping[part_lower])
+                    else:
+                        # マッピングにない場合はそのまま（既に正規化されている可能性）
+                        normalized_parts.append(part)
+                
+                # 重複を除去して結合
+                unique_parts = list(dict.fromkeys(normalized_parts))  # 順序を保持しながら重複除去
+                return '\n'.join(unique_parts)
+            
+            df_cleaned['成分'] = df_cleaned['成分'].apply(normalize_ingredient_name)
+            logger.info("成分名の表記ゆれを統一しました。")
+        except ImportError:
+            logger.warning("INGREDIENT_DICTIONARYをインポートできませんでした。成分名の正規化をスキップします。")
+    
+    # 2. 欠損値の補完
+    # 効能効果が空の場合は、医薬品の種類から推測（簡易的な補完）
+    if '効能効果' in df_cleaned.columns:
+        missing_efficacy_count = df_cleaned['効能効果'].isna().sum()
+        if missing_efficacy_count > 0:
+            # 医薬品の種類に基づいてデフォルト効能効果を設定（簡易的）
+            default_efficacy_map = {
+                '解熱鎮痛薬': '発熱、頭痛、生理痛',
+                '風邪薬': '風邪の諸症状',
+                '胃腸薬': '胃腸の不調',
+                '漢方薬': '体質改善',
+                '外用薬（のど）': 'のどの痛み',
+                '外用薬（皮膚）': '皮膚の炎症'
+            }
+            
+            if '医薬品の種類' in df_cleaned.columns:
+                for idx, row in df_cleaned.iterrows():
+                    if pd.isna(row['効能効果']):
+                        medicine_type = row.get('医薬品の種類', '')
+                        if medicine_type in default_efficacy_map:
+                            df_cleaned.at[idx, '効能効果'] = default_efficacy_map[medicine_type]
+            
+            logger.info(f"効能効果の欠損値を補完しました（{missing_efficacy_count}件）。")
+    
+    # 成分が空の場合は、医薬品の種類から推測（簡易的な補完）
+    if '成分' in df_cleaned.columns:
+        missing_ingredient_count = df_cleaned['成分'].isna().sum()
+        if missing_ingredient_count > 0:
+            # 成分が空の場合は空文字列に統一（後続処理で扱いやすくする）
+            df_cleaned['成分'] = df_cleaned['成分'].fillna('')
+            logger.info(f"成分の欠損値を補完しました（{missing_ingredient_count}件）。")
+    
+    # 3. 効能効果の正規化
+    if '効能効果' in df_cleaned.columns:
+        # 症状名の正規化マッピング（「生理不順」→「月経不順」など）
+        efficacy_normalization_map = {
+            '生理不順': '月経不順',
+            '生理異常': '月経不順',
+            '生理痛': '月経痛',
+            '生理の痛み': '月経痛',
+            '血の道症': '月経不順',  # より広義な表現を月経不順に統一
+            '血の道': '月経不順'
+        }
+        
+        def normalize_efficacy(efficacy_str):
+            """効能効果を正規化"""
+            if pd.isna(efficacy_str) or not isinstance(efficacy_str, str):
+                return efficacy_str
+            
+            normalized = efficacy_str
+            for old_term, new_term in efficacy_normalization_map.items():
+                # 単語境界を考慮した置換
+                pattern = r'\b' + re.escape(old_term) + r'\b'
+                normalized = re.sub(pattern, new_term, normalized)
+            
+            return normalized
+        
+        df_cleaned['効能効果'] = df_cleaned['効能効果'].apply(normalize_efficacy)
+        logger.info("効能効果の正規化を完了しました。")
+    
+    logger.info("CSVデータのクリーニングが完了しました。")
+    return df_cleaned
+
 df = None
 csv_load_status = {
     "success": False,
@@ -742,6 +864,8 @@ encodings = ['utf-8', 'shift_jis', 'cp932', 'euc-jp']
 for encoding in encodings:
     try:
         df = pd.read_csv(CSV_PATH, encoding=encoding)
+        # CSVデータのクリーニングを実行
+        df = clean_csv_data(df)
         csv_load_status["success"] = True
         csv_load_status["encoding"] = encoding
         csv_load_status["row_count"] = len(df)
@@ -2502,4 +2626,537 @@ def get_crisis_support_resources(language='ja'):
         'message': messages.get(language, messages['ja'])['message'],
         'emergency_message': messages.get(language, messages['ja'])['emergency'],
         'resources': resources
+    }
+
+def detect_severity_escalation(user_message: str, nlu_result: dict, user_info: dict) -> dict:
+    """
+    症状の重症度による受診勧奨の判定
+    
+    Args:
+        user_message: ユーザーの入力メッセージ
+        nlu_result: NLU解析結果
+        user_info: ユーザー情報
+    
+    Returns:
+        {
+            "needs_escalation": True/False,
+            "reason": "受診勧奨理由",
+            "urgency": "high/medium/low",
+            "message": "受診勧奨メッセージ"
+        }
+    """
+    needs_escalation = False
+    reason = ""
+    urgency = "low"
+    message = ""
+    
+    user_message_lower = user_message.lower() if user_message else ""
+    
+    # 「生理痛が年々ひどくなっている」の検出
+    # パターンマッチング
+    temporal_keywords = ['年々', '徐々に', 'だんだん', '次第に', '段々', 'だんだんと', '徐々', '年を追うごとに', '年を重ねるごとに']
+    severity_keywords = ['ひどくなっている', '悪化', '悪化している', 'ひどくなった', '強くなっている', '強くなった', 'つらくなっている', 'つらくなった']
+    pain_keywords = ['生理痛', '月経痛', '腹痛', 'お腹の痛み', '下腹部痛', '下腹部の痛み']
+    
+    # 時間的キーワードと重症度キーワードの組み合わせ
+    has_temporal = any(kw in user_message_lower for kw in temporal_keywords)
+    has_severity = any(kw in user_message_lower for kw in severity_keywords)
+    has_pain = any(kw in user_message_lower for kw in pain_keywords)
+    
+    if has_temporal and has_severity and has_pain:
+        needs_escalation = True
+        reason = "生理痛が年々ひどくなっている"
+        urgency = "high"
+        message = "生理痛が年々ひどくなっている場合、子宮内膜症などの疾患が隠れている可能性があります。婦人科での受診をお勧めします。"
+        logger.info(f"🚨 受診勧奨: {reason} (緊急度: {urgency})")
+        return {
+            "needs_escalation": needs_escalation,
+            "reason": reason,
+            "urgency": urgency,
+            "message": message
+        }
+    
+    # NLUで症状の進行パターンを分析
+    if nlu_result:
+        symptoms = nlu_result.get("symptoms", [])
+        for symptom in symptoms:
+            symptom_name = symptom.get("name", "")
+            # 症状の進行パターンをチェック（NLU結果に進行情報が含まれている場合）
+            if "進行" in str(symptom) or "悪化" in str(symptom):
+                if "生理痛" in symptom_name or "月経痛" in symptom_name:
+                    needs_escalation = True
+                    reason = "生理痛の進行パターンが検出されました"
+                    urgency = "high"
+                    message = "生理痛が進行している場合、子宮内膜症などの疾患が隠れている可能性があります。婦人科での受診をお勧めします。"
+                    logger.info(f"🚨 受診勧奨: {reason} (緊急度: {urgency})")
+                    return {
+                        "needs_escalation": needs_escalation,
+                        "reason": reason,
+                        "urgency": urgency,
+                        "message": message
+                    }
+    
+    # 「出血量が異常に多い（過多月経）」の検出
+    # 明示的なキーワード
+    excessive_bleeding_keywords = [
+        '出血量が多い', '過多月経', 'ナプキンがすぐにいっぱいになる',
+        '出血が多い', '経血量が多い', '出血が異常に多い', '出血量が異常',
+        '大量出血', '出血が止まらない', '出血が長引く'
+    ]
+    
+    # 重症度キーワードと「出血」「経血」の組み合わせ
+    severity_modifiers = ['異常に', '非常に', '大量に', 'すごく', 'とても', 'かなり', 'めちゃくちゃ']
+    bleeding_keywords = ['出血', '経血', '生理の出血', '月経の出血']
+    
+    # 明示的なキーワードをチェック
+    if any(kw in user_message_lower for kw in excessive_bleeding_keywords):
+        needs_escalation = True
+        reason = "過多月経の可能性"
+        urgency = "high"
+        message = "出血量が異常に多い場合、子宮筋腫や子宮内膜症などの疾患が隠れている可能性があります。婦人科での受診をお勧めします。"
+        logger.info(f"🚨 受診勧奨: {reason} (緊急度: {urgency})")
+        return {
+            "needs_escalation": needs_escalation,
+            "reason": reason,
+            "urgency": urgency,
+            "message": message
+        }
+    
+    # 重症度キーワードと出血キーワードの組み合わせ
+    has_severity_modifier = any(kw in user_message_lower for kw in severity_modifiers)
+    has_bleeding = any(kw in user_message_lower for kw in bleeding_keywords)
+    
+    if has_severity_modifier and has_bleeding:
+        needs_escalation = True
+        reason = "異常な出血量の可能性"
+        urgency = "high"
+        message = "出血量が異常に多い場合、子宮筋腫や子宮内膜症などの疾患が隠れている可能性があります。婦人科での受診をお勧めします。"
+        logger.info(f"🚨 受診勧奨: {reason} (緊急度: {urgency})")
+        return {
+            "needs_escalation": needs_escalation,
+            "reason": reason,
+            "urgency": urgency,
+            "message": message
+        }
+    
+    # NLUで過多月経の症状を抽出
+    if nlu_result:
+        symptoms = nlu_result.get("symptoms", [])
+        for symptom in symptoms:
+            symptom_name = symptom.get("name", "")
+            if "過多月経" in symptom_name or "出血量" in symptom_name:
+                needs_escalation = True
+                reason = "過多月経の症状が検出されました"
+                urgency = "high"
+                message = "出血量が異常に多い場合、子宮筋腫や子宮内膜症などの疾患が隠れている可能性があります。婦人科での受診をお勧めします。"
+                logger.info(f"🚨 受診勧奨: {reason} (緊急度: {urgency})")
+                return {
+                    "needs_escalation": needs_escalation,
+                    "reason": reason,
+                    "urgency": urgency,
+                    "message": message
+                }
+    
+    return {
+        "needs_escalation": False,
+        "reason": "",
+        "urgency": "",
+        "message": ""
+    }
+
+def generate_doctor_referral_message(escalation_info: dict) -> dict:
+    """
+    受診勧奨メッセージの生成
+    
+    Args:
+        escalation_info: detect_severity_escalationの結果
+    
+    Returns:
+        構造化された受診勧奨メッセージ
+    """
+    if not escalation_info.get("needs_escalation", False):
+        return {}
+    
+    reason = escalation_info.get("reason", "")
+    urgency = escalation_info.get("urgency", "medium")
+    message = escalation_info.get("message", "")
+    
+    # 推奨される診療科を決定
+    recommended_department = "婦人科"
+    
+    # 緊急度に応じたメッセージの調整
+    if urgency == "high":
+        urgency_message = "早めに"
+    elif urgency == "medium":
+        urgency_message = "なるべく早く"
+    else:
+        urgency_message = "可能な限り"
+    
+    structured_message = {
+        "title": "受診をお勧めします",
+        "reason": reason,
+        "recommended_department": recommended_department,
+        "urgency": urgency,
+        "urgency_message": urgency_message,
+        "message": message,
+        "additional_info": "市販薬で対応できない症状の可能性があります。専門医の診察を受けることをお勧めします。"
+    }
+    
+    return structured_message
+
+def determine_pain_urgency(user_message: str, nlu_result: dict) -> dict:
+    """
+    痛みの緊急性判定（痛みが主訴か随伴症状かを判定）
+    
+    Args:
+        user_message: ユーザーの入力メッセージ
+        nlu_result: NLU解析結果
+    
+    Returns:
+        {
+            "is_primary": True/False,
+            "pain_level": "severe/moderate/mild",
+            "keywords": ["検出されたキーワード"]
+        }
+    """
+    user_message_lower = user_message.lower() if user_message else ""
+    detected_keywords = []
+    
+    # キーワードの優先度判定
+    primary_pain_keywords = ['痛い', '激痛', '痛くて辛い', '痛くてつらい', '痛みが強い', '痛みがひどい', '痛みで', '痛みのため']
+    secondary_pain_keywords = ['たまに痛む', '時々痛む', '痛むことがある', '痛みがある', '痛みを感じる']
+    
+    # 文の構造判定
+    # 「痛くて辛い」などの主訴パターン
+    primary_patterns = [
+        r'痛くて\s*辛い',
+        r'痛くて\s*つらい',
+        r'痛みが\s*強い',
+        r'痛みが\s*ひどい',
+        r'激痛',
+        r'痛みで\s*',
+        r'痛みのため\s*'
+    ]
+    
+    # 「たまに痛む」などの随伴症状パターン
+    secondary_patterns = [
+        r'たまに\s*痛む',
+        r'時々\s*痛む',
+        r'痛む\s*ことが\s*ある',
+        r'痛みが\s*ある',
+        r'痛みを\s*感じる'
+    ]
+    
+    # キーワードの優先度チェック
+    has_primary_keyword = False
+    has_secondary_keyword = False
+    
+    for keyword in primary_pain_keywords:
+        if keyword in user_message_lower:
+            has_primary_keyword = True
+            detected_keywords.append(keyword)
+            break
+    
+    if not has_primary_keyword:
+        for keyword in secondary_pain_keywords:
+            if keyword in user_message_lower:
+                has_secondary_keyword = True
+                detected_keywords.append(keyword)
+                break
+    
+    # 文の構造チェック
+    import re
+    has_primary_pattern = False
+    has_secondary_pattern = False
+    
+    for pattern in primary_patterns:
+        if re.search(pattern, user_message_lower):
+            has_primary_pattern = True
+            break
+    
+    if not has_primary_pattern:
+        for pattern in secondary_patterns:
+            if re.search(pattern, user_message_lower):
+                has_secondary_pattern = True
+                break
+    
+    # NLUで症状の重要度を分析
+    nlu_primary = False
+    if nlu_result:
+        symptoms = nlu_result.get("symptoms", [])
+        # 症状の順序や重要度フラグをチェック（NLU結果に含まれている場合）
+        for i, symptom in enumerate(symptoms):
+            symptom_name = symptom.get("name", "")
+            if "痛" in symptom_name or "痛み" in symptom_name:
+                # 最初の症状または重要度が高い場合は主訴の可能性が高い
+                if i == 0 or symptom.get("priority", 0) > 0.7:
+                    nlu_primary = True
+                    break
+    
+    # 判定結果の統合
+    is_primary = has_primary_keyword or has_primary_pattern or nlu_primary
+    
+    # 痛みのレベル判定
+    pain_level = "mild"
+    if any(kw in user_message_lower for kw in ['激痛', '激しい痛み', '強い痛み', 'ひどい痛み']):
+        pain_level = "severe"
+    elif any(kw in user_message_lower for kw in ['痛い', '痛み', '痛む']):
+        pain_level = "moderate"
+    
+    logger.info(f"🔍 痛みの緊急性判定: is_primary={is_primary}, pain_level={pain_level}, keywords={detected_keywords}")
+    
+    return {
+        "is_primary": is_primary,
+        "pain_level": pain_level,
+        "keywords": detected_keywords
+    }
+
+def detect_digestive_sensitivity(user_message: str, nlu_result: dict, user_info: dict) -> dict:
+    """
+    消化器症状の検出（お腹を壊しやすい、下痢しやすいなど）
+    
+    Args:
+        user_message: ユーザーの入力メッセージ
+        nlu_result: NLU解析結果
+        user_info: ユーザー情報
+    
+    Returns:
+        {
+            "has_digestive_sensitivity": True/False,
+            "reason": "検出理由"
+        }
+    """
+    has_digestive_sensitivity = False
+    reason = ""
+    
+    user_message_lower = user_message.lower() if user_message else ""
+    
+    # 明示的なキーワードを検出
+    digestive_keywords = ['お腹を壊しやすい', '下痢しやすい', 'お腹が弱い', '胃腸が弱い', '下痢をしやすい', 'お腹を下しやすい']
+    if any(kw in user_message_lower for kw in digestive_keywords):
+        has_digestive_sensitivity = True
+        reason = "明示的なキーワード検出"
+    
+    # NLUで「消化器症状」や「下痢」の既往歴を抽出
+    if not has_digestive_sensitivity and nlu_result:
+        symptoms = nlu_result.get("symptoms", [])
+        for symptom in symptoms:
+            symptom_name = symptom.get("name", "")
+            if "下痢" in symptom_name or "消化器" in symptom_name:
+                has_digestive_sensitivity = True
+                reason = "NLU解析による検出"
+                break
+    
+    # ユーザー属性（user_info）から判定
+    if not has_digestive_sensitivity:
+        if user_info.get('digestive_sensitivity') is True:
+            has_digestive_sensitivity = True
+            reason = "ユーザー属性による検出"
+    
+    return {
+        "has_digestive_sensitivity": has_digestive_sensitivity,
+        "reason": reason
+    }
+
+def extract_user_preferences(user_message: str, nlu_result: dict = None, user_info: dict = None) -> dict:
+    """
+    ユーザー要望を抽出（成分・バランス、飲みやすさ、随伴症状など）
+    
+    Args:
+        user_message: ユーザーのメッセージ
+        nlu_result: NLU解析結果（オプション）
+        user_info: ユーザー情報（オプション）
+    
+    Returns:
+        {
+            "ingredient_balance": True/False,  # 成分・バランス重視
+            "ease_of_taking": True/False,      # 飲みやすさ重視
+            "accompanying_symptoms": True/False,  # 随伴症状対応
+            "confidence": 0.0-1.0,            # 確信度
+            "reasons": List[str]               # 判定理由
+        }
+    """
+    if not user_message:
+        return {
+            "ingredient_balance": False,
+            "ease_of_taking": False,
+            "accompanying_symptoms": False,
+            "confidence": 0.0,
+            "reasons": []
+        }
+    
+    user_message_lower = user_message.lower()
+    reasons = []
+    confidence = 0.0
+    
+    # 成分・バランス重視のキーワード（計画要件: ユーザー要望抽出の改善）
+    ingredient_balance_keywords = [
+        "成分", "バランス", "配合", "ビタミン", "栄養", "総合", "複合",
+        "成分重視", "バランス重視", "配合成分", "成分のバランス",
+        "ビタミン配合", "栄養補給", "総合的な", "複合的な",
+        "成分・バランス", "成分・バランス重視", "成分バランス",  # 追加
+        "生薬重視", "漢方重視", "複合成分"  # 追加
+    ]
+    
+    # 飲みやすさ重視のキーワード（計画要件: ユーザー要望抽出の改善）
+    ease_of_taking_keywords = [
+        "飲みやすい", "飲みやすさ", "錠剤", "カプセル", "顆粒", "顆粒が苦手",
+        "味が苦手", "漢方の味", "苦い", "飲みにくい", "服用しやすい",
+        "簡単に", "手軽に", "1日1回", "1日2回", "服用回数が少ない",
+        "飲みやすさ重視", "服用しやすさ", "手軽に飲める",
+        "錠剤タイプ", "錠剤タイプが", "錠剤が", "カプセルタイプ",  # 追加
+        "顆粒苦手", "味が苦手", "携帯しやすい"  # 追加
+    ]
+    
+    # 随伴症状対応のキーワード（計画要件: ユーザー要望抽出の改善）
+    accompanying_symptoms_keywords = [
+        "随伴症状", "併発", "一緒に", "同時に", "複数の症状", "いろいろな症状",
+        "ニキビ", "肌荒れ", "腰痛", "頭痛", "めまい", "冷え症", "むくみ",
+        "複数の悩み", "様々な症状", "多様な症状", "幅広い症状",
+        "あれこれ", "あれこれ気になる", "色々気になる", "色々な症状",  # 追加
+        "複合的な症状", "全体的に", "まとめて", "随伴症状対応"  # 追加
+    ]
+    
+    # 成分・バランス重視の判定
+    ingredient_balance = False
+    ingredient_balance_count = 0
+    for keyword in ingredient_balance_keywords:
+        if keyword in user_message_lower:
+            ingredient_balance = True
+            ingredient_balance_count += 1
+            reasons.append(f"成分・バランス重視: '{keyword}'を検出")
+    
+    # 飲みやすさ重視の判定
+    ease_of_taking = False
+    ease_of_taking_count = 0
+    for keyword in ease_of_taking_keywords:
+        if keyword in user_message_lower:
+            ease_of_taking = True
+            ease_of_taking_count += 1
+            reasons.append(f"飲みやすさ重視: '{keyword}'を検出")
+    
+    # 随伴症状対応の判定
+    accompanying_symptoms = False
+    accompanying_symptoms_count = 0
+    
+    # 明示的なキーワード
+    for keyword in accompanying_symptoms_keywords:
+        if keyword in user_message_lower:
+            accompanying_symptoms = True
+            accompanying_symptoms_count += 1
+            reasons.append(f"随伴症状対応: '{keyword}'を検出")
+    
+    # NLU結果から複数の症状が検出されている場合、随伴症状対応と推測
+    if nlu_result:
+        symptoms = nlu_result.get("symptoms", [])
+        if len(symptoms) >= 2:
+            accompanying_symptoms = True
+            accompanying_symptoms_count += 1
+            reasons.append(f"随伴症状対応: 複数の症状が検出されました（{len(symptoms)}個）")
+    
+    # 確信度の計算
+    total_keywords = ingredient_balance_count + ease_of_taking_count + accompanying_symptoms_count
+    if total_keywords >= 3:
+        confidence = min(1.0, 0.7 + (total_keywords - 3) * 0.1)
+    elif total_keywords >= 2:
+        confidence = 0.5 + (total_keywords - 2) * 0.1
+    elif total_keywords >= 1:
+        confidence = 0.3 + (total_keywords - 1) * 0.1
+    else:
+        confidence = 0.0
+    
+    # 症状から推測（明示的な指定がない場合）
+    if not ingredient_balance and not ease_of_taking and not accompanying_symptoms:
+        # ビタミンや総合的な表現がある場合、成分・バランス重視と推測
+        if any(kw in user_message_lower for kw in ["ビタミン", "総合", "複合", "配合"]):
+            ingredient_balance = True
+            confidence = max(confidence, 0.2)
+            reasons.append("成分・バランス重視: ビタミンや総合的な表現から推測")
+        
+        # 錠剤や服用回数に関する言及がある場合、飲みやすさ重視と推測
+        if any(kw in user_message_lower for kw in ["錠剤", "カプセル", "1日1回", "1日2回", "服用回数"]):
+            ease_of_taking = True
+            confidence = max(confidence, 0.2)
+            reasons.append("飲みやすさ重視: 錠剤や服用回数に関する言及から推測")
+        
+        # 複数の症状が検出されている場合、随伴症状対応と推測
+        if nlu_result and len(nlu_result.get("symptoms", [])) >= 2:
+            accompanying_symptoms = True
+            confidence = max(confidence, 0.2)
+            reasons.append("随伴症状対応: 複数の症状から推測")
+    
+    logger.info(f"📋 ユーザー要望抽出: 成分・バランス={ingredient_balance}, 飲みやすさ={ease_of_taking}, 随伴症状={accompanying_symptoms}, 確信度={confidence:.2f}")
+    if reasons:
+        logger.debug(f"ユーザー要望抽出の詳細: {reasons}")
+    
+    return {
+        "ingredient_balance": ingredient_balance,
+        "ease_of_taking": ease_of_taking,
+        "accompanying_symptoms": accompanying_symptoms,
+        "confidence": confidence,
+        "reasons": reasons
+    }
+
+def detect_postpartum_breastfeeding(user_message: str, nlu_result: dict, user_info: dict) -> dict:
+    """
+    産後・授乳中の判定
+    
+    Args:
+        user_message: ユーザーの入力メッセージ
+        nlu_result: NLU解析結果
+        user_info: ユーザー情報
+    
+    Returns:
+        {
+            "is_postpartum": True/False,
+            "is_breastfeeding": True/False,
+            "reason": "検出理由"
+        }
+    """
+    is_postpartum = False
+    is_breastfeeding = False
+    reason = ""
+    
+    user_message_lower = user_message.lower() if user_message else ""
+    
+    # 明示的キーワード: 「産後」「授乳中」「授乳」などのキーワードを検出
+    postpartum_keywords = ['産後', '出産後', '分娩後']
+    breastfeeding_keywords = ['授乳中', '授乳', '母乳', '授乳している', '授乳期間中']
+    
+    if any(kw in user_message_lower for kw in postpartum_keywords):
+        is_postpartum = True
+        reason = "明示的なキーワード検出（産後）"
+    
+    if any(kw in user_message_lower for kw in breastfeeding_keywords):
+        is_breastfeeding = True
+        if not reason:
+            reason = "明示的なキーワード検出（授乳中）"
+        else:
+            reason += "、授乳中"
+    
+    # NLP抽出: NLUで「産後」「授乳」などの状態を抽出
+    if nlu_result:
+        # NLU結果から産後・授乳関連の情報を抽出（必要に応じて実装）
+        # 現時点では明示的なキーワードとuser_infoを確認
+        pass
+    
+    # ユーザー属性（user_info）から判定
+    if not is_postpartum:
+        if user_info.get('postpartum') is True:
+            is_postpartum = True
+            if not reason:
+                reason = "ユーザー属性による検出（産後）"
+    
+    if not is_breastfeeding:
+        if user_info.get('breastfeeding') is True:
+            is_breastfeeding = True
+            if not reason:
+                reason = "ユーザー属性による検出（授乳中）"
+            else:
+                reason += "、授乳中"
+    
+    return {
+        "is_postpartum": is_postpartum,
+        "is_breastfeeding": is_breastfeeding,
+        "reason": reason
     } 
