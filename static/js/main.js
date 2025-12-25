@@ -4416,7 +4416,7 @@
                 messageDiv.className = 'message bot';
                 
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (message.content && (message.content.includes('<div class="recommendation-result">') || 
+                if (message.content && (message.content.includes('<div class="recommendation-result') || 
                                        message.content.includes('<div class="chat-response">'))) {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示
                     // 管理画面専用のスコア情報を除去
@@ -4457,7 +4457,8 @@
                     
                     cleanedContent = tempDiv.innerHTML;
                     
-                    messageDiv.innerHTML = cleanedContent;
+                    // message-contentクラスでラップしてHTMLを正しくレンダリング
+                    messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
                 }
                 // 危機対応メッセージの特別表示
                 else if (message.crisis_support) {
