@@ -3157,7 +3157,7 @@ def index():
                         info_message_html = escaped_info_message.replace('\n', '<br>')
                         info_bot_response = {
                             'type': 'bot',
-                            'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000; white-space: pre-line;">{info_message_html}</p><button onclick="editUserInfo()" style="margin-top: 10px; padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">情報を修正</button></div>',
+                            'content': f'<div class="chat-response user-info-notification"><p>{info_message_html}</p><button class="edit-info-btn" onclick="editUserInfo()">情報を修正</button></div>',
                             'diagnosis': None,
                             'timestamp': datetime.now().isoformat()
                         }
@@ -3298,7 +3298,7 @@ def index():
                                     escaped_gender_message = html.escape(gender_notification_message_from_nlu)
                                     gender_bot_response = {
                                         'type': 'bot',
-                                        'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000;">{escaped_gender_message}</p></div>',
+                                        'content': f'<div class="chat-response gender-notification"><p>{escaped_gender_message}</p></div>',
                                         'diagnosis': None,
                                         'timestamp': datetime.now().isoformat()
                                     }
@@ -3347,7 +3347,7 @@ def index():
                                     escaped_gender_message = html.escape(gender_notification_message_from_nlu)
                                     gender_bot_response = {
                                         'type': 'bot',
-                                        'content': f'<div class="chat-response" style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><p style="margin: 0; color: #000;">{escaped_gender_message}</p></div>',
+                                        'content': f'<div class="chat-response gender-notification"><p>{escaped_gender_message}</p></div>',
                                         'diagnosis': None,
                                         'timestamp': datetime.now().isoformat()
                                     }
@@ -3506,19 +3506,19 @@ def index():
                             # doctor_consultationの内容を改行で表示
                             doctor_consultation_html = escaped_doctor_consultation.replace('\n', '<br>')
                             bot_content = f"""
-<div class="chat-response" style="padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
-    <h4 style="margin: 0 0 10px 0; color: #856404;">⚠️ 医薬品種類が判定できませんでした</h4>
-    <div style="margin: 10px 0; color: #856404; white-space: pre-line;">{doctor_consultation_html}</div>
-    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーメッセージはいかがでしたか？</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+<div class="chat-response error-notification">
+    <h4>⚠️ 医薬品種類が判定できませんでした</h4>
+    <div class="error-message-content">{doctor_consultation_html}</div>
+    <div class="feedback-buttons">
+        <p class="feedback-question">このエラーメッセージはいかがでしたか？</p>
+        <div class="feedback-buttons-container">
+            <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})">
                 適切
             </button>
-            <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})">
                 不適切
             </button>
-            <button class="bug-report-btn" onclick="handleSecurityReportFromButton(this)" {bug_report_data_attrs} style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            <button class="bug-report-btn" onclick="handleSecurityReportFromButton(this)" {bug_report_data_attrs}>
                 🐛 不具合報告
             </button>
         </div>
