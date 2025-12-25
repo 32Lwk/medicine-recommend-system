@@ -68,7 +68,7 @@ except Exception as e:
 from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
 from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
-from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
+from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation, is_diagnosis_term
 from debug_logger import performance_stats, network_logs, add_network_log
 from analytics import log_access_analytics, get_access_statistics
 from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
@@ -1104,8 +1104,7 @@ def index():
                         new_category = response.get('new_category')
                         if new_category == 'Emergency':
                             # 緊急対応フローへ
-                            emergency_message = """
-⚠️ 緊急対応が必要な症状の可能性があります。
+                            emergency_message = """⚠️ 緊急対応が必要な症状の可能性があります。
 速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
 """
                             bot_response = {
@@ -1468,8 +1467,7 @@ def index():
                             return jsonify({'status': 'ok', 'message_count': message_count})
                         else:
                             # 0.5以上なら緊急対応フローへ（通常のconfidenceチェックをスキップ）
-                            emergency_message = """
-⚠️ 緊急対応が必要な症状の可能性があります。
+                            emergency_message = """⚠️ 緊急対応が必要な症状の可能性があります。
 速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
 市販薬での対応は推奨できません。医師の診断を受けてください。
 """
@@ -2302,9 +2300,11 @@ def index():
                     logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
                     
                     # 言語を検出（すべての入力に対して実行）
-                    detected_language = detect_language(user_message)
+                    # セッションの既存言語情報を考慮して検出
+                    session_language = session.get('detected_language', 'ja')
+                    detected_language = detect_language(user_message, session_language=session_language)
                     session['detected_language'] = detected_language
-                    logger.info(f"🌍 検出された言語: {detected_language}")
+                    logger.info(f"🌍 検出された言語: {detected_language} (セッション既存言語: {session_language})")
                     
                     # 初回チャットで症状入力の場合は属性抽出をスキップして症状分析に進む
                     if len(session.get('messages', [])) <= 1 and is_symptom_input(user_message):
@@ -2839,9 +2839,61 @@ def index():
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
             if not is_question:
                 # 言語を検出（症状入力時にも実行）
-                detected_language = detect_language(user_message)
+                # セッションの既存言語情報を考慮して検出
+                session_language = session.get('detected_language', 'ja')
+                detected_language = detect_language(user_message, session_language=session_language)
                 session['detected_language'] = detected_language
-                logger.info(f"🌍 検出された言語: {detected_language}")
+                logger.info(f"🌍 検出された言語: {detected_language} (セッション既存言語: {session_language})")
+                
+                # 診断名の検出（症状入力処理の前にチェック）
+                is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_message)
+                if is_diagnosis:
+                    logger.info(f"🏥 診断名が検出されました: {diagnosis_type} - {user_message}")
+                    bot_response = {
+                        'type': 'bot',
+                        'content': diagnosis_response['message'],
+                        'diagnosis': None,
+                        'escalation_required': diagnosis_response.get('escalation_required', False),
+                        'escalation_reason': diagnosis_response.get('escalation_reason', '')
+                    }
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # DB保存処理
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session.get('messages', []),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'created_at': datetime.now().isoformat(),
+                                'last_updated': datetime.now().isoformat()
+                            }
+                        else:
+                            session_data['messages'] = session.get('messages', [])
+                            session_data['last_updated'] = datetime.now().isoformat()
+                        save_session_to_db(sid, session_data)
+                    
+                    # 翻訳処理
+                    if detected_language != 'ja' and bot_response.get('content'):
+                        try:
+                            translated_content = translate_medicine_recommendation(
+                                bot_response['content'], 
+                                detected_language, 
+                                recommendation_client
+                            )
+                            if translated_content:
+                                bot_response['content'] = translated_content
+                                logger.info(f"✅ 診断名返信の翻訳完了: {detected_language}")
+                        except Exception as e:
+                            logger.error(f"❌ 診断名返信の翻訳エラー: {e}")
+                    
+                    return jsonify({
+                        'messages': session.get('messages', []),
+                        'session_id': sid
+                    })
                 
                 # 医薬品相談回答処理の開始時にフラグを設定
                 session['is_medicine_consultation'] = True
@@ -3569,6 +3621,57 @@ def index():
                 try:
                     logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
                     analysis_result = analyze_symptoms_and_medicine_type(user_message, recommendation_client)
+                    
+                    # 診断名が検出された場合の処理
+                    if analysis_result.get('is_diagnosis', False):
+                        diagnosis_response = analysis_result.get('diagnosis_response', {})
+                        logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type結果）: {analysis_result.get('diagnosis_type')}")
+                        bot_response = {
+                            'type': 'bot',
+                            'content': diagnosis_response.get('message', '診断名が検出されました。具体的な症状を教えていただけますか？'),
+                            'diagnosis': None,
+                            'escalation_required': diagnosis_response.get('escalation_required', False),
+                            'escalation_reason': diagnosis_response.get('escalation_reason', '')
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # DB保存処理
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': session.get('messages', []),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'created_at': datetime.now().isoformat(),
+                                    'last_updated': datetime.now().isoformat()
+                                }
+                            else:
+                                session_data['messages'] = session.get('messages', [])
+                                session_data['last_updated'] = datetime.now().isoformat()
+                            save_session_to_db(sid, session_data)
+                        
+                        # 翻訳処理
+                        if detected_language != 'ja' and bot_response.get('content'):
+                            try:
+                                translated_content = translate_medicine_recommendation(
+                                    bot_response['content'], 
+                                    detected_language, 
+                                    recommendation_client
+                                )
+                                if translated_content:
+                                    bot_response['content'] = translated_content
+                                    logger.info(f"✅ 診断名返信の翻訳完了: {detected_language}")
+                            except Exception as e:
+                                logger.error(f"❌ 診断名返信の翻訳エラー: {e}")
+                        
+                        return jsonify({
+                            'messages': session.get('messages', []),
+                            'session_id': sid
+                        })
+                    
                     medicine_type = analysis_result.get('medicine_type')
                     symptoms = analysis_result.get('symptoms', [])
                     
