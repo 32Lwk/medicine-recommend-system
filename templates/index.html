@@ -86,22 +86,14 @@
         }
         /* 雪のアニメーション */
         .snow-container {
-            position: fixed;
+            position: absolute;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             width: 100%;
-            max-width: 900px;
-            height: 100vh;
-            height: 100dvh;
+            height: 100%;
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
-        }
-        @supports (-webkit-touch-callout: none) {
-            .snow-container {
-                height: -webkit-fill-available;
-            }
         }
         .snowflake {
             position: absolute;
@@ -218,10 +210,10 @@
          alt="雪だるま" 
          class="winter-decoration snowman">
     
-    <!-- 雪のアニメーション（chat-container全体をカバー） -->
-    <div class="snow-container" id="snowContainer"></div>
-    
     <div class="chat-messages" id="chatMessages">
+        <!-- 冬仕様の装飾 -->
+        <div class="snow-container" id="snowContainer"></div>
+        
         <div class="message bot" data-initial-message="true">
             <div class="message-content">
                 <span id="initial-greeting"></span><br>

@@ -21,9 +21,19 @@ services:
       - key: GUNICORN_WORKERS
         value: 2
         sync: false
+        # 20人同時アクセス対応の場合: 5に変更
       - key: GUNICORN_WORKER_CLASS
         value: sync
         sync: false
+        # 20人同時アクセス対応の場合: geventに変更（非同期処理）
+      - key: DB_MIN_CONNECTIONS
+        value: 2
+        sync: false
+        # 20人同時アクセス対応の場合: 5に変更
+      - key: DB_MAX_CONNECTIONS
+        value: 10
+        sync: false
+        # 20人同時アクセス対応の場合: 20に変更（インスタンスあたり）
       # 注意: DATABASE_URL, OPENAI_API_KEY などの機密情報は
       # Render.comのダッシュボードで直接設定してください（sync: false）
     
