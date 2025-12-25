@@ -2023,7 +2023,7 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
         traceback.print_exc()
         return {
             "status": "error",
-            "reason": f"システムエラー: {str(e)}"
+            "reason": f"システムエラー({str(e)})"
         }
 
 def detect_medicine_name_in_query(user_message, medicine_df):
