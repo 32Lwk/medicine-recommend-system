@@ -7,7 +7,16 @@ import pandas as pd
 import re
 import os
 import unicodedata
+import logging
 from typing import Dict, List, Optional, Tuple, Any
+
+logger = logging.getLogger(__name__)
+
+# DEBUG_MODEはrule_based_recommendation.pyから取得（グローバル変数として定義されていない場合はFalse）
+try:
+    from rule_based_recommendation import DEBUG_MODE
+except ImportError:
+    DEBUG_MODE = False
 
 # CSVファイルのパス
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -195,8 +204,45 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         
         return False
     
-    # 各効能パート内でマッチングをカウント
-    match_count = 0
+    # キーワードの重み付けシステム
+    def get_keyword_weight(keyword: str, symptom_name: str) -> float:
+        """
+        キーワードの重みを取得（コンテキストによる重み調整）
+        
+        Args:
+            keyword: 効能テキスト内のキーワード
+            symptom_name: 症状名
+        
+        Returns:
+            重み (0.0-1.0)
+        """
+        keyword_lower = keyword.lower()
+        symptom_name_lower = symptom_name.lower()
+        
+        # 「生理不順」→「月経不順」: weight: 1.0（直接的な表現）
+        if (normalize_text('生理不順') in symptom_name_lower or normalize_text('月経不順') in symptom_name_lower) and normalize_text('月経不順') in keyword_lower:
+            return 1.0
+        if (normalize_text('月経不順') in symptom_name_lower or normalize_text('生理不順') in symptom_name_lower) and normalize_text('生理不順') in keyword_lower:
+            return 1.0
+        
+        # 「血の道症」: weight: 0.8（より広義な表現）
+        if normalize_text('血の道症') in keyword_lower or normalize_text('血の道') in keyword_lower:
+            return 0.8
+        
+        # 「月経異常」「生理異常」: weight: 0.9（直接的な表現に近い）
+        if normalize_text('月経異常') in keyword_lower or normalize_text('生理異常') in keyword_lower:
+            return 0.9
+        
+        # 「産前産後」「更年期」: weight: コンテキスト依存（ユーザーの年齢や症状に応じて0.85-0.95）
+        if normalize_text('産前産後') in keyword_lower or normalize_text('更年期') in keyword_lower:
+            # デフォルトは0.9（年齢情報があれば調整可能）
+            return 0.9
+        
+        # デフォルトの重み
+        return 1.0
+    
+    # 各効能パート内でマッチングをカウント（重み付け対応）
+    weighted_match_score = 0.0
     matched_symptoms = set()  # 既にマッチした症状を記録（重複カウントを防ぐ）
     
     for name in normalized_symptom_set:
@@ -204,21 +250,31 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
             continue  # 既にマッチした症状はスキップ
         
         matched = False
+        match_weight = 1.0
+        
         for part in efficacy_parts:
             # 直接マッチング
             if is_word_match(name, part):
-                match_count += 1
+                # キーワードの重みを取得
+                match_weight = get_keyword_weight(part, name)
+                weighted_match_score += match_weight
                 matched_symptoms.add(name)
                 matched = True
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"効能効果マッチング: {name} × {part} = weight {match_weight:.2f}")
                 break
             # 同義語マッチング（月経不順と生理不順を同義語として扱う）
             if name in symptom_synonyms:
                 for synonym in symptom_synonyms[name]:
                     normalized_synonym = normalize_text(synonym)
                     if normalized_synonym and is_word_match(normalized_synonym, part):
-                        match_count += 1
+                        # キーワードの重みを取得
+                        match_weight = get_keyword_weight(part, name)
+                        weighted_match_score += match_weight
                         matched_symptoms.add(name)
                         matched = True
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"効能効果マッチング（同義語）: {name} × {part} = weight {match_weight:.2f}")
                         break
                 if matched:
                     break
@@ -234,11 +290,25 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
             )
             
             if is_menstrual_symptom:
-                # 効能テキスト全体で月経不順関連キーワードをチェック
+                # 効能テキスト全体で月経不順関連キーワードをチェック（重み付け対応）
                 if has_menstrual_efficacy:
-                    match_count += 1
+                    # 最も適切なキーワードの重みを取得
+                    best_weight = 0.0
+                    for kw in menstrual_efficacy_keywords:
+                        if kw in efficacy_lower:
+                            weight = get_keyword_weight(kw, name)
+                            best_weight = max(best_weight, weight)
+                    weighted_match_score += best_weight
                     matched_symptoms.add(name)
                     matched = True
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"効能効果マッチング（月経不順関連）: {name} = weight {best_weight:.2f}")
+    
+    # 重み付けされたマッチスコアを症状数で正規化
+    if len(normalized_symptom_set) > 0:
+        match_count = weighted_match_score  # 重み付けされたスコアを使用
+    else:
+        match_count = 0.0
     
     # 症状が効能に全く含まれていない場合の処理
     if match_count == 0:
@@ -279,7 +349,12 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         
         return 0.0
     
-    specificity_ratio = match_count / len(normalized_symptom_set)
+    # 重み付けされたスコアを使用して特異性比率を計算
+    if len(normalized_symptom_set) > 0:
+        # 重み付けされたスコアを症状数で正規化（最大値は症状数）
+        specificity_ratio = match_count / len(normalized_symptom_set)
+    else:
+        specificity_ratio = 0.0
     
     # 月経不順関連症状と効能のマッチング強化
     if has_menstrual_efficacy:
