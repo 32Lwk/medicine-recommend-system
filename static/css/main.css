@@ -172,7 +172,7 @@
             min-height: 100%;
             height: var(--snow-container-height, 100%);
             pointer-events: none;
-            z-index: -1; /* チャットメッセージの下に配置 */
+            z-index: 0; /* チャットメッセージ（z-index: 2）の下、背景の上に配置 */
             overflow: hidden;
         }
         
