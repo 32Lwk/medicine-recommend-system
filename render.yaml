@@ -1,0 +1,40 @@
+# Render.com デプロイメント設定ファイル
+# このファイルを使用することで、Render.comでの設定をコードで管理できます
+
+services:
+  - type: web
+    name: medicine-recommend-system
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: chmod +x start.sh && ./start.sh
+    # または直接コマンドを指定する場合:
+    # startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50 --keep-alive 5 --access-logfile - --error-logfile - --log-level info --name medicine-recommend-app app:app
+    
+    # 環境変数
+    envVars:
+      - key: GUNICORN_TIMEOUT
+        value: 120
+        sync: false
+      - key: GUNICORN_GRACEFUL_TIMEOUT
+        value: 30
+        sync: false
+      - key: GUNICORN_WORKERS
+        value: 2
+        sync: false
+      - key: GUNICORN_WORKER_CLASS
+        value: sync
+        sync: false
+      # 注意: DATABASE_URL, OPENAI_API_KEY などの機密情報は
+      # Render.comのダッシュボードで直接設定してください（sync: false）
+    
+    # ヘルスチェック設定
+    healthCheckPath: /
+    # ヘルスチェックタイムアウト（秒）
+    # 注意: Render.comの無料プランでは30秒の制限がある場合があります
+    
+    # 自動デプロイ設定
+    autoDeploy: true
+    
+    # ブランチ設定
+    branch: main  # または master、デフォルトブランチ名に合わせて変更
+
