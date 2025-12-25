@@ -165,14 +165,22 @@
         
         /* 雪のアニメーション */
         .snow-container {
-            position: absolute;
+            position: fixed;
             top: 0;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
-            height: 100%;
+            max-width: 900px;
+            height: 100vh;
+            height: 100dvh;
             pointer-events: none;
             z-index: 0; /* 最も下に配置 */
             overflow: hidden;
+        }
+        @supports (-webkit-touch-callout: none) {
+            .snow-container {
+                height: -webkit-fill-available;
+            }
         }
         
         .snowflake {
