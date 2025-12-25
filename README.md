@@ -1917,40 +1917,61 @@ medicine-recommend/
 
 ### WORKER TIMEOUTエラーが発生した�?��?
 
-**問�?**: `gunicorn_config.py`で`timeout = 180`?�?3�??��に設定されて�?るが、実際には�?30秒でタイ�?アウトして�?る�??
+**問�?**: `gunicorn_config.py`で`timeout = 120`?�?2�??��に設定されて�?るが、実際には�?30秒でタイ�?アウトして�?る�??
 
-**原因**: Renderなどのホス�?ィングサービスでは、�?�ラ�?トフォー�?側のタイ�?アウト設定が優先される場合があります�??
+**原因**: Renderなどのホス�?ィングサービスでは、�?�ラ�?トフォー�?側のタイ�?アウト設定が優先される場合があります�?�また�?�gunicornの起動時に設定ファイルが読み込まれて�?な�?可能性があります�??
 
 **解決方�?**:
 
-1. **Render�?�?シュボ�?�ドでの設定確�?**:
-   - Render�?�?シュボ�?�ドにログイン
+#### 方�?1: 起動スクリプトを使用?��推奨?�?
+
+1. **Render.com�?�?シュボ�?�ドでの設�?**:
+   - Render.com�?�?シュボ�?�ドにログイン
    - 該当するWebサービスを選�?
-   - Settings �? Environment セクションを確�?
-   - 環�?変数に`WEB_SERVICE_TIMEOUT`などのタイ�?アウト設定がな�?か確�?
+   - **Settings** �? **Build & Deploy** セクション
+   - **Start Command** を以下�?�ように設�?:
+     ```bash
+     chmod +x start.sh && ./start.sh
+     ```
+     また�?�直接コマンドを�?�?:
+     ```bash
+     gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50 --keep-alive 5 --access-logfile - --error-logfile - --log-level info --name medicine-recommend-app app:app
+     ```
 
-2. **Renderのサービス設定を確�?**:
-   - Settings �? Advanced セクション
-   - 「Health Check Path」や「Health Check Timeout」�?�設定を確�?
-   - �?要に応じてタイ�?アウト�?�を増加
+2. **環�?変数の設�?**:
+   - **Settings** �? **Environment** セクション
+   - 以下�?�環�?変数を追�?:
+     - `GUNICORN_TIMEOUT=120`
+     - `GUNICORN_GRACEFUL_TIMEOUT=30`
+     - `GUNICORN_WORKERS=2`
+     - `GUNICORN_WORKER_CLASS=sync`
 
-3. **環�?変数の設�?**:
-   ```bash
-   # Renderの環�?変数に追�??��例�?
-   GUNICORN_TIMEOUT=180
-   ```
+#### 方�?2: render.yamlを使用
 
-4. **gunicorn_config.pyの確�?**:
-   ```python
-   # gunicorn_config.py
-   timeout = 180  # 3�??��秒単位�?
-   ```
-   こ�?�設定が正しく読み込まれて�?るか確�?
+1. プロジェクトルートに`render.yaml`ファイルを�?�置?��既に作�?�済み?�?
+2. Render.com�?�?シュボ�?�ドで:
+   - **Settings** �? **Build & Deploy**
+   - **Render YAML Path** に `render.yaml` を指�?
 
-5. **ログの確�?**:
-   - Renderのログで「WORKER TIMEOUT」エラーが発生して�?る時間を確�?
-   - 実際のタイ�?アウト時間を記録
-   - 処�?が長時間かかって�?る原�?を特定�?ChatGPT API呼び出し�?�データベ�?�スクエリなど?�?
+#### 方�?3: Render.comのプラ�?トフォー�?設定確�?
+
+1. **Settings** �? **Advanced** セクション
+2. **Health Check Path**: `/` また�?� `/api/health`?��存在する場合�?
+3. **Health Check Timeout**: �?要に応じて増加
+
+#### 設定�?�確�?
+
+�?プロイ後�?�ログで以下�?�メ�?セージを確�?:
+```
+🚀 Starting Gunicorn with the following settings:
+   - Timeout: 120s
+   - Graceful Timeout: 30s
+   - Workers: 2
+   - Worker Class: sync
+   - Port: 10000
+```
+
+**詳細な設定方�?**: `docs/RENDER_DEPLOYMENT.md` を参照してください�?
 
 **注�?**: Renderの無料�?�ランでは、タイ�?アウトが30秒に制限されて�?る�?�合があります�?�有料�?�ランへのア�?プグレードが�?要な場合があります�??
 
