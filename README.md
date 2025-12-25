@@ -1917,40 +1917,61 @@ medicine-recommend/
 
 ### WORKER TIMEOUTエラーが発生した場合
 
-**問題**: `gunicorn_config.py`で`timeout = 180`（3分）に設定されているが、実際には約30秒でタイムアウトしている。
+**問題**: `gunicorn_config.py`で`timeout = 120`（2分）に設定されているが、実際には約30秒でタイムアウトしている。
 
-**原因**: Renderなどのホスティングサービスでは、プラットフォーム側のタイムアウト設定が優先される場合があります。
+**原因**: Renderなどのホスティングサービスでは、プラットフォーム側のタイムアウト設定が優先される場合があります。また、gunicornの起動時に設定ファイルが読み込まれていない可能性があります。
 
 **解決方法**:
 
-1. **Renderダッシュボードでの設定確認**:
-   - Renderダッシュボードにログイン
+#### 方法1: 起動スクリプトを使用（推奨）
+
+1. **Render.comダッシュボードでの設定**:
+   - Render.comダッシュボードにログイン
    - 該当するWebサービスを選択
-   - Settings → Environment セクションを確認
-   - 環境変数に`WEB_SERVICE_TIMEOUT`などのタイムアウト設定がないか確認
+   - **Settings** → **Build & Deploy** セクション
+   - **Start Command** を以下のように設定:
+     ```bash
+     chmod +x start.sh && ./start.sh
+     ```
+     または直接コマンドを指定:
+     ```bash
+     gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 120 --graceful-timeout 30 --max-requests 1000 --max-requests-jitter 50 --keep-alive 5 --access-logfile - --error-logfile - --log-level info --name medicine-recommend-app app:app
+     ```
 
-2. **Renderのサービス設定を確認**:
-   - Settings → Advanced セクション
-   - 「Health Check Path」や「Health Check Timeout」の設定を確認
-   - 必要に応じてタイムアウト値を増加
+2. **環境変数の設定**:
+   - **Settings** → **Environment** セクション
+   - 以下の環境変数を追加:
+     - `GUNICORN_TIMEOUT=120`
+     - `GUNICORN_GRACEFUL_TIMEOUT=30`
+     - `GUNICORN_WORKERS=2`
+     - `GUNICORN_WORKER_CLASS=sync`
 
-3. **環境変数の設定**:
-   ```bash
-   # Renderの環境変数に追加（例）
-   GUNICORN_TIMEOUT=180
-   ```
+#### 方法2: render.yamlを使用
 
-4. **gunicorn_config.pyの確認**:
-   ```python
-   # gunicorn_config.py
-   timeout = 180  # 3分（秒単位）
-   ```
-   この設定が正しく読み込まれているか確認
+1. プロジェクトルートに`render.yaml`ファイルを配置（既に作成済み）
+2. Render.comダッシュボードで:
+   - **Settings** → **Build & Deploy**
+   - **Render YAML Path** に `render.yaml` を指定
 
-5. **ログの確認**:
-   - Renderのログで「WORKER TIMEOUT」エラーが発生している時間を確認
-   - 実際のタイムアウト時間を記録
-   - 処理が長時間かかっている原因を特定（ChatGPT API呼び出し、データベースクエリなど）
+#### 方法3: Render.comのプラットフォーム設定確認
+
+1. **Settings** → **Advanced** セクション
+2. **Health Check Path**: `/` または `/api/health`（存在する場合）
+3. **Health Check Timeout**: 必要に応じて増加
+
+#### 設定の確認
+
+デプロイ後、ログで以下のメッセージを確認:
+```
+🚀 Starting Gunicorn with the following settings:
+   - Timeout: 120s
+   - Graceful Timeout: 30s
+   - Workers: 2
+   - Worker Class: sync
+   - Port: 10000
+```
+
+**詳細な設定方法**: `docs/RENDER_DEPLOYMENT.md` を参照してください。
 
 **注意**: Renderの無料プランでは、タイムアウトが30秒に制限されている場合があります。有料プランへのアップグレードが必要な場合があります。
 
