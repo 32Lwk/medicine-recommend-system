@@ -255,7 +255,7 @@
         .message-content {
             max-width: 70%;
             padding: 12px 16px;
-            border-radius: 18px;
+            border-radius: 24px;
             word-wrap: break-word;
             text-align: left;
             min-height: 20px;
@@ -527,7 +527,7 @@
         .recommendation-result {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 8px;
+            border-radius: 16px;
             padding: 15px;
             margin: 10px 0;
             text-align: left;
@@ -547,7 +547,7 @@
         .medicine-item {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 6px;
+            border-radius: 12px;
             padding: 12px;
             margin: 10px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -575,7 +575,7 @@
         .medicine-summary {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 8px;
             margin: 5px 0;
             font-size: 13px;
@@ -592,7 +592,7 @@
         .chat-response {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 8px;
+            border-radius: 16px;
             padding: 15px;
             margin: 10px 0;
             text-align: left;
@@ -609,10 +609,139 @@
             padding-bottom: 5px;
         }
         
+        .chat-response p {
+            margin: 0;
+            color: #000;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        
+        /* 性別登録通知のスタイル */
+        .chat-response.gender-notification {
+            min-height: auto;
+            padding: 15px;
+        }
+        
+        .chat-response.gender-notification p {
+            margin: 0;
+            color: #000;
+            line-height: 1.5;
+        }
+        
+        /* ユーザー情報登録通知のスタイル */
+        .chat-response.user-info-notification {
+            min-height: auto;
+            padding: 15px;
+        }
+        
+        .chat-response.user-info-notification p {
+            margin: 0;
+            color: #000;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
+        /* 情報修正ボタンのスタイル */
+        .edit-info-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .edit-info-btn:hover {
+            background: #138496;
+        }
+        
+        .edit-info-btn:active {
+            background: #117a8b;
+        }
+        
+        /* エラー通知のスタイル */
+        .chat-response.error-notification {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+        }
+        
+        .chat-response.error-notification h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+            font-size: 16px;
+        }
+        
+        .error-message-content {
+            margin: 10px 0;
+            color: #856404;
+            white-space: pre-line;
+        }
+        
+        /* フィードバックボタンエリアのスタイル */
+        .feedback-buttons {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .feedback-question {
+            margin: 0 0 10px 0;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .feedback-buttons-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .feedback-btn-positive,
+        .feedback-btn-negative,
+        .bug-report-btn {
+            padding: 8px 16px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .feedback-btn-positive {
+            background: #28a745;
+        }
+        
+        .feedback-btn-positive:hover {
+            background: #218838;
+        }
+        
+        .feedback-btn-negative {
+            background: #dc3545;
+        }
+        
+        .feedback-btn-negative:hover {
+            background: #c82333;
+        }
+        
+        .bug-report-btn {
+            background: #6c757d;
+        }
+        
+        .bug-report-btn:hover {
+            background: #5a6268;
+        }
+        
         .answer-section {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 6px;
+            border-radius: 12px;
             padding: 12px;
             margin: 10px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -624,7 +753,7 @@
         .details-section {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 6px;
+            border-radius: 12px;
             padding: 12px;
             margin: 10px 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
