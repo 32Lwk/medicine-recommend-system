@@ -20,12 +20,13 @@ CSV_PATH = os.path.join(DATA_DIR, "otc_medicine_data.csv")
 logger.info(f'CSVファイル絶対パス: {CSV_PATH}')
 logger.info(f'ファイル存在: {os.path.exists(CSV_PATH)}')
 
-def detect_language(text):
+def detect_language(text, session_language=None):
     """
     テキストから言語を自動検出
     
     Args:
         text (str): 検出対象のテキスト
+        session_language (str): セッションの既存言語情報（オプション）
     
     Returns:
         str: 検出された言語コード ('ja', 'en', 'ko', 'zh')
@@ -33,21 +34,55 @@ def detect_language(text):
     if not text or not isinstance(text, str):
         return 'ja'  # デフォルトは日本語
     
+    text = text.strip()
+    
+    # セッションの既存言語情報がある場合は優先的に考慮
+    if session_language and session_language != 'en':
+        # 既存言語が日本語の場合、短いテキストは日本語として扱う
+        if session_language == 'ja' and len(text) <= 10:
+            # 日本語の一般的な医学用語・症状名リスト
+            japanese_medical_terms = [
+                '精神疾患', 'うつ病', '統合失調症', '不安障害', 'パニック障害',
+                '頭痛', '腹痛', '発熱', '咳', '鼻水', '下痢', '便秘', '吐き気',
+                '不眠', '倦怠感', '疲労感', 'ストレス', 'イライラ', '不安',
+                '風邪', 'インフルエンザ', '花粉症', 'アレルギー', '湿疹',
+                '肩こり', '腰痛', '関節痛', '筋肉痛', 'めまい', '動悸'
+            ]
+            if text in japanese_medical_terms:
+                return 'ja'
+    
     # 韓国語の文字が含まれているかチェック（ハングル）- 最初にチェック（重複がないため）
     if re.search(r'[\uAC00-\uD7AF]', text):
         return 'ko'
     
-    # 中国語の文字が含まれているかチェック（簡体字・繁体字）- 日本語より先にチェック
-    # 中国語特有の文字パターンをチェック
+    # 中国語の文字が含まれているかチェック（簡体字・繁体字）
     chinese_chars = re.search(r'[\u4E00-\u9FFF]', text)
     if chinese_chars:
-        # ひらがなやカタカナが含まれていれば日本語、そうでなければ中国語
+        # ひらがなやカタカナが含まれていれば日本語
         if re.search(r'[\u3040-\u309F\u30A0-\u30FF]', text):
-            # ひらがな・カタカナが含まれている場合は日本語
             return 'ja'
-        else:
-            # 漢字のみの場合は中国語
-            return 'zh'
+        
+        # 漢字のみの場合の判定を改善
+        # 短いテキスト（10文字以下）で、日本語の一般的な医学用語の可能性がある場合は日本語として扱う
+        if len(text) <= 10:
+            # 日本語の一般的な医学用語・症状名リスト
+            japanese_medical_terms = [
+                '精神疾患', 'うつ病', '統合失調症', '不安障害', 'パニック障害',
+                '頭痛', '腹痛', '発熱', '咳', '鼻水', '下痢', '便秘', '吐き気',
+                '不眠', '倦怠感', '疲労感', 'ストレス', 'イライラ', '不安',
+                '風邪', 'インフルエンザ', '花粉症', 'アレルギー', '湿疹',
+                '肩こり', '腰痛', '関節痛', '筋肉痛', 'めまい', '動悸',
+                'のどの痛み', '喉の痛み', '胃痛', '胸痛', '背痛'
+            ]
+            if text in japanese_medical_terms:
+                return 'ja'
+            
+            # セッションの既存言語が日本語の場合は日本語として扱う
+            if session_language == 'ja':
+                return 'ja'
+        
+        # 長いテキストで漢字のみの場合は中国語の可能性が高い
+        return 'zh'
     
     # 日本語の文字が含まれているかチェック（ひらがな、カタカナ）
     if re.search(r'[\u3040-\u309F\u30A0-\u30FF]', text):
@@ -55,6 +90,82 @@ def detect_language(text):
     
     # デフォルトは英語
     return 'en'
+
+def is_diagnosis_term(text):
+    """
+    テキストが診断名（疾患名）かどうかを判定
+    
+    Args:
+        text (str): 検出対象のテキスト
+    
+    Returns:
+        tuple: (is_diagnosis, diagnosis_type, suggested_response)
+            - is_diagnosis: 診断名かどうか
+            - diagnosis_type: 診断名の種類（'mental_health', 'chronic', 'serious', 'other'）
+            - suggested_response: 推奨される返信内容
+    """
+    if not text or not isinstance(text, str):
+        return (False, None, None)
+    
+    text = text.strip()
+    
+    # 精神疾患・精神科関連の診断名
+    mental_health_diagnoses = [
+        '精神疾患', 'うつ病', '統合失調症', '双極性障害', 'パニック障害',
+        '不安障害', '強迫性障害', 'PTSD', '適応障害', '解離性障害',
+        '摂食障害', 'ADHD', '自閉症スペクトラム', '認知症', 'アルツハイマー'
+        '鬱病', '憂鬱症', 'パニック障害', '不安障害', '強迫性障害', 'PTSD', '適応障害', '解離性障害',
+    ]
+    
+    # 慢性疾患・重篤な疾患
+    chronic_serious_diagnoses = [
+        'がん', '癌', '悪性腫瘍', '悪性新腫瘍', '白血病', 'リウマチ', '膠原病',
+        '腎臓病', '肝臓病', '肝炎', '肝硬変', '腎不全', '透析'
+    ]
+    
+    # その他の診断名
+    other_diagnoses = [
+        'てんかん', 'パーキンソン病', '多発性硬化症', '筋萎縮性側索硬化症',
+        'クローン病', '潰瘍性大腸炎', '橋本病', 'バセドウ病'
+    ]
+    
+    # 診断名の検出
+    for diagnosis in mental_health_diagnoses:
+        if diagnosis in text:
+            return (True, 'mental_health', {
+                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
+                          f'市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n'
+                          f'1. 具体的な症状（例：不眠、不安、イライラ、倦怠感など）を教えてください\n'
+                          f'2. 医師や薬剤師にご相談ください\n\n'
+                          f'※精神疾患の治療は専門医の診断と処方薬が必要な場合があります。',
+                'escalation_required': True,
+                'escalation_reason': f'診断名「{diagnosis}」が検出されました。専門医への相談を推奨します。'
+            })
+    
+    for diagnosis in chronic_serious_diagnoses:
+        if diagnosis in text:
+            return (True, 'chronic', {
+                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
+                          f'慢性疾患や重篤な疾患の場合は、医師の診断と処方薬が必要です。\n'
+                          f'市販薬での対応が難しい可能性がありますので、以下のいずれかをお試しください：\n'
+                          f'1. 具体的な症状（例：頭痛、発熱、痛みなど）を教えてください\n'
+                          f'2. かかりつけの医師や薬剤師にご相談ください',
+                'escalation_required': True,
+                'escalation_reason': f'診断名「{diagnosis}」が検出されました。医師への相談を推奨します。'
+            })
+    
+    for diagnosis in other_diagnoses:
+        if diagnosis in text:
+            return (True, 'other', {
+                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
+                          f'市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n'
+                          f'1. 具体的な症状（例：痛み、発熱、不調など）を教えてください\n'
+                          f'2. かかりつけの医師や薬剤師にご相談ください',
+                'escalation_required': True,
+                'escalation_reason': f'診断名「{diagnosis}」が検出されました。医師への相談を推奨します。'
+            })
+    
+    return (False, None, None)
 
 def create_multilingual_attribute_extraction_prompt(user_text, language, user_info=None):
     """
@@ -1163,9 +1274,23 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     """
     症状文と症状リスト、医薬品の種類のデータをChatGPTに渡して
     症状（複数選択可）と適する医薬品の種類を返す
+    
+    診断名が検出された場合は、適切な返信を返す
     """
     if client is None:
         client = OpenAI(api_key=api_key)
+    
+    # 診断名の検出（先にチェック）
+    is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
+    if is_diagnosis:
+        logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
+        return {
+            'symptoms': [],
+            'medicine_type': 'その他',
+            'is_diagnosis': True,
+            'diagnosis_type': diagnosis_type,
+            'diagnosis_response': diagnosis_response
+        }
     
     # 医薬品の種類リスト（CSVファイルの実際の内容に基づく）
     medicine_types = [
