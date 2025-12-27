@@ -51,8 +51,8 @@ SEASON_CONFIG = {
 }
 
 # 干支マッピング辞書（2026年を基準）
-ZODIAC_LIST = ['Cow', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 
-               'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig', 'Rat']
+ZODIAC_LIST = ['horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig', 
+               'Rat', 'Cow', 'Tiger', 'Rabbit', 'Dragon', 'Snake']
 
 # 画像のalt属性マッピング
 IMAGE_ALT_MAPPING = {
@@ -66,7 +66,7 @@ IMAGE_ALT_MAPPING = {
     'Rabbit.png': 'うさぎ',
     'Dragon.png': 'たつ',
     'Snake.png': 'へび',
-    'Horse.png': 'うま',
+    'horse.png': 'うま',
     'Goat.png': 'ひつじ',
     'Monkey.png': 'さる',
     'Rooster.png': 'とり',
