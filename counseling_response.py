@@ -86,9 +86,12 @@ def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
         "眠れない", "睡眠", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
         "寝れない", "寝れません", "寝れないです", "夜寝れない", "最近寝れない",
         "眠れなくて", "眠れなく", "寝つけない", "寝つけません", "寝つけないです",
-        "不眠症", "不眠で", "不眠です", "不眠の", "不眠が"
+        "不眠症", "不眠で", "不眠です", "不眠の", "不眠が",
+        "睡眠薬", "睡眠薬を", "睡眠薬について", "睡眠薬を教えて", "睡眠薬を知りたい",
+        "睡眠改善薬", "睡眠改善薬を", "睡眠改善薬について", "睡眠改善薬を教えて"
     ]
-    if any(keyword in user_text_lower for keyword in insomnia_keywords):
+    # トリアージ結果のsubcategoryがinsomniaの場合も不眠として判定
+    if "insomnia" in subcategory or any(keyword in user_text_lower for keyword in insomnia_keywords):
         return "insomnia"
     
     if "heart" in subcategory or "心" in user_text:
@@ -118,7 +121,7 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     # 不眠専用のプロンプトテンプレート
     if symptom_type == "insomnia":
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。不眠に関するカウンセリングを行い、代替療法を推奨し、薬のリスクを説明してください。「一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい」というメッセージは含めないでください（別途送信されます）。",
+            "system_message": "あなたは薬剤師兼カウンセラーです。不眠に関するカウンセリングを行い、代替療法を推奨し、薬のリスクを説明してください。",
             "user_prompt_template": """
 あなたは薬剤師兼カウンセラーです。不眠で悩むユーザーに対して、
 共感的で実践的なアドバイスを含む返信を生成してください。
@@ -137,13 +140,12 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
   * 軽いストレッチや深呼吸を行う
   * リラックスできる音楽を聴く
   * 睡眠環境の改善（室温、照明、騒音対策など）
-- **薬のリスク説明**: 簡潔に説明してください（必須）
+- **薬のリスク説明**: 簡潔に自然な文脈で説明してください（必須）
   * 睡眠改善薬は一時的な不眠にのみ効果がある
   * 常用化のリスクがある
   * 不眠症と診断されている場合は医師にご相談ください
 - **応答長さ**: 200-300文字程度（簡潔に要点を押さえる）
 - **質問は最小限に**: 不必要な質問は避け、代替療法の推奨と薬のリスク説明を優先する
-- **重要**: 「一時的な不眠で推奨される医薬品を知りたい場合は教えて下さい」というメッセージは含めないでください（別途送信されます）
 """,
             "response_requirements": "代替療法の推奨と薬のリスク説明を含む、共感的で実践的な返信（200-300文字程度）。簡潔に要点を押さえる。",
             "max_length": 300
@@ -1657,17 +1659,38 @@ def handle_user_input_in_counseling_mode(
         # ユーザーの入力からも期間を抽出（collected_infoにない場合、または最新の入力から確認）
         import re
         if not duration or '日' in user_text or '週間' in user_text or '週' in user_text:
-            # 「14日」「2,3日」「2週間」「14日ほどです」などのパターンを抽出
+            # 「14日」「2,3日」「2〜3日」「2-3日」「2週間」「14日ほどです」などのパターンを抽出
             if '週間' in user_text or '週' in user_text:
                 weeks_match = re.search(r'(\d+)', user_text)
                 if weeks_match:
                     weeks = int(weeks_match.group(1))
                     duration = f"{weeks}週間"
             elif '日' in user_text:
-                # 「14日」「14日ほどです」「ここ14日ほどです」などのパターンに対応
-                days_match = re.search(r'(\d+)', user_text.replace(',', '').replace('、', ''))
-                if days_match:
-                    days = int(days_match.group(1))
+                # 範囲表現を検出（「2,3日」「2〜3日」「2-3日」など）
+                # カンマ、全角チルダ、ハイフンで区切られた範囲表現を検出
+                range_patterns = [
+                    r'(\d+)[,、](\d+)日',  # 「2,3日」「2、3日」
+                    r'(\d+)[〜～](\d+)日',  # 「2〜3日」「2～3日」
+                    r'(\d+)[-－](\d+)日',  # 「2-3日」「2－3日」
+                ]
+                days = None
+                for pattern in range_patterns:
+                    range_match = re.search(pattern, user_text)
+                    if range_match:
+                        # 範囲表現の場合は最大値（後ろの数値）を取る
+                        days = max(int(range_match.group(1)), int(range_match.group(2)))
+                        logger.info(f"📅 範囲表現を検出: {user_text} → {days}日（最大値）")
+                        break
+                
+                if days is None:
+                    # 範囲表現でない場合は通常の数値抽出
+                    # カンマや全角カンマを削除してから数値を抽出
+                    cleaned_text = user_text.replace(',', '').replace('、', '')
+                    days_match = re.search(r'(\d+)', cleaned_text)
+                    if days_match:
+                        days = int(days_match.group(1))
+                
+                if days is not None:
                     duration = f"{days}日"
         
         if duration:
@@ -1682,9 +1705,30 @@ def handle_user_input_in_counseling_mode(
                     duration_days = weeks * 7
             elif '日' in duration:
                 # 日数の場合は数値を抽出
-                days_match = re.search(r'(\d+)', duration.replace(',', '').replace('、', ''))
-                if days_match:
-                    duration_days = int(days_match.group(1))
+                # 範囲表現を検出（「2,3日」「2〜3日」「2-3日」など）
+                range_patterns = [
+                    r'(\d+)[,、](\d+)日',  # 「2,3日」「2、3日」
+                    r'(\d+)[〜～](\d+)日',  # 「2〜3日」「2～3日」
+                    r'(\d+)[-－](\d+)日',  # 「2-3日」「2－3日」
+                ]
+                days = None
+                for pattern in range_patterns:
+                    range_match = re.search(pattern, duration)
+                    if range_match:
+                        # 範囲表現の場合は最大値（後ろの数値）を取る
+                        days = max(int(range_match.group(1)), int(range_match.group(2)))
+                        logger.info(f"📅 範囲表現を検出（duration）: {duration} → {days}日（最大値）")
+                        break
+                
+                if days is None:
+                    # 範囲表現でない場合は通常の数値抽出
+                    cleaned_duration = duration.replace(',', '').replace('、', '')
+                    days_match = re.search(r'(\d+)', cleaned_duration)
+                    if days_match:
+                        days = int(days_match.group(1))
+                
+                if days is not None:
+                    duration_days = days
             
             if duration_days and duration_days > 14:
                 # 2週間を超えている場合、カウンセリングを中止して受診勧告
@@ -1726,6 +1770,19 @@ def handle_user_input_in_counseling_mode(
     # 不眠カウンセリング中に薬を希望した場合の検出
     if current_topic == "insomnia":
         user_text_lower = user_text.lower()
+        
+        # 直前のメッセージを確認（「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答かどうか）
+        messages = session.get('messages', [])
+        is_medicine_info_response = False
+        if messages:
+            # 直前のbotメッセージを確認
+            for msg in reversed(messages[-5:]):  # 直近5件を確認
+                if msg.get('type') == 'bot' and msg.get('counseling_medicine_info'):
+                    # 「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答
+                    is_medicine_info_response = True
+                    logger.info(f"✅ 不眠カウンセリング中の医薬品情報メッセージへの回答を検出")
+                    break
+        
         medicine_request_keywords = [
             "薬を教えて", "睡眠薬を教えて", "医薬品を知りたい", "薬を知りたい",
             "睡眠薬", "薬を", "医薬品を", "薬を教えて下さい", "薬を教えてください",
@@ -1736,7 +1793,14 @@ def handle_user_input_in_counseling_mode(
             "推奨して", "推奨してください", "推奨して下さい", "推奨して欲しい"
         ]
         
-        if any(keyword in user_text_lower for keyword in medicine_request_keywords):
+        # 「知りたい」系のキーワードは、直前のメッセージが医薬品情報メッセージの場合のみ検出
+        simple_knowledge_keywords = ["知りたい", "知りたいです", "知りたいです。", "知りたい。"]
+        has_simple_knowledge_keyword = any(keyword in user_text_lower for keyword in simple_knowledge_keywords)
+        
+        if has_simple_knowledge_keyword and not is_medicine_info_response:
+            # 直前のメッセージが医薬品情報メッセージでない場合、薬推奨リクエストとして扱わない
+            logger.info(f"⏭️ 「知りたい」系キーワードを検出しましたが、直前のメッセージが医薬品情報メッセージではないため、薬推奨リクエストとして扱いません")
+        elif any(keyword in user_text_lower for keyword in medicine_request_keywords) or (has_simple_knowledge_keyword and is_medicine_info_response):
             # カウンセリングモードを終了し、Physicalカテゴリの処理に移行
             counseling_mode['active'] = False
             session['counseling_mode'] = counseling_mode
