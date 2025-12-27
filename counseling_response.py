@@ -19,19 +19,31 @@ def log_counseling_response(
     response_type: str,
     category: str = None,
     confidence: float = None,
-    counseling_mode: Dict = None
+    counseling_mode: Dict = None,
+    user_input: str = None,
+    conversation_history: List[Dict] = None
 ) -> None:
     """
     カウンセリング返信をログに記録
     
     Args:
         session_id: セッションID
-        response_content: 返信内容
+        response_content: 返信内容（全文）
         response_type: 返信タイプ（counseling_question, counseling_summary, counseling_response等）
         category: トリアージカテゴリ（オプション）
         confidence: トリアージconfidence（オプション）
         counseling_mode: カウンセリングモード状態（オプション）
+        user_input: ユーザー入力（全文）
+        conversation_history: 会話履歴（最新N件）
     """
+    # structured_loggerをインポート
+    try:
+        from structured_logger import log_counseling_detail
+    except ImportError:
+        logger.warning("structured_loggerがインポートできません。旧形式のログを出力します。")
+        log_counseling_detail = None
+    
+    # 旧形式のログも出力（後方互換性のため）
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "session_id": session_id,
@@ -64,6 +76,19 @@ def log_counseling_response(
         logger.info(f"📝 カウンセリング返信ログ記録: {response_type} (session_id: {session_id})")
     except Exception as e:
         logger.error(f"❌ カウンセリング返信ログ記録エラー: {e}")
+    
+    # structured_loggerを使用した詳細ログを出力
+    if log_counseling_detail and user_input:
+        # 会話履歴が指定されていない場合は空リスト
+        if conversation_history is None:
+            conversation_history = []
+        
+        log_counseling_detail(
+            session_id=session_id,
+            user_input=user_input,
+            response=response_content,
+            conversation_history=conversation_history
+        )
 
 
 def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
