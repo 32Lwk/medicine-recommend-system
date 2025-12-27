@@ -8697,7 +8697,7 @@ def rule_based_recommendation(
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
             "relative_score": candidate.get('relative_score', candidate['final_score']),  # 相対スコア（最高スコアを1.0として正規化）
-            "display_score": candidate.get('display_score'),  # 表示用スコア（整数、40-100%）
+            "display_score": candidate.get('display_score'),  # 表示用スコア（小数点第1位、絶対評価ベース）
             "score_level": candidate.get('score_level', '中'),  # スコア帯（高/中/低）
             "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
@@ -8705,7 +8705,9 @@ def rule_based_recommendation(
             "allergy_warning": candidate.get('allergy_warning', ''),
             "interaction_warnings": candidate.get('interaction_warnings', []),
             "completeness_penalty": completeness_penalty,  # 不足情報による減点
-            "max_possible_score": candidate.get('max_possible_score', 1.0)  # MaxPossibleScore
+            "max_possible_score": candidate.get('max_possible_score', 1.0),  # MaxPossibleScore
+            "raw_score": candidate.get('raw_score'),  # 管理者向け: raw_score（絶対評価ベースの計算元）
+            "original_rank": candidate.get('original_rank', i)  # 管理者向け: original_rank（ランキング保護用）
         }
         
         # リスク警告を追加

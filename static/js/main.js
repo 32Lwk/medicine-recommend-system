@@ -4527,7 +4527,7 @@
                     let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}${message.style_class ? ' ' + message.style_class : ''}">`;
                     
                     if (message.manual_reply) {
-                        content += `<span class="manual-reply-indicator">👤 薬剤師 川嶋 返信</span><br><br>`;
+                        content += `<span class="manual-reply-indicator">👤 薬剤師 返信</span><br><br>`;
                     }
                     
                     // 新しい推奨結果の形式に対応

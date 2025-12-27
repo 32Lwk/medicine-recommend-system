@@ -212,7 +212,7 @@ def is_diagnosis_term(text):
     mental_health_diagnoses = [
         # 気分障害
         'うつ病', '鬱病', '憂鬱症', '大うつ病性障害', '気分障害',
-        '双極性障害', '躁うつ病', '躁鬱病', 'うつ状態', '抑うつ',
+        '双極性障害', '躁うつ病','躁鬱症','躁鬱', '躁鬱病', 'うつ状態', '抑うつ',
         
         # 不安障害
         'パニック障害', '不安障害', '全般性不安障害', 'GAD',
@@ -2401,7 +2401,19 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
     
     # ルールベース推奨モジュールをインポート
     try:
-        from rule_based_recommendation import rule_based_recommendation, log_recommendation_session
+        # モジュールをインポート（関数内でインポートすることで循環インポートを回避）
+        import rule_based_recommendation as rbr_module
+        
+        # 関数が存在するか確認
+        if not hasattr(rbr_module, 'rule_based_recommendation'):
+            raise AttributeError(f"rule_based_recommendation関数が見つかりません。利用可能な属性: {[attr for attr in dir(rbr_module) if not attr.startswith('_')][:20]}")
+        
+        if not hasattr(rbr_module, 'log_recommendation_session'):
+            raise AttributeError(f"log_recommendation_session関数が見つかりません。")
+        
+        # 関数を取得
+        rule_based_recommendation = rbr_module.rule_based_recommendation
+        log_recommendation_session = rbr_module.log_recommendation_session
         
         # グローバルdfを使用
         global df
@@ -2425,13 +2437,32 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
         
         return result
         
-    except Exception as e:
-        print(f"ルールベース推奨エラー: {e}")
+    except ImportError as e:
+        logger.error(f"ルールベース推奨モジュールのインポートエラー: {e}")
         import traceback
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return {
             "status": "error",
-            "reason": f"システムエラー({str(e)})"
+            "reason": f"システムエラー(モジュールインポートエラー: {str(e)})",
+            "error_type": "import_error"
+        }
+    except AttributeError as e:
+        logger.error(f"ルールベース推奨関数の属性エラー: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {
+            "status": "error",
+            "reason": f"システムエラー(関数が見つかりません: {str(e)})",
+            "error_type": "attribute_error"
+        }
+    except Exception as e:
+        logger.error(f"ルールベース推奨エラー: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {
+            "status": "error",
+            "reason": f"システムエラー({str(e)})",
+            "error_type": "unknown_error"
         }
 
 def detect_medicine_name_in_query(user_message, medicine_df):
