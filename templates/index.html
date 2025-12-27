@@ -164,6 +164,7 @@
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20251221" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body>
 <div class="chat-container">
@@ -451,6 +452,7 @@
     </div>
 </div>
 
+    <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}?v=20251221-3" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->

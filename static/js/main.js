@@ -53,6 +53,18 @@
             feedbackQuestionNotice: "この重要な注意事項はいかがでしたか？",
             feedbackThankYou: "フィードバックありがとうございます！",
             
+            // イースターエッグ
+            easterEggThanks: "🎉 ありがとうございます！",
+            easterEggThanksMessage: "お役に立てて嬉しいです！",
+            easterEggThanksResponse: "他にご質問がございましたら、お気軽にお聞かせください。",
+            easterEggSnakeGame: "🐍 スネークゲーム",
+            easterEggSnakeScore: "スコア: ",
+            easterEggSnakeControls: "操作方法: 方向キーまたは画面のボタン",
+            easterEggSnakeGameOver: "ゲームオーバー！",
+            easterEggEmojiGame: "🎯 絵文字キャッチゲーム",
+            easterEggEmojiScore: "スコア: ",
+            easterEggEmojiControls: "操作方法: タッチまたはクリックで絵文字をキャッチ！",
+            
             // 不具合報告
             bugReportPrompt: "不具合の内容を詳しく説明してください",
             bugReportSubmitted: "不具合報告を送信しました",
@@ -391,6 +403,18 @@
             back: "← 뒤로",
             close: "×",
             skipOnboarding: "넘기고 시작하기",
+            
+            // イースターエッグ
+            easterEggThanks: "🎉 감사합니다!",
+            easterEggThanksMessage: "도움이 되어 기쁩니다!",
+            easterEggThanksResponse: "다른 질문이 있으시면 언제든지 물어보세요.",
+            easterEggSnakeGame: "🐍 스네이크 게임",
+            easterEggSnakeScore: "점수: ",
+            easterEggSnakeControls: "조작: 방향키 또는 화면 버튼",
+            easterEggSnakeGameOver: "게임 오버!",
+            easterEggEmojiGame: "🎯 이모지 캐치 게임",
+            easterEggEmojiScore: "점수: ",
+            easterEggEmojiControls: "조작: 터치 또는 클릭하여 이모지를 잡으세요!",
             onboarding: [
                 {
                     title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
@@ -3406,6 +3430,19 @@
                 sessionStorage.setItem('lastUserMessage', message);
             } catch (e) {}
             
+            // イースターエッグチェック（通常処理より優先）
+            if (typeof checkEasterEggs === 'function' && checkEasterEggs(message)) {
+                // イースターエッグ発動時は通常処理をスキップ
+                // 入力フィールドをクリア（イースターエッグ発動時もクリアする）
+                input.value = '';
+                input.style.height = 'auto';
+                isSubmitting = false;
+                restoreSubmitButton();
+                input.disabled = false;
+                input.placeholder = translations[currentLang].placeholder || '症状を入力してください...';
+                return;
+            }
+            
             // 入力フィールドをクリア
             input.value = '';
             input.style.height = 'auto';
@@ -3483,8 +3520,11 @@
         
         const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
         
+        // 改行を<br>タグに変換
+        const formattedMessage = escapeHtml(message).replace(/\n/g, '<br>');
+        
         messageDiv.innerHTML = `
-            <div class="message-content">${escapeHtml(message)}</div>
+            <div class="message-content">${formattedMessage}</div>
         `;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -3897,6 +3937,11 @@
 
     window.toggleLanguageMenu = toggleLanguageMenu;
     window.selectLanguage = selectLanguage;
+    
+    // イースターエッグ機能用のグローバル関数を公開
+    window.addUserMessage = addUserMessage;
+    window.addMessage = addMessage;
+    window.scrollToBottom = scrollToBottom;
     window.handlePositiveFeedback = handlePositiveFeedback;
     window.handleNegativeFeedback = handleNegativeFeedback;
     window.handleSecurityReportFromButton = handleSecurityReportFromButton;
