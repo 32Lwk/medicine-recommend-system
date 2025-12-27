@@ -3709,7 +3709,13 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                                 logger.info(f"🔬 作用機序の多様性確保: 理気・駆瘀血系を追加 {candidate.get('product_name', '')}")
                             break
 
-    return final_selected[:top_n]
+    # original_rankに基づいて順序を復元（ランキング保護）
+    final_selected_sorted = sorted(final_selected[:top_n], key=lambda x: x.get('original_rank', 9999))
+    
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"ensure_ingredient_diversity: original_rankに基づいて順序を復元: {len(final_selected_sorted)}件")
+    
+    return final_selected_sorted
 
 
 def _detect_body_part_specificity(candidate: Dict) -> Optional[str]:
@@ -5534,6 +5540,149 @@ def is_contraindicated(candidate: Dict, user_info: Dict, nlu_result: Dict) -> Di
         "reason": "",
         "severity": ""
     }
+
+
+def ensure_score_difference(display_scores: List[float], floor_map: Dict[int, float]) -> List[float]:
+    """
+    スコア差の保証と衝突回避（最小0.2%の差を強制）
+    
+    Args:
+        display_scores: 上位3件のdisplay_scoreリスト（整数変換前）
+        floor_map: ランク別最低保証スコア（{1: 60.0, 2: 50.0, 3: 40.0}）
+    
+    Returns:
+        調整後のdisplay_scoreリスト
+    """
+    if len(display_scores) < 2:
+        return display_scores
+    
+    adjusted_scores = list(display_scores)  # コピーを作成
+    min_difference = 0.0025  # 最小差（0.025 = 2.5%、僅差になるように調整）
+    
+    # 1位-2位の差をチェック
+    if len(adjusted_scores) >= 2:
+        diff_1_2 = adjusted_scores[0] - adjusted_scores[1]
+        if diff_1_2 < min_difference:
+            # 下位（2位）のスコアを減算
+            reduction = min_difference - diff_1_2
+            new_score_2 = adjusted_scores[1] - reduction
+            
+            # 逆転防止: Floor(2)を割り込まないようにチェック
+            floor_2 = floor_map.get(2, 50.0)
+            if new_score_2 >= floor_2:
+                adjusted_scores[1] = new_score_2
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"スコア差調整（1-2位）: 2位を {adjusted_scores[1]:.1f}% → {new_score_2:.1f}% に調整（差: {diff_1_2:.2f}% → {min_difference:.2f}%）")
+            else:
+                # Floorを割り込む場合は、1位を上げる
+                adjusted_scores[0] = adjusted_scores[1] + min_difference
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"スコア差調整（1-2位、Floor保護）: 1位を {display_scores[0]:.1f}% → {adjusted_scores[0]:.1f}% に調整")
+    
+    # 2位-3位の差をチェック
+    if len(adjusted_scores) >= 3:
+        diff_2_3 = adjusted_scores[1] - adjusted_scores[2]
+        if diff_2_3 < min_difference:
+            # 下位（3位）のスコアを減算
+            reduction = min_difference - diff_2_3
+            new_score_3 = adjusted_scores[2] - reduction
+            
+            # 逆転防止: Floor(3)を割り込まないようにチェック
+            floor_3 = floor_map.get(3, 40.0)
+            if new_score_3 >= floor_3:
+                adjusted_scores[2] = new_score_3
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"スコア差調整（2-3位）: 3位を {adjusted_scores[2]:.1f}% → {new_score_3:.1f}% に調整（差: {diff_2_3:.2f}% → {min_difference:.2f}%）")
+            else:
+                # Floorを割り込む場合は、2位を上げる
+                adjusted_scores[1] = adjusted_scores[2] + min_difference
+                # 1位との差も再チェック
+                if adjusted_scores[0] - adjusted_scores[1] < min_difference:
+                    adjusted_scores[0] = adjusted_scores[1] + min_difference
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"スコア差調整（2-3位、Floor保護）: 2位を {display_scores[1]:.1f}% → {adjusted_scores[1]:.1f}% に調整")
+    
+    return adjusted_scores
+
+
+def calculate_display_score(rank: int, s_final: float, s_min: float, s_max: float, max_possible: float) -> float:
+    """
+    ランク別最低保証スコアを考慮した表示用スコアを計算（単調増加写像）
+    
+    Args:
+        rank: ランク（1, 2, 3）
+        s_final: 減点適用後のfinal_score
+        s_min: 上位3件の最小final_score
+        s_max: 上位3件の最大final_score
+        max_possible: MaxPossibleScore（1.0 - completeness_penalty）
+    
+    Returns:
+        display_score: 表示用スコア（40-100%の範囲、整数変換前）
+    """
+    # Floor(rank): ランク別最低保証スコア（パーセンテージ）
+    floor_map = {
+        1: 60.0,  # 1位の最低保証
+        2: 50.0,  # 2位の最低保証
+        3: 40.0   # 3位の最低保証
+    }
+    floor_rank = floor_map.get(rank, 40.0)
+    
+    # MaxPossible × 100: 1位の上限（パーセンテージ）
+    max_possible_percent = max_possible * 100.0
+    
+    # Score_norm: 正規化スコア（0-1）
+    score_range = s_max - s_min
+    if score_range > 0:
+        score_norm = (s_final - s_min) / score_range
+    else:
+        # ゼロ割防止: 全薬のスコアが同じ場合
+        score_norm = 0.5
+    
+    # 0.0-1.0の範囲にクリップ
+    score_norm = max(0.0, min(1.0, score_norm))
+    
+    # S_display(rank) = Floor(rank) + (MaxPossible × 100 - Floor(rank)) × Score_norm
+    display_score = floor_rank + (max_possible_percent - floor_rank) * score_norm
+    
+    # 単調増加性の保証: s_finalが大きいほどdisplay_scoreも大きくなる
+    # （線形補間により自動的に保証される）
+    
+    return display_score
+
+
+def calculate_display_score_absolute(rank: int, raw_score: float, completeness_penalty: float) -> float:
+    """
+    絶対評価ベースの表示用スコアを計算
+    
+    Args:
+        rank: ランク（1, 2, 3）
+        raw_score: 減点適用前のraw_score
+        completeness_penalty: 不足情報による減点（0.0-0.15）
+    
+    Returns:
+        display_score: 表示用スコア（小数点第1位）
+    """
+    # 基本スコア: raw_scoreをそのまま100倍（ただし、100%を超える場合は100%に制限）
+    # raw_scoreが1.0を超える場合は、1.0にクリップしてから100倍
+    raw_score_clipped = min(raw_score, 1.0)
+    base_score = raw_score_clipped * 100.0
+    
+    # ランク調整: 1.5%刻みでデクリメント
+    rank_adjustment = (rank - 1) * 1.5
+    
+    # 不足情報による減点を適用
+    penalty_percent = completeness_penalty * 100.0
+    
+    # 表示スコア = (基本スコア - ランク調整) × (1 - 減点率)
+    display_score = (base_score - rank_adjustment) * (1.0 - penalty_percent / 100.0)
+    
+    # 小数点第1位で丸める
+    display_score = round(display_score, 1)
+    
+    # 0.0以上100.0以下にクリップ
+    display_score = max(0.0, min(100.0, display_score))
+    
+    return display_score
 
 
 def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, user_text: str = "") -> Dict:
@@ -7785,6 +7934,12 @@ def rule_based_recommendation(
         logger.debug(f"\n--- ステップ1.5: 不足情報のチェック ---")
     missing_info_result = check_missing_information(user_info, nlu_result, user_text, client)
     
+    # 不足情報による減点を事前に計算（後で使用するため）
+    from medicine_logic import calculate_completeness_penalty
+    penalty_result = calculate_completeness_penalty(missing_info_result)
+    completeness_penalty = penalty_result.get('completeness_penalty', 0.0)
+    missing_fields_detail = penalty_result.get('missing_fields_detail', {})
+    
     if missing_info_result["has_missing_info"]:
         priority = missing_info_result["priority"]
         logger.info(f"不足情報検出（優先度: {priority}）")
@@ -8243,57 +8398,78 @@ def rule_based_recommendation(
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"詳細スコアリング上位10件: {', '.join([f'{s[0]}({s[2]:.3f})' for s in top_10_scores[:5]])}...")
     
-    # ステップ5.2.5: Min-Max正規化のための最大値・最小値を計算
-    raw_scores = [c.get('raw_score', 0.0) for c in [c for _, c in top_candidates_for_scoring]]
-    if raw_scores:
-        min_raw_score = min(raw_scores)
-        max_raw_score = max(raw_scores)
-        score_range = max_raw_score - min_raw_score
+    # ステップ5.2.5: 閾値判定のセーフティガード（減点適用前のraw_scoreで判定）
+    # raw_score < 0.3の候補を除外（現在の完璧な薬が除外されないよう保護）
+    threshold = 0.3
+    excluded_candidates = []
+    valid_candidates_for_scoring = []
+    
+    for score, candidate in top_candidates_for_scoring:
+        raw_score = candidate.get('raw_score', 0.0)
+        if raw_score < threshold:
+            excluded_candidates.append(candidate)
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"閾値以下で除外: {candidate.get('product_name', '')} raw_score={raw_score:.3f} < {threshold}")
+        else:
+            valid_candidates_for_scoring.append((score, candidate))
+    
+    if excluded_candidates:
+        logger.info(f"閾値判定: {len(excluded_candidates)}件の候補を除外（raw_score < {threshold}）、残り{len(valid_candidates_for_scoring)}件")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"除外された候補: {[c.get('product_name', '') for c in excluded_candidates[:5]]}...")
+    
+    # 有効な候補のみを使用
+    top_candidates_for_scoring = valid_candidates_for_scoring
+    
+    # ステップ5.2.5.5: raw_scoreで順序を確定し、original_rankを保存（ランキング保護）
+    # 正規化前のraw_scoreでソートし、順序を確定
+    candidates_with_scores = [(c.get('raw_score', 0.0), c) for _, c in top_candidates_for_scoring]
+    candidates_with_scores_sorted = sorted(candidates_with_scores, key=lambda x: x[0], reverse=True)
+    
+    # 各候補にoriginal_rankを保存（raw_scoreでの順位）
+    for rank, (raw_score, candidate) in enumerate(candidates_with_scores_sorted, 1):
+        candidate['original_rank'] = rank
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"original_rank保存: rank={rank}, product_name={candidate.get('product_name', '')}, raw_score={raw_score:.3f}")
+    
+    # 元の形式に戻す（タプルのリスト）
+    top_candidates_for_scoring = [(score, candidate) for score, candidate in candidates_with_scores_sorted]
+    
+    # ステップ5.2.6: 正規化プロセスを簡素化（絶対評価ベースのため、raw_scoreをそのまま保持）
+    # Min-Max正規化、重み付き線形変換、底上げロジックを削除
+    # raw_scoreをそのままfinal_scoreとして使用（絶対評価ベース）
+    for _, candidate in top_candidates_for_scoring:
+        raw_score = candidate.get('raw_score', 0.0)
+        score_breakdown = candidate.get('score_breakdown', {})
+        hangover_boost = score_breakdown.get('hangover_boost', 0.0)
+        is_hangover_medicine = candidate.get('is_hangover', False)
         
-        # 各候補に対してMin-Max正規化を適用
-        import math
-        for _, candidate in top_candidates_for_scoring:
-            raw_score = candidate.get('raw_score', 0.0)
-            score_breakdown = candidate.get('score_breakdown', {})
-            hangover_boost = score_breakdown.get('hangover_boost', 0.0)
-            is_hangover_medicine = candidate.get('is_hangover', False)
-            
-            # 二日酔い医薬品の場合、閾値を下げる
-            min_threshold = 0.3 if (hangover_boost > 0 or is_hangover_medicine) else 0.5
-            
-            # 閾値以下のスコアは0.0にマッピング
-            if raw_score <= min_threshold:
-                # 二日酔い医薬品で0.2以上の場合は、最低限のスコアを与える
-                if (hangover_boost > 0 or is_hangover_medicine) and raw_score >= 0.2:
-                    normalized_score = 0.4  # 最低限の推奨可能スコア
-                else:
-                    normalized_score = 0.0
+        # 二日酔い医薬品の場合、閾値を下げる
+        min_threshold = 0.3 if (hangover_boost > 0 or is_hangover_medicine) else 0.5
+        
+        # 閾値以下のスコアは0.0にマッピング
+        if raw_score <= min_threshold:
+            # 二日酔い医薬品で0.2以上の場合は、最低限のスコアを与える
+            if (hangover_boost > 0 or is_hangover_medicine) and raw_score >= 0.2:
+                final_score = 0.4  # 最低限の推奨可能スコア
             else:
-                # Min-Max正規化: (raw_score - min) / (max - min)
-                if score_range > 0:
-                    min_max_normalized = (raw_score - min_raw_score) / score_range
-                else:
-                    # 全て同じスコアの場合、1.0に設定
-                    min_max_normalized = 1.0 if raw_score > min_threshold else 0.0
-                
-                # 非線形変換（平方根）で差を拡大
-                normalized_score = math.sqrt(min_max_normalized) if min_max_normalized >= 0.0 else 0.0
-                # 0.0-1.0の範囲にクリップ
-                normalized_score = min(1.0, max(0.0, normalized_score))
-            
-            candidate['final_score'] = normalized_score
-            candidate['normalization_info'] = {
-                'min_raw_score': min_raw_score,
-                'max_raw_score': max_raw_score,
-                'score_range': score_range
-            }
+                final_score = 0.0
+        else:
+            # raw_scoreをそのままfinal_scoreとして使用（絶対評価ベース）
+            final_score = raw_score
+        
+        candidate['final_score'] = final_score
         
         if DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug(f"Min-Max正規化適用: raw_score範囲 [{min_raw_score:.3f}, {max_raw_score:.3f}], 範囲幅: {score_range:.3f}")
+            logger.debug(f"正規化簡素化: product_name={candidate.get('product_name', '')}, raw_score={raw_score:.3f} → final_score={final_score:.3f}")
     
     # ステップ5.3: 詳細スコアリング（選別された候補のみ）
-    candidates_sorted = sorted([c for _, c in top_candidates_for_scoring], 
-                              key=lambda x: x['final_score'], reverse=True)
+    # 正規化後、original_rankに基づいて順序を復元（ランキング保護）
+    candidates_list = [c for _, c in top_candidates_for_scoring]
+    candidates_sorted = sorted(candidates_list, key=lambda x: x.get('original_rank', 9999))
+    
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"正規化後、original_rankに基づいて順序を復元: {len(candidates_sorted)}件")
     
     # スコア差が僅差（0.1以内）の場合、指定第2類医薬品を優先するソートロジック（乗り物酔い薬の場合）
     symptom_names = [s.get("name") for s in nlu_result.get("symptoms", [])]
@@ -8311,7 +8487,9 @@ def rule_based_recommendation(
             # 2位が指定第2類で、1位が指定第2類でない場合、入れ替え
             if '指定第2類' in second_classification and '指定第2類' not in top_classification:
                 candidates_sorted[0], candidates_sorted[1] = candidates_sorted[1], candidates_sorted[0]
-                logger.info(f"スコア差が僅差（{score_diff:.3f}）のため、指定第2類医薬品を優先しました")
+                # original_rankを更新（ランキング保護のため）
+                candidates_sorted[0]['original_rank'], candidates_sorted[1]['original_rank'] = candidates_sorted[1]['original_rank'], candidates_sorted[0]['original_rank']
+                logger.info(f"スコア差が僅差（{score_diff:.3f}）のため、指定第2類医薬品を優先しました（original_rankを更新）")
     
     # 肩こり・筋肉痛の場合、最適解の外用薬（フェイタス、バンテリン、サロンパス）を優先するソートロジック
     has_musculoskeletal_symptom = any(s in symptom_names for s in ["肩こり", "筋肉痛", "関節痛", "腰痛"])
@@ -8338,8 +8516,13 @@ def rule_based_recommendation(
                         # 最適解を1位に移動
                         optimal_candidate = candidates_sorted.pop(idx)
                         candidates_sorted.insert(0, optimal_candidate)
+                        # original_rankを更新（ランキング保護のため）
+                        # 1位からidx位までのoriginal_rankをシフト
+                        for i in range(idx):
+                            candidates_sorted[i + 1]['original_rank'] = i + 2
+                        candidates_sorted[0]['original_rank'] = 1
                         if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f})")
+                            logger.debug(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f}, original_rankを更新)")
                         break
     
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result, user_info=user_info)
@@ -8357,6 +8540,31 @@ def rule_based_recommendation(
         raw_score = candidate.get('raw_score', 0.0)
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"最終推奨結果 rank{i}: medicine_type={medicine_type}, product_name={product_name}, final_score={final_score:.3f}, raw_score={raw_score:.3f}")
+    
+    # ステップ5.3.5: 不足情報による減点情報の保存（絶対評価ベースのため、final_scoreには適用しない）
+    # 減点はdisplay_score計算時に適用されるため、ここでは情報のみを保存
+    if completeness_penalty > 0:
+        logger.info(f"不足情報による減点情報を保存: penalty={completeness_penalty:.3f}, missing_fields={list(missing_fields_detail.keys())}")
+        
+        # 減点適用前のraw_scoreをログ出力（INFOレベルで出力）
+        for i, candidate in enumerate(top_candidates[:3], 1):
+            logger.info(f"減点適用前 rank{i}: {candidate.get('product_name', '')} final_score={candidate.get('final_score', 0.0):.3f}, raw_score={candidate.get('raw_score', 0.0):.3f}")
+        
+        # score_breakdownに減点情報を追加（final_scoreには影響しない）
+        for candidate in top_candidates:
+            if 'score_breakdown' not in candidate:
+                candidate['score_breakdown'] = {}
+            candidate['score_breakdown']['completeness_penalty'] = -completeness_penalty
+            candidate['score_breakdown']['missing_fields_detail'] = missing_fields_detail
+            
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"減点情報を保存: {candidate.get('product_name', '')} penalty={completeness_penalty:.3f} (final_scoreには適用しない)")
+    
+    # ステップ5.3.6: MaxPossibleScore計算（絶対評価ベースのため、MaxPossibleScore情報のみ保存）
+    # 絶対評価ベースのため、MaxPossibleScore正規化は不要
+    MaxPossibleScore = 1.0 - completeness_penalty  # 最大-0.15でキャップ済み
+    for candidate in top_candidates:
+        candidate['max_possible_score'] = MaxPossibleScore
     
     # ステップ5.4: 相対スコア化（最高スコアを100%として正規化）
     # ensure_ingredient_diversity実行後、relative_scoreを再計算
@@ -8377,32 +8585,76 @@ def rule_based_recommendation(
                     # 1.0を超えないようにクリップ
                     relative_score = min(1.0, relative_score)
                     candidate['relative_score'] = relative_score
-                    # スコア帯の判定（高/中/低）
-                    if relative_score >= 0.9:
-                        candidate['score_level'] = '高'
-                    elif relative_score >= 0.7:
-                        candidate['score_level'] = '中'
+                    
+                    # スコアレベルの再定義（情報網羅率を考慮）
+                    # Criticalな不足情報があるかチェック
+                    has_critical_missing = False
+                    if missing_info_result.get("has_missing_info", False):
+                        critical_fields = ["age", "allergies", "pregnancy_status"]
+                        missing_fields = missing_info_result.get("missing_fields", [])
+                        has_critical_missing = any(field in missing_fields for field in critical_fields)
+                    
+                    # 新しいスコアレベル判定（計画7.1に従う）
+                    if relative_score >= 0.8 and not has_critical_missing:
+                        candidate['score_level'] = '高'  # 高（S）: 80%以上 + Criticalな不足情報なし
+                    elif relative_score >= 0.6:
+                        candidate['score_level'] = '中'  # 中（A）: 60%以上
+                    elif relative_score < 0.4:
+                        candidate['score_level'] = '低'  # 低（B）: 40%未満 または 閾値ギリギリ
                     else:
-                        candidate['score_level'] = '低'
+                        # 0.4 <= relative_score < 0.6 の場合は中（A）として扱う
+                        candidate['score_level'] = '中'
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"相対スコア: {candidate.get('product_name', '')} = {candidate.get('relative_score', 0.0):.3f} ({candidate.get('score_level', '')})")
         
-        # 相対スコア計算後、スコアの降順で再ソート（順位を最適度の降順に統一）
-        top_candidates = sorted(top_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
+        # 相対スコア計算後、original_rankに基づいて順序を復元（ランキング保護）
+        top_candidates = sorted(top_candidates, key=lambda x: x.get('original_rank', 9999))
+        
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"相対スコア計算後、original_rankに基づいて順序を復元: {len(top_candidates)}件")
+        
+        # ステップ5.4.5: 絶対評価ベースの表示用スコア計算
+        if len(top_candidates) >= 1:
+            # 各候補に対してdisplay_scoreを計算（絶対評価ベース）
+            for rank, candidate in enumerate(top_candidates[:3], 1):
+                raw_score = candidate.get('raw_score', 0.0)
+                
+                # 絶対評価ベースのdisplay_scoreを計算
+                display_score = calculate_display_score_absolute(rank, raw_score, completeness_penalty)
+                candidate['display_score'] = display_score
+                
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"表示用スコア（絶対評価ベース）: rank={rank}, {candidate.get('product_name', '')} = {display_score:.1f}% (raw_score={raw_score:.3f}, penalty={completeness_penalty:.3f})")
     
     # ステップ5.5: 推奨後の検証処理
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ5.5: 推奨後の検証処理 ---")
+    
+    # 減点適用後、final_scoreが0になった候補も保持（ランキング保護のため）
+    # 減点適用前のraw_scoreで閾値判定済みのため、減点適用後も候補を保持
     validated_candidates = _finalize_recommendations(top_candidates, nlu_result, influenza_risk)
+    
+    # 減点適用後、final_scoreが0になった候補も保持（最低3件推奨するため）
+    # 減点適用前のraw_scoreで閾値判定済みのため、減点適用後も候補を保持
+    if len(validated_candidates) < top_n:
+        # 減点適用後、final_scoreが0になった候補も追加
+        excluded_by_validation = [c for c in top_candidates if c not in validated_candidates]
+        # 減点適用前のraw_scoreで閾値判定済みのため、減点適用後も候補を保持
+        for candidate in excluded_by_validation:
+            if candidate.get('raw_score', 0.0) >= 0.3:  # 減点適用前のraw_scoreで閾値判定済み
+                validated_candidates.append(candidate)
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"減点適用後も候補を保持: {candidate.get('product_name', '')} (raw_score={candidate.get('raw_score', 0.0):.3f}, final_score={candidate.get('final_score', 0.0):.3f})")
     
     # 推奨医薬品が3件未満の場合、スコアが低い候補も含める（最低3件推奨するため）
     if len(validated_candidates) < top_n and len(top_candidates) > len(validated_candidates):
-        # 除外された候補から、スコアが0.0より大きい候補を追加
+        # 除外された候補から、減点適用前のraw_score >= 0.3の候補を追加
+        # 減点適用後、final_scoreが0になっても、減点適用前のraw_scoreで閾値判定済みのため保持
         excluded_candidates = [c for c in top_candidates if c not in validated_candidates]
-        excluded_candidates = [c for c in excluded_candidates if c.get('final_score', 0.0) > 0.0]
+        excluded_candidates = [c for c in excluded_candidates if c.get('raw_score', 0.0) >= 0.3]
         
-        # スコア順にソート
-        excluded_candidates = sorted(excluded_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
+        # original_rankに基づいてソート（ランキング保護）
+        excluded_candidates = sorted(excluded_candidates, key=lambda x: x.get('original_rank', 9999))
         
         # 不足分を追加
         needed_count = top_n - len(validated_candidates)
@@ -8412,8 +8664,14 @@ def rule_based_recommendation(
             validated_candidates.append(candidate)
             logger.info(f"⚠️ 推奨医薬品が{top_n}件未満のため、低スコア候補を追加: {candidate.get('product_name', '')} (スコア: {candidate.get('final_score', 0.0):.3f})")
         
-        # スコア順に再ソート
-        validated_candidates = sorted(validated_candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)
+        # original_rankに基づいて順序を復元（ランキング保護）
+        validated_candidates = sorted(validated_candidates, key=lambda x: x.get('original_rank', 9999))
+    
+    # 最終的な順序復元（すべての処理後、original_rankに基づいて順序を復元）
+    validated_candidates = sorted(validated_candidates, key=lambda x: x.get('original_rank', 9999))
+    
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        logger.debug(f"最終的な順序復元: original_rankに基づいて順序を復元: {len(validated_candidates)}件")
     
     # ステップ6: 説明生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -8439,12 +8697,15 @@ def rule_based_recommendation(
             "usage_notes": candidate.get('usage_notes', '用法用量を守ってご使用ください。'),
             "score": candidate['final_score'],
             "relative_score": candidate.get('relative_score', candidate['final_score']),  # 相対スコア（最高スコアを1.0として正規化）
+            "display_score": candidate.get('display_score'),  # 表示用スコア（整数、40-100%）
             "score_level": candidate.get('score_level', '中'),  # スコア帯（高/中/低）
             "score_breakdown": candidate.get('score_breakdown', {}),
             "explanation": explanation,
             "reason": explanation,  # ChatGPTベース互換性のため追加
             "allergy_warning": candidate.get('allergy_warning', ''),
-            "interaction_warnings": candidate.get('interaction_warnings', [])
+            "interaction_warnings": candidate.get('interaction_warnings', []),
+            "completeness_penalty": completeness_penalty,  # 不足情報による減点
+            "max_possible_score": candidate.get('max_possible_score', 1.0)  # MaxPossibleScore
         }
         
         # リスク警告を追加
@@ -8508,6 +8769,8 @@ def rule_based_recommendation(
         "influenza_reason": influenza_reason,  # 新規追加
         "confidence_score": confidence_score,  # confidence_scoreを追加
         "score_breakdown_json": score_breakdown_json,  # デバッグ用JSON出力
+        "completeness_penalty": completeness_penalty,  # 不足情報による減点
+        "max_possible_score": MaxPossibleScore,  # MaxPossibleScore
         "timestamp": datetime.now().isoformat()
     }
 
