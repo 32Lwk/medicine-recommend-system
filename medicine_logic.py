@@ -700,7 +700,7 @@ def set_cached_translation(text: str, target_language: str, translated_text: str
     cache_key = f"{target_language}:{hash(text)}"
     _translation_cache_global[cache_key] = translated_text
 
-def translate_medicine_recommendation(text, target_language, client=None):
+def translate_medicine_recommendation(text, target_language, client=None, session_id=None):
     """
     AI応答（医薬品推奨）を翻訳（DeepL API使用、キャッシュ機能付き）
     
@@ -708,6 +708,7 @@ def translate_medicine_recommendation(text, target_language, client=None):
         text (str): 翻訳対象のテキスト
         target_language (str): 翻訳先言語コード ('en', 'ko', 'zh')
         client: 後方互換性のためのパラメータ（使用されません）
+        session_id: セッションID（ログ用、オプション）
     
     Returns:
         str: 翻訳されたテキスト
@@ -719,6 +720,18 @@ def translate_medicine_recommendation(text, target_language, client=None):
     cached_result = get_cached_translation(text, target_language)
     if cached_result:
         logger.debug(f"翻訳キャッシュヒット: {target_language}, テキスト長: {len(text)}")
+        # キャッシュヒット時もログを記録
+        if session_id:
+            try:
+                from structured_logger import log_translation_detail
+                log_translation_detail(
+                    session_id=session_id,
+                    original_text=text[:500],  # 長いテキストは最初の500文字のみ
+                    translated_text=cached_result[:500],
+                    target_language=target_language
+                )
+            except Exception as e:
+                logger.warning(f"翻訳ログ記録エラー: {e}")
         return cached_result
     
     # .envファイルから環境変数を読み込む（念のため）
@@ -778,6 +791,19 @@ def translate_medicine_recommendation(text, target_language, client=None):
         
         # キャッシュに保存
         set_cached_translation(text, target_language, translated_text)
+        
+        # 翻訳ログを記録
+        if session_id:
+            try:
+                from structured_logger import log_translation_detail
+                log_translation_detail(
+                    session_id=session_id,
+                    original_text=text[:500] if len(text) > 500 else text,  # 長いテキストは最初の500文字のみ
+                    translated_text=translated_text[:500] if len(translated_text) > 500 else translated_text,
+                    target_language=target_language
+                )
+            except Exception as e:
+                logger.warning(f"翻訳ログ記録エラー: {e}")
         
         return translated_text
         
@@ -2383,7 +2409,7 @@ def comprehensive_medicine_recommendation(user_text, user_info=None, client=None
 # ルールベース推奨システム（新規追加）
 # ================================================================================
 
-def rule_based_medicine_recommendation(user_text, user_info, client=None):
+def rule_based_medicine_recommendation(user_text, user_info, client=None, session_id=None):
     """
     ルールベース医薬品推奨システムのラッパー関数
     風邪薬、解熱鎮痛薬、鼻炎用薬に限定
@@ -2392,6 +2418,7 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
         user_text: ユーザーの症状入力
         user_info: ユーザー情報（年齢、妊娠など）
         client: OpenAIクライアント
+        session_id: セッションID（オプション、ログ用）
     
     Returns:
         推奨結果
@@ -2429,11 +2456,12 @@ def rule_based_medicine_recommendation(user_text, user_info, client=None):
             user_info=user_info,
             medicine_df=df,
             client=client,
-            top_n=3
+            top_n=3,
+            session_id=session_id
         )
         
-        # ログ保存
-        log_recommendation_session(user_text, user_info, result)
+        # ログ保存はapp.pyでbot_contentが生成された後に実行されるため、ここではスキップ
+        # （app.pyから完全なapp_outputを渡してログを記録する）
         
         return result
         
