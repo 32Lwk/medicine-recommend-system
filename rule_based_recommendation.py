@@ -8036,6 +8036,9 @@ def rule_based_recommendation(
         logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
     candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
     
+    # 初期候補数を記録
+    initial_candidate_count = len(candidates)
+    
     # 睡眠改善薬専用の安全性チェック（候補医薬品取得後、スコアリング前）
     # 症状から医薬品種類を判定
     medicine_type = None
@@ -8271,6 +8274,9 @@ def rule_based_recommendation(
         top_candidates_for_scoring = sorted(threshold_candidates, key=lambda x: x[0], reverse=True)
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"閾値ベース選別: 簡易スコア0.3以上の候補 {len(top_candidates_for_scoring)}件を選別")
+    
+    # スコアリング後の候補数を記録（閾値ベース選別後）
+    after_scoring_candidate_count = len(top_candidates_for_scoring)
     
     # 解熱鎮痛薬と外用薬（のど）を優先的に詳細スコアリングに含める
     # 「のど痛み+発熱」パターンの場合、解熱鎮痛薬と外用薬（のど）を確実に含める
@@ -8527,6 +8533,9 @@ def rule_based_recommendation(
     
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result, user_info=user_info)
     
+    # フィルタリング後の候補数を記録
+    after_filtering_candidate_count = len(top_candidates)
+    
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(
             f"詳細スコアリング完了: {len(top_candidates_for_scoring)}件 → 上位{len(top_candidates)}件を選択（成分多様性考慮）"
@@ -8773,6 +8782,11 @@ def rule_based_recommendation(
         "score_breakdown_json": score_breakdown_json,  # デバッグ用JSON出力
         "completeness_penalty": completeness_penalty,  # 不足情報による減点
         "max_possible_score": MaxPossibleScore,  # MaxPossibleScore
+        "candidate_counts": {
+            "initial": initial_candidate_count,
+            "after_scoring": after_scoring_candidate_count,
+            "after_filtering": after_filtering_candidate_count
+        },
         "timestamp": datetime.now().isoformat()
     }
 
@@ -9395,10 +9409,31 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
 # 7. ロギング関数
 # ================================================================================
 
-def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, log_file: str = "recommendation_log.jsonl"):
+def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, session_id: str = None, app_output: str = None, log_file: str = "recommendation_log.jsonl"):
     """
     推奨セッションをログに保存（監査用）
+    
+    Args:
+        user_text: ユーザー入力
+        user_info: ユーザー情報
+        result: 推奨結果
+        session_id: セッションID（オプション）
+        app_output: アプリケーション出力（オプション、なければ推奨結果から生成）
+        log_file: ログファイル名（旧形式互換用）
     """
+    # structured_loggerをインポート
+    try:
+        from structured_logger import log_recommendation_detail
+    except ImportError:
+        logger.warning("structured_loggerがインポートできません。旧形式のログを出力します。")
+        log_recommendation_detail = None
+    
+    # セッションIDが指定されていない場合は生成
+    if not session_id:
+        import uuid
+        session_id = str(uuid.uuid4())
+    
+    # 旧形式のログも出力（後方互換性のため）
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "user_text": user_text,
@@ -9414,6 +9449,60 @@ def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, lo
     
     with open(log_path, 'a', encoding='utf-8') as f:
         f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+    
+    # structured_loggerを使用した詳細ログを出力
+    if log_recommendation_detail:
+        # app_outputが指定されていない場合は、推奨結果から簡易的に生成
+        if not app_output:
+            recommended_medicines = result.get('recommended_medicines', [])
+            if recommended_medicines:
+                medicine_names = [m.get('product_name', '') for m in recommended_medicines[:3]]
+                app_output = f"推奨医薬品: {', '.join(medicine_names)}"
+            else:
+                app_output = f"推奨結果: {result.get('status', 'unknown')}"
+        
+        # NLU結果を取得
+        nlu_result = result.get('nlu_result', {})
+        
+        # 候補数を取得
+        candidate_counts = result.get('candidate_counts', {
+            "initial": 0,
+            "after_scoring": 0,
+            "after_filtering": 0
+        })
+        
+        # 推奨医薬品を取得（全スコアを含む）
+        recommended_medicines = result.get('recommended_medicines', [])
+        # 各医薬品の全スコア情報を含める
+        medicines_with_scores = []
+        for medicine in recommended_medicines:
+            medicine_detail = {
+                "product_name": medicine.get('product_name', ''),
+                "medicine_type": medicine.get('medicine_type', ''),
+                "final_score": medicine.get('score', medicine.get('final_score')),
+                "total_score": medicine.get('score', medicine.get('final_score')),
+                "raw_score": medicine.get('raw_score'),
+                "display_score": medicine.get('display_score'),
+                "relative_score": medicine.get('relative_score'),
+                "score_breakdown": medicine.get('score_breakdown', {}),
+                "max_possible_score": medicine.get('max_possible_score'),
+                "original_rank": medicine.get('original_rank')
+            }
+            medicines_with_scores.append(medicine_detail)
+        
+        # 翻訳後のテキストを取得（resultに含まれている場合）
+        translated_output = result.get('translated_output')
+        
+        # structured_loggerでログ出力
+        log_recommendation_detail(
+            session_id=session_id,
+            user_input=user_text,
+            app_output=app_output,
+            nlu_result=nlu_result,
+            candidate_counts=candidate_counts,
+            recommended_medicines=medicines_with_scores,
+            translated_output=translated_output
+        )
     
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"ログ保存完了: {log_path}")
