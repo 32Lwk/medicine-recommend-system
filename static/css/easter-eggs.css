@@ -1,0 +1,126 @@
+/**
+ * イースターエッグ専用スタイル
+ */
+
+/* アクセシビリティ: アニメーション無効化 */
+@media (prefers-reduced-motion: reduce) {
+    .chat-container[style*="transform"],
+    .chat-container[style*="animation"],
+    #easterEggParticles,
+    #easterEggSnow,
+    #easterEggRain,
+    #fireworksCanvas {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* ゲームモーダルのスタイル */
+#snakeModal .modal-content,
+#emojiModal .modal-content {
+    max-width: 600px;
+}
+
+#snakeCanvas,
+#emojiCanvas {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ゲームコントロールボタンのスタイル */
+#snakeControls button {
+    transition: background 0.2s, transform 0.1s;
+}
+
+#snakeControls button:active {
+    transform: scale(0.95);
+}
+
+#snakeControls button:hover {
+    background: #45a049 !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    #snakeModal .modal-content,
+    #emojiModal .modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    #snakeCanvas,
+    #emojiCanvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+    
+    #snakeControls {
+        gap: 5px !important;
+    }
+    
+    #snakeControls button {
+        padding: 8px 15px !important;
+        font-size: 16px !important;
+    }
+}
+
+/* パーティクル効果のスタイル */
+#easterEggParticles,
+#easterEggSnow,
+#easterEggRain {
+    will-change: transform, opacity;
+}
+
+/* 感謝モーダルのスタイル */
+#thanksModal .modal-content {
+    animation: bounceIn 0.5s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ゲームオーバーのスタイル */
+#snakeGameOver {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* ARIA属性対応（スクリーンリーダー用） */
+.modal[role="dialog"] {
+    /* 既存のスタイルを継承 */
+}
+
+.modal[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* フォーカス管理（キーボード操作） */
+.modal-content:focus {
+    outline: 2px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+/* タッチ操作の最適化 */
+@media (hover: none) and (pointer: coarse) {
+    #snakeControls button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
