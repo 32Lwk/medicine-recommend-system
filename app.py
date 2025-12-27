@@ -5022,17 +5022,30 @@ def index():
                                     
                                     rank = medicine.get('rank', 1)
                                     
-                                    # スコア表示の生成（相対スコアとスコア帯）
+                                    # スコア表示の生成（display_scoreを優先、整数表示）
                                     score_display = ""
-                                    relative_score = medicine.get('relative_score')
+                                    display_score = medicine.get('display_score')
                                     score_level = medicine.get('score_level', '中')
-                                    if relative_score is not None:
-                                        score_percent = relative_score * 100
-                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent:.1f}% <span style="color: #666;">({score_level})</span></p>'
+                                    completeness_penalty = medicine.get('completeness_penalty', 0.0)
+                                    
+                                    if display_score is not None:
+                                        # display_scoreを小数点以下1桁表示（例：85.5%）
+                                        score_percent = round(display_score, 1)
+                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
+                                        
+                                        # 不足情報による減点がある場合、メッセージを表示
+                                        if completeness_penalty > 0:
+                                            penalty_percent = round(completeness_penalty * 100, 1)
+                                            score_display += f'<p style="margin: 5px 0; color: #f57c00; font-size: 0.9em;"><strong>ℹ️ 情報:</strong> 年齢などの情報が入力されると、より正確な判定が可能です（不足情報により{penalty_percent}%低下中）</p>'
+                                    elif medicine.get('relative_score') is not None:
+                                        # display_scoreがない場合はrelative_scoreを使用（フォールバック）
+                                        relative_score = medicine.get('relative_score')
+                                        score_percent = int(round(relative_score * 100))
+                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
                                     elif medicine.get('score') is not None:
                                         # 相対スコアがない場合は絶対スコアを表示（フォールバック）
-                                        score_percent = medicine.get('score', 0) * 100
-                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent:.1f}%</p>'
+                                        score_percent = int(round(medicine.get('score', 0) * 100))
+                                        score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}%</p>'
                                     
                                     # リスク警告の表示
                                     risk_warning_display = ""
