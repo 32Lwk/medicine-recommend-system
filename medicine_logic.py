@@ -4,6 +4,7 @@ import os
 import re
 import time
 import logging
+from typing import Dict
 from debug_logger import add_network_log, performance_stats
 from datetime import datetime
 # from typing import List
@@ -3442,4 +3443,78 @@ def detect_postpartum_breastfeeding(user_message: str, nlu_result: dict, user_in
         "is_postpartum": is_postpartum,
         "is_breastfeeding": is_breastfeeding,
         "reason": reason
-    } 
+    }
+
+
+# ================================================================================
+# 不足情報による減点システム
+# ================================================================================
+
+# 不足情報フィールドと減点値のマッピング
+PENALTY_MAP = {
+    "age": 0.15,  # Critical
+    "allergies": 0.15,  # Critical
+    "pregnancy_status": 0.15,  # Critical
+    "gender": 0.05,  # Important
+    "current_medications": 0.05,  # Important
+    "symptom_duration": 0.02,  # Optional
+    "symptoms": 0.0  # 症状が検出されない場合は推奨を中断するため減点なし
+}
+
+def calculate_completeness_penalty(missing_info_result: Dict) -> Dict:
+    """
+    不足情報による減点を計算
+    
+    Args:
+        missing_info_result: check_missing_informationの戻り値
+            {
+                "has_missing_info": bool,
+                "missing_fields": List[str],
+                "priority": str
+            }
+    
+    Returns:
+        {
+            "completeness_penalty": float,  # 累積減点（最大-0.3でキャップ）
+            "missing_fields_detail": Dict[str, float],  # 各フィールドの減点内訳
+            "max_penalty_reached": bool  # 最大減点に達したかどうか
+        }
+    """
+    if not missing_info_result.get("has_missing_info", False):
+        return {
+            "completeness_penalty": 0.0,
+            "missing_fields_detail": {},
+            "max_penalty_reached": False
+        }
+    
+    missing_fields = missing_info_result.get("missing_fields", [])
+    if not missing_fields:
+        return {
+            "completeness_penalty": 0.0,
+            "missing_fields_detail": {},
+            "max_penalty_reached": False
+        }
+    
+    # 各フィールドの減点を計算
+    missing_fields_detail = {}
+    total_penalty = 0.0
+    max_penalty = 0.15  # 最大減点（30%から15%に変更）
+    
+    for field in missing_fields:
+        penalty = PENALTY_MAP.get(field, 0.0)
+        if penalty > 0:
+            missing_fields_detail[field] = penalty
+            total_penalty += penalty
+    
+    # 最大減点でキャップ
+    max_penalty_reached = total_penalty >= max_penalty
+    completeness_penalty = min(total_penalty, max_penalty)
+    
+    if logger.level <= logging.DEBUG:
+        logger.debug(f"不足情報減点計算: missing_fields={missing_fields}, total_penalty={total_penalty:.3f}, capped_penalty={completeness_penalty:.3f}, max_reached={max_penalty_reached}")
+    
+    return {
+        "completeness_penalty": completeness_penalty,
+        "missing_fields_detail": missing_fields_detail,
+        "max_penalty_reached": max_penalty_reached
+    }
