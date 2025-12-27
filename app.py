@@ -409,11 +409,49 @@ def handle_502_error(e):
 @app.errorhandler(500)
 def handle_500_error(e):
     """500エラーのハンドラー"""
-    logger.error(f"❌ 500 Internal Server Error: {str(e)}")
-    logger.error(f"❌ エラータイプ: {type(e).__name__}")
-    
     import traceback
-    logger.error(f"❌ トレースバック:\n{traceback.format_exc()}")
+    
+    error_type = type(e).__name__
+    error_message = str(e)
+    stack_trace = traceback.format_exc()
+    
+    logger.error(f"❌ 500 Internal Server Error: {error_message}")
+    logger.error(f"❌ エラータイプ: {error_type}")
+    logger.error(f"❌ トレースバック:\n{stack_trace}")
+    
+    # セッションIDを取得
+    session_id = None
+    try:
+        session_id = session.get('_id') if has_request_context() and hasattr(session, 'get') else None
+    except:
+        pass
+    
+    # ユーザー入力を取得（可能な場合）
+    user_input = None
+    try:
+        if request.method == 'POST':
+            if request.is_json:
+                user_input = json.dumps(request.get_json())
+            else:
+                user_input = request.form.get('message', '')
+    except:
+        pass
+    
+    # システム状態を取得
+    system_state = {}
+    try:
+        from performance_monitor import get_global_monitor
+        monitor = get_global_monitor()
+        metrics = monitor.get_metrics()
+        system_state = {
+            'memory_usage_percent': metrics.get('memory_usage_percent', 0),
+            'cpu_usage_percent': metrics.get('cpu_usage_percent', 0),
+            'response_time_ms': metrics.get('response_time_ms', 0),
+            'error_count': metrics.get('error_count', 0),
+            'request_count': metrics.get('request_count', 0)
+        }
+    except:
+        pass
     
     # APIキーのチェック
     if not os.getenv('OPENAI_API_KEY'):
@@ -422,12 +460,27 @@ def handle_500_error(e):
     else:
         error_msg = "申し訳ございません。システムエラーが発生しました。管理者に連絡してください。"
     
+    # structured_loggerで詳細ログを記録
+    try:
+        from structured_logger import log_error_detail
+        log_error_detail(
+            session_id=session_id,
+            error_type=error_type,
+            error_message=error_message,
+            stack_trace=stack_trace,
+            user_input=user_input,
+            system_state=system_state,
+            user_display_message=error_msg
+        )
+    except Exception as log_error:
+        logger.warning(f"エラーログ記録エラー: {log_error}")
+    
     # JSONリクエストの場合
     if request.is_json or request.method == 'POST':
         return jsonify({
             'error': True,
             'response': error_msg,
-            'error_type': type(e).__name__ if os.getenv('FLASK_ENV') != 'production' else None
+            'error_type': error_type if os.getenv('FLASK_ENV') != 'production' else None
         }), 500
     
     # HTMLリクエストの場合
@@ -1243,13 +1296,17 @@ def index():
                             session.modified = True
                             
                             # ログ記録
+                            # 会話履歴を取得（最新10件）
+                            conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=emergency_message.strip(),
                                 response_type="emergency_response",
                                 category="Emergency",
                                 confidence=None,
-                                counseling_mode=counseling_mode
+                                counseling_mode=counseling_mode,
+                                user_input=user_message,
+                                conversation_history=conversation_history
                             )
                             
                             if sid:
@@ -1350,13 +1407,17 @@ def index():
                         session.modified = True
                         
                         # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        # 会話履歴を取得（最新10件）
+                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
                             response_type="counseling_question",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_message,
+                            conversation_history=conversation_history
                         )
                     elif not skip_counseling_response and response.get('type') == 'counseling_summary':
                         # カウンセリング完了時も返信を含める場合がある
@@ -1383,13 +1444,17 @@ def index():
                         session.modified = True
                         
                         # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        # 会話履歴を取得（最新10件）
+                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
                             response_type="counseling_summary",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_message,
+                            conversation_history=conversation_history
                         )
                         
                         # カウンセリング完了ログを保存
@@ -1415,6 +1480,8 @@ def index():
                         session.modified = True
                         
                         # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                        # 会話履歴を取得（最新10件）
+                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
@@ -2415,6 +2482,17 @@ def index():
                             latest_recommended_medicines
                         )
                         
+                        # 医薬品質疑応答のログを記録
+                        try:
+                            from structured_logger import log_medicine_question_detail
+                            log_medicine_question_detail(
+                                session_id=sid,
+                                user_input=user_message,
+                                response=chat_response.get('answer', '')
+                            )
+                        except Exception as e:
+                            logger.warning(f"医薬品質疑応答ログ記録エラー: {e}")
+                        
                         # 評価ボタン用のデータを準備
                         import json
                         import html
@@ -3135,6 +3213,17 @@ def index():
                             conversation_history,
                             latest_recommended_medicines
                         )
+                        
+                        # 医薬品質疑応答のログを記録
+                        try:
+                            from structured_logger import log_medicine_question_detail
+                            log_medicine_question_detail(
+                                session_id=sid,
+                                user_input=user_message,
+                                response=chat_response.get('answer', '')
+                            )
+                        except Exception as e:
+                            logger.warning(f"医薬品質疑応答ログ記録エラー: {e}")
 
                         # 医薬品相談回答の処理は既に上記で実装済み
                         # 重複コードを削除
@@ -4268,7 +4357,8 @@ def index():
                         recommendation_result = rule_based_medicine_recommendation(
                             user_message, 
                             user_info, 
-                            recommendation_client
+                            recommendation_client,
+                            session_id=sid
                         )
                         
                         # ルールベース結果のデバッグログ
@@ -5206,7 +5296,7 @@ def index():
                         if detected_language != 'ja' and bot_content:
                             try:
                                 logger.info(f"🌍 翻訳開始: {detected_language}")
-                                translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client)
+                                translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client, session_id=sid)
                                 if translated_content and translated_content != bot_content:
                                     bot_content = translated_content
                                     logger.info(f"✅ 翻訳完了: {detected_language}")
@@ -5239,9 +5329,9 @@ def index():
                         feedback_negative = "不適切"
                         if detected_language != 'ja':
                             try:
-                                feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client)
-                                feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client)
-                                feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client)
+                                feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client, session_id=sid)
+                                feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client, session_id=sid)
+                                feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client, session_id=sid)
                                 if feedback_text_translated and feedback_text_translated != feedback_text:
                                     feedback_text = feedback_text_translated
                                 if feedback_positive_translated and feedback_positive_translated != feedback_positive:
@@ -5262,6 +5352,19 @@ def index():
         </button>
     </div>
 </div>"""
+                        
+                        # bot_contentが完成したので、完全なapp_outputでログを追加記録
+                        try:
+                            from rule_based_recommendation import log_recommendation_session
+                            log_recommendation_session(
+                                user_text=user_message,
+                                user_info=user_info,
+                                result=recommendation_result,
+                                session_id=sid,
+                                app_output=bot_content  # 完全なHTML出力を記録
+                            )
+                        except Exception as e:
+                            logger.warning(f"⚠️ ログ追加エラー（無視して続行）: {e}")
                     
                         bot_diag = recommendation_result
                     
