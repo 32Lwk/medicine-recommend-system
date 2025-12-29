@@ -78,16 +78,13 @@ def log_counseling_response(
         logger.error(f"❌ カウンセリング返信ログ記録エラー: {e}")
     
     # structured_loggerを使用した詳細ログを出力
+    # 通常時はconversation_history=None（エラー時や不適切評価時のみ会話履歴を含める）
     if log_counseling_detail and user_input:
-        # 会話履歴が指定されていない場合は空リスト
-        if conversation_history is None:
-            conversation_history = []
-        
         log_counseling_detail(
             session_id=session_id,
             user_input=user_input,
             response=response_content,
-            conversation_history=conversation_history
+            conversation_history=conversation_history  # Noneの場合は空リストとして扱われる
         )
 
 
@@ -329,7 +326,7 @@ def generate_counseling_response(
             else:
                 response_text = response_text[:max_length] + "..."
         
-        # ログ記録
+        # ログ記録（通常時は会話履歴なし）
         if session_id:
             log_counseling_response(
                 session_id=session_id,
@@ -337,7 +334,9 @@ def generate_counseling_response(
                 response_type="counseling_response",
                 category=None,
                 confidence=None,
-                counseling_mode=None
+                counseling_mode=None,
+                user_input=user_text,
+                conversation_history=None
             )
         
         return response_text
@@ -374,7 +373,9 @@ def generate_counseling_response(
                     response_type="counseling_response_error",
                     category=None,
                     confidence=None,
-                    counseling_mode=None
+                    counseling_mode=None,
+                    user_input=user_text,
+                    conversation_history=conversation_history if 'conversation_history' in locals() else None
                 )
             except:
                 pass
@@ -986,7 +987,7 @@ def process_counseling_answer(
             
             end_message = '承知いたしました。お役に立てて嬉しいです。何か他に気になることがあれば、いつでもお聞かせください。'
             
-            # ログ記録（カウンセリング中断理由を記録）
+            # ログ記録（カウンセリング中断理由を記録、通常時は会話履歴なし）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -994,7 +995,9 @@ def process_counseling_answer(
                     response_type="counseling_summary",
                     category=None,
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=None
                 )
                 logger.info(f"📊 カウンセリング中断: 理由=ユーザー明示的終了, "
                           f"質問回数={len(question_history)}, "
@@ -1033,7 +1036,7 @@ def process_counseling_answer(
             
             crisis_content = crisis_resources.get('message', '専門機関への相談をお勧めします。')
             
-            # ログ記録（カウンセリング中断理由を記録）
+            # ログ記録（カウンセリング中断理由を記録、通常時は会話履歴なし）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -1041,7 +1044,9 @@ def process_counseling_answer(
                     response_type="crisis_support",
                     category="Emergency",
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=None
                 )
                 logger.warning(f"🚨 カウンセリング中断: 理由=危機検出（希死念慮・自傷他害の示唆）, "
                              f"質問回数={len(question_history)}, "
@@ -1064,7 +1069,7 @@ def process_counseling_answer(
             
             no_progress_content = '詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。'
             
-            # ログ記録（カウンセリング中断理由を記録）
+            # ログ記録（カウンセリング中断理由を記録、通常時は会話履歴なし）
             if session_id:
                 log_counseling_response(
                     session_id=session_id,
@@ -1072,7 +1077,9 @@ def process_counseling_answer(
                     response_type="counseling_summary_no_progress",
                     category=None,
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=None
                 )
                 logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞（LLM判定）, "
                           f"質問回数={len(question_history)}, "
@@ -1163,7 +1170,7 @@ def process_counseling_answer(
                     
                     summary_content = counseling_response_text + "\n\nお役に立てて嬉しいです。何か他に気になることがあれば、いつでもお聞かせください。"
                     
-                    # ログ記録（カウンセリング中断理由を記録）
+                    # ログ記録（カウンセリング中断理由を記録、通常時は会話履歴なし）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -1171,7 +1178,9 @@ def process_counseling_answer(
                             response_type="counseling_summary",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_text,
+                            conversation_history=None
                         )
                         logger.info(f"📊 カウンセリング中断: 理由=ユーザー満足度高（満足度スコア={satisfaction.get('satisfaction_score', 0.0):.2f}）, "
                                   f"質問回数={len(question_history)}, "
@@ -1199,7 +1208,7 @@ def process_counseling_answer(
                     
                     no_progress_content = counseling_response_text + "\n\n詳しい症状が分からないため、一度お近くの医療機関にご相談されることをお勧めします。"
                     
-                    # ログ記録（カウンセリング中断理由を記録）
+                    # ログ記録（カウンセリング中断理由を記録、通常時は会話履歴なし）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -1207,7 +1216,9 @@ def process_counseling_answer(
                             response_type="counseling_summary_no_progress",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_text,
+                            conversation_history=None
                         )
                         logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞, "
                                   f"質問回数={len(question_history)}, "
@@ -1277,7 +1288,7 @@ def process_counseling_answer(
                         'continue_counseling': True
                     }
                     
-                    # ログ記録
+                    # ログ記録（通常時は会話履歴なし）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -1285,7 +1296,9 @@ def process_counseling_answer(
                             response_type="counseling_response_with_question",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_text,
+                            conversation_history=None
                         )
                     
                     return result
@@ -1297,7 +1310,7 @@ def process_counseling_answer(
                     
                     summary_content = counseling_response_text + "\n\nお話を伺えました。ありがとうございます。"
                     
-                    # ログ記録
+                    # ログ記録（通常時は会話履歴なし）
                     if session_id:
                         log_counseling_response(
                             session_id=session_id,
@@ -1305,7 +1318,9 @@ def process_counseling_answer(
                             response_type="counseling_summary",
                             category=None,
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_text,
+                            conversation_history=None
                         )
                     
                     return {
@@ -1333,7 +1348,8 @@ def process_counseling_answer(
                     interpretation, 
                     client,
                     conversation_history=conversation_history,
-                    session_id=session_id
+                    session_id=session_id,
+                    user_text=user_text
                 )
                 final_content = counseling_response_text + "\n\n" + summary
             else:
@@ -1342,7 +1358,8 @@ def process_counseling_answer(
                     interpretation, 
                     client,
                     conversation_history=conversation_history,
-                    session_id=session_id
+                    session_id=session_id,
+                    user_text=user_text
                 )
                 final_content = summary
             
@@ -1382,7 +1399,9 @@ def process_counseling_answer(
                     response_type="counseling_error",
                     category=None,
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=conversation_history
                 )
             except:
                 pass
@@ -1399,7 +1418,8 @@ def generate_counseling_summary(
     interpretation: Dict,
     client: OpenAI,
     conversation_history: List[Dict] = None,
-    session_id: str = None
+    session_id: str = None,
+    user_text: str = None
 ) -> str:
     """
     カウンセリングの総合的な返信を生成
@@ -1466,7 +1486,7 @@ def generate_counseling_summary(
         if len(response_text) > 200:
             response_text = response_text[:200] + "..."
         
-        # ログ記録
+        # ログ記録（通常時は会話履歴なし）
         if session_id:
             log_counseling_response(
                 session_id=session_id,
@@ -1474,7 +1494,9 @@ def generate_counseling_summary(
                 response_type="counseling_summary",
                 category=None,
                 confidence=None,
-                counseling_mode=counseling_mode
+                counseling_mode=counseling_mode,
+                user_input=user_text,
+                conversation_history=None
             )
         
         return response_text
@@ -1491,7 +1513,9 @@ def generate_counseling_summary(
                     response_type="counseling_summary_error",
                     category=None,
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=conversation_history
                 )
             except:
                 pass
@@ -1661,13 +1685,16 @@ def handle_user_input_in_counseling_mode(
                       f"収集情報数={len(collected_info)}")
             
             if session_id:
+                # ログ記録（通常時は会話履歴なし）
                 log_counseling_response(
                     session_id=session_id,
                     response_content=consultation_message.strip(),
                     response_type="counseling_summary_medical_consultation",
                     category=None,
                     confidence=None,
-                    counseling_mode=counseling_mode
+                    counseling_mode=counseling_mode,
+                    user_input=user_text,
+                    conversation_history=None
                 )
             
             return {
@@ -1775,13 +1802,16 @@ def handle_user_input_in_counseling_mode(
                           f"収集情報数={len(collected_info)}")
                 
                 if session_id:
+                    # ログ記録（通常時は会話履歴なし）
                     log_counseling_response(
                         session_id=session_id,
                         response_content=consultation_message.strip(),
                         response_type="counseling_summary_medical_consultation",
                         category=None,
                         confidence=None,
-                        counseling_mode=counseling_mode
+                        counseling_mode=counseling_mode,
+                        user_input=user_text,
+                        conversation_history=None
                     )
                 
                 return {
