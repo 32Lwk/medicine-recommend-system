@@ -10,6 +10,10 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+# LLMトリアージ結果のキャッシュ（完全一致のみ）
+_triage_cache: Dict[str, Dict] = {}
+_MAX_CACHE_SIZE = 1000
+
 TRIAGE_PROMPT = """
 あなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。
 
@@ -18,7 +22,7 @@ TRIAGE_PROMPT = """
 2. Emotional（精神的・感情的症状）: 緊張、不安、ストレス、恋愛の悩みなど、心理的な症状
 3. Emergency（緊急性が高い症状）: 心臓が痛い、呼吸困難、激しい頭痛など、即座に医療機関受診が必要な症状
 4. Ask（医薬品質問）: 特定の医薬品についての質問
-5. Other（その他）: 挨拶、不明な入力、店舗案内、遺失物関連など
+5. Other（その他）: 挨拶、不明な入力、店舗案内、遺失物関連、在庫確認、周辺施設の案内など
 
 【重要な判定ルール】
 - 「心臓が痛い」「心臓部分が痛い」→ Emergency（身体的・緊急性高）
@@ -29,8 +33,16 @@ TRIAGE_PROMPT = """
 - **「睡眠薬を教えて」「睡眠薬について」「睡眠薬を知りたい」「睡眠改善薬を教えて」など、睡眠薬に関する質問 → Emotional（subcategory: insomnia）を優先**
 - **「眠れない」「不眠」「睡眠不足」「寝つきが悪い」など、不眠の症状を訴える → Emotional（subcategory: insomnia）**
 - **注意: 睡眠薬に関する質問は、Askカテゴリではなく、Emotionalカテゴリ（subcategory: insomnia）として分類してください。これは、不眠の症状に対するカウンセリングが必要なためです。**
-- **「場所を教えてください」「どこにありますか」など、店舗案内に関する質問 → Other（subcategory: store_inquiry）**
+- **「場所を教えてください」「どこにありますか」「トイレはどこですか」など、店舗案内に関する質問 → Other（subcategory: store_inquiry）**
 - **「忘れ物を拾いました」「落とし物を拾いました」など、遺失物に関する質問 → Other（subcategory: lost_and_found）**
+- **「ありますか」「在庫」「取り寄せ」など、在庫確認に関する質問 → Other（subcategory: store_inquiry/inventory）**
+- **「近くに」「周辺に」「コンビニ」「銀行」など、周辺施設に関する質問 → Other（subcategory: store_inquiry/facilities）**
+- **「免税」「免税対応」などのキーワードがある場合 → Other（subcategory: store_inquiry/tax_free）**
+- **「観光地」「観光」「名所」などのキーワードがある場合 → Other（subcategory: store_inquiry/tourism）**
+- **「営業時間」「アクセス」「開店」「閉店」などのキーワードがある場合 → Other（subcategory: store_inquiry/business_hours）**
+- **「支払い」「決済」「カード」「現金」などのキーワードがある場合 → Other（subcategory: store_inquiry/payment）**
+- **「駐車場」「パーキング」「駐車」などのキーワードがある場合 → Other（subcategory: store_inquiry/parking）**
+- **「サービス」「取り扱い」「配達」などのキーワードがある場合 → Other（subcategory: store_inquiry/services）**
 - **その他の挨拶や不明な入力 → Other（subcategory: general_other）**
 
 【比喩的表現・アニメ・小説のセリフの検出】
@@ -61,20 +73,21 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
 {
     "category": "カテゴリ名（Physical/Emotional/Emergency/Ask/Other）",
     "confidence": 0.0-1.0の数値,
-    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, metaphorical, store_inquiry, lost_and_found, general_other）",
+    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, metaphorical, store_inquiry, store_inquiry/inventory, store_inquiry/facilities, store_inquiry/tax_free, store_inquiry/tourism, store_inquiry/business_hours, store_inquiry/payment, store_inquiry/parking, store_inquiry/services, lost_and_found, general_other）",
     "requires_immediate_action": true/false,
     "reasoning": "判定理由"
 }
 """
 
 
-def llm_triage(user_text: str, client: OpenAI) -> Dict:
+def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
     """
     LLMを使用してユーザー入力をカテゴリに分類
     
     Args:
         user_text: ユーザーの入力テキスト
         client: OpenAIクライアントインスタンス
+        use_cache: キャッシュを使用するか（デフォルト: True）
     
     Returns:
         {
@@ -85,6 +98,13 @@ def llm_triage(user_text: str, client: OpenAI) -> Dict:
             "reasoning": str  # 判定理由
         }
     """
+    # キャッシュをチェック（完全一致のみ）
+    if use_cache:
+        cache_key = user_text.strip()
+        if cache_key in _triage_cache:
+            logger.debug(f"💾 キャッシュからLLMトリアージ結果を取得: {cache_key[:50]}...")
+            return _triage_cache[cache_key].copy()
+    
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -133,13 +153,27 @@ def llm_triage(user_text: str, client: OpenAI) -> Dict:
             category = "Other"
             confidence = 0.5
         
-        return {
+        result = {
             "category": category,
             "confidence": confidence,
             "subcategory": subcategory,
             "requires_immediate_action": requires_immediate_action,
             "reasoning": reasoning
         }
+        
+        # キャッシュに保存（完全一致のみ）
+        if use_cache:
+            cache_key = user_text.strip()
+            if len(_triage_cache) >= _MAX_CACHE_SIZE:
+                # 最も古いエントリを削除（FIFO方式）
+                oldest_key = next(iter(_triage_cache))
+                del _triage_cache[oldest_key]
+                logger.debug(f"💾 キャッシュが満杯のため、最も古いエントリを削除: {oldest_key[:50]}...")
+            
+            _triage_cache[cache_key] = result.copy()
+            logger.debug(f"💾 LLMトリアージ結果をキャッシュに保存: {cache_key[:50]}...")
+        
+        return result
         
     except Exception as e:
         logger.error(f"LLMトリアージエラー: {e}")

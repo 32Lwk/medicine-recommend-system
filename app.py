@@ -1259,41 +1259,69 @@ def index():
                 import traceback
                 traceback.print_exc()
             
-            # ステップ1.8: 店舗案内・遺失物関連の処理（LLMトリアージ後、症状検出の前）
+            # ステップ1.7.5: 緊急事案検出（LLMトリアージ後、店舗案内処理の前）
             try:
-                from store_inquiry_handler import handle_store_inquiry
+                from store_emergency_handler import handle_store_emergency
                 
-                # 店舗案内・遺失物関連の質問を処理
-                store_inquiry_result = handle_store_inquiry(
+                # 言語設定を取得
+                user_language = session.get('language', 'ja')
+                
+                # 緊急事案を検出
+                emergency_result = handle_store_emergency(
                     sanitized_message,
                     recommendation_client,
-                    triage_result
+                    triage_result,
+                    user_language
                 )
                 
-                if store_inquiry_result and store_inquiry_result.get("is_store_inquiry"):
-                    logger.info(f"🏪 店舗案内・遺失物関連の質問を検出: {store_inquiry_result.get('inquiry_type')}")
+                if emergency_result and emergency_result.get("is_emergency"):
+                    logger.warning(f"🚨 緊急事案を検出: {emergency_result.get('emergency_type')}")
                     
-                    # 応答を生成
-                    response_data = store_inquiry_result.get("response", {})
-                    simple_message = response_data.get("simple_message", "")
-                    structured_html = response_data.get("structured_html", "")
+                    # ユーザーメッセージをセッションに追加
+                    if 'messages' not in session:
+                        session['messages'] = []
                     
-                    # 構造化されたHTMLを使用（シンプルなメッセージも含む）
-                    bot_content = structured_html if structured_html else simple_message
+                    from datetime import datetime
+                    import uuid
                     
+                    # 重複チェック
+                    user_message_exists = any(
+                        msg.get('type') == 'user' and 
+                        msg.get('content') == sanitized_message and
+                        msg.get('uuid')
+                        for msg in session.get('messages', [])
+                    )
+                    
+                    if not user_message_exists:
+                        session['messages'].append({
+                            'type': 'user',
+                            'content': sanitized_message,
+                            'timestamp': datetime.now().isoformat(),
+                            'uuid': str(uuid.uuid4())
+                        })
+                    
+                    # 緊急事案応答を取得（既にhandle_store_emergencyで生成済み）
+                    emergency_type = emergency_result.get('emergency_type')
+                    emergency_response = emergency_result.get('response', {})
+                    
+                    # 緊急事案応答を作成
                     bot_response = {
                         'type': 'bot',
-                        'content': bot_content,
-                        'store_inquiry': True,
-                        'inquiry_type': store_inquiry_result.get('inquiry_type'),
-                        'store_location': store_inquiry_result.get('store_location'),
+                        'content': emergency_response.get('structured_html', emergency_response.get('simple_message', '')),
+                        'emergency_detected': True,
+                        'emergency_type': emergency_type,
+                        'emergency_types': emergency_result.get('emergency_types', []),
+                        'emergency_keywords': emergency_result.get('detected_keywords', []),
+                        'icon': emergency_result.get('icon', '🔴'),
+                        'color': emergency_result.get('color', '#d32f2f'),
+                        'priority_score': emergency_result.get('priority_score', 999),
                         'timestamp': datetime.now().isoformat()
                     }
                     
-                    if 'messages' not in session:
-                        session['messages'] = []
+                    # セッションに追加
                     session['messages'].append(bot_response)
                     session.modified = True
+                    session['emergency_detected'] = True
                     
                     # DBを更新
                     if sid:
@@ -1307,17 +1335,182 @@ def index():
                                 'client_ip': request.remote_addr,
                                 'user_agent': request.headers.get('User-Agent', ''),
                                 'user_attributes': session.get('user_attributes', {}),
-                                'session_active': True
+                                'session_active': True,
+                                'emergency_detected': True
                             }
-                            save_session_to_db(sid, session_data)
                         else:
                             session_data['messages'] = session['messages'].copy()
+                            session_data['emergency_detected'] = True
                             session_data['last_activity'] = datetime.now()
-                            save_session_to_db(sid, session_data)
+                        save_session_to_db(sid, session_data)
+                    
+                    # 緊急事案ログを記録
+                    try:
+                        from security_logger import log_emergency_detection
+                        log_emergency_detection(
+                            user_id=session.get('username', 'unknown'),
+                            input_text=sanitized_message,
+                            emergency_type=emergency_type,
+                            emergency_types=emergency_result.get('emergency_types', []),
+                            detected_keywords=emergency_result.get('detected_keywords', []),
+                            session_id=sid
+                        )
+                    except ImportError:
+                        logger.warning("⚠️ 緊急事案ログ機能のインポートに失敗")
+                    except Exception as e:
+                        logger.error(f"❌ 緊急事案ログ記録エラー: {e}")
+                    
+                    # 緊急事案セッションを手動返信キューに追加
+                    emergency_queue_item = {
+                        'session_id': sid,
+                        'user_message': sanitized_message,
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'status': 'emergency_detected',
+                        'emergency_type': emergency_type,
+                        'emergency_types': emergency_result.get('emergency_types', []),
+                        'emergency_keywords': emergency_result.get('detected_keywords', []),
+                        'icon': emergency_result.get('icon', '🔴'),
+                        'color': emergency_result.get('color', '#d32f2f'),
+                        'priority': 'highest',
+                        'priority_score': emergency_result.get('priority_score', 999)
+                    }
+                    queue = get_manual_reply_queue()
+                    queue.append(emergency_queue_item)
+                    set_manual_reply_queue(queue)
+                    logger.info(f"🚨 緊急事案セッションを手動返信キューに追加: {sid}")
                     
                     message_count = len(session['messages'])
-                    logger.info(f"✅ 店舗案内・遺失物関連の処理完了: {message_count} messages")
-                    return jsonify({'status': 'ok', 'message_count': message_count})
+                    logger.info(f"✅ 緊急事案対応完了: {message_count} messages")
+                    return jsonify({
+                        'status': 'ok', 
+                        'message_count': message_count, 
+                        'emergency_detected': True
+                    })
+                    
+            except ImportError as e:
+                logger.warning(f"⚠️ 緊急事案検出機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ 緊急事案検出機能でエラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # ステップ1.8: 店舗案内・遺失物関連の処理（LLMトリアージ後、症状検出の前）
+            try:
+                from store_inquiry_handler import handle_store_inquiry
+                
+                # 店舗案内・遺失物関連の質問を処理
+                store_inquiry_result = handle_store_inquiry(
+                    sanitized_message,
+                    recommendation_client,
+                    triage_result
+                )
+                
+                if store_inquiry_result and store_inquiry_result.get("is_store_inquiry"):
+                    store_inquiry_confidence = store_inquiry_result.get("confidence", 0.0)
+                    logger.info(f"🏪 店舗案内・遺失物関連の質問を検出: {store_inquiry_result.get('inquiry_type')}, confidence: {store_inquiry_confidence:.2f}")
+                    
+                    # confidenceが低い場合（0.7未満）は症状検出も実行する可能性がある
+                    # ただし、店舗案内として確実に検出された場合は早期リターン
+                    if store_inquiry_confidence >= 0.7:
+                        # 高確信度の場合は店舗案内として処理
+                        response_data = store_inquiry_result.get("response", {})
+                        simple_message = response_data.get("simple_message", "")
+                        structured_html = response_data.get("structured_html", "")
+                        
+                        # 構造化されたHTMLを使用（シンプルなメッセージも含む）
+                        bot_content = structured_html if structured_html else simple_message
+                        
+                        bot_response = {
+                            'type': 'bot',
+                            'content': bot_content,
+                            'store_inquiry': True,
+                            'inquiry_type': store_inquiry_result.get('inquiry_type'),
+                            'store_location': store_inquiry_result.get('store_location'),
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # DBを更新
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': session['messages'].copy(),
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'session_active': True
+                                }
+                                save_session_to_db(sid, session_data)
+                            else:
+                                session_data['messages'] = session['messages'].copy()
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                        
+                        message_count = len(session['messages'])
+                        logger.info(f"✅ 店舗案内・遺失物関連の処理完了（高確信度）: {message_count} messages")
+                        return jsonify({'status': 'ok', 'message_count': message_count})
+                    else:
+                        # 低確信度の場合は、店舗案内の応答を生成するが、症状検出も実行する可能性を残す
+                        # ただし、キーワードで確実に検出された場合は店舗案内として処理
+                        reasoning = store_inquiry_result.get("reasoning", "")
+                        if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
+                            # キーワードで検出された場合は店舗案内として処理
+                            response_data = store_inquiry_result.get("response", {})
+                            simple_message = response_data.get("simple_message", "")
+                            structured_html = response_data.get("structured_html", "")
+                            
+                            bot_content = structured_html if structured_html else simple_message
+                            
+                            bot_response = {
+                                'type': 'bot',
+                                'content': bot_content,
+                                'store_inquiry': True,
+                                'inquiry_type': store_inquiry_result.get('inquiry_type'),
+                                'store_location': store_inquiry_result.get('store_location'),
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # DBを更新
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if not session_data:
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', 'Unknown'),
+                                        'messages': session['messages'].copy(),
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {}),
+                                        'session_active': True
+                                    }
+                                    save_session_to_db(sid, session_data)
+                                else:
+                                    session_data['messages'] = session['messages'].copy()
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            logger.info(f"✅ 店舗案内・遺失物関連の処理完了（キーワード検出）: {message_count} messages")
+                            return jsonify({'status': 'ok', 'message_count': message_count})
+                        else:
+                            # 低確信度でキーワードでも検出されなかった場合は、症状検出に進む
+                            logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
+                            # store_inquiry_resultをNoneに設定して、症状検出に進む
+                            store_inquiry_result = None
                     
             except ImportError as e:
                 logger.warning(f"⚠️ 店舗案内・遺失物関連機能のインポートに失敗: {e}")
