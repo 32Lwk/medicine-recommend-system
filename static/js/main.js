@@ -4460,8 +4460,13 @@
             } else if (message.type === 'bot') {
                 messageDiv.className = 'message bot';
                 
+                // 店舗案内・遺失物関連のメッセージ（HTMLをそのまま表示）
+                if (message.store_inquiry && message.content) {
+                    // HTMLをそのまま表示（エスケープしない）
+                    messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                }
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
-                if (message.content && (message.content.includes('<div class="recommendation-result') || 
+                else if (message.content && (message.content.includes('<div class="recommendation-result') || 
                                        message.content.includes('class="chat-response') || 
                                        message.content.includes("class='chat-response"))) {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示

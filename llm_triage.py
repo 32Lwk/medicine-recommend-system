@@ -18,7 +18,7 @@ TRIAGE_PROMPT = """
 2. Emotional（精神的・感情的症状）: 緊張、不安、ストレス、恋愛の悩みなど、心理的な症状
 3. Emergency（緊急性が高い症状）: 心臓が痛い、呼吸困難、激しい頭痛など、即座に医療機関受診が必要な症状
 4. Ask（医薬品質問）: 特定の医薬品についての質問
-5. Other（その他）: 挨拶、不明な入力など
+5. Other（その他）: 挨拶、不明な入力、店舗案内、遺失物関連など
 
 【重要な判定ルール】
 - 「心臓が痛い」「心臓部分が痛い」→ Emergency（身体的・緊急性高）
@@ -29,6 +29,9 @@ TRIAGE_PROMPT = """
 - **「睡眠薬を教えて」「睡眠薬について」「睡眠薬を知りたい」「睡眠改善薬を教えて」など、睡眠薬に関する質問 → Emotional（subcategory: insomnia）を優先**
 - **「眠れない」「不眠」「睡眠不足」「寝つきが悪い」など、不眠の症状を訴える → Emotional（subcategory: insomnia）**
 - **注意: 睡眠薬に関する質問は、Askカテゴリではなく、Emotionalカテゴリ（subcategory: insomnia）として分類してください。これは、不眠の症状に対するカウンセリングが必要なためです。**
+- **「場所を教えてください」「どこにありますか」など、店舗案内に関する質問 → Other（subcategory: store_inquiry）**
+- **「忘れ物を拾いました」「落とし物を拾いました」など、遺失物に関する質問 → Other（subcategory: lost_and_found）**
+- **その他の挨拶や不明な入力 → Other（subcategory: general_other）**
 
 【比喩的表現・アニメ・小説のセリフの検出】
 以下のような表現は比喩的表現やアニメ・小説のセリフの可能性が高いため、OtherカテゴリまたはEmotionalカテゴリ（metaphoricalサブカテゴリ）として分類してください：
@@ -58,7 +61,7 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
 {
     "category": "カテゴリ名（Physical/Emotional/Emergency/Ask/Other）",
     "confidence": 0.0-1.0の数値,
-    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, metaphorical）",
+    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, metaphorical, store_inquiry, lost_and_found, general_other）",
     "requires_immediate_action": true/false,
     "reasoning": "判定理由"
 }
