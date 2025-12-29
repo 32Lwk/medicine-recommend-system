@@ -460,6 +460,16 @@ def handle_500_error(e):
     else:
         error_msg = "申し訳ございません。システムエラーが発生しました。管理者に連絡してください。"
     
+    # 会話履歴を取得（エラー時のみ記録）
+    conversation_history = None
+    try:
+        if has_request_context() and hasattr(session, 'get'):
+            messages = session.get('messages', [])
+            if messages:
+                conversation_history = messages[-10:] if len(messages) > 10 else messages
+    except:
+        pass
+    
     # structured_loggerで詳細ログを記録
     try:
         from structured_logger import log_error_detail
@@ -470,7 +480,8 @@ def handle_500_error(e):
             stack_trace=stack_trace,
             user_input=user_input,
             system_state=system_state,
-            user_display_message=error_msg
+            user_display_message=error_msg,
+            conversation_history=conversation_history
         )
     except Exception as log_error:
         logger.warning(f"エラーログ記録エラー: {log_error}")
@@ -1295,9 +1306,7 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録
-                            # 会話履歴を取得（最新10件）
-                            conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
+                            # ログ記録（通常時は会話履歴なし）
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=emergency_message.strip(),
@@ -1306,7 +1315,7 @@ def index():
                                 confidence=None,
                                 counseling_mode=counseling_mode,
                                 user_input=user_message,
-                                conversation_history=conversation_history
+                                conversation_history=None
                             )
                             
                             if sid:
@@ -1373,6 +1382,18 @@ def index():
                             }
                             session['messages'].append(bot_response)
                             session.modified = True
+                            
+                            # ログ記録（返信部分、通常時は会話履歴なし）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=counseling_response,
+                                response_type="counseling_response",
+                                category=None,
+                                confidence=None,
+                                counseling_mode=counseling_mode,
+                                user_input=user_message,
+                                conversation_history=None
+                            )
                         
                         # 質問を追加
                         question = response.get('question', '')
@@ -1386,6 +1407,18 @@ def index():
                             }
                             session['messages'].append(question_response)
                             session.modified = True
+                            
+                            # ログ記録（質問部分、通常時は会話履歴なし）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=question,
+                                response_type="counseling_question",
+                                category=None,
+                                confidence=None,
+                                counseling_mode=counseling_mode,
+                                user_input=user_message,
+                                conversation_history=None
+                            )
                     elif not skip_counseling_response and response.get('type') == 'counseling_response':
                         # 返信のみ（質問をスキップ）
                         bot_response = {
@@ -1396,6 +1429,18 @@ def index():
                         }
                         session['messages'].append(bot_response)
                         session.modified = True
+                        
+                        # ログ記録（通常時は会話履歴なし）
+                        log_counseling_response(
+                            session_id=sid,
+                            response_content=response.get('content', ''),
+                            response_type="counseling_response",
+                            category=None,
+                            confidence=None,
+                            counseling_mode=counseling_mode,
+                            user_input=user_message,
+                            conversation_history=None
+                        )
                     elif not skip_counseling_response and response.get('type') == 'counseling_question':
                         bot_response = {
                             'type': 'bot',
@@ -1406,9 +1451,7 @@ def index():
                         session['messages'].append(bot_response)
                         session.modified = True
                         
-                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                        # 会話履歴を取得（最新10件）
-                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
+                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため、通常時は会話履歴なし）
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
@@ -1417,7 +1460,7 @@ def index():
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_message,
-                            conversation_history=conversation_history
+                            conversation_history=None
                         )
                     elif not skip_counseling_response and response.get('type') == 'counseling_summary':
                         # カウンセリング完了時も返信を含める場合がある
@@ -1432,6 +1475,18 @@ def index():
                             }
                             session['messages'].append(bot_response)
                             session.modified = True
+                            
+                            # ログ記録（返信部分、通常時は会話履歴なし）
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=counseling_response,
+                                response_type="counseling_response",
+                                category=None,
+                                confidence=None,
+                                counseling_mode=counseling_mode,
+                                user_input=user_message,
+                                conversation_history=None
+                            )
                         
                         # サマリーを追加
                         bot_response = {
@@ -1443,9 +1498,7 @@ def index():
                         session['messages'].append(bot_response)
                         session.modified = True
                         
-                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                        # 会話履歴を取得（最新10件）
-                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
+                        # ログ記録（サマリー部分、通常時は会話履歴なし）
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
@@ -1454,7 +1507,7 @@ def index():
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_message,
-                            conversation_history=conversation_history
+                            conversation_history=None
                         )
                         
                         # カウンセリング完了ログを保存
@@ -1480,15 +1533,16 @@ def index():
                         session.modified = True
                         
                         # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                        # 会話履歴を取得（最新10件）
-                        conversation_history = session.get('messages', [])[-10:] if 'messages' in session else []
+                        # ログ記録（通常時は会話履歴なし）
                         log_counseling_response(
                             session_id=sid,
                             response_content=response.get('content', ''),
                             response_type="crisis_support",
                             category="Emergency",
                             confidence=None,
-                            counseling_mode=counseling_mode
+                            counseling_mode=counseling_mode,
+                            user_input=user_message,
+                            conversation_history=None
                         )
                     
                     # 話題転換で薬推奨フローに移行する場合は、カウンセリング処理をスキップして後続処理に進む
@@ -1573,7 +1627,7 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録
+                            # ログ記録（通常時は会話履歴なし）
                             from counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
@@ -1581,7 +1635,9 @@ def index():
                                 response_type="emergency_low_confidence_confirmation",
                                 category="Emergency",
                                 confidence=confidence,
-                                counseling_mode=None
+                                counseling_mode=None,
+                                user_input=user_message,
+                                conversation_history=None
                             )
                             
                             # confidenceチェックのログ
@@ -1618,7 +1674,7 @@ def index():
                             session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録
+                            # ログ記録（通常時は会話履歴なし）
                             from counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
@@ -1626,7 +1682,9 @@ def index():
                                 response_type="emergency_response",
                                 category="Emergency",
                                 confidence=confidence,
-                                counseling_mode=None
+                                counseling_mode=None,
+                                user_input=user_message,
+                                conversation_history=None
                             )
                             
                             if sid:
@@ -1658,12 +1716,14 @@ def index():
                         else:
                             confirmation_message = f"「{sanitized_message}」について、{category}カテゴリと判定しましたが、確信度が低いため確認が必要です。もう少し詳しく教えていただけますか？"
                             
-                            # Otherカテゴリの場合もログ記録
+                            # Otherカテゴリの場合もログ記録（通常時は会話履歴なし）
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=confirmation_message,
                                 response_type="low_confidence_confirmation",
                                 category=category,
+                                user_input=user_message,
+                                conversation_history=None,
                                 confidence=confidence,
                                 counseling_mode=None
                             )
@@ -1759,7 +1819,7 @@ def index():
                         }
                         session['messages'].append(bot_response)
                         
-                        # 初期返信のログ記録
+                        # 初期返信のログ記録（通常時は会話履歴なし）
                         from counseling_response import log_counseling_response
                         log_counseling_response(
                             session_id=sid,
@@ -1767,7 +1827,9 @@ def index():
                             response_type="counseling_initial_response",
                             category=category,
                             confidence=confidence,
-                            counseling_mode=session.get('counseling_mode')
+                            counseling_mode=session.get('counseling_mode'),
+                            user_input=user_message,
+                            conversation_history=None
                         )
                         
                         # 不眠カウンセリングの場合、「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」というメッセージを別途送信
@@ -1809,14 +1871,16 @@ def index():
                                 session['messages'].append(medicine_info_response)
                                 session.modified = True  # セッション変更を明示的に設定
                                 
-                                # 医薬品情報メッセージのログ記録
+                                # 医薬品情報メッセージのログ記録（通常時は会話履歴なし）
                                 log_counseling_response(
                                     session_id=sid,
                                     response_content=medicine_info_message,
                                     response_type="counseling_medicine_info",
                                     category=category,
                                     confidence=confidence,
-                                    counseling_mode=session.get('counseling_mode')
+                                    counseling_mode=session.get('counseling_mode'),
+                                    user_input=user_message,
+                                    conversation_history=None
                                 )
                                 
                                 logger.info(f"✅ 不眠カウンセリング開始: 医薬品情報メッセージを送信しました (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
@@ -7330,6 +7394,25 @@ def submit_feedback():
         
         if feedback_id:
             logger.info(f"✅ Feedback saved with ID: {feedback_id}")
+            
+            # 不適切評価（negative_feedback）の場合、会話履歴を含むログを出力
+            if data.get('report_type') == 'negative_feedback' and session_id:
+                try:
+                    from structured_logger import log_counseling_detail
+                    # 会話履歴を取得（最新10件）
+                    messages = session.get('messages', [])
+                    conversation_history = messages[-10:] if len(messages) > 10 else messages
+                    
+                    log_counseling_detail(
+                        session_id=session_id,
+                        user_input=data.get('user_message', ''),
+                        response=data.get('ai_response', ''),
+                        conversation_history=conversation_history
+                    )
+                    logger.info(f"📝 不適切評価ログ記録完了 [session_id: {session_id}, feedback_id: {feedback_id}]")
+                except Exception as log_error:
+                    logger.warning(f"不適切評価ログ記録エラー: {log_error}")
+            
             return jsonify({'status': 'success', 'feedback_id': feedback_id})
         else:
             return jsonify({'error': 'Failed to save feedback'}), 500

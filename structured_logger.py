@@ -101,7 +101,7 @@ def log_counseling_detail(
     session_id: str,
     user_input: str,
     response: str,
-    conversation_history: List[Dict]
+    conversation_history: Optional[List[Dict]] = None
 ) -> None:
     """
     カウンセリングの詳細ログを記録
@@ -110,9 +110,12 @@ def log_counseling_detail(
         session_id: セッションID
         user_input: ユーザー入力
         response: システムの返信
-        conversation_history: 会話履歴（最新N件）
+        conversation_history: 会話履歴（最新N件、オプショナル。エラー時や不適切評価時のみ記録）
     """
     timestamp = datetime.now().isoformat()
+    
+    # conversation_historyがNoneの場合は空リストとして扱う
+    history = conversation_history if conversation_history is not None else []
     
     log_data = {
         "log_type": "counseling_detail",
@@ -120,7 +123,7 @@ def log_counseling_detail(
         "session_id": session_id,
         "user_input": user_input,
         "response": response,
-        "conversation_history": conversation_history
+        "conversation_history": history
     }
     
     # JSONLファイルに出力
@@ -200,7 +203,8 @@ def log_error_detail(
     stack_trace: str,
     user_input: Optional[str],
     system_state: Dict,
-    user_display_message: str
+    user_display_message: str,
+    conversation_history: Optional[List[Dict]] = None
 ) -> None:
     """
     エラーの詳細ログを記録
@@ -213,6 +217,7 @@ def log_error_detail(
         user_input: エラー発生時のユーザー入力
         system_state: エラー発生時のシステム状態
         user_display_message: ユーザーに表示されたメッセージ
+        conversation_history: 会話履歴（最新N件、オプショナル。エラー時のみ記録）
     """
     timestamp = datetime.now().isoformat()
     
@@ -227,6 +232,10 @@ def log_error_detail(
         "system_state": system_state,
         "user_display_message": user_display_message
     }
+    
+    # 会話履歴がある場合のみ追加
+    if conversation_history is not None:
+        log_data["conversation_history"] = conversation_history
     
     # JSONLファイルに出力
     _write_to_jsonl("error_detail_log.jsonl", log_data)
