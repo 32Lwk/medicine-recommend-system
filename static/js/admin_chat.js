@@ -782,11 +782,68 @@ function renderQueue(queue) {
     }
     
     let html = '';
-    queue.forEach((item, index) => {
-        // 危機対応セッションかどうかをチェック
+    // 優先度に基づいてソート（緊急事案が最優先）
+    const sortedQueue = [...queue].sort((a, b) => {
+        const aIsEmergency = a.status === 'emergency_detected';
+        const bIsEmergency = b.status === 'emergency_detected';
+        const aIsCrisis = a.status === 'crisis_detected' || a.priority === 'high';
+        const bIsCrisis = b.status === 'crisis_detected' || b.priority === 'high';
+        
+        // 緊急事案が最優先
+        if (aIsEmergency && !bIsEmergency) return -1;
+        if (!aIsEmergency && bIsEmergency) return 1;
+        
+        // 緊急事案同士の場合は優先度スコアで比較
+        if (aIsEmergency && bIsEmergency) {
+            const aScore = a.priority_score || 999;
+            const bScore = b.priority_score || 999;
+            return aScore - bScore;
+        }
+        
+        // 危機対応が次に優先
+        if (aIsCrisis && !bIsCrisis) return -1;
+        if (!aIsCrisis && bIsCrisis) return 1;
+        
+        return 0;
+    });
+    
+    sortedQueue.forEach((item, index) => {
+        // 緊急事案の検出
+        const isEmergencyItem = item.status === 'emergency_detected';
         const isCrisisItem = item.status === 'crisis_detected' || item.priority === 'high';
-        const itemClass = isCrisisItem ? 'queue-item crisis-queue-item' : 'queue-item';
-        const crisisBadge = isCrisisItem ? '<span class="crisis-badge">🚨 緊急</span>' : '';
+        
+        // アイコン、色、バッジを決定
+        let itemClass = 'queue-item';
+        let itemIcon = '';
+        let itemColor = '';
+        let itemBadge = '';
+        let itemTitle = '';
+        
+        if (isEmergencyItem) {
+            itemClass = 'queue-item emergency-queue-item';
+            itemIcon = item.icon || '🔴';
+            itemColor = item.color || '#d32f2f';
+            itemTitle = item.emergency_type || '緊急事案';
+            // 緊急事案の種類名を取得
+            const emergencyTypeNames = {
+                'fire': '火災',
+                'weapon': '刃物',
+                'medical_emergency': '医療緊急',
+                'violence': '暴力',
+                'injured_person': '傷病人',
+                'suspicious_person': '不審者',
+                'theft': '窃盗'
+            };
+            const typeName = emergencyTypeNames[item.emergency_type] || '緊急事案';
+            itemBadge = `<span class="emergency-badge" style="background: ${itemColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 4px;" title="${typeName}">${itemIcon} ${typeName}</span>`;
+        } else if (isCrisisItem) {
+            itemClass = 'queue-item crisis-queue-item';
+            itemIcon = '🚨';
+            itemColor = '#d32f2f';
+            itemTitle = '自殺・自傷';
+            itemBadge = '<span class="crisis-badge">🚨 緊急</span>';
+        }
+        
         const accordionId = `queue-accordion-${index}`;
         const accordionContentId = `queue-accordion-content-${index}`;
         
@@ -798,16 +855,23 @@ function renderQueue(queue) {
         // セッションIDを短縮表示（8文字まで）
         const shortSessionId = item.session_id ? item.session_id.substring(0, 8) + '...' : '不明';
         
-        const crisisKeywords = isCrisisItem && item.crisis_keywords ? 
-            `<div class="crisis-keywords" style="background: #ffebee; padding: 8px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c; font-size: 0.9em; color: #e74c3c;">
+        // キーワード表示
+        let keywordsDisplay = '';
+        if (isEmergencyItem && item.emergency_keywords) {
+            keywordsDisplay = `<div class="emergency-keywords" style="background: #ffebee; padding: 8px; margin: 5px 0; border-radius: 4px; border-left: 3px solid ${itemColor}; font-size: 0.9em; color: ${itemColor};">
+                <strong>検出キーワード:</strong> ${item.emergency_keywords.join(', ')}
+            </div>`;
+        } else if (isCrisisItem && item.crisis_keywords) {
+            keywordsDisplay = `<div class="crisis-keywords" style="background: #ffebee; padding: 8px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c; font-size: 0.9em; color: #e74c3c;">
                 <strong>検出キーワード:</strong> ${item.crisis_keywords.join(', ')}
-            </div>` : '';
+            </div>`;
+        }
         
         html += `
-            <div class="${itemClass} queue-accordion-item">
-                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
+            <div class="${itemClass} queue-accordion-item" style="${isEmergencyItem ? `border-left: 4px solid ${itemColor};` : ''}">
+                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')" style="${isEmergencyItem ? `background: ${itemColor}15;` : ''}">
                     <div style="flex: 1; min-width: 0;">
-                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${escapeHtml(shortSessionId)} ${crisisBadge}</span>
+                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${escapeHtml(shortSessionId)} ${itemBadge}</span>
                         <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
                     </div>
                     <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
@@ -817,7 +881,7 @@ function renderQueue(queue) {
                         <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
                             <strong>👤 ユーザー:</strong> ${escapeHtml(item.user_message || 'メッセージなし')}
                         </div>
-                        ${crisisKeywords}
+                        ${keywordsDisplay}
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666; margin-bottom: 6px;">
                             <span><strong>🕐</strong> ${escapeHtml(item.timestamp || '不明')}</span>
                         </div>
@@ -848,12 +912,23 @@ function renderQueue(queue) {
         content.innerHTML = html;
     }
     
-    // 危機対応セッションの数をカウントして表示
+    // 緊急事案と危機対応セッションの数をカウントして表示
+    const emergencyCount = queue.filter(item => item.status === 'emergency_detected').length;
     const crisisCount = queue.filter(item => item.status === 'crisis_detected' || item.priority === 'high').length;
+    const totalUrgentCount = emergencyCount + crisisCount;
+    
     const crisisCountElement = document.getElementById('crisis-count');
     if (crisisCountElement) {
-        if (crisisCount > 0) {
-            crisisCountElement.textContent = `🚨 緊急: ${crisisCount}件`;
+        if (totalUrgentCount > 0) {
+            let countText = '';
+            if (emergencyCount > 0 && crisisCount > 0) {
+                countText = `🚨 緊急: ${totalUrgentCount}件 (緊急事案: ${emergencyCount}件, 自殺・自傷: ${crisisCount}件)`;
+            } else if (emergencyCount > 0) {
+                countText = `🚨 緊急事案: ${emergencyCount}件`;
+            } else {
+                countText = `🚨 緊急: ${crisisCount}件`;
+            }
+            crisisCountElement.textContent = countText;
             crisisCountElement.style.background = '#ffebee';
             crisisCountElement.style.color = '#e74c3c';
         } else {

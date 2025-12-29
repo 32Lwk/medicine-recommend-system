@@ -1115,6 +1115,25 @@ main {
     border-width: 2px;
 }
 
+.queue-accordion-item.emergency-queue-item {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(211, 47, 47, 0.2);
+    }
+    50% {
+        box-shadow: 0 2px 12px rgba(211, 47, 47, 0.4);
+    }
+}
+
+.queue-accordion-item.emergency-queue-item .queue-accordion-header {
+    background: rgba(211, 47, 47, 0.1);
+    border-left: 4px solid #d32f2f;
+    font-weight: 600;
+}
+
 .queue-accordion-item.crisis-queue-item .queue-accordion-header {
     background: #ffebee;
     border-color: var(--color-danger);

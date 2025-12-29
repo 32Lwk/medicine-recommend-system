@@ -4523,6 +4523,11 @@
                         messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
                     }
                 }
+                // 緊急事案メッセージの特別表示
+                else if (message.emergency_detected && message.content) {
+                    // HTMLをそのまま表示（エスケープしない）
+                    messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                }
                 // 危機対応メッセージの特別表示
                 else if (message.crisis_support) {
                     messageDiv.innerHTML = displayCrisisSupportResources(message);

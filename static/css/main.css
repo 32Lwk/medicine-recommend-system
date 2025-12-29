@@ -2003,6 +2003,283 @@
             text-decoration: underline;
         }
 
+        /* 緊急事案応答のスタイル */
+        /* 旧デザイン（後方互換性のため残す） */
+        .emergency-response {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border: 3px solid #d32f2f;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 20px rgba(211, 47, 47, 0.3);
+            width: 100%;
+            box-sizing: border-box;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(211, 47, 47, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 30px rgba(211, 47, 47, 0.6);
+            }
+        }
+
+        .emergency-title {
+            color: #d32f2f;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .emergency-message {
+            color: #212529;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .safety-first {
+            background: #ffcdd2;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .emergency-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .emergency-section h5 {
+            color: #d32f2f;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .emergency-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .emergency-section li {
+            margin: 8px 0;
+            color: #212529;
+        }
+
+        .safety-section {
+            border-left-color: #ff9800;
+        }
+
+        .safety-section h5 {
+            color: #ff9800;
+        }
+
+        .staff-section {
+            border-left-color: #2196f3;
+        }
+
+        .staff-section h5 {
+            color: #2196f3;
+        }
+
+        .police-section {
+            border-left-color: #d32f2f;
+        }
+
+        .police-section h5 {
+            color: #d32f2f;
+        }
+
+        /* モダンな緊急事案デザイン（読みやすさ優先、余白半減） */
+        .emergency-response-modern {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border: 3px solid #d32f2f;
+            border-radius: 16px;
+            padding: 0;
+            margin: 10px 0;
+            box-shadow: 0 6px 24px rgba(211, 47, 47, 0.4), 0 0 0 1px rgba(211, 47, 47, 0.1);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            animation: emergencyPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% {
+                box-shadow: 0 6px 24px rgba(211, 47, 47, 0.4), 0 0 0 1px rgba(211, 47, 47, 0.1);
+            }
+            50% {
+                box-shadow: 0 8px 32px rgba(211, 47, 47, 0.6), 0 0 0 2px rgba(211, 47, 47, 0.2);
+            }
+        }
+
+        .emergency-header {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            font-size: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.3px;
+        }
+
+        .emergency-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            50% {
+                transform: translate(-50%, -50%) rotate(180deg);
+            }
+        }
+
+        .emergency-alert-banner {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .emergency-content {
+            padding: 12px 16px;
+            background: white;
+        }
+
+        .emergency-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .emergency-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .safety-header {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-bottom: 2px solid #ff9800;
+        }
+
+        .staff-header {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-bottom: 2px solid #2196F3;
+        }
+
+        .police-header {
+            background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%);
+            border-bottom: 2px solid #fbc02d;
+        }
+
+        .card-icon {
+            font-size: 20px;
+            display: inline-block;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+            color: #212529;
+        }
+
+        .safety-header .card-title {
+            color: #e65100;
+        }
+
+        .staff-header .card-title {
+            color: #1565c0;
+        }
+
+        .police-header .card-title {
+            color: #f57f17;
+        }
+
+        .card-body {
+            padding: 12px 14px;
+        }
+
+        .card-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .card-list li {
+            padding: 8px 0;
+            color: #424242;
+            font-size: 15px;
+            line-height: 1.6;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .card-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .list-marker {
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .safety-card .list-marker {
+            color: #ff9800;
+        }
+
+        .staff-card .list-marker {
+            color: #2196F3;
+        }
+
+        .police-card .list-marker {
+            color: #fbc02d;
+        }
+
         /* 一覧ページスタイル */
         .list-page {
             padding: 20px;
