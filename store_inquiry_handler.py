@@ -26,9 +26,12 @@ except Exception as e:
     PRODUCT_CATEGORIES = {}
 
 # 店舗案内関連のキーワード
+# 注意: 「教えてください」「教えて」は文脈依存のため、店舗案内関連の文脈でのみ検出
 STORE_INQUIRY_KEYWORDS = [
     "場所を教えて", "場所は", "どこにありますか", "どこですか", "どこに",
-    "場所を", "場所が", "場所の", "案内", "教えてください", "教えて",
+    "場所を", "場所が", "場所の", "案内",
+    # 注意: 「教えてください」「教えて」は単独では検出しない（文脈依存）
+    # 代わりに、店舗案内関連のキーワードと組み合わせて検出（例：「場所を教えてください」）
     "どこ", "場所",
     # トイレ関連（症状キーワードがない場合のみ）
     "トイレ", "お手洗い", "便所", "化粧室", "洗面所",
@@ -203,10 +206,25 @@ def detect_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
             return True, "store_inquiry"
     
     # その他の店舗案内関連のキーワードをチェック
+    # 注意: 「教えてください」「教えて」は単独では検出しない（文脈依存）
+    # 店舗案内関連のキーワード（「場所」「どこ」「案内」など）と組み合わせて検出
+    store_inquiry_context_keywords = ["場所", "どこ", "案内", "トイレ", "お手洗い"]
+    has_store_context = any(keyword in user_text_lower for keyword in store_inquiry_context_keywords)
+    
     for keyword in STORE_INQUIRY_KEYWORDS:
         if keyword in user_text_lower:
-            logger.info(f"🔍 店舗案内関連キーワード検出: {keyword}")
-            return True, "store_inquiry"
+            # 「教えてください」「教えて」は店舗案内関連の文脈がある場合のみ検出
+            if keyword in ["教えてください", "教えて"]:
+                if has_store_context:
+                    logger.info(f"🔍 店舗案内関連キーワード検出（文脈あり）: {keyword}")
+                    return True, "store_inquiry"
+                else:
+                    # 店舗案内関連の文脈がない場合は検出しない
+                    logger.debug(f"🔍 「{keyword}」は検出されたが、店舗案内関連の文脈がないためスキップ")
+                    continue
+            else:
+                logger.info(f"🔍 店舗案内関連キーワード検出: {keyword}")
+                return True, "store_inquiry"
     
     return False, None
 
@@ -1032,6 +1050,14 @@ def handle_store_inquiry_with_two_stage(
     # 第2段階: 店舗案内の詳細分類
     llm_result = classify_inquiry_with_llm(user_text, client, triage_result)
     confidence = llm_result.get("confidence", 0.0)
+    is_store_inquiry = llm_result.get("is_store_inquiry", False)
+    
+    # is_store_inquiryがFalseでconfidenceが0.0の場合、店舗案内ではないと判定
+    # 既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進むため、Noneを返す
+    if not is_store_inquiry and confidence == 0.0:
+        logger.info(f"🔍 第2段階: 店舗案内ではないと判定（confidence=0.00, is_store_inquiry=False）")
+        logger.info(f"🔍 既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む")
+        return None
     
     # confidence閾値による分岐
     if confidence >= 0.8:
@@ -1484,9 +1510,10 @@ def process_low_confidence_case(
     retry_result = retry_first_stage_with_modified_prompt(user_text, client)
     
     if retry_result and retry_result.get("category") == "Other":
-        # 再実行結果がOtherの場合、店舗案内として処理
+        # 再実行結果がOtherの場合、サブカテゴリを確認
         subcategory = retry_result.get("subcategory", "").lower()
         if "store_inquiry" in subcategory or "lost_and_found" in subcategory:
+            # 店舗案内または遺失物関連の場合のみ店舗案内として処理
             store_location = detect_store_location(user_text)
             inquiry_type = "lost_and_found" if "lost_and_found" in subcategory else "store_inquiry"
             response = generate_store_inquiry_response(user_text, inquiry_type, store_location)
@@ -1499,9 +1526,14 @@ def process_low_confidence_case(
                 "confidence": retry_result.get("confidence", 0.6),
                 "reasoning": f"第1段階再実行結果: {retry_result.get('reasoning', '')}"
             }
+        else:
+            # Otherカテゴリだが、store_inquiry/lost_and_found以外（general_otherなど）の場合はNoneを返す
+            # これにより、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む
+            logger.info(f"🔍 第1段階再実行結果: Otherカテゴリだが、general_otherのため既存の汎用応答処理に進む")
+            return None
     
-    # 再実行結果がOtherでない場合、Noneを返して症状検出に進む
-    logger.debug(f"🔍 第1段階再実行結果: Otherカテゴリではないため、症状検出に進む")
+    # 再実行結果がOtherでない場合、Noneを返して症状検出または既存の汎用応答処理に進む
+    logger.info(f"🔍 第1段階再実行結果: Otherカテゴリではないため、症状検出または既存の汎用応答処理に進む")
     return None
 
 
