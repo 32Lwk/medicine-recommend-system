@@ -30,8 +30,10 @@ TRIAGE_PROMPT = """
 - 「恋の病」「好きな人」→ Emotional（比喩的表現）
 - 「緊張する」「不安」→ Emotional
 - 「頭痛」「発熱」→ Physical
+- **「眠くて寝てしまう」「仕事中に寝てしまう」「眠気が強い」「眠い」「眠たい」など、眠気（sleepiness/drowsiness）の症状を訴える → Physical（subcategory: drowsiness）**
+- **「眠れない」「不眠」「睡眠不足」「寝つきが悪い」など、不眠（insomnia）の症状を訴える → Emotional（subcategory: insomnia）**
 - **「睡眠薬を教えて」「睡眠薬について」「睡眠薬を知りたい」「睡眠改善薬を教えて」など、睡眠薬に関する質問 → Emotional（subcategory: insomnia）を優先**
-- **「眠れない」「不眠」「睡眠不足」「寝つきが悪い」など、不眠の症状を訴える → Emotional（subcategory: insomnia）**
+- **注意: 眠気と不眠は明確に区別してください。眠気は日中の眠さ、不眠は夜間に眠れない症状です。**
 - **注意: 睡眠薬に関する質問は、Askカテゴリではなく、Emotionalカテゴリ（subcategory: insomnia）として分類してください。これは、不眠の症状に対するカウンセリングが必要なためです。**
 - **「場所を教えてください」「どこにありますか」「トイレはどこですか」など、店舗案内に関する質問 → Other（subcategory: store_inquiry）**
 - **「忘れ物を拾いました」「落とし物を拾いました」など、遺失物に関する質問 → Other（subcategory: lost_and_found）**
@@ -73,7 +75,7 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
 {
     "category": "カテゴリ名（Physical/Emotional/Emergency/Ask/Other）",
     "confidence": 0.0-1.0の数値,
-    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, metaphorical, store_inquiry, store_inquiry/inventory, store_inquiry/facilities, store_inquiry/tax_free, store_inquiry/tourism, store_inquiry/business_hours, store_inquiry/payment, store_inquiry/parking, store_inquiry/services, lost_and_found, general_other）",
+    "subcategory": "詳細カテゴリ（例: heart_pain, anxiety, headache, drowsiness, insomnia, metaphorical, store_inquiry, store_inquiry/inventory, store_inquiry/facilities, store_inquiry/tax_free, store_inquiry/tourism, store_inquiry/business_hours, store_inquiry/payment, store_inquiry/parking, store_inquiry/services, lost_and_found, general_other）",
     "requires_immediate_action": true/false,
     "reasoning": "判定理由"
 }
