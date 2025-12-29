@@ -1259,6 +1259,73 @@ def index():
                 import traceback
                 traceback.print_exc()
             
+            # ステップ1.8: 店舗案内・遺失物関連の処理（LLMトリアージ後、症状検出の前）
+            try:
+                from store_inquiry_handler import handle_store_inquiry
+                
+                # 店舗案内・遺失物関連の質問を処理
+                store_inquiry_result = handle_store_inquiry(
+                    sanitized_message,
+                    recommendation_client,
+                    triage_result
+                )
+                
+                if store_inquiry_result and store_inquiry_result.get("is_store_inquiry"):
+                    logger.info(f"🏪 店舗案内・遺失物関連の質問を検出: {store_inquiry_result.get('inquiry_type')}")
+                    
+                    # 応答を生成
+                    response_data = store_inquiry_result.get("response", {})
+                    simple_message = response_data.get("simple_message", "")
+                    structured_html = response_data.get("structured_html", "")
+                    
+                    # 構造化されたHTMLを使用（シンプルなメッセージも含む）
+                    bot_content = structured_html if structured_html else simple_message
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': bot_content,
+                        'store_inquiry': True,
+                        'inquiry_type': store_inquiry_result.get('inquiry_type'),
+                        'store_location': store_inquiry_result.get('store_location'),
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    
+                    # DBを更新
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True
+                            }
+                            save_session_to_db(sid, session_data)
+                        else:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 店舗案内・遺失物関連の処理完了: {message_count} messages")
+                    return jsonify({'status': 'ok', 'message_count': message_count})
+                    
+            except ImportError as e:
+                logger.warning(f"⚠️ 店舗案内・遺失物関連機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ 店舗案内・遺失物関連機能でエラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})
             if counseling_mode.get('active'):
