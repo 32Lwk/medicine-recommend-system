@@ -395,6 +395,18 @@ SYMPTOM_DICTIONARY = {
         "medicine_types": ["睡眠障害"],
         "weight": 0.9
     },
+    "眠気": {
+        "canonical_name": "眠気",
+        "synonyms": [
+            "眠い", "眠気", "だるい", "眠たい", "眠気が強い", "いつも眠い",
+            "寝てしまう", "眠くて寝てしまう", "眠すぎて寝てしまう",
+            "仕事中に寝てしまう", "居眠り", "眠くてたまらない",
+            "眠気に襲われる", "眠くて仕方がない", "眠すぎる"
+        ],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["睡眠障害"],  # データベース上では睡眠障害カテゴリに分類
+        "weight": 0.9
+    },
     "めまい": {
         "canonical_name": "めまい",
         "synonyms": ["めまい", "眩暈", "ふらつき", "立ちくらみ"],
@@ -1244,6 +1256,18 @@ THROAT_TOPICAL_PRIORITY = {
     }
 }
 
+# 睡眠障害（眠気）向け成分優先順位
+SLEEP_DISORDER_PRIORITY = {
+    "高優先度（ビタミン剤配合カフェイン製剤）": {
+        "product_names": ["エスタロン", "エスタロンモカ", "トメルミン"],
+        "boost": 0.20
+    },
+    "中優先度（カフェイン単独製剤）": {
+        "ingredients": ["カフェイン", "無水カフェイン", "カフェイン水和物", "クエン酸カフェイン"],
+        "boost": 0.15
+    }
+}
+
 # 切り傷・擦り傷の成分・剤形優先順位
 WOUND_MEDICINE_PRIORITY = {
     "成分": {
@@ -1572,6 +1596,21 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
     if duration_days is not None:
         for symptom in detected_symptoms:
             symptom["duration_days"] = duration_days
+    
+    # 不眠と眠気の両方が検出された場合、文脈に基づいて優先順位を決定
+    detected_symptom_names = [s["name"] for s in detected_symptoms]
+    if "不眠" in detected_symptom_names and "眠気" in detected_symptom_names:
+        # 文脈に基づいて優先順位を決定（より具体的な表現を優先）
+        if any(keyword in user_text for keyword in ["寝てしまう", "眠くて", "眠すぎて"]):
+            # 眠気を優先
+            detected_symptoms = [s for s in detected_symptoms if s["name"] == "眠気"]
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"不眠と眠気の両方が検出されましたが、文脈から眠気を優先しました")
+        elif any(keyword in user_text for keyword in ["眠れない", "寝つきが悪い"]):
+            # 不眠を優先
+            detected_symptoms = [s for s in detected_symptoms if s["name"] == "不眠"]
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"不眠と眠気の両方が検出されましたが、文脈から不眠を優先しました")
     
     # 症状の組み合わせパターン認識
     symptom_names = [s['name'] for s in detected_symptoms]
@@ -2355,6 +2394,19 @@ def check_sleep_medicine_safety(
     if medicine_type != "睡眠障害":
         return result
     
+    # 症状名を確認して、「不眠」の場合は睡眠改善薬向けのチェックを実行
+    # 「眠気」の場合はカフェイン剤（眠気覚まし）のため、不眠症関連のチェックはスキップ
+    symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    has_insomnia = any(symptom_name == "不眠" for symptom_name in symptom_names)
+    has_sleepiness = any(symptom_name == "眠気" for symptom_name in symptom_names)
+    
+    # 眠気のみの場合は、不眠症関連のチェックをスキップ（カフェイン剤のため）
+    if has_sleepiness and not has_insomnia:
+        # カフェイン剤（眠気覚まし）の場合は、アルコール併用警告のみ追加して終了
+        result["warnings"].append("お酒とあわせた服用は危険です。アルコール摂取後は服用しないでください。")
+        return result
+    
+    # 不眠症状がある場合のみ、以下のチェックを実行
     # 1. 不眠症の診断有無チェック
     insomnia_diagnosed = nlu_result.get("insomnia_diagnosed", False)
     if insomnia_diagnosed:
@@ -2464,6 +2516,7 @@ def check_sleep_medicine_safety(
     result["warnings"].append("お酒とあわせた服用は危険です。アルコール摂取後は服用しないでください。")
     
     # 7. 常用化リスク警告（推奨は継続するが警告を追加）
+    # 注意: ここまで到達する場合は、不眠症状がある場合のみ（眠気のみの場合は既に早期リターン済み）
     result["warnings"].append("睡眠改善薬は一時的な不眠にのみ効果があります。常用化を避け、症状が続く場合は医師にご相談ください。")
     result["warnings"].append("睡眠改善薬は医師による治療の代用にはなりません。不眠症と診断されている場合は医師にご相談ください。")
     
@@ -5421,6 +5474,32 @@ def calculate_ingredient_based_boost(candidate: Dict, nlu_result: Dict, user_inf
                 boost = max(boost, MENSTRUAL_MEDICINE_PRIORITY["中優先度（当帰または芍薬単独）"]["boost"])
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"当帰または芍薬単独ボーナス: {candidate.get('product_name', '')} = +{MENSTRUAL_MEDICINE_PRIORITY['中優先度（当帰または芍薬単独）']['boost']}")
+    
+    # 睡眠障害（眠気）向けの成分優先順位
+    sleep_disorder_symptoms = ["眠気", "だるさ", "倦怠感", "疲労感"]
+    has_sleep_disorder_symptom = any(symptom in symptom_names for symptom in sleep_disorder_symptoms)
+    
+    if has_sleep_disorder_symptom and '睡眠障害' in medicine_type:
+        # 高優先度（ビタミン剤配合カフェイン製剤）
+        product_name_original = str(candidate.get('product_name', ''))
+        product_name_lower = product_name.lower()
+        # 製品名のマッチング（部分マッチでも可）
+        for product_pattern in SLEEP_DISORDER_PRIORITY["高優先度（ビタミン剤配合カフェイン製剤）"]["product_names"]:
+            if product_pattern.lower() in product_name_lower:
+                boost = max(boost, SLEEP_DISORDER_PRIORITY["高優先度（ビタミン剤配合カフェイン製剤）"]["boost"])
+                logger.info(f"⭐ ビタミン剤配合カフェイン製剤ボーナス: {product_name_original} = +{SLEEP_DISORDER_PRIORITY['高優先度（ビタミン剤配合カフェイン製剤）']['boost']}")
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"ビタミン剤配合カフェイン製剤ボーナス: {product_name_original} = +{SLEEP_DISORDER_PRIORITY['高優先度（ビタミン剤配合カフェイン製剤）']['boost']}")
+                break
+        
+        # 中優先度（カフェイン単独製剤）- ビタミン剤配合でない場合のみ
+        if boost < SLEEP_DISORDER_PRIORITY["高優先度（ビタミン剤配合カフェイン製剤）"]["boost"]:
+            for ingredient in SLEEP_DISORDER_PRIORITY["中優先度（カフェイン単独製剤）"]["ingredients"]:
+                if ingredient.lower() in ingredients:
+                    boost = max(boost, SLEEP_DISORDER_PRIORITY["中優先度（カフェイン単独製剤）"]["boost"])
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"カフェイン単独製剤ボーナス: {candidate.get('product_name', '')} = +{SLEEP_DISORDER_PRIORITY['中優先度（カフェイン単独製剤）']['boost']}")
+                    break
     
     return boost
 
@@ -9080,6 +9159,13 @@ def generate_usage_notes_and_consultation_with_gpt(
             "doping_prohibited": med.get('doping_prohibited', '')
         })
     
+    # 症状情報の準備
+    symptoms_context = ""
+    if nlu_result:
+        symptoms_list = [s.get("name", "") if isinstance(s, dict) else s for s in nlu_result.get("symptoms", [])]
+        if symptoms_list:
+            symptoms_context = f"\nユーザーの症状: {', '.join(symptoms_list)}\n"
+    
     # バッチ処理用のプロンプト（簡潔化で処理時間短縮）
     prompt = "医薬品情報:\n\n"
     
@@ -9093,6 +9179,7 @@ def generate_usage_notes_and_consultation_with_gpt(
             prompt += f"禁止物質: {med_info['doping_prohibited']}\n"
         prompt += "\n"
     
+    prompt += f"{symptoms_context}"
     prompt += """JSON形式で出力:
 {
   "medicines": [
@@ -9105,7 +9192,8 @@ def generate_usage_notes_and_consultation_with_gpt(
 }
 
 ルール: 効能は全文、用法用量注意は2項目以内、重要情報のみ記載。
-年齢制限が複雑な表現（「1歳以下は1／12量以下」「15歳以下8歳まで：1／2量」など）を含む場合は、「年齢制限: 用法用量を参照してください」と記載してください。"""
+年齢制限が複雑な表現（「1歳以下は1／12量以下」「15歳以下8歳まで：1／2量」など）を含む場合は、「年齢制限: 用法用量を参照してください」と記載してください。
+{symptoms_context and f'ユーザーの症状に合わせた注意事項を含めてください。' or ''}"""
     
     try:
         response = client.chat.completions.create(
@@ -9290,7 +9378,7 @@ def generate_usage_notes_and_consultation_with_gpt(
     if user_body_part:
         enhanced_user_info['user_body_part'] = user_body_part
     
-    general_notes = generate_default_usage_notes_and_consultation(recommended_medicines, enhanced_user_info)
+    general_notes = generate_default_usage_notes_and_consultation(recommended_medicines, enhanced_user_info, nlu_result)
     
     # 性器周辺症状の場合、特別な注意書きを追加
     if user_body_part == "delicate_area":
@@ -9309,10 +9397,15 @@ def generate_usage_notes_and_consultation_with_gpt(
         "doctor_consultation": doctor_consultation
     }
 
-def generate_default_usage_notes_and_consultation(recommended_medicines: List[Dict], user_info: Dict) -> Dict:
+def generate_default_usage_notes_and_consultation(recommended_medicines: List[Dict], user_info: Dict, nlu_result: Dict = None) -> Dict:
     """
     デフォルトの使用上の注意と医師相談アドバイスを生成（フォールバック用）
     推奨医薬品のCSVデータから禁忌情報を抽出（年齢制限は個別に表示するので除く）
+    
+    Args:
+        recommended_medicines: 推奨医薬品リスト
+        user_info: ユーザー情報
+        nlu_result: NLU結果（症状情報を含む）
     """
     usage_notes_parts = []
     
@@ -9323,6 +9416,15 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         if '睡眠障害' in str(medicine_type):
             is_sleep_medicine = True
             break
+    
+    # 症状名を確認して、「不眠」の場合は睡眠改善薬向けの注意事項を追加
+    # 「眠気」の場合はカフェイン剤（眠気覚まし）のため、不眠症関連の注意事項は追加しない
+    has_insomnia = False
+    has_sleepiness = False
+    if nlu_result:
+        symptom_names = [s.get("name", "") if isinstance(s, dict) else s for s in nlu_result.get("symptoms", [])]
+        has_insomnia = any(symptom_name == "不眠" for symptom_name in symptom_names)
+        has_sleepiness = any(symptom_name == "眠気" for symptom_name in symptom_names)
     
     # 使ってはいけない人の情報を追加（年齢制限は個別表示なので除く）
     contraindications_parts = ["【使ってはいけない人】"]
@@ -9348,8 +9450,8 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         "・高齢者の方（医師や薬剤師にご相談ください）"
     ])
     
-    # 睡眠改善薬の場合の特別な禁忌
-    if is_sleep_medicine:
+    # 睡眠改善薬の場合の特別な禁忌（不眠症状がある場合のみ）
+    if is_sleep_medicine and has_insomnia and not has_sleepiness:
         contraindications_parts.append("・緑内障の疾患がある方（抗コリン作用により症状が悪化する可能性があります）")
         contraindications_parts.append("・前立腺肥大の疾患がある方（抗コリン作用により症状が悪化する可能性があります）")
     
@@ -9367,10 +9469,14 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
     
     # 睡眠改善薬の場合の特別な注意
     if is_sleep_medicine:
+        # アルコール併用警告は常に追加
         usage_notes_parts.append("・お酒とあわせた服用は危険です。アルコール摂取後は服用しないでください")
-        usage_notes_parts.append("・睡眠改善薬は一時的な不眠にのみ効果があります。常用化を避け、症状が続く場合は医師にご相談ください")
-        usage_notes_parts.append("・睡眠改善薬は医師による治療の代用にはなりません。不眠症と診断されている場合は医師にご相談ください")
-        usage_notes_parts.append("・かぜ薬、解熱鎮痛薬、鎮咳去痰薬、抗ヒスタミン剤含有薬、睡眠薬との併用はできません")
+        
+        # 不眠症状がある場合のみ、睡眠改善薬向けの注意事項を追加
+        if has_insomnia and not has_sleepiness:
+            usage_notes_parts.append("・睡眠改善薬は一時的な不眠にのみ効果があります。常用化を避け、症状が続く場合は医師にご相談ください")
+            usage_notes_parts.append("・睡眠改善薬は医師による治療の代用にはなりません。不眠症と診断されている場合は医師にご相談ください")
+            usage_notes_parts.append("・かぜ薬、解熱鎮痛薬、鎮咳去痰薬、抗ヒスタミン剤含有薬、睡眠薬との併用はできません")
     
     if user_info.get('age') and user_info['age'] < 15:
         usage_notes_parts.append("・小児が服用する場合は保護者の監督のもとで服用してください")
@@ -9386,8 +9492,8 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         "・長期連用する場合"
     ]
     
-    # 睡眠改善薬の場合の特別な医師相談項目
-    if is_sleep_medicine:
+    # 睡眠改善薬の場合の特別な医師相談項目（不眠症状がある場合のみ）
+    if is_sleep_medicine and has_insomnia and not has_sleepiness:
         doctor_consultation_parts.insert(1, "・不眠症と診断されている場合")
         doctor_consultation_parts.insert(2, "・慢性的な不眠状態が続いている場合")
         doctor_consultation_parts.insert(3, "・症状が1週間以上続いている場合")
