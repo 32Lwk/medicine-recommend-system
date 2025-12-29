@@ -1009,34 +1009,6 @@ def index():
             from datetime import datetime
             import uuid
             
-            # 重複チェック
-            user_message_exists = any(
-                msg.get('type') == 'user' and 
-                msg.get('content') == sanitized_message and
-                msg.get('uuid')
-                for msg in session.get('messages', [])
-            )
-            
-            if not user_message_exists:
-                user_msg = {
-                    'type': 'user',
-                    'content': sanitized_message,
-                    'timestamp': datetime.now().isoformat(),
-                    'uuid': str(uuid.uuid4())
-                }
-                session['messages'].append(user_msg)
-                session.modified = True
-                
-                # ユーザーメッセージをDBに保存
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        session_data['messages'].append(user_msg)
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-
             # ステップ1: LLMトリアージ（セキュリティ検証後）
             triage_result = None
             try:
@@ -1519,6 +1491,70 @@ def index():
                 import traceback
                 traceback.print_exc()
             
+            # ステップ1.8.5: 店舗案内ではないと判定された場合、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む
+            if store_inquiry_result is None and triage_result and triage_result.get("category") == "Other":
+                logger.info(f"🔍 店舗案内ではないと判定されたため、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む")
+                # この処理は、後続の症状検出処理の前に実行される（2800行目以降の処理）
+                # フラグを設定して、後続処理で汎用応答処理を実行する
+                session['should_handle_other_category'] = True
+            
+            # ステップ1.9: 眠気関連キーワードのチェック（カウンセリングモードチェックの前、重複チェックの前に実行）
+            # 注意: このチェックは重複チェックの前に実行する必要がある（カウンセリングフローにリダイレクトするため）
+            sleepiness_keywords = [
+                "寝てしまう", "眠くて寝てしまう", "眠すぎて寝てしまう",
+                "仕事中に寝てしまう", "居眠り", "眠くてたまらない",
+                "眠気に襲われる", "眠くて仕方がない", "眠すぎる",
+                "眠気が強い", "眠い", "眠たい", "寝むたい", "寝たい", "眠気", "だるい", "いつも眠い",
+                "眠くて", "眠すぎ", "眠気で", "眠気です", "眠気が", "眠気の",
+                "日中の眠気", "昼間の眠気", "眠くて困る", "眠くて仕方ない",
+                "眠気が取れない", "眠気が強い", "強い眠気", "眠気がひどい",
+                "日中に寝てしまう", "日中に寝てしま", "日中寝てしまう", "日中寝てしま"
+            ]
+            has_sleepiness_keyword = any(keyword in sanitized_message for keyword in sleepiness_keywords)
+            # 後続処理で使用するため、セッションに保存
+            session['has_sleepiness_keyword'] = has_sleepiness_keyword
+            
+            # 眠気が検出された場合、カウンセリングフローにリダイレクト（薬推奨フローからの切り替えでない場合）
+            if has_sleepiness_keyword and not session.get('sleepiness_medicine_recommendation'):
+                logger.info(f"🔄 眠気関連キーワードを検出: カウンセリングフローにリダイレクト (category={triage_result.get('category', 'N/A') if triage_result else 'N/A'})")
+                # トリアージ結果をEmotionalカテゴリに変更
+                if triage_result:
+                    triage_result['category'] = 'Emotional'
+                    triage_result['subcategory'] = 'drowsiness'
+                    triage_result['reasoning'] = '眠気関連キーワードを検出したため、カウンセリングフローにリダイレクト'
+                category = 'Emotional'
+                # Emotionalカテゴリの処理に進む（後続処理で実行される）
+            
+            # 重複チェック（ステップ1.9の後に実行）
+            user_message_exists = any(
+                msg.get('type') == 'user' and 
+                msg.get('content') == sanitized_message and
+                msg.get('uuid')
+                for msg in session.get('messages', [])
+            )
+            
+            if not user_message_exists:
+                user_msg = {
+                    'type': 'user',
+                    'content': sanitized_message,
+                    'timestamp': datetime.now().isoformat(),
+                    'uuid': str(uuid.uuid4())
+                }
+                session['messages'].append(user_msg)
+                session.modified = True
+                
+                # ユーザーメッセージをDBに保存
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        if 'messages' not in session_data:
+                            session_data['messages'] = []
+                        session_data['messages'].append(user_msg)
+                        session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
+            else:
+                logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
+            
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})
             if counseling_mode.get('active'):
@@ -1588,9 +1624,11 @@ def index():
                             message_count = len(session['messages'])
                             return jsonify({'status': 'ok', 'message_count': message_count})
                         elif new_category == 'Physical':
-                            # Physicalカテゴリの処理：不眠カウンセリングから薬推奨フローへの切り替え
+                            # Physicalカテゴリの処理：不眠・眠気カウンセリングから薬推奨フローへの切り替え
                             medicine_request = response.get('medicine_request', False)
-                            if medicine_request and counseling_mode.get('symptom_type') == 'insomnia':
+                            symptom_type = counseling_mode.get('symptom_type')
+                            
+                            if medicine_request and symptom_type == 'insomnia':
                                 # 不眠の薬推奨フローに移行
                                 logger.info(f"✅ 不眠カウンセリングから薬推奨フローへ移行")
                                 
@@ -1615,6 +1653,41 @@ def index():
                                     triage_result['category'] = 'Physical'
                                     triage_result['subcategory'] = 'insomnia'
                                     triage_result['reasoning'] = '不眠カウンセリングから薬推奨への切り替え'
+                                
+                                # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
+                                session.pop('should_handle_other_category', None)
+                                
+                                # 後続処理に進む（カウンセリング応答の処理はスキップ）
+                                # ここでreturnせず、後続のPhysicalカテゴリ処理で薬推奨を実行
+                                pass
+                            elif medicine_request and symptom_type == 'drowsiness':
+                                # 眠気の薬推奨フローに移行
+                                logger.info(f"✅ 眠気カウンセリングから薬推奨フローへ移行")
+                                
+                                # カウンセリングモードを終了
+                                counseling_mode['active'] = False
+                                session['counseling_mode'] = counseling_mode
+                                session.modified = True
+                                
+                                # 眠気の症状で薬推奨フローを実行
+                                # ユーザーメッセージを「日中の眠気」として処理（3文字以上の要件を満たすため）
+                                user_text_for_recommendation = "日中の眠気"
+                                
+                                # 薬推奨処理を実行（後続のPhysicalカテゴリ処理で実行される）
+                                # ここではフラグを設定して、後続処理で薬推奨を実行する
+                                session['sleepiness_medicine_recommendation'] = True
+                                session['sleepiness_user_text'] = user_text_for_recommendation
+                                session.modified = True
+                                
+                                # 後続処理で薬推奨が実行されるように、カテゴリをPhysicalに設定
+                                # トリアージ結果をPhysicalカテゴリに変更
+                                if triage_result:
+                                    triage_result['category'] = 'Physical'
+                                    triage_result['subcategory'] = 'drowsiness'
+                                    triage_result['reasoning'] = '眠気カウンセリングから薬推奨への切り替え'
+                                
+                                # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
+                                session.pop('should_handle_other_category', None)
                                 
                                 # 後続処理に進む（カウンセリング応答の処理はスキップ）
                                 # ここでreturnせず、後続のPhysicalカテゴリ処理で薬推奨を実行
@@ -1831,11 +1904,17 @@ def index():
                     import traceback
                     traceback.print_exc()
             
+            # ステップ2.4.5: 眠気関連キーワードのチェック（不眠チェックの前に行う）
+            # 注意: このチェックはステップ1.9で既に実行済み（重複チェックの前に実行）
+            # ここでは、眠気が検出された場合に不眠フローに入らないようにするフラグを設定するだけ
+            has_sleepiness_keyword = session.get('has_sleepiness_keyword', False)
+            skip_insomnia_check = has_sleepiness_keyword
+            
             # ステップ2.5: 不眠関連キーワードのチェック（トリアージ結果に関係なく、必ずカウンセリングフローにリダイレクト）
             # 注意: 「不眠症」は診断名としてステップ1.7で既に検出されているため、ここから除外
             insomnia_keywords = [
                 "不眠", "眠れない", "睡眠不足", "寝つきが悪い", "眠れません", "眠れないです", 
-                "眠れない", "睡眠", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
+                "眠れない", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
                 "寝れない", "寝れません", "寝れないです", "夜寝れない", "最近寝れない",
                 "眠れなくて", "眠れなく", "寝つけない", "寝つけません", "寝つけないです",
                 # "不眠症" は診断名としてステップ1.7で検出されるため除外
@@ -1847,7 +1926,8 @@ def index():
             has_insomnia_keyword = any(keyword in sanitized_message for keyword in insomnia_keywords)
             
             # 不眠関連キーワードが検出された場合、必ずカウンセリングフローにリダイレクト（薬推奨フローからの切り替えでない場合）
-            if has_insomnia_keyword and not session.get('insomnia_medicine_recommendation'):
+            # ただし、眠気が検出された場合は不眠フローには入らない
+            if has_insomnia_keyword and not session.get('insomnia_medicine_recommendation') and not skip_insomnia_check:
                 logger.info(f"🔄 不眠関連キーワードを検出: カウンセリングフローにリダイレクト (category={triage_result.get('category', 'N/A') if triage_result else 'N/A'})")
                 # トリアージ結果をEmotionalカテゴリに変更
                 if triage_result:
@@ -2050,8 +2130,13 @@ def index():
                         
                         symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
                         
-                        # 不眠関連キーワードが検出された場合、symptom_typeを強制的に"insomnia"に設定
-                        if has_insomnia_keyword and symptom_type != "insomnia":
+                        # 眠気関連キーワードが検出された場合、symptom_typeを強制的に"drowsiness"に設定
+                        if has_sleepiness_keyword and symptom_type != "drowsiness":
+                            symptom_type = "drowsiness"
+                            logger.info(f"🔄 眠気関連キーワード直接検出により、symptom_typeを'drowsiness'に変更しました")
+                        
+                        # 不眠関連キーワードが検出された場合、symptom_typeを強制的に"insomnia"に設定（眠気が優先されない場合のみ）
+                        if has_insomnia_keyword and symptom_type != "insomnia" and not has_sleepiness_keyword:
                             symptom_type = "insomnia"
                             logger.info(f"🔄 不眠関連キーワード直接検出により、symptom_typeを'insomnia'に変更しました")
                         
@@ -2147,6 +2232,60 @@ def index():
                             else:
                                 logger.info(f"✅ 不眠カウンセリング開始: 医薬品情報メッセージは既に存在します (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
                         
+                        # 眠気カウンセリングの場合、「眠気で、推奨される医薬品を知りたい場合は教えて下さい。」というメッセージを別途送信
+                        # symptom_typeが"drowsiness"の場合、またはtriage_resultのsubcategoryが"drowsiness"の場合、または眠気関連キーワードが検出された場合に送信
+                        is_sleepiness_counseling = (
+                            symptom_type == "drowsiness" or 
+                            triage_result.get("subcategory", "").lower() == "drowsiness" or
+                            "drowsiness" in triage_result.get("subcategory", "").lower() or
+                            has_sleepiness_keyword
+                        )
+                        if is_sleepiness_counseling:
+                            # 眠気カウンセリングであることを確実にするため、symptom_typeを強制的に"drowsiness"に設定
+                            if symptom_type != "drowsiness":
+                                symptom_type = "drowsiness"
+                                # カウンセリングモードのsymptom_typeも更新
+                                if session.get('counseling_mode'):
+                                    session['counseling_mode']['symptom_type'] = "drowsiness"
+                                logger.info(f"🔄 眠気関連キーワード検出により、symptom_typeを'drowsiness'に変更しました")
+                            
+                            # 既に同じメッセージが存在するかチェック（重複防止）
+                            medicine_info_message = "眠気で、推奨される医薬品を知りたい場合は教えて下さい。"
+                            existing_medicine_info = False
+                            for msg in session.get('messages', []):
+                                if (msg.get('type') == 'bot' and 
+                                    msg.get('counseling_medicine_info') and 
+                                    msg.get('content') == medicine_info_message):
+                                    existing_medicine_info = True
+                                    logger.info(f"⏭️ 既に医薬品情報メッセージが存在するため、追加をスキップします")
+                                    break
+                            
+                            if not existing_medicine_info:
+                                medicine_info_response = {
+                                    'type': 'bot',
+                                    'content': medicine_info_message,
+                                    'counseling': True,
+                                    'counseling_medicine_info': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(medicine_info_response)
+                                session.modified = True  # セッション変更を明示的に設定
+                                
+                                # 医薬品情報メッセージのログ記録（通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=medicine_info_message,
+                                    response_type="counseling_medicine_info",
+                                    category=category,
+                                    confidence=confidence,
+                                    counseling_mode=session.get('counseling_mode'),
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
+                                logger.info(f"✅ 眠気カウンセリング開始: 医薬品情報メッセージを送信しました (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
+                            else:
+                                logger.info(f"✅ 眠気カウンセリング開始: 医薬品情報メッセージは既に存在します (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
+                        
                         if initial_questions:
                             first_question = initial_questions[0]
                             # 質問履歴に追加
@@ -2215,14 +2354,31 @@ def index():
                         # 症状入力として処理されるように設定
                         is_question = False
                         logger.info(f"✅ 不眠の薬推奨フローに移行: {user_text_for_recommendation}")
+                    # 眠気カウンセリングから薬推奨への切り替えの場合
+                    elif session.get('sleepiness_medicine_recommendation'):
+                        # 眠気の薬推奨フローを実行
+                        user_text_for_recommendation = session.get('sleepiness_user_text', '日中の眠気')
+                        # フラグをクリア
+                        session.pop('sleepiness_medicine_recommendation', None)
+                        session.pop('sleepiness_user_text', None)
+                        session.modified = True
+                        
+                        # 眠気の症状で薬推奨を実行（後続処理で実行される）
+                        # ここではユーザーメッセージを「眠気」に置き換えて処理を継続
+                        sanitized_message = user_text_for_recommendation
+                        user_message = user_text_for_recommendation  # user_messageも更新
+                        # 症状入力として処理されるように設定
+                        is_question = False
+                        logger.info(f"✅ 眠気の薬推奨フローに移行: {user_text_for_recommendation}")
                     # （既存の処理を継続）
                     pass
                 
                 elif category == 'Ask':
                     # 医薬品質問フロー
-                    # カウンセリングモード中または直後に「薬を知りたい」という回答が来た場合、不眠の薬推奨として処理
+                    # カウンセリングモード中または直後に「薬を知りたい」という回答が来た場合、不眠・眠気の薬推奨として処理
                     counseling_mode_check = session.get('counseling_mode', {})
                     is_insomnia_medicine_request = False
+                    is_sleepiness_medicine_request = False
                     
                     # 直前のメッセージを確認（カウンセリングモードが終了していても確認）
                     messages = session.get('messages', [])
@@ -2230,10 +2386,18 @@ def index():
                         # 直前のbotメッセージを確認
                         for msg in reversed(messages[-5:]):  # 直近5件を確認
                             if msg.get('type') == 'bot' and msg.get('counseling_medicine_info'):
-                                # 「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答
-                                is_insomnia_medicine_request = True
-                                logger.info(f"✅ 不眠カウンセリング関連の薬推奨リクエストを検出: {sanitized_message}")
-                                break
+                                # カウンセリングモードのsymptom_typeを確認
+                                symptom_type_in_msg = counseling_mode_check.get('symptom_type', '')
+                                if symptom_type_in_msg == 'insomnia' or '不眠' in msg.get('content', ''):
+                                    # 「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答
+                                    is_insomnia_medicine_request = True
+                                    logger.info(f"✅ 不眠カウンセリング関連の薬推奨リクエストを検出: {sanitized_message}")
+                                    break
+                                elif symptom_type_in_msg == 'drowsiness' or '眠気' in msg.get('content', ''):
+                                    # 眠気カウンセリング関連の薬推奨リクエスト
+                                    is_sleepiness_medicine_request = True
+                                    logger.info(f"✅ 眠気カウンセリング関連の薬推奨リクエストを検出: {sanitized_message}")
+                                    break
                     
                     # カウンセリングモード中または直前のメッセージが医薬品情報メッセージの場合
                     if (counseling_mode_check.get('active') and counseling_mode_check.get('symptom_type') == 'insomnia') or is_insomnia_medicine_request:
@@ -2259,6 +2423,34 @@ def index():
                         category = 'Physical'
                         # 症状入力として処理されるように設定
                         is_question = False
+                        # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
+                        session.pop('should_handle_other_category', None)
+                        logger.info(f"✅ カテゴリをPhysicalに変更して薬推奨フローへ: {sanitized_message}")
+                    elif (counseling_mode_check.get('active') and counseling_mode_check.get('symptom_type') == 'drowsiness') or is_sleepiness_medicine_request:
+                        # 眠気の薬推奨フローに移行
+                        logger.info(f"✅ 眠気カウンセリング関連の薬推奨フローに移行: {sanitized_message}")
+                        
+                        # カウンセリングモードを終了
+                        if counseling_mode_check.get('active'):
+                            counseling_mode_check['active'] = False
+                            session['counseling_mode'] = counseling_mode_check
+                            session.modified = True
+                        
+                        # 眠気の症状で薬推奨フローを実行
+                        # トリアージ結果をPhysicalカテゴリに変更
+                        if triage_result:
+                            triage_result['category'] = 'Physical'
+                            triage_result['subcategory'] = 'drowsiness'
+                            triage_result['reasoning'] = '眠気カウンセリングから薬推奨への切り替え'
+                        
+                        # ユーザーメッセージを「日中の眠気」に置き換えて処理を継続（3文字以上の要件を満たすため）
+                        sanitized_message = '日中の眠気'
+                        user_message = '日中の眠気'  # user_messageも更新
+                        category = 'Physical'
+                        # 症状入力として処理されるように設定
+                        is_question = False
+                        # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
+                        session.pop('should_handle_other_category', None)
                         logger.info(f"✅ カテゴリをPhysicalに変更して薬推奨フローへ: {sanitized_message}")
                     
                     # 睡眠薬関連の質問の場合は不眠カウンセリングにリダイレクト
@@ -2631,6 +2823,21 @@ def index():
                 return jsonify({'status': 'ok', 'message_count': message_count})
             
             # AI自動応答がONの場合の通常処理
+            # ステップ1.8.5の続き: 店舗案内ではないと判定された場合、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）を実行
+            should_handle_other_category = session.get('should_handle_other_category', False)
+            # フラグが設定されている場合は、is_questionをTrueに固定（後続処理で変更されないようにする）
+            force_question_mode = should_handle_other_category
+            if should_handle_other_category:
+                session['should_handle_other_category'] = False  # フラグをリセット
+                logger.info(f"🔍 既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）を実行")
+                # この処理は、後続の挨拶検出処理で実行される
+                # 強制的に質問処理に進むようにする
+                is_question = True
+                logger.info(f"🔍 フラグ設定により、is_question=Trueに設定（固定）: {user_message}")
+            else:
+                # フラグが設定されていない場合のみ、通常の判定を実行
+                is_question = None  # 未初期化状態
+            
             # まず挨拶を検出（症状検出の前に実行）
             greeting_keywords = [
                 'こんにちは', 'こんばんは', 'おはよう', 'おはようございます',
@@ -2657,15 +2864,24 @@ def index():
             # 症状キーワードが含まれているかチェック
             has_symptom = any(symptom in user_message for symptom in symptom_keywords)
             
-            # 質問か症状入力かを判定
-            is_question = not is_symptom_input(user_message)
+            # 質問か症状入力かを判定（フラグが設定されていない場合のみ）
+            if is_question is None:
+                is_question = not is_symptom_input(user_message)
+                logger.info(f"🔍 is_symptom_input判定結果: is_question={is_question}, user_message={user_message}")
             add_reanalysis_message = False  # 再分析メッセージフラグ
             original_user_message = None  # 元のユーザーメッセージ
             
-            # 挨拶のみで症状キーワードが含まれていない場合は質問処理に進む
-            if has_greeting and not has_symptom:
+            # 挨拶のみで症状キーワードが含まれていない場合は質問処理に進む（フラグが設定されていない場合のみ）
+            if not force_question_mode and has_greeting and not has_symptom:
                 is_question = True
+                logger.info(f"🔍 挨拶検出により、is_question=Trueに設定: {user_message}")
             
+            # フラグが設定されている場合は、is_questionをTrueに固定（後続処理で変更されないようにする）
+            if force_question_mode:
+                is_question = True
+                logger.info(f"🔍 フラグ固定により、is_question=Trueに再設定: {user_message}")
+            
+            logger.info(f"🔍 is_question最終判定: is_question={is_question}, force_question_mode={force_question_mode}, user_message={user_message}")
             if is_question:
                 # システム紹介質問を検出
                 system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能', '自己紹介']
@@ -3576,7 +3792,9 @@ def index():
                 
             # 症状入力の場合のみ医薬品推奨を実行
             # 質問の場合は属性抽出のみ行い、医薬品推奨は行わない
-            if not is_question:
+            # 注意: should_handle_other_categoryフラグが設定されていた場合は、is_questionがFalseに変更されていても質問処理として扱う
+            force_question_mode = session.get('should_handle_other_category', False)
+            if not is_question and not force_question_mode:
                 # 言語を検出（症状入力時にも実行）
                 detected_language = detect_language(user_message)
                 session['detected_language'] = detected_language
@@ -4821,11 +5039,17 @@ def index():
                                             if 'conditions' not in medicine_with_details:
                                                 medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
                                             
+                                            # 症状情報を取得（nlu_resultから）
+                                            symptoms_list = []
+                                            if nlu_result and 'symptoms' in nlu_result:
+                                                symptoms_list = nlu_result.get('symptoms', [])
+                                            
                                             # 使用上の注意を生成（キャッシュ機能付き）
                                             medicine_notes = generate_usage_notes(
                                                 medicine.get('name', ''),
                                                 medicine_with_details,
-                                                user_info
+                                                user_info,
+                                                symptoms=symptoms_list
                                             )
                                             if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。":
                                                 generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")

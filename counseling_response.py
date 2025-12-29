@@ -102,10 +102,23 @@ def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
     subcategory = triage_result.get("subcategory", "").lower()
     user_text_lower = user_text.lower()
     
-    # 不眠の検出（最優先）
+    # 眠気の検出（不眠の前にチェック）
+    sleepiness_keywords = [
+        "寝てしまう", "眠くて寝てしまう", "眠すぎて寝てしまう",
+        "仕事中に寝てしまう", "居眠り", "眠くてたまらない",
+        "眠気に襲われる", "眠くて仕方がない", "眠すぎる",
+        "眠気が強い", "眠い", "眠たい", "眠気", "だるい", "いつも眠い",
+        "眠くて", "眠すぎ", "眠気で", "眠気です", "眠気が", "眠気の",
+        "日中の眠気", "昼間の眠気", "眠くて困る", "眠くて仕方ない",
+        "眠気が取れない", "眠気が強い", "強い眠気", "眠気がひどい"
+    ]
+    if any(keyword in user_text_lower for keyword in sleepiness_keywords):
+        return "drowsiness"
+    
+    # 不眠の検出
     insomnia_keywords = [
         "不眠", "眠れない", "睡眠不足", "寝つきが悪い", "眠れません", "眠れないです", 
-        "眠れない", "睡眠", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
+        "眠れない", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
         "寝れない", "寝れません", "寝れないです", "夜寝れない", "最近寝れない",
         "眠れなくて", "眠れなく", "寝つけない", "寝つけません", "寝つけないです",
         "不眠症", "不眠で", "不眠です", "不眠の", "不眠が",
@@ -140,6 +153,41 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
             "max_length": int
         }
     """
+    # 眠気専用のプロンプトテンプレート
+    if symptom_type == "drowsiness":
+        return {
+            "system_message": "あなたは薬剤師兼カウンセラーです。眠気に関するカウンセリングを行い、生活習慣の改善を推奨し、カフェイン剤の適切な使用について説明してください。",
+            "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。日中の眠気で悩むユーザーに対して、
+共感的で実践的なアドバイスを含む返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【症状タイプ】
+眠気（日中の眠さ）
+
+【返信の要件】
+- **共感的なメッセージ**: 眠気で悩む気持ちに寄り添う（1-2文）
+- **生活習慣の改善推奨**: 以下の方法を具体的に説明してください（必須）
+  * 十分な睡眠時間の確保（7-8時間を目安に）
+  * 規則正しい生活リズム（就寝・起床時間を一定にする）
+  * 適度な運動（特に朝の運動が効果的）
+  * 栄養バランスの取れた食事
+  * 適度な休憩を取る
+- **カフェイン剤について**: 簡潔に自然な文脈で説明してください（必須）
+  * カフェイン剤は一時的な眠気の除去に効果がある
+  * 1日の摂取量を守ること（過剰摂取は避ける）
+  * 就寝前の使用は避ける（不眠の原因になる可能性がある）
+  * 常用化のリスクがあるため、一時的な使用に留める
+  * 慢性的な眠気の場合は医師にご相談ください
+- **応答長さ**: 200-300文字程度（簡潔に要点を押さえる）
+- **質問は最小限に**: 不必要な質問は避け、生活習慣の改善推奨とカフェイン剤の適切な使用説明を優先する
+""",
+            "response_requirements": "生活習慣の改善推奨とカフェイン剤の適切な使用説明を含む、共感的で実践的な返信（200-300文字程度）。簡潔に要点を押さえる。",
+            "max_length": 300
+        }
+    
     # 不眠専用のプロンプトテンプレート
     if symptom_type == "insomnia":
         return {
@@ -275,8 +323,8 @@ def generate_counseling_response(
     max_length = template.get("max_length", 200)
     
     try:
-        # 不眠の場合は長めの応答を許可（max_tokensを増やす）
-        max_tokens_value = max_length * 2 if symptom_type == "insomnia" else max_length
+        # 不眠と眠気の場合は長めの応答を許可（max_tokensを増やす）
+        max_tokens_value = max_length * 2 if symptom_type in ["insomnia", "drowsiness"] else max_length
         
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -307,11 +355,11 @@ def generate_counseling_response(
                     response_text = '\n'.join([line for line in lines if pattern not in line])
                     break
         
-        # 文字数制限を超える場合は切り詰める（不眠の場合は400文字まで許可）
+        # 文字数制限を超える場合は切り詰める（不眠と眠気の場合は400文字まで許可）
         if len(response_text) > max_length:
             # 文の途中で切らないように、最後の文を削除
-            if symptom_type == "insomnia" and max_length >= 300:
-                # 不眠の場合は、文の区切りで切る
+            if symptom_type in ["insomnia", "drowsiness"] and max_length >= 300:
+                # 不眠と眠気の場合は、文の区切りで切る
                 sentences = response_text.split('。')
                 trimmed_text = ""
                 for sentence in sentences:
@@ -470,6 +518,43 @@ def generate_follow_up_questions(
         # 最低1つは質問を返す
         if not questions:
             questions = ["どのくらいの期間、眠れない状態が続いていますか？"]
+        
+        return questions[:3]  # 最大3つまで
+    
+    # 眠気専用の質問生成
+    if symptom_type == "drowsiness":
+        # 既に収集済みの情報を確認
+        has_duration = "duration" in collected_info or "期間" in str(collected_info)
+        has_cause = "cause" in collected_info or "原因" in str(collected_info)
+        has_sleep_pattern = "sleep_pattern" in collected_info or "睡眠パターン" in str(collected_info)
+        
+        questions = []
+        
+        # 期間に関する質問（未収集の場合）
+        if not has_duration:
+            questions.append("どのくらいの期間、眠気が続いていますか？")
+        
+        # 原因に関する質問（未収集の場合）
+        if not has_cause and len(questions) < 3:
+            questions.append("眠気の原因として、何か心当たりはありますか？（睡眠不足、ストレス、生活リズムなど）")
+        
+        # 睡眠パターンに関する質問（未収集の場合）
+        if not has_sleep_pattern and len(questions) < 3:
+            questions.append("普段の睡眠時間はどのくらいですか？")
+        
+        # 質問が不足している場合、追加の質問を生成
+        if len(questions) < 2:
+            additional_questions = [
+                "どのような時間帯に特に眠気を感じますか？",
+                "日中の眠気で、生活や仕事に支障はありますか？"
+            ]
+            for q in additional_questions:
+                if len(questions) < 3:
+                    questions.append(q)
+        
+        # 最低1つは質問を返す
+        if not questions:
+            questions = ["どのくらいの期間、眠気が続いていますか？"]
         
         return questions[:3]  # 最大3つまで
     
@@ -1822,20 +1907,20 @@ def handle_user_input_in_counseling_mode(
                     'completion_reason': 'duration_exceeded_2weeks'
                 }
     
-    # 不眠カウンセリング中に薬を希望した場合の検出
-    if current_topic == "insomnia":
+    # 不眠・眠気カウンセリング中に薬を希望した場合の検出
+    if current_topic == "insomnia" or current_topic == "drowsiness":
         user_text_lower = user_text.lower()
         
-        # 直前のメッセージを確認（「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答かどうか）
+        # 直前のメッセージを確認（医薬品情報メッセージに対する回答かどうか）
         messages = session.get('messages', [])
         is_medicine_info_response = False
         if messages:
             # 直前のbotメッセージを確認
             for msg in reversed(messages[-5:]):  # 直近5件を確認
                 if msg.get('type') == 'bot' and msg.get('counseling_medicine_info'):
-                    # 「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答
+                    # 医薬品情報メッセージに対する回答
                     is_medicine_info_response = True
-                    logger.info(f"✅ 不眠カウンセリング中の医薬品情報メッセージへの回答を検出")
+                    logger.info(f"✅ {current_topic}カウンセリング中の医薬品情報メッセージへの回答を検出")
                     break
         
         medicine_request_keywords = [
@@ -1844,12 +1929,15 @@ def handle_user_input_in_counseling_mode(
             "睡眠薬を教えて下さい", "睡眠薬を教えてください", "医薬品を教えて",
             "薬を推奨", "睡眠薬を推奨", "医薬品を推奨",
             "教えて欲しい", "教えてください", "教えて下さい", "教えて",
+            "おしえてほしい","おしえて",
             "知りたい", "知りたいです", "知りたいです。", "知りたい。",
-            "推奨して", "推奨してください", "推奨して下さい", "推奨して欲しい"
+            "しりたい", "しりたいです", "しりたいです。", "しりたい。",
+            "推奨して", "推奨してください", "推奨して下さい", "推奨して欲しい",
+            "カフェイン", "カフェイン剤", "カフェイン剤を教えて", "眠気覚まし"
         ]
         
-        # 「知りたい」系のキーワードは、直前のメッセージが医薬品情報メッセージの場合のみ検出
-        simple_knowledge_keywords = ["知りたい", "知りたいです", "知りたいです。", "知りたい。"]
+        # 「知りたい」「しりたい」系のキーワードは、直前のメッセージが医薬品情報メッセージの場合のみ検出
+        simple_knowledge_keywords = ["知りたい", "知りたいです", "知りたいです。", "知りたい。", "しりたい", "しりたいです", "しりたいです。", "しりたい。"]
         has_simple_knowledge_keyword = any(keyword in user_text_lower for keyword in simple_knowledge_keywords)
         
         if has_simple_knowledge_keyword and not is_medicine_info_response:
@@ -1861,7 +1949,7 @@ def handle_user_input_in_counseling_mode(
             session['counseling_mode'] = counseling_mode
             session.modified = True
             
-            logger.info(f"不眠カウンセリングから薬推奨への切り替え: ユーザーが薬を希望")
+            logger.info(f"{current_topic}カウンセリングから薬推奨への切り替え: ユーザーが薬を希望")
             
             return {
                 'type': 'topic_shift',
@@ -1870,7 +1958,7 @@ def handle_user_input_in_counseling_mode(
                     'is_topic_shift': True,
                     'new_topic_category': 'Physical',
                     'relation_to_current_topic': 0.0,
-                    'reasoning': 'ユーザーが薬を希望したため、カウンセリングから薬推奨に切り替え'
+                    'reasoning': f'ユーザーが薬を希望したため、{current_topic}カウンセリングから薬推奨に切り替え'
                 },
                 'continue_counseling': False,
                 'medicine_request': True
