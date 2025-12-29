@@ -314,3 +314,54 @@ def log_crisis_keyword_detection(user_id: str, input_text: str, detected_keyword
         logger.warning(f"🚨 危機関連ワード検出ログ記録: {user_id} - キーワード: {detected_keywords}")
     except Exception as e:
         logger.error(f"❌ 危機関連ワード検出ログ記録エラー: {e}")
+
+
+def log_emergency_detection(
+    user_id: str,
+    input_text: str,
+    emergency_type: str,
+    emergency_types: List[str],
+    detected_keywords: List[str],
+    session_id: str = None,
+    location: Optional[str] = None,
+    staff_notified: bool = False,
+    police_notified: bool = False
+):
+    """
+    緊急事案検出のログ記録
+    
+    Args:
+        user_id: ユーザーID
+        input_text: 入力テキスト
+        emergency_type: 主要な緊急事案の種類
+        emergency_types: 検出されたすべての緊急事案の種類
+        detected_keywords: 検出されたキーワードのリスト
+        session_id: セッションID
+        location: 場所情報（オプション）
+        staff_notified: スタッフに通知されたか（オプション）
+        police_notified: 警察に通知されたか（オプション）
+    """
+    log_entry = {
+        'timestamp': datetime.now().isoformat(),
+        'event_type': 'emergency_detection',
+        'user_id': user_id,
+        'session_id': session_id,
+        'input_text': input_text[:100] + '...' if len(input_text) > 100 else input_text,
+        'emergency_type': emergency_type,
+        'emergency_types': emergency_types,
+        'detected_keywords': detected_keywords,
+        'location': location,
+        'staff_notified': staff_notified,
+        'police_notified': police_notified,
+        'severity': 'critical',
+        'action_taken': 'emergency_response_provided',
+        'is_safe': False,
+        'risk_score': 100  # 最高リスクレベル
+    }
+    
+    try:
+        with open('log/security_events.jsonl', 'a', encoding='utf-8') as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+        logger.warning(f"🚨 緊急事案検出ログ記録: {user_id} - 種類: {emergency_type}, キーワード: {detected_keywords}")
+    except Exception as e:
+        logger.error(f"❌ 緊急事案検出ログ記録エラー: {e}")
