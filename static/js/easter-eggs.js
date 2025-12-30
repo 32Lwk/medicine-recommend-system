@@ -216,6 +216,125 @@ const ANIMATION_TRIGGERS = {
     rain: new Set(['雨', 'あめ', 'rain'])
 };
 
+// 特別イベント系のトリガー
+const SPECIAL_EVENT_TRIGGERS = {
+    newyear: new Set([
+        // 基本形
+        'あけましておめでとう', 'あけましておめでとうございます', 'あけおめ', 'ことより',
+        '新年おめでとう', '新年おめでとうございます', '新年あけましておめでとう', '新年あけましておめでとうございます',
+        '謹賀新年', 'きんがしんねん', '賀正', 'がしょう', '迎春', 'げいしゅん', '初春', 'しょしゅん',
+        '良いお年を', 'よいおとしを', '良いお年をお迎えください', 'よいおとしをおむかえください',
+        '良い年を', 'よいとしを', '良い年をお迎えください', 'よいとしをおむかえください',
+        '新年', 'しんねん', '正月', 'しょうがつ', 'お正月', 'おしょうがつ',
+        // 英語
+        'happy new year', 'happy new year!', 'new year', 'newyear', 'happy new year to you',
+        'wishing you a happy new year', 'new year greetings', 'new year wishes'
+    ]),
+    birthday: new Set([
+        // 基本形
+        '誕生日', 'たんじょうび', '誕生日です', 'たんじょうびです', '誕生日おめでとう',
+        '誕生日おめでとうございます', '今日が誕生日', 'きょうがたんじょうび', '今日は誕生日', 'きょうはたんじょうび',
+        'お誕生日', 'おたんじょうび', 'お誕生日おめでとう', 'おたんじょうびおめでとう',
+        'お誕生日おめでとうございます', 'おたんじょうびおめでとうございます',
+        'ハッピーバースデー', 'はっぴーばーすでー', 'ハッピーバースデイ', 'はっぴーばーすでい',
+        // 英語
+        'birthday', 'happy birthday', 'birthday!', 'my birthday', "it's my birthday",
+        'happy birthday to you', 'birthday wishes', 'birthday greetings', 'happy bday', 'bday'
+    ]),
+    christmas: new Set([
+        // 基本形
+        'メリークリスマス', 'めりーくりすます', 'クリスマス', 'くりすます', 'クリスマスおめでとう',
+        'クリスマスおめでとうございます', 'メリークリスマス！', 'クリスマスです', 'クリスマスだ',
+        'メリークリスマス！', 'クリスマスイブ', 'くりすますいぶ', 'クリスマスイブです',
+        'クリスマスおめでとうございます', 'クリスマスおめでとう', 'クリスマスです',
+        'ハッピークリスマス', 'はっぴーくりすます', 'クリスマスおめでとうございます',
+        // 英語
+        'merry christmas', 'merry christmas!', 'christmas', 'xmas', 'happy christmas',
+        'merry xmas', 'xmas!', 'christmas eve', 'happy holidays', 'season\'s greetings',
+        'merry christmas to you', 'christmas wishes', 'christmas greetings'
+    ]),
+    halloween: new Set([
+        // 基本形
+        'ハッピーハロウィン', 'はっぴーはろうぃん', 'ハロウィン', 'はろうぃん', 'ハロウィンおめでとう',
+        'ハロウィンです', 'ハロウィンだ', 'トリックオアトリート', 'とりっくおあとりーと',
+        'トリック・オア・トリート', 'とりっくおあとりーと', 'ハロウィンおめでとうございます',
+        // 英語
+        'happy halloween', 'happy halloween!', 'halloween', 'trick or treat', 'trick or treat!',
+        'trick-or-treat', 'happy halloween to you', 'halloween wishes', 'halloween greetings'
+    ]),
+    valentine: new Set([
+        // 基本形
+        'バレンタイン', 'ばれんたいん', 'バレンタインデー', 'ばれんたいんでー', 'バレンタインおめでとう',
+        'バレンタインデーおめでとう', 'バレンタインです', 'バレンタインだ', 'ハッピーバレンタイン',
+        'はっぴーばれんたいん', 'バレンタインおめでとうございます', 'バレンタインデーおめでとうございます',
+        // 英語
+        'valentine', 'valentine\'s day', 'happy valentine', 'happy valentine\'s day',
+        'valentines day', 'valentine day', 'happy valentines', 'valentine wishes'
+    ]),
+    whiteDay: new Set([
+        // 基本形
+        'ホワイトデー', 'ほわいとでー', 'ホワイトデーおめでとう', 'ホワイトデーです', 'ホワイトデーだ',
+        'ホワイトデーおめでとうございます', 'ハッピーホワイトデー', 'はっぴーほわいとでー',
+        // 英語
+        'white day', 'white day!', 'happy white day', 'white day wishes', 'white day greetings'
+    ]),
+    tanabata: new Set([
+        // 基本形
+        '七夕', 'たなばた', '七夕祭り', 'たなばたまつり', '七夕です', '七夕だ', '七夕おめでとう',
+        '七夕おめでとうございます', '七夕の日', 'たなばたのひ', '星祭り', 'ほしまつり',
+        // 英語
+        'tanabata', 'star festival', 'tanabata festival', 'tanabata wishes', 'tanabata greetings'
+    ]),
+    obon: new Set([
+        // 基本形
+        'お盆', 'おぼん', 'お盆です', 'お盆だ', 'お盆休み', 'おぼんやすみ', 'お盆おめでとう',
+        'お盆おめでとうございます', 'お盆の日', 'おぼんのひ', '盂蘭盆', 'うらぼん',
+        // 英語
+        'obon', 'bon festival', 'obon festival', 'obon wishes', 'obon greetings'
+    ]),
+    childrensDay: new Set([
+        // 基本形
+        'こどもの日', 'こどものひ', '子供の日', 'こどもの日おめでとう', 'こどもの日です', 'こどもの日だ',
+        'こどもの日おめでとうございます', '子供の日おめでとう', '子供の日です', '子供の日だ',
+        '子どもの日', 'こどもの日おめでとう', '子どもの日おめでとう',
+        // 英語
+        'children\'s day', 'kodomo no hi', 'childrens day', 'children day', 'children\'s day wishes'
+    ]),
+    mothersDay: new Set([
+        // 基本形
+        '母の日', 'ははのひ', '母の日おめでとう', '母の日です', '母の日だ', 'ハッピーマザーズデー',
+        'はっぴーまざーずでー', '母の日おめでとうございます', 'お母さんの日', 'おかあさんのひ',
+        // 英語
+        'mother\'s day', 'mothers day', 'happy mother\'s day', 'mothersday', 'mother day',
+        'mother\'s day wishes', 'mother\'s day greetings'
+    ]),
+    fathersDay: new Set([
+        // 基本形
+        '父の日', 'ちちのひ', '父の日おめでとう', '父の日です', '父の日だ', 'ハッピーファザーズデー',
+        'はっぴーふぁざーずでー', '父の日おめでとうございます', 'お父さんの日', 'おとうさんのひ',
+        // 英語
+        'father\'s day', 'fathers day', 'happy father\'s day', 'fathersday', 'father day',
+        'father\'s day wishes', 'father\'s day greetings'
+    ]),
+    respectForTheAgedDay: new Set([
+        // 基本形
+        '敬老の日', 'けいろうのひ', '敬老の日おめでとう', '敬老の日です', '敬老の日だ',
+        '敬老の日おめでとうございます', 'けいろうのひおめでとう', 'けいろうのひです',
+        // 英語
+        'respect for the aged day', 'keiro no hi', 'respectfortheagedday', 'respect for aged day',
+        'aged day', 'elderly day', 'senior citizens day'
+    ]),
+    newYearsEve: new Set([
+        // 基本形
+        '大晦日', 'おおみそか', '大晦日です', '大晦日だ', '大晦日おめでとう', '年越し', 'としこし',
+        '年越しです', 'としこしです', '年越しだ', 'としこしだ', '除夜', 'じょや', '除夜の鐘', 'じょやのかね',
+        '良いお年を', 'よいおとしを', '良いお年をお迎えください', 'よいおとしをおむかえください',
+        // 英語
+        'new year\'s eve', 'new years eve', 'newyearseve', 'year end', 'new year eve',
+        'new year\'s eve wishes', 'new year\'s eve greetings', 'end of year'
+    ])
+};
+
 // よく使われる絵文字のカスタムリスト（一般的な絵文字を広くカバー）
 const EMOJI_LIST = [
     '🎉', '🎊', '🎈', '🎁', '⭐', '🌟', '✨', '💫', '🎯', '🎮', '🎲', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧', '🎵', '🎶', '🎸', '🎹', '🎺', '🎻', '🥁', '🎷',
@@ -492,6 +611,13 @@ function matchEasterEggTriggers(normalized) {
         }
     }
     
+    // 特別イベント系
+    for (const [type, triggers] of Object.entries(SPECIAL_EVENT_TRIGGERS)) {
+        if (triggers.has(normalized)) {
+            return type;
+        }
+    }
+    
     return null;
 }
 
@@ -649,7 +775,12 @@ function checkEasterEggs(message) {
             }
             
             // トリガーに応じた処理を実行
-            if (trigger === 'fireworks' || trigger === 'snow' || trigger === 'rain') {
+            if (trigger === 'fireworks' || trigger === 'snow' || trigger === 'rain' || 
+                trigger === 'newyear' || trigger === 'birthday' || trigger === 'christmas' ||
+                trigger === 'halloween' || trigger === 'valentine' || trigger === 'whiteDay' ||
+                trigger === 'tanabata' || trigger === 'obon' || trigger === 'childrensDay' ||
+                trigger === 'mothersDay' || trigger === 'fathersDay' || trigger === 'respectForTheAgedDay' ||
+                trigger === 'newYearsEve') {
                 // アニメーション系は少し遅延させて実行
                 setTimeout(() => {
                     executeEasterEgg(trigger, message);
@@ -753,6 +884,71 @@ function getEasterEggResponse(trigger, message) {
             '🌧️ 雨が降りました！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n他にも「雪」「花火」などのキーワードでアニメーションが表示されたり、「スネーク」でゲームが遊べたりします。ぜひ色々試してみてください！',
             '🌦️ 雨が降りました！\n\n遊園地のように、このアプリにも楽しい機能がたくさん隠れています。\n\n主な機能：\n• 症状を入力すると、AIが適切な市販薬を提案\n• 「スネーク」でゲームが遊べます\n• 「回転」「傾く」「揺れる」で画面が変形します\n\nぜひ色々な機能をお試しください！',
             '🌧️ 雨が降りました！\n\nこのアプリには、他にも面白い機能が隠れています。例えば「雪」「花火」と入力するとアニメーションが表示されたり、「スネーク」でゲームが遊べたりします。ぜひ試してみてください！\n\nもちろん、症状についてのご相談もいつでもお受けしています。'
+        ],
+        newyear: [
+            '🎊 あけましておめでとうございます！\n\n新年を迎えられたことを心よりお祝い申し上げます。今年も健康で素晴らしい一年になりますように！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n今年もどうぞよろしくお願いいたします！',
+            '🎉 新年あけましておめでとうございます！\n\n新しい年が皆様にとって健康で幸せな一年になりますように。\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n今年もよろしくお願いいたします！',
+            '🎈 あけましておめでとうございます！\n\n新年を迎えられたことをお祝い申し上げます。今年も健康で素晴らしい一年になりますように！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        birthday: [
+            '🎂 お誕生日おめでとうございます！\n\n素晴らしい一年になりますように、心よりお祝い申し上げます！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n健康で幸せな一年になりますように！',
+            '🎁 お誕生日おめでとうございます！\n\n素敵な一年になりますように、心よりお祝い申し上げます！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしい一年になりますように！',
+            '🎉 お誕生日おめでとうございます！\n\n健康で幸せな一年になりますように、心よりお祝い申し上げます！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        christmas: [
+            '🎄 メリークリスマス！\n\n素敵なクリスマスをお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしいクリスマスと良いお年をお迎えください！',
+            '🎅 メリークリスマス！\n\nクリスマスの素敵なひとときをお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしいクリスマスをお過ごしください！',
+            '🎁 メリークリスマス！\n\n素敵なクリスマスをお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        halloween: [
+            '🎃 ハッピーハロウィン！\n\n楽しいハロウィンをお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\nトリックオアトリート！',
+            '👻 ハッピーハロウィン！\n\n楽しいハロウィンをお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\nトリックオアトリート！',
+            '🦇 ハッピーハロウィン！\n\n楽しいハロウィンをお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        valentine: [
+            '💝 ハッピーバレンタイン！\n\n素敵なバレンタインデーをお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしいバレンタインデーをお過ごしください！',
+            '💕 ハッピーバレンタイン！\n\n素敵なバレンタインデーをお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしいバレンタインデーをお過ごしください！',
+            '💖 ハッピーバレンタイン！\n\n素敵なバレンタインデーをお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        whiteDay: [
+            '🤍 ハッピーホワイトデー！\n\n素敵なホワイトデーをお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしいホワイトデーをお過ごしください！',
+            '💝 ハッピーホワイトデー！\n\n素敵なホワイトデーをお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしいホワイトデーをお過ごしください！',
+            '🎁 ハッピーホワイトデー！\n\n素敵なホワイトデーをお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        tanabata: [
+            '🎋 七夕おめでとうございます！\n\n素敵な七夕をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n願い事が叶いますように！',
+            '⭐ 七夕おめでとうございます！\n\n素敵な七夕をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n願い事が叶いますように！',
+            '✨ 七夕おめでとうございます！\n\n素敵な七夕をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        obon: [
+            '🕯️ お盆おめでとうございます！\n\n素敵なお盆をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしいお盆をお過ごしください！',
+            '🏮 お盆おめでとうございます！\n\n素敵なお盆をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしいお盆をお過ごしください！',
+            '🎐 お盆おめでとうございます！\n\n素敵なお盆をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        childrensDay: [
+            '🎏 こどもの日おめでとうございます！\n\n素敵なこどもの日をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしいこどもの日をお過ごしください！',
+            '🎎 こどもの日おめでとうございます！\n\n素敵なこどもの日をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしいこどもの日をお過ごしください！',
+            '🎌 こどもの日おめでとうございます！\n\n素敵なこどもの日をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        mothersDay: [
+            '💐 母の日おめでとうございます！\n\n素敵な母の日をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしい母の日をお過ごしください！',
+            '🌷 母の日おめでとうございます！\n\n素敵な母の日をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしい母の日をお過ごしください！',
+            '🌹 母の日おめでとうございます！\n\n素敵な母の日をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        fathersDay: [
+            '👔 父の日おめでとうございます！\n\n素敵な父の日をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしい父の日をお過ごしください！',
+            '🎁 父の日おめでとうございます！\n\n素敵な父の日をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしい父の日をお過ごしください！',
+            '🍺 父の日おめでとうございます！\n\n素敵な父の日をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        respectForTheAgedDay: [
+            '👴 敬老の日おめでとうございます！\n\n素敵な敬老の日をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n素晴らしい敬老の日をお過ごしください！',
+            '👵 敬老の日おめでとうございます！\n\n素敵な敬老の日をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n素晴らしい敬老の日をお過ごしください！',
+            '🌻 敬老の日おめでとうございます！\n\n素敵な敬老の日をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
+        ],
+        newYearsEve: [
+            '🎊 大晦日おめでとうございます！\n\n素敵な大晦日をお過ごしください！\n\nこのアプリは、チャット形式で症状を教えていただくと、AIが適切な市販薬の候補をご提案する「チャット型医薬品相談ツール」です。\n\n良いお年をお迎えください！',
+            '🎉 大晦日おめでとうございます！\n\n素敵な大晦日をお過ごしください！\n\nこのアプリでは、症状を入力するとAIが適切な市販薬を提案します。また、「スネーク」でゲームが遊べたり、「花火」「雪」「雨」でアニメーションが表示されたりする楽しい機能も隠れています。\n\n良いお年をお迎えください！',
+            '🎈 大晦日おめでとうございます！\n\n素敵な大晦日をお過ごしください！\n\n症状についてのご相談も、いつでもお気軽にお聞かせください。'
         ]
     };
     
@@ -814,6 +1010,45 @@ async function executeEasterEgg(trigger, message) {
                 break;
             case 'rain':
                 triggerRain();
+                break;
+            case 'newyear':
+                triggerNewYear();
+                break;
+            case 'birthday':
+                triggerBirthday();
+                break;
+            case 'christmas':
+                triggerChristmas();
+                break;
+            case 'halloween':
+                triggerHalloween();
+                break;
+            case 'valentine':
+                triggerValentine();
+                break;
+            case 'whiteDay':
+                triggerWhiteDay();
+                break;
+            case 'tanabata':
+                triggerTanabata();
+                break;
+            case 'obon':
+                triggerObon();
+                break;
+            case 'childrensDay':
+                triggerChildrensDay();
+                break;
+            case 'mothersDay':
+                triggerMothersDay();
+                break;
+            case 'fathersDay':
+                triggerFathersDay();
+                break;
+            case 'respectForTheAgedDay':
+                triggerRespectForTheAgedDay();
+                break;
+            case 'newYearsEve':
+                triggerNewYearsEve();
                 break;
             default:
                 console.warn(`[EasterEgg] Unknown trigger: ${trigger}`);
@@ -1483,6 +1718,458 @@ function triggerRain() {
         }
         finishEasterEgg();
     }, 4000);
+}
+
+/**
+ * 新年アニメーション（花火とパーティクル効果）
+ */
+function triggerNewYear() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    // 花火アニメーションを実行
+    triggerFireworks();
+    
+    // 新年用のパーティクル効果を追加
+    const particleContainer = document.createElement('div');
+    particleContainer.id = 'easterEggNewYearParticles';
+    particleContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(particleContainer);
+    
+    const newYearParticles = ['🎊', '🎉', '🎈', '✨', '⭐', '🌟', '💫', '🎁'];
+    const particleCount = window.innerWidth < 768 ? 40 : 60;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.textContent = newYearParticles[Math.floor(Math.random() * newYearParticles.length)];
+        const fontSize = 25 + Math.random() * 30;
+        const duration = 3 + Math.random() * 2;
+        const horizontalDrift = (Math.random() - 0.5) * 150;
+        
+        particle.style.cssText = `
+            position: absolute;
+            font-size: ${fontSize}px;
+            left: ${Math.random() * 100}%;
+            top: -50px;
+            animation: newYearParticleFall${i} ${duration}s linear forwards;
+            animation-delay: ${Math.random() * 2}s;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+        `;
+        particleContainer.appendChild(particle);
+        
+        // 各パーティクルに個別のアニメーションを設定
+        const style = document.createElement('style');
+        style.id = `newYearParticleStyle${i}`;
+        style.textContent = `
+            @keyframes newYearParticleFall${i} {
+                0% {
+                    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+                    opacity: 0.9;
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${horizontalDrift * 0.5}px) rotate(180deg) scale(1.2);
+                    opacity: 0.95;
+                }
+                100% {
+                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // 5秒後に自動停止
+    setTimeout(() => {
+        particleContainer.remove();
+        // 個別のスタイルも削除
+        for (let i = 0; i < particleCount; i++) {
+            const style = document.getElementById(`newYearParticleStyle${i}`);
+            if (style) style.remove();
+        }
+        finishEasterEgg();
+    }, 5000);
+}
+
+/**
+ * 誕生日アニメーション（ケーキと風船のパーティクル効果）
+ */
+function triggerBirthday() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    const birthdayContainer = document.createElement('div');
+    birthdayContainer.id = 'easterEggBirthdayParticles';
+    birthdayContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(birthdayContainer);
+    
+    const birthdayParticles = ['🎂', '🎁', '🎈', '🎉', '🎊', '✨', '⭐', '🌟', '💫', '🎀'];
+    const particleCount = window.innerWidth < 768 ? 50 : 70;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.textContent = birthdayParticles[Math.floor(Math.random() * birthdayParticles.length)];
+        const fontSize = 30 + Math.random() * 35;
+        const duration = 4 + Math.random() * 2;
+        const horizontalDrift = (Math.random() - 0.5) * 200;
+        const startDelay = Math.random() * 2;
+        
+        // 風船は上に、ケーキやプレゼントは下に落ちる
+        const isBalloon = /[🎈]/.test(particle.textContent);
+        const startY = isBalloon ? 'calc(100vh + 50px)' : '-50px';
+        const endY = isBalloon ? '-50px' : 'calc(100vh + 50px)';
+        const rotation = isBalloon ? -360 : 360;
+        
+        particle.style.cssText = `
+            position: absolute;
+            font-size: ${fontSize}px;
+            left: ${Math.random() * 100}%;
+            top: ${startY};
+            animation: birthdayParticleMove${i} ${duration}s linear forwards;
+            animation-delay: ${startDelay}s;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.7));
+        `;
+        birthdayContainer.appendChild(particle);
+        
+        // 各パーティクルに個別のアニメーションを設定
+        const style = document.createElement('style');
+        style.id = `birthdayParticleStyle${i}`;
+        style.textContent = `
+            @keyframes birthdayParticleMove${i} {
+                0% {
+                    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+                    opacity: 0.9;
+                }
+                50% {
+                    transform: translateY(${isBalloon ? '-50vh' : '50vh'}) translateX(${horizontalDrift * 0.5}px) rotate(${rotation * 0.5}deg) scale(1.2);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(${endY}) translateX(${horizontalDrift}px) rotate(${rotation}deg) scale(0.6);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // 6秒後に自動停止
+    setTimeout(() => {
+        birthdayContainer.remove();
+        // 個別のスタイルも削除
+        for (let i = 0; i < particleCount; i++) {
+            const style = document.getElementById(`birthdayParticleStyle${i}`);
+            if (style) style.remove();
+        }
+        finishEasterEgg();
+    }, 6000);
+}
+
+/**
+ * クリスマスアニメーション（雪とクリスマスパーティクル）
+ */
+function triggerChristmas() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    // 雪アニメーションを実行
+    triggerSnow();
+    
+    // クリスマス用のパーティクル効果を追加
+    const particleContainer = document.createElement('div');
+    particleContainer.id = 'easterEggChristmasParticles';
+    particleContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(particleContainer);
+    
+    const christmasParticles = ['🎄', '🎅', '🎁', '🎄', '⭐', '🌟', '✨', '💫', '🔔', '❄️'];
+    const particleCount = window.innerWidth < 768 ? 40 : 60;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.textContent = christmasParticles[Math.floor(Math.random() * christmasParticles.length)];
+        const fontSize = 25 + Math.random() * 30;
+        const duration = 3 + Math.random() * 2;
+        const horizontalDrift = (Math.random() - 0.5) * 150;
+        
+        particle.style.cssText = `
+            position: absolute;
+            font-size: ${fontSize}px;
+            left: ${Math.random() * 100}%;
+            top: -50px;
+            animation: christmasParticleFall${i} ${duration}s linear forwards;
+            animation-delay: ${Math.random() * 2}s;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+        `;
+        particleContainer.appendChild(particle);
+        
+        const style = document.createElement('style');
+        style.id = `christmasParticleStyle${i}`;
+        style.textContent = `
+            @keyframes christmasParticleFall${i} {
+                0% {
+                    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+                    opacity: 0.9;
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${horizontalDrift * 0.5}px) rotate(180deg) scale(1.2);
+                    opacity: 0.95;
+                }
+                100% {
+                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    setTimeout(() => {
+        particleContainer.remove();
+        for (let i = 0; i < particleCount; i++) {
+            const style = document.getElementById(`christmasParticleStyle${i}`);
+            if (style) style.remove();
+        }
+        finishEasterEgg();
+    }, 5000);
+}
+
+/**
+ * ハロウィンアニメーション（ハロウィンパーティクル）
+ */
+function triggerHalloween() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    const halloweenContainer = document.createElement('div');
+    halloweenContainer.id = 'easterEggHalloweenParticles';
+    halloweenContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(halloweenContainer);
+    
+    const halloweenParticles = ['🎃', '👻', '🦇', '🕷️', '🕸️', '💀', '☠️', '🧙', '🧛', '🧟'];
+    const particleCount = window.innerWidth < 768 ? 50 : 70;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.textContent = halloweenParticles[Math.floor(Math.random() * halloweenParticles.length)];
+        const fontSize = 30 + Math.random() * 35;
+        const duration = 4 + Math.random() * 2;
+        const horizontalDrift = (Math.random() - 0.5) * 200;
+        const startDelay = Math.random() * 2;
+        
+        particle.style.cssText = `
+            position: absolute;
+            font-size: ${fontSize}px;
+            left: ${Math.random() * 100}%;
+            top: -50px;
+            animation: halloweenParticleMove${i} ${duration}s linear forwards;
+            animation-delay: ${startDelay}s;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.7));
+        `;
+        halloweenContainer.appendChild(particle);
+        
+        const style = document.createElement('style');
+        style.id = `halloweenParticleStyle${i}`;
+        style.textContent = `
+            @keyframes halloweenParticleMove${i} {
+                0% {
+                    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+                    opacity: 0.9;
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${horizontalDrift * 0.5}px) rotate(180deg) scale(1.2);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    setTimeout(() => {
+        halloweenContainer.remove();
+        for (let i = 0; i < particleCount; i++) {
+            const style = document.getElementById(`halloweenParticleStyle${i}`);
+            if (style) style.remove();
+        }
+        finishEasterEgg();
+    }, 6000);
+}
+
+/**
+ * 汎用イベントパーティクル効果（バレンタイン、ホワイトデー、七夕、お盆など）
+ * @param {string} eventId - イベントID
+ * @param {string[]} particles - 使用する絵文字の配列
+ * @param {number} duration - アニメーション時間（秒）
+ */
+function triggerGenericEvent(eventId, particles, duration = 5000) {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    const eventContainer = document.createElement('div');
+    eventContainer.id = `easterEgg${eventId}Particles`;
+    eventContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(eventContainer);
+    
+    const particleCount = window.innerWidth < 768 ? 40 : 60;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+        const fontSize = 25 + Math.random() * 30;
+        const animDuration = 3 + Math.random() * 2;
+        const horizontalDrift = (Math.random() - 0.5) * 150;
+        
+        particle.style.cssText = `
+            position: absolute;
+            font-size: ${fontSize}px;
+            left: ${Math.random() * 100}%;
+            top: -50px;
+            animation: ${eventId}ParticleFall${i} ${animDuration}s linear forwards;
+            animation-delay: ${Math.random() * 2}s;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+        `;
+        eventContainer.appendChild(particle);
+        
+        const style = document.createElement('style');
+        style.id = `${eventId}ParticleStyle${i}`;
+        style.textContent = `
+            @keyframes ${eventId}ParticleFall${i} {
+                0% {
+                    transform: translateY(0) translateX(0) rotate(0deg) scale(0.8);
+                    opacity: 0.9;
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${horizontalDrift * 0.5}px) rotate(180deg) scale(1.2);
+                    opacity: 0.95;
+                }
+                100% {
+                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    setTimeout(() => {
+        eventContainer.remove();
+        for (let i = 0; i < particleCount; i++) {
+            const style = document.getElementById(`${eventId}ParticleStyle${i}`);
+            if (style) style.remove();
+        }
+        finishEasterEgg();
+    }, duration);
+}
+
+/**
+ * バレンタインアニメーション
+ */
+function triggerValentine() {
+    triggerGenericEvent('Valentine', ['💝', '💕', '💖', '💗', '💓', '💞', '💟', '❤️', '💘', '🌹'], 5000);
+}
+
+/**
+ * ホワイトデーアニメーション
+ */
+function triggerWhiteDay() {
+    triggerGenericEvent('WhiteDay', ['🤍', '💝', '🎁', '💕', '💖', '💗', '💓', '💞', '💟', '❤️'], 5000);
+}
+
+/**
+ * 七夕アニメーション
+ */
+function triggerTanabata() {
+    triggerGenericEvent('Tanabata', ['🎋', '⭐', '🌟', '✨', '💫', '🌠', '⭐', '🌟', '✨', '💫'], 5000);
+}
+
+/**
+ * お盆アニメーション
+ */
+function triggerObon() {
+    triggerGenericEvent('Obon', ['🕯️', '🏮', '🎐', '✨', '💫', '🕯️', '🏮', '🎐', '✨', '💫'], 5000);
+}
+
+/**
+ * こどもの日アニメーション
+ */
+function triggerChildrensDay() {
+    triggerGenericEvent('ChildrensDay', ['🎏', '🎎', '🎌', '🎊', '🎉', '🎈', '🎁', '✨', '⭐', '🌟'], 5000);
+}
+
+/**
+ * 母の日アニメーション
+ */
+function triggerMothersDay() {
+    triggerGenericEvent('MothersDay', ['💐', '🌷', '🌹', '🌺', '🌸', '🌻', '🌼', '💕', '💖', '💗'], 5000);
+}
+
+/**
+ * 父の日アニメーション
+ */
+function triggerFathersDay() {
+    triggerGenericEvent('FathersDay', ['👔', '🎁', '🍺', '🍻', '🎉', '🎊', '💝', '💕', '💖', '💗'], 5000);
+}
+
+/**
+ * 敬老の日アニメーション
+ */
+function triggerRespectForTheAgedDay() {
+    triggerGenericEvent('RespectForTheAgedDay', ['👴', '👵', '🌻', '🌷', '🌹', '💐', '💝', '💕', '💖', '💗'], 5000);
+}
+
+/**
+ * 大晦日アニメーション
+ */
+function triggerNewYearsEve() {
+    triggerGenericEvent('NewYearsEve', ['🎊', '🎉', '🎈', '✨', '⭐', '🌟', '💫', '🎁', '🎊', '🎉'], 5000);
 }
 
 /**
