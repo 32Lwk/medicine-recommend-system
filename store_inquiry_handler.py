@@ -1054,13 +1054,14 @@ def handle_store_inquiry_with_two_stage(
     confidence = llm_result.get("confidence", 0.0)
     is_store_inquiry = llm_result.get("is_store_inquiry", False)
     
-    # is_store_inquiryがFalseでconfidenceが0.0の場合、店舗案内ではないと判定
+    # is_store_inquiryがFalseの場合は、confidenceに関係なく店舗案内ではないと判定
     # 既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進むため、Noneを返す
-    if not is_store_inquiry and confidence == 0.0:
-        logger.info(f"🔍 第2段階: 店舗案内ではないと判定（confidence=0.00, is_store_inquiry=False）")
+    if not is_store_inquiry:
+        logger.info(f"🔍 第2段階: 店舗案内ではないと判定（is_store_inquiry=False, confidence={confidence:.2f}）")
         logger.info(f"🔍 既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む")
         return None
     
+    # is_store_inquiryがTrueの場合のみ、confidence閾値による分岐を実行
     # confidence閾値による分岐
     if confidence >= 0.8:
         # 高確信度: 詳細分類を実行

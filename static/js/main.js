@@ -4508,13 +4508,14 @@
                     
                     cleanedContent = tempDiv.innerHTML;
                     
-                    // cleanedContentが既にrecommendation-resultやchat-responseを含んでいる場合、
+                    // cleanedContentが既にrecommendation-resultやchat-response、emergency-response-modernを含んでいる場合、
                     // それらは既に適切なコンテナなので、追加のmessage-contentラッパーは不要
                     // ただし、最上位の要素を確認して、既にdivでラップされている場合はそのまま使用
                     const firstElement = tempDiv.firstElementChild;
                     if (firstElement && (
                         firstElement.classList.contains('recommendation-result') || 
-                        firstElement.classList.contains('chat-response')
+                        firstElement.classList.contains('chat-response') ||
+                        firstElement.classList.contains('emergency-response-modern')
                     )) {
                         // 既に適切なコンテナがあるので、そのまま使用（message-contentラッパーは不要）
                         messageDiv.innerHTML = cleanedContent;
@@ -4525,8 +4526,14 @@
                 }
                 // 緊急事案メッセージの特別表示
                 else if (message.emergency_detected && message.content) {
-                    // HTMLをそのまま表示（エスケープしない）
-                    messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                    // emergency-response-modernが含まれている場合は、message-contentでラップしない
+                    if (message.content.includes('emergency-response-modern')) {
+                        // HTMLをそのまま表示（エスケープしない、message-contentラッパーなし）
+                        messageDiv.innerHTML = message.content;
+                    } else {
+                        // 念のため、emergency-response-modernが含まれていない場合は従来通り
+                        messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                    }
                 }
                 // 危機対応メッセージの特別表示
                 else if (message.crisis_support) {
