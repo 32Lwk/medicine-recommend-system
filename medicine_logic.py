@@ -114,17 +114,44 @@ def is_diagnosis_term(text):
     
     text = text.strip()
     
-    # 治療中キーワードが含まれている場合は診断名として扱わない（通常の医薬品推奨フローに進むべき）
-    try:
-        from counseling_response import is_treatment_mention
-        if is_treatment_mention(text):
-            # 治療中キーワードが検出された場合は、診断名として扱わない
-            return (False, None, None)
-    except ImportError:
-        # counseling_responseモジュールがインポートできない場合はスキップ
-        pass
+    # 高リスクコンテキストキーワードの定義（疑い・検査中のコンテキスト）
+    HIGH_RISK_CONTEXT_KEYWORDS = [
+        '疑い', '疑われる', '疑わしい', '可能性', '可能性が高い',
+        '検査', '検査中', '検査結果', '検査結果待ち', '検査予定',
+        '精密検査', '再検査', '追加検査', '詳しい検査',
+        '数値が悪い', '数値が高い', '数値が低い',
+        '再確認', '確認中', '要確認'
+    ]
     
-    # 過去形・他人の話・既往歴を表す除外パターン（診断名の前後50文字以内にこれらの語がある場合は除外）
+    # 副作用メッセージテンプレート（構造化フォーマット）
+    SIDE_EFFECT_MESSAGE_TEMPLATE = """お薬の副作用に対する市販薬の使用は、現在の治療に影響を及ぼす恐れがあります。
+自己判断で服用せず、必ず主治医にご相談ください。
+
+特に、抗がん剤などの治療薬の副作用の場合、市販薬が治療薬の吸収や効果に
+影響を与える可能性があります。
+
+【医師に相談する際に伝えるべきポイント】
+以下の情報をメモして、医師に伝えてください：
+
+1. 副作用の内容
+   - どのような症状が出ていますか？（例：吐き気、便秘、頭痛など）
+
+2. 発生時期
+   - いつから症状が出始めましたか？
+   - 薬を飲み始めてからどのくらいで出ましたか？
+
+3. 服用中の薬
+   - どのような薬（処方薬）を飲んでいますか？
+   - 薬の名前や種類がわかれば教えてください
+
+4. 症状の変化
+   - 症状は続いていますか？
+   - 時間が経つにつれて良くなっていますか、悪くなっていますか？
+   - 市販薬を飲みたい理由は何ですか？
+
+これらの情報を整理してから医師に相談することで、より適切なアドバイスが受けられます。"""
+    
+    # 過去形・他人の話・既往歴を表す除外パターン（診断名の前後10-20文字以内にこれらの語がある場合は除外）
     exclusion_context_words = [
         # 時間的表現（過去）
         '過去', '以前', '昔', '前', '過去に', 'かつて', '先月', '先週', '去年', '昨年',
@@ -135,6 +162,15 @@ def is_diagnosis_term(text):
         '知り合い', '友人', '家族', '父', '母', '兄弟', '姉妹', '祖父', '祖母', '親',
         '配偶者', '夫', '妻', '彼', '彼女', '子供', '息子', '娘', '他人', '同僚',
         '上司', '部下', '隣人',
+        
+        # ペット関連
+        '猫', '犬', 'ペット', '動物',
+        
+        # 治癒表現
+        '治り', '完治', '回復', '治った', '治癒', '改善', '良くなった',
+        
+        # 将来表現
+        '将来', '未来', '怖い', '心配', '不安',
         
         # 医学用語（既往歴・持病）
         '既往症', '既往歴', '持病', '基礎疾患', '基礎疾病', '既往疾患',
@@ -178,9 +214,9 @@ def is_diagnosis_term(text):
         if index == -1:
             return False
         
-        # 診断名の前後50文字を抽出（範囲を拡大）
-        start = max(0, index - 50)
-        end = min(len(text), index + len(diagnosis) + 50)
+        # 診断名の前後15文字を抽出（主体・時間軸の除外判定を最適化）
+        start = max(0, index - 15)
+        end = min(len(text), index + len(diagnosis) + 15)
         context = text[start:end]
         
         # 1. 除外語が文脈内にあるかチェック
@@ -205,9 +241,9 @@ def is_diagnosis_term(text):
         
         # 2. 正規表現パターンで既往歴表現をチェック
         for pattern in medical_history_patterns:
-            # 診断名の前後30文字以内でパターンを検索
-            pattern_start = max(0, index - 30)
-            pattern_end = min(len(text), index + len(diagnosis) + 30)
+            # 診断名の前後15文字以内でパターンを検索（最適化）
+            pattern_start = max(0, index - 15)
+            pattern_end = min(len(text), index + len(diagnosis) + 15)
             pattern_context = text[pattern_start:pattern_end]
             
             if re.search(pattern, pattern_context):
@@ -410,57 +446,320 @@ def is_diagnosis_term(text):
         '先天性疾患', '遺伝性疾患', '奇形', '染色体異常','ダウン症','ダウン症候群','21トリソミー'
     ]
     
-    # 診断名の検出（精神疾患）
-    for diagnosis in mental_health_diagnoses:
-        if check_diagnosis_with_context(diagnosis, text, exclusion_context_words):
-            return (True, 'mental_health', {
-                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
-                          f'市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n'
-                          f'1. 具体的な症状（例：不眠、不安、イライラ、倦怠感など）を教えてください\n'
-                          f'2. 医師や薬剤師にご相談ください\n\n'
-                          f'※精神疾患の治療は専門医の診断と処方薬が必要な場合があります。',
-                'escalation_required': True,
-                'escalation_reason': f'診断名「{diagnosis}」が検出されました。専門医への相談を推奨します。'
-            })
+    # すべての診断名を検出（複数診断名対応）
+    detected_diagnoses = []  # (diagnosis, diagnosis_type) のタプルのリスト
     
-    # 診断名の検出（悪性腫瘍）
+    # 診断名の検出（優先順位: serious > mental_health > chronic > other）
+    # 1. 悪性腫瘍（serious）
     for diagnosis in cancer_diagnoses:
         if check_diagnosis_with_context(diagnosis, text, exclusion_context_words):
-            return (True, 'serious', {
-                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
-                          f'悪性腫瘍の治療は医師の診断と処方薬が必須です。\n'
-                          f'市販薬での対応は困難ですので、必ずかかりつけの医師や専門医にご相談ください。\n\n'
-                          f'※現在の症状について教えていただけますと、より適切なご案内ができます。',
-                'escalation_required': True,
-                'escalation_reason': f'診断名「{diagnosis}」が検出されました。専門医への相談を強く推奨します。'
-            })
+            detected_diagnoses.append((diagnosis, 'serious'))
     
-    # 診断名の検出（慢性疾患・重篤な疾患）
+    # 2. 精神疾患（mental_health）
+    for diagnosis in mental_health_diagnoses:
+        if check_diagnosis_with_context(diagnosis, text, exclusion_context_words):
+            detected_diagnoses.append((diagnosis, 'mental_health'))
+    
+    # 3. 慢性疾患・重篤な疾患（chronic）
     for diagnosis in chronic_serious_diagnoses:
         if check_diagnosis_with_context(diagnosis, text, exclusion_context_words):
-            return (True, 'chronic', {
-                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
-                          f'慢性疾患や重篤な疾患の場合は、医師の診断と処方薬が必要です。\n'
-                          f'市販薬での対応が難しい可能性がありますので、以下のいずれかをお試しください：\n'
-                          f'1. 具体的な症状（例：頭痛、発熱、痛みなど）を教えてください\n'
-                          f'2. かかりつけの医師や薬剤師にご相談ください',
-                'escalation_required': True,
-                'escalation_reason': f'診断名「{diagnosis}」が検出されました。医師への相談を推奨します。'
-            })
+            detected_diagnoses.append((diagnosis, 'chronic'))
     
-    # 診断名の検出（その他の重篤な疾患）
+    # 4. その他の重篤な疾患（other）
     for diagnosis in other_serious_diagnoses:
         if check_diagnosis_with_context(diagnosis, text, exclusion_context_words):
-            return (True, 'other', {
-                'message': f'「{diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
-                          f'市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n'
-                          f'1. 具体的な症状（例：痛み、発熱、不調など）を教えてください\n'
-                          f'2. かかりつけの医師や薬剤師にご相談ください',
-                'escalation_required': True,
-                'escalation_reason': f'診断名「{diagnosis}」が検出されました。医師への相談を推奨します。'
-            })
+            detected_diagnoses.append((diagnosis, 'other'))
     
-    return (False, None, None)
+    # 診断名が検出されなかった場合は早期リターン
+    if not detected_diagnoses:
+        return (False, None, None)
+    
+    # 優先順位で診断名を選択（serious > mental_health > chronic > other）
+    priority_order = {'serious': 0, 'mental_health': 1, 'chronic': 2, 'other': 3}
+    detected_diagnoses.sort(key=lambda x: priority_order.get(x[1], 999))
+    selected_diagnosis, selected_type = detected_diagnoses[0]
+    
+    # すべての検出された診断名のリスト
+    all_diagnosis_names = [d[0] for d in detected_diagnoses]
+    
+    # フィルタリングの連鎖を適用（エラーハンドリング付き）
+    # 1. 高リスクフィルター（診断名検出後にAND条件でチェック）
+    try:
+        has_high_risk_context = any(keyword in text for keyword in HIGH_RISK_CONTEXT_KEYWORDS)
+    except Exception as e:
+        logger.error(f"❌ 高リスクコンテキストチェックでエラー: {e}")
+        has_high_risk_context = False  # 安全側に倒す
+    
+    # 2. 診断名のみ判定
+    try:
+        diagnosis_only = is_diagnosis_only(text, selected_diagnosis)
+    except Exception as e:
+        logger.error(f"❌ 診断名のみ判定でエラー: {e}")
+        diagnosis_only = True  # 安全側に倒す（診断名のみとして扱う）
+    
+    # 3. 症状の有無確認
+    try:
+        from counseling_response import has_specific_symptom
+        has_symptom = has_specific_symptom(text)
+    except ImportError:
+        has_symptom = False
+    except Exception as e:
+        logger.error(f"❌ 症状確認でエラー: {e}")
+        has_symptom = False  # 安全側に倒す
+    
+    # 4. 副作用フィルター
+    try:
+        has_side_effect = has_side_effect_mention(text)
+    except Exception as e:
+        logger.error(f"❌ 副作用検出でエラー: {e}")
+        has_side_effect = False  # 安全側に倒す
+    
+    # 5. 治療中チェック
+    try:
+        from counseling_response import is_treatment_mention
+        has_treatment = is_treatment_mention(text, skip_diagnosis_only=True)
+    except ImportError:
+        has_treatment = False
+    except Exception as e:
+        logger.error(f"❌ 治療中チェックでエラー: {e}")
+        has_treatment = False  # 安全側に倒す
+    
+    # ログ記録：フィルタリング結果
+    try:
+        logger.info(f"🔍 フィルタリング結果: diagnosis_only={diagnosis_only}, has_symptom={has_symptom}, has_treatment={has_treatment}, has_side_effect={has_side_effect}, has_high_risk_context={has_high_risk_context}")
+    except Exception:
+        pass  # ログ記録のエラーは無視
+    
+    # メッセージ生成（高リスクコンテキストの場合は専用メッセージ）
+    try:
+        if has_high_risk_context:
+            message = f'「{selected_diagnosis}」について検査中や疑いの状態であることをお知らせいただき、ありがとうございます。\n\n'
+            message += f'検査結果待ちや疑いの状態の場合、診断が確定していない状態での市販薬の使用は避けるべきです。\n'
+            message += f'必ず医師の診断を受けてから、適切な治療を開始してください。\n\n'
+            message += f'検査結果が出るまでの間は、自己判断で市販薬を使用せず、医師の指示に従ってください。'
+            
+            return (True, selected_type, {
+                'message': message,
+                'escalation_required': True,
+                'escalation_reason': f'診断名「{selected_diagnosis}」と高リスクコンテキストが検出されました。',
+                'has_symptom': has_symptom,
+                'has_treatment': has_treatment,
+                'has_side_effect': has_side_effect,
+                'should_show_counseling': False,
+                'diagnosis_only': diagnosis_only,
+                'detected_diagnoses': all_diagnosis_names,
+                'selected_diagnosis': selected_diagnosis,
+                'has_high_urgency_symptom': False,  # 後で実装
+                'high_risk_context': True
+            })
+        
+        # 副作用が検出された場合の専用メッセージ
+        if has_side_effect:
+            side_effect_message = SIDE_EFFECT_MESSAGE_TEMPLATE
+            
+            # 複数診断名の場合はマージ
+            if len(all_diagnosis_names) > 1:
+                diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+                message_prefix = f'{diagnosis_list}などの持病をお持ちの方で、'
+            else:
+                message_prefix = f'「{selected_diagnosis}」をお持ちの方で、'
+            
+            return (True, selected_type, {
+            'message': message_prefix + side_effect_message,
+            'escalation_required': True,
+            'escalation_reason': f'診断名「{selected_diagnosis}」と副作用が検出されました。',
+            'has_symptom': has_symptom,
+            'has_treatment': has_treatment,
+            'has_side_effect': True,
+            'should_show_counseling': False,
+            'diagnosis_only': diagnosis_only,
+            'detected_diagnoses': all_diagnosis_names,
+            'selected_diagnosis': selected_diagnosis,
+                'has_high_urgency_symptom': False,  # 後で実装
+                'high_risk_context': False
+            })
+        
+        # 診断名のみの場合
+        if diagnosis_only:
+            # 複数診断名の場合はマージ
+            if len(all_diagnosis_names) > 1:
+                diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+                message_prefix = f'{diagnosis_list}などの持病をお持ちの方へ：\n\n'
+            else:
+                message_prefix = f'「{selected_diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
+            
+            if selected_type == 'serious':
+                message = message_prefix + '悪性腫瘍の治療は医師の診断と処方薬が必須です。\n市販薬での対応は困難ですので、必ずかかりつけの医師や専門医にご相談ください。\n\n現在の症状について教えていただけますと、より適切なご案内ができます。'
+            elif selected_type == 'mental_health':
+                message = message_prefix + '市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n1. 具体的な症状（例：不眠、不安、イライラ、倦怠感など）を教えてください\n2. 医師や薬剤師にご相談ください\n\n※精神疾患の治療は専門医の診断と処方薬が必要な場合があります。'
+            elif selected_type == 'chronic':
+                message = message_prefix + '慢性疾患や重篤な疾患の場合は、医師の診断と処方薬が必要です。\n市販薬での対応が難しい可能性がありますので、以下のいずれかをお試しください：\n1. 具体的な症状（例：頭痛、発熱、痛みなど）を教えてください\n2. かかりつけの医師や薬剤師にご相談ください'
+            else:
+                message = message_prefix + '市販薬での対応が難しい可能性があります。以下のいずれかをお試しください：\n1. 具体的な症状（例：痛み、発熱、不調など）を教えてください\n2. かかりつけの医師や薬剤師にご相談ください'
+            
+            return (True, selected_type, {
+                'message': message,
+                'escalation_required': True,
+                'escalation_reason': f'診断名「{selected_diagnosis}」のみが検出されました。',
+                'has_symptom': False,
+                'has_treatment': has_treatment,
+                'has_side_effect': False,
+                'should_show_counseling': False,
+                'diagnosis_only': True,
+                'detected_diagnoses': all_diagnosis_names,
+                'selected_diagnosis': selected_diagnosis,
+                'has_high_urgency_symptom': False,  # 後で実装
+                'high_risk_context': False
+            })
+        
+        # 診断名+症状の場合
+        # 複数診断名の場合はマージ
+        if len(all_diagnosis_names) > 1:
+            diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+            message_prefix = f'{diagnosis_list}などの持病をお持ちの方へ：\n\n'
+        else:
+            message_prefix = f'「{selected_diagnosis}」をお持ちの方へ：\n\n'
+        
+        if selected_type == 'serious':
+            message = message_prefix + '体調変化が主疾患に関連している可能性があります。\n悪性腫瘍の治療は医師の診断と処方薬が必須です。\n市販薬での対応は困難ですので、必ずかかりつけの医師や専門医にご相談ください。'
+        elif selected_type == 'mental_health':
+            message = message_prefix + 'お薬の飲み合わせ（相互作用）が非常に多いため、市販薬の使用には注意が必要です。\n医師や薬剤師にご相談ください。'
+        elif selected_type == 'chronic':
+            message = message_prefix + '数値管理（血圧、血糖値など）に影響が出る可能性があります。\n市販薬を使用する場合は、かかりつけの医師や薬剤師にご相談ください。'
+        else:
+            message = message_prefix + '市販薬を使用する場合は、かかりつけの医師や薬剤師にご相談ください。'
+        
+        return (True, selected_type, {
+            'message': message,
+            'escalation_required': True,
+            'escalation_reason': f'診断名「{selected_diagnosis}」と症状が検出されました。',
+            'has_symptom': True,
+            'has_treatment': has_treatment,
+            'has_side_effect': False,
+            'should_show_counseling': True,  # 症状がある場合はカウンセリングフローにも流す
+            'diagnosis_only': False,
+            'detected_diagnoses': all_diagnosis_names,
+            'selected_diagnosis': selected_diagnosis,
+            'has_high_urgency_symptom': False,  # 後で実装
+            'high_risk_context': False
+        })
+    except Exception as e:
+        logger.error(f"❌ メッセージ生成でエラー: {e}")
+        import traceback
+        traceback.print_exc()
+        # エラー発生時は安全側に倒す（診断名として検出しない）
+        return (False, None, None)
+
+
+def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
+    """
+    「診断名のみ」かどうかを判定する関数
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        diagnosis_term: 検出された診断名
+    
+    Returns:
+        True: 診断名のみの場合（症状や追加情報がない）
+        False: 診断名以外に症状や追加情報がある場合
+    """
+    import re
+    import unicodedata
+    
+    # ユーザー入力から診断名を除去
+    cleaned_text = user_text.replace(diagnosis_term, "").replace("です", "").replace("ます", "").strip()
+    
+    # 1. Unicodeカテゴリで記号・句読点・空白を除去
+    meaningful_chars = []
+    for char in cleaned_text:
+        category = unicodedata.category(char)
+        # 記号類（P*）、区切り文字（Z*）を除外
+        if not (category.startswith('P') or category.startswith('Z')):
+            meaningful_chars.append(char)
+    
+    meaningful_text = ''.join(meaningful_chars).strip()
+    
+    # 1.5. ストップワード（助詞・助動詞）の除去（文脈に応じた除去）
+    # 診断名の直後に続く助詞・助動詞のみ除去（誤除去を防ぐため）
+    stop_words = ['かも', 'だ', 'です', 'ます', 'の', 'が', 'は', 'を', 'に', 'へ', 'と', 'や', 'も']
+    # ただし、症状語として認識される単語（ホワイトリスト）は除去しない
+    symptom_whitelist = ['発熱', '頭痛', '腹痛', '下痢', '吐き気', '咳', '鼻水', '痛み', '痛い']
+    for stop_word in stop_words:
+        # 症状語ホワイトリストに含まれていない場合のみ除去
+        if stop_word not in symptom_whitelist:
+            # 診断名の直後に続く場合のみ除去（文脈を考慮）
+            if meaningful_text.startswith(stop_word):
+                meaningful_text = meaningful_text[len(stop_word):].strip()
+    
+    # 2. 残った文字が極端に少ない（2文字以下）場合は「診断名のみ」
+    if len(meaningful_text) <= 2:
+        return True
+    
+    # 3. 症状語の簡易チェック（軽量版）
+    # まず簡易チェック（パフォーマンス考慮）
+    common_symptom_words = ['発熱', '頭痛', '腹痛', '下痢', '吐き気', '咳', '鼻水', '痛み', '痛い']
+    if any(word in meaningful_text for word in common_symptom_words):
+        return False
+    
+    # 4. 詳細な症状チェック（has_specific_symptomを使用）
+    try:
+        from counseling_response import has_specific_symptom
+        if has_specific_symptom(meaningful_text):
+            return False
+    except ImportError:
+        # counseling_responseモジュールがインポートできない場合はスキップ
+        pass
+    
+    # 5. その他の場合は「診断名のみ」と判定
+    return True
+
+
+def has_side_effect_mention(user_text: str) -> bool:
+    """
+    副作用パターンが含まれているかを判定する関数
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        True: 副作用パターンが検出された場合
+        False: 副作用パターンが検出されなかった場合
+    """
+    import re
+    
+    # 副作用キーワード
+    SIDE_EFFECT_KEYWORDS = [
+        '副作用', '副作用で', '副作用が', '副作用による', '副作用による',
+        '副作用の', '薬の副作用', '処方薬の副作用', '治療の副作用'
+    ]
+    
+    # 1. 明示的な副作用キーワードをチェック
+    for keyword in SIDE_EFFECT_KEYWORDS:
+        if keyword in user_text:
+            return True
+    
+    # 2. 治療中キーワード + 症状の組み合わせをチェック
+    # 例：「薬を飲んでいます。吐き気があります」
+    try:
+        from counseling_response import is_treatment_mention, has_specific_symptom
+        if is_treatment_mention(user_text, skip_diagnosis_only=True):
+            # 治療中キーワードが検出された場合、症状も検出されているかチェック
+            if has_specific_symptom(user_text):
+                # 「薬を飲んでいます。副作用で吐き気があります」のような明示的な表現をチェック
+                side_effect_patterns = [
+                    r'副作用[でがによる]',
+                    r'薬[のの副作用]',
+                    r'処方薬[のの副作用]',
+                    r'治療[のの副作用]'
+                ]
+                for pattern in side_effect_patterns:
+                    if re.search(pattern, user_text):
+                        return True
+    except ImportError:
+        # counseling_responseモジュールがインポートできない場合はスキップ
+        pass
+    
+    return False
 
 def create_multilingual_attribute_extraction_prompt(user_text, language, user_info=None):
     """
@@ -1802,17 +2101,20 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     if client is None:
         client = OpenAI(api_key=api_key)
     
-    # 治療中キーワードを先にチェック（診断名検出より優先）
+    # 診断名検出を優先（app.pyと同じロジック）
     try:
-        from counseling_response import is_treatment_mention
-        if is_treatment_mention(user_text):
-            logger.info(f"🔔 治療中キーワード検出により診断名検出をスキップ（analyze_symptoms_and_medicine_type）: {user_text}")
-            # 診断名検出をスキップして通常の症状抽出に進む
-        else:
-            # 診断名の検出（先にチェック）
-            is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
-            if is_diagnosis:
-                logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
+        # 診断名の検出（先にチェック）
+        is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
+        if is_diagnosis:
+            has_side_effect = diagnosis_response.get('has_side_effect', False)
+            should_show_counseling = diagnosis_response.get('should_show_counseling', False)
+            detected_diagnoses = diagnosis_response.get('detected_diagnoses', [])
+            selected_diagnosis = diagnosis_response.get('selected_diagnosis', '')
+            
+            logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}, detected_diagnoses={detected_diagnoses}, has_side_effect={has_side_effect}, should_show_counseling={should_show_counseling}")
+            
+            # 副作用が検出された場合や診断名のみの場合は、症状抽出をスキップ
+            if has_side_effect or not should_show_counseling:
                 return {
                     'symptoms': [],
                     'medicine_type': 'その他',
@@ -1820,8 +2122,10 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
                     'diagnosis_type': diagnosis_type,
                     'diagnosis_response': diagnosis_response
                 }
+            # 診断名+症状の場合は、症状抽出も続行（should_show_counseling=Trueの場合のみ）
+            logger.info(f"📝 診断名+症状が検出されたため、症状抽出も続行します（analyze_symptoms_and_medicine_type）: {user_text}")
     except ImportError:
-        # counseling_responseモジュールがインポートできない場合は、診断名検出のみ実行
+        # モジュールがインポートできない場合は、診断名検出をスキップ
         is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
         if is_diagnosis:
             logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
