@@ -1343,46 +1343,92 @@ def index():
                 except:
                     pass
             
-            # ステップ1.7: 診断名検出（心臓緊急チェック後、不眠関連キーワードチェック前）（2025年12月27日追加）
-            # 注意: 治療中キーワードが検出された場合は、診断名検出をスキップして通常フローに進む
+            # ステップ1.7: 診断名検出（優先順位を変更：診断名検出を先に実行）
             try:
                 from medicine_logic import is_diagnosis_term
                 from counseling_response import is_treatment_mention
                 
-                # 治療中キーワードを先にチェック
-                if is_treatment_mention(sanitized_message):
-                    logger.info(f"🔔 治療中キーワード検出により診断名検出をスキップ: {sanitized_message}")
-                    # 診断名検出をスキップして通常フローに進む
-                else:
-                    try:
-                        is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(sanitized_message)
-                        if is_diagnosis:
-                            diagnosis_message = diagnosis_response.get('message', '診断名が検出されました。医師にご相談ください。')
-                            
-                            logger.info(f"🏥 診断名検出による早期リターン（ステップ1.7）: {diagnosis_type} - {sanitized_message}")
-                            
-                            # HTMLエスケープ処理
-                            import html
-                            escaped_user_message = html.escape(sanitized_message)
-                            escaped_diagnosis_message = html.escape(diagnosis_message)
-                            diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
-                            
-                            # 評価ボタン用のデータを準備
-                            import json
-                            feedback_data = {
-                                'user_message': escaped_user_message,
-                                'ai_response': escaped_diagnosis_message,
-                                'security_score': None,
-                                'error_type': 'diagnosis_detected',
-                                'diagnosis_type': diagnosis_type
+                # 診断名検出を先に実行
+                try:
+                    is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(sanitized_message)
+                    if is_diagnosis:
+                        diagnosis_message = diagnosis_response.get('message', '診断名が検出されました。医師にご相談ください。')
+                        has_side_effect = diagnosis_response.get('has_side_effect', False)
+                        should_show_counseling = diagnosis_response.get('should_show_counseling', False)
+                        detected_diagnoses = diagnosis_response.get('detected_diagnoses', [])
+                        selected_diagnosis = diagnosis_response.get('selected_diagnosis', '')
+                        
+                        logger.info(f"🏥 診断名検出: {diagnosis_type} - {sanitized_message}, detected_diagnoses={detected_diagnoses}, has_side_effect={has_side_effect}, should_show_counseling={should_show_counseling}")
+                        
+                        # ユーザーメッセージをセッションに追加（重複チェック付き）
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        
+                        from datetime import datetime
+                        import uuid
+                        
+                        # 重複チェック
+                        user_message_exists = any(
+                            msg.get('type') == 'user' and 
+                            msg.get('content') == sanitized_message and
+                            msg.get('uuid')
+                            for msg in session.get('messages', [])
+                        )
+                        
+                        if not user_message_exists:
+                            user_msg = {
+                                'type': 'user',
+                                'content': sanitized_message,
+                                'timestamp': datetime.now().isoformat(),
+                                'uuid': str(uuid.uuid4())
                             }
-                            feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                            session['messages'].append(user_msg)
+                            session.modified = True
                             
-                            # 不具合報告用のデータ属性
-                            bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
-                            
-                            # 診断名検出メッセージのHTML
-                            bot_content = f"""
+                            # ユーザーメッセージをDBにも保存
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if not session_data:
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', 'Unknown'),
+                                        'messages': [],
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {}),
+                                        'session_active': True
+                                    }
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(user_msg)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                        
+                        # HTMLエスケープ処理
+                        import html
+                        escaped_user_message = html.escape(sanitized_message)
+                        escaped_diagnosis_message = html.escape(diagnosis_message)
+                        diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
+                        
+                        # 評価ボタン用のデータを準備
+                        import json
+                        feedback_data = {
+                            'user_message': escaped_user_message,
+                            'ai_response': escaped_diagnosis_message,
+                            'security_score': None,
+                            'error_type': 'diagnosis_detected',
+                            'diagnosis_type': diagnosis_type,
+                            'detected_diagnoses': detected_diagnoses,
+                            'selected_diagnosis': selected_diagnosis
+                        }
+                        feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                        
+                        # 不具合報告用のデータ属性
+                        bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
+                        
+                        # 診断名検出メッセージのHTML
+                        bot_content = f"""
 <div class="chat-response error-notification">
     <h4>🏥 診断名が検出されました</h4>
     <div class="error-message-content">{diagnosis_message_html}</div>
@@ -1401,45 +1447,48 @@ def index():
         </div>
     </div>
 </div>"""
-                            
-                            bot_response = {
-                                'type': 'bot',
-                                'content': bot_content,
-                                'diagnosis': diagnosis_type,
-                                'timestamp': datetime.now().isoformat()
-                            }
-                            if 'messages' not in session:
-                                session['messages'] = []
-                            session['messages'].append(bot_response)
-                            session.modified = True
-                            
-                            # DBにも保存
-                            if sid:
-                                session_data = get_session_from_db(sid)
-                                if not session_data:
-                                    session_data = {
-                                        'session_id': sid,
-                                        'username': session.get('username', 'Unknown'),
-                                        'messages': [],
-                                        'last_activity': datetime.now(),
-                                        'client_ip': request.remote_addr,
-                                        'user_agent': request.headers.get('User-Agent', ''),
-                                        'user_attributes': session.get('user_attributes', {}),
-                                        'session_active': True
-                                    }
-                                if 'messages' not in session_data:
-                                    session_data['messages'] = []
-                                session_data['messages'].append(bot_response)
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
-                            
+                        
+                        bot_response = {
+                            'type': 'bot',
+                            'content': bot_content,
+                            'diagnosis': diagnosis_type,
+                            'timestamp': datetime.now().isoformat()
+                        }
+                        session['messages'].append(bot_response)
+                        session.modified = True
+                        
+                        # DBにも保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if not session_data:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', 'Unknown'),
+                                    'messages': [],
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {}),
+                                    'session_active': True
+                                }
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                        
+                        # 副作用が検出された場合や診断名のみの場合は、カウンセリングフローには流さない
+                        if has_side_effect or not should_show_counseling:
                             message_count = len(session['messages'])
                             return jsonify({'status': 'ok', 'message_count': message_count})
-                    except Exception as e:
-                        logger.error(f"❌ 診断名検出処理でエラー: {e}")
-                        import traceback
-                        traceback.print_exc()
-                        # エラーが発生した場合は診断名検出をスキップして通常フローに進む
+                        # 診断名+症状の場合は、カウンセリングフローにも流す（should_show_counseling=Trueの場合のみ）
+                        # ここでは早期リターンせず、通常フローに続行させる
+                        logger.info(f"📝 診断名+症状が検出されたため、カウンセリングフローにも流します: {sanitized_message}")
+                except Exception as e:
+                    logger.error(f"❌ 診断名検出処理でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # エラーが発生した場合は診断名検出をスキップして通常フローに進む
             except ImportError as e:
                 logger.warning(f"⚠️ 診断名検出機能のインポートに失敗: {e}")
             except Exception as e:
