@@ -13,12 +13,16 @@ from collections.abc import MutableMapping
 from threading import local
 
 # ログ設定（早期に設定）
+# logディレクトリが存在しない場合は作成
+log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+os.makedirs(log_dir, exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),  # ターミナルに出力
-        logging.FileHandler('log/app.log', encoding='utf-8')  # ファイルにも出力
+        logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8')  # ファイルにも出力
     ]
 )
 logger = logging.getLogger(__name__)
