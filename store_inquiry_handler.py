@@ -285,6 +285,15 @@ def classify_inquiry_with_llm(user_text: str, client: OpenAI, triage_result: Opt
                     "confidence": triage_result.get("confidence", 0.8),
                     "reasoning": f"トリアージ結果から検出: {subcategory}"
                 }
+            # general_otherの場合は店舗案内として扱わない（カウンセリングフローに流す）
+            elif "general_other" in subcategory or subcategory == "":
+                logger.info(f"🔍 トリアージ結果がgeneral_otherのため、店舗案内として扱わない: {subcategory}")
+                return {
+                    "is_store_inquiry": False,
+                    "inquiry_type": None,
+                    "confidence": 0.0,
+                    "reasoning": f"トリアージ結果がgeneral_otherのため、店舗案内として扱わない: {subcategory}"
+                }
         
         # LLMで詳細分類
         prompt = """
@@ -301,7 +310,9 @@ def classify_inquiry_with_llm(user_text: str, client: OpenAI, triage_result: Opt
 - 「うんこしたい」「トイレに行きたい」だけの場合は店舗案内として扱う
 - 「うんこしたいけど出ない」「便秘でうんこしたい」「下痢で困っている」など、症状を示すキーワードが含まれている場合は医薬品推奨を優先する（is_store_inquiry=false）
 - 不適切なメッセージ（暴言、脅迫など）が含まれている場合は、is_store_inquiryをfalseに設定
+- 意味不明なメッセージ、意味のないメッセージ、ランダムな文字列、繰り返しの文字列（例：「うんこうんこ」「ああああ」など）の場合は、is_store_inquiryをfalseに設定
 - 不明な場合や曖昧な場合は、is_store_inquiryをfalseに設定（カウンセリングフローに流すため）
+- 店舗案内や遺失物関連の明確な意図がない場合は、is_store_inquiryをfalseに設定
 
 【回答形式】
 JSON形式で回答してください：
