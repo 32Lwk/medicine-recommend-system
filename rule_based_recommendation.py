@@ -1303,6 +1303,385 @@ BURN_SEVERITY_KEYWORDS = {
     "severe": ["水ぶくれ", "水疱", "痛くない", "3度熱傷", "顔面", "広範囲", "重度", "激しい"]
 }
 
+# 成分重複チェック用リスク成分マスター（過剰摂取のリスクが高い成分）
+RISK_INGREDIENTS_OVERLAP = {
+    # 鎮痛成分
+    "アセトアミノフェン": {
+        "canonical_name": "アセトアミノフェン",
+        "synonyms": ["アセトアミノフェン", "アセトアミノフェン水和物", "パラセタモール"],
+        "overlap_warning": True,
+        "category": "analgesic",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "アセトアミノフェン",
+        "side_effects": ["肝機能障害", "過剰摂取"],
+        "max_daily_dose": 4000  # mg（参考値）
+    },
+    "エテンザミド": {
+        "canonical_name": "エテンザミド",
+        "synonyms": ["エテンザミド"],
+        "overlap_warning": True,
+        "category": "analgesic",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "エテンザミド",
+        "side_effects": ["過剰摂取"]
+    },
+    "イブプロフェン": {
+        "canonical_name": "イブプロフェン",
+        "synonyms": ["イブプロフェン", "イブプロフェン錠"],
+        "overlap_warning": True,
+        "category": "nsaid",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "イブプロフェン（NSAIDs）",
+        "side_effects": ["胃腸障害", "過剰摂取", "腎機能障害", "喘息誘発"],
+        "note": "ロキソプロフェン等、他のNSAIDsとの併用は避けてください"
+    },
+    # 抗ヒスタミン薬（第一世代のみ：眠気の副作用が強いもの）
+    "クロルフェニラミン": {
+        "canonical_name": "クロルフェニラミン",
+        "synonyms": [
+            "クロルフェニラミン", "クロルフェニラミンマレイン酸塩",
+            "クロルフェニラミン塩酸塩", "d-クロルフェニラミンマレイン酸塩"
+        ],
+        "overlap_warning": True,
+        "category": "antihistamine",
+        "severity": "yellow",  # 注意レベル（副作用が強まるが致命的ではない）
+        "warning_message": "クロルフェニラミン",
+        "side_effects": ["眠気", "口渇", "閉尿"],
+        "focus_side_effect": "眠気"
+    },
+    "ジフェンヒドラミン": {
+        "canonical_name": "ジフェンヒドラミン",
+        "synonyms": [
+            "ジフェンヒドラミン", "ジフェンヒドラミン塩酸塩",
+            "ジフェンヒドラミンサリチル酸塩"
+        ],
+        "overlap_warning": True,
+        "category": "antihistamine",
+        "severity": "yellow",  # 注意レベル（副作用が強まるが致命的ではない）
+        "warning_message": "ジフェンヒドラミン",
+        "side_effects": ["眠気", "口渇", "閉尿"],
+        "focus_side_effect": "眠気"
+    },
+    "クレマスチン": {
+        "canonical_name": "クレマスチン",
+        "synonyms": ["クレマスチン", "クレマスチンフマル酸塩"],
+        "overlap_warning": True,
+        "category": "antihistamine",
+        "severity": "yellow",  # 注意レベル（副作用が強まるが致命的ではない）
+        "warning_message": "クレマスチン",
+        "side_effects": ["眠気", "口渇", "閉尿"],
+        "focus_side_effect": "眠気"
+    },
+    "プロメタジン": {
+        "canonical_name": "プロメタジン",
+        "synonyms": [
+            "プロメタジン", "プロメタジン塩酸塩",
+            "プロメタジンマレイン酸塩"
+        ],
+        "overlap_warning": True,
+        "category": "antihistamine",
+        "severity": "yellow",  # 注意レベル（副作用が強まるが致命的ではない）
+        "warning_message": "プロメタジン",
+        "side_effects": ["眠気", "口渇", "閉尿"],
+        "focus_side_effect": "眠気"
+    },
+    # その他の鎮痛・解熱成分
+    "アスピリン": {
+        "canonical_name": "アスピリン",
+        "synonyms": [
+            "アスピリン", "アセチルサリチル酸", "アセチルサリチル酸アルミニウム",
+            "アセチルサリチル酸カルシウム", "アセチルサリチル酸リジン"
+        ],
+        "overlap_warning": True,
+        "category": "nsaid",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "アスピリン（サリチル酸系）",
+        "side_effects": ["胃腸障害", "出血傾向", "過剰摂取", "ライ症候群（小児）"],
+        "max_daily_dose": 4000,  # mg（参考値）
+        "note": "他の解熱鎮痛薬との併用不可"
+    },
+    "ロキソプロフェン": {
+        "canonical_name": "ロキソプロフェン",
+        "synonyms": [
+            "ロキソプロフェン", "ロキソプロフェンナトリウム",
+            "ロキソプロフェンナトリウム水和物"
+        ],
+        "overlap_warning": True,
+        "category": "nsaid",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "ロキソプロフェン（NSAIDs）",
+        "side_effects": ["胃腸障害", "過剰摂取", "腎機能障害", "喘息誘発"],
+        "max_daily_dose": 180,  # mg（参考値）
+        "note": "イブプロフェン等、他のNSAIDsとの併用は避けてください"
+    },
+    "イソプロピルアンチピリン": {
+        "canonical_name": "イソプロピルアンチピリン",
+        "synonyms": [
+            "イソプロピルアンチピリン", "イソプロピルアンチピリン錠"
+        ],
+        "overlap_warning": True,
+        "category": "pyralozone",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "イソプロピルアンチピリン（ピリン系）",
+        "side_effects": ["過剰摂取", "アレルギー反応", "顆粒球減少症", "ピリン疹（薬疹）", "ショック"],
+        "note": "ピリン系アレルギーの既往がある場合は厳禁"
+    },
+    "メフェナム酸": {
+        "canonical_name": "メフェナム酸",
+        "synonyms": [
+            "メフェナム酸", "メフェナム酸錠"
+        ],
+        "overlap_warning": True,
+        "category": "nsaid",
+        "severity": "red",  # 重複禁止レベル（1日最大摂取量を超える可能性）
+        "warning_message": "メフェナム酸（NSAIDs）",
+        "side_effects": ["胃腸障害", "過剰摂取", "腎機能障害", "喘息誘発"],
+        "note": "ロキソプロフェン、イブプロフェン等、他のNSAIDsとの併用は避けてください"
+    },
+    # カフェイン（過剰摂取のリスク）
+    "カフェイン": {
+        "canonical_name": "カフェイン",
+        "synonyms": [
+            "カフェイン", "無水カフェイン", "カフェイン水和物",
+            "クエン酸カフェイン", "安息香酸ナトリウムカフェイン"
+        ],
+        "overlap_warning": True,
+        "category": "xanthine",
+        "severity": "yellow",  # 注意レベル（過剰摂取で不眠、動悸など）
+        "warning_message": "カフェイン",
+        "side_effects": ["不眠", "動悸", "頭痛", "過剰摂取", "振戦", "胃荒れ"],
+        "max_daily_dose": 400,  # mg（参考値）
+        "note": "風邪薬、鎮痛薬、眠気防止薬、栄養ドリンクでの重複が非常に起きやすい"
+    },
+    # 鎮咳成分
+    "デキストロメトルファン": {
+        "canonical_name": "デキストロメトルファン",
+        "synonyms": [
+            "デキストロメトルファン", "デキストロメトルファン臭化水素酸塩",
+            "デキストロメトルファン臭化水素酸塩水和物"
+        ],
+        "overlap_warning": True,
+        "category": "antitussive_non_narcotic",
+        "severity": "yellow",  # 注意レベル（過剰摂取で副作用が強まる）
+        "warning_message": "デキストロメトルファン",
+        "side_effects": ["眠気", "めまい", "過剰摂取", "消化器症状"],
+        "note": "非麻薬性だが、重複すると副作用が強く出る"
+    },
+    "ジヒドロコデイン": {
+        "canonical_name": "ジヒドロコデイン",
+        "synonyms": [
+            "ジヒドロコデイン", "ジヒドロコデインリン酸塩",
+            "ジヒドロコデインリン酸塩水和物"
+        ],
+        "overlap_warning": True,
+        "category": "antitussive_narcotic",
+        "severity": "red",  # 重複禁止レベル（依存性のリスク）
+        "warning_message": "ジヒドロコデイン（麻薬性鎮咳成分）",
+        "side_effects": ["依存性", "眠気", "便秘", "過剰摂取", "呼吸抑制"],
+        "note": "12歳未満は使用禁止。風邪薬と咳止めで重複しやすい"
+    },
+    "コデイン": {
+        "canonical_name": "コデイン",
+        "synonyms": [
+            "コデイン", "コデインリン酸塩水和物", "リン酸コデイン"
+        ],
+        "overlap_warning": True,
+        "category": "antitussive_narcotic",
+        "severity": "red",  # 重複禁止レベル（依存性のリスク）
+        "warning_message": "コデイン類（麻薬性鎮咳成分）",
+        "side_effects": ["呼吸抑制", "便秘", "眠気", "依存性"],
+        "note": "12歳未満は使用禁止。重複により呼吸抑制リスク増大"
+    },
+    # 鼻づまり改善成分（交感神経興奮成分）
+    "プソイドエフェドリン": {
+        "canonical_name": "プソイドエフェドリン",
+        "synonyms": [
+            "プソイドエフェドリン", "プソイドエフェドリン塩酸塩",
+            "dl-プソイドエフェドリン塩酸塩"
+        ],
+        "overlap_warning": True,
+        "category": "sympathomimetic",
+        "severity": "red",  # 重複禁止レベル（高血圧・心臓病の人は要注意）
+        "warning_message": "プソイドエフェドリン",
+        "side_effects": ["不眠", "動悸", "血圧上昇", "過剰摂取", "排尿困難"],
+        "note": "鼻炎薬と風邪薬での重複が非常に多い。高血圧・心臓病の人は要注意"
+    },
+    "メチルエフェドリン": {
+        "canonical_name": "メチルエフェドリン",
+        "synonyms": [
+            "メチルエフェドリン", "dl-メチルエフェドリン塩酸塩",
+            "メチルエフェドリンサッカリン塩"
+        ],
+        "overlap_warning": True,
+        "category": "sympathomimetic",
+        "severity": "yellow",  # 注意レベル（副作用が強まる）
+        "warning_message": "メチルエフェドリン",
+        "side_effects": ["動悸", "血圧上昇", "震え"],
+        "note": "咳止めや風邪薬に含まれる。交感神経刺激作用の重複に注意"
+    },
+    # 止血成分
+    "トラネキサム酸": {
+        "canonical_name": "トラネキサム酸",
+        "synonyms": [
+            "トラネキサム酸", "トラネキサム酸錠"
+        ],
+        "overlap_warning": True,
+        "category": "hemostatic",
+        "severity": "yellow",  # 注意レベル（血栓症のリスク）
+        "warning_message": "トラネキサム酸",
+        "side_effects": ["血栓症", "過剰摂取"]
+    },
+    # 脂溶性ビタミン（過剰摂取のリスク）
+    "ビタミンA": {
+        "canonical_name": "ビタミンA",
+        "synonyms": [
+            "ビタミンA", "レチノール", "レチノールパルミチン酸エステル",
+            "レチノール酢酸エステル", "β-カロテン"
+        ],
+        "overlap_warning": True,
+        "category": "vitamin",
+        "severity": "yellow",  # 注意レベル（過剰摂取で肝機能障害など）
+        "warning_message": "ビタミンA",
+        "side_effects": ["肝機能障害", "頭痛", "過剰摂取"],
+        "max_daily_dose": 5000  # IU（参考値）
+    },
+    "ビタミンD": {
+        "canonical_name": "ビタミンD",
+        "synonyms": [
+            "ビタミンD", "ビタミンD2", "ビタミンD3",
+            "エルゴカルシフェロール", "コレカルシフェロール"
+        ],
+        "overlap_warning": True,
+        "category": "vitamin",
+        "severity": "yellow",  # 注意レベル（過剰摂取で高カルシウム血症など）
+        "warning_message": "ビタミンD",
+        "side_effects": ["高カルシウム血症", "腎機能障害", "過剰摂取"],
+        "max_daily_dose": 4000  # IU（参考値）
+    },
+    # 制酸剤（長期併用のリスク）
+    "アルミニウム": {
+        "canonical_name": "アルミニウム",
+        "synonyms": [
+            "アルミニウム", "水酸化アルミニウム", "アルミニウムゲル",
+            "合成ケイ酸アルミニウム", "ケイ酸アルミニウムマグネシウム",
+            "炭酸アルミニウム", "リン酸アルミニウムゲル"
+        ],
+        "overlap_warning": True,
+        "category": "antacid",
+        "severity": "yellow",  # 注意レベル（長期併用で便秘、リン吸着など）
+        "warning_message": "アルミニウム含有製剤",
+        "side_effects": ["便秘", "リン吸着", "長期使用によるリスク"]
+    },
+    "マグネシウム": {
+        "canonical_name": "マグネシウム",
+        "synonyms": [
+            "マグネシウム", "酸化マグネシウム", "水酸化マグネシウム",
+            "炭酸マグネシウム", "ケイ酸アルミニウムマグネシウム"
+        ],
+        "overlap_warning": True,
+        "category": "antacid",
+        "severity": "yellow",  # 注意レベル（下痢のリスク）
+        "warning_message": "マグネシウム含有製剤",
+        "side_effects": ["下痢", "長期使用によるリスク"]
+    },
+    # その他のリスク成分
+    "グアヤコールスルホン酸カリウム": {
+        "canonical_name": "グアヤコールスルホン酸カリウム",
+        "synonyms": [
+            "グアヤコールスルホン酸カリウム", "グアイフェネシン"
+        ],
+        "overlap_warning": True,
+        "category": "expectorant",
+        "severity": "yellow",  # 注意レベル（過剰摂取で副作用が強まる）
+        "warning_message": "グアヤコールスルホン酸カリウム",
+        "side_effects": ["胃腸障害", "過剰摂取"]
+    },
+    "ブロムヘキシン": {
+        "canonical_name": "ブロムヘキシン",
+        "synonyms": [
+            "ブロムヘキシン", "ブロムヘキシン塩酸塩"
+        ],
+        "overlap_warning": True,
+        "category": "expectorant",
+        "severity": "yellow",  # 注意レベル（過剰摂取で副作用が強まる）
+        "warning_message": "ブロムヘキシン",
+        "side_effects": ["胃腸障害", "過剰摂取"]
+    },
+    "カルボシステイン": {
+        "canonical_name": "カルボシステイン",
+        "synonyms": [
+            "カルボシステイン", "L-カルボシステイン"
+        ],
+        "overlap_warning": True,
+        "category": "expectorant",
+        "severity": "yellow",  # 注意レベル（過剰摂取で副作用が強まる）
+        "warning_message": "カルボシステイン",
+        "side_effects": ["胃腸障害", "過剰摂取"]
+    },
+    # 抗コリン成分（鼻水止め・胃痛止め：カテゴリーが違う薬での重複事故が多い）
+    "ベラドンナ総アルカロイド": {
+        "canonical_name": "ベラドンナ総アルカロイド",
+        "synonyms": [
+            "ベラドンナ総アルカロイド", "ベラドンナエキス"
+        ],
+        "overlap_warning": True,
+        "category": "anticholinergic",
+        "severity": "red",  # 重複禁止レベル（緑内障・前立腺肥大の人はリスク大）
+        "warning_message": "ベラドンナ総アルカロイド（抗コリン成分）",
+        "side_effects": ["口渇", "便秘", "眼圧上昇", "排尿困難"],
+        "note": "鼻炎薬と胃腸鎮痛鎮痙薬での重複が多い。緑内障・前立腺肥大の人はリスク大"
+    },
+    "ヨウ化イソプロパミド": {
+        "canonical_name": "ヨウ化イソプロパミド",
+        "synonyms": [
+            "ヨウ化イソプロパミド"
+        ],
+        "overlap_warning": True,
+        "category": "anticholinergic",
+        "severity": "yellow",  # 注意レベル（副作用が強まる）
+        "warning_message": "ヨウ化イソプロパミド（抗コリン成分）",
+        "side_effects": ["口渇", "便秘", "眼圧上昇"],
+        "note": "鼻炎薬によく含まれる。作用時間が長い"
+    },
+    "スコポラミン": {
+        "canonical_name": "スコポラミン",
+        "synonyms": [
+            "スコポラミン", "スコポラミン臭化水素酸塩水和物", "ロートエキス"
+        ],
+        "overlap_warning": True,
+        "category": "anticholinergic",
+        "severity": "yellow",  # 注意レベル（副作用が強まる）
+        "warning_message": "スコポラミン・ロートエキス（抗コリン成分）",
+        "side_effects": ["眠気", "口渇", "目のかすみ"],
+        "note": "乗り物酔い止め、胃薬、風邪薬での重複に注意"
+    },
+    # 鎮静成分（依存性や過剰摂取のリスク）
+    "ブロモバレリル尿素": {
+        "canonical_name": "ブロモバレリル尿素",
+        "synonyms": [
+            "ブロモバレリル尿素", "ブロムワレリル尿素"
+        ],
+        "overlap_warning": True,
+        "category": "sedative",
+        "severity": "red",  # 重複禁止レベル（依存性のリスク）
+        "warning_message": "ブロモバレリル尿素（鎮静成分）",
+        "side_effects": ["強い眠気", "依存性", "ふらつき"],
+        "note": "「アリルイソプロピルアセチル尿素」との重複も鎮静作用増強のため注意"
+    },
+    "アリルイソプロピルアセチル尿素": {
+        "canonical_name": "アリルイソプロピルアセチル尿素",
+        "synonyms": [
+            "アリルイソプロピルアセチル尿素"
+        ],
+        "overlap_warning": True,
+        "category": "sedative",
+        "severity": "yellow",  # 注意レベル（副作用が強まる）
+        "warning_message": "アリルイソプロピルアセチル尿素",
+        "side_effects": ["眠気", "だるさ"],
+        "note": "解熱鎮痛薬によく配合されている。乗り物酔い薬等との重複で眠気が増強"
+    }
+}
+
 # ================================================================================
 # 2. NLU関数（ChatGPT APIで症状抽出のみ）
 # ================================================================================
@@ -2803,6 +3182,117 @@ def extract_main_ingredients(ingredients: str, max_count: int = 3) -> List[str]:
     return normalized
 
 
+def check_ingredient_overlap(medicines: List[Dict]) -> Dict:
+    """
+    推奨医薬品リスト内で成分重複をチェック（集合演算を使用）
+    
+    Args:
+        medicines: 推奨医薬品のリスト（Dictのリスト）
+    
+    Returns:
+        {
+            "has_overlap": bool,
+            "overlapping_ingredients": List[Dict],  # 重複している成分の詳細
+            "affected_medicines": List[str],  # 重複成分を含む医薬品名のリスト
+            "highest_severity": str  # 最も深刻なレベル（"red", "yellow", "blue"）
+        }
+    """
+    overlap_result = {
+        "has_overlap": False,
+        "overlapping_ingredients": [],
+        "affected_medicines": [],
+        "highest_severity": "blue"
+    }
+    
+    if len(medicines) < 2:
+        return overlap_result
+    
+    # 各医薬品の成分を集合として抽出
+    medicine_ingredient_sets = {}
+    for medicine in medicines:
+        product_name = medicine.get('product_name', '')
+        ingredients_str = medicine.get('ingredients', '')
+        if ingredients_str:
+            # extract_main_ingredientsを使用して成分を抽出（戻り値をそのまま使用）
+            ingredients_list = extract_main_ingredients(ingredients_str, max_count=20)
+            # 集合に変換（正規化済みの成分名を小文字に統一）
+            ingredients_set = set(ing.lower() for ing in ingredients_list)
+            medicine_ingredient_sets[product_name] = ingredients_set
+    
+    # リスク成分の正規化された名前セットを作成
+    risk_ingredient_sets = {}
+    for risk_name, risk_info in RISK_INGREDIENTS_OVERLAP.items():
+        canonical = risk_info["canonical_name"].lower()
+        synonyms = [s.lower() for s in risk_info.get("synonyms", [])]
+        risk_set = {canonical} | set(synonyms)
+        risk_ingredient_sets[risk_name] = {
+            "ingredient_set": risk_set,
+            "info": risk_info
+        }
+    
+    # すべての組み合わせをチェック（nC2）
+    from itertools import combinations
+    checked_combinations = set()
+    
+    for (med1_name, ing_set1), (med2_name, ing_set2) in combinations(medicine_ingredient_sets.items(), 2):
+        # 成分の積集合を取得
+        common_ingredients = ing_set1 & ing_set2
+        
+        if not common_ingredients:
+            continue
+        
+        # リスク成分とのマッチング（集合演算）
+        for risk_name, risk_data in risk_ingredient_sets.items():
+            risk_set = risk_data["ingredient_set"]
+            risk_info = risk_data["info"]
+            
+            # 共通成分とリスク成分の積集合を取得
+            overlapping_risk = common_ingredients & risk_set
+            
+            if overlapping_risk:
+                # 重複が検出された
+                overlap_key = (risk_name, tuple(sorted([med1_name, med2_name])))
+                if overlap_key not in checked_combinations:
+                    checked_combinations.add(overlap_key)
+                    
+                    # 深刻度を取得（severityフィールドから）
+                    severity = risk_info.get("severity", "blue")  # デフォルトはblue（情報）
+                    warning_msg = risk_info["warning_message"]
+                    
+                    # 深刻度に応じたメッセージを生成
+                    if severity == "red":
+                        side_effect_msg = "（過剰摂取のリスクがあります。同時に服用しないでください）"
+                    elif severity == "yellow":
+                        if risk_info.get("category") == "antihistamine":
+                            side_effect_msg = f"（同じ成分が含まれていますので、併用時は副作用（{risk_info.get('focus_side_effect', '眠気')}など）にご注意ください）"
+                        else:
+                            side_effect_msg = "（同じ成分が含まれていますので、併用時は副作用にご注意ください）"
+                    else:  # blue
+                        side_effect_msg = "（同じ成分が含まれていますので、用法用量をご確認ください）"
+                    
+                    overlap_result["has_overlap"] = True
+                    overlap_result["overlapping_ingredients"].append({
+                        "ingredient_name": risk_name,
+                        "warning_message": warning_msg,
+                        "medicines": sorted([med1_name, med2_name]),
+                        "side_effect_message": side_effect_msg,
+                        "severity": severity  # 深刻度を追加
+                    })
+                    overlap_result["affected_medicines"].extend([med1_name, med2_name])
+    
+    # 最も深刻なレベルを決定（複数の重複がある場合）
+    if overlap_result["overlapping_ingredients"]:
+        severities = [overlap.get("severity", "blue") for overlap in overlap_result["overlapping_ingredients"]]
+        severity_order = {"red": 3, "yellow": 2, "blue": 1}
+        highest_severity = max(severities, key=lambda s: severity_order.get(s, 0))
+        overlap_result["highest_severity"] = highest_severity
+    
+    # 重複を除去
+    overlap_result["affected_medicines"] = list(set(overlap_result["affected_medicines"]))
+    
+    return overlap_result
+
+
 def is_exact_product_match(product_name: str, target_names: List[str]) -> bool:
     """
     厳密な製品名マッチング関数
@@ -3622,6 +4112,30 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     # まず、スコア順にソート
     selected_sorted = sorted(selected, key=lambda x: x.get('final_score', 0.0), reverse=True)
     
+    # のどの痛みがある場合、外用薬（のど）のスロットを確保（3位以内に必ず1つ含める）
+    if nlu_result:
+        symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_throat_pain = any("のど" in name or "喉" in name for name in symptom_names_list)
+        
+        if has_throat_pain:
+            # 既に選択されている候補に外用薬（のど）があるかチェック
+            has_external_throat = any('外用薬（のど）' in c.get('medicine_type', '') for c in selected_sorted[:3])
+            
+            if not has_external_throat:
+                # 外用薬（のど）を優先的に追加
+                remaining_candidates = [c for c in filtered_candidates if c not in selected_sorted[:3]]
+                for candidate in remaining_candidates:
+                    if '外用薬（のど）' in candidate.get('medicine_type', ''):
+                        # 3位以内に確保（既に3位以上ある場合は、3位の候補と置き換え）
+                        if len(selected_sorted) >= 3:
+                            # 3位の候補を削除して外用薬（のど）を追加
+                            selected_sorted = selected_sorted[:2] + [candidate]
+                            logger.info(f"🔒 外用薬（のど）のスロット確保: {candidate.get('product_name', '')} を3位に配置")
+                        else:
+                            selected_sorted.append(candidate)
+                            logger.info(f"🔒 外用薬（のど）のスロット確保: {candidate.get('product_name', '')} を追加")
+                        break
+    
     # 上位2件をスコア順で確保
     top_2_candidates = selected_sorted[:2] if len(selected_sorted) >= 2 else selected_sorted
     
@@ -3694,6 +4208,83 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
             if len(final_selected) >= top_n:
                 break
             final_selected.append(candidate)
+    
+    # カテゴリ多様性の確保と弱点補完ロジック（3症状以上の場合）
+    if nlu_result and len(final_selected) >= top_n:
+        symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        symptom_count = len(symptom_names_list)
+        
+        if symptom_count >= 3:
+            # 現在のカテゴリを確認
+            medicine_types = [c.get('medicine_type', '') for c in final_selected[:top_n]]
+            unique_types = set()
+            for med_type in medicine_types:
+                # カテゴリを抽出（"風邪薬"、"解熱鎮痛薬"、"外用薬（のど）"など）
+                if '風邪薬' in med_type:
+                    unique_types.add('風邪薬')
+                elif '解熱鎮痛薬' in med_type:
+                    unique_types.add('解熱鎮痛薬')
+                elif '外用薬（のど）' in med_type:
+                    unique_types.add('外用薬（のど）')
+                elif '漢方薬' in med_type or any(kw in med_type for kw in ['葛根湯', '五苓散']):
+                    unique_types.add('漢方薬')
+            
+            # 単一カテゴリのみの場合は、弱点補完ロジックを適用
+            if len(unique_types) == 1:
+                first_medicine_type = list(unique_types)[0]
+                first_medicine = final_selected[0]
+                
+                # 1位の薬の弱点を補うカテゴリを決定（ルールベース + 症状ベース）
+                complementary_category = None
+                
+                # ルールベース: 1位のカテゴリに応じた補完カテゴリ
+                category_compensation_rules = {
+                    "風邪薬": ["外用薬（のど）", "解熱鎮痛薬"],  # 総合感冒薬の弱点: 局所治療、強力な解熱
+                    "解熱鎮痛薬": ["風邪薬", "外用薬（のど）"],  # 解熱鎮痛薬の弱点: 総合的な対応、局所治療
+                    "外用薬（のど）": ["風邪薬", "解熱鎮痛薬"],  # 外用薬の弱点: 全身症状への対応
+                }
+                
+                # 症状ベース: 症状に応じた優先順位
+                has_throat_pain = any("のど" in name or "喉" in name for name in symptom_names_list)
+                has_fever = "発熱" in symptom_names_list
+                has_cough = "咳" in symptom_names_list
+                
+                if first_medicine_type == "風邪薬":
+                    # のど痛みがあれば外用薬（のど）を優先、発熱が強ければ解熱鎮痛薬を優先
+                    if has_throat_pain:
+                        complementary_category = "外用薬（のど）"
+                    elif has_fever:
+                        complementary_category = "解熱鎮痛薬"
+                    else:
+                        complementary_category = category_compensation_rules.get(first_medicine_type, ["外用薬（のど）"])[0]
+                elif first_medicine_type == "解熱鎮痛薬":
+                    # のど痛みがあれば外用薬（のど）を優先、そうでなければ総合感冒薬を優先
+                    if has_throat_pain:
+                        complementary_category = "外用薬（のど）"
+                    else:
+                        complementary_category = "風邪薬"
+                elif first_medicine_type == "外用薬（のど）":
+                    # 発熱があれば解熱鎮痛薬を優先、そうでなければ総合感冒薬を優先
+                    if has_fever:
+                        complementary_category = "解熱鎮痛薬"
+                    else:
+                        complementary_category = "風邪薬"
+                
+                # 補完カテゴリの候補を探して追加
+                if complementary_category:
+                    # 既に選択されている候補以外から探す
+                    remaining_for_compensation = [c for c in filtered_candidates if c not in final_selected[:top_n]]
+                    for candidate in remaining_for_compensation:
+                        candidate_type = candidate.get('medicine_type', '')
+                        if complementary_category in candidate_type:
+                            # 3位の候補と置き換え（または追加）
+                            if len(final_selected) >= 3:
+                                final_selected = final_selected[:2] + [candidate]
+                                logger.info(f"🔬 弱点補完: {complementary_category} を追加 {candidate.get('product_name', '')}")
+                            else:
+                                final_selected.append(candidate)
+                                logger.info(f"🔬 弱点補完: {complementary_category} を追加 {candidate.get('product_name', '')}")
+                            break
     
     # 作用機序の多様性の強制: 補血・調血系と理気・駆瘀血系の両方を強制的に含める
     # 月経不順関連の症状がある場合のみ適用
@@ -6308,6 +6899,13 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"葛根湯のためthroat_bonusを0.0に設定（のど痛み+発熱）: {product_name}")
     
+    # 複数症状（3症状以上）時の総合感冒薬への追加ボーナス
+    multi_symptom_cold_bonus = 0.0
+    if len(symptom_names) >= 3 and '風邪薬' in medicine_type:
+        multi_symptom_cold_bonus = 0.15
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"複数症状（3症状以上）時の総合感冒薬への追加ボーナス: {candidate.get('product_name', '')} = +0.15")
+    
     # 「のど痛み+発熱」パターンのボーナス適用条件をログ出力（DEBUGレベル）
     if has_throat_symptom and has_fever and len(symptom_names) >= 2:
         if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -6319,20 +6917,20 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         if not is_kakkonto_medicine:
             if '風邪薬' in medicine_type:
                 if throat_specificity_level == "component_and_efficacy":
-                    # 総合感冒薬（喉向き・成分あり）に+0.50のボーナス（強化）
-                    throat_bonus = 0.50
+                    # 総合感冒薬（喉向き・成分あり）に+0.55のボーナス（強化：0.50から0.55に）
+                    throat_bonus = 0.55
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"総合感冒薬（喉向き・成分あり）ボーナス: {candidate.get('product_name', '')} = +0.50")
+                        logger.debug(f"総合感冒薬（喉向き・成分あり）ボーナス: {candidate.get('product_name', '')} = +0.55")
                 elif throat_specificity_level == "efficacy_only":
-                    # 総合感冒薬（喉向き・効能のみ）に+0.40のボーナス（強化）
+                    # 総合感冒薬（喉向き・効能のみ）に+0.45のボーナス（強化：0.40から0.45に）
+                    throat_bonus = 0.45
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"総合感冒薬（喉向き・効能のみ）ボーナス: {candidate.get('product_name', '')} = +0.45")
+                else:
+                    # 一般の総合感冒薬にも+0.40のボーナス（強化：0.30から0.40に）
                     throat_bonus = 0.40
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"総合感冒薬（喉向き・効能のみ）ボーナス: {candidate.get('product_name', '')} = +0.40")
-                else:
-                    # 一般の総合感冒薬にも+0.30のボーナス（強化：葛根湯より優先するため）
-                    throat_bonus = 0.30
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"一般の総合感冒薬ボーナス: {candidate.get('product_name', '')} = +0.30")
+                        logger.debug(f"一般の総合感冒薬ボーナス: {candidate.get('product_name', '')} = +0.40")
             elif '解熱鎮痛薬' in medicine_type:
                 # 解熱鎮痛薬に+0.45のボーナス（強化：2位優先のため、0.35から0.45に増加）
                 throat_bonus = 0.45
@@ -6393,13 +6991,25 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # 二日酔いブースト（二日酔いが検出された場合）
     hangover_boost = candidate.get('hangover_boost', 0.0)
     
+    # 複数症状（3症状以上）時の総合感冒薬への追加ボーナスの上限制限
+    limited_multi_symptom_cold_bonus = max(0.0, min(0.15, multi_symptom_cold_bonus))
+    
     # ボーナス/ペナルティの影響を制限（スコアのばらつきを確保しつつ、特化医薬品の優位性を保つ）
     # 特化医薬品のボーナスは最大0.30まで許可（症状特化型ブースト、throat_bonus）- 総合感冒薬ボーナス強化のため上限を0.30に変更
     # 不適切な医薬品のペナルティは最大-0.30まで許可（症状特異性ペナルティ、リスク成分ペナルティ）
     # アレルギー関連は中程度の影響（-0.20から+0.20）
     # 解熱鎮痛薬と外用薬（のど）のボーナス上限を0.50に引き上げ（2位・3位優先のため強化）
+    # 総合感冒薬の上限を0.70に引き上げ（throat_bonus 0.55 + multi_symptom_cold_bonus 0.15 = 0.70）
     if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
         limited_throat_bonus = max(-0.20, min(0.50, throat_bonus))  # 解熱鎮痛薬と外用薬（のど）の上限を0.50に引き上げ
+    elif '風邪薬' in medicine_type:
+        # 総合感冒薬の場合、throat_bonus + multi_symptom_cold_bonusの合計が0.70を超えないように制限
+        total_cold_bonus = throat_bonus + multi_symptom_cold_bonus
+        if total_cold_bonus > 0.70:
+            # 合計が0.70を超える場合は、throat_bonusを0.70 - multi_symptom_cold_bonusに制限
+            limited_throat_bonus = max(-0.20, min(0.70 - limited_multi_symptom_cold_bonus, throat_bonus))
+        else:
+            limited_throat_bonus = max(-0.20, min(0.70, throat_bonus))  # 総合感冒薬の上限を0.70に引き上げ
     else:
         limited_throat_bonus = max(-0.20, min(0.40, throat_bonus))  # 特化医薬品の優位性を保つ（総合感冒薬ボーナス強化のため上限を0.40に変更）
     limited_symptom_boost = max(-0.20, min(0.25, symptom_boost))  # 特化医薬品の優位性を保つ
@@ -6805,6 +7415,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         limited_symptom_specificity_penalty +
         limited_risk_penalty +
         limited_throat_bonus +
+        limited_multi_symptom_cold_bonus +  # 複数症状（3症状以上）時の総合感冒薬への追加ボーナス
         limited_symptom_boost +
         limited_allergy_penalty +
         limited_allergy_boost +
@@ -6945,6 +7556,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             "throat_bonus": limited_throat_bonus,  # 制限後のthroat_bonus
             "symptom_specific_boost": limited_symptom_boost,  # 制限後の症状特化型ブースト
             "multi_symptom_bonus": multi_symptom_bonus,  # MULTI_SYMPTOM_COMBINATIONSのボーナス（表示用）
+            "multi_symptom_cold_bonus": limited_multi_symptom_cold_bonus,  # 複数症状（3症状以上）時の総合感冒薬への追加ボーナス
             "pattern_bonus": limited_pattern_bonus,  # 制限後の症状パターンボーナス
             "allergy_penalty": limited_allergy_penalty,  # 制限後のアレルギーペナルティ
             "allergy_boost": limited_allergy_boost,  # 制限後のアレルギーブースト
