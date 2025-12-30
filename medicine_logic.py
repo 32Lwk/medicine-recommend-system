@@ -219,23 +219,81 @@ def is_diagnosis_term(text):
         end = min(len(text), index + len(diagnosis) + 15)
         context = text[start:end]
         
+        # 逆接表現の定義
+        adversative_expressions = ['ですが', 'ですが、', 'だけど', 'だけど、', 'がありますが', 'がありますが、',
+                                   'を患っていますが', 'を患っていますが、', 'と言われていますが', 'と言われていますが、',
+                                   'と診断されていますが', 'と診断されていますが、', 'なんですが', 'なんですが、', 'なんですが。']
+        
+        # 症状キーワードの定義（逆接表現の後に続く場合、診断名を除外しない）
+        symptom_keywords = [
+            '頭痛', '発熱', '熱', '咳', '鼻水', '鼻づまり', 'のどの痛み', '喉が痛い',
+            '腹痛', '下痢', '便秘', '吐き気', '嘔吐', '胸やけ', 'めまい', '疲労',
+            '不眠', 'かゆみ', '発疹', '関節痛', '筋肉痛', '腰痛', '肩こり',
+            '痛み', '痛い', '違和感', '不調', '症状', '辛い', '苦しい', 'しんどい',
+            '市販薬', '薬', '探しています', '欲しい', 'おすすめ', '相談',
+            '続いています', '続いている', 'します', 'しています', 'ひどい', 'ひどく'
+        ]
+        
+        # 「があります」「がある」の特別処理: 「診断名があります」のような単純な表記は除外しない
+        # ただし、「既往症として診断名があります」のような場合は除外する
+        simple_existence_patterns = ['があります', 'がある', 'あり', 'あります']
+        medical_history_keywords = ['既往症', '既往歴', '持病', '基礎疾患', '基礎疾病', '既往疾患', '病歴']
+        
+        # 診断名の前の部分を確認（最大30文字）
+        before_diagnosis = text[max(0, index - 30):index]
+        has_medical_history_keyword = any(keyword in before_diagnosis for keyword in medical_history_keywords)
+        
         # 1. 除外語が文脈内にあるかチェック
         for word in exclusion_words:
             if word in context:
-                # ただし、「現在」「今」「最近」など現在を示す語があれば除外しない
-                # ただし、逆接表現（「ですが」「がありますが」など）の場合は除外する
-                if word in ['ですが', 'ですが、', 'だけど', 'だけど、', 'がありますが', 'がありますが、',
-                           'を患っていますが', 'を患っていますが、', 'と言われていますが', 'と言われていますが、',
-                           'と診断されていますが', 'と診断されていますが、']:
+                # 「があります」「がある」の特別処理
+                if word in simple_existence_patterns:
+                    # 医学用語（既往症など）が前にない場合は除外しない
+                    if not has_medical_history_keyword:
+                        continue  # 単純な「診断名があります」の場合は除外しない
+                    # 医学用語がある場合は除外（既往歴のパターン）
+                    return False
+                
+                # 逆接表現の場合は、その後に症状キーワードが続くかチェック
+                if word in adversative_expressions:
+                    # 診断名の後の部分を取得（逆接表現の後の部分）
+                    diagnosis_end = index + len(diagnosis)
+                    after_diagnosis = text[diagnosis_end:]
+                    
+                    # 逆接表現の位置を特定
+                    adversative_index = after_diagnosis.find(word)
+                    if adversative_index != -1:
+                        # 逆接表現の後の部分を取得（最大50文字）
+                        after_adversative = after_diagnosis[adversative_index + len(word):adversative_index + len(word) + 50]
+                        
+                        # 症状キーワードが続くかチェック
+                        has_symptom_after = any(keyword in after_adversative for keyword in symptom_keywords)
+                        if has_symptom_after:
+                            # 症状が続く場合は除外しない（診断名+症状のパターン）
+                            continue
+                    
+                    # 症状が続かない場合は除外（既往歴のパターン）
                     return False
                 
                 current_indicators = ['現在', '今', '最近', 'この頃', '現在は', '今は', '現在も', '今も']
                 has_current_indicator = any(indicator in context for indicator in current_indicators)
                 if has_current_indicator:
                     # 逆接表現がない場合のみ続行
-                    if 'ですが' not in context and 'がありますが' not in context:
+                    adversative_in_context = any(expr in context for expr in adversative_expressions)
+                    if not adversative_in_context:
                         continue
                     else:
+                        # 逆接表現がある場合、その後に症状があるかチェック
+                        diagnosis_end = index + len(diagnosis)
+                        after_diagnosis = text[diagnosis_end:]
+                        for expr in adversative_expressions:
+                            if expr in after_diagnosis:
+                                adversative_index = after_diagnosis.find(expr)
+                                if adversative_index != -1:
+                                    after_adversative = after_diagnosis[adversative_index + len(expr):adversative_index + len(expr) + 50]
+                                    has_symptom_after = any(keyword in after_adversative for keyword in symptom_keywords)
+                                    if has_symptom_after:
+                                        continue
                         return False
                 return False
         
