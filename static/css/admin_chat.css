@@ -1111,33 +1111,14 @@ main {
 
 .queue-accordion-item.current-session .queue-accordion-header {
     background: #d4edda;
-    border-color: var(--color-success);
-    border-width: 2px;
-}
-
-.queue-accordion-item.emergency-queue-item {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 2px 8px rgba(211, 47, 47, 0.2);
-    }
-    50% {
-        box-shadow: 0 2px 12px rgba(211, 47, 47, 0.4);
-    }
+    border: none !important;
 }
 
 .queue-accordion-item.emergency-queue-item .queue-accordion-header {
-    background: rgba(211, 47, 47, 0.1);
-    border-left: 4px solid #d32f2f;
-    font-weight: 600;
-}
-
-.queue-accordion-item.crisis-queue-item .queue-accordion-header {
     background: #ffebee;
     border-color: var(--color-danger);
     border-width: 2px;
+    font-weight: 600;
 }
 
 .queue-accordion-icon {
@@ -2140,7 +2121,27 @@ main {
     51%, 100% { opacity: 0.3; }
 }
 
+.emergency-badge {
+    background: var(--color-danger);
+    color: var(--color-white);
+    padding: 4px var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-bold);
+    animation: crisis-blink 1s infinite;
+    display: inline-block;
+    margin-left: var(--spacing-sm);
+}
+
 .crisis-message-highlight {
+    background: #ffebee !important;
+    border-left: 4px solid var(--color-danger) !important;
+    padding: var(--spacing-sm) !important;
+    margin: var(--spacing-xs) 0 !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.emergency-message-highlight {
     background: #ffebee !important;
     border-left: 4px solid var(--color-danger) !important;
     padding: var(--spacing-sm) !important;
@@ -2151,6 +2152,11 @@ main {
 .crisis-queue-item {
     background: linear-gradient(135deg, #ffebee, #ffcdd2) !important;
     border: 2px solid var(--color-danger) !important;
+}
+
+.queue-accordion-item.crisis-queue-item .queue-accordion-header {
+    background: #ffebee;
+    border: none !important;
 }
 
 .crisis-queue-item .queue-header {

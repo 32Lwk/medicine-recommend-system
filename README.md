@@ -1,6 +1,6 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2025年12月31日（イースターエッグ機能の大幅拡張・成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善）**
+**最終更新日: 2025年12月31日（イースターエッグ機能の大幅拡張・成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善・管理画面UI改善）**
 
 🎄 **メリークリスマス！🎄**
 サンタからのクリスマスプレゼントとして、シーズン対応UIシステムを実装しました！🎁✨ 
@@ -234,6 +234,11 @@
   - 最高優先度で表示（自殺・自傷対応と同等）
   - 緊急事案の種類に応じたアイコンと色で表示
   - リアルタイム更新
+- **管理画面での表示改善（2025年12月31日追加）**:
+  - **緊急事案メッセージの簡潔表示**: ユーザー向けの詳細なHTML表示ではなく、「🚨 緊急事案」インジケーターと簡潔なヘッダーテキストを表示
+  - **危機対応メッセージとの統一**: 危機対応メッセージと同じスタイルで表示され、管理画面での可読性が向上
+  - **キューアイテムのUI統一**: 緊急事案キューアイテムと危機対応キューアイテムのスタイルを統一（パルスアニメーション削除、外枠の二重表示問題を修正）
+  - **バッジ表示の統一**: emergency-badgeとcrisis-badgeを同じサイズ・形状でピカピカアニメーションを適用
 - **ログ記録**: すべての緊急事案検出を`log/security_events.jsonl`に記録
   - ユーザーID、セッションID、入力テキスト、緊急事案タイプ、検出キーワード、リスクスコア（100）などを記録
   - デバッグログの追加（検出開始、キーワード検出、検出結果の詳細ログ）
@@ -348,7 +353,7 @@
 - **年齢制限**: 個別の医薬品ごとに年齢制限を明示
 - **使用上の注意**: データベース情報を活用した詳細な注意事項
 
-### 👨‍⚕️ 管理者機能（2025年11月5日更新）
+### 👨‍⚕️ 管理者機能（2025年11月5日更新・2025年12月31日UI改善）
 - **手動介入モード**: AIの自動応答を停止し、管理者が手動で返信
 - **セッション管理**: 複数ユーザーのセッションを一元管理
   - **セッション管理ボタン**: /adminページに「📋 セッション管理」ボタンを追加
@@ -364,6 +369,22 @@
   - パフォーマンス監視（メモリ・CPU・レスポンス時間）
   - エラー率・キャッシュヒット率の監視
   - データエクスポート機能
+- **管理画面UI改善（2025年12月31日追加）**:
+  - **緊急メッセージ表示の改善**: 緊急事案メッセージ（emergency-response-modern）と危機対応メッセージ（crisis_support）の表示スタイルを統一し、簡潔で読みやすい形式に変更
+    - 緊急事案メッセージ: 「🚨 緊急事案」インジケーターと簡潔なヘッダーテキストを表示
+    - 危機対応メッセージ: 「🚨 危機対応」インジケーターと簡潔なメッセージ内容を表示
+    - HTMLがコードそのまま表示される問題を修正し、正しくレンダリングされるように改善
+  - **キューアイテムのUI統一**: 緊急事案キューアイテム（emergency-queue-item）と危機対応キューアイテム（crisis-queue-item）のスタイルを統一
+    - パルスアニメーションを削除し、視覚的な混乱を防止
+    - 外枠の二重表示問題を修正
+    - ヘッダーのスタイルを統一（背景色: #ffebee、境界線スタイルを統一）
+  - **バッジ表示の改善**: emergency-badgeとcrisis-badgeのスタイルを統一
+    - 同じサイズ・形状でピカピカアニメーション（crisis-blink）を適用
+    - バッジのデザインを統一（背景色: var(--color-danger)、padding: 4px var(--spacing-sm)、border-radius: var(--radius-full)）
+  - **アクティブセッション表示の改善**: アクティブセッションをキュー一覧から独立した項目として表示する代わりに、各キューアイテムの右上に緑色のマーク（12px × 12px）を表示
+    - アクティブセッションかどうかを自動判定し、マークを表示
+    - 複数のアクティブセッションがある場合でも、各アイテムに個別にマークが表示される
+    - マークのスタイル: 緑色（#28a745）、白色の境界線、影付きで視認性を向上
 
 ### 📱 モバイル対応
 - **Web版**: iPhone Safari最適化、モバイルファーストのレスポンシブデザイン
@@ -2246,6 +2267,14 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `analytics.py`: アクセス分析モジュール
 - `performance_monitor.py`: パフォーマンス監視モジュール
 - `debug_logger.py`: ログ管理モジュール
+- `structured_logger.py`: 構造化ログモジュール（app.logとJSONLファイルの両方に構造化ログを出力）
+
+### 店舗案内・緊急事案対応モジュール
+- `store_inquiry_handler.py`: 店舗案内・遺失物対応ハンドラー（店舗案内や遺失物関連の質問を検出し、適切な案内を提供）
+- `store_emergency_handler.py`: 緊急事案検出ハンドラー（不審者、傷病人、刃物などの緊急事案を検出し、適切な案内を提供）
+
+### UI・表示関連モジュール
+- `season_manager.py`: シーズン管理モジュール（日時からシーズンを判定し、適切な装飾画像のパスを生成）
 
 ### データファイル（data/フォルダ）
 - `data/otc_medicine_data.csv`: 市販薬データベース（7495件）
@@ -2291,7 +2320,13 @@ safe_json_parse(result, schema='medicine_recommendation')
 
 ### 静的ファイル
 - `static/css/main.css`: メインCSSスタイルシート
+- `static/css/admin_chat.css`: 管理者チャットCSSスタイルシート
+- `static/css/easter-eggs.css`: イースターエッグ機能CSSスタイルシート
 - `static/js/main.js`: メインJavaScriptファイル
+- `static/js/admin_chat.js`: 管理者チャットJavaScriptファイル
+- `static/js/easter-eggs.js`: イースターエッグ機能JavaScriptファイル
+- `static/js/games/emoji-catch.js`: 絵文字キャッチゲーム
+- `static/js/games/snake.js`: スネークゲーム
 
 ### ログ（log/フォルダ）
 - `log/recommendation_log.jsonl`: 推奨履歴の監査ログ
@@ -2311,23 +2346,31 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `config/requirements.txt`: 依存パッケージリスト（ルートにもコピーを保持）
 - `config/runtime.txt`: Pythonランタイムバージョン（ルートにもコピーを保持）
 
-### フォルダ構造（2025年12月26日更新）
+### フォルダ構造（2025年12月31日更新）
 ```
-medicine-recommend/
+medicine-recommend-system/
 ├── config/          # 設定ファイル
-├── data/            # データファイル（CSV）
+├── data/            # データファイル（CSV、JSON）
 ├── docs/            # ドキュメント
 ├── log/             # ログファイル
 ├── tools/           # ツール・スクリプト
-├── static/          # 静的ファイル（CSS、JS）
+├── static/          # 静的ファイル（CSS、JS、画像）
+│   ├── css/         # CSSスタイルシート
+│   ├── js/          # JavaScriptファイル
+│   │   └── games/   # ゲームファイル
+│   └── img/         # 画像ファイル
 ├── templates/       # テンプレート（HTML）
-├── examples/        # サンプルコード
-├── test_snapshots/  # テストスナップショット（2025年12月26日追加）
+├── ios/             # iOSアプリ関連ファイル
+├── photo/           # 写真・画像ファイル
 ├── app.py           # メインアプリケーション
+├── admin_app.py     # 管理者用Webアプリケーション
+├── debug_app.py     # デバッグ用Webアプリケーション
+├── medicine_logic.py  # 医薬品推奨ロジック
 ├── rule_based_recommendation.py  # ルールベース推奨アルゴリズム
-├── test_menstrual_recommendations.py  # 月経関連推奨テスト（2025年12月26日追加）
-├── test_report.html  # テストレポート（2025年12月26日追加）
-├── test_results.json  # テスト結果（2025年12月26日追加）
+├── store_inquiry_handler.py  # 店舗案内・遺失物対応ハンドラー
+├── store_emergency_handler.py  # 緊急事案検出ハンドラー
+├── season_manager.py  # シーズン管理モジュール
+├── structured_logger.py  # 構造化ログモジュール
 ├── requirements.txt # デプロイ用（ルートに保持）
 ├── runtime.txt      # デプロイ用（ルートに保持）
 └── README.md        # メインドキュメント（ルートに保持）
@@ -2335,50 +2378,56 @@ medicine-recommend/
 
 ## プロジェクト統計
 
-### コード行数と言語別の割合（2025年12月26日時点）
+### コード行数と言語別の割合（2025年12月31日時点）
 
 | 言語 | ファイル数 | 行数 | 割合 |
 |------|-----------|------|------|
-| **CSV** | 5 | 108,168 | 65.74% |
-| **Python** | 23 | 27,565 | 16.75% |
-| **Markdown** | 20 | 11,706 | 7.11% |
-| **JavaScript** | 2 | 10,325 | 6.27% |
-| **CSS** | 2 | 6,235 | 3.79% |
-| **HTML** | 4 | 2,522 | 1.53% |
-| **Other** | 9 | 195 | 0.12% |
+| **CSV** | 5 | 108,162 | 63.48% |
+| **Python** | 29 | 39,194 | 23.00% |
+| **Markdown** | 31 | 13,676 | 8.03% |
+| **JavaScript** | 5 | 13,897 | 8.16% |
+| **CSS** | 3 | 6,928 | 4.07% |
+| **HTML** | 4 | 2,636 | 1.55% |
+| **Other** | 9 | 195 | 0.11% |
 | **Config** | 2 | 14 | 0.01% |
-| **合計** | **67** | **164,630** | **100.00%** |
+| **合計** | **88** | **170,302** | **100.00%** |
 
 #### 主要ファイル（各言語の上位5ファイル）
 
 **CSVファイル（data/フォルダ）:**
-- `data/otc_medicine_data.csv` - 93,820行（市販薬データベース）
+- `data/otc_medicine_data.csv` - 93,814行（市販薬データベース）
 - `data/summarized_efficacy_data.csv` - 13,994行（効能要約データ）
 - `data/kanpo_medicine.csv` - 220行（漢方薬データ）
 - `data/medicine_interactions.csv` - 83行（相互作用データ）
 - `data/medicine_side_effects.csv` - 51行（副作用データ）
 
 **Pythonファイル:**
-- `rule_based_recommendation.py` - 8,979行（ルールベース推奨アルゴリズム）
-- `app.py` - 6,287行（メインアプリケーション）
-- `medicine_logic.py` - 3,163行（医薬品推奨ロジック）
+- `rule_based_recommendation.py` - 10,370行（ルールベース推奨アルゴリズム）
+- `app.py` - 8,980行（メインアプリケーション）
+- `medicine_logic.py` - 3,689行（医薬品推奨ロジック）
+- `store_inquiry_handler.py` - 1,625行（店舗案内・遺失物対応ハンドラー）
 - `tools/test_comprehensive.py` - 1,789行（包括的テストスイート）
 - `security_validator.py` - 1,282行（セキュリティ検証モジュール）
+- `store_emergency_handler.py` - 616行（緊急事案検出ハンドラー）
 
 **Markdownファイル（docs/フォルダ）:**
 - `docs/会社向け概要書類.md` - 3,342行
-- `README.md` - 2,735行（このファイル）
+- `README.md` - 3,914行（このファイル）
 - `docs/ASYNC_IMPLEMENTATION_GUIDE.md` - 1,045行
 - `docs/企業向け簡略版概要資料.md` - 717行
 - その他のドキュメントファイル
 
 **JavaScriptファイル:**
-- `static/js/main.js` - 5,053行（メインJavaScript）
-- `static/js/admin_chat.js` - 5,272行（管理者チャットJavaScript）
+- `static/js/admin_chat.js` - 5,466行（管理者チャットJavaScript）
+- `static/js/main.js` - 5,277行（メインJavaScript）
+- `static/js/easter-eggs.js` - 2,245行（イースターエッグ機能JavaScript）
+- `static/js/games/emoji-catch.js` - ゲームファイル
+- `static/js/games/snake.js` - ゲームファイル
 
 **CSSファイル:**
-- `static/css/admin_chat.css` - 3,646行（管理者チャットCSS）
-- `static/css/main.css` - 2,589行（メインCSS）
+- `static/css/admin_chat.css` - 3,665行（管理者チャットCSS）
+- `static/css/main.css` - 3,137行（メインCSS）
+- `static/css/easter-eggs.css` - 126行（イースターエッグ機能CSS）
 
 **HTMLファイル:**
 - `templates/debug_index.html` - 1,375行（デバッグUI）
@@ -2388,13 +2437,13 @@ medicine-recommend/
 
 #### 統計のまとめ
 
-- **合計行数**: 約170,000行以上（2025年12月26日時点、主要ファイルの更新により増加）
-- **合計ファイル数**: 70ファイル以上（2025年12月26日時点、テストファイル等の追加により増加）
-- **最大の言語**: CSV（65.74%）—主に医薬品データベース
-- **コード言語**: Python（16.75%）—アプリケーションの主要ロジック
-- **フロントエンド**: JavaScript（6.27%）+ CSS（3.79%）+ HTML（1.53%）= 約11.59%
+- **合計行数**: 約170,302行（2025年12月31日時点、主要ファイルの更新により増加）
+- **合計ファイル数**: 88ファイル（2025年12月31日時点、新規モジュール追加により増加）
+- **最大の言語**: CSV（63.48%）—主に医薬品データベース
+- **コード言語**: Python（23.00%）—アプリケーションの主要ロジック
+- **フロントエンド**: JavaScript（8.16%）+ CSS（4.07%）+ HTML（1.55%）= 約13.78%
 
-**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。2025年12月21日にフォルダ構造を整理し、ファイルを`config/`、`data/`、`docs/`、`tools/`フォルダに分類しました。
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。2025年12月21日にフォルダ構造を整理し、ファイルを`config/`、`data/`、`docs/`、`tools/`フォルダに分類しました。2025年12月31日時点で、店舗案内・緊急事案対応モジュール、シーズン管理モジュール、構造化ログモジュール、イースターエッグ機能などが追加されています。
 
 ## セキュリティと安全性
 
@@ -2742,7 +2791,27 @@ POST /api/admin_mode      # 管理者モード切り替え
 
 ## 📝 最近の更新履歴
 
-### 2025年12月31日（成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善）
+### 2025年12月31日（成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善・管理画面UI改善）
+
+- **管理画面UI改善**
+  - **緊急メッセージ表示の改善**: 緊急事案メッセージ（emergency-response-modern）と危機対応メッセージ（crisis_support）の表示スタイルを統一し、簡潔で読みやすい形式に変更
+    - 緊急事案メッセージ: 「🚨 緊急事案」インジケーターと簡潔なヘッダーテキストを表示
+    - 危機対応メッセージ: 「🚨 危機対応」インジケーターと簡潔なメッセージ内容を表示
+    - HTMLがコードそのまま表示される問題を修正し、正しくレンダリングされるように改善（`static/js/main.js`、`static/js/admin_chat.js`）
+  - **キューアイテムのUI統一**: 緊急事案キューアイテム（emergency-queue-item）と危機対応キューアイテム（crisis-queue-item）のスタイルを統一
+    - パルスアニメーションを削除し、視覚的な混乱を防止（`static/css/admin_chat.css`）
+    - 外枠の二重表示問題を修正（`.queue-accordion-item.crisis-queue-item .queue-accordion-header`のborderを削除）
+    - ヘッダーのスタイルを統一（背景色: #ffebee、境界線スタイルを統一）
+  - **バッジ表示の改善**: emergency-badgeとcrisis-badgeのスタイルを統一
+    - 同じサイズ・形状でピカピカアニメーション（crisis-blink）を適用
+    - バッジのデザインを統一（背景色: var(--color-danger)、padding: 4px var(--spacing-sm)、border-radius: var(--radius-full)、animation: crisis-blink 1s infinite）
+    - インラインスタイルを削除し、CSSクラスを使用するように変更（`static/js/admin_chat.js`）
+  - **アクティブセッション表示の改善**: アクティブセッションをキュー一覧から独立した項目として表示する代わりに、各キューアイテムの右上に緑色のマーク（12px × 12px）を表示
+    - アクティブセッションかどうかを自動判定し、マークを表示（`currentSessionId`と`item.session_id`を比較）
+    - 複数のアクティブセッションがある場合でも、各アイテムに個別にマークが表示される
+    - マークのスタイル: 緑色（#28a745）、白色の境界線（2px solid white）、影付き（box-shadow: 0 2px 4px rgba(0,0,0,0.2)）で視認性を向上
+    - z-index: 10を設定して、確実に表示されるように改善
+    - `renderCurrentSession`関数を簡略化し、データ保持のみを行うように変更（`static/js/admin_chat.js`）
 
 - **成分重複チェック機能の実装**
   - **リスク成分マスターの定義**: `RISK_INGREDIENTS_OVERLAP`辞書に30種類のリスク成分を定義

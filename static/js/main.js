@@ -4526,13 +4526,18 @@
                 }
                 // 緊急事案メッセージの特別表示
                 else if (message.emergency_detected && message.content) {
+                    // HTMLを正しくパースするためにtempDivを使用
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = message.content;
+                    
                     // emergency-response-modernが含まれている場合は、message-contentでラップしない
-                    if (message.content.includes('emergency-response-modern')) {
-                        // HTMLをそのまま表示（エスケープしない、message-contentラッパーなし）
-                        messageDiv.innerHTML = message.content;
+                    const firstElement = tempDiv.firstElementChild;
+                    if (firstElement && firstElement.classList.contains('emergency-response-modern')) {
+                        // 既に適切なコンテナがあるので、そのまま使用（message-contentラッパーは不要）
+                        messageDiv.innerHTML = tempDiv.innerHTML;
                     } else {
                         // 念のため、emergency-response-modernが含まれていない場合は従来通り
-                        messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                        messageDiv.innerHTML = `<div class="message-content">${tempDiv.innerHTML}</div>`;
                     }
                 }
                 // 危機対応メッセージの特別表示
