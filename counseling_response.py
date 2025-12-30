@@ -174,35 +174,37 @@ def log_counseling_response(
         )
 
 
-def is_treatment_mention(user_text: str) -> bool:
+def is_treatment_mention(user_text: str, skip_diagnosis_only: bool = False) -> bool:
     """
     「治療中」を示すキーワードが含まれているかを判定
     
     Args:
         user_text: ユーザーの入力テキスト
+        skip_diagnosis_only: Trueの場合、診断名のみ（疾患名+「です」のパターン）を「治療中」として判定しない
     
     Returns:
         True: 「治療中」キーワードが含まれている場合
     """
     user_text_normalized = normalize_text(user_text)
     
-    # 1. 基本的な治療中キーワードをチェック
+    # 1. 基本的な治療中キーワードをチェック（変更なし）
     for keyword in TREATMENT_KEYWORDS:
         keyword_normalized = normalize_text(keyword)
         if keyword_normalized in user_text_normalized:
             logger.debug(f"「治療中」キーワード検出: {keyword}")
             return True
     
-    # 2. 疾患名 + 「です」「です、」「です。」のパターンをチェック
+    # 2. skip_diagnosis_onlyがFalseの場合のみ、疾患名 + 「です」「です、」「です。」のパターンをチェック
     # 重篤疾患キーワードリストから疾患名を取得
-    import re
-    for category, keywords in SEVERE_DISEASE_KEYWORDS.items():
-        for disease in keywords:
-            # 疾患名 + 「です」「です、」「です。」のパターンを検出
-            pattern = rf"{re.escape(disease)}(です|です、|です。)"
-            if re.search(pattern, user_text):
-                logger.debug(f"「治療中」キーワード検出（疾患名+です）: {disease}")
-                return True
+    if not skip_diagnosis_only:
+        import re
+        for category, keywords in SEVERE_DISEASE_KEYWORDS.items():
+            for disease in keywords:
+                # 疾患名 + 「です」「です、」「です。」のパターンを検出
+                pattern = rf"{re.escape(disease)}(です|です、|です。)"
+                if re.search(pattern, user_text):
+                    logger.debug(f"「治療中」キーワード検出（疾患名+です）: {disease}")
+                    return True
     
     # 3. 「血圧が高い」などの表現をチェック（既にTREATMENT_KEYWORDSに含まれているが、念のため）
     if "血圧が高い" in user_text or "血圧が高いです" in user_text:
