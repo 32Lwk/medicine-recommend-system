@@ -762,22 +762,13 @@ function renderQueue(queue) {
     
     if (!content) return;
     
-    // 現在のセッション情報を保持
-    const existingCurrentSession = content.querySelector('.current-session');
-    const currentSessionHtml = existingCurrentSession ? existingCurrentSession.outerHTML : '';
-    
     if (!Array.isArray(queue) || queue.length === 0) {
-        // 現在のセッション情報があれば表示
-        if (currentSessionHtml) {
-            content.innerHTML = currentSessionHtml;
-        } else {
-            content.innerHTML = `
-                <div class="empty-state">
-                    <i class="fa-regular fa-inbox"></i>
-                    <p>手動返信待ちのメッセージがありません</p>
-                </div>
-            `;
-        }
+        content.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-regular fa-inbox"></i>
+                <p>手動返信待ちのメッセージがありません</p>
+            </div>
+        `;
         return;
     }
     
@@ -835,7 +826,7 @@ function renderQueue(queue) {
                 'theft': '窃盗'
             };
             const typeName = emergencyTypeNames[item.emergency_type] || '緊急事案';
-            itemBadge = `<span class="emergency-badge" style="background: ${itemColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 4px;" title="${typeName}">${itemIcon} ${typeName}</span>`;
+            itemBadge = `<span class="emergency-badge" title="${typeName}">${itemIcon} ${typeName}</span>`;
         } else if (isCrisisItem) {
             itemClass = 'queue-item crisis-queue-item';
             itemIcon = '🚨';
@@ -867,9 +858,14 @@ function renderQueue(queue) {
             </div>`;
         }
         
+        // アクティブセッションかどうかを判定
+        const isActiveSession = currentSessionId && item.session_id && currentSessionId === item.session_id;
+        const activeMarker = isActiveSession ? '<span class="active-session-marker" style="position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; background: #28a745; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;"></span>' : '';
+        
         html += `
-            <div class="${itemClass} queue-accordion-item" style="${isEmergencyItem ? `border-left: 4px solid ${itemColor};` : ''}">
-                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')" style="${isEmergencyItem ? `background: ${itemColor}15;` : ''}">
+            <div class="${itemClass} queue-accordion-item" style="position: relative;">
+                ${activeMarker}
+                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
                     <div style="flex: 1; min-width: 0;">
                         <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${escapeHtml(shortSessionId)} ${itemBadge}</span>
                         <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
@@ -905,12 +901,7 @@ function renderQueue(queue) {
         `;
     });
     
-    // 現在のセッション情報があれば最初に追加
-    if (currentSessionHtml) {
-        content.innerHTML = currentSessionHtml + html;
-    } else {
-        content.innerHTML = html;
-    }
+    content.innerHTML = html;
     
     // 緊急事案と危機対応セッションの数をカウントして表示
     const emergencyCount = queue.filter(item => item.status === 'emergency_detected').length;
@@ -968,68 +959,11 @@ function updateStats(queue) {
 }
 
 function renderCurrentSession(sessionData) {
-    const content = document.getElementById('manual-reply-queue');
-    
-    if (!content) return;
-    
-    // セッションデータを保持
+    // セッションデータを保持（キュー一覧で使用）
     currentSessionData = sessionData;
     
-    // 既存のキュー情報を保持（現在のセッション以外）
-    const existingQueueItems = Array.from(content.querySelectorAll('.queue-item:not(.current-session)'));
-    const existingQueueHtml = existingQueueItems.map(item => item.outerHTML).join('');
-    
-    // 現在のセッション情報を追加
-    if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
-        const accordionId = 'current-session-accordion';
-        const accordionContentId = 'current-session-accordion-content';
-        const lastMessageRaw = sessionData.messages[sessionData.messages.length - 1]?.content || 'なし';
-        // HTMLタグを削除してテキストのみを抽出
-        const lastMessage = stripHtml(lastMessageRaw);
-        const shortMessage = lastMessage.length > 30 ? lastMessage.substring(0, 30) + '...' : lastMessage;
-        const shortSessionId = sessionData.session_id ? sessionData.session_id.substring(0, 8) + '...' : '不明';
-        
-        const currentSessionHtml = `
-            <div class="queue-item current-session queue-accordion-item">
-                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
-                    <div style="flex: 1; min-width: 0;">
-                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; color: #28a745; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">
-                            📱 ${escapeHtml(shortSessionId)} <span style="background: #28a745; color: white; padding: 1px 4px; border-radius: 8px; font-size: 0.65rem; font-weight: 600; margin-left: 4px;">アクティブ</span>
-                        </span>
-                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
-                    </div>
-                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
-                </div>
-                <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
-                    <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
-                            <strong>💬 最新:</strong> ${escapeHtml(lastMessage.length > 60 ? lastMessage.substring(0, 60) + '...' : lastMessage)}
-                        </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666;">
-                            <span><strong>📊 件数:</strong> ${sessionData.messages_count || sessionData.messages.length || 0}</span>
-                            <span><strong>${sessionData.session_active ? '✅' : '❌'}</strong> ${sessionData.session_active ? '有効' : '無効'}</span>
-                        </div>
-                        <div style="font-size: 0.65rem; color: #999; margin-top: 4px; word-break: break-all;">
-                            ID: ${escapeHtml(sessionData.session_id || '不明')} | ${escapeHtml(sessionData.last_activity || '不明')}
-                        </div>
-                        <div style="margin-top: 6px;">
-                            <button class="btn btn-info" onclick="selectSession(event, '${escapeHtml(sessionData.session_id)}', 'current'); event.stopPropagation();" style="width: 100%; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                <i class="fa-solid fa-comments"></i> チャットに移動
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // 現在のセッションを最初に表示し、既存のキュー情報を保持
-        content.innerHTML = currentSessionHtml + existingQueueHtml;
-    } else {
-        // セッションデータがない場合は、既存のキュー情報のみ表示
-        if (existingQueueHtml) {
-            content.innerHTML = existingQueueHtml;
-        }
-    }
+    // 現在のセッションをキュー一覧から削除したため、この関数はデータ保持のみ行う
+    // キュー一覧はrenderQueue関数で更新される
 }
 
 function loadChatHistory(sessionId) {
@@ -1806,7 +1740,9 @@ function renderChatMessages(messages) {
         
         // 管理画面用のインジケーター：薬剤師視点で表示
         if (msg.type === 'bot') {
-        if (msg.crisis_support) {
+        if (msg.emergency_detected) {
+            indicator = '<span class="emergency-indicator" style="color: #e74c3c; font-weight: bold; background: #ffebee; padding: 2px 6px; border-radius: 4px;">🚨 緊急事案</span><br>';
+            } else if (msg.crisis_support) {
             indicator = '<span class="crisis-indicator" style="color: #e74c3c; font-weight: bold; background: #ffebee; padding: 2px 6px; border-radius: 4px;">🚨 危機対応</span><br>';
             } else if (msg.manual_reply) {
                 indicator = '<span class="manual-reply-indicator">👤 薬剤師返信</span><br>';
@@ -1819,36 +1755,9 @@ function renderChatMessages(messages) {
         
         let messageContentHtml = '';
 
-        // 危機対応メッセージの特別表示
+        // 危機対応メッセージの特別表示（簡潔に）
         if (msg.crisis_support) {
-            messageContentHtml += `<div class="crisis-message-highlight">`;
-            messageContentHtml += `<h4 style="color: #e74c3c; margin-bottom: 10px;">🚨 危機対応メッセージ</h4>`;
-            messageContentHtml += `<p><strong>タイトル:</strong> ${msg.crisis_title || 'あなたの気持ちを大切に思っています'}</p>`;
-            messageContentHtml += `<p><strong>メッセージ:</strong> ${msg.content || '今、とてもつらい状況かもしれません。'}</p>`;
-            
-            if (msg.resources && msg.resources.length > 0) {
-                messageContentHtml += `<h5 style="color: #e74c3c; margin-top: 15px;">相談先情報:</h5>`;
-                msg.resources.forEach(resource => {
-                    messageContentHtml += `<div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; border-left: 3px solid #e74c3c;">`;
-                    messageContentHtml += `<strong>${resource.name}</strong><br>`;
-                    messageContentHtml += `<small>${resource.organization}</small><br>`;
-                    if (resource.phone) messageContentHtml += `📞 ${resource.phone}<br>`;
-                    if (resource.line) messageContentHtml += `💬 <a href="${resource.line}" target="_blank">LINEで相談する</a><br>`;
-                    if (resource.line_qr) messageContentHtml += `📱 <img src="${resource.line_qr}" alt="LINE QRコード" style="width: 80px; height: 80px; border: 1px solid #ddd; border-radius: 4px; margin: 5px 0;"><br>`;
-                    if (resource.website) messageContentHtml += `🌐 <a href="${resource.website}" target="_blank">ウェブサイト</a><br>`;
-                    if (resource.hours) messageContentHtml += `⏰ ${resource.hours}<br>`;
-                    messageContentHtml += `<small>${resource.description}</small>`;
-                    messageContentHtml += `</div>`;
-                });
-            }
-            
-            if (msg.emergency_message) {
-                messageContentHtml += `<div style="background: #e74c3c; color: white; padding: 10px; margin-top: 10px; border-radius: 4px; text-align: center; font-weight: bold;">`;
-                messageContentHtml += `${msg.emergency_message}`;
-                messageContentHtml += `</div>`;
-            }
-            
-            messageContentHtml += `</div>`;
+            messageContentHtml = msg.content || '今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。';
         }
         // ★★★ 推奨医薬品メッセージの判定（簡素化） ★★★
         const isMedicineRecommendation = (msg) => {
@@ -2017,15 +1926,37 @@ function renderChatMessages(messages) {
                 // 管理者用の再描画ができない場合のみ、msg.contentをそのまま使用
                 messageContentHtml = msg.content || '';
             }
-
+        }
+        // ★★★ 緊急事案メッセージの特別表示（簡潔に） ★★★
+        else if (msg.emergency_detected && msg.content) {
+            // HTMLを正しくパースするためにtempDivを使用
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = msg.content;
+            
+            // emergency-response-modernが含まれている場合は、ヘッダーテキストを抽出して簡潔に表示
+            const firstElement = tempDiv.firstElementChild;
+            if (firstElement && firstElement.classList.contains('emergency-response-modern')) {
+                const headerElement = firstElement.querySelector('.emergency-header');
+                const headerText = headerElement ? headerElement.textContent.trim() : '安全を最優先にしてください。';
+                // 危機対応メッセージと同じスタイルで簡潔に表示
+                messageContentHtml = headerText;
+            } else {
+                messageContentHtml = tempDiv.innerHTML;
+            }
+        }
         // ★★★ 通常のテキストメッセージ ★★★
-        } else {
+        else {
             let contentText = msg.content || '';
             if (msg.type === 'user') {
                 messageContentHtml = escapeHtml(contentText);
             } else if (msg.type === 'bot') {
-                if (contentText.includes('<div class="chat-response">')) {
-                    messageContentHtml = contentText;
+                // emergency-response-modernまたはchat-responseが含まれている場合はHTMLをそのまま表示
+                if (contentText.includes('<div class="emergency-response-modern">') || 
+                    contentText.includes('<div class="chat-response">')) {
+                    // HTMLを正しくパースするためにtempDivを使用
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = contentText;
+                    messageContentHtml = tempDiv.innerHTML;
                 } else {
                     messageContentHtml = escapeHtml(contentText);
                 }
