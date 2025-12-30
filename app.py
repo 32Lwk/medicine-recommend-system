@@ -1032,7 +1032,7 @@ def index():
                     processing_time_ms=processing_time
                 )
                 
-                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, confidence: {triage_result.get('confidence'):.2f}")
+                logger.info(f"🔍 LLMトリアージ結果: {triage_result.get('category')}, subcategory: {triage_result.get('subcategory', 'N/A')}, confidence: {triage_result.get('confidence'):.2f}")
                 
             except ImportError as e:
                 logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
@@ -1141,37 +1141,45 @@ def index():
                     pass
             
             # ステップ1.7: 診断名検出（心臓緊急チェック後、不眠関連キーワードチェック前）（2025年12月27日追加）
+            # 注意: 治療中キーワードが検出された場合は、診断名検出をスキップして通常フローに進む
             try:
                 from medicine_logic import is_diagnosis_term
+                from counseling_response import is_treatment_mention
                 
-                is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(sanitized_message)
-                if is_diagnosis:
-                    diagnosis_message = diagnosis_response.get('message', '診断名が検出されました。医師にご相談ください。')
-                    
-                    logger.info(f"🏥 診断名検出による早期リターン（ステップ1.7）: {diagnosis_type} - {sanitized_message}")
-                    
-                    # HTMLエスケープ処理
-                    import html
-                    escaped_user_message = html.escape(sanitized_message)
-                    escaped_diagnosis_message = html.escape(diagnosis_message)
-                    diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
-                    
-                    # 評価ボタン用のデータを準備
-                    import json
-                    feedback_data = {
-                        'user_message': escaped_user_message,
-                        'ai_response': escaped_diagnosis_message,
-                        'security_score': None,
-                        'error_type': 'diagnosis_detected',
-                        'diagnosis_type': diagnosis_type
-                    }
-                    feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
-                    
-                    # 不具合報告用のデータ属性
-                    bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
-                    
-                    # 診断名検出メッセージのHTML
-                    bot_content = f"""
+                # 治療中キーワードを先にチェック
+                if is_treatment_mention(sanitized_message):
+                    logger.info(f"🔔 治療中キーワード検出により診断名検出をスキップ: {sanitized_message}")
+                    # 診断名検出をスキップして通常フローに進む
+                else:
+                    try:
+                        is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(sanitized_message)
+                        if is_diagnosis:
+                            diagnosis_message = diagnosis_response.get('message', '診断名が検出されました。医師にご相談ください。')
+                            
+                            logger.info(f"🏥 診断名検出による早期リターン（ステップ1.7）: {diagnosis_type} - {sanitized_message}")
+                            
+                            # HTMLエスケープ処理
+                            import html
+                            escaped_user_message = html.escape(sanitized_message)
+                            escaped_diagnosis_message = html.escape(diagnosis_message)
+                            diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
+                            
+                            # 評価ボタン用のデータを準備
+                            import json
+                            feedback_data = {
+                                'user_message': escaped_user_message,
+                                'ai_response': escaped_diagnosis_message,
+                                'security_score': None,
+                                'error_type': 'diagnosis_detected',
+                                'diagnosis_type': diagnosis_type
+                            }
+                            feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                            
+                            # 不具合報告用のデータ属性
+                            bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
+                            
+                            # 診断名検出メッセージのHTML
+                            bot_content = f"""
 <div class="chat-response error-notification">
     <h4>🏥 診断名が検出されました</h4>
     <div class="error-message-content">{diagnosis_message_html}</div>
@@ -1190,40 +1198,45 @@ def index():
         </div>
     </div>
 </div>"""
-                    
-                    bot_response = {
-                        'type': 'bot',
-                        'content': bot_content,
-                        'diagnosis': diagnosis_type,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    if 'messages' not in session:
-                        session['messages'] = []
-                    session['messages'].append(bot_response)
-                    session.modified = True
-                    
-                    # DBにも保存
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if not session_data:
-                            session_data = {
-                                'session_id': sid,
-                                'username': session.get('username', 'Unknown'),
-                                'messages': [],
-                                'last_activity': datetime.now(),
-                                'client_ip': request.remote_addr,
-                                'user_agent': request.headers.get('User-Agent', ''),
-                                'user_attributes': session.get('user_attributes', {}),
-                                'session_active': True
+                            
+                            bot_response = {
+                                'type': 'bot',
+                                'content': bot_content,
+                                'diagnosis': diagnosis_type,
+                                'timestamp': datetime.now().isoformat()
                             }
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        session_data['messages'].append(bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                    
-                    message_count = len(session['messages'])
-                    return jsonify({'status': 'ok', 'message_count': message_count})
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # DBにも保存
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if not session_data:
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', 'Unknown'),
+                                        'messages': [],
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {}),
+                                        'session_active': True
+                                    }
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                session_data['messages'].append(bot_response)
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            return jsonify({'status': 'ok', 'message_count': message_count})
+                    except Exception as e:
+                        logger.error(f"❌ 診断名検出処理でエラー: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # エラーが発生した場合は診断名検出をスキップして通常フローに進む
             except ImportError as e:
                 logger.warning(f"⚠️ 診断名検出機能のインポートに失敗: {e}")
             except Exception as e:
@@ -1366,79 +1379,502 @@ def index():
                 import traceback
                 traceback.print_exc()
             
-            # ステップ1.8: 店舗案内・遺失物関連の処理（LLMトリアージ後、症状検出の前）
+            # ステップ1.7.5: 不適切なメッセージの検出（最優先）
+            inappropriate_message_detected = False
             try:
-                from store_inquiry_handler import handle_store_inquiry
+                from config.keywords import INAPPROPRIATE_MESSAGE_KEYWORDS
+                from counseling_response import normalize_text
                 
-                # 店舗案内・遺失物関連の質問を処理
-                store_inquiry_result = handle_store_inquiry(
-                    sanitized_message,
-                    recommendation_client,
-                    triage_result
-                )
+                normalized_message = normalize_text(sanitized_message)
+                for keyword in INAPPROPRIATE_MESSAGE_KEYWORDS:
+                    normalized_keyword = normalize_text(keyword)
+                    if normalized_keyword in normalized_message:
+                        inappropriate_message_detected = True
+                        logger.warning(f"⚠️ 不適切なメッセージを検出: {keyword}, session_id={sid}")
+                        break
                 
-                if store_inquiry_result and store_inquiry_result.get("is_store_inquiry"):
-                    store_inquiry_confidence = store_inquiry_result.get("confidence", 0.0)
-                    logger.info(f"🏪 店舗案内・遺失物関連の質問を検出: {store_inquiry_result.get('inquiry_type')}, confidence: {store_inquiry_confidence:.2f}")
+                if inappropriate_message_detected:
+                    # 不適切なメッセージに対する応答を生成
+                    from counseling_response import (
+                        generate_counseling_response,
+                        generate_follow_up_questions,
+                        start_counseling_mode
+                    )
                     
-                    # confidenceが低い場合（0.7未満）は症状検出も実行する可能性がある
-                    # ただし、店舗案内として確実に検出された場合は早期リターン
-                    if store_inquiry_confidence >= 0.7:
-                        # 高確信度の場合は店舗案内として処理
-                        response_data = store_inquiry_result.get("response", {})
-                        simple_message = response_data.get("simple_message", "")
-                        structured_html = response_data.get("structured_html", "")
-                        
-                        # 構造化されたHTMLを使用（シンプルなメッセージも含む）
-                        bot_content = structured_html if structured_html else simple_message
-                        
-                        bot_response = {
-                            'type': 'bot',
-                            'content': bot_content,
-                            'store_inquiry': True,
-                            'inquiry_type': store_inquiry_result.get('inquiry_type'),
-                            'store_location': store_inquiry_result.get('store_location'),
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        
-                        if 'messages' not in session:
-                            session['messages'] = []
-                        session['messages'].append(bot_response)
+                    # ユーザーメッセージをセッションに追加
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    
+                    import uuid
+                    user_msg = {
+                        'type': 'user',
+                        'content': sanitized_message,
+                        'timestamp': datetime.now().isoformat(),
+                        'uuid': str(uuid.uuid4())
+                    }
+                    session['messages'].append(user_msg)
+                    session.modified = True
+                    
+                    # ユーザーメッセージをDBに保存
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(user_msg)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                        else:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                'messages': [user_msg],
+                                'session_active': True,
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {})
+                            }
+                            save_session_to_db(sid, session_data)
+                    
+                    # カウンセリングフロー開始（不適切なメッセージ専用）
+                    symptom_type = "inappropriate_request/inappropriate_message"
+                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                    
+                    initial_response = generate_counseling_response(
+                        symptom_type, sanitized_message, recommendation_client,
+                        conversation_history=conversation_history,
+                        session_id=sid
+                    )
+                    initial_questions = generate_follow_up_questions(
+                        symptom_type, {}, recommendation_client
+                    )
+                    start_counseling_mode(session, symptom_type, initial_questions)
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': initial_response,
+                        'counseling': True,
+                        'inappropriate_request': True,
+                        'request_type': 'inappropriate_message',
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    session['messages'].append(bot_response)
+                    
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    
+                    from counseling_response import log_counseling_response
+                    log_counseling_response(
+                        session_id=sid,
+                        response_content=initial_response,
+                        response_type="counseling_inappropriate_message",
+                        category="Other",
+                        confidence=1.0,
+                        counseling_mode=session.get('counseling_mode'),
+                        user_input=user_message,
+                        conversation_history=None
+                    )
+                    
+                    session.modified = True
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 不適切なメッセージ処理完了: {message_count} messages")
+                    return jsonify({
+                        'status': 'ok',
+                        'message_count': message_count
+                    })
+            except ImportError as e:
+                logger.warning(f"⚠️ 不適切なメッセージ検出機能のインポートに失敗: {e}")
+            except Exception as e:
+                logger.error(f"❌ 不適切なメッセージ検出機能でエラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # ステップ1.7.6: 治療中フラグ確認と主訴判定、不適切な要求の検出（店舗案内処理の前、最優先）
+            inappropriate_request_detected = False
+            treatment_mention_flag = False
+            medical_prevention_flag = False
+            
+            if triage_result:
+                category = triage_result.get('category', 'Other')
+                subcategory = triage_result.get('subcategory', '').lower()
+                
+                # ステップ1: 治療中フラグ確認
+                try:
+                    from counseling_response import is_treatment_mention, has_specific_symptom, is_medical_prevention_request
+                    
+                    treatment_mention_flag = is_treatment_mention(sanitized_message)
+                    has_symptom = has_specific_symptom(sanitized_message)
+                    medical_prevention_flag = is_medical_prevention_request(sanitized_message)
+                    
+                    if treatment_mention_flag:
+                        logger.info(f"🔔 治療中キーワード検出: session_id={sid}")
+                        # user_infoに治療中フラグを設定（後続の処理で使用）
+                        if 'user_attributes' not in session:
+                            session['user_attributes'] = {}
+                        session['user_attributes']['treatment_mention'] = True
+                        session['user_attributes']['medical_prevention_request'] = medical_prevention_flag
                         session.modified = True
                         
-                        # DBを更新
+                        # DBにも保存
                         if sid:
                             session_data = get_session_from_db(sid)
-                            if not session_data:
+                            if session_data:
+                                if 'user_attributes' not in session_data:
+                                    session_data['user_attributes'] = {}
+                                session_data['user_attributes']['treatment_mention'] = True
+                                session_data['user_attributes']['medical_prevention_request'] = medical_prevention_flag
+                                session_data['last_activity'] = datetime.now()
+                                save_session_to_db(sid, session_data)
+                                logger.info(f"💾 治療中フラグをDBに保存: treatment_mention=True")
+                            else:
+                                # セッションデータが存在しない場合は新規作成
                                 session_data = {
                                     'session_id': sid,
-                                    'username': session.get('username', 'Unknown'),
-                                    'messages': session['messages'].copy(),
+                                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                    'messages': [],
+                                    'session_active': True,
                                     'last_activity': datetime.now(),
                                     'client_ip': request.remote_addr,
                                     'user_agent': request.headers.get('User-Agent', ''),
-                                    'user_attributes': session.get('user_attributes', {}),
-                                    'session_active': True
+                                    'user_attributes': {
+                                        'treatment_mention': True,
+                                        'medical_prevention_request': medical_prevention_flag
+                                    }
                                 }
                                 save_session_to_db(sid, session_data)
-                            else:
-                                session_data['messages'] = session['messages'].copy()
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
+                                logger.info(f"💾 治療中フラグをDBに保存（新規セッション）: treatment_mention=True")
+                    
+                    # ステップ2: 主訴判定
+                    # 症状あり → 通常フロー（＋警告フラグに応じたメッセージ）
+                    # 「医薬的な予防」あり → カウンセリングフロー（＋推奨商品、警告フラグに応じたメッセージ）
+                    # 「治療中」キーワードがある場合、「医薬的な予防」であっても通常フローに進む（警告メッセージ付き）
+                    if has_symptom:
+                        logger.info(f"📋 具体的な症状が検出されました: session_id={sid}")
+                        # 通常フローに進む（警告フラグに応じたメッセージは後続処理で追加）
+                    elif medical_prevention_flag and not treatment_mention_flag:
+                        logger.info(f"💊 医薬的な予防要求が検出されました: session_id={sid}")
+                        # カウンセリングフローに進む（医薬品推奨も含める）
+                        # この場合は、不適切な要求検出処理をスキップして、カウンセリングフローを開始
+                        try:
+                            from counseling_response import (
+                                generate_counseling_response,
+                                generate_follow_up_questions,
+                                start_counseling_mode
+                            )
+                            
+                            # ユーザーメッセージをセッションに追加
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            
+                            # 重複チェック
+                            user_message_exists = any(
+                                msg.get('type') == 'user' and 
+                                msg.get('content') == sanitized_message and
+                                msg.get('uuid')
+                                for msg in session.get('messages', [])
+                            )
+                            
+                            if not user_message_exists:
+                                import uuid
+                                user_msg = {
+                                    'type': 'user',
+                                    'content': sanitized_message,
+                                    'timestamp': datetime.now().isoformat(),
+                                    'uuid': str(uuid.uuid4())
+                                }
+                                session['messages'].append(user_msg)
+                                session.modified = True
+                                
+                                # ユーザーメッセージをDBに保存
+                                if sid:
+                                    session_data = get_session_from_db(sid)
+                                    if session_data:
+                                        if 'messages' not in session_data:
+                                            session_data['messages'] = []
+                                        session_data['messages'].append(user_msg)
+                                        session_data['last_activity'] = datetime.now()
+                                        save_session_to_db(sid, session_data)
+                                    else:
+                                        session_data = {
+                                            'session_id': sid,
+                                            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                            'messages': [user_msg],
+                                            'session_active': True,
+                                            'last_activity': datetime.now(),
+                                            'client_ip': request.remote_addr,
+                                            'user_agent': request.headers.get('User-Agent', ''),
+                                            'user_attributes': session.get('user_attributes', {})
+                                        }
+                                        save_session_to_db(sid, session_data)
+                            
+                            # カウンセリングフロー開始（医薬的な予防）
+                            symptom_type = "inappropriate_request/prevention"
+                            
+                            # 会話履歴を取得
+                            conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                            
+                            # カウンセリング応答を生成
+                            initial_response = generate_counseling_response(
+                                symptom_type, sanitized_message, recommendation_client,
+                                conversation_history=conversation_history,
+                                session_id=sid
+                            )
+                            
+                            # フォローアップ質問を生成
+                            initial_questions = generate_follow_up_questions(
+                                symptom_type, {}, recommendation_client
+                            )
+                            
+                            # カウンセリングモードを開始
+                            start_counseling_mode(session, symptom_type, initial_questions)
+                            
+                            # 応答をセッションに追加
+                            bot_response = {
+                                'type': 'bot',
+                                'content': initial_response,
+                                'counseling': True,
+                                'inappropriate_request': False,
+                                'request_type': 'prevention',
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            
+                            # ボットレスポンスをDBに保存
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    if 'messages' not in session_data:
+                                        session_data['messages'] = []
+                                    session_data['messages'].append(bot_response)
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                                else:
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                        'messages': session.get('messages', []),
+                                        'session_active': True,
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {})
+                                    }
+                                    save_session_to_db(sid, session_data)
+                            
+                            # 早期リターン（通常の処理フローをスキップ）
+                            session.modified = True
+                            message_count = len(session['messages'])
+                            logger.info(f"✅ 医薬的な予防要求処理完了: {message_count} messages")
+                            return jsonify({
+                                'status': 'ok',
+                                'message_count': message_count
+                            })
+                        except Exception as e:
+                            logger.error(f"❌ 医薬的な予防要求処理エラー: {e}")
+                            import traceback
+                            traceback.print_exc()
+                            # エラー時は通常の処理フローに戻る
+                            logger.warning(f"⚠️ 医薬的な予防要求処理でエラーが発生しましたが、通常の処理フローに戻ります: {e}")
+                except Exception as e:
+                    logger.error(f"❌ 治療中フラグ確認・主訴判定エラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+                
+                # ステップ3: 不適切な要求の検出（救済ロジック通過後）
+                if category == 'Other' and 'inappropriate_request' in subcategory:
+                    try:
+                        from counseling_response import (
+                            detect_inappropriate_request,
+                            generate_counseling_response,
+                            generate_follow_up_questions,
+                            start_counseling_mode
+                        )
                         
-                        message_count = len(session['messages'])
-                        logger.info(f"✅ 店舗案内・遺失物関連の処理完了（高確信度）: {message_count} messages")
-                        return jsonify({'status': 'ok', 'message_count': message_count})
-                    else:
-                        # 低確信度の場合は、店舗案内の応答を生成するが、症状検出も実行する可能性を残す
-                        # ただし、キーワードで確実に検出された場合は店舗案内として処理
-                        reasoning = store_inquiry_result.get("reasoning", "")
-                        if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
-                            # キーワードで検出された場合は店舗案内として処理
+                        request_type = detect_inappropriate_request(sanitized_message, triage_result)
+                        
+                        if request_type:
+                            inappropriate_request_detected = True
+                            logger.info(f"⚠️ 不適切な要求を検出（店舗案内処理の前）: type={request_type}, session_id={sid}")
+                            
+                            # ユーザーメッセージをセッションに追加（早期リターン前に実行）
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            
+                            # 重複チェック
+                            user_message_exists = any(
+                                msg.get('type') == 'user' and 
+                                msg.get('content') == sanitized_message and
+                                msg.get('uuid')
+                                for msg in session.get('messages', [])
+                            )
+                            
+                            if not user_message_exists:
+                                import uuid
+                                user_msg = {
+                                    'type': 'user',
+                                    'content': sanitized_message,
+                                    'timestamp': datetime.now().isoformat(),
+                                    'uuid': str(uuid.uuid4())
+                                }
+                                session['messages'].append(user_msg)
+                                session.modified = True
+                                
+                                # ユーザーメッセージをDBに保存
+                                if sid:
+                                    session_data = get_session_from_db(sid)
+                                    if session_data:
+                                        if 'messages' not in session_data:
+                                            session_data['messages'] = []
+                                        session_data['messages'].append(user_msg)
+                                        session_data['last_activity'] = datetime.now()
+                                        save_session_to_db(sid, session_data)
+                                    else:
+                                        # session_dataが存在しない場合は新規作成（DB接続失敗時もALL_SESSIONSに保存される）
+                                        session_data = {
+                                            'session_id': sid,
+                                            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                            'messages': [user_msg],
+                                            'session_active': True,
+                                            'last_activity': datetime.now(),
+                                            'client_ip': request.remote_addr,
+                                            'user_agent': request.headers.get('User-Agent', ''),
+                                            'user_attributes': session.get('user_attributes', {})
+                                        }
+                                        save_session_to_db(sid, session_data)
+                            
+                            # カウンセリングフロー開始
+                            symptom_type = f"inappropriate_request/{request_type}"
+                            
+                            # 会話履歴を取得
+                            conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                            
+                            # カウンセリング応答を生成
+                            initial_response = generate_counseling_response(
+                                symptom_type, sanitized_message, recommendation_client,
+                                conversation_history=conversation_history,
+                                session_id=sid
+                            )
+                            
+                            # フォローアップ質問を生成（違法薬物・規制薬物の場合は空リスト）
+                            initial_questions = generate_follow_up_questions(
+                                symptom_type, {}, recommendation_client
+                            )
+                            
+                            # 違法薬物・規制薬物の場合は、カウンセリングモードを開始しない（単一メッセージで完結）
+                            if request_type not in ['illegal', 'controlled']:
+                                # カウンセリングモードを開始
+                                start_counseling_mode(session, symptom_type, initial_questions)
+                            
+                            # セッションにフラグを設定
+                            if 'inappropriate_requests' not in session:
+                                session['inappropriate_requests'] = []
+                            session['inappropriate_requests'].append({
+                                'type': request_type,
+                                'timestamp': datetime.now().isoformat(),
+                                'user_message': sanitized_message
+                            })
+                            
+                            # 応答をセッションに追加
+                            bot_response = {
+                                'type': 'bot',
+                                'content': initial_response,
+                                'counseling': request_type not in ['illegal', 'controlled'],
+                                'inappropriate_request': True,
+                                'request_type': request_type,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            
+                            # ボットレスポンスをDBに保存
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    if 'messages' not in session_data:
+                                        session_data['messages'] = []
+                                    session_data['messages'].append(bot_response)
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                                else:
+                                    # session_dataが存在しない場合は新規作成（DB接続失敗時もALL_SESSIONSに保存される）
+                                    # この時点でsession['messages']にはユーザーメッセージとボットレスポンスの両方が含まれている
+                                    session_data = {
+                                        'session_id': sid,
+                                        'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                        'messages': session.get('messages', []),
+                                        'session_active': True,
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {})
+                                    }
+                                    save_session_to_db(sid, session_data)
+                            
+                            # ログ記録
+                            from counseling_response import log_counseling_response
+                            confidence = triage_result.get('confidence', 1.0)  # confidenceを取得
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=initial_response,
+                                response_type="counseling_inappropriate_request",
+                                category=category,
+                                confidence=confidence,
+                                counseling_mode=session.get('counseling_mode'),
+                                user_input=user_message,
+                                conversation_history=None
+                            )
+                            
+                            # 検出ログ
+                            logger.warning(f"⚠️ 不適切な要求検出: type={request_type}, session_id={sid}")
+                            
+                            # 早期リターン（通常の処理フローをスキップ）
+                            # フロントエンドが期待する形式で返す（他の処理と同じ形式）
+                            session.modified = True
+                            message_count = len(session['messages'])
+                            logger.info(f"✅ 不適切な要求処理完了: {message_count} messages")
+                            return jsonify({
+                                'status': 'ok',
+                                'message_count': message_count
+                            })
+                    except Exception as e:
+                        logger.error(f"❌ 不適切な要求処理エラー: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # エラー時は通常の処理フローに戻る（安全側に倒す）
+                        logger.warning(f"⚠️ 不適切な要求処理でエラーが発生しましたが、通常の処理フローに戻ります: {e}")
+            
+            # ステップ1.8: 店舗案内・遺失物関連の処理（LLMトリアージ後、症状検出の前）
+            # 不適切な要求が検出された場合はスキップ
+            if not inappropriate_request_detected:
+                try:
+                    from store_inquiry_handler import handle_store_inquiry
+                    
+                    # 店舗案内・遺失物関連の質問を処理
+                    store_inquiry_result = handle_store_inquiry(
+                        sanitized_message,
+                        recommendation_client,
+                        triage_result
+                    )
+                    
+                    if store_inquiry_result and store_inquiry_result.get("is_store_inquiry"):
+                        store_inquiry_confidence = store_inquiry_result.get("confidence", 0.0)
+                        logger.info(f"🏪 店舗案内・遺失物関連の質問を検出: {store_inquiry_result.get('inquiry_type')}, confidence: {store_inquiry_confidence:.2f}")
+                        
+                        # confidenceが低い場合（0.7未満）は症状検出も実行する可能性がある
+                        # ただし、店舗案内として確実に検出された場合は早期リターン
+                        if store_inquiry_confidence >= 0.7:
+                            # 高確信度の場合は店舗案内として処理
                             response_data = store_inquiry_result.get("response", {})
                             simple_message = response_data.get("simple_message", "")
                             structured_html = response_data.get("structured_html", "")
                             
+                            # 構造化されたHTMLを使用（シンプルなメッセージも含む）
                             bot_content = structured_html if structured_html else simple_message
                             
                             bot_response = {
@@ -1476,27 +1912,180 @@ def index():
                                     save_session_to_db(sid, session_data)
                             
                             message_count = len(session['messages'])
-                            logger.info(f"✅ 店舗案内・遺失物関連の処理完了（キーワード検出）: {message_count} messages")
+                            logger.info(f"✅ 店舗案内・遺失物関連の処理完了（高確信度）: {message_count} messages")
                             return jsonify({'status': 'ok', 'message_count': message_count})
                         else:
-                            # 低確信度でキーワードでも検出されなかった場合は、症状検出に進む
-                            logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
-                            # store_inquiry_resultをNoneに設定して、症状検出に進む
-                            store_inquiry_result = None
-                    
-            except ImportError as e:
-                logger.warning(f"⚠️ 店舗案内・遺失物関連機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ 店舗案内・遺失物関連機能でエラー: {e}")
-                import traceback
-                traceback.print_exc()
+                            # 低確信度の場合は、店舗案内の応答を生成するが、症状検出も実行する可能性を残す
+                            # ただし、キーワードで確実に検出された場合は店舗案内として処理
+                            reasoning = store_inquiry_result.get("reasoning", "")
+                            if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
+                                # キーワードで検出された場合は店舗案内として処理
+                                response_data = store_inquiry_result.get("response", {})
+                                simple_message = response_data.get("simple_message", "")
+                                structured_html = response_data.get("structured_html", "")
+                                
+                                bot_content = structured_html if structured_html else simple_message
+                                
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': bot_content,
+                                    'store_inquiry': True,
+                                    'inquiry_type': store_inquiry_result.get('inquiry_type'),
+                                    'store_location': store_inquiry_result.get('store_location'),
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                
+                                if 'messages' not in session:
+                                    session['messages'] = []
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                                
+                                # DBを更新
+                                if sid:
+                                    session_data = get_session_from_db(sid)
+                                    if not session_data:
+                                        session_data = {
+                                            'session_id': sid,
+                                            'username': session.get('username', 'Unknown'),
+                                            'messages': session['messages'].copy(),
+                                            'last_activity': datetime.now(),
+                                            'client_ip': request.remote_addr,
+                                            'user_agent': request.headers.get('User-Agent', ''),
+                                            'user_attributes': session.get('user_attributes', {}),
+                                            'session_active': True
+                                        }
+                                        save_session_to_db(sid, session_data)
+                                    else:
+                                        session_data['messages'] = session['messages'].copy()
+                                        session_data['last_activity'] = datetime.now()
+                                        save_session_to_db(sid, session_data)
+                                
+                                message_count = len(session['messages'])
+                                logger.info(f"✅ 店舗案内・遺失物関連の処理完了（キーワード検出）: {message_count} messages")
+                                return jsonify({'status': 'ok', 'message_count': message_count})
+                            else:
+                                # 低確信度でキーワードでも検出されなかった場合は、症状検出に進む
+                                logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
+                                # store_inquiry_resultをNoneに設定して、症状検出に進む
+                                store_inquiry_result = None
+                except ImportError as e:
+                    logger.warning(f"⚠️ 店舗案内・遺失物関連機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ 店舗案内・遺失物関連機能でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+            else:
+                # 不適切な要求が検出された場合は、店舗案内処理をスキップ
+                store_inquiry_result = None
+                logger.info(f"⏭️ 不適切な要求が検出されたため、店舗案内処理をスキップ")
             
-            # ステップ1.8.5: 店舗案内ではないと判定された場合、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む
+            # ステップ1.8.5: 店舗案内ではないと判定された場合、カウンセリングフローに流す
             if store_inquiry_result is None and triage_result and triage_result.get("category") == "Other":
-                logger.info(f"🔍 店舗案内ではないと判定されたため、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）に進む")
-                # この処理は、後続の症状検出処理の前に実行される（2800行目以降の処理）
-                # フラグを設定して、後続処理で汎用応答処理を実行する
-                session['should_handle_other_category'] = True
+                logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
+                # カウンセリングフローに流す
+                try:
+                    from counseling_response import (
+                        generate_counseling_response,
+                        generate_follow_up_questions,
+                        start_counseling_mode
+                    )
+                    
+                    # ユーザーメッセージをセッションに追加
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    
+                    import uuid
+                    user_msg = {
+                        'type': 'user',
+                        'content': sanitized_message,
+                        'timestamp': datetime.now().isoformat(),
+                        'uuid': str(uuid.uuid4())
+                    }
+                    session['messages'].append(user_msg)
+                    session.modified = True
+                    
+                    # ユーザーメッセージをDBに保存
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(user_msg)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                        else:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                'messages': [user_msg],
+                                'session_active': True,
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': session.get('user_attributes', {})
+                            }
+                            save_session_to_db(sid, session_data)
+                    
+                    # カウンセリングフロー開始（不明な要求専用）
+                    symptom_type = "inappropriate_request/unknown"
+                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                    
+                    initial_response = generate_counseling_response(
+                        symptom_type, sanitized_message, recommendation_client,
+                        conversation_history=conversation_history,
+                        session_id=sid
+                    )
+                    initial_questions = generate_follow_up_questions(
+                        symptom_type, {}, recommendation_client
+                    )
+                    start_counseling_mode(session, symptom_type, initial_questions)
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': initial_response,
+                        'counseling': True,
+                        'inappropriate_request': True,
+                        'request_type': 'unknown',
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    session['messages'].append(bot_response)
+                    
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    
+                    from counseling_response import log_counseling_response
+                    log_counseling_response(
+                        session_id=sid,
+                        response_content=initial_response,
+                        response_type="counseling_unknown_request",
+                        category="Other",
+                        confidence=triage_result.get('confidence', 0.5),
+                        counseling_mode=session.get('counseling_mode'),
+                        user_input=user_message,
+                        conversation_history=None
+                    )
+                    
+                    session.modified = True
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 不明な要求のカウンセリングフロー処理完了: {message_count} messages")
+                    return jsonify({
+                        'status': 'ok',
+                        'message_count': message_count
+                    })
+                except ImportError as e:
+                    logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ カウンセリングフロー処理でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # エラー時は既存の汎用応答処理に進む
+                    session['should_handle_other_category'] = True
             
             # ステップ1.9: 眠気関連キーワードのチェック（カウンセリングモードチェックの前、重複チェックの前に実行）
             # 注意: このチェックは重複チェックの前に実行する必要がある（カウンセリングフローにリダイレクトするため）
@@ -1558,24 +2147,33 @@ def index():
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})
             if counseling_mode.get('active'):
-                try:
-                    from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
-                    from triage_analytics import log_topic_shift_detection
-                    
-                    # カウンセリングモード中の心臓緊急チェック（既にステップ1.5で実行済み）
-                    # 緊急チェックで中断されなかった場合、カウンセリングを継続
-                    
-                    # カウンセリングモード中の処理（話題転換を自動検知）
-                    # 会話履歴を取得（直近10件）
-                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                    
-                    response = handle_user_input_in_counseling_mode(
-                        sanitized_message, session, recommendation_client, session_id=sid
-                    )
-                    
-                    # 話題転換が検知された場合の処理
-                    if response.get('type') == 'topic_shift':
-                        topic_shift_result = response.get('topic_shift_result', {})
+                # トリアージ結果がPhysicalカテゴリの場合、カウンセリングモードを終了して通常の医薬品推奨フローに進む
+                if triage_result and triage_result.get('category') == 'Physical':
+                    # カウンセリングモードを終了
+                    counseling_mode['active'] = False
+                    session['counseling_mode'] = counseling_mode
+                    session.modified = True
+                    logger.info(f"🔄 カウンセリングモードを終了: Physicalカテゴリの症状入力のため、通常の医薬品推奨フローに移行")
+                    # 通常の医薬品推奨フローに進む（後続処理で実行される）
+                else:
+                    try:
+                        from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
+                        from triage_analytics import log_topic_shift_detection
+                        
+                        # カウンセリングモード中の心臓緊急チェック（既にステップ1.5で実行済み）
+                        # 緊急チェックで中断されなかった場合、カウンセリングを継続
+                        
+                        # カウンセリングモード中の処理（話題転換を自動検知）
+                        # 会話履歴を取得（直近10件）
+                        conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                        
+                        response = handle_user_input_in_counseling_mode(
+                            sanitized_message, session, recommendation_client, session_id=sid
+                        )
+                        
+                        # 話題転換が検知された場合の処理
+                        if response.get('type') == 'topic_shift':
+                            topic_shift_result = response.get('topic_shift_result', {})
                         # 話題転換検知結果をログに保存
                         log_topic_shift_detection(
                             session_id=sid,
@@ -1695,31 +2293,78 @@ def index():
                             else:
                                 # その他のPhysicalカテゴリの処理
                                 pass
-                    
-                    # 話題転換で薬推奨フローに移行する場合は、カウンセリング応答の処理をスキップ
-                    skip_counseling_response = False
-                    if response.get('type') == 'topic_shift' and response.get('medicine_request'):
-                        skip_counseling_response = True
-                        logger.info(f"⏭️ 薬推奨フローへの切り替えのため、カウンセリング応答の処理をスキップ")
-                    
-                    # カウンセリング応答を処理（改善版：返信と質問を分離）
-                    if not skip_counseling_response and response.get('type') == 'counseling_response_with_question':
-                        # 返信を先に追加
-                        counseling_response = response.get('counseling_response', '')
-                        if counseling_response:
+                        
+                        # 話題転換で薬推奨フローに移行する場合は、カウンセリング応答の処理をスキップ
+                        skip_counseling_response = False
+                        if response.get('type') == 'topic_shift' and response.get('medicine_request'):
+                            skip_counseling_response = True
+                            logger.info(f"⏭️ 薬推奨フローへの切り替えのため、カウンセリング応答の処理をスキップ")
+                        
+                        # カウンセリング応答を処理（改善版：返信と質問を分離）
+                        if not skip_counseling_response and response.get('type') == 'counseling_response_with_question':
+                            # 返信を先に追加
+                            counseling_response = response.get('counseling_response', '')
+                            if counseling_response:
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': counseling_response,
+                                    'counseling': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                                
+                                # ログ記録（返信部分、通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=counseling_response,
+                                    response_type="counseling_response",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode,
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
+                            
+                            # 質問を追加
+                            question = response.get('question', '')
+                            if question:
+                                question_response = {
+                                    'type': 'bot',
+                                    'content': question,
+                                    'counseling': True,
+                                    'counseling_question': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(question_response)
+                                session.modified = True
+                                
+                                # ログ記録（質問部分、通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=question,
+                                    response_type="counseling_question",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode,
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
+                        elif not skip_counseling_response and response.get('type') == 'counseling_response':
+                            # 返信のみ（質問をスキップ）
                             bot_response = {
                                 'type': 'bot',
-                                'content': counseling_response,
+                                'content': response.get('content', ''),
                                 'counseling': True,
                                 'timestamp': datetime.now().isoformat()
                             }
                             session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録（返信部分、通常時は会話履歴なし）
+                            # ログ記録（通常時は会話履歴なし）
                             log_counseling_response(
                                 session_id=sid,
-                                response_content=counseling_response,
+                                response_content=response.get('content', ''),
                                 response_type="counseling_response",
                                 category=None,
                                 confidence=None,
@@ -1727,24 +2372,20 @@ def index():
                                 user_input=user_message,
                                 conversation_history=None
                             )
-                        
-                        # 質問を追加
-                        question = response.get('question', '')
-                        if question:
-                            question_response = {
+                        elif not skip_counseling_response and response.get('type') == 'counseling_question':
+                            bot_response = {
                                 'type': 'bot',
-                                'content': question,
+                                'content': response.get('content', ''),
                                 'counseling': True,
-                                'counseling_question': True,
                                 'timestamp': datetime.now().isoformat()
                             }
-                            session['messages'].append(question_response)
+                            session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録（質問部分、通常時は会話履歴なし）
+                            # ログ記録（process_counseling_answer内で既に記録されているが、念のため、通常時は会話履歴なし）
                             log_counseling_response(
                                 session_id=sid,
-                                response_content=question,
+                                response_content=response.get('content', ''),
                                 response_type="counseling_question",
                                 category=None,
                                 confidence=None,
@@ -1752,157 +2393,114 @@ def index():
                                 user_input=user_message,
                                 conversation_history=None
                             )
-                    elif not skip_counseling_response and response.get('type') == 'counseling_response':
-                        # 返信のみ（質問をスキップ）
-                        bot_response = {
-                            'type': 'bot',
-                            'content': response.get('content', ''),
-                            'counseling': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        
-                        # ログ記録（通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=response.get('content', ''),
-                            response_type="counseling_response",
-                            category=None,
-                            confidence=None,
-                            counseling_mode=counseling_mode,
-                            user_input=user_message,
-                            conversation_history=None
-                        )
-                    elif not skip_counseling_response and response.get('type') == 'counseling_question':
-                        bot_response = {
-                            'type': 'bot',
-                            'content': response.get('content', ''),
-                            'counseling': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        
-                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため、通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=response.get('content', ''),
-                            response_type="counseling_question",
-                            category=None,
-                            confidence=None,
-                            counseling_mode=counseling_mode,
-                            user_input=user_message,
-                            conversation_history=None
-                        )
-                    elif not skip_counseling_response and response.get('type') == 'counseling_summary':
-                        # カウンセリング完了時も返信を含める場合がある
-                        counseling_response = response.get('counseling_response')
-                        if counseling_response:
-                            # 返信を先に追加
+                        elif not skip_counseling_response and response.get('type') == 'counseling_summary':
+                            # カウンセリング完了時も返信を含める場合がある
+                            counseling_response = response.get('counseling_response')
+                            if counseling_response:
+                                # 返信を先に追加
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': counseling_response,
+                                    'counseling': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                                
+                                # ログ記録（返信部分、通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=counseling_response,
+                                    response_type="counseling_response",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode,
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
+                            
+                            # サマリーを追加
                             bot_response = {
                                 'type': 'bot',
-                                'content': counseling_response,
-                                'counseling': True,
+                                'content': response.get('content', ''),
+                                'counseling_completed': True,
                                 'timestamp': datetime.now().isoformat()
                             }
                             session['messages'].append(bot_response)
                             session.modified = True
                             
-                            # ログ記録（返信部分、通常時は会話履歴なし）
+                            # ログ記録（サマリー部分、通常時は会話履歴なし）
                             log_counseling_response(
                                 session_id=sid,
-                                response_content=counseling_response,
-                                response_type="counseling_response",
+                                response_content=response.get('content', ''),
+                                response_type="counseling_summary",
                                 category=None,
                                 confidence=None,
                                 counseling_mode=counseling_mode,
                                 user_input=user_message,
                                 conversation_history=None
                             )
-                        
-                        # サマリーを追加
-                        bot_response = {
-                            'type': 'bot',
-                            'content': response.get('content', ''),
-                            'counseling_completed': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        
-                        # ログ記録（サマリー部分、通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=response.get('content', ''),
-                            response_type="counseling_summary",
-                            category=None,
-                            confidence=None,
-                            counseling_mode=counseling_mode,
-                            user_input=user_message,
-                            conversation_history=None
-                        )
-                        
-                        # カウンセリング完了ログを保存
-                        if response.get('completion_reason'):
-                            from triage_analytics import log_counseling_completion
-                            log_counseling_completion(
+                            
+                            # カウンセリング完了ログを保存
+                            if response.get('completion_reason'):
+                                from triage_analytics import log_counseling_completion
+                                log_counseling_completion(
+                                    session_id=sid,
+                                    counseling_mode=counseling_mode,
+                                    completion_reason=response.get('completion_reason', 'normal'),
+                                    total_questions=len(counseling_mode.get('question_history', [])),
+                                    collected_info_count=len(counseling_mode.get('collected_info', {}))
+                                )
+                        elif not skip_counseling_response and response.get('type') == 'crisis_support':
+                            bot_response = {
+                                'type': 'bot',
+                                'content': response.get('content', ''),
+                                'crisis_support': True,
+                                'resources': response.get('resources', []),
+                                'emergency_message': response.get('emergency_message', ''),
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            
+                            # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
+                            # ログ記録（通常時は会話履歴なし）
+                            log_counseling_response(
                                 session_id=sid,
+                                response_content=response.get('content', ''),
+                                response_type="crisis_support",
+                                category="Emergency",
+                                confidence=None,
                                 counseling_mode=counseling_mode,
-                                completion_reason=response.get('completion_reason', 'normal'),
-                                total_questions=len(counseling_mode.get('question_history', [])),
-                                collected_info_count=len(counseling_mode.get('collected_info', {}))
+                                user_input=user_message,
+                                conversation_history=None
                             )
-                    elif not skip_counseling_response and response.get('type') == 'crisis_support':
-                        bot_response = {
-                            'type': 'bot',
-                            'content': response.get('content', ''),
-                            'crisis_support': True,
-                            'resources': response.get('resources', []),
-                            'emergency_message': response.get('emergency_message', ''),
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
                         
-                        # ログ記録（process_counseling_answer内で既に記録されているが、念のため）
-                        # ログ記録（通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=response.get('content', ''),
-                            response_type="crisis_support",
-                            category="Emergency",
-                            confidence=None,
-                            counseling_mode=counseling_mode,
-                            user_input=user_message,
-                            conversation_history=None
-                        )
+                        # 話題転換で薬推奨フローに移行する場合は、カウンセリング処理をスキップして後続処理に進む
+                        if skip_counseling_response:
+                            logger.info(f"⏭️ 薬推奨フローへの切り替えのため、カウンセリング処理をスキップして後続処理に進みます")
+                            # 後続処理で薬推奨を実行するため、ここではreturnしない
+                        else:
+                            # DBを更新
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session['messages'].copy()
+                                    session_data['last_activity'] = datetime.now()
+                                    if 'counseling_mode' in session:
+                                        session_data['counseling_mode'] = session['counseling_mode']
+                                    save_session_to_db(sid, session_data)
+                            
+                            message_count = len(session['messages'])
+                            logger.info(f"✅ カウンセリング処理完了: {message_count} messages")
+                            return jsonify({'status': 'ok', 'message_count': message_count})
                     
-                    # 話題転換で薬推奨フローに移行する場合は、カウンセリング処理をスキップして後続処理に進む
-                    if skip_counseling_response:
-                        logger.info(f"⏭️ 薬推奨フローへの切り替えのため、カウンセリング処理をスキップして後続処理に進みます")
-                        # 後続処理で薬推奨を実行するため、ここではreturnしない
-                    else:
-                        # DBを更新
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if session_data:
-                                session_data['messages'] = session['messages'].copy()
-                                session_data['last_activity'] = datetime.now()
-                                if 'counseling_mode' in session:
-                                    session_data['counseling_mode'] = session['counseling_mode']
-                                save_session_to_db(sid, session_data)
-                        
-                        message_count = len(session['messages'])
-                        logger.info(f"✅ カウンセリング処理完了: {message_count} messages")
-                        return jsonify({'status': 'ok', 'message_count': message_count})
-                    
-                except ImportError as e:
-                    logger.warning(f"⚠️ カウンセリング機能のインポートに失敗: {e}")
-                except Exception as e:
-                    logger.error(f"❌ カウンセリング機能でエラー: {e}")
-                    import traceback
-                    traceback.print_exc()
+                    except ImportError as e:
+                        logger.warning(f"⚠️ カウンセリング機能のインポートに失敗: {e}")
+                    except Exception as e:
+                        logger.error(f"❌ カウンセリング機能でエラー: {e}")
+                        import traceback
+                        traceback.print_exc()
             
             # ステップ2.4.5: 眠気関連キーワードのチェック（不眠チェックの前に行う）
             # 注意: このチェックはステップ1.9で既に実行済み（重複チェックの前に実行）
@@ -2107,6 +2705,98 @@ def index():
             # ステップ4: カテゴリに応じて処理を分岐
             if triage_result:
                 category = triage_result.get('category', 'Other')
+                subcategory = triage_result.get('subcategory', '').lower()
+                
+                # ステップ4.5: 不適切な要求の検出（トリアージ結果確認後）
+                # 注意: 既にステップ1.7.5で検出されている場合はスキップ
+                if category == 'Other' and 'inappropriate_request' in subcategory and not inappropriate_request_detected:
+                    try:
+                        from counseling_response import (
+                            detect_inappropriate_request,
+                            generate_counseling_response,
+                            generate_follow_up_questions,
+                            start_counseling_mode
+                        )
+                        
+                        request_type = detect_inappropriate_request(sanitized_message, triage_result)
+                        
+                        if request_type:
+                            # カウンセリングフロー開始
+                            symptom_type = f"inappropriate_request/{request_type}"
+                            
+                            # 会話履歴を取得
+                            conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                            
+                            # カウンセリング応答を生成
+                            initial_response = generate_counseling_response(
+                                symptom_type, sanitized_message, recommendation_client,
+                                conversation_history=conversation_history,
+                                session_id=sid
+                            )
+                            
+                            # フォローアップ質問を生成（違法薬物・規制薬物の場合は空リスト）
+                            initial_questions = generate_follow_up_questions(
+                                symptom_type, {}, recommendation_client
+                            )
+                            
+                            # 違法薬物・規制薬物の場合は、カウンセリングモードを開始しない（単一メッセージで完結）
+                            if request_type not in ['illegal', 'controlled']:
+                                # カウンセリングモードを開始
+                                start_counseling_mode(session, symptom_type, initial_questions)
+                            
+                            # セッションにフラグを設定
+                            if 'inappropriate_requests' not in session:
+                                session['inappropriate_requests'] = []
+                            session['inappropriate_requests'].append({
+                                'type': request_type,
+                                'timestamp': datetime.now().isoformat(),
+                                'user_message': sanitized_message
+                            })
+                            
+                            # 応答をセッションに追加
+                            bot_response = {
+                                'type': 'bot',
+                                'content': initial_response,
+                                'counseling': request_type not in ['illegal', 'controlled'],
+                                'inappropriate_request': True,
+                                'request_type': request_type,
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            
+                            # ログ記録
+                            from counseling_response import log_counseling_response
+                            log_counseling_response(
+                                session_id=sid,
+                                response_content=initial_response,
+                                response_type="counseling_inappropriate_request",
+                                category=category,
+                                confidence=confidence,
+                                counseling_mode=session.get('counseling_mode'),
+                                user_input=user_message,
+                                conversation_history=None
+                            )
+                            
+                            # 検出ログ
+                            logger.warning(f"⚠️ 不適切な要求検出: type={request_type}, session_id={sid}")
+                            
+                            # 早期リターン（通常の処理フローをスキップ）
+                            session.modified = True
+                            save_session_to_db(sid, session)
+                            return jsonify({
+                                'response': initial_response,
+                                'questions': initial_questions if request_type not in ['illegal', 'controlled'] else [],
+                                'counseling': request_type not in ['illegal', 'controlled'],
+                                'inappropriate_request': True
+                            })
+                    except Exception as e:
+                        logger.error(f"❌ 不適切な要求処理エラー: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        # エラー時は通常の処理フローに戻る（安全側に倒す）
+                        # フォールバックメッセージを表示
+                        fallback_message = "申し訳ございませんが、システムエラーが発生しました。通常の相談フローに戻ります。"
+                        logger.warning(f"⚠️ 不適切な要求処理でエラーが発生しましたが、通常の処理フローに戻ります: {e}")
                 
                 # 月経不順関連の症状が含まれている場合は、Emotionalカテゴリでも医薬品推奨フローに進む
                 menstrual_keywords = ['生理不順', '月経不順', '生理が遅れ', '生理が来ない', '生理周期', 
@@ -4326,7 +5016,10 @@ def index():
                     'breastfeeding': user_attributes.get('breastfeeding'),
                     'current_medications': user_attributes.get('current_medications', []),
                     'allergies': user_attributes.get('allergies', []),
-                    'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                    'symptom_duration_days': user_attributes.get('symptom_duration_days'),
+                    'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
+                    'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+                    'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
                 }
                 logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                 
@@ -4868,7 +5561,10 @@ def index():
                             'breastfeeding': user_attributes.get('breastfeeding'),  # Noneのまま渡す
                             'current_medications': user_attributes.get('current_medications', []),
                             'allergies': user_attributes.get('allergies', []),
-                            'symptom_duration_days': user_attributes.get('symptom_duration_days')  # 症状期間を追加
+                            'symptom_duration_days': user_attributes.get('symptom_duration_days'),  # 症状期間を追加
+                            'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
+                            'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+                            'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
                         }
                         
                         logger.info(f"📋 User info for recommendation: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
@@ -4880,7 +5576,10 @@ def index():
                             'breastfeeding': user_attributes.get('breastfeeding'),
                             'current_medications': user_attributes.get('current_medications', []),
                             'allergies': user_attributes.get('allergies', []),
-                            'symptom_duration_days': user_attributes.get('symptom_duration_days')
+                            'symptom_duration_days': user_attributes.get('symptom_duration_days'),
+                            'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
+                            'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+                            'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
                         }
                         logger.info(f"📋 User info for recommendation（再構築後）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                         
@@ -5604,9 +6303,22 @@ def index():
 """
                             session.pop('is_reanalysis_with_updated_attributes', None)
                         
+                        # 治療中警告メッセージの生成
+                        treatment_warning_section = ""
+                        treatment_mention = user_info.get('treatment_mention', False)
+                        if treatment_mention:
+                            treatment_warning_section = """
+    <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+        <h4 style="color: #e65100; margin-top: 0;">⚠️ <strong>治療中の方へ</strong></h4>
+        <p style="margin: 5px 0; line-height: 1.6;">現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。</p>
+        <p style="margin: 5px 0; line-height: 1.6;">治療中の方が市販薬を服用する場合、主疾患への重大な影響を与える可能性があります。</p>
+    </div>
+"""
+                        
                         bot_content = f"""
 <div class="recommendation-result">
 {attribute_update_message}
+{treatment_warning_section}
 {personalized_section}
     <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
     <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
