@@ -10,7 +10,93 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from openai import OpenAI
 
+# キーワードリストのインポート
+try:
+    from config.keywords import (
+        SEVERE_DISEASE_KEYWORDS,
+        SYMPTOM_KEYWORDS,
+        TREATMENT_KEYWORDS,
+        MEDICAL_PREVENTION_KEYWORDS
+    )
+except ImportError:
+    # フォールバック（開発環境などでconfig/keywords.pyが存在しない場合）
+    SEVERE_DISEASE_KEYWORDS = {}
+    SYMPTOM_KEYWORDS = []
+    TREATMENT_KEYWORDS = []
+    MEDICAL_PREVENTION_KEYWORDS = []
+    logging.warning("config/keywords.pyが見つかりません。キーワードリストを使用できません。")
+
+# normalize_text関数のインポート
+try:
+    from scoring_utils import normalize_text
+except ImportError:
+    # フォールバック
+    def normalize_text(text: str) -> str:
+        if not text or not isinstance(text, str):
+            return ""
+        return text.lower().strip()
+
 logger = logging.getLogger(__name__)
+
+# 違法薬物・規制薬物用の拒否メッセージテンプレート
+ILLEGAL_DRUG_REJECTION_TEMPLATES = {
+    "illegal": """⚠️ 申し訳ございませんが、違法薬物に関するご相談には対応できません。
+
+【法的警告】
+違法薬物の所持、使用、譲渡は法律で厳しく禁止されており、重大な刑事罰の対象となります。
+- 覚醒剤取締法違反：最高刑期10年以下の懲役
+- 大麻取締法違反：最高刑期5年以下の懲役
+- その他の違法薬物も同様に厳しい処罰の対象となります
+
+【健康上の警告】
+違法薬物は深刻な健康被害を引き起こす可能性があります：
+- 依存症のリスク
+- 精神疾患の発症
+- 身体機能の障害
+- 最悪の場合、死に至る可能性
+
+【支援リソース】
+もし薬物依存でお悩みの場合は、以下の専門機関にご相談ください：
+- 厚生労働省 薬物依存症相談窓口
+- 各都道府県の精神保健福祉センター
+- 依存症専門医療機関
+
+当システムは市販薬（OTC医薬品）の相談を承っております。""",
+    "controlled": """⚠️ 申し訳ございませんが、規制薬物に関するご相談には対応できません。
+
+【法的警告】
+規制薬物（向精神薬、麻薬、指定薬物など）は、医師の処方箋なしでの所持や使用は法律で禁止されています。
+- 麻薬及び向精神薬取締法違反：最高刑期10年以下の懲役
+- 医師の処方箋なしでの使用は重大な違法行為となります
+
+【健康上の警告】
+規制薬物の不正使用は深刻な健康被害を引き起こす可能性があります：
+- 依存症のリスク
+- 精神疾患の発症
+- 身体機能の障害
+- 他の薬物との相互作用による危険
+
+【支援リソース】
+もし薬物依存でお悩みの場合は、以下の専門機関にご相談ください：
+- 厚生労働省 薬物依存症相談窓口
+- 各都道府県の精神保健福祉センター
+- 依存症専門医療機関
+
+当システムは市販薬（OTC医薬品）の相談を承っております。"""
+}
+
+
+def generate_illegal_drug_rejection_message(request_type: str) -> str:
+    """
+    違法薬物・規制薬物用の拒否メッセージを生成
+    
+    Args:
+        request_type: 要求の種類（"illegal" または "controlled"）
+    
+    Returns:
+        拒否メッセージ
+    """
+    return ILLEGAL_DRUG_REJECTION_TEMPLATES.get(request_type, ILLEGAL_DRUG_REJECTION_TEMPLATES["illegal"])
 
 
 def log_counseling_response(
@@ -86,6 +172,248 @@ def log_counseling_response(
             response=response_content,
             conversation_history=conversation_history  # Noneの場合は空リストとして扱われる
         )
+
+
+def is_treatment_mention(user_text: str) -> bool:
+    """
+    「治療中」を示すキーワードが含まれているかを判定
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        True: 「治療中」キーワードが含まれている場合
+    """
+    user_text_normalized = normalize_text(user_text)
+    
+    # 1. 基本的な治療中キーワードをチェック
+    for keyword in TREATMENT_KEYWORDS:
+        keyword_normalized = normalize_text(keyword)
+        if keyword_normalized in user_text_normalized:
+            logger.debug(f"「治療中」キーワード検出: {keyword}")
+            return True
+    
+    # 2. 疾患名 + 「です」「です、」「です。」のパターンをチェック
+    # 重篤疾患キーワードリストから疾患名を取得
+    import re
+    for category, keywords in SEVERE_DISEASE_KEYWORDS.items():
+        for disease in keywords:
+            # 疾患名 + 「です」「です、」「です。」のパターンを検出
+            pattern = rf"{re.escape(disease)}(です|です、|です。)"
+            if re.search(pattern, user_text):
+                logger.debug(f"「治療中」キーワード検出（疾患名+です）: {disease}")
+                return True
+    
+    # 3. 「血圧が高い」などの表現をチェック（既にTREATMENT_KEYWORDSに含まれているが、念のため）
+    if "血圧が高い" in user_text or "血圧が高いです" in user_text:
+        logger.debug("「治療中」キーワード検出: 血圧が高い")
+        return True
+    
+    return False
+
+
+def has_specific_symptom(user_text: str) -> bool:
+    """
+    具体的な症状が述べられているかを判定
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        True: 症状キーワードが含まれている場合
+    """
+    user_text_normalized = normalize_text(user_text)
+    
+    for keyword in SYMPTOM_KEYWORDS:
+        keyword_normalized = normalize_text(keyword)
+        if keyword_normalized in user_text_normalized:
+            logger.debug(f"症状キーワード検出: {keyword}")
+            return True
+    
+    return False
+
+
+def is_severe_disease_request(user_text: str, triage_result: Optional[Dict] = None) -> bool:
+    """
+    重篤な疾患の要求かどうかを判定（キーワードベース優先）
+    - 表記ゆれに対応（normalize_text関数を使用）
+    - 「治療中」キーワードがある場合はFalseを返す
+    - 症状キーワードが含まれている場合はFalseを返す（誤判定対策）
+    - 「心臓」を含む表現は、LLMで最終判定（曖昧な場合のみ）
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        triage_result: トリアージ結果（オプション、LLM判定が必要な場合に使用）
+    
+    Returns:
+        True: 重篤な疾患の要求と判定された場合
+    """
+    # 「治療中」キーワードがある場合はFalseを返す
+    if is_treatment_mention(user_text):
+        return False
+    
+    # 症状キーワードが含まれている場合はFalseを返す（誤判定対策）
+    if has_specific_symptom(user_text):
+        return False
+    
+    user_text_normalized = normalize_text(user_text)
+    
+    # キーワードベースの判定（優先）
+    for category, keywords in SEVERE_DISEASE_KEYWORDS.items():
+        for keyword in keywords:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in user_text_normalized:
+                # 「心臓」を含む表現は、LLMで最終判定（曖昧な場合のみ）
+                if "心臓" in keyword or "心" in keyword:
+                    # 症状キーワードが含まれている場合はFalseを返す（誤判定対策）
+                    if has_specific_symptom(user_text):
+                        return False
+                    # 曖昧な場合は、triage_resultを確認
+                    if triage_result:
+                        subcategory = triage_result.get("subcategory", "").lower()
+                        if "heart" in subcategory or "心臓" in subcategory:
+                            # LLMが身体的症状として分類した場合はFalse
+                            category = triage_result.get("category", "")
+                            if category == "Physical" or category == "Emergency":
+                                return False
+                logger.debug(f"重篤疾患キーワード検出: {keyword} (カテゴリ: {category})")
+                return True
+    
+    return False
+
+
+def is_medical_prevention_request(user_text: str) -> bool:
+    """
+    「医薬的な予防」の要求かどうかを判定
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        True: 「医薬的な予防」キーワードが含まれている場合
+    """
+    user_text_normalized = normalize_text(user_text)
+    
+    for keyword in MEDICAL_PREVENTION_KEYWORDS:
+        keyword_normalized = normalize_text(keyword)
+        if keyword_normalized in user_text_normalized:
+            logger.debug(f"「医薬的な予防」キーワード検出: {keyword}")
+            return True
+    
+    # より柔軟なマッチング: 「風邪」と「予防」の両方が含まれている場合
+    # （ただし、重篤疾患の予防要求は除外）
+    if "風邪" in user_text_normalized and "予防" in user_text_normalized:
+        # 重篤疾患キーワードが含まれていないことを確認
+        is_severe = False
+        for category_keywords in SEVERE_DISEASE_KEYWORDS.values():
+            for severe_keyword in category_keywords:
+                if normalize_text(severe_keyword) in user_text_normalized:
+                    is_severe = True
+                    break
+            if is_severe:
+                break
+        
+        if not is_severe:
+            logger.debug(f"「医薬的な予防」キーワード検出（柔軟マッチング）: 風邪 + 予防")
+            return True
+    
+    return False
+
+
+def is_psychiatric_disease_request(user_text: str, triage_result: Optional[Dict] = None) -> bool:
+    """
+    精神疾患関連の要求かどうかを判定
+    - neurological_psychiatricカテゴリのキーワードが含まれている場合
+    - キーワードベースで判定し、曖昧な場合のみLLMで判定
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        triage_result: トリアージ結果（オプション、LLM判定が必要な場合に使用）
+    
+    Returns:
+        True: 精神疾患関連の要求と判定された場合
+    """
+    user_text_normalized = normalize_text(user_text)
+    
+    # キーワードベースの判定（優先）
+    if "neurological_psychiatric" in SEVERE_DISEASE_KEYWORDS:
+        for keyword in SEVERE_DISEASE_KEYWORDS["neurological_psychiatric"]:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in user_text_normalized:
+                logger.debug(f"精神疾患キーワード検出: {keyword}")
+                return True
+    
+    return False
+
+
+def detect_inappropriate_request(user_text: str, triage_result: Dict) -> Optional[str]:
+    """
+    不適切な要求の種類を判定
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+        triage_result: トリアージ結果
+    
+    Returns:
+        要求の種類（"prescription", "weight_loss", "love_potion", "cure_prevention", 
+        "psychiatric_cure_prevention", "anti_aging", "body_shape", "hair_growth", 
+        "illegal", "controlled"）またはNone
+    """
+    subcategory = triage_result.get("subcategory", "").lower()
+    
+    # トリアージ結果から不適切な要求を判定
+    if "inappropriate_request" not in subcategory:
+        return None
+    
+    # サブカテゴリから要求の種類を抽出
+    if "/prescription" in subcategory:
+        return "prescription"
+    elif "/weight_loss" in subcategory:
+        return "weight_loss"
+    elif "/love_potion" in subcategory:
+        return "love_potion"
+    elif "/cure_prevention" in subcategory:
+        # cure_preventionの判定ロジックを厳格化
+        # 1. 「治療中」キーワードがある場合はNoneを返す（通常フローに進む）
+        if is_treatment_mention(user_text):
+            logger.debug("「治療中」キーワードにより、通常フローに進む")
+            return None
+        
+        # 2. 症状キーワードが含まれている場合はNoneを返す（誤判定対策）
+        if has_specific_symptom(user_text):
+            logger.debug("症状キーワードにより、通常フローに進む")
+            return None
+        
+        # 3. 重篤疾患キーワードがない場合はNoneを返す
+        if not is_severe_disease_request(user_text, triage_result):
+            logger.debug("重篤疾患キーワードがないため、通常フローに進む")
+            return None
+        
+        # 4. 精神疾患関連の要求かどうかを判定
+        if is_psychiatric_disease_request(user_text, triage_result):
+            logger.debug("精神疾患関連の完治要求を検出")
+            return "psychiatric_cure_prevention"
+        
+        # 5. 「医薬的な予防」の判定を追加
+        if is_medical_prevention_request(user_text):
+            logger.debug("「医薬的な予防」キーワードにより、カウンセリングフローに進む")
+            return None
+        
+        # 6. 上記すべてFalseの場合のみcure_preventionを返す
+        logger.debug("重篤疾患の完治・予防要求を検出")
+        return "cure_prevention"
+    elif "/anti_aging" in subcategory:
+        return "anti_aging"
+    elif "/body_shape" in subcategory:
+        return "body_shape"
+    elif "/hair_growth" in subcategory:
+        return "hair_growth"
+    elif "/illegal" in subcategory:
+        return "illegal"
+    elif "/controlled" in subcategory:
+        return "controlled"
+    
+    return None
 
 
 def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
@@ -221,6 +549,283 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
             "max_length": 300
         }
     
+    # 不適切な要求用のプロンプトテンプレート
+    if symptom_type.startswith("inappropriate_request/"):
+        request_type = symptom_type.split("/")[1]
+        
+        # 処方薬の要求
+        if request_type == "prescription":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。処方薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+処方薬の要求
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 医師への相談方法を案内
+- **代替案の提示**: 市販薬の代替案（該当する場合）、医師への相談方法
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 痩せ薬・ダイエット薬
+        elif request_type == "weight_loss":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。痩せ薬・ダイエット薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+痩せ薬・ダイエット薬
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、痩せ薬の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 医師や栄養士への相談を案内
+- **代替案の提示**: 生活習慣の改善（食事、運動）、合法的な市販薬（該当する場合）
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 惚れ薬・媚薬
+        elif request_type == "love_potion":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。惚れ薬・媚薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+惚れ薬・媚薬
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、そのような薬物は存在しないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 恋愛相談、心理カウンセリングを案内
+- **代替案の提示**: 恋愛相談、心理カウンセリング
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 精神疾患関連の完治・予防（共感的なテンプレート）
+        elif request_type == "psychiatric_cure_prevention":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。精神疾患で悩むユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。精神疾患の完治を希望するユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+精神疾患の完治・予防
+
+【返信の要件】
+- **共感的なメッセージ**: 「お辛い状況ですね。お力になりたいのですが、お心の悩みについては専門の医師による診断が不可欠です」というような、より共感的かつ丁寧な表現を使用（200-300文字程度）
+- **専門家への相談を強く推奨**: 精神科医や心療内科医への受診を案内
+- **市販薬の限界の説明**: 市販薬では対応できないことを説明
+- **支援リソースの案内**: 精神保健福祉センター、相談窓口などの案内
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "より共感的かつ丁寧な受診勧奨メッセージ（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 病気の完治・予防（重篤な疾患のみ、精神疾患以外）
+        elif request_type == "cure_prevention":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。重篤な疾患の完治・予防を目的とした医薬品の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+重篤な疾患の完治・予防
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、重篤な疾患の完治や予防を目的とした処方薬の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 医師への相談を案内
+- **代替案の提示**: 予防接種、健康診断、医師への相談
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 「予防したい」専用のテンプレート
+        elif request_type == "prevention":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+予防に関する相談
+
+【返信の要件】
+- **共感的なメッセージ**: 予防への関心に共感する（1-2文）
+- **生活習慣のアドバイス**: バランスの取れた食事、適度な運動、十分な睡眠、ストレス管理などの具体的なアドバイス
+- **サプリメント（食品）と医薬品の違いを説明**: 
+  * サプリメントは食品であり、医薬品ではない
+  * 医薬品は治療・予防の効果が認められている
+  * サプリメントは栄養補給を目的とする
+- **予防接種や健康診断の案内**: 適切な予防方法を案内
+- **医薬的な予防の場合は医薬品推奨も含める**: 日焼け止め、酔い止め、ビタミン剤など、医薬的な予防が可能な場合は医薬品推奨も含める
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "生活習慣のアドバイスとサプリメントと医薬品の違いを説明する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 「完治したい」だけの場合のテンプレート
+        elif request_type == "cure_only":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+完治に関する相談
+
+【返信の要件】
+- **共感的なメッセージ**: 完治への願いに共感する（1-2文）
+- **OTC医薬品は対症療法であることの説明**: 市販薬（OTC医薬品）は症状を和らげる対症療法であり、完治を目的としたものではないことを説明
+- **医師受診を案内**: 完治を目指す場合は、専門の医師に相談することを案内
+- **応答長さ**: 150-200文字程度（簡潔に）
+""",
+                "response_requirements": "簡潔な説明と医師受診を案内する返信（150-200文字程度）",
+                "max_length": 200
+            }
+        
+        # 不適切なメッセージ（暴言、脅迫など）
+        elif request_type == "inappropriate_message":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。不適切なメッセージに対して、冷静で丁寧な対応をしてください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。不適切なメッセージに対して、冷静で丁寧な対応をしてください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+不適切なメッセージ（暴言、脅迫など）
+
+【返信の要件】
+- **冷静で丁寧なトーン**: 感情的にならず、冷静で丁寧な対応をする
+- **システムの目的の説明**: 当システムは医薬品相談を目的としており、不適切なメッセージには対応できないことを説明
+- **建設的な対応を促す**: 医薬品相談であれば、適切な方法で対応できることを伝える
+- **応答長さ**: 100-150文字程度（簡潔に）
+""",
+                "response_requirements": "冷静で丁寧な対応をする返信（100-150文字程度）",
+                "max_length": 150
+            }
+        
+        # アンチエイジング・若返り
+        elif request_type == "anti_aging":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。アンチエイジング・若返りの薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+アンチエイジング・若返り
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、そのような薬物の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 医師や皮膚科医への相談を案内
+- **代替案の提示**: 生活習慣の改善、スキンケア、医師への相談
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 身体の特定部位の形状変化
+        elif request_type == "body_shape":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。身体の特定部位の形状変化の薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+身体の特定部位の形状変化
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、そのような薬物の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 形成外科医への相談を案内
+- **代替案の提示**: 生活習慣の改善、専門医への相談（形成外科など）
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+        
+        # 毛が生える・ハゲが治る薬
+        elif request_type == "hair_growth":
+            return {
+                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。毛が生える・ハゲが治る薬の要求に対して、優しく導くトーンで返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+毛が生える・ハゲが治る薬
+
+【返信の要件】
+- **優しく導くトーン**: 共感的で理解を示す（1-2文）
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **ユーザー教育**: 市販薬の範囲、適切な相談方法を説明
+- **専門家への相談を促す**: 医師や皮膚科医への相談を案内
+- **代替案の提示**: 市販薬の可能性（ミノキシジルなど、該当する場合）、医師への相談
+- **応答長さ**: 200-300文字程度
+""",
+                "response_requirements": "優しく導くトーンで、システムの制限を説明し、適切な代替案を提示する返信（200-300文字程度）",
+                "max_length": 300
+            }
+    
     # 医療関連の症状タイプ
     MEDICAL_SYMPTOM_TYPES = {'heart_pain', 'anxiety', 'depression_like'}
     
@@ -248,6 +853,28 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
             "response_requirements": "医療的な観点も含めたバランスの取れた返信",
             "max_length": 200
         }
+    # 不明な要求（unknown）
+    if symptom_type == "inappropriate_request/unknown":
+        return {
+            "system_message": "あなたは薬剤師兼カウンセラーです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。",
+            "user_prompt_template": """
+あなたは薬剤師兼カウンセラーです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【要求タイプ】
+不明な要求
+
+【返信の要件】
+- **丁寧な説明**: 当システムは医薬品相談を目的としており、ご要望の内容が不明確であることを説明
+- **適切な案内**: 医薬品相談であれば、具体的な症状や悩みを教えていただければ対応できることを伝える
+- **応答長さ**: 150-200文字程度
+""",
+            "response_requirements": "丁寧に説明し、適切な案内をする返信（150-200文字程度）",
+            "max_length": 200
+        }
+    
     else:
         # 非医療関連: 応援を重視したプロンプト
         return {
@@ -290,7 +917,7 @@ def generate_counseling_response(
     カウンセリング的返信を生成
     
     Args:
-        symptom_type: 感情的症状タイプ
+        symptom_type: 感情的症状タイプまたは不適切な要求タイプ
         user_text: ユーザーの入力テキスト
         client: OpenAIクライアントインスタンス
         conversation_history: 会話履歴（直近10件まで使用）
@@ -299,6 +926,12 @@ def generate_counseling_response(
     Returns:
         カウンセリング的返信テキスト
     """
+    # 違法薬物・規制薬物の場合は、テンプレートベースのメッセージを返す
+    if symptom_type.startswith("inappropriate_request/"):
+        request_type = symptom_type.split("/")[1]
+        if request_type in ["illegal", "controlled"]:
+            return generate_illegal_drug_rejection_message(request_type)
+    
     # プロンプトテンプレートを取得
     template = get_counseling_prompt_template(symptom_type)
     
@@ -477,13 +1110,68 @@ def generate_follow_up_questions(
     フォローアップ質問を生成
     
     Args:
-        symptom_type: 感情的症状タイプ
-        collected_info: 既に収集済みの情報
+        symptom_type: 感情的症状タイプまたは不適切な要求タイプ
+        collected_info: 収集済み情報
         client: OpenAIクライアントインスタンス
     
     Returns:
         フォローアップ質問のリスト
     """
+    # 違法薬物・規制薬物の場合は、フォローアップ質問を返さない
+    if symptom_type.startswith("inappropriate_request/"):
+        request_type = symptom_type.split("/")[1]
+        if request_type in ["illegal", "controlled"]:
+            return []
+        
+        # その他の不適切な要求の場合は、LLMで質問を生成
+        # 4-6ステップの中程度の対話フローを実装
+        try:
+            prompt = f"""
+あなたは薬剤師兼カウンセラーです。不適切な要求に対して、より詳しい情報を収集するための
+フォローアップ質問を生成してください。
+
+【要求タイプ】
+{symptom_type}
+
+【既に収集済みの情報】
+{json.dumps(collected_info, ensure_ascii=False, indent=2)}
+
+【質問生成の要件】
+- 優しく導くトーンで質問を生成
+- ユーザーの理解度に応じた適応的な質問
+- 4-6ステップの中程度の対話フローを想定
+- システムの制限や代替案について理解を深めるための質問
+- 専門家への相談を促すための質問
+
+【回答形式】
+JSON形式で回答してください：
+{{
+    "questions": ["質問1", "質問2", "質問3", "質問4"]
+}}
+
+最大4つの質問を生成してください。
+"""
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。適切なフォローアップ質問を生成してください。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=300,
+                response_format={"type": "json_object"}
+            )
+            
+            content = response.choices[0].message.content
+            result = json.loads(content)
+            questions = result.get("questions", [])
+            
+            # 最大4つまで返す
+            return questions[:4] if questions else []
+        except Exception as e:
+            logger.error(f"フォローアップ質問生成エラー: {e}")
+            # デフォルトの質問を返す
+            return ["他にご質問やご相談はございますか？"]
     # 不眠専用の質問生成
     if symptom_type == "insomnia":
         # 既に収集済みの情報を確認
