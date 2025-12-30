@@ -1874,6 +1874,29 @@ def index():
                         # ただし、店舗案内として確実に検出された場合は早期リターン
                         if store_inquiry_confidence >= 0.7:
                             # 高確信度の場合は店舗案内として処理
+                            # ユーザーメッセージをセッションに追加
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            
+                            from datetime import datetime
+                            import uuid
+                            
+                            # 重複チェック
+                            user_message_exists = any(
+                                msg.get('type') == 'user' and 
+                                msg.get('content') == sanitized_message and
+                                msg.get('uuid')
+                                for msg in session.get('messages', [])
+                            )
+                            
+                            if not user_message_exists:
+                                session['messages'].append({
+                                    'type': 'user',
+                                    'content': sanitized_message,
+                                    'timestamp': datetime.now().isoformat(),
+                                    'uuid': str(uuid.uuid4())
+                                })
+                            
                             response_data = store_inquiry_result.get("response", {})
                             simple_message = response_data.get("simple_message", "")
                             structured_html = response_data.get("structured_html", "")
@@ -1890,8 +1913,6 @@ def index():
                                 'timestamp': datetime.now().isoformat()
                             }
                             
-                            if 'messages' not in session:
-                                session['messages'] = []
                             session['messages'].append(bot_response)
                             session.modified = True
                             
@@ -1924,6 +1945,29 @@ def index():
                             reasoning = store_inquiry_result.get("reasoning", "")
                             if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
                                 # キーワードで検出された場合は店舗案内として処理
+                                # ユーザーメッセージをセッションに追加
+                                if 'messages' not in session:
+                                    session['messages'] = []
+                                
+                                from datetime import datetime
+                                import uuid
+                                
+                                # 重複チェック
+                                user_message_exists = any(
+                                    msg.get('type') == 'user' and 
+                                    msg.get('content') == sanitized_message and
+                                    msg.get('uuid')
+                                    for msg in session.get('messages', [])
+                                )
+                                
+                                if not user_message_exists:
+                                    session['messages'].append({
+                                        'type': 'user',
+                                        'content': sanitized_message,
+                                        'timestamp': datetime.now().isoformat(),
+                                        'uuid': str(uuid.uuid4())
+                                    })
+                                
                                 response_data = store_inquiry_result.get("response", {})
                                 simple_message = response_data.get("simple_message", "")
                                 structured_html = response_data.get("structured_html", "")
@@ -1939,8 +1983,6 @@ def index():
                                     'timestamp': datetime.now().isoformat()
                                 }
                                 
-                                if 'messages' not in session:
-                                    session['messages'] = []
                                 session['messages'].append(bot_response)
                                 session.modified = True
                                 
