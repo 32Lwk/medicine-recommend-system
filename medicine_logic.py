@@ -96,6 +96,7 @@ def is_diagnosis_term(text):
     """
     テキストが診断名（疾患名）かどうかを判定
     過去形や他人の話など、現在の状態に関係ない場合は除外する
+    治療中キーワードが含まれている場合は除外する（通常の医薬品推奨フローに進むべき）
     
     Args:
         text (str): 検出対象のテキスト
@@ -112,6 +113,16 @@ def is_diagnosis_term(text):
         return (False, None, None)
     
     text = text.strip()
+    
+    # 治療中キーワードが含まれている場合は診断名として扱わない（通常の医薬品推奨フローに進むべき）
+    try:
+        from counseling_response import is_treatment_mention
+        if is_treatment_mention(text):
+            # 治療中キーワードが検出された場合は、診断名として扱わない
+            return (False, None, None)
+    except ImportError:
+        # counseling_responseモジュールがインポートできない場合はスキップ
+        pass
     
     # 過去形・他人の話・既往歴を表す除外パターン（診断名の前後50文字以内にこれらの語がある場合は除外）
     exclusion_context_words = [
@@ -1587,11 +1598,12 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
 【重要な指示】
 1. ユーザーの症状文から該当する症状を抽出してください
 2. **一般的な表現から典型的な症状を推測してください**：
-   - 「風邪をひいています」→ 頭痛、発熱、咳、鼻水、のどの痛みなどの典型的な風邪症状を推測
+   - 「風邪をひいています」「風邪を完治したい」「風邪を治したい」→ 頭痛、発熱、咳、鼻水、のどの痛みなどの典型的な風邪症状を推測
    - 「インフルエンザです」→ 発熱、頭痛、関節痛、筋肉痛、悪寒などの典型的なインフルエンザ症状を推測
    - 「胃腸炎です」→ 腹痛、下痢、吐き気などの典型的な胃腸炎症状を推測
 3. 症状文に明示的に書かれていない症状でも、一般的な表現から推測できる典型的な症状は含めてください
-4. ただし、症状文が「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
+4. 「完治したい」「治したい」などの表現が含まれていても、症状を抽出してください（これらは治療の意図を示すだけで、症状自体は別途抽出可能です）
+5. ただし、症状文が「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
 
 【回答形式】
 該当する症状を以下の形式で出力してください：
@@ -1604,8 +1616,9 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         {"role": "system", "content": """あなたは医薬品推奨システムです。ユーザーの症状文から正確に症状を抽出してください。
 
 重要な注意事項：
-- 「風邪をひいています」のような一般的な表現からも、典型的な症状（頭痛、発熱、咳、鼻水、のどの痛みなど）を推測して抽出してください
+- 「風邪をひいています」「風邪を完治したい」「風邪を治したい」のような一般的な表現からも、典型的な症状（頭痛、発熱、咳、鼻水、のどの痛みなど）を推測して抽出してください
 - 「インフルエンザです」のような表現からも、典型的な症状（発熱、頭痛、関節痛、筋肉痛、悪寒など）を推測して抽出してください
+- 「完治したい」「治したい」などの表現が含まれていても、症状を抽出してください（これらは治療の意図を示すだけで、症状自体は別途抽出可能です）
 - 症状文に明示的に書かれていない症状でも、一般的な表現から推測できる典型的な症状は含めてください"""},
         {"role": "user", "content": prompt}
     ]
@@ -1784,21 +1797,41 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
     症状（複数選択可）と適する医薬品の種類を返す
     
     診断名が検出された場合は、適切な返信を返す
+    ただし、治療中キーワードが含まれている場合は診断名検出をスキップして通常フローに進む
     """
     if client is None:
         client = OpenAI(api_key=api_key)
     
-    # 診断名の検出（先にチェック）
-    is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
-    if is_diagnosis:
-        logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
-        return {
-            'symptoms': [],
-            'medicine_type': 'その他',
-            'is_diagnosis': True,
-            'diagnosis_type': diagnosis_type,
-            'diagnosis_response': diagnosis_response
-        }
+    # 治療中キーワードを先にチェック（診断名検出より優先）
+    try:
+        from counseling_response import is_treatment_mention
+        if is_treatment_mention(user_text):
+            logger.info(f"🔔 治療中キーワード検出により診断名検出をスキップ（analyze_symptoms_and_medicine_type）: {user_text}")
+            # 診断名検出をスキップして通常の症状抽出に進む
+        else:
+            # 診断名の検出（先にチェック）
+            is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
+            if is_diagnosis:
+                logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
+                return {
+                    'symptoms': [],
+                    'medicine_type': 'その他',
+                    'is_diagnosis': True,
+                    'diagnosis_type': diagnosis_type,
+                    'diagnosis_response': diagnosis_response
+                }
+    except ImportError:
+        # counseling_responseモジュールがインポートできない場合は、診断名検出のみ実行
+        is_diagnosis, diagnosis_type, diagnosis_response = is_diagnosis_term(user_text)
+        if is_diagnosis:
+            logger.info(f"🏥 診断名が検出されました（analyze_symptoms_and_medicine_type）: {diagnosis_type} - {user_text}")
+            return {
+                'symptoms': [],
+                'medicine_type': 'その他',
+                'is_diagnosis': True,
+                'diagnosis_type': diagnosis_type,
+                'diagnosis_response': diagnosis_response
+            }
     
     # 医薬品の種類リスト（CSVファイルの実際の内容に基づく）
     medicine_types = [
@@ -1856,10 +1889,13 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
 
 【指示】
 1. 症状文から該当する症状のみを抽出してください
-2. 症状文に明示的に書かれていない症状は含めないでください
-3. 症状文が曖昧で、医療関連のキーワードが含まれていない場合は、症状なしとして空のリストを返してください
-4. 「決まりたい」「治したい」「良くなりたい」などの一般的な表現のみの場合は、具体的な症状が含まれていないため、症状なしとして扱ってください
-5. 推測や憶測による症状の検出は避け、明確に記述された症状のみを抽出してください
+2. **一般的な表現から典型的な症状を推測してください**：
+   - 「風邪をひいています」「風邪を完治したい」「風邪を治したい」→ 頭痛、発熱、咳、鼻水、のどの痛みなどの典型的な風邪症状を推測
+   - 「インフルエンザです」→ 発熱、頭痛、関節痛、筋肉痛、悪寒などの典型的なインフルエンザ症状を推測
+   - 「胃腸炎です」→ 腹痛、下痢、吐き気などの典型的な胃腸炎症状を推測
+3. 「完治したい」「治したい」などの表現が含まれていても、症状文に「風邪」「インフルエンザ」などの具体的な疾患名が含まれている場合は、その疾患の典型的な症状を抽出してください
+4. 症状文が曖昧で、医療関連のキーワードが含まれていない場合は、症状なしとして空のリストを返してください
+5. 「決まりたい」「良くなりたい」などの一般的な表現のみで、具体的な疾患名や症状が含まれていない場合は、症状なしとして扱ってください
 6. 「こんにちは」などの挨拶のみの場合は、症状なしとして空のリストを返してください
 7. 医薬品の種類は1つ選択してください
 

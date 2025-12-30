@@ -214,6 +214,20 @@ class EnhancedSafetyChecker:
             safety_result["doctor_referral_required"] = True
             safety_result["referral_reasons"].append(self.doctor_referral_conditions["red_flags"])
         
+        # 9. 「治療中」キーワードがある場合の「医薬的な予防」における禁忌チェック
+        # 例：緑内障で治療中の人が酔い止めを希望した場合、抗コリン薬による悪化リスクを警告
+        treatment_mention = user_info.get("treatment_mention", False)
+        medical_prevention_request = user_info.get("medical_prevention_request", False)
+        
+        if treatment_mention and medical_prevention_request:
+            # 治療中の疾患と医薬品の成分の相互作用をチェック
+            contraindication_warning = self._check_treatment_contraindication_for_prevention(
+                medicine, user_info, nlu_result
+            )
+            if contraindication_warning:
+                safety_result["warnings"].append(contraindication_warning)
+                safety_result["safety_score"] -= 20
+        
         # 最終判定
         if safety_result["safety_score"] < 50:
             safety_result["is_safe"] = False
@@ -327,6 +341,49 @@ class EnhancedSafetyChecker:
                         max_risk = max(max_risk, 0.8)  # 相互作用リスク80%
         
         return max_risk
+    
+    def _check_treatment_contraindication_for_prevention(
+        self, medicine: Dict[str, Any], user_info: Dict[str, Any], nlu_result: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        「治療中」キーワードがある場合の「医薬的な予防」における禁忌チェック
+        例：緑内障で治療中の人が酔い止めを希望した場合、抗コリン薬による悪化リスクを警告
+        
+        Args:
+            medicine: 医薬品情報
+            user_info: ユーザー情報
+            nlu_result: NLU解析結果
+        
+        Returns:
+            警告メッセージ（該当する場合）またはNone
+        """
+        # 治療中の疾患を検出（user_infoまたはuser_textから）
+        treatment_diseases = user_info.get("treatment_diseases", [])
+        user_text = user_info.get("user_text", "").lower()
+        
+        # 医薬品の成分を取得
+        ingredients = medicine.get('ingredients', '').lower()
+        medicine_name = medicine.get('product_name', '').lower()
+        
+        # 緑内障で治療中の人が酔い止めを希望した場合
+        if "緑内障" in user_text or any("緑内障" in d for d in treatment_diseases):
+            # 抗コリン薬を含む医薬品（酔い止めなど）をチェック
+            anticholinergic_keywords = ["ジフェンヒドラミン", "メクリジン", "プロメタジン", "スコポラミン"]
+            if any(keyword.lower() in ingredients for keyword in anticholinergic_keywords) or "酔い止め" in medicine_name:
+                return "治療中の疾患によっては服用できない成分があるため、必ず主治医に確認してください。特に緑内障で治療中の方は、抗コリン薬を含む医薬品（酔い止めなど）の使用は避ける必要があります。"
+        
+        # その他の治療中疾患と医薬品の相互作用チェック
+        # 例：前立腺肥大で治療中の人が抗コリン薬を含む医薬品を使用する場合
+        if "前立腺" in user_text or any("前立腺" in d for d in treatment_diseases):
+            anticholinergic_keywords = ["ジフェンヒドラミン", "メクリジン", "プロメタジン", "スコポラミン"]
+            if any(keyword.lower() in ingredients for keyword in anticholinergic_keywords):
+                return "治療中の疾患によっては服用できない成分があるため、必ず主治医に確認してください。特に前立腺肥大で治療中の方は、抗コリン薬を含む医薬品の使用は避ける必要があります。"
+        
+        # 一般的な警告（治療中の場合）
+        if treatment_diseases or "治療中" in user_text or "通院中" in user_text:
+            return "治療中の疾患によっては服用できない成分があるため、必ず主治医に確認してください。"
+        
+        return None
     
     def enhanced_scoring_weights(self) -> Dict[str, float]:
         """強化されたスコアリングウェイトを取得"""

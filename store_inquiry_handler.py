@@ -300,6 +300,8 @@ def classify_inquiry_with_llm(user_text: str, client: OpenAI, triage_result: Opt
 【重要な注意事項】
 - 「うんこしたい」「トイレに行きたい」だけの場合は店舗案内として扱う
 - 「うんこしたいけど出ない」「便秘でうんこしたい」「下痢で困っている」など、症状を示すキーワードが含まれている場合は医薬品推奨を優先する（is_store_inquiry=false）
+- 不適切なメッセージ（暴言、脅迫など）が含まれている場合は、is_store_inquiryをfalseに設定
+- 不明な場合や曖昧な場合は、is_store_inquiryをfalseに設定（カウンセリングフローに流すため）
 
 【回答形式】
 JSON形式で回答してください：

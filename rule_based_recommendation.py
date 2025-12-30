@@ -16,6 +16,14 @@ from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
 from scoring_utils import normalize_text
 
+# キーワードリストのインポート
+try:
+    from config.keywords import URGENT_SYMPTOM_KEYWORDS
+except ImportError:
+    # フォールバック（開発環境などでconfig/keywords.pyが存在しない場合）
+    URGENT_SYMPTOM_KEYWORDS = []
+    logging.warning("config/keywords.pyが見つかりません。URGENT_SYMPTOM_KEYWORDSを使用できません。")
+
 # ロガー設定
 logger = logging.getLogger(__name__)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
@@ -499,6 +507,16 @@ RED_FLAG_SYMPTOMS = {
     "手足の麻痺": ["手足の麻痺", "手足が動かない", "力が入らない", "しびれが続く"],
     "持続する嘔吐": ["持続する嘔吐", "何度も吐く", "止まらない嘔吐", "嘔吐が続く"]
 }
+
+# URGENT_SYMPTOM_KEYWORDSと統合（緊急症状の拡張）
+if URGENT_SYMPTOM_KEYWORDS:
+    # 既存のRED_FLAG_SYMPTOMSに緊急症状を追加
+    if "緊急症状" not in RED_FLAG_SYMPTOMS:
+        RED_FLAG_SYMPTOMS["緊急症状"] = []
+    # URGENT_SYMPTOM_KEYWORDSの各キーワードを追加
+    for keyword in URGENT_SYMPTOM_KEYWORDS:
+        if keyword not in RED_FLAG_SYMPTOMS["緊急症状"]:
+            RED_FLAG_SYMPTOMS["緊急症状"].append(keyword)
 
 # 医師受診推奨条件
 # 妊娠の可能性を示す症状辞書
@@ -7090,8 +7108,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                 # ペナルティ（負の値）のみを適用
                 if adjustment < 0.0:
                     total_adjustment += adjustment
-                    logger.info(f"複数症状ペナルティ適用: combo={combo_key}, medicine_type={medicine_type}, adjustment={adjustment:.2f}, total_adjustment={total_adjustment:.2f}")
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"複数症状ペナルティ適用: combo={combo_key}, medicine_type={medicine_type}, adjustment={adjustment:.2f}, total_adjustment={total_adjustment:.2f}")
                         logger.debug(
                             f"複数症状ペナルティ: {combo_key} × {medicine_type} = {adjustment:.2f}"
                         )
@@ -7131,7 +7149,8 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
         # この関数はペナルティのみを返し、ボーナスは別途calculate_symptom_specific_boostで処理される
         if total_adjustment != 0.0:
             final_penalty = min(0.0, total_adjustment)
-            logger.info(f"calculate_symptom_specificity_penalty最終結果: {candidate.get('product_name', '')} - total_adjustment={total_adjustment:.2f}, final_penalty={final_penalty:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"calculate_symptom_specificity_penalty最終結果: {candidate.get('product_name', '')} - total_adjustment={total_adjustment:.2f}, final_penalty={final_penalty:.2f}, efficacy_specificity={efficacy_specificity:.2f}")
             # 負の値のみを返す（正の値が含まれている場合は0を返す）
             return final_penalty
 
@@ -7836,6 +7855,10 @@ def rule_based_recommendation(
         "痛", "熱", "咳", "鼻", "喉", "頭", "胃", "下痢", "便秘", "吐", "めまい",
         "かゆ", "発疹", "不眠", "疲労", "症状", "病気", "薬", "医", "病",
         
+        # 風邪関連キーワード（「風邪を完治したい」などの表現に対応）
+        "風邪", "かぜ", "風邪をひ", "風邪気味", "風邪っぽい", "風邪の症状",
+        "風邪を完治", "風邪を治", "風邪を直", "完治", "治したい", "治す", "直したい", "直す",
+        
         # 風邪関連症状（SYMPTOM_DICTIONARYから抽出）
         "発熱", "熱がある", "熱っぽい", "高熱", "微熱", "体温", "熱",
         "頭痛", "頭が痛い", "ズキズキ", "頭が重い", "偏頭痛",
@@ -7942,7 +7965,10 @@ def rule_based_recommendation(
         "用法", "用量", "服用", "飲む", "飲み",
         "錠剤", "カプセル", "粉薬", "シロップ", "液剤",
         "軟膏", "クリーム", "ローション", "スプレー",
-        "点眼", "点鼻", "点耳"
+        "点眼", "点鼻", "点耳",
+        # 風邪関連のキーワード
+        "風邪", "かぜ", "風邪をひ", "風邪気味", "風邪っぽい", "風邪の症状",
+        "風邪を完治", "風邪を治", "風邪を直", "治したい", "治す"
     ]
     has_medical_keyword = any(keyword in user_text_stripped for keyword in medical_keywords)
     
@@ -7977,6 +8003,43 @@ def rule_based_recommendation(
     # NLU結果を確認し、症状が検出されている場合はキーワードチェックをスキップ
     symptoms_detected = nlu_result.get("symptoms", [])
     has_detected_symptoms = len(symptoms_detected) > 0
+    
+    # 症状が検出されていない場合、select_symptoms_via_gptで抽出を試みる
+    if not has_detected_symptoms:
+        try:
+            from medicine_logic import select_symptoms_via_gpt
+            logger.info(f"🔍 select_symptoms_via_gptで症状抽出を試みます: {user_text}")
+            symptom_extraction_result = select_symptoms_via_gpt(user_text, client=client)
+            logger.debug(f"🔍 select_symptoms_via_gptの結果: {symptom_extraction_result}")
+            
+            # select_symptoms_via_gptは直接 {'status': 'success', 'symptoms': [...], 'message': '...'} を返す
+            if symptom_extraction_result and 'symptoms' in symptom_extraction_result:
+                extracted_symptom_names = symptom_extraction_result['symptoms']
+                logger.debug(f"🔍 extracted_symptom_names: {extracted_symptom_names}")
+                
+                if extracted_symptom_names:
+                    # 抽出された症状をnlu_resultに統合
+                    symptoms_list = []
+                    for symptom_name in extracted_symptom_names:
+                        symptoms_list.append({
+                            "name": symptom_name,
+                            "severity": "中等度",
+                            "duration": "不明",
+                            "body_part": None
+                        })
+                    nlu_result["symptoms"] = symptoms_list
+                    has_detected_symptoms = True
+                    # confidence_scoreも更新
+                    nlu_result["confidence_score"] = 0.7  # フォールバック抽出のため中程度の信頼度
+                    logger.info(f"✅ select_symptoms_via_gptで症状を抽出: {extracted_symptom_names}")
+                else:
+                    logger.warning(f"⚠️ select_symptoms_via_gptで症状が抽出されませんでした（空のリスト）")
+            else:
+                logger.warning(f"⚠️ select_symptoms_via_gptの結果に'symptoms'キーがありません: {symptom_extraction_result}")
+        except Exception as e:
+            logger.warning(f"⚠️ select_symptoms_via_gptでの症状抽出に失敗: {e}")
+            import traceback
+            traceback.print_exc()
     
     # 医療キーワードがなく、かつ短い文字列の場合、かつ症状も検出されていない場合のみエラー
     if not has_medical_keyword and len(user_text_stripped) < 10 and not has_detected_symptoms:
@@ -9300,6 +9363,12 @@ def generate_usage_notes_and_consultation_with_gpt(
             if age_restriction_display and age_restriction_display not in individual_note and not is_complex_age_restriction:
                 note_text += f"\n{age_restriction_display}"
             
+            # 「治療中」警告メッセージを各項目に追加
+            treatment_warning = user_info.get('treatment_mention', False)
+            if treatment_warning:
+                treatment_warning_message = "\n⚠️ <strong>治療中の方へ</strong>: 現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響が重要になります。"
+                note_text += treatment_warning_message
+            
             individual_notes.append(note_text)
         
         # 個別の使用上の注意を結合
@@ -9367,6 +9436,12 @@ def generate_usage_notes_and_consultation_with_gpt(
             if age_restriction_display:
                 note_text += f"\n{age_restriction_display}"
             
+            # 「治療中」警告メッセージを各項目に追加（フォールバック処理）
+            treatment_warning = user_info.get('treatment_mention', False)
+            if treatment_warning:
+                treatment_warning_message = "\n⚠️ <strong>治療中の方へ</strong>: 現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響が重要になります。"
+                note_text += treatment_warning_message
+            
             individual_notes.append(note_text)
         
         usage_notes_individual = '\n\n'.join(individual_notes)
@@ -9392,9 +9467,13 @@ def generate_usage_notes_and_consultation_with_gpt(
     
     logger.info(f"使用上の注意生成完了: {len(individual_notes)}件")
     
+    # treatment_warningフラグを取得
+    treatment_warning = general_notes.get('treatment_warning', False)
+    
     return {
         "usage_notes": usage_notes_combined,
-        "doctor_consultation": doctor_consultation
+        "doctor_consultation": doctor_consultation,
+        "treatment_warning": treatment_warning  # 治療中警告フラグ
     }
 
 def generate_default_usage_notes_and_consultation(recommended_medicines: List[Dict], user_info: Dict, nlu_result: Dict = None) -> Dict:
@@ -9506,9 +9585,35 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         doctor_consultation_parts.insert(1, "・性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。")
         doctor_consultation_parts.insert(2, "・性器周辺のかゆみ、発疹、痛みなどの症状が続く場合は、早めに医師にご相談ください。")
     
+    # OTC医薬品の定義と表現を追加
+    otc_disclaimer = [
+        "",
+        "【OTC医薬品について】",
+        "・OTC医薬品（市販薬）はあくまで対症療法であり、安静や栄養補給が重要です",
+        "・症状が長引く場合や重症化する可能性がある場合は、専門の医師に相談することをお勧めします"
+    ]
+    usage_notes_parts = otc_disclaimer + usage_notes_parts
+    
+    # 「治療中」警告メッセージの自動挿入
+    treatment_mention = user_info.get("treatment_mention", False)
+    if treatment_mention:
+        # 推奨メッセージの冒頭に警告を追加
+        treatment_warning_header = [
+            "⚠️ <strong>治療中の方へ</strong>",
+            "現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。",
+            "重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響（例：腎不全患者へのNSAIDs使用、高血圧患者へのエフェドリン使用など）が重要になります。",
+            ""
+        ]
+        usage_notes_parts = treatment_warning_header + usage_notes_parts
+        
+        # 推奨医薬品の各項目に注意書きを追加
+        # この部分は、推奨医薬品の各項目に個別に追加する必要があるため、
+        # 呼び出し側（app.pyやrule_based_recommendation関数）で処理する
+    
     return {
         "usage_notes": '\n'.join(usage_notes_parts),
-        "doctor_consultation": '\n'.join(doctor_consultation_parts)
+        "doctor_consultation": '\n'.join(doctor_consultation_parts),
+        "treatment_warning": treatment_mention  # 治療中警告フラグを返す
     }
 
 # ================================================================================
