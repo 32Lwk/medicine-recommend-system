@@ -6183,6 +6183,7 @@ def index():
                                 recommended_medicines,
                                 symptoms,
                                 recommendation_client,
+                                user_text=user_message,
                                 influenza_risk=influenza_risk,
                                 influenza_reason=influenza_reason
                             )
@@ -6319,9 +6320,27 @@ def index():
     </div>
 """
                         
+                        # 曖昧な入力への注意書き（治療中警告の前に配置）
+                        ambiguous_warning_section = ""
+                        try:
+                            # nlu_resultをrecommendation_resultから取得を試みる
+                            nlu_result_for_ambiguous = recommendation_result.get('nlu_result', {})
+                            # symptomsは文字列のリストとして扱う
+                            symptoms_list = [s if isinstance(s, str) else s.get('name', '') if isinstance(s, dict) else str(s) for s in symptoms] if symptoms else []
+                            if is_ambiguous_input(user_message, symptoms_list, nlu_result_for_ambiguous):
+                                ambiguous_warning_section = """
+    <div style="background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
+        <h4 style="color: #1976d2; margin-top: 0;">ℹ️ ご入力について</h4>
+        <p style="margin: 5px 0; line-height: 1.6;">ご入力いただいた内容から、複数の症状が推定されました。より正確な推奨のため、具体的な症状（発熱、咳、鼻水など）を詳しく教えていただくと、より適切な医薬品をご提案できます。</p>
+    </div>
+"""
+                        except Exception as e:
+                            logger.warning(f"曖昧さ判定エラー: {e}")
+                        
                         bot_content = f"""
 <div class="recommendation-result">
 {attribute_update_message}
+{ambiguous_warning_section}
 {treatment_warning_section}
 {personalized_section}
     <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
@@ -6331,6 +6350,65 @@ def index():
     <div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
         <h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>
 """
+                        
+                        # 成分重複チェック
+                        overlap_warning_section = ""
+                        if recommended_medicines:
+                            try:
+                                from rule_based_recommendation import check_ingredient_overlap
+                                overlap_result = check_ingredient_overlap(recommended_medicines)
+                                if overlap_result.get("has_overlap"):
+                                    # コンパクトな形式で警告メッセージを生成（1-2行で簡潔に）
+                                    overlap_summaries = []
+                                    for overlap in overlap_result.get("overlapping_ingredients", []):
+                                        medicines_list = "、".join(overlap.get("medicines", []))
+                                        summary = f"{overlap.get('warning_message', '')}：{medicines_list}{overlap.get('side_effect_message', '')}"
+                                        overlap_summaries.append(summary)
+                                    
+                                    # 複数の重複がある場合は最初の1-2件のみ表示（コンパクトに）
+                                    display_summaries = overlap_summaries[:2]  # 最大2件まで表示
+                                    if len(overlap_summaries) > 2:
+                                        display_summaries.append(f"他{len(overlap_summaries) - 2}件の重複あり")
+                                    
+                                    # 深刻度に応じたスタイルを決定
+                                    highest_severity = overlap_result.get("highest_severity", "blue")
+                                    severity_styles = {
+                                        "red": {
+                                            "icon": "🚨",
+                                            "title": "成分の重複について（重複禁止）",
+                                            "border_color": "#d32f2f",
+                                            "title_color": "#c62828",
+                                            "background": "white"
+                                        },
+                                        "yellow": {
+                                            "icon": "⚠️",
+                                            "title": "成分の重複について（注意）",
+                                            "border_color": "#f57c00",
+                                            "title_color": "#e65100",
+                                            "background": "white"
+                                        },
+                                        "blue": {
+                                            "icon": "ℹ️",
+                                            "title": "成分の重複について（情報）",
+                                            "border_color": "#1976d2",
+                                            "title_color": "#1976d2",
+                                            "background": "white"
+                                        }
+                                    }
+                                    style = severity_styles.get(highest_severity, severity_styles["blue"])
+                                    
+                                    overlap_warning_section = f"""
+    <div style="background: {style['background']}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {style['border_color']};">
+        <h4 style="color: {style['title_color']}; margin-top: 0;">{style['icon']} {style['title']}</h4>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            {''.join(f'<li style="margin: 3px 0;">{summary}</li>' for summary in display_summaries)}
+        </ul>
+    </div>
+"""
+                                    bot_content += overlap_warning_section
+                            except Exception as e:
+                                # 成分重複チェックでエラーが発生した場合は警告を表示せず、処理を続行
+                                logger.warning(f"成分重複チェックエラー: {e}")
                         
                         if recommended_medicines:
                             for medicine in recommended_medicines:
@@ -6375,6 +6453,17 @@ def index():
                                             pass
                                     
                                     rank = medicine.get('rank', 1)
+                                    medicine_type = medicine.get('medicine_type', '')
+                                    
+                                    # 外用薬（のど）の補助療法説明
+                                    auxiliary_note = ""
+                                    if '外用薬（のど）' in medicine_type:
+                                        auxiliary_note = """
+        <p style="margin: 5px 0; padding: 8px; background: #f0f7ff; border-left: 3px solid #2196f3; font-size: 0.9em; color: #1976d2;">
+            💡 <strong>補助的な使用について</strong><br>
+            この外用薬は、内服薬と併用して喉を直接ケアする補助的な製品です。飲み薬にプラスして使うことで、喉の痛みをより和らげることができます。
+        </p>
+"""
                                     
                                     # スコア表示の生成（display_scoreを優先、整数表示）
                                     score_display = ""
@@ -6416,6 +6505,7 @@ def index():
             <h5 style="margin: 0 0 10px 0;">🏆 {rank}つ目: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
             {score_display}
             <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
+            {auxiliary_note}
             {age_restriction_display}
             {risk_warning_display}
             {low_score_warning_display}
@@ -6955,7 +7045,61 @@ def index():
                          decoration_images=decoration_images,
                          image_version=image_version)
 
-def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, influenza_risk: bool = False, influenza_reason: str = "") -> str:
+def is_ambiguous_input(user_text: str, symptoms: List[str], nlu_result: Dict) -> bool:
+    """
+    曖昧な入力かどうかを判定
+    
+    Args:
+        user_text: ユーザー入力テキスト
+        symptoms: 抽出された症状リスト（文字列のリスト）
+        nlu_result: NLU解析結果
+    
+    Returns:
+        bool: 曖昧な入力の場合True
+    """
+    # 1. 症状数のチェック（3症状以上）
+    symptom_count = len(symptoms) if symptoms else 0
+    if symptom_count < 3:
+        return False
+    
+    # 2. 入力文字数のチェック（30文字以下は曖昧の可能性が高い）
+    text_length = len(user_text.strip())
+    if text_length > 30:  # 具体的な入力を想定
+        return False
+    
+    # 3. NLU判定（信頼度スコアと明示/推論の判定）
+    confidence_score = nlu_result.get('confidence_score', 1.0)  # デフォルトは1.0（高信頼度）
+    
+    # ユーザー入力に症状名が直接含まれているかチェック
+    user_text_lower = user_text.lower()
+    explicit_symptoms = []
+    symptom_keywords = {
+        "発熱": ["発熱", "熱", "高熱", "微熱", "熱がある"],
+        "頭痛": ["頭痛", "頭が痛い"],
+        "咳": ["咳", "せき"],
+        "鼻水": ["鼻水", "鼻みず"],
+        "のどの痛み": ["のど", "喉", "のどの痛み", "喉が痛い"],
+        "くしゃみ": ["くしゃみ"],
+        "寒気": ["寒気", "悪寒"]
+    }
+    
+    for symptom_name, keywords in symptom_keywords.items():
+        if any(keyword in user_text_lower for keyword in keywords):
+            explicit_symptoms.append(symptom_name)
+    
+    # 明示された症状数が2つ以上の場合、具体的な入力と判定
+    if len(explicit_symptoms) >= 2:
+        return False
+    
+    # 信頼度スコアが低い場合（0.5未満）→ 推論と判定 → 曖昧
+    if confidence_score < 0.5:
+        return True
+    
+    # 上記の条件をすべて満たす場合、曖昧な入力と判定
+    return True
+
+
+def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], symptoms: List[str], client, user_text: str = "", influenza_risk: bool = False, influenza_reason: str = "") -> str:
     """
     ユーザー属性に基づいた個別アドバイスをChatGPTで生成（インフルエンザリスク対応含む）
     
@@ -6964,6 +7108,7 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
         medicines: 推奨医薬品リスト
         symptoms: 症状リスト
         client: OpenAIクライアント
+        user_text: ユーザーの入力テキスト
         influenza_risk: インフルエンザリスクの有無
         influenza_reason: インフルエンザリスクの理由
     
@@ -7013,7 +7158,10 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
         risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば薬剤師または登録販売者にご相談ください。"
     
     prompt = f"""
-あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100-150字程度で生成してください。
+あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100-200字程度で生成してください。
+
+【ユーザーの入力】
+{user_text if user_text else '症状情報なし'}
 
 【ユーザー情報】
 {attr_summary}
@@ -7025,16 +7173,14 @@ def generate_personalized_advice(user_attrs: Dict, medicines: List[Dict], sympto
 {', '.join(medicine_names) if medicine_names else '推奨医薬品なし'}{influenza_info}{risk_warning_info}
 
 【生成するアドバイス】
+- ユーザーの入力内容（「{user_text[:50] if user_text else ''}...」など）に言及し、親身な対応を心がけてください
 - ユーザーの年齢、性別、妊娠状態などを考慮
-- 推奨医薬品がこのユーザーに適している理由
+- 推奨医薬品がこのユーザーに適している理由を、ユーザーの言葉を使って自然に説明してください（例：「〇〇という症状に基づき、複数の症状を同時にカバーできる総合感冒薬を優先して選んでいます」）
 - 特に注意すべきポイント
 - インフルエンザリスクがある場合はその注意喚起を含める
 - 温かく、分かりやすい言葉で
 
-例：
-「19歳女性で妊娠中とのこと。妊娠中は薬の選択に特に注意が必要です。推奨した医薬品は妊娠中でも安全に使用できるものを選んでいます。服用前に必ず添付文書を確認し、不安な点があれば医師にご相談ください。」
-
-100字程度で、このユーザーに合わせた温かいアドバイスを生成してください。
+100-200字程度で、このユーザーに合わせた温かいアドバイスを生成してください。
 """
     
     try:
