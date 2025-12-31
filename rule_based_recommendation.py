@@ -10197,7 +10197,7 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         doctor_consultation_parts.insert(1, "・性器周辺の症状は、性感染症や皮膚疾患の可能性があります。市販薬の使用前に医師の診察を受けることを強く推奨します。")
         doctor_consultation_parts.insert(2, "・性器周辺のかゆみ、発疹、痛みなどの症状が続く場合は、早めに医師にご相談ください。")
     
-    # OTC医薬品の定義と表現を追加
+    # OTC医薬品の定義と表現を追加（シンプルな区切りを追加）
     otc_disclaimer = [
         "",
         "【OTC医薬品について】",

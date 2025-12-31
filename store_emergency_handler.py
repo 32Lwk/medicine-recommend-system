@@ -192,6 +192,72 @@ EMERGENCY_COLORS = {
 }
 
 
+# 医療用語（症状名・疾患名）に含まれる「炎」を除外するためのリスト
+MEDICAL_TERMS_WITH_EN = [
+    '口内炎', '胃炎', '腸炎', '胃腸炎', '膀胱炎', '腎盂腎炎', '尿道炎', '前立腺炎',
+    '結膜炎', '咽頭炎', '喉頭炎', '扁桃炎', '副鼻腔炎', '中耳炎', '外耳炎',
+    '関節炎', 'リウマチ性関節炎', '腱鞘炎', '滑液包炎',
+    '皮膚炎', '接触皮膚炎', 'アトピー性皮膚炎', '脂漏性皮膚炎',
+    '膵炎', '肝炎', '胆嚢炎', '胆管炎',
+    '肺炎', '気管支炎', '胸膜炎',
+    '髄膜炎', '脳炎', '脊髄炎',
+    '子宮内膜炎', '卵管炎', '卵巣炎', '腟炎',
+    '前立腺炎', '精巣上体炎',
+    '虫垂炎', '大腸炎', '直腸炎',
+    '甲状腺炎', 'リンパ節炎',
+    '歯肉炎', '歯周炎', '舌炎',
+    '角膜炎', '強膜炎', 'ぶどう膜炎',
+    '心膜炎', '心内膜炎', '心筋炎',
+    '静脈炎', '動脈炎', '血管炎',
+    '骨髄炎', '骨膜炎',
+    '筋炎', '多発性筋炎',
+    '神経炎', '多発性神経炎',
+    'リンパ管炎', '蜂窩織炎',
+    '炎症', '炎症性', '抗炎症'
+]
+
+# 誤検知を防ぐための除外パターン（医療相談の文脈）
+MEDICAL_CONSULTATION_INDICATORS = [
+    # 医療相談を示す表現
+    '症状', '症状が', '症状を', '症状は', '症状の', '症状について',
+    '市販薬', '薬', '薬を', '薬が', '薬の', '薬について',
+    '処方薬', '処方薬の', '処方薬を', '処方薬が',
+    '副作用', '副作用で', '副作用が', '副作用の', '副作用を',
+    '相談', '相談したい', '相談です', '相談があります',
+    '探しています', '欲しい', 'おすすめ', '教えて',
+    '診断', '診断名', '診断が', '診断を',
+    '治療', '治療中', '治療の', '治療を',
+    '持病', '既往症', '既往歴', '基礎疾患',
+    '医師', '医者', '病院', 'クリニック',
+    '受診', '受診した', '受診しています',
+    '服用', '服用中', '服用している', '服用しています',
+    '飲んで', '飲んでいる', '飲んでいます',
+    'できました', 'できた', 'できています',
+    'なりました', 'なった', 'なっています',
+    'あります', 'ある', 'ありました',
+    # 症状報告の表現（医療相談の文脈として扱う）
+    '出ました', '出ています', '出た', '出る',
+    'しました', 'しています', 'した', 'する',
+    'なりました', 'なっています', 'なった', 'なる',
+    'できました', 'できています', 'できた', 'できる',
+]
+
+# 一般的な表現（緊急事案ではない）
+COMMON_EXPRESSIONS_TO_EXCLUDE = [
+    # 時間・曜日
+    '火曜日', '火曜', '火曜日に', '火曜日の',
+    # 一般的な動作
+    '火を使う', '火をつける', '火を消す',
+    # 比喩的表現
+    '血が出る', '鼻血', '鼻血が出る', '鼻血が出た', '鼻血が出ました',
+    '歯茎から血', '歯茎から出血', '歯茎の出血',
+    '生理の出血', '生理出血', '月経出血',
+    # 医療相談の文脈
+    '血圧', '血糖値', '血中', '血液',
+    # その他
+    '煙草', 'たばこ', 'タバコ', '喫煙',
+]
+
 def detect_store_emergency(user_text: str) -> Optional[Dict]:
     """
     緊急事案（不審者、傷病人、刃物など）を検出
@@ -216,10 +282,99 @@ def detect_store_emergency(user_text: str) -> Optional[Dict]:
     detected_types = []
     detected_keywords = []
     
+    # 医療相談の文脈かどうかをチェック（誤検知を防ぐため）
+    is_medical_consultation = any(indicator in user_text for indicator in MEDICAL_CONSULTATION_INDICATORS)
+    
     # 各緊急事案の種類をチェック
     for emergency_type, keywords in EMERGENCY_KEYWORDS.items():
         for keyword in keywords:
             if keyword in user_text_lower:
+                # 誤検知を防ぐためのチェック
+                should_exclude = False
+                keyword_index = user_text_lower.find(keyword)
+                
+                # キーワードの前後を確認（最大30文字）
+                start = max(0, keyword_index - 30)
+                end = min(len(user_text), keyword_index + len(keyword) + 30)
+                context = user_text[start:end]
+                context_lower = context.lower()
+                
+                # 1. 医療用語（症状名・疾患名）に含まれる「炎」を除外
+                if keyword == "炎" or keyword == "炎が" or keyword == "炎を" or keyword == "炎が出ている" or keyword == "炎が出ています":
+                    # 医療用語が文脈内に含まれているかチェック
+                    for medical_term in MEDICAL_TERMS_WITH_EN:
+                        if medical_term in context:
+                            # 医療用語が見つかった場合、その位置を確認
+                            medical_term_index_in_context = context.find(medical_term)
+                            keyword_index_in_context = keyword_index - start
+                            
+                            # 「炎」が医療用語の一部として使われている場合
+                            medical_term_en_index = medical_term.find('炎')
+                            if medical_term_en_index != -1:
+                                # 医療用語内の「炎」の位置
+                                medical_term_en_pos = medical_term_index_in_context + medical_term_en_index
+                                # 検出された「炎」の位置との距離が近い場合（5文字以内）
+                                if abs(keyword_index_in_context - medical_term_en_pos) <= 5:
+                                    should_exclude = True
+                                    logger.info(f"🔍 医療用語として除外: {medical_term} (keyword: {keyword})")
+                                    break
+                
+                # 2. 一般的な表現を除外
+                if not should_exclude:
+                    for common_expr in COMMON_EXPRESSIONS_TO_EXCLUDE:
+                        if common_expr in context:
+                            should_exclude = True
+                            logger.info(f"🔍 一般的な表現として除外: {common_expr} (keyword: {keyword})")
+                            break
+                
+                # 2.5. 「車を」「車が」が「救急車を」「救急車が」の一部として使われている場合は除外
+                if not should_exclude and (keyword == "車を" or keyword == "車が"):
+                    # 「救急車」が文脈内に含まれているかチェック
+                    if "救急車" in context:
+                        should_exclude = True
+                        logger.info(f"🔍 救急車の一部として除外: {keyword}")
+                
+                # 3. 医療相談の文脈で、特定のキーワードを除外
+                if not should_exclude and is_medical_consultation:
+                    # 医療相談の文脈では、以下のキーワードを除外
+                    medical_consultation_exclude_keywords = [
+                        '血', '血が', '血を', '血の', '出血', '出血が', '出血を',
+                        '救急車', '救急車を', '救急車が', '救急車が必要', '救急車を呼ぶ', '救急車を呼ぶべき',
+                        '救急', '119', '119番',
+                    ]
+                    if keyword in medical_consultation_exclude_keywords:
+                        # 医療相談の文脈で、症状や相談内容として使われている場合は除外
+                        should_exclude = True
+                        logger.info(f"🔍 医療相談の文脈として除外: {keyword}")
+                    
+                    # 「血が出ている」系のキーワードは、自分の症状として使われている場合は除外
+                    # ただし、「血が出ている人」のように他人の症状として使われている場合は検出
+                    if keyword == "血が出ている" or keyword == "血が出た" or keyword == "血が":
+                        # 「人」が含まれていない場合は自分の症状として除外
+                        # また、「鼻血」「歯茎から血」などの医療用語が含まれている場合も除外
+                        # さらに、症状報告の表現（「出ました」「出ています」など）が含まれている場合も除外
+                        medical_blood_terms = ['鼻血', '歯茎', '生理', '月経', '出血', '症状', '副作用', '処方薬', '薬']
+                        symptom_report_indicators = ['出ました', '出ています', '出た', 'できました', 'できています', 'できた']
+                        has_medical_context = any(term in context for term in medical_blood_terms)
+                        has_symptom_report = any(indicator in user_text for indicator in symptom_report_indicators)
+                        if "人" not in context or has_medical_context or has_symptom_report:
+                            should_exclude = True
+                            logger.info(f"🔍 医療相談の文脈として除外: {keyword} (自分の症状または医療用語)")
+                    
+                    # 「助けて」系のキーワードは、相談の文脈がある場合のみ除外
+                    if keyword == '助けて' or keyword == '助けてください' or keyword == '助けを' or keyword == '助けが必要':
+                        # 相談の文脈を示す語（「相談」「教えて」「どうすれば」など）が含まれているかチェック
+                        consultation_context_words = ['相談', '教えて', 'どうすれば', 'どうしたら', 'すべきか', 'べきか', 'かどうか', 'か教えて', 'どうしたらいい', 'どうすればいい']
+                        has_consultation_context = any(word in user_text for word in consultation_context_words)
+                        if has_consultation_context:
+                            # 相談の文脈がある場合は除外
+                            should_exclude = True
+                            logger.info(f"🔍 医療相談の文脈として除外: {keyword} (相談の文脈あり)")
+                        # 相談の文脈がない場合は緊急事案として扱う（should_excludeはFalseのまま）
+                
+                if should_exclude:
+                    continue  # 除外する場合はスキップ
+                
                 if emergency_type not in detected_types:
                     detected_types.append(emergency_type)
                 detected_keywords.append(keyword)
