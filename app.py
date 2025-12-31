@@ -1774,7 +1774,71 @@ def index():
                 import traceback
                 traceback.print_exc()
             
-            # ステップ1.7.6: 治療中フラグ確認と主訴判定、不適切な要求の検出（店舗案内処理の前、最優先）
+            # 元のユーザーメッセージを保持（UI表示用）
+            original_user_message = user_message
+            
+            # ステップ1.7.5.5: 基本正規化（新規追加）
+            try:
+                from scoring_utils import basic_normalize_text
+                sanitized_message = basic_normalize_text(sanitized_message)
+            except ImportError:
+                logger.warning("⚠️ 基本正規化機能のインポートに失敗")
+            except Exception as e:
+                logger.error(f"❌ 基本正規化エラー: {e}")
+            
+            # ステップ1.7.6: 方言変換（新規追加）
+            processed_message = sanitized_message  # 内部処理用のメッセージ
+            
+            try:
+                from scoring_utils import convert_dialect_to_standard, check_escalation_threshold
+                converted_message, severity_tag, escalation_score, non_destructive_candidates, normalized_weights = convert_dialect_to_standard(
+                    sanitized_message,
+                    extract_severity=True,
+                    non_destructive=True,
+                    use_aho_corasick=True,
+                    use_index=True,
+                    use_scanner=True
+                )
+                processed_message = converted_message  # 内部処理用に変換後のテキストを保存
+                # sanitized_messageは元のメッセージのまま保持（UI表示用）
+                
+                # 重症度タグをセッションに保存
+                if severity_tag:
+                    session['detected_severity_tag'] = severity_tag
+                
+                # escalation_scoreをセッションに保存
+                if escalation_score > 0:
+                    session['escalation_score'] = escalation_score
+                    
+                    # 閾値を超えている場合は受診勧奨フラグを立てる（閾値4.0：重度×2回分）
+                    if check_escalation_threshold(escalation_score):
+                        session['doctor_referral_required'] = True
+                        session['escalation_reason'] = f"複数の強調表現が検出されました（escalation_score: {escalation_score:.1f}）。特に高齢の方の場合、複数の強調語は「痛みに耐えかねている」シグナルです。医師の診断を受けることをお勧めします。"
+                
+                # 非破壊的変換の候補をセッションに保存
+                if non_destructive_candidates:
+                    session['dialect_candidates'] = non_destructive_candidates
+                
+                # 正規化された重みをセッションに保存
+                if normalized_weights:
+                    session['normalized_symptom_weights'] = normalized_weights
+                
+                # デバッグモード時のログ記録
+                DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(
+                        f"方言変換: {sanitized_message[:50]}... "
+                        f"(重症度タグ: {severity_tag}, escalation_score: {escalation_score:.1f}, "
+                        f"候補数: {len(non_destructive_candidates)}, 重み数: {len(normalized_weights)})"
+                    )
+            except ImportError:
+                logger.warning("⚠️ 方言変換機能のインポートに失敗")
+            except Exception as e:
+                logger.error(f"❌ 方言変換エラー: {e}")
+                import traceback
+                traceback.print_exc()
+            
+            # ステップ1.7.7: 治療中フラグ確認と主訴判定、不適切な要求の検出（店舗案内処理の前、最優先）
             inappropriate_request_detected = False
             treatment_mention_flag = False
             medical_prevention_flag = False
@@ -1787,9 +1851,9 @@ def index():
                 try:
                     from counseling_response import is_treatment_mention, has_specific_symptom, is_medical_prevention_request
                     
-                    treatment_mention_flag = is_treatment_mention(sanitized_message)
-                    has_symptom = has_specific_symptom(sanitized_message)
-                    medical_prevention_flag = is_medical_prevention_request(sanitized_message)
+                    treatment_mention_flag = is_treatment_mention(processed_message)  # 方言変換後のテキストを使用
+                    has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
+                    medical_prevention_flag = is_medical_prevention_request(processed_message)  # 方言変換後のテキストを使用
                     
                     if treatment_mention_flag:
                         logger.info(f"🔔 治療中キーワード検出: session_id={sid}")
@@ -2365,7 +2429,7 @@ def index():
                                 save_session_to_db(sid, session_data)
                     
                     # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
-                    has_symptom = has_specific_symptom(sanitized_message)
+                    has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
                     if has_symptom:
                         # 症状が検出されている場合は、一般的な症状相談として扱う
                         symptom_type = "general_symptom"
@@ -2462,9 +2526,10 @@ def index():
                 # Emotionalカテゴリの処理に進む（後続処理で実行される）
             
             # 重複チェック（ステップ1.9の後に実行）
+            # 元のユーザーメッセージで重複チェック
             user_message_exists = any(
                 msg.get('type') == 'user' and 
-                msg.get('content') == sanitized_message and
+                msg.get('content') == original_user_message and
                 msg.get('uuid')
                 for msg in session.get('messages', [])
             )
@@ -2472,7 +2537,7 @@ def index():
             if not user_message_exists:
                 user_msg = {
                     'type': 'user',
-                    'content': sanitized_message,
+                    'content': original_user_message,  # 元のユーザーメッセージを表示（方言変換前）
                     'timestamp': datetime.now().isoformat(),
                     'uuid': str(uuid.uuid4())
                 }
@@ -2489,7 +2554,7 @@ def index():
                         session_data['last_activity'] = datetime.now()
                         save_session_to_db(sid, session_data)
             else:
-                logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
+                logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {original_user_message[:50]}...")
             
             # ステップ2: カウンセリングモード中かチェック
             counseling_mode = session.get('counseling_mode', {})
@@ -2515,7 +2580,7 @@ def index():
                         conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
                         
                         response = handle_user_input_in_counseling_mode(
-                            sanitized_message, session, recommendation_client, session_id=sid
+                            processed_message, session, recommendation_client, session_id=sid  # 方言変換後のテキストを使用
                         )
                         
                         # 話題転換が検知された場合の処理
@@ -2524,7 +2589,7 @@ def index():
                         # 話題転換検知結果をログに保存
                         log_topic_shift_detection(
                             session_id=sid,
-                            user_input=sanitized_message,
+                            user_input=processed_message,  # 方言変換後のテキストを使用
                             topic_shift_result=topic_shift_result,
                             current_counseling_topic=counseling_mode.get('symptom_type', ''),
                             conversation_history_length=len(session.get('messages', [])),
@@ -3692,7 +3757,7 @@ def index():
             # 重複チェック：同じ内容のユーザーメッセージが既に存在するかチェック
             user_message_exists = any(
                 msg.get('type') == 'user' and 
-                msg.get('content') == sanitized_message and
+                msg.get('content') == original_user_message and
                 msg.get('uuid')  # UUIDが存在する場合は既存メッセージ
                 for msg in session.get('messages', [])
             )
@@ -3700,11 +3765,11 @@ def index():
             if not user_message_exists:
                 session['messages'].append({
                     'type': 'user',
-                    'content': sanitized_message,  # サニタイズされたメッセージを使用
+                    'content': original_user_message,  # 元のユーザーメッセージを表示（方言変換前）
                     'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
                     'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
                 })
-                logger.info(f"✅ ユーザーメッセージ追加: {sanitized_message[:50]}...")
+                logger.info(f"✅ ユーザーメッセージ追加: {original_user_message[:50]}...")
             else:
                 logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
             # 管理画面表示用にDBへも即時反映（ユーザーメッセージが見えるように）
@@ -4752,14 +4817,14 @@ def index():
                 try:
                     logger.info(f"🔍 Calling select_symptoms_via_gpt...")
                     start_time = time.time()
-                    matched_symptoms = select_symptoms_via_gpt(user_message)
+                    matched_symptoms = select_symptoms_via_gpt(processed_message)  # 方言変換後のテキストを使用
                     end_time = time.time()
                     execution_time = round(end_time - start_time, 3)
                     
                     # medicine_logic.pyの呼び出しをログ出力
                     log_medicine_logic_call(
                         "select_symptoms_via_gpt",
-                        {"user_message": user_message},
+                        {"user_message": processed_message},  # 方言変換後のテキストをログに表示
                         {"matched_symptoms": matched_symptoms},
                         execution_time
                     )
@@ -5334,9 +5399,9 @@ def index():
                 from rule_based_recommendation import hybrid_nlu_extraction
                 nlu_result = {}
                 try:
-                    logger.info(f"🔍 NLU解析を実行中: user_message={user_message[:50]}...")
+                    logger.info(f"🔍 NLU解析を実行中: processed_message={processed_message[:50]}...")
                     nlu_result = hybrid_nlu_extraction(
-                        user_message,
+                        processed_message,  # 方言変換後のテキストを使用
                         user_info,
                         recommendation_client,
                         session_id=sid
@@ -5525,7 +5590,7 @@ def index():
                 start_time = time.time()
                 try:
                     logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
-                    analysis_result = analyze_symptoms_and_medicine_type(user_message, recommendation_client)
+                    analysis_result = analyze_symptoms_and_medicine_type(processed_message, recommendation_client)  # 方言変換後のテキストを使用
                     
                     # 診断名が検出された場合の処理（早期リターンでAPIコストを削減）
                     if analysis_result.get('is_diagnosis', False):
@@ -5903,7 +5968,7 @@ def index():
                             user_info['user_preferences'] = None
                         
                         recommendation_result = rule_based_medicine_recommendation(
-                            user_message, 
+                            processed_message,  # 方言変換後のテキストを使用
                             user_info, 
                             recommendation_client,
                             session_id=sid
@@ -6268,7 +6333,7 @@ def index():
                     # medicine_logic.pyの呼び出しをログ出力
                     log_medicine_logic_call(
                         f"hybrid_recommendation ({recommendation_result.get('algorithm', 'unknown')})",
-                        {"user_message": user_message},
+                        {"user_message": processed_message},  # 方言変換後のテキストをログに表示
                         {
                             "symptoms": recommendation_result.get('symptoms', []),
                             "medicine_type": recommendation_result.get('medicine_type', medicine_type),
@@ -9233,6 +9298,15 @@ def is_port_in_use(port):
 
 if __name__ == '__main__':
     logger.info("🚀 Starting Medicine Recommendation System...")
+    
+    # 方言変換リソースの初期化（アプリ起動時に一度だけ実行）
+    try:
+        from scoring_utils import initialize_dialect_resources
+        initialize_dialect_resources()
+    except Exception as e:
+        logger.warning(f"⚠️ 方言変換リソースの初期化に失敗: {e}")
+        import traceback
+        traceback.print_exc()
     
     # 最小限のログ出力で起動時間を短縮
     requested_port = int(os.getenv('PORT', 5000))

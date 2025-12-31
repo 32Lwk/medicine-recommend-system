@@ -801,8 +801,19 @@ def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
     import re
     import unicodedata
     
+    # 方言変換を適用（変換後のテキストで判定）
+    try:
+        from scoring_utils import convert_dialect_to_standard
+        converted_text, _, _, _, _ = convert_dialect_to_standard(
+            user_text,
+            extract_severity=False,
+            non_destructive=False
+        )
+    except Exception:
+        converted_text = user_text
+    
     # ユーザー入力から診断名を除去
-    cleaned_text = user_text.replace(diagnosis_term, "").replace("です", "").replace("ます", "").strip()
+    cleaned_text = converted_text.replace(diagnosis_term, "").replace("です", "").replace("ます", "").strip()
     
     # 1. Unicodeカテゴリで記号・句読点・空白を除去
     meaningful_chars = []
@@ -855,6 +866,30 @@ def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
             # 診断名の直後に続く場合のみ除去（文脈を考慮）
             if meaningful_text.startswith(stop_word):
                 meaningful_text = meaningful_text[len(stop_word):].strip()
+    
+    # 例外処理：感情・状態に関する否定語のチェック
+    try:
+        from config.dialect_dictionary import (
+            EMOTIONAL_NEGATIVE_WORDS,
+            EMOTIONAL_NEGATIVE_PATTERNS
+        )
+        
+        # 例外リストのチェック
+        for word in EMOTIONAL_NEGATIVE_WORDS:
+            if word in meaningful_text:
+                return False  # 診断名のみではない
+        
+        # パターンマッチングのチェック
+        for pattern in EMOTIONAL_NEGATIVE_PATTERNS:
+            if re.search(pattern, meaningful_text, re.IGNORECASE):
+                return False  # 診断名のみではない
+    except ImportError:
+        # dialect_dictionaryモジュールがインポートできない場合はスキップ
+        pass
+    except Exception as e:
+        # エラーが発生した場合はスキップ
+        import logging
+        logging.getLogger(__name__).warning(f"is_diagnosis_onlyの例外処理でエラー: {e}")
     
     # 2. 残った文字が極端に少ない（2文字以下）場合は「診断名のみ」
     if len(meaningful_text) <= 2:
@@ -2048,6 +2083,8 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         "めまい", "疲労感", "倦怠感", "だるさ", "むくみ", "筋肉痛", "関節痛", "肩こり", "腰痛",
         # 皮膚系
         "かゆみ", "発疹", "湿疹", "蕁麻疹", "皮膚の乾燥",
+        # 外傷・打撲関連
+        "打ち身", "打撲", "あざ", "青あざ", "内出血", "炎症",
         # 睡眠・精神系
         "不眠", "眠気", "イライラ", "不安", "ストレス",
         # 女性特有
@@ -2077,6 +2114,20 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
     if any(kw in user_text_lower for kw in gastroenteritis_keywords):
         # 胃腸炎の典型的な症状を追加
         inferred_symptoms.extend(["腹痛", "下痢", "吐き気"])
+    
+    # 外傷・打撲関連のキーワード検出
+    # 日本語は大文字小文字の区別がないため、元のテキストで直接チェック
+    if "打ち身" in user_text:
+        inferred_symptoms.append("打ち身")
+    if "打撲" in user_text:
+        inferred_symptoms.append("打撲")
+    if "あざ" in user_text or "青あざ" in user_text or "あおたん" in user_text:
+        inferred_symptoms.append("あざ")
+    if "炎症" in user_text:
+        inferred_symptoms.append("炎症")
+    if "にえる" in user_text or "にえている" in user_text or "にえた" in user_text:
+        # 和歌山弁の「にえる」は「打ち身」「打撲」「あざ」のニュアンスが強い
+        inferred_symptoms.extend(["打ち身", "打撲", "あざ"])
     
     # 症状抽出のプロンプトを改善
     prompt = f"""
@@ -2111,6 +2162,7 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
 重要な注意事項：
 - 「風邪をひいています」「風邪を完治したい」「風邪を治したい」のような一般的な表現からも、典型的な症状（頭痛、発熱、咳、鼻水、のどの痛みなど）を推測して抽出してください
 - 「インフルエンザです」のような表現からも、典型的な症状（発熱、頭痛、関節痛、筋肉痛、悪寒など）を推測して抽出してください
+- 「打ち身になっている」「打撲になった」「あざができた」「炎症している」のような表現からも、症状（打ち身、打撲、あざ、炎症など）を直接抽出してください
 - 「完治したい」「治したい」などの表現が含まれていても、症状を抽出してください（これらは治療の意図を示すだけで、症状自体は別途抽出可能です）
 - 症状文に明示的に書かれていない症状でも、一般的な表現から推測できる典型的な症状は含めてください"""},
         {"role": "user", "content": prompt}
