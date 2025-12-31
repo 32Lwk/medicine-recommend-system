@@ -220,7 +220,7 @@ const ANIMATION_TRIGGERS = {
 const SPECIAL_EVENT_TRIGGERS = {
     newyear: new Set([
         // 基本形
-        'あけましておめでとう', 'あけましておめでとうございます', 'あけおめ', 'ことより',
+        'あけましておめでとう', 'あけましておめでとうございます', 'あけおめ', 'ことより','あけおめことよろ',
         '新年おめでとう', '新年おめでとうございます', '新年あけましておめでとう', '新年あけましておめでとうございます',
         '謹賀新年', 'きんがしんねん', '賀正', 'がしょう', '迎春', 'げいしゅん', '初春', 'しょしゅん',
         '良いお年を', 'よいおとしを', '良いお年をお迎えください', 'よいおとしをおむかえください',
@@ -1721,6 +1721,49 @@ function triggerRain() {
 }
 
 /**
+ * 「謹賀新年」縦書きアニメーション
+ * 大人っぽくカッコいいデザインで表示
+ */
+function showKeigaShinnen() {
+    // 既存の要素があれば削除
+    const existing = document.getElementById('keigaShinnenText');
+    if (existing) existing.remove();
+    
+    const textContainer = document.createElement('div');
+    textContainer.id = 'keigaShinnenText';
+    textContainer.className = 'keiga-shinnen-text';
+    
+    // 縦書きで4文字を表示
+    const characters = ['謹', '賀', '新', '年'];
+    characters.forEach((char, index) => {
+        const charSpan = document.createElement('span');
+        charSpan.className = 'keiga-char';
+        charSpan.textContent = char;
+        charSpan.style.animationDelay = `${index * 0.1}s`;
+        textContainer.appendChild(charSpan);
+    });
+    
+    document.body.appendChild(textContainer);
+    
+    // アニメーション完了後にwill-changeを削除してパフォーマンスを最適化
+    setTimeout(() => {
+        const chars = textContainer.querySelectorAll('.keiga-char');
+        chars.forEach(char => {
+            char.style.willChange = 'auto';
+        });
+    }, 2000); // アニメーション完了後
+    
+    // 5秒後に自動削除
+    setTimeout(() => {
+        const element = document.getElementById('keigaShinnenText');
+        if (element) {
+            element.style.animation = 'keigaShinnenFadeOut 0.8s ease-out forwards';
+            setTimeout(() => element.remove(), 800);
+        }
+    }, 5000);
+}
+
+/**
  * 新年アニメーション（花火とパーティクル効果）
  */
 function triggerNewYear() {
@@ -1729,6 +1772,9 @@ function triggerNewYear() {
     
     // 花火アニメーションを実行
     triggerFireworks();
+    
+    // 「謹賀新年」アニメーションを表示
+    showKeigaShinnen();
     
     // 新年用のパーティクル効果を追加
     const particleContainer = document.createElement('div');
@@ -2169,6 +2215,9 @@ function triggerRespectForTheAgedDay() {
  * 大晦日アニメーション
  */
 function triggerNewYearsEve() {
+    // 「謹賀新年」アニメーションを表示
+    showKeigaShinnen();
+    
     triggerGenericEvent('NewYearsEve', ['🎊', '🎉', '🎈', '✨', '⭐', '🌟', '💫', '🎁', '🎊', '🎉'], 5000);
 }
 

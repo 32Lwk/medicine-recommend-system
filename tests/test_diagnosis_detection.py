@@ -79,6 +79,17 @@ class TestDiagnosisDetection(unittest.TestCase):
         self.assertTrue(response.get('should_show_counseling', False), "診断名+症状の場合はカウンセリングフローにも流す")
         self.assertFalse(response.get('diagnosis_only', True), "診断名のみではない")
     
+    def test_031_cancer_with_cold_symptom(self):
+        """テストケース31: 診断名+症状（風邪） - 癌なんですが、風邪で市販薬を探しています"""
+        text = "癌なんですが、風邪で市販薬を探しています。"
+        is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
+        self.assertTrue(is_diagnosis, "癌+風邪の入力は診断名として検出されるべき")
+        self.assertEqual(diagnosis_type, "serious")
+        self.assertIsNotNone(response)
+        self.assertTrue(response.get('should_show_counseling', False), "診断名+症状の場合はカウンセリングフローにも流す")
+        self.assertFalse(response.get('diagnosis_only', True), "診断名のみではない")
+        self.assertTrue(response.get('has_symptom', False), "症状が検出されるべき")
+    
     def test_007_diabetes_with_symptom(self):
         """テストケース7: 診断名+症状 - 糖尿病ですが、頭痛がします"""
         text = "糖尿病ですが、頭痛がします"

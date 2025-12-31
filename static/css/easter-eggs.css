@@ -124,3 +124,110 @@
     }
 }
 
+/* 「謹賀新年」縦書きアニメーション */
+.keiga-shinnen-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    z-index: 10000;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'Yu Mincho', 'YuMincho', 'MS PMincho', 'MS Mincho', 'Noto Serif JP', serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    animation: keigaShinnenFadeIn 1.2s ease-out forwards;
+    contain: layout style paint;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.keiga-char {
+    display: block;
+    font-size: 7rem;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #c92a2a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 
+        0 0 30px rgba(212, 175, 55, 0.6),
+        0 6px 12px rgba(0, 0, 0, 0.4);
+    animation: keigaShinnenScale 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform-origin: center;
+    transform: translateZ(0);
+    will-change: transform;
+    contain: layout style paint;
+    backface-visibility: hidden;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .keiga-char {
+        font-size: 5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .keiga-char {
+        font-size: 4rem;
+    }
+}
+
+/* フェードインアニメーション */
+@keyframes keigaShinnenFadeIn {
+    0% {
+        opacity: 0;
+        transform: translate3d(-50%, calc(-50% + 20px), 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(-50%, -50%, 0);
+    }
+}
+
+/* スケールアニメーション（大きくなっていく） */
+@keyframes keigaShinnenScale {
+    0% {
+        transform: translateZ(0) scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: translateZ(0) scale(1.15);
+        opacity: 1;
+    }
+    70% {
+        transform: translateZ(0) scale(0.98);
+    }
+    100% {
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* フェードアウトアニメーション */
+@keyframes keigaShinnenFadeOut {
+    0% {
+        opacity: 1;
+        transform: translate3d(-50%, -50%, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(-50%, -50%, 0) scale(0.8);
+    }
+}
+
+/* アクセシビリティ: アニメーション無効化 */
+@media (prefers-reduced-motion: reduce) {
+    .keiga-shinnen-text,
+    .keiga-char {
+        animation: none !important;
+        transform: translate3d(-50%, -50%, 0) scale(1) !important;
+        opacity: 1 !important;
+    }
+}
+
