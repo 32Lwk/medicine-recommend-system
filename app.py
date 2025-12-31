@@ -1360,6 +1360,32 @@ def index():
                         
                         logger.info(f"🏥 診断名検出: {diagnosis_type} - {sanitized_message}, detected_diagnoses={detected_diagnoses}, has_side_effect={has_side_effect}, should_show_counseling={should_show_counseling}")
                         
+                        # 診断名を既往症として登録（症状が続く場合のみ）
+                        # 「癌なんですが、頭痛がひどい」のような文脈の場合、既往症として登録
+                        if detected_diagnoses and not diagnosis_response.get('diagnosis_only', False):
+                            # 診断名のみでなく、症状も含まれている場合は既往症として登録
+                            if 'user_attributes' not in session:
+                                session['user_attributes'] = {}
+                            user_attributes = session.get('user_attributes', {})
+                            if 'medical_history' not in user_attributes:
+                                user_attributes['medical_history'] = []
+                            
+                            for diagnosis in detected_diagnoses:
+                                if diagnosis and diagnosis not in user_attributes['medical_history']:
+                                    user_attributes['medical_history'].append(diagnosis)
+                                    logger.info(f"📝 診断名を既往症として登録: {diagnosis}")
+                            
+                            session['user_attributes'] = user_attributes
+                            session.modified = True
+                            
+                            # DBにも保存
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['user_attributes'] = user_attributes
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                        
                         # ユーザーメッセージをセッションに追加（重複チェック付き）
                         if 'messages' not in session:
                             session['messages'] = []
@@ -2281,44 +2307,71 @@ def index():
                     from counseling_response import (
                         generate_counseling_response,
                         generate_follow_up_questions,
-                        start_counseling_mode
+                        start_counseling_mode,
+                        has_specific_symptom
                     )
                     
-                    # ユーザーメッセージをセッションに追加
+                    # ユーザーメッセージをセッションに追加（重複チェック付き）
                     if 'messages' not in session:
                         session['messages'] = []
                     
-                    import uuid
-                    user_msg = {
-                        'type': 'user',
-                        'content': sanitized_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())
-                    }
-                    session['messages'].append(user_msg)
-                    session.modified = True
+                    # 重複チェック（診断名検出時に既に追加されている可能性がある）
+                    user_message_exists = any(
+                        msg.get('type') == 'user' and 
+                        msg.get('content') == sanitized_message and
+                        msg.get('uuid')
+                        for msg in session.get('messages', [])
+                    )
                     
-                    # ユーザーメッセージをDBに保存
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            if 'messages' not in session_data:
-                                session_data['messages'] = []
-                            session_data['messages'].append(user_msg)
-                            session_data['last_activity'] = datetime.now()
-                            save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                'session_id': sid,
-                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                                'messages': [user_msg],
-                                'session_active': True,
-                                'last_activity': datetime.now(),
-                                'client_ip': request.remote_addr,
-                                'user_agent': request.headers.get('User-Agent', ''),
-                                'user_attributes': session.get('user_attributes', {})
-                            }
-                            save_session_to_db(sid, session_data)
+                    if not user_message_exists:
+                        import uuid
+                        user_msg = {
+                            'type': 'user',
+                            'content': sanitized_message,
+                            'timestamp': datetime.now().isoformat(),
+                            'uuid': str(uuid.uuid4())
+                        }
+                        session['messages'].append(user_msg)
+                        session.modified = True
+                        
+                        # ユーザーメッセージをDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                # DB側でも重複チェック
+                                db_message_exists = any(
+                                    msg.get('type') == 'user' and 
+                                    msg.get('content') == sanitized_message and
+                                    msg.get('uuid')
+                                    for msg in session_data.get('messages', [])
+                                )
+                                if not db_message_exists:
+                                    session_data['messages'].append(user_msg)
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            else:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                    'messages': [user_msg],
+                                    'session_active': True,
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {})
+                                }
+                                save_session_to_db(sid, session_data)
+                    
+                    # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
+                    has_symptom = has_specific_symptom(sanitized_message)
+                    if has_symptom:
+                        # 症状が検出されている場合は、一般的な症状相談として扱う
+                        symptom_type = "general_symptom"
+                    else:
+                        # 症状が検出されていない場合は、不明な要求として扱う
+                        symptom_type = "inappropriate_request/unknown"
                     
                     # カウンセリングフロー開始（不明な要求専用）
                     symptom_type = "inappropriate_request/unknown"
@@ -4321,19 +4374,36 @@ def index():
                                     break
                 
                 # 服用中の薬（日本語と英語）
+                # 除外パターン：市販薬を探している、薬を探しているなどの文脈を除外
+                medication_exclusion_patterns = [
+                    r'市販薬を探',
+                    r'薬を探',
+                    r'薬を.*探',
+                    r'薬.*探',
+                    r'市販薬.*探',
+                    r'探している',
+                    r'探しています',
+                    r'おすすめ',
+                    r'推奨',
+                    r'欲しい',
+                    r'相談'
+                ]
+                is_medication_search = any(re.search(pattern, user_message) for pattern in medication_exclusion_patterns)
+                
                 if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
                     'not taking' in user_message.lower() or 'no medication' in user_message.lower()):
                     user_attributes['current_medications'] = []
                     logger.info(f"📝 服用中の薬なしを確認")
                     updated = True
-                elif ('服用している' in user_message or '飲んでいる' in user_message or '薬を' in user_message or
+                elif not is_medication_search and ('服用している' in user_message or '飲んでいる' in user_message or 
                       'taking' in user_message.lower() or 'medication' in user_message.lower() or 'medicine' in user_message.lower()):
                     # 薬の名前を抽出（日本語と英語）
+                    # 「服用している」「飲んでいる」などの明確な表現のみを対象
                     medication_patterns = [
                         r'服用している薬[はが]?([^。、\n]+)',
                         r'飲んでいる薬[はが]?([^。、\n]+)',
-                        r'薬[はが]?([^。、\n]+)',
-                        r'([^。、\n]*薬[^。、\n]*)',
+                        r'服用している[はが]?([^。、\n]+)',
+                        r'飲んでいる[はが]?([^。、\n]+)',
                         # 英語のパターン
                         r'taking\s+([^,\s]+(?:\s+[^,\s]+)*)',
                         r'medication[:\s]+([^,\n]+)',
@@ -4344,11 +4414,13 @@ def index():
                         match = re.search(pattern, user_message)
                         if match:
                             medication_name = match.group(1).strip()
-                            if medication_name and medication_name not in user_attributes['current_medications']:
-                                user_attributes['current_medications'].append(medication_name)
-                                logger.info(f"📝 服用中の薬を抽出: {medication_name}")
-                                updated = True
-                                break
+                            # 抽出された名前が空でなく、かつ「探しています」などの除外パターンに含まれていないことを確認
+                            if medication_name and not any(ex_pattern in medication_name for ex_pattern in ['探', 'おすすめ', '推奨', '欲しい', '相談']):
+                                if medication_name not in user_attributes['current_medications']:
+                                    user_attributes['current_medications'].append(medication_name)
+                                    logger.info(f"📝 服用中の薬を抽出: {medication_name}")
+                                    updated = True
+                                    break
                 
                 # 既往症の抽出（日本語と英語）
                 if ('既往症' in user_message or '病気' in user_message or '疾患' in user_message or
@@ -4888,6 +4960,22 @@ def index():
                     
                     # 服用中の薬の抽出・登録
                     try:
+                        # 除外パターン：市販薬を探している、薬を探しているなどの文脈を除外
+                        medication_exclusion_patterns = [
+                            r'市販薬を探',
+                            r'薬を探',
+                            r'薬を.*探',
+                            r'薬.*探',
+                            r'市販薬.*探',
+                            r'探している',
+                            r'探しています',
+                            r'おすすめ',
+                            r'推奨',
+                            r'欲しい',
+                            r'相談'
+                        ]
+                        is_medication_search = any(re.search(pattern, user_message) for pattern in medication_exclusion_patterns)
+                        
                         if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
                             'not taking' in user_message.lower() or 'no medication' in user_message.lower()):
                             if user_attributes.get('current_medications') != []:
@@ -4899,13 +4987,14 @@ def index():
                                     'message': '服用中の薬: なし'
                                 }
                                 logger.info(f"📝 服用中の薬を登録: なし")
-                        elif ('服用している' in user_message or '飲んでいる' in user_message or '薬を' in user_message or
+                        elif not is_medication_search and ('服用している' in user_message or '飲んでいる' in user_message or
                               'taking' in user_message.lower() or 'medication' in user_message.lower() or 'medicine' in user_message.lower()):
+                            # 「服用している」「飲んでいる」などの明確な表現のみを対象
                             medication_patterns = [
                                 r'服用している薬[はが]?([^。、\n]+)',
                                 r'飲んでいる薬[はが]?([^。、\n]+)',
-                                r'薬[はが]?([^。、\n]+)',
-                                r'([^。、\n]*薬[^。、\n]*)',
+                                r'服用している[はが]?([^。、\n]+)',
+                                r'飲んでいる[はが]?([^。、\n]+)',
                                 r'taking\s+([^,\s]+(?:\s+[^,\s]+)*)',
                                 r'medication[:\s]+([^,\n]+)',
                                 r'medicine[:\s]+([^,\n]+)'
@@ -4914,7 +5003,8 @@ def index():
                                 match = re.search(pattern, user_message)
                                 if match:
                                     medication_name = match.group(1).strip()
-                                    if medication_name:
+                                    # 抽出された名前が空でなく、かつ「探しています」などの除外パターンに含まれていないことを確認
+                                    if medication_name and not any(ex_pattern in medication_name for ex_pattern in ['探', 'おすすめ', '推奨', '欲しい', '相談']):
                                         existing_medications = user_attributes.get('current_medications', [])
                                         if medication_name not in existing_medications:
                                             user_attributes['current_medications'] = existing_medications + [medication_name]
@@ -4931,6 +5021,9 @@ def index():
                     
                     # 既往歴の抽出・登録
                     try:
+                        # 診断名検出の結果を既往症として登録（「癌なんですが」のような文脈）
+                        # 診断名検出が既に実行されている場合、その結果を活用
+                        # ただし、ここではパターンマッチングによる抽出も併用
                         if ('既往症' in user_message or '病気' in user_message or '疾患' in user_message or
                             'history' in user_message.lower() or 'disease' in user_message.lower() or 'condition' in user_message.lower()):
                             history_patterns = [
@@ -4959,6 +5052,40 @@ def index():
                                             }
                                             logger.info(f"📝 既往歴を登録: {history_name}")
                                             break
+                        
+                        # 「なんですが」「ですが」などの逆接表現の後に症状が続く場合、診断名を既往症として抽出
+                        # 例：「癌なんですが、頭痛がひどい」
+                        inverse_patterns = [
+                            r'([^。、\n]+)なんですが',
+                            r'([^。、\n]+)ですが',
+                            r'([^。、\n]+)だけど',
+                            r'([^。、\n]+)ですが、',
+                            r'([^。、\n]+)なんですが、'
+                        ]
+                        for pattern in inverse_patterns:
+                            match = re.search(pattern, user_message)
+                            if match:
+                                potential_diagnosis = match.group(1).strip()
+                                # 診断名として認識される可能性がある単語をチェック
+                                # 癌、糖尿病、高血圧、心臓病、肝臓病、腎臓病など
+                                diagnosis_keywords = ['癌', 'がん', '糖尿病', '高血圧', '心臓病', '肝臓病', '腎臓病', 
+                                                      '喘息', 'てんかん', 'うつ病', '統合失調症', 'パーキンソン病']
+                                if any(keyword in potential_diagnosis for keyword in diagnosis_keywords):
+                                    existing_history = user_attributes.get('medical_history', [])
+                                    # 診断名を抽出（キーワードを含む部分）
+                                    for keyword in diagnosis_keywords:
+                                        if keyword in potential_diagnosis:
+                                            if keyword not in existing_history:
+                                                user_attributes['medical_history'] = existing_history + [keyword]
+                                                registered_info['medical_history'] = {
+                                                    'registered': True,
+                                                    'value': user_attributes['medical_history'],
+                                                    'source': '入力から抽出（逆接表現）',
+                                                    'message': f'既往歴: {", ".join(user_attributes["medical_history"])}'
+                                                }
+                                                logger.info(f"📝 既往歴を登録（逆接表現）: {keyword}")
+                                                break
+                                    break
                     except Exception as e:
                         logger.info(f"⚠️ 既往歴の抽出でエラー: {str(e)}")
                     
@@ -6754,9 +6881,17 @@ def index():
                                             # 禁忌セクション
                                             current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="color: #d32f2f; margin: 0 0 8px 0;">⚠️ {line}</h5>'
                                             current_section = 'caution'
+                                        elif line.startswith('【OTC医薬品について】'):
+                                            # 前のセクションを閉じる
+                                            if current_section and current_html:
+                                                formatted_usage_notes += current_html + '</div>'
+                                                current_html = ""
+                                            # OTC医薬品セクション（シンプルな区切り）
+                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">{line}</h5>'
+                                            current_section = 'otc'
                                         elif line.startswith('【服用時の注意】'):
-                                            # 禁忌セクションを閉じる
-                                            if current_section == 'caution' and current_html:
+                                            # 前のセクションを閉じる
+                                            if current_section and current_html:
                                                 formatted_usage_notes += current_html + '</div>'
                                                 current_html = ""
                                             # 服用注意セクション

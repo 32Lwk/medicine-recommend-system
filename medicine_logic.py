@@ -225,17 +225,46 @@ def is_diagnosis_term(text):
                                    'と診断されていますが', 'と診断されていますが、', 'なんですが', 'なんですが、', 'なんですが。']
         
         # 症状キーワードの定義（逆接表現の後に続く場合、診断名を除外しない）
+        # 既往症があっても、それとは関係のない症状がある場合は除外しない
         symptom_keywords = [
-            '頭痛', '発熱', '熱', '咳', '鼻水', '鼻づまり', 'のどの痛み', '喉が痛い',
-            '腹痛', '下痢', '便秘', '吐き気', '嘔吐', '胸やけ', 'めまい', '疲労',
-            '不眠', 'かゆみ', '発疹', '関節痛', '筋肉痛', '腰痛', '肩こり',
+            # 身体的症状（頭部・神経系）
+            '頭痛', '発熱', '熱', 'めまい', 'ふらつき', '立ちくらみ',
+            # 呼吸器系
+            '咳', 'せき', '鼻水', '鼻づまり', 'くしゃみ', 'のどの痛み', '喉が痛い', '息切れ', '息が切れる', '呼吸困難',
+            # 消化器系
+            '腹痛', 'お腹が痛い', '胃痛', '胃が痛い', '下痢', '便秘', '吐き気', '嘔吐', '胸やけ', '胃もたれ', '消化不良',
+            # 循環器系
+            '動悸', '心臓がドキドキ', '心臓がバクバク', '脈が速い',
+            # 全身症状
+            '疲労', '疲労感', '倦怠感', 'だるさ', 'むくみ', '寒気', '悪寒',
+            # 運動器系
+            '関節痛', '筋肉痛', '腰痛', '肩こり', '背中の痛み', '首の痛み',
+            # 皮膚系
+            'かゆみ', '痒み', '発疹', '湿疹', '蕁麻疹', '皮膚の乾燥', '皮膚の異常',
+            # 睡眠・精神系
+            '不眠', '眠れない', '眠気', 'イライラ', '不安', 'ストレス',
+            # 眼科系
+            '目の疲れ', '目が疲れる', '目のかゆみ', '目がかゆい', '目の充血', '目が赤い',
+            # 耳鼻科系
+            '耳鳴り', '耳の痛み', '耳が痛い',
+            # 口腔系
+            '口内炎', '口の痛み', '歯痛', '歯が痛い',
+            # 女性特有
+            '生理痛', '月経痛', '月経不順', '更年期症状',
+            # その他の症状表現
             '痛み', '痛い', '違和感', '不調', '症状', '辛い', '苦しい', 'しんどい',
+            # 疾患名（症状として扱う）
+            '風邪', 'インフルエンザ', 'かぜ', 'カゼ', '感冒', '胃腸炎',
+            # 市販薬関連（症状があることを示唆）
             '市販薬', '薬', '探しています', '欲しい', 'おすすめ', '相談',
-            '続いています', '続いている', 'します', 'しています', 'ひどい', 'ひどく'
+            # 症状の継続・程度を表す表現
+            '続いています', '続いている', 'します', 'しています', 'ひどい', 'ひどく',
+            'あります', 'ある', 'でます', '出ます', 'します', 'しています'
         ]
         
         # 「があります」「がある」の特別処理: 「診断名があります」のような単純な表記は除外しない
         # ただし、「既往症として診断名があります」のような場合は除外する
+        # ただし、逆接表現（「ですが」「がありますが」など）の後に症状がある場合は除外しない
         simple_existence_patterns = ['があります', 'がある', 'あり', 'あります']
         medical_history_keywords = ['既往症', '既往歴', '持病', '基礎疾患', '基礎疾病', '既往疾患', '病歴']
         
@@ -243,37 +272,69 @@ def is_diagnosis_term(text):
         before_diagnosis = text[max(0, index - 30):index]
         has_medical_history_keyword = any(keyword in before_diagnosis for keyword in medical_history_keywords)
         
+        # 診断名の後の部分を確認（逆接表現と症状の有無をチェック）
+        diagnosis_end = index + len(diagnosis)
+        after_diagnosis = text[diagnosis_end:]
+        # 逆接表現の後に症状があるかチェック（最大100文字まで）
+        after_diagnosis_check = after_diagnosis[:100] if len(after_diagnosis) > 100 else after_diagnosis
+        
         # 1. 除外語が文脈内にあるかチェック
+        # 除外しない理由（症状があるなど）が見つかった場合のフラグ
+        should_exclude = False  # デフォルトは除外しない
+        
         for word in exclusion_words:
             if word in context:
                 # 「があります」「がある」の特別処理
                 if word in simple_existence_patterns:
                     # 医学用語（既往症など）が前にない場合は除外しない
                     if not has_medical_history_keyword:
-                        continue  # 単純な「診断名があります」の場合は除外しない
-                    # 医学用語がある場合は除外（既往歴のパターン）
-                    return False
+                        # 単純な「診断名があります」の場合は除外しない（should_excludeはFalseのまま）
+                        continue  # 次の除外語をチェック
+                    
+                    # 医学用語がある場合でも、逆接表現の後に症状がある場合は除外しない
+                    # 例：「既往症として糖尿病がありますが、風邪をひきました」
+                    has_symptom_after_expr = False
+                    for expr in adversative_expressions:
+                        if expr in after_diagnosis_check:
+                            expr_index = after_diagnosis_check.find(expr)
+                            if expr_index != -1:
+                                after_expr = after_diagnosis_check[expr_index + len(expr):expr_index + len(expr) + 80]
+                                # 症状キーワードが続くかチェック
+                                if any(keyword in after_expr for keyword in symptom_keywords):
+                                    has_symptom_after_expr = True
+                                    break  # 症状が見つかったらループを抜ける
+                    
+                    if has_symptom_after_expr:
+                        # 症状が続く場合は除外しない（既往症があっても別の症状があるパターン）
+                        # 症状がある場合は、他の除外語のチェックをスキップしてTrueを返す
+                        return True  # 診断名を検出する
+                    
+                    # 逆接表現の後に症状がない場合は除外（既往歴のみのパターン）
+                    should_exclude = True  # 除外する
+                    continue  # この除外語については除外する、次のチェックに進む
                 
                 # 逆接表現の場合は、その後に症状キーワードが続くかチェック
                 if word in adversative_expressions:
                     # 診断名の後の部分を取得（逆接表現の後の部分）
-                    diagnosis_end = index + len(diagnosis)
-                    after_diagnosis = text[diagnosis_end:]
+                    # after_diagnosis_checkは既に定義済み
                     
-                    # 逆接表現の位置を特定
-                    adversative_index = after_diagnosis.find(word)
+                    # 逆接表現の位置を特定（より広範囲にチェック）
+                    adversative_index = after_diagnosis_check.find(word)
                     if adversative_index != -1:
-                        # 逆接表現の後の部分を取得（最大50文字）
-                        after_adversative = after_diagnosis[adversative_index + len(word):adversative_index + len(word) + 50]
+                        # 逆接表現の後の部分を取得（最大80文字に拡大、より確実に症状を検出）
+                        after_adversative = after_diagnosis_check[adversative_index + len(word):adversative_index + len(word) + 80]
                         
                         # 症状キーワードが続くかチェック
                         has_symptom_after = any(keyword in after_adversative for keyword in symptom_keywords)
                         if has_symptom_after:
                             # 症状が続く場合は除外しない（診断名+症状のパターン）
-                            continue
+                            # 既往症があっても、それとは関係のない症状がある場合は除外しない
+                            # 症状がある場合は、他の除外語のチェックをスキップしてTrueを返す
+                            return True  # 診断名を検出する
                     
-                    # 症状が続かない場合は除外（既往歴のパターン）
-                    return False
+                    # 症状が続かない場合は除外（既往歴のみのパターン）
+                    should_exclude = True  # 除外する
+                    continue  # この除外語については除外する、次のチェックに進む
                 
                 current_indicators = ['現在', '今', '最近', 'この頃', '現在は', '今は', '現在も', '今も']
                 has_current_indicator = any(indicator in context for indicator in current_indicators)
@@ -281,21 +342,37 @@ def is_diagnosis_term(text):
                     # 逆接表現がない場合のみ続行
                     adversative_in_context = any(expr in context for expr in adversative_expressions)
                     if not adversative_in_context:
-                        continue
+                        # 現在を示す語がある場合は除外しない（should_excludeはFalseのまま）
+                        continue  # 次のチェックに進む
                     else:
                         # 逆接表現がある場合、その後に症状があるかチェック
-                        diagnosis_end = index + len(diagnosis)
-                        after_diagnosis = text[diagnosis_end:]
+                        # after_diagnosis_checkは既に定義済み
+                        has_symptom_after = False
                         for expr in adversative_expressions:
-                            if expr in after_diagnosis:
-                                adversative_index = after_diagnosis.find(expr)
+                            if expr in after_diagnosis_check:
+                                adversative_index = after_diagnosis_check.find(expr)
                                 if adversative_index != -1:
-                                    after_adversative = after_diagnosis[adversative_index + len(expr):adversative_index + len(expr) + 50]
-                                    has_symptom_after = any(keyword in after_adversative for keyword in symptom_keywords)
-                                    if has_symptom_after:
-                                        continue
-                        return False
-                return False
+                                    # 最大80文字に拡大（より確実に症状を検出）
+                                    after_adversative = after_diagnosis_check[adversative_index + len(expr):adversative_index + len(expr) + 80]
+                                    if any(keyword in after_adversative for keyword in symptom_keywords):
+                                        has_symptom_after = True
+                                        break  # 症状が見つかったらループを抜ける
+                        
+                        if has_symptom_after:
+                            # 症状が続く場合は除外しない（既往症があっても別の症状があるパターン）
+                            # 症状がある場合は、他の除外語のチェックをスキップしてTrueを返す
+                            return True  # 診断名を検出する
+                        # 症状が続かない場合は除外（既往歴のみのパターン）
+                        should_exclude = True  # 除外する
+                        continue  # 次のチェックに進む
+                
+                # その他の除外語の場合は除外
+                should_exclude = True  # 除外する
+                continue  # 次のチェックに進む
+        
+        # 除外する理由が見つかり、除外しない理由（症状があるなど）がなかった場合のみ除外
+        if should_exclude:
+            return False
         
         # 2. 正規表現パターンで既往歴表現をチェック
         for pattern in medical_history_patterns:
@@ -741,7 +818,37 @@ def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
     # 診断名の直後に続く助詞・助動詞のみ除去（誤除去を防ぐため）
     stop_words = ['かも', 'だ', 'です', 'ます', 'の', 'が', 'は', 'を', 'に', 'へ', 'と', 'や', 'も']
     # ただし、症状語として認識される単語（ホワイトリスト）は除去しない
-    symptom_whitelist = ['発熱', '頭痛', '腹痛', '下痢', '吐き気', '咳', '鼻水', '痛み', '痛い']
+    # 既往症があっても、それとは関係のない症状がある場合は除外しない
+    symptom_whitelist = [
+        # 身体的症状（頭部・神経系）
+        '発熱', '頭痛', 'めまい', 'ふらつき', '立ちくらみ',
+        # 呼吸器系
+        '咳', 'せき', '鼻水', '鼻づまり', 'くしゃみ', 'のどの痛み', '喉が痛い', '息切れ', '息が切れる', '呼吸困難',
+        # 消化器系
+        '腹痛', 'お腹が痛い', '胃痛', '胃が痛い', '下痢', '便秘', '吐き気', '嘔吐', '胸やけ', '胃もたれ', '消化不良',
+        # 循環器系
+        '動悸', '心臓がドキドキ', '心臓がバクバク', '脈が速い',
+        # 全身症状
+        '疲労', '疲労感', '倦怠感', 'だるさ', 'むくみ', '寒気', '悪寒',
+        # 運動器系
+        '関節痛', '筋肉痛', '腰痛', '肩こり', '背中の痛み', '首の痛み',
+        # 皮膚系
+        'かゆみ', '痒み', '発疹', '湿疹', '蕁麻疹', '皮膚の乾燥', '皮膚の異常',
+        # 睡眠・精神系
+        '不眠', '眠れない', '眠気', 'イライラ', '不安', 'ストレス',
+        # 眼科系
+        '目の疲れ', '目が疲れる', '目のかゆみ', '目がかゆい', '目の充血', '目が赤い',
+        # 耳鼻科系
+        '耳鳴り', '耳の痛み', '耳が痛い',
+        # 口腔系
+        '口内炎', '口の痛み', '歯痛', '歯が痛い',
+        # 女性特有
+        '生理痛', '月経痛', '月経不順', '更年期症状',
+        # その他の症状表現
+        '痛み', '痛い', '違和感', '不調', '症状', '辛い', '苦しい', 'しんどい',
+        # 疾患名（症状として扱う）
+        '風邪', 'インフルエンザ', 'かぜ', 'カゼ', '感冒', '胃腸炎'
+    ]
     for stop_word in stop_words:
         # 症状語ホワイトリストに含まれていない場合のみ除去
         if stop_word not in symptom_whitelist:
@@ -755,7 +862,36 @@ def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
     
     # 3. 症状語の簡易チェック（軽量版）
     # まず簡易チェック（パフォーマンス考慮）
-    common_symptom_words = ['発熱', '頭痛', '腹痛', '下痢', '吐き気', '咳', '鼻水', '痛み', '痛い']
+    common_symptom_words = [
+        # 身体的症状（頭部・神経系）
+        '発熱', '頭痛', 'めまい', 'ふらつき', '立ちくらみ',
+        # 呼吸器系
+        '咳', 'せき', '鼻水', '鼻づまり', 'くしゃみ', 'のどの痛み', '喉が痛い', '息切れ', '息が切れる', '呼吸困難',
+        # 消化器系
+        '腹痛', 'お腹が痛い', '胃痛', '胃が痛い', '下痢', '便秘', '吐き気', '嘔吐', '胸やけ', '胃もたれ', '消化不良',
+        # 循環器系
+        '動悸', '心臓がドキドキ', '心臓がバクバク', '脈が速い',
+        # 全身症状
+        '疲労', '疲労感', '倦怠感', 'だるさ', 'むくみ', '寒気', '悪寒',
+        # 運動器系
+        '関節痛', '筋肉痛', '腰痛', '肩こり', '背中の痛み', '首の痛み',
+        # 皮膚系
+        'かゆみ', '痒み', '発疹', '湿疹', '蕁麻疹', '皮膚の乾燥', '皮膚の異常',
+        # 睡眠・精神系
+        '不眠', '眠れない', '眠気', 'イライラ', '不安', 'ストレス',
+        # 眼科系
+        '目の疲れ', '目が疲れる', '目のかゆみ', '目がかゆい', '目の充血', '目が赤い',
+        # 耳鼻科系
+        '耳鳴り', '耳の痛み', '耳が痛い',
+        # 口腔系
+        '口内炎', '口の痛み', '歯痛', '歯が痛い',
+        # 女性特有
+        '生理痛', '月経痛', '月経不順', '更年期症状',
+        # その他の症状表現
+        '痛み', '痛い', '違和感', '不調', '症状', '辛い', '苦しい', 'しんどい',
+        # 疾患名（症状として扱う）
+        '風邪', 'インフルエンザ', 'かぜ', 'カゼ', '感冒', '胃腸炎'
+    ]
     if any(word in meaningful_text for word in common_symptom_words):
         return False
     
