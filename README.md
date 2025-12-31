@@ -1,6 +1,6 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2025年12月31日**（謹賀新年縦書きアニメーション追加・緊急事案検出の誤検知防止機能・ユーザーメッセージ重複表示の修正・症状検出の改善・カウンセリングフロー返信の改善・診断名検出機能の大幅改善・イースターエッグ機能の大幅拡張・成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善・管理画面UI改善・薬剤師要請機能の改善）
+**最終更新日: 2025年12月31日**（謹賀新年縦書きアニメーション追加・緊急事案検出の誤検知防止機能・ユーザーメッセージ重複表示の修正・症状検出の改善・カウンセリングフロー返信の改善・診断名検出機能の大幅改善・イースターエッグ機能の大幅拡張・成分重複チェック機能・曖昧入力検出の改善・総合感冒薬推奨ロジックの強化・カテゴリ多様性の確保・アドバイス生成の改善・管理画面UI改善・薬剤師要請機能の改善・README完全化：環境変数一覧・APIエンドポイント一覧・トラブルシューティングの拡充）
 
 ---
 
@@ -240,10 +240,29 @@
   - **Other（その他）**: 挨拶、不明な入力、店舗案内、遺失物関連など → 汎用応答または店舗案内フローへ（2025年12月29日拡張）
 - **2段階トリアージシステム（2025年12月29日追加）**: Otherカテゴリと判定された場合、詳細なサブカテゴリ分類を実行
   - **第1段階**: 広範なカテゴリ分類（Physical/Emotional/Emergency/Ask/Other）
-  - **第2段階**: Otherカテゴリの場合のみ、詳細なサブカテゴリ分類を実行
-    - `store_inquiry`: 店舗案内関連（在庫確認、周辺施設、免税対応、周辺観光地、営業時間、支払い方法、駐車場、店舗サービス、トイレの場所など）
+  - **第2段階**: Otherカテゴリの場合のみ、詳細なサブカテゴリ分類を実行（全20種類）
+    - **不適切な要求（9種類）**:
+      - `inappropriate_request/prescription`: 処方薬の要求
+      - `inappropriate_request/weight_loss`: 痩せ薬・ダイエット薬の要求
+      - `inappropriate_request/love_potion`: 惚れ薬・媚薬の要求
+      - `inappropriate_request/cure_prevention`: 完治・予防を目的とした薬の要求（重篤な疾患のみ）
+      - `inappropriate_request/anti_aging`: アンチエイジング・若返りの薬の要求
+      - `inappropriate_request/body_shape`: 身体の特定部位の形状変化の薬の要求
+      - `inappropriate_request/hair_growth`: 毛が生える・ハゲが治る薬の要求
+      - `inappropriate_request/illegal`: 違法薬物の要求
+      - `inappropriate_request/controlled`: 規制薬物の要求
+    - **店舗案内関連（9種類）**:
+      - `store_inquiry`: 店舗案内（基本）
+      - `store_inquiry/inventory`: 在庫確認
+      - `store_inquiry/facilities`: 周辺施設
+      - `store_inquiry/tax_free`: 免税対応
+      - `store_inquiry/tourism`: 周辺観光地
+      - `store_inquiry/business_hours`: 営業時間・アクセス
+      - `store_inquiry/payment`: 支払い方法
+      - `store_inquiry/parking`: 駐車場
+      - `store_inquiry/services`: 店舗サービス
     - `lost_and_found`: 遺失物関連
-    - `general_other`: その他の一般的な質問
+    - `general_other`: その他の一般的な質問（挨拶、不明な入力など）
   - **ハイブリッド検出方式**: キーワードマッチングとLLM分類を組み合わせた堅牢な検出
   - **早期リターン最適化**: 店舗関連の質問は早期に処理し、医薬品推奨フローへの影響を最小化
   - **信頼度閾値処理**: LLMの信頼度が低い場合（0.7未満）はキーワードマッチングにフォールバック
@@ -800,14 +819,79 @@ export DATABASE_URL="postgresql://REDACTED:REDACTED@localhost/medicine_feedback"
 **初期化**:
 - アプリケーション起動時に`init_database()`が自動実行され、必要なテーブルが自動作成されます
 
-### 4. データファイルの確認
+### 4. 環境変数の設定（2025年12月31日更新）
+
+**必須の環境変数**:
+- `OPENAI_API_KEY`: OpenAI APIキー（必須）
+  - [OpenAI Platform](https://platform.openai.com/api-keys)で取得
+  - GPT-4oモデルを使用するため、APIキーが必要
+
+- `SECRET_KEY`: Flaskセッション管理用の秘密鍵（必須）
+  - 本番環境では安全なランダム文字列を設定
+  - 例: `openssl rand -hex 32`で生成
+
+**推奨の環境変数**:
+- `DATABASE_URL`: PostgreSQLデータベース接続URL（推奨）
+  - マルチインスタンス対応とセッション管理に必須
+  - 形式: `postgresql://REDACTED:REDACTED@host:port/database_name`
+  - 例: `postgresql://REDACTED:REDACTED@localhost:5432/medicine_feedback`
+
+- `DEEPL_API_KEY`: DeepL APIキー（推奨）
+  - 多言語対応の高速翻訳に使用（10-20倍高速化）
+  - [DeepL API](https://www.deepl.com/pro-api)で取得
+  - 未設定の場合はOpenAI APIで翻訳（遅いが動作可能）
+
+**オプションの環境変数**:
+- `DEBUG_MODE`: デバッグモードの有効/無効（デフォルト: `false`）
+  - `true`に設定すると詳細なログを出力
+  - 本番環境では`false`に設定することを推奨
+
+- `GUNICORN_TIMEOUT`: Gunicornのタイムアウト（秒、デフォルト: `120`）
+- `GUNICORN_GRACEFUL_TIMEOUT`: Gunicornのグレースフルタイムアウト（秒、デフォルト: `30`）
+- `GUNICORN_WORKERS`: Gunicornのワーカー数（デフォルト: `2`）
+- `GUNICORN_WORKER_CLASS`: Gunicornのワーカークラス（デフォルト: `sync`、`gevent`も選択可能）
+
+- `DB_MIN_CONNECTIONS`: データベース接続プールの最小接続数（デフォルト: `2`）
+- `DB_MAX_CONNECTIONS`: データベース接続プールの最大接続数（デフォルト: `10`）
+- `DATABASE_SSLMODE`: データベースSSL接続モード（デフォルト: `require`）
+
+- `FLASK_ENV`: Flask環境（`development`または`production`、デフォルト: `development`）
+  - `production`に設定するとセッションクッキーがSecure/HttpOnlyになる
+
+**環境変数の設定方法**:
+
+`.env`ファイルを使用する場合（推奨）:
+```env
+OPENAI_API_KEY=your-api-key-here
+DEEPL_API_KEY=your-deepl-api-key
+DATABASE_URL=postgresql://REDACTED:REDACTED@localhost:5432/medicine_feedback
+SECRET_KEY=your-secret-key-here
+DEBUG_MODE=false
+```
+
+システム環境変数として設定する場合:
+```bash
+# Linux/Mac
+export OPENAI_API_KEY="your-api-key-here"
+export DEEPL_API_KEY="your-deepl-api-key"
+export DATABASE_URL="postgresql://REDACTED:REDACTED@localhost:5432/medicine_feedback"
+export SECRET_KEY="your-secret-key-here"
+
+# Windows PowerShell
+[Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "your-api-key-here", "User")
+[Environment]::SetEnvironmentVariable("DEEPL_API_KEY", "your-deepl-api-key", "User")
+[Environment]::SetEnvironmentVariable("DATABASE_URL", "postgresql://REDACTED:REDACTED@localhost:5432/medicine_feedback", "User")
+[Environment]::SetEnvironmentVariable("SECRET_KEY", "your-secret-key-here", "User")
+```
+
+### 5. データファイルの確認
 
 以下のCSVファイルが配置されていることを確認：
-- `otc_medicine_data.csv`: 市販薬のデータベース（7495件）
-- `summarized_efficacy_data.csv`: 効能要約データ
-- `medicine_side_effects.csv`: 副作用データ
-- `medicine_interactions.csv`: 相互作用データ
-- `kanpo_medicine.csv`: 漢方薬データ（34種類の漢方薬に対する詳細なルールを含む）
+- `data/otc_medicine_data.csv`: 市販薬のデータベース（7495件）
+- `data/summarized_efficacy_data.csv`: 効能要約データ
+- `data/medicine_side_effects.csv`: 副作用データ
+- `data/medicine_interactions.csv`: 相互作用データ
+- `data/kanpo_medicine.csv`: 漢方薬データ（34種類の漢方薬に対する詳細なルールを含む）
 
 以下のJSONファイルが配置されていることを確認（2025年12月29日追加・拡張）：
 - `data/store_products.json`: 店舗商品リスト
@@ -868,6 +952,126 @@ python debug_app.py
 ```
 ブラウザで `http://localhost:5001` にアクセス
 
+## APIエンドポイント一覧（2025年12月31日追加）
+
+### ユーザー向けAPI
+
+**POST `/`** - メインチャットエンドポイント
+- ユーザーからの症状入力を受け取り、医薬品推奨や応答を返却
+- リクエスト: `{ "message": "症状テキスト" }`
+- レスポンス: `{ "status": "ok", "message_count": 5 }`
+
+**POST `/clear`** - チャット履歴のクリア
+- セッションのチャット履歴をクリア
+
+**POST `/new_session`** - 新しいセッションの作成
+- 新しいセッションIDを生成
+
+**POST `/api/request_admin`** - 薬剤師要請
+- 薬剤師への手動返信を要請
+- AI自動応答をOFFに切り替え
+
+**GET `/api/status`** - システムステータス取得
+- アプリケーションの動作状況を確認
+
+**GET `/api/performance`** - パフォーマンス情報取得
+- パフォーマンス統計情報を返却
+
+**GET `/api/logs`** - ログ情報取得
+- アプリケーションログを取得
+
+**GET/POST `/api/sessions`** - セッション管理
+- セッション一覧の取得・作成
+
+**GET `/api/all_sessions`** - 全セッション取得
+- すべてのセッション情報を取得
+
+**GET `/api/session_stats`** - セッション統計取得
+- セッションの統計情報を取得
+
+**GET/POST `/api/user_attributes`** - ユーザー属性管理
+- ユーザー属性の取得・更新
+
+**POST `/api/submit_feedback`** - フィードバック送信
+- ユーザーからのフィードバックを送信
+
+**GET `/api/get_feedback_reports`** - フィードバック一覧取得
+- 管理者がフィードバック一覧を取得
+
+**POST `/api/translate`** - テキスト翻訳
+- テキストを多言語に翻訳
+
+**POST `/api/set_language`** - 言語設定
+- ユーザーの言語設定を保存
+
+### 管理者向けAPI
+
+**GET `/admin`** - 管理者ダッシュボード
+- 管理者用のダッシュボードページを表示
+
+**GET `/admin/system_status`** - システムステータス
+- システムの詳細ステータス情報を取得
+
+**GET `/admin/access_stats`** - アクセス統計
+- アクセス統計情報を取得
+
+**GET `/admin/performance_stats`** - パフォーマンス統計
+- パフォーマンス統計情報を取得
+
+**GET `/admin/browser_distribution`** - ブラウザ分布
+- ブラウザ別のアクセス分布を取得
+
+**GET `/admin/os_distribution`** - OS分布
+- OS別のアクセス分布を取得
+
+**GET `/admin/device_distribution`** - デバイス分布
+- デバイス別のアクセス分布を取得
+
+**GET `/admin/realtime_monitoring`** - リアルタイム監視
+- リアルタイム監視データを取得
+
+**GET `/admin/export_monitoring_data`** - 監視データエクスポート
+- 監視データをCSV形式でエクスポート
+
+**POST `/admin/ai_control`** - AI自動応答制御
+- AI自動応答のON/OFFを切り替え
+
+**POST `/admin/medicine_chat`** - 管理者チャット送信
+- 管理者からユーザーへのメッセージ送信
+
+**GET `/api/admin/sessions`** - 管理者用セッション一覧
+- 管理者が全セッションを取得
+
+**DELETE `/api/admin/sessions/<session_id>`** - セッション削除
+- 指定されたセッションを削除
+
+**DELETE `/api/admin/sessions/delete_all`** - 全セッション削除
+- すべてのセッションを削除
+
+**PUT `/api/admin/sessions/<session_id>`** - セッション更新
+- セッション情報を更新
+
+**POST `/api/admin/send_message`** - メッセージ送信
+- 管理者からセッションへのメッセージ送信
+
+**GET/POST `/api/main_sessions`** - メインサイト用セッション管理
+- メインサイト用のセッション情報取得
+
+**GET/POST `/api/main_manual_reply_queue`** - メインサイト用手動返信キュー
+- メインサイト用の手動返信キュー管理
+
+**GET/POST `/api/main_ai_control`** - メインサイト用AI制御
+- メインサイト用のAI自動応答制御
+
+**POST `/api/resolve_feedback/<feedback_id>`** - フィードバック解決
+- フィードバックを解決済みにマーク
+
+**DELETE `/api/delete_feedback/<feedback_id>`** - フィードバック削除
+- フィードバックを削除
+
+**POST `/clear_logs`** - ログクリア
+- ログをクリア
+
 ## システムアーキテクチャ
 
 ### 推奨フロー（2025年12月29日更新）
@@ -883,17 +1087,15 @@ python debug_app.py
    ↓
 [ステップ0.5] AI自動応答OFFチェック（2025年12月31日追加）
    ├─ 薬剤師要請中（ai_auto_reply=False） → 確認メッセージ送信・手動返信キューに追加・早期リターン
-   └─ AI自動応答ON → ステップ0へ
+   └─ AI自動応答ON → ステップ1へ
    ↓
-[ステップ0] 「心臓」キーワードチェック（最優先・安全弁強化版）
-   ├─ 「心臓」「動悸」「不整脈」が含まれる → 即座に緊急対応フロー（除外ロジックなし）
-   └─ 含まれない → ステップ1へ
-   ↓
-[ステップ1] LLMトリアージ（ユーザー入力直後）
+[ステップ1] LLMトリアージ（ユーザー入力直後、AI自動応答ONの場合のみ実行）
    ├─ confidence < 0.7 → ユーザーに確認を求める
    └─ confidence >= 0.7 → ステップ1.5へ
    ↓
-[ステップ1.5] 心臓緊急チェック（文脈考慮型）
+[ステップ1.5] 心臓緊急チェック（文脈考慮型・LLMトリアージの後）
+   ├─ 会話履歴を考慮した心臓関連症状の検出
+   ├─ 比喩的表現の除外処理
    ├─ 緊急度が高い場合 → 即座に緊急対応フロー
    └─ 緊急度が低い場合 → ステップ1.7へ
    ↓
@@ -1182,10 +1384,29 @@ LLM分類（信頼度0.7以上の場合のみ、classify_inquiry_with_llm）
    ↓
 2段階トリアージ（2025年12月29日追加）
    ├─ 第1段階: 広範なカテゴリ分類（Physical/Emotional/Emergency/Ask/Other）
-   └─ 第2段階: Otherカテゴリの場合のみ、詳細なサブカテゴリ分類を実行
-       ├─ store_inquiry: 店舗案内関連
+   └─ 第2段階: Otherカテゴリの場合のみ、詳細なサブカテゴリ分類を実行（全20種類）
+       ├─ 不適切な要求（9種類）
+       │   ├─ inappropriate_request/prescription: 処方薬の要求
+       │   ├─ inappropriate_request/weight_loss: 痩せ薬・ダイエット薬の要求
+       │   ├─ inappropriate_request/love_potion: 惚れ薬・媚薬の要求
+       │   ├─ inappropriate_request/cure_prevention: 完治・予防を目的とした薬の要求（重篤な疾患のみ）
+       │   ├─ inappropriate_request/anti_aging: アンチエイジング・若返りの薬の要求
+       │   ├─ inappropriate_request/body_shape: 身体の特定部位の形状変化の薬の要求
+       │   ├─ inappropriate_request/hair_growth: 毛が生える・ハゲが治る薬の要求
+       │   ├─ inappropriate_request/illegal: 違法薬物の要求
+       │   └─ inappropriate_request/controlled: 規制薬物の要求
+       ├─ 店舗案内関連（9種類）
+       │   ├─ store_inquiry: 店舗案内（基本）
+       │   ├─ store_inquiry/inventory: 在庫確認
+       │   ├─ store_inquiry/facilities: 周辺施設
+       │   ├─ store_inquiry/tax_free: 免税対応
+       │   ├─ store_inquiry/tourism: 周辺観光地
+       │   ├─ store_inquiry/business_hours: 営業時間・アクセス
+       │   ├─ store_inquiry/payment: 支払い方法
+       │   ├─ store_inquiry/parking: 駐車場
+       │   └─ store_inquiry/services: 店舗サービス
        ├─ lost_and_found: 遺失物関連
-       └─ general_other: その他の一般的な質問
+       └─ general_other: その他の一般的な質問（挨拶、不明な入力など）
    ↓
 店舗案内・遺失物関連の処理（ステップ1.8で既に実行済み）
    ├─ 店舗案内が検出された場合 → 店舗案内応答を返却（早期リターン）
@@ -1201,25 +1422,27 @@ LLM分類（信頼度0.7以上の場合のみ、classify_inquiry_with_llm）
 
 **注意**: ルールベース推奨が失敗した場合（status: 'error', 'no_candidates', 'missing_critical_info'など）は、エラーメッセージを表示し、ChatGPTフォールバックは使用されません（2025年12月5日の更新により、ChatGPTフォールバック機能は完全に廃止されました）。
 
-### ルールベーススコアリング（2025年11月1日更新）
+### ルールベーススコアリング（2025年11月1日更新・2025年12月31日修正）
 
 ```
 合計スコア = 
-  症状適合度 (0-1.0) × 0.35
-  + 効能特異性 (0-1.0) × 0.25
-  + 年齢適合性 (0-1.0) × 0.20
-  + 用法簡便性 (0-1.0) × 0.05
-  - 副作用リスク (0-1.0) × 0.20
-  - 相互作用リスク (0-1.0) × 0.10
+  症状適合度 (0-1.0) × 0.30
+  + 効能特異性 (0-1.0) × 0.20
+  + 年齢適合性 (0-1.0) × 0.12
+  + 用法簡便性 (0-1.0) × 0.03
+  + 安全性スコア (0-1.0) × 0.08
+  - 副作用リスク (0-1.0) × 0.10（リスクスコアは-1.0～0.0なので結果は負の値）
+  - 相互作用リスク (0-1.0) × 0.05（リスクスコアは-1.0～0.0なので結果は負の値）
   - 症状特異性ペナルティ (0～-0.3)
   - リスク成分ペナルティ (0～-0.5)
 ```
 
 #### スコア要素の詳細
-- **症状適合度**: ユーザーの症状と医薬品の効能の適合度（重み: 0.35）
-- **効能特異性**: 医薬品の効能が症状に対してどれだけ特異的か（重み: 0.25）
-- **年齢適合性**: ユーザーの年齢と医薬品の年齢制限の適合度（重み: 0.20）
-- **用法簡便性**: 医薬品の用法・用量の簡便性（重み: 0.05）
+- **症状適合度**: ユーザーの症状と医薬品の効能の適合度（重み: 0.30）
+- **効能特異性**: 医薬品の効能が症状に対してどれだけ特異的か（重み: 0.20）
+- **年齢適合性**: ユーザーの年齢と医薬品の年齢制限の適合度（重み: 0.12）
+- **用法簡便性**: 医薬品の用法・用量の簡便性（重み: 0.03）
+- **安全性スコア**: 安全性評価スコア（重み: 0.08）
 - **副作用リスク**: 医薬品の副作用のリスクレベル（重み: 0.10、リスクスコアは-1.0～0.0なので結果は負の値）
 - **相互作用リスク**: 他の薬との相互作用のリスクレベル（重み: 0.05、リスクスコアは-1.0～0.0なので結果は負の値）
 - **症状特異性ペナルティ**: 単一症状時に複合薬（総合感冒薬など）に適用されるペナルティ（効能特異性に応じて-0.3～-0.05）
@@ -2594,12 +2817,12 @@ medicine-recommend-system/
 
 **Pythonファイル:**
 - `rule_based_recommendation.py` - 10,370行（ルールベース推奨アルゴリズム）
-- `app.py` - 8,980行（メインアプリケーション）
-- `medicine_logic.py` - 3,689行（医薬品推奨ロジック）
+- `app.py` - 9,249行（メインアプリケーション）
+- `medicine_logic.py` - 4,187行（医薬品推奨ロジック）
 - `store_inquiry_handler.py` - 1,625行（店舗案内・遺失物対応ハンドラー）
 - `tools/test_comprehensive.py` - 1,789行（包括的テストスイート）
 - `security_validator.py` - 1,282行（セキュリティ検証モジュール）
-- `store_emergency_handler.py` - 616行（緊急事案検出ハンドラー）
+- `store_emergency_handler.py` - 771行（緊急事案検出ハンドラー）
 
 **Markdownファイル（docs/フォルダ）:**
 - `docs/会社向け概要書類.md` - 3,342行
@@ -2652,6 +2875,239 @@ medicine-recommend-system/
    - ローカル開発環境での使用
    - 本番環境では環境変数を使用
 
+## トラブルシューティング（2025年12月31日追加）
+
+### よくある問題と解決方法
+
+#### 1. 環境変数が読み込まれない
+
+**症状**: APIキーエラーが発生する、データベース接続に失敗する
+
+**解決方法**:
+1. 環境変数が正しく設定されているか確認
+   ```bash
+   # Linux/Mac
+   echo $OPENAI_API_KEY
+   echo $DATABASE_URL
+   
+   # Windows PowerShell
+   $env:OPENAI_API_KEY
+   $env:DATABASE_URL
+   ```
+
+2. `.env`ファイルが正しい場所にあるか確認
+   - `.env`ファイルは`app.py`と同じディレクトリに配置
+   - `.env`ファイルのパスが正しいか確認
+
+3. `python-dotenv`がインストールされているか確認
+   ```bash
+   pip install python-dotenv
+   ```
+
+4. プログラムを再起動して環境変数を再読み込み
+   - 環境変数を設定した後は、アプリケーションを再起動する必要があります
+
+#### 2. データベース接続エラー
+
+**症状**: PostgreSQL接続エラー、セッションが保存されない
+
+**解決方法**:
+1. `DATABASE_URL`が正しく設定されているか確認
+   - 形式: `postgresql://REDACTED:REDACTED@host:port/database_name`
+   - ユーザー名、パスワード、ホスト、ポート、データベース名が正しいか確認
+
+2. PostgreSQLサービスが起動しているか確認
+   ```bash
+   # Linux/Mac
+   sudo systemctl status postgresql
+   
+   # Windows
+   services.msc で PostgreSQL サービスを確認
+   ```
+
+3. データベースが存在するか確認
+   ```bash
+   psql -U postgres -l
+   ```
+
+4. 接続権限を確認
+   - ユーザーにデータベースへの接続権限があるか確認
+
+5. SSL接続の問題
+   - `DATABASE_SSLMODE=disable`を試す（本番環境では非推奨）
+
+#### 3. モジュールインポートエラー
+
+**症状**: `ModuleNotFoundError`、`ImportError`
+
+**解決方法**:
+1. 必要なパッケージがインストールされているか確認
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. 仮想環境が有効化されているか確認
+   ```bash
+   # 仮想環境を作成
+   python -m venv venv
+   
+   # 仮想環境を有効化
+   # Linux/Mac
+   source venv/bin/activate
+   # Windows
+   venv\Scripts\activate
+   ```
+
+3. Pythonパスを確認
+   - 正しいディレクトリから実行しているか確認
+
+#### 4. ポートが既に使用されている
+
+**症状**: `Address already in use`エラー
+
+**解決方法**:
+1. ポート5000を使用しているプロセスを確認
+   ```bash
+   # Linux/Mac
+   lsof -i :5000
+   # または
+   netstat -an | grep 5000
+   
+   # Windows
+   netstat -ano | findstr :5000
+   ```
+
+2. プロセスを終了
+   ```bash
+   # Linux/Mac
+   kill -9 <PID>
+   
+   # Windows
+   taskkill /PID <PID> /F
+   ```
+
+3. 別のポートを使用
+   ```bash
+   PORT=5001 python app.py
+   ```
+
+#### 5. ChatGPT API呼び出しエラー
+
+**症状**: API呼び出しがタイムアウト、レート制限エラー
+
+**解決方法**:
+1. APIキーが正しいか確認
+   - OpenAI PlatformでAPIキーを確認
+
+2. APIクォータを確認
+   - OpenAI Platformで使用量とクォータを確認
+
+3. ネットワーク接続を確認
+   - インターネット接続が正常か確認
+   - ファイアウォールやプロキシの設定を確認
+
+4. タイムアウト設定を調整
+   - `GUNICORN_TIMEOUT`を増やす（例: 180秒）
+
+#### 6. メモリ不足エラー
+
+**症状**: メモリエラー、アプリケーションがクラッシュ
+
+**解決方法**:
+1. ワーカー数を減らす
+   ```bash
+   export GUNICORN_WORKERS=1
+   ```
+
+2. データベース接続プールサイズを減らす
+   ```bash
+   export DB_MAX_CONNECTIONS=5
+   ```
+
+3. ログファイルを確認してメモリ使用量を監視
+   - `log/app.log`でメモリ使用量を確認
+
+#### 7. セッションが保存されない
+
+**症状**: ページをリロードするとセッションが失われる
+
+**解決方法**:
+1. データベース接続を確認
+   - `DATABASE_URL`が正しく設定されているか確認
+   - データベーステーブルが正しく作成されているか確認
+
+2. セッションクッキーの設定を確認
+   - ブラウザの開発者ツールでクッキーを確認
+   - `SECRET_KEY`が設定されているか確認
+
+3. マルチインスタンス環境での問題
+   - すべてのインスタンスが同じデータベースに接続しているか確認
+
+#### 8. 翻訳機能が動作しない
+
+**症状**: 多言語対応が機能しない
+
+**解決方法**:
+1. DeepL APIキーが設定されているか確認
+   - `DEEPL_API_KEY`が正しく設定されているか確認
+
+2. DeepL APIのクォータを確認
+   - 無料プランでは500,000文字/月まで
+   - APIキーが有効か確認
+
+3. フォールバック動作を確認
+   - DeepL APIキーが設定されていない場合、OpenAI APIで翻訳（遅い）
+
+#### 9. ログファイルが大きすぎる
+
+**症状**: ディスク容量が不足
+
+**解決方法**:
+1. ログファイルをローテーション
+   ```bash
+   # logrotateを使用（Linux）
+   # または定期的にログをクリーンアップ
+   ```
+
+2. `DEBUG_MODE`を`false`に設定
+   - 本番環境では`DEBUG_MODE=false`を推奨
+
+3. 古いログファイルを削除
+   ```bash
+   # log/フォルダの古いログを削除
+   ```
+
+### デバッグモードの有効化
+
+詳細なログを出力するには、`DEBUG_MODE`環境変数を`true`に設定：
+
+```bash
+export DEBUG_MODE=true
+python app.py
+```
+
+または`.env`ファイルに追加：
+```env
+DEBUG_MODE=true
+```
+
+### ログファイルの確認
+
+問題が発生した場合、以下のログファイルを確認：
+
+- `log/app.log`: アプリケーションログ
+- `log/recommendation_detail_log.jsonl`: 医薬品推奨詳細ログ
+- `log/counseling_detail_log.jsonl`: カウンセリング詳細ログ
+- `log/security_events.jsonl`: セキュリティイベントログ
+- `log/error_detail_log.jsonl`: エラー詳細ログ
+
+### サポート
+
+問題が解決しない場合：
+1. ログファイルを確認してエラーメッセージを特定
+2. GitHubのIssuesで報告（該当する場合）
+3. 運営者に連絡（`docs/運営者情報.md`を参照）
+
 4. **定期的なキーのローテーション**
    - 定期的にAPIキーを更新
    - 不要になったキーは削除
@@ -2663,13 +3119,38 @@ medicine-recommend-system/
 - 体調に変化があった場合は専門家にご相談ください
 - Red Flag症状検出時は即座に医師相談を推奨
 
-## トラブルシューティング
+## トラブルシューティング（2025年12月31日更新）
 
-### APIキーが認識されない場合
+### よくある問題と解決方法
+
+#### 1. APIキーが認識されない
+
+**症状**: APIキーエラーが発生する、データベース接続に失敗する
+
+**解決方法**:
 1. 環境変数が正しく設定されているか確認
+   ```bash
+   # Linux/Mac
+   echo $OPENAI_API_KEY
+   echo $DATABASE_URL
+   
+   # Windows PowerShell
+   $env:OPENAI_API_KEY
+   $env:DATABASE_URL
+   ```
+
 2. `.env`ファイルが正しい場所にあるか確認
-3. ファイルの文字エンコーディングがUTF-8か確認
+   - `.env`ファイルは`app.py`と同じディレクトリに配置
+   - `.env`ファイルのパスが正しいか確認
+   - ファイルの文字エンコーディングがUTF-8か確認
+
+3. `python-dotenv`がインストールされているか確認
+   ```bash
+   pip install python-dotenv
+   ```
+
 4. プログラムを再起動して環境変数を再読み込み
+   - 環境変数を設定した後は、アプリケーションを再起動する必要があります
 
 ### Webアプリケーションが起動しない場合
 1. Flaskがインストールされているか確認
