@@ -354,7 +354,21 @@ SYMPTOM_DICTIONARY = {
     },
     "打撲": {
         "canonical_name": "打撲",
-        "synonyms": ["打撲", "打ち身", "青あざ", "内出血"],
+        "synonyms": ["打撲", "打ち身", "青あざ", "あおたん", "内出血", "あざ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "打ち身": {
+        "canonical_name": "打ち身",
+        "synonyms": ["打ち身", "打撲", "青あざ", "あおたん", "内出血", "あざ"],
+        "severity_tags": ["軽度", "中等度", "重度"],
+        "medicine_types": ["外用薬（皮膚）"],
+        "weight": 0.9
+    },
+    "炎症": {
+        "canonical_name": "炎症",
+        "synonyms": ["炎症", "炎症している", "炎症する", "にえる", "にえている"],
         "severity_tags": ["軽度", "中等度", "重度"],
         "medicine_types": ["外用薬（皮膚）"],
         "weight": 0.9
@@ -1967,6 +1981,39 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
                 break
         
         symptom["severity"] = severity
+    
+    # セッションから重症度タグとescalation_scoreを取得
+    severity_tag_from_dialect = user_info.get('detected_severity_tag')
+    escalation_score = user_info.get('escalation_score', 0.0)
+    
+    # 重症度の優先順位定義（5段階）
+    severity_order = {
+        "重度": 5,
+        "やや重度": 4,
+        "中等度": 3,
+        "軽度": 2,
+        "やや軽度": 1
+    }
+    
+    # escalation_scoreが閾値を超えている場合は受診勧奨（閾値4.0：重度×2回分）
+    if escalation_score >= 4.0:
+        # 受診勧奨フラグは後続の処理で設定されるため、ここではログのみ
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"escalation_scoreが閾値を超えています: {escalation_score:.1f}")
+    
+    # 症状の重症度判定（方言から抽出した重症度タグを考慮）
+    for symptom in detected_symptoms:
+        # 既存の重症度判定
+        current_severity = symptom.get("severity")
+        current_level = severity_order.get(current_severity, 0)
+        
+        # 方言から抽出した重症度タグを考慮（最大値を取得）
+        if severity_tag_from_dialect:
+            dialect_level = severity_order.get(severity_tag_from_dialect, 0)
+            if dialect_level > current_level:
+                symptom["severity"] = severity_tag_from_dialect
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"方言から抽出した重症度タグを適用: {severity_tag_from_dialect}")
     
     # 期間の推定（強化版）
     duration_days = None
