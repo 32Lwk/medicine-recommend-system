@@ -8,7 +8,17 @@ import re
 import os
 import unicodedata
 import logging
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Set
+
+# Aho-Corasickアルゴリズムのインポート（オプション）
+try:
+    import ahocorasick
+    AHO_CORASICK_AVAILABLE = True
+except ImportError:
+    AHO_CORASICK_AVAILABLE = False
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.warning("pyahocorasickがインストールされていません。通常の正規表現を使用します。")
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +49,64 @@ def normalize_text(text: str) -> str:
     # 空白と記号を除去（数字・アルファベット・日本語は残す）
     normalized = re.sub(r'[\s\u3000]+', '', normalized)
     normalized = re.sub(r"[^\wぁ-んァ-ン一-龥]+", '', normalized)
+    return normalized
+
+
+def basic_normalize_text(text: str) -> str:
+    """
+    基本正規化（Unicode正規化、大文字小文字・半角全角の統一、長音削除）
+    方言変換の前に実行する
+    
+    Args:
+        text: 正規化前のテキスト
+    
+    Returns:
+        基本正規化されたテキスト
+    """
+    if not text or not isinstance(text, str):
+        return ""
+    
+    # Unicode正規化（NFKC）
+    normalized = unicodedata.normalize('NFKC', text)
+    
+    # 全角半角の統一（数字・アルファベット）
+    normalized = normalized.translate(str.maketrans(
+        '０１２３４５６７８９ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ',
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    ))
+    
+    # カタカナをひらがなに統一（濁点・半濁点も含む）
+    # 全角カタカナの範囲を変換
+    katakana_to_hiragana_map = {}
+    for i in range(0x30A1, 0x30F7):  # ァ～ヲ
+        katakana = chr(i)
+        hiragana = chr(i - 0x60)  # カタカナとひらがなの差は0x60
+        katakana_to_hiragana_map[katakana] = hiragana
+    
+    # 特殊な文字のマッピング
+    katakana_to_hiragana_map['ヲ'] = 'を'
+    katakana_to_hiragana_map['ヴ'] = 'う'
+    katakana_to_hiragana_map['ヰ'] = 'ゐ'
+    katakana_to_hiragana_map['ヱ'] = 'ゑ'
+    
+    # 濁点・半濁点付きカタカナ
+    for base_kata, base_hira in [
+        ('ガ', 'が'), ('ギ', 'ぎ'), ('グ', 'ぐ'), ('ゲ', 'げ'), ('ゴ', 'ご'),
+        ('ザ', 'ざ'), ('ジ', 'じ'), ('ズ', 'ず'), ('ゼ', 'ぜ'), ('ゾ', 'ぞ'),
+        ('ダ', 'だ'), ('ヂ', 'ぢ'), ('ヅ', 'づ'), ('デ', 'で'), ('ド', 'ど'),
+        ('バ', 'ば'), ('ビ', 'び'), ('ブ', 'ぶ'), ('ベ', 'べ'), ('ボ', 'ぼ'),
+        ('パ', 'ぱ'), ('ピ', 'ぴ'), ('プ', 'ぷ'), ('ペ', 'ぺ'), ('ポ', 'ぽ')
+    ]:
+        katakana_to_hiragana_map[base_kata] = base_hira
+    
+    # 変換テーブルを作成
+    katakana_chars = ''.join(katakana_to_hiragana_map.keys())
+    hiragana_chars = ''.join(katakana_to_hiragana_map.values())
+    normalized = normalized.translate(str.maketrans(katakana_chars, hiragana_chars))
+    
+    # 長音の削除（「えらーい」→「えらい」）
+    normalized = re.sub(r'[ー〜～]', '', normalized)
+    
     return normalized
 
 
@@ -1488,3 +1556,719 @@ def calculate_symptom_specific_boost(candidate: Dict, nlu_result: Dict, user_inf
                 boost += 0.10
     
     return boost
+
+
+# ============================================================================
+# 方言変換機能（グローバルリソース対応）
+# ============================================================================
+
+# グローバル変数（アプリ起動時に一度だけ構築）
+GLOBAL_DIALECT_AUTOMATON = None
+GLOBAL_DIALECT_INDEX = None
+GLOBAL_RE_SCANNER = None
+
+
+def initialize_dialect_resources():
+    """
+    方言変換用のリソースを初期化（アプリ起動時に一度だけ実行）
+    オートマトン、インデックス、re.Scannerを構築してグローバル変数に保存
+    """
+    global GLOBAL_DIALECT_AUTOMATON, GLOBAL_DIALECT_INDEX, GLOBAL_RE_SCANNER
+    
+    try:
+        from config.dialect_dictionary import DIALECT_DICTIONARY
+        
+        # Aho-Corasickオートマトンの構築
+        if AHO_CORASICK_AVAILABLE:
+            GLOBAL_DIALECT_AUTOMATON = build_aho_corasick_automaton(DIALECT_DICTIONARY)
+            logger.info("✅ Aho-Corasickオートマトンの構築が完了しました。")
+        else:
+            logger.info("⚠️ pyahocorasickが利用できないため、Aho-Corasickオートマトンは構築しません。")
+        
+        # 方言インデックスの構築
+        GLOBAL_DIALECT_INDEX = build_dialect_index(DIALECT_DICTIONARY)
+        logger.info("✅ 方言インデックスの構築が完了しました。")
+        
+        # re.Scannerの構築
+        GLOBAL_RE_SCANNER = build_re_scanner(DIALECT_DICTIONARY)
+        logger.info("✅ re.Scannerの構築が完了しました。")
+        
+        logger.info("✅ 方言変換リソースの初期化が完了しました。")
+    except Exception as e:
+        logger.error(f"❌ 方言変換リソースの初期化エラー: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def create_japanese_word_boundary_pattern(word: str, sentence_end_priority: bool = False, is_emphasis: bool = False, is_symptom: bool = False) -> str:
+    """
+    日本語の単語境界判定パターンを作成（否定の戻り読み・先読み＋カスタム判定）
+    
+    Args:
+        word: 方言表現
+        sentence_end_priority: 文末マッチングを優先するかどうか
+        is_emphasis: 強調副詞かどうか（後ろに形容詞・動詞が続くことを許可）
+        is_symptom: 症状関連の方言表現かどうか（前にも日本語文字が続くことを許可）
+    
+    Returns:
+        正規表現パターン
+    """
+    escaped_word = re.escape(word)
+    
+    if sentence_end_priority:
+        # 文末マッチングを優先（「ばい」「たい」など）
+        # 文末パターンと通常パターンの両方を生成
+        end_pattern = f"({escaped_word})$"
+        normal_pattern = f"(?<![ぁ-んァ-ヶー一-龥]){escaped_word}(?![ぁ-んァ-ヶー一-龥])"
+        return f"({end_pattern}|{normal_pattern})"
+    else:
+        # 通常の単語境界判定（否定の戻り読み・先読み）
+        # 前後に日本語文字（ひらがな、カタカナ、漢字）がない場合にマッチ
+        # ただし、強調副詞や症状関連の場合は前後にも日本語文字が続くことを許可
+        if is_emphasis:
+            # 強調副詞の場合：前後にも日本語文字が続くことを許可（「でら痛い」「めっちゃしんどい」「でらめっちゃ痛い」など）
+            # ただし、「でらきん」のような誤変換を防ぐため、「きん」で始まる語は除外
+            return f"{escaped_word}(?!きん)"
+        elif is_symptom:
+            # 症状関連の場合：前後にも日本語文字が続くことを許可（「今日はしんどい」「頭がえらい」など）
+            return f"{escaped_word}"
+        else:
+            return f"(?<![ぁ-んァ-ヶー一-龥]){escaped_word}(?![ぁ-んァ-ヶー一-龥])"
+
+
+def check_health_context(text: str, dialect_word: str, dialect_info: Dict) -> bool:
+    """
+    体調関連の文脈かどうかを判定
+    
+    Args:
+        text: ユーザー入力テキスト
+        dialect_word: 方言表現
+        dialect_info: 方言情報（context_keywords, exclude_patternsを含む）
+    
+    Returns:
+        True: 体調関連の文脈の場合（変換可能）
+        False: 体調関連でない場合（変換しない）
+    """
+    # 除外パターンのチェック
+    exclude_patterns = dialect_info.get("exclude_patterns", [])
+    for pattern in exclude_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return False
+    
+    # 文脈キーワードのチェック
+    context_keywords = dialect_info.get("context_keywords", [])
+    if not context_keywords:
+        # 文脈キーワードが定義されていない場合は変換可能
+        return True
+    
+    # 体調関連キーワードが近くにあるかチェック（前後20文字以内）
+    dialect_pos = text.find(dialect_word)
+    if dialect_pos == -1:
+        return False
+    
+    context_window = text[max(0, dialect_pos - 20):dialect_pos + len(dialect_word) + 20]
+    
+    for keyword in context_keywords:
+        if keyword in context_window:
+            return True
+    
+    return False
+
+
+def build_aho_corasick_automaton(dialect_dictionary: Dict) -> Optional[Any]:
+    """
+    Aho-Corasickオートマトンを構築
+    
+    Args:
+        dialect_dictionary: 方言辞書
+    
+    Returns:
+        Aho-Corasickオートマトン（利用可能な場合）
+    """
+    if not AHO_CORASICK_AVAILABLE:
+        return None
+    
+    automaton = ahocorasick.Automaton()
+    
+    for dialect_type, entries in dialect_dictionary.items():
+        for dialect_word, info in entries.items():
+            # 方言表現をキーとして追加
+            automaton.add_word(dialect_word, (dialect_word, info, dialect_type))
+    
+    automaton.make_automaton()
+    return automaton
+
+
+def find_dialect_matches_aho_corasick(
+    text: str,
+    automaton: Any
+) -> List[Tuple[int, int, Tuple]]:
+    """
+    Aho-Corasickアルゴリズムで方言表現を検出
+    
+    Args:
+        text: 検索対象テキスト
+        automaton: Aho-Corasickオートマトン
+    
+    Returns:
+        マッチした方言表現のリスト（位置、長さ、情報）
+    """
+    if not automaton:
+        return []
+    
+    matches = []
+    for end_index, (dialect_word, info, dialect_type) in automaton.iter(text):
+        start_index = end_index - len(dialect_word) + 1
+        matches.append((start_index, end_index + 1, (dialect_word, info, dialect_type)))
+    
+    return matches
+
+
+def build_dialect_index(dialect_dictionary: Dict) -> Dict[str, Set[str]]:
+    """
+    方言インデックスを構築（文字ベース＋N-gram）
+    
+    Args:
+        dialect_dictionary: 方言辞書
+    
+    Returns:
+        文字/N-gramから方言表現へのマッピング
+    """
+    index = {}
+    
+    for dialect_type, entries in dialect_dictionary.items():
+        for dialect_word, info in entries.items():
+            # 文字ベースのインデックス
+            for char in dialect_word:
+                if char not in index:
+                    index[char] = set()
+                index[char].add(dialect_word)
+            
+            # N-gramベースのインデックス（2-3文字）
+            for n in [2, 3]:
+                for i in range(len(dialect_word) - n + 1):
+                    ngram = dialect_word[i:i+n]
+                    if ngram not in index:
+                        index[ngram] = set()
+                    index[ngram].add(dialect_word)
+    
+    return index
+
+
+def filter_dialects_by_index(
+    text: str,
+    dialect_index: Dict[str, Set[str]],
+    dialect_dictionary: Dict
+) -> List[Tuple[str, Dict, str]]:
+    """
+    方言インデックスを使用してマッチする可能性のある方言を絞り込み
+    
+    Args:
+        text: ユーザー入力テキスト
+        dialect_index: 方言インデックス
+        dialect_dictionary: 方言辞書
+    
+    Returns:
+        マッチする可能性のある方言のリスト
+    """
+    candidate_dialects = set()
+    
+    # テキスト内の文字/N-gramから候補を抽出
+    for n in [1, 2, 3]:
+        for i in range(len(text) - n + 1):
+            ngram = text[i:i+n]
+            if ngram in dialect_index:
+                candidate_dialects.update(dialect_index[ngram])
+    
+    # 候補の方言表現を返す
+    candidates = []
+    for dialect_word in candidate_dialects:
+        for dialect_type, entries in dialect_dictionary.items():
+            if dialect_word in entries:
+                candidates.append((dialect_word, entries[dialect_word], dialect_type))
+                break
+    
+    return candidates
+
+
+def build_re_scanner(dialect_dictionary: Dict) -> Any:
+    """
+    re.Scannerを構築（一括スキャン用）
+    
+    注意: re.ScannerはPython 3.11で非推奨となり、エラーが発生するため使用しない
+    
+    Args:
+        dialect_dictionary: 方言辞書
+    
+    Returns:
+        None（re.Scannerは非推奨のため使用しない）
+    """
+    # re.ScannerはPython 3.11で非推奨となり、エラーが発生するため使用しない
+    # 代わりに通常の正規表現を使用
+    logger.warning("⚠️ re.Scannerは非推奨のため使用しません。通常の正規表現を使用します。")
+    return None
+
+
+def scan_text_with_scanner(text: str, scanner: Any) -> List[Tuple[int, int, Tuple]]:
+    """
+    re.Scannerでテキストを一括スキャン
+    
+    Args:
+        text: スキャン対象テキスト
+        scanner: re.Scannerオブジェクト
+    
+    Returns:
+        マッチした方言表現のリスト（位置、長さ、情報）
+    """
+    matches = []
+    tokens, remainder = scanner.scan(text)
+    
+    current_pos = 0
+    for token in tokens:
+        if token is not None:
+            dialect_word, info, dialect_type = token
+            start_pos = text.find(dialect_word, current_pos)
+            if start_pos != -1:
+                end_pos = start_pos + len(dialect_word)
+                matches.append((start_pos, end_pos, (dialect_word, info, dialect_type)))
+                current_pos = end_pos
+    
+    return matches
+
+
+def calculate_escalation_score(severity_tags: List[str]) -> float:
+    """
+    escalation_scoreを計算（重み付き加算）
+    
+    Args:
+        severity_tags: 検出された重症度タグのリスト
+    
+    Returns:
+        escalation_score
+    """
+    from config.dialect_dictionary import ESCALATION_SCORE_WEIGHTS
+    
+    total_score = 0.0
+    for severity_tag in severity_tags:
+        weight = ESCALATION_SCORE_WEIGHTS.get(severity_tag, 0.0)
+        total_score += weight
+    
+    return total_score
+
+
+def check_escalation_threshold(escalation_score: float) -> bool:
+    """
+    escalation_scoreが閾値を超えているかチェック
+    
+    Args:
+        escalation_score: 計算されたescalation_score
+    
+    Returns:
+        True: 閾値を超えている場合（受診勧奨）
+    """
+    from config.dialect_dictionary import ESCALATION_THRESHOLD
+    
+    return escalation_score >= ESCALATION_THRESHOLD
+
+
+def get_max_severity(severity1: Optional[str], severity2: Optional[str]) -> Optional[str]:
+    """
+    2つの重症度タグのうち、より高い方を返す
+    
+    Args:
+        severity1: 重症度タグ1
+        severity2: 重症度タグ2
+    
+    Returns:
+        より高い重症度タグ
+    """
+    from config.dialect_dictionary import SEVERITY_LEVELS
+    
+    level1 = SEVERITY_LEVELS.get(severity1, 0)
+    level2 = SEVERITY_LEVELS.get(severity2, 0)
+    
+    if level1 >= level2:
+        return severity1
+    else:
+        return severity2
+
+
+def normalize_symptom_weights(
+    dialect_word: str,
+    dialect_info: Dict,
+    original_weight: float = 1.0
+) -> Dict[str, float]:
+    """
+    症状の重みを正規化（総症状エネルギー保存＋正規化）
+    
+    物理の「確率密度関数の正規化」と同様の保存則を適用：
+    Σ(i=1 to n) w_i = W_original
+    
+    これにより、「にえる」を分解した結果、全体的な「痛みの強さ」の
+    期待値が勝手に増幅されるバグを防ぐ。
+    
+    Args:
+        dialect_word: 方言表現
+        dialect_info: 方言情報
+        original_weight: 元の重み（総症状エネルギー W_original）
+    
+    Returns:
+        正規化された重みの辞書（Σw_i = W_original を満たす）
+    """
+    if not dialect_info.get("multiple_symptoms", False):
+        # 複数症状対応でない場合はそのまま
+        standard = dialect_info.get("standard", dialect_word)
+        return {standard: original_weight}
+    
+    standard_tokens = dialect_info.get("standard_tokens", [])
+    symptom_weights = dialect_info.get("symptom_weights", {})
+    
+    # 重み付き配分
+    normalized_weights = {}
+    total_weight = 0.0
+    
+    for token in standard_tokens:
+        if token in symptom_weights:
+            weight = symptom_weights[token]
+        else:
+            # デフォルトは均等配分
+            weight = 1.0 / len(standard_tokens)
+        
+        normalized_weights[token] = weight
+        total_weight += weight
+    
+    # 正規化（保存則：Σw_i = W_original）
+    # 合計がoriginal_weightになるように正規化
+    if total_weight > 0:
+        for token in normalized_weights:
+            # 各重みを正規化して、合計がoriginal_weightになるように調整
+            normalized_weights[token] = (normalized_weights[token] / total_weight) * original_weight
+    
+    # 検証：保存則が満たされているか確認（デバッグ用）
+    calculated_total = sum(normalized_weights.values())
+    if abs(calculated_total - original_weight) > 0.001:  # 浮動小数点誤差を考慮
+        logger.warning(
+            f"重みの正規化で保存則が満たされていません: "
+            f"original={original_weight}, calculated={calculated_total}"
+        )
+    
+    return normalized_weights
+
+
+def is_protected_word(word: str) -> bool:
+    """
+    保護すべき語かどうかを判定（2文字以上の名詞・症状語）
+    
+    Args:
+        word: チェックする語
+    
+    Returns:
+        True: 保護すべき語の場合
+    """
+    from config.dialect_dictionary import PROTECTED_WORDS
+    
+    # 2文字以上で、保護リストに含まれているか
+    if len(word) >= 2 and word in PROTECTED_WORDS:
+        return True
+    
+    # 症状語のパターンチェック（「痛」「熱」「咳」などが含まれる）
+    symptom_keywords = ["痛", "熱", "咳", "下痢", "便秘", "吐", "かゆ", "だる", "疲"]
+    if any(keyword in word for keyword in symptom_keywords) and len(word) >= 2:
+        return True
+    
+    return False
+
+
+def convert_dialect_to_standard(
+    text: str,
+    extract_severity: bool = False,
+    non_destructive: bool = True,
+    use_aho_corasick: bool = True,
+    use_index: bool = True,
+    use_scanner: bool = True
+) -> Tuple[str, Optional[str], float, Dict[str, List[str]], Dict[str, float]]:
+    """
+    方言表現を標準語に変換（最終版：パフォーマンス最適化対応）
+    
+    Args:
+        text: 変換前のテキスト
+        extract_severity: 強調副詞の重症度タグを抽出するかどうか
+        non_destructive: 非破壊的変換を使用するかどうか
+        use_aho_corasick: Aho-Corasickアルゴリズムを使用するかどうか
+        use_index: 方言インデックスを使用するかどうか
+        use_scanner: re.Scannerを使用するかどうか
+    
+    Returns:
+        (変換後のテキスト, 重症度タグ, escalation_score, 非破壊的変換の候補辞書, 正規化された重み)
+    """
+    # エラーハンドリング：無効な入力のチェック
+    if text is None:
+        return None, None, 0.0, {}, {}
+    if not isinstance(text, str):
+        if DEBUG_MODE:
+            logger.debug(f"無効な入力: {type(text)}")
+        # 数値やその他の型は文字列に変換
+        return str(text), None, 0.0, {}, {}
+    if not text:
+        return "", None, 0.0, {}, {}
+    
+    try:
+        from config.dialect_dictionary import (
+            DIALECT_DICTIONARY,
+            CONVERSION_EXCLUSION_LIST,
+            SEVERITY_LEVELS
+        )
+    except ImportError as e:
+        logger.error(f"❌ 方言辞書のインポートに失敗: {e}")
+        return text, None, 0.0, {}, {}
+    except Exception as e:
+        logger.error(f"❌ 方言辞書の読み込みエラー: {e}")
+        return text, None, 0.0, {}, {}
+    
+    converted_text = text
+    detected_severity = None
+    severity_tags = []  # 複数の重症度タグを収集
+    escalation_score = 0.0
+    non_destructive_candidates = {}
+    normalized_weights = {}
+    
+    # グローバル変数からリソースを取得（構築済みのものを使用）
+    global GLOBAL_DIALECT_AUTOMATON, GLOBAL_DIALECT_INDEX, GLOBAL_RE_SCANNER
+    
+    # グローバルリソースが初期化されていない場合は初期化
+    if GLOBAL_DIALECT_INDEX is None:
+        initialize_dialect_resources()
+    
+    # 方言インデックスで候補を絞り込み（パフォーマンス最適化）
+    try:
+        if use_index and GLOBAL_DIALECT_INDEX:
+            candidate_dialects = filter_dialects_by_index(text, GLOBAL_DIALECT_INDEX, DIALECT_DICTIONARY)
+        else:
+            # インデックスを使用しない場合は全エントリを処理
+            candidate_dialects = []
+            for dialect_type, entries in DIALECT_DICTIONARY.items():
+                for dialect_word, info in entries.items():
+                    candidate_dialects.append((dialect_word, info, dialect_type))
+    except Exception as e:
+        logger.warning(f"⚠️ 方言インデックスの使用でエラー: {e}")
+        # フォールバック：全エントリを処理
+        candidate_dialects = []
+        for dialect_type, entries in DIALECT_DICTIONARY.items():
+            for dialect_word, info in entries.items():
+                candidate_dialects.append((dialect_word, info, dialect_type))
+    
+    # Aho-Corasickでマッチング（パフォーマンス最適化）
+    try:
+        if use_aho_corasick and AHO_CORASICK_AVAILABLE and GLOBAL_DIALECT_AUTOMATON:
+            matches = find_dialect_matches_aho_corasick(text, GLOBAL_DIALECT_AUTOMATON)
+            # マッチした方言のみを処理
+            if matches:
+                candidate_dialects = [
+                    (word, info, dtype) for _, _, (word, info, dtype) in matches
+                ]
+    except Exception as e:
+        logger.warning(f"⚠️ Aho-Corasickマッチングでエラー: {e}")
+        # エラーが発生しても処理を続行（インデックスで絞り込んだ候補を使用）
+    
+    # 長さの降順でソート（最長一致原則）
+    candidate_dialects.sort(key=lambda x: len(x[0]), reverse=True)
+    
+    # 変換処理
+    for dialect_word, dialect_info, dialect_type in candidate_dialects:
+        # 変換保留リストのチェック
+        if dialect_word in CONVERSION_EXCLUSION_LIST:
+            if dialect_info.get("ambiguity_risk") == "high":
+                if not check_health_context(converted_text, dialect_word, dialect_info):
+                    continue
+        
+        # 正規表現パターンの取得
+        regex_pattern = dialect_info.get("regex_pattern")
+        if not regex_pattern:
+            # 強調副詞かどうかを判定（severity_tagがある場合は強調副詞）
+            is_emphasis = bool(dialect_info.get("severity_tag"))
+            # 症状関連かどうかを判定（symptom_relatedがTrueの場合は症状関連）
+            is_symptom = bool(dialect_info.get("symptom_related", False))
+            regex_pattern = create_japanese_word_boundary_pattern(
+                dialect_word,
+                dialect_info.get("sentence_end_priority", False),
+                is_emphasis=is_emphasis,
+                is_symptom=is_symptom
+            )
+        
+        # マッチングと置換
+        try:
+            matches = list(re.finditer(regex_pattern, converted_text, re.IGNORECASE))
+        except re.error as e:
+            logger.warning(f"⚠️ 正規表現エラー: {regex_pattern} - {e}")
+            continue
+        
+        if matches:
+            # 後ろから置換（インデックスのずれを防ぐ）
+            for match in reversed(matches):
+                # 文脈判定（多義語の場合）
+                if dialect_info.get("ambiguity_risk") == "high":
+                    if not check_health_context(converted_text, dialect_word, dialect_info):
+                        continue
+                
+                # 非破壊的変換
+                if non_destructive and dialect_info.get("standard_tokens"):
+                    standard_tokens = dialect_info.get("standard_tokens", [])
+                    non_destructive_candidates[dialect_word] = standard_tokens
+                    
+                    # 重みの正規化
+                    weights = normalize_symptom_weights(dialect_word, dialect_info)
+                    normalized_weights.update(weights)
+                    
+                    # 主要な変換先で置換
+                    standard_word = dialect_info.get("standard", dialect_word)
+                else:
+                    standard_word = dialect_info.get("standard", dialect_word)
+                
+                # 置換（動詞の活用形を考慮）
+                # 「にえる」→「打ち身」のように、名詞の場合は「になっている」などの表現に変換
+                matched_text = match.group()
+                replacement = standard_word
+                
+                # 動詞の活用形を考慮（「にえています」→「打ち身になっています」など）
+                # 正規表現パターンが「にえ(?:ています|ている|て|た|る)」の場合、
+                # 「にえています」全体がマッチするが、「にえる」の基本形は「にえ」+「る」
+                # なので、活用部分を抽出する際は「にえ」を除いた部分を取得
+                # 注意：「にえた」の場合、matched_textとdialect_wordの長さが同じ（3文字）なので、
+                # len(matched_text) != len(dialect_word) または matched_text != dialect_word で判定
+                if matched_text != dialect_word:
+                    # 活用形が含まれている場合（「にえています」など）
+                    # 「にえる」の基本形は「にえ」+「る」なので、「にえ」を除いた部分を取得
+                    base_form = dialect_word[:-1]  # 「にえる」→「にえ」
+                    if matched_text.startswith(base_form):
+                        verb_suffix = matched_text[len(base_form):]  # 「にえています」→「ています」
+                    else:
+                        # フォールバック：通常の方法
+                        verb_suffix = matched_text[len(dialect_word):]
+                    
+                    # 標準語が動詞（「する」で終わる）か名詞かを判定
+                    if standard_word.endswith("する"):
+                        # 動詞の場合：「する」動詞の活用形に変換
+                        if verb_suffix:
+                            # 「ている」「ています」などの活用形を保持
+                            if verb_suffix.startswith("て"):
+                                replacement = standard_word[:-2] + "し" + verb_suffix
+                            elif verb_suffix.startswith("た"):
+                                replacement = standard_word[:-2] + "し" + verb_suffix
+                            elif verb_suffix.startswith("る"):
+                                replacement = standard_word
+                            else:
+                                replacement = standard_word[:-2] + "し" + verb_suffix
+                        else:
+                            replacement = standard_word
+                    else:
+                        # 名詞の場合：「になっている」「になった」などの表現に変換
+                        if verb_suffix:
+                            if verb_suffix.startswith("て"):
+                                # 「ている」「ています」→「になっている」「になっています」
+                                if "ます" in verb_suffix:
+                                    replacement = standard_word + "になっています"
+                                else:
+                                    replacement = standard_word + "になっている"
+                            elif verb_suffix.startswith("た"):
+                                # 「た」→「になった」
+                                replacement = standard_word + "になった"
+                            elif verb_suffix.startswith("る"):
+                                # 「る」→「になる」
+                                replacement = standard_word + "になる"
+                            else:
+                                # その他の活用形は「になっている」に統一
+                                replacement = standard_word + "になっている"
+                        else:
+                            replacement = standard_word
+                else:
+                    replacement = standard_word
+                
+                converted_text = (
+                    converted_text[:match.start()] +
+                    replacement +
+                    converted_text[match.end():]
+                )
+                
+                # 強調副詞の重症度タグ抽出（最大値を取得＋escalation_score加算）
+                if extract_severity and dialect_info.get("severity_tag"):
+                    new_severity = dialect_info.get("severity_tag")
+                    severity_tags.append(new_severity)
+                    detected_severity = get_max_severity(detected_severity, new_severity)
+    
+    # escalation_scoreを計算
+    if severity_tags:
+        escalation_score = calculate_escalation_score(severity_tags)
+    
+    # デバッグモード時のログ記録（変換前後のテキスト記録）
+    if DEBUG_MODE or logger.level <= logging.DEBUG:
+        if converted_text != text:
+            logger.debug(
+                f"方言変換: '{text[:50]}...' → '{converted_text[:50]}...' "
+                f"(重症度: {detected_severity}, escalation_score: {escalation_score:.1f})"
+            )
+    
+    # 自動学習基盤：変換結果のログ記録（誤変換パターンの分析用）
+    try:
+        log_conversion_result(
+            original_text=text,
+            converted_text=converted_text,
+            severity_tag=detected_severity,
+            escalation_score=escalation_score,
+            non_destructive_candidates=non_destructive_candidates,
+            normalized_weights=normalized_weights
+        )
+    except Exception as e:
+        # ログ記録のエラーは無視（メイン処理に影響を与えない）
+        if DEBUG_MODE:
+            logger.debug(f"変換結果のログ記録でエラー: {e}")
+    
+    return converted_text, detected_severity, escalation_score, non_destructive_candidates, normalized_weights
+
+
+def log_conversion_result(
+    original_text: str,
+    converted_text: str,
+    severity_tag: Optional[str],
+    escalation_score: float,
+    non_destructive_candidates: Dict[str, List[str]],
+    normalized_weights: Dict[str, float]
+):
+    """
+    自動学習機能の基盤：変換結果をログ記録（誤変換パターンの分析用）
+    
+    Args:
+        original_text: 変換前のテキスト
+        converted_text: 変換後のテキスト
+        severity_tag: 検出された重症度タグ
+        escalation_score: escalation_score
+        non_destructive_candidates: 非破壊的変換の候補
+        normalized_weights: 正規化された重み
+    """
+    import json
+    from datetime import datetime
+    
+    # ログディレクトリの確認
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'log')
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # 変換結果をJSON形式で記録
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "original_text": original_text,
+        "converted_text": converted_text,
+        "severity_tag": severity_tag,
+        "escalation_score": escalation_score,
+        "non_destructive_candidates": non_destructive_candidates,
+        "normalized_weights": normalized_weights,
+        "conversion_applied": original_text != converted_text
+    }
+    
+    # JSONL形式でログファイルに追記
+    log_file = os.path.join(log_dir, 'dialect_conversion_log.jsonl')
+    try:
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+    except Exception as e:
+        # ログ記録のエラーは無視
+        if DEBUG_MODE:
+            logger.debug(f"変換結果のログ記録でエラー: {e}")
