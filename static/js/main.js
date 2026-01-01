@@ -3025,6 +3025,107 @@
                     </div>
                 `
             }
+        },
+        'settings': {
+            title: '設定',
+            content: {
+                ja: `
+                    <div class="info-section">
+                        <h3>⚙️ 表示設定</h3>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">文字サイズ</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">小</button>
+                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">標準</button>
+                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">大</button>
+                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">特大</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">文字サイズを変更すると、ページ全体の文字が大きくなります。設定は保存され、次回アクセス時も適用されます。</p>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">音声読み上げ速度</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">遅い</button>
+                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">標準</button>
+                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">速い</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">音声読み上げの速度を調整できます。設定は保存され、次回アクセス時も適用されます。</p>
+                        </div>
+                    </div>
+                `,
+                en: `
+                    <div class="info-section">
+                        <h3>⚙️ Display Settings</h3>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">Font Size</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Small</button>
+                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">Normal</button>
+                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">Large</button>
+                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">Extra Large</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">Changing the font size will make all text on the page larger. Settings are saved and will be applied on your next visit.</p>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">Voice Reading Speed</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Slow</button>
+                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Normal</button>
+                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Fast</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">You can adjust the voice reading speed. Settings are saved and will be applied on your next visit.</p>
+                        </div>
+                    </div>
+                `,
+                ko: `
+                    <div class="info-section">
+                        <h3>⚙️ 표시 설정</h3>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">글자 크기</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">작게</button>
+                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">보통</button>
+                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">크게</button>
+                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">아주 크게</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">글자 크기를 변경하면 페이지의 모든 텍스트가 커집니다. 설정은 저장되며 다음 방문 시에도 적용됩니다.</p>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">음성 읽기 속도</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">느리게</button>
+                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">보통</button>
+                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">빠르게</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">음성 읽기 속도를 조정할 수 있습니다. 설정은 저장되며 다음 방문 시에도 적용됩니다.</p>
+                        </div>
+                    </div>
+                `,
+                zh: `
+                    <div class="info-section">
+                        <h3>⚙️ 显示设置</h3>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">字体大小</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">小</button>
+                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">标准</button>
+                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">大</button>
+                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">特大</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">更改字体大小将使页面上的所有文本变大。设置将被保存，并在下次访问时应用。</p>
+                        </div>
+                        <div style="margin: 20px 0;">
+                            <h4 style="margin-bottom: 15px;">语音朗读速度</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">慢</button>
+                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">标准</button>
+                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">快</button>
+                            </div>
+                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">您可以调整语音朗读速度。设置将被保存，并在下次访问时应用。</p>
+                        </div>
+                    </div>
+                `
+            }
         }
     };
     
@@ -3065,6 +3166,7 @@
         else if (pageId === 'privacy') translatedTitle = t.privacy;
         else if (pageId === 'consultation') translatedTitle = t.consultation;
         else if (pageId === 'faq') translatedTitle = t.faq || 'よくある質問（FAQ）';
+        else if (pageId === 'settings') translatedTitle = '設定';
         
         document.getElementById('modalTitle').textContent = translatedTitle;
         
@@ -3078,6 +3180,11 @@
             content = content[currentLanguage];
         }
         document.getElementById('detailContent').innerHTML = content;
+        
+        // 設定ページの場合、現在の設定を反映
+        if (pageId === 'settings') {
+            updateSettingsPage();
+        }
         
         // スクロール位置を一番上にリセット
         const detailPage = document.getElementById('detailPage');
@@ -4310,6 +4417,11 @@
                 input.value = pending;
             }
         }
+        // 文字サイズ設定を読み込み
+        loadFontSize();
+        // 音声読み上げ速度を読み込み
+        const savedSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
+        voiceReadSpeed = savedSpeed;
         scrollToBottom();
         // 初回ロード時にAPIから現在の履歴を取得
         loadMessages();
@@ -4330,6 +4442,135 @@
                 location.reload();
             });
         }
+    }
+    
+    // 文字サイズ変更機能
+    function setFontSize(level) {
+        const root = document.documentElement;
+        const sizeMap = {
+            'small': { base: '0.75rem', lineHeight: '1.7' },
+            'normal': { base: '1rem', lineHeight: '1.8' },
+            'large': { base: '1.25rem', lineHeight: '1.75' },
+            'extra-large': { base: '1.5rem', lineHeight: '1.7' }
+        };
+        
+        const size = sizeMap[level] || sizeMap['normal'];
+        root.style.setProperty('--font-size-base', size.base);
+        root.style.setProperty('--line-height-base', size.lineHeight);
+        
+        // ボタンのアクティブ状態を更新
+        document.querySelectorAll('.font-size-btn').forEach(btn => {
+            btn.style.background = btn.dataset.size === level ? '#4CAF50' : 'white';
+            btn.style.color = btn.dataset.size === level ? 'white' : '#4CAF50';
+        });
+        
+        // localStorageに保存
+        saveFontSize(level);
+    }
+    
+    function setLineHeight(size) {
+        const root = document.documentElement;
+        const lineHeightMap = {
+            'small': '1.7',
+            'normal': '1.8',
+            'large': '1.75',
+            'extra-large': '1.7'
+        };
+        root.style.setProperty('--line-height-base', lineHeightMap[size] || '1.8');
+    }
+    
+    function loadFontSize() {
+        const savedSize = localStorage.getItem('fontSize') || 'normal';
+        setFontSize(savedSize);
+    }
+    
+    function saveFontSize(level) {
+        localStorage.setItem('fontSize', level);
+    }
+    
+    // 折りたたみ機能の初期化
+    function initCollapsibleSections() {
+        const sections = document.querySelectorAll('.collapsible-section[data-collapsible="true"]');
+        
+        sections.forEach(section => {
+            // 既に初期化済みの場合はスキップ（data-initialized属性でチェック）
+            if (section.hasAttribute('data-initialized')) {
+                return;
+            }
+            
+            const toggle = section.querySelector('.collapse-toggle');
+            // collapse-contentを探す、なければボタンの次の要素（コンテンツ部分）を取得
+            let content = section.querySelector('.collapse-content');
+            if (!content && toggle) {
+                // ボタンの次の要素を取得
+                content = toggle.nextElementSibling;
+            }
+            
+            if (!toggle || !content) return;
+            
+            // デフォルト状態を設定
+            const defaultExpanded = section.getAttribute('data-default-expanded') === 'true';
+            const isExpanded = defaultExpanded;
+            
+            // 初期状態を設定
+            section.setAttribute('aria-expanded', isExpanded.toString());
+            toggle.setAttribute('aria-expanded', isExpanded.toString());
+            
+            if (isExpanded) {
+                content.style.display = 'block';
+                toggle.setAttribute('aria-label', '閉じる');
+                const icon = toggle.querySelector('.collapse-icon');
+                if (icon) {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            } else {
+                content.style.display = 'none';
+                toggle.setAttribute('aria-label', '詳細を見る');
+            }
+            
+            // クリックイベントハンドラ（一度だけ追加）
+            const clickHandler = function(e) {
+                e.stopPropagation(); // イベントの伝播を防ぐ
+                const currentExpanded = section.getAttribute('aria-expanded') === 'true';
+                const newExpanded = !currentExpanded;
+                
+                // 状態を更新
+                section.setAttribute('aria-expanded', newExpanded.toString());
+                toggle.setAttribute('aria-expanded', newExpanded.toString());
+                
+                // コンテンツの表示/非表示を切り替え（アニメーションなし）
+                if (newExpanded) {
+                    content.style.display = 'block';
+                    toggle.setAttribute('aria-label', '閉じる');
+                    const icon = toggle.querySelector('.collapse-icon');
+                    if (icon) {
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                } else {
+                    content.style.display = 'none';
+                    toggle.setAttribute('aria-label', '詳細を見る');
+                    const icon = toggle.querySelector('.collapse-icon');
+                    if (icon) {
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+            };
+            
+            // キーボード操作対応（Enter/Spaceキー）
+            const keydownHandler = function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clickHandler(e);
+                }
+            };
+            
+            toggle.addEventListener('click', clickHandler);
+            toggle.addEventListener('keydown', keydownHandler);
+            
+            // 初期化済みフラグを設定
+            section.setAttribute('data-initialized', 'true');
+        });
     }
 
     // 新しいセッションを開始する関数
@@ -4684,6 +4925,12 @@
         }
         
         // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
+        
+        // 折りたたみ機能を初期化
+        initCollapsibleSections();
+        
+        // 音声読み上げボタンを表示（推奨結果がある場合）
+        checkAndShowVoiceReadButton();
         
         // スクロール位置を安定化
         requestAnimationFrame(() => {
@@ -5094,6 +5341,187 @@
             console.error('ユーザー情報保存エラー:', error);
             alert('通信エラーが発生しました。もう一度お試しください。');
         });
+    }
+    
+    // 音声読み上げ機能
+    let isReading = false;
+    let currentUtterance = null;
+    let voiceReadSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
+    let voiceReadProgress = 0;
+    
+    // 音声読み上げのトグル機能
+    function toggleVoiceRead() {
+        if (isReading) {
+            // 読み上げ中 → 停止
+            speechSynthesis.cancel();
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+        } else {
+            // 停止中 → 開始
+            speakFullRecommendation();
+            updateVoiceReadButtonState(true);
+            showVoiceReadProgress();
+            isReading = true;
+        }
+    }
+    
+    // ボタンの状態を更新
+    function updateVoiceReadButtonState(reading) {
+        const buttons = document.querySelectorAll('.voice-read-main-btn');
+        buttons.forEach(button => {
+            if (reading) {
+                button.innerHTML = '■ 読み上げを停止';
+                button.classList.add('playing');
+                button.setAttribute('aria-label', '読み上げを停止する');
+            } else {
+                button.innerHTML = '🔊 音声で聞く';
+                button.classList.remove('playing');
+                button.setAttribute('aria-label', '推奨結果を音声で読み上げる');
+            }
+        });
+    }
+    
+    // 全文読み上げ
+    function speakFullRecommendation() {
+        const recommendationResult = document.querySelector('.recommendation-result');
+        if (!recommendationResult) {
+            alert('読み上げる内容が見つかりませんでした。');
+            return;
+        }
+        
+        // テキストを抽出（HTMLタグを除去）
+        const text = recommendationResult.innerText || recommendationResult.textContent;
+        if (!text || text.trim().length === 0) {
+            alert('読み上げる内容がありません。');
+            return;
+        }
+        
+        // 既存の読み上げを停止
+        speechSynthesis.cancel();
+        
+        // 新しい読み上げを開始
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+        utterance.rate = voiceReadSpeed;
+        utterance.volume = 1.0;
+        utterance.pitch = 1.0;
+        
+        // 進行状況の更新
+        utterance.onstart = function() {
+            voiceReadProgress = 0;
+            updateVoiceReadProgress(0);
+        };
+        
+        utterance.onend = function() {
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            voiceReadProgress = 0;
+        };
+        
+        utterance.onerror = function(event) {
+            console.error('音声読み上げエラー:', event);
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            alert('音声読み上げでエラーが発生しました。');
+        };
+        
+        // 進行状況をシミュレート（実際の進行状況は取得できないため）
+        const progressInterval = setInterval(() => {
+            if (isReading && voiceReadProgress < 95) {
+                voiceReadProgress += 2;
+                updateVoiceReadProgress(voiceReadProgress);
+            } else {
+                clearInterval(progressInterval);
+            }
+        }, 500);
+        
+        currentUtterance = utterance;
+        speechSynthesis.speak(utterance);
+    }
+    
+    // 進行状況表示の更新
+    function updateVoiceReadProgress(percentage) {
+        const progressBars = document.querySelectorAll('#voice-read-progress-bar, #voice-read-progress-bar-inline');
+        const percentageTexts = document.querySelectorAll('#voice-read-percentage, #voice-read-percentage-inline');
+        
+        progressBars.forEach(progressBar => {
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+        });
+        
+        percentageTexts.forEach(percentageText => {
+            if (percentageText) {
+                percentageText.textContent = Math.round(percentage) + '%';
+            }
+        });
+    }
+    
+    // 進行状況表示を表示
+    function showVoiceReadProgress() {
+        const containers = document.querySelectorAll('#voice-read-progress, #voice-read-progress-inline');
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'block';
+            }
+        });
+    }
+    
+    // 進行状況表示を非表示
+    function hideVoiceReadProgress() {
+        const containers = document.querySelectorAll('#voice-read-progress, #voice-read-progress-inline');
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'none';
+            }
+        });
+        updateVoiceReadProgress(0);
+    }
+    
+    // 速度調整
+    function setVoiceReadSpeed(speed) {
+        voiceReadSpeed = speed;
+        localStorage.setItem('voiceReadSpeed', speed.toString());
+        
+        // 読み上げ中の場合は再開
+        if (isReading) {
+            speechSynthesis.cancel();
+            setTimeout(() => {
+                speakFullRecommendation();
+            }, 100);
+        }
+    }
+    
+    // 推奨結果が表示されたら音声読み上げボタンを表示（recommendation-result内のボタンを使用）
+    function checkAndShowVoiceReadButton() {
+        const recommendationResult = document.querySelector('.recommendation-result');
+        const voiceReadContainer = document.getElementById('voice-read-container-inline');
+        
+        if (recommendationResult && voiceReadContainer) {
+            voiceReadContainer.style.display = 'block';
+        }
+    }
+    
+    // 設定ページの状態を更新
+    function updateSettingsPage() {
+        // 現在の文字サイズを反映
+        const currentSize = localStorage.getItem('fontSize') || 'normal';
+        document.querySelectorAll('.font-size-btn').forEach(btn => {
+            if (btn.dataset.size === currentSize) {
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = 'white';
+                btn.style.color = '#4CAF50';
+            }
+        });
+        
+        // 現在の速度設定を反映（速度ボタンがあれば）
+        const currentSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
+        // 速度ボタンの状態更新は必要に応じて実装
     }
     
     // 音声入力機能
