@@ -6427,7 +6427,7 @@ def index():
                         escaped_technical = html.escape(technical_details)
                         
                         error_content = f"""
-<div class="recommendation-result error" style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 15px 0;">
+<div class="recommendation-result error warning-caution" role="region" aria-label="{error_info['title']}" style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 15px 0;">
     <h4 style="color: #856404; margin-top: 0;">{error_info['title']}</h4>
     <p style="color: #856404; font-weight: bold; margin: 10px 0;">{error_info['main_message']}</p>
     <p style="color: #856404; margin: 10px 0;"><strong>エラー理由:</strong> {escaped_reason}</p>
@@ -6488,7 +6488,7 @@ def index():
                         # HTMLエスケープ処理
                         escaped_user_message = html.escape(user_message)
                         escalation_content = f"""
-<div class="recommendation-result escalation">
+<div class="recommendation-result escalation warning-critical" role="region" aria-label="重要な注意事項">
     <h4>⚠️ 重要な注意事項</h4>
     <p class="escalation-warning"><strong>{doctor_consultation}</strong></p>
     <p><strong>医薬品の種類:</strong> {medicine_type}</p>
@@ -6557,7 +6557,7 @@ def index():
                             )
                             
                             personalized_section = f"""
-    <div style="background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <div class="warning-info" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
         <h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>
         <p style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;">{personalized_advice}</p>
     </div>
@@ -6681,10 +6681,15 @@ def index():
                         treatment_mention = user_info.get('treatment_mention', False)
                         if treatment_mention:
                             treatment_warning_section = """
-    <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
-        <h4 style="color: #e65100; margin-top: 0;">⚠️ <strong>治療中の方へ</strong></h4>
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="治療中の方へ" style="background: #fff3e0; border-left: 4px solid #f57c00;" id="treatment-warning-content">
+        <button class="collapse-toggle" aria-expanded="true" aria-controls="treatment-warning-content" aria-label="閉じる">
+            <span class="collapse-icon">▼</span>
+            <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ <strong>治療中の方へ</strong></h4>
+        </button>
+        <div style="padding: 15px;">
         <p style="margin: 5px 0; line-height: 1.6;">現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。</p>
         <p style="margin: 5px 0; line-height: 1.6;">治療中の方が市販薬を服用する場合、主疾患への重大な影響を与える可能性があります。</p>
+        </div>
     </div>
 """
                         
@@ -6697,13 +6702,32 @@ def index():
                             symptoms_list = [s if isinstance(s, str) else s.get('name', '') if isinstance(s, dict) else str(s) for s in symptoms] if symptoms else []
                             if is_ambiguous_input(user_message, symptoms_list, nlu_result_for_ambiguous):
                                 ambiguous_warning_section = """
-    <div style="background: #e3f2fd; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
-        <h4 style="color: #1976d2; margin-top: 0;">ℹ️ ご入力について</h4>
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="ご入力について" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
+        <button class="collapse-toggle" aria-expanded="false" aria-controls="ambiguous-warning-content" aria-label="詳細を見る">
+            <span class="collapse-icon">▼</span>
+            <h4 style="color: #1976d2; margin-top: 0; display: inline;">ℹ️ ご入力について</h4>
+        </button>
+        <div class="collapse-content" id="ambiguous-warning-content" style="padding: 20px; margin: 15px 0;">
         <p style="margin: 5px 0; line-height: 1.6;">ご入力いただいた内容から、複数の症状が推定されました。より正確な推奨のため、具体的な症状（発熱、咳、鼻水など）を詳しく教えていただくと、より適切な医薬品をご提案できます。</p>
+        </div>
     </div>
 """
                         except Exception as e:
                             logger.warning(f"曖昧さ判定エラー: {e}")
+                        
+                        # 症状分析結果を折りたたみ可能にする
+                        symptom_analysis_section = f"""
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="症状分析結果">
+        <button class="collapse-toggle" aria-expanded="false" aria-controls="symptom-analysis-content" aria-label="詳細を見る">
+            <span class="collapse-icon">▼</span>
+            <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px; display: inline;">🔍 症状分析結果</h4>
+        </button>
+        <div class="collapse-content" id="symptom-analysis-content">
+            <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
+            <p><strong>医薬品の種類:</strong> {medicine_type}</p>
+        </div>
+    </div>
+"""
                         
                         bot_content = f"""
 <div class="recommendation-result">
@@ -6711,9 +6735,7 @@ def index():
 {ambiguous_warning_section}
 {treatment_warning_section}
 {personalized_section}
-    <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">🔍 症状分析結果</h4>
-    <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
-    <p><strong>医薬品の種類:</strong> {medicine_type}</p>
+{symptom_analysis_section}
     
     <div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
         <h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>
@@ -6765,8 +6787,11 @@ def index():
                                     }
                                     style = severity_styles.get(highest_severity, severity_styles["blue"])
                                     
+                                    # 警告のクラスを決定（深刻度に応じて）
+                                    warning_class = 'warning-critical' if highest_severity == 'red' else 'warning-caution' if highest_severity == 'yellow' else 'warning-info'
+                                    
                                     overlap_warning_section = f"""
-    <div style="background: {style['background']}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {style['border_color']};">
+    <div class="{warning_class}" role="region" aria-label="{style['title']}" style="background: {style['background']}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {style['border_color']};">
         <h4 style="color: {style['title_color']}; margin-top: 0;">{style['icon']} {style['title']}</h4>
         <ul style="margin: 10px 0; padding-left: 20px;">
             {''.join(f'<li style="margin: 3px 0;">{summary}</li>' for summary in display_summaries)}
@@ -6924,6 +6949,9 @@ def index():
                                     # 年齢制限の重複チェック用
                                     age_restriction_added = False
                                     
+                                    # セクションID用のカウンター
+                                    section_counter = 0
+                                    
                                     for line in lines:
                                         line = line.strip()
                                         if not line:
@@ -6931,36 +6959,77 @@ def index():
                                             
                                         if line.startswith('1つ目：') or line.startswith('2つ目：') or line.startswith('3つ目：'):
                                             # 前のセクションを閉じる
-                                            if current_section and current_html:
-                                                formatted_usage_notes += current_html + '</div>'
+                                            if current_section == 'individual' and current_html:
+                                                # 前の医薬品セクションのコンテンツとセクション自体を閉じる
+                                                formatted_usage_notes += current_html + '</div></div>'
+                                                current_html = ""
+                                            elif current_section and current_html:
+                                                # その他のセクション（caution, usage等）を閉じる
+                                                formatted_usage_notes += current_html + '</div></div>'
+                                                current_html = ""
                                             
-                                            # 新しい医薬品セクション開始（シンプルな区切り）
-                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">💊 {line}</h5>'
+                                            # 新しい医薬品セクション開始（折りたたみ可能）
+                                            medicine_num = line.replace('：', '').replace('つ目', '')
+                                            section_id = f"medicine-{medicine_num}"
+                                            formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #f5f5f5; border-left: 4px solid #4CAF50;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">💊 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                            current_html = ""
                                             current_section = 'individual'
                                             age_restriction_added = False  # 新しい医薬品セクションでリセット
                                         elif line.startswith('【使ってはいけない人】'):
-                                            # 個別セクションを閉じる
-                                            if current_section == 'individual' and current_html:
-                                                formatted_usage_notes += current_html + '</div>'
+                                            # 前のセクションを閉じる
+                                            if current_section == 'individual':
+                                                # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                                if current_html:
+                                                    formatted_usage_notes += current_html
+                                                formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
                                                 current_html = ""
-                                            # 禁忌セクション
-                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="color: #d32f2f; margin: 0 0 8px 0;">⚠️ {line}</h5>'
+                                            elif current_section and current_html:
+                                                # その他のセクション（caution, usage等）を閉じる
+                                                formatted_usage_notes += current_html + '</div></div>'
+                                                current_html = ""
+                                            # 禁忌セクション（折りたたみ可能）
+                                            section_counter += 1
+                                            section_id = f"contraindication-section-{section_counter}"
+                                            formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #ffebee; border-left: 4px solid #c62828;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #d32f2f; margin: 0; display: inline;">⚠️ {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                            current_html = ""
                                             current_section = 'caution'
                                         elif line.startswith('【OTC医薬品について】'):
-                                            # 前のセクションを閉じる
-                                            if current_section and current_html:
-                                                formatted_usage_notes += current_html + '</div>'
+                                            # 前のセクションを閉じる（医薬品セクションも含む）
+                                            if current_section == 'individual':
+                                                # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                                if current_html:
+                                                    formatted_usage_notes += current_html
+                                                formatted_usage_notes += '</div></div>'
                                                 current_html = ""
-                                            # OTC医薬品セクション（シンプルな区切り）
-                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;"><h5 style="margin: 0 0 8px 0;">{line}</h5>'
+                                            elif current_section and current_html:
+                                                if current_section in ['caution', 'usage']:
+                                                    formatted_usage_notes += current_html + '</div></div>'
+                                                else:
+                                                    formatted_usage_notes += current_html + '</div>'
+                                                current_html = ""
+                                            # OTC医薬品セクション（折りたたみ可能なセクションとして独立）
+                                            section_counter += 1
+                                            section_id = f"otc-section-{section_counter}"
+                                            formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #e3f2fd; border-left: 4px solid #1976d2;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">{line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                            current_html = ""
                                             current_section = 'otc'
                                         elif line.startswith('【服用時の注意】'):
                                             # 前のセクションを閉じる
-                                            if current_section and current_html:
-                                                formatted_usage_notes += current_html + '</div>'
+                                            if current_section == 'individual':
+                                                # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                                if current_html:
+                                                    formatted_usage_notes += current_html
+                                                formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
                                                 current_html = ""
-                                            # 服用注意セクション
-                                            current_html = f'<div style="padding: 10px 0; margin: 10px 0;"><h5 style="color: #f57c00; margin: 0 0 8px 0;">📌 {line}</h5>'
+                                            elif current_section and current_html:
+                                                # その他のセクション（caution, usage等）を閉じる
+                                                formatted_usage_notes += current_html + '</div></div>'
+                                                current_html = ""
+                                            # 服用注意セクション（折りたたみ可能）
+                                            section_counter += 1
+                                            section_id = f"usage-note-section-{section_counter}"
+                                            formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #fff3e0; border-left: 4px solid #f57c00;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #f57c00; margin: 0; display: inline;">📌 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                            current_html = ""
                                             current_section = 'usage'
                                         elif line.startswith('年齢制限:'):
                                             # 年齢制限の処理（重複を避けるため）
@@ -6989,17 +7058,48 @@ def index():
                                             current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
                                         else:
                                             # 通常のテキスト（年齢制限とドーピング以外）
+                                            # 「⚠️ 治療中の方へ」の内容は、医薬品セクション内では表示（各医薬品の下に表示）、それ以外ではスキップ（上部に表示されているため）
                                             if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
-                                                current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                                # 医薬品セクション内の場合は「治療中の方へ」も表示
+                                                if current_section == 'individual':
+                                                    current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                                else:
+                                                    # 医薬品セクション外（ルートレベル）の場合は「治療中の方へ」をスキップ
+                                                    if not (line.startswith('⚠️ 治療中の方へ') or 
+                                                            '現在治療中の疾患がある場合' in line or 
+                                                            '治療中の方が市販薬を服用する場合' in line or
+                                                            '主疾患への重大な影響' in line or
+                                                            '重篤な疾患で治療中の方が市販薬を服用する場合' in line):
+                                                        current_html += f'<p style="margin: 3px 0;">{line}</p>'
                                     
                                     # 最後のセクションを閉じる
-                                    if current_section and current_html:
-                                        formatted_usage_notes += current_html + '</div>'
+                                    if current_section:
+                                        if current_section == 'individual':
+                                            # 医薬品セクションの場合、コンテンツとセクションを閉じる
+                                            if current_html:
+                                                formatted_usage_notes += current_html
+                                            formatted_usage_notes += '</div></div>'
+                                        elif current_section in ['caution', 'usage', 'otc']:
+                                            # 折りたたみ可能なセクションの場合
+                                            if current_html:
+                                                formatted_usage_notes += current_html
+                                            formatted_usage_notes += '</div></div>'
+                                        else:
+                                            # 折りたたみ不可のセクションの場合
+                                            if current_html:
+                                                formatted_usage_notes += current_html + '</div>'
                             
+                            # 使用上の注意を折りたたみ可能にする
+                            usage_notes_content = formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'
                             bot_content += f"""
-    <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
-        <h4 style="color: #e65100; margin-top: 0;">⚠️ 使用上の注意</h4>
-        {formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'}
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="使用上の注意" style="background: #fff3e0; border-left: 4px solid #ff9800;" id="usage-notes-content">
+        <button class="collapse-toggle" aria-expanded="true" aria-controls="usage-notes-content" aria-label="閉じる">
+            <span class="collapse-icon">▼</span>
+            <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ 使用上の注意</h4>
+        </button>
+        <div style="padding: 15px;">
+            {usage_notes_content}
+        </div>
     </div>
 """
                         
@@ -7008,7 +7108,7 @@ def index():
                         if doctor_consultation or True:  # 常に表示
                             doctor_consultation_text = doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'
                             doctor_consultation_section = f"""
-    <div style="background: #ffebee; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+    <div class="warning-critical" role="region" aria-label="医師の受診が必要な場合" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
         <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
         <p style="margin: 5px 0;">{doctor_consultation_text}</p>
     </div>
@@ -7072,6 +7172,17 @@ def index():
                                 logger.warning(f"⚠️ フィードバックボタンの翻訳エラー: {e}")
                         
                         bot_content += f"""
+    <div id="voice-read-container-inline" style="margin-top: 20px; margin-bottom: 10px;">
+        <button type="button" class="voice-read-main-btn" id="voiceReadMainBtn" onclick="toggleVoiceRead()" aria-label="推奨結果を音声で読み上げる" style="width: 100%; padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; min-height: 44px;">
+            🔊 音声で聞く
+        </button>
+        <div id="voice-read-progress-inline" style="margin-top: 10px; display: none;">
+            <div style="background: #e0e0e0; border-radius: 4px; height: 8px; overflow: hidden;">
+                <div id="voice-read-progress-bar-inline" style="background: #4CAF50; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+            <p id="voice-read-percentage-inline" style="margin: 5px 0 0 0; text-align: center; font-size: 14px; color: #666;">0%</p>
+        </div>
+    </div>
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
         <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">{feedback_text}</p>
         <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
