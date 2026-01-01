@@ -211,19 +211,90 @@ class TestDialectConversion(unittest.TestCase):
         total_words = 0
         successful_conversions = 0
         
+        # 症状関連の文脈テンプレート
+        symptom_contexts = {
+            "体": ["体が", "身体が", "体調が"],
+            "頭": ["頭が", "頭部が"],
+            "胃": ["胃が", "お腹が", "胸が"],
+            "傷": ["傷が", "傷口が", "けがが"],
+            "肌": ["肌が", "皮膚が"],
+            "手": ["手が", "腕が"],
+            "足": ["足が", "脚が"]
+        }
+        
         for dialect_type, entries in DIALECT_DICTIONARY.items():
             for dialect_word, info in entries.items():
                 total_words += 1
                 try:
-                    # 文脈判定が必要な方言表現（ambiguity_risk=high）は、適切な文脈を含むテキストでテスト
+                    # テストテキストの生成
+                    test_text = None
+                    
+                    # 1. 高多義性リスクの方言表現（ambiguity_risk=high）
                     if info.get("ambiguity_risk") == "high":
-                        # 文脈キーワードを含むテキストでテスト
                         context_keywords = info.get("context_keywords", [])
                         if context_keywords:
+                            # 文脈キーワードを含むテキストでテスト
                             test_text = f"今日は{context_keywords[0]}くて{dialect_word}"
                         else:
                             test_text = f"今日は{dialect_word}"
+                    
+                    # 2. 中多義性リスクの方言表現（ambiguity_risk=medium）
+                    elif info.get("ambiguity_risk") == "medium":
+                        context_keywords = info.get("context_keywords", [])
+                        if context_keywords:
+                            # 文脈キーワードを含むテキストでテスト
+                            if "痛" in context_keywords or "傷" in context_keywords or "けが" in context_keywords:
+                                test_text = f"傷が{dialect_word}"
+                            elif "吐" in context_keywords or "気持ち" in context_keywords or "胃" in context_keywords:
+                                test_text = f"胃が{dialect_word}"
+                            else:
+                                test_text = f"{context_keywords[0]}が{dialect_word}"
+                        else:
+                            test_text = f"今日は{dialect_word}"
+                    
+                    # 3. 症状関連の方言表現（symptom_related=True）
+                    elif info.get("symptom_related"):
+                        # 症状関連の方言は、適切な文脈を含むテキストでテスト
+                        if dialect_word in ["きつい", "しんどい", "だるい"]:
+                            test_text = f"体が{dialect_word}"
+                        elif dialect_word in ["かいい", "かゆい"]:
+                            test_text = f"肌が{dialect_word}"
+                        elif dialect_word in ["ひやこい", "冷たい"]:
+                            test_text = f"体が{dialect_word}"
+                        elif dialect_word in ["いびる", "痛む"]:
+                            test_text = f"傷が{dialect_word}"
+                        elif dialect_word in ["はしる", "しみる"]:
+                            test_text = f"傷口が{dialect_word}"
+                        elif dialect_word in ["むかつく", "吐き気"]:
+                            test_text = f"胃が{dialect_word}"
+                        elif dialect_word in ["えずく", "吐きそう"]:
+                            test_text = f"胃が{dialect_word}"
+                        else:
+                            test_text = f"体が{dialect_word}"
+                    
+                    # 4. 強調語（severity_tagがある）
+                    elif info.get("severity_tag"):
+                        # 強調語は「痛い」「しんどい」などの症状語と組み合わせてテスト
+                        test_text = f"{dialect_word}痛い"
+                    
+                    # 5. 文末優先の方言表現（sentence_end_priority=True）
+                    elif info.get("sentence_end_priority"):
+                        # 文末に来る方言は、文末に配置してテスト
+                        test_text = f"痛い{dialect_word}"
+                    
+                    # 6. その他の方言表現
                     else:
+                        # 症状関連でない方言は、そのままテスト
+                        # ただし、症状関連の文脈を含む場合もある
+                        if dialect_word in ["あかん", "だめ"]:
+                            test_text = f"体調が{dialect_word}"
+                        elif dialect_word in ["ほんま", "本当"]:
+                            test_text = f"{dialect_word}に痛い"
+                        else:
+                            test_text = f"今日は{dialect_word}"
+                    
+                    # デフォルトフォールバック
+                    if test_text is None:
                         test_text = f"今日は{dialect_word}"
                     
                     result = convert_dialect_to_standard(
@@ -239,9 +310,11 @@ class TestDialectConversion(unittest.TestCase):
         success_rate = successful_conversions / total_words if total_words > 0 else 0
         logger.info(f"方言変換成功率: {success_rate * 100:.1f}% ({successful_conversions}/{total_words})")
         
-        # 最低でも30%以上の成功率を期待（辞書の拡張により、一部の方言表現は変換されない可能性がある）
-        # 特に、ambiguity_riskがhighの方言表現は、文脈判定により変換されない場合がある
-        self.assertGreater(success_rate, 0.3)
+        # 改善されたテストケースにより、成功率が向上することを期待
+        # 最低でも45%以上の成功率を期待（改善前は30%以上、現実的な目標値）
+        # 注: 一部の方言表現は、正規表現パターンや複合語のため変換されない可能性がある
+        # 例: 「おなかがおどる」「はなげを出す」などの複合語、「おおきに」「みゃー」などの症状関連でない方言
+        self.assertGreater(success_rate, 0.45)
 
 
 class TestErrorHandling(unittest.TestCase):
