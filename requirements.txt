@@ -12,3 +12,4 @@ flask-cors==4.0.0
 deepl==1.18.0
 gevent==24.2.1
 pytz==2024.1
+pyahocorasick>=2.0.0
