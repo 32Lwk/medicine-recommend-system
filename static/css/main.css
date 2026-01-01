@@ -1,5 +1,19 @@
+        :root {
+            --font-size-base: 1rem; /* 標準サイズ */
+            --line-height-base: 1.8; /* ベース行間 */
+            --section-spacing: 30px;
+            --focus-color: #4CAF50; /* フォーカスリングの色（CSS変数） */
+        }
+        
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 
+                "BIZ UDPGothic",           /* UDフォント（Windows 10/11） */
+                "Hiragino Kaku Gothic ProN", /* UDフォント（macOS） */
+                "Yu Gothic",               /* UDフォント（Windows 8.1+） */
+                -apple-system,             /* システムフォント（macOS/iOS） */
+                BlinkMacSystemFont,        /* システムフォント（macOS Safari） */
+                "Segoe UI",                /* システムフォント（Windows） */
+                sans-serif;                /* フォールバック */
             margin: 0; 
             padding: 0; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -7,6 +21,39 @@
             height: 100dvh;
             text-align: left;
             -webkit-text-size-adjust: 100%;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+        }
+        
+        /* モバイル向け最適化 */
+        @media (max-width: 768px) {
+            body {
+                font-family: 
+                    -apple-system,         /* iOS標準フォント優先 */
+                    "BIZ UDPGothic",
+                    "Hiragino Kaku Gothic ProN",
+                    "Yu Gothic",
+                    "Roboto",               /* Android標準フォント */
+                    sans-serif;
+            }
+        }
+        
+        /* 文字サイズクラス */
+        .font-size-small { 
+            --font-size-base: 0.75rem; 
+            --line-height-base: 1.7; /* 少し詰める */
+        }
+        .font-size-normal { 
+            --font-size-base: 1rem; 
+            --line-height-base: 1.8;
+        }
+        .font-size-large { 
+            --font-size-base: 1.25rem; 
+            --line-height-base: 1.75; /* 少し詰める */
+        }
+        .font-size-extra-large { 
+            --font-size-base: 1.5rem; /* 最大150% */
+            --line-height-base: 1.7; /* 少し詰める */
         }
         .chat-container { 
             width: 100%;
@@ -254,7 +301,7 @@
         }
         .message-content {
             max-width: 70%;
-            padding: 12px 16px;
+            padding: calc(var(--font-size-base) * 0.75) calc(var(--font-size-base) * 1); /* rem単位で可変 */
             border-radius: 24px;
             word-wrap: break-word;
             text-align: left;
@@ -264,6 +311,8 @@
             overflow-x: hidden;
             position: relative;
             z-index: 2; /* 装飾の上に表示 */
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
         }
         .message.user .message-content {
             background: #4CAF50;
@@ -311,7 +360,7 @@
             color: #000 !important;
         }
         .chat-input { 
-            padding: 20px;
+            padding: calc(var(--font-size-base) * 1.25); /* rem単位で可変 */
             background: white;
             border-top: 1px solid #ddd;
             flex-shrink: 0;
@@ -330,16 +379,16 @@
             padding: 12px 16px;
             border: 2px solid #ddd;
             border-radius: 25px;
-            font-size: 16px;
+            font-size: var(--font-size-base, 16px);
             outline: none;
             resize: none;
-            min-height: 20px;
+            min-height: 44px; /* 高齢者向けの大きなタッチターゲット */
             max-height: 100px;
             overflow-y: auto;
             font-family: inherit;
             box-sizing: border-box;
             width: 100%;
-            line-height: 1.4;
+            line-height: var(--line-height-base, 1.4);
         }
         .chat-input input:focus, .chat-input textarea:focus {
             border-color: #4CAF50;
@@ -353,6 +402,8 @@
             cursor: pointer;
             font-size: 16px;
             transition: background 0.3s;
+            min-height: 44px; /* 高齢者向けの大きなタッチターゲット */
+            min-width: 44px;
         }
         .chat-input button:hover {
             background: #45a049;
@@ -528,43 +579,309 @@
             background: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 16px;
-            padding: 15px;
-            margin: 10px 0;
+            padding: calc(var(--font-size-base) * 1.25); /* rem単位で可変 */
+            margin: calc(var(--font-size-base) * 1.875) 0; /* rem単位で可変 */
             text-align: left;
             min-height: 100px;
             box-sizing: border-box;
             position: relative;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--font-size-base) * 1.25);
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            overflow-x: hidden; /* オーバーフロー防止 */
         }
         
         .recommendation-result h4 {
             color: #000;
-            margin: 10px 0 5px 0;
-            font-size: 16px;
+            margin: calc(var(--font-size-base) * 0.625) 0 calc(var(--font-size-base) * 0.3125) 0;
+            font-size: calc(var(--font-size-base) * 1.25); /* 20px相当（標準時） */
             border-bottom: 2px solid #4CAF50;
-            padding-bottom: 5px;
+            padding-bottom: calc(var(--font-size-base) * 0.3125);
+            font-weight: bold;
+        }
+        
+        .recommendation-result h5 {
+            font-size: calc(var(--font-size-base) * 1.125); /* 18px相当（標準時） */
+            font-weight: bold;
+        }
+        
+        /* 折りたたみセクションのスタイル（モダン、シンプル、ミニマル） */
+        .collapsible-section {
+            background: #ffffff;
+            border: 1px dotted #dee2e6; /* 点線の境界線 */
+            border-radius: 10px; /* 中程度の角丸（8-12px） */
+            padding: calc(var(--font-size-base) * 1.25); /* rem単位で可変 */
+            margin: calc(var(--font-size-base) * 1.875) 0; /* rem単位で可変、30px相当 */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 中程度の影（明確な立体感） */
+            transition: box-shadow 0.2s ease;
+        }
+        
+        .collapsible-section:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* ホバー時は影を強く */
+        }
+        
+        /* 折りたたみボタンのスタイル */
+        .collapse-toggle {
+            width: 100%;
+            min-height: 44px; /* 高齢者向けの大きなタッチターゲット */
+            padding: calc(var(--font-size-base) * 0.75) calc(var(--font-size-base) * 1); /* rem単位で可変 */
+            background: transparent;
+            border: none;
+            border-radius: 8px; /* 中程度の角丸 */
+            color: #4CAF50; /* テーマカラー（アプリのメインカラー） */
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: calc(var(--font-size-base) * 0.75);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            text-align: left;
+        }
+        
+        .collapse-toggle:hover {
+            background-color: rgba(76, 175, 80, 0.1); /* テーマカラーの薄い背景 */
+            transform: scale(1.02); /* ホバー時の拡大縮小効果 */
+        }
+        
+        .collapse-toggle:active {
+            transform: scale(0.98);
+        }
+        
+        .collapse-toggle:focus-visible {
+            outline: 3px solid var(--focus-color, #4CAF50);
+            outline-offset: 2px;
+        }
+        
+        /* 折りたたみアイコン（矢印） */
+        .collapse-icon {
+            font-size: calc(var(--font-size-base) * 0.875); /* 14px相当（標準時） */
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .collapsible-section[aria-expanded="true"] .collapse-icon {
+            transform: rotate(180deg); /* 展開時は矢印を回転 */
+        }
+        
+        /* 折りたたみコンテンツ */
+        .collapse-content {
+            margin-top: calc(var(--font-size-base) * 0.9375); /* rem単位で可変 */
+            padding-top: calc(var(--font-size-base) * 0.9375); /* rem単位で可変 */
+            border-top: 1px dotted #dee2e6; /* 点線の区切り */
+        }
+        
+        .collapsible-section[aria-expanded="false"] .collapse-content {
+            display: none; /* 折りたたみ時は非表示（アニメーションなし） */
+        }
+        
+        /* 折りたたみ不可のセクション（常に展開） */
+        .collapsible-section[data-collapsible="false"] .collapse-toggle {
+            display: none; /* ボタンを非表示 */
+        }
+        
+        .collapsible-section[data-collapsible="false"] .collapse-content {
+            display: block !important; /* 常に表示 */
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+        
+        /* すべてのボタンとリンクを44px×44px以上に（高齢者向け） */
+        button:not(.collapse-toggle):not(.collapse-icon),
+        a.button,
+        .chat-input button,
+        .voice-read-main-btn,
+        .font-size-btn {
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* タッチターゲット間の余白を8px以上に */
+        .input-group button + button,
+        .font-size-btn + .font-size-btn {
+            margin-left: 8px;
+        }
+        
+        /* レイアウト対応（flex/grid） - recommendation-resultの既存スタイルに統合済み */
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        /* 文字サイズに応じたメディアクエリ */
+        @media (min-width: 768px) {
+            .font-size-extra-large .recommendation-result {
+                max-width: 95%;
+            }
+        }
+        
+        /* セクション間のmarginをrem単位に（30px相当に拡大） */
+        .collapsible-section {
+            margin: calc(var(--font-size-base) * 1.875) 0; /* 30px相当（標準時） */
+        }
+        
+        .warning-critical,
+        .warning-caution,
+        .warning-info {
+            margin: calc(var(--font-size-base) * 1.875) 0; /* 30px相当（標準時） */
+            padding: calc(var(--font-size-base) * 1.25);
+        }
+        
+        .recommendation-result > * {
+            margin: calc(var(--font-size-base) * 1.875) 0; /* セクション間のmarginを30px相当に */
+        }
+        
+        /* フォーカスリングの視認性強化（キーボード操作時のみ） */
+        button:focus-visible,
+        a:focus-visible {
+            outline: 3px solid var(--focus-color, #4CAF50); /* 太めのoutline、高コントラスト色 */
+            outline-offset: 2px;        /* 余白を開ける */
+        }
+        
+        /* 高コントラストモード対応 */
+        @media (prefers-contrast: high) {
+            :root {
+                --focus-color: #000000; /* 高コントラスト時は黒 */
+            }
+            button:focus-visible,
+            a:focus-visible {
+                outline-width: 4px; /* 高コントラスト時は太めに */
+            }
+        }
+        
+        /* 警告の色分け */
+        /* 危険（赤）- 併用禁忌、アレルギー（命に関わる） */
+        .warning-critical {
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            color: #b71c1c; /* コントラスト比4.5:1以上 */
+        }
+        
+        .warning-critical h4 {
+            color: #c62828;
+        }
+        
+        /* 注意（黄色/オレンジ）- 成分重複、副作用 */
+        .warning-caution {
+            background: #fff3e0;
+            border-left: 4px solid #f57c00;
+            color: #e65100; /* コントラスト比4.5:1以上 */
+        }
+        
+        .warning-caution h4 {
+            color: #e65100;
+        }
+        
+        /* 情報（青/緑）- 推奨、アドバイス */
+        .warning-info {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            color: #0d47a1; /* コントラスト比4.5:1以上 */
+        }
+        
+        .warning-info h4 {
+            color: #1976d2;
+        }
+        
+        /* 音声読み上げボタンのスタイル */
+        .voice-read-main-btn {
+            width: 100%;
+            padding: calc(var(--font-size-base) * 0.75) calc(var(--font-size-base) * 1.25);
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            min-height: 44px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        
+        .voice-read-main-btn:hover {
+            background: #45a049;
+            transform: scale(1.02);
+        }
+        
+        .voice-read-main-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .voice-read-main-btn.playing {
+            background: #dc3545;
+        }
+        
+        .voice-read-main-btn.playing:hover {
+            background: #c82333;
+        }
+        
+        .voice-read-main-btn:focus-visible {
+            outline: 3px solid var(--focus-color, #4CAF50);
+            outline-offset: 2px;
+        }
+        
+        /* 音声読み上げ進行状況 */
+        #voice-read-progress,
+        #voice-read-progress-inline {
+            margin-top: calc(var(--font-size-base) * 0.625);
+        }
+        
+        #voice-read-progress-bar,
+        #voice-read-progress-bar-inline {
+            background: #4CAF50;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #voice-read-percentage,
+        #voice-read-percentage-inline {
+            margin: calc(var(--font-size-base) * 0.3125) 0 0 0;
+            text-align: center;
+            font-size: calc(var(--font-size-base) * 0.875);
+            color: #666;
+        }
+        
+        /* recommendation-result内の音声読み上げボタンコンテナ */
+        #voice-read-container-inline {
+            margin-top: calc(var(--font-size-base) * 1.25);
+            margin-bottom: calc(var(--font-size-base) * 0.625);
         }
         
         .medicine-item {
             background: white;
             border: 1px solid #e9ecef;
             border-radius: 12px;
-            padding: 12px;
-            margin: 10px 0;
+            padding: calc(var(--font-size-base) * 0.75); /* rem単位で可変 */
+            margin: calc(var(--font-size-base) * 0.625) 0; /* rem単位で可変 */
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             min-height: 20px;
             box-sizing: border-box;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
         }
         
         .medicine-item h5 {
             color: #4CAF50;
-            margin: 0 0 8px 0;
-            font-size: 14px;
+            margin: 0 0 calc(var(--font-size-base) * 0.5) 0;
+            font-size: calc(var(--font-size-base) * 0.875); /* 14px相当（標準時） */
         }
         
         .medicine-item p {
-            margin: 5px 0;
-            font-size: 13px;
-            line-height: 1.4;
+            margin: calc(var(--font-size-base) * 0.3125) 0;
+            font-size: calc(var(--font-size-base) * 0.8125); /* 13px相当（標準時） */
+            line-height: var(--line-height-base);
             color: #000;
         }
         
