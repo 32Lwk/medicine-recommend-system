@@ -1,0 +1,902 @@
+{
+  "total_cases": 923,
+  "total_recommendations": 2749,
+  "unique_medicines": 72,
+  "top_medicines": [
+    {
+      "product_name": "清風散",
+      "manufacturer": "摩耶堂製薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "咳、熱、頭痛、頭重、悪寒、さむけ、たん",
+      "ingredients": "オウゴン\nカッコン\nカンゾウ\nキキョウ\nキョウニン\nケイヒ\nサイコ\nシャクヤク\nショウキョウ\nタイソウ\nハンゲ\nマオウ",
+      "age_restriction": 4.0,
+      "recommendation_count": 237,
+      "recommendation_percentage": 8.621316842488177,
+      "symptoms_recommended_for": {
+        "頭痛": 156,
+        "発熱": 15,
+        "咳": 64,
+        "たん": 29,
+        "鼻水": 3,
+        "のど": 11,
+        "腹痛": 3,
+        "下痢": 3,
+        "生理痛": 2
+      }
+    },
+    {
+      "product_name": "ケイブク（顆粒）",
+      "manufacturer": "東洋漢方製薬",
+      "classification": "第2類",
+      "medicine_type": "筋肉痛",
+      "efficacy": "打撲症",
+      "ingredients": "ケイヒ\nケイヒ末\nシャクヤク\nシャクヤク末\nトウニン\nトウニン末\nブクリョウ\nブクリョウ末\nボタンピ\nボタンピ末",
+      "age_restriction": 7.0,
+      "recommendation_count": 223,
+      "recommendation_percentage": 8.112040742088032,
+      "symptoms_recommended_for": {
+        "頭痛": 152,
+        "発熱": 15,
+        "咳": 2,
+        "のど": 4,
+        "腹痛": 3,
+        "下痢": 3,
+        "筋肉痛": 34
+      }
+    },
+    {
+      "product_name": "大柴胡湯",
+      "manufacturer": "東洋漢方製薬",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "がっしりとした体格で比較的体力があり、便秘の傾向にあるものの次の諸症：胃炎、常習便秘、高血圧に伴う肩こり・高血圧に伴う頭痛・高血圧に伴う便秘、肩こり、肥胖症",
+      "ingredients": "オウゴン\nキジツ\nサイコ\nシャクヤク\nショウキョウ\nタイソウ\nダイオウ\nハンゲ",
+      "age_restriction": NaN,
+      "recommendation_count": 155,
+      "recommendation_percentage": 5.638413968715897,
+      "symptoms_recommended_for": {
+        "頭痛": 154,
+        "発熱": 15,
+        "咳": 2,
+        "のど": 4,
+        "腹痛": 3,
+        "下痢": 3,
+        "生理痛": 2
+      }
+    },
+    {
+      "product_name": "太田漢方胃腸薬Ⅱ",
+      "manufacturer": "太田胃散",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "体力中等度以下で、腹部は力がなくて、神経過敏で胃痛又は腹痛があって、ときに胸やけや、げっぷ、胃もたれ、食欲不振、はきけ、嘔吐などを伴うものの次の諸症：神経性胃炎、慢性胃炎、胃腸虚弱",
+      "ingredients": "ウイキョウ\nエンゴサク\nカンゾウ\nケイヒ\nシュクシャ\nブクリョウ\nボレイ\nリョウキョウ",
+      "age_restriction": 7.0,
+      "recommendation_count": 126,
+      "recommendation_percentage": 4.58348490360131,
+      "symptoms_recommended_for": {
+        "頭痛": 16,
+        "のど": 1,
+        "腹痛": 57,
+        "下痢": 6,
+        "便秘": 9
+      }
+    },
+    {
+      "product_name": "雲仙散",
+      "manufacturer": "摩耶堂製薬",
+      "classification": "指定第2類",
+      "medicine_type": "筋肉痛",
+      "efficacy": "腰痛、背痛、五十肩、筋肉痛、神経痛、関節炎、リウマチ",
+      "ingredients": "カッコン\nカンゾウ\nキョウニン\nケイヒ\nシャクヤク\nショウキョウ\nソウジュツ\nタイソウ\nダイオウ\nトウニン\nブクリョウ\nボウイ\nボウフウ\nボタンピ\nマオウ\nヨクイニン",
+      "age_restriction": 4.0,
+      "recommendation_count": 106,
+      "recommendation_percentage": 3.8559476173153877,
+      "symptoms_recommended_for": {
+        "頭痛": 16,
+        "のど": 1,
+        "腹痛": 4
+      }
+    },
+    {
+      "product_name": "イブＡ錠",
+      "manufacturer": "エスエス製薬",
+      "classification": "指定第1類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "鎮痛、頭痛、歯痛、月経痛（生理痛）、筋肉痛、関節痛、腰痛、神経痛、咽頭痛、打撲痛、解熱、急性上気道炎頭痛、歯痛、月経痛（生理痛）、筋肉痛、関節痛、腰痛、神経痛、咽頭痛、打撲痛、解熱、急性上気道炎",
+      "ingredients": "アリルイソプロピルアセチル尿素\nイブプロフェン\n無水カフェイン",
+      "age_restriction": 15.0,
+      "recommendation_count": 71,
+      "recommendation_percentage": 2.5827573663150236,
+      "symptoms_recommended_for": {
+        "筋肉痛": 34
+      }
+    },
+    {
+      "product_name": "ビトラックＳ",
+      "manufacturer": "東洋漢方製薬",
+      "classification": "第2類",
+      "medicine_type": "筋肉痛",
+      "efficacy": "ひざの痛み又はむくみ",
+      "ingredients": "オウギ\nカンゾウ\nショウキョウ\nタイソウ\nビャクジュツ\nボウイ",
+      "age_restriction": 2.0,
+      "recommendation_count": 68,
+      "recommendation_percentage": 2.4736267733721355,
+      "symptoms_recommended_for": {
+        "頭痛": 16,
+        "のど": 1,
+        "腹痛": 4
+      }
+    },
+    {
+      "product_name": "クミアイ新いたみどめカプセル",
+      "manufacturer": "佐藤薬品工業",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "のどの痛み",
+      "ingredients": "アセトアミノフェン\nエテンザミド\nブロモバレリル尿素\n無水カフェイン",
+      "age_restriction": 7.0,
+      "recommendation_count": 66,
+      "recommendation_percentage": 2.4008730447435433,
+      "symptoms_recommended_for": {
+        "のど": 66
+      }
+    },
+    {
+      "product_name": "プレミナスＩＰクイックａ",
+      "manufacturer": "大昭製薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "のどの痛み",
+      "ingredients": "アリルイソプロピルアセチル尿素\nイブプロフェン\n乾燥水酸化アルミニウムゲル\n無水カフェイン",
+      "age_restriction": 15.0,
+      "recommendation_count": 66,
+      "recommendation_percentage": 2.4008730447435433,
+      "symptoms_recommended_for": {
+        "のど": 66
+      }
+    },
+    {
+      "product_name": "クレーモアファーストａ",
+      "manufacturer": "大昭製薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "のどの痛み",
+      "ingredients": "アリルイソプロピルアセチル尿素\nイブプロフェン\n乾燥水酸化アルミニウムゲル\n無水カフェイン",
+      "age_restriction": 15.0,
+      "recommendation_count": 66,
+      "recommendation_percentage": 2.4008730447435433,
+      "symptoms_recommended_for": {
+        "のど": 66
+      }
+    },
+    {
+      "product_name": "ウチダの麻黄加朮湯",
+      "manufacturer": "ウチダ和漢薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "頭痛、発熱、悪寒して汗無く、身体疼痛し、喘咳して小便不利のもの：リウマチ、関節炎",
+      "ingredients": "カンゾウ\nキョウニン\nケイヒ\nソウジュツ\nマオウ",
+      "age_restriction": 15.0,
+      "recommendation_count": 62,
+      "recommendation_percentage": 2.2553655874863585,
+      "symptoms_recommended_for": {
+        "頭痛": 2,
+        "咳": 62,
+        "たん": 9,
+        "鼻水": 3,
+        "のど": 6
+      }
+    },
+    {
+      "product_name": "カンゾウいけだや",
+      "manufacturer": "延寿堂",
+      "classification": "第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "激しい咳、咽頭痛の緩解",
+      "ingredients": "カンゾウ",
+      "age_restriction": 15.0,
+      "recommendation_count": 62,
+      "recommendation_percentage": 2.2553655874863585,
+      "symptoms_recommended_for": {
+        "頭痛": 2,
+        "咳": 62,
+        "たん": 9,
+        "鼻水": 3,
+        "のど": 6
+      }
+    },
+    {
+      "product_name": "太田漢方胃腸薬Ⅱ＜錠剤＞",
+      "manufacturer": "太田胃散",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "体力中等度以下で、腹部は力がなくて、神経過敏で胃痛又は腹痛があって、ときに胸やけや、げっぷ、胃もたれ、食欲不振、はきけ、嘔吐などを伴うものの次の諸症：神経性胃炎、慢性胃炎、胃腸虚弱",
+      "ingredients": "ウイキョウ\nエンゴサク\nカンゾウ\nケイヒ\nシュクシャ\nブクリョウ\nボレイ\nリョウキョウ",
+      "age_restriction": 7.0,
+      "recommendation_count": 58,
+      "recommendation_percentage": 2.109858130229174,
+      "symptoms_recommended_for": {
+        "腹痛": 53,
+        "下痢": 6,
+        "便秘": 9
+      }
+    },
+    {
+      "product_name": "大正胃腸薬Ｋ",
+      "manufacturer": "大正製薬",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "胃痛、胃のもたれ、胃炎、胃部不快感、食欲不振、げっぷ、腹痛、胸やけ、はきけ、胃酸過多、腹部膨満感",
+      "ingredients": "ウイキョウ\nエンゴサク\nカンゾウ\nケイヒ\nシャクヤク\nシュクシャ\nボレイ\nリョウキョウ",
+      "age_restriction": 5.0,
+      "recommendation_count": 58,
+      "recommendation_percentage": 2.109858130229174,
+      "symptoms_recommended_for": {
+        "腹痛": 53,
+        "下痢": 6,
+        "便秘": 9
+      }
+    },
+    {
+      "product_name": "ハイゼリーロイヤル",
+      "manufacturer": "ゼリア新薬工業",
+      "classification": "第3類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "滋養強壮、虚弱体質、肉体疲労・病中病後・胃腸障害・栄養障害・発熱性消耗性疾患・妊娠授乳期などの場合の栄養補給",
+      "ingredients": "アルコール\nオウセイ流エキス\nオキソアミヂン\nガラナ軟エキス\nコンドロイチン硫酸エステルナトリウム\nゴオウ抽出液\nタウリン\nニコチン酸アミド\nニンジンエキス\nパンテノール\nビタミンＢ２リン酸エステル\nビタミンＢ６\nローヤルゼリー\n肝水解物\n酢酸ｄ−α−トコフェロール",
+      "age_restriction": 15.0,
+      "recommendation_count": 55,
+      "recommendation_percentage": 2.000727537286286,
+      "symptoms_recommended_for": {
+        "発熱": 49,
+        "咳": 4,
+        "たん": 1,
+        "鼻水": 1,
+        "のど": 4,
+        "腹痛": 1,
+        "下痢": 1
+      }
+    },
+    {
+      "product_name": "新ハイゼリーエースⅡ",
+      "manufacturer": "ゼリア新薬工業",
+      "classification": "第3類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "滋養強壮、虚弱体質、肉体疲労・病中病後・胃腸障害・栄養障害・発熱性消耗性疾患・妊娠授乳期などの場合の栄養補給",
+      "ingredients": "コンドロイチン硫酸エステルナトリウム\nゴオウ\nニンジン乾燥エキス\nビスベンチアミン\nローヤルゼリー\n肝水解物\n酢酸ｄ−α−トコフェロール",
+      "age_restriction": 15.0,
+      "recommendation_count": 55,
+      "recommendation_percentage": 2.000727537286286,
+      "symptoms_recommended_for": {
+        "発熱": 49,
+        "咳": 4,
+        "たん": 1,
+        "鼻水": 1,
+        "のど": 4,
+        "腹痛": 1,
+        "下痢": 1
+      }
+    },
+    {
+      "product_name": "ヘパリーゼドリンクⅡ",
+      "manufacturer": "ゼリア新薬工業",
+      "classification": "第3類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "滋養強壮、胃腸障害・栄養障害・病中病後・肉体疲労・発熱性消耗性疾患・妊娠授乳期などの場合の栄養補給、虚弱体質",
+      "ingredients": "アルコール\nオウギ流エキス\nクコシ流エキス\nコンドロイチン硫酸エステルナトリウム\nゴミシエキス\nジクロロ酢酸ジイソプロピルアミン\nタウリン\nニコチン酸アミド\nビタミンＢ２リン酸エステル\nビタミンＢ６\n肝臓水解物",
+      "age_restriction": 15.0,
+      "recommendation_count": 55,
+      "recommendation_percentage": 2.000727537286286,
+      "symptoms_recommended_for": {
+        "発熱": 49,
+        "咳": 4,
+        "たん": 1,
+        "鼻水": 1,
+        "のど": 4,
+        "腹痛": 1,
+        "下痢": 1
+      }
+    },
+    {
+      "product_name": "新エザック鼻炎Ｌ",
+      "manufacturer": "新新薬品工業",
+      "classification": "指定第2類",
+      "medicine_type": "鼻炎用薬",
+      "efficacy": "急性鼻炎、アレルギー性鼻炎又は副鼻腔炎による次の諸症状の緩和：くしゃみ、鼻水、鼻づまり、なみだ目、のどの痛み、頭が重い",
+      "ingredients": "クロルフェニラミンマレイン酸塩\nグリチルリチン酸\nベラドンナ総アルカロイド\n塩酸プソイドエフェドリン\n無水カフェイン",
+      "age_restriction": 15.0,
+      "recommendation_count": 51,
+      "recommendation_percentage": 1.8552200800291014,
+      "symptoms_recommended_for": {
+        "鼻水": 51,
+        "のど": 3
+      }
+    },
+    {
+      "product_name": "新ビノック鼻炎用カプセル",
+      "manufacturer": "新新薬品工業",
+      "classification": "指定第2類",
+      "medicine_type": "鼻炎用薬",
+      "efficacy": "急性鼻炎、アレルギー性鼻炎又は副鼻腔炎による次の諸症状の緩和：くしゃみ、鼻水、鼻づまり、なみだ目、のどの痛み、頭重",
+      "ingredients": "サイシン乾燥エキス\nベラドンナ総アルカロイド\n塩酸プソイドエフェドリン\n無水カフェイン\nｄ−クロルフェニラミンマレイン酸塩",
+      "age_restriction": 15.0,
+      "recommendation_count": 51,
+      "recommendation_percentage": 1.8552200800291014,
+      "symptoms_recommended_for": {
+        "鼻水": 51,
+        "のど": 3
+      }
+    },
+    {
+      "product_name": "フジビトール鼻炎薬Ｓ",
+      "manufacturer": "佐藤薬品工業",
+      "classification": "指定第2類",
+      "medicine_type": "鼻炎用薬",
+      "efficacy": "急性鼻炎、アレルギー性鼻炎又は副鼻腔炎による次の諸症状の緩和：くしゃみ、鼻水、鼻づまり、なみだ目、のどの痛み、頭が重い",
+      "ingredients": "サイシン乾燥エキス\nプソイドエフェドリン塩酸塩\nベラドンナ総アルカロイド\n無水カフェイン\nｄ−クロルフェニラミンマレイン酸塩",
+      "age_restriction": 15.0,
+      "recommendation_count": 51,
+      "recommendation_percentage": 1.8552200800291014,
+      "symptoms_recommended_for": {
+        "鼻水": 51,
+        "のど": 3
+      }
+    },
+    {
+      "product_name": "半夏厚朴湯",
+      "manufacturer": "東洋漢方製薬",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "気分がふさいで、咽喉に異物感・食道部に異物感があり、時に動悸、めまい、吐気などを伴う次の諸症：不安神経症、神経性胃炎、つわり、せき、しわがれ声",
+      "ingredients": "コウボク\nショウキョウ\nソヨウ\nハンゲ\nブクリョウ",
+      "age_restriction": 4.0,
+      "recommendation_count": 45,
+      "recommendation_percentage": 1.6369588941433248,
+      "symptoms_recommended_for": {}
+    },
+    {
+      "product_name": "強表水散",
+      "manufacturer": "剤盛堂薬品",
+      "classification": "第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "水ぶとりして色が白く、疲れやすく、自汗の激しい体質の人を目標に主として次の諸症に用いる：むくみ、盗汗、肥胖症、関節炎、頭痛、腎炎",
+      "ingredients": "オウギ\nカンゾウ末\nショウキョウ末\nソウジュツ末\nタイソウ\nボウイ",
+      "age_restriction": NaN,
+      "recommendation_count": 41,
+      "recommendation_percentage": 1.4914514368861402,
+      "symptoms_recommended_for": {}
+    },
+    {
+      "product_name": "高砂オウレン",
+      "manufacturer": "高砂薬業",
+      "classification": "第2類",
+      "medicine_type": "胃腸薬",
+      "efficacy": "胃弱、食欲不振、胃部膨満感・腹部膨満感、消化不良、食べ過ぎ、飲み過ぎ、胃のむかつき、下痢",
+      "ingredients": "オウレン",
+      "age_restriction": NaN,
+      "recommendation_count": 40,
+      "recommendation_percentage": 1.4550745725718441,
+      "symptoms_recommended_for": {
+        "腹痛": 1,
+        "下痢": 32
+      }
+    },
+    {
+      "product_name": "奥田脳神経薬",
+      "manufacturer": "奥田製薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "耳鳴り、めまい、首のこり・肩のこり、いらいら、頭痛、頭重、のぼせ、不安感",
+      "ingredients": "インヨウカク末\nカフェイン水和物\nグリセロリン酸カルシウム\nサイシン末\nサンソウニン\nシンイ末\nチョウトウ末\nテンナンショウ末\nニンジン末\nブロモバレリル尿素\nルチン",
+      "age_restriction": 15.0,
+      "recommendation_count": 39,
+      "recommendation_percentage": 1.4186977082575483,
+      "symptoms_recommended_for": {}
+    },
+    {
+      "product_name": "アネロン「キャップ」",
+      "manufacturer": "エスエス製薬",
+      "classification": "指定第2類",
+      "medicine_type": "解熱鎮痛薬",
+      "efficacy": "乗物酔いによるはきけ・めまい・頭痛の予防及び緩和",
+      "ingredients": "アミノ安息香酸エチル\nスコポラミン臭化水素酸塩水和物\nピリドキシン塩酸塩\nマレイン酸フェニラミン\n無水カフェイン",
+      "age_restriction": 7.0,
+      "recommendation_count": 39,
+      "recommendation_percentage": 1.4186977082575483,
+      "symptoms_recommended_for": {}
+    },
+    {
+      "product_name": "レーバンＨ注入軟膏",
+      "manufacturer": "万協製薬",
+      "classification": "指定第2類",
+      "medicine_type": "外用薬（皮膚）",
+      "efficacy": "さけ痔",
+      "ingredients": "アラントイン\nトコフェロール酢酸エステル\nプレドニゾロン酢酸エステル\nリドカイン",
+      "age_restriction": NaN,
+      "recommendation_count": 38,
+      "recommendation_percentage": 1.3823208439432522,
+      "symptoms_recommended_for": {
+        "発熱": 1
+      }
+    },
+    {
+      "product_name": "スラジン",
+      "manufacturer": "佐藤製薬",
+      "classification": "指定第2類",
+      "medicine_type": "外用薬（皮膚）",
+      "efficacy": "じんましん、湿疹、かゆみ、かぶれ",
+      "ingredients": "クロルフェニラミンマレイン酸塩\n茵ちん蒿湯乾燥エキス\nｄｌ−メチルエフェドリン塩酸塩",
+      "age_restriction": 8.0,
+      "recommendation_count": 38,
+      "recommendation_percentage": 1.3823208439432522,
+      "symptoms_recommended_for": {
+        "発熱": 1
+      }
+    },
+    {
+      "product_name": "スラジンＡ",
+      "manufacturer": "佐藤製薬",
+      "classification": "指定第2類",
+      "medicine_type": "外用薬（皮膚）",
+      "efficacy": "じんましん、湿疹、かゆみ、かぶれ",
+      "ingredients": "インチンコウ\nクロルフェニラミンマレイン酸塩\nサンシシ\nダイオウ\nｄｌ−メチルエフェドリン塩酸塩",
+      "age_restriction": 15.0,
+      "recommendation_count": 38,
+      "recommendation_percentage": 1.3823208439432522,
+      "symptoms_recommended_for": {
+        "発熱": 1
+      }
+    },
+    {
+      "product_name": "ピュアＣホワイト",
+      "manufacturer": "米田薬品工業",
+      "classification": "第3類",
+      "medicine_type": "その他",
+      "efficacy": "次の諸症状の緩和：しみ、そばかす、次の諸症状の緩和：日やけ・かぶれによる色素沈着\n次の場合の出血予防：歯ぐきからの出血、鼻出血\n「但し、これらの症状について、１カ月ほど使用しても改善がみられない場合は医師、薬剤師又は歯科医師に相談すること」\n次の場合のビタミンＣの補給：肉体疲労時、妊娠・授乳期、病中病後の体力低下時、老年期",
+      "ingredients": "アスコルビン酸\nコハク酸ｄ−α−トコフェロール\nピリドキシン塩酸塩\nリボフラビン\nＬ−システイン",
+      "age_restriction": 7.0,
+      "recommendation_count": 36,
+      "recommendation_percentage": 1.30956711531466,
+      "symptoms_recommended_for": {
+        "鼻水": 1
+      }
+    },
+    {
+      "product_name": "ピュアナＣチュアブル錠",
+      "manufacturer": "米田薬品工業",
+      "classification": "第3類",
+      "medicine_type": "その他",
+      "efficacy": "次の諸症状の緩和：しみ、そばかす、次の諸症状の緩和：日やけ・かぶれによる色素沈着\n次の場合の出血予防：歯ぐきからの出血、鼻出血\n「但し、これらの症状について、１カ月ほど使用しても改善がみられない場合は、医師、薬剤師又は歯科医師に相談してください」\n次の場合のビタミンＣの補給：肉体疲労時、妊娠・授乳期、病中病後の体力低下時、老年期",
+      "ingredients": "アスコルビン酸\nアスコルビン酸カルシウム\nリボフラビン酪酸エステル",
+      "age_restriction": 5.0,
+      "recommendation_count": 36,
+      "recommendation_percentage": 1.30956711531466,
+      "symptoms_recommended_for": {
+        "鼻水": 1
+      }
+    }
+  ],
+  "symptom_analysis": {
+    "頭痛": {
+      "total_cases": 516,
+      "top_medicines": [
+        {
+          "name": "清風散",
+          "count": 156
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 154
+        },
+        {
+          "name": "イブ",
+          "count": 152
+        },
+        {
+          "name": "雲仙散",
+          "count": 16
+        },
+        {
+          "name": "ビトラックＳ",
+          "count": 16
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ",
+          "count": 16
+        },
+        {
+          "name": "ノーシンピュア《ピルケース》",
+          "count": 2
+        },
+        {
+          "name": "ウチダの麻黄加朮湯",
+          "count": 2
+        },
+        {
+          "name": "カンゾウいけだや",
+          "count": 2
+        }
+      ]
+    },
+    "発熱": {
+      "total_cases": 195,
+      "top_medicines": [
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 49
+        },
+        {
+          "name": "新ハイゼリーエースⅡ",
+          "count": 49
+        },
+        {
+          "name": "ヘパリーゼドリンクⅡ",
+          "count": 49
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 15
+        },
+        {
+          "name": "清風散",
+          "count": 15
+        },
+        {
+          "name": "イブ",
+          "count": 15
+        },
+        {
+          "name": "レーバンＨ",
+          "count": 1
+        },
+        {
+          "name": "スラジン",
+          "count": 1
+        },
+        {
+          "name": "スラジンＡ",
+          "count": 1
+        }
+      ]
+    },
+    "咳": {
+      "total_cases": 204,
+      "top_medicines": [
+        {
+          "name": "清風散",
+          "count": 64
+        },
+        {
+          "name": "ウチダの麻黄加朮湯",
+          "count": 62
+        },
+        {
+          "name": "カンゾウいけだや",
+          "count": 62
+        },
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 4
+        },
+        {
+          "name": "新ハイゼリーエースⅡ",
+          "count": 4
+        },
+        {
+          "name": "ヘパリーゼドリンクⅡ",
+          "count": 4
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 2
+        },
+        {
+          "name": "イブ",
+          "count": 2
+        }
+      ]
+    },
+    "たん": {
+      "total_cases": 141,
+      "top_medicines": [
+        {
+          "name": "清風散",
+          "count": 29
+        },
+        {
+          "name": "滋陰降火湯エキス細粒Ｇ「コタロー」",
+          "count": 20
+        },
+        {
+          "name": "ウチダの小青龍湯",
+          "count": 20
+        },
+        {
+          "name": "ウチダの人参養栄湯",
+          "count": 17
+        },
+        {
+          "name": "ウチダの麦門冬湯",
+          "count": 17
+        },
+        {
+          "name": "角野龍雲湯",
+          "count": 17
+        },
+        {
+          "name": "ウチダの麻黄加朮湯",
+          "count": 9
+        },
+        {
+          "name": "カンゾウいけだや",
+          "count": 9
+        },
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 1
+        },
+        {
+          "name": "新ハイゼリーエースⅡ",
+          "count": 1
+        }
+      ]
+    },
+    "鼻水": {
+      "total_cases": 168,
+      "top_medicines": [
+        {
+          "name": "新エザック鼻炎Ｌ",
+          "count": 51
+        },
+        {
+          "name": "新ビノック鼻炎用カプセル",
+          "count": 51
+        },
+        {
+          "name": "フジビトール鼻炎薬Ｓ",
+          "count": 51
+        },
+        {
+          "name": "清風散",
+          "count": 3
+        },
+        {
+          "name": "ウチダの麻黄加朮湯",
+          "count": 3
+        },
+        {
+          "name": "カンゾウいけだや",
+          "count": 3
+        },
+        {
+          "name": "ナイシトールＧ",
+          "count": 1
+        },
+        {
+          "name": "ピュアＣホワイト",
+          "count": 1
+        },
+        {
+          "name": "ピュアナＣチュアブル錠",
+          "count": 1
+        },
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 1
+        }
+      ]
+    },
+    "のど": {
+      "total_cases": 258,
+      "top_medicines": [
+        {
+          "name": "クミアイ新いたみどめカプセル",
+          "count": 66
+        },
+        {
+          "name": "プレミナスＩＰクイックａ",
+          "count": 66
+        },
+        {
+          "name": "クレーモアファーストａ",
+          "count": 66
+        },
+        {
+          "name": "清風散",
+          "count": 11
+        },
+        {
+          "name": "ウチダの麻黄加朮湯",
+          "count": 6
+        },
+        {
+          "name": "カンゾウいけだや",
+          "count": 6
+        },
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 4
+        },
+        {
+          "name": "新ハイゼリーエースⅡ",
+          "count": 4
+        },
+        {
+          "name": "ヘパリーゼドリンクⅡ",
+          "count": 4
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 4
+        }
+      ]
+    },
+    "腹痛": {
+      "total_cases": 186,
+      "top_medicines": [
+        {
+          "name": "太田漢方胃腸薬Ⅱ",
+          "count": 57
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ＜錠剤＞",
+          "count": 53
+        },
+        {
+          "name": "大正胃腸薬Ｋ",
+          "count": 53
+        },
+        {
+          "name": "雲仙散",
+          "count": 4
+        },
+        {
+          "name": "ビトラックＳ",
+          "count": 4
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 3
+        },
+        {
+          "name": "清風散",
+          "count": 3
+        },
+        {
+          "name": "イブ",
+          "count": 3
+        },
+        {
+          "name": "高砂オウレン",
+          "count": 1
+        },
+        {
+          "name": "高砂オウレン末",
+          "count": 1
+        }
+      ]
+    },
+    "下痢": {
+      "total_cases": 126,
+      "top_medicines": [
+        {
+          "name": "高砂オウレン",
+          "count": 32
+        },
+        {
+          "name": "高砂オウレン末",
+          "count": 32
+        },
+        {
+          "name": "オウレンいけだや",
+          "count": 32
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ",
+          "count": 6
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ＜錠剤＞",
+          "count": 6
+        },
+        {
+          "name": "大正胃腸薬Ｋ",
+          "count": 6
+        },
+        {
+          "name": "大柴胡湯",
+          "count": 3
+        },
+        {
+          "name": "清風散",
+          "count": 3
+        },
+        {
+          "name": "イブ",
+          "count": 3
+        },
+        {
+          "name": "ハイゼリーロイヤル",
+          "count": 1
+        }
+      ]
+    },
+    "便秘": {
+      "total_cases": 111,
+      "top_medicines": [
+        {
+          "name": "東洋漢方のセンナ顆粒Ｓ（分包）",
+          "count": 28
+        },
+        {
+          "name": "ミカサ浣腸Ｎ４０",
+          "count": 28
+        },
+        {
+          "name": "コトブキ浣腸４０",
+          "count": 28
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ",
+          "count": 9
+        },
+        {
+          "name": "太田漢方胃腸薬Ⅱ＜錠剤＞",
+          "count": 9
+        },
+        {
+          "name": "大正胃腸薬Ｋ",
+          "count": 9
+        }
+      ]
+    },
+    "筋肉痛": {
+      "total_cases": 102,
+      "top_medicines": [
+        {
+          "name": "イブ",
+          "count": 34
+        },
+        {
+          "name": "イブＡ錠",
+          "count": 34
+        },
+        {
+          "name": "イブクイック頭痛薬",
+          "count": 34
+        }
+      ]
+    },
+    "生理痛": {
+      "total_cases": 12,
+      "top_medicines": [
+        {
+          "name": "大柴胡湯",
+          "count": 2
+        },
+        {
+          "name": "清風散",
+          "count": 2
+        },
+        {
+          "name": "ノーシンピュア《ピルケース》",
+          "count": 2
+        },
+        {
+          "name": "ノーシン",
+          "count": 2
+        },
+        {
+          "name": "ノーシンホワイト＜細粒＞",
+          "count": 2
+        },
+        {
+          "name": "ノーシンホワイト錠",
+          "count": 2
+        }
+      ]
+    }
+  }
+}
