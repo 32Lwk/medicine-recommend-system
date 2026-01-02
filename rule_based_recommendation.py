@@ -7090,6 +7090,113 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             "contraindication_severity": contraindication_check.get("severity", "critical")
         }
     
+    # --- 生理痛専用医薬品の完全除外チェック（早期チェック） ---
+    # 生理痛専用の解熱鎮痛剤を、生理痛以外の場合に完全に除外
+    # CSVの列名が'製品名'の場合と'product_name'の場合の両方に対応
+    product_name_early = candidate.get('product_name', candidate.get('製品名', ''))
+    efficacy_early = str(candidate.get('efficacy', candidate.get('効能効果', ''))).lower()
+    
+    # 生理痛専用医薬品のリスト（製品名ベースで判定）
+    # これらの製品は、効能効果に「頭痛」などが含まれていても、生理痛専用として扱う
+    menstrual_only_products = [
+        "ノーシンピュア", "オトナノーシンピュア", "ノーシン", "ノーシンホワイト",
+        "エルペインコーワ", "バファリンルナ", "バファリンルナi", "バファリンルナJ",
+        "A錠EX", "イブA錠EX", "イントウェル", "ウラック", "メディペイン", "ユニトップファースト",
+        "マルコミンEV", "ノーチカ", "クミアイ新頭痛錠"
+    ]
+    
+    # 製品名で生理痛専用医薬品を判定（効能効果に関係なく、製品名で判定）
+    is_menstrual_only_product = any(menstrual_product in product_name_early for menstrual_product in menstrual_only_products)
+    
+    # 効能効果が「生理痛」のみの医薬品を判定（他の効能効果がない場合）
+    # 効能効果に「生理痛」が含まれ、かつ「頭痛」「発熱」「歯痛」などの一般的な効能効果が含まれていない場合
+    has_menstrual_only_efficacy = (
+        '生理痛' in efficacy_early and 
+        not any(general_efficacy in efficacy_early for general_efficacy in ['頭痛', '発熱', '解熱', '歯痛', '咽喉痛', 'のどの痛み', '筋肉痛', '関節痛', '腰痛', '神経痛'])
+    )
+    
+    # 小児用ノーシンピュアの例外処理（アセトアミノフェンのみの場合は除外しない）
+    is_pediatric_noshin_early = "小中学生用ノーシンピュア" in product_name_early or "小中学生用" in product_name_early
+    ingredients_check_early = str(candidate.get('ingredients', candidate.get('成分', ''))).lower()
+    has_acetaminophen_only_early = 'アセトアミノフェン' in ingredients_check_early and 'イブプロフェン' not in ingredients_check_early
+    is_pediatric_exception_early = is_pediatric_noshin_early and has_acetaminophen_only_early
+    
+    # 生理痛専用医薬品の判定（製品名ベースで判定、効能効果に関係なく除外）
+    if (is_menstrual_only_product or has_menstrual_only_efficacy) and not is_pediatric_exception_early:
+        # 生理痛関連キーワードのチェック
+        menstrual_keywords_early = [
+            "生理痛", "月経痛", "生理の痛み", "下腹部痛", "生理中",
+            "月経不順", "生理不順", "生理", "月経"
+        ]
+        user_text_lower_early = user_text.lower() if user_text else ''
+        has_menstrual_keyword_early = any(kw in user_text_lower_early for kw in menstrual_keywords_early)
+        
+        # 症状名からもチェック
+        symptom_names_early = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_menstrual_symptom_early = any(
+            any(kw in symptom_name.lower() for kw in menstrual_keywords_early)
+            for symptom_name in symptom_names_early
+        )
+        
+        # 生理痛が明示されていない場合は完全に除外
+        if not (has_menstrual_keyword_early or has_menstrual_symptom_early):
+            return {
+                "total_score": 0.0,
+                "score_breakdown": {
+                    "symptom_match": 0.0,
+                    "efficacy_specificity": 0.0,
+                    "age_fit": 0.0,
+                    "usage_convenience": 0.0,
+                    "side_effect_risk": 0.0,
+                    "interaction_risk": 0.0
+                },
+                "contraindication_reason": f"{product_name_early}は生理痛専用の医薬品です。生理痛が明示されていない場合は使用できません。",
+                "contraindication_severity": "critical"
+            }
+    
+    # --- アスピリンとインフルエンザ・水痘の組み合わせの早期チェック（2.5で追加） ---
+    # 15歳未満のインフルエンザ・水痘患者ではアスピリンを完全に除外
+    # CSVの列名が'成分'の場合と'ingredients'の場合の両方に対応
+    ingredients_str_early = str(candidate.get('ingredients', candidate.get('成分', ''))).lower()
+    has_aspirin_early = 'アスピリン' in ingredients_str_early or 'アセチルサリチル酸' in ingredients_str_early
+    
+    if has_aspirin_early and user_info and user_info.get('age') and user_info.get('age') < 15:
+        # インフルエンザ・水痘の疑いの検出
+        influenza_risk_early = nlu_result.get('influenza_risk', False) or False
+        
+        # 水痘の疑いの検出（キーワードと症状の両方をチェック）
+        chickenpox_keywords_early = [
+            "水痘", "みずぼうそう", "水疱瘡", "帯状疱疹", "ヘルペス", 
+            "発疹", "水ぶくれ", "水疱"
+        ]
+        user_text_lower_early = user_text.lower() if user_text else ''
+        has_chickenpox_keyword_early = any(kw in user_text_lower_early for kw in chickenpox_keywords_early)
+        
+        # 水痘の症状の組み合わせ（発疹 + 水ぶくれ + かゆみ）
+        symptom_names_early = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_rash_early = any("発疹" in name or "皮疹" in name for name in symptom_names_early)
+        has_blister_early = any("水ぶくれ" in name or "水疱" in name for name in symptom_names_early)
+        has_itch_early = any("かゆみ" in name or "痒み" in name for name in symptom_names_early)
+        has_chickenpox_symptoms_early = (has_rash_early and has_blister_early) or (has_rash_early and has_itch_early) or (has_blister_early and has_itch_early)
+        
+        chickenpox_risk_early = has_chickenpox_keyword_early or has_chickenpox_symptoms_early
+        
+        if influenza_risk_early or chickenpox_risk_early:
+            # 15歳未満かつインフルエンザ・水痘の疑いがある場合は完全に除外
+            return {
+                "total_score": 0.0,
+                "score_breakdown": {
+                    "symptom_match": 0.0,
+                    "efficacy_specificity": 0.0,
+                    "age_fit": 0.0,
+                    "usage_convenience": 0.0,
+                    "side_effect_risk": 0.0,
+                    "interaction_risk": 0.0
+                },
+                "contraindication_reason": "アスピリン含有医薬品は、15歳未満のインフルエンザ・水痘患者ではライ症候群のリスクがあるため使用できません。",
+                "contraindication_severity": "critical"
+            }
+    
     # スコアリングユーティリティをインポート
     from scoring_utils import (
         calculate_efficacy_specificity_score,
@@ -7109,8 +7216,117 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     side_effect_score = calculate_side_effect_risk_score(candidate, user_info)
     interaction_score = calculate_interaction_risk_score(candidate, user_info)
     
-    # 期待される医薬品の基本スコアを底上げ（最低0.50を保証）（計画要件: スコアリングシステムの調整）
+    # --- 2.0 強力な医薬品・信頼性の高い医薬品の評価と特化型ボーナス ---
+    import re
+    
     product_name = candidate.get('product_name', '')
+    medicine_classification = candidate.get('classification', '')
+    manufacturer = candidate.get('manufacturer', '')
+    ingredients_str = str(candidate.get('ingredients', ''))
+    
+    # 1. 信頼性の高いメーカーリスト（大幅拡充）
+    trusted_manufacturers = [
+        '第一三共', '第一三共ヘルスケア',  # ロキソニン, ルル
+        '大正製薬',  # パブロン, ナロン
+        'エスエス製薬',  # イブ, エスタック
+        'ライオン',  # バファリン
+        'シオノギ', 'シオノギヘルスケア',  # セデス
+        '興和', 'Kowa',  # バンテリン, キャベジン
+        'ロート製薬',  # 目薬, 漢方
+        '小林製薬',  # 独自のニッチ薬
+        '武田', 'タケダ', 'アリナミン製薬',  # ベンザブロック
+        '佐藤製薬',  # リングル, ユンケル
+        '久光製薬',  # フェイタス, サロンパス
+        'グラクソ', 'GSK',  # ボルタレン, コンタック
+        'ジョンソン', 'J&J'  # タイレノール
+    ]
+    
+    # 2. 強力・著名な製品ブランドリスト（大幅拡充）
+    strong_products = [
+        # 解熱鎮痛
+        'ロキソニン', 'カロナール', 'タイレノール', 
+        'イブ', 'EVE', 'バファリン', 'セデス', 'ナロン', 'リングル',
+        # 胃薬（H2ブロッカー等）
+        'ガスター', 
+        # 外用薬
+        'ボルタレン', 'フェイタス', 'バンテリン', 'サロンパス',
+        # アレルギー・鼻炎
+        'アレグラ', 'アレジオン', 'クラリチン'
+    ]
+    
+    # 3. 強力な成分リスト
+    strong_ingredients = [
+        'ロキソプロフェン', 'アセトアミノフェン', 'イブプロフェン', 
+        'ジクロフェナク', 'フェルビナク', 'インドメタシン',  # 強力な鎮痛・抗炎症
+        'ファモチジン',  # 強力な制酸
+        'フェキソフェナジン', 'ロラタジン'  # 第2世代抗ヒスタミン
+    ]
+    
+    # --- 判定ロジック ---
+    
+    is_strong_medicine = False
+    strong_medicine_bonus = 0.0
+    
+    # A. 分類ボーナス（指定第1類、第1類は薬剤師の関与が必要な強力な薬が多い）
+    if '指定第1類' in medicine_classification or '第1類' in medicine_classification:
+        strong_medicine_bonus += 0.1
+    
+    # B. 成分ボーナス（大文字小文字を区別しない）
+    ingredients_lower = ingredients_str.lower()
+    if any(ingredient.lower() in ingredients_lower for ingredient in strong_ingredients):
+        strong_medicine_bonus += 0.05
+    
+    # C. 製品ブランドボーナス（大文字小文字を区別しない、部分一致）
+    product_name_lower = product_name.lower()
+    if any(product.lower() in product_name_lower for product in strong_products):
+        is_strong_medicine = True
+        strong_medicine_bonus += 0.1
+    
+    # D. メーカー信頼度ボーナス（大文字小文字を区別しない、部分一致）
+    manufacturer_lower = manufacturer.lower()
+    if any(m.lower() in manufacturer_lower for m in trusted_manufacturers):
+        strong_medicine_bonus += 0.05
+    
+    # --- 【重要】特化型（スペシャリスト）判定 ---
+    # ロキソニンなどが風邪薬に負けないための最重要ロジック
+    # 成分数が少ない（例：5つ以下）＝ 特定の症状に特化して効く「シャープな薬」
+    
+    # 成分文字列の正規化と解析
+    # 1. 前後の空白を除去
+    ingredients_normalized = ingredients_str.strip()
+    # 2. 小文字に統一
+    ingredients_normalized = ingredients_normalized.lower()
+    # 3. 正規表現で分割（カンマ、スペース、改行などに対応）
+    # カンマ、カンマ+スペース、改行などで分割
+    ingredient_list = re.split(r'[,，\s\n]+', ingredients_normalized)
+    # 4. 空文字列を除外
+    ingredient_list = [ing for ing in ingredient_list if ing.strip()]
+    
+    # 成分数のカウント
+    ingredient_count = len(ingredient_list)
+    
+    # 特化型（スペシャリスト）判定（成分数が5つ以下）
+    is_focused_medicine = ingredient_count <= 5
+    
+    # 特化型ボーナス（強力な医薬品かつ特化型の場合のみ+0.15）
+    if is_strong_medicine and is_focused_medicine:
+        # ブランド力があり、かつ特化型の薬には追加ボーナス
+        # これにより「頭痛」単一症状などの場合に、総合風邪薬（成分多）より優先される
+        strong_medicine_bonus += 0.15
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"特化型ブランド薬ボーナス適用: {product_name} (成分数: {ingredient_count})")
+    
+    # ボーナスの適用（上限 +0.3 に設定）
+    strong_medicine_bonus_final = min(strong_medicine_bonus, 0.3)
+    
+    if DEBUG_MODE or logger.level <= logging.DEBUG and strong_medicine_bonus > 0:
+        logger.debug(f"強力な医薬品ボーナス合計: {product_name} = +{strong_medicine_bonus_final} (成分数: {ingredient_count}, 特化型: {is_focused_medicine})")
+    
+    # --- 成人判定（変更なし） ---
+    # 成人（15歳以上）には年齢制限のペナルティを適用しない
+    # （既存の年齢制限ペナルティロジックで、15歳未満の場合のみペナルティを適用するようにする）
+    
+    # 期待される医薬品の基本スコアを底上げ（最低0.50を保証）（計画要件: スコアリングシステムの調整）
     priority_medicine_names = ["ラムールQ", "ラムールＱ", "ラムールq", "ラムールｑ", "加味逍遙散", "カミショウヨウサン", "命の母ホワイト", "命の母 ホワイト", "ルナエール", "ルナフェミン", "桂枝茯苓丸", "ケイシブクリョウガン"]
     # 厳密マッチング + 部分一致も許可（CSVデータの表記の違いに対応）
     is_priority_medicine = any(is_exact_product_match(product_name, [name]) or name in product_name for name in priority_medicine_names)
@@ -7131,6 +7347,62 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             symptom_score += base_score_boost / 0.30
             logger.info(f"⭐ 期待される医薬品の基本スコアを底上げ: {product_name} = +{base_score_boost:.2f} (底上げ前: {base_score:.2f})")
     
+    # --- 2.1 ノーシンピュアの推奨条件の厳格化（小児用例外処理含む） ---
+    # ノーシンピュア系医薬品の判定
+    noshin_products = ["ノーシンピュア", "オトナノーシンピュア"]
+    is_noshin_product = any(noshin_name in product_name for noshin_name in noshin_products)
+    
+    # 小児用ノーシンピュアの判定（例外処理用）
+    is_pediatric_noshin = "小中学生用ノーシンピュア" in product_name or "小中学生用" in product_name
+    ingredients_check = str(candidate.get('ingredients', '')).lower()
+    has_acetaminophen_only = 'アセトアミノフェン' in ingredients_check and 'イブプロフェン' not in ingredients_check
+    is_pediatric_exception = is_pediatric_noshin and has_acetaminophen_only
+    
+    noshin_penalty = 0.0
+    has_menstrual_keyword = False
+    has_menstrual_symptom = False
+    
+    if is_noshin_product and not is_pediatric_exception:
+        # 生理痛関連キーワードのチェック（拡張版）
+        menstrual_keywords = [
+            "生理痛", "月経痛", "生理の痛み", "下腹部痛", "生理中",
+            "月経不順", "生理不順", "生理", "月経"
+        ]
+        user_text_lower = user_text.lower() if user_text else ''
+        has_menstrual_keyword = any(kw in user_text_lower for kw in menstrual_keywords)
+        
+        # 症状名からもチェック
+        symptom_names_check = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_menstrual_symptom = any(
+            any(kw in symptom_name.lower() for kw in menstrual_keywords)
+            for symptom_name in symptom_names_check
+        )
+        
+        if not (has_menstrual_keyword or has_menstrual_symptom):
+            # 生理痛が明示されていない場合はペナルティを適用
+            noshin_penalty = -0.5  # -0.3から-0.5に強化
+            
+            # 頭痛に対しては追加のペナルティを適用（ノーシンピュアは頭痛に不適切）
+            symptom_names_check = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            has_headache = any("頭痛" in symptom_name for symptom_name in symptom_names_check)
+            if has_headache or "頭痛" in (user_text_lower if user_text else ''):
+                noshin_penalty -= 0.2  # 頭痛に対して追加で-0.2（合計-0.7）
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"ノーシンピュア頭痛追加ペナルティ: {product_name} = -0.2 (頭痛に対して不適切)")
+            
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"ノーシンピュアペナルティ: {product_name} = {noshin_penalty} (生理痛が明示されていない)")
+    
+    # 小児用ノーシンピュアの例外処理
+    if is_pediatric_exception:
+        # 小児用でアセトアミノフェンのみの場合は、生理痛キーワードがなくても軽減されたペナルティのみ
+        # （通常の-0.3ではなく-0.1に軽減）
+        if not (has_menstrual_keyword or has_menstrual_symptom):
+            pediatric_noshin_penalty = -0.1  # 軽減されたペナルティ
+            noshin_penalty = pediatric_noshin_penalty
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"小児用ノーシンピュア軽減ペナルティ: {product_name} = {pediatric_noshin_penalty}")
+    
     # 部位マッチングスコアを計算
     user_body_part = nlu_result.get("user_body_part")
     body_part_score = calculate_body_part_match_score(candidate, user_body_part)
@@ -7147,6 +7419,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         if user_preference_bonus > 0:
             logger.info(f"💊 ユーザー要望ボーナス: {candidate.get('product_name', '')} = +{user_preference_bonus:.2f}")
     
+    # --- 2.4 痛みフラグボーナスの条件付き適用（既存コードの修正） ---
     # 痛みフラグボーナス（解熱鎮痛剤への独立したボーナス）
     pain_flag_bonus = 0.0
     medicine_type = candidate.get("medicine_type", "")
@@ -7155,11 +7428,119 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         user_message = user_text or user_info.get('user_message', '') or ''
         user_message_lower = user_message.lower() if user_message else ''
         pain_keywords = ['痛い', '激痛', '生理痛', '月経痛', '腹痛', 'お腹の痛み', '下腹部痛', '痛み', '痛む']
+        
         if any(kw in user_message_lower for kw in pain_keywords):
-            pain_flag_bonus = 0.3  # 独立したボーナス（他のボーナスとは別枠）
-            logger.info(f"💊 痛みフラグボーナス: {candidate.get('product_name', '')} = +0.3 (解熱鎮痛剤)")
+            # 生理痛の場合はボーナスを維持
+            menstrual_keywords = ['生理痛', '月経痛', '生理の痛み', '下腹部痛']
+            is_menstrual_pain = any(kw in user_message_lower for kw in menstrual_keywords)
+            
+            # 症状名からもチェック
+            symptom_names_pain = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            has_menstrual_symptom_pain = any(
+                any(kw in symptom_name.lower() for kw in menstrual_keywords)
+                for symptom_name in symptom_names_pain
+            )
+            
+            if is_menstrual_pain or has_menstrual_symptom_pain:
+                pain_flag_bonus = 0.3
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"痛みフラグボーナス（生理痛）: {product_name} = +0.3")
+            # それ以外の痛みは削除（アセトアミノフェンボーナスやNSAIDsボーナスに置き換える）
+    
+    # --- 2.2 アセトアミノフェン含有医薬品へのボーナス追加（炎症系除外） ---
+    # アセトアミノフェン含有医薬品へのボーナス
+    ingredients_acetaminophen = str(candidate.get('ingredients', '')).lower()
+    has_acetaminophen = 'アセトアミノフェン' in ingredients_acetaminophen
+    has_ibuprofen = 'イブプロフェン' in ingredients_acetaminophen
+    
+    acetaminophen_bonus = 0.0
+    # アセトアミノフェンのみを含む医薬品（イブプロフェンを含まない）
+    if has_acetaminophen and not has_ibuprofen:
+        symptom_names_acetaminophen = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        user_text_lower_acetaminophen = user_text.lower() if user_text else ''
+        
+        # アセトアミノフェンが得意な領域（ボーナス大 +0.3）
+        high_match_symptoms = ["頭痛", "発熱", "熱", "悪寒"]
+        has_high_match = any(
+            any(symptom in symptom_name for symptom in high_match_symptoms)
+            for symptom_name in symptom_names_acetaminophen
+        )
+        
+        # 炎症を伴う痛み（NSAIDsの方が適切）
+        inflammatory_symptoms = ["筋肉痛", "関節痛", "腰痛", "打撲", "ねんざ", "腱鞘炎"]
+        has_inflammatory_pain = any(
+            any(symptom in symptom_name for symptom in inflammatory_symptoms)
+            for symptom_name in symptom_names_acetaminophen
+        )
+        
+        # 炎症キーワードのチェック
+        inflammation_keywords = ["腫れている", "熱を持っている", "炎症"]
+        has_inflammation_keyword = any(kw in user_text_lower_acetaminophen for kw in inflammation_keywords)
+        
+        # 生理痛は除外（ノーシンピュアが適切）
+        menstrual_keywords_acetaminophen = ["生理痛", "月経痛", "生理の痛み", "下腹部痛"]
+        has_menstrual_pain_acetaminophen = any(
+            any(kw in symptom_name.lower() for kw in menstrual_keywords_acetaminophen)
+            for symptom_name in symptom_names_acetaminophen
+        ) or any(kw in user_text_lower_acetaminophen for kw in menstrual_keywords_acetaminophen)
+        
+        # 胃への配慮のチェック
+        stomach_concern_keywords = [
+            "胃が痛い", "胃もたれ", "胃潰瘍", "胃炎", "胃が弱い", 
+            "胃が心配", "空腹時", "胃腸が弱い"
+        ]
+        has_stomach_concern = any(kw in user_text_lower_acetaminophen for kw in stomach_concern_keywords)
+        
+        # アセトアミノフェンボーナスの適用
+        if has_high_match and not has_inflammatory_pain and not has_inflammation_keyword and not has_menstrual_pain_acetaminophen:
+            acetaminophen_bonus = 0.4  # 0.3から0.4に強化（カロナールAなどをより推奨）
+            # 胃への配慮が検出された場合は追加ボーナス
+            if has_stomach_concern:
+                acetaminophen_bonus += 0.1  # 合計+0.5
+            # カロナールAなどの有名な製品には追加ボーナス
+            if 'カロナール' in product_name or 'タイレノール' in product_name:
+                acetaminophen_bonus += 0.1  # 合計+0.5または+0.6
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"カロナール/タイレノール追加ボーナス: {product_name} = +0.1")
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"痛みフラグボーナス: {candidate.get('product_name', '')} = +0.3 (解熱鎮痛剤)")
+                logger.debug(f"アセトアミノフェンボーナス: {product_name} = +{acetaminophen_bonus}")
+    
+    # --- 2.3 NSAIDs（イブプロフェン、ロキソプロフェンなど）へのボーナス追加 ---
+    # NSAIDs含有医薬品へのボーナス
+    nsaids_ingredients = ["イブプロフェン", "ロキソプロフェン", "アスピリン", "インドメタシン"]
+    has_nsaids = any(nsaid.lower() in ingredients_acetaminophen for nsaid in nsaids_ingredients)
+    
+    nsaids_bonus = 0.0
+    if has_nsaids:
+        symptom_names_nsaids = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        user_text_lower_nsaids = user_text.lower() if user_text else ''
+        
+        # 炎症を伴う症状
+        inflammatory_symptoms_nsaids = ["筋肉痛", "関節痛", "腰痛", "打撲", "ねんざ", "腱鞘炎"]
+        has_inflammatory_symptom = any(
+            any(symptom in symptom_name for symptom in inflammatory_symptoms_nsaids)
+            for symptom_name in symptom_names_nsaids
+        )
+        
+        # 炎症キーワードのチェック
+        inflammation_keywords_nsaids = ["腫れている", "熱を持っている", "炎症"]
+        has_inflammation_keyword_nsaids = any(kw in user_text_lower_nsaids for kw in inflammation_keywords_nsaids)
+        
+        # 痛みの強度キーワード（拡張版）
+        pain_severity_keywords = [
+            "激痛", "激しい痛み", "強い痛み", "ズキズキ", "脈打つような痛み",
+            "割れそう", "耐えられない", "ひどい痛み"
+        ]
+        has_severe_pain = any(kw in user_text_lower_nsaids for kw in pain_severity_keywords)
+        
+        # 炎症が検出された場合
+        if has_inflammatory_symptom or has_inflammation_keyword_nsaids:
+            nsaids_bonus = 0.2
+            # 強い痛みの場合は追加ボーナス
+            if has_severe_pain:
+                nsaids_bonus += 0.1  # 合計+0.3
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"NSAIDsボーナス: {product_name} = +{nsaids_bonus}")
     
     # 複数症状の組み合わせによるボーナス（MULTI_SYMPTOM_COMBINATIONSから）
     multi_symptom_bonus = 0.0
@@ -7207,6 +7588,169 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 症状特異性ペナルティを計算
     symptom_specificity_penalty = calculate_symptom_specificity_penalty(candidate, nlu_result)
+    
+    # --- 2.5 NSAIDs全般への条件付きペナルティ（15歳未満禁止成分の範囲拡大、胃薬成分考慮） ---
+    # 15歳未満使用不可、または慎重投与のNSAIDs成分リスト（拡張版）
+    adult_only_nsaids = [
+        "イブプロフェン", "ロキソプロフェン", "アスピリン", "アセチルサリチル酸", 
+        "インドメタシン", "メフェナム酸", "ジクロフェナク", "ナプロキセン", 
+        "ケトプロフェン", "メロキシカム", "ピロキシカム"
+    ]
+    ingredients_str_nsaids = str(candidate.get('ingredients', '')).lower()
+    has_adult_nsaid = any(nsaid.lower() in ingredients_str_nsaids for nsaid in adult_only_nsaids)
+    
+    nsaid_penalty = 0.0
+    if has_adult_nsaid:
+        total_penalty = 0.0  # 複数のNSAIDsが含まれている場合の合計ペナルティ
+        
+        # 各NSAIDs成分のペナルティ値を定義
+        nsaid_penalty_values = {
+            "イブプロフェン": -0.2,
+            "ロキソプロフェン": -0.2,
+            "アスピリン": -0.3,  # インフルエンザ・水痘がない場合
+            "アセチルサリチル酸": -0.3,  # インフルエンザ・水痘がない場合
+            "インドメタシン": -0.2,
+            "メフェナム酸": -0.2,
+            "ジクロフェナク": -0.2,
+            "ナプロキセン": -0.2,
+            "ケトプロフェン": -0.2,
+            "メロキシカム": -0.2,
+            "ピロキシカム": -0.2
+        }
+        
+        # アスピリン含有のチェック
+        has_aspirin = 'アスピリン' in ingredients_str_nsaids or 'アセチルサリチル酸' in ingredients_str_nsaids
+        
+        # インフルエンザ・水痘の疑いの検出（既存のロジックを拡張）
+        # 既存のinfluenza_riskフラグを使用
+        influenza_risk = nlu_result.get('influenza_risk', False) or False
+        
+        # 水痘の疑いの検出（キーワードと症状の両方をチェック）
+        chickenpox_keywords = [
+            "水痘", "みずぼうそう", "水疱瘡", "帯状疱疹", "ヘルペス", 
+            "発疹", "水ぶくれ", "水疱"
+        ]
+        user_text_lower_nsaids = user_text.lower() if user_text else ''
+        has_chickenpox_keyword = any(kw in user_text_lower_nsaids for kw in chickenpox_keywords)
+        
+        # 水痘の症状の組み合わせ（発疹 + 水ぶくれ + かゆみ）
+        symptom_names_nsaids_penalty = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        has_rash = any("発疹" in name or "皮疹" in name for name in symptom_names_nsaids_penalty)
+        has_blister = any("水ぶくれ" in name or "水疱" in name for name in symptom_names_nsaids_penalty)
+        has_itch = any("かゆみ" in name or "痒み" in name for name in symptom_names_nsaids_penalty)
+        has_chickenpox_symptoms = (has_rash and has_blister) or (has_rash and has_itch) or (has_blister and has_itch)
+        
+        chickenpox_risk = has_chickenpox_keyword or has_chickenpox_symptoms
+        
+        # アスピリンの特別処理（インフルエンザ・水痘の疑いがある場合は完全に除外）
+        if has_aspirin:
+            if (influenza_risk or chickenpox_risk) and user_info and user_info.get('age') and user_info.get('age') < 15:
+                # 15歳未満かつインフルエンザ・水痘の疑いがある場合は完全に除外
+                return {
+                    "total_score": 0.0,
+                    "score_breakdown": {
+                        "symptom_match": 0.0,
+                        "efficacy_specificity": 0.0,
+                        "age_fit": 0.0,
+                        "usage_convenience": 0.0,
+                        "side_effect_risk": 0.0,
+                        "interaction_risk": 0.0
+                    },
+                    "contraindication_reason": "アスピリン含有医薬品は、15歳未満のインフルエンザ・水痘患者ではライ症候群のリスクがあるため使用できません。",
+                    "contraindication_severity": "critical"
+                }
+        
+        # 胃を守る成分のチェック
+        stomach_guard_ingredients = [
+            "酸化マグネシウム", "乾燥水酸化アルミニウムゲル", 
+            "合成ヒドロタルサイト", "メタケイ酸アルミン酸マグネシウム",
+            "水酸化マグネシウム"
+        ]
+        has_stomach_guard = any(guard.lower() in ingredients_str_nsaids for guard in stomach_guard_ingredients)
+        
+        # 年齢ベースのペナルティ（15歳未満）
+        if user_info and user_info.get('age'):
+            age = user_info.get('age')
+            if age < 15:
+                # 各NSAIDs成分のペナルティを計算
+                for nsaid, penalty_value in nsaid_penalty_values.items():
+                    if nsaid.lower() in ingredients_str_nsaids:
+                        # アスピリンの場合は特別処理（インフルエンザ・水痘がない場合のみペナルティ）
+                        if nsaid in ["アスピリン", "アセチルサリチル酸"]:
+                            if not (influenza_risk or chickenpox_risk):
+                                total_penalty += penalty_value
+                        else:
+                            total_penalty += penalty_value
+                
+                # ペナルティの合計に上限を設定（-0.5を超える場合はスコアを0にする）
+                if total_penalty < -0.5:
+                    return {
+                        "total_score": 0.0,
+                        "score_breakdown": {
+                            "symptom_match": 0.0,
+                            "efficacy_specificity": 0.0,
+                            "age_fit": 0.0,
+                            "usage_convenience": 0.0,
+                            "side_effect_risk": 0.0,
+                            "interaction_risk": 0.0
+                        },
+                        "contraindication_reason": "15歳未満で使用不可のNSAIDs成分が複数含まれています。",
+                        "contraindication_severity": "critical"
+                    }
+                
+                nsaid_penalty = total_penalty
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"NSAIDsペナルティ（年齢）: {product_name} = {nsaid_penalty} (年齢: {age}歳)")
+        
+        # ユーザー情報ベースのペナルティ（胃腸が弱い、胃潰瘍など）
+        if user_info:
+            stomach_conditions = [
+                '胃腸が弱い', '胃潰瘍', '胃痛', '胃炎', '胃もたれ',
+                '胃が弱い', '胃が心配', '空腹時'
+            ]
+            user_conditions = user_info.get('conditions', []) or []
+            has_stomach_condition = any(
+                condition in str(user_conditions).lower() or 
+                condition in str(user_info).lower() or
+                condition in user_text_lower_nsaids
+                for condition in stomach_conditions
+            )
+            
+            if has_stomach_condition:
+                base_penalty = -0.4  # 胃が弱いのにNSAIDsは原則避けるべきなので強めに
+                # 胃薬成分が配合されている場合、かつインフルエンザ・水痘がない場合はペナルティを軽減
+                if has_stomach_guard and not (influenza_risk or chickenpox_risk):
+                    base_penalty = -0.2  # 胃薬配合なら許容範囲内としてペナルティ軽減（-0.2軽減）
+                nsaid_penalty = max(nsaid_penalty, base_penalty)  # より大きいペナルティを適用
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"NSAIDsペナルティ（胃腸）: {product_name} = {base_penalty} (胃薬成分: {has_stomach_guard}, インフルエンザ・水痘リスク: {influenza_risk or chickenpox_risk})")
+    
+    # --- 2.6 速効性要求への対応（液体カプセルボーナス） ---
+    # 速効性要求の検出
+    speed_keywords = [
+        "速攻", "すぐ", "早く", "即効性", "すぐに効く", 
+        "早く治したい", "急いでいる", "すぐ効く"
+    ]
+    user_text_lower_speed = user_text.lower() if user_text else ''
+    has_speed_requirement = any(kw in user_text_lower_speed for kw in speed_keywords)
+    
+    speed_bonus = 0.0
+    if has_speed_requirement:
+        # 液体カプセルや溶解の早い製剤の判定
+        product_name_lower_speed = product_name.lower()
+        usage_speed = str(candidate.get('usage', '')).lower()
+        medicine_type_speed = candidate.get('medicine_type', '').lower()
+        
+        # 液体カプセル、カプセル、顆粒などの判定
+        is_fast_dissolving = any(
+            form in product_name_lower_speed or form in usage_speed or form in medicine_type_speed
+            for form in ['液体', 'カプセル', '顆粒', 'ドリンク', '液剤']
+        )
+        
+        if is_fast_dissolving:
+            speed_bonus = 0.1
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"速効性ボーナス: {product_name} = +{speed_bonus}")
     
     # リスク成分の減点（複数症状の場合は減点のみ、単一症状の場合は既に除外済み）
     risk_penalty = 0.0
@@ -7724,6 +8268,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     limited_allergy_penalty = max(-0.20, min(0.0, allergy_penalty))  # 中程度のペナルティ
     limited_allergy_boost = max(0.0, min(0.20, allergy_boost))  # 中程度のボーナス
     limited_hangover_boost = max(0.0, min(0.55, hangover_boost))  # 二日酔い医薬品への非常に大幅なブースト（五苓散+頭痛優先）
+    # symptom_specificity_penaltyがNoneの場合は0.0を使用
+    symptom_specificity_penalty = symptom_specificity_penalty if symptom_specificity_penalty is not None else 0.0
     limited_symptom_specificity_penalty = max(-0.30, min(0.0, symptom_specificity_penalty))  # 不適切な医薬品を確実に下げる
     limited_risk_penalty = max(-0.30, min(0.0, risk_penalty))  # リスク成分のペナルティを強化
     
@@ -7757,6 +8303,55 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 症状パターンボーナスの制限
     limited_pattern_bonus = max(-0.20, min(0.25, pattern_bonus))
+    
+    # --- 2.7 解熱鎮痛薬以外の医薬品タイプでの多様性向上 ---
+    # 解熱鎮痛薬以外の医薬品タイプでの多様性向上
+    medicine_type_diversity = candidate.get("medicine_type", "")
+    symptom_names_diversity = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    user_text_lower_diversity = user_text.lower() if user_text else ''
+    
+    # 症状の重症度に応じた推奨
+    severity_keywords = {
+        "重度": ["激しい", "ひどい", "重い", "酷い", "深刻", "重症", "強烈", "耐えられない"],
+        "軽度": ["少し", "軽い", "軽微", "ちょっと", "やや"],
+        "中等度": ["中程度", "普通", "まあまあ"]
+    }
+    
+    # 症状の重症度を判定
+    detected_severity = None
+    for severity, keywords in severity_keywords.items():
+        if any(kw in user_text_lower_diversity for kw in keywords):
+            detected_severity = severity
+            break
+    
+    # 重症度に応じたボーナス（重度の症状には強力な医薬品を推奨）
+    severity_bonus = 0.0
+    if detected_severity == "重度" and is_strong_medicine:
+        severity_bonus = 0.1
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"重症度ボーナス: {product_name} = +{severity_bonus}")
+    
+    # 症状の組み合わせに応じた推奨（複数症状の場合は異なる医薬品を推奨）
+    combination_bonus = 0.0
+    if len(symptom_names_diversity) >= 2:
+        # 複数症状の場合は、より広範囲の効能効果を持つ医薬品にボーナス
+        efficacy_diversity = str(candidate.get('efficacy', '')).lower()
+        matched_symptoms = sum(1 for symptom in symptom_names_diversity if symptom.lower() in efficacy_diversity)
+        if matched_symptoms >= 2:
+            combination_bonus = 0.05
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"複数症状マッチボーナス: {product_name} = +{combination_bonus}")
+    
+    # ユーザーの年齢に応じた推奨（小児用、成人用など）
+    age_match_bonus = 0.0
+    if user_info and user_info.get('age'):
+        age_diversity = user_info.get('age')
+        # 小児用製剤の判定
+        is_pediatric_form = any(kw in product_name.lower() for kw in ['小児', '子供', 'こども', '小中学生'])
+        if age_diversity < 15 and is_pediatric_form:
+            age_match_bonus = 0.1
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"年齢適合ボーナス: {product_name} = +{age_match_bonus}")
     
     # 剤形の優先順位調整（症状に応じた剤形ボーナス/ペナルティ）
     dosage_form_bonus = 0.0
@@ -8108,6 +8703,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # kampo_adjustmentをadjustment_scoreに含める
     # kakkonto_penalty（葛根湯の条件付き推奨ペナルティ）も追加
     # pain_flag_bonusは独立したボーナス（他のボーナスとは別枠）
+    # strong_medicine_bonus_finalは強力な医薬品ボーナス（2.0で追加）
+    # noshin_penaltyはノーシンピュアペナルティ（2.1で追加）
+    # acetaminophen_bonusはアセトアミノフェンボーナス（2.2で追加）
+    # nsaids_bonusはNSAIDsボーナス（2.3で追加）
     adjustment_score = (
         limited_symptom_specificity_penalty +
         limited_risk_penalty +
@@ -8128,7 +8727,16 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         sho_bonus +  # 証（Sho）判定によるボーナス/ペナルティを追加
         user_preference_bonus +  # ユーザー要望に基づくボーナスを追加
         kakkonto_penalty +  # 葛根湯の条件付き推奨ペナルティを追加
-        pain_flag_bonus  # 痛みフラグボーナス（独立したボーナス、他のボーナスとは別枠）
+        pain_flag_bonus +  # 痛みフラグボーナス（独立したボーナス、他のボーナスとは別枠）
+        strong_medicine_bonus_final +  # 強力な医薬品ボーナス（2.0で追加）
+        noshin_penalty +  # ノーシンピュアペナルティ（2.1で追加）
+        acetaminophen_bonus +  # アセトアミノフェンボーナス（2.2で追加）
+        nsaids_bonus +  # NSAIDsボーナス（2.3で追加）
+        nsaid_penalty +  # NSAIDsペナルティ（2.5で追加）
+        speed_bonus +  # 速効性ボーナス（2.6で追加）
+        severity_bonus +  # 重症度ボーナス（2.7で追加）
+        combination_bonus +  # 複数症状マッチボーナス（2.7で追加）
+        age_match_bonus  # 年齢適合ボーナス（2.7で追加）
     )
     
     # ボーナス/ペナルティ適用のデバッグログ
