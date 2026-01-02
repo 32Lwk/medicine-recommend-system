@@ -110,6 +110,150 @@ def basic_normalize_text(text: str) -> str:
     return normalized
 
 
+# 「たん」の誤検知防止用ブラックリスト
+TANN_FALSE_POSITIVE_BLACKLIST = [
+    "簡単", "かんたん", "カンタン",
+    "負担", "ふたん", "フタン",
+    "短期間", "たんきかん", "タンキカン",
+    "ビタン", "ビタミン",
+    "タンパク質", "たんぱく質", "タンパク",
+    "担当", "たんとう", "タントウ",
+    "単独", "たんどく", "タンドク",
+    "単純", "たんじゅん", "タンジュン",
+    "短縮", "たんしゅく", "タンシュク"
+]
+
+# キャッシュ用の辞書
+_synonym_cache = {}
+_blacklist_cache = {}
+
+
+def is_word_match(token: str, text: str, blacklist: List[str] = None) -> bool:
+    """
+    単語境界を考慮したマッチング（ブラックリストチェック統合版・局所判定）
+    
+    Args:
+        token: 検索する単語
+        text: 検索対象のテキスト
+        blacklist: 誤検知防止用ブラックリスト
+    
+    Returns:
+        マッチした場合True
+    """
+    if not token or not text:
+        return False
+    
+    normalized_text = normalize_text(text)
+    normalized_token = normalize_text(token)
+    
+    # トークンが見つからない場合は即False
+    if normalized_token not in normalized_text:
+        return False
+    
+    # トークンの出現位置をすべて取得（str.find()を繰り返し使用）
+    start_positions = []
+    start = 0
+    while True:
+        pos = normalized_text.find(normalized_token, start)
+        if pos == -1:
+            break
+        start_positions.append(pos)
+        start = pos + 1
+    
+    if not start_positions:
+        return False
+    
+    # ブラックリストチェック（短単語の場合・局所判定・座標計算のみで判定）
+    if blacklist and len(normalized_token) <= 2:
+        valid_match_found = False
+        
+        for start_idx in start_positions:
+            is_part_of_blacklist = False
+            
+            for bl_word in blacklist:
+                normalized_bl = normalize_text(bl_word)
+                
+                # ブラックリスト語の中にトークンが含まれていないならスキップ
+                if normalized_token not in normalized_bl:
+                    continue
+                
+                # トークンがブラックリスト語内の「どこ」にあるか特定（複数ある場合も考慮）
+                # 例: bl_word="カンタン", token="タン" -> 相対位置 2
+                bl_token_start = 0
+                while True:
+                    rel_start = normalized_bl.find(normalized_token, bl_token_start)
+                    if rel_start == -1:
+                        break
+                    
+                    # テキスト上の「ブラックリスト語の開始位置」と推測される座標
+                    # text上の token_start (start_idx) から、相対位置 (rel_start) を引く
+                    suspected_bl_start = start_idx - rel_start
+                    suspected_bl_end = suspected_bl_start + len(normalized_bl)
+                    
+                    # 範囲チェック：テキストの範囲外なら無視
+                    if suspected_bl_start < 0 or suspected_bl_end > len(normalized_text):
+                        bl_token_start = rel_start + 1
+                        continue
+                    
+                    # 実際にその範囲のテキストがブラックリスト語と一致するか？
+                    if normalized_text[suspected_bl_start:suspected_bl_end] == normalized_bl:
+                        is_part_of_blacklist = True
+                        break  # この start_idx はブラックリストの一部だと確定
+                    
+                    bl_token_start = rel_start + 1
+                
+                if is_part_of_blacklist:
+                    break  # 次のブラックリスト語を見るまでもなくNG
+            
+            if not is_part_of_blacklist:
+                valid_match_found = True
+                break  # 有効なマッチが1つでもあればOK
+        
+        # すべての出現がブラックリストに含まれている場合はFalse
+        if not valid_match_found:
+            return False
+    
+    # 以下、既存の単語境界チェック処理
+    # 日本語文字の判定関数（助詞・記号を除く）
+    def is_japanese_word_char(c: str) -> bool:
+        if not c:
+            return False
+        # 漢字、カタカナのみを単語文字とみなす（ひらがな助詞は境界）
+        return ('\u30A0' <= c <= '\u30FF' or  # カタカナ
+                '\u4E00' <= c <= '\u9FFF')    # 漢字
+    
+    # 各出現位置で、前後が日本語文字でないことを確認
+    for pos in start_positions:
+        # 前の文字（存在する場合）
+        prev_char = normalized_text[pos - 1] if pos > 0 else ''
+        # 後の文字（存在する場合）
+        next_pos = pos + len(normalized_token)
+        next_char = normalized_text[next_pos] if next_pos < len(normalized_text) else ''
+        
+        # 前後が日本語単語文字でないことを確認
+        # （前が文の始まりまたは非単語文字）AND（後が文の終わりまたは非単語文字）
+        # ひらがな助詞（の、が、を、に、は、など）や記号（、。）は境界とみなす
+        is_valid_start = (pos == 0) or not is_japanese_word_char(prev_char)
+        is_valid_end = (next_pos >= len(normalized_text)) or not is_japanese_word_char(next_char)
+        
+        if is_valid_start and is_valid_end:
+            return True
+    
+    return False
+
+def get_synonym_expansion(symptom_name: str) -> set:
+    """同義語展開をキャッシュ付きで取得"""
+    if symptom_name in _synonym_cache:
+        return _synonym_cache[symptom_name]
+    
+    # 同義語展開処理（symptom_synonyms辞書から取得）
+    expanded = set()
+    # この関数は後でcalculate_efficacy_specificity_score関数内で使用される
+    # 実際の展開処理はcalculate_efficacy_specificity_score関数内で行う
+    
+    _synonym_cache[symptom_name] = expanded
+    return expanded
+
 BROAD_EFFICACY_KEYWORDS = {
     "滋養強壮": {
         "require_any": {"倦怠感", "疲労感", "虚弱体質", "肉体疲労", "病後"},
@@ -159,227 +303,299 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
     Returns:
         効能特異性スコア (0.0-1.0)
     """
-    efficacy_text = candidate.get('efficacy', '')
-    if not efficacy_text:
-        return 0.0
-    
-    symptoms = nlu_result.get("symptoms", [])
-    if not symptoms:
-        return 0.0
-    
-    # 症状名のリストを作成
-    symptom_names = [s.get('name', '') for s in symptoms if s.get('name')]
-    if not symptom_names:
-        return 0.0
+    try:
+        efficacy_text = candidate.get('efficacy', '')
+        if not efficacy_text:
+            return 0.0
+        
+        symptoms = nlu_result.get("symptoms", [])
+        if not symptoms:
+            return 0.0
+        
+        # 症状名のリストを作成
+        symptom_names = [s.get('name', '') for s in symptoms if s.get('name')]
+        if not symptom_names:
+            return 0.0
 
-    # 二日酔い特別処理：効能に「二日酔」が明記されている場合
-    efficacy_lower = efficacy_text.lower()
-    hangover_keywords_in_efficacy = ["二日酔", "宿酔", "悪酔"]
-    has_hangover_efficacy = any(kw in efficacy_lower for kw in hangover_keywords_in_efficacy)
-    has_hangover_symptom = any("二日酔" in str(name) for name in symptom_names)
-    
-    # 二日酔い症状と二日酔い効能が一致する場合、高スコアを付与
-    if has_hangover_symptom and has_hangover_efficacy:
-        return 0.95  # 二日酔い特化医薬品には高い効能特異性スコア
+        # 二日酔い特別処理：効能に「二日酔」が明記されている場合
+        efficacy_lower = efficacy_text.lower()
+        hangover_keywords_in_efficacy = ["二日酔", "宿酔", "悪酔"]
+        has_hangover_efficacy = any(kw in efficacy_lower for kw in hangover_keywords_in_efficacy)
+        has_hangover_symptom = any("二日酔" in str(name) for name in symptom_names)
+        
+        # 二日酔い症状と二日酔い効能が一致する場合、高スコアを付与
+        if has_hangover_symptom and has_hangover_efficacy:
+            return 0.95  # 二日酔い特化医薬品には高い効能特異性スコア
 
-    normalized_symptoms = [normalize_text(name) for name in symptom_names]
-    normalized_symptom_set = {name for name in normalized_symptoms if name}
+        normalized_symptoms = [normalize_text(name) for name in symptom_names]
+        normalized_symptom_set = {name for name in normalized_symptoms if name}
 
-    if not normalized_symptom_set:
-        return 0.0
-    
-    # 症状名の同義語マッピング（月経不順と生理不順を同義語として扱う）
-    symptom_synonyms = {
+        if not normalized_symptom_set:
+            return 0.0
+        
+        # 症状名の同義語マッピング（月経不順と生理不順を同義語として扱う）
+        symptom_synonyms = {
         "生理不順": ["月経不順", "生理不順", "月経異常", "生理異常"],
         "月経不順": ["月経不順", "生理不順", "月経異常", "生理異常"],
-        "イライラ": ["イライラ", "いらいら", "イラつき", "いらつき", "ストレス", "不安", "神経症状", "精神不安", "いらだち", "ヒステリー"]
-    }
-    
-    # 症状名の同義語を展開
-    expanded_symptom_set = set(normalized_symptom_set)
-    for symptom in normalized_symptom_set:
-        if symptom in symptom_synonyms:
-            for synonym in symptom_synonyms[symptom]:
-                expanded_symptom_set.add(normalize_text(synonym))
-        # 「月経不順」と「生理不順」を相互にマッピング
-        if normalize_text('月経不順') in symptom or normalize_text('生理不順') in symptom:
-            expanded_symptom_set.add(normalize_text('月経不順'))
-            expanded_symptom_set.add(normalize_text('生理不順'))
-    
-    normalized_symptom_set = expanded_symptom_set
-    
-    # 効能テキストを句読点で分割してから正規化
-    import re
-    efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text)
-    efficacy_parts = [normalize_text(p) for p in efficacy_parts_raw if p.strip()]
-    efficacy_parts = [p for p in efficacy_parts if p]
-    
-    if not efficacy_parts:
-        return 0.0
-    
-    # 効能効果欄の専門用語マッピング（月経不順関連）
-    efficacy_lower = efficacy_text.lower()
-    menstrual_efficacy_keywords = ["月経不順", "生理不順", "血の道症", "血の道", "月経異常", "生理異常"]
-    has_menstrual_efficacy = any(kw in efficacy_lower for kw in menstrual_efficacy_keywords)
+        "イライラ": ["イライラ", "いらいら", "イラつき", "いらつき", "いらだち"],
+        # 新規追加（拡張版）
+        "たん": [
+            "たん", "痰", "タン", 
+            "たんが出る", "痰が出る", 
+            "喀痰", "咳痰",
+            "のどにからむ", "喉に絡む"
+        ],
+        "痰": [
+            "たん", "痰", "タン", 
+            "たんが出る", "痰が出る", 
+            "喀痰", "咳痰",
+            "のどにからむ", "喉に絡む"
+        ],
+        "せき": ["せき", "咳", "セキ", "せきが出る", "咳が出る", "咳嗽", "咳込む", "空咳", "咳が止まらない", "咳がでる"],
+        "咳": ["せき", "咳", "セキ", "せきが出る", "咳が出る", "咳嗽", "咳込む", "空咳", "咳が止まらない", "咳がでる"],
+        # その他の一般的な症状
+        "頭痛": ["頭痛", "頭が痛い", "頭がズキズキ", "偏頭痛", "緊張性頭痛", "頭が重い", "頭痛がする", "ずきずき"],
+        "発熱": ["発熱", "熱", "熱がある", "高熱", "微熱", "体温上昇", "熱っぽい", "熱が出る", "熱が出た", "熱がでる", "悪寒", "寒気", "さむけ"],
+        "悪寒": ["悪寒", "寒気", "さむけ", "ゾクゾクする", "悪寒がする", "発熱", "熱", "震え"],
+        "震え": ["震え", "ふるえ", "震える", "悪寒", "寒気"],
+        "鼻水": ["鼻水", "鼻みず", "鼻汁", "鼻が出る", "水っぽい鼻水", "はなみず", "鼻がでる", "鼻炎", "鼻汁過多", "鼻水が多い", "鼻水がとまらない"],
+        "鼻炎": ["鼻炎", "鼻水", "鼻づまり", "鼻汁過多"],
+        "鼻汁過多": ["鼻汁過多", "鼻水が多い", "鼻水がとまらない", "鼻水"],
+        "鼻づまり": ["鼻づまり", "鼻詰まり", "鼻が詰まる", "鼻閉", "鼻がつまる", "鼻が詰まってる", "鼻がつまってる"],
+        "のどの痛み": ["のどの痛み", "喉の痛み", "咽頭痛", "のど痛", "喉が痛い", "のどが痛い", "声がかすれる", "声がかれる"],
+        "声がかすれる": ["声がかすれる", "声がかれる", "のどの痛み", "喉の痛み"],
+        "腹痛": ["腹痛", "お腹が痛い", "腹が痛い", "腹部痛", "おなかが痛い", "はらが痛い", "胃痛", "胃が痛い"],
+        "下痢": ["下痢", "軟便", "水様便", "便がゆるい", "便が緩い", "おなかを下す", "お腹を下す", "下す", "下痢をする", "げり"],
+        "便秘": ["便秘", "便が出ない", "便通がない", "便が硬い", "お通じがない", "便がでない", "うんちが出ない", "ウンチが出ない"],
+        # 胃腸関連症状
+        "吐き気": ["吐き気", "むかつき", "気持ち悪い", "嘔吐感", "吐きそう", "はきけ", "むかむか", "つわり"],
+        "胸やけ": ["胸やけ", "胸焼け", "むねやけ", "胃もたれ"],
+        "胃もたれ": ["胃もたれ", "胃の重い感じ", "消化が悪い", "胃の不快感", "いもたれ", "胸やけ", "胸焼け", "消化不良"],
+        "消化不良": ["消化不良", "消化が悪い", "胃もたれ", "胃の重い感じ"],
+        "胃痛": ["胃痛", "胃が痛い", "胃の痛み", "胃部痛", "みぞおちの痛み"],
+        "つわり": ["つわり", "悪阻", "吐き気", "嘔吐", "匂いに敏感", "匂いが気になる"],
+        "頻尿": ["頻尿", "トイレが近い", "おしっこが近い", "尿が近い", "トイレに行く回数が多い"],
+        # めまい・疲労関連
+        "めまい": ["めまい", "眩暈", "ふらつき", "立ちくらみ", "くらくら", "平衡感覚の異常"],
+        "疲労感": ["疲労感", "疲れ", "だるい", "倦怠感", "体が重い", "つかれた", "疲れた", "だるさ"],
+        "だるさ": ["だるさ", "だるい", "体がだるい", "全身倦怠感", "倦怠感", "疲労感", "疲れ"],
+        # 睡眠関連
+        "不眠": ["不眠", "眠れない", "睡眠不足", "寝つきが悪い", "浅い眠り", "ねむれない"],
+        # 皮膚関連
+        "かゆみ": ["かゆみ", "痒み", "かゆい", "皮膚のかゆみ", "全身のかゆみ"],
+        "発疹": ["発疹", "ブツブツ", "赤い斑点", "皮膚の異常", "湿疹"],
+        "湿疹": ["湿疹", "皮膚炎", "かぶれ", "皮膚の炎症", "発疹"],
+        "水虫": ["水虫", "白癬", "足の水虫", "指の間のかゆみ"],
+        "打撲": ["打撲", "打ち身", "青あざ", "あおたん", "内出血", "あざ"],
+        "打ち身": ["打ち身", "打撲", "青あざ", "あおたん", "内出血", "あざ"],
+        "炎症": ["炎症", "炎症している", "炎症する", "にえる", "にえている"],
+        "捻挫": ["捻挫", "くじいた", "関節の痛み", "靭帯損傷"],
+        "くしゃみ": ["くしゃみ", "クシャミ", "くしゃみがでる", "くしゃみが出る"],
+        # その他
+        "むくみ": ["むくみ", "浮腫", "腫れぼったい", "パンパン", "顔のむくみ", "足のむくみ"],
+        "二日酔い": ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ"],
+        "肩こり": ["肩こり", "肩の凝り", "肩の痛み", "首肩の痛み", "かたこり", "首の痛み"],
+        "腰痛": ["腰痛", "腰が痛い", "こしがいたい", "背中の痛み"],
+        "背中の痛み": ["背中の痛み", "背中が痛い", "せなかがいたい"],
+        "首の痛み": ["首の痛み", "首が痛い", "くびがいたい", "肩こり"],
+        "関節痛": ["関節痛", "関節が痛い", "かんせつがいたい", "節々が痛い", "関節の痛み", "筋肉痛"],
+        "筋肉痛": ["筋肉痛", "筋肉の痛み", "体が痛い", "筋肉が痛い", "関節痛"],
+        "目の疲れ": ["目の疲れ", "眼精疲労", "目が疲れる", "目の重い感じ", "めがつかれる"],
+        "目のかゆみ": ["目のかゆみ", "目がかゆい", "目の痒み", "めがかゆい", "結膜炎"],
+        "目の充血": ["目の充血", "目が赤い", "充血", "目の血走り"],
+        "なみだ目": ["なみだ目", "涙目", "目が涙でる", "涙が出る"],
+        "結膜炎": ["結膜炎", "目のかゆみ", "目がかゆい", "目の充血"],
+        "眠気": ["眠気", "眠い", "だるい", "眠たい", "眠気が強い", "いつも眠い", "寝てしまう", "眠くて寝てしまう", "居眠り", "眠くてたまらない"],
+        "乗り物酔い": ["乗り物酔い", "車酔い", "船酔い", "バス酔い", "酔い", "乗り物に酔う", "車に乗ると気持ち悪い", "船に乗ると気持ち悪い", "乗物酔い", "乗物に酔う"],
+        "冷え性": ["冷え性", "冷え", "手足が冷える", "体が冷える", "冷え症"],
+        "動悸": ["動悸", "心臓がドキドキ", "ドキドキする", "心拍が速い", "脈が速い", "心臓がバクバク"],
+        "息切れ": ["息切れ", "息が切れる", "息切れがする", "呼吸困難", "呼吸が苦しい", "息苦しい"],
+        "呼吸困難": ["呼吸困難", "呼吸が苦しい", "息苦しい", "息ができない", "息切れ"],
+        "生理痛": ["生理痛", "月経痛", "生理の痛み", "下腹部痛", "下腹部が痛い"],
+        "下腹部痛": ["下腹部痛", "下腹部が痛い", "生理痛", "月経痛"],
+        "歯痛": ["歯痛", "歯が痛い", "歯の痛み", "はがいたい"],
+        "口内炎": ["口内炎", "口の痛み", "口が痛い", "口の中が痛い", "くちがいたい"],
+        "口の痛み": ["口の痛み", "口が痛い", "口の中が痛い", "口内炎"],
+        "耳鳴り": ["耳鳴り", "みみなり", "耳が鳴る"],
+        "耳の痛み": ["耳の痛み", "耳が痛い", "みみがいたい"],
+        "胸の張り": ["胸の張り", "胸が張る", "乳房の張り", "胸が痛い", "胸が敏感", "乳房が痛い"]
+        }
+        
+        # 症状名の同義語を展開（キャッシュ対応）
+        expanded_symptom_set = set(normalized_symptom_set)
+        for symptom in normalized_symptom_set:
+            # キャッシュをチェック
+            cache_key = symptom
+            if cache_key in _synonym_cache:
+                expanded_symptom_set.update(_synonym_cache[cache_key])
+            else:
+                # キャッシュにない場合は展開処理を実行
+                symptom_expanded = set()
+                if symptom in symptom_synonyms:
+                    for synonym in symptom_synonyms[symptom]:
+                        normalized_synonym = normalize_text(synonym)
+                        symptom_expanded.add(normalized_synonym)
+                        expanded_symptom_set.add(normalized_synonym)
+                # 「月経不順」と「生理不順」を相互にマッピング
+                if normalize_text('月経不順') in symptom or normalize_text('生理不順') in symptom:
+                    symptom_expanded.add(normalize_text('月経不順'))
+                    symptom_expanded.add(normalize_text('生理不順'))
+                    expanded_symptom_set.add(normalize_text('月経不順'))
+                    expanded_symptom_set.add(normalize_text('生理不順'))
+                # キャッシュに保存
+                _synonym_cache[cache_key] = symptom_expanded
+        
+        normalized_symptom_set = expanded_symptom_set
+        
+        # 効能テキストを句読点で分割してから正規化
+        import re
+        efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text)
+        efficacy_parts = [normalize_text(p) for p in efficacy_parts_raw if p.strip()]
+        efficacy_parts = [p for p in efficacy_parts if p]
+        
+        if not efficacy_parts:
+            return 0.0
+        
+        # 効能効果欄の専門用語マッピング（月経不順関連）
+        efficacy_lower = efficacy_text.lower()
+        menstrual_efficacy_keywords = ["月経不順", "生理不順", "血の道症", "血の道", "月経異常", "生理異常"]
+        has_menstrual_efficacy = any(kw in efficacy_lower for kw in menstrual_efficacy_keywords)
 
-    # 単語境界を考慮したマッチング関数
-    def is_word_match(token: str, text: str) -> bool:
-        """
-        単語境界を考慮したマッチング
-        日本語の単語境界を考慮（症状名が独立した単語として存在するかチェック）
-        """
-        if not token or not text:
-            return False
+        # 単語境界を考慮したマッチング関数（モジュールレベルのis_word_match関数を使用）
         
-        # 症状名が効能テキスト内に存在するかチェック
-        if token not in text:
-            return False
-        
-        # 日本語文字の判定関数（助詞・記号を除く）
-        def is_japanese_word_char(c: str) -> bool:
-            if not c:
-                return False
-            # 漢字、カタカナのみを単語文字とみなす（ひらがな助詞は境界）
-            return ('\u30A0' <= c <= '\u30FF' or  # カタカナ
-                    '\u4E00' <= c <= '\u9FFF')    # 漢字
-        
-        # 症状名の出現位置をすべて取得
-        start_positions = []
-        start = 0
-        while True:
-            pos = text.find(token, start)
-            if pos == -1:
-                break
-            start_positions.append(pos)
-            start = pos + 1
-        
-        # 各出現位置で、前後が日本語文字でないことを確認
-        for pos in start_positions:
-            # 前の文字（存在する場合）
-            prev_char = text[pos - 1] if pos > 0 else ''
-            # 後の文字（存在する場合）
-            next_pos = pos + len(token)
-            next_char = text[next_pos] if next_pos < len(text) else ''
+        # キーワードの重み付けシステム
+        def get_keyword_weight(keyword: str, symptom_name: str) -> float:
+            """
+            キーワードの重みを取得（コンテキストによる重み調整）
             
-            # 前後が日本語単語文字でないことを確認
-            # （前が文の始まりまたは非単語文字）AND（後が文の終わりまたは非単語文字）
-            # ひらがな助詞（の、が、を、に、は、など）や記号（、。）は境界とみなす
-            is_valid_start = (pos == 0) or not is_japanese_word_char(prev_char)
-            is_valid_end = (next_pos >= len(text)) or not is_japanese_word_char(next_char)
+            Args:
+                keyword: 効能テキスト内のキーワード
+                symptom_name: 症状名
             
-            if is_valid_start and is_valid_end:
-                return True
-        
-        return False
-    
-    # キーワードの重み付けシステム
-    def get_keyword_weight(keyword: str, symptom_name: str) -> float:
-        """
-        キーワードの重みを取得（コンテキストによる重み調整）
-        
-        Args:
-            keyword: 効能テキスト内のキーワード
-            symptom_name: 症状名
-        
-        Returns:
-            重み (0.0-1.0)
-        """
-        keyword_lower = keyword.lower()
-        symptom_name_lower = symptom_name.lower()
-        
-        # 「生理不順」→「月経不順」: weight: 1.0（直接的な表現）
-        if (normalize_text('生理不順') in symptom_name_lower or normalize_text('月経不順') in symptom_name_lower) and normalize_text('月経不順') in keyword_lower:
-            return 1.0
-        if (normalize_text('月経不順') in symptom_name_lower or normalize_text('生理不順') in symptom_name_lower) and normalize_text('生理不順') in keyword_lower:
+            Returns:
+                重み (0.0-1.0)
+            """
+            keyword_lower = keyword.lower()
+            symptom_name_lower = symptom_name.lower()
+            
+            # 「生理不順」→「月経不順」: weight: 1.0（直接的な表現）
+            if (normalize_text('生理不順') in symptom_name_lower or normalize_text('月経不順') in symptom_name_lower) and normalize_text('月経不順') in keyword_lower:
+                return 1.0
+            if (normalize_text('月経不順') in symptom_name_lower or normalize_text('生理不順') in symptom_name_lower) and normalize_text('生理不順') in keyword_lower:
+                return 1.0
+            
+            # 「血の道症」: weight: 0.8（より広義な表現）
+            if normalize_text('血の道症') in keyword_lower or normalize_text('血の道') in keyword_lower:
+                return 0.8
+            
+            # 「月経異常」「生理異常」: weight: 0.9（直接的な表現に近い）
+            if normalize_text('月経異常') in keyword_lower or normalize_text('生理異常') in keyword_lower:
+                return 0.9
+            
+            # 「産前産後」「更年期」: weight: コンテキスト依存（ユーザーの年齢や症状に応じて0.85-0.95）
+            if normalize_text('産前産後') in keyword_lower or normalize_text('更年期') in keyword_lower:
+                # デフォルトは0.9（年齢情報があれば調整可能）
+                return 0.9
+            
+            # デフォルトの重み
             return 1.0
         
-        # 「血の道症」: weight: 0.8（より広義な表現）
-        if normalize_text('血の道症') in keyword_lower or normalize_text('血の道') in keyword_lower:
-            return 0.8
+        # 各効能パート内でマッチングをカウント（重み付け対応）
+        weighted_match_score = 0.0
+        matched_symptoms = set()  # 既にマッチした症状を記録（重複カウントを防ぐ）
         
-        # 「月経異常」「生理異常」: weight: 0.9（直接的な表現に近い）
-        if normalize_text('月経異常') in keyword_lower or normalize_text('生理異常') in keyword_lower:
-            return 0.9
-        
-        # 「産前産後」「更年期」: weight: コンテキスト依存（ユーザーの年齢や症状に応じて0.85-0.95）
-        if normalize_text('産前産後') in keyword_lower or normalize_text('更年期') in keyword_lower:
-            # デフォルトは0.9（年齢情報があれば調整可能）
-            return 0.9
-        
-        # デフォルトの重み
-        return 1.0
-    
-    # 各効能パート内でマッチングをカウント（重み付け対応）
-    weighted_match_score = 0.0
-    matched_symptoms = set()  # 既にマッチした症状を記録（重複カウントを防ぐ）
-    
-    for name in normalized_symptom_set:
-        if name in matched_symptoms:
-            continue  # 既にマッチした症状はスキップ
-        
-        matched = False
-        match_weight = 1.0
-        
-        for part in efficacy_parts:
-            # 直接マッチング
-            if is_word_match(name, part):
-                # キーワードの重みを取得
-                match_weight = get_keyword_weight(part, name)
-                weighted_match_score += match_weight
-                matched_symptoms.add(name)
-                matched = True
-                if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"効能効果マッチング: {name} × {part} = weight {match_weight:.2f}")
-                break
-            # 同義語マッチング（月経不順と生理不順を同義語として扱う）
-            if name in symptom_synonyms:
-                for synonym in symptom_synonyms[name]:
-                    normalized_synonym = normalize_text(synonym)
-                    if normalized_synonym and is_word_match(normalized_synonym, part):
-                        # キーワードの重みを取得
-                        match_weight = get_keyword_weight(part, name)
-                        weighted_match_score += match_weight
-                        matched_symptoms.add(name)
-                        matched = True
-                        if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"効能効果マッチング（同義語）: {name} × {part} = weight {match_weight:.2f}")
-                        break
-                if matched:
-                    break
-        
-        # 効能テキストに「月経不順」や「生理不順」が含まれている場合、症状が「月経不順」または「生理不順」ならマッチ
-        if not matched:
-            # 症状名が「月経不順」または「生理不順」に関連する場合
-            is_menstrual_symptom = (
-                normalize_text('月経不順') in name or 
-                normalize_text('生理不順') in name or
-                name == normalize_text('月経不順') or
-                name == normalize_text('生理不順')
-            )
+        for name in normalized_symptom_set:
+            if name in matched_symptoms:
+                continue  # 既にマッチした症状はスキップ
             
-            if is_menstrual_symptom:
-                # 効能テキスト全体で月経不順関連キーワードをチェック（重み付け対応）
-                if has_menstrual_efficacy:
-                    # 最も適切なキーワードの重みを取得
-                    best_weight = 0.0
-                    for kw in menstrual_efficacy_keywords:
-                        if kw in efficacy_lower:
-                            weight = get_keyword_weight(kw, name)
-                            best_weight = max(best_weight, weight)
-                    weighted_match_score += best_weight
+            matched = False
+            match_weight = 1.0
+            
+            for part in efficacy_parts:
+                # 直接マッチング
+                if is_word_match(name, part):
+                    # キーワードの重みを取得
+                    match_weight = get_keyword_weight(part, name)
+                    weighted_match_score += match_weight
                     matched_symptoms.add(name)
                     matched = True
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"効能効果マッチング（月経不順関連）: {name} = weight {best_weight:.2f}")
-    
-    # 重み付けされたマッチスコアを症状数で正規化
-    if len(normalized_symptom_set) > 0:
-        match_count = weighted_match_score  # 重み付けされたスコアを使用
-    else:
-        match_count = 0.0
-    
-    # 症状が効能に全く含まれていない場合の処理
-    if match_count == 0:
+                        logger.debug(f"効能効果マッチング: {name} × {part} = weight {match_weight:.2f}")
+                    break
+                # 同義語マッチング（月経不順と生理不順を同義語として扱う）
+                if name in symptom_synonyms:
+                    for synonym in symptom_synonyms[name]:
+                        normalized_synonym = normalize_text(synonym)
+                        if normalized_synonym and is_word_match(normalized_synonym, part):
+                            # キーワードの重みを取得
+                            match_weight = get_keyword_weight(part, name)
+                            weighted_match_score += match_weight
+                            matched_symptoms.add(name)
+                            matched = True
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"効能効果マッチング（同義語）: {name} × {part} = weight {match_weight:.2f}")
+                            break
+                    if matched:
+                        break
+            
+            # 効能テキストに「月経不順」や「生理不順」が含まれている場合、症状が「月経不順」または「生理不順」ならマッチ
+            if not matched:
+                # 症状名が「月経不順」または「生理不順」に関連する場合
+                is_menstrual_symptom = (
+                    normalize_text('月経不順') in name or 
+                    normalize_text('生理不順') in name or
+                    name == normalize_text('月経不順') or
+                    name == normalize_text('生理不順')
+                )
+                
+                if is_menstrual_symptom:
+                    # 効能テキスト全体で月経不順関連キーワードをチェック（重み付け対応）
+                    if has_menstrual_efficacy:
+                        # 最も適切なキーワードの重みを取得
+                        best_weight = 0.0
+                        for kw in menstrual_efficacy_keywords:
+                            if kw in efficacy_lower:
+                                weight = get_keyword_weight(kw, name)
+                                best_weight = max(best_weight, weight)
+                        weighted_match_score += best_weight
+                        matched_symptoms.add(name)
+                        matched = True
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"効能効果マッチング（月経不順関連）: {name} = weight {best_weight:.2f}")
+        
+        # 重み付けされたマッチスコアを症状数で正規化
+        if len(normalized_symptom_set) > 0:
+            match_count = weighted_match_score  # 重み付けされたスコアを使用
+        else:
+            match_count = 0.0
+        
+        # 効能特異性が0.0（イプシロン比較）の場合のフォールバック処理
+        EPSILON = 0.0001  # 浮動小数点比較用イプシロン
+        
+        # 症状が効能に全く含まれていない場合の処理
+        if match_count == 0:
+            # 効能テキスト全体で症状が含まれているかを直接チェック（2段階）
+            normalized_efficacy_full = normalize_text(efficacy_text)
+            
+            # 第1段階: 単純包含チェック（高速）
+            has_simple_match = False
+            for symptom_name in normalized_symptom_set:
+                if symptom_name in normalized_efficacy_full:
+                    has_simple_match = True
+                    break
+            
+            # 第2段階: 単語境界チェック（正確性重視）
+            if has_simple_match:
+                for symptom_name in normalized_symptom_set:
+                    # ブラックリストチェック（「たん」の場合）
+                    blacklist = TANN_FALSE_POSITIVE_BLACKLIST if symptom_name == "たん" else None
+                    if is_word_match(symptom_name, normalized_efficacy_full, blacklist=blacklist):
+                        # 効能に症状が含まれている場合は、効能特異性スコアを0.5に底上げ
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"効能特異性フォールバック: {candidate.get('product_name', '')} - "
+                                        f"症状: {symptom_name}, 効能特異性: 0.5（底上げ）")
+                        return 0.5
+        
         # 解熱鎮痛薬の場合、発熱やのどの痛みなどの症状に対して一定のスコアを付与
         medicine_type = candidate.get("medicine_type", "")
         if "解熱鎮痛薬" in medicine_type:
@@ -414,51 +630,91 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
                 if any(throat in name for throat in throat_symptoms):
                     # 外用薬（のど）はのどの痛みに効果があるため、一定のスコアを付与
                     return 0.45
+            
+            return 0.0
         
-        return 0.0
-    
-    # 重み付けされたスコアを使用して特異性比率を計算
-    if len(normalized_symptom_set) > 0:
-        # 重み付けされたスコアを症状数で正規化（最大値は症状数）
-        specificity_ratio = match_count / len(normalized_symptom_set)
-    else:
-        specificity_ratio = 0.0
-    
-    # 月経不順関連症状と効能のマッチング強化
-    if has_menstrual_efficacy:
-        # 効能効果欄に月経不順関連のキーワードが含まれている場合、症状とのマッチングを強化
-        menstrual_symptom_keywords = ["月経不順", "生理不順", "月経異常", "生理異常", "血の道症", "生理が遅れ", "月経が遅れ"]
-        symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
-        has_menstrual_symptom = any(
-            any(keyword in symptom_name or keyword in normalize_text(symptom_name) 
-                for keyword in menstrual_symptom_keywords)
-            for symptom_name in symptom_names
-        )
-        if has_menstrual_symptom:
-            # 月経不順関連症状と効能が一致する場合、特異性スコアを底上げ
-            specificity_ratio = max(specificity_ratio, 0.7)  # 最低0.7を保証
+        # 重み付けされたスコアを使用して特異性比率を計算
+        if len(normalized_symptom_set) > 0:
+            # 重み付けされたスコアを症状数で正規化（最大値は症状数）
+            specificity_ratio = match_count / len(normalized_symptom_set)
+        else:
+            specificity_ratio = 0.0
+        
+        # 効能特異性が非常に低い場合（イプシロン比較）でも、効能テキストに症状が含まれているかを直接チェック
+        EPSILON = 0.0001  # 浮動小数点比較用イプシロン
+        
+        # 効能テキスト全体で症状が含まれているかを直接チェック（2段階）
+        normalized_efficacy_full = normalize_text(efficacy_text)
+        
+        # 第1段階: 単純包含チェック（高速）
+        has_simple_match = False
+        for symptom_name in normalized_symptom_set:
+            if symptom_name in normalized_efficacy_full:
+                has_simple_match = True
+                break
+        
+        # 第2段階: 単語境界チェック（正確性重視）
+        if has_simple_match:
+            for symptom_name in normalized_symptom_set:
+                # ブラックリストチェック（「たん」の場合）
+                blacklist = TANN_FALSE_POSITIVE_BLACKLIST if symptom_name == "たん" else None
+                if is_word_match(symptom_name, normalized_efficacy_full, blacklist=blacklist):
+                    # 効能に症状が含まれている場合、かつスコアが0.5未満の場合は0.5に底上げ
+                    # ただし、すでに0.5以上の場合はそのまま返す
+                    if specificity_ratio < EPSILON:
+                        # 効能に症状が含まれている場合は、効能特異性スコアを0.5に底上げ
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"効能特異性フォールバック（低スコア）: {candidate.get('product_name', '')} - "
+                                        f"症状: {symptom_name}, 効能特異性: 0.5（底上げ）")
+                        return 0.5
+                    # スコアが0.5未満の場合も底上げ（効能に明記されている場合は最低0.5を保証）
+                    elif specificity_ratio < 0.5:
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"効能特異性底上げ: {candidate.get('product_name', '')} - "
+                                        f"症状: {symptom_name}, 効能特異性: {specificity_ratio:.2f} → 0.5（底上げ）")
+                        return 0.5
+        
+        # 月経不順関連症状と効能のマッチング強化
+        if has_menstrual_efficacy:
+            # 効能効果欄に月経不順関連のキーワードが含まれている場合、症状とのマッチングを強化
+            menstrual_symptom_keywords = ["月経不順", "生理不順", "月経異常", "生理異常", "血の道症", "生理が遅れ", "月経が遅れ"]
+            symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            has_menstrual_symptom = any(
+                any(keyword in symptom_name or keyword in normalize_text(symptom_name) 
+                    for keyword in menstrual_symptom_keywords)
+                for symptom_name in symptom_names
+            )
+            if has_menstrual_symptom:
+                # 月経不順関連症状と効能が一致する場合、特異性スコアを底上げ
+                specificity_ratio = max(specificity_ratio, 0.7)  # 最低0.7を保証
 
-    # 効能効果の長さによる調整（短いほど特化している）
-    # 全パートを結合して長さを計算
-    combined_efficacy = ''.join(efficacy_parts)
-    efficacy_length = len(combined_efficacy)
-    length_penalty = min(1.0, efficacy_length / 120)  # 正規化後のテキスト長を基準
+        # 効能効果の長さによる調整（短いほど特化している）
+        # 全パートを結合して長さを計算
+        combined_efficacy = ''.join(efficacy_parts)
+        efficacy_length = len(combined_efficacy)
+        length_penalty = min(1.0, efficacy_length / 120)  # 正規化後のテキスト長を基準
 
-    final_score = specificity_ratio * (1.0 - length_penalty * 0.25)
+        final_score = specificity_ratio * (1.0 - length_penalty * 0.25)
 
-    # 広域効能（滋養強壮など）の場合は症状との整合性を確認
-    penalty_factor = 1.0
-    for keyword, rule in BROAD_EFFICACY_KEYWORDS.items():
-        normalized_keyword = normalize_text(keyword)
-        if normalized_keyword and normalized_keyword in combined_efficacy:
-            required_set = {normalize_text(req) for req in rule.get("require_any", set())}
-            if required_set and not any(req in normalized_symptom_set for req in required_set):
-                penalty = max(0.0, min(1.0, rule.get("penalty", 0.2)))
-                penalty_factor *= (1.0 - penalty)
+        # 広域効能（滋養強壮など）の場合は症状との整合性を確認
+        penalty_factor = 1.0
+        for keyword, rule in BROAD_EFFICACY_KEYWORDS.items():
+            normalized_keyword = normalize_text(keyword)
+            if normalized_keyword and normalized_keyword in combined_efficacy:
+                required_set = {normalize_text(req) for req in rule.get("require_any", set())}
+                if required_set and not any(req in normalized_symptom_set for req in required_set):
+                    penalty = max(0.0, min(1.0, rule.get("penalty", 0.2)))
+                    penalty_factor *= (1.0 - penalty)
 
-    final_score *= penalty_factor
+        final_score *= penalty_factor
 
-    return min(1.0, max(0.0, final_score))
+        return min(1.0, max(0.0, final_score))
+    except Exception as e:
+        logger.warning(f"効能特異性計算エラー: {e}")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            import traceback
+            logger.debug(f"詳細: {traceback.format_exc()}")
+        return 0.0  # デフォルト値
 
 def calculate_side_effect_risk_score(candidate: Dict, user_info: Dict) -> float:
     """
