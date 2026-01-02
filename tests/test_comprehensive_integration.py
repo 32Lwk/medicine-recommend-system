@@ -1092,7 +1092,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     def test_comprehensive_symptom_detection(self):
         """包括的な症状検出テスト"""
         test_cases = self.generate_test_cases()
-        logger.info(f"テストケース数: {len(test_cases)}")
+        # ログ出力を削減（テストケース数はサマリーで確認可能）
         
         results = {
             "total": len(test_cases),
@@ -1136,7 +1136,8 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                         symptom_time = time.time() - symptom_start
                         
                         if detected_symptoms:
-                            process_flow.append(f"症状検出完了: {', '.join(detected_symptoms[:3])} (処理時間: {symptom_time:.4f}秒)")
+                            # ログ出力を削減（処理時間の詳細は不要）
+                            process_flow.append(f"症状検出完了: {', '.join(detected_symptoms[:3])}")
                             
                             # 上位3件の医薬品を取得（簡易版）
                             medicine_start = time.time()
@@ -1145,7 +1146,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                             
                             if top_medicines:  # 医薬品が見つかった場合のみ記録
                                 output_content = f"推奨医薬品: {', '.join(top_medicines)}"
-                                process_flow.append(f"医薬品推奨完了: {len(top_medicines)}件 (処理時間: {medicine_time:.4f}秒)")
+                                process_flow.append(f"医薬品推奨完了: {len(top_medicines)}件")
                                 results["recommendations"][test_number] = {
                                     "input": input_text,
                                     "category": category,
@@ -1154,10 +1155,10 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                                 }
                             else:
                                 output_content = "推奨医薬品: 該当なし"
-                                process_flow.append(f"医薬品推奨完了: 該当なし (処理時間: {medicine_time:.4f}秒)")
+                                process_flow.append(f"医薬品推奨完了: 該当なし")
                         else:
                             output_content = "症状検出: 該当なし"
-                            process_flow.append(f"症状検出完了: 該当なし (処理時間: {symptom_time:.4f}秒)")
+                            process_flow.append(f"症状検出完了: 該当なし")
                 
                 # 診断名検出のテスト（診断名と追加診断名の両方を対象）
                 if category in ["診断名", "追加診断名"]:
@@ -1169,7 +1170,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                         
                         if is_diagnosis:
                             output_content = f"診断名検出: {diagnosis_type} (医薬品推奨なし)"
-                            process_flow.append(f"診断名検出完了: {diagnosis_type} (処理時間: {diagnosis_time:.4f}秒)")
+                            process_flow.append(f"診断名検出完了: {diagnosis_type}")
                             results["recommendations"][test_number] = {
                                 "input": input_text,
                                 "category": category,
@@ -1179,7 +1180,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                             }
                         else:
                             output_content = "診断名検出: 該当なし"
-                            process_flow.append(f"診断名検出完了: 該当なし (処理時間: {diagnosis_time:.4f}秒)")
+                            process_flow.append(f"診断名検出完了: 該当なし")
                     except Exception as e:
                         error_details = f"診断名検出エラー: {str(e)}"
                         process_flow.append(f"診断名検出エラー: {str(e)}")
@@ -1195,7 +1196,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                         
                         if result[0] != input_text:
                             output_content = f"方言変換: {result[0]}"
-                            process_flow.append(f"方言変換完了: {result[0][:50]}... (処理時間: {dialect_time:.4f}秒)")
+                            process_flow.append(f"方言変換完了: {result[0][:50]}...")
                             results["recommendations"][test_number] = {
                                 "input": input_text,
                                 "category": category,
@@ -1205,7 +1206,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                             }
                         else:
                             output_content = "方言変換: 変換不要"
-                            process_flow.append(f"方言変換完了: 変換不要 (処理時間: {dialect_time:.4f}秒)")
+                            process_flow.append(f"方言変換完了: 変換不要")
                     except Exception as e:
                         error_details = f"方言変換エラー: {str(e)}"
                         process_flow.append(f"方言変換エラー: {str(e)}")
@@ -1224,21 +1225,21 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                 process_flow.append(f"エラー発生: {str(e)}")
                 logger.error(f"テストエラー ({test_number}, {category}): {e}")
             
-            # 処理時間を計算
+            # 処理時間を計算（ログ出力を削減するため、エラー時のみ記録）
             processing_time = time.time() - test_start_time
             
-            # 詳細情報を保存
+            # 詳細情報を保存（エラー時のみ詳細を記録）
             detail = {
                 "test_number": test_number,
                 "input": input_text,
                 "output": output_content if output_content else "処理なし",
                 "process_flow": " → ".join(process_flow) if process_flow else "処理なし",
                 "error": error_details,
-                "processing_time": f"{processing_time:.4f}秒"
+                "processing_time": f"{processing_time:.4f}秒" if error_details else None  # エラー時のみ記録
             }
             results["details"].append(detail)
         
-        # 結果のサマリーを出力
+        # 結果のサマリーのみを出力（ログ出力を削減）
         logger.info(f"\n{'='*80}")
         logger.info(f"テスト結果サマリー")
         logger.info(f"{'='*80}")
@@ -1247,66 +1248,18 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
         logger.info(f"失敗: {results['failed']}")
         logger.info(f"エラー: {results['errors']}")
         logger.info(f"推奨医薬品が生成されたケース: {len(results['recommendations'])}")
-        
-        # 詳細情報の出力（test_number|入力内容|出力内容|処理時間）
-        logger.info(f"\n{'='*80}")
-        logger.info(f"テストケース詳細情報")
-        logger.info(f"{'='*80}")
-        logger.info(f"形式:")
-        logger.info(f"  test_number|入力内容|")
-        logger.info(f"  出力内容(処理フロー(改行)推奨医薬品or診断名検出結果orエラー詳細)|")
-        logger.info(f"  処理時間")
         logger.info(f"{'='*80}\n")
         
-        # 数値順にソートするためのキー関数
-        def get_test_number(test_id):
-            """test_idから数値部分を抽出して返す（例: 'test_0001' -> 1）"""
-            import re
-            match = re.search(r'test_(\d+)', test_id)
-            return int(match.group(1)) if match else 0
+        # エラーのみ詳細を出力
+        error_count = 0
+        for detail in results["details"]:
+            if detail.get("error"):
+                error_count += 1
+                if error_count <= 10:  # エラーは最大10件まで出力
+                    logger.warning(f"エラー ({detail['test_number']}): {detail['error']}")
         
-        # 詳細情報を数値順にソート
-        sorted_details = sorted(results["details"], key=lambda x: get_test_number(x["test_number"]))
-        
-        for detail in sorted_details:
-            test_number = detail["test_number"]
-            input_content = detail["input"]
-            output_content = detail["output"]
-            process_flow = detail["process_flow"]
-            error_info = detail["error"]
-            processing_time = detail["processing_time"]
-            
-            # 入力内容が長い場合は切り詰め
-            if len(input_content) > 100:
-                input_content = input_content[:100] + "..."
-            
-            # 1行目: test_number|入力内容|
-            logger.info(f"{test_number}|{input_content}|")
-            
-            # 2行目: 出力内容（処理フローを改行で区切る）
-            if error_info:
-                # エラーの場合
-                logger.info(f"エラー詳細: {error_info}")
-            elif process_flow and process_flow != "処理なし":
-                # 処理フローを改行で区切る
-                process_steps = process_flow.split(" → ")
-                logger.info("処理フロー:")
-                for step in process_steps:
-                    logger.info(f"  - {step}")
-                
-                # 出力内容（推奨医薬品or診断名検出結果）
-                if output_content:
-                    logger.info(f"出力: {output_content}")
-            else:
-                # その他の場合
-                if output_content:
-                    logger.info(f"出力: {output_content}")
-            
-            # 3行目: 処理時間
-            logger.info(f"処理時間: {processing_time}")
-            
-            # 区切り線（見やすくするため）
-            logger.info("")
+        if error_count > 10:
+            logger.warning(f"（その他{error_count - 10}件のエラーが発生しましたが、ログを省略しています）")
         
         # 基本的なアサーション
         self.assertGreaterEqual(results["passed"], results["total"] * 0.9, 
