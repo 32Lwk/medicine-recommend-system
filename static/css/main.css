@@ -675,8 +675,13 @@
             border-top: 1px dotted #dee2e6; /* 点線の区切り */
         }
         
-        .collapsible-section[aria-expanded="false"] .collapse-content {
-            display: none; /* 折りたたみ時は非表示（アニメーションなし） */
+        .collapsible-section[aria-expanded="false"] .collapse-content,
+        .collapsible-section[aria-expanded="false"] > div:not(.collapse-toggle) {
+            display: none !important; /* 折りたたみ時は非表示（アニメーションなし） */
+        }
+        
+        .collapsible-section[aria-expanded="true"] > div:not(.collapse-toggle) {
+            display: block !important; /* 展開時は表示 */
         }
         
         /* 折りたたみ不可のセクション（常に展開） */
