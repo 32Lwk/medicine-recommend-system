@@ -4506,7 +4506,18 @@
                 content = toggle.nextElementSibling;
             }
             
-            if (!toggle || !content) return;
+            // aria-controlsで指定されたIDの要素を探す
+            if (!content && toggle) {
+                const controlsId = toggle.getAttribute('aria-controls');
+                if (controlsId) {
+                    content = document.getElementById(controlsId);
+                }
+            }
+            
+            if (!toggle || !content) {
+                console.warn('折りたたみセクションの初期化に失敗:', section);
+                return;
+            }
             
             // デフォルト状態を設定
             const defaultExpanded = section.getAttribute('data-default-expanded') === 'true';
@@ -5413,33 +5424,86 @@
             updateVoiceReadProgress(0);
         };
         
-        utterance.onend = function() {
-            updateVoiceReadButtonState(false);
-            hideVoiceReadProgress();
-            isReading = false;
-            voiceReadProgress = 0;
-        };
-        
-        utterance.onerror = function(event) {
-            console.error('音声読み上げエラー:', event);
-            updateVoiceReadButtonState(false);
-            hideVoiceReadProgress();
-            isReading = false;
-            alert('音声読み上げでエラーが発生しました。');
-        };
-        
         // 進行状況をシミュレート（実際の進行状況は取得できないため）
-        const progressInterval = setInterval(() => {
+        let progressInterval = null;
+        progressInterval = setInterval(() => {
             if (isReading && voiceReadProgress < 95) {
                 voiceReadProgress += 2;
                 updateVoiceReadProgress(voiceReadProgress);
             } else {
-                clearInterval(progressInterval);
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                }
             }
         }, 500);
         
-        currentUtterance = utterance;
-        speechSynthesis.speak(utterance);
+        // 読み上げ終了時に100%に更新
+        utterance.onend = function() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            updateVoiceReadProgress(100);
+            setTimeout(() => {
+                updateVoiceReadButtonState(false);
+                hideVoiceReadProgress();
+                isReading = false;
+                voiceReadProgress = 0;
+            }, 300); // 100%表示を少し見せるため300ms待機
+        };
+        
+        utterance.onerror = function(event) {
+            console.error('音声読み上げエラー:', event);
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            voiceReadProgress = 0;
+            alert('音声読み上げでエラーが発生しました。ブラウザの音声読み上げ機能が有効か確認してください。');
+        };
+        
+        // 音声読み上げの準備ができているか確認
+        if (typeof speechSynthesis === 'undefined' || !speechSynthesis) {
+            alert('お使いのブラウザは音声読み上げ機能に対応していません。');
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            return;
+        }
+        
+        // 音声が利用可能になるまで待機
+        const speakWhenReady = () => {
+            if (speechSynthesis.speaking) {
+                // 既に読み上げ中の場合は停止
+                speechSynthesis.cancel();
+            }
+            
+            try {
+                currentUtterance = utterance;
+                speechSynthesis.speak(utterance);
+                console.log('音声読み上げを開始しました');
+            } catch (error) {
+                console.error('音声読み上げの開始に失敗:', error);
+                alert('音声読み上げの開始に失敗しました。ブラウザの音声読み上げ機能を確認してください。');
+                updateVoiceReadButtonState(false);
+                hideVoiceReadProgress();
+                isReading = false;
+            }
+        };
+        
+        // 音声が利用可能か確認
+        if (speechSynthesis.getVoices().length === 0) {
+            // 音声リストがまだ読み込まれていない場合、イベントを待つ
+            speechSynthesis.onvoiceschanged = () => {
+                speakWhenReady();
+            };
+        } else {
+            speakWhenReady();
+        }
     }
     
     // 進行状況表示の更新
