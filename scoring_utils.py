@@ -572,7 +572,7 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         # 効能特異性が0.0（イプシロン比較）の場合のフォールバック処理
         EPSILON = 0.0001  # 浮動小数点比較用イプシロン
         
-        # 症状が効能に全く含まれていない場合の処理
+        # 症状が効能に全く含まれていない場合の処理（強化版：ペナルティを強化）
         if match_count == 0:
             # 効能テキスト全体で症状が含まれているかを直接チェック（2段階）
             normalized_efficacy_full = normalize_text(efficacy_text)
