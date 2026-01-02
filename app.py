@@ -6681,12 +6681,12 @@ def index():
                         treatment_mention = user_info.get('treatment_mention', False)
                         if treatment_mention:
                             treatment_warning_section = """
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="治療中の方へ" style="background: #fff3e0; border-left: 4px solid #f57c00;" id="treatment-warning-content">
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="治療中の方へ" style="background: #fff3e0; border-left: 4px solid #f57c00;">
         <button class="collapse-toggle" aria-expanded="true" aria-controls="treatment-warning-content" aria-label="閉じる">
             <span class="collapse-icon">▼</span>
             <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ <strong>治療中の方へ</strong></h4>
         </button>
-        <div style="padding: 15px;">
+        <div id="treatment-warning-content" style="padding: 15px;">
         <p style="margin: 5px 0; line-height: 1.6;">現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。</p>
         <p style="margin: 5px 0; line-height: 1.6;">治療中の方が市販薬を服用する場合、主疾患への重大な影響を与える可能性があります。</p>
         </div>
@@ -6849,9 +6849,16 @@ def index():
                                     medicine_type = medicine.get('medicine_type', '')
                                     
                                     # 外用薬（のど）の補助療法説明
+                                    # 実際に外用薬（スプレー、トローチなど）の場合のみ表示
                                     auxiliary_note = ""
                                     if '外用薬（のど）' in medicine_type:
-                                        auxiliary_note = """
+                                        product_name_lower = medicine.get('product_name', '').lower()
+                                        # 実際に外用薬（スプレー、トローチ、うがい薬など）であることを確認
+                                        is_external_medicine = any(kw in product_name_lower for kw in ['スプレー', 'トローチ', 'うがい', '含嗽', '噴射', '塗布'])
+                                        # 漢方薬（湯、散、丸など）の場合は除外
+                                        is_kampo = any(kw in product_name_lower for kw in ['湯', '散', '丸', 'エキス'])
+                                        if is_external_medicine and not is_kampo:
+                                            auxiliary_note = """
         <p style="margin: 5px 0; padding: 8px; background: #f0f7ff; border-left: 3px solid #2196f3; font-size: 0.9em; color: #1976d2;">
             💡 <strong>補助的な使用について</strong><br>
             この外用薬は、内服薬と併用して喉を直接ケアする補助的な製品です。飲み薬にプラスして使うことで、喉の痛みをより和らげることができます。
@@ -7092,12 +7099,12 @@ def index():
                             # 使用上の注意を折りたたみ可能にする
                             usage_notes_content = formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'
                             bot_content += f"""
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="使用上の注意" style="background: #fff3e0; border-left: 4px solid #ff9800;" id="usage-notes-content">
+    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="使用上の注意" style="background: #fff3e0; border-left: 4px solid #ff9800;">
         <button class="collapse-toggle" aria-expanded="true" aria-controls="usage-notes-content" aria-label="閉じる">
             <span class="collapse-icon">▼</span>
             <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ 使用上の注意</h4>
         </button>
-        <div style="padding: 15px;">
+        <div id="usage-notes-content" style="padding: 15px;">
             {usage_notes_content}
         </div>
     </div>
