@@ -355,14 +355,14 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         "咳": ["せき", "咳", "セキ", "せきが出る", "咳が出る", "咳嗽", "咳込む", "空咳", "咳が止まらない", "咳がでる"],
         # その他の一般的な症状
         "頭痛": ["頭痛", "頭が痛い", "頭がズキズキ", "偏頭痛", "緊張性頭痛", "頭が重い", "頭痛がする", "ずきずき"],
-        "発熱": ["発熱", "熱", "熱がある", "高熱", "微熱", "体温上昇", "熱っぽい", "熱が出る", "熱が出た", "熱がでる", "悪寒", "寒気", "さむけ"],
+        "発熱": ["発熱", "熱", "熱がある", "高熱", "微熱", "体温上昇", "熱っぽい", "熱が出る", "熱が出た", "熱がでる", "悪寒", "寒気", "さむけ", "解熱", "熱感", "発熱感", "熱症状", "熱性"],
         "悪寒": ["悪寒", "寒気", "さむけ", "ゾクゾクする", "悪寒がする", "発熱", "熱", "震え"],
         "震え": ["震え", "ふるえ", "震える", "悪寒", "寒気"],
         "鼻水": ["鼻水", "鼻みず", "鼻汁", "鼻が出る", "水っぽい鼻水", "はなみず", "鼻がでる", "鼻炎", "鼻汁過多", "鼻水が多い", "鼻水がとまらない"],
         "鼻炎": ["鼻炎", "鼻水", "鼻づまり", "鼻汁過多"],
         "鼻汁過多": ["鼻汁過多", "鼻水が多い", "鼻水がとまらない", "鼻水"],
         "鼻づまり": ["鼻づまり", "鼻詰まり", "鼻が詰まる", "鼻閉", "鼻がつまる", "鼻が詰まってる", "鼻がつまってる"],
-        "のどの痛み": ["のどの痛み", "喉の痛み", "咽頭痛", "のど痛", "喉が痛い", "のどが痛い", "声がかすれる", "声がかれる"],
+        "のどの痛み": ["のどの痛み", "喉の痛み", "咽頭痛", "のど痛", "喉が痛い", "のどが痛い", "声がかすれる", "声がかれる", "咽喉痛", "咽頭部痛", "のどの炎症", "喉の炎症", "咽頭炎", "咽喉炎"],
         "声がかすれる": ["声がかすれる", "声がかれる", "のどの痛み", "喉の痛み"],
         "腹痛": ["腹痛", "お腹が痛い", "腹が痛い", "腹部痛", "おなかが痛い", "はらが痛い", "胃痛", "胃が痛い"],
         "下痢": ["下痢", "軟便", "水様便", "便がゆるい", "便が緩い", "おなかを下す", "お腹を下す", "下す", "下痢をする", "げり"],
@@ -448,8 +448,24 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         normalized_symptom_set = expanded_symptom_set
         
         # 効能テキストを句読点で分割してから正規化
+        # より柔軟な分割方法を採用（句読点だけでなく、長いテキストの場合は適切に分割）
         import re
+        # 句読点で分割
         efficacy_parts_raw = re.split(r'[、。，．,.]', efficacy_text)
+        # さらに、長いテキストの場合は適切に分割（効能効果の表現の多様性に対応）
+        # 例：「発熱、さむけ、頭痛」と「発熱・さむけ・頭痛」と「発熱、さむけ及び頭痛」など
+        additional_parts = []
+        for part in efficacy_parts_raw:
+            # 「及び」「並びに」「または」などの接続詞で分割
+            if '及び' in part or '並びに' in part or 'または' in part or '又は' in part:
+                additional_parts.extend(re.split(r'[及び並びにまたは又は]', part))
+            # 「・」で分割（ただし、短い場合はそのまま）
+            elif '・' in part and len(part) > 10:
+                additional_parts.extend(part.split('・'))
+            else:
+                additional_parts.append(part)
+        efficacy_parts_raw = additional_parts
+        
         efficacy_parts = [normalize_text(p) for p in efficacy_parts_raw if p.strip()]
         efficacy_parts = [p for p in efficacy_parts if p]
         
@@ -647,11 +663,22 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
         normalized_efficacy_full = normalize_text(efficacy_text)
         
         # 第1段階: 単純包含チェック（高速）
+        # 同義語も含めてチェック（効能効果の表現の多様性に対応）
         has_simple_match = False
         for symptom_name in normalized_symptom_set:
+            # 直接マッチ
             if symptom_name in normalized_efficacy_full:
                 has_simple_match = True
                 break
+            # 同義語マッチ（症状名の同義語を展開してチェック）
+            if symptom_name in symptom_synonyms:
+                for synonym in symptom_synonyms[symptom_name]:
+                    normalized_synonym = normalize_text(synonym)
+                    if normalized_synonym and normalized_synonym in normalized_efficacy_full:
+                        has_simple_match = True
+                        break
+                if has_simple_match:
+                    break
         
         # 第2段階: 単語境界チェック（正確性重視）
         if has_simple_match:
@@ -673,6 +700,22 @@ def calculate_efficacy_specificity_score(candidate: Dict, nlu_result: Dict) -> f
                             logger.debug(f"効能特異性底上げ: {candidate.get('product_name', '')} - "
                                         f"症状: {symptom_name}, 効能特異性: {specificity_ratio:.2f} → 0.5（底上げ）")
                         return 0.5
+                # 同義語マッチ（症状名の同義語を展開してチェック）
+                if symptom_name in symptom_synonyms:
+                    for synonym in symptom_synonyms[symptom_name]:
+                        normalized_synonym = normalize_text(synonym)
+                        if normalized_synonym and is_word_match(normalized_synonym, normalized_efficacy_full, blacklist=blacklist):
+                            # 効能に症状が含まれている場合、かつスコアが0.5未満の場合は0.5に底上げ
+                            if specificity_ratio < EPSILON:
+                                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                    logger.debug(f"効能特異性フォールバック（低スコア・同義語）: {candidate.get('product_name', '')} - "
+                                                f"症状: {symptom_name} (同義語: {synonym}), 効能特異性: 0.5（底上げ）")
+                                return 0.5
+                            elif specificity_ratio < 0.5:
+                                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                    logger.debug(f"効能特異性底上げ（同義語）: {candidate.get('product_name', '')} - "
+                                                f"症状: {symptom_name} (同義語: {synonym}), 効能特異性: {specificity_ratio:.2f} → 0.5（底上げ）")
+                                return 0.5
         
         # 月経不順関連症状と効能のマッチング強化
         if has_menstrual_efficacy:
