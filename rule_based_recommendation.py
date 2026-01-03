@@ -1336,7 +1336,9 @@ IRRITANT_LAXATIVE_INGREDIENTS = [
 MAJOR_ANALGESIC_MEDICINES = [
     'カロナールＡ', 'カロナールA', 'カロナール',
     'ロキソニンＳ', 'ロキソニンS', 'ロキソニン',
-    'タイレノールＡ', 'タイレノールA', 'タイレノール'
+    'タイレノールＡ', 'タイレノールA', 'タイレノール',
+    'イブ', 'EVE', 'イブプロフェン',
+    'ブファリン', 'バファリン', 'バファリンA'
 ]
 
 # 解熱鎮痛薬の成分優先順位
@@ -3315,6 +3317,97 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
                 logger.info(f"🚫 効能が「のどの痛み」のみの医薬品を除外（のどの痛みの症状なし）: {product_name} (効能: のどの痛みのみ, ユーザー症状: {symptom_names})")
                 continue
         
+        # 発熱のみの症状に対して、必須条件が満たされていない医薬品を除外
+        # 例: 「発熱して、諸関節が腫れて痛むもの」→ 関節痛が必須条件
+        # 例: 「下腹部に化膿性の腫瘍又は下腹部に凝結を認め、圧痛があり、便秘の傾向あるもので、発熱、自汗、悪寒などを伴うもの」→ 下腹部の化膿性腫瘍や便秘が必須条件
+        is_fever_only = len(symptom_names) == 1 and any('発熱' in name or '熱' in name for name in symptom_names)
+        if is_fever_only:
+            # 効能効果に「発熱して、」や「発熱、」などの表現があり、その後に必須条件が続く場合を検出
+            import re
+            
+            # パターン1: 「発熱して、[必須条件]」の形式
+            # 例: 「発熱して、諸関節が腫れて痛むもの」
+            pattern1 = r'発熱して[、,]\s*[^の]*?(?:諸関節|関節|筋肉|神経痛|リウマチ|肩痛|腰痛|関節炎|筋肉痛)'
+            if re.search(pattern1, efficacy):
+                # 必須条件（関節痛、筋肉痛など）がユーザー症状に含まれているかチェック
+                required_conditions = ['関節痛', '筋肉痛', '神経痛', 'リウマチ', '肩痛', '腰痛', '関節炎', '関節の痛み', '筋肉の痛み']
+                has_required_condition = any(
+                    any(condition in name for condition in required_conditions)
+                    for name in symptom_names
+                )
+                if not has_required_condition:
+                    logger.info(f"🚫 発熱のみの症状に対して必須条件が満たされていない医薬品を除外: {product_name} (効能: {efficacy[:100]}..., 必須条件: 関節痛/筋肉痛など, ユーザー症状: {symptom_names})")
+                    continue
+            
+            # パターン2: 「下腹部に化膿性の腫瘍」や「下腹部に凝結」などの必須条件がある場合
+            # 例: 「下腹部に化膿性の腫瘍又は下腹部に凝結を認め、圧痛があり、便秘の傾向あるもので、発熱、自汗、悪寒などを伴うもの」
+            pattern2 = r'下腹部.*?(?:化膿性.*?腫瘍|凝結|圧痛|便秘)'
+            if re.search(pattern2, efficacy) and '発熱' in efficacy:
+                # 必須条件（下腹部の化膿性腫瘍、便秘など）がユーザー症状に含まれているかチェック
+                required_conditions = ['便秘', '下腹部', '化膿', '腫瘍', '圧痛']
+                has_required_condition = any(
+                    any(condition in name for condition in required_conditions)
+                    for name in symptom_names
+                )
+                if not has_required_condition:
+                    logger.info(f"🚫 発熱のみの症状に対して必須条件が満たされていない医薬品を除外: {product_name} (効能: {efficacy[:100]}..., 必須条件: 下腹部の化膿性腫瘍/便秘など, ユーザー症状: {symptom_names})")
+                    continue
+            
+            # パターン3: 「発熱、[必須条件]」の形式で、必須条件が明示されている場合
+            # 例: 「発熱、悪寒、[必須条件]」など
+            # ただし、一般的な風邪症状（悪寒、寒気、頭痛など）は除外条件としない
+            # より具体的な必須条件（関節痛、筋肉痛、下腹部の症状など）のみをチェック
+            if '発熱' in efficacy or '熱' in efficacy:
+                # 効能効果に「発熱」が含まれていても、必須条件が明示されている場合は除外
+                # 「諸関節が腫れて痛む」「各処の筋肉が腫れて痛む」などの表現を検出
+                has_joint_muscle_requirement = any(
+                    kw in efficacy for kw in ['諸関節が腫れて痛む', '各処の筋肉が腫れて痛む', '関節が腫れて痛む', '筋肉が腫れて痛む', '関節の腫れ', '筋肉の腫れ', '諸関節', '各処の筋肉']
+                )
+                if has_joint_muscle_requirement:
+                    required_conditions = ['関節痛', '筋肉痛', '神経痛', 'リウマチ', '肩痛', '腰痛', '関節炎', '関節の痛み', '筋肉の痛み', '関節の腫れ', '筋肉の腫れ']
+                    has_required_condition = any(
+                        any(condition in name for condition in required_conditions)
+                        for name in symptom_names
+                    )
+                    if not has_required_condition:
+                        logger.info(f"🚫 発熱のみの症状に対して必須条件（関節痛/筋肉痛）が満たされていない医薬品を除外: {product_name} (効能: {efficacy[:100]}..., ユーザー症状: {symptom_names})")
+                        continue
+                
+                # パターン4: 「下腹部に化膿性の腫瘍」や「下腹部に凝結」などの必須条件がある場合（より厳密なチェック）
+                # 例: 「下腹部に化膿性の腫瘍又は下腹部に凝結を認め、圧痛があり、便秘の傾向あるもので、発熱、自汗、悪寒などを伴うもの」
+                has_lower_abdomen_requirement = any(
+                    kw in efficacy for kw in ['下腹部に化膿性', '下腹部に凝結', '下腹部.*化膿', '下腹部.*凝結', '化膿性の腫瘍', '凝結を認め', '圧痛があり', '便秘の傾向']
+                )
+                if has_lower_abdomen_requirement:
+                    required_conditions = ['便秘', '下腹部', '化膿', '腫瘍', '圧痛', '凝結']
+                    has_required_condition = any(
+                        any(condition in name for condition in required_conditions)
+                        for name in symptom_names
+                    )
+                    if not has_required_condition:
+                        logger.info(f"🚫 発熱のみの症状に対して必須条件（下腹部の化膿性腫瘍/便秘など）が満たされていない医薬品を除外: {product_name} (効能: {efficacy[:100]}..., ユーザー症状: {symptom_names})")
+                        continue
+                
+                # パターン5: 漢方薬の縛り表現を検出（「ものの次の諸症」などの表現）
+                # 例: 「発熱して、諸関節が腫れて痛むものや各処の筋肉が腫れて痛むものの次の諸症：神経痛、リウマチ、肩痛、筋肉痛、関節炎」
+                has_restrictive_expression = any(
+                    kw in efficacy for kw in ['ものの次の諸症', 'ものの次の', 'ものの諸症', 'ものや', 'もの及び', 'もの並びに']
+                )
+                if has_restrictive_expression:
+                    # 必須条件のキーワードを検出
+                    restrictive_keywords = ['諸関節', '関節', '筋肉', '神経痛', 'リウマチ', '肩痛', '腰痛', '関節炎', '筋肉痛', '下腹部', '化膿', '腫瘍', '便秘', '圧痛']
+                    has_restrictive_keyword = any(kw in efficacy for kw in restrictive_keywords)
+                    if has_restrictive_keyword:
+                        # 必須条件がユーザー症状に含まれているかチェック
+                        required_conditions = ['関節痛', '筋肉痛', '神経痛', 'リウマチ', '肩痛', '腰痛', '関節炎', '関節の痛み', '筋肉の痛み', '便秘', '下腹部', '化膿', '腫瘍', '圧痛']
+                        has_required_condition = any(
+                            any(condition in name for condition in required_conditions)
+                            for name in symptom_names
+                        )
+                        if not has_required_condition:
+                            logger.info(f"🚫 発熱のみの症状に対して縛り表現のある漢方を除外: {product_name} (効能: {efficacy[:100]}..., ユーザー症状: {symptom_names})")
+                            continue
+        
         if is_nutritional_only:
             # 栄養補給・滋養強壮薬の場合、解熱作用がないため発熱症状がある場合は除外
             # また、風邪症状（発熱、咳、鼻水など）が含まれている場合も除外
@@ -3430,12 +3523,20 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
                     continue
         
         # 一般的な効能効果チェック: 効能効果に症状が含まれていない場合を除外
-        # ただし、特定の例外パターン（漢方薬の広範な効能、主要解熱鎮痛薬など）は除外しない
+        # ただし、特定の例外パターン（漢方薬の広範な効能、主要解熱鎮痛薬、二日酔い特化医薬品など）は除外しない
         if symptom_names:  # 症状がある場合のみチェック
             # 主要解熱鎮痛薬の場合は除外しない（効能効果チェックをスキップ）
             is_major_analgesic = any(major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES)
             
-            if not is_major_analgesic:
+            # 二日酔い特化医薬品の場合は除外しない（hangover_boostがある、またはis_hangoverフラグがある）
+            hangover_boost = candidate.get('hangover_boost', 0.0)
+            is_hangover_medicine = candidate.get('is_hangover', False)
+            is_hangover_specialized = hangover_boost > 0 or is_hangover_medicine
+            
+            # 効能効果に「二日酔」「宿酔」「悪酔」が含まれている場合も二日酔い特化医薬品とみなす
+            has_hangover_efficacy = any(kw in efficacy for kw in ['二日酔', '宿酔', '悪酔', '五苓散', '茵ちん五苓散'])
+            
+            if not is_major_analgesic and not is_hangover_specialized and not has_hangover_efficacy:
                 # 効能効果に症状が含まれているかチェック
                 has_symptom_match = has_symptom_in_efficacy(candidate, symptom_names)
                 
@@ -3448,7 +3549,7 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
                 ]
                 
                 # 効能効果が限定的かどうかを判定（複数の効能が含まれている場合は限定的ではない）
-                efficacy_keywords_count = sum(1 for kw in ['頭痛', '発熱', '解熱', '歯痛', '筋肉痛', '関節痛', '腰痛', '神経痛', '月経痛', '生理痛', '咽頭痛', '打撲痛', '急性上気道炎', '咳', '鼻水', '鼻づまり'] if kw in efficacy)
+                efficacy_keywords_count = sum(1 for kw in ['頭痛', '発熱', '解熱', '歯痛', '筋肉痛', '関節痛', '腰痛', '神経痛', '月経痛', '生理痛', '咽頭痛', '打撲痛', '急性上気道炎', '咳', '鼻水', '鼻づまり', '痰', 'たん'] if kw in efficacy)
                 is_limited_efficacy = efficacy_keywords_count <= 1  # 効能キーワードが1つ以下の場合のみ限定的と判定
                 
                 # 特定の単一症状専用医薬品のパターンをチェック
@@ -3470,6 +3571,10 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
                 if (is_limited_efficacy or has_single_symptom_only_pattern) and not has_symptom_match:
                     logger.info(f"🚫 効能効果に症状が含まれていない医薬品を除外: {product_name} (効能: {efficacy[:100]}..., ユーザー症状: {symptom_names})")
                     continue
+            elif is_hangover_specialized or has_hangover_efficacy:
+                # 二日酔い特化医薬品の場合は除外しない（効能効果チェックをスキップ）
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"✅ 二日酔い特化医薬品のため効能効果チェックをスキップ: {product_name} (hangover_boost={hangover_boost}, is_hangover={is_hangover_medicine}, has_hangover_efficacy={has_hangover_efficacy})")
         
         filtered.append(candidate)
     
@@ -3493,18 +3598,65 @@ def has_symptom_in_efficacy(candidate: Dict, symptom_names: List[str]) -> bool:
         
         efficacy = str(candidate.get('efficacy', ''))
         if not efficacy:
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"❌ has_symptom_in_efficacy: 効能が空 (症状: {symptom_names})")
             return False
         
         normalized_efficacy = normalize_text(efficacy)
         
+        # 効能テキスト内の「痰」を「たん」に統一（効能には「たん」と表記されていることが多い）
+        # これにより、効能が「痰」でも症状が「痰」や「たん」のどちらでもマッチする
+        if "痰" in normalized_efficacy:
+            normalized_efficacy = normalized_efficacy.replace("痰", "たん")
+        
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"🔍 has_symptom_in_efficacy: 効能={efficacy[:50]}, 正規化後={normalized_efficacy[:50]}, 症状={symptom_names}")
+        
         for symptom_name in symptom_names:
             normalized_symptom = normalize_text(symptom_name)
+            
+            # 二日酔い関連の症状名を正規化（「二日酔い」→「二日酔」など）
+            # 効能には「二日酔のむかつき」のように「二日酔」と表記されていることが多い
+            hangover_symptom_mapping = {
+                "二日酔い": "二日酔",
+                "二日酔": "二日酔",
+                "宿酔": "宿酔",
+                "悪酔い": "悪酔",
+                "悪酔": "悪酔",
+            }
+            if normalized_symptom in hangover_symptom_mapping:
+                normalized_symptom = hangover_symptom_mapping[normalized_symptom]
+            
+            # 痰・たんのマッピング（効能には「たん」と表記されていることが多い）
+            phlegm_symptom_mapping = {
+                "痰": "たん",
+                "たん": "たん",
+            }
+            if normalized_symptom in phlegm_symptom_mapping:
+                normalized_symptom = phlegm_symptom_mapping[normalized_symptom]
             
             # ブラックリストチェック（「たん」の場合）
             blacklist = TANN_FALSE_POSITIVE_BLACKLIST if normalized_symptom == "たん" else None
             
+            # マッチングを試行（正規化後の症状名で）
             if is_word_match(normalized_symptom, normalized_efficacy, blacklist=blacklist):
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"✅ has_symptom_in_efficacy: マッチ成功 (症状: {symptom_name} -> {normalized_symptom}, 効能: {efficacy[:50]}...)")
                 return True
+            
+            # 痰・たんの場合、両方の表記でマッチングを試行
+            if symptom_name in ["痰", "たん"]:
+                for alt_symptom in ["痰", "たん"]:
+                    if alt_symptom != symptom_name:
+                        normalized_alt = normalize_text(alt_symptom)
+                        blacklist_alt = TANN_FALSE_POSITIVE_BLACKLIST if normalized_alt == "たん" else None
+                        if is_word_match(normalized_alt, normalized_efficacy, blacklist=blacklist_alt):
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"✅ has_symptom_in_efficacy: マッチ成功 (症状: {symptom_name} -> {alt_symptom} -> {normalized_alt}, 効能: {efficacy[:50]}...)")
+                            return True
+        
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"❌ has_symptom_in_efficacy: マッチ失敗 (症状: {symptom_names}, 効能: {efficacy[:50]}...)")
         return False
     except Exception as e:
         logger.warning(f"has_symptom_in_efficacyエラー: {e}")
@@ -3534,6 +3686,22 @@ def _enforce_symptom_match_threshold(
     for candidate in candidates:
         score_breakdown = candidate.get('score_breakdown', {}) or {}
         symptom_match = score_breakdown.get('symptom_match')
+        
+        # 主要解熱鎮痛薬の場合は除外しない（発熱のみの場合）
+        product_name = candidate.get('product_name', '')
+        is_major_analgesic = any(
+            major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+        )
+        cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
+        cold_symptom_count = sum(1 for s in symptoms if s.get("name") in cold_symptoms)
+        is_fever_only = cold_symptom_count == 1 and any(s.get("name") == "発熱" for s in symptoms)
+        
+        if is_fever_only and is_major_analgesic and '解熱鎮痛薬' in candidate.get('medicine_type', ''):
+            # 主要解熱鎮痛薬は発熱のみの場合、症状適合度が低くても除外しない
+            filtered.append(candidate)
+            if logger.level <= logging.INFO:
+                logger.info(f"✅ 主要解熱鎮痛薬のため症状適合度チェックをスキップ: {product_name} (symptom_match={symptom_match})")
+            continue
         
         # 二日酔いブーストがある医薬品は、症状適合度が低くても除外しない
         hangover_boost = score_breakdown.get('hangover_boost', 0.0)
@@ -4654,19 +4822,44 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                 top_2_candidates.append(selected_sorted[0])
                 selected_sorted[0]['original_rank'] = 1  # 1位として明示的に設定
             
-            # 2位: 内服薬（外用薬以外、総合風邪薬以外）を優先
+            # 2位: 総合風邪薬を優先（複数症状時は1,2つ目に総合感冒薬を推奨）
             logger.info(f"🔍 2位選定開始: top_2_candidates={len(top_2_candidates)}, other_medicines={len(other_medicines)}")
             if len(top_2_candidates) < 2:
-                # 内服薬（外用薬以外、総合風邪薬以外）を優先的に選定
-                # other_medicinesに総合風邪薬以外の内服薬が含まれている場合
-                for candidate in other_medicines:
+                # 2位も総合風邪薬を優先（複数症状時は1,2つ目に総合感冒薬を推奨）
+                # まず総合風邪薬を探す（selected_sortedから優先的に探す）
+                found_2nd_comprehensive_cold = False
+                for candidate in selected_sorted:
                     if candidate not in top_2_candidates and len(top_2_candidates) < 2:
-                        # 総合風邪薬でないことを再確認
-                        if not is_comprehensive_cold_medicine(candidate):
+                        # 総合風邪薬を優先
+                        if is_comprehensive_cold_medicine(candidate):
                             top_2_candidates.append(candidate)
                             candidate['original_rank'] = 2  # 2位として明示的に設定
-                            logger.info(f"✅ 風邪症状: 内服薬を2位に配置: {candidate.get('product_name', '')}")
+                            logger.info(f"✅ 風邪症状: 総合風邪薬を2位に配置: {candidate.get('product_name', '')}")
+                            found_2nd_comprehensive_cold = True
                             break
+                
+                # selected_sortedから見つからない場合、other_medicines + candidatesから探す
+                if not found_2nd_comprehensive_cold and len(top_2_candidates) < 2:
+                    for candidate in other_medicines + [c for c in candidates if c not in selected_sorted]:
+                        if candidate not in top_2_candidates and len(top_2_candidates) < 2:
+                            # 総合風邪薬を優先
+                            if is_comprehensive_cold_medicine(candidate):
+                                top_2_candidates.append(candidate)
+                                candidate['original_rank'] = 2  # 2位として明示的に設定
+                                logger.info(f"✅ 風邪症状: 総合風邪薬を2位に配置（candidatesから）: {candidate.get('product_name', '')}")
+                                found_2nd_comprehensive_cold = True
+                                break
+                
+                # 総合風邪薬が見つからない場合、内服薬（外用薬以外、総合風邪薬以外）を選定
+                if len(top_2_candidates) < 2:
+                    for candidate in other_medicines:
+                        if candidate not in top_2_candidates and len(top_2_candidates) < 2:
+                            # 総合風邪薬でないことを再確認
+                            if not is_comprehensive_cold_medicine(candidate):
+                                top_2_candidates.append(candidate)
+                                candidate['original_rank'] = 2  # 2位として明示的に設定
+                                logger.info(f"✅ 風邪症状: 内服薬を2位に配置: {candidate.get('product_name', '')}")
+                                break
                 
                 # 内服薬が見つからない場合、selected_sortedから総合風邪薬以外の内服薬を探す
                 if len(top_2_candidates) < 2:
@@ -4721,28 +4914,56 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                         if len(top_2_candidates) < 2:
                             logger.warning(f"⚠️ candidatesからも総合風邪薬以外の内服薬が見つかりませんでした。上位10件: {[(c.get('product_name', ''), c.get('medicine_type', ''), is_comprehensive_cold_medicine(c), c.get('final_score', 0.0)) for c in sorted(candidates, key=lambda x: x.get('final_score', 0.0), reverse=True)[:10]]}")
             
-            # 3位用の候補リスト（外用薬（のど）を含む）
+            # 3位用の候補リスト（特化薬を優先：解熱鎮痛薬、外用喉薬、喉薬、鼻炎薬など）
             remaining_candidates = []
-            # まず外用薬（のど）を追加（1つだけ、スコアが最も高いもの）
-            if external_throat_medicines:
-                best_external_throat = max(external_throat_medicines, key=lambda x: x.get('final_score', 0.0))
-                remaining_candidates.append(best_external_throat)
-                best_external_throat['original_rank'] = 3  # 3位として明示的に設定
-            # その他の候補を追加（重複を防止）
-            added_product_names = {c.get('product_name', '') for c in top_2_candidates + remaining_candidates}
-            for candidate in other_medicines + [c for c in selected_sorted if c not in top_2_candidates and c not in external_throat_medicines]:
-                # 既に選定された候補や、同じ製品名の候補を除外
-                if candidate not in top_2_candidates and candidate.get('product_name', '') not in added_product_names:
-                    remaining_candidates.append(candidate)
-                    added_product_names.add(candidate.get('product_name', ''))
+            # 3位は症状に特化した医薬品を優先（総合感冒薬以外）
+            # 優先順位: 1. 外用薬（のど）、2. 解熱鎮痛薬、3. 鼻炎用薬、4. その他
+            priority_types_for_3rd = ['外用薬（のど）', '解熱鎮痛薬', '鼻炎用薬']
+            
+            # まず特化薬を探す（総合感冒薬以外）
+            for priority_type in priority_types_for_3rd:
+                for candidate in other_medicines + selected_sorted:
+                    if (candidate not in top_2_candidates and 
+                        candidate.get('product_name', '') not in {c.get('product_name', '') for c in remaining_candidates} and
+                        priority_type in candidate.get('medicine_type', '') and
+                        not is_comprehensive_cold_medicine(candidate)):
+                        remaining_candidates.append(candidate)
+                        candidate['original_rank'] = 3  # 3位として明示的に設定
+                        logger.info(f"✅ 風邪症状: 特化薬（{priority_type}）を3位候補に追加: {candidate.get('product_name', '')}")
+                        break  # 各タイプから1つずつ選定
+                if len(remaining_candidates) >= 3:  # 3つまで追加
+                    break
+            
+            # 特化薬が見つからない場合、その他の候補を追加（重複を防止）
+            if len(remaining_candidates) == 0:
+                added_product_names = {c.get('product_name', '') for c in top_2_candidates + remaining_candidates}
+                for candidate in other_medicines + [c for c in selected_sorted if c not in top_2_candidates]:
+                    # 既に選定された候補や、同じ製品名の候補を除外
+                    if (candidate not in top_2_candidates and 
+                        candidate.get('product_name', '') not in added_product_names and
+                        not is_comprehensive_cold_medicine(candidate)):  # 総合感冒薬は除外
+                        remaining_candidates.append(candidate)
+                        added_product_names.add(candidate.get('product_name', ''))
+                        if len(remaining_candidates) >= 3:  # 3つまで追加
+                            break
         else:
             # 風邪症状がない場合、従来のロジック
             top_2_candidates = selected_sorted[:2] if len(selected_sorted) >= 2 else selected_sorted
-            remaining_candidates = selected_sorted[2:] if len(selected_sorted) > 2 else []
+            # remaining_candidatesを生成する際、除外ロジックを適用
+            if nlu_result and len(selected_sorted) > 2:
+                temp_candidates = selected_sorted[2:]
+                remaining_candidates = filter_by_efficacy_symptom_match(temp_candidates, nlu_result)
+            else:
+                remaining_candidates = selected_sorted[2:] if len(selected_sorted) > 2 else []
     else:
         # nlu_resultがない場合、従来のロジック
         top_2_candidates = selected_sorted[:2] if len(selected_sorted) >= 2 else selected_sorted
-    remaining_candidates = selected_sorted[2:] if len(selected_sorted) > 2 else []
+    # remaining_candidatesを生成する際、除外ロジックを適用
+    if nlu_result and len(selected_sorted) > 2:
+        temp_candidates = selected_sorted[2:]
+        remaining_candidates = filter_by_efficacy_symptom_match(temp_candidates, nlu_result)
+    else:
+        remaining_candidates = selected_sorted[2:] if len(selected_sorted) > 2 else []
     
     # 上位2件の作用機序を確認
     top_2_mechanisms = set()
@@ -4757,6 +4978,12 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         # selected_sortedから、top_2_candidatesに含まれていない候補を探す
         for candidate in selected_sorted:
             if candidate not in top_2_candidates:
+                # 除外ロジックを事前に適用（不適切な候補を除外）
+                if nlu_result:
+                    temp_list = [candidate]
+                    filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                    if len(filtered_temp) == 0:
+                        continue  # 除外される場合はスキップ
                 remaining_candidates.append(candidate)
                 if len(remaining_candidates) >= 3:  # 3件まで追加
                     break
@@ -4802,46 +5029,200 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         
         # 作用機序の多様性が確保されている場合、スコア順で3件目を選定
         if not third_candidate and remaining_candidates:
-            third_candidate = remaining_candidates[0]
-            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"📊 3件目をスコア順で選定: {third_candidate.get('product_name', '')}")
+            # remaining_candidatesから適切な候補を選定（除外ロジックを適用済み）
+            for candidate in remaining_candidates:
+                # 除外ロジックを再度適用（念のため）
+                if nlu_result:
+                    temp_list = [candidate]
+                    filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                    if len(filtered_temp) == 0:
+                        continue  # 除外される場合はスキップ
+                third_candidate = candidate
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"📊 3件目をスコア順で選定: {third_candidate.get('product_name', '')}")
+                break
     
     # 最終選定リストを構築
     # 風邪症状がある場合、top_2_candidatesが2件未満の場合は2位を選定
-    if nlu_result and len(top_2_candidates) < 2:
+    if nlu_result:
         symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
-        cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
+        cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり", "痰", "たん"]
         cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
         
-        if cold_symptom_count >= 2:
-            # 2位: 総合風邪薬以外の内服薬を選定
+        if len(top_2_candidates) < 2:
+            if cold_symptom_count >= 2:
+                # 2位: 総合風邪薬を優先（複数症状時は1,2つ目に総合感冒薬を推奨）
+                for candidate in selected_sorted:
+                    if (candidate not in top_2_candidates and 
+                        is_comprehensive_cold_medicine(candidate)):
+                        top_2_candidates.append(candidate)
+                        logger.info(f"✅ 風邪症状: 最終チェックで2位を選定（総合風邪薬）: {candidate.get('product_name', '')} (medicine_type: {candidate.get('medicine_type', '')})")
+                        if len(top_2_candidates) >= 2:
+                            break
+            else:
+                # 単一症状の場合も2位、3位を選定（主要解熱鎮痛薬を優先）
+                for candidate in selected_sorted:
+                    if candidate not in top_2_candidates:
+                        # 主要解熱鎮痛薬を優先
+                        is_major_analgesic = any(
+                            major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                        )
+                        if is_major_analgesic or len(top_2_candidates) < 2:
+                            top_2_candidates.append(candidate)
+                            logger.info(f"✅ 単一症状: {len(top_2_candidates)}位を選定: {candidate.get('product_name', '')} (medicine_type: {candidate.get('medicine_type', '')})")
+                            if len(top_2_candidates) >= 2:
+                                break
+        
+        # 単一症状の場合、3位も選定（主要解熱鎮痛薬を優先）
+        if cold_symptom_count == 1 and len(top_2_candidates) >= 2 and not third_candidate:
             for candidate in selected_sorted:
-                if (candidate not in top_2_candidates and 
-                    '外用薬（のど）' not in candidate.get('medicine_type', '') and
-                    not is_comprehensive_cold_medicine(candidate)):
-                    top_2_candidates.append(candidate)
-                    logger.info(f"✅ 風邪症状: 最終チェックで2位を選定（総合風邪薬以外）: {candidate.get('product_name', '')} (medicine_type: {candidate.get('medicine_type', '')})")
-                    if len(top_2_candidates) >= 2:
+                if candidate not in top_2_candidates:
+                    # 除外ロジックを事前に適用（不適切な候補を除外）
+                    if nlu_result:
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            continue  # 除外される場合はスキップ
+                    
+                    # 主要解熱鎮痛薬を優先
+                    is_major_analgesic = any(
+                        major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                    )
+                    if is_major_analgesic:
+                        third_candidate = candidate
+                        logger.info(f"✅ 単一症状: 3位を選定（主要解熱鎮痛薬）: {candidate.get('product_name', '')} (medicine_type: {candidate.get('medicine_type', '')})")
+                        break
+            
+            # 主要解熱鎮痛薬が見つからない場合、スコア順で3位を選定（除外ロジックを適用）
+            if not third_candidate and selected_sorted:
+                for candidate in selected_sorted:
+                    if candidate not in top_2_candidates:
+                        # 除外ロジックを事前に適用（不適切な候補を除外）
+                        if nlu_result:
+                            temp_list = [candidate]
+                            filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                            if len(filtered_temp) == 0:
+                                continue  # 除外される場合はスキップ
+                        
+                        third_candidate = candidate
+                        logger.info(f"✅ 単一症状: 3位を選定（スコア順）: {candidate.get('product_name', '')} (medicine_type: {candidate.get('medicine_type', '')})")
                         break
     
     final_selected = top_2_candidates.copy()
     if third_candidate and len(final_selected) < top_n:
         final_selected.append(third_candidate)
+        logger.info(f"✅ 3位候補を追加: {third_candidate.get('product_name', '')} (現在の選定数: {len(final_selected)})")
     
     # 残りの候補を追加（top_nに達するまで）
     # 重複を防止: 既に選定された医薬品と同じ製品名の候補を除外
+    # 単一症状の場合も3つ選定する（主要解熱鎮痛薬を優先）
     if len(final_selected) < top_n:
         selected_product_names = {c.get('product_name', '') for c in final_selected}
+        
+        # まずremaining_candidatesから主要解熱鎮痛薬を優先的に追加
         for candidate in remaining_candidates:
             if candidate == third_candidate:
                 continue
-            # 同じ製品名の候補を除外（重複防止）
             if candidate.get('product_name', '') in selected_product_names:
                 continue
-            if len(final_selected) >= top_n:
-                break
-            final_selected.append(candidate)
-            selected_product_names.add(candidate.get('product_name', ''))
+            # 除外ロジックを事前に適用（不適切な候補を除外）
+            if nlu_result:
+                temp_list = [candidate]
+                filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                if len(filtered_temp) == 0:
+                    continue  # 除外される場合はスキップ
+            # 主要解熱鎮痛薬を優先
+            is_major_analgesic = any(
+                major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+            )
+            if is_major_analgesic:
+                final_selected.append(candidate)
+                selected_product_names.add(candidate.get('product_name', ''))
+                logger.info(f"✅ 単一症状: 主要解熱鎮痛薬を追加（remaining_candidates）: {candidate.get('product_name', '')}")
+                if len(final_selected) >= top_n:
+                    break
+        
+        # remaining_candidatesが空または不足している場合、selected_sortedから追加
+        if len(final_selected) < top_n:
+            # 単一症状の場合、主要解熱鎮痛薬を優先
+            if nlu_result:
+                symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+                cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり", "痰", "たん"]
+                cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
+                
+                if cold_symptom_count == 1:
+                    # 主要解熱鎮痛薬を優先的に追加
+                    for candidate in selected_sorted:
+                        if candidate.get('product_name', '') in selected_product_names:
+                            continue
+                        # 除外ロジックを事前に適用（不適切な候補を除外）
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            continue  # 除外される場合はスキップ
+                        is_major_analgesic = any(
+                            major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                        )
+                        if is_major_analgesic:
+                            final_selected.append(candidate)
+                            selected_product_names.add(candidate.get('product_name', ''))
+                            logger.info(f"✅ 単一症状: 主要解熱鎮痛薬を追加（selected_sorted）: {candidate.get('product_name', '')}")
+                            if len(final_selected) >= top_n:
+                                break
+            
+            # 主要解熱鎮痛薬が不足している場合、remaining_candidatesから追加
+            if len(final_selected) < top_n:
+                for candidate in remaining_candidates:
+                    if candidate == third_candidate:
+                        continue
+                    if candidate.get('product_name', '') in selected_product_names:
+                        continue
+                    # 除外ロジックを事前に適用（不適切な候補を除外）
+                    if nlu_result:
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            continue  # 除外される場合はスキップ
+                    final_selected.append(candidate)
+                    selected_product_names.add(candidate.get('product_name', ''))
+                    logger.info(f"✅ 単一症状: 残りの候補を追加（remaining_candidates）: {candidate.get('product_name', '')}")
+                    if len(final_selected) >= top_n:
+                        break
+            
+            # まだ不足している場合、selected_sortedから追加（確実に3つ選定するため）
+            if len(final_selected) < top_n:
+                for candidate in selected_sorted:
+                    if candidate.get('product_name', '') in selected_product_names:
+                        continue
+                    # 除外ロジックを事前に適用（不適切な候補を除外）
+                    if nlu_result:
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            continue  # 除外される場合はスキップ
+                    final_selected.append(candidate)
+                    selected_product_names.add(candidate.get('product_name', ''))
+                    logger.info(f"✅ 単一症状: 残りの候補を追加（selected_sorted）: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected)})")
+                    if len(final_selected) >= top_n:
+                        break
+                
+                # それでも不足している場合、candidatesから追加（確実に3つ選定するため）
+                if len(final_selected) < top_n:
+                    for candidate in candidates:
+                        if candidate.get('product_name', '') in selected_product_names:
+                            continue
+                        if candidate.get('final_score', 0.0) >= 0.3:  # スコアが0.3以上の候補のみ
+                            # 除外ロジックを事前に適用（不適切な候補を除外）
+                            if nlu_result:
+                                temp_list = [candidate]
+                                filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                                if len(filtered_temp) == 0:
+                                    continue  # 除外される場合はスキップ
+                            final_selected.append(candidate)
+                            selected_product_names.add(candidate.get('product_name', ''))
+                            logger.info(f"✅ 単一症状: 残りの候補を追加（candidates）: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected)})")
+                            if len(final_selected) >= top_n:
+                                break
     
     # カテゴリ多様性の確保と弱点補完ロジック（3症状以上の場合）
     if nlu_result and len(final_selected) >= top_n:
@@ -5088,6 +5469,273 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         else:
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"重複を除去: {product_name} (original_rank={candidate.get('original_rank', 'N/A')})")
+    
+    # 最終チェック: 除外ロジックを再度適用（選定後に追加された候補を除外）
+    if nlu_result:
+        final_selected_filtered = filter_by_efficacy_symptom_match(final_selected_deduplicated, nlu_result)
+        final_selected_deduplicated = final_selected_filtered
+        
+        # 除外後に3つ未満になった場合、再度候補を追加（確実に3つ選定するため）
+        if len(final_selected_deduplicated) < top_n:
+            symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり", "痰", "たん"]
+            cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
+            is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names_list
+            is_single_symptom = cold_symptom_count == 1
+            
+            logger.info(f"🔍 除外後の再追加処理: final_selected_deduplicated={len(final_selected_deduplicated)}, top_n={top_n}, symptom_names_list={symptom_names_list}, cold_symptom_count={cold_symptom_count}, is_single_symptom={is_single_symptom}, is_fever_only={is_fever_only}")
+            
+            selected_product_names = {c.get('product_name', '') for c in final_selected_deduplicated}
+            
+            # 単一症状（発熱のみ）の場合、主要解熱鎮痛薬を優先的に追加
+            if is_fever_only:
+                # selected_sortedから主要解熱鎮痛薬を優先的に追加
+                for candidate in selected_sorted:
+                    if candidate.get('product_name', '') in selected_product_names:
+                        continue
+                    # 除外ロジックを再度適用（主要解熱鎮痛薬でも不適切なものは除外）
+                    temp_list = [candidate]
+                    filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                    if len(filtered_temp) == 0:
+                        continue  # 除外される場合はスキップ
+                    
+                    is_major_analgesic = any(
+                        major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                    )
+                    if is_major_analgesic:
+                        final_selected_deduplicated.append(candidate)
+                        selected_product_names.add(candidate.get('product_name', ''))
+                        logger.info(f"✅ 除外後: 主要解熱鎮痛薬を追加: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                        if len(final_selected_deduplicated) >= top_n:
+                            break
+                
+                # それでも不足している場合、selected_sortedから追加
+                if len(final_selected_deduplicated) < top_n:
+                    for candidate in selected_sorted:
+                        if candidate.get('product_name', '') in selected_product_names:
+                            continue
+                        # 除外ロジックを再度適用
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            continue  # 除外される場合はスキップ
+                        
+                        final_selected_deduplicated.append(candidate)
+                        selected_product_names.add(candidate.get('product_name', ''))
+                        logger.info(f"✅ 除外後: 残りの候補を追加: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                        if len(final_selected_deduplicated) >= top_n:
+                            break
+            
+            # 単一症状（発熱以外：咳、痰、鼻水など）の場合、適切な医薬品を追加
+            elif is_single_symptom:
+                logger.info(f"🔍 単一症状用の再追加処理開始: selected_sorted={len(selected_sorted)}件, selected_product_names={len(selected_product_names)}件")
+                # selected_sortedから適切な候補を追加
+                added_count = 0
+                skipped_count = 0
+                for candidate in selected_sorted:
+                    if candidate.get('product_name', '') in selected_product_names:
+                        skipped_count += 1
+                        continue
+                    # 除外ロジックを再度適用
+                    temp_list = [candidate]
+                    filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                    if len(filtered_temp) == 0:
+                        skipped_count += 1
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"🚫 除外ロジックで除外: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...)")
+                        continue  # 除外される場合はスキップ
+                    
+                    final_selected_deduplicated.append(candidate)
+                    selected_product_names.add(candidate.get('product_name', ''))
+                    added_count += 1
+                    logger.info(f"✅ 除外後: 単一症状用の候補を追加: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                    if len(final_selected_deduplicated) >= top_n:
+                        break
+                logger.info(f"🔍 単一症状用の再追加処理完了: 追加={added_count}件, スキップ={skipped_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+                
+                # selected_sortedから追加できなかった場合、candidatesから追加の候補を取得
+                if len(final_selected_deduplicated) < top_n:
+                    logger.info(f"🔍 selected_sortedから追加できなかったため、candidatesから追加の候補を取得: candidates={len(candidates)}件")
+                    # 症状に応じた効能効果キーワードを取得
+                    symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])] if nlu_result else []
+                    # 効能効果に症状が含まれている候補を優先的に考慮
+                    priority_keywords = []
+                    for symptom_name in symptom_names_list:
+                        if symptom_name in ["痰", "たん"]:
+                            priority_keywords.extend(["たん", "痰", "去たん", "去痰"])
+                        elif symptom_name in ["咳"]:
+                            priority_keywords.extend(["咳", "せき", "咳嗽"])
+                    
+                    # candidatesを優先度順にソート（効能効果に症状が含まれている候補を優先、その後スコア順）
+                    def get_priority_score(candidate):
+                        efficacy = str(candidate.get('efficacy', '')).lower()
+                        # 効能効果に症状が含まれている場合は優先度を高く
+                        priority_score = 0
+                        if priority_keywords:
+                            for keyword in priority_keywords:
+                                if keyword in efficacy:
+                                    priority_score = 1
+                                    break
+                        # スコアを追加（優先度が同じ場合はスコア順）
+                        return (priority_score, candidate.get('final_score', 0.0))
+                    
+                    candidates_sorted = sorted(candidates, key=get_priority_score, reverse=True)
+                    
+                    # 効能効果に症状が含まれている候補を優先的に追加
+                    priority_candidates = [c for c in candidates_sorted if get_priority_score(c)[0] == 1]
+                    other_candidates = [c for c in candidates_sorted if get_priority_score(c)[0] == 0]
+                    
+                    # 優先度の高い候補から追加
+                    for candidate_list in [priority_candidates, other_candidates]:
+                        for candidate in candidate_list:
+                            if candidate.get('product_name', '') in selected_product_names:
+                                continue
+                            # 除外ロジックを再度適用
+                            temp_list = [candidate]
+                            filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                            if len(filtered_temp) == 0:
+                                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                    logger.debug(f"🚫 除外ロジックで除外: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...)")
+                                continue  # 除外される場合はスキップ
+                            
+                            final_selected_deduplicated.append(candidate)
+                            selected_product_names.add(candidate.get('product_name', ''))
+                            added_count += 1
+                            logger.info(f"✅ 除外後: 単一症状用の候補を追加（candidatesから）: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                            if len(final_selected_deduplicated) >= top_n:
+                                break
+                        if len(final_selected_deduplicated) >= top_n:
+                            break
+                    logger.info(f"🔍 candidatesからの追加処理完了: 追加={added_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+                    
+                    # それでも不足している場合、効能効果に症状が含まれている候補を強制的に追加（除外ロジックをスキップ）
+                    if len(final_selected_deduplicated) < top_n and priority_keywords:
+                        logger.info(f"🔍 除外ロジックをスキップして、効能効果に症状が含まれている候補を強制的に追加: priority_keywords={priority_keywords}")
+                        for candidate in priority_candidates:
+                            if candidate.get('product_name', '') in selected_product_names:
+                                continue
+                            # 効能効果に症状が含まれているか確認
+                            efficacy = str(candidate.get('efficacy', '')).lower()
+                            has_priority_keyword = any(keyword in efficacy for keyword in priority_keywords)
+                            if has_priority_keyword:
+                                final_selected_deduplicated.append(candidate)
+                                selected_product_names.add(candidate.get('product_name', ''))
+                                added_count += 1
+                                logger.info(f"✅ 強制的に追加: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...) (現在の選定数: {len(final_selected_deduplicated)})")
+                                if len(final_selected_deduplicated) >= top_n:
+                                    break
+                        logger.info(f"🔍 強制的な追加処理完了: 追加={added_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+                    
+                    # それでも不足している場合、効能効果に症状が含まれている候補を強制的に追加（除外ロジックをスキップ）
+                    if len(final_selected_deduplicated) < top_n and priority_keywords:
+                        logger.info(f"🔍 除外ロジックをスキップして、効能効果に症状が含まれている候補を強制的に追加: priority_keywords={priority_keywords}")
+                        for candidate in priority_candidates:
+                            if candidate.get('product_name', '') in selected_product_names:
+                                continue
+                            # 効能効果に症状が含まれているか確認
+                            efficacy = str(candidate.get('efficacy', '')).lower()
+                            has_priority_keyword = any(keyword in efficacy for keyword in priority_keywords)
+                            if has_priority_keyword:
+                                final_selected_deduplicated.append(candidate)
+                                selected_product_names.add(candidate.get('product_name', ''))
+                                added_count += 1
+                                logger.info(f"✅ 強制的に追加: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...) (現在の選定数: {len(final_selected_deduplicated)})")
+                                if len(final_selected_deduplicated) >= top_n:
+                                    break
+                        logger.info(f"🔍 強制的な追加処理完了: 追加={added_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+            
+            # 複数症状の場合も、3つ未満の場合は追加
+            elif len(final_selected_deduplicated) < top_n:
+                logger.info(f"🔍 複数症状用の再追加処理開始: selected_sorted={len(selected_sorted)}件, selected_product_names={len(selected_product_names)}件")
+                # selected_sortedから適切な候補を追加
+                added_count = 0
+                skipped_count = 0
+                for candidate in selected_sorted:
+                    if candidate.get('product_name', '') in selected_product_names:
+                        skipped_count += 1
+                        continue
+                    # 除外ロジックを再度適用
+                    temp_list = [candidate]
+                    filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                    if len(filtered_temp) == 0:
+                        skipped_count += 1
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"🚫 除外ロジックで除外: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...)")
+                        continue  # 除外される場合はスキップ
+                    
+                    final_selected_deduplicated.append(candidate)
+                    selected_product_names.add(candidate.get('product_name', ''))
+                    added_count += 1
+                    logger.info(f"✅ 除外後: 複数症状用の候補を追加: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                    if len(final_selected_deduplicated) >= top_n:
+                        break
+                logger.info(f"🔍 複数症状用の再追加処理完了: 追加={added_count}件, スキップ={skipped_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+                
+                # selected_sortedから追加できなかった場合、candidatesから追加の候補を取得
+                if len(final_selected_deduplicated) < top_n:
+                    logger.info(f"🔍 selected_sortedから追加できなかったため、candidatesから追加の候補を取得: candidates={len(candidates)}件")
+                    # 症状に応じた効能効果キーワードを取得
+                    symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])] if nlu_result else []
+                    # 効能効果に症状が含まれている候補を優先的に考慮
+                    priority_keywords = []
+                    for symptom_name in symptom_names_list:
+                        if symptom_name in ["痰", "たん"]:
+                            priority_keywords.extend(["たん", "痰", "去たん", "去痰"])
+                        elif symptom_name in ["咳"]:
+                            priority_keywords.extend(["咳", "せき", "咳嗽"])
+                    
+                    # candidatesを優先度順にソート（効能効果に症状が含まれている候補を優先、その後スコア順）
+                    def get_priority_score(candidate):
+                        efficacy = str(candidate.get('efficacy', '')).lower()
+                        # 効能効果に症状が含まれている場合は優先度を高く
+                        priority_score = 0
+                        if priority_keywords:
+                            for keyword in priority_keywords:
+                                if keyword in efficacy:
+                                    priority_score = 1
+                                    break
+                        # スコアを追加（優先度が同じ場合はスコア順）
+                        return (priority_score, candidate.get('final_score', 0.0))
+                    
+                    candidates_sorted = sorted(candidates, key=get_priority_score, reverse=True)
+                    for candidate in candidates_sorted:
+                        if candidate.get('product_name', '') in selected_product_names:
+                            continue
+                        # 除外ロジックを再度適用
+                        temp_list = [candidate]
+                        filtered_temp = filter_by_efficacy_symptom_match(temp_list, nlu_result)
+                        if len(filtered_temp) == 0:
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"🚫 除外ロジックで除外: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...)")
+                            continue  # 除外される場合はスキップ
+                        
+                        final_selected_deduplicated.append(candidate)
+                        selected_product_names.add(candidate.get('product_name', ''))
+                        added_count += 1
+                        logger.info(f"✅ 除外後: 複数症状用の候補を追加（candidatesから）: {candidate.get('product_name', '')} (現在の選定数: {len(final_selected_deduplicated)})")
+                        if len(final_selected_deduplicated) >= top_n:
+                            break
+                    logger.info(f"🔍 candidatesからの追加処理完了: 追加={added_count}件, 現在の選定数={len(final_selected_deduplicated)}")
+                    
+                    # それでも不足している場合、効能効果に症状が含まれている候補を強制的に追加（除外ロジックをスキップ）
+                    if len(final_selected_deduplicated) < top_n and priority_keywords:
+                        logger.info(f"🔍 除外ロジックをスキップして、効能効果に症状が含まれている候補を強制的に追加: priority_keywords={priority_keywords}")
+                        # 優先度の高い候補を取得
+                        priority_candidates = [c for c in candidates_sorted if get_priority_score(c)[0] == 1]
+                        for candidate in priority_candidates:
+                            if candidate.get('product_name', '') in selected_product_names:
+                                continue
+                            # 効能効果に症状が含まれているか確認
+                            efficacy = str(candidate.get('efficacy', '')).lower()
+                            has_priority_keyword = any(keyword in efficacy for keyword in priority_keywords)
+                            if has_priority_keyword:
+                                final_selected_deduplicated.append(candidate)
+                                selected_product_names.add(candidate.get('product_name', ''))
+                                added_count += 1
+                                logger.info(f"✅ 強制的に追加: {candidate.get('product_name', '')} (効能: {candidate.get('efficacy', '')[:50]}...) (現在の選定数: {len(final_selected_deduplicated)})")
+                                if len(final_selected_deduplicated) >= top_n:
+                                    break
+                        logger.info(f"🔍 強制的な追加処理完了: 追加={added_count}件, 現在の選定数={len(final_selected_deduplicated)}")
     
     final_selected_sorted = sorted(final_selected_deduplicated, key=lambda x: x.get('original_rank', 9999))
     
@@ -5574,13 +6222,15 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
     if is_hangover:
         if "抗アレルギー薬" not in medicine_types:
             medicine_types.add("抗アレルギー薬")
-            logger.info("二日酔いが検出されました。抗アレルギー薬カテゴリを追加（五苓散対応）")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug("二日酔いが検出されました。抗アレルギー薬カテゴリを追加（五苓散対応）")
     
     logger.info(f"推定された医薬品の種類（拡張後）: {medicine_types}")
     if is_allergy_case:
         logger.info(f"アレルギー症状が検出されました（目のかゆみ: {has_eye_itch}, アレルギー指標: {has_allergy_indicator}）。鼻炎用薬を優先します")
     if is_hangover:
-        logger.info(f"二日酔いが検出されました（キーワードまたは症状パターン）。二日酔い向け医薬品を優先します")
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(f"二日酔いが検出されました（キーワードまたは症状パターン）。二日酔い向け医薬品を優先します")
 
     def _sanitize_text(value) -> str:
         if value is None:
@@ -5992,7 +6642,8 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
                 hangover_count += 1
         
         if hangover_count > 0:
-            logger.info(f"二日酔い特化医薬品を効能効果から{hangover_count}件追加しました")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"二日酔い特化医薬品を効能効果から{hangover_count}件追加しました")
         
         # L-システイン含有医薬品も追加検索
         cysteine_keywords = ["l-システイン", "lシステイン", "システイン"]
@@ -6016,7 +6667,8 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
                 cysteine_count += 1
         
         if cysteine_count > 0:
-            logger.info(f"L-システイン含有医薬品（二日酔い関連）を{cysteine_count}件追加しました")
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"L-システイン含有医薬品（二日酔い関連）を{cysteine_count}件追加しました")
         
         # 二日酔いブーストを後から適用（append_candidate内で設定されなかった場合のフォールバック）
         for candidate in candidates:
@@ -6289,17 +6941,19 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
                 symptom_dict_entry = SYMPTOM_DICTIONARY.get(symptom_name, {})
                 synonyms = [normalized_symptom] + [normalize_text(s) for s in symptom_dict_entry.get("synonyms", [])]
                 
-                # 効能効果に症状が含まれているか確認
-                if any(synonym in efficacy_lower for synonym in synonyms if synonym):
-                    has_symptom_in_efficacy = True
-                    break
-                
-                # 発熱関連症状のチェック
+                # 発熱関連症状のチェック（先に実行）
                 if any(fever in normalized_symptom or fever in symptom_name for fever in fever_symptoms):
                     # 効能効果に「発熱」「熱」「解熱」などが含まれているか
                     if any(kw in efficacy_lower for kw in ['発熱', '熱', '解熱', '高熱', '微熱']):
                         has_symptom_in_efficacy = True
+                        matched_symptom_count += 1
+                        continue  # 発熱関連症状の場合は次の症状へ
+                
+                # 効能効果に症状が含まれているか確認（発熱関連症状以外）
+                if any(synonym in efficacy_lower for synonym in synonyms if synonym):
+                    has_symptom_in_efficacy = True
                     matched_symptom_count += 1
+                    continue  # マッチした場合は次の症状へ
                 # のど痛み関連症状のチェック
                 elif any(throat in normalized_symptom or throat in symptom_name for throat in throat_symptoms):
                     # 効能効果に「のど」「咽頭」「喉」などが含まれているか
@@ -6328,7 +6982,7 @@ def calculate_symptom_match_score(candidate: Dict, nlu_result: Dict) -> float:
                     # その他の症状の場合も、効能効果に含まれているかチェック
                     if normalized_symptom in efficacy_lower or symptom_name in efficacy_lower:
                         has_symptom_in_efficacy = True
-                    matched_symptom_count += 1
+                        matched_symptom_count += 1
             
             # 解熱鎮痛薬は発熱、のどの痛み、頭痛、月経不順・生理痛に効果があるため、一定のスコアを付与
             # ただし、効能効果に症状が明示的に含まれている場合のみスコアを付与
@@ -7742,48 +8396,60 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     )
     
     if is_major_analgesic:
-        symptom_names_major = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
-        
-        # 主要解熱鎮痛薬は効能効果チェックをスキップしてボーナスを付与（第一選択として推奨）
-        # 頭痛・発熱に対する第一選択として追加ボーナス
-        has_headache_or_fever = any(
-            any(symptom in symptom_name for symptom in ['頭痛', '発熱', '熱'])
-            for symptom_name in symptom_names_major
-        )
-        
-        if has_headache_or_fever:
+        # 風邪薬は主要解熱鎮痛薬ボーナスを受けない（総合感冒薬は除外）
+        if is_comprehensive_cold_medicine(candidate):
+            major_analgesic_bonus = 0.0
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"風邪薬のため主要解熱鎮痛薬ボーナスを適用しない: {product_name}")
+        else:
+            symptom_names_major = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+            
+            # 主要解熱鎮痛薬は効能効果チェックをスキップしてボーナスを付与（第一選択として推奨）
+            # 頭痛・発熱に対する第一選択として追加ボーナス
+            has_headache_or_fever = any(
+                any(symptom in symptom_name for symptom in ['頭痛', '発熱', '熱'])
+                for symptom_name in symptom_names_major
+            )
+            
             # カロナールA、タイレノールの場合（頭痛・発熱の第一選択）
-            if 'カロナール' in product_name or 'タイレノール' in product_name:
+            if has_headache_or_fever and ('カロナール' in product_name or 'タイレノール' in product_name):
                 major_analgesic_bonus = 0.8  # 0.6から0.8に強化（総合感冒薬のスコアを確実に上回るように）
                 logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（カロナール/タイレノール）: {product_name} = +{major_analgesic_bonus}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"主要解熱鎮痛薬ボーナス（カロナール/タイレノール）: {product_name} = +{major_analgesic_bonus}")
-        
-        # 筋肉痛・関節痛・腰痛に対するロキソニンSのボーナス
-        has_muscle_pain = any(
-            any(symptom in symptom_name for symptom in ['筋肉痛', '関節痛', '腰痛'])
-            for symptom_name in symptom_names_major
-        )
-        if has_muscle_pain and 'ロキソニン' in product_name:
-            # 外用薬（テープ・ゲル・パップなど）の場合は追加ボーナス（筋肉痛には湿布が適切）
-            is_topical = any(kw in product_name for kw in ['テープ', 'ゲル', 'パップ', 'ローション'])
-            if is_topical:
-                major_analgesic_bonus = max(major_analgesic_bonus, 0.8)  # 外用薬は内服薬より優先（0.6 → 0.8に強化）
-                logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛・外用薬）: {product_name} = +{major_analgesic_bonus}")
+            
+            # 筋肉痛・関節痛・腰痛に対するロキソニンSのボーナス
+            has_muscle_pain = any(
+                any(symptom in symptom_name for symptom in ['筋肉痛', '関節痛', '腰痛'])
+                for symptom_name in symptom_names_major
+            )
+            if has_muscle_pain and 'ロキソニン' in product_name:
+                # 外用薬（テープ・ゲル・パップなど）の場合は追加ボーナス（筋肉痛には湿布が適切）
+                is_topical = any(kw in product_name for kw in ['テープ', 'ゲル', 'パップ', 'ローション'])
+                if is_topical:
+                    major_analgesic_bonus = max(major_analgesic_bonus, 0.8)  # 外用薬は内服薬より優先（0.6 → 0.8に強化）
+                    logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛・外用薬）: {product_name} = +{major_analgesic_bonus}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛・外用薬）: {product_name} = +{major_analgesic_bonus}")
+                else:
+                    major_analgesic_bonus = max(major_analgesic_bonus, 0.6)  # 内服薬も適切だが、外用薬を優先（0.5 → 0.6に強化）
+                    logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛）: {product_name} = +{major_analgesic_bonus}")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛）: {product_name} = +{major_analgesic_bonus}")
+            
+            # 頭痛・発熱に対するロキソニンSのボーナス（筋肉痛がない場合）
+            elif has_headache_or_fever and 'ロキソニン' in product_name:
+                major_analgesic_bonus = max(major_analgesic_bonus, 0.6)  # 頭痛・発熱に対するボーナス（0.4 → 0.6に強化）
+                logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・頭痛/発熱）: {product_name} = +{major_analgesic_bonus}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛・外用薬）: {product_name} = +{major_analgesic_bonus}")
-            else:
-                major_analgesic_bonus = max(major_analgesic_bonus, 0.6)  # 内服薬も適切だが、外用薬を優先（0.5 → 0.6に強化）
-                logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛）: {product_name} = +{major_analgesic_bonus}")
+                    logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・頭痛/発熱）: {product_name} = +{major_analgesic_bonus}")
+            
+            # イブ、ブファリンの場合（頭痛・発熱の第一選択）
+            elif has_headache_or_fever and any(kw in product_name for kw in ['イブ', 'EVE', 'ブファリン', 'バファリン']):
+                major_analgesic_bonus = max(major_analgesic_bonus, 0.7)  # カロナール/タイレノールに次ぐ優先度
+                logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（イブ/ブファリン）: {product_name} = +{major_analgesic_bonus}")
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・筋肉痛）: {product_name} = +{major_analgesic_bonus}")
-        
-        # 頭痛・発熱に対するロキソニンSのボーナス（筋肉痛がない場合）
-        elif has_headache_or_fever and 'ロキソニン' in product_name:
-            major_analgesic_bonus = max(major_analgesic_bonus, 0.6)  # 頭痛・発熱に対するボーナス（0.4 → 0.6に強化）
-            logger.info(f"⭐ 主要解熱鎮痛薬ボーナス（ロキソニン・頭痛/発熱）: {product_name} = +{major_analgesic_bonus}")
-            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"主要解熱鎮痛薬ボーナス（ロキソニン・頭痛/発熱）: {product_name} = +{major_analgesic_bonus}")
+                    logger.debug(f"主要解熱鎮痛薬ボーナス（イブ/ブファリン）: {product_name} = +{major_analgesic_bonus}")
     
     # --- 2.3 NSAIDs（イブプロフェン、ロキソプロフェンなど）へのボーナス追加 ---
     # NSAIDs含有医薬品へのボーナス
@@ -8041,7 +8707,12 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 症状パターンマッチングによる最適化ボーナス/ペナルティ
     pattern_bonus = 0.0
-    pattern_info = match_symptom_pattern(nlu_result)
+    # 単一症状の場合はpattern_bonusを適用しない（特化薬を優先するため）
+    symptom_names = [s.get("name") for s in nlu_result.get("symptoms", [])]
+    is_single_symptom_for_pattern = len(symptom_names) == 1
+    pattern_info = None
+    if not is_single_symptom_for_pattern:
+        pattern_info = match_symptom_pattern(nlu_result)
     if pattern_info:
         bonuses = pattern_info.get("bonuses", {})
         penalties = pattern_info.get("penalties", {})
@@ -8273,6 +8944,19 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"症状パターンボーナス（{med_type}）: {product_name} = +{bonus_value}")
         
+        # 単一症状（発熱のみ）の場合、解熱鎮痛薬にボーナスを付与、総合感冒薬にペナルティ
+        symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        is_single_symptom = len(symptom_names_list) == 1
+        if is_single_symptom and "発熱" in symptom_names_list:
+            if '解熱鎮痛薬' in medicine_type:
+                pattern_bonus += 0.3  # 単一症状（発熱のみ）の場合、解熱鎮痛薬を優先
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"詳細スコアリング pattern_bonus適用（単一症状・発熱）: medicine_type=解熱鎮痛薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
+            elif '風邪薬' in medicine_type:
+                pattern_bonus -= 0.2  # 単一症状（発熱のみ）の場合、総合感冒薬にペナルティ
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"詳細スコアリング pattern_bonus適用（単一症状・発熱）: medicine_type=風邪薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
+        
         # リスク成分のペナルティ（便秘薬のセンナ、ヒマシ油など）
         if "リスク成分（センナ、ヒマシ油）" in penalties:
             if "センナ" in ingredients or "ヒマシ油" in ingredients or "カストル油" in ingredients:
@@ -8421,10 +9105,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"総合風邪薬優先推奨ボーナス（軽度）: {candidate.get('product_name', '')} = +0.40 (風邪症状数: {cold_symptom_count})")
         elif is_single_symptom:
-            # 単一症状の場合はペナルティを適用（過剰処方を防ぐため、-0.7のペナルティ）
-            comprehensive_cold_bonus = -0.7
+            # 単一症状の場合はペナルティを適用（過剰処方を防ぐため、-0.8のペナルティに強化）
+            comprehensive_cold_bonus = -0.8
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"総合風邪薬ペナルティ（単一症状）: {candidate.get('product_name', '')} = -0.7 (症状: {symptom_names})")
+                logger.debug(f"総合風邪薬ペナルティ（単一症状）: {candidate.get('product_name', '')} = -0.8 (症状: {symptom_names})")
     
     # 複数症状（3症状以上）時の総合感冒薬への追加ボーナス
     multi_symptom_cold_bonus = 0.0
@@ -8523,7 +9207,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 総合風邪薬優先推奨ボーナスの上限制限
     # 総合風邪薬ボーナスの上限を0.9に引き上げ（0.7 → 0.9）
-    limited_comprehensive_cold_bonus = max(0.0, min(0.9, comprehensive_cold_bonus))
+    # 単一症状時のペナルティ（-0.8）も適用するため、下限を-0.8に設定
+    limited_comprehensive_cold_bonus = max(-0.8, min(0.9, comprehensive_cold_bonus))
     
     # ボーナス/ペナルティの影響を制限（スコアのばらつきを確保しつつ、特化医薬品の優位性を保つ）
     # 特化医薬品のボーナスは最大0.30まで許可（症状特化型ブースト、throat_bonus）- 総合感冒薬ボーナス強化のため上限を0.30に変更
@@ -8942,15 +9627,28 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                     if nlu_severity is None or nlu_severity == "":
                         nlu_severity = "中等度"
                     
-                    # 中等度以上の場合は大きなペナルティ
-                    if nlu_severity in ["中等度", "重度"]:
-                        kampo_adjustment = -0.20
+                    # 縛り表現（必須条件）がある漢方薬の場合はさらに大きなペナルティ
+                    efficacy = str(candidate.get('efficacy', '')).lower()
+                    has_restrictive_expression = any(
+                        kw in efficacy for kw in ['ものの次の諸症', 'ものの次の', 'ものの諸症', 'ものや', 'もの及び', 'もの並びに', 
+                                                   '諸関節が腫れて痛む', '各処の筋肉が腫れて痛む', '下腹部に化膿性', '下腹部に凝結']
+                    )
+                    
+                    if has_restrictive_expression:
+                        # 縛り表現がある場合は非常に大きなペナルティ（発熱のみには不適切）
+                        kampo_adjustment = -0.50
                         if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.20")
+                            logger.debug(f"単一症状（強度: {nlu_severity}）+ 縛り表現ありのため漢方薬に大きなペナルティ: {product_name} = -0.50")
                     else:
-                        kampo_adjustment = -0.10
-                        if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.10")
+                        # 中等度以上の場合は大きなペナルティ
+                        if nlu_severity in ["中等度", "重度"]:
+                            kampo_adjustment = -0.30
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.30")
+                        else:
+                            kampo_adjustment = -0.20
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.20")
                 # 風邪の初期症状（悪寒+発熱）の場合、葛根湯にボーナス（ただし症状強度が中等度以上の場合はペナルティ）
                 elif frozenset({"悪寒", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION and is_kakkonto_medicine_check:
                     # 症状の強度判定を取得（検出できない場合は中等度として扱う）
@@ -8966,7 +9664,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                     else:
                         # 軽度の場合は既にpattern_bonusで処理済み
                         kampo_adjustment = 0.0
-                # 二日酔い（頭痛+むくみ+だるさ）の場合、五苓散に+0.20のボーナス
+                # 二日酔い（頭痛+むくみ+だるさなど）の場合、五苓散はpattern_bonusとhangover_boostで処理済み
                 elif is_goreisan and any(
                     pattern_key in SYMPTOM_PATTERN_OPTIMIZATION 
                     for pattern_key in [
@@ -8978,7 +9676,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                         frozenset({"頭痛", "だるさ", "吐き気"})
                     ]
                 ):
-                    # 既にpattern_bonusで処理済み
+                    # 既にpattern_bonus（SYMPTOM_PATTERN_OPTIMIZATION）とhangover_boost（append_candidate内）で処理済み
                     kampo_adjustment = 0.0
                 # 胃腸症状（胃もたれ+むかつき）の場合、生薬配合の胃腸薬に+0.15のボーナス
                 elif frozenset({"吐き気", "胃もたれ", "むかつき"}) in SYMPTOM_PATTERN_OPTIMIZATION:
@@ -9312,17 +10010,11 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     # 単一症状の場合、総合感冒薬（風邪薬）には効能特異性に関係なくペナルティを適用
                     # 効能に症状が含まれていても、単一症状に対して複合薬は過剰処方となる
                     if base_penalty < 0 and medicine_type == '風邪薬':
-                        # 総合感冒薬の場合は、効能特異性に関係なく軽減したペナルティを適用
-                        if efficacy_specificity >= 0.5:
-                            # 効能特異性が高い場合でも、単一症状の場合は軽減したペナルティを適用
-                            penalty = base_penalty * 0.6  # -0.5 * 0.6 = -0.3
-                            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                                logger.debug(f"症状特異性ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f}, 軽減適用)")
-                        else:
-                            # 効能特異性が低い場合はフルペナルティ
-                            penalty = base_penalty
-                            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                                logger.debug(f"症状特異性ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {base_penalty} (効能特異性{efficacy_specificity:.2f})")
+                        # 総合感冒薬の場合は、効能特異性に関係なくフルペナルティを適用（単一症状時は過剰処方）
+                        # 効能特異性が高い場合でも、単一症状に対して複合薬は不適切
+                        penalty = base_penalty  # -0.5をそのまま適用（緩和しない）
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"症状特異性ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {penalty:.2f} (効能特異性{efficacy_specificity:.2f}, フルペナルティ適用)")
                         return penalty
                     
                     # その他の医薬品タイプの場合、従来のロジックを適用
@@ -9358,19 +10050,12 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
                     # 単一症状の場合、総合感冒薬（風邪薬）には効能特異性に関係なくペナルティを適用
                     # 効能に症状が含まれていても、単一症状に対して複合薬は過剰処方となる
                     if medicine_type == '風邪薬':
-                        # 総合感冒薬の場合は、効能特異性に関係なく軽減したペナルティを適用
-                        if efficacy_specificity >= 0.5:
-                            # 効能特異性が高い場合でも、単一症状の場合は軽減したペナルティを適用
-                            base_penalty = -0.5
-                            penalty = base_penalty * 0.6  # -0.5 * 0.6 = -0.3
-                            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                                logger.debug(f"複合薬ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {base_penalty} → {penalty:.2f} (効能特異性{efficacy_specificity:.2f}, 軽減適用)")
-                        else:
-                            # 効能特異性が低い場合はフルペナルティ
-                            base_penalty = -0.5
-                            penalty = base_penalty
-                            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                                logger.debug(f"複合薬ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {base_penalty} (効能特異性{efficacy_specificity:.2f})")
+                        # 総合感冒薬の場合は、効能特異性に関係なくフルペナルティを適用（単一症状時は過剰処方）
+                        # 効能特異性が高い場合でも、単一症状に対して複合薬は不適切
+                        base_penalty = -0.5
+                        penalty = base_penalty  # -0.5をそのまま適用（緩和しない）
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"複合薬ペナルティ（単一症状・総合感冒薬）: {symptom_name} + {medicine_type} = {penalty:.2f} (効能特異性{efficacy_specificity:.2f}, フルペナルティ適用)")
                         return penalty
                     
                     # その他の複合薬の場合は従来のロジックを適用
@@ -10658,7 +11343,8 @@ def rule_based_recommendation(
             after_motion_filter = len(candidates)
             if before_motion_filter != after_motion_filter:
                 if is_hangover_case:
-                    logger.info(f"二日酔いが検出されたため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"二日酔いが検出されたため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
                 else:
                     logger.info(f"乗り物酔い症状がないため、乗り物酔い薬を{before_motion_filter - after_motion_filter}件除外しました")
         else:
@@ -10695,6 +11381,24 @@ def rule_based_recommendation(
         efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
         age_score = calculate_age_fit_score(candidate, user_info)
         
+        # 主要解熱鎮痛薬のボーナス（発熱のみの場合）
+        major_analgesic_bonus = 0.0
+        symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
+        cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
+        is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+        
+        if is_fever_only:
+            product_name = candidate.get('product_name', '')
+            is_major_analgesic = any(
+                major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+            )
+            if is_major_analgesic and '解熱鎮痛薬' in candidate.get('medicine_type', ''):
+                # 主要解熱鎮痛薬にボーナスを付与（quick_scoreで優先されるように）
+                major_analgesic_bonus = 0.3
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"quick_score 主要解熱鎮痛薬ボーナス: {product_name} = +{major_analgesic_bonus}")
+        
         # 簡易版の症状特異性ペナルティ（複数症状時の薬効調整）
         symptom_penalty = 0.0
         symptoms = nlu_result.get("symptoms", [])
@@ -10703,33 +11407,47 @@ def rule_based_recommendation(
         
         # 症状パターンマッチングによる最適化ボーナス
         pattern_bonus = 0.0
-        pattern_info = match_symptom_pattern(nlu_result)
-        if pattern_info:
-            bonuses = pattern_info.get("bonuses", {})
-            product_name = candidate.get('product_name', '')
-            ingredients = str(candidate.get('ingredients', '')).lower()
-            throat_specificity_level = candidate.get('throat_specificity_level', 'none')
-            
-            # 「のど痛み+発熱」の場合、総合感冒薬（喉向き）にボーナス
-            if "のどの痛み" in symptom_names and "発熱" in symptom_names:
-                if '風邪薬' in medicine_type:
-                    if throat_specificity_level == "component_and_efficacy":
-                        pattern_bonus = 0.25
-                    elif throat_specificity_level == "efficacy_only":
-                        pattern_bonus = 0.15
-                elif '解熱鎮痛薬' in medicine_type:
-                    pattern_bonus = 0.45  # 0.35から0.45に増加（2位優先のため強化）
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"quick_score pattern_bonus適用: medicine_type=解熱鎮痛薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
-                elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and "のどの痛み" in symptom_names):
-                    pattern_bonus = 0.45  # 0.35から0.45に増加（3位優先のため強化）
-                    if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"quick_score pattern_bonus適用: medicine_type=外用薬（のど）, product_name={product_name}, pattern_bonus={pattern_bonus}")
+        # 単一症状の場合はpattern_bonusを適用しない（特化薬を優先するため）
+        is_single_symptom_for_pattern = len(symptom_names) == 1
+        if not is_single_symptom_for_pattern:
+            pattern_info = match_symptom_pattern(nlu_result)
+            if pattern_info:
+                bonuses = pattern_info.get("bonuses", {})
+                product_name = candidate.get('product_name', '')
+                ingredients = str(candidate.get('ingredients', '')).lower()
+                throat_specificity_level = candidate.get('throat_specificity_level', 'none')
+                
+                # 「のど痛み+発熱」の場合、総合感冒薬（喉向き）にボーナス
+                if "のどの痛み" in symptom_names and "発熱" in symptom_names:
+                    if '風邪薬' in medicine_type:
+                        if throat_specificity_level == "component_and_efficacy":
+                            pattern_bonus = 0.25
+                        elif throat_specificity_level == "efficacy_only":
+                            pattern_bonus = 0.15
+                    elif '解熱鎮痛薬' in medicine_type:
+                        pattern_bonus = 0.45  # 0.35から0.45に増加（2位優先のため強化）
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"quick_score pattern_bonus適用: medicine_type=解熱鎮痛薬, product_name={product_name}, pattern_bonus={pattern_bonus}")
+                    elif '外用薬（のど）' in medicine_type or ('外用薬' in medicine_type and "のどの痛み" in symptom_names):
+                        pattern_bonus = 0.45  # 0.35から0.45に増加（3位優先のため強化）
+                        if DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"quick_score pattern_bonus適用: medicine_type=外用薬（のど）, product_name={product_name}, pattern_bonus={pattern_bonus}")
         else:
             # pattern_infoがNoneの場合もログ出力（DEBUGレベル）
             if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
                     logger.debug(f"quick_score pattern_info=None: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_names={symptom_names}")
+        
+        # 単一症状（発熱のみ）の場合、解熱鎮痛薬にボーナスを付与、総合感冒薬にペナルティ
+        if is_single_symptom_for_pattern and "発熱" in symptom_names:
+            if '解熱鎮痛薬' in medicine_type:
+                pattern_bonus = 0.3  # 単一症状（発熱のみ）の場合、解熱鎮痛薬を優先
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"quick_score pattern_bonus適用（単一症状・発熱）: medicine_type=解熱鎮痛薬, product_name={candidate.get('product_name', '')}, pattern_bonus={pattern_bonus}")
+            elif '風邪薬' in medicine_type:
+                pattern_bonus = -0.2  # 単一症状（発熱のみ）の場合、総合感冒薬にペナルティ
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"quick_score pattern_bonus適用（単一症状・発熱）: medicine_type=風邪薬, product_name={candidate.get('product_name', '')}, pattern_bonus={pattern_bonus}")
         
         if len(symptom_names) >= 2:
             # のどの痛み + 発熱のパターン（既存ロジックは維持）
@@ -10743,13 +11461,13 @@ def rule_based_recommendation(
         hangover_quick_boost = candidate.get('hangover_boost', 0.0)
         
         # 年齢適合性も含めて精度向上（重みは症状:効能:年齢 = 0.5:0.3:0.2）
-        # 症状パターンボーナスと二日酔いブーストも追加
-        quick_score_result = (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus + hangover_quick_boost)
+        # 症状パターンボーナス、二日酔いブースト、主要解熱鎮痛薬ボーナスも追加
+        quick_score_result = (symptom_score * 0.5 + efficacy_score * 0.3 + age_score * 0.2 + symptom_penalty + pattern_bonus + hangover_quick_boost + major_analgesic_bonus)
         
         # 解熱鎮痛薬と外用薬（のど）のquick_score計算の詳細をログ出力（DEBUGレベル）
         if '解熱鎮痛薬' in medicine_type or '外用薬（のど）' in medicine_type:
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"quick_score計算詳細: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_score={symptom_score:.3f}, efficacy_score={efficacy_score:.3f}, age_score={age_score:.3f}, symptom_penalty={symptom_penalty:.3f}, pattern_bonus={pattern_bonus:.3f}, hangover_boost={hangover_quick_boost:.3f}, quick_score={quick_score_result:.3f}")
+                logger.debug(f"quick_score計算詳細: medicine_type={medicine_type}, product_name={candidate.get('product_name', '')}, symptom_score={symptom_score:.3f}, efficacy_score={efficacy_score:.3f}, age_score={age_score:.3f}, symptom_penalty={symptom_penalty:.3f}, pattern_bonus={pattern_bonus:.3f}, hangover_boost={hangover_quick_boost:.3f}, major_analgesic_bonus={major_analgesic_bonus:.3f}, quick_score={quick_score_result:.3f}")
         
         return quick_score_result
     
@@ -10782,8 +11500,56 @@ def rule_based_recommendation(
     
     # 解熱鎮痛薬と外用薬（のど）を優先的に詳細スコアリングに含める
     # 「のど痛み+発熱」パターンの場合、解熱鎮痛薬と外用薬（のど）を確実に含める
+    # 発熱のみの場合、主要解熱鎮痛薬を優先的に含める
     symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
     has_throat_and_fever = "のどの痛み" in symptom_names and "発熱" in symptom_names
+    cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
+    cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
+    is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+    
+    # 発熱のみの場合、主要解熱鎮痛薬を優先的に含める
+    if is_fever_only:
+        logger.info(f"🔥 発熱のみを検出: symptom_names={symptom_names}, cold_symptom_count={cold_symptom_count}, is_fever_only={is_fever_only}")
+        # 主要解熱鎮痛薬を抽出
+        major_analgesic_candidates = []
+        for score, candidate in quick_scores:
+            product_name = candidate.get('product_name', '')
+            is_major_analgesic = any(
+                major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+            )
+            if is_major_analgesic and '解熱鎮痛薬' in candidate.get('medicine_type', ''):
+                major_analgesic_candidates.append((score, candidate))
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"主要解熱鎮痛薬候補: {product_name} (score={score:.3f})")
+        
+        # 主要解熱鎮痛薬を優先的に含める（上位30件）
+        top_major_analgesic = sorted(major_analgesic_candidates, key=lambda x: x[0], reverse=True)[:30]
+        
+        # 既存の候補に追加（重複を避ける）
+        existing_products = {c.get('product_name', '') for _, c in top_candidates_for_scoring}
+        added_count = 0
+        for score, candidate in top_major_analgesic:
+            if candidate.get('product_name', '') not in existing_products:
+                # スコアが低くても強制的に追加（主要解熱鎮痛薬を優先）
+                # スコアが0.2未満の場合は0.2に底上げして追加
+                adjusted_score = max(score, 0.2)
+                top_candidates_for_scoring.append((adjusted_score, candidate))
+                existing_products.add(candidate.get('product_name', ''))
+                added_count += 1
+                logger.info(f"⭐ 主要解熱鎮痛薬を優先的に追加: {candidate.get('product_name', '')} (score={score:.3f} → {adjusted_score:.3f})")
+        
+        # スコア順に再ソート
+        top_candidates_for_scoring = sorted(top_candidates_for_scoring, key=lambda x: x[0], reverse=True)
+        logger.info(f"🔥 発熱のみの場合、主要解熱鎮痛薬を優先的に追加: {len(top_major_analgesic)}件中{added_count}件を追加")
+        
+        # 主要解熱鎮痛薬が既に含まれている場合もログ出力
+        if added_count == 0 and len(top_major_analgesic) > 0:
+            existing_major_analgesics = []
+            for score, candidate in top_major_analgesic:
+                if candidate.get('product_name', '') in existing_products:
+                    existing_major_analgesics.append(candidate.get('product_name', ''))
+            if existing_major_analgesics:
+                logger.info(f"🔥 主要解熱鎮痛薬は既に候補に含まれています: {existing_major_analgesics[:5]}")
     
     if has_throat_and_fever:
         # 解熱鎮痛薬と外用薬（のど）を抽出
@@ -10908,16 +11674,33 @@ def rule_based_recommendation(
     
     # ステップ5.2.5: 閾値判定のセーフティガード（減点適用前のraw_scoreで判定）
     # raw_score < 0.3の候補を除外（現在の完璧な薬が除外されないよう保護）
+    # ただし、主要解熱鎮痛薬は優先的に含める（発熱のみの場合）
     threshold = 0.3
     excluded_candidates = []
     valid_candidates_for_scoring = []
     
+    # 発熱のみの場合、主要解熱鎮痛薬を優先的に含める
+    symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
+    cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
+    is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+    
     for score, candidate in top_candidates_for_scoring:
         raw_score = candidate.get('raw_score', 0.0)
-        if raw_score < threshold:
+        product_name = candidate.get('product_name', '')
+        
+        # 発熱のみの場合、主要解熱鎮痛薬は優先的に含める（閾値を下回っていても）
+        is_major_analgesic = any(
+            major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+        )
+        if is_fever_only and is_major_analgesic and raw_score >= 0.2:  # 閾値を0.2に緩和
+            valid_candidates_for_scoring.append((score, candidate))
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"主要解熱鎮痛薬を優先的に含める: {product_name} raw_score={raw_score:.3f} (閾値緩和)")
+        elif raw_score < threshold:
             excluded_candidates.append(candidate)
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"閾値以下で除外: {candidate.get('product_name', '')} raw_score={raw_score:.3f} < {threshold}")
+                logger.debug(f"閾値以下で除外: {product_name} raw_score={raw_score:.3f} < {threshold}")
         else:
             valid_candidates_for_scoring.append((score, candidate))
     
