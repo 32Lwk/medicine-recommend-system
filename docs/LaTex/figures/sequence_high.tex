@@ -1,0 +1,69 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.3cm,
+    auto,
+    thick,
+    actor/.style={rectangle, draw=blue!70!black, fill=blue!5, text width=1.8cm, text centered, minimum height=0.7cm, font=\footnotesize, rounded corners},
+    object/.style={rectangle, draw=gray!70!black, fill=gray!5, text width=1.8cm, text centered, minimum height=0.7cm, font=\footnotesize, rounded corners},
+    arrow/.style={->, >=stealth, semithick, color=blue!60!black},
+    return arrow/.style={->, >=stealth, semithick, dashed, color=gray!60!black},
+    lifeline/.style={dashed, semithick, color=gray!40}
+]
+
+% 参加者
+\node[actor] (user) at (0,0) {ユーザー};
+\node[object] (app) at (3,0) {Flask App};
+\node[object] (security) at (6,0) {Security\\Validator};
+\node[object] (nlu) at (9,0) {NLU\\Processor};
+\node[object] (scoring) at (12,0) {Scoring\\Engine};
+\node[object] (db) at (15,0) {Database};
+
+% ライフライン
+\draw[lifeline] (user) -- (0,-6.5);
+\draw[lifeline] (app) -- (3,-6.5);
+\draw[lifeline] (security) -- (6,-6.5);
+\draw[lifeline] (nlu) -- (9,-6.5);
+\draw[lifeline] (scoring) -- (12,-6.5);
+\draw[lifeline] (db) -- (15,-6.5);
+
+% メッセージ（時系列順）
+% 1. POSTリクエスト
+\draw[arrow] (0,-0.8) -- (3,-0.8) node[midway, above, font=\tiny, sloped] {POST /};
+
+% 2. セキュリティ検証
+\draw[arrow] (3,-1.5) -- (6,-1.5) node[midway, above, font=\tiny, sloped] {validate\_input()};
+\draw[return arrow] (6,-2.0) -- (3,-2.0) node[midway, below, font=\tiny, sloped] {is\_safe};
+
+% 3. NLU処理
+\draw[arrow] (3,-2.7) -- (9,-2.7) node[midway, above, font=\tiny, sloped] {extract\_symptoms()};
+\draw[return arrow] (9,-3.2) -- (3,-3.2) node[midway, below, font=\tiny, sloped] {symptoms};
+
+% 4. スコアリング
+\draw[arrow] (3,-3.9) -- (12,-3.9) node[midway, above, font=\tiny, sloped] {calculate\_score()};
+\draw[arrow] (12,-4.4) -- (15,-4.4) node[midway, above, font=\tiny, sloped] {get\_medicines()};
+\draw[return arrow] (15,-4.9) -- (12,-4.9) node[midway, below, font=\tiny, sloped] {medicines};
+\draw[return arrow] (12,-5.4) -- (3,-5.4) node[midway, below, font=\tiny, sloped] {scores};
+
+% 5. 最終結果
+\draw[return arrow] (3,-6.0) -- (0,-6.0) node[midway, below, font=\tiny, sloped] {recommendation};
+
+\end{tikzpicture}
+\end{document}

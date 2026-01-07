@@ -1,0 +1,111 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.7cm and 1.2cm,
+    auto,
+    thick,
+    start node/.style={ellipse, draw=green!70!black, fill=green!8, text width=1.8cm, text centered, minimum height=0.6cm, font=\scriptsize},
+    process node/.style={rectangle, draw=blue!70!black, fill=blue!8, text width=2.2cm, text centered, rounded corners, minimum height=0.6cm, font=\scriptsize},
+    decision node/.style={diamond, draw=orange!70!black, fill=orange!8, text width=1.8cm, text centered, aspect=2, font=\tiny},
+    end node/.style={ellipse, draw=red!70!black, fill=red!8, text width=1.8cm, text centered, minimum height=0.6cm, font=\scriptsize},
+    arrow/.style={->, >=stealth, semithick, color=gray!70!black},
+    yes arrow/.style={->, >=stealth, semithick, color=green!60!black},
+    no arrow/.style={->, >=stealth, semithick, color=red!60!black}
+]
+
+% 開始
+\node[start node] (start) {入力受信};
+
+% Layer 1: セキュリティ検証（詳細）
+\node[process node, below=of start] (layer1) {Layer 1: セキュリティ検証};
+\node[process node, below=of layer1] (risk_calc) {$\mathcal{R}(t) = \sum w_i \cdot f_i(t)$};
+\node[decision node, below=of risk_calc] (check1) {$\mathcal{R}(t) < 80$};
+
+% Layer 2: NLU処理（詳細）
+\node[process node, below=of check1, xshift=-3.5cm] (layer2) {Layer 2: NLU処理};
+\node[process node, below=of layer2] (pattern_match) {パターンマッチング\\$\mathcal{D}_{sym}$};
+\node[process node, below=of pattern_match] (confidence) {$\mathcal{C}_{NLU}(t) = \sum w_i \cdot f_i(t)$};
+\node[decision node, below=of confidence] (check_confidence) {$\mathcal{C}_{NLU} \geq 0.3$};
+\node[process node, below=of check_confidence, xshift=-1.5cm] (gpt_fallback) {ChatGPT\\フォールバック};
+\node[decision node, below=of check_confidence, xshift=1.5cm] (check2) {$|\mathcal{S}(t)| > 0$};
+
+% Layer 3: 禁忌チェック（詳細）
+\node[process node, below=of check2, xshift=-3.5cm] (layer3) {Layer 3: 禁忌チェック};
+\node[process node, below=of layer3] (age_check) {年齢チェック\\（乳児・幼児）};
+\node[process node, below=of age_check] (pregnancy_check) {妊娠・授乳\\チェック};
+\node[decision node, below=of pregnancy_check] (check3) {$\neg\mathcal{E}(u)$};
+
+% Layer 4: スコアリング（詳細）
+\node[process node, below=of check3, xshift=-3.5cm] (layer4) {Layer 4: スコアリング};
+\node[process node, below=of layer4] (vector_sim) {$\text{Sim} = \frac{v_u \cdot v_m}{\|v_u\|\|v_m\|}$\\$v_u, v_m \in \mathbb{R}^{1536}$};
+\node[process node, below=of vector_sim] (coverage) {$\text{Cov} = \frac{|S_u \cap E_m|}{|S_u|}$};
+\node[process node, below=of coverage] (weighted) {$\alpha(\sigma) \cdot \text{Sim}$\\$+ \beta(\sigma) \cdot \text{Cov}$};
+\node[process node, below=of weighted] (risk_penalty) {$P_{risk}(m) = w_{side} \cdot R_{side}$\\$+ w_{inter} \cdot R_{inter}$};
+\node[process node, below=of risk_penalty] (final_score) {$S(m) = \alpha \cdot \text{Sim}$\\$+ \beta \cdot \text{Cov} - P_{risk}$};
+\node[decision node, below=of final_score] (check4) {アレルギー\\検出};
+
+% Layer 5: 最終判定（詳細）
+\node[process node, below=of check4, xshift=-3.5cm] (layer5) {Layer 5: 最終判定};
+\node[process node, below=of layer5] (sort) {スコア順ソート};
+\node[process node, below=of sort] (topk) {$top_k = 3$選定};
+
+% 成功終了
+\node[end node, below=of topk] (success) {推奨結果};
+
+% エラー終了
+\node[end node, right=of check1, yshift=-0.8cm] (error1) {ブロック};
+\node[end node, right=of check2, yshift=-0.8cm] (error2) {症状未検出};
+\node[end node, right=of check3, yshift=-0.8cm] (error3) {医師受診必須};
+\node[end node, right=of check4, yshift=-0.8cm] (error4) {アレルギー検出};
+
+% 矢印（メインフロー）
+\draw[arrow] (start) -- (layer1);
+\draw[arrow] (layer1) -- (risk_calc);
+\draw[arrow] (risk_calc) -- (check1);
+\draw[yes arrow] (check1) -- node[left, font=\tiny] {Yes} (layer2);
+\draw[no arrow] (check1) -- node[above, font=\tiny] {No} (error1);
+\draw[arrow] (layer2) -- (pattern_match);
+\draw[arrow] (pattern_match) -- (confidence);
+\draw[arrow] (confidence) -- (check_confidence);
+\draw[no arrow] (check_confidence) -- node[left, font=\tiny] {No} (gpt_fallback);
+\draw[yes arrow] (check_confidence) -- node[right, font=\tiny] {Yes} (check2);
+\draw[arrow] (gpt_fallback) -- (check2);
+\draw[yes arrow] (check2) -- node[left, font=\tiny] {Yes} (layer3);
+\draw[no arrow] (check2) -- node[above, font=\tiny] {No} (error2);
+\draw[arrow] (layer3) -- (age_check);
+\draw[arrow] (age_check) -- (pregnancy_check);
+\draw[arrow] (pregnancy_check) -- (check3);
+\draw[yes arrow] (check3) -- node[left, font=\tiny] {Yes} (layer4);
+\draw[no arrow] (check3) -- node[above, font=\tiny] {No} (error3);
+\draw[arrow] (layer4) -- (vector_sim);
+\draw[arrow] (vector_sim) -- (coverage);
+\draw[arrow] (coverage) -- (weighted);
+\draw[arrow] (weighted) -- (risk_penalty);
+\draw[arrow] (risk_penalty) -- (final_score);
+\draw[arrow] (final_score) -- (check4);
+\draw[yes arrow] (check4) -- node[left, font=\tiny] {No} (layer5);
+\draw[no arrow] (check4) -- node[above, font=\tiny] {Yes} (error4);
+\draw[arrow] (layer5) -- (sort);
+\draw[arrow] (sort) -- (topk);
+\draw[arrow] (topk) -- (success);
+
+\end{tikzpicture}
+\end{document}

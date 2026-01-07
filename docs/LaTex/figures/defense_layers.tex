@@ -1,0 +1,129 @@
+\documentclass[tikz]{standalone}
+
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{amsmath}
+
+\usetikzlibrary{
+  matrix,
+  positioning,
+  calc,
+  backgrounds
+}
+
+% -----------------------
+% フォント設定
+% -----------------------
+\setCJKmainfont[
+  BoldFont=BIZUDPGothic-Bold.ttf,
+  Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+  Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+
+\begin{tikzpicture}[
+  every node/.style={font=\footnotesize},
+  header/.style={
+    text width=2.3cm,
+    align=center,
+    minimum height=0.75cm,
+    font=\footnotesize\bfseries,
+    inner sep=4pt
+  },
+  cell/.style={
+    text width=2.3cm,
+    align=center,
+    minimum height=0.65cm,
+    inner sep=4pt
+  },
+  cell2/.style={
+    text width=3.8cm,
+    align=center,
+    minimum height=0.65cm,
+    inner sep=4pt
+  },
+  cell3/.style={
+    text width=4.5cm,
+    align=center,
+    minimum height=0.65cm,
+    inner sep=4pt
+  }
+]
+
+% -----------------------
+% 表本体（構造のみ）
+% -----------------------
+\matrix (table) [
+  matrix of nodes,
+  row sep=0pt,
+  column sep=0pt,
+  nodes={anchor=center},
+  column 1/.style={nodes={cell}},
+  column 2/.style={nodes={cell2}},
+  column 3/.style={nodes={cell3}},
+  row 1/.style={nodes={header}}
+] {
+  層 & 機能 & 判定条件 $L_k(x)$ \\
+  Layer 1 & 入力検証（セキュリティ） & $\mathcal{R}(x) < 80$ \\
+  Layer 2 & NLU（症状抽出） & $|\mathcal{S}(x)| > 0$ \\
+  Layer 3 & 禁忌チェック（エスカレーション） & $\neg\mathcal{E}(u)$ \\
+  Layer 4 & スコアリング & $\text{allergy\_check}(m,u)=\text{False}$ \\
+  Layer 5 & 最終判定 & $\text{top\_k}=3$ \\
+};
+
+% -----------------------
+% 背景処理（最背面）
+% -----------------------
+\begin{scope}[on background layer]
+  % ヘッダー背景
+  \fill[gray!12]
+    (table.north west)
+    rectangle
+    (table-1-1.south -| table.north east);
+\end{scope}
+
+% -----------------------
+% 枠線（後処理）
+% -----------------------
+
+% 外枠
+\draw[line width=1pt, gray!70!black]
+  (table.north west) rectangle (table.south east);
+
+% 縦罫線（2列目と3列目の境界のみを 2.5em 右に）
+\coordinate (VLine23) at ($(table-1-2.south east)+(2.5em,0)$);
+
+% 縦罫線（1列目と2列目の境界：移動しない）
+\draw[line width=0.5pt, gray!60!black]
+  (table-1-1.south east |- table.north west)
+  --
+  (table-1-1.south east |- table.south west);
+
+  
+\draw[line width=0.5pt, gray!60!black]
+  (VLine23 |- table.north west)
+  --
+  (VLine23 |- table.south west);
+
+
+
+% 横罫線
+\foreach \r in {1,...,5} {
+  \draw[
+    line width={ifthenelse(\r=1,0.7pt,0.3pt)},
+    gray!60!black
+  ]
+    (table-\r-1.south -| table.north west)
+    --
+    (table-\r-1.south -| table.south east);
+}
+
+\end{tikzpicture}
+
+\end{document}
