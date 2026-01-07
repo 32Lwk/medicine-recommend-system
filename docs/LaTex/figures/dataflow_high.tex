@@ -1,0 +1,67 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.8cm,
+    auto,
+    thick,
+    input node/.style={rectangle, draw=blue!70!black, fill=blue!8, text width=2.5cm, text centered, rounded corners, minimum height=0.9cm, font=\footnotesize},
+    process node/.style={rectangle, draw=green!70!black, fill=green!8, text width=2.5cm, text centered, rounded corners, minimum height=0.9cm, font=\footnotesize},
+    data node/.style={cylinder, draw=orange!70!black, fill=orange!8, text width=2cm, text centered, minimum height=0.9cm, font=\footnotesize, shape border rotate=90, aspect=0.3},
+    external node/.style={rectangle, draw=purple!70!black, fill=purple!8, text width=2cm, text centered, rounded corners, minimum height=0.9cm, font=\footnotesize},
+    arrow/.style={->, >=stealth, semithick, color=gray!70!black},
+    data arrow/.style={->, >=stealth, semithick, dashed, color=orange!60!black}
+]
+
+% 入力
+\node[input node] (input) {ユーザー入力\\テキスト $t$};
+
+% セキュリティ検証
+\node[process node, below=of input] (security) {Layer 1: セキュリティ\\検証 $\mathcal{R}(t) < 80$};
+
+% NLU処理
+\node[process node, below=of security] (nlu) {Layer 2: NLU処理\\症状抽出 $\mathcal{S}(t)$};
+
+% スコアリング
+\node[process node, below=of nlu] (scoring) {Layer 4: スコアリング\\$S(m)$計算};
+
+% 推奨結果
+\node[input node, below=of scoring] (output) {推奨結果\\上位$k=3$件};
+
+% データストア
+\node[data node, right=of nlu, yshift=-0.3cm] (db) {医薬品\\DB};
+
+% 外部サービス
+\node[external node, left=of nlu, yshift=-0.3cm] (api) {OpenAI\\API};
+
+% 矢印（メインフロー）
+\draw[arrow] (input) -- (security);
+\draw[arrow] (security) -- (nlu);
+\draw[arrow] (nlu) -- (scoring);
+\draw[arrow] (scoring) -- (output);
+
+% データストアへの接続
+\draw[data arrow] (nlu) -- (db) node[midway, above, font=\tiny] {検索};
+\draw[data arrow] (db) -- (scoring) node[midway, above, font=\tiny] {データ取得};
+
+% 外部サービスへの接続
+\draw[data arrow] (nlu) -- (api) node[midway, above, font=\tiny] {フォールバック\\$C_{NLU} < 0.3$};
+
+\end{tikzpicture}
+\end{document}

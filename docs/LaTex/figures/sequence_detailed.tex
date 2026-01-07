@@ -1,0 +1,140 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.5cm,
+    auto,
+    thick,
+    actor/.style={rectangle, draw=blue!70!black, fill=blue!5, text width=1.5cm, text centered, minimum height=0.7cm, font=\scriptsize, rounded corners},
+    object/.style={rectangle, draw=gray!70!black, fill=gray!5, text width=1.5cm, text centered, minimum height=0.7cm, font=\scriptsize, rounded corners},
+    vector/.style={rectangle, draw=purple!70!black, fill=purple!5, text width=1.5cm, text centered, minimum height=0.7cm, font=\scriptsize, rounded corners},
+    session/.style={rectangle, draw=orange!70!black, fill=orange!5, text width=1.5cm, text centered, minimum height=0.7cm, font=\scriptsize, rounded corners},
+    admin/.style={rectangle, draw=red!70!black, fill=red!5, text width=1.5cm, text centered, minimum height=0.7cm, font=\scriptsize, rounded corners},
+    arrow/.style={->, >=stealth, semithick, color=blue!60!black},
+    return arrow/.style={->, >=stealth, semithick, dashed, color=gray!60!black},
+    self arrow/.style={->, >=stealth, semithick, color=purple!60!black},
+    session arrow/.style={->, >=stealth, semithick, dashed, color=orange!60!black},
+    admin arrow/.style={->, >=stealth, semithick, dashed, color=red!60!black},
+    lifeline/.style={dashed, semithick, color=gray!40}
+]
+
+% 参加者（間隔を広げる）
+\node[actor] (user) at (0,0) {ユーザー};
+\node[object] (app) at (2.5,0) {Web\\アプリ};
+\node[session] (session) at (5,0) {セッション\\管理};
+\node[object] (security) at (7.5,0) {セキュリティ\\検証};
+\node[object] (nlu) at (10,0) {NLU\\処理};
+\node[object] (scoring) at (12.5,0) {スコアリング};
+\node[vector] (vecdb) at (15,0) {ベクトル\\DB};
+\node[object] (llm) at (17.5,0) {LLM\\API};
+\node[object] (db) at (20,0) {データ\\ベース};
+\node[admin] (admin) at (22.5,0) {管理者};
+
+% ライフライン（長さを調整）
+\draw[lifeline] (user) -- (0,-24);
+\draw[lifeline] (app) -- (2.5,-24);
+\draw[lifeline] (session) -- (5,-24);
+\draw[lifeline] (security) -- (7.5,-24);
+\draw[lifeline] (nlu) -- (10,-24);
+\draw[lifeline] (scoring) -- (12.5,-24);
+\draw[lifeline] (vecdb) -- (15,-24);
+\draw[lifeline] (llm) -- (17.5,-24);
+\draw[lifeline] (db) -- (20,-24);
+\draw[lifeline] (admin) -- (22.5,-24);
+
+% メッセージ（詳細版、時系列順、間隔を広げる）
+% 1. チャット画面アクセス
+\draw[arrow] (0,-0.8) -- (2.5,-0.8) node[midway, above, font=\scriptsize, sloped] {チャット画面\\アクセス};
+
+% 2. セッション作成
+\draw[session arrow] (2.5,-1.6) -- (5,-1.6) node[midway, above, font=\scriptsize, sloped] {セッション\\作成要求};
+\draw[session arrow] (5,-2.0) -- (20,-2.0) node[midway, above, font=\scriptsize, sloped] {セッション生成};
+\draw[return arrow] (20,-2.4) -- (5,-2.4) node[midway, below, font=\scriptsize, sloped] {セッション情報};
+\draw[return arrow] (5,-2.8) -- (2.5,-2.8) node[midway, below, font=\scriptsize, sloped] {セッション確立};
+\draw[return arrow] (2.5,-3.2) -- (0,-3.2) node[midway, below, font=\scriptsize, sloped] {症状入力画面};
+
+% 3. 症状文入力
+\draw[arrow] (0,-4.0) -- (2.5,-4.0) node[midway, above, font=\scriptsize, sloped] {症状文入力};
+
+% 4. セッション更新
+\draw[session arrow] (2.5,-4.8) -- (5,-4.8) node[midway, above, font=\scriptsize, sloped] {セッション更新};
+\draw[session arrow] (5,-5.2) -- (10,-5.2) node[midway, above, font=\scriptsize, sloped] {症状データ保存};
+
+% 5. セキュリティ検証
+\draw[arrow] (2.5,-6.0) -- (7.5,-6.0) node[midway, above, font=\scriptsize, sloped] {入力検証};
+\draw[self arrow] (7.5,-6.4) -- (7.5,-6.8) node[right, font=\scriptsize] {$\mathcal{R}(t)$計算};
+\draw[return arrow] (7.5,-7.2) -- (2.5,-7.2) node[midway, below, font=\scriptsize, sloped] {($\mathcal{R}(t) < 80$)};
+
+% 6. NLU処理
+\draw[arrow] (2.5,-8.0) -- (10,-8.0) node[midway, above, font=\scriptsize, sloped] {ハイブリッドNLU};
+\draw[self arrow] (10,-8.4) -- (10,-8.8) node[right, font=\scriptsize] {パターン\\マッチング};
+\draw[self arrow] (10,-9.2) -- (10,-9.6) node[right, font=\scriptsize] {$\mathcal{C}_{NLU}(t)$計算};
+\draw[arrow] (10,-10.0) -- (17.5,-10.0) node[midway, above, font=\scriptsize, sloped] {フォールバック\\($\mathcal{C}_{NLU} < 0.3$)};
+\draw[return arrow] (17.5,-10.4) -- (10,-10.4) node[midway, below, font=\scriptsize, sloped] {症状抽出結果};
+\draw[return arrow] (10,-10.8) -- (2.5,-10.8) node[midway, below, font=\scriptsize, sloped] {($\mathcal{S}(t)$, $\sigma$)};
+
+% 7. スコアリング開始
+\draw[arrow] (2.5,-11.6) -- (12.5,-11.6) node[midway, above, font=\scriptsize, sloped] {スコアリング計算};
+
+% 8. ベクトル埋め込み（潜在空間）
+\draw[arrow] (12.5,-12.4) -- (15,-12.4) node[midway, above, font=\scriptsize, sloped] {$E(t) \rightarrow \mathbf{v}_u$};
+\draw[return arrow] (15,-12.8) -- (12.5,-12.8) node[midway, below, font=\scriptsize, sloped] {$\mathbf{v}_u \in \mathbb{R}^{1536}$};
+
+% 9. 事前計算済みベクトル取得
+\draw[arrow] (12.5,-13.6) -- (15,-13.6) node[midway, above, font=\scriptsize, sloped] {$\mathbf{v}_m$取得};
+\draw[return arrow] (15,-14.0) -- (12.5,-14.0) node[midway, below, font=\scriptsize, sloped] {$\mathbf{v}_m$（事前計算済み）};
+
+% 10. コサイン類似度計算
+\draw[self arrow] (12.5,-14.8) -- (12.5,-15.2) node[right, font=\scriptsize] {$\text{Sim} = \frac{\mathbf{v}_u \cdot \mathbf{v}_m}{\|\mathbf{v}_u\|\|\mathbf{v}_m\|}$};
+
+% 11. 症状カバレッジ計算
+\draw[self arrow] (12.5,-16.0) -- (12.5,-16.4) node[right, font=\scriptsize] {$\text{Cov} = \frac{|\mathcal{S}_u \cap \mathcal{E}_m|}{|\mathcal{S}_u|}$};
+
+% 12. 動的重み付け
+\draw[self arrow] (12.5,-17.2) -- (12.5,-17.6) node[right, font=\scriptsize] {$\alpha(\sigma) \cdot \text{Sim}$\\$+ \beta(\sigma) \cdot \text{Cov}$};
+
+% 13. リスクペナルティ
+\draw[self arrow] (12.5,-18.4) -- (12.5,-18.8) node[right, font=\scriptsize] {$P_{risk}(m)$計算};
+
+% 14. 最終スコア
+\draw[self arrow] (12.5,-19.6) -- (12.5,-20.0) node[right, font=\scriptsize] {$S(m) = \alpha \cdot \text{Sim}$\\$+ \beta \cdot \text{Cov} - P_{risk}$};
+
+% 15. データベース取得
+\draw[arrow] (12.5,-20.8) -- (20,-20.8) node[midway, above, font=\scriptsize, sloped] {医薬品詳細取得};
+\draw[return arrow] (20,-21.2) -- (12.5,-21.2) node[midway, below, font=\scriptsize, sloped] {医薬品データ};
+\draw[return arrow] (12.5,-21.6) -- (2.5,-21.6) node[midway, below, font=\scriptsize, sloped] {上位$k=3$件};
+
+% 16. セッション更新（推奨結果保存）
+\draw[session arrow] (2.5,-22.4) -- (5,-22.4) node[midway, above, font=\scriptsize, sloped] {推奨結果保存};
+\draw[session arrow] (5,-22.8) -- (20,-22.8) node[midway, above, font=\scriptsize, sloped] {セッション更新};
+
+% 17. 最終結果
+\draw[return arrow] (2.5,-23.2) -- (0,-23.2) node[midway, below, font=\scriptsize, sloped] {推奨結果表示};
+
+% 18. 管理者操作（並行処理）
+\draw[admin arrow] (22.5,-4.5) -- (5,-4.5) node[midway, above, font=\scriptsize, sloped] {管理者アクセス};
+\draw[session arrow] (5,-4.9) -- (10,-4.9) node[midway, above, font=\scriptsize, sloped] {セッション情報取得};
+\draw[return arrow] (10,-5.3) -- (5,-5.3) node[midway, below, font=\scriptsize, sloped] {セッション情報};
+\draw[admin arrow] (5,-5.7) -- (22.5,-5.7) node[midway, below, font=\scriptsize, sloped, yshift=-0.1cm] {セッション情報返却};
+\draw[admin arrow] (22.5,-6.1) -- (2.5,-6.1) node[midway, above, font=\scriptsize, sloped] {AI制御指示};
+\draw[admin arrow] (22.5,-11.0) -- (2.5,-11.0) node[midway, below, font=\scriptsize, sloped, yshift=-0.1cm] {手動返信送信};
+
+\end{tikzpicture}
+\end{document}
