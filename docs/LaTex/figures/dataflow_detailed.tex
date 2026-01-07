@@ -1,0 +1,103 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=0.9cm and 2cm,
+    auto,
+    thick,
+    input node/.style={rectangle, draw=blue!70!black, fill=blue!8, text width=2.2cm, text centered, rounded corners, minimum height=0.7cm, font=\scriptsize},
+    process node/.style={rectangle, draw=green!70!black, fill=green!8, text width=2.2cm, text centered, rounded corners, minimum height=0.7cm, font=\scriptsize},
+    vector node/.style={rectangle, draw=purple!70!black, fill=purple!8, text width=2cm, text centered, rounded corners, minimum height=0.7cm, font=\scriptsize},
+    rule node/.style={rectangle, draw=orange!70!black, fill=orange!8, text width=2cm, text centered, rounded corners, minimum height=0.7cm, font=\scriptsize},
+    merge node/.style={rectangle, draw=red!70!black, fill=red!8, text width=2.2cm, text centered, rounded corners, minimum height=0.7cm, font=\scriptsize},
+    data node/.style={cylinder, draw=gray!70!black, fill=gray!8, text width=1.8cm, text centered, minimum height=0.7cm, font=\tiny, shape border rotate=90, aspect=0.3},
+    arrow/.style={->, >=stealth, semithick, color=gray!70!black},
+    vector arrow/.style={->, >=stealth, semithick, color=purple!60!black},
+    rule arrow/.style={->, >=stealth, semithick, color=orange!60!black}
+]
+
+% 入力
+\node[input node] (input) {ユーザー入力\\$t$};
+
+% Layer 1
+\node[process node, below=of input] (layer1) {Layer 1\\$\mathcal{R}(t) < 80$};
+
+% NLU処理（分岐点）
+\node[process node, below=of layer1] (nlu) {Layer 2: NLU\\$\mathcal{S}(t)$, $\sigma$};
+
+% 上段: ベクトル演算系（潜在空間）
+\node[vector node, right=of nlu, yshift=1.2cm] (embedding) {埋め込み\\$E(t): \mathcal{T} \rightarrow \mathbb{R}^d$};
+\node[data node, right=of embedding] (vecdb) {Vector DB\\$v_m \in \mathbb{R}^{1536}$\\(事前計算済み)};
+\node[vector node, right=of vecdb] (cosine) {コサイン類似度\\$\text{Sim} = \frac{v_u \cdot v_m}{\|v_u\|\|v_m\|}$};
+
+% 下段: ルールベース系
+\node[rule node, right=of nlu, yshift=-1.2cm] (keyword) {キーワード\\マッチング};
+\node[rule node, right=of keyword] (coverage) {症状カバレッジ\\$\text{Cov} = \frac{|S_u \cap E_m|}{|S_u|}$};
+
+% 合流: 動的重み付け
+\node[merge node, right=of cosine, yshift=-1.2cm] (weight) {動的重み付け\\$\alpha(\sigma) \cdot \text{Sim}$\\$+ \beta(\sigma) \cdot \text{Cov}$};
+
+% リスクペナルティ
+\node[process node, below=of weight] (risk) {リスクペナルティ\\$P_{risk}(m)$};
+
+% 最終スコア
+\node[merge node, below=of risk] (score) {最終スコア\\$S(m) = \alpha \cdot \text{Sim}$\\$+ \beta \cdot \text{Cov} - P_{risk}$};
+
+% Layer 3
+\node[process node, below=of score] (layer3) {Layer 3\\$\neg\mathcal{E}(u)$};
+
+% Layer 4
+\node[process node, below=of layer3] (layer4) {Layer 4\\アレルギー検出};
+
+% Layer 5
+\node[process node, below=of layer4] (layer5) {Layer 5\\$top_k = 3$};
+
+% 出力
+\node[input node, below=of layer5] (output) {推奨結果};
+
+% 矢印（メインフロー）
+\draw[arrow] (input) -- (layer1);
+\draw[arrow] (layer1) -- (nlu);
+\draw[arrow] (layer3) -- (layer4);
+\draw[arrow] (layer4) -- (layer5);
+\draw[arrow] (layer5) -- (output);
+
+% 上段: ベクトル演算系
+\draw[vector arrow] (nlu) -- (embedding) node[midway, above, font=\tiny] {$t$};
+\draw[vector arrow] (embedding) -- (vecdb) node[midway, above, font=\tiny] {$v_u$};
+\draw[vector arrow] (vecdb) -- (cosine) node[midway, above, font=\tiny] {$v_m$取得};
+\draw[vector arrow] (cosine) -- (weight) node[midway, right, font=\tiny] {Sim};
+
+% 下段: ルールベース系
+\draw[rule arrow] (nlu) -- (keyword) node[midway, below, font=\tiny] {$\mathcal{S}_u$};
+\draw[rule arrow] (keyword) -- (coverage) node[midway, above, font=\tiny] {マッチング};
+\draw[rule arrow] (coverage) -- (weight) node[midway, right, font=\tiny] {Cov};
+
+% 合流後の処理
+\draw[arrow] (weight) -- (risk);
+\draw[arrow] (risk) -- (score);
+\draw[arrow] (score) -- (layer3);
+
+% 注釈
+\node[below=0.1cm of embedding, font=\tiny, text width=2.5cm, align=center] {$d = 1536$次元\\埋め込み};
+\node[below=0.1cm of vecdb, font=\tiny, text width=2.5cm, align=center] {オフライン\\事前計算};
+
+\end{tikzpicture}
+\end{document}
