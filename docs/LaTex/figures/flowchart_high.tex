@@ -1,0 +1,81 @@
+\documentclass[tikz]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% フォント設定（メインファイルと同じ）
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=1cm and 1.5cm,
+    auto,
+    thick,
+    start node/.style={ellipse, draw=green!70!black, fill=green!8, text width=2cm, text centered, minimum height=0.8cm, font=\footnotesize},
+    process node/.style={rectangle, draw=blue!70!black, fill=blue!8, text width=2.5cm, text centered, rounded corners, minimum height=0.8cm, font=\footnotesize},
+    decision node/.style={diamond, draw=orange!70!black, fill=orange!8, text width=2cm, text centered, aspect=2, font=\footnotesize},
+    end node/.style={ellipse, draw=red!70!black, fill=red!8, text width=2cm, text centered, minimum height=0.8cm, font=\footnotesize},
+    arrow/.style={->, >=stealth, semithick, color=gray!70!black},
+    yes arrow/.style={->, >=stealth, semithick, color=green!60!black},
+    no arrow/.style={->, >=stealth, semithick, color=red!60!black}
+]
+
+% 開始
+\node[start node] (start) {入力受信};
+
+% Layer 1
+\node[process node, below=of start] (layer1) {Layer 1\\$\mathcal{R}(t)$計算};
+\node[decision node, below=of layer1] (check1) {$\mathcal{R}(t) < 80$};
+
+% Layer 2
+\node[process node, below=of check1, xshift=-3cm] (layer2) {Layer 2\\NLU処理};
+\node[decision node, below=of layer2] (check2) {$|\mathcal{S}(t)| > 0$};
+
+% Layer 3
+\node[process node, below=of check2, xshift=-3cm] (layer3) {Layer 3\\禁忌チェック};
+\node[decision node, below=of layer3] (check3) {$\neg\mathcal{E}(u)$};
+
+% Layer 4
+\node[process node, below=of check3, xshift=-3cm] (layer4) {Layer 4\\スコアリング};
+\node[decision node, below=of layer4] (check4) {アレルギー\\検出};
+
+% Layer 5
+\node[process node, below=of check4, xshift=-3cm] (layer5) {Layer 5\\$top_k = 3$};
+
+% 成功終了
+\node[end node, below=of layer5] (success) {推奨結果};
+
+% エラー終了
+\node[end node, right=of check1, yshift=-1.5cm] (error1) {ブロック};
+\node[end node, right=of check2, yshift=-1.5cm] (error2) {症状未検出};
+\node[end node, right=of check3, yshift=-1.5cm] (error3) {医師受診必須};
+\node[end node, right=of check4, yshift=-1.5cm] (error4) {アレルギー検出};
+
+% 矢印
+\draw[arrow] (start) -- (layer1);
+\draw[arrow] (layer1) -- (check1);
+\draw[yes arrow] (check1) -- node[left, font=\tiny] {Yes} (layer2);
+\draw[no arrow] (check1) -- node[above, font=\tiny] {No} (error1);
+\draw[arrow] (layer2) -- (check2);
+\draw[yes arrow] (check2) -- node[left, font=\tiny] {Yes} (layer3);
+\draw[no arrow] (check2) -- node[above, font=\tiny] {No} (error2);
+\draw[arrow] (layer3) -- (check3);
+\draw[yes arrow] (check3) -- node[left, font=\tiny] {Yes} (layer4);
+\draw[no arrow] (check3) -- node[above, font=\tiny] {No} (error3);
+\draw[arrow] (layer4) -- (check4);
+\draw[yes arrow] (check4) -- node[left, font=\tiny] {No} (layer5);
+\draw[no arrow] (check4) -- node[above, font=\tiny] {Yes} (error4);
+\draw[arrow] (layer5) -- (success);
+
+\end{tikzpicture}
+\end{document}
