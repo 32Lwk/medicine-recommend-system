@@ -9,8 +9,6 @@ import random
 import logging
 import re
 import socket
-from collections.abc import MutableMapping
-from threading import local
 
 # ログ設定（早期に設定）
 # logディレクトリが存在しない場合は作成
@@ -69,6 +67,7 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
+from utils.session_manager import RequestSafeSession
 from medicine_logic import get_medicines_by_symptom, csv_load_status
 from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
 from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
@@ -79,97 +78,6 @@ from performance_monitor import get_global_monitor, log_performance_metrics, che
 from database import init_database, get_database
 from season_manager import get_current_season, get_season_images
 import pytz
-
-
-class RequestSafeSession(MutableMapping):
-    """Flaskセッションをリクエストコンテキスト外でも安全に扱うためのラッパー"""
-
-    def __init__(self):
-        self._storage = local()
-
-    def _use_real_session(self) -> bool:
-        return has_request_context()
-
-    def _fallback_store(self):
-        if not hasattr(self._storage, 'data'):
-            self._storage.data = {}
-            self._storage.modified = False
-        return self._storage
-
-    def __getitem__(self, key):
-        if self._use_real_session():
-            return flask_session[key]
-        store = self._fallback_store()
-        return store.data[key]
-
-    def __setitem__(self, key, value):
-        if self._use_real_session():
-            flask_session[key] = value
-        else:
-            store = self._fallback_store()
-            store.data[key] = value
-            store.modified = True
-
-    def __delitem__(self, key):
-        if self._use_real_session():
-            del flask_session[key]
-        else:
-            store = self._fallback_store()
-            del store.data[key]
-            store.modified = True
-
-    def __iter__(self):
-        if self._use_real_session():
-            return iter(flask_session)
-        return iter(self._fallback_store().data)
-
-    def __len__(self):
-        if self._use_real_session():
-            return len(flask_session)
-        return len(self._fallback_store().data)
-
-    def get(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.get(key, default)
-        return self._fallback_store().data.get(key, default)
-
-    def setdefault(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.setdefault(key, default)
-        store = self._fallback_store()
-        if key not in store.data:
-            store.data[key] = default
-            store.modified = True
-        return store.data[key]
-
-    def pop(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.pop(key, default)
-        store = self._fallback_store()
-        store.modified = True
-        return store.data.pop(key, default)
-
-    def clear(self):
-        if self._use_real_session():
-            flask_session.clear()
-        else:
-            store = self._fallback_store()
-            store.data.clear()
-            store.modified = True
-
-    @property
-    def modified(self):
-        if self._use_real_session():
-            return flask_session.modified
-        return self._fallback_store().modified
-
-    @modified.setter
-    def modified(self, value: bool):
-        if self._use_real_session():
-            flask_session.modified = value
-        else:
-            store = self._fallback_store()
-            store.modified = bool(value)
 
 
 session = RequestSafeSession()

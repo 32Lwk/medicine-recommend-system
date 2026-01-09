@@ -28,7 +28,7 @@ except ImportError:
 
 # normalize_text関数のインポート
 try:
-    from scoring_utils import normalize_text
+    from utils.text_utils import normalize_text
 except ImportError:
     # フォールバック
     def normalize_text(text: str) -> str:

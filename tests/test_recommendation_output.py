@@ -98,7 +98,7 @@ for i, test_case in enumerate(test_cases, 1):
         normalized_efficacy = efficacy.lower()
         if symptom_name in normalized_efficacy or 'たん' in normalized_efficacy or '痰' in normalized_efficacy:
             # 単語境界チェック
-            from scoring_utils import normalize_text
+            from utils.text_utils import normalize_text
             normalized_efficacy_full = normalize_text(efficacy)
             normalized_symptom = normalize_text(symptom_name)
             
