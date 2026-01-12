@@ -471,6 +471,28 @@ def detect_emotional_symptom_type(user_text: str, triage_result: Dict) -> str:
         return "general_emotional"
 
 
+def detect_app_specification_question(user_text: str) -> bool:
+    """
+    アプリケーションの技術仕様や対応内容に関する質問を検出
+    
+    Args:
+        user_text: ユーザーの入力テキスト
+    
+    Returns:
+        アプリケーションの技術仕様に関する質問かどうか
+    """
+    app_spec_keywords = [
+        "あなたについて", "あなたは", "あなたの", "システムについて", "アプリについて", 
+        "機能について", "対応", "できること", "何ができる", "技術", "仕様", "仕組み",
+        "アルゴリズム", "開発", "使用", "利用", "使い方", "特徴", "強み", "データベース",
+        "API", "フレームワーク", "言語", "環境", "デプロイ", "監視", "ログ", "セッション",
+        "多言語", "翻訳", "対応言語", "対応内容", "できること", "できないこと"
+    ]
+    
+    user_text_lower = user_text.lower()
+    return any(keyword in user_text_lower for keyword in app_spec_keywords)
+
+
 def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     """
     症状タイプに応じたプロンプトテンプレートを取得
@@ -486,9 +508,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     # 眠気専用のプロンプトテンプレート
     if symptom_type == "drowsiness":
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。眠気に関するカウンセリングを行い、生活習慣の改善を推奨し、カフェイン剤の適切な使用について説明してください。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。眠気に関するカウンセリングを行い、生活習慣の改善を推奨し、カフェイン剤の適切な使用について説明してください。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。日中の眠気で悩むユーザーに対して、
+あなたは医薬品相談AIアシスタントです。日中の眠気で悩むユーザーに対して、
 共感的で実践的なアドバイスを含む返信を生成してください。
 {history_context}
 【ユーザーの入力】
@@ -521,9 +543,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     # 不眠専用のプロンプトテンプレート
     if symptom_type == "insomnia":
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。不眠に関するカウンセリングを行い、代替療法を推奨し、薬のリスクを説明してください。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。不眠に関するカウンセリングを行い、代替療法を推奨し、薬のリスクを説明してください。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。不眠で悩むユーザーに対して、
+あなたは医薬品相談AIアシスタントです。不眠で悩むユーザーに対して、
 共感的で実践的なアドバイスを含む返信を生成してください。
 {history_context}
 【ユーザーの入力】
@@ -558,9 +580,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 処方薬の要求
         if request_type == "prescription":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。処方薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。処方薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -583,9 +605,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 痩せ薬・ダイエット薬
         elif request_type == "weight_loss":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。痩せ薬・ダイエット薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。痩せ薬・ダイエット薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -608,9 +630,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 惚れ薬・媚薬
         elif request_type == "love_potion":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。惚れ薬・媚薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。惚れ薬・媚薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -633,9 +655,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 精神疾患関連の完治・予防（共感的なテンプレート）
         elif request_type == "psychiatric_cure_prevention":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。精神疾患で悩むユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。精神疾患で悩むユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。精神疾患の完治を希望するユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。
+あなたは医薬品相談AIアシスタントです。精神疾患の完治を希望するユーザーに対して、より共感的かつ丁寧な受診勧奨メッセージを生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -657,9 +679,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 病気の完治・予防（重篤な疾患のみ、精神疾患以外）
         elif request_type == "cure_prevention":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。重篤な疾患の完治・予防を目的とした医薬品の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。重篤な疾患の完治・予防を目的とした医薬品の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -682,9 +704,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 「予防したい」専用のテンプレート
         elif request_type == "prevention":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。
+あなたは医薬品相談AIアシスタントです。予防に関する相談に対して、生活習慣のアドバイスとサプリメントと医薬品の違いを説明してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -710,9 +732,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 「完治したい」だけの場合のテンプレート
         elif request_type == "cure_only":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。
+あなたは医薬品相談AIアシスタントです。完治に関する相談に対して、簡潔な説明と医師受診を案内してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -730,23 +752,24 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
                 "max_length": 200
             }
         
-        # 不適切なメッセージ（暴言、脅迫など）
+        # 不適切なメッセージ（暴言、脅迫、下ネタなど）
         elif request_type == "inappropriate_message":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。不適切なメッセージに対して、冷静で丁寧な対応をしてください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。不適切なメッセージに対して、冷静で丁寧な対応をしてください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。不適切なメッセージに対して、冷静で丁寧な対応をしてください。
+あなたは医薬品相談AIアシスタントです。不適切なメッセージ（暴言、脅迫、下ネタなど）に対して、冷静で丁寧な対応をしてください。
 {history_context}
 【ユーザーの入力】
 {user_text}
 
 【要求タイプ】
-不適切なメッセージ（暴言、脅迫など）
+不適切なメッセージ（暴言、脅迫、下ネタなど）
 
 【返信の要件】
 - **冷静で丁寧なトーン**: 感情的にならず、冷静で丁寧な対応をする
 - **システムの目的の説明**: 当システムは医薬品相談を目的としており、不適切なメッセージには対応できないことを説明
 - **建設的な対応を促す**: 医薬品相談であれば、適切な方法で対応できることを伝える
+- **下ネタへの対応**: 下ネタの場合は、医薬品相談の目的を明確に伝え、適切な相談内容に誘導する
 - **応答長さ**: 100-150文字程度（簡潔に）
 """,
                 "response_requirements": "冷静で丁寧な対応をする返信（100-150文字程度）",
@@ -756,9 +779,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # アンチエイジング・若返り
         elif request_type == "anti_aging":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。アンチエイジング・若返りの薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。アンチエイジング・若返りの薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -781,9 +804,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 身体の特定部位の形状変化
         elif request_type == "body_shape":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。身体の特定部位の形状変化の薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。身体の特定部位の形状変化の薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -806,9 +829,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
         # 毛が生える・ハゲが治る薬
         elif request_type == "hair_growth":
             return {
-                "system_message": "あなたは薬剤師兼カウンセラーです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
+                "system_message": "あなたは医薬品相談AIアシスタントです。優しく導くトーンで、システムの制限を説明し、適切な代替案を提示してください。",
                 "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。毛が生える・ハゲが治る薬の要求に対して、優しく導くトーンで返信を生成してください。
+あなたは医薬品相談AIアシスタントです。毛が生える・ハゲが治る薬の要求に対して、優しく導くトーンで返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -834,9 +857,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     if symptom_type in MEDICAL_SYMPTOM_TYPES:
         # 医療関連: 従来のプロンプト（詳細な情報収集を重視）
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。共感的でバランスの取れた返信を生成してください。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。共感的でバランスの取れた返信を生成してください。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。ユーザーの感情的症状に対して、
+あなたは医薬品相談AIアシスタントです。ユーザーの感情的症状に対して、
 共感的でバランスの取れた返信を生成してください。
 {history_context}
 【ユーザーの入力】
@@ -859,9 +882,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     # 一般的な症状相談用のプロンプトテンプレート
     if symptom_type == "general_symptom":
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。ユーザーの症状に対して、共感的で実践的なアドバイスを提供してください。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。ユーザーの症状に対して、共感的で実践的なアドバイスを提供してください。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。ユーザーの症状に対して、共感的で実践的なアドバイスを含む返信を生成してください。
+あなたは医薬品相談AIアシスタントです。ユーザーの症状に対して、共感的で実践的なアドバイスを含む返信を生成してください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -884,9 +907,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     
     if symptom_type == "inappropriate_request/unknown":
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。
+あなたは医薬品相談AIアシスタントです。不明な要求に対して、丁寧に説明し、適切な案内をしてください。
 {history_context}
 【ユーザーの入力】
 {user_text}
@@ -906,9 +929,9 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     else:
         # 非医療関連: 応援を重視したプロンプト
         return {
-            "system_message": "あなたは薬剤師兼カウンセラーです。医療的アドバイスよりも心理的サポートを優先し、ユーザーを応援し、励まします。",
+            "system_message": "あなたは医薬品相談AIアシスタントです。医療的アドバイスよりも心理的サポートを優先し、ユーザーを応援し、励まします。",
             "user_prompt_template": """
-あなたは薬剤師兼カウンセラーです。ユーザーの悩みや感情に対して、
+あなたは医薬品相談AIアシスタントです。ユーザーの悩みや感情に対して、
 温かく支援的で前向きな応援メッセージを生成してください。
 {history_context}
 【ユーザーの入力】
@@ -959,6 +982,462 @@ def generate_counseling_response(
         request_type = symptom_type.split("/")[1]
         if request_type in ["illegal", "controlled"]:
             return generate_illegal_drug_rejection_message(request_type)
+        
+        # 緊急避妊薬に関する質問を検出（処方薬の要求の場合）
+        if request_type == "prescription":
+            # 性被害の検出
+            sexual_assault_keywords = [
+                "レイプ", "れいぷ", "rape", "強姦", "ごうかん", "性被害", "せいひがい", 
+                "性的被害", "せいてきひがい", "性暴力", "せいぼうりょく", "性的暴力", "せいてきぼうりょく"
+            ]
+            
+            user_text_lower = user_text.lower()
+            is_sexual_assault = any(keyword.lower() in user_text_lower for keyword in sexual_assault_keywords)
+            
+            emergency_contraception_keywords = [
+                "アフターピル", "あふたーぴる", "afterpill", "after pill",
+                "ノルレボ", "のるれぼ", "norlevo",
+                "レボノルゲストレル", "れぼのるげすとれる", "levonorgestrel",
+                "緊急避妊", "きんきゅうひにん", "緊急避妊薬", "きんきゅうひにんやく",
+                "緊急避妊ピル", "きんきゅうひにんぴる",
+                "避妊に失敗", "ひにんにしっぱい", "避妊失敗", "ひにんしっぱい",
+                "避妊できません", "ひにんできません", "避妊できなかった", "ひにんできなかった",
+                "避妊出来なかった", "ひにんできなかった", "避妊出来ません", "ひにんできません",
+                "コンドームが破れ", "こんどむが破れ", "コンドーム破れ", "こんどむ破れ",
+                "コンドームが破れた", "こんどむが破れた", "コンドーム破れた", "こんどむ破れた"
+            ]
+            
+            is_emergency_contraception = any(keyword.lower() in user_text_lower for keyword in emergency_contraception_keywords)
+            
+            if is_sexual_assault:
+                # 性被害の場合の専用プロンプト
+                history_text = ""
+                if conversation_history:
+                    try:
+                        recent_history = conversation_history[-5:]
+                        history_lines = []
+                        for msg in recent_history:
+                            role = msg.get('type', 'unknown')
+                            content = msg.get('content', '')
+                            if role == 'user':
+                                history_lines.append(f"ユーザー: {content}")
+                            elif role == 'bot':
+                                history_lines.append(f"アシスタント: {content}")
+                        history_text = "\n".join(history_lines)
+                    except Exception:
+                        history_text = ""
+                
+                sexual_assault_prompt = f"""
+あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。
+
+【ユーザーの状況】
+{user_text}
+
+【会話履歴】
+{history_text if history_text else "（会話履歴がありません）"}
+
+【性被害を受けた方への重要な情報】
+
+1. **緊急避妊薬（アフターピル）について**
+   - 性行為から72時間（3日）以内に服用することで、高い確率で妊娠を避けることが期待できます
+   - できるだけ早く服用することが効果的です
+   - 日本で認可されている緊急避妊薬は「ノルレボ」「レボノルゲストレル」で、性行為から72時間以内に1錠服用します
+   - 必ず医療機関で発行される処方箋が必要です
+
+2. **医療機関への相談**
+   - 産婦人科を受診し、緊急避妊薬の処方を受けることができます
+   - 性感染症の検査も受けることをお勧めします
+   - 2019年より、オンライン診療も可能です（産婦人科医または必要な研修を受けた医師が初診からオンライン診療を行うことができます）
+
+3. **心理的サポート**
+   - 性暴力被害者支援センターや相談窓口があります
+   - 一人で抱え込まず、信頼できる人や専門家に相談することが大切です
+
+4. **警察への相談**
+   - 希望する場合は、警察への相談も可能です
+   - 証拠保全のため、できるだけ早く相談することが重要です
+
+5. **その他の支援**
+   - 性暴力被害者支援センター（全国共通ダイヤル：0120-279-889）
+   - 各都道府県の相談窓口
+
+【返信の要件】
+- **親身で共感的なトーン**: ユーザーの状況に寄り添い、理解を示す（1-2文）
+- **時間の重要性を強調**: 72時間以内の緊急避妊薬の服用の重要性を説明
+- **医療機関への相談を促す**: 産婦人科への相談を案内し、性感染症の検査も受けることを推奨
+- **心理的サポートの案内**: 性暴力被害者支援センターなどの相談窓口を案内
+- **警察への相談の案内**: 希望する場合は警察への相談も可能であることを伝える
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **安心感を与える**: ユーザーが適切な支援を受けられるよう、親身にサポートする
+- **応答長さ**: 400-500文字程度（重要な情報を含めるため、やや長めでも可）
+- **マークダウン記号の使用禁止**: **や*などのマークダウン記号は使用せず、通常のテキストで返信してください
+
+【返信を生成してください】
+"""
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。"},
+                            {"role": "user", "content": sexual_assault_prompt}
+                        ],
+                        temperature=0.7,
+                        max_tokens=600
+                    )
+                    # マークダウン記号を削除
+                    response_text = response.choices[0].message.content.strip()
+                    response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
+                    return response_text
+                except Exception as e:
+                    logger.error(f"性被害応答生成エラー: {e}")
+                    # フォールバック: 一般的な処方薬の応答を返す（後続処理で実行される）
+            elif is_emergency_contraception:
+                # 緊急避妊薬専用のプロンプトを使用
+                history_text = ""
+                if conversation_history:
+                    # format_conversation_historyは同じファイル内にあるため、直接呼び出し
+                    # 関数が定義される前に呼び出される可能性があるため、後で定義を確認
+                    try:
+                        recent_history = conversation_history[-5:]
+                        history_lines = []
+                        for msg in recent_history:
+                            role = msg.get('type', 'unknown')
+                            content = msg.get('content', '')
+                            if role == 'user':
+                                history_lines.append(f"ユーザー: {content}")
+                            elif role == 'bot':
+                                history_lines.append(f"アシスタント: {content}")
+                        history_text = "\n".join(history_lines)
+                    except Exception:
+                        history_text = ""
+                
+                emergency_contraception_prompt = f"""
+あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。
+
+【ユーザーの質問】
+{user_text}
+
+【会話履歴】
+{history_text if history_text else "（会話履歴がありません）"}
+
+【緊急避妊薬に関する重要な情報】
+- **名称**: アフターピル、緊急避妊ピルとも呼ばれます
+- **目的**: 望まない妊娠の可能性がある場合（性行為や性被害など）に使用
+- **有効性**: 性行為から72時間（3日）以内に服用することで、高い確率で妊娠を避けることが期待できます
+- **効果**: 主に排卵を遅らせるなどの作用により緊急的に妊娠の成立を防ぎます
+- **時間の重要性**: 性交からできるだけ早く服用することが効果的で、早く服用した方が効果が高いことがわかっています。72時間を超えてから服用すると効果は大きく落ちますが、効果が全く得られないわけではありません
+- **認可されている薬**: 日本で認可されている緊急避妊薬は「ノルレボ」「レボノルゲストレル（ノルレボのジェネリック医薬品）」で、性行為から72時間以内に1錠服用します
+
+【取得方法】
+緊急避妊薬は必ず医療機関で発行される処方箋が必要です。以下の2つの方法があります：
+
+1. **対面診療**
+   - 産婦人科及び必要な研修を受けた医師に診察を受ける
+   - 処方箋原本を薬局に持参
+   - 薬局で必要な研修を受けた薬剤師との対面服用（処方は1錠のみ）
+
+2. **オンライン診療（緊急避妊に関するオンライン診療）**
+   - 2019年より、産婦人科医又は厚生労働省が指定する研修を受講した医師が、初診からオンライン診療を行うことができるようになりました
+   - 産婦人科及び必要な研修を受けた医師に診察を受ける
+   - 医療機関から薬局へ処方箋情報の送付・情報提供
+   - 薬局において、必要な研修を受けた薬剤師との対面服用（処方は1錠のみ）
+   - 薬局から処方医へ、服用したことを情報提供
+
+**重要**: いずれの場合も、3週間後に産婦人科医による対面診療を受けてください。
+
+【返信の要件】
+- **親身で共感的なトーン**: ユーザーの状況に寄り添い、理解を示す（1-2文）
+- **時間の重要性を強調**: 72時間以内の服用の重要性、できるだけ早く服用することが効果的であることを説明
+- **具体的な取得方法の案内**: 対面診療とオンライン診療の両方の選択肢を説明
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **専門家への相談を促す**: 産婦人科医への相談を案内し、3週間後の対面診療の重要性も伝える
+- **安心感を与える**: ユーザーが適切な医療機関にアクセスできるよう、親身にサポートする
+- **応答長さ**: 300-400文字程度（重要な情報を含めるため、やや長めでも可）
+- **マークダウン記号の使用禁止**: **や*などのマークダウン記号は使用せず、通常のテキストで返信してください
+
+【返信を生成してください】
+"""
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。"},
+                            {"role": "user", "content": emergency_contraception_prompt}
+                        ],
+                        temperature=0.7,
+                        max_tokens=500
+                    )
+                    # マークダウン記号を削除
+                    response_text = response.choices[0].message.content.strip()
+                    response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
+                    return response_text
+                except Exception as e:
+                    logger.error(f"緊急避妊薬応答生成エラー: {e}")
+                    # フォールバック: 一般的な処方薬の応答を返す（後続処理で実行される）
+    
+    # 緊急避妊薬に関する質問を検出（general_otherまたはinappropriate_request/unknownの場合も）
+    # 性被害の検出
+    sexual_assault_keywords = [
+        "レイプ", "れいぷ", "rape", "強姦", "ごうかん", "性被害", "せいひがい", 
+        "性的被害", "せいてきひがい", "性暴力", "せいぼうりょく", "性的暴力", "せいてきぼうりょく"
+    ]
+    
+    user_text_lower = user_text.lower()
+    is_sexual_assault_general = any(keyword.lower() in user_text_lower for keyword in sexual_assault_keywords)
+    
+    emergency_contraception_keywords = [
+        "アフターピル", "あふたーぴる", "afterpill", "after pill",
+        "ノルレボ", "のるれぼ", "norlevo",
+        "レボノルゲストレル", "れぼのるげすとれる", "levonorgestrel",
+        "緊急避妊", "きんきゅうひにん", "緊急避妊薬", "きんきゅうひにんやく",
+        "緊急避妊ピル", "きんきゅうひにんぴる",
+        "避妊に失敗", "ひにんにしっぱい", "避妊失敗", "ひにんしっぱい",
+        "避妊できません", "ひにんできません", "避妊できなかった", "ひにんできなかった",
+        "避妊出来なかった", "ひにんできなかった", "避妊出来ません", "ひにんできません",
+        "コンドームが破れ", "こんどむが破れ", "コンドーム破れ", "こんどむ破れ",
+        "コンドームが破れた", "こんどむが破れた", "コンドーム破れた", "こんどむ破れた"
+    ]
+    
+    is_emergency_contraception_general = any(keyword.lower() in user_text_lower for keyword in emergency_contraception_keywords)
+    
+    # general_otherまたはinappropriate_request/unknownの場合に性被害または緊急避妊薬の質問をチェック
+    if (symptom_type == "general_other" or symptom_type == "inappropriate_request/unknown") and (is_sexual_assault_general or is_emergency_contraception_general):
+        if is_sexual_assault_general:
+            # 性被害の場合の専用プロンプト
+            history_text = ""
+            if conversation_history:
+                try:
+                    recent_history = conversation_history[-5:]
+                    history_lines = []
+                    for msg in recent_history:
+                        role = msg.get('type', 'unknown')
+                        content = msg.get('content', '')
+                        if role == 'user':
+                            history_lines.append(f"ユーザー: {content}")
+                        elif role == 'bot':
+                            history_lines.append(f"アシスタント: {content}")
+                    history_text = "\n".join(history_lines)
+                except Exception:
+                    history_text = ""
+            
+            sexual_assault_prompt = f"""
+あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。
+
+【ユーザーの状況】
+{user_text}
+
+【会話履歴】
+{history_text if history_text else "（会話履歴がありません）"}
+
+【性被害を受けた方への重要な情報】
+
+1. **緊急避妊薬（アフターピル）について**
+   - 性行為から72時間（3日）以内に服用することで、高い確率で妊娠を避けることが期待できます
+   - できるだけ早く服用することが効果的です
+   - 日本で認可されている緊急避妊薬は「ノルレボ」「レボノルゲストレル」で、性行為から72時間以内に1錠服用します
+   - 必ず医療機関で発行される処方箋が必要です
+
+2. **医療機関への相談**
+   - 産婦人科を受診し、緊急避妊薬の処方を受けることができます
+   - 性感染症の検査も受けることをお勧めします
+   - 2019年より、オンライン診療も可能です（産婦人科医または必要な研修を受けた医師が初診からオンライン診療を行うことができます）
+
+3. **心理的サポート**
+   - 性暴力被害者支援センターや相談窓口があります
+   - 一人で抱え込まず、信頼できる人や専門家に相談することが大切です
+
+4. **警察への相談**
+   - 希望する場合は、警察への相談も可能です
+   - 証拠保全のため、できるだけ早く相談することが重要です
+
+5. **その他の支援**
+   - 性暴力被害者支援センター（全国共通ダイヤル：0120-279-889）
+   - 各都道府県の相談窓口
+
+【返信の要件】
+- **親身で共感的なトーン**: ユーザーの状況に寄り添い、理解を示す（1-2文）
+- **時間の重要性を強調**: 72時間以内の緊急避妊薬の服用の重要性を説明
+- **医療機関への相談を促す**: 産婦人科への相談を案内し、性感染症の検査も受けることを推奨
+- **心理的サポートの案内**: 性暴力被害者支援センターなどの相談窓口を案内
+- **警察への相談の案内**: 希望する場合は警察への相談も可能であることを伝える
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **安心感を与える**: ユーザーが適切な支援を受けられるよう、親身にサポートする
+- **応答長さ**: 400-500文字程度（重要な情報を含めるため、やや長めでも可）
+- **マークダウン記号の使用禁止**: **や*などのマークダウン記号は使用せず、通常のテキストで返信してください
+
+【返信を生成してください】
+"""
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。"},
+                        {"role": "user", "content": sexual_assault_prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=600
+                )
+                # マークダウン記号を削除
+                response_text = response.choices[0].message.content.strip()
+                response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
+                return response_text
+            except Exception as e:
+                logger.error(f"性被害応答生成エラー: {e}")
+                # フォールバック: 一般的な応答を返す（後続処理で実行される）
+        elif is_emergency_contraception_general:
+            # 緊急避妊薬専用のプロンプトを使用
+            history_text = ""
+            if conversation_history:
+                try:
+                    recent_history = conversation_history[-5:]
+                    history_lines = []
+                    for msg in recent_history:
+                        role = msg.get('type', 'unknown')
+                        content = msg.get('content', '')
+                        if role == 'user':
+                            history_lines.append(f"ユーザー: {content}")
+                        elif role == 'bot':
+                            history_lines.append(f"アシスタント: {content}")
+                    history_text = "\n".join(history_lines)
+                except Exception:
+                    history_text = ""
+            
+            emergency_contraception_prompt = f"""
+あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。
+
+【ユーザーの質問】
+{user_text}
+
+【会話履歴】
+{history_text if history_text else "（会話履歴がありません）"}
+
+【緊急避妊薬に関する重要な情報】
+- **名称**: アフターピル、緊急避妊ピルとも呼ばれます
+- **目的**: 望まない妊娠の可能性がある場合（性行為や性被害など）に使用
+- **有効性**: 性行為から72時間（3日）以内に服用することで、高い確率で妊娠を避けることが期待できます
+- **効果**: 主に排卵を遅らせるなどの作用により緊急的に妊娠の成立を防ぎます
+- **時間の重要性**: 性交からできるだけ早く服用することが効果的で、早く服用した方が効果が高いことがわかっています。72時間を超えてから服用すると効果は大きく落ちますが、効果が全く得られないわけではありません
+- **認可されている薬**: 日本で認可されている緊急避妊薬は「ノルレボ」「レボノルゲストレル（ノルレボのジェネリック医薬品）」で、性行為から72時間以内に1錠服用します
+
+【取得方法】
+緊急避妊薬は必ず医療機関で発行される処方箋が必要です。以下の2つの方法があります：
+
+1. **対面診療**
+   - 産婦人科及び必要な研修を受けた医師に診察を受ける
+   - 処方箋原本を薬局に持参
+   - 薬局で必要な研修を受けた薬剤師との対面服用（処方は1錠のみ）
+
+2. **オンライン診療（緊急避妊に関するオンライン診療）**
+   - 2019年より、産婦人科医又は厚生労働省が指定する研修を受講した医師が、初診からオンライン診療を行うことができるようになりました
+   - 産婦人科及び必要な研修を受けた医師に診察を受ける
+   - 医療機関から薬局へ処方箋情報の送付・情報提供
+   - 薬局において、必要な研修を受けた薬剤師との対面服用（処方は1錠のみ）
+   - 薬局から処方医へ、服用したことを情報提供
+
+**重要**: いずれの場合も、3週間後に産婦人科医による対面診療を受けてください。
+
+【返信の要件】
+- **親身で共感的なトーン**: ユーザーの状況に寄り添い、理解を示す（1-2文）
+- **時間の重要性を強調**: 72時間以内の服用の重要性、できるだけ早く服用することが効果的であることを説明
+- **具体的な取得方法の案内**: 対面診療とオンライン診療の両方の選択肢を説明
+- **システムの制限の説明**: 当システムは市販薬（OTC医薬品）の相談を承っており、処方薬の処方はできないことを説明
+- **専門家への相談を促す**: 産婦人科医への相談を案内し、3週間後の対面診療の重要性も伝える
+- **安心感を与える**: ユーザーが適切な医療機関にアクセスできるよう、親身にサポートする
+- **応答長さ**: 300-400文字程度（重要な情報を含めるため、やや長めでも可）
+- **マークダウン記号の使用禁止**: **や*などのマークダウン記号は使用せず、通常のテキストで返信してください
+
+【返信を生成してください】
+"""
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。"},
+                        {"role": "user", "content": emergency_contraception_prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=500
+                )
+                # マークダウン記号を削除
+                response_text = response.choices[0].message.content.strip()
+                response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
+                return response_text
+            except Exception as e:
+                logger.error(f"緊急避妊薬応答生成エラー: {e}")
+                # フォールバック: 一般的な応答を返す（後続処理で実行される）
+    
+    # アプリケーションの技術仕様に関する質問を検出
+    # general_otherまたはinappropriate_request/unknownの場合に技術仕様質問をチェック
+    if (symptom_type == "general_other" or symptom_type == "inappropriate_request/unknown") and detect_app_specification_question(user_text):
+        # アプリケーションの技術仕様に関する質問に特化したプロンプトを使用
+        app_spec_prompt = f"""
+あなたは医薬品相談AIアシスタントです。ユーザーからのアプリケーションの技術仕様や対応内容に関する質問に対して、正確で分かりやすい説明を提供してください。
+
+【ユーザーの質問】
+{user_text}
+
+【アプリケーションの基本情報】
+- 名称: チャット型医薬品相談ツール（β版）
+- 目的: 症状に基づいて一般用医薬品（OTC薬）をチャット形式で安全かつ柔軟に提案
+- 対象: 企業・行政関係者・薬剤師・登録販売者など、限られた専門関係者（β版）
+
+【主な機能】
+1. 自然なチャット形式での相談
+2. AI × 薬学知識による安全性の担保
+3. 受診勧奨システムの導入
+4. 多言語・多環境対応（日本語・英語・中国語・韓国語）
+5. データの安全管理
+
+【技術仕様】
+- バックエンド: Python 3.9+, Flask 3.0.0, Jinja2
+- AI/NLP: OpenAI GPT-4o-mini, ルールベースNLU（ハイブリッド推奨システム）
+- 翻訳API: DeepL API（多言語対応：日本語・英語・中国語・韓国語、高速翻訳）
+- データベース: PostgreSQL（フィードバック永続化・セッション管理・マルチインスタンス対応）
+- データ処理: Pandas 2.2.3, NumPy
+- フロントエンド: HTML5, CSS3, JavaScript（ES6+）、バニラJavaScript（フレームワーク不使用）、レスポンシブデザイン
+- デプロイ環境: Render（本番環境）、Gunicorn（WSGIサーバー）
+- 監視・ログ: psutil, JSONL形式記録（構造化ログ）、アクセス分析、パフォーマンス監視
+- バージョン管理: Git（GitHub）
+
+【独自のアルゴリズム】
+本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。
+
+【対応内容】
+- 一般用医薬品（OTC薬）の相談・推奨
+- 症状に基づいた医薬品選定
+- 医薬品の相互作用チェック
+- アレルギー対応
+- 受診勧奨（重篤な症状が疑われる場合）
+- 多言語対応（日本語・英語・中国語・韓国語）
+
+【対応できない内容】
+- 処方薬の推奨・処方
+- 診断・治療行為
+- 違法薬物・規制薬物に関する相談
+- 重篤な疾患の完治・予防を目的とした薬の要求
+
+【返信の要件】
+- **正確性**: アプリケーションの技術仕様や対応内容について、正確な情報を提供してください
+- **分かりやすさ**: 専門用語を使う場合は、分かりやすく説明してください
+- **簡潔さ**: 200-300文字程度で簡潔に説明してください
+- **丁寧さ**: ユーザーの質問に対して、丁寧に回答してください
+
+【返信を生成してください】
+"""
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。アプリケーションの技術仕様や対応内容に関する質問に対して、正確で分かりやすい説明を提供してください。"},
+                    {"role": "user", "content": app_spec_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=400
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"アプリケーション仕様質問応答生成エラー: {e}")
+            return "申し訳ございませんが、システムエラーが発生しました。アプリケーションの技術仕様については、右上のℹ️ボタンから「アプリ概要・運営者情報」をご確認ください。"
     
     # プロンプトテンプレートを取得
     template = get_counseling_prompt_template(symptom_type)
@@ -1155,7 +1634,7 @@ def generate_follow_up_questions(
         # 4-6ステップの中程度の対話フローを実装
         try:
             prompt = f"""
-あなたは薬剤師兼カウンセラーです。不適切な要求に対して、より詳しい情報を収集するための
+あなたは医薬品相談AIアシスタントです。不適切な要求に対して、より詳しい情報を収集するための
 フォローアップ質問を生成してください。
 
 【要求タイプ】
@@ -1182,7 +1661,7 @@ JSON形式で回答してください：
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。適切なフォローアップ質問を生成してください。"},
+                    {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。適切なフォローアップ質問を生成してください。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -1276,7 +1755,7 @@ JSON形式で回答してください：
     
     # その他の症状タイプの処理
     prompt = f"""
-    あなたは薬剤師兼カウンセラーです。感情的症状について、より詳しい情報を収集するための
+    あなたは医薬品相談AIアシスタントです。感情的症状について、より詳しい情報を収集するための
     フォローアップ質問を生成してください。
     
     【症状タイプ】
@@ -1303,7 +1782,7 @@ JSON形式で回答してください：
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。自然な会話形式のフォローアップ質問を生成してください。「もう少し詳しく教えていただけますか？」という質問は生成しないでください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。自然な会話形式のフォローアップ質問を生成してください。「もう少し詳しく教えていただけますか？」という質問は生成しないでください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
@@ -1549,7 +2028,7 @@ def generate_supportive_question(
     history_text = format_conversation_history(conversation_history[-5:])
     
     prompt = f"""
-あなたは薬剤師兼カウンセラーです。ユーザーを応援し、支援するための
+あなたは医薬品相談AIアシスタントです。ユーザーを応援し、支援するための
 自然で親しみやすい質問を1つ生成してください。
 
 【会話履歴】
@@ -1574,7 +2053,7 @@ def generate_supportive_question(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。支援的で親しみやすい質問を生成してください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。支援的で親しみやすい質問を生成してください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
@@ -1605,7 +2084,7 @@ def analyze_user_satisfaction(
     history_text = format_conversation_history(conversation_history[-5:])
     
     prompt = f"""
-あなたは薬剤師兼カウンセラーです。ユーザーの最新の回答から満足度を分析してください。
+あなたは医薬品相談AIアシスタントです。ユーザーの最新の回答から満足度を分析してください。
 
 【会話履歴】
 {history_text}
@@ -1636,7 +2115,7 @@ JSON形式で回答してください：
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。ユーザーの満足度を正確に分析してください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。ユーザーの満足度を正確に分析してください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
@@ -1703,7 +2182,7 @@ def process_counseling_answer(
         ])
     
     prompt = f"""
-    あなたは薬剤師兼カウンセラーです。以下の会話履歴を基に、ユーザーの最新の回答を解釈してください。
+    あなたは医薬品相談AIアシスタントです。以下の会話履歴を基に、ユーザーの最新の回答を解釈してください。
     
     【会話履歴（全文）】
     {history_text}
@@ -1768,7 +2247,7 @@ def process_counseling_answer(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。会話の文脈を理解し、ユーザーの回答を正確に解釈してください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の文脈を理解し、ユーザーの回答を正確に解釈してください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
@@ -1908,7 +2387,7 @@ def process_counseling_answer(
             
             # 不眠専用の簡潔な返信を生成
             prompt = f"""
-あなたは薬剤師兼カウンセラーです。不眠で悩むユーザーに対して、会話の流れを考慮した簡潔な返信を生成してください。
+あなたは医薬品相談AIアシスタントです。不眠で悩むユーザーに対して、会話の流れを考慮した簡潔な返信を生成してください。
 
 【会話履歴】
 {history_text}
@@ -1935,7 +2414,7 @@ def process_counseling_answer(
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。会話の流れを考慮した簡潔な返信を生成してください。"},
+                        {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の流れを考慮した簡潔な返信を生成してください。"},
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.7,
@@ -2251,7 +2730,7 @@ def generate_counseling_summary(
     """
     
     prompt = f"""
-    あなたは薬剤師兼カウンセラーです。カウンセリングで収集した情報を基に、
+    あなたは医薬品相談AIアシスタントです。カウンセリングで収集した情報を基に、
     総合的な返信を生成してください。
     {history_context}
     【収集した情報】
@@ -2274,7 +2753,7 @@ def generate_counseling_summary(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師兼カウンセラーです。総合的な返信を生成してください。返信は200文字以内に収めてください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。総合的な返信を生成してください。返信は200文字以内に収めてください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
@@ -2352,7 +2831,7 @@ def detect_topic_shift(
     history_text = format_conversation_history(conversation_history[-10:])  # 直近10件
     
     prompt = f"""
-    あなたは薬剤師です。カウンセリング中の会話で、ユーザーが話題を転換したかを判定してください。
+    あなたは医薬品相談AIアシスタントです。カウンセリング中の会話で、ユーザーが話題を転換したかを判定してください。
     
     【会話履歴】
     {history_text}
@@ -2398,7 +2877,7 @@ def detect_topic_shift(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "あなたは薬剤師です。会話の文脈を理解し、話題転換を正確に検知してください。"},
+                {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の文脈を理解し、話題転換を正確に検知してください。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
