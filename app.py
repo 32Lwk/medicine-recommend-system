@@ -1662,14 +1662,48 @@ def index():
             try:
                 from config.keywords import INAPPROPRIATE_MESSAGE_KEYWORDS
                 from counseling_response import normalize_text
+                import re
                 
                 normalized_message = normalize_text(sanitized_message)
-                for keyword in INAPPROPRIATE_MESSAGE_KEYWORDS:
-                    normalized_keyword = normalize_text(keyword)
-                    if normalized_keyword in normalized_message:
+                
+                # 誤検知を避けるため、一般的な言葉として使われる可能性があるキーワードのリスト
+                # これらのキーワードは単語境界を厳密にチェックする
+                AMBIGUOUS_KEYWORDS = [
+                    "やばい", "ヤバい", "草", "くさ", "クサ", "H", "h",
+                    "尊い", "たっふい", "タッフイ", "ワロタ", "わろた"
+                ]
+                
+                # 数字による隠語のリスト（性的な意味で使われる数字）
+                NUMERIC_SLANG = ["69", "88", "419"]
+                
+                # 数字による隠語の検出（単独で使われる場合のみ）
+                for num_slang in NUMERIC_SLANG:
+                    # 数字が単独で使われている場合（前後に数字や文字が来ない）を検出
+                    pattern = r'(?:^|[^\d])' + re.escape(num_slang) + r'(?:[^\d]|$)'
+                    if re.search(pattern, normalized_message):
                         inappropriate_message_detected = True
-                        logger.warning(f"⚠️ 不適切なメッセージを検出: {keyword}, session_id={sid}")
+                        logger.warning(f"⚠️ 不適切なメッセージを検出（数字隠語）: {num_slang}, session_id={sid}")
                         break
+                
+                if not inappropriate_message_detected:
+                    for keyword in INAPPROPRIATE_MESSAGE_KEYWORDS:
+                        normalized_keyword = normalize_text(keyword)
+                        
+                        # 誤検知を避けるため、単語境界を考慮した検出を行う
+                        # 短いキーワード（3文字以下）または曖昧なキーワードは単語境界を厳密にチェック
+                        if len(keyword) <= 3 or keyword in AMBIGUOUS_KEYWORDS:
+                            # 単語境界を考慮したパターン（前後に単語文字が来ない）
+                            pattern = r'\b' + re.escape(normalized_keyword) + r'\b'
+                            if re.search(pattern, normalized_message):
+                                inappropriate_message_detected = True
+                                logger.warning(f"⚠️ 不適切なメッセージを検出: {keyword}, session_id={sid}")
+                                break
+                        else:
+                            # 長いキーワードは部分一致でも検出（誤検知のリスクが低い）
+                            if normalized_keyword in normalized_message:
+                                inappropriate_message_detected = True
+                                logger.warning(f"⚠️ 不適切なメッセージを検出: {keyword}, session_id={sid}")
+                                break
                 
                 if inappropriate_message_detected:
                     # 不適切なメッセージに対する応答を生成
@@ -2584,17 +2618,18 @@ def index():
                         )
                         
                         # 話題転換が検知された場合の処理
+                        topic_shift_result = {}
                         if response.get('type') == 'topic_shift':
                             topic_shift_result = response.get('topic_shift_result', {})
-                        # 話題転換検知結果をログに保存
-                        log_topic_shift_detection(
-                            session_id=sid,
-                            user_input=processed_message,  # 方言変換後のテキストを使用
-                            topic_shift_result=topic_shift_result,
-                            current_counseling_topic=counseling_mode.get('symptom_type', ''),
-                            conversation_history_length=len(session.get('messages', [])),
-                            was_topic_shifted=True
-                        )
+                            # 話題転換検知結果をログに保存
+                            log_topic_shift_detection(
+                                session_id=sid,
+                                user_input=processed_message,  # 方言変換後のテキストを使用
+                                topic_shift_result=topic_shift_result,
+                                current_counseling_topic=counseling_mode.get('symptom_type', ''),
+                                conversation_history_length=len(session.get('messages', [])),
+                                was_topic_shifted=True
+                            )
                         
                         # 新しいカテゴリに応じて処理を分岐（後続処理で実装）
                         new_category = response.get('new_category')
@@ -2808,12 +2843,16 @@ def index():
                         elif not skip_counseling_response and response.get('type') == 'counseling_summary':
                             # カウンセリング完了時も返信を含める場合がある
                             counseling_response = response.get('counseling_response')
-                            if counseling_response:
-                                # 返信を先に追加
+                            summary_content = response.get('content', '')
+                            
+                            # 返信とサマリーの両方がある場合は、返信のみを返す（重複を避ける）
+                            if counseling_response and summary_content:
+                                # 返信のみを追加
                                 bot_response = {
                                     'type': 'bot',
                                     'content': counseling_response,
                                     'counseling': True,
+                                    'counseling_completed': True,
                                     'timestamp': datetime.now().isoformat()
                                 }
                                 session['messages'].append(bot_response)
@@ -2823,35 +2862,58 @@ def index():
                                 log_counseling_response(
                                     session_id=sid,
                                     response_content=counseling_response,
-                                    response_type="counseling_response",
+                                    response_type="counseling_summary",
                                     category=None,
                                     confidence=None,
                                     counseling_mode=counseling_mode,
                                     user_input=user_message,
                                     conversation_history=None
                                 )
-                            
-                            # サマリーを追加
-                            bot_response = {
-                                'type': 'bot',
-                                'content': response.get('content', ''),
-                                'counseling_completed': True,
-                                'timestamp': datetime.now().isoformat()
-                            }
-                            session['messages'].append(bot_response)
-                            session.modified = True
-                            
-                            # ログ記録（サマリー部分、通常時は会話履歴なし）
-                            log_counseling_response(
-                                session_id=sid,
-                                response_content=response.get('content', ''),
-                                response_type="counseling_summary",
-                                category=None,
-                                confidence=None,
-                                counseling_mode=counseling_mode,
-                                user_input=user_message,
-                                conversation_history=None
-                            )
+                            elif counseling_response:
+                                # 返信のみがある場合
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': counseling_response,
+                                    'counseling': True,
+                                    'counseling_completed': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                                
+                                # ログ記録（返信部分、通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=counseling_response,
+                                    response_type="counseling_summary",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode,
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
+                            elif summary_content:
+                                # サマリーのみがある場合
+                                bot_response = {
+                                    'type': 'bot',
+                                    'content': summary_content,
+                                    'counseling_completed': True,
+                                    'timestamp': datetime.now().isoformat()
+                                }
+                                session['messages'].append(bot_response)
+                                session.modified = True
+                                
+                                # ログ記録（サマリー部分、通常時は会話履歴なし）
+                                log_counseling_response(
+                                    session_id=sid,
+                                    response_content=summary_content,
+                                    response_type="counseling_summary",
+                                    category=None,
+                                    confidence=None,
+                                    counseling_mode=counseling_mode,
+                                    user_input=user_message,
+                                    conversation_history=None
+                                )
                             
                             # カウンセリング完了ログを保存
                             if response.get('completion_reason'):
