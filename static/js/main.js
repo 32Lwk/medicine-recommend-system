@@ -1356,7 +1356,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 使用画像の著作権</h3>
-                        <p>本アプリで使用している季節装飾画像（クリスマスツリー、雪だるま）の著作権は、<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(運営者個人)</a></strong>に帰属します。</p>
+                        <p>本アプリで使用しているイラストの著作権は、<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(運営者個人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>、および<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>に帰属します。</p>
                     </div>
                     
                     <div class="warning-box">
@@ -1488,7 +1488,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 Image Copyright</h3>
-                        <p>The copyright of seasonal decoration images (Christmas tree, snowman) used in this app belongs to <strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">Sofukore (Individual Operator)</a></strong>.</p>
+                        <p>The copyright of illustrations used in this app belongs to <strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">Sofukore (Individual Operator)</a></strong>, <strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">Tegakiz (てがきっず)</a></strong>, and <strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>.</p>
                     </div>
                     
                     <div class="warning-box">
@@ -1617,7 +1617,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 사용 이미지 저작권</h3>
-                        <p>이 앱에서 사용하는 계절 장식 이미지(크리스마스 트리, 눈사람)의 저작권은 <strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">소후코레(운영자 개인)</a></strong>에 귀속됩니다.</p>
+                        <p>이 앱에서 사용하는 일러스트의 저작권은 <strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">소후코레(운영자 개인)</a></strong>, <strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">테가키즈(てがきっず)</a></strong>, 및 <strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>에 귀속됩니다.</p>
                     </div>
                     
                     <div class="warning-box">
@@ -1746,7 +1746,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 使用图像版权</h3>
-                        <p>本应用使用的季节装饰图像（圣诞树、雪人）的版权归<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(运营者个人)</a></strong>所有。</p>
+                        <p>本应用使用的插图的版权归<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(运营者个人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>和<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>所有。</p>
                     </div>
                     
                     <div class="warning-box">

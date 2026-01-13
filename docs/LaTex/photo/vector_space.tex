@@ -1,0 +1,126 @@
+\documentclass[tikz]{standalone}
+
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{3d}
+
+% -----------------------
+% フォント設定
+% -----------------------
+\setCJKmainfont[
+  BoldFont=BIZUDPGothic-Bold.ttf,
+  Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\setmainfont[
+  Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+\begin{document}
+
+\begin{tikzpicture}[scale=1.0]
+\begin{axis}[
+    view={120}{30},
+    axis lines=center,
+    xlabel={$x_1$},
+    ylabel={$x_2$},
+    zlabel={$x_3$},
+    xmin=0, xmax=5,
+    ymin=0, ymax=5,
+    zmin=0, zmax=5,
+    xtick=\empty,
+    ytick=\empty,
+    ztick=\empty,
+    enlargelimits=0.2,
+    width=12cm,
+    height=12cm,
+    grid=major,
+    grid style={gray!20,line width=0.3pt},
+    axis line style={line width=1.2pt},
+    xlabel style={font=\large\bfseries,text=black},
+    ylabel style={font=\large\bfseries,text=black},
+    zlabel style={font=\large\bfseries,text=black}
+]
+% ユーザーの症状ベクトル（頭痛・熱）
+\addplot3[
+    ->,
+    very thick,
+    blue!80!black,
+    mark=*,
+    mark size=5pt,
+    line width=2.5pt
+] coordinates {
+    (0,0,0) (1.8,2.5,2.2)
+};
+\node[blue!80!black,left,font=\normalsize\bfseries,xshift=-12pt] at (axis cs:1.8,2.5,2.2) {$\mathbf{v}_u$};
+\node[blue!80!black,below,font=\small\bfseries,yshift=-8pt] at (axis cs:1.8,2.5,1.8) {（頭痛・熱）};
+
+% 推奨薬A（近い - 類似度高）
+\addplot3[
+    ->,
+    very thick,
+    red!80!black,
+    dashed,
+    mark=*,
+    mark size=5pt,
+    line width=2.5pt,
+    dash pattern=on 4pt off 2pt
+] coordinates {
+    (0,0,0) (2.5,3.2,2.8)
+};
+\node[red!80!black,right,font=\normalsize\bfseries,xshift=12pt] at (axis cs:2.5,3.2,2.8) {推奨薬A};
+
+% 類似度を示す線とラベル（推奨薬Aとの距離）
+\addplot3[
+    gray!60!black,
+    line width=1.5pt,
+    opacity=0.7
+] coordinates {
+    (1.8,2.5,2.2) (2.5,3.2,2.8)
+};
+\node[gray!60!black,above,font=\small\bfseries,align=center,xshift=5pt,yshift=10pt] at (axis cs:2.15,2.85,2.5) {$\theta$小\\（類似度高）};
+
+% 類似度を示す線とラベル（推奨薬Bとの距離）
+\addplot3[
+    gray!60!black,
+    line width=1.5pt,
+    opacity=0.7
+] coordinates {
+    (2.0,2.6,2.3) (3.1,0.8,0.5)
+};
+\node[gray!60!black,below,font=\small\bfseries,align=center,xshift=-10pt,yshift=-12pt] at (axis cs:3.1,1.7,1.45) {$\theta$大\\（類似度低）};
+
+% 推奨薬B（遠い - 類似度低）
+\addplot3[
+    ->,
+    very thick,
+    green!70!black,
+    dashed,
+    mark=*,
+    mark size=5pt,
+    line width=2.5pt,
+    dash pattern=on 4pt off 2pt
+] coordinates {
+    (0,0,0) (3.1,0.8,0.5)
+};
+\node[green!70!black,below,font=\normalsize\bfseries,xshift=-5pt,yshift=-20pt] at (axis cs:3.1,0.8,0.5) {推奨薬B};
+
+% 原点のマーカー
+\addplot3[
+    mark=*,
+    mark size=3pt,
+    color=black
+] coordinates {
+    (0,0,0)
+};
+
+\end{axis}
+\end{tikzpicture}
+
+\end{document}
