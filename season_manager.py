@@ -27,6 +27,31 @@ SEASON_CONFIG = {
         },
         'base_path': 'winter/HappyNewYear'
     },
+    'winter': {
+        'period': [(1, 8, 1, 31), (2, 4, 2, 13), (2, 15, 2, 28)],
+        'images': {
+            'right': ['wintertree.png', 'winter_snow.png'],  # ランダム選択
+            'left': ['snowman.png', 'can_coffee.png']  # ランダム選択（snowman.pngはwinter/から参照）
+        },
+        'base_path': 'winter/general'
+    },
+    'setubun': {
+        'period': [(2, 1, 2, 3)],
+        'images': {
+            'right': ['oni.png'],
+            'left': ['mame.png', 'ehoumaki.png', 'kanabou.png']  # ランダム選択
+        },
+        'base_path': 'winter/setubun'
+    },
+    'valentine': {
+        'period': [(2, 14, 2, 14)],
+        'images': {
+            'right': ['choco.png', 'heart.png', 'loveletter.png'],  # ランダム選択
+            'left': ['lgbt.png', 'lgbt2.png', 'student.png', 'valentine.png'],  # 重み付きランダム選択
+            'left_weights': {'lgbt.png': 1, 'lgbt2.png': 1, 'student.png': 1, 'valentine.png': 1}  # 出現率（デフォルトは均等）
+        },
+        'base_path': 'winter/valentine'
+    },
     'spring': {
         'period': [(3, 1, 5, 31)],
         'images': {
@@ -73,6 +98,23 @@ IMAGE_ALT_MAPPING = {
     'Dog.png': 'いぬ',
     'Pig.png': 'いのしし',
     'Rat.png': 'ねずみ',
+    # 冬の季節
+    'wintertree.png': '冬の木',
+    'winter_snow.png': '雪景色',
+    'can_coffee.png': '温かいコーヒー',
+    # 節分
+    'oni.png': '鬼',
+    'mame.png': '豆',
+    'ehoumaki.png': '恵方巻',
+    'kanabou.png': '金棒',
+    # バレンタイン
+    'valentine.png': 'バレンタイン',
+    'heart.png': 'ハート',
+    'choco.png': 'チョコレート',
+    'loveletter.png': 'ラブレター',
+    'student.png': '学生',
+    'lgbt.png': 'LGBT',
+    'lgbt2.png': 'LGBT',
 }
 
 
@@ -112,10 +154,10 @@ def get_current_season(date):
         date: datetimeオブジェクト（JST）
     
     Returns:
-        str: シーズンタイプ（'christmas', 'newyear', 'spring', 'summer', 'autumn', None）
+        str: シーズンタイプ（'christmas', 'newyear', 'valentine', 'setubun', 'winter', 'spring', 'summer', 'autumn', None）
     """
-    # 優先順位の高い順にチェック（クリスマスと正月が重複する可能性があるため）
-    priority_seasons = ['christmas', 'newyear', 'spring', 'summer', 'autumn']
+    # 優先順位の高い順にチェック（イベント日が重複する可能性があるため）
+    priority_seasons = ['christmas', 'newyear', 'valentine', 'setubun', 'winter', 'spring', 'summer', 'autumn']
     
     for season_type in priority_seasons:
         config = SEASON_CONFIG.get(season_type)
@@ -188,6 +230,15 @@ def get_season_images(season_type, year, session):
                 right_img = 'Sneak.png'
             else:
                 right_img = get_zodiac_image(year)
+        elif len(config['images']['right']) > 1:
+            # 複数の選択肢がある場合はランダム選択（セッション固定）
+            if session is not None:
+                session_key = f'decoration_right_{season_type}'
+                if session_key not in session:
+                    session[session_key] = random.choice(config['images']['right'])
+                right_img = session[session_key]
+            else:
+                right_img = random.choice(config['images']['right'])
         
         images.append({
             'path': f"img/{config['base_path']}/{right_img}",
@@ -200,14 +251,43 @@ def get_season_images(season_type, year, session):
         if session is not None:
             session_key = f'decoration_left_{season_type}'
             if session_key not in session:
-                session[session_key] = random.choice(config['images']['left'])
+                # 重み付きランダム選択が設定されている場合
+                if 'left_weights' in config['images'] and config['images']['left_weights']:
+                    weights = config['images']['left_weights']
+                    # 重みに基づいて選択肢と重みのリストを作成
+                    choices = []
+                    weights_list = []
+                    for img in config['images']['left']:
+                        choices.append(img)
+                        weights_list.append(weights.get(img, 1))  # 重みが未設定の場合は1
+                    # 重み付きランダム選択
+                    left_img = random.choices(choices, weights=weights_list, k=1)[0]
+                else:
+                    # 通常のランダム選択
+                    left_img = random.choice(config['images']['left'])
+                session[session_key] = left_img
             left_img = session[session_key]
         else:
-            # セッションが利用できない場合は最初の画像を使用
-            left_img = config['images']['left'][0]
+            # セッションが利用できない場合
+            if 'left_weights' in config['images'] and config['images']['left_weights']:
+                weights = config['images']['left_weights']
+                choices = []
+                weights_list = []
+                for img in config['images']['left']:
+                    choices.append(img)
+                    weights_list.append(weights.get(img, 1))
+                left_img = random.choices(choices, weights=weights_list, k=1)[0]
+            else:
+                left_img = config['images']['left'][0]
+        
+        # snowman.pngはwinter/直下にあるため、winter/general/からは../で参照
+        if left_img == 'snowman.png' and config['base_path'] == 'winter/general':
+            left_path = f"img/winter/{left_img}"
+        else:
+            left_path = f"img/{config['base_path']}/{left_img}"
         
         images.append({
-            'path': f"img/{config['base_path']}/{left_img}",
+            'path': left_path,
             'alt': get_image_alt(left_img),
             'position_class': 'position-left'
         })
