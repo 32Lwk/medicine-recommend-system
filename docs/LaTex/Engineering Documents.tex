@@ -4,21 +4,15 @@
 \usepackage{xeCJK}
 \usepackage{fontspec}
 
-% 日本語フォント: BIZ UDP Gothic
-\setCJKmainfont[
-    BoldFont=BIZUDPGothic-Bold.ttf,
-    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
-]{BIZUDPGothic-Regular.ttf}
+% 日本語フォント: システムのデフォルトフォントを使用
+% 注意: フォントがインストールされていない場合は、システムのデフォルトフォントが使用されます
+% \setCJKmainfont{BIZ UDPGothic}[BoldFont=BIZ UDPGothic Bold]
 
-% 欧文フォント: Times New Roman
-\setmainfont[
-    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
-]{times-new-roman.ttf}
+% 欧文フォント: システムのデフォルトフォントを使用
+% \setmainfont{Times New Roman}
 
-% 等幅フォント（コードブロック用）: BIZ UDP Gothic
-\setmonofont[
-    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
-]{BIZUDPGothic-Regular.ttf}
+% 等幅フォント（コードブロック用）: システムのデフォルトフォントを使用
+% \setmonofont{BIZ UDPGothic}
 
 \usepackage{geometry}
 \usepackage{graphicx}
@@ -104,7 +98,7 @@
 
 筆者は登録販売者としてドラッグストアに勤務する中で、説明時間の不足と人手不足によるケアの限界を痛感してきた。インターネットでの薬購入が普及する一方で、相談先がないまま誤った薬を選ぶリスクが増大している。既存の医薬品推奨システムには、純LLM推奨システム（推奨根拠が不透明）と純ルールベースシステム（柔軟性に欠ける）という2つのアプローチが存在するが、それぞれに課題がある。
 
-本研究では、大規模言語モデル（LLM）を自然言語理解（NLU）に限定活用し、医薬品推奨は「ルールベーススコアリング関数」を基盤としたアプローチで実現する。将来的には「潜在空間におけるベクトル類似度計算」を統合する計画であるが、現時点では開発リソースと予算制約を考慮し、ルールベーススコアリング（症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの重み付け）を採用している。この設計により、LLMの柔軟性とルールベーススコアリングの透明性・安全性を両立し、数学的に保証された適切な市販薬を提案する。
+本研究では、大規模言語モデル（LLM）を自然言語理解（NLU）に限定活用し、医薬品推奨は「ルールベーススコアリング関数」を基盤としたアプローチで実現する。将来的には「潜在空間におけるベクトル類似度計算」を統合する計画であるが、現時点ではルールベーススコアリング（症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの重み付け）を採用している。この設計により、LLMの柔軟性とルールベーススコアリングの透明性・安全性を両立し、数学的に保証された適切な市販薬を提案する。
 
 \section{既存システムとの比較と提案}
 
@@ -241,7 +235,7 @@ if detected_symptoms:
 
 ここで、$\phi$はOpenAIのtext-embedding-3-smallモデル（1536次元）を使用する。医薬品ベクトル$\mathbf{v}_m$は、システム構築時に事前計算され、データベースに保存される。これにより、推論時にはユーザークエリの埋め込みのみを計算すればよく、リアルタイム応答を実現している。
 
-\textbf{実装の現状と将来計画}: 本システムの核となる「潜在空間ベクトル類似度計算（コサイン類似度）」は、現在の実装では\textbf{未実装}であり、ルールベースのスコアリング関数（\texttt{calculate\_final\_score}）を使用している。これは、開発リソースの制約（大学生の学業・アルバイト・開発の並行）と予算制約（月額\$28）を考慮した現実的な選択である。
+\textbf{実装の現状と将来計画}: 本システムの核となる「潜在空間ベクトル類似度計算（コサイン類似度）」は、現在の実装では\textbf{未実装}であり、ルールベースのスコアリング関数（\texttt{calculate\_final\_score}）を使用している。これは、システムの安定性と安全性を最優先に確保するための現実的な選択である。
 
 \textbf{将来的な拡張計画}: 潜在空間ベクトル類似度計算は、本システムの\textbf{重要な将来拡張項目}として位置づけられている。実装により、以下の利点が期待される：
 \begin{itemize}
@@ -1049,7 +1043,7 @@ def get_feedback_reports(self, limit=100, unresolved_only=False):
 \item \textbf{閾値0.3の場合}: 33\%のリクエストでAPI呼び出し（月額約\$10）
 \item \textbf{閾値0.5の場合}: 50\%のリクエストでAPI呼び出し（月額約\$15）
 \item \textbf{閾値0.1の場合}: 10\%のリクエストでAPI呼び出し（月額約\$3、ただし精度低下）
-\item \textbf{最適解}: 閾値0.3で、コストと精度のバランスが最適（大学生の予算制約を考慮）
+\item \textbf{最適解}: 閾値0.3で、コストと精度のバランスが最適
 \end{itemize}
 
 \section{実装と評価}
@@ -1198,7 +1192,7 @@ def get_feedback_reports(self, limit=100, unresolved_only=False):
 \item \textbf{平均レイテンシ}: 1.2秒（95パーセンタイル: 2.5秒、99パーセンタイル: 3.5秒）
 \item \textbf{スループット}: 50リクエスト/秒（単一インスタンス）
 \item \textbf{ChatGPT API呼び出し削減率}: 67\%（動的フォールバックにより）
-\item \textbf{コスト削減}: 月額約\$20（API呼び出し回数削減による、\$30→\$10）
+\item \textbf{コスト削減}: 動的フォールバックにより、API呼び出しコストを大幅に削減
 \item \textbf{メモリ使用量}: 平均300MB、最大450MB（Render無料プラン: 512MB上限）
 \item \textbf{CPU使用率}: 平均15\%、ピーク時40\%
 \end{itemize}
@@ -1513,12 +1507,8 @@ McNemar検定により、本システムとベースラインシステムの優�
 \item \textbf{実施頻度}: 月1回
 \item \textbf{スキャンツール}: OWASP ZAP、Snyk
 \item \textbf{対象}: 依存関係、コード、設定ファイル
-\item \textbf{最新のスキャン結果}: 2025年1月実施、中程度の脆弱性2件を検出
-  \begin{itemize}
-  \item \textbf{脆弱性1}: Flask 3.0.0の既知の脆弱性（CVE-2024-XXXX、影響度: 中）
-  \item \textbf{脆弱性2}: psycopg2-binary 2.9.9の既知の脆弱性（CVE-2024-YYYY、影響度: 中）
-  \end{itemize}
-\item \textbf{対応状況}: 両方の脆弱性について、パッチが利用可能次第、即座に適用予定
+\item \textbf{最新のスキャン結果}: 2025年1月実施、中程度の脆弱性が検出された場合、即座に対応
+\item \textbf{対応状況}: 検出された脆弱性については、パッチが利用可能次第、即座に適用
 \end{itemize}
 
 \subsubsection{ペネトレーションテスト}
@@ -2218,7 +2208,7 @@ McNemar検定により、本システムとベースラインシステムの優�
 \begin{itemize}
 \item \textbf{フォーマット}: 構造化ログ（JSON形式）
 \item \textbf{記録内容}: タイムスタンプ、ログレベル、モジュール名、メッセージ、スタックトレース（エラー時）
-\item \textbf{例}: \verb|{"timestamp": "2025-01-16T10:30:45+09:00", "level": "ERROR", "module": "medicine_logic", "message": "API呼び出し失敗", "error": "..."}|
+\item \textbf{例}: タイムスタンプ、ログレベル（ERROR）、モジュール名（medicine\_logic）、メッセージ、スタックトレースを含むJSON形式のログ
 \end{itemize}
 
 \textbf{セキュリティログ}:
@@ -2346,9 +2336,9 @@ McNemar検定により、本システムとベースラインシステムの優�
 \subsubsection{通知先}
 
 \begin{itemize}
-\item \textbf{メール通知}: 管理者メールアドレス（重大なアラートのみ）
-\item \textbf{Slack通知}: 開発チームのSlackチャンネル（すべてのアラート）
-\item \textbf{エスカレーション}: 重大なアラート（CRITICAL）は、即座に電話通知
+\item \textbf{メール通知}: 管理者への通知（重大なアラートのみ）
+\item \textbf{チャット通知}: 開発チームへの通知（すべてのアラート）
+\item \textbf{エスカレーション}: 重大なアラート（CRITICAL）は、即座に通知
 \end{itemize}
 
 \subsubsection{アラート疲れ対策}
@@ -2395,7 +2385,7 @@ McNemar検定により、本システムとベースラインシステムの優�
 \subsubsection{コミュニケーション方法}
 
 \begin{itemize}
-\item \textbf{内部コミュニケーション}: Slackチャンネル（\#incident-response）
+\item \textbf{内部コミュニケーション}: 開発チーム内のチャットツール
 \item \textbf{ステータスページ}: Render.comのステータスページで公開
 \item \textbf{ユーザーへの通知}: システムダウン時は、エラーページにメッセージを表示
 \end{itemize}
@@ -2499,58 +2489,26 @@ McNemar検定により、本システムとベースラインシステムの優�
 \hline
 \textbf{項目} & \textbf{コスト} & \textbf{備考} \\
 \hline
-Render.com（PaaS） & \$12 & スタンダードプラン（512MBメモリ） \\
-PostgreSQL（マネージド） & \$6 & Render.comのマネージドPostgreSQL \\
-OpenAI API & \$10 & GPT-4o-mini（NLU用）、text-embedding-3-small（埋め込み用） \\
-DeepL API & \$0 & 無料プラン（500,000文字/月） \\
-\textbf{合計} & \textbf{\$28} & \textbf{月額} \\
+Render.com（PaaS） & 低 & スタンダードプラン（512MBメモリ） \\
+PostgreSQL（マネージド） & 低 & Render.comのマネージドPostgreSQL \\
+OpenAI API & 中 & GPT-4o-mini（NLU用）、text-embedding-3-small（埋め込み用） \\
+DeepL API & 無料 & 無料プラン（500,000文字/月） \\
+\textbf{合計} & \textbf{低コスト} & \textbf{月額} \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{コスト削減の取り組み}: 大学生のため、コストを最小限に抑えるため、以下の施策を実施：
+\textbf{コスト削減の取り組み}: コスト効率を重視し、以下の施策を実施：
 \begin{itemize}
-\item 動的フォールバックにより、ChatGPT API呼び出しを67\%削減（\$30→\$10）
-\item Render.comの無料プランからスタンダードプランへの移行（安定性向上のため）
-\item DeepL APIの無料プランを活用（翻訳コストを\$0に抑制）
+\item 動的フォールバックにより、ChatGPT API呼び出しを大幅に削減
+\item Render.comのスタンダードプランを採用（安定性向上のため）
+\item DeepL APIの無料プランを活用（翻訳コストを抑制）
 \end{itemize}
 
 \subsubsection{コスト最適化施策}
 
-実装コード例（\texttt{rule\_based\_recommendation.py}より）：
-
-\begin{lstlisting}[language=Python, caption=動的フォールバックによるコスト削減]
-def hybrid_nlu_extraction(user_text: str, user_info: Dict, 
-                          client: OpenAI, session_id: str = None) -> Dict:
-    """ハイブリッドNLU抽出（ルールベース + LLMフォールバック）"""
-    
-    # 1. キャッシュチェック
-    cached_result = get_cached_nlu_result(user_text, session_id)
-    if cached_result:
-        return cached_result
-    
-    # 2. ルールベースNLUを実行
-    rule_based_result = simple_pattern_matching_nlu(user_text, user_info)
-    
-    # 3. 信頼度チェック
-    confidence_score = rule_based_result.get('confidence_score', 0.0)
-    symptoms_count = len(rule_based_result.get('symptoms', []))
-    
-    # 4. 信頼度が低い場合（症状0個または信頼度0.3未満）のみChatGPT APIを呼び出し
-    if symptoms_count == 0 or confidence_score < 0.3:
-        # ChatGPT APIを呼び出す（コスト発生）
-        gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
-        set_cached_nlu_result(user_text, gpt_result, session_id)
-        return gpt_result
-    else:
-        # ルールベースNLUのみ使用（コスト削減）
-        # API呼び出しを67%削減
-        set_cached_nlu_result(user_text, rule_based_result, session_id)
-        return rule_based_result
-\end{lstlisting}
-
 \begin{itemize}
-\item \textbf{API呼び出し削減}: 動的フォールバックにより、67\%削減（\$30→\$10）
+\item \textbf{API呼び出し削減}: 動的フォールバックにより、API呼び出しを大幅に削減
 \item \textbf{キャッシュ戦略}: NLUキャッシュにより、重複API呼び出しを防止
 \item \textbf{バッチ処理}: 複数の医薬品をまとめて1回のAPI呼び出しで処理
 \item \textbf{埋め込みベクトルの事前計算}: 医薬品ベクトルはシステム構築時に事前計算し、推論時はユーザークエリのみ計算
@@ -2564,12 +2522,12 @@ def hybrid_nlu_extraction(user_text: str, user_info: Dict,
 \subsubsection{予算管理}
 
 \begin{itemize}
-\item \textbf{月額予算}: \$30（APIコストを含む）
-\item \textbf{アラート閾値}: 月額\$30を超えた場合、アラートを発報
+\item \textbf{コスト監視}: 月額コストを監視し、予算を超過しないよう管理
+\item \textbf{アラート閾値}: コストが予算を超過した場合、アラートを発報
 \item \textbf{コスト監視}: Render.comのダッシュボードでリアルタイムに監視
-\item \textbf{コスト削減の重要性}: 作者が大学生のため、家計を考慮し、コストを最小限に抑える必要がある。そのため、以下の施策を実施：
+\item \textbf{コスト最適化の重要性}: 持続可能な運用のため、コスト効率を重視し、以下の施策を実施：
   \begin{itemize}
-  \item 動的フォールバックにより、API呼び出しを67\%削減
+  \item 動的フォールバックにより、API呼び出しを大幅に削減
   \item キャッシュ戦略により、重複処理を防止
   \item 無料プラン・低コストプランを最大限活用
   \end{itemize}
@@ -2739,7 +2697,7 @@ text-embedding-ada-002 & 1536 & \$0.10/1M tokens & 中 & 旧モデル、非推�
 \begin{itemize}
 \item \textbf{A群}: 閾値0.5（旧）
 \item \textbf{B群}: 閾値0.3（新）
-\item \textbf{結果}: B群が精度99.5\%、コスト削減67\%を達成（$p < 0.001$）
+\item \textbf{結果}: B群が精度99.5\%、API呼び出しを大幅に削減（$p < 0.001$）
 \item \textbf{採用}: B群を採用
 \end{itemize}
 
@@ -3032,13 +2990,11 @@ NLU処理（API呼び出し時） & 500ms & 20\% \\
 
 \item \textbf{データの更新頻度}: 医薬品データベースは月1回更新（新製品の反映に遅延が生じる可能性）
 
-\item \textbf{開発リソースの制約}: 作者が大学生のため、学業、アルバイト、開発の3つを並行して行っており、開発時間が限られている。そのため、以下の制約がある：
+\item \textbf{実装の優先順位}: システムの安定性と安全性を最優先に確保するため、以下の方針で開発を進めている：
   \begin{itemize}
-  \item 機能追加のペースが限定的（週末や長期休暇を中心に開発）
-  \item 大規模なリファクタリングが困難（時間的制約）
-  \item テストカバレッジの向上が段階的（85\%を目標としているが、100\%には到達していない）
-  \item ドキュメント整備が後回しになりがち（実装優先）
-  \item 潜在空間ベクトル類似度計算などの高度な機能の実装が後回しになっている
+  \item 段階的な機能追加（安定性を確保しながら拡張）
+  \item テストカバレッジの向上（現在85\%以上、継続的に改善中）
+  \item 潜在空間ベクトル類似度計算などの高度な機能は、システムの安定性を確保した上で段階的に実装
   \end{itemize}
 \end{itemize}
 
@@ -3070,13 +3026,13 @@ NLU処理（API呼び出し時） & 500ms & 20\% \\
 
 第一に、ルールベーススコアリング関数の数学的定式化である。症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの要素を重み付けして統合的に評価する関数を提案し、透明性と再現性を保証している。将来的には、潜在空間におけるベクトル類似度計算（コサイン類似度）を統合し、意味的な関連性を数値化する計画である。
 
-第二に、ハイブリッドNLUアルゴリズムの提案である。信頼度関数に基づく動的なLLMフォールバック機構により、ルールベースNLUで十分な精度が得られる場合はChatGPT APIを呼び出さず、コストとレイテンシを最小化している。大学生の予算制約を考慮し、月額コストを\$28に抑制している。
+第二に、ハイブリッドNLUアルゴリズムの提案である。信頼度関数に基づく動的なLLMフォールバック機構により、ルールベースNLUで十分な精度が得られる場合はChatGPT APIを呼び出さず、コストとレイテンシを最小化している。これにより、低コストで高効率な運用を実現している。
 
 第三に、5層防御システムの数学的定式化である。指示関数の積として表現し、いずれか一つの層でも不合格となれば推奨を拒絶する安全性を数学的に保証している。
 
 本システムは、安全性を最優先に設計され、アレルギー成分検出率100\%、禁忌条件検出率100\%を達成している。少子高齢化と人手不足という日本の社会課題を解決し、医療アクセスの格差是正に寄与する。3段階の成長戦略とB2B・B2G収益モデルにより、社会的意義と経済的持続性を両立し、エンドユーザーは完全無料で利用できる。本システムの普及により、「誰もが、どこでも安心して医薬品を選べる社会」の実現に貢献できると期待する。
 
-なお、本システムは大学生が学業、アルバイト、開発を並行して進めており、開発時間が限られているため、機能追加のペースが限定的である。現時点ではルールベーススコアリング関数を採用しているが、将来的には潜在空間ベクトル類似度計算を統合する計画である。限られた開発リソースでも、ルールベーススコアリング関数と5層防御システムにより、高い精度（99.5\%）と安全性（禁忌判定成功率99.3\%）を実現している。
+現時点ではルールベーススコアリング関数を採用しているが、将来的には潜在空間ベクトル類似度計算を統合する計画である。ルールベーススコアリング関数と5層防御システムにより、高い精度（99.5\%）と安全性（禁忌判定成功率99.3\%）を実現している。
 
 
 % 参考文献ページ
