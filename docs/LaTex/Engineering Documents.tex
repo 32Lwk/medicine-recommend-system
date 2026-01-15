@@ -1391,7 +1391,7 @@ McNemar検定により、本システムとベースラインシステムの優�
 既存の機能が新機能の追加によって壊れていないことを確認：
 \begin{itemize}
 \item \textbf{回帰テストスイート}: 500件の症例文を使用した回帰テスト
-\item \textbf{自動実行}: すべてのプルリクエストに対して自動実行
+\item \textbf{自動実行}: コード変更時に自動実行
 \item \textbf{パフォーマンステスト}: パフォーマンスの劣化がないことを確認
 \end{itemize}
 
@@ -1487,132 +1487,6 @@ McNemar検定により、本システムとベースラインシステムの優�
 \item \textbf{実装}: ユーザーIDは「ユーザー1」「ユーザー2」などの匿名化された形式で表示
 \item \textbf{技術的実装}: セッションIDはUUID形式で生成し、個人情報と紐付けない
 \item \textbf{データ保存期間}: セッションデータは30日間のみ保存し、その後自動削除
-\end{itemize}
-
-\subsection{コンプライアンス}
-
-本システムは、以下の規制・ガイドラインに準拠：
-\begin{itemize}
-\item 個人情報保護法
-\item 医薬品医療機器等法（薬機法）
-\item 厚生労働省「一般用医薬品の販売に関するガイドライン」
-\item ISO/IEC 27001（情報セキュリティマネジメントシステム）
-\end{itemize}
-
-\subsection{セキュリティ監査}
-
-\subsubsection{脆弱性スキャン}
-
-\begin{itemize}
-\item \textbf{実施頻度}: 月1回
-\item \textbf{スキャンツール}: OWASP ZAP、Snyk
-\item \textbf{対象}: 依存関係、コード、設定ファイル
-\item \textbf{最新のスキャン結果}: 2025年1月実施、中程度の脆弱性が検出された場合、即座に対応
-\item \textbf{対応状況}: 検出された脆弱性については、パッチが利用可能次第、即座に適用
-\end{itemize}
-
-\subsubsection{ペネトレーションテスト}
-
-\begin{itemize}
-\item \textbf{実施頻度}: 四半期に1回
-\item \textbf{実施者}: 外部セキュリティ企業
-\item \textbf{最新のテスト結果}: 2024年12月実施、重大な脆弱性は検出されず
-\item \textbf{検出された軽微な問題}:
-  \begin{itemize}
-  \item レート制限の回避可能性（影響度: 低、対応済み）
-  \item セッション固定攻撃の可能性（影響度: 低、対応済み）
-  \end{itemize}
-\end{itemize}
-
-\subsubsection{コードレビュー}
-
-\begin{itemize}
-\item \textbf{実施頻度}: すべてのプルリクエストに対して実施
-\item \textbf{レビュアー}: 2名以上のエンジニア
-\item \textbf{チェック項目}: セキュリティベストプラクティス、SQLインジェクション、XSS、CSRF対策
-\item \textbf{自動化}: GitHub Actionsによる自動セキュリティチェック
-\end{itemize}
-
-\subsection{バージョン管理戦略}
-
-\subsubsection{Git運用}
-
-\begin{itemize}
-\item \textbf{ブランチ戦略}: Git Flow
-  \begin{itemize}
-  \item \textbf{main}: 本番環境用ブランチ（保護ブランチ）
-  \item \textbf{develop}: 開発環境用ブランチ
-  \item \textbf{feature/*}: 機能開発用ブランチ
-  \item \textbf{hotfix/*}: 緊急修正用ブランチ
-  \end{itemize}
-\item \textbf{マージ方針}: プルリクエストによるマージ、コードレビュー必須
-\item \textbf{コミットメッセージ規約}: Conventional Commits形式
-  \begin{itemize}
-  \item \textbf{feat}: 新機能追加
-  \item \textbf{fix}: バグ修正
-  \item \textbf{docs}: ドキュメント更新
-  \item \textbf{refactor}: リファクタリング
-  \item \textbf{test}: テスト追加・修正
-  \end{itemize}
-\end{itemize}
-
-\subsubsection{リリースサイクル}
-
-\begin{itemize}
-\item \textbf{メジャーリリース}: 四半期に1回（機能追加、大規模な変更）
-\item \textbf{マイナーリリース}: 月1回（機能追加、改善）
-\item \textbf{パッチリリース}: 必要に応じて（バグ修正、セキュリティパッチ）
-\item \textbf{セマンティックバージョニング}: MAJOR.MINOR.PATCH形式（例: 1.2.3）
-\end{itemize}
-
-\subsubsection{変更管理}
-
-\begin{itemize}
-\item \textbf{変更ログ}: CHANGELOG.mdにすべての変更を記録
-\item \textbf{破壊的変更}: メジャーバージョンアップ時に明示的に記載
-\item \textbf{後方互換性}: マイナーリリースでは後方互換性を維持
-\end{itemize}
-
-\subsection{CI/CDパイプライン}
-
-\subsubsection{継続的インテグレーション（CI）}
-
-\begin{itemize}
-\item \textbf{プラットフォーム}: GitHub Actions
-\item \textbf{トリガー}: プルリクエスト作成時、mainブランチへのプッシュ時
-\item \textbf{実行内容}:
-  \begin{itemize}
-  \item コードリント（flake8、pylint）
-  \item 型チェック（mypy）
-  \item 単体テスト実行（pytest、カバレッジ85\%以上）
-  \item 統合テスト実行
-  \item セキュリティスキャン（Snyk、OWASP ZAP）
-  \end{itemize}
-\item \textbf{実行時間}: 平均5分（全テストスイート）
-\end{itemize}
-
-\subsubsection{継続的デプロイメント（CD）}
-
-\begin{itemize}
-\item \textbf{プラットフォーム}: Render.com（自動デプロイ）
-\item \textbf{デプロイトリガー}: mainブランチへのマージ時
-\item \textbf{デプロイプロセス}:
-  \begin{enumerate}
-  \item コードをGitリポジトリにプッシュ
-  \item Render.comが自動的にビルドとデプロイを実行
-  \item ヘルスチェックエンドポイント（\texttt{/api/status}）で動作確認
-  \item 問題がなければ本番環境に反映
-  \end{enumerate}
-\item \textbf{ロールバック手順}: Render.comのダッシュボードから、前のバージョンに即座にロールバック可能
-\end{itemize}
-
-\subsubsection{テスト自動実行}
-
-\begin{itemize}
-\item \textbf{単体テスト}: すべてのモジュールに対して自動実行
-\item \textbf{統合テスト}: パイプライン全体のテストを自動実行
-\item \textbf{E2Eテスト}: 主要なユーザーシナリオのテストを自動実行
-\item \textbf{カバレッジレポート}: Codecovを使用して、コードカバレッジを可視化
 \end{itemize}
 
 \section{社会的意義}
@@ -2337,7 +2211,7 @@ McNemar検定により、本システムとベースラインシステムの優�
 
 \begin{itemize}
 \item \textbf{メール通知}: 管理者への通知（重大なアラートのみ）
-\item \textbf{チャット通知}: 開発チームへの通知（すべてのアラート）
+\item \textbf{チャット通知}: 開発者への通知（すべてのアラート）
 \item \textbf{エスカレーション}: 重大なアラート（CRITICAL）は、即座に通知
 \end{itemize}
 
@@ -2349,127 +2223,11 @@ McNemar検定により、本システムとベースラインシステムの優�
 \item \textbf{アラートの優先度}: CRITICAL、HIGH、MEDIUM、LOWの4段階で分類
 \end{itemize}
 
-\subsection{インシデント対応}
-
-\subsubsection{インシデント対応手順}
-
-障害発生時の対応手順：
-\begin{enumerate}
-\item \textbf{検知}: モニタリングツールが異常を検知し、アラートを送信
-\item \textbf{調査}: ログを確認し、原因を特定
-  \begin{itemize}
-  \item エラーログの確認（\texttt{log/app.log}）
-  \item パフォーマンスログの確認（\texttt{log/performance.log}）
-  \item セキュリティログの確認（\texttt{log/security\_events.jsonl}）
-  \item データベース接続状態の確認
-  \end{itemize}
-\item \textbf{対応}: 
-   \begin{itemize}
-   \item \textbf{API障害}: ルールベース推奨にフォールバック、ユーザーへの通知
-   \item \textbf{データベース障害}: キャッシュから読み込み、メモリベースの動作にフォールバック
-   \item \textbf{サーバー障害}: Render.comが自動的にバックアップサーバーに切り替え
-   \item \textbf{メモリリーク}: アプリケーションの再起動
-   \end{itemize}
-\item \textbf{復旧}: 問題を解決し、システムを復旧
-\item \textbf{事後対応}: インシデントレポートを作成し、再発防止策を検討
-\end{enumerate}
-
-\subsubsection{RTO/RPO}
-
-\begin{itemize}
-\item \textbf{RTO（目標復旧時間）}: 15分（重大な障害の場合）
-\item \textbf{RPO（目標復旧時点）}: 1時間（データベースバックアップの頻度に基づく）
-\item \textbf{実際の復旧時間}: 平均10分（過去6ヶ月間の実績）
-\end{itemize}
-
-\subsubsection{コミュニケーション方法}
-
-\begin{itemize}
-\item \textbf{内部コミュニケーション}: 開発チーム内のチャットツール
-\item \textbf{ステータスページ}: Render.comのステータスページで公開
-\item \textbf{ユーザーへの通知}: システムダウン時は、エラーページにメッセージを表示
-\end{itemize}
-
-\subsubsection{ポストモーテム}
-
-\begin{itemize}
-\item \textbf{実施頻度}: 重大なインシデント（影響範囲: 100ユーザー以上、ダウンタイム: 30分以上）に対して実施
-\item \textbf{実施期間}: インシデント発生後1週間以内
-\item \textbf{内容}: 原因分析、影響範囲、対応内容、再発防止策
-\item \textbf{共有}: チーム内で共有し、改善施策を実装
-\end{itemize}
-
-\subsection{バックアップと復旧}
-
-\subsubsection{バックアップ戦略}
-
-\textbf{データベースバックアップ}:
-\begin{itemize}
-\item \textbf{頻度}: 毎日自動バックアップ（深夜2時）
-\item \textbf{保持期間}: 7日間（日次バックアップ）
-\item \textbf{保存先}: Render.comのマネージドバックアップサービス
-\item \textbf{バックアップ方式}: PostgreSQLの\texttt{pg\_dump}を使用したフルバックアップ
-\item \textbf{バックアップサイズ}: 約100MB（圧縮後）
-\end{itemize}
-
-\textbf{設定ファイルバックアップ}:
-\begin{itemize}
-\item \textbf{頻度}: 変更時のみ（Gitリポジトリに保存）
-\item \textbf{保持期間}: 無期限（Git履歴）
-\item \textbf{保存先}: GitHubリポジトリ
-\end{itemize}
-
-\textbf{ログファイルバックアップ}:
-\begin{itemize}
-\item \textbf{頻度}: ログローテーション時（100MBごと）
-\item \textbf{保持期間}: 30日間
-\item \textbf{保存先}: Render.comのストレージ
-\end{itemize}
-
-\subsubsection{復旧手順}
-
-\textbf{データベース復旧}:
-\begin{enumerate}
-\item Render.comのダッシュボードからバックアップを選択
-\item バックアップファイルをダウンロード
-\item データベースを再作成
-\item \texttt{pg\_restore}コマンドでバックアップを復元
-\item データの整合性を確認
-\end{enumerate}
-
-\textbf{アプリケーション復旧}:
-\begin{enumerate}
-\item Gitリポジトリから最新のコードを取得
-\item 依存関係をインストール（\texttt{pip install -r requirements.txt}）
-\item 環境変数を設定
-\item アプリケーションを起動
-\item ヘルスチェックエンドポイントで動作確認
-\end{enumerate}
-
-\subsubsection{災害復旧計画}
-
-\begin{itemize}
-\item \textbf{災害シナリオ}: 
-  \begin{itemize}
-  \item データセンターの障害
-  \item データベースの完全な破損
-  \item アプリケーションコードの消失
-  \end{itemize}
-\item \textbf{復旧手順}: 
-  \begin{enumerate}
-  \item 新しい環境を構築（Render.comで新しいサービスを作成）
-  \item バックアップからデータベースを復元
-  \item Gitリポジトリからコードをデプロイ
-  \item DNS設定を更新（必要に応じて）
-  \end{enumerate}
-\item \textbf{目標復旧時間}: 4時間以内
-\end{itemize}
 
 \subsection{データベース管理}
 
 データベースの管理：
 \begin{itemize}
-\item \textbf{バックアップ}: 毎日自動バックアップ（保持期間: 7日間）
 \item \textbf{マイグレーション}: Alembicを使用したスキーマ管理（将来的に実装予定、現在は手動管理）
 \item \textbf{インデックス最適化}: クエリパフォーマンスを定期的に監視し、必要に応じてインデックスを追加
 \item \textbf{バキューム}: 定期的にVACUUMを実行し、データベースの断片化を解消（週1回、自動実行）
@@ -2543,7 +2301,6 @@ DeepL API & 無料 & 無料プラン（500,000文字/月） \\
 \item \textbf{OTC医薬品データ}: PMDA（独立行政法人医薬品医療機器総合機構）の一般用医薬品検索システム
   \begin{itemize}
   \item \textbf{データファイル}: \texttt{data/otc\_medicine\_data.csv}（7,495件）
-  \item \textbf{更新頻度}: 月1回（PMDAのデータ更新に合わせて）
   \item \textbf{データ構造}: 製品名、効能効果、成分、用法用量、分類、年齢制限など
   \end{itemize}
 \item \textbf{効能要約データ}: PMDAの医薬品データベースから抽出
@@ -2561,7 +2318,7 @@ DeepL API & 無料 & 無料プラン（500,000文字/月） \\
   \item \textbf{データファイル}: \texttt{data/medicine\_interactions.csv}
   \item \textbf{データ構造}: 医薬品A、医薬品B、相互作用の種類、相互作用レベル（高・中・低）、詳細説明
   \end{itemize}
-\item \textbf{漢方薬データ}: 専門薬剤師による手動構築
+\item \textbf{漢方薬データ}: 開発者（登録販売者）による手動構築
   \begin{itemize}
   \item \textbf{データファイル}: \texttt{data/kanpo\_medicine.csv}（34種類の漢方薬）
   \item \textbf{内容}: 証（Sho）の条件、適応症状、不適切な使用条件、ペナルティ値
@@ -2594,7 +2351,7 @@ DeepL API & 無料 & 無料プラン（500,000文字/月） \\
 \item \textbf{初期構築}: 
   \begin{itemize}
   \item PMDAの医薬品データベースから、効能効果に記載されている症状を抽出
-  \item 専門薬剤師によるレビューと追加
+  \item 開発者（登録販売者）によるレビューと追加
   \item 一般的な症状表現（「頭痛」「頭が痛い」など）を追加
   \end{itemize}
 \item \textbf{拡張プロセス}: 
@@ -2605,7 +2362,7 @@ DeepL API & 無料 & 無料プラン（500,000文字/月） \\
   \end{itemize}
 \item \textbf{品質管理}: 
   \begin{itemize}
-  \item 専門薬剤師による定期的なレビュー（四半期に1回）
+  \item 開発者（登録販売者）による定期的なレビュー（四半期に1回）
   \item 誤検出パターンの分析と修正
   \item 症状の重み付けの最適化
   \end{itemize}
@@ -2795,7 +2552,7 @@ text-embedding-ada-002 & 1536 & \$0.10/1M tokens & 中 & 旧モデル、非推�
 \subsubsection{品質保証}
 
 \begin{itemize}
-\item \textbf{翻訳精度}: 専門薬剤師によるレビュー（サンプル100件、精度95\%以上）
+\item \textbf{翻訳精度}: 開発者（登録販売者）によるレビュー（サンプル100件、精度95\%以上）
 \item \textbf{医療用語の正確性}: 医療用語辞書を使用して、専門用語の翻訳を保証
 \item \textbf{エラーハンドリング}: 翻訳失敗時は、英語でエラーメッセージを表示
 \end{itemize}
@@ -2987,8 +2744,6 @@ NLU処理（API呼び出し時） & 500ms & 20\% \\
 \item \textbf{医薬品の種類}: 一般用医薬品（OTC医薬品）のみ（処方箋医薬品には対応不可）
 
 \item \textbf{リアルタイム性}: API呼び出しが必要な場合、レイテンシが増加する可能性がある
-
-\item \textbf{データの更新頻度}: 医薬品データベースは月1回更新（新製品の反映に遅延が生じる可能性）
 
 \item \textbf{実装の優先順位}: システムの安定性と安全性を最優先に確保するため、以下の方針で開発を進めている：
   \begin{itemize}
