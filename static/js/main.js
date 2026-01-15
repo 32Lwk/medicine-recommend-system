@@ -162,23 +162,23 @@
                     visualAlt: "資料を表すアイコン",
                     body: [
                         "本アプリケーションに関する詳細資料をご用意しています。",
-                        "以下のリンクから、技術的資料、パワーポイント、質疑応答、プロトタイプを確認できます。"
+                        "以下のリンクから、技術的資料、パワーポイント、解説動画、プロトタイプを確認できます。"
                     ],
                     links: [
                         {
                             text: "📄 技術的資料",
-                            url: "#",  // Google DriveのURLに置き換えてください
+                            url: "https://drive.google.com/file/d/19CTRYV4moDikaLKXgC2Z_70wRXeCwKbx/view?usp=sharing",
                             ariaLabel: "技術的資料をGoogle Driveで開く"
                         },
                         {
                             text: "📊 パワーポイント",
-                            url: "#",  // Google DriveのURLに置き換えてください
+                            url: "https://drive.google.com/file/d/1FhdB7aUWlhYHRdhMLjDrNU0bvGyjdZ1F/view?usp=sharing",
                             ariaLabel: "パワーポイントをGoogle Driveで開く"
                         },
                         {
-                            text: "❓ 質疑応答",
-                            url: "#",  // Google DriveのURLに置き換えてください
-                            ariaLabel: "質疑応答をGoogle Driveで開く"
+                            text: "🎥 解説動画",
+                            url: "https://youtu.be/O1ptrH1q7S4",
+                            ariaLabel: "解説動画をYouTubeで開く"
                         },
                         {
                             text: "🎨 プロトタイプ (Marvel)",
@@ -369,23 +369,23 @@
                     visualAlt: "Icons representing documentation",
                     body: [
                         "Detailed documentation about this application is available.",
-                        "You can access technical documents, PowerPoint presentations, Q&A, and prototype from the links below."
+                        "You can access technical documents, PowerPoint presentations, explanatory video, and prototype from the links below."
                     ],
                     links: [
                         {
                             text: "📄 Technical Documents",
-                            url: "#",  // Replace with Google Drive URL
+                            url: "https://drive.google.com/file/d/19CTRYV4moDikaLKXgC2Z_70wRXeCwKbx/view?usp=sharing",
                             ariaLabel: "Open technical documents on Google Drive"
                         },
                         {
                             text: "📊 PowerPoint",
-                            url: "#",  // Replace with Google Drive URL
+                            url: "https://drive.google.com/file/d/1FhdB7aUWlhYHRdhMLjDrNU0bvGyjdZ1F/view?usp=sharing",
                             ariaLabel: "Open PowerPoint on Google Drive"
                         },
                         {
-                            text: "❓ Q&A",
-                            url: "#",  // Replace with Google Drive URL
-                            ariaLabel: "Open Q&A on Google Drive"
+                            text: "🎥 Explanatory Video",
+                            url: "https://youtu.be/O1ptrH1q7S4",
+                            ariaLabel: "Open explanatory video on YouTube"
                         },
                         {
                             text: "🎨 Prototype (Marvel)",
@@ -588,23 +588,23 @@
                     visualAlt: "자료를 나타내는 아이콘",
                     body: [
                         "본 애플리케이션에 대한 상세 자료를 준비했습니다.",
-                        "아래 링크에서 기술 문서, 파워포인트, 질의응답, 프로토타입을 확인할 수 있습니다."
+                        "아래 링크에서 기술 문서, 파워포인트, 설명 동영상, 프로토타입을 확인할 수 있습니다."
                     ],
                     links: [
                         {
                             text: "📄 기술 문서",
-                            url: "#",  // Google Drive URL로 교체하세요
+                            url: "https://drive.google.com/file/d/19CTRYV4moDikaLKXgC2Z_70wRXeCwKbx/view?usp=sharing",
                             ariaLabel: "Google Drive에서 기술 문서 열기"
                         },
                         {
                             text: "📊 파워포인트",
-                            url: "#",  // Google Drive URL로 교체하세요
+                            url: "https://drive.google.com/file/d/1FhdB7aUWlhYHRdhMLjDrNU0bvGyjdZ1F/view?usp=sharing",
                             ariaLabel: "Google Drive에서 파워포인트 열기"
                         },
                         {
-                            text: "❓ 질의응답",
-                            url: "#",  // Google Drive URL로 교체하세요
-                            ariaLabel: "Google Drive에서 질의응답 열기"
+                            text: "🎥 설명 동영상",
+                            url: "https://youtu.be/O1ptrH1q7S4",
+                            ariaLabel: "YouTube에서 설명 동영상 열기"
                         },
                         {
                             text: "🎨 프로토타입 (Marvel)",
@@ -795,23 +795,23 @@
                     visualAlt: "表示资料的图标",
                     body: [
                         "我们准备了有关本应用程序的详细资料。",
-                        "您可以通过以下链接查看技术文档、PowerPoint、问答和原型。"
+                        "您可以通过以下链接查看技术文档、PowerPoint、解说视频和原型。"
                     ],
                     links: [
                         {
                             text: "📄 技术文档",
-                            url: "#",  // 请替换为Google Drive URL
+                            url: "https://drive.google.com/file/d/19CTRYV4moDikaLKXgC2Z_70wRXeCwKbx/view?usp=sharing",
                             ariaLabel: "在Google Drive中打开技术文档"
                         },
                         {
                             text: "📊 PowerPoint",
-                            url: "#",  // 请替换为Google Drive URL
+                            url: "https://drive.google.com/file/d/1FhdB7aUWlhYHRdhMLjDrNU0bvGyjdZ1F/view?usp=sharing",
                             ariaLabel: "在Google Drive中打开PowerPoint"
                         },
                         {
-                            text: "❓ 问答",
-                            url: "#",  // 请替换为Google Drive URL
-                            ariaLabel: "在Google Drive中打开问答"
+                            text: "🎥 解说视频",
+                            url: "https://youtu.be/O1ptrH1q7S4",
+                            ariaLabel: "在YouTube中打开解说视频"
                         },
                         {
                             text: "🎨 原型 (Marvel)",
