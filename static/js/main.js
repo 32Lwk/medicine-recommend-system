@@ -136,6 +136,58 @@
                         "右上の ℹ️ ボタンから使い方ガイドやFAQをいつでも確認できます。"
                     ],
                     buttonText: "次へ",
+                    buttonAria: "次のステップへ進む"
+                },
+                {
+                    title: "🎮 イースターエッグ機能について",
+                    visual: "🎉✨",
+                    visualAlt: "イースターエッグ機能を表すアイコン",
+                    body: [
+                        "本アプリには、特定のキーワードやメッセージで発動する楽しい隠し機能「イースターエッグ」が実装されています。",
+                        "感謝のメッセージを送るとパーティクル効果が表示されたり、特定のキーワードで画面が変形したり、絵文字のみを送信すると特別な効果が表示されたりします。",
+                        "ぜひ試してみてください！"
+                    ],
+                    bullets: [
+                        "感謝メッセージ（「ありがとう」など）でパーティクル効果",
+                        "画面変形（「回転」「揺れる」などのキーワード）",
+                        "絵文字のみの送信",
+                        "季節イベント対応（新年、クリスマスなど）"
+                    ],
+                    buttonText: "次へ",
+                    buttonAria: "次のステップへ進む"
+                },
+                {
+                    title: "📚 本アプリケーションの資料",
+                    visual: "📄📊",
+                    visualAlt: "資料を表すアイコン",
+                    body: [
+                        "本アプリケーションに関する詳細資料をご用意しています。",
+                        "以下のリンクから、技術的資料、パワーポイント、質疑応答、プロトタイプを確認できます。"
+                    ],
+                    links: [
+                        {
+                            text: "📄 技術的資料",
+                            url: "#",  // Google DriveのURLに置き換えてください
+                            ariaLabel: "技術的資料をGoogle Driveで開く"
+                        },
+                        {
+                            text: "📊 パワーポイント",
+                            url: "#",  // Google DriveのURLに置き換えてください
+                            ariaLabel: "パワーポイントをGoogle Driveで開く"
+                        },
+                        {
+                            text: "❓ 質疑応答",
+                            url: "#",  // Google DriveのURLに置き換えてください
+                            ariaLabel: "質疑応答をGoogle Driveで開く"
+                        },
+                        {
+                            text: "🎨 プロトタイプ (Marvel)",
+                            url: "https://marvelapp.com/prototype/350fehf6",
+                            ariaLabel: "Marvelプロトタイプを開く"
+                        }
+                    ],
+                    isBetaOnly: true,
+                    buttonText: "次へ",
                     buttonAria: "最終ステップへ進む"
                 },
                 {
@@ -290,6 +342,58 @@
                         "If you are unsure about the AI's reply, tap “Request Pharmacist” to speak with a professional.",
                         "Use the ℹ️ button in the top right to open guides and FAQs whenever you like."
                     ],
+                    buttonText: "Next",
+                    buttonAria: "Go to the next step"
+                },
+                {
+                    title: "🎮 About Easter Egg Features",
+                    visual: "🎉✨",
+                    visualAlt: "Icons representing Easter egg features",
+                    body: [
+                        "This app includes fun hidden features called \"Easter Eggs\" that activate with specific keywords or messages.",
+                        "Sending a thank you message displays particle effects, specific keywords transform the screen, and sending only emojis displays special effects.",
+                        "Please try them out!"
+                    ],
+                    bullets: [
+                        "Particle effects with thank you messages (\"thank you\", etc.)",
+                        "Screen transformations (keywords like \"rotate\", \"shake\", etc.)",
+                        "Sending only emojis",
+                        "Seasonal event support (New Year, Christmas, etc.)"
+                    ],
+                    buttonText: "Next",
+                    buttonAria: "Go to the next step"
+                },
+                {
+                    title: "📚 Application Documentation",
+                    visual: "📄📊",
+                    visualAlt: "Icons representing documentation",
+                    body: [
+                        "Detailed documentation about this application is available.",
+                        "You can access technical documents, PowerPoint presentations, Q&A, and prototype from the links below."
+                    ],
+                    links: [
+                        {
+                            text: "📄 Technical Documents",
+                            url: "#",  // Replace with Google Drive URL
+                            ariaLabel: "Open technical documents on Google Drive"
+                        },
+                        {
+                            text: "📊 PowerPoint",
+                            url: "#",  // Replace with Google Drive URL
+                            ariaLabel: "Open PowerPoint on Google Drive"
+                        },
+                        {
+                            text: "❓ Q&A",
+                            url: "#",  // Replace with Google Drive URL
+                            ariaLabel: "Open Q&A on Google Drive"
+                        },
+                        {
+                            text: "🎨 Prototype (Marvel)",
+                            url: "https://marvelapp.com/prototype/350fehf6",
+                            ariaLabel: "Open Marvel prototype"
+                        }
+                    ],
+                    isBetaOnly: true,
                     buttonText: "Next",
                     buttonAria: "Go to the final step"
                 },
@@ -458,6 +562,58 @@
                         "오른쪽 상단의 ℹ️ 버튼에서 언제든지 이용 가이드와 FAQ를 확인할 수 있습니다."
                     ],
                     buttonText: "다음",
+                    buttonAria: "다음 단계로 이동"
+                },
+                {
+                    title: "🎮 이스터 에그 기능에 대해",
+                    visual: "🎉✨",
+                    visualAlt: "이스터 에그 기능을 나타내는 아이콘",
+                    body: [
+                        "이 앱에는 특정 키워드나 메시지로 발동하는 재미있는 숨겨진 기능 \"이스터 에그\"가 구현되어 있습니다.",
+                        "감사 메시지를 보내면 파티클 효과가 표시되거나, 특정 키워드로 화면이 변형되거나, 이모지만 보내면 특별한 효과가 표시됩니다.",
+                        "꼭 시도해 보세요!"
+                    ],
+                    bullets: [
+                        "감사 메시지(\"감사합니다\" 등)로 파티클 효과",
+                        "화면 변형(\"회전\", \"흔들림\" 등의 키워드)",
+                        "이모지만 보내기",
+                        "계절 이벤트 지원(새해, 크리스마스 등)"
+                    ],
+                    buttonText: "다음",
+                    buttonAria: "다음 단계로 이동"
+                },
+                {
+                    title: "📚 본 애플리케이션 자료",
+                    visual: "📄📊",
+                    visualAlt: "자료를 나타내는 아이콘",
+                    body: [
+                        "본 애플리케이션에 대한 상세 자료를 준비했습니다.",
+                        "아래 링크에서 기술 문서, 파워포인트, 질의응답, 프로토타입을 확인할 수 있습니다."
+                    ],
+                    links: [
+                        {
+                            text: "📄 기술 문서",
+                            url: "#",  // Google Drive URL로 교체하세요
+                            ariaLabel: "Google Drive에서 기술 문서 열기"
+                        },
+                        {
+                            text: "📊 파워포인트",
+                            url: "#",  // Google Drive URL로 교체하세요
+                            ariaLabel: "Google Drive에서 파워포인트 열기"
+                        },
+                        {
+                            text: "❓ 질의응답",
+                            url: "#",  // Google Drive URL로 교체하세요
+                            ariaLabel: "Google Drive에서 질의응답 열기"
+                        },
+                        {
+                            text: "🎨 프로토타입 (Marvel)",
+                            url: "https://marvelapp.com/prototype/350fehf6",
+                            ariaLabel: "Marvel 프로토타입 열기"
+                        }
+                    ],
+                    isBetaOnly: true,
+                    buttonText: "다음",
                     buttonAria: "마지막 단계로 이동"
                 },
                 {
@@ -613,6 +769,58 @@
                         "右上角的 ℹ️ 按钮可以随时打开使用指南和常见问题。"
                     ],
                     buttonText: "下一步",
+                    buttonAria: "前往下一步"
+                },
+                {
+                    title: "🎮 关于彩蛋功能",
+                    visual: "🎉✨",
+                    visualAlt: "表示彩蛋功能的图标",
+                    body: [
+                        "本应用程序包含有趣的隐藏功能“彩蛋”，可通过特定关键词或消息触发。",
+                        "发送感谢消息会显示粒子效果，特定关键词会使屏幕变形，仅发送表情符号会显示特殊效果。",
+                        "请尝试一下！"
+                    ],
+                    bullets: [
+                        "感谢消息（“谢谢”等）触发粒子效果",
+                        "屏幕变形（“旋转”、“摇晃”等关键词）",
+                        "仅发送表情符号",
+                        "季节性活动支持（新年、圣诞节等）"
+                    ],
+                    buttonText: "下一步",
+                    buttonAria: "前往下一步"
+                },
+                {
+                    title: "📚 本应用程序资料",
+                    visual: "📄📊",
+                    visualAlt: "表示资料的图标",
+                    body: [
+                        "我们准备了有关本应用程序的详细资料。",
+                        "您可以通过以下链接查看技术文档、PowerPoint、问答和原型。"
+                    ],
+                    links: [
+                        {
+                            text: "📄 技术文档",
+                            url: "#",  // 请替换为Google Drive URL
+                            ariaLabel: "在Google Drive中打开技术文档"
+                        },
+                        {
+                            text: "📊 PowerPoint",
+                            url: "#",  // 请替换为Google Drive URL
+                            ariaLabel: "在Google Drive中打开PowerPoint"
+                        },
+                        {
+                            text: "❓ 问答",
+                            url: "#",  // 请替换为Google Drive URL
+                            ariaLabel: "在Google Drive中打开问答"
+                        },
+                        {
+                            text: "🎨 原型 (Marvel)",
+                            url: "https://marvelapp.com/prototype/350fehf6",
+                            ariaLabel: "打开Marvel原型"
+                        }
+                    ],
+                    isBetaOnly: true,
+                    buttonText: "下一步",
                     buttonAria: "前往最后一步"
                 },
                 {
@@ -757,41 +965,76 @@
             }
             return;
         }
-        let targetIndex = Math.max(0, Math.min(activeIndex, slidesData.length - 1));
-        onboardingState.totalSlides = slidesData.length;
+        // β版判定（タイトルに「β版」が含まれているかで判定）
+        const isBetaVersion = document.title.includes('β') || document.title.includes('Beta') || 
+                             (typeof translations !== 'undefined' && translations[currentLanguage] && 
+                              translations[currentLanguage].title && 
+                              (translations[currentLanguage].title.includes('β') || translations[currentLanguage].title.includes('Beta')));
+        
+        // フィルタリング後のスライドを取得
+        const filteredSlides = slidesData.filter((slide) => {
+            // β版のみのスライドは、β版の場合のみ表示
+            if (slide.isBetaOnly && !isBetaVersion) {
+                return false;
+            }
+            return true;
+        });
+        
+        // フィルタリング後のスライド数に基づいてtargetIndexを計算
+        const filteredTotal = filteredSlides.length;
+        let targetIndex = Math.max(0, Math.min(activeIndex, filteredTotal - 1));
+        onboardingState.totalSlides = filteredTotal;
         onboardingState.currentSlide = targetIndex;
-        const html = slidesData.map((slide, index) => {
-            const isActive = index === targetIndex;
-            const bodyHtml = Array.isArray(slide.body)
-                ? slide.body.map(text => `<p>${text}</p>`).join('')
-                : (slide.body || '');
-            const listHtml = Array.isArray(slide.list)
-                ? `<ul>${slide.list.map(item => `<li>${item}</li>`).join('')}</ul>`
-                : '';
-            const bulletsHtml = Array.isArray(slide.bullets)
-                ? `<ul>${slide.bullets.map(item => `<li>${item}</li>`).join('')}</ul>`
-                : '';
-            const detailsHtml = createOnboardingDetailsMarkup(slide);
-            const actionsHtml = (index === slidesData.length - 1)
-                ? createOnboardingFinalActions(slide)
-                : `<button type="button" class="onboarding-btn" onclick="nextOnboardingSlide()" aria-label="${slide.buttonAria || slide.buttonText}">${slide.buttonText}</button>`;
-            const subtitleHtml = slide.subtitle ? `<p class="onboarding-subtitle">${slide.subtitle}</p>` : '';
-            const visualHtml = slide.visual ? `<div class="onboarding-visual" role="img" aria-label="${slide.visualAlt || ''}">${slide.visual}</div>` : '';
-            return `
-                <div class="onboarding-slide${isActive ? ' active' : ''}" role="tabpanel" data-slide-index="${index}" aria-hidden="${isActive ? 'false' : 'true'}">
-                    ${visualHtml}
-                    <h2 class="onboarding-title">${slide.title}</h2>
-                    ${subtitleHtml}
-                    <div class="onboarding-desc">
-                        ${bodyHtml}
-                        ${listHtml}
-                        ${bulletsHtml}
+        
+        const html = filteredSlides
+            .map((slide, filteredIndex, filteredArray) => {
+                const isActive = filteredIndex === targetIndex;
+                const bodyHtml = Array.isArray(slide.body)
+                    ? slide.body.map(text => `<p>${text}</p>`).join('')
+                    : (slide.body || '');
+                const listHtml = Array.isArray(slide.list)
+                    ? `<ul>${slide.list.map(item => `<li>${item}</li>`).join('')}</ul>`
+                    : '';
+                const bulletsHtml = Array.isArray(slide.bullets)
+                    ? `<ul>${slide.bullets.map(item => `<li>${item}</li>`).join('')}</ul>`
+                    : '';
+                const detailsHtml = createOnboardingDetailsMarkup(slide);
+                
+                // カスタムHTMLがある場合はそれを使用
+                const customHtml = slide.customHtml || '';
+                
+                // リンクボタンがある場合はそれを使用
+                let linksHtml = '';
+                if (Array.isArray(slide.links) && slide.links.length > 0) {
+                    linksHtml = '<div class="onboarding-links">' + 
+                        slide.links.map(link => 
+                            `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="onboarding-link-btn" aria-label="${link.ariaLabel || link.text}">${link.text}</a>`
+                        ).join('') + 
+                        '</div>';
+                }
+                
+                const actionsHtml = (filteredIndex === filteredArray.length - 1)
+                    ? createOnboardingFinalActions(slide)
+                    : `<button type="button" class="onboarding-btn" onclick="nextOnboardingSlide()" aria-label="${slide.buttonAria || slide.buttonText}">${slide.buttonText}</button>`;
+                const subtitleHtml = slide.subtitle ? `<p class="onboarding-subtitle">${slide.subtitle}</p>` : '';
+                const visualHtml = slide.visual ? `<div class="onboarding-visual" role="img" aria-label="${slide.visualAlt || ''}">${slide.visual}</div>` : '';
+                return `
+                    <div class="onboarding-slide${isActive ? ' active' : ''}" role="tabpanel" data-slide-index="${filteredIndex}" aria-hidden="${isActive ? 'false' : 'true'}">
+                        ${visualHtml}
+                        <h2 class="onboarding-title">${slide.title}</h2>
+                        ${subtitleHtml}
+                        <div class="onboarding-desc">
+                            ${bodyHtml}
+                            ${listHtml}
+                            ${bulletsHtml}
+                            ${customHtml}
+                            ${linksHtml}
+                        </div>
+                        ${detailsHtml}
+                        ${actionsHtml}
                     </div>
-                    ${detailsHtml}
-                    ${actionsHtml}
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
         slidesContainer.innerHTML = html;
         updateOnboardingIndicator(targetIndex);
         updateOnboardingSkipLabel();
