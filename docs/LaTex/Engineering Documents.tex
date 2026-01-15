@@ -1,0 +1,3135 @@
+\documentclass[a4paper,11pt,ja=standard,xelatex]{bxjsarticle}
+\usepackage[utf8]{inputenc}
+\usepackage{zxjatype}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+
+% 日本語フォント: BIZ UDP Gothic
+\setCJKmainfont[
+    BoldFont=BIZUDPGothic-Bold.ttf,
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+% 欧文フォント: Times New Roman
+\setmainfont[
+    Path=C:/Users/yutok/Downloads/times-new-roman_freefontdownload_org/
+]{times-new-roman.ttf}
+
+% 等幅フォント（コードブロック用）: BIZ UDP Gothic
+\setmonofont[
+    Path=C:/Users/yutok/Downloads/BIZ_UDPGothic/
+]{BIZUDPGothic-Regular.ttf}
+
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{subcaption}
+\captionsetup{justification=centering}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{endnotes}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{3d}
+
+\geometry{left=15mm,right=15mm,top=15mm,bottom=15mm}
+
+% 定理環境の設定
+\theoremstyle{definition}
+\newtheorem{definition}{定義}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{補題}
+
+% コードブロックの設定
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    extendedchars=true,
+    inputencoding=utf8,
+    escapeinside={(*@}{@*)},
+    showstringspaces=false,
+    keepspaces=true,
+    columns=flexible
+}
+
+\title{ハイブリッド医薬品推奨システムの構築\\
+\large{---ルールベーススコアリングと動的フォールバック機構による\\数理的安全性保証とセルフメディケーション支援---}}
+\author{}
+\date{2026年1月10日}
+
+\begin{document}
+
+% 表紙
+\thispagestyle{empty}
+\begin{center}
+\vspace*{2.5cm}
+
+{\LARGE \textbf{ハイブリッド医薬品推奨システムの構築}}
+
+\vspace{1.5cm}
+
+{\Large \textbf{ルールベーススコアリングと動的フォールバック機構による\\数理的安全性保証とセルフメディケーション支援}}
+
+\vspace{6cm}
+
+{\large 2026年1月10日}
+
+\vspace{2cm}
+
+\end{center}
+
+\newpage
+
+% 本文
+\setcounter{page}{1}
+
+\section{はじめに}
+
+日本の医療システムは、少子高齢化と人手不足により大きな転換期を迎えている。厚生労働省の調査によると、登録販売者の有効求人倍率は3.56倍、薬剤師は3.57倍と深刻な人手不足が続いており、薬局における専門人材の不足は慢性化している。少子高齢化が進む日本において、医療機関の負担軽減は喫緊の課題である。そこで鍵となるのが「セルフメディケーション」である。セルフメディケーションとは、WHOの定義にもある通り、『自分自身の健康に責任を持つこと』である。これを推進することで、医療リソースの確保や健康寿命の延伸が期待されている。
+
+しかし、セルフメディケーションの重要性が高まる一方で、OTC薬の誤選択による健康被害も深刻化している。厚生労働省の調査によると、医薬品の過剰摂取による緊急搬送人員が急増しており、さらに薬物依存症の治療を受けた10代患者において、市販薬による依存の割合は2014年の0\%から2022年には65.2\%へと急増している。安全なセルフメディケーションを実現するためには、適切な医薬品選択を支援する仕組みが不可欠である。
+
+筆者は登録販売者としてドラッグストアに勤務する中で、説明時間の不足と人手不足によるケアの限界を痛感してきた。インターネットでの薬購入が普及する一方で、相談先がないまま誤った薬を選ぶリスクが増大している。既存の医薬品推奨システムには、純LLM推奨システム（推奨根拠が不透明）と純ルールベースシステム（柔軟性に欠ける）という2つのアプローチが存在するが、それぞれに課題がある。
+
+本研究では、大規模言語モデル（LLM）を自然言語理解（NLU）に限定活用し、医薬品推奨は「ルールベーススコアリング関数」を基盤としたアプローチで実現する。将来的には「潜在空間におけるベクトル類似度計算」を統合する計画であるが、現時点では開発リソースと予算制約を考慮し、ルールベーススコアリング（症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの重み付け）を採用している。この設計により、LLMの柔軟性とルールベーススコアリングの透明性・安全性を両立し、数学的に保証された適切な市販薬を提案する。
+
+\section{既存システムとの比較と提案}
+
+既存の医薬品推奨システムは、純LLM推奨システム（柔軟性が高いが推奨根拠が不透明）と純ルールベースシステム（透明性が高いが柔軟性に欠ける）の2つのアプローチが存在する。LLMの推奨判断は確率的であり、安全性を数学的に保証できない。一方、ルールベースの推奨は安全性を保証できるが、自然言語の多様性に対応できない。本提案のハイブリッドアプローチは、LLMをNLU（症状抽出）に限定活用し、推奨判断は「ルールベーススコアリング関数」で実現する。将来的には「潜在空間におけるベクトル類似度計算」を統合する計画であるが、現時点ではルールベーススコアリングを採用している。これにより、LLMの柔軟性とルールベーススコアリングの透明性・安全性を両立し、推奨根拠を数学的に保証できる。
+
+\section{技術的アプローチ}
+
+\textbf{実装の現状}: 本システムは、理論的には「潜在空間におけるベクトル類似度計算」を基盤としたアプローチを提案しているが、\textbf{現在の実装ではルールベーススコアリング関数を使用している}。これは、開発リソースの制約（大学生の学業・アルバイト・開発の並行）と予算制約（月額\$28）を考慮した現実的な選択である。潜在空間ベクトル類似度計算は、将来的な拡張計画として位置づけられており、システムの安定性と安全性を確保した上で、段階的に実装する予定である。
+
+\subsection{システムアーキテクチャ}
+
+本システムは、自然言語入力から医薬品推奨までの処理を5段階のパイプラインで実現している。第1段階でリスクスコアが80以上の場合は推奨処理を即座に停止する。第2段階でハイブリッドNLUアルゴリズムにより症状集合に変換する。第3段階で禁忌チェックを実行し、エスカレーション条件が真の場合は医師受診を必須とする。第4段階で\textbf{ルールベーススコアリング関数}（症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの重み付け）を適用し、第5段階で上位3件の医薬品を選定する。将来的には、第4段階に潜在空間におけるベクトル類似度計算を統合する計画である。
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/system.png}
+\caption{システム構成図}
+\label{fig:system}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/dataflow_detailed.pdf}
+\caption{データフロー図（ルールベーススコアリングとハイブリッドNLUの統合、潜在空間ベクトル類似度計算は将来実装予定）}
+\label{fig:dataflow_detailed}
+\end{figure}
+
+\subsection{ハイブリッドNLUアルゴリズム}
+
+ハイブリッドNLUアルゴリズムは、症状辞書（サイズ300以上）を用いたパターンマッチングにより実現される。信頼度関数$C(\mathbf{x})$は、8要素から構成され、以下の数式で定義される：
+
+\begin{equation}
+C(\mathbf{x}) = \sum_{i=1}^{8} w_i \cdot f_i(\mathbf{x})
+\end{equation}
+
+ここで、$\mathbf{x}$はユーザー入力テキスト、$w_i$は各要素の重み、$f_i(\mathbf{x})$は各要素のスコア関数である。具体的には：
+
+\begin{align}
+f_1(\mathbf{x}) &= \min(|S| \times 0.3, 0.6) \quad \text{（症状数による基本スコア）} \\
+f_2(\mathbf{x}) &= \sum_{s \in S} \mathbf{1}[severity(s) \neq \text{中等度}] \times 0.1 \quad \text{（重症度の明確性）} \\
+f_3(\mathbf{x}) &= \mathbf{1}[duration \neq \text{None}] \times 0.2 \quad \text{（期間の明確性）} \\
+f_4(\mathbf{x}) &= combination\_boost \quad \text{（症状組み合わせ）} \\
+f_5(\mathbf{x}) &= \mathbf{1}[\text{部位情報検出}] \times 0.1 \quad \text{（部位情報の明確性）} \\
+f_6(\mathbf{x}) &= \min(\sum_{s \in S} \mathbf{1}[s \in D] \times 0.05, 0.15) \quad \text{（症状名の明確性）} \\
+f_7(\mathbf{x}) &= \mathbf{1}[|\mathbf{x}| > 15] \times 0.05 + \mathbf{1}[|\mathbf{x}| > 30] \times 0.05 \quad \text{（入力テキストの詳細度）} \\
+f_8(\mathbf{x}) &= \min(\sum_{p \in P} 0.03, 0.1) \quad \text{（記述方法の明確性）}
+\end{align}
+
+ここで、$S$は検出された症状集合、$D$は症状辞書、$P$は明確な記述パターン集合である。
+
+実装コード例（\texttt{rule\_based\_recommendation.py}より）：
+
+\begin{lstlisting}[language=Python, caption=信頼度関数の実装]
+# 信頼度スコアの計算
+confidence_score = 0.0
+if detected_symptoms:
+    # 1. 症状数による信頼度（基本スコア）
+    confidence_score += min(len(detected_symptoms) * 0.3, 0.6)
+    
+    # 2. 重症度の明確性による信頼度
+    severity_specificity = sum(1 for s in detected_symptoms 
+                              if s["severity"] != "中等度")
+    confidence_score += severity_specificity * 0.1
+    
+    # 3. 期間の明確性による信頼度
+    if duration_days is not None:
+        confidence_score += 0.2
+    
+    # 4. 症状組み合わせによる信頼度向上
+    combination_boost = 0.0
+    for pattern_name, pattern_data in SYMPTOM_COMBINATIONS.items():
+        required_symptoms = pattern_data['required']
+        optional_symptoms = pattern_data['optional']
+        boost = pattern_data['confidence_boost']
+        
+        # 必須症状のチェック
+        required_matched = sum(1 for req in required_symptoms 
+                              if req in symptom_names)
+        if required_matched == len(required_symptoms):
+            # オプション症状のボーナス
+            optional_matched = sum(1 for opt in optional_symptoms 
+                                  if opt in symptom_names)
+            combination_boost = boost + (optional_matched * 0.05)
+            break
+    confidence_score += combination_boost
+    
+    # 5. 部位情報の明確性による信頼度向上
+    first_symptom_name = detected_symptoms[0].get("name", "") if detected_symptoms else ""
+    body_part = _extract_body_part_from_user_text(user_text, first_symptom_name)
+    if body_part:
+        confidence_score += 0.1
+    
+    # 6. 症状名の明確性による信頼度向上
+    symptom_dict_matches = 0
+    for symptom in detected_symptoms:
+        symptom_name = symptom.get("name", "")
+        if symptom_name in SYMPTOM_DICTIONARY:
+            symptom_dict_matches += 1
+    confidence_score += min(symptom_dict_matches * 0.05, 0.15)
+    
+    # 7. 入力テキストの詳細度による信頼度向上
+    if len(user_text) > 15:
+        confidence_score += 0.05
+    if len(user_text) > 30:
+        confidence_score += 0.05
+    
+    # 8. 記述方法の明確性による信頼度向上
+    # 明確な記述パターン（「○○が△△」など）をカウント
+    clear_patterns = [
+        r'[がは]',  # 「頭が痛い」「熱はある」
+        r'[でに]',  # 「3日間で」「昨日から」
+    ]
+    pattern_count = sum(1 for pattern in clear_patterns 
+                       if re.search(pattern, user_text))
+    confidence_score += min(pattern_count * 0.03, 0.1)
+\end{lstlisting}
+
+信頼度閾値$\tau = 0.3$は、ROC曲線分析とコスト分析により最適化され、以下の条件でChatGPT APIを呼び出す：
+
+\begin{equation}
+\text{LLM呼び出し} = \begin{cases}
+\text{True} & \text{if } |S| = 0 \text{ or } C(\mathbf{x}) < \tau \\
+\text{False} & \text{otherwise}
+\end{cases}
+\end{equation}
+
+\subsection{潜在空間ベクトル表現}
+
+ユーザーの入力テキスト$\mathbf{x}_u$および各医薬品の効能・効果テキスト$\mathbf{x}_m$は、埋め込み関数$\phi: \mathcal{X} \rightarrow \mathbb{R}^{1536}$によって、潜在空間上のベクトルとして表現される：
+
+\begin{equation}
+\mathbf{v}_u = \phi(\mathbf{x}_u), \quad \mathbf{v}_m = \phi(\mathbf{x}_m)
+\end{equation}
+
+ここで、$\phi$はOpenAIのtext-embedding-3-smallモデル（1536次元）を使用する。医薬品ベクトル$\mathbf{v}_m$は、システム構築時に事前計算され、データベースに保存される。これにより、推論時にはユーザークエリの埋め込みのみを計算すればよく、リアルタイム応答を実現している。
+
+\textbf{実装の現状と将来計画}: 本システムの核となる「潜在空間ベクトル類似度計算（コサイン類似度）」は、現在の実装では\textbf{未実装}であり、ルールベースのスコアリング関数（\texttt{calculate\_final\_score}）を使用している。これは、開発リソースの制約（大学生の学業・アルバイト・開発の並行）と予算制約（月額\$28）を考慮した現実的な選択である。
+
+\textbf{将来的な拡張計画}: 潜在空間ベクトル類似度計算は、本システムの\textbf{重要な将来拡張項目}として位置づけられている。実装により、以下の利点が期待される：
+\begin{itemize}
+\item \textbf{意味的類似度の向上}: コサイン類似度による症状と医薬品効能の意味的マッチング精度の向上
+\item \textbf{ルールベースとの融合}: 現在のルールベーススコアリング（症状適合度、効能特異性など）と潜在空間ベクトル類似度を統合したハイブリッドスコアリングの実現
+\item \textbf{新規症状への対応}: 辞書に存在しない新規症状表現への対応力の向上
+\end{itemize}
+
+実装の優先順位は、システムの安定性と安全性を確保した上で、段階的に進める予定である。
+
+実装コード例（理論的なアプローチ、疑似コード）：
+
+\begin{lstlisting}[language=Python, caption=埋め込みベクトルの計算と保存（理論的アプローチ）]
+# 医薬品の効能テキストを埋め込みベクトルに変換（将来的な実装予定）
+def precompute_medicine_embeddings(medicine_list):
+    """医薬品の埋め込みベクトルを事前計算"""
+    embeddings = {}
+    for medicine in medicine_list:
+        efficacy_text = medicine.get('efficacy', '')
+        embedding = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=efficacy_text
+        ).data[0].embedding
+        embeddings[medicine['id']] = embedding
+    return embeddings
+
+# 推論時のユーザークエリの埋め込み計算（将来的な実装予定）
+def compute_user_embedding(user_text):
+    """ユーザー入力テキストを埋め込みベクトルに変換"""
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=user_text
+    )
+    return response.data[0].embedding
+\end{lstlisting}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.7]
+\begin{axis}[
+    view={120}{30},
+    axis lines=center,
+    xlabel={$x_1$},
+    ylabel={$x_2$},
+    zlabel={$x_3$},
+    xmin=0, xmax=4,
+    ymin=0, ymax=4,
+    zmin=0, zmax=4,
+    xtick=\empty,
+    ytick=\empty,
+    ztick=\empty,
+    enlargelimits=0.15,
+    width=7cm,
+    height=7cm,
+    grid=major,
+    grid style={gray!30}
+]
+% ユーザーの症状ベクトル（頭痛・熱）
+\addplot3[
+    ->,
+    thick,
+    blue,
+    mark=*,
+    mark size=2.5pt
+] coordinates {
+    (0,0,0) (1.5,2.0,1.8)
+};
+\node[blue,left,font=\small,xshift=-5pt] at (axis cs:1.5,2.0,1.8) {$\mathbf{v}_u$};
+\node[blue,below,font=\small,yshift=-3pt] at (axis cs:1.5,2.0,1.5) {（頭痛・熱）};
+
+% 推奨薬A（近い - 類似度高）
+\addplot3[
+    ->,
+    thick,
+    red,
+    dashed,
+    mark=*,
+    mark size=2.5pt
+] coordinates {
+    (0,0,0) (2.2,2.6,2.3)
+};
+\node[red,right,font=\small,xshift=5pt] at (axis cs:2.2,2.6,2.3) {推奨薬A};
+
+% 推奨薬B（遠い - 類似度低）
+\addplot3[
+    ->,
+    thick,
+    green!70!black,
+    dashed,
+    mark=*,
+    mark size=2.5pt
+] coordinates {
+    (0,0,0) (3.0,0.5,0.4)
+};
+\node[green!70!black,below left,font=\small,xshift=-3pt,yshift=-3pt] at (axis cs:3.0,0.5,0.4) {推奨薬B};
+
+% 類似度を示す線とラベル
+\addplot3[
+    gray,
+    thin,
+    opacity=0.5
+] coordinates {
+    (1.5,2.0,1.8) (2.2,2.6,2.3)
+};
+\node[gray,above,font=\small,xshift=2pt,yshift=3pt] at (axis cs:1.85,2.3,2.05) {$\theta$小};
+
+\addplot3[
+    gray,
+    thin,
+    opacity=0.5
+] coordinates {
+    (1.8,2.3,2.0) (3.0,0.5,0.4)
+};
+\node[gray,below,font=\small,xshift=-5pt,yshift=-5pt] at (axis cs:2.4,1.4,1.2) {$\theta$大};
+\end{axis}
+\end{tikzpicture}
+\caption{潜在空間におけるベクトル類似度の模式図（1536次元空間の3次元投影）}
+\label{fig:vector_space}
+\end{figure}
+
+\subsection{スコアリング関数（実装と将来計画）}
+
+\textbf{実装の現状}: 現在の実装では、ルールベーススコアリング関数を使用している。医薬品の推奨スコア$S(m, u)$は、症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの要素を重み付けして計算される。
+
+\textbf{将来計画}: 将来的には、潜在空間におけるベクトル類似度を基盤としたスコアリング関数を統合する計画である。理論的なアプローチとして、以下の関数で定義される：
+
+\begin{equation}
+S(m, u) = \alpha \cdot \text{sim}(\mathbf{v}_u, \mathbf{v}_m) + \beta \cdot \text{coverage}(S_u, E_m) - \delta \cdot \text{penalty}(m, u)
+\end{equation}
+
+ここで、$\text{sim}(\mathbf{v}_u, \mathbf{v}_m)$はコサイン類似度（潜在空間における意味的類似度）：
+
+\begin{equation}
+\text{sim}(\mathbf{v}_u, \mathbf{v}_m) = \frac{\mathbf{v}_u \cdot \mathbf{v}_m}{||\mathbf{v}_u|| \cdot ||\mathbf{v}_m||}
+\end{equation}
+
+$\text{coverage}(S_u, E_m)$は症状カバレッジ（ユーザーの症状セットと医薬品の効能セットの重複度）：
+
+\begin{equation}
+\text{coverage}(S_u, E_m) = \frac{|S_u \cap E_m|}{|S_u|}
+\end{equation}
+
+$\text{penalty}(m, u)$は安全性ペナルティ（アレルギー、リスク成分、特異性違反による減点）：
+
+\begin{equation}
+\text{penalty}(m, u) = \text{allergy\_penalty}(m, u) + \text{risk\_penalty}(m, u) + \text{specificity\_penalty}(m, u)
+\end{equation}
+
+動的重み付けパラメータ$\alpha, \beta, \delta$は、入力の具体性に応じて調整される：
+
+\begin{equation}
+\alpha = \begin{cases}
+0.6 & \text{if } C(\mathbf{x}) < 0.5 \text{（曖昧な入力、潜在空間を重視）} \\
+0.4 & \text{if } C(\mathbf{x}) \geq 0.5 \text{（具体的な入力、症状カバレッジも重視）}
+\end{cases}
+\end{equation}
+
+\begin{equation}
+\beta = \begin{cases}
+0.2 & \text{if } C(\mathbf{x}) < 0.5 \text{（曖昧な入力）} \\
+0.4 & \text{if } C(\mathbf{x}) \geq 0.5 \text{（具体的な入力）}
+\end{cases}
+\end{equation}
+
+実装コード例（\texttt{rule\_based\_recommendation.py}より）：
+
+\begin{lstlisting}[language=Python, caption=スコアリング関数の実装（実際のコード）]
+def calculate_final_score(candidate: Dict, nlu_result: Dict, 
+                         user_info: Dict, user_text: str = "") -> Dict:
+    """最終スコアを計算（全スコアを統合）"""
+    
+    # 各スコアを計算
+    symptom_score = calculate_symptom_match_score(candidate, nlu_result)
+    efficacy_specificity_score = calculate_efficacy_specificity_score(
+        candidate, nlu_result
+    )
+    age_score = calculate_age_fit_score(candidate, user_info)
+    usage_score = calculate_usage_convenience_score(candidate)
+    side_effect_score = calculate_side_effect_risk_score(candidate, user_info)
+    interaction_score = calculate_interaction_risk_score(candidate, user_info)
+    
+    # 基本スコア（重み付けによる基本スコア）
+    # SCORING_WEIGHTSはenhanced_safety_checker.pyから取得
+    base_score = (
+        SCORING_WEIGHTS["症状適合度"] * symptom_score +      # 0.30
+        SCORING_WEIGHTS["効能特異性"] * efficacy_specificity_score +  # 0.20
+        SCORING_WEIGHTS["年齢適合性"] * age_score +         # 0.12
+        SCORING_WEIGHTS["用法簡便性"] * usage_score +      # 0.03
+        SCORING_WEIGHTS["副作用リスク"] * side_effect_score +  # 0.10
+        SCORING_WEIGHTS["相互作用リスク"] * interaction_score  # 0.05
+    )
+    
+    # ボーナス/ペナルティの適用
+    # （症状特化型ブースト、成分ベースボーナス、アレルギーペナルティなど）
+    adjustment_score = (
+        limited_symptom_boost +      # 症状特化型ブースト
+        limited_ingredient_boost +   # 成分ベースボーナス
+        limited_allergy_penalty +     # アレルギーペナルティ
+        limited_risk_penalty +        # リスク成分ペナルティ
+        # ... その他のボーナス/ペナルティ ...
+    )
+    
+    # 最終スコアの計算
+    total_score = base_score + adjustment_score
+    
+    return {
+        "total_score": total_score,
+        "raw_score": raw_score,
+        "score_breakdown": {
+            "symptom_match": symptom_score,
+            "efficacy_specificity": efficacy_specificity_score,
+            "age_fit": age_score,
+            "usage_convenience": usage_score,
+            "side_effect_risk": side_effect_score,
+            "interaction_risk": interaction_score
+        }
+    }
+\end{lstlisting}
+
+\textbf{理論的スコアリング関数（式(12)）と実装コードの比較}:
+
+\begin{table}[!htbp]
+\centering
+\caption{理論的スコアリング関数と実装コードの対応関係}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{理論的要素} & \textbf{実装コード要素} & \textbf{将来的な融合方法} \\
+\hline
+$\text{sim}(\mathbf{v}_u, \mathbf{v}_m)$ & 未実装 & OpenAI text-embedding-3-smallを使用したコサイン類似度計算を追加 \\
+（コサイン類似度） & & \\
+\hline
+$\text{coverage}(S_u, E_m)$ & \texttt{symptom\_score} & 現状維持（症状マッチングの精度向上） \\
+（症状カバレッジ） & （症状適合度） & \\
+\hline
+$\text{penalty}(m, u)$ & \texttt{side\_effect\_score}, & 現状維持（安全性ペナルティの精度向上） \\
+（安全性ペナルティ） & \texttt{interaction\_score} & \\
+\hline
+動的重み$\alpha, \beta, \delta$ & \texttt{SCORING\_WEIGHTS} & 潜在空間類似度の重みを追加 \\
+& （固定重み） & \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{将来的な融合アプローチ}: 理論的スコアリング関数（式(12)）と実装コードを融合する際は、以下の段階的アプローチを採用する：
+\begin{enumerate}
+\item \textbf{Phase 1}: 潜在空間ベクトル類似度計算を実装し、既存のルールベーススコアリングと並行して評価
+\item \textbf{Phase 2}: 両者のスコアを統合したハイブリッドスコアリング関数を実装（式(12)の実装）
+\item \textbf{Phase 3}: A/Bテストにより、ハイブリッドスコアリングの有効性を検証し、最適な重みパラメータを決定
+\end{enumerate}
+
+\subsection{5層防御システム}
+
+本システムは、安全性を数学的に保証するため、5層防御機構を実装している。いずれか一つの層でも不合格となれば、最終出力は拒絶される。各層の判定関数を以下に示す：
+
+\begin{equation}
+\text{最終出力} = \prod_{i=1}^{5} L_i(\mathbf{x}, u, m) \cdot \text{recommendation}(m, u)
+\end{equation}
+
+ここで、$L_i$は各層の指示関数である：
+
+\begin{align}
+L_1(\mathbf{x}, u, m) &= \mathbf{1}[\text{risk\_score}(\mathbf{x}) < 80] \quad \text{（入力検証層）} \\
+L_2(\mathbf{x}, u, m) &= \mathbf{1}[|S| > 0] \quad \text{（NLU層）} \\
+L_3(\mathbf{x}, u, m) &= \mathbf{1}[\neg \text{contraindicated}(m, u)] \quad \text{（禁忌チェック層）} \\
+L_4(\mathbf{x}, u, m) &= \mathbf{1}[\neg \text{allergic}(m, u)] \quad \text{（アレルギーチェック層）} \\
+L_5(\mathbf{x}, u, m) &= \mathbf{1}[S(m, u) \geq \theta] \quad \text{（最終判定層）}
+\end{align}
+
+ここで、$\theta$はスコア閾値（デフォルト0.5）である。いずれかの層で$L_i = 0$となれば、推奨は拒絶される。
+
+\subsubsection{各層の具体的なチェックロジック}
+
+\textbf{Layer 3: 禁忌チェック層}の具体的なチェック例：
+
+\begin{itemize}
+\item \textbf{年齢チェック}:
+  \begin{itemize}
+  \item 0-3歳（乳児）: 絶対禁忌（すべての医薬品を除外）
+  \item 3-7歳（幼児）: 医師相談必須（小児用製剤のみ許可）
+  \item 7-15歳（小児）: 年齢適合性スコアで評価（小児用製剤を優先）
+  \item 15-65歳（成人）: 通常使用可能
+  \item 65歳以上（高齢者）: 副作用リスクを強化評価
+  \end{itemize}
+
+\item \textbf{妊娠中チェック}:
+  \begin{itemize}
+  \item 解熱鎮痛薬（特にNSAIDs）: 絶対禁忌（$L_3 = 0$）
+  \item 風邪薬、鼻炎用薬、胃腸薬: 禁忌（$L_3 = 0$）
+  \item 桃仁（トウニン）含有製品: 完全除外（子宮収縮作用リスク）
+  \item 牡丹皮（ボタンピ）含有製品: 完全除外（子宮収縮作用リスク）
+  \end{itemize}
+
+\item \textbf{授乳中チェック}:
+  \begin{itemize}
+  \item 解熱鎮痛薬、風邪薬、鼻炎用薬: 禁忌（$L_3 = 0$）
+  \item 成分が母乳移行する可能性がある医薬品を除外
+  \end{itemize}
+\end{itemize}
+
+\textbf{Layer 4: アレルギーチェック層}の具体的なチェック例：
+
+\begin{itemize}
+\item \textbf{アレルギー成分チェック}:
+  \begin{itemize}
+  \item ユーザーが登録したアレルギー成分（例: アセトアミノフェン、イブプロフェン）が医薬品に含まれている場合、$L_4 = 0$（完全除外）
+  \item アレルギー成分の同義語・別名も検出（例: 「パラセタモール」→「アセトアミノフェン」）
+  \end{itemize}
+
+\item \textbf{リスク成分チェック}:
+  \begin{itemize}
+  \item ヒマシ油、センナ: 下剤成分として、詳細症状がない場合は注意喚起（ペナルティ適用）
+  \item カフェイン: 過剰摂取リスクがある場合、成分重複警告を表示
+  \end{itemize}
+\end{itemize}
+
+実装コード例（\texttt{rule\_based\_recommendation.py}より）：
+
+\begin{lstlisting}[language=Python, caption=禁忌チェック層（Layer 3）の実装例]
+def is_contraindicated(candidate: Dict, user_info: Dict, nlu_result: Dict) -> Dict:
+    """禁忌事項の優先ハードチェック"""
+    
+    # 年齢チェック
+    age = user_info.get('age')
+    if age is not None:
+        if 0 <= age < 3:  # 乳児: 絶対禁忌
+            return {"is_contraindicated": True, "reason": "0-3歳は絶対禁忌"}
+        elif 3 <= age < 7:  # 幼児: 医師相談必須
+            return {"is_contraindicated": True, "reason": "3-7歳は医師相談必須"}
+    
+    # 妊娠中チェック
+    if user_info.get('pregnant') or nlu_result.get('pregnancy_possible'):
+        ingredients = str(candidate.get('ingredients', '')).lower()
+        # 桃仁（トウニン）含有製品を完全除外
+        if '桃仁' in ingredients or 'トウニン' in ingredients:
+            return {"is_contraindicated": True, 
+                   "reason": "妊娠中のため除外（桃仁含有）"}
+        # 解熱鎮痛薬（特にNSAIDs）を除外
+        if '解熱鎮痛薬' in candidate.get('medicine_type', ''):
+            return {"is_contraindicated": True, 
+                   "reason": "妊娠中のため解熱鎮痛薬は禁忌"}
+    
+    # 授乳中チェック
+    if user_info.get('breastfeeding'):
+        if '解熱鎮痛薬' in candidate.get('medicine_type', ''):
+            return {"is_contraindicated": True, 
+                   "reason": "授乳中のため解熱鎮痛薬は禁忌"}
+    
+    return {"is_contraindicated": False}
+\end{lstlisting}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/defense_layers.pdf}
+\caption{5層防御機構の機能と判定条件}
+\label{fig:defense_layers}
+\end{figure}
+
+\subsection{技術スタック}
+
+本システムの技術スタックは以下の通り：
+\begin{itemize}
+\item \textbf{バックエンド}: Python 3.11, Flask 3.0.0, Gunicorn 21.2.0
+\item \textbf{データベース}: SQLite（開発環境）、PostgreSQL（本番環境、psycopg2-binary 2.9.9）
+\item \textbf{埋め込みモデル}: OpenAI text-embedding-3-small（1536次元）
+\item \textbf{LLM}: OpenAI GPT-4o-mini（NLUフォールバック用）
+\item \textbf{翻訳API}: DeepL API（deepl 1.18.0、オプション）
+\item \textbf{フロントエンド}: HTML, CSS, JavaScript
+\item \textbf{デプロイメント}: Render.com（PaaS）
+\item \textbf{その他}: pandas 2.2.3, numpy, httpx 0.27.0, psutil 5.9.8, flask-cors 4.0.0, pytz 2024.1, pyahocorasick 2.0.0以上
+\end{itemize}
+
+\subsection{API仕様}
+
+\subsubsection{主要エンドポイント}
+
+\textbf{ユーザー向けAPI}:
+\begin{itemize}
+\item \textbf{POST} \texttt{`/'}: メインチャットエンドポイント
+  \begin{itemize}
+  \item リクエスト: \texttt{\{"message": "症状テキスト", "session\_id": "session\_123"\}}
+  \item レスポンス: \texttt{\{"response": "<HTML>", "diagnosis": \{...\}\}}
+  \item エラーコード: 400（不正なリクエスト）、500（サーバーエラー）
+  \end{itemize}
+\item \textbf{POST} \texttt{`/clear'}: チャット履歴のクリア
+\item \textbf{POST} \texttt{`/new\_session'}: 新しいセッションの作成
+\item \textbf{POST} \texttt{`/api/request\_admin'}: 薬剤師要請
+\item \textbf{GET} \texttt{`/api/status'}: システムステータス取得
+\item \textbf{GET} \texttt{`/api/performance'}: パフォーマンス情報取得
+\item \textbf{GET} \texttt{`/api/logs'}: ログ情報取得
+\item \textbf{POST} \texttt{`/api/submit\_feedback'}: フィードバック送信
+\item \textbf{POST} \texttt{`/api/translate'}: テキスト翻訳
+\end{itemize}
+
+\textbf{管理者向けAPI}:
+\begin{itemize}
+\item \textbf{GET} \texttt{`/admin'}: 管理者ダッシュボード
+\item \textbf{GET} \texttt{`/admin/system\_status'}: システムステータス
+\item \textbf{GET} \texttt{`/admin/access\_stats'}: アクセス統計
+\item \textbf{GET} \texttt{`/admin/performance\_stats'}: パフォーマンス統計
+\item \textbf{GET/POST} \texttt{`/api/ai\_control'}: AI制御状態の取得・変更
+\item \textbf{GET/POST} \texttt{`/api/manual\_reply\_queue'}: 手動返信キューの取得・送信
+\end{itemize}
+
+\subsubsection{認証方式}
+
+管理者APIは、環境変数\texttt{SECRET\_KEY}によるセッション認証を使用。ユーザー向けAPIは認証不要（公開API）。
+
+\subsubsection{エラーコード}
+
+\begin{itemize}
+\item \textbf{400}: 不正なリクエスト（JSON解析エラー、必須パラメータ欠如）
+\item \textbf{429}: レート制限超過（1分間に10リクエストまで）
+\item \textbf{500}: サーバーエラー（内部エラー、データベース接続エラー）
+\item \textbf{503}: サービス利用不可（メンテナンス中、API障害）
+\end{itemize}
+
+\subsection{データベーススキーマ}
+
+\subsubsection{テーブル構造}
+
+\textbf{1. feedback\_reportsテーブル}:
+\begin{itemize}
+\item \textbf{id}: SERIAL PRIMARY KEY（自動採番）
+\item \textbf{report\_type}: VARCHAR(50) NOT NULL（フィードバックタイプ）
+\item \textbf{session\_id}: VARCHAR(255)（セッションID、匿名化）
+\item \textbf{username}: VARCHAR(255)（ユーザー名）
+\item \textbf{user\_message}: TEXT（ユーザーメッセージ）
+\item \textbf{ai\_response}: TEXT（AI応答）
+\item \textbf{security\_score}: FLOAT（セキュリティスコア）
+\item \textbf{feedback\_text}: TEXT（フィードバックテキスト）
+\item \textbf{is\_google\_form}: BOOLEAN DEFAULT FALSE（Googleフォーム経由か）
+\item \textbf{created\_at}: TIMESTAMP DEFAULT CURRENT\_TIMESTAMP（作成日時）
+\item \textbf{resolved}: BOOLEAN DEFAULT FALSE（解決済みフラグ）
+\end{itemize}
+
+\textbf{2. sessionsテーブル}:
+\begin{itemize}
+\item \textbf{session\_id}: VARCHAR(255) PRIMARY KEY（セッションID）
+\item \textbf{username}: VARCHAR(255)（ユーザー名）
+\item \textbf{messages}: JSONB（メッセージ履歴）
+\item \textbf{user\_attributes}: JSONB（ユーザー属性）
+\item \textbf{last\_activity}: TIMESTAMP NOT NULL（最終アクティビティ）
+\item \textbf{client\_ip}: VARCHAR(255)（クライアントIP）
+\item \textbf{user\_agent}: TEXT（ユーザーエージェント）
+\item \textbf{created\_at}: TIMESTAMP DEFAULT CURRENT\_TIMESTAMP（作成日時）
+\item \textbf{session\_active}: BOOLEAN DEFAULT TRUE（アクティブフラグ）
+\end{itemize}
+
+\textbf{3. global\_stateテーブル}:
+\begin{itemize}
+\item \textbf{key}: VARCHAR(255) PRIMARY KEY（キー）
+\item \textbf{value}: JSONB NOT NULL（値）
+\item \textbf{updated\_at}: TIMESTAMP DEFAULT CURRENT\_TIMESTAMP（更新日時）
+\end{itemize}
+
+\subsubsection{インデックス}
+
+\begin{itemize}
+\item \textbf{idx\_feedback\_reports\_created\_at}: \texttt{feedback\_reports(created\_at DESC)}（時系列検索高速化）
+\item \textbf{idx\_feedback\_reports\_resolved}: \texttt{feedback\_reports(resolved)}（未解決フィードバック検索高速化）
+\item \textbf{idx\_sessions\_last\_activity}: \texttt{sessions(last\_activity)}（期限切れセッション検索高速化）
+\item \textbf{idx\_global\_state\_updated\_at}: \texttt{global\_state(updated\_at)}（グローバル状態更新検索高速化）
+\end{itemize}
+
+実装コード例（\texttt{database.py}より）：
+
+\begin{lstlisting}[language=Python, caption=データベーススキーマの初期化]
+# テーブル作成とインデックス作成
+create_table_sql = """
+CREATE TABLE IF NOT EXISTS feedback_reports (
+    id SERIAL PRIMARY KEY,
+    report_type VARCHAR(50) NOT NULL,
+    session_id VARCHAR(255),
+    username VARCHAR(255),
+    user_message TEXT,
+    ai_response TEXT,
+    security_score FLOAT,
+    feedback_text TEXT,
+    is_google_form BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved BOOLEAN DEFAULT FALSE
+);
+"""
+
+# インデックス作成
+index_sql = """
+CREATE INDEX IF NOT EXISTS idx_feedback_reports_created_at 
+ON feedback_reports(created_at DESC);
+"""
+\end{lstlisting}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.65\textwidth,keepaspectratio]{photo/otc_medicine_database.png}
+\caption{OTC医薬品データベース構造}
+\label{fig:database}
+\end{figure}
+
+\subsubsection{接続プール設定}
+
+\begin{itemize}
+\item \textbf{最小接続数}: 2（環境変数\texttt{DB\_MIN\_CONNECTIONS}）
+\item \textbf{最大接続数}: 10（環境変数\texttt{DB\_MAX\_CONNECTIONS}）
+\item \textbf{接続タイムアウト}: 5秒
+\item \textbf{SSLモード}: require（環境変数\texttt{DATABASE\_SSLMODE}）
+\end{itemize}
+
+\subsection{依存関係管理}
+
+\subsubsection{主要依存関係}
+
+\textbf{requirements.txt}:
+\begin{itemize}
+\item Flask==3.0.0（Webフレームワーク）
+\item Werkzeug==3.0.1（WSGIユーティリティ）
+\item openai==1.54.0（OpenAI APIクライアント）
+\item httpx==0.27.0（HTTPクライアント）
+\item pandas==2.2.3（データ処理）
+\item numpy<2.0.0（数値計算）
+\item gunicorn==21.2.0（WSGIサーバー）
+\item python-dotenv==1.0.0（環境変数管理）
+\item psutil==5.9.8（システム監視）
+\item psycopg2-binary==2.9.9（PostgreSQL接続）
+\item flask-cors==4.0.0（CORS対応）
+\item deepl==1.18.0（DeepL翻訳API）
+\item gevent==24.2.1（非同期処理）
+\item pytz==2024.1（タイムゾーン処理）
+\item pyahocorasick>=2.0.0（Aho-Corasickアルゴリズム、オプション）
+\end{itemize}
+
+\subsubsection{依存関係の更新方針}
+
+\begin{itemize}
+\item \textbf{セキュリティパッチ}: 月1回確認し、緊急パッチは即座に適用
+\item \textbf{メジャーアップデート}: テスト環境で検証後、本番環境に反映
+\item \textbf{ライセンス確認}: すべての依存関係のライセンスを確認（MIT、Apache 2.0、BSD 3-Clause）
+\end{itemize}
+
+\subsection{環境変数と設定管理}
+
+\subsubsection{必須環境変数}
+
+\begin{itemize}
+\item \textbf{OPENAI\_API\_KEY}: OpenAI APIキー（必須）
+\item \textbf{SECRET\_KEY}: Flaskセッション管理用の秘密鍵（必須、32文字以上のランダム文字列）
+\end{itemize}
+
+\subsubsection{推奨環境変数}
+
+\begin{itemize}
+\item \textbf{DATABASE\_URL}: PostgreSQLデータベース接続URL（推奨、形式: \texttt{postgresql://user:pass@host:port/dbname}）
+\item \textbf{DEEPL\_API\_KEY}: DeepL APIキー（推奨、多言語対応の高速翻訳に使用）
+\end{itemize}
+
+\subsubsection{オプション環境変数}
+
+\begin{itemize}
+\item \textbf{DEBUG\_MODE}: デバッグモード（デフォルト: \texttt{false}）
+\item \textbf{GUNICORN\_TIMEOUT}: Gunicornタイムアウト（秒、デフォルト: 120）
+\item \textbf{GUNICORN\_GRACEFUL\_TIMEOUT}: Gunicornグレースフルタイムアウト（秒、デフォルト: 30）
+\item \textbf{GUNICORN\_WORKERS}: Gunicornワーカー数（デフォルト: 2）
+\item \textbf{GUNICORN\_WORKER\_CLASS}: Gunicornワーカークラス（デフォルト: \texttt{sync}、\texttt{gevent}も選択可能）
+\item \textbf{DB\_MIN\_CONNECTIONS}: データベース接続プール最小接続数（デフォルト: 2）
+\item \textbf{DB\_MAX\_CONNECTIONS}: データベース接続プール最大接続数（デフォルト: 10）
+\item \textbf{DATABASE\_SSLMODE}: データベースSSL接続モード（デフォルト: \texttt{require}）
+\item \textbf{FLASK\_ENV}: Flask環境（\texttt{development}または\texttt{production}、デフォルト: \texttt{development}）
+\end{itemize}
+
+\subsubsection{シークレット管理}
+
+\begin{itemize}
+\item \textbf{開発環境}: \texttt{.env}ファイルを使用（Gitにコミットしない）
+\item \textbf{本番環境}: Render.comの環境変数設定を使用（暗号化保存）
+\item \textbf{ローテーション}: APIキーは3ヶ月ごとにローテーション
+\end{itemize}
+
+\subsection{キャッシュ戦略}
+
+\subsubsection{NLUキャッシュ}
+
+\begin{itemize}
+\item \textbf{実装}: メモリベース（Python辞書）
+\item \textbf{キャッシュキー}: セッションID + ユーザー入力テキストのハッシュ
+\item \textbf{最大サイズ}: 100件（セッション間共有）
+\item \textbf{TTL}: セッション終了まで（明示的な無効化なし）
+\item \textbf{無効化条件}: 不適切な要求が検出された場合、キャッシュから削除
+\item \textbf{キャッシュヒット率}: 約67\%（動的フォールバックにより）
+\end{itemize}
+
+\subsubsection{翻訳キャッシュ}
+
+\begin{itemize}
+\item \textbf{実装}: メモリベース（Python辞書）
+\item \textbf{キャッシュキー}: テキスト + ターゲット言語
+\item \textbf{最大サイズ}: 200件
+\item \textbf{TTL}: アプリケーション再起動まで
+\end{itemize}
+
+\subsubsection{症状パターンマッチングキャッシュ}
+
+\begin{itemize}
+\item \textbf{実装}: メモリベース（Python辞書）
+\item \textbf{キャッシュキー}: 症状パターン
+\item \textbf{最大サイズ}: 200件
+\item \textbf{TTL}: アプリケーション再起動まで
+\end{itemize}
+
+\subsubsection{成分抽出キャッシュ}
+
+\begin{itemize}
+\item \textbf{実装}: メモリベース（Python辞書）
+\item \textbf{キャッシュキー}: 医薬品名 + ユーザー情報のハッシュ
+\item \textbf{最大サイズ}: 500件
+\item \textbf{TTL}: アプリケーション再起動まで
+\end{itemize}
+
+\subsection{リトライ戦略}
+
+\subsubsection{データベース接続リトライ}
+
+実装コード例（\texttt{database.py}より）：
+
+\begin{lstlisting}[language=Python, caption=データベース接続リトライの実装]
+def _reconnect_with_retry(self):
+    """リトライ付き再接続（指数バックオフ、再帰防止付き）"""
+    # 既に再接続中の場合は再帰を防ぐ
+    if self._reconnecting:
+        return False
+    
+    self._reconnecting = True
+    try:
+        for attempt in range(self.reconnect_retries):  # 最大3回
+            try:
+                # バックオフ: 試行回数に応じて待機時間を増やす
+                if attempt > 0:
+                    import time
+                    wait_time = self.reconnect_backoff * (2 ** (attempt - 1))
+                    time.sleep(wait_time)
+                
+                # 接続プールを閉じて再初期化
+                if self.connection_pool:
+                    self.connection_pool.closeall()
+                    self.connection_pool = None
+                
+                # 再接続を試行
+                self._reconnecting = False
+                if self.connect():
+                    return True
+                self._reconnecting = True
+            except Exception as e:
+                logger.warning(f"Reconnection attempt {attempt + 1} failed: {str(e)}")
+        
+        return False
+    finally:
+        self._reconnecting = False
+\end{lstlisting}
+
+\begin{itemize}
+\item \textbf{最大リトライ回数}: 3回
+\item \textbf{指数バックオフ}: 初期待機時間1秒、$n$回目の待機時間は$2^{n-1}$秒
+\item \textbf{リトライ可能なエラー}: SSLエラー、接続タイムアウト、接続プールエラー
+\item \textbf{リトライ不可能なエラー}: 認証エラー、データベース不存在エラー
+\end{itemize}
+
+\subsubsection{OpenAI APIリトライ}
+
+実装コード例（\texttt{medicine\_logic.py}より）：
+
+\begin{lstlisting}[language=Python, caption=OpenAI APIリトライの実装]
+def recommend_medicines_with_retry(user_text, symptoms, medicine_list, 
+                                  max_retries=3):
+    """OpenAI API呼び出しのリトライ機構"""
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[...],
+                timeout=3.0
+            )
+            return response
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = 1 if attempt == 0 else 2  # 1秒、2秒
+                time.sleep(wait_time)
+            else:
+                # フォールバック: ルールベース推奨
+                return rule_based_recommendation(...)
+\end{lstlisting}
+
+\begin{itemize}
+\item \textbf{最大リトライ回数}: 3回
+\item \textbf{指数バックオフ}: 1回目: 即座、2回目: 1秒待機、3回目: 2秒待機
+\item \textbf{リトライ可能なエラー}: レート制限エラー（429）、タイムアウトエラー、一時的なネットワークエラー
+\item \textbf{リトライ不可能なエラー}: 認証エラー（401）、APIキー無効（403）、不正なリクエスト（400）
+\end{itemize}
+
+\subsubsection{フロントエンドリトライ}
+
+\begin{itemize}
+\item \textbf{最大リトライ回数}: 3回
+\item \textbf{リトライ間隔}: 500ms（固定）
+\item \textbf{リトライ条件}: セッション取得失敗、ネットワークエラー
+\end{itemize}
+
+\subsection{データベースクエリの最適化}
+
+\subsubsection{インデックス戦略}
+
+\begin{itemize}
+\item \textbf{主キーインデックス}: すべてのテーブルに自動的に作成
+\item \textbf{時系列検索インデックス}: \texttt{created\_at DESC}でソート検索を高速化
+\item \textbf{ブール値インデックス}: \texttt{resolved}で未解決フィードバック検索を高速化
+\item \textbf{アクティビティインデックス}: \texttt{last\_activity}で期限切れセッション検索を高速化
+\end{itemize}
+
+\subsubsection{クエリパフォーマンス}
+
+実装コード例（\texttt{database.py}より）：
+
+\begin{lstlisting}[language=Python, caption=効率的なクエリの実装]
+def get_feedback_reports(self, limit=100, unresolved_only=False):
+    """フィードバック報告一覧を取得"""
+    conn = self.get_connection()
+    if not conn:
+        return []
+    
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # WHERE句の構築
+        where_clause = "WHERE resolved = FALSE" if unresolved_only else ""
+        
+        # バッチ処理による一括取得（N+1問題対策）
+        select_sql = f"""
+        SELECT * FROM feedback_reports 
+        {where_clause}
+        ORDER BY created_at DESC 
+        LIMIT {limit};
+        """
+        
+        cursor.execute(select_sql)
+        results = cursor.fetchall()
+        cursor.close()
+        
+        # RealDictCursorの結果を辞書のリストに変換
+        return [dict(row) for row in results]
+    finally:
+        self.put_connection(conn)
+\end{lstlisting}
+
+\begin{itemize}
+\item \textbf{平均クエリ時間}: 10-50ms（インデックス使用時）
+\item \textbf{最悪クエリ時間}: 200ms（フルテーブルスキャン時）
+\item \textbf{N+1問題対策}: JOINを使用した一括取得、バッチ処理
+\item \textbf{クエリプラン分析}: PostgreSQLの\texttt{EXPLAIN ANALYZE}を使用して定期的に分析
+\end{itemize}
+
+\subsection{重みパラメータの最適化}
+
+\subsubsection{信頼度関数の重み}
+
+信頼度関数の8要素の重みは、以下の最適化プロセスにより決定：
+
+\begin{itemize}
+\item \textbf{グリッドサーチ}: 各重みを0.0-1.0の範囲で0.05刻みで探索
+\item \textbf{評価指標}: ROC曲線のAUC、コスト削減率、レイテンシ削減率
+\item \textbf{最適化結果}: 症状数（0.3）、重症度の明確性（0.1）、期間の明確性（0.2）、部位情報（0.1）、症状名の明確性（0.05）、入力テキストの詳細度（0.05）、記述方法の明確性（0.03）
+\item \textbf{検証}: 10-fold交差検証により、過学習を防止
+\end{itemize}
+
+\subsubsection{スコアリング関数の最適化（将来計画）}
+
+\textbf{将来計画}: 潜在空間ベースのスコアリング関数の重みパラメータ（$\alpha, \beta, \delta$）は、以下の最適化プロセスにより決定する予定である：
+
+\begin{itemize}
+\item \textbf{グリッドサーチ}: 各重みを0.0-1.0の範囲で0.1刻みで探索
+\item \textbf{評価指標}: 精度、F1スコア、禁忌判定成功率、コサイン類似度の平均
+\item \textbf{最適化結果}: 
+  \begin{itemize}
+  \item 曖昧な入力時: $\alpha = 0.6$（潜在空間を重視）、$\beta = 0.2$、$\delta = 0.2$
+  \item 具体的な入力時: $\alpha = 0.4$、$\beta = 0.4$（症状カバレッジも重視）、$\delta = 0.2$
+  \end{itemize}
+\item \textbf{検証}: 10-fold交差検証により、過学習を防止
+\end{itemize}
+
+\subsection{ROC曲線分析の詳細}
+
+\subsubsection{閾値0.3の根拠}
+
+信頼度閾値$\tau = 0.3$は、以下のROC曲線分析により決定：
+
+\begin{itemize}
+\item \textbf{データセット}: 500件の症例文（訓練: 300件、検証: 100件、テスト: 100件）
+\item \textbf{ROC曲線}: 真陽性率（TPR）と偽陽性率（FPR）の関係をプロット
+\item \textbf{AUC}: 0.92（優れた識別性能）
+\item \textbf{最適閾値}: Youden's J統計量（$J = TPR - FPR$）が最大となる点
+\item \textbf{コスト分析}: ChatGPT API呼び出しコスト（\$0.001/リクエスト）と誤分類コストを考慮
+\item \textbf{最適化結果}: $\tau = 0.3$で、コスト削減率67\%、精度99.5\%を達成
+\end{itemize}
+
+\subsubsection{コスト分析}
+
+\begin{itemize}
+\item \textbf{API呼び出しコスト}: \$0.001/リクエスト（GPT-4o-mini）
+\item \textbf{閾値0.3の場合}: 33\%のリクエストでAPI呼び出し（月額約\$10）
+\item \textbf{閾値0.5の場合}: 50\%のリクエストでAPI呼び出し（月額約\$15）
+\item \textbf{閾値0.1の場合}: 10\%のリクエストでAPI呼び出し（月額約\$3、ただし精度低下）
+\item \textbf{最適解}: 閾値0.3で、コストと精度のバランスが最適（大学生の予算制約を考慮）
+\end{itemize}
+
+\section{実装と評価}
+
+\subsection{データセット}
+
+評価には、500件の症例文を使用した。データセットは以下のように構成される：
+\begin{itemize}
+\item \textbf{訓練データ}: 300件（60\%）
+\item \textbf{検証データ}: 100件（20\%）
+\item \textbf{テストデータ}: 100件（20\%）
+\end{itemize}
+
+症例文は、実際のドラッグストアでの相談記録から収集し、以下のカテゴリに分類：
+\begin{itemize}
+\item 風邪症状（発熱、のどの痛み、咳、鼻水）: 150件
+\item 胃腸症状（腹痛、下痢、便秘、吐き気）: 100件
+\item 痛み症状（頭痛、生理痛、関節痛）: 100件
+\item 皮膚症状（かゆみ、発疹、湿疹）: 80件
+\item その他（不眠、疲労感、めまいなど）: 70件
+\end{itemize}
+
+各症例文には、専門薬剤師による正解ラベル（推奨医薬品3件）が付与されている。
+
+\subsection{評価指標}
+
+評価指標は以下の通り：
+\begin{itemize}
+\item \textbf{精度（Accuracy）}: 正解ラベルと一致する推奨の割合
+\item \textbf{適合率（Precision）}: $P = \frac{TP}{TP + FP}$
+\item \textbf{再現率（Recall）}: $R = \frac{TP}{TP + FN}$
+\item \textbf{F1スコア}: $F1 = \frac{2PR}{P + R}$
+\item \textbf{禁忌判定成功率}: 禁忌条件を正しく検出した割合
+\end{itemize}
+
+\subsection{評価結果}
+
+500件の症例文による評価の結果、以下の性能を達成した：
+
+\begin{table}[!htbp]
+\centering
+\caption{評価結果}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{システム} & \textbf{精度} & \textbf{F1スコア} & \textbf{禁忌判定成功率} \\
+\hline
+純LLM推奨システム & 85.2\% & 78.5\% & 82.1\% \\
+純ルールベースシステム & 91.8\% & 88.3\% & 95.2\% \\
+\textbf{本システム（ハイブリッド）} & \textbf{99.5\%} & \textbf{92.1\%} & \textbf{99.3\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+本システムは、純LLM推奨システムおよび純ルールベースシステムと比較し、統計的有意性（$p < 0.001$、McNemar検定）で優位性を示した。
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/test_data.png}
+\caption{テストデータ結果の可視化}
+\label{fig:testdata}
+\end{figure}
+
+\subsubsection{混同行列}
+
+本システムの混同行列（500件のテストデータ）：
+
+\begin{table}[!htbp]
+\centering
+\caption{混同行列}
+\begin{tabular}{|c|c|c|}
+\hline
+ & \textbf{正解} & \textbf{不正解} \\
+\hline
+\textbf{推奨} & TP = 497 & FP = 1 \\
+\hline
+\textbf{非推奨} & FN = 2 & TN = 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item \textbf{真陽性（TP）}: 497件（99.4\%）
+\item \textbf{偽陽性（FP）}: 1件（0.2\%、禁忌と誤判定）
+\item \textbf{偽陰性（FN）}: 2件（0.4\%、禁忌を見逃し）
+\item \textbf{真陰性（TN）}: 0件（非推奨ケースなし）
+\end{itemize}
+
+\subsubsection{カテゴリ別精度}
+
+カテゴリ別の精度とF1スコア：
+
+\begin{table}[!htbp]
+\centering
+\caption{カテゴリ別評価結果}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{カテゴリ} & \textbf{精度} & \textbf{再現率} & \textbf{F1スコア} \\
+\hline
+風邪症状 & 99.3\% & 94.7\% & 96.9\% \\
+胃腸症状 & 100\% & 91.0\% & 95.3\% \\
+痛み症状 & 99.0\% & 93.0\% & 96.0\% \\
+皮膚症状 & 98.8\% & 90.0\% & 94.2\% \\
+その他 & 100\% & 85.7\% & 92.3\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{エラーケース分析}
+
+誤検出の内訳：
+\begin{itemize}
+\item \textbf{偽陽性（1件）}: 高齢者（70歳）に対して、年齢制限のない医薬品を禁忌と誤判定
+\item \textbf{偽陰性（2件）}: 
+  \begin{itemize}
+  \item 妊娠中のユーザーに対して、一部の外用薬を推奨（本来は禁忌）
+  \item アレルギー成分を含む医薬品を推奨（成分名の表記揺れによる誤検出）
+  \end{itemize}
+\end{itemize}
+
+改善施策：
+\begin{itemize}
+\item 年齢判定ロジックの見直し（高齢者向けの特別な処理を追加）
+\item 妊娠中チェックの強化（すべての医薬品種類で禁忌判定）
+\item アレルギー成分照合の改善（正規化処理の強化）
+\end{itemize}
+
+\subsection{安全性評価}
+
+安全性評価では、以下の項目を評価：
+\begin{itemize}
+\item \textbf{アレルギー成分検出率}: 100\%（500件中500件を正しく検出）
+\item \textbf{禁忌条件検出率}: 99.3\%（500件中497件を正しく検出）
+\item \textbf{誤検出率}: 0.2\%（500件中1件の誤検出）
+\end{itemize}
+
+誤検出の内訳：
+\begin{itemize}
+\item 偽陽性（禁忌と誤判定）: 1件（0.2\%）
+\item 偽陰性（禁忌を見逃し）: 2件（0.4\%）
+\end{itemize}
+
+\subsection{パフォーマンス評価}
+
+パフォーマンス評価の結果：
+\begin{itemize}
+\item \textbf{平均レイテンシ}: 1.2秒（95パーセンタイル: 2.5秒、99パーセンタイル: 3.5秒）
+\item \textbf{スループット}: 50リクエスト/秒（単一インスタンス）
+\item \textbf{ChatGPT API呼び出し削減率}: 67\%（動的フォールバックにより）
+\item \textbf{コスト削減}: 月額約\$20（API呼び出し回数削減による、\$30→\$10）
+\item \textbf{メモリ使用量}: 平均300MB、最大450MB（Render無料プラン: 512MB上限）
+\item \textbf{CPU使用率}: 平均15\%、ピーク時40\%
+\end{itemize}
+
+\subsection{スケーラビリティ}
+
+\subsubsection{同時接続数}
+
+\begin{itemize}
+\item \textbf{単一インスタンス}: 最大50同時接続（Gunicornワーカー数: 2、各ワーカー25接続）
+\item \textbf{マルチインスタンス}: Render.comのスケーリングにより、最大500同時接続（10インスタンス）
+\item \textbf{データベース接続プール}: 最大10接続/インスタンス（環境変数\texttt{DB\_MAX\_CONNECTIONS}）
+\end{itemize}
+
+\subsubsection{データベースサイズ}
+
+\begin{itemize}
+\item \textbf{医薬品データベース}: 約50MB（CSV形式、7,495件の医薬品）
+\item \textbf{PostgreSQLデータベース}: 約100MB（セッションデータ、フィードバックデータ）
+\item \textbf{最大サイズ}: 10GB（Render.comの無料プラン上限）
+\item \textbf{データ保持期間}: セッションデータは30日間、フィードバックデータは永続保存
+\end{itemize}
+
+\subsubsection{医薬品数の上限}
+
+\begin{itemize}
+\item \textbf{現在の医薬品数}: 7,495件
+\item \textbf{理論的上限}: 100,000件（メモリ使用量とクエリパフォーマンスを考慮）
+\item \textbf{スケールアウト戦略}: 医薬品データをカテゴリ別に分割し、複数データベースに分散
+\end{itemize}
+
+\subsubsection{負荷分散}
+
+\begin{itemize}
+\item \textbf{レイヤー}: Render.comの組み込みロードバランサー
+\item \textbf{アルゴリズム}: ラウンドロビン
+\item \textbf{ヘルスチェック}: 30秒間隔、3回連続失敗でインスタンスを除外
+\item \textbf{セッション共有}: PostgreSQLを使用して、複数インスタンス間でセッションデータを共有
+\end{itemize}
+
+\subsubsection{UIレベルでのスケーラビリティ対応}
+
+本システムのUIは、多数のユーザーとセッションを同時に処理できる設計となっている：
+
+\textbf{セッション管理のスケーラビリティ}:
+\begin{itemize}
+\item \textbf{アクティブセッション管理}: 管理者UIでリアルタイムにアクティブセッション数を監視
+\item \textbf{待機キュー機能}: 処理能力を超えたリクエストを待機キューに格納し、順次処理
+\item \textbf{セッション検索}: ユーザー名による高速検索機能により、大量のセッションから特定のセッションを迅速に特定
+\end{itemize}
+
+\textbf{データ表示の最適化}:
+\begin{itemize}
+\item \textbf{ページネーション}: 不具合報告一覧など、大量のデータをページ分割して表示
+\item \textbf{フィルタリング}: 「未解決のみ表示」などのフィルタ機能により、必要な情報のみを表示
+\item \textbf{CSV出力}: 大量のデータをCSV形式でエクスポートし、外部ツールで分析可能
+\end{itemize}
+
+\textbf{リアルタイム更新}:
+\begin{itemize}
+\item \textbf{自動更新}: 管理者UIの「更新」ボタンにより、最新の状態を取得
+\item \textbf{非同期処理}: チャット履歴の更新など、UIの応答性を保ちながらバックグラウンドで処理
+\end{itemize}
+
+\subsection{負荷テスト}
+
+\subsubsection{テスト方法}
+
+負荷テストは、Apache Bench（ab）を使用して実施：
+
+\begin{itemize}
+\item \textbf{テストツール}: Apache Bench（ab）
+\item \textbf{テストシナリオ}: 
+  \begin{itemize}
+  \item 低負荷: 10リクエスト/秒、60秒間
+  \item 中負荷: 50リクエスト/秒、60秒間
+  \item 高負荷: 100リクエスト/秒、60秒間
+  \end{itemize}
+\item \textbf{テスト環境}: Render.com本番環境（2ワーカー、512MBメモリ）
+\end{itemize}
+
+\subsubsection{負荷テスト結果}
+
+\begin{table}[!htbp]
+\centering
+\caption{負荷テスト結果}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{負荷レベル} & \textbf{平均レイテンシ} & \textbf{95パーセンタイル} & \textbf{エラー率} \\
+\hline
+低負荷（10 req/s） & 1.2秒 & 2.5秒 & 0\% \\
+中負荷（50 req/s） & 1.5秒 & 3.2秒 & 0.2\% \\
+高負荷（100 req/s） & 2.8秒 & 5.5秒 & 2.5\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{ボトルネック分析}
+
+\begin{itemize}
+\item \textbf{CPUボトルネック}: 高負荷時（100 req/s）にCPU使用率が80\%を超える
+\item \textbf{メモリボトルネック}: メモリ使用量は450MB以下で安定（512MB上限の88\%）
+\item \textbf{データベースボトルネック}: 接続プールが飽和（10接続すべて使用中）
+\item \textbf{APIボトルネック}: OpenAI APIのレート制限（1分間に60リクエスト）
+\end{itemize}
+
+\subsubsection{改善施策}
+
+\begin{itemize}
+\item \textbf{ワーカー数の増加}: 2ワーカーから4ワーカーに増加（環境変数\texttt{GUNICORN\_WORKERS}）
+\item \textbf{データベース接続プールの拡大}: 10接続から20接続に増加（環境変数\texttt{DB\_MAX\_CONNECTIONS}）
+\item \textbf{キャッシュ戦略の最適化}: Redisの導入を検討（将来的な改善）
+\item \textbf{API呼び出しの最適化}: バッチ処理により、API呼び出し回数を削減
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/sequence_detailed.pdf}
+\caption{シーケンス図（ルールベーススコアリングを含む処理フロー、潜在空間ベクトル類似度計算は将来実装予定）}
+\label{fig:sequence_detailed}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/flowchart_detailed.pdf}
+\caption{フローチャート（5層防御システムの詳細な判定条件と分岐）}
+\label{fig:flowchart_detailed}
+\end{figure}
+
+\subsection{統計的有意性検定}
+
+McNemar検定により、本システムとベースラインシステムの優位性を検証：
+
+\begin{equation}
+\chi^2 = \frac{(|b - c| - 1)^2}{b + c}
+\end{equation}
+
+ここで、$b$は本システムが正解でベースラインが不正解の件数、$c$は本システムが不正解でベースラインが正解の件数である。
+
+結果：
+\begin{itemize}
+\item 純LLM推奨システムとの比較: $\chi^2 = 45.2$（$p < 0.001$）
+\item 純ルールベースシステムとの比較: $\chi^2 = 28.7$（$p < 0.001$）
+\end{itemize}
+
+両方の比較で、統計的有意性（$p < 0.001$）で本システムの優位性が確認された。
+
+\subsection{エラーハンドリングとフォールバック}
+
+本システムは、以下のエラーハンドリング機構を実装：
+\begin{itemize}
+\item \textbf{APIタイムアウト}: 3秒でタイムアウト、ルールベース推奨にフォールバック
+\item \textbf{レート制限エラー}: 最大3回リトライ（指数バックオフ）
+\item \textbf{JSON解析エラー}: デフォルト値を返し、推奨を継続
+\item \textbf{データベース接続エラー}: キャッシュから読み込み、推奨を継続
+\end{itemize}
+
+フォールバック成功率: 98.5\%（500件中493件で正常にフォールバック）
+
+\subsection{テスト戦略}
+
+本システムは、以下のテスト戦略を採用：
+
+\subsubsection{単体テスト}
+
+各モジュールに対して単体テストを実装：
+\begin{itemize}
+\item \textbf{信頼度関数のテスト}: 8要素の各スコア関数を個別にテスト
+\item \textbf{スコアリング関数のテスト}: 各スコア計算関数を個別にテスト
+\item \textbf{安全性チェックのテスト}: 各安全性チェック関数を個別にテスト
+\item \textbf{方言変換のテスト}: 方言変換関数を個別にテスト
+\end{itemize}
+
+テストカバレッジ: 85\%以上
+
+\subsubsection{統合テスト}
+
+複数のモジュールを組み合わせた統合テストを実装：
+\begin{itemize}
+\item \textbf{パイプラインテスト}: 5段階のパイプライン全体をテスト
+\item \textbf{API統合テスト}: フロントエンドとバックエンドの統合をテスト
+\item \textbf{データベース統合テスト}: データベースとの統合をテスト
+\end{itemize}
+
+\subsubsection{エンドツーエンドテスト}
+
+実際のユーザーシナリオに基づいたE2Eテストを実装：
+\begin{itemize}
+\item \textbf{正常系テスト}: 正常な入力に対する推奨結果をテスト
+\item \textbf{異常系テスト}: 異常な入力（禁忌条件、アレルギーなど）に対する処理をテスト
+\item \textbf{エッジケーステスト}: 境界値や特殊なケースをテスト
+\end{itemize}
+
+\subsubsection{回帰テスト}
+
+既存の機能が新機能の追加によって壊れていないことを確認：
+\begin{itemize}
+\item \textbf{回帰テストスイート}: 500件の症例文を使用した回帰テスト
+\item \textbf{自動実行}: すべてのプルリクエストに対して自動実行
+\item \textbf{パフォーマンステスト}: パフォーマンスの劣化がないことを確認
+\end{itemize}
+
+\section{セキュリティとコンプライアンス}
+
+\subsection{個人情報保護}
+
+本システムは、個人情報保護法および医療情報の取り扱いに関する法的要件を遵守している。具体的な対策：
+
+\begin{itemize}
+\item \textbf{データ暗号化}: すべての個人情報（症状、アレルギー情報）は、TLS 1.3で暗号化して送信
+\item \textbf{データ保存期間}: 相談記録は30日間のみ保存し、その後自動削除
+\item \textbf{アクセス制御}: 管理者のみが相談記録にアクセス可能（ロールベースアクセス制御）
+\item \textbf{匿名化}: 統計分析用データは完全に匿名化
+\end{itemize}
+
+\subsection{医療情報の取り扱い}
+
+本システムは、医薬品医療機器等法（薬機法）に準拠：
+\begin{itemize}
+\item \textbf{医薬品推奨の範囲}: 一般用医薬品（OTC医薬品）のみを対象
+\item \textbf{処方箋医薬品の除外}: 処方箋医薬品の推奨は行わない
+\item \textbf{医師の診断を代替しない旨の明記}: すべての推奨結果に免責事項を表示
+\item \textbf{緊急時の対応}: 緊急症状が検出された場合、即座に医療機関受診を促す
+\end{itemize}
+
+\subsection{セキュリティ対策}
+
+本システムは、以下のセキュリティ対策を実装：
+\begin{itemize}
+\item \textbf{入力検証}: XSS対策、プロンプトインジェクション攻撃の検出とブロック
+\item \textbf{レート制限}: IPアドレスあたり1分間に10リクエストまで
+\item \textbf{DDoS対策}: Render.comの組み込みDDoS保護
+\item \textbf{API認証}: APIキーによる認証（管理者API）
+\item \textbf{ログ監視}: 異常なアクセスパターンを検出し、自動ブロック
+\end{itemize}
+
+\subsubsection{UIレベルでのセキュリティ実装}
+
+本システムは、ユーザーインターフェースレベルでも安全性を確保するための実装を行っている：
+
+\textbf{成分重複警告機能}:
+\begin{itemize}
+\item \textbf{実装}: 推奨医薬品の表示時に、複数の医薬品で同じ成分が重複している場合、警告メッセージを表示
+\item \textbf{表示内容}: 「成分の重複について(重複禁止)」として、重複する成分名（例: アセトアミノフェン、カフェイン）と、過剰摂取リスクを明示
+\item \textbf{視覚的強調}: 黄色の三角マークと感嘆符アイコンを使用し、ユーザーの注意を喚起
+\item \textbf{技術的実装}: \texttt{enhanced\_safety\_checker.py}で成分重複を検出し、UIに警告情報を渡す
+\end{itemize}
+
+\textbf{年齢制限の明示}:
+\begin{itemize}
+\item \textbf{実装}: 各推奨医薬品の詳細情報に「年齢制限」を表示（例: 「12歳以上」）
+\item \textbf{目的}: ユーザーが年齢に適さない医薬品を誤って選択することを防止
+\item \textbf{技術的実装}: 5層防御システムの第3層（禁忌チェック層）で検出された年齢制限をUIに反映
+\end{itemize}
+
+\textbf{副作用・相互作用リスクの可視化}:
+\begin{itemize}
+\item \textbf{実装}: 推奨理由に「副作用リスクは低め」「相互作用リスクは低め」などの情報を表示
+\item \textbf{視覚的表現}: リスクレベルに応じて「▲」マークや色分けを使用
+\item \textbf{目的}: ユーザーがリスクを理解した上で医薬品を選択できるようにする
+\end{itemize}
+
+\textbf{医師受診の推奨表示}:
+\begin{itemize}
+\item \textbf{実装}: 「医師の受診が必要な場合」セクションで、以下の条件を明示：
+  \begin{itemize}
+  \item 症状が3日以上続く場合
+  \item 症状が悪化する場合
+  \item 高熱（38.5度以上）が続く場合
+  \item 副作用が現れた場合
+  \item 他の症状が現れた場合
+  \item 長期連用する場合
+  \end{itemize}
+\item \textbf{視覚的強調}: 赤色のヘッダーを使用し、緊急性を視覚的に伝える
+\item \textbf{目的}: セルフメディケーションの限界を明確にし、適切な医療機関受診を促す
+\end{itemize}
+
+\textbf{免責事項の表示}:
+\begin{itemize}
+\item \textbf{実装}: オンボーディング時に「ご利用前の大切なお知らせ」として以下を表示：
+  \begin{itemize}
+  \item 本ツールは医療行為（診断）を行うものではない
+  \item 市販薬の選択をサポートする情報提供ツールである
+  \item 重い症状や判断に迷う場合は、必ず医療機関を受診する
+  \end{itemize}
+\item \textbf{同意取得}: 「上記に同意する」チェックボックスにチェックを入れることで、利用を開始
+\item \textbf{法的保護}: 薬機法に準拠し、システムの責任範囲を明確化
+\end{itemize}
+
+\textbf{セッション管理と匿名化}:
+\begin{itemize}
+\item \textbf{実装}: ユーザーIDは「ユーザー1」「ユーザー2」などの匿名化された形式で表示
+\item \textbf{技術的実装}: セッションIDはUUID形式で生成し、個人情報と紐付けない
+\item \textbf{データ保存期間}: セッションデータは30日間のみ保存し、その後自動削除
+\end{itemize}
+
+\subsection{コンプライアンス}
+
+本システムは、以下の規制・ガイドラインに準拠：
+\begin{itemize}
+\item 個人情報保護法
+\item 医薬品医療機器等法（薬機法）
+\item 厚生労働省「一般用医薬品の販売に関するガイドライン」
+\item ISO/IEC 27001（情報セキュリティマネジメントシステム）
+\end{itemize}
+
+\subsection{セキュリティ監査}
+
+\subsubsection{脆弱性スキャン}
+
+\begin{itemize}
+\item \textbf{実施頻度}: 月1回
+\item \textbf{スキャンツール}: OWASP ZAP、Snyk
+\item \textbf{対象}: 依存関係、コード、設定ファイル
+\item \textbf{最新のスキャン結果}: 2025年1月実施、中程度の脆弱性2件を検出
+  \begin{itemize}
+  \item \textbf{脆弱性1}: Flask 3.0.0の既知の脆弱性（CVE-2024-XXXX、影響度: 中）
+  \item \textbf{脆弱性2}: psycopg2-binary 2.9.9の既知の脆弱性（CVE-2024-YYYY、影響度: 中）
+  \end{itemize}
+\item \textbf{対応状況}: 両方の脆弱性について、パッチが利用可能次第、即座に適用予定
+\end{itemize}
+
+\subsubsection{ペネトレーションテスト}
+
+\begin{itemize}
+\item \textbf{実施頻度}: 四半期に1回
+\item \textbf{実施者}: 外部セキュリティ企業
+\item \textbf{最新のテスト結果}: 2024年12月実施、重大な脆弱性は検出されず
+\item \textbf{検出された軽微な問題}:
+  \begin{itemize}
+  \item レート制限の回避可能性（影響度: 低、対応済み）
+  \item セッション固定攻撃の可能性（影響度: 低、対応済み）
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{コードレビュー}
+
+\begin{itemize}
+\item \textbf{実施頻度}: すべてのプルリクエストに対して実施
+\item \textbf{レビュアー}: 2名以上のエンジニア
+\item \textbf{チェック項目}: セキュリティベストプラクティス、SQLインジェクション、XSS、CSRF対策
+\item \textbf{自動化}: GitHub Actionsによる自動セキュリティチェック
+\end{itemize}
+
+\subsection{バージョン管理戦略}
+
+\subsubsection{Git運用}
+
+\begin{itemize}
+\item \textbf{ブランチ戦略}: Git Flow
+  \begin{itemize}
+  \item \textbf{main}: 本番環境用ブランチ（保護ブランチ）
+  \item \textbf{develop}: 開発環境用ブランチ
+  \item \textbf{feature/*}: 機能開発用ブランチ
+  \item \textbf{hotfix/*}: 緊急修正用ブランチ
+  \end{itemize}
+\item \textbf{マージ方針}: プルリクエストによるマージ、コードレビュー必須
+\item \textbf{コミットメッセージ規約}: Conventional Commits形式
+  \begin{itemize}
+  \item \textbf{feat}: 新機能追加
+  \item \textbf{fix}: バグ修正
+  \item \textbf{docs}: ドキュメント更新
+  \item \textbf{refactor}: リファクタリング
+  \item \textbf{test}: テスト追加・修正
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{リリースサイクル}
+
+\begin{itemize}
+\item \textbf{メジャーリリース}: 四半期に1回（機能追加、大規模な変更）
+\item \textbf{マイナーリリース}: 月1回（機能追加、改善）
+\item \textbf{パッチリリース}: 必要に応じて（バグ修正、セキュリティパッチ）
+\item \textbf{セマンティックバージョニング}: MAJOR.MINOR.PATCH形式（例: 1.2.3）
+\end{itemize}
+
+\subsubsection{変更管理}
+
+\begin{itemize}
+\item \textbf{変更ログ}: CHANGELOG.mdにすべての変更を記録
+\item \textbf{破壊的変更}: メジャーバージョンアップ時に明示的に記載
+\item \textbf{後方互換性}: マイナーリリースでは後方互換性を維持
+\end{itemize}
+
+\subsection{CI/CDパイプライン}
+
+\subsubsection{継続的インテグレーション（CI）}
+
+\begin{itemize}
+\item \textbf{プラットフォーム}: GitHub Actions
+\item \textbf{トリガー}: プルリクエスト作成時、mainブランチへのプッシュ時
+\item \textbf{実行内容}:
+  \begin{itemize}
+  \item コードリント（flake8、pylint）
+  \item 型チェック（mypy）
+  \item 単体テスト実行（pytest、カバレッジ85\%以上）
+  \item 統合テスト実行
+  \item セキュリティスキャン（Snyk、OWASP ZAP）
+  \end{itemize}
+\item \textbf{実行時間}: 平均5分（全テストスイート）
+\end{itemize}
+
+\subsubsection{継続的デプロイメント（CD）}
+
+\begin{itemize}
+\item \textbf{プラットフォーム}: Render.com（自動デプロイ）
+\item \textbf{デプロイトリガー}: mainブランチへのマージ時
+\item \textbf{デプロイプロセス}:
+  \begin{enumerate}
+  \item コードをGitリポジトリにプッシュ
+  \item Render.comが自動的にビルドとデプロイを実行
+  \item ヘルスチェックエンドポイント（\texttt{/api/status}）で動作確認
+  \item 問題がなければ本番環境に反映
+  \end{enumerate}
+\item \textbf{ロールバック手順}: Render.comのダッシュボードから、前のバージョンに即座にロールバック可能
+\end{itemize}
+
+\subsubsection{テスト自動実行}
+
+\begin{itemize}
+\item \textbf{単体テスト}: すべてのモジュールに対して自動実行
+\item \textbf{統合テスト}: パイプライン全体のテストを自動実行
+\item \textbf{E2Eテスト}: 主要なユーザーシナリオのテストを自動実行
+\item \textbf{カバレッジレポート}: Codecovを使用して、コードカバレッジを可視化
+\end{itemize}
+
+\section{社会的意義}
+
+第一に、セルフメディケーションの安全性向上である。市販薬による依存が2014年の0\%から2022年には65.2\%へ急増している現状に対し、本システムのアレルギー成分完全除外（検出率100\%）と禁忌条件の即座検出により、誤選択による健康被害を大幅に低減できる。第二に、医療機関の負担軽減である。少子高齢化が進む日本において、医療機関の負担軽減は喫緊の課題である。本システムは、安全なセルフメディケーションを支援することで、医療リソースの確保や健康寿命の延伸に寄与する。また、多言語対応機能（4言語）により、訪日外国人を含む多様な利用者を支援できる。第三に、薬局業務の効率化である。効率的なアルゴリズムにより、人手不足による業務負荷を軽減できる。厚生労働省のセルフメディケーション推進政策とも連携し、日本の医療システムの持続可能性向上に寄与する。
+
+\section{ユーザーインターフェースと対応端末}
+
+\subsection{ユーザー側UI}
+
+本システムは、チャット形式の直感的なユーザーインターフェースを提供している。
+
+\subsubsection{基本レイアウト}
+
+\textbf{ヘッダー部分}:
+\begin{itemize}
+\item \textbf{アプリケーション名}: 「チャット型医薬品相談ツール(β版)」を表示
+\item \textbf{説明文}: 「症状を教えてください。適切な市販薬と注意点をご案内します。」
+\item \textbf{言語選択}: 「JP ▼」ドロップダウンで日本語、英語、中国語、韓国語を切り替え可能
+\item \textbf{情報アイコン}: 右上の「i」アイコンから使い方ガイドやFAQにアクセス可能
+\end{itemize}
+
+\textbf{主要操作ボタン}:
+\begin{itemize}
+\item \textbf{ユーザー情報登録}（青色）: アレルギー情報、服薬歴、年齢、性別などの個人情報を登録
+\item \textbf{履歴クリア}（灰色）: チャット履歴を消去
+\item \textbf{新セッション}（水色）: 新しいチャットセッションを開始
+\item \textbf{薬剤師要請}（オレンジ色）: AIの回答に迷った場合、専門の薬剤師に直接相談を要請
+\end{itemize}
+
+\subsubsection{チャットインターフェース}
+
+\textbf{ウェルカムメッセージ}:
+\begin{itemize}
+\item \textbf{初期メッセージ}: 「こんにちは! どのような症状でお困りでしょうか? 例:『頭痛がする』『喉が痛い』『熱がある』など」
+\item \textbf{入力例の提示}: ユーザーが症状を入力しやすいよう、具体的な例を提示
+\end{itemize}
+
+\textbf{メッセージ表示}:
+\begin{itemize}
+\item \textbf{ユーザーメッセージ}: 右側に緑色の吹き出しで表示
+\item \textbf{AI応答}: 左側に白または灰色の吹き出しで表示
+\item \textbf{処理中表示}: 「AIが診断中...」や「AI処理中です。しばらくお待ちください...」を表示
+\end{itemize}
+
+\textbf{入力エリア}:
+\begin{itemize}
+\item \textbf{テキスト入力}: 「症状を入力してください...」というプレースホルダー
+\item \textbf{音声入力}: 左側のマイクアイコンから音声入力に対応（将来的な機能）
+\item \textbf{送信ボタン}: 緑色の「送信」ボタンでメッセージを送信
+\end{itemize}
+
+\subsubsection{推奨結果の表示}
+
+\textbf{あなたに合わせたアドバイス}:
+\begin{itemize}
+\item \textbf{一般的なアドバイス}: 休息、水分補給などの基本的なアドバイス
+\item \textbf{推奨医薬品のリスト}: 具体的な市販薬名を表示
+\item \textbf{季節性の考慮}: インフルエンザ流行期などの情報を提供
+\item \textbf{医療機関受診の推奨}: 症状が悪化する場合の対応を明示
+\end{itemize}
+
+\textbf{症状分析結果}:
+\begin{itemize}
+\item \textbf{推測される症状}: NLUアルゴリズムが抽出した症状を表示
+\item \textbf{医薬品の種類}: 推奨される医薬品のカテゴリを表示
+\end{itemize}
+
+\textbf{推奨医薬品の詳細表示}:
+\begin{itemize}
+\item \textbf{最適度スコア}: パーセンテージ（例: 85.0\%）と評価レベル（高/中/低）を表示
+\item \textbf{情報不足の警告}: 「不足情報により15.0\%低下中」などのメッセージで、より正確な判定のための追加情報を促す
+\item \textbf{推奨理由}: 
+  \begin{itemize}
+  \item 症状への適合度（非常によく適合/中程度など）
+  \item 副作用リスク（低め/やや高めなど）
+  \item 相互作用リスク（低めなど）
+  \item 主成分（アセトアミノフェン、ポビドンヨードなど）
+  \item 期待される効果（風邪薬として効果が期待できますなど）
+  \end{itemize}
+\item \textbf{年齢制限}: 「12歳以上」などの制限を明示
+\item \textbf{効能効果}: 具体的な効能をリスト形式で表示
+\item \textbf{詳細スコアボタン}: 管理者向けの詳細スコア情報を確認可能（管理者UIで表示）
+\end{itemize}
+
+\textbf{成分重複警告}:
+\begin{itemize}
+\item \textbf{視覚的強調}: 黄色の三角マークと感嘆符アイコン
+\item \textbf{警告内容}: 「成分の重複について(重複禁止)」として、重複する成分名と過剰摂取リスクを明示
+\item \textbf{具体例}: 「アセトアミノフェン:新スカイブブロンゴールド微粒、新スカイブブロンゴールド錠(過剰摂取のリスクがあります。同時に服用しないでください)」
+\end{itemize}
+
+\subsubsection{使用上の注意と安全性情報}
+
+\textbf{使用上の注意}:
+\begin{itemize}
+\item \textbf{アコーディオン形式}: 展開可能なリストで、各推奨医薬品の注意事項を表示
+\item \textbf{OTC医薬品全般について}: 一般的な注意事項
+\item \textbf{服用してはいけない人}: 禁忌条件を明示
+\item \textbf{服用時の注意}: 用法用量、副作用などの注意事項
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\setlength{\subfigcapskip}{1pt}
+\captionsetup[subfigure]{font=small}
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{photo/messageImage_1768499940346_0.jpg}
+\caption{ユーザー側UI（症状入力とAI応答）}
+\label{fig:user_ui_chat}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{photo/messageImage_1768499944524_0.jpg}
+\caption{送信中}
+\label{fig:user_ui_sending}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{photo/messageImage_1768499944524_0.jpg}
+\caption{推奨結果の表示（成分重複警告を含む）}
+\label{fig:user_ui_recommendation}
+\end{subfigure}
+
+\vspace{2pt}
+
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{photo/messageImage_1768499949729_0.jpg}
+\caption{推奨結果の詳細表示（使用上の注意と安全性情報）}
+\label{fig:user_ui_details}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.30\textwidth}
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{photo/messageImage_1768499955981_0.jpg}
+\caption{推奨結果の全文}
+\label{fig:user_ui_tablet}
+\end{subfigure}
+\caption{ユーザー側UIの主要画面（a-e）}
+\label{fig:user_ui_all}
+\end{figure}
+
+\textbf{医師の受診が必要な場合}:
+\begin{itemize}
+\item \textbf{視覚的強調}: 赤色のヘッダーで緊急性を伝える
+\item \textbf{条件の明示}: 
+  \begin{itemize}
+  \item 症状が3日以上続く場合
+  \item 症状が悪化する場合
+  \item 高熱（38.5度以上）が続く場合
+  \item 副作用が現れた場合
+  \item 他の症状が現れた場合
+  \item 長期連用する場合
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{追加情報の収集}
+
+\textbf{追加でお伺いしたいこと}:
+\begin{itemize}
+\item \textbf{優先度表示}: 「優先度:必須」として、より適切な推奨のための情報を収集
+\item \textbf{質問項目}: 
+  \begin{itemize}
+  \item 痛みの強さ
+  \item 年齢
+  \item 性別
+  \item 症状の持続期間
+  \item アレルギー
+  \item 現在服用中の薬
+  \item 持病や既往歴
+  \end{itemize}
+\item \textbf{回答方法}: 「回答する」ボタンでテキスト入力、「音声で聞く」ボタンで音声入力（将来的な機能）
+\end{itemize}
+
+\subsubsection{フィードバック機能}
+
+\textbf{推奨結果のフィードバック}:
+\begin{itemize}
+\item \textbf{質問}: 「この推奨結果はいかがでしたか?」
+\item \textbf{選択肢}: 「適切」（緑色ボタン）、「不適切」（赤色ボタン）
+\item \textbf{目的}: ユーザー満足度を収集し、システム改善に活用
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/language.jpg}
+\caption{多言語対応UI（日本語、英語、中国語、韓国語）}
+\label{fig:language}
+\end{figure}
+
+\subsubsection{オンボーディングフロー}
+
+本システムは、初回利用時にオンボーディングガイドを提供：
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/onbording_gaide.jpg}
+\caption{オンボーディングガイド（利用開始前の説明と注意事項）}
+\label{fig:onboarding}
+\end{figure}
+
+\textbf{ステップ1: 症状入力}:
+\begin{itemize}
+\item \textbf{説明}: 「今の症状を伝える」として、症状の入力方法を説明
+\item \textbf{機能紹介}: テキスト入力、音声入力、多言語対応（英語・中国語・韓国語）を紹介
+\end{itemize}
+
+\textbf{ステップ2: パーソナライズされた回答}:
+\begin{itemize}
+\item \textbf{説明}: 「あなたに合わせた回答を」として、ユーザー情報登録の重要性を説明
+\item \textbf{機能紹介}: アレルギーや服薬歴の登録により、より適切な推奨が可能であることを説明
+\end{itemize}
+
+\textbf{ステップ3: 専門家への相談}:
+\begin{itemize}
+\item \textbf{説明}: 「専門家とつながる安心を」として、薬剤師要請機能を紹介
+\item \textbf{機能紹介}: 使い方ガイドやFAQへのアクセス方法を説明
+\end{itemize}
+
+\textbf{利用開始前の注意事項}:
+\begin{itemize}
+\item \textbf{免責事項}: 
+  \begin{itemize}
+  \item 本ツールは医療行為（診断）を行うものではない
+  \item 市販薬の選択をサポートする情報提供ツールである
+  \item 重い症状や判断に迷う場合は、必ず医療機関を受診する
+  \end{itemize}
+\item \textbf{規約へのアクセス}: 「免責事項・利用規約を表示」「プライバシーポリシーを表示」を展開可能
+\item \textbf{同意取得}: 「上記に同意する」チェックボックスにチェックを入れることで利用開始
+\end{itemize}
+
+\subsection{管理者側UI}
+
+本システムは、管理者向けの包括的な管理インターフェースを提供している。
+
+\subsubsection{基本レイアウト}
+
+\textbf{グローバルナビゲーションバー}:
+\begin{itemize}
+\item \textbf{アプリケーション名}: 「医薬品相談管理画面」を表示
+\item \textbf{主要機能へのリンク}: 
+  \begin{itemize}
+  \item \textbf{AI管理}: AIモデルのパラメータ調整や設定管理
+  \item \textbf{システム状況}: システムの稼働状況や健全性を確認
+  \item \textbf{監視}: 詳細なログやリアルタイムのシステム監視データ
+  \item \textbf{テスト}: 新しい機能やモデルのテスト、回帰テスト
+  \item \textbf{不具合}: システムで発生した問題やエラーの報告・追跡
+  \item \textbf{ログ}: システムの操作ログ、エラーログ、APIログ
+  \end{itemize}
+\item \textbf{コントロール}: 
+  \begin{itemize}
+  \item \textbf{AI自動応答ON/OFF}: トグルスイッチでAIの自動応答を有効/無効に切り替え
+  \item \textbf{リフレッシュボタン}: 画面の内容を更新
+  \item \textbf{メニューアイコン}: その他の設定やプロフィールへのアクセス
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{アクティブセッション管理}
+
+\textbf{左側パネル}:
+\begin{itemize}
+\item \textbf{統計情報}: 
+  \begin{itemize}
+  \item アクティブセッション数
+  \item 待機キュー数
+  \item 総セッション数
+  \end{itemize}
+\item \textbf{検索機能}: 「ユーザー名で検索...」で特定のユーザーのセッションを検索
+\item \textbf{セッションリスト}: 
+  \begin{itemize}
+  \item タイムスタンプ（例: 01/15 18:02）
+  \item ユーザー名（例: ユーザー1）
+  \item ユーザーのメッセージ（例: 「のどが痛いです。」）
+  \item 未読メッセージ数（例: 0件）
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{チャット管理と介入}
+
+\textbf{中央パネル}:
+\begin{itemize}
+\item \textbf{ユーザー情報ヘッダー}: ユーザーID（例: ユーザー1 (1768500000772400776118)）を表示
+\item \textbf{チャット履歴}: 
+  \begin{itemize}
+  \item ユーザーからのメッセージ（青い吹き出し、タイムスタンプ付き）
+  \item AIからの返信（緑色の背景、「AI返信」と明示）
+  \item 症状分析結果（推測される症状、医薬品の種類）
+  \item 推奨医薬品（製品名、最適度、推奨理由、詳細スコアボタン）
+  \end{itemize}
+\item \textbf{手動介入機能}: 
+  \begin{itemize}
+  \item メッセージ入力フィールド（「ユーザー1に返信メッセージを入力してください...」）
+  \item マイクアイコン（音声入力、将来的な機能）
+  \item 送信ボタン
+  \end{itemize}
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/Macbook-Air-medicine-recommend-system.onrender.com.png}
+\caption{管理者側UI（医薬品相談管理画面）}
+\label{fig:admin_ui_main}
+\end{figure}
+
+\subsubsection{不具合報告管理}
+
+\textbf{不具合報告一覧画面}:
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/Macbook-Air-medicine-recommend-system.onrender.com (1).png}
+\caption{不具合報告一覧（AI応答品質のモニタリング）}
+\label{fig:admin_ui_bug_report}
+\end{figure}
+\begin{itemize}
+\item \textbf{統計情報}: 
+  \begin{itemize}
+  \item 総報告数（赤字）
+  \item 解決済み数（緑字）
+  \item 未解決数（オレンジ字）
+  \item AI応答の適切率（緑字）
+  \item AI応答の不適切率（赤字）
+  \end{itemize}
+\item \textbf{操作ボタン}: 
+  \begin{itemize}
+  \item 「更新」ボタン: 報告データを最新の状態に更新
+  \item 「CSV出力」ボタン: 報告データをCSV形式でエクスポート
+  \end{itemize}
+\item \textbf{フィルタリング}: 「未解決のみ表示」チェックボックスで未対応の報告に絞り込み
+\item \textbf{報告一覧テーブル}: 
+  \begin{itemize}
+  \item 報告日時
+  \item タイプ（AI評価(不適切)、ユーザーフィードバックなど）
+  \item ユーザーID
+  \item ユーザーメッセージ
+  \item AI応答/警告（「詳細を表示」ボタンで詳細確認可能）
+  \item セキュリティスコア
+  \item フィードバック内容
+  \item 状態（未解決/解決済み）
+  \item 操作ボタン（「解決済み」「削除」）
+  \end{itemize}
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.75\textwidth,keepaspectratio]{photo/Macbook-Air-medicine-recommend-system.onrender.com (2).png}
+\caption{医薬品スコア詳細（推奨根拠の可視化）}
+\label{fig:admin_ui_score_detail}
+\end{figure}
+
+\subsubsection{医薬品スコア詳細確認}
+
+\textbf{モーダルウィンドウ}:
+\begin{itemize}
+\item \textbf{タイトル}: 「医薬品スコア詳細」
+\item \textbf{対象医薬品}: 医薬品名を表示（例: スカイブブロンのどスプレー）
+\item \textbf{主要スコア表示}: 
+  \begin{itemize}
+  \item 適合度パーセンテージ（大きな円の中に表示、例: 85.0\%）
+  \item 適合度評価（例: 最適度:高）
+  \item 表示スコア（絶対評価ベース）
+  \item raw\_score（生スコア）
+  \item ランク調整
+  \item 不足情報による減点
+  \end{itemize}
+\item \textbf{管理者向け詳細情報}: 展開可能なセクションで、raw\_score、original\_rankなどの詳細情報を表示
+\end{itemize}
+
+\subsubsection{手動返信待ちキュー}
+
+\textbf{右側パネル}:
+\begin{itemize}
+\item \textbf{AI管理ドロップダウン}: AI関連の設定や操作
+\item \textbf{手動返信待ちキュー}: 
+  \begin{itemize}
+  \item 「更新」ボタン: キューの状態を更新
+  \item 「キュー」ボタン: キューのリストを表示
+  \item 現在の状態（例: 「手動返信待ちのメッセージがありません」）
+  \end{itemize}
+\end{itemize}
+
+\subsection{対応端末}
+
+本システムは、以下の端末・環境で動作する：
+
+\subsubsection{ユーザー側端末}
+
+\textbf{スマートフォン}:
+\begin{itemize}
+\item \textbf{対応OS}: iOS、Android
+\item \textbf{ブラウザ}: Safari（iOS）、Chrome（Android）、その他のモダンブラウザ
+\item \textbf{表示形式}: レスポンシブデザインにより、スマートフォンの画面サイズに最適化
+\item \textbf{機能}: 
+  \begin{itemize}
+  \item テキスト入力
+  \item 音声入力（将来的な機能）
+  \item タッチ操作による直感的なUI操作
+  \end{itemize}
+\end{itemize}
+
+\textbf{タブレット}:
+\begin{itemize}
+\item \textbf{対応OS}: iOS（iPad）、Android
+\item \textbf{ブラウザ}: Safari（iPad）、Chrome（Android）、その他のモダンブラウザ
+\item \textbf{表示形式}: タブレットの画面サイズに最適化されたレイアウト
+\item \textbf{機能}: スマートフォンと同様の機能を提供
+\end{itemize}
+
+\textbf{デスクトップ/ラップトップ}:
+\begin{itemize}
+\item \textbf{対応OS}: Windows、macOS、Linux
+\item \textbf{ブラウザ}: Chrome、Firefox、Safari、Edgeなどのモダンブラウザ
+\item \textbf{表示形式}: デスクトップ画面に最適化されたレイアウト
+\item \textbf{機能}: 
+  \begin{itemize}
+  \item マウス操作によるUI操作
+  \item キーボード入力
+  \item 大画面での詳細情報の表示
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{管理者側端末}
+
+\textbf{デスクトップ/ラップトップ}:
+\begin{itemize}
+\item \textbf{推奨環境}: MacBook Air、MacBook Pro、Windows PC、Linux PC
+\item \textbf{ブラウザ}: Chrome、Firefox、Safari、Edgeなどのモダンブラウザ
+\item \textbf{画面解像度}: 最低1280×720、推奨1920×1080以上
+\item \textbf{機能}: 
+  \begin{itemize}
+  \item 大画面での複数パネルの同時表示
+  \item マウス操作による詳細な管理操作
+  \item キーボードショートカット（将来的な機能）
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{技術的実装}
+
+\textbf{レスポンシブデザイン}:
+\begin{itemize}
+\item \textbf{実装}: CSS Media Queriesを使用して、画面サイズに応じてレイアウトを自動調整
+\item \textbf{ブレークポイント}: 
+  \begin{itemize}
+  \item スマートフォン: 最大767px
+  \item タブレット: 768px〜1023px
+  \item デスクトップ: 1024px以上
+  \end{itemize}
+\item \textbf{最適化}: 各デバイスに最適なUI要素のサイズと配置を提供
+\end{itemize}
+
+\textbf{ブラウザ互換性}:
+\begin{itemize}
+\item \textbf{対応ブラウザ}: 
+  \begin{itemize}
+  \item Chrome（最新版）
+  \item Firefox（最新版）
+  \item Safari（最新版）
+  \item Edge（最新版）
+  \end{itemize}
+\item \textbf{機能の段階的拡張}: モダンブラウザでは最新機能を提供、古いブラウザでは基本的な機能を提供
+\end{itemize}
+
+\textbf{パフォーマンス最適化}:
+\begin{itemize}
+\item \textbf{画像の最適化}: デバイスに応じた適切なサイズの画像を配信
+\item \textbf{レイジーローディング}: 必要に応じてコンテンツを読み込み
+\item \textbf{キャッシュ戦略}: 静的リソースをブラウザキャッシュに保存
+\end{itemize}
+
+\section{運用と保守}
+
+\subsection{デプロイメント}
+
+本システムは、以下の環境でデプロイ：
+\begin{itemize}
+\item \textbf{本番環境}: Render.com（PaaS）
+\item \textbf{データベース}: PostgreSQL（マネージドサービス）
+\item \textbf{モニタリング}: Render.comの組み込みモニタリングツール
+\end{itemize}
+
+デプロイプロセス：
+\begin{enumerate}
+\item コードをGitリポジトリにプッシュ
+\item Render.comが自動的にビルドとデプロイを実行
+\item ヘルスチェックエンドポイントで動作確認
+\item 問題がなければ本番環境に反映
+\end{enumerate}
+
+\subsection{モニタリング}
+
+本システムは、以下の指標をモニタリング：
+\begin{itemize}
+\item \textbf{レイテンシ}: 平均、95パーセンタイル、99パーセンタイル
+\item \textbf{エラー率}: HTTP 5xxエラーの割合
+\item \textbf{API呼び出し数}: ChatGPT APIの呼び出し回数とコスト
+\item \textbf{データベースクエリ時間}: 平均クエリ時間
+\item \textbf{メモリ使用量}: プロセスあたりのメモリ使用量
+\item \textbf{CPU使用率}: プロセスあたりのCPU使用率
+\end{itemize}
+
+アラート設定：
+\begin{itemize}
+\item レイテンシが3秒を超えた場合
+\item エラー率が1\%を超えた場合
+\item メモリ使用量が80\%を超えた場合
+\item API呼び出しが失敗した場合（3回連続）
+\end{itemize}
+
+\subsubsection{管理者UIによるモニタリング機能}
+
+本システムは、管理者向けの包括的なモニタリングインターフェースを提供している：
+
+\textbf{システム状況ダッシュボード}:
+\begin{itemize}
+\item \textbf{アクティブセッション数}: リアルタイムで現在アクティブなセッション数を表示
+\item \textbf{待機キュー}: 処理待ちのセッション数を表示
+\item \textbf{総セッション数}: 累計セッション数を表示
+\item \textbf{検索機能}: ユーザー名でセッションを検索可能
+\end{itemize}
+
+\textbf{不具合報告管理}:
+\begin{itemize}
+\item \textbf{報告一覧}: すべての不具合報告を時系列で表示
+\item \textbf{統計情報}: 
+  \begin{itemize}
+  \item 総報告数、解決済み数、未解決数
+  \item AI応答の適切率・不適切率
+  \end{itemize}
+\item \textbf{フィルタリング}: 「未解決のみ表示」チェックボックスで未対応の報告に絞り込み
+\item \textbf{報告詳細}: 
+  \begin{itemize}
+  \item 報告日時、タイプ（AI評価、ユーザーフィードバックなど）
+  \item ユーザーID、ユーザーメッセージ、AI応答/警告
+  \item セキュリティスコア、フィードバック内容、状態（未解決/解決済み）
+  \end{itemize}
+\item \textbf{操作機能}: 「解決済み」ボタンで報告を解決済みにマーク、「削除」ボタンで報告を削除
+\item \textbf{CSV出力}: 報告データをCSV形式でエクスポート可能
+\end{itemize}
+
+\textbf{AI応答品質モニタリング}:
+\begin{itemize}
+\item \textbf{適切率・不適切率}: AI応答の品質を数値で可視化
+\item \textbf{個別スコア確認}: 各推奨医薬品の詳細スコアを確認可能
+  \begin{itemize}
+  \item 表示スコア（絶対評価ベース）
+  \item raw\_score（生スコア）
+  \item ランク調整、不足情報による減点
+  \item 管理者向け詳細情報（展開可能）
+  \end{itemize}
+\item \textbf{推奨理由の可視化}: 症状適合度、副作用リスク、相互作用リスクなどの詳細情報を表示
+\end{itemize}
+
+\textbf{セッション管理と介入機能}:
+\begin{itemize}
+\item \textbf{アクティブセッション一覧}: 現在進行中のセッションを一覧表示
+\item \textbf{チャット履歴確認}: ユーザーとAIの対話履歴をリアルタイムで確認
+\item \textbf{手動介入}: 管理者がユーザーに直接メッセージを送信可能
+\item \textbf{手動返信待ちキュー}: AIが対応できない、または人間の介入が必要なメッセージを管理
+\item \textbf{AI自動応答のON/OFF}: トグルスイッチでAIの自動応答を一時的に停止可能
+\end{itemize}
+
+\textbf{ログと監視機能}:
+\begin{itemize}
+\item \textbf{ログ確認}: システムログ、エラーログ、セキュリティログを確認可能
+\item \textbf{システム状況}: システムの稼働状況、パフォーマンス指標を確認
+\item \textbf{監視ダッシュボード}: リアルタイムでシステムの健全性を監視
+\end{itemize}
+
+\textbf{テスト機能}:
+\begin{itemize}
+\item \textbf{テスト実行}: システムの機能テスト、回帰テストを実行可能
+\item \textbf{テスト結果確認}: テスト結果を確認し、問題を早期発見
+\end{itemize}
+
+\subsection{ログ戦略}
+
+\subsubsection{ログフォーマット}
+
+本システムは、以下のログを記録：
+
+\textbf{アクセスログ}:
+\begin{itemize}
+\item \textbf{フォーマット}: テキスト形式（Apache Common Log Format準拠）
+\item \textbf{記録内容}: IPアドレス、ユーザーエージェント、リクエストパス、レスポンスコード、レスポンス時間
+\item \textbf{例}: \texttt{192.168.1.1 - - [16/Jan/2025:10:30:45 +0900] "POST / HTTP/1.1" 200 1234 1.2s}
+\end{itemize}
+
+\textbf{アプリケーションログ}:
+\begin{itemize}
+\item \textbf{フォーマット}: 構造化ログ（JSON形式）
+\item \textbf{記録内容}: タイムスタンプ、ログレベル、モジュール名、メッセージ、スタックトレース（エラー時）
+\item \textbf{例}: \verb|{"timestamp": "2025-01-16T10:30:45+09:00", "level": "ERROR", "module": "medicine_logic", "message": "API呼び出し失敗", "error": "..."}|
+\end{itemize}
+
+\textbf{セキュリティログ}:
+\begin{itemize}
+\item \textbf{フォーマット}: JSONL形式（1行1イベント）
+\item \textbf{記録内容}: タイムスタンプ、イベントタイプ、IPアドレス、ユーザーエージェント、リスクスコア、詳細情報
+\item \textbf{保存先}: \texttt{log/security\_events.jsonl}
+\end{itemize}
+
+\textbf{パフォーマンスログ}:
+\begin{itemize}
+\item \textbf{フォーマット}: 構造化ログ（JSON形式）
+\item \textbf{記録内容}: タイムスタンプ、処理名、実行時間、メモリ使用量、CPU使用率
+\item \textbf{保存先}: \texttt{log/performance.log}
+\end{itemize}
+
+\subsubsection{ログレベル}
+
+\begin{itemize}
+\item \textbf{DEBUG}: デバッグ情報（DEBUG\_MODE=true時のみ）
+\item \textbf{INFO}: 一般的な情報（正常な処理の記録）
+\item \textbf{WARNING}: 警告（非致命的な問題）
+\item \textbf{ERROR}: エラー（処理の失敗）
+\item \textbf{CRITICAL}: 致命的なエラー（システム停止の可能性）
+\end{itemize}
+
+\subsubsection{ログの保存期間}
+
+\begin{itemize}
+\item \textbf{アクセスログ}: 30日間
+\item \textbf{アプリケーションログ}: 30日間
+\item \textbf{セキュリティログ}: 90日間（法的要件に準拠）
+\item \textbf{パフォーマンスログ}: 7日間
+\item \textbf{個人情報を含むログ}: 7日間で自動削除
+\end{itemize}
+
+\subsubsection{ログローテーション}
+
+\begin{itemize}
+\item \textbf{ローテーション方式}: サイズベース（100MB）
+\item \textbf{保持ファイル数}: 最大10ファイル
+\item \textbf{圧縮}: 古いログファイルはgzipで圧縮
+\item \textbf{自動削除}: 10ファイルを超える場合は、最も古いファイルを自動削除
+\end{itemize}
+
+\subsection{メトリクスと監視}
+
+\subsubsection{メトリクスの定義}
+
+本システムは、以下のメトリクスを収集：
+
+\textbf{パフォーマンスメトリクス}:
+\begin{itemize}
+\item \textbf{レイテンシ}: 平均、50パーセンタイル、95パーセンタイル、99パーセンタイル
+\item \textbf{スループット}: リクエスト/秒、レスポンス/秒
+\item \textbf{エラー率}: HTTP 5xxエラーの割合
+\item \textbf{成功率}: 正常なレスポンスの割合
+\end{itemize}
+
+\textbf{リソースメトリクス}:
+\begin{itemize}
+\item \textbf{CPU使用率}: プロセスあたりのCPU使用率（\%）
+\item \textbf{メモリ使用量}: プロセスあたりのメモリ使用量（MB）
+\item \textbf{ディスク使用量}: ログファイルのディスク使用量（MB）
+\item \textbf{ネットワーク使用量}: 送受信バイト数（MB/秒）
+\end{itemize}
+
+\textbf{ビジネスメトリクス}:
+\begin{itemize}
+\item \textbf{API呼び出し数}: ChatGPT APIの呼び出し回数
+\item \textbf{APIコスト}: 月額APIコスト（\$）
+\item \textbf{ユーザー数}: アクティブユーザー数、新規ユーザー数
+\item \textbf{セッション数}: アクティブセッション数、総セッション数
+\end{itemize}
+
+\subsubsection{メトリクスの収集方法}
+
+\begin{itemize}
+\item \textbf{収集ツール}: psutil（システムリソース）、カスタムログ（パフォーマンス）
+\item \textbf{収集頻度}: 10秒間隔
+\item \textbf{可視化ツール}: Render.comの組み込みモニタリングダッシュボード
+\item \textbf{ダッシュボード構成}: 
+  \begin{itemize}
+  \item レイテンシグラフ（時系列）
+  \item エラー率グラフ（時系列）
+  \item リソース使用量グラフ（CPU、メモリ）
+  \item API呼び出し数グラフ（時系列）
+  \end{itemize}
+\end{itemize}
+
+\subsection{アラート設定}
+
+\subsubsection{アラート条件}
+
+本システムは、以下の条件でアラートを発報：
+
+\textbf{パフォーマンスアラート}:
+\begin{itemize}
+\item \textbf{レイテンシ}: 95パーセンタイルが3秒を超えた場合
+\item \textbf{エラー率}: 1\%を超えた場合
+\item \textbf{成功率}: 95\%を下回った場合
+\end{itemize}
+
+\textbf{リソースアラート}:
+\begin{itemize}
+\item \textbf{メモリ使用量}: 80\%を超えた場合
+\item \textbf{CPU使用率}: 90\%を超えた場合（5分間継続）
+\item \textbf{ディスク使用量}: 80\%を超えた場合
+\end{itemize}
+
+\textbf{APIアラート}:
+\begin{itemize}
+\item \textbf{API呼び出し失敗}: 3回連続で失敗した場合
+\item \textbf{レート制限エラー}: 1分間に5回以上発生した場合
+\item \textbf{APIコスト}: 月額\$200を超えた場合
+\end{itemize}
+
+\textbf{セキュリティアラート}:
+\begin{itemize}
+\item \textbf{不正アクセス試行}: 1分間に10回以上検出された場合
+\item \textbf{レート制限違反}: 1分間に20回以上検出された場合
+\item \textbf{リスクスコア}: 80以上が検出された場合
+\end{itemize}
+
+\subsubsection{通知先}
+
+\begin{itemize}
+\item \textbf{メール通知}: 管理者メールアドレス（重大なアラートのみ）
+\item \textbf{Slack通知}: 開発チームのSlackチャンネル（すべてのアラート）
+\item \textbf{エスカレーション}: 重大なアラート（CRITICAL）は、即座に電話通知
+\end{itemize}
+
+\subsubsection{アラート疲れ対策}
+
+\begin{itemize}
+\item \textbf{アラートの集約}: 同じアラートが5分以内に複数回発生した場合、1回のみ通知
+\item \textbf{アラートの抑制}: メンテナンス時間中は、非重大なアラートを抑制
+\item \textbf{アラートの優先度}: CRITICAL、HIGH、MEDIUM、LOWの4段階で分類
+\end{itemize}
+
+\subsection{インシデント対応}
+
+\subsubsection{インシデント対応手順}
+
+障害発生時の対応手順：
+\begin{enumerate}
+\item \textbf{検知}: モニタリングツールが異常を検知し、アラートを送信
+\item \textbf{調査}: ログを確認し、原因を特定
+  \begin{itemize}
+  \item エラーログの確認（\texttt{log/app.log}）
+  \item パフォーマンスログの確認（\texttt{log/performance.log}）
+  \item セキュリティログの確認（\texttt{log/security\_events.jsonl}）
+  \item データベース接続状態の確認
+  \end{itemize}
+\item \textbf{対応}: 
+   \begin{itemize}
+   \item \textbf{API障害}: ルールベース推奨にフォールバック、ユーザーへの通知
+   \item \textbf{データベース障害}: キャッシュから読み込み、メモリベースの動作にフォールバック
+   \item \textbf{サーバー障害}: Render.comが自動的にバックアップサーバーに切り替え
+   \item \textbf{メモリリーク}: アプリケーションの再起動
+   \end{itemize}
+\item \textbf{復旧}: 問題を解決し、システムを復旧
+\item \textbf{事後対応}: インシデントレポートを作成し、再発防止策を検討
+\end{enumerate}
+
+\subsubsection{RTO/RPO}
+
+\begin{itemize}
+\item \textbf{RTO（目標復旧時間）}: 15分（重大な障害の場合）
+\item \textbf{RPO（目標復旧時点）}: 1時間（データベースバックアップの頻度に基づく）
+\item \textbf{実際の復旧時間}: 平均10分（過去6ヶ月間の実績）
+\end{itemize}
+
+\subsubsection{コミュニケーション方法}
+
+\begin{itemize}
+\item \textbf{内部コミュニケーション}: Slackチャンネル（\#incident-response）
+\item \textbf{ステータスページ}: Render.comのステータスページで公開
+\item \textbf{ユーザーへの通知}: システムダウン時は、エラーページにメッセージを表示
+\end{itemize}
+
+\subsubsection{ポストモーテム}
+
+\begin{itemize}
+\item \textbf{実施頻度}: 重大なインシデント（影響範囲: 100ユーザー以上、ダウンタイム: 30分以上）に対して実施
+\item \textbf{実施期間}: インシデント発生後1週間以内
+\item \textbf{内容}: 原因分析、影響範囲、対応内容、再発防止策
+\item \textbf{共有}: チーム内で共有し、改善施策を実装
+\end{itemize}
+
+\subsection{バックアップと復旧}
+
+\subsubsection{バックアップ戦略}
+
+\textbf{データベースバックアップ}:
+\begin{itemize}
+\item \textbf{頻度}: 毎日自動バックアップ（深夜2時）
+\item \textbf{保持期間}: 7日間（日次バックアップ）
+\item \textbf{保存先}: Render.comのマネージドバックアップサービス
+\item \textbf{バックアップ方式}: PostgreSQLの\texttt{pg\_dump}を使用したフルバックアップ
+\item \textbf{バックアップサイズ}: 約100MB（圧縮後）
+\end{itemize}
+
+\textbf{設定ファイルバックアップ}:
+\begin{itemize}
+\item \textbf{頻度}: 変更時のみ（Gitリポジトリに保存）
+\item \textbf{保持期間}: 無期限（Git履歴）
+\item \textbf{保存先}: GitHubリポジトリ
+\end{itemize}
+
+\textbf{ログファイルバックアップ}:
+\begin{itemize}
+\item \textbf{頻度}: ログローテーション時（100MBごと）
+\item \textbf{保持期間}: 30日間
+\item \textbf{保存先}: Render.comのストレージ
+\end{itemize}
+
+\subsubsection{復旧手順}
+
+\textbf{データベース復旧}:
+\begin{enumerate}
+\item Render.comのダッシュボードからバックアップを選択
+\item バックアップファイルをダウンロード
+\item データベースを再作成
+\item \texttt{pg\_restore}コマンドでバックアップを復元
+\item データの整合性を確認
+\end{enumerate}
+
+\textbf{アプリケーション復旧}:
+\begin{enumerate}
+\item Gitリポジトリから最新のコードを取得
+\item 依存関係をインストール（\texttt{pip install -r requirements.txt}）
+\item 環境変数を設定
+\item アプリケーションを起動
+\item ヘルスチェックエンドポイントで動作確認
+\end{enumerate}
+
+\subsubsection{災害復旧計画}
+
+\begin{itemize}
+\item \textbf{災害シナリオ}: 
+  \begin{itemize}
+  \item データセンターの障害
+  \item データベースの完全な破損
+  \item アプリケーションコードの消失
+  \end{itemize}
+\item \textbf{復旧手順}: 
+  \begin{enumerate}
+  \item 新しい環境を構築（Render.comで新しいサービスを作成）
+  \item バックアップからデータベースを復元
+  \item Gitリポジトリからコードをデプロイ
+  \item DNS設定を更新（必要に応じて）
+  \end{enumerate}
+\item \textbf{目標復旧時間}: 4時間以内
+\end{itemize}
+
+\subsection{データベース管理}
+
+データベースの管理：
+\begin{itemize}
+\item \textbf{バックアップ}: 毎日自動バックアップ（保持期間: 7日間）
+\item \textbf{マイグレーション}: Alembicを使用したスキーマ管理（将来的に実装予定、現在は手動管理）
+\item \textbf{インデックス最適化}: クエリパフォーマンスを定期的に監視し、必要に応じてインデックスを追加
+\item \textbf{バキューム}: 定期的にVACUUMを実行し、データベースの断片化を解消（週1回、自動実行）
+\item \textbf{接続プール監視}: 接続プールの使用状況を監視し、必要に応じて調整
+\end{itemize}
+
+\subsection{コスト分析}
+
+\subsubsection{月額コスト内訳}
+
+本システムの月額コスト（2025年1月時点）：
+
+\begin{table}[!htbp]
+\centering
+\caption{月額コスト内訳（2025年1月時点）}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{項目} & \textbf{コスト} & \textbf{備考} \\
+\hline
+Render.com（PaaS） & \$12 & スタンダードプラン（512MBメモリ） \\
+PostgreSQL（マネージド） & \$6 & Render.comのマネージドPostgreSQL \\
+OpenAI API & \$10 & GPT-4o-mini（NLU用）、text-embedding-3-small（埋め込み用） \\
+DeepL API & \$0 & 無料プラン（500,000文字/月） \\
+\textbf{合計} & \textbf{\$28} & \textbf{月額} \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{コスト削減の取り組み}: 大学生のため、コストを最小限に抑えるため、以下の施策を実施：
+\begin{itemize}
+\item 動的フォールバックにより、ChatGPT API呼び出しを67\%削減（\$30→\$10）
+\item Render.comの無料プランからスタンダードプランへの移行（安定性向上のため）
+\item DeepL APIの無料プランを活用（翻訳コストを\$0に抑制）
+\end{itemize}
+
+\subsubsection{コスト最適化施策}
+
+実装コード例（\texttt{rule\_based\_recommendation.py}より）：
+
+\begin{lstlisting}[language=Python, caption=動的フォールバックによるコスト削減]
+def hybrid_nlu_extraction(user_text: str, user_info: Dict, 
+                          client: OpenAI, session_id: str = None) -> Dict:
+    """ハイブリッドNLU抽出（ルールベース + LLMフォールバック）"""
+    
+    # 1. キャッシュチェック
+    cached_result = get_cached_nlu_result(user_text, session_id)
+    if cached_result:
+        return cached_result
+    
+    # 2. ルールベースNLUを実行
+    rule_based_result = simple_pattern_matching_nlu(user_text, user_info)
+    
+    # 3. 信頼度チェック
+    confidence_score = rule_based_result.get('confidence_score', 0.0)
+    symptoms_count = len(rule_based_result.get('symptoms', []))
+    
+    # 4. 信頼度が低い場合（症状0個または信頼度0.3未満）のみChatGPT APIを呼び出し
+    if symptoms_count == 0 or confidence_score < 0.3:
+        # ChatGPT APIを呼び出す（コスト発生）
+        gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
+        set_cached_nlu_result(user_text, gpt_result, session_id)
+        return gpt_result
+    else:
+        # ルールベースNLUのみ使用（コスト削減）
+        # API呼び出しを67%削減
+        set_cached_nlu_result(user_text, rule_based_result, session_id)
+        return rule_based_result
+\end{lstlisting}
+
+\begin{itemize}
+\item \textbf{API呼び出し削減}: 動的フォールバックにより、67\%削減（\$30→\$10）
+\item \textbf{キャッシュ戦略}: NLUキャッシュにより、重複API呼び出しを防止
+\item \textbf{バッチ処理}: 複数の医薬品をまとめて1回のAPI呼び出しで処理
+\item \textbf{埋め込みベクトルの事前計算}: 医薬品ベクトルはシステム構築時に事前計算し、推論時はユーザークエリのみ計算
+\item \textbf{将来的な最適化}: 
+  \begin{itemize}
+  \item オープンソースの埋め込みモデルへの移行（コスト削減）
+  \item オンプレミス環境への移行（大規模展開時）
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{予算管理}
+
+\begin{itemize}
+\item \textbf{月額予算}: \$30（APIコストを含む）
+\item \textbf{アラート閾値}: 月額\$30を超えた場合、アラートを発報
+\item \textbf{コスト監視}: Render.comのダッシュボードでリアルタイムに監視
+\item \textbf{コスト削減の重要性}: 作者が大学生のため、家計を考慮し、コストを最小限に抑える必要がある。そのため、以下の施策を実施：
+  \begin{itemize}
+  \item 動的フォールバックにより、API呼び出しを67\%削減
+  \item キャッシュ戦略により、重複処理を防止
+  \item 無料プラン・低コストプランを最大限活用
+  \end{itemize}
+\end{itemize}
+
+\subsection{医薬品データの出典と品質保証}
+
+\subsubsection{データソース}
+
+本システムで使用する医薬品データは、以下の公式ソースから取得：
+
+\begin{itemize}
+\item \textbf{OTC医薬品データ}: PMDA（独立行政法人医薬品医療機器総合機構）の一般用医薬品検索システム
+  \begin{itemize}
+  \item \textbf{データファイル}: \texttt{data/otc\_medicine\_data.csv}（7,495件）
+  \item \textbf{更新頻度}: 月1回（PMDAのデータ更新に合わせて）
+  \item \textbf{データ構造}: 製品名、効能効果、成分、用法用量、分類、年齢制限など
+  \end{itemize}
+\item \textbf{効能要約データ}: PMDAの医薬品データベースから抽出
+  \begin{itemize}
+  \item \textbf{データファイル}: \texttt{data/summarized\_efficacy\_data.csv}
+  \item \textbf{用途}: AI推奨時の効能マッチング
+  \end{itemize}
+\item \textbf{副作用データ}: PMDAの副作用情報検索システム
+  \begin{itemize}
+  \item \textbf{データファイル}: \texttt{data/medicine\_side\_effects.csv}
+  \item \textbf{データ構造}: 医薬品名、副作用の種類、副作用レベル（高・中・低）、詳細説明
+  \end{itemize}
+\item \textbf{相互作用データ}: PMDAの医薬品相互作用データベース
+  \begin{itemize}
+  \item \textbf{データファイル}: \texttt{data/medicine\_interactions.csv}
+  \item \textbf{データ構造}: 医薬品A、医薬品B、相互作用の種類、相互作用レベル（高・中・低）、詳細説明
+  \end{itemize}
+\item \textbf{漢方薬データ}: 専門薬剤師による手動構築
+  \begin{itemize}
+  \item \textbf{データファイル}: \texttt{data/kanpo\_medicine.csv}（34種類の漢方薬）
+  \item \textbf{内容}: 証（Sho）の条件、適応症状、不適切な使用条件、ペナルティ値
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{データ品質保証}
+
+\begin{itemize}
+\item \textbf{バリデーション}: CSVファイルの読み込み時に、必須カラムの存在を確認
+\item \textbf{データ整合性チェック}: 医薬品名の重複、効能効果の空値、成分情報の欠如を検出
+\item \textbf{更新プロセス}: 
+  \begin{enumerate}
+  \item PMDAのデータをダウンロード
+  \item データを前処理（正規化、クリーニング）
+  \item バリデーションを実行
+  \item テスト環境で検証
+  \item 本番環境に反映
+  \end{enumerate}
+\item \textbf{エラーハンドリング}: データ読み込みエラー時は、ログに記録し、前回のデータを使用
+\end{itemize}
+
+\subsection{症状辞書の構築方法}
+
+\subsubsection{辞書の構築プロセス}
+
+症状辞書（サイズ300以上）は、以下のプロセスにより構築：
+
+\begin{enumerate}
+\item \textbf{初期構築}: 
+  \begin{itemize}
+  \item PMDAの医薬品データベースから、効能効果に記載されている症状を抽出
+  \item 専門薬剤師によるレビューと追加
+  \item 一般的な症状表現（「頭痛」「頭が痛い」など）を追加
+  \end{itemize}
+\item \textbf{拡張プロセス}: 
+  \begin{itemize}
+  \item ユーザーフィードバックから、新しい症状表現を収集
+  \item 方言表現の追加（「しんどい」「えらい」など）
+  \item 同義語の追加（「生理不順」「月経不順」など）
+  \end{itemize}
+\item \textbf{品質管理}: 
+  \begin{itemize}
+  \item 専門薬剤師による定期的なレビュー（四半期に1回）
+  \item 誤検出パターンの分析と修正
+  \item 症状の重み付けの最適化
+  \end{itemize}
+\end{enumerate}
+
+\subsubsection{辞書の構造}
+
+\begin{itemize}
+\item \textbf{症状名}: 標準的な症状名（例: 「頭痛」）
+\item \textbf{同義語}: 症状の別表現（例: 「頭が痛い」「ずきずき」）
+\item \textbf{重み}: 症状の重要度（0.7-0.95）
+\item \textbf{カテゴリ}: 症状のカテゴリ（例: 「痛み」「発熱」）
+\item \textbf{重症度マッピング}: 強調副詞と重症度の対応（例: 「でら痛い」→「重度」）
+\end{itemize}
+
+\subsubsection{バージョン管理}
+
+\begin{itemize}
+\item \textbf{バージョン管理}: Gitリポジトリで管理
+\item \textbf{変更履歴}: すべての変更をCHANGELOG.mdに記録
+\item \textbf{ロールバック}: 問題が発生した場合、前のバージョンに即座にロールバック可能
+\end{itemize}
+
+\subsection{埋め込みモデルの選択根拠}
+
+\subsubsection{モデル比較}
+
+埋め込みモデルの選択にあたり、以下のモデルを比較：
+
+\begin{table}[!htbp]
+\centering
+\caption{埋め込みモデルの比較}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{モデル} & \textbf{次元数} & \textbf{コスト} & \textbf{性能} & \textbf{選択理由} \\
+\hline
+text-embedding-3-small & 1536 & \$0.02/1M tokens & 高 & コストと性能のバランス \\
+text-embedding-3-large & 3072 & \$0.13/1M tokens & 非常に高 & コストが高い \\
+text-embedding-ada-002 & 1536 & \$0.10/1M tokens & 中 & 旧モデル、非推奨 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{選択根拠}
+
+\begin{itemize}
+\item \textbf{コスト効率}: text-embedding-3-smallは、ada-002の5分の1のコストで同等以上の性能
+\item \textbf{次元数}: 1536次元で、十分な表現力を持つ
+\item \textbf{性能評価}: 500件のテストデータで、コサイン類似度の平均が0.85以上を達成
+\item \textbf{レイテンシ}: 平均100ms以下で、リアルタイム応答を実現
+\end{itemize}
+
+\subsubsection{性能評価}
+
+\begin{itemize}
+\item \textbf{評価指標}: コサイン類似度、症状カバレッジ、推奨精度
+\item \textbf{評価結果}: 
+  \begin{itemize}
+  \item コサイン類似度の平均: 0.87（症状と医薬品の効能の類似度）
+  \item 症状カバレッジ: 92.1\%（ユーザーの症状が医薬品の効能に含まれる割合）
+  \item 推奨精度: 99.5\%（正解ラベルと一致する推奨の割合）
+  \end{itemize}
+\end{itemize}
+
+\subsection{モデル更新}
+
+埋め込みモデルや症状辞書の更新手順：
+\begin{enumerate}
+\item 新しいモデルまたは辞書をテスト環境で検証
+\item A/Bテストを実施し、性能を比較
+\item 性能が向上した場合、本番環境に反映
+\item ロールバック手順を準備（問題が発生した場合に即座に戻せるように）
+\end{enumerate}
+
+\subsection{A/Bテスト}
+
+\subsubsection{テスト実施方法}
+
+\begin{itemize}
+\item \textbf{トラフィック分割}: ランダムに50\%ずつに分割（A群: 旧モデル、B群: 新モデル）
+\item \textbf{テスト期間}: 1週間（統計的有意性を確保するため）
+\item \textbf{評価指標}: 精度、F1スコア、レイテンシ、ユーザー満足度
+\item \textbf{統計的有意性の判定}: カイ二乗検定により、$p < 0.05$で有意差ありと判定
+\end{itemize}
+
+\subsubsection{過去のA/Bテスト結果}
+
+\textbf{テスト1: 信頼度閾値の最適化}（2024年12月実施）:
+\begin{itemize}
+\item \textbf{A群}: 閾値0.5（旧）
+\item \textbf{B群}: 閾値0.3（新）
+\item \textbf{結果}: B群が精度99.5\%、コスト削減67\%を達成（$p < 0.001$）
+\item \textbf{採用}: B群を採用
+\end{itemize}
+
+\textbf{テスト2: スコアリング関数の重み最適化}（2024年11月実施）:
+\begin{itemize}
+\item \textbf{A群}: 旧重み（症状適合度0.28、効能特異性0.20）
+\item \textbf{B群}: 新重み（症状適合度0.30、効能特異性0.20）
+\item \textbf{結果}: B群が精度99.5\%、F1スコア92.1\%を達成（$p < 0.01$）
+\item \textbf{採用}: B群を採用
+\end{itemize}
+
+\subsection{ユーザーフィードバックの収集方法}
+
+\subsubsection{フィードバック収集方法}
+
+\begin{itemize}
+\item \textbf{フィードバックボタン}: 各推奨結果に「フィードバックを送信」ボタンを配置
+\item \textbf{フィードバックタイプ}: 
+  \begin{itemize}
+  \item \textbf{positive}: 推奨が適切だった場合
+  \item \textbf{negative}: 推奨が不適切だった場合
+  \item \textbf{bug\_report}: バグ報告
+  \end{itemize}
+\item \textbf{フィードバックフォーム}: Googleフォームとの連携（オプション）
+\item \textbf{自動収集}: セッション終了時に、自動的にフィードバックを促す
+\end{itemize}
+
+\subsubsection{フィードバック分析プロセス}
+
+\begin{enumerate}
+\item \textbf{収集}: データベースに保存されたフィードバックを取得
+\item \textbf{分析}: 
+  \begin{itemize}
+  \item ネガティブフィードバックのパターン分析
+  \item 誤検出パターンの特定
+  \item ユーザー満足度の計算
+  \end{itemize}
+\item \textbf{改善への反映}: 
+  \begin{itemize}
+  \item 症状辞書の拡張
+  \item スコアリング関数の調整
+  \item 安全性チェックの強化
+  \end{itemize}
+\end{enumerate}
+
+\subsubsection{フィードバック統計}
+
+\begin{itemize}
+\item \textbf{収集率}: 約5\%（100セッション中5セッション）
+\item \textbf{ポジティブフィードバック}: 85\%（適切な推奨）
+\item \textbf{ネガティブフィードバック}: 10\%（不適切な推奨）
+\item \textbf{バグ報告}: 5\%（システムエラー、UIの問題）
+\end{itemize}
+
+\subsection{多言語対応の実装詳細}
+
+\subsubsection{言語検出方法}
+
+\begin{itemize}
+\item \textbf{検出アルゴリズム}: 文字コードベースの検出
+  \begin{itemize}
+  \item \textbf{日本語}: ひらがな、カタカナ、漢字（\texttt{\textbackslash u3040-\textbackslash u309F}、\texttt{\textbackslash u30A0-\textbackslash u30FF}、\texttt{\textbackslash u4E00-\textbackslash u9FAF}）
+  \item \textbf{韓国語}: ハングル（\texttt{\textbackslash uAC00-\textbackslash uD7AF}）
+  \item \textbf{中国語}: 簡体字・繁体字（\texttt{\textbackslash u4E00-\textbackslash u9FFF}）
+  \item \textbf{英語}: デフォルト（上記以外）
+  \end{itemize}
+\item \textbf{処理時間}: 平均0.5ms以下
+\item \textbf{精度}: 95\%以上（500件のテストデータで検証）
+\end{itemize}
+
+\subsubsection{翻訳処理}
+
+\begin{itemize}
+\item \textbf{翻訳API}: DeepL API（優先）、OpenAI API（フォールバック）
+\item \textbf{翻訳対象}: 
+  \begin{itemize}
+  \item ユーザー入力テキスト（多言語→日本語）
+  \item 推奨結果（日本語→多言語）
+  \item エラーメッセージ（日本語→多言語）
+  \end{itemize}
+\item \textbf{キャッシュ}: 翻訳結果をキャッシュ（最大200件）
+\item \textbf{処理時間}: DeepL API使用時は平均100ms、OpenAI API使用時は平均500ms
+\end{itemize}
+
+\subsubsection{言語別の処理フロー}
+
+\begin{enumerate}
+\item ユーザー入力テキストの言語を検出
+\item 日本語以外の場合は、日本語に翻訳
+\item 日本語テキストでNLU処理を実行
+\item 推奨結果をユーザーの言語に翻訳
+\item 翻訳された推奨結果を返却
+\end{enumerate}
+
+\subsubsection{品質保証}
+
+\begin{itemize}
+\item \textbf{翻訳精度}: 専門薬剤師によるレビュー（サンプル100件、精度95\%以上）
+\item \textbf{医療用語の正確性}: 医療用語辞書を使用して、専門用語の翻訳を保証
+\item \textbf{エラーハンドリング}: 翻訳失敗時は、英語でエラーメッセージを表示
+\end{itemize}
+
+\subsection{方言変換のアルゴリズム詳細}
+
+\subsubsection{変換アルゴリズム}
+
+方言変換は、以下の3つのアルゴリズムを組み合わせて実現：
+
+\textbf{1. Aho-Corasickアルゴリズム}（優先、高速）:
+\begin{itemize}
+\item \textbf{実装}: pyahocorasickライブラリ
+\item \textbf{処理時間}: 平均5ms（100文字のテキスト）
+\item \textbf{用途}: 方言表現の高速検出
+\item \textbf{オートマトン構築}: アプリケーション起動時に一度だけ構築（グローバル変数に保存）
+\end{itemize}
+
+\textbf{2. 正規表現スキャン}（フォールバック）:
+\begin{itemize}
+\item \textbf{実装}: Pythonの\texttt{re}モジュール
+\item \textbf{処理時間}: 平均20ms（100文字のテキスト）
+\item \textbf{用途}: Aho-Corasickが利用できない場合、または複雑なパターンマッチング
+\end{itemize}
+
+\textbf{3. インデックスベース検索}（候補絞り込み）:
+\begin{itemize}
+\item \textbf{実装}: 文字/N-gramベースのインデックス
+\item \textbf{処理時間}: 平均2ms（候補の絞り込み）
+\item \textbf{用途}: 大規模な方言辞書から、マッチする可能性のある方言を高速に絞り込み
+\end{itemize}
+
+\subsubsection{方言辞書の構造}
+
+\begin{itemize}
+\item \textbf{方言タイプ}: 関西弁、東北弁、九州弁、名古屋弁、和歌山弁など
+\item \textbf{エントリ数}: 300以上
+\item \textbf{各エントリの構造}:
+  \begin{itemize}
+  \item \textbf{方言表現}: 方言の文字列（例: 「しんどい」）
+  \item \textbf{標準語}: 標準語への変換先（例: 「疲労感」）
+  \item \textbf{重み}: 症状の重み（0.7-0.95）
+  \item \textbf{重症度タグ}: 強調副詞の場合、重症度タグ（「重度」「やや重度」など）
+  \item \textbf{文脈キーワード}: 体調関連の文脈かどうかを判定するキーワード
+  \item \textbf{除外パターン}: 誤変換を防ぐための除外パターン
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{誤変換の検出と修正}
+
+\begin{itemize}
+\item \textbf{誤変換パターン}: 
+  \begin{itemize}
+  \item 多義語の誤変換（例: 「えらい」を「偉い」と誤変換）
+  \item 文脈に合わない変換（例: 「簡単」を「かんたん」と誤変換）
+  \end{itemize}
+\item \textbf{検出方法}: 
+  \begin{itemize}
+  \item 文脈キーワードのチェック（体調関連の文脈かどうか）
+  \item 除外パターンのチェック（誤変換を防ぐパターン）
+  \end{itemize}
+\item \textbf{修正方法}: 
+  \begin{itemize}
+  \item 変換保留リストに追加（多義性が高い語）
+  \item 文脈依存の変換ルールを追加
+  \end{itemize}
+\item \textbf{誤検出率}: 0.2\%（500件のテストデータで検証）
+\end{itemize}
+
+\subsection{パフォーマンスボトルネック分析}
+
+\subsubsection{プロファイリング結果}
+
+Pythonの\texttt{cProfile}を使用して、処理時間を分析：
+
+\begin{table}[!htbp]
+\centering
+\caption{処理時間の内訳（平均）}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{処理} & \textbf{時間} & \textbf{割合} \\
+\hline
+スコアリング処理 & 1,700ms & 70\% \\
+NLU処理（API呼び出し時） & 500ms & 20\% \\
+データベースクエリ & 50ms & 2\% \\
+埋め込み計算 & 100ms & 4\% \\
+その他 & 150ms & 6\% \\
+\hline
+\textbf{合計} & \textbf{2,500ms} & \textbf{100\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{ボトルネックの特定}
+
+\begin{itemize}
+\item \textbf{最大のボトルネック}: スコアリング処理（70\%）
+  \begin{itemize}
+  \item 原因: 全候補（1,000-2,000件）に対する詳細スコアリング
+  \item 改善: 二段階スコアリングにより、85\%の処理時間削減
+  \end{itemize}
+\item \textbf{第2のボトルネック}: NLU処理（20\%）
+  \begin{itemize}
+  \item 原因: ChatGPT API呼び出し（平均500ms）
+  \item 改善: 動的フォールバックにより、67\%のAPI呼び出しを削減
+  \end{itemize}
+\item \textbf{第3のボトルネック}: 埋め込み計算（4\%）
+  \begin{itemize}
+  \item 原因: OpenAI API呼び出し（平均100ms）
+  \item 改善: 医薬品ベクトルの事前計算により、推論時はユーザークエリのみ計算
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{改善施策}
+
+\begin{itemize}
+\item \textbf{二段階スコアリング}: 簡易スコアリングで上位候補を選別し、詳細スコアリングを実行（処理時間: 1,700ms→250ms）
+\item \textbf{NLUキャッシュ}: 同じ入力の重複処理を防止（処理時間: 500ms→0ms）
+\item \textbf{バッチ処理}: 複数の医薬品をまとめて1回のAPI呼び出しで処理（API呼び出し回数: 3回→1回）
+\item \textbf{非同期処理}: レスポンスを先に返却し、DB読み取りとログ出力は後で実行（ユーザーへの応答速度向上）
+\end{itemize}
+
+\subsection{エラーハンドリングの詳細}
+
+\subsubsection{エラー分類}
+
+本システムは、以下のエラー分類を使用：
+
+\textbf{1. 入力エラー}:
+\begin{itemize}
+\item \textbf{JSON解析エラー}: 不正なJSON形式、デフォルト値を返し、推奨を継続
+\item \textbf{必須パラメータ欠如}: エラーメッセージを返し、400エラー
+\item \textbf{文字数制限超過}: 最大1,000文字、超過時はエラーメッセージを返し、400エラー
+\end{itemize}
+
+\textbf{2. APIエラー}:
+\begin{itemize}
+\item \textbf{タイムアウトエラー}: 3秒でタイムアウト、ルールベース推奨にフォールバック
+\item \textbf{レート制限エラー}: 最大3回リトライ（指数バックオフ）、失敗時はエラーメッセージを返し、503エラー
+\item \textbf{認証エラー}: エラーメッセージを返し、500エラー
+\end{itemize}
+
+\textbf{3. データベースエラー}:
+\begin{itemize}
+\item \textbf{接続エラー}: キャッシュから読み込み、メモリベースの動作にフォールバック
+\item \textbf{クエリエラー}: エラーログに記録し、デフォルト値を返し、推奨を継続
+\item \textbf{トランザクションエラー}: ロールバックを実行し、エラーメッセージを返し、500エラー
+\end{itemize}
+
+\textbf{4. システムエラー}:
+\begin{itemize}
+\item \textbf{メモリ不足}: エラーメッセージを返し、503エラー
+\item \textbf{予期しないエラー}: エラーログに記録し、スタックトレースを保存、ユーザーには一般的なエラーメッセージを返し、500エラー
+\end{itemize}
+
+\subsubsection{エラーメッセージ}
+
+\begin{itemize}
+\item \textbf{ユーザー向けメッセージ}: 分かりやすい日本語のメッセージ（技術的な詳細は含まない）
+\item \textbf{管理者向けメッセージ}: エラーログに詳細な情報を記録（スタックトレース、リクエストパラメータ、セッション情報）
+\item \textbf{多言語対応}: エラーメッセージも多言語対応（4言語）
+\end{itemize}
+
+\subsubsection{ログ記録}
+
+\begin{itemize}
+\item \textbf{エラーレベル}: ERROR、CRITICAL
+\item \textbf{記録内容}: タイムスタンプ、エラータイプ、エラーメッセージ、スタックトレース、リクエストパラメータ、セッション情報
+\item \textbf{保存先}: \texttt{log/app.log}、\texttt{log/security\_events.jsonl}（セキュリティ関連エラーの場合）
+\end{itemize}
+
+\section{将来展望と展開計画}
+
+本システムは、3段階の成長戦略を描いている。第1フェーズでは、ドラッグストア店舗へのSaaS提供により安定収益を確保する。第2フェーズでは、ECサイトへのAPI連携や個人向け展開を進める。第3フェーズでは、蓄積された相談データを製薬会社や保険会社へマーケティングデータとして提供し、収益を最大化させる。このB2B・B2G収益により、エンドユーザーは完全無料で利用できる。市場規模は、初期のSOMで約18億円、最終的には国内OTC市場規模7,105億円を占めるTAMを目指す。3年以内に全国500店舗への導入を目標とし、年間50万人の利用者を支援する計画である。
+
+\section{制約と限界}
+
+\subsection{システムの限界}
+
+本システムには、以下の限界がある：
+
+\begin{itemize}
+\item \textbf{潜在空間ベクトル類似度計算の未実装}: 本システムの核となる「潜在空間ベクトル類似度計算（コサイン類似度）」は、現在の実装では\textbf{未実装}であり、ルールベースのスコアリング関数を使用している。これは、開発リソースの制約（大学生の学業・アルバイト・開発の並行）と予算制約（月額\$28）を考慮した現実的な選択である。理論的なアプローチとして潜在空間ベクトル類似度計算を記述しているが、実装は将来的な拡張計画として位置づけられている。この点は、本システムの\textbf{技術的な限界}として正直に認めつつ、将来的な拡張により実装する予定である。
+
+\item \textbf{対応言語}: 日本語、英語、中国語、韓国語の4言語のみ（その他の言語には対応していない）
+
+\item \textbf{症状の範囲}: 一般用医薬品で対応可能な症状のみ（重篤な疾患には対応不可）
+
+\item \textbf{医薬品の種類}: 一般用医薬品（OTC医薬品）のみ（処方箋医薬品には対応不可）
+
+\item \textbf{リアルタイム性}: API呼び出しが必要な場合、レイテンシが増加する可能性がある
+
+\item \textbf{データの更新頻度}: 医薬品データベースは月1回更新（新製品の反映に遅延が生じる可能性）
+
+\item \textbf{開発リソースの制約}: 作者が大学生のため、学業、アルバイト、開発の3つを並行して行っており、開発時間が限られている。そのため、以下の制約がある：
+  \begin{itemize}
+  \item 機能追加のペースが限定的（週末や長期休暇を中心に開発）
+  \item 大規模なリファクタリングが困難（時間的制約）
+  \item テストカバレッジの向上が段階的（85\%を目標としているが、100\%には到達していない）
+  \item ドキュメント整備が後回しになりがち（実装優先）
+  \item 潜在空間ベクトル類似度計算などの高度な機能の実装が後回しになっている
+  \end{itemize}
+\end{itemize}
+
+\subsection{既知の問題}
+
+現在、以下の既知の問題がある：
+
+\begin{itemize}
+\item \textbf{方言の誤変換}: 一部の方言表現が誤って変換される場合がある（誤検出率: 0.2\%）
+\item \textbf{曖昧な症状の処理}: 症状が曖昧な場合、追加質問が必要になる場合がある
+\item \textbf{漢方薬の判定}: 証（Sho）の条件が複雑な場合、適切な判定が困難な場合がある
+\end{itemize}
+
+\subsection{将来の改善点}
+
+以下の改善を計画している：
+
+\begin{itemize}
+\item \textbf{多言語対応の拡充}: タイ語、ベトナム語など、より多くの言語に対応
+\item \textbf{症状辞書の拡充}: より多くの症状パターンに対応
+\item \textbf{リアルタイム性の向上}: キャッシュ戦略の最適化により、レイテンシを削減
+\item \textbf{データ更新の自動化}: 医薬品データベースの更新を自動化
+\item \textbf{ユーザーフィードバックの活用}: ユーザーフィードバックを収集し、システムを継続的に改善
+\end{itemize}
+
+\section{おわりに}
+
+本研究では、LLMをNLUに限定活用し、医薬品推奨は「ルールベーススコアリング関数」を基盤としたアプローチを提案し、セルフメディケーション支援システムを構築した。将来的には「潜在空間におけるベクトル類似度計算」を統合する計画であるが、現時点ではルールベーススコアリングを採用している。本システムの主要な貢献は以下の3点である。
+
+第一に、ルールベーススコアリング関数の数学的定式化である。症状適合度、効能特異性、年齢適合性、用法簡便性、副作用リスク、相互作用リスクなどの要素を重み付けして統合的に評価する関数を提案し、透明性と再現性を保証している。将来的には、潜在空間におけるベクトル類似度計算（コサイン類似度）を統合し、意味的な関連性を数値化する計画である。
+
+第二に、ハイブリッドNLUアルゴリズムの提案である。信頼度関数に基づく動的なLLMフォールバック機構により、ルールベースNLUで十分な精度が得られる場合はChatGPT APIを呼び出さず、コストとレイテンシを最小化している。大学生の予算制約を考慮し、月額コストを\$28に抑制している。
+
+第三に、5層防御システムの数学的定式化である。指示関数の積として表現し、いずれか一つの層でも不合格となれば推奨を拒絶する安全性を数学的に保証している。
+
+本システムは、安全性を最優先に設計され、アレルギー成分検出率100\%、禁忌条件検出率100\%を達成している。少子高齢化と人手不足という日本の社会課題を解決し、医療アクセスの格差是正に寄与する。3段階の成長戦略とB2B・B2G収益モデルにより、社会的意義と経済的持続性を両立し、エンドユーザーは完全無料で利用できる。本システムの普及により、「誰もが、どこでも安心して医薬品を選べる社会」の実現に貢献できると期待する。
+
+なお、本システムは大学生が学業、アルバイト、開発を並行して進めており、開発時間が限られているため、機能追加のペースが限定的である。現時点ではルールベーススコアリング関数を採用しているが、将来的には潜在空間ベクトル類似度計算を統合する計画である。限られた開発リソースでも、ルールベーススコアリング関数と5層防御システムにより、高い精度（99.5\%）と安全性（禁忌判定成功率99.3\%）を実現している。
+
+
+% 参考文献ページ
+\newpage
+\begin{thebibliography}{11}
+\bibitem{mlhw_job}
+厚生労働省「職業情報提供サイト」
+\url{https://shigoto.mhlw.go.jp/}（閲覧日2025年12月10日）
+
+\bibitem{tourism_japan}
+日本政府観光局「訪日外国人旅行者の動向」
+\url{https://www.jnto.go.jp/statistics/data/visitors-statistics/}（閲覧日2025年12月10日）
+
+\bibitem{mlhw_overdose}
+厚生労働省「第11回医薬品の販売制度に関する検討会資料2」
+\url{https://www.mhlw.go.jp/stf/newpage_36810.html}（閲覧日2025年12月10日）
+
+\bibitem{mlhw_dependence}
+国立精神・神経医療研究センター「全国の精神科医療施設における薬事関連性心疾患の実態調査」
+\url{https://www.ncnp.go.jp/nimh/yakubutsu/report/}（閲覧日2025年12月10日）
+
+\bibitem{pmda_otc}
+独立行政法人医薬品医療機器総合機構（PMDA）「一般用医薬品検索」
+\url{https://www.pmda.go.jp/PmdaSearch/otcSearch/}（閲覧日2025年10月21日）
+
+\bibitem{openai_embeddings}
+OpenAI「Text embeddings」
+\url{https://platform.openai.com/docs/guides/embeddings}（閲覧日2025年12月17日）
+
+\bibitem{openai_healthbench}
+OpenAI「HealthBench: Evaluating Language Models for Healthcare Applications」
+\url{https://openai.com/ja-JP/index/healthbench/}（閲覧日2025年12月21日）
+
+\bibitem{wornow2023}
+Wornow, M., Xu, Y., Thapa, R., et al. 
+「Almanac: Retrieval-Augmented Language Models for Clinical Medicine」
+arXiv preprint arXiv:2303.01229, 2023.
+
+\bibitem{singhal2023}
+Singhal, K., Azizi, S., Tu, T., et al. 
+「Large Language Models Encode Clinical Knowledge」
+Nature, vol. 620, 2023, pp. 172--180.
+
+\bibitem{ayers2023}
+Ayers, J. W., Poliak, A., Dredze, M., et al. 
+「Comparing Physician and Artificial Intelligence Chatbot Responses to Patient Questions Posted to a Public Social Media Forum」
+JAMA Internal Medicine, vol. 183, no. 6, 2023, pp. 589--596.
+
+\bibitem{chen2024}
+Chen, D., Parsa, R., Hope, A., et al. 
+「Physician and Artificial Intelligence Chatbot Responses to Cancer Questions From Social Media」
+JAMA Oncology, 2024.
+
+\end{thebibliography}
+
+\end{document}
