@@ -35,3 +35,6 @@ user_interface_state.xcuserstate
 # Logs
 log/
 *.jsonl
+
+# ローカル用（GitHub にプッシュしない）
+Makefile
