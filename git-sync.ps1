@@ -51,8 +51,11 @@ function Invoke-GitPull {
     git pull $RemoteName $BranchName
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Pulled from $RemoteName/$BranchName" -ForegroundColor Green
+        return $true
     } else {
-        Write-Host "Pull completed (may have conflicts or no changes)" -ForegroundColor Yellow
+        Write-Host "Pull failed! There may be conflicts or uncommitted changes." -ForegroundColor Red
+        Write-Host "Please resolve conflicts or commit your changes first." -ForegroundColor Yellow
+        return $false
     }
 }
 
@@ -85,9 +88,40 @@ function Show-GitStatusVerbose {
 switch ($Command) {
     "sync" {
         Write-Host "`n=== Starting Sync ===" -ForegroundColor Yellow
-        Invoke-GitPull -RemoteName $Remote -BranchName $Branch
-        Invoke-GitAdd
-        Invoke-GitCommit -Message $Msg
+        
+        # まずローカルの変更をコミット（競合を避けるため）
+        git diff --quiet
+        $hasUnstaged = $LASTEXITCODE -ne 0
+        git diff --cached --quiet
+        $hasStaged = $LASTEXITCODE -ne 0
+        
+        if ($hasUnstaged -or $hasStaged) {
+            Write-Host "Committing local changes before pull..." -ForegroundColor Cyan
+            Invoke-GitAdd
+            Invoke-GitCommit -Message $Msg
+        }
+        
+        # リモートから取得
+        $pullSuccess = Invoke-GitPull -RemoteName $Remote -BranchName $Branch
+        if (-not $pullSuccess) {
+            Write-Host "`n=== Sync Failed ===" -ForegroundColor Red
+            Write-Host "Pull failed. Please resolve conflicts manually and try again." -ForegroundColor Yellow
+            Write-Host "You can use: git status  to see what needs to be resolved." -ForegroundColor Yellow
+            exit 1
+        }
+        
+        # プッシュ（pull後に新しい変更がある可能性があるため、再度確認）
+        git diff --quiet
+        $hasUnstaged = $LASTEXITCODE -ne 0
+        git diff --cached --quiet
+        $hasStaged = $LASTEXITCODE -ne 0
+        
+        if ($hasUnstaged -or $hasStaged) {
+            Write-Host "Committing any remaining changes after pull..." -ForegroundColor Cyan
+            Invoke-GitAdd
+            Invoke-GitCommit -Message $Msg
+        }
+        
         Invoke-GitPush -RemoteName $Remote -BranchName $Branch
         Write-Host "`n=== Sync Complete ===" -ForegroundColor Green
         Write-Host "Synced: Pulled from and pushed to $Remote/$Branch" -ForegroundColor Green
@@ -95,7 +129,10 @@ switch ($Command) {
     
     "pull" {
         Write-Host "`n=== Pulling ===" -ForegroundColor Yellow
-        Invoke-GitPull -RemoteName $Remote -BranchName $Branch
+        $pullSuccess = Invoke-GitPull -RemoteName $Remote -BranchName $Branch
+        if (-not $pullSuccess) {
+            exit 1
+        }
     }
     
     "push" {
