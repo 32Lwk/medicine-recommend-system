@@ -36,10 +36,8 @@ user_interface_state.xcuserstate
 log/
 *.jsonl
 
-<<<<<<< HEAD
 # PowerShell scripts (local use only)
 git-sync.ps1
-=======
+
 # ローカル用（GitHub にプッシュしない）
 Makefile
->>>>>>> 81ca16f8bbdbcf8090ba4948334fd35bdbc9ad9e
