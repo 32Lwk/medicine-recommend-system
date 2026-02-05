@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>開発線表 - OTC医薬品推奨システム</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#b8dce8',
+        primaryTextColor: '#1a1a1a',
+        primaryBorderColor: '#4a90a4',
+        lineColor: '#6b8e9e',
+        secondaryColor: '#c8e6f0',
+        tertiaryColor: '#d4ecf4',
+        background: '#fafbfc',
+        mainBkg: '#b8dce8',
+        secondBkg: '#c8e6f0',
+        tertiaryBkg: '#d4ecf4',
+        textColor: '#1a1a1a',
+        sectionBkgColor: '#e8f4f8',
+        altSectionBkgColor: '#f0f7fa'
+      },
+      gantt: {
+        barHeight: 32,
+        barGap: 12,
+        useMaxWidth: true,
+        topAxis: true,
+        axisFormat: '%Y年%m月',
+        tickInterval: '1month',
+        leftPadding: 220
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --bg: #fafbfc;
+      --card-bg: #fff;
+      --text: #1a1a1a;
+      --text-muted: #555;
+      --border: #e1e4e8;
+      --accent: #0969da;
+      --font-sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-sans);
+      margin: 0;
+      padding: 2rem 1.5rem;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem 0;
+      color: var(--text);
+    }
+
+    .period {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .mermaid-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .mermaid {
+      margin: 0 auto;
+      min-height: 320px;
+    }
+
+    /* ガントのバーを常に明るい色にし、文字を読めるようにする */
+    .mermaid-wrap .bar rect,
+    .mermaid-wrap rect.bar {
+      fill: #7eb8d0 !important;
+      stroke: #4a90a4 !important;
+    }
+    .mermaid-wrap .bar-label,
+    .mermaid-wrap .bar text,
+    .mermaid-wrap .label text {
+      fill: #1a1a1a !important;
+      font-size: 12px !important;
+    }
+    .mermaid-wrap .section0 rect.bar { fill: #4a90a4 !important; }
+    .mermaid-wrap .section1 rect.bar { fill: #2e7d6e !important; }
+    .mermaid-wrap .section2 rect.bar { fill: #6b5b95 !important; }
+    .mermaid-wrap .section3 rect.bar { fill: #c45a2b !important; }
+    .mermaid-wrap .section4 rect.bar { fill: #8b6914 !important; }
+
+    .legend {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .legend-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .legend-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .legend-list li {
+      padding: 0.25rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .legend-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5em;
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    .legend-list li:nth-child(1)::before { background: #4a90a4; }
+    .legend-list li:nth-child(2)::before { background: #2e7d6e; }
+    .legend-list li:nth-child(3)::before { background: #6b5b95; }
+    .legend-list li:nth-child(4)::before { background: #c45a2b; }
+    .legend-list li:nth-child(5)::before { background: #8b6914; }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 0.6rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-table th {
+      background: var(--bg);
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .summary-table tr:last-child td { border-bottom: none; }
+
+    .summary-table .phase { font-weight: 500; color: var(--text); }
+    .summary-table .duration { color: var(--text-muted); white-space: nowrap; }
+
+    .note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .mermaid-wrap { padding: 1rem; }
+      .summary-table th, .summary-table td { padding: 0.5rem; font-size: 0.8rem; }
+    }
+
+    @media print {
+      body { background: #fff; padding: 1rem; }
+      .mermaid-wrap, .legend, .summary-table { border-color: #ccc; box-shadow: none; }
+      .note { border-left-color: #333; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>開発線表</h1>
+    <p class="period">OTC医薬品推奨システム（潜在空間統合）　2026年6月～2027年3月</p>
+
+    <section class="legend" aria-label="フェーズ凡例">
+      <h2 class="legend-title">フェーズ概要</h2>
+      <ul class="legend-list">
+        <li><strong>キックオフ</strong> — 環境・リポジトリ整理、CI確認</li>
+        <li><strong>Phase1 潜在空間</strong> — 埋め込みAPI設計、コサイン類似度、ルールベース並行評価用IF</li>
+        <li><strong>Phase2 ハイブリッド統合</strong> — 重み・動的重み設計、ハイブリッドスコアリング実装、5層防御結合</li>
+        <li><strong>検証・Phase3</strong> — 安全性検証、A/B評価、重みチューニング、評価レポート</li>
+        <li><strong>仕上げ</strong> — ドキュメント、OSS化準備、デモ動画、成果・実績報告書</li>
+      </ul>
+    </section>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+gantt
+    title 開発スケジュール（2026.06～2027.03）
+    dateFormat  YYYY-MM-DD
+    axisFormat  %Y年%m月
+    todayMarker off
+
+    section キックオフ
+    環境整理・CI・キックオフ                    :kickoff, 2026-06-22, 10d
+
+    section Phase1 潜在空間
+    埋め込みAPI設計・実装                       :p1a, 2026-07-01, 30d
+    類似度評価（Cosine）                        :p1b, after p1a, 15d
+    評価IF整備                                  :p1c, after p1b, 15d
+
+    section Phase2 ハイブリッド統合
+    重み設計（静的・動的）                      :p2a, 2026-09-01, 15d
+    ハイブリッド実装                            :p2b, after p2a, 30d
+    5層防御ロジック統合                         :p2c, after p2b, 15d
+
+    section 検証・最適化（Phase3）
+    安全性・性能検証                            :v1, 2026-11-01, 30d
+    A/Bテスト・調整                             :p3, 2026-12-01, 30d
+
+    section 仕上げ
+    ドキュメント整備                            :doc, 2027-01-01, 31d
+    OSS公開準備                                 :oss, after doc, 14d
+    デモ動画・報告書作成                        :demo, 2027-02-01, 30d
+      </pre>
+    </div>
+    
+
+    <table class="summary-table" aria-label="スケジュール一覧">
+      <thead>
+        <tr>
+          <th>フェーズ</th>
+          <th>主なタスク</th>
+          <th>期間</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="phase">キックオフ</td>
+          <td>環境・リポジトリ整理、CI確認</td>
+          <td class="duration">6/22～約10日</td>
+        </tr>
+        <tr>
+          <td class="phase">Phase1</td>
+          <td>埋め込みAPI・コサイン類似度、並行評価用IF</td>
+          <td class="duration">7月～8月</td>
+        </tr>
+        <tr>
+          <td class="phase">Phase2</td>
+          <td>設計、ハイブリッドスコアリング・5層防御結合</td>
+          <td class="duration">8月中旬～10月</td>
+        </tr>
+        <tr>
+          <td class="phase">検証・Phase3</td>
+          <td>安全性検証、A/B評価・チューニング</td>
+          <td class="duration">10月～11月</td>
+        </tr>
+        <tr>
+          <td class="phase">仕上げ</td>
+          <td>ドキュメント、デモ、成果・実績報告書</td>
+          <td class="duration">12月～3月</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="note">
+      <strong>提案詳細資料への挿入方法：</strong> このページをブラウザで開き、図を右クリック→「画像を別名で保存」でPNG保存するか、印刷→PDFで保存してください。
+    </p>
+  </div>
+  <script>
+    (function() {
+      var sectionColors = ['#4a90a4', '#2e7d6e', '#6b5b95', '#c45a2b', '#8b6914'];
+      var sectionForBarIndex = [0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4];
+      function colorizeBars() {
+        var wrap = document.querySelector('.mermaid-wrap');
+        if (!wrap) return;
+        var svg = wrap.querySelector('svg');
+        if (!svg) return;
+        var rects = Array.prototype.slice.call(svg.querySelectorAll('rect'));
+        var bars = rects.filter(function(r) {
+          var w = parseFloat(r.getAttribute('width')) || 0;
+          var h = parseFloat(r.getAttribute('height')) || 0;
+          return w > 60 && h >= 15 && h <= 45;
+        });
+        bars.sort(function(a, b) {
+          var ya = parseFloat(a.getAttribute('y')) || 0;
+          var yb = parseFloat(b.getAttribute('y')) || 0;
+          return ya - yb;
+        });
+        bars.forEach(function(r, i) {
+          var idx = i < sectionForBarIndex.length ? sectionForBarIndex[i] : 0;
+          var color = sectionColors[idx];
+          r.setAttribute('fill', color);
+          r.setAttribute('stroke', '#333');
+          r.style.setProperty('fill', color, 'important');
+        });
+        var texts = svg.querySelectorAll('text');
+        texts.forEach(function(t) {
+          t.setAttribute('fill', '#1a1a1a');
+        });
+      }
+      function run() {
+        setTimeout(colorizeBars, 500);
+        setTimeout(colorizeBars, 1500);
+        setTimeout(colorizeBars, 2500);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+      } else {
+        run();
+      }
+      window.addEventListener('load', function() { setTimeout(colorizeBars, 3000); });
+    })();
+  </script>
+</body>
+</html>
