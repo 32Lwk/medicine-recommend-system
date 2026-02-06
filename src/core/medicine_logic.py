@@ -5,7 +5,7 @@ import re
 import time
 import logging
 from typing import Dict
-from debug_logger import add_network_log, performance_stats
+from src.utils.debug_logger import add_network_log, performance_stats
 from datetime import datetime
 # from typing import List
 # from openai.types.chat import ChatCompletionMessageParam ←不要なので削除
@@ -13,8 +13,9 @@ from datetime import datetime
 # ログ設定
 logger = logging.getLogger(__name__)
 
-# このファイルのあるディレクトリを基準にCSVファイルの絶対パスを取得
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# プロジェクトルートを基準にCSVファイルの絶対パスを取得
+from src import PROJECT_ROOT
+BASE_DIR = PROJECT_ROOT
 DATA_DIR = os.path.join(BASE_DIR, "data")
 CSV_PATH = os.path.join(DATA_DIR, "otc_medicine_data.csv")
 
@@ -803,7 +804,7 @@ def is_diagnosis_only(user_text: str, diagnosis_term: str) -> bool:
     
     # 方言変換を適用（変換後のテキストで判定）
     try:
-        from scoring_utils import convert_dialect_to_standard
+        from src.core.scoring_utils import convert_dialect_to_standard
         converted_text, _, _, _, _ = convert_dialect_to_standard(
             user_text,
             extract_severity=False,
@@ -1671,7 +1672,7 @@ def clean_csv_data(df: pd.DataFrame) -> pd.DataFrame:
     if '成分' in df_cleaned.columns:
         # INGREDIENT_DICTIONARYから正規化マッピングを作成
         try:
-            from rule_based_recommendation import INGREDIENT_DICTIONARY
+            from src.core.rule_based_recommendation import INGREDIENT_DICTIONARY
             ingredient_mapping = {}
             for canonical_name, info in INGREDIENT_DICTIONARY.items():
                 synonyms = info.get('synonyms', [])
@@ -1815,7 +1816,7 @@ if not csv_load_status["success"]:
 def get_medicines_by_symptom(symptom_text, df=None):
     if df is None:
         try:
-            from medicine_logic import df as global_df
+            from src.core.medicine_logic import df as global_df
             df = global_df
         except ImportError:
             return ["データが読み込まれていません"]
@@ -1904,8 +1905,8 @@ def recommend_otc_medicines_via_gpt(user_text, symptom_csv_path=None, otc_csv_pa
     import pandas as pd
     import os
     # CSV読み込み
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(base_dir, "data")
+    base_dir = BASE_DIR
+    data_dir = DATA_DIR
     symptom_csv = symptom_csv_path or os.path.join(data_dir, "症状-薬.csv")
     otc_csv = otc_csv_path or os.path.join(data_dir, "otc_medicine_data.csv")
     df_symptom = pd.read_csv(symptom_csv)
@@ -1939,8 +1940,8 @@ def recommend_otc_medicines_from_summarized(user_text, summarized_csv_path=None,
     import os
     import re
     # CSV読み込み
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(base_dir, "data")
+    base_dir = BASE_DIR
+    data_dir = DATA_DIR
     summarized_csv = summarized_csv_path or os.path.join(data_dir, "summarized_efficacy_data.csv")
     df = pd.read_csv(summarized_csv)
     
@@ -2027,8 +2028,7 @@ def gpt_select_efficacy_candidates(user_text, summarized_csv_path=None, max_cand
     """
     import pandas as pd
     import os
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    summarized_csv = summarized_csv_path or os.path.join(base_dir, "summarized_efficacy_data.csv")
+    summarized_csv = summarized_csv_path or os.path.join(DATA_DIR, "summarized_efficacy_data.csv")
     df = pd.read_csv(summarized_csv)
     
     # NaN値を適切に処理
@@ -2656,9 +2656,9 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, user_info
     使用上の注意を要約して返す。適した医薬品が返ってこなければ再試行
     """
     # セキュリティ検証の追加
-    from security_validator import validate_user_input
-    from security_config import should_block_input, get_current_phase
-    from security_logger import log_input_validation
+    from src.security.security_validator import validate_user_input
+    from src.security.security_config import should_block_input, get_current_phase
+    from src.security.security_logger import log_input_validation
     
     # 入力検証
     is_safe, risk_score, warnings, sanitized_text = validate_user_input(
@@ -2801,7 +2801,7 @@ def recommend_medicines_with_retry(user_text, symptoms, medicine_list, user_info
             result = result.strip()
             
             # 安全なJSON解析
-            from json_validator import safe_json_parse
+            from src.security.json_validator import safe_json_parse
             try:
                 parsed_result = safe_json_parse(result, schema='medicine_recommendation')
                 
@@ -3294,9 +3294,7 @@ def chat_with_medicine_context(user_message, conversation_history, recommended_m
     if not recommended_medicines:
         try:
             import pandas as pd
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            data_dir = os.path.join(base_dir, "data")
-            df = pd.read_csv(os.path.join(data_dir, 'otc_medicine_data.csv'))
+            df = pd.read_csv(CSV_PATH)
             detected_medicines = detect_medicine_name_in_query(user_message, df)
             if detected_medicines:
                 medicine_info = ""

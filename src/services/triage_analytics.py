@@ -8,6 +8,8 @@ import os
 from datetime import datetime
 from typing import Dict, Optional, List
 
+from src import PROJECT_ROOT
+
 def log_triage_result(
     session_id: str,
     user_input: str,
@@ -44,7 +46,7 @@ def log_triage_result(
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存（JSONL形式）
@@ -94,7 +96,7 @@ def log_topic_shift_detection(
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存（JSONL形式）
@@ -140,7 +142,7 @@ def log_confidence_check(
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存（JSONL形式）
@@ -192,7 +194,7 @@ def log_counseling_completion(
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存（JSONL形式）

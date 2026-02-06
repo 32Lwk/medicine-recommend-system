@@ -1,0 +1,919 @@
+{
+  "発熱": {
+    "canonical_name": "発熱",
+    "synonyms": [
+      "熱がある",
+      "熱っぽい",
+      "高熱",
+      "微熱",
+      "体温が高い",
+      "熱"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.9
+  },
+  "頭痛": {
+    "canonical_name": "頭痛",
+    "synonyms": [
+      "頭が痛い",
+      "ズキズキする",
+      "頭が重い",
+      "偏頭痛"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.85
+  },
+  "のどの痛み": {
+    "canonical_name": "のどの痛み",
+    "synonyms": [
+      "喉が痛い",
+      "喉の痛み",
+      "のどが痛い",
+      "咽頭痛",
+      "喉の腫れ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "外用薬（のど）"
+    ],
+    "weight": 0.9
+  },
+  "咳": {
+    "canonical_name": "咳",
+    "synonyms": [
+      "せき",
+      "咳が出る",
+      "咳込む",
+      "空咳"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "風邪薬"
+    ],
+    "weight": 0.85
+  },
+  "痰": {
+    "canonical_name": "痰",
+    "synonyms": [
+      "たん",
+      "痰が絡む",
+      "痰が出る"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬"
+    ],
+    "weight": 0.8
+  },
+  "鼻水": {
+    "canonical_name": "鼻水",
+    "synonyms": [
+      "鼻みず",
+      "鼻汁",
+      "鼻が出る",
+      "水っぽい鼻水"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "鼻炎用薬"
+    ],
+    "weight": 0.85
+  },
+  "鼻づまり": {
+    "canonical_name": "鼻づまり",
+    "synonyms": [
+      "鼻詰まり",
+      "鼻が詰まる",
+      "鼻閉"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "鼻炎用薬"
+    ],
+    "weight": 0.85
+  },
+  "くしゃみ": {
+    "canonical_name": "くしゃみ",
+    "synonyms": [
+      "クシャミ",
+      "くしゃみが出る"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "鼻炎用薬"
+    ],
+    "weight": 0.8
+  },
+  "悪寒": {
+    "canonical_name": "悪寒",
+    "synonyms": [
+      "寒気",
+      "さむけ",
+      "ゾクゾクする",
+      "悪寒がする"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "風邪薬"
+    ],
+    "weight": 0.85
+  },
+  "関節痛": {
+    "canonical_name": "関節痛",
+    "synonyms": [
+      "関節の痛み",
+      "節々が痛い",
+      "関節が痛い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.8
+  },
+  "筋肉痛": {
+    "canonical_name": "筋肉痛",
+    "synonyms": [
+      "筋肉の痛み",
+      "体が痛い",
+      "筋肉が痛い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "風邪薬",
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.75
+  },
+  "生理痛": {
+    "canonical_name": "生理痛",
+    "synonyms": [
+      "月経痛",
+      "生理の痛み",
+      "下腹部痛"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.95
+  },
+  "月経不順": {
+    "canonical_name": "月経不順",
+    "synonyms": [
+      "月経不順",
+      "生理不順",
+      "月経異常",
+      "生理周期が乱れている",
+      "生理が遅れている",
+      "月経が遅れている",
+      "生理が来ていない",
+      "月経が来ない",
+      "生理が来ない",
+      "血の道症",
+      "生理異常"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.95
+  },
+  "歯痛": {
+    "canonical_name": "歯痛",
+    "synonyms": [
+      "歯が痛い",
+      "歯の痛み"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.9
+  },
+  "鼻汁過多": {
+    "canonical_name": "鼻汁過多",
+    "synonyms": [
+      "鼻水が多い",
+      "鼻水がとまらない"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "鼻炎用薬"
+    ],
+    "weight": 0.9
+  },
+  "なみだ目": {
+    "canonical_name": "なみだ目",
+    "synonyms": [
+      "涙目"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [
+      "鼻炎用薬"
+    ],
+    "weight": 0.7
+  },
+  "胃痛": {
+    "canonical_name": "胃痛",
+    "synonyms": [
+      "胃が痛い",
+      "胃の痛み",
+      "胃部痛",
+      "みぞおちの痛み"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "腹痛": {
+    "canonical_name": "腹痛",
+    "synonyms": [
+      "お腹が痛い",
+      "腹部痛",
+      "おなかが痛い",
+      "腹が痛い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "下痢": {
+    "canonical_name": "下痢",
+    "synonyms": [
+      "下痢",
+      "軟便",
+      "水様便",
+      "便がゆるい"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "便秘": {
+    "canonical_name": "便秘",
+    "synonyms": [
+      "便秘",
+      "便が出ない",
+      "便通がない",
+      "便が硬い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "吐き気": {
+    "canonical_name": "吐き気",
+    "synonyms": [
+      "吐き気",
+      "むかつき",
+      "気持ち悪い",
+      "嘔吐感"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "胸やけ": {
+    "canonical_name": "胸やけ",
+    "synonyms": [
+      "胸やけ",
+      "胸焼け",
+      "胃もたれ",
+      "胃の重い感じ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.85
+  },
+  "胃もたれ": {
+    "canonical_name": "胃もたれ",
+    "synonyms": [
+      "胃もたれ",
+      "胃の重い感じ",
+      "消化が悪い",
+      "胃の不快感"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.85
+  },
+  "つわり": {
+    "canonical_name": "つわり",
+    "synonyms": [
+      "つわり",
+      "悪阻",
+      "吐き気",
+      "嘔吐",
+      "匂いに敏感",
+      "匂いが気になる"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.9
+  },
+  "胸の張り": {
+    "canonical_name": "胸の張り",
+    "synonyms": [
+      "胸が張る",
+      "胸の張り",
+      "乳房の張り",
+      "胸が痛い",
+      "胸が敏感",
+      "乳房が痛い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.8
+  },
+  "頻尿": {
+    "canonical_name": "頻尿",
+    "synonyms": [
+      "頻尿",
+      "トイレが近い",
+      "おしっこが近い",
+      "尿が近い",
+      "トイレに行く回数が多い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "胃腸薬"
+    ],
+    "weight": 0.8
+  },
+  "かゆみ": {
+    "canonical_name": "かゆみ",
+    "synonyms": [
+      "かゆい",
+      "痒み",
+      "かゆみ",
+      "皮膚のかゆみ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "発疹": {
+    "canonical_name": "発疹",
+    "synonyms": [
+      "発疹",
+      "ブツブツ",
+      "赤い斑点",
+      "皮膚の異常"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "湿疹": {
+    "canonical_name": "湿疹",
+    "synonyms": [
+      "湿疹",
+      "皮膚炎",
+      "かぶれ",
+      "皮膚の炎症"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "水虫": {
+    "canonical_name": "水虫",
+    "synonyms": [
+      "水虫",
+      "白癬",
+      "足の水虫",
+      "指の間のかゆみ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.95
+  },
+  "打撲": {
+    "canonical_name": "打撲",
+    "synonyms": [
+      "打撲",
+      "打ち身",
+      "青あざ",
+      "あおたん",
+      "内出血",
+      "あざ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "打ち身": {
+    "canonical_name": "打ち身",
+    "synonyms": [
+      "打ち身",
+      "打撲",
+      "青あざ",
+      "あおたん",
+      "内出血",
+      "あざ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "炎症": {
+    "canonical_name": "炎症",
+    "synonyms": [
+      "炎症",
+      "炎症している",
+      "炎症する",
+      "にえる",
+      "にえている"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "捻挫": {
+    "canonical_name": "捻挫",
+    "synonyms": [
+      "捻挫",
+      "くじいた",
+      "関節の痛み",
+      "靭帯損傷"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）"
+    ],
+    "weight": 0.9
+  },
+  "肩こり": {
+    "canonical_name": "肩こり",
+    "synonyms": [
+      "肩こり",
+      "肩の凝り",
+      "肩の痛み",
+      "首肩の痛み"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "外用薬（皮膚）",
+      "筋肉痛"
+    ],
+    "weight": 0.85
+  },
+  "目の充血": {
+    "canonical_name": "目の充血",
+    "synonyms": [
+      "目の充血",
+      "目が赤い",
+      "充血",
+      "目の血走り"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "目薬"
+    ],
+    "weight": 0.9
+  },
+  "目の疲れ": {
+    "canonical_name": "目の疲れ",
+    "synonyms": [
+      "目の疲れ",
+      "眼精疲労",
+      "目が疲れる",
+      "目の重い感じ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "目薬"
+    ],
+    "weight": 0.85
+  },
+  "目のかゆみ": {
+    "canonical_name": "目のかゆみ",
+    "synonyms": [
+      "目のかゆみ",
+      "目がかゆい",
+      "目の痒み",
+      "目のかゆみ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "目薬"
+    ],
+    "weight": 0.9
+  },
+  "不眠": {
+    "canonical_name": "不眠",
+    "synonyms": [
+      "不眠",
+      "眠れない",
+      "睡眠不足",
+      "寝つきが悪い"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "睡眠障害"
+    ],
+    "weight": 0.9
+  },
+  "眠気": {
+    "canonical_name": "眠気",
+    "synonyms": [
+      "眠い",
+      "眠気",
+      "だるい",
+      "眠たい",
+      "眠気が強い",
+      "いつも眠い",
+      "寝てしまう",
+      "眠くて寝てしまう",
+      "眠すぎて寝てしまう",
+      "仕事中に寝てしまう",
+      "居眠り",
+      "眠くてたまらない",
+      "眠気に襲われる",
+      "眠くて仕方がない",
+      "眠すぎる"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "睡眠障害"
+    ],
+    "weight": 0.9
+  },
+  "めまい": {
+    "canonical_name": "めまい",
+    "synonyms": [
+      "めまい",
+      "眩暈",
+      "ふらつき",
+      "立ちくらみ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状"
+    ],
+    "weight": 0.8
+  },
+  "乗り物酔い": {
+    "canonical_name": "乗り物酔い",
+    "synonyms": [
+      "乗り物酔い",
+      "車酔い",
+      "船酔い",
+      "バス酔い",
+      "酔い",
+      "乗り物に酔う",
+      "車に乗ると気持ち悪い",
+      "船に乗ると気持ち悪い",
+      "乗物酔い",
+      "乗物に酔う"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.95
+  },
+  "疲労感": {
+    "canonical_name": "疲労感",
+    "synonyms": [
+      "疲労感",
+      "疲れ",
+      "だるい",
+      "倦怠感"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状"
+    ],
+    "weight": 0.7
+  },
+  "だるさ": {
+    "canonical_name": "だるさ",
+    "synonyms": [
+      "だるさ",
+      "だるい",
+      "体がだるい",
+      "全身倦怠感",
+      "倦怠感"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状",
+      "胃腸薬",
+      "抗アレルギー薬"
+    ],
+    "weight": 0.7
+  },
+  "むくみ": {
+    "canonical_name": "むくみ",
+    "synonyms": [
+      "むくみ",
+      "浮腫",
+      "腫れぼったい",
+      "パンパン",
+      "顔のむくみ",
+      "足のむくみ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "抗アレルギー薬",
+      "胃腸薬"
+    ],
+    "weight": 0.75
+  },
+  "二日酔い": {
+    "canonical_name": "二日酔い",
+    "synonyms": [
+      "二日酔い",
+      "二日酔",
+      "宿酔",
+      "悪酔い",
+      "悪酔",
+      "飲み過ぎ",
+      "飲みすぎ"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "抗アレルギー薬",
+      "胃腸薬",
+      "解熱鎮痛薬"
+    ],
+    "weight": 0.95
+  },
+  "イライラ": {
+    "canonical_name": "イライラ",
+    "synonyms": [
+      "イライラ",
+      "いらいら",
+      "焦燥感",
+      "落ち着かない"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状"
+    ],
+    "weight": 0.8
+  },
+  "不安": {
+    "canonical_name": "不安",
+    "synonyms": [
+      "不安",
+      "心配",
+      "憂鬱",
+      "落ち込み"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状"
+    ],
+    "weight": 0.8
+  },
+  "ストレス": {
+    "canonical_name": "ストレス",
+    "synonyms": [
+      "ストレス",
+      "ストレス",
+      "緊張",
+      "プレッシャー"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度",
+      "重度"
+    ],
+    "medicine_types": [
+      "精神症状"
+    ],
+    "weight": 0.7
+  }
+}

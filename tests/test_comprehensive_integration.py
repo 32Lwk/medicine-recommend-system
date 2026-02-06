@@ -22,7 +22,7 @@ except ImportError:
     pass
 
 # インポート
-from scoring_utils import (
+from src.core.scoring_utils import (
     calculate_efficacy_specificity_score,
     normalize_text,
     is_word_match,
@@ -32,8 +32,8 @@ from scoring_utils import (
     basic_normalize_text,
     initialize_dialect_resources
 )
-from rule_based_recommendation import calculate_ingredient_based_boost
-from medicine_logic import is_diagnosis_term
+from src.core.rule_based_recommendation import calculate_ingredient_based_boost
+from src.core.medicine_logic import is_diagnosis_term
 
 # ログ設定
 logging.basicConfig(level=logging.INFO)
@@ -1270,7 +1270,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
         if medicine_df is None:
             return []
         
-        from rule_based_recommendation import calculate_final_score, simple_pattern_matching_nlu
+        from src.core.rule_based_recommendation import calculate_final_score, simple_pattern_matching_nlu
         
         # 生理痛専用医薬品のリスト
         menstrual_only_products = [
@@ -1467,7 +1467,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_headache_acetaminophen_preference(self):
         """頭痛にはアセトアミノフェン含有医薬品が推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             "頭痛がします",
@@ -1516,7 +1516,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_menstrual_pain_noshin_recommendation(self):
         """生理痛にはノーシンピュアが推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             "生理痛がひどい",
@@ -1543,7 +1543,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_menstrual_only_medicines_excluded_for_headache(self):
         """生理痛専用医薬品が頭痛の場合に完全に除外されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         # 生理痛専用医薬品のリスト
         menstrual_only_products = [
@@ -1586,7 +1586,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_inflammatory_pain_nsaids_preference(self):
         """炎症を伴う痛みにはNSAIDsが推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             ("筋肉痛で腫れています", "筋肉痛"),
@@ -1624,7 +1624,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_stomach_concern_acetaminophen(self):
         """胃への配慮がある場合はアセトアミノフェンが優先されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             "頭痛がします（胃が弱い）",
@@ -1672,7 +1672,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_pediatric_noshin_exception(self):
         """小児用ノーシンピュアは生理痛キーワードがなくても軽減されたペナルティのみであることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         if medicine_df is not None:
             pediatric_noshin = medicine_df[
@@ -1692,7 +1692,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_nsaids_age_restriction(self):
         """NSAIDsの年齢制限に関するテストケース"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             ("頭痛がします", 10, False),  # 10歳、インフルエンザなし
@@ -1723,7 +1723,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_aspirin_influenza_chickenpox(self):
         """アスピリンとインフルエンザ・水痘の組み合わせのテストケース"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             ("頭痛がします、インフルエンザです", 10, True, False),   # 10歳、インフルエンザあり
@@ -1760,7 +1760,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_consistency_deterministic(self):
         """完全性の検証：同じ条件で同じ医薬品が推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             "頭痛がします",
@@ -1812,7 +1812,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_qualitative_conditions(self):
         """定性的な条件を含むテストケース（「胃が弱い」「腫れている」「激痛」など）"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             ("頭痛がします、胃が弱いです", "頭痛", "アセトアミノフェン"),
@@ -1839,7 +1839,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_roxonin_calonel_recommendation(self):
         """ロキソニンやカロナールが適切に推奨されることを確認する包括的なテストケース"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         test_cases = [
             ("頭痛がします", "カロナール"),
@@ -1867,7 +1867,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_menstrual_only_medicines_recommended_for_menstrual_pain(self):
         """生理関連の症状や女性の場合に生理痛専用医薬品が推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         # 生理痛専用医薬品のリスト
         menstrual_only_products = [
@@ -1943,7 +1943,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
     
     def test_menstrual_keywords_variations(self):
         """様々な生理関連キーワードのバリエーションで推奨されることを確認"""
-        from rule_based_recommendation import calculate_final_score
+        from src.core.rule_based_recommendation import calculate_final_score
         
         # 生理関連キーワードのバリエーション
         menstrual_keyword_variations = [
@@ -1980,7 +1980,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
 
     def test_inappropriate_recommendations_prevented(self):
         """不適切な推奨が防止されることを確認（ケイブク、ビトラックＳ、大柴胡湯など）"""
-        from rule_based_recommendation import get_candidate_medicines, filter_by_efficacy_symptom_match
+        from src.core.rule_based_recommendation import get_candidate_medicines, filter_by_efficacy_symptom_match
         
         # テストデータの読み込み
         import pandas as pd
@@ -2046,7 +2046,7 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
 
     def test_major_analgesics_recommended(self):
         """主要解熱鎮痛薬（カロナールA、ロキソニンS、タイレノール）が適切に推奨されることを確認"""
-        from rule_based_recommendation import get_candidate_medicines, calculate_medicine_score
+        from src.core.rule_based_recommendation import get_candidate_medicines, calculate_medicine_score
         
         # テストデータの読み込み
         import pandas as pd
