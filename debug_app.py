@@ -7,8 +7,8 @@ import time
 import traceback
 from datetime import datetime
 import pandas as pd
-from medicine_logic import df, client, CSV_PATH, api_key
-from debug_logger import network_logs, add_network_log, performance_stats, reset_performance_stats
+from src.core.medicine_logic import df, client, CSV_PATH, api_key
+from src.utils.debug_logger import network_logs, add_network_log, performance_stats, reset_performance_stats
 import threading
 import queue
 import uuid
@@ -225,7 +225,7 @@ def clear_logs():
 @app.route('/clear_network_logs', methods=['POST'])
 def clear_network_logs():
     """ネットワークログをクリア"""
-    from debug_logger import network_logs
+    from src.utils.debug_logger import network_logs
     network_logs.clear()
     add_debug_log("Network logs cleared by user")
     return jsonify({'message': 'Network logs cleared successfully'})

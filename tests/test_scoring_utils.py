@@ -12,7 +12,7 @@ import logging
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scoring_utils import (
+from src.core.scoring_utils import (
     calculate_efficacy_specificity_score,
     normalize_text,
     is_word_match,
@@ -101,7 +101,7 @@ class TestScoringUtils(unittest.TestCase):
     
     def test_007_expectorant_bonus(self):
         """去痰成分ボーナスのテスト"""
-        from rule_based_recommendation import calculate_ingredient_based_boost
+        from src.core.rule_based_recommendation import calculate_ingredient_based_boost
         
         candidate = {
             'product_name': 'テスト去痰薬',
@@ -118,7 +118,7 @@ class TestScoringUtils(unittest.TestCase):
     
     def test_008_antitussive_penalty(self):
         """鎮咳成分ペナルティのテスト"""
-        from rule_based_recommendation import calculate_ingredient_based_boost
+        from src.core.rule_based_recommendation import calculate_ingredient_based_boost
         
         candidate = {
             'product_name': 'テスト鎮咳去痰薬',
@@ -137,7 +137,7 @@ class TestScoringUtils(unittest.TestCase):
     
     def test_009_kampo_expectorant(self):
         """漢方薬の去痰成分ボーナスのテスト"""
-        from rule_based_recommendation import calculate_ingredient_based_boost
+        from src.core.rule_based_recommendation import calculate_ingredient_based_boost
         
         candidate = {
             'product_name': '麦門冬湯',
@@ -204,7 +204,7 @@ class TestScoringUtils(unittest.TestCase):
         self.assertGreaterEqual(efficacy_score, 0.5, "効能に「たん」が含まれている場合は0.5以上になるべき")
         
         # 去痰成分ボーナスの計算
-        from rule_based_recommendation import calculate_ingredient_based_boost
+        from src.core.rule_based_recommendation import calculate_ingredient_based_boost
         boost = calculate_ingredient_based_boost(candidate, nlu_result, {})
         # カルボシステイン（去痰成分）とジヒドロコデイン（強力な鎮咳成分）の両方が含まれているため、
         # ボーナスは0.15 - 0.05 = 0.10になる

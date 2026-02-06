@@ -14,7 +14,7 @@ import math
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
-from scoring_utils import normalize_text
+from src.core.scoring_utils import normalize_text
 
 # キーワードリストのインポート
 try:
@@ -28,8 +28,9 @@ except ImportError:
 logger = logging.getLogger(__name__)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
-# CSVファイルのパス設定
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# CSVファイルのパス設定（プロジェクトルート基準）
+from src import PROJECT_ROOT
+BASE_DIR = PROJECT_ROOT
 DATA_DIR = os.path.join(BASE_DIR, "data")
 CSV_PATH = os.path.join(DATA_DIR, "otc_medicine_data.csv")
 
@@ -692,7 +693,7 @@ CONTRAINDICATION_RULES = {
 }
 
 # スコアリングウェイト（強化版）
-from enhanced_safety_checker import enhanced_scoring_weights
+from src.security.enhanced_safety_checker import enhanced_scoring_weights
 SCORING_WEIGHTS = enhanced_scoring_weights()
 
 # リスク成分リスト（減点対象、詳細症状がない場合は注意喚起）
@@ -2560,9 +2561,9 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
         構造化された症状データ
     """
     # セキュリティ検証の追加
-    from security_validator import validate_user_input
-    from security_config import should_block_input, get_block_threshold
-    from security_logger import log_input_validation
+    from src.security.security_validator import validate_user_input
+    from src.security.security_config import should_block_input, get_block_threshold
+    from src.security.security_logger import log_input_validation
     
     # 入力検証
     is_safe, risk_score, warnings, sanitized_text = validate_user_input(
@@ -2679,7 +2680,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
         result = response.choices[0].message.content
         
         # 安全なJSON解析
-        from json_validator import safe_json_parse
+        from src.security.json_validator import safe_json_parse
         try:
             parsed_result = safe_json_parse(result, schema='symptom_analysis')
         except Exception as e:
@@ -3594,7 +3595,7 @@ def has_symptom_in_efficacy(candidate: Dict, symptom_names: List[str]) -> bool:
         効能に症状が含まれている場合True
     """
     try:
-        from scoring_utils import normalize_text, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
+        from src.core.scoring_utils import normalize_text, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
         
         efficacy = str(candidate.get('efficacy', ''))
         if not efficacy:
@@ -4675,7 +4676,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     # 漢方+解熱鎮痛剤の組み合わせ保護（多様性チェックの後に適用、補完的に保護）
     # 痛みが主訴の場合、漢方1件+解熱鎮痛剤1件を最優先ペアとして保護
     if nlu_result:
-        from medicine_logic import determine_pain_urgency
+        from src.core.medicine_logic import determine_pain_urgency
         user_message = nlu_result.get('user_message', '') or ''
         pain_urgency = determine_pain_urgency(user_message, nlu_result)
         
@@ -4689,7 +4690,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
             # 選択済みの候補から漢方と解熱鎮痛剤を確認
             for candidate in selected:
                 medicine_type = candidate.get('medicine_type', '')
-                from scoring_utils import _is_kampo_or_herbal_medicine
+                from src.core.scoring_utils import _is_kampo_or_herbal_medicine
                 if _is_kampo_or_herbal_medicine(candidate):
                     has_kampo = True
                     kampo_candidate = candidate
@@ -4704,7 +4705,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                     for candidate in filtered_candidates:
                         if candidate in selected:
                             continue
-                        from scoring_utils import _is_kampo_or_herbal_medicine
+                        from src.core.scoring_utils import _is_kampo_or_herbal_medicine
                         if _is_kampo_or_herbal_medicine(candidate):
                             # 月経不順関連の症状がある場合は、月経不順向けの漢方を優先
                             symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
@@ -4897,7 +4898,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                                     continue
                                 
                                 # 効能特異性が低い医薬品を除外（_enforce_symptom_match_thresholdと同じ条件）
-                                from scoring_utils import calculate_efficacy_specificity_score
+                                from src.core.scoring_utils import calculate_efficacy_specificity_score
                                 efficacy_specificity = calculate_efficacy_specificity_score(candidate, nlu_result)
                                 symptom_specificity_penalty = calculate_symptom_specificity_penalty(candidate, nlu_result)
                                 
@@ -8069,7 +8070,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             }
     
     # スコアリングユーティリティをインポート
-    from scoring_utils import (
+    from src.core.scoring_utils import (
         calculate_efficacy_specificity_score,
         calculate_side_effect_risk_score,
         calculate_interaction_risk_score,
@@ -8296,7 +8297,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # ユーザー要望に基づくボーナス
     user_preference_bonus = 0.0
     if user_info and user_info.get('user_preferences'):
-        from medicine_logic import extract_user_preferences
+        from src.core.medicine_logic import extract_user_preferences
         user_preferences = user_info.get('user_preferences')
         user_preference_bonus = apply_user_preference_bonus(candidate, user_preferences, nlu_result)
         if user_preference_bonus > 0:
@@ -8912,7 +8913,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         
         # 葛根湯の識別とペナルティ（「のどの痛み+発熱」の場合はペナルティを適用）
         if "葛根湯" in bonuses:
-            from scoring_utils import _is_kampo_or_herbal_medicine
+            from src.core.scoring_utils import _is_kampo_or_herbal_medicine
             # 葛根湯の判定：製品名または成分から判定
             is_kampo_check = _is_kampo_or_herbal_medicine(candidate)
             is_kakkonto_by_name = "葛根湯" in product_name
@@ -9420,7 +9421,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     if has_menstrual_symptom_list:
         # 漢方薬の判定
-        from scoring_utils import _is_kampo_or_herbal_medicine
+        from src.core.scoring_utils import _is_kampo_or_herbal_medicine
         is_kampo = _is_kampo_or_herbal_medicine(candidate)
         
         if is_kampo:
@@ -9523,7 +9524,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 漢方薬・生薬製剤の優先度調整（症状パターンごとに異なる処理）
     # adjustment_scoreの計算前に実行する必要がある
-    from scoring_utils import _is_kampo_or_herbal_medicine, _is_goreisan
+    from src.core.scoring_utils import _is_kampo_or_herbal_medicine, _is_goreisan
     kampo_adjustment = 0.0
     
     # 証（Sho）判定によるボーナス/ペナルティ（月経不順症状がある場合）
@@ -9984,7 +9985,7 @@ def calculate_symptom_specificity_penalty(candidate: Dict, nlu_result: Dict) -> 
         medicine_type = candidate.get("medicine_type", "")
         
         # 効能特異性スコアを計算（外部関数を使用）
-        from scoring_utils import calculate_efficacy_specificity_score
+        from src.core.scoring_utils import calculate_efficacy_specificity_score
         efficacy_specificity = calculate_efficacy_specificity_score(candidate, nlu_result)
         
         # 浮動小数点比較用イプシロン
@@ -10320,7 +10321,7 @@ def _finalize_recommendations(candidates: List[Dict], nlu_result: Dict, influenz
             logger.debug(f"性器周辺症状: {len(validated)}件の候補をフィルタリング後")
     
     # 4.6. 効能特異性が非常に低い医薬品を除外（症状に合わない医薬品を除外）
-    from scoring_utils import calculate_efficacy_specificity_score
+    from src.core.scoring_utils import calculate_efficacy_specificity_score
     
     filtered_by_efficacy = []
     for candidate in validated:
@@ -11047,7 +11048,7 @@ def rule_based_recommendation(
     # 症状が検出されていない場合、select_symptoms_via_gptで抽出を試みる
     if not has_detected_symptoms:
         try:
-            from medicine_logic import select_symptoms_via_gpt
+            from src.core.medicine_logic import select_symptoms_via_gpt
             logger.info(f"🔍 select_symptoms_via_gptで症状抽出を試みます: {user_text}")
             symptom_extraction_result = select_symptoms_via_gpt(user_text, client=client)
             logger.debug(f"🔍 select_symptoms_via_gptの結果: {symptom_extraction_result}")
@@ -11117,7 +11118,7 @@ def rule_based_recommendation(
     missing_info_result = check_missing_information(user_info, nlu_result, user_text, client)
     
     # 不足情報による減点を事前に計算（後で使用するため）
-    from medicine_logic import calculate_completeness_penalty
+    from src.core.medicine_logic import calculate_completeness_penalty
     penalty_result = calculate_completeness_penalty(missing_info_result)
     completeness_penalty = penalty_result.get('completeness_penalty', 0.0)
     missing_fields_detail = penalty_result.get('missing_fields_detail', {})
@@ -11184,7 +11185,7 @@ def rule_based_recommendation(
     
     # 消化器症状と産後・授乳中の情報を追加
     try:
-        from medicine_logic import detect_digestive_sensitivity, detect_postpartum_breastfeeding
+        from src.core.medicine_logic import detect_digestive_sensitivity, detect_postpartum_breastfeeding
         
         # 消化器症状の検出
         digestive_info = detect_digestive_sensitivity(user_text, nlu_result, user_info)
@@ -11376,7 +11377,7 @@ def rule_based_recommendation(
     # ステップ5.1: 簡易スコアリング（高速）
     def calculate_quick_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
         """簡易スコア（症状マッチ、効能特異性、年齢適合性、症状特異性ペナルティを含む）"""
-        from scoring_utils import calculate_efficacy_specificity_score
+        from src.core.scoring_utils import calculate_efficacy_specificity_score
         symptom_score = calculate_symptom_match_score(candidate, nlu_result)
         efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
         age_score = calculate_age_fit_score(candidate, user_info)
@@ -12795,7 +12796,7 @@ def log_recommendation_session(user_text: str, user_info: Dict, result: Dict, se
         "result": result
     }
     
-    log_dir = os.path.dirname(os.path.abspath(__file__))
+    log_dir = os.path.join(BASE_DIR, 'log')
     log_path = os.path.join(log_dir, "log", log_file)
     
     # logディレクトリがなければ作成
