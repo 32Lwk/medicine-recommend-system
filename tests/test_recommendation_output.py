@@ -18,8 +18,8 @@ try:
 except ImportError:
     pass
 
-from scoring_utils import calculate_efficacy_specificity_score, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
-from rule_based_recommendation import calculate_ingredient_based_boost
+from src.core.scoring_utils import calculate_efficacy_specificity_score, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
+from src.core.rule_based_recommendation import calculate_ingredient_based_boost
 
 # CSVデータを読み込み
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -98,7 +98,7 @@ for i, test_case in enumerate(test_cases, 1):
         normalized_efficacy = efficacy.lower()
         if symptom_name in normalized_efficacy or 'たん' in normalized_efficacy or '痰' in normalized_efficacy:
             # 単語境界チェック
-            from scoring_utils import normalize_text
+            from src.core.scoring_utils import normalize_text
             normalized_efficacy_full = normalize_text(efficacy)
             normalized_symptom = normalize_text(symptom_name)
             

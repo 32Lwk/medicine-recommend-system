@@ -12,11 +12,13 @@ from collections import defaultdict, Counter
 
 logger = logging.getLogger(__name__)
 
+from src import PROJECT_ROOT
+
 class SecurityLogger:
     """セキュリティログ管理クラス"""
     
-    def __init__(self, log_file: str = "log/security_events.jsonl"):
-        self.log_file = log_file
+    def __init__(self, log_file: str = None):
+        self.log_file = log_file or os.path.join(PROJECT_ROOT, "log", "security_events.jsonl")
         self.ensure_log_directory()
     
     def ensure_log_directory(self):
