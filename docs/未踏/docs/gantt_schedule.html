@@ -78,7 +78,7 @@
 
     .mermaid-wrap {
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      border: none;
       border-radius: 8px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
@@ -227,7 +227,7 @@ gantt
     title 開発スケジュール（2026.06～2027.03）
     dateFormat  YYYY-MM-DD
     axisFormat  %Y年%m月
-    todayMarker off
+    todayMarker on
 
     section キックオフ
     環境整理・CI・キックオフ                    :kickoff, 2026-06-22, 10d
@@ -243,7 +243,7 @@ gantt
     5層防御ロジック統合                         :p2c, after p2b, 15d
 
     section 検証・最適化（Phase3）
-    安全性・性能検証                            :v1, 2026-11-01, 30d
+    安全性・性能検証                            :v3, 2026-11-01, 30d
     A/Bテスト・調整                             :p3, 2026-12-01, 30d
 
     section 仕上げ
