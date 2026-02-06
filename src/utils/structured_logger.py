@@ -12,7 +12,8 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # ログディレクトリのパス
-LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+from src import PROJECT_ROOT
+LOG_DIR = os.path.join(PROJECT_ROOT, 'log')
 os.makedirs(LOG_DIR, exist_ok=True)
 
 

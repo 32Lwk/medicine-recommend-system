@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import threading
 
+from src import PROJECT_ROOT
+
 # psutilのインポート（利用できない場合はフォールバック）
 try:
     import psutil
@@ -129,7 +131,7 @@ def log_performance_metrics(monitor: PerformanceMonitor, session_id: str,
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存
@@ -148,7 +150,7 @@ def get_performance_statistics(log_file: str = None) -> Dict:
         パフォーマンス統計の辞書
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'performance_metrics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'performance_metrics.jsonl')
     
     if not os.path.exists(log_file):
         return {

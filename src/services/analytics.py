@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import os
 
+from src import PROJECT_ROOT
+
 def parse_user_agent(user_agent: str) -> Dict:
     """
     ユーザーエージェントから詳細情報を抽出
@@ -141,7 +143,7 @@ def log_access_analytics(session_id: str, user_agent: str, client_ip: str,
     }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存
@@ -160,7 +162,7 @@ def get_browser_distribution(log_file: str = None) -> Dict:
         ブラウザ分布の辞書
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'access_analytics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'access_analytics.jsonl')
     
     if not os.path.exists(log_file):
         return {}
@@ -194,7 +196,7 @@ def get_os_distribution(log_file: str = None) -> Dict:
         OS分布の辞書
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'access_analytics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'access_analytics.jsonl')
     
     if not os.path.exists(log_file):
         return {}
@@ -228,7 +230,7 @@ def get_device_distribution(log_file: str = None) -> Dict:
         デバイス分布の辞書
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'access_analytics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'access_analytics.jsonl')
     
     if not os.path.exists(log_file):
         return {}
@@ -262,7 +264,7 @@ def calculate_avg_response_time(log_file: str = None) -> float:
         平均レスポンス時間（ミリ秒）
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'access_analytics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'access_analytics.jsonl')
     
     if not os.path.exists(log_file):
         return 0.0
@@ -292,7 +294,7 @@ def get_access_statistics(log_file: str = None) -> Dict:
         アクセス統計の辞書
     """
     if not log_file:
-        log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log', 'access_analytics.jsonl')
+        log_file = os.path.join(PROJECT_ROOT, 'log', 'access_analytics.jsonl')
     
     if not os.path.exists(log_file):
         return {

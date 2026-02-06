@@ -24,12 +24,13 @@ logger = logging.getLogger(__name__)
 
 # DEBUG_MODEはrule_based_recommendation.pyから取得（グローバル変数として定義されていない場合はFalse）
 try:
-    from rule_based_recommendation import DEBUG_MODE
+    from src.core.rule_based_recommendation import DEBUG_MODE
 except ImportError:
     DEBUG_MODE = False
 
-# CSVファイルのパス
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# CSVファイルのパス（プロジェクトルート基準）
+from src import PROJECT_ROOT
+BASE_DIR = PROJECT_ROOT
 DATA_DIR = os.path.join(BASE_DIR, "data")
 SIDE_EFFECTS_CSV = os.path.join(DATA_DIR, "medicine_side_effects.csv")
 INTERACTIONS_CSV = os.path.join(DATA_DIR, "medicine_interactions.csv")
@@ -2547,7 +2548,7 @@ def log_conversion_result(
     from datetime import datetime
     
     # ログディレクトリの確認
-    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'log')
+    log_dir = os.path.join(BASE_DIR, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # 変換結果をJSON形式で記録

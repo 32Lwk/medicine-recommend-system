@@ -12,72 +12,29 @@ import socket
 from collections.abc import MutableMapping
 from threading import local
 
-# ログ設定（早期に設定）
-# logディレクトリが存在しない場合は作成
-log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
-os.makedirs(log_dir, exist_ok=True)
+# 環境変数・ログ設定（medicine_logic等より前に実行）
+from config.app_config import load_env, configure_logging, get_cors_config, get_session_config
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),  # ターミナルに出力
-        logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8')  # ファイルにも出力
-    ]
-)
+configure_logging()
+load_env()
 logger = logging.getLogger(__name__)
 
-# .envファイルから環境変数を読み込み（medicine_logic.pyより前に実行）
-try:
-    from dotenv import load_dotenv
-    # 明示的なパスを指定（app.pyと同じディレクトリの.envファイル）
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    env_path = os.path.join(base_dir, '.env')
-    
-    # デバッグ情報（DEBUG_MODE時のみ）
-    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
-        logger.debug(f"[DEBUG app.py] base_dir: {base_dir}")
-        logger.debug(f"[DEBUG app.py] .envファイルのパス: {env_path}")
-        logger.debug(f"[DEBUG app.py] .envファイル存在確認: {os.path.exists(env_path)}")
-    
-    # まず明示的なパスで読み込む（存在する場合）
-    loaded = False
-    if os.path.exists(env_path):
-        loaded = load_dotenv(env_path, override=True)  # override=Trueで確実に読み込む
-        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
-            logger.debug(f"[DEBUG app.py] load_dotenv({env_path}) 結果: {loaded}")
-    
-    # 引数なしでも試す（自動検索、override=Trueで上書き）
-    if not loaded:
-        loaded = load_dotenv(override=True)
-        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
-            logger.debug(f"[DEBUG app.py] load_dotenv() (引数なし) 結果: {loaded}")
-    
-    # 環境変数の確認
-    api_key_check = os.getenv('OPENAI_API_KEY')
-    if api_key_check:
-        if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
-            logger.debug(f"[DEBUG app.py] OPENAI_API_KEY読み込み成功（長さ: {len(api_key_check)}文字）")
-    else:
-        logger.warning("[DEBUG app.py] WARNING: OPENAI_API_KEYが環境変数に設定されていません")
-    
-    logger.info("app.py: .envファイルから環境変数を読み込みました。")
-except ImportError:
-    logger.info("app.py: python-dotenvがインストールされていません。環境変数のみを使用します。")
-except Exception as e:
-    logger.warning(f"app.py: .envファイル読み込みエラー: {e}")
-    import traceback
-    traceback.print_exc()
-
-from medicine_logic import get_medicines_by_symptom, csv_load_status
-from medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
-from medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
-from medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
-from debug_logger import performance_stats, network_logs, add_network_log
-from analytics import log_access_analytics, get_access_statistics
-from performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
-from database import init_database, get_database
-from season_manager import get_current_season, get_season_images
+from config.settings import (
+    MAX_SESSIONS,
+    SESSION_TIMEOUT,
+    CHAT_END_TIMEOUT,
+    CLEANUP_INTERVAL,
+    MAX_CLEANUP_DELAY,
+)
+from src.core.medicine_logic import get_medicines_by_symptom, csv_load_status
+from src.core.medicine_logic import select_symptoms_via_gpt, comprehensive_medicine_recommendation, chat_with_medicine_context
+from src.core.medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
+from src.core.medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
+from src.utils.debug_logger import performance_stats, network_logs, add_network_log
+from src.services.analytics import log_access_analytics, get_access_statistics
+from src.utils.performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
+from src.services.database import init_database, get_database
+from src.core.season_manager import get_current_season, get_season_images
 import pytz
 
 
@@ -177,32 +134,13 @@ session = RequestSafeSession()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
-# CORS設定（Render環境対応）
-CORS(app, 
-     supports_credentials=True, 
-     origins=["https://medicine-recommend-system.onrender.com", "http://localhost:5000", "http://127.0.0.1:5000"],
-     allow_headers=["Content-Type", "Authorization"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+# CORS・セッション設定
+cors_config = get_cors_config()
+CORS(app, **cors_config)
 
-# セッション設定（環境に応じて自動調整）
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_TYPE'] = 'filesystem'
-
-# 本番環境（FLASK_ENV=production）では Secure/None、開発では非Secure/Lax
-env = os.getenv('FLASK_ENV', 'development').lower()
-is_prod = (env == 'production')
-secure_override = os.getenv('SESSION_COOKIE_SECURE')
-if secure_override is not None:
-    secure_flag = secure_override.lower() == 'true'
-else:
-    secure_flag = is_prod
-
-samesite_value = 'None' if secure_flag else 'Lax'
-
-app.config['SESSION_COOKIE_SECURE'] = secure_flag
-app.config['SESSION_COOKIE_SAMESITE'] = samesite_value
-app.config['SESSION_COOKIE_HTTPONLY'] = False  # 既存挙動を維持
-app.config['SESSION_COOKIE_DOMAIN'] = None  # ドメイン制限を解除
+session_config = get_session_config()
+for key, value in session_config.items():
+    app.config[key] = value
 
 # データベース初期化（非同期化）
 try:
@@ -298,12 +236,7 @@ MANUAL_REPLY_QUEUE = []  # 手動返信待ちのメッセージ
 ALL_SESSIONS = {}  # フォールバック用（DB接続失敗時のみ使用）
 ADMIN_SESSIONS = {}  # 管理者専用のセッション情報
 USER_COUNTER = 1  # ユーザー名の連番
-MAX_SESSIONS = 50  # 最大セッション数（メモリ制約を考慮した適切な値）
-SESSION_TIMEOUT = 600  # セッションタイムアウト（秒）- 10分に短縮
-CHAT_END_TIMEOUT = 300  # チャット終了後の削除タイムアウト（秒）- 5分
 LAST_CLEANUP_TIME = 0  # 最後にクリーンアップを実行した時刻（タイムスタンプ）
-CLEANUP_INTERVAL = 60  # クリーンアップ実行間隔（秒）- 1分ごとに実行
-MAX_CLEANUP_DELAY = 300  # 高負荷時のクリーンアップ遅延（秒）- 5分
 
 # セッション管理ヘルパー関数（DBアクセス優先）
 def get_session_from_db(session_id):
@@ -444,7 +377,7 @@ def handle_500_error(e):
     # システム状態を取得
     system_state = {}
     try:
-        from performance_monitor import get_global_monitor
+        from src.utils.performance_monitor import get_global_monitor
         monitor = get_global_monitor()
         metrics = monitor.get_metrics()
         system_state = {
@@ -476,7 +409,7 @@ def handle_500_error(e):
     
     # structured_loggerで詳細ログを記録
     try:
-        from structured_logger import log_error_detail
+        from src.utils.structured_logger import log_error_detail
         log_error_detail(
             session_id=session_id,
             error_type=error_type,
@@ -839,9 +772,9 @@ def index():
         if user_message:
             # セキュリティ検証を一時的に無効化（デプロイメント問題のため）
             try:
-                from security_validator import validate_user_input
-                from security_config import should_block_input
-                from security_logger import log_input_validation
+                from src.security.security_validator import validate_user_input
+                from src.security.security_config import should_block_input
+                from src.security.security_logger import log_input_validation
                 
                 # 入力検証
                 is_safe, risk_score, warnings, sanitized_message = validate_user_input(
@@ -893,8 +826,8 @@ def index():
             
             # 危機関連ワード検出（「終了」ワード検知の前）
             try:
-                from medicine_logic import detect_crisis_keywords, get_crisis_support_resources
-                from security_logger import log_crisis_keyword_detection
+                from src.core.medicine_logic import detect_crisis_keywords, get_crisis_support_resources
+                from src.security.security_logger import log_crisis_keyword_detection
                 
                 # 危機関連ワードをチェック
                 has_crisis_keywords, detected_keywords = detect_crisis_keywords(sanitized_message)
@@ -1215,8 +1148,8 @@ def index():
             # ステップ1: LLMトリアージ（セキュリティ検証後、AI自動応答ONの場合のみ実行）
             triage_result = None
             try:
-                from llm_triage import llm_triage
-                from triage_analytics import log_triage_result, log_confidence_check
+                from src.services.llm_triage import llm_triage
+                from src.services.triage_analytics import log_triage_result, log_confidence_check
                 
                 # OpenAIクライアントを取得
                 recommendation_client = client  # medicine_logicからインポート済み
@@ -1246,7 +1179,7 @@ def index():
             
             # ステップ1.5: 文脈考慮型心臓緊急チェック（LLMトリアージの後）
             try:
-                from llm_triage import check_heart_emergency_with_context
+                from src.services.llm_triage import check_heart_emergency_with_context
                 
                 # 会話履歴を取得（最大20メッセージ）
                 conversation_history = []
@@ -1274,7 +1207,7 @@ def index():
                     
                     # 緊急対応メッセージを生成（文脈を考慮）
                     # 文脈を考慮した統合メッセージを生成
-                    from llm_triage import generate_contextual_emergency_message
+                    from src.services.llm_triage import generate_contextual_emergency_message
                     emergency_message = generate_contextual_emergency_message(
                         sanitized_message,
                         emergency_result,
@@ -1345,8 +1278,8 @@ def index():
             
             # ステップ1.7: 診断名検出（優先順位を変更：診断名検出を先に実行）
             try:
-                from medicine_logic import is_diagnosis_term
-                from counseling_response import is_treatment_mention
+                from src.core.medicine_logic import is_diagnosis_term
+                from src.services.counseling_response import is_treatment_mention
                 
                 # 診断名検出を先に実行
                 try:
@@ -1524,7 +1457,7 @@ def index():
             
             # ステップ1.7.5: 緊急事案検出（LLMトリアージ後、店舗案内処理の前）
             try:
-                from store_emergency_handler import handle_store_emergency
+                from src.services.store_emergency_handler import handle_store_emergency
                 
                 # 言語設定を取得
                 user_language = session.get('language', 'ja')
@@ -1609,7 +1542,7 @@ def index():
                     
                     # 緊急事案ログを記録
                     try:
-                        from security_logger import log_emergency_detection
+                        from src.security.security_logger import log_emergency_detection
                         log_emergency_detection(
                             user_id=session.get('username', 'unknown'),
                             input_text=sanitized_message,
@@ -1661,7 +1594,7 @@ def index():
             inappropriate_message_detected = False
             try:
                 from config.keywords import INAPPROPRIATE_MESSAGE_KEYWORDS
-                from counseling_response import normalize_text
+                from src.services.counseling_response import normalize_text
                 import re
                 
                 normalized_message = normalize_text(sanitized_message)
@@ -1707,7 +1640,7 @@ def index():
                 
                 if inappropriate_message_detected:
                     # 不適切なメッセージに対する応答を生成
-                    from counseling_response import (
+                    from src.services.counseling_response import (
                         generate_counseling_response,
                         generate_follow_up_questions,
                         start_counseling_mode
@@ -1782,7 +1715,7 @@ def index():
                             session_data['last_activity'] = datetime.now()
                             save_session_to_db(sid, session_data)
                     
-                    from counseling_response import log_counseling_response
+                    from src.services.counseling_response import log_counseling_response
                     log_counseling_response(
                         session_id=sid,
                         response_content=initial_response,
@@ -1813,7 +1746,7 @@ def index():
             
             # ステップ1.7.5.5: 基本正規化（新規追加）
             try:
-                from scoring_utils import basic_normalize_text
+                from src.core.scoring_utils import basic_normalize_text
                 sanitized_message = basic_normalize_text(sanitized_message)
             except ImportError:
                 logger.warning("⚠️ 基本正規化機能のインポートに失敗")
@@ -1824,7 +1757,7 @@ def index():
             processed_message = sanitized_message  # 内部処理用のメッセージ
             
             try:
-                from scoring_utils import convert_dialect_to_standard, check_escalation_threshold
+                from src.core.scoring_utils import convert_dialect_to_standard, check_escalation_threshold
                 converted_message, severity_tag, escalation_score, non_destructive_candidates, normalized_weights = convert_dialect_to_standard(
                     sanitized_message,
                     extract_severity=True,
@@ -1883,7 +1816,7 @@ def index():
                 
                 # ステップ1: 治療中フラグ確認
                 try:
-                    from counseling_response import is_treatment_mention, has_specific_symptom, is_medical_prevention_request
+                    from src.services.counseling_response import is_treatment_mention, has_specific_symptom, is_medical_prevention_request
                     
                     treatment_mention_flag = is_treatment_mention(processed_message)  # 方言変換後のテキストを使用
                     has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
@@ -1939,7 +1872,7 @@ def index():
                         # カウンセリングフローに進む（医薬品推奨も含める）
                         # この場合は、不適切な要求検出処理をスキップして、カウンセリングフローを開始
                         try:
-                            from counseling_response import (
+                            from src.services.counseling_response import (
                                 generate_counseling_response,
                                 generate_follow_up_questions,
                                 start_counseling_mode
@@ -2066,7 +1999,7 @@ def index():
                 # ステップ3: 不適切な要求の検出（救済ロジック通過後）
                 if category == 'Other' and 'inappropriate_request' in subcategory:
                     try:
-                        from counseling_response import (
+                        from src.services.counseling_response import (
                             detect_inappropriate_request,
                             generate_counseling_response,
                             generate_follow_up_questions,
@@ -2193,7 +2126,7 @@ def index():
                                     save_session_to_db(sid, session_data)
                             
                             # ログ記録
-                            from counseling_response import log_counseling_response
+                            from src.services.counseling_response import log_counseling_response
                             confidence = triage_result.get('confidence', 1.0)  # confidenceを取得
                             log_counseling_response(
                                 session_id=sid,
@@ -2229,7 +2162,7 @@ def index():
             # 不適切な要求が検出された場合はスキップ
             if not inappropriate_request_detected:
                 try:
-                    from store_inquiry_handler import handle_store_inquiry
+                    from src.services.store_inquiry_handler import handle_store_inquiry
                     
                     # 店舗案内・遺失物関連の質問を処理
                     store_inquiry_result = handle_store_inquiry(
@@ -2402,7 +2335,7 @@ def index():
                 logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
                 # カウンセリングフローに流す
                 try:
-                    from counseling_response import (
+                    from src.services.counseling_response import (
                         generate_counseling_response,
                         generate_follow_up_questions,
                         start_counseling_mode,
@@ -2504,7 +2437,7 @@ def index():
                             session_data['last_activity'] = datetime.now()
                             save_session_to_db(sid, session_data)
                     
-                    from counseling_response import log_counseling_response
+                    from src.services.counseling_response import log_counseling_response
                     log_counseling_response(
                         session_id=sid,
                         response_content=initial_response,
@@ -2603,8 +2536,8 @@ def index():
                     # 通常の医薬品推奨フローに進む（後続処理で実行される）
                 else:
                     try:
-                        from counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
-                        from triage_analytics import log_topic_shift_detection
+                        from src.services.counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
+                        from src.services.triage_analytics import log_topic_shift_detection
                         
                         # カウンセリングモード中の心臓緊急チェック（既にステップ1.5で実行済み）
                         # 緊急チェックで中断されなかった場合、カウンセリングを継続
@@ -2917,7 +2850,7 @@ def index():
                             
                             # カウンセリング完了ログを保存
                             if response.get('completion_reason'):
-                                from triage_analytics import log_counseling_completion
+                                from src.services.triage_analytics import log_counseling_completion
                                 log_counseling_completion(
                                     session_id=sid,
                                     counseling_mode=counseling_mode,
@@ -3012,7 +2945,7 @@ def index():
             # ステップ3: confidenceスコアをチェック（Emergency例外処理を含む）
             if triage_result:
                 try:
-                    from triage_analytics import log_confidence_check
+                    from src.services.triage_analytics import log_confidence_check
                     
                     category = triage_result.get('category', 'Other')
                     confidence = triage_result.get('confidence', 1.0)
@@ -3040,7 +2973,7 @@ def index():
                             session.modified = True
                             
                             # ログ記録（通常時は会話履歴なし）
-                            from counseling_response import log_counseling_response
+                            from src.services.counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=emergency_message.strip(),
@@ -3087,7 +3020,7 @@ def index():
                             session.modified = True
                             
                             # ログ記録（通常時は会話履歴なし）
-                            from counseling_response import log_counseling_response
+                            from src.services.counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=emergency_message.strip(),
@@ -3112,7 +3045,7 @@ def index():
                     # その他のカテゴリの通常処理
                     if confidence < 0.7:
                         # 確信度が低い場合は確認を求める
-                        from counseling_response import generate_counseling_response, detect_emotional_symptom_type, log_counseling_response
+                        from src.services.counseling_response import generate_counseling_response, detect_emotional_symptom_type, log_counseling_response
                         
                         # 会話履歴を取得（直近10件）
                         conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
@@ -3185,7 +3118,7 @@ def index():
                 # 注意: 既にステップ1.7.5で検出されている場合はスキップ
                 if category == 'Other' and 'inappropriate_request' in subcategory and not inappropriate_request_detected:
                     try:
-                        from counseling_response import (
+                        from src.services.counseling_response import (
                             detect_inappropriate_request,
                             generate_counseling_response,
                             generate_follow_up_questions,
@@ -3239,7 +3172,7 @@ def index():
                             session['messages'].append(bot_response)
                             
                             # ログ記録
-                            from counseling_response import log_counseling_response
+                            from src.services.counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=initial_response,
@@ -3285,7 +3218,7 @@ def index():
                 if category == 'Emotional':
                     # カウンセリングフロー開始（月経不順関連の症状がない場合のみ）
                     try:
-                        from counseling_response import (
+                        from src.services.counseling_response import (
                             detect_emotional_symptom_type,
                             generate_counseling_response,
                             generate_follow_up_questions,
@@ -3329,7 +3262,7 @@ def index():
                         session['messages'].append(bot_response)
                         
                         # 初期返信のログ記録（通常時は会話履歴なし）
-                        from counseling_response import log_counseling_response
+                        from src.services.counseling_response import log_counseling_response
                         log_counseling_response(
                             session_id=sid,
                             response_content=initial_response,
@@ -3625,7 +3558,7 @@ def index():
                     if any(keyword in sanitized_message for keyword in sleep_medicine_keywords):
                         # 不眠カウンセリングフローにリダイレクト
                         try:
-                            from counseling_response import (
+                            from src.services.counseling_response import (
                                 detect_emotional_symptom_type,
                                 generate_counseling_response,
                                 generate_follow_up_questions,
@@ -3663,7 +3596,7 @@ def index():
                             session['messages'].append(bot_response)
                             
                             # 初期返信のログ記録
-                            from counseling_response import log_counseling_response
+                            from src.services.counseling_response import log_counseling_response
                             log_counseling_response(
                                 session_id=sid,
                                 response_content=initial_response,
@@ -4074,7 +4007,7 @@ def index():
                         
                         # 医薬品質疑応答のログを記録
                         try:
-                            from structured_logger import log_medicine_question_detail
+                            from src.utils.structured_logger import log_medicine_question_detail
                             log_medicine_question_detail(
                                 session_id=sid,
                                 user_input=user_message,
@@ -4825,7 +4758,7 @@ def index():
                         
                         # 医薬品質疑応答のログを記録
                         try:
-                            from structured_logger import log_medicine_question_detail
+                            from src.utils.structured_logger import log_medicine_question_detail
                             log_medicine_question_detail(
                                 session_id=sid,
                                 user_input=user_message,
@@ -5458,7 +5391,7 @@ def index():
                 logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                 
                 # ステップ1: NLU解析を常に実行（性別自動判定・妊娠可能性検出のため）
-                from rule_based_recommendation import hybrid_nlu_extraction
+                from src.core.rule_based_recommendation import hybrid_nlu_extraction
                 nlu_result = {}
                 try:
                     logger.info(f"🔍 NLU解析を実行中: processed_message={processed_message[:50]}...")
@@ -5747,7 +5680,7 @@ def index():
                         
                         # 「その他」の場合でも、NLU解析結果から症状を取得し、適切なmedicine_typeを推測
                         if nlu_symptoms:
-                            from rule_based_recommendation import SYMPTOM_DICTIONARY
+                            from src.core.rule_based_recommendation import SYMPTOM_DICTIONARY
                             
                             # NLU解析結果から検出された症状に基づいてmedicine_typeを推測
                             detected_medicine_types = set()
@@ -5893,7 +5826,7 @@ def index():
                     
                     # ステップ2: 医薬品の種類に応じて推奨アルゴリズムを選択
                     # SYMPTOM_DICTIONARYから動的に対応種類を判定
-                    from rule_based_recommendation import SYMPTOM_DICTIONARY
+                    from src.core.rule_based_recommendation import SYMPTOM_DICTIONARY
                     
                     # SYMPTOM_DICTIONARYに含まれる全てのmedicine_typesを取得
                     supported_types = set()
@@ -6019,7 +5952,7 @@ def index():
                         
                         # ユーザー要望を抽出してuser_infoに追加
                         try:
-                            from medicine_logic import extract_user_preferences
+                            from src.core.medicine_logic import extract_user_preferences
                             nlu_result_for_preferences = recommendation_result.get('nlu_result', {}) if 'recommendation_result' in locals() else {}
                             user_preferences = extract_user_preferences(user_message, nlu_result_for_preferences, user_info)
                             user_info['user_preferences'] = user_preferences
@@ -6154,7 +6087,7 @@ def index():
                             if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
                                 # 推奨された医薬品の使用上の注意を一括生成
                                 try:
-                                    from medicine_logic import generate_usage_notes
+                                    from src.core.medicine_logic import generate_usage_notes
                                     
                                     # 上位3つの医薬品の使用上の注意を並列処理で生成
                                     generated_notes = []
@@ -6203,7 +6136,7 @@ def index():
                             
                             # 症状の重症度による受診勧奨チェック
                             try:
-                                from medicine_logic import detect_severity_escalation, generate_doctor_referral_message
+                                from src.core.medicine_logic import detect_severity_escalation, generate_doctor_referral_message
                                 
                                 escalation_info = detect_severity_escalation(sanitized_message, nlu_result, user_info)
                                 if escalation_info.get("needs_escalation", False):
@@ -6807,7 +6740,7 @@ def index():
                         overlap_warning_section = ""
                         if recommended_medicines:
                             try:
-                                from rule_based_recommendation import check_ingredient_overlap
+                                from src.core.rule_based_recommendation import check_ingredient_overlap
                                 overlap_result = check_ingredient_overlap(recommended_medicines)
                                 if overlap_result.get("has_overlap"):
                                     # コンパクトな形式で警告メッセージを生成（1-2行で簡潔に）
@@ -7265,7 +7198,7 @@ def index():
                         
                         # bot_contentが完成したので、完全なapp_outputでログを追加記録
                         try:
-                            from rule_based_recommendation import log_recommendation_session
+                            from src.core.rule_based_recommendation import log_recommendation_session
                             log_recommendation_session(
                                 user_text=user_message,
                                 user_info=user_info,
@@ -8545,42 +8478,42 @@ def admin_system_status():
 @app.route('/admin/access_stats', methods=['GET'])
 def admin_access_stats():
     """アクセス統計を取得"""
-    from analytics import get_access_statistics
+    from src.services.analytics import get_access_statistics
     stats = get_access_statistics()
     return jsonify(stats)
 
 @app.route('/admin/performance_stats', methods=['GET'])
 def admin_performance_stats():
     """パフォーマンス統計を取得"""
-    from performance_monitor import get_performance_statistics
+    from src.utils.performance_monitor import get_performance_statistics
     stats = get_performance_statistics()
     return jsonify(stats)
 
 @app.route('/admin/browser_distribution', methods=['GET'])
 def admin_browser_distribution():
     """ブラウザ分布を取得"""
-    from analytics import get_browser_distribution
+    from src.services.analytics import get_browser_distribution
     distribution = get_browser_distribution()
     return jsonify(distribution)
 
 @app.route('/admin/os_distribution', methods=['GET'])
 def admin_os_distribution():
     """OS分布を取得"""
-    from analytics import get_os_distribution
+    from src.services.analytics import get_os_distribution
     distribution = get_os_distribution()
     return jsonify(distribution)
 
 @app.route('/admin/device_distribution', methods=['GET'])
 def admin_device_distribution():
     """デバイス分布を取得"""
-    from analytics import get_device_distribution
+    from src.services.analytics import get_device_distribution
     distribution = get_device_distribution()
     return jsonify(distribution)
 
 @app.route('/admin/realtime_monitoring', methods=['GET'])
 def admin_realtime_monitoring():
     """リアルタイム監視データを取得"""
-    from performance_monitor import get_global_monitor
+    from src.utils.performance_monitor import get_global_monitor
     monitor = get_global_monitor()
     metrics = monitor.get_metrics()
     
@@ -8597,8 +8530,8 @@ def admin_realtime_monitoring():
 @app.route('/admin/export_monitoring_data', methods=['GET'])
 def admin_export_monitoring_data():
     """監視データをエクスポート"""
-    from analytics import get_access_statistics
-    from performance_monitor import get_performance_statistics
+    from src.services.analytics import get_access_statistics
+    from src.utils.performance_monitor import get_performance_statistics
     import json
     
     data = {
@@ -8710,7 +8643,7 @@ def admin_medicine_chat():
         logger.info(f"✅ OpenAIクライアント初期化成功（医薬品相談テスト用）")
         
         # 症状抽出を実行
-        from medicine_logic import select_symptoms_via_gpt
+        from src.core.medicine_logic import select_symptoms_via_gpt
         symptoms_result = select_symptoms_via_gpt(user_message, None, test_client)
         
         # 医薬品推奨を実行
@@ -8718,14 +8651,14 @@ def admin_medicine_chat():
             symptoms = symptoms_result.get('symptoms', [])
             
             # ルールベース推奨を試行
-            from medicine_logic import analyze_symptoms_and_medicine_type
+            from src.core.medicine_logic import analyze_symptoms_and_medicine_type
             medicine_type_result = analyze_symptoms_and_medicine_type(user_message, test_client)
             
             if medicine_type_result and medicine_type_result.get('medicine_type'):
                 medicine_type = medicine_type_result['medicine_type']
                 
                 # ルールベース推奨
-                from medicine_logic import rule_based_medicine_recommendation
+                from src.core.medicine_logic import rule_based_medicine_recommendation
                 recommendation = rule_based_medicine_recommendation(
                     user_text=user_message,
                     user_info={},
@@ -8772,7 +8705,7 @@ def admin_medicine_chat():
                 })
             else:
                 # AI推奨
-                from medicine_logic import comprehensive_medicine_recommendation
+                from src.core.medicine_logic import comprehensive_medicine_recommendation
                 recommendation = comprehensive_medicine_recommendation(
                     user_text=user_message,
                     client=test_client
@@ -9300,7 +9233,7 @@ def submit_feedback():
             # 不適切評価（negative_feedback）の場合、会話履歴を含むログを出力
             if data.get('report_type') == 'negative_feedback' and session_id:
                 try:
-                    from structured_logger import log_counseling_detail
+                    from src.utils.structured_logger import log_counseling_detail
                     # 会話履歴を取得（最新10件）
                     messages = session.get('messages', [])
                     conversation_history = messages[-10:] if len(messages) > 10 else messages
@@ -9481,7 +9414,7 @@ if __name__ == '__main__':
     
     # 方言変換リソースの初期化（アプリ起動時に一度だけ実行）
     try:
-        from scoring_utils import initialize_dialect_resources
+        from src.core.scoring_utils import initialize_dialect_resources
         initialize_dialect_resources()
     except Exception as e:
         logger.warning(f"⚠️ 方言変換リソースの初期化に失敗: {e}")

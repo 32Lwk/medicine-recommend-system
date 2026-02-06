@@ -1,179 +1,155 @@
 #!/usr/bin/env python3
 """
-ログファイルから推奨医薬品を分析するスクリプト
+ログファイルから推奨医薬品を分析する統合スクリプト
+
+複数のログ形式に対応し、以下のレポートを生成可能:
+  summary       - 要約レポート + recommendation_analysis.csv
+  pharmacist    - 薬剤師視点レポート（簡易）pharmacist_analysis_report.md
+  detailed      - 薬剤師視点詳細レポート pharmacist_detailed_analysis_report.md
+  comprehensive - ボーナススコア・優位性分析 pharmacist_comprehensive_analysis_report.md
+  all           - 上記すべて
+
+使用例:
+  python analyze_recommendations.py --report all
+  python analyze_recommendations.py --report summary --output-dir ./out
+  python analyze_recommendations.py --log log/test.log --csv data/otc_medicine_data.csv --report pharmacist
 """
-import re
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional
+
 import pandas as pd
-from collections import defaultdict, Counter
-from typing import Dict, List, Tuple
 
-def parse_log_file(log_path: str) -> List[Dict]:
-    """ログファイルを解析して推奨医薬品の情報を抽出"""
-    recommendations = []
-    
-    with open(log_path, 'r', encoding='utf-8') as f:
-        current_test = None
-        current_input = None
-        current_symptoms = None
-        current_medicines = None
-        
-        for line in f:
-            # テストケース番号を抽出
-            test_match = re.search(r'test_(\d+)\|(.+?)\|', line)
-            if test_match:
-                current_test = test_match.group(1)
-                current_input = test_match.group(2)
-                current_symptoms = None
-                current_medicines = None
-                continue
-            
-            # 症状検出結果を抽出
-            symptom_match = re.search(r'症状検出完了: (.+?)(?: \(処理時間|$)', line)
-            if symptom_match:
-                symptoms_str = symptom_match.group(1)
-                if symptoms_str != "該当なし":
-                    current_symptoms = [s.strip() for s in symptoms_str.split(',')]
-                else:
-                    current_symptoms = []
-                continue
-            
-            # 推奨医薬品を抽出
-            medicine_match = re.search(r'推奨医薬品: (.+?)(?:$|処理時間)', line)
-            if medicine_match:
-                medicines_str = medicine_match.group(1)
-                if medicines_str != "該当なし":
-                    current_medicines = [m.strip() for m in medicines_str.split(',')]
-                else:
-                    current_medicines = []
-                
-                if current_test and current_input:
-                    recommendations.append({
-                        'test_number': current_test,
-                        'input': current_input,
-                        'symptoms': current_symptoms or [],
-                        'medicines': current_medicines or []
-                    })
-    
-    return recommendations
+from src.analysis.log_parsers import (
+    parse_log_unified,
+    extract_medicine_names_from_log,
+    extract_bonus_scores_from_log,
+)
+from src.analysis.report_generators import (
+    generate_summary_report,
+    generate_pharmacist_report,
+    generate_detailed_report,
+    generate_comprehensive_report,
+)
 
-def load_medicine_data(csv_path: str) -> pd.DataFrame:
-    """医薬品データを読み込む"""
-    return pd.read_csv(csv_path, encoding='utf-8')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-def analyze_recommendations(recommendations: List[Dict], medicine_df: pd.DataFrame) -> Dict:
-    """推奨医薬品を分析"""
-    analysis = {
-        'total_tests': len(recommendations),
-        'tests_with_recommendations': sum(1 for r in recommendations if r['medicines']),
-        'medicine_frequency': Counter(),
-        'symptom_to_medicines': defaultdict(list),
-        'medicine_details': {},
-        'top_medicines': [],
-        'symptom_patterns': defaultdict(list)
-    }
-    
-    # 医薬品の出現頻度をカウント
-    for rec in recommendations:
-        if rec['medicines']:
-            for medicine in rec['medicines']:
-                analysis['medicine_frequency'][medicine] += 1
-                
-                # 症状と医薬品のマッピング
-                for symptom in rec['symptoms']:
-                    analysis['symptom_to_medicines'][symptom].append(medicine)
-                    analysis['symptom_patterns'][symptom].append({
-                        'medicine': medicine,
-                        'input': rec['input'],
-                        'test_number': rec['test_number']
-                    })
-    
-    # 医薬品の詳細情報を取得
-    for medicine_name, count in analysis['medicine_frequency'].most_common(50):
-        # 医薬品データから情報を取得
-        medicine_rows = medicine_df[medicine_df['製品名'] == medicine_name]
-        if not medicine_rows.empty:
-            row = medicine_rows.iloc[0]
-            analysis['medicine_details'][medicine_name] = {
-                'frequency': count,
-                'manufacturer': row.get('メーカー名', ''),
-                'category': row.get('分類', ''),
-                'medicine_type': row.get('医薬品の種類', ''),
-                'efficacy': row.get('効能効果', ''),
-                'ingredients': row.get('成分', ''),
-                'age_limit': row.get('年齢制限', ''),
-                'doping_prohibited': row.get('禁止物質あり', '')
-            }
-    
-    # トップ医薬品を取得
-    analysis['top_medicines'] = analysis['medicine_frequency'].most_common(30)
-    
-    return analysis
 
-def generate_report(analysis: Dict) -> str:
-    """分析結果をレポート形式で生成"""
-    report = []
-    report.append("=" * 80)
-    report.append("推奨医薬品分析レポート")
-    report.append("=" * 80)
-    report.append(f"\n総テストケース数: {analysis['total_tests']}")
-    report.append(f"推奨医薬品が生成されたケース: {analysis['tests_with_recommendations']}")
-    report.append(f"\n推奨医薬品が生成されなかったケース: {analysis['total_tests'] - analysis['tests_with_recommendations']}")
-    
-    report.append("\n" + "=" * 80)
-    report.append("最も頻繁に推奨される医薬品 TOP 30")
-    report.append("=" * 80)
-    for i, (medicine, count) in enumerate(analysis['top_medicines'], 1):
-        report.append(f"\n{i}. {medicine}: {count}回")
-        if medicine in analysis['medicine_details']:
-            details = analysis['medicine_details'][medicine]
-            report.append(f"   メーカー: {details['manufacturer']}")
-            report.append(f"   分類: {details['category']}")
-            report.append(f"   種類: {details['medicine_type']}")
-            report.append(f"   効能効果: {details['efficacy'][:100]}..." if len(details['efficacy']) > 100 else f"   効能効果: {details['efficacy']}")
-    
-    report.append("\n" + "=" * 80)
-    report.append("症状別推奨医薬品パターン")
-    report.append("=" * 80)
-    for symptom, medicines in sorted(analysis['symptom_to_medicines'].items(), key=lambda x: len(x[1]), reverse=True)[:20]:
-        medicine_counts = Counter(medicines)
-        report.append(f"\n【{symptom}】")
-        for medicine, count in medicine_counts.most_common(5):
-            report.append(f"  - {medicine}: {count}回")
-    
-    return "\n".join(report)
+class RecommendationAnalyzer:
+    """統合分析クラス（データ読み込みとオーケストレーション）"""
 
-if __name__ == "__main__":
-    log_path = "log/test.log"
-    csv_path = "data/otc_medicine_data.csv"
-    
-    print("ログファイルを解析中...")
-    recommendations = parse_log_file(log_path)
-    print(f"解析完了: {len(recommendations)}件のテストケース")
-    
-    print("医薬品データを読み込み中...")
-    medicine_df = load_medicine_data(csv_path)
-    print(f"読み込み完了: {len(medicine_df)}件の医薬品")
-    
-    print("分析中...")
-    analysis = analyze_recommendations(recommendations, medicine_df)
-    
-    print("\n" + generate_report(analysis))
-    
-    # 詳細データをCSVに保存
-    print("\n詳細データをCSVに保存中...")
-    detailed_data = []
-    for rec in recommendations:
-        if rec['medicines']:
-            for i, medicine in enumerate(rec['medicines'], 1):
-                detailed_data.append({
-                    'test_number': rec['test_number'],
-                    'input': rec['input'],
-                    'symptoms': ', '.join(rec['symptoms']),
-                    'rank': i,
-                    'medicine_name': medicine
-                })
-    
-    df_detailed = pd.DataFrame(detailed_data)
-    df_detailed.to_csv('recommendation_analysis.csv', index=False, encoding='utf-8-sig')
-    print("recommendation_analysis.csv に保存しました。")
+    def __init__(self, log_path: Path, csv_path: Path, output_dir: Path):
+        self.log_path = log_path
+        self.csv_path = csv_path
+        self.output_dir = output_dir
+        self.medicine_df: Optional[pd.DataFrame] = None
+        self.recommendations: List[Dict] = []
+        self.bonus_scores: Dict[str, List[float]] = {}
+        self.detailed_contexts: List[Dict] = []
 
+    def load_medicine_data(self) -> None:
+        """OTC医薬品データを読み込み"""
+        logger.info("医薬品データを読み込み中...")
+        self.medicine_df = pd.read_csv(self.csv_path, encoding='utf-8')
+        logger.info(f"医薬品データ読み込み完了: {len(self.medicine_df)}件")
+
+    def load_log(self) -> None:
+        """ログを解析して推奨リストを取得"""
+        logger.info("ログファイルを解析中...")
+        self.recommendations = parse_log_unified(self.log_path)
+        logger.info(f"解析完了: {len(self.recommendations)}件のテストケース")
+
+    def load_bonus_scores(self) -> None:
+        """ボーナススコアを抽出"""
+        self.bonus_scores = extract_bonus_scores_from_log(self.log_path)
+        logger.info(f"ボーナススコア: {len(self.bonus_scores)}種類の医薬品")
+
+    def load_detailed_contexts(self) -> None:
+        """詳細レポート用に医薬品名をログから抽出"""
+        self.detailed_contexts, _ = extract_medicine_names_from_log(self.log_path)
+        logger.info(f"詳細抽出: {len(self.detailed_contexts)}件")
+
+    def run_report_summary(self) -> None:
+        """要約レポート + CSV 出力"""
+        generate_summary_report(
+            self.output_dir,
+            self.recommendations,
+            self.medicine_df,
+        )
+
+    def run_report_pharmacist(self) -> None:
+        """薬剤師視点レポート（簡易）"""
+        generate_pharmacist_report(
+            self.output_dir,
+            self.recommendations,
+            self.medicine_df,
+        )
+
+    def run_report_detailed(self) -> None:
+        """薬剤師視点詳細レポート（医薬品名パターン抽出ベース）"""
+        if not self.detailed_contexts:
+            self.load_detailed_contexts()
+        generate_detailed_report(
+            self.output_dir,
+            self.detailed_contexts,
+            self.medicine_df,
+            self.log_path,
+        )
+
+    def run_report_comprehensive(self) -> None:
+        """包括レポート（ボーナススコア・優位性）"""
+        if not self.bonus_scores:
+            self.load_bonus_scores()
+        generate_comprehensive_report(
+            self.output_dir,
+            self.bonus_scores,
+            self.medicine_df,
+            self.log_path,
+        )
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='ログから推奨医薬品を分析し、要約・薬剤師・詳細・包括レポートを出力する'
+    )
+    parser.add_argument('--log', type=Path, default=Path('log/test.log'), help='テストログのパス')
+    parser.add_argument('--csv', type=Path, default=Path('data/otc_medicine_data.csv'), help='OTC医薬品CSVのパス')
+    parser.add_argument('--output-dir', '-o', type=Path, default=Path('.'), help='レポート出力ディレクトリ')
+    parser.add_argument(
+        '--report', '-r',
+        choices=['summary', 'pharmacist', 'detailed', 'comprehensive', 'all'],
+        default='all',
+        help='出力するレポート種別 (default: all)'
+    )
+    args = parser.parse_args()
+
+    if not args.log.exists():
+        logger.error(f"ログファイルが見つかりません: {args.log}")
+        return 1
+    if not args.csv.exists():
+        logger.error(f"CSVファイルが見つかりません: {args.csv}")
+        return 1
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    analyzer = RecommendationAnalyzer(args.log, args.csv, args.output_dir)
+    analyzer.load_medicine_data()
+    analyzer.load_log()
+
+    reports = args.report if args.report != 'all' else ['summary', 'pharmacist', 'detailed', 'comprehensive']
+    if 'summary' in reports:
+        analyzer.run_report_summary()
+    if 'pharmacist' in reports:
+        analyzer.run_report_pharmacist()
+    if 'detailed' in reports:
+        analyzer.run_report_detailed()
+    if 'comprehensive' in reports:
+        analyzer.run_report_comprehensive()
+
+    logger.info("分析完了")
+    return 0
+
+
+if __name__ == '__main__':
+    exit(main() or 0)

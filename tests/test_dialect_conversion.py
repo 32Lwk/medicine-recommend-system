@@ -12,7 +12,7 @@ import logging
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scoring_utils import (
+from src.core.scoring_utils import (
     convert_dialect_to_standard,
     basic_normalize_text,
     initialize_dialect_resources,
@@ -325,7 +325,7 @@ class TestErrorHandling(unittest.TestCase):
         # モジュールが存在しない場合のテストは難しいが、
         # エラーが発生してもアプリがクラッシュしないことを確認
         try:
-            from scoring_utils import convert_dialect_to_standard
+            from src.core.scoring_utils import convert_dialect_to_standard
             result = convert_dialect_to_standard("テスト", extract_severity=False)
             self.assertIsNotNone(result)
         except Exception as e:
