@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 # 商品リストの読み込み
 PRODUCT_CATEGORIES = {}
 try:
-    # プロジェクトルートからの相対パス（store_inquiry_handler.pyはプロジェクトルートにある）
-    product_list_path = os.path.join(os.path.dirname(__file__), 'data', 'store_products.json')
+    from src import PROJECT_ROOT
+    product_list_path = os.path.join(PROJECT_ROOT, 'data', 'store_products.json')
     with open(product_list_path, 'r', encoding='utf-8') as f:
         PRODUCT_CATEGORIES = json.load(f)
     logger.info(f"✅ 商品リストを読み込みました: {len(PRODUCT_CATEGORIES)}カテゴリ")

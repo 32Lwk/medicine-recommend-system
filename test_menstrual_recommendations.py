@@ -18,8 +18,8 @@ sys.path.insert(0, BASE_DIR)
 DATA_DIR = os.path.join(BASE_DIR, "data")
 CSV_PATH = os.path.join(DATA_DIR, "otc_medicine_data.csv")
 
-from rule_based_recommendation import rule_based_medicine_recommendation, simple_pattern_matching_nlu
-from medicine_logic import extract_user_preferences, detect_digestive_sensitivity, detect_postpartum_breastfeeding, detect_severity_escalation
+from src.core.rule_based_recommendation import rule_based_medicine_recommendation, simple_pattern_matching_nlu
+from src.core.medicine_logic import extract_user_preferences, detect_digestive_sensitivity, detect_postpartum_breastfeeding, detect_severity_escalation
 from openai import OpenAI
 import logging
 
@@ -576,7 +576,7 @@ def test_mechanism_diversity():
         result = rule_based_medicine_recommendation(user_message, user_info, test_client)
         recommendations = result.get('recommendations', [])
         
-        from rule_based_recommendation import classify_medicine_mechanism
+        from src.core.rule_based_recommendation import classify_medicine_mechanism
         
         mechanisms = [classify_medicine_mechanism(r) for r in recommendations]
         has_blood_tonifying = "補血・調血系" in mechanisms

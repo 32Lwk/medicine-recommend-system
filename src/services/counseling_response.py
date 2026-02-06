@@ -28,7 +28,7 @@ except ImportError:
 
 # normalize_text関数のインポート
 try:
-    from scoring_utils import normalize_text
+    from src.core.scoring_utils import normalize_text
 except ImportError:
     # フォールバック
     def normalize_text(text: str) -> str:
@@ -124,7 +124,7 @@ def log_counseling_response(
     """
     # structured_loggerをインポート
     try:
-        from structured_logger import log_counseling_detail
+        from src.utils.structured_logger import log_counseling_detail
     except ImportError:
         logger.warning("structured_loggerがインポートできません。旧形式のログを出力します。")
         log_counseling_detail = None
@@ -151,7 +151,8 @@ def log_counseling_response(
         }
     
     # ログディレクトリの作成
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
+    from src import PROJECT_ROOT
+    log_dir = os.path.join(PROJECT_ROOT, 'log')
     os.makedirs(log_dir, exist_ok=True)
     
     # ログファイルに保存
@@ -2300,7 +2301,7 @@ def process_counseling_answer(
         
         if completion_reason == 'crisis_detected':
             # 希死念慮が検出された場合、即座に専門機関案内へ
-            from medicine_logic import get_crisis_support_resources
+            from src.core.medicine_logic import get_crisis_support_resources
             try:
                 crisis_resources = get_crisis_support_resources('ja')
             except:
