@@ -27,10 +27,15 @@ if ([string]::IsNullOrEmpty($Msg)) {
 }
 
 function Invoke-GitAdd {
-    Write-Host "Staging all changes..." -ForegroundColor Cyan
+    Write-Host "Staging all changes (including new/untracked files, images, PDFs)..." -ForegroundColor Cyan
     git add -A
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Staged all changes" -ForegroundColor Green
+        $status = git status --short
+        if ($status) {
+            Write-Host "Files to be committed:" -ForegroundColor Gray
+            $status | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
+        }
     }
 }
 
