@@ -4,37 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>開発線表 - OTC医薬品推奨システム</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'base',
-      themeVariables: {
-        primaryColor: '#b8dce8',
-        primaryTextColor: '#1a1a1a',
-        primaryBorderColor: '#4a90a4',
-        lineColor: '#6b8e9e',
-        secondaryColor: '#c8e6f0',
-        tertiaryColor: '#d4ecf4',
-        background: '#fafbfc',
-        mainBkg: '#b8dce8',
-        secondBkg: '#c8e6f0',
-        tertiaryBkg: '#d4ecf4',
-        textColor: '#1a1a1a',
-        sectionBkgColor: '#e8f4f8',
-        altSectionBkgColor: '#f0f7fa'
-      },
-      gantt: {
-        barHeight: 32,
-        barGap: 12,
-        useMaxWidth: true,
-        topAxis: true,
-        axisFormat: '%Y年%m月',
-        tickInterval: '1month',
-        leftPadding: 220
-      }
-    });
-  </script>
   <style>
     :root {
       --bg: #fafbfc;
@@ -76,37 +45,94 @@
       margin-bottom: 1.5rem;
     }
 
-    .mermaid-wrap {
+    /* エクセル風ガントチャート（マス目） */
+    .gantt-wrap {
       background: var(--card-bg);
-      border: none;
       border-radius: 8px;
-      padding: 1.5rem;
+      padding: 0;
       margin-bottom: 1.5rem;
-      overflow-x: auto;
+      overflow: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
-    .mermaid {
-      margin: 0 auto;
-      min-height: 320px;
+    .gantt-table {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      table-layout: fixed;
     }
 
-    /* ガントのバーを常に明るい色にし、文字を読めるようにする */
-    .mermaid-wrap .bar rect,
-    .mermaid-wrap rect.bar {
-      fill: #7eb8d0 !important;
-      stroke: #4a90a4 !important;
+    .gantt-table th,
+    .gantt-table td {
+      border: 1px solid #d0d7de;
+      padding: 0.5rem 0.65rem;
+      vertical-align: middle;
+      min-height: 2.5rem;
     }
-    .mermaid-wrap .bar-label,
-    .mermaid-wrap .bar text,
-    .mermaid-wrap .label text {
-      fill: #1a1a1a !important;
-      font-size: 12px !important;
+
+    .gantt-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f0f4f8;
     }
-    .mermaid-wrap .section0 rect.bar { fill: #4a90a4 !important; }
-    .mermaid-wrap .section1 rect.bar { fill: #2e7d6e !important; }
-    .mermaid-wrap .section2 rect.bar { fill: #6b5b95 !important; }
-    .mermaid-wrap .section3 rect.bar { fill: #c45a2b !important; }
-    .mermaid-wrap .section4 rect.bar { fill: #8b6914 !important; }
+
+    .gantt-table thead th {
+      background: #f0f4f8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text);
+      text-align: center;
+      padding: 0.6rem 0.65rem;
+      border-bottom: 2px solid #c9cdd2;
+    }
+
+    .gantt-table .gantt-label {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      width: 220px;
+      min-width: 200px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--card-bg);
+      box-shadow: 2px 0 4px rgba(0,0,0,0.04);
+      padding: 0.55rem 0.75rem;
+    }
+
+    .gantt-table tbody tr:nth-child(odd) .gantt-label:not(.gantt-section) {
+      background: #f8fafb;
+    }
+
+    .gantt-table .gantt-section {
+      background: #dceaf0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #1a3650;
+    }
+
+    .gantt-table .gantt-section.gantt-label {
+      box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+    }
+
+    .gantt-table .gantt-cell {
+      width: 4%;
+      min-width: 44px;
+      text-align: center;
+      background: #f6f8fa;
+    }
+
+    .gantt-table .gantt-cell.bar {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .gantt-table .gantt-cell.bar-0 { background: #4a90a4; }
+    .gantt-table .gantt-cell.bar-1 { background: #2e7d6e; }
+    .gantt-table .gantt-cell.bar-2 { background: #6b5b95; }
+    .gantt-table .gantt-cell.bar-3 { background: #c45a2b; }
+    .gantt-table .gantt-cell.bar-4 { background: #8b6914; }
 
     .legend {
       background: var(--card-bg);
@@ -194,13 +220,14 @@
 
     @media (max-width: 640px) {
       body { padding: 1rem; }
-      .mermaid-wrap { padding: 1rem; }
+      .gantt-wrap { padding: 0.5rem; }
+      .gantt-table .gantt-label { min-width: 120px; font-size: 0.75rem; }
       .summary-table th, .summary-table td { padding: 0.5rem; font-size: 0.8rem; }
     }
 
     @media print {
       body { background: #fff; padding: 1rem; }
-      .mermaid-wrap, .legend, .summary-table { border-color: #ccc; box-shadow: none; }
+      .gantt-wrap, .legend, .summary-table { border-color: #ccc; box-shadow: none; }
       .note { border-left-color: #333; }
     }
   </style>
@@ -221,38 +248,249 @@
       </ul>
     </section>
 
-    <div class="mermaid-wrap">
-      <pre class="mermaid">
-gantt
-    title 開発スケジュール（2026.06～2027.03）
-    dateFormat  YYYY-MM-DD
-    axisFormat  %Y年%m月
-    todayMarker on
-
-    section キックオフ
-    環境整理・CI・キックオフ                    :kickoff, 2026-06-22, 10d
-
-    section Phase1 潜在空間
-    埋め込みAPI設計・実装                       :p1a, 2026-07-01, 30d
-    類似度評価（Cosine）                        :p1b, after p1a, 15d
-    評価IF整備                                  :p1c, after p1b, 15d
-
-    section Phase2 ハイブリッド統合
-    重み設計（静的・動的）                      :p2a, 2026-09-01, 15d
-    ハイブリッド実装                            :p2b, after p2a, 30d
-    5層防御ロジック統合                         :p2c, after p2b, 15d
-
-    section 検証・最適化（Phase3）
-    安全性・性能検証                            :v3, 2026-11-01, 30d
-    A/Bテスト・調整                             :p3, 2026-12-01, 30d
-
-    section 仕上げ
-    ドキュメント整備                            :doc, 2027-01-01, 31d
-    OSS公開準備                                 :oss, after doc, 14d
-    デモ動画・報告書作成                        :demo, 2027-02-01, 30d
-      </pre>
+    <div class="gantt-wrap">
+      <table class="gantt-table" aria-label="開発スケジュール（2026.06～2027.03）">
+        <thead>
+          <tr>
+            <th class="gantt-label">タスク</th>
+            <th class="gantt-cell">2026/6</th>
+            <th class="gantt-cell">2026/7</th>
+            <th class="gantt-cell">2026/8</th>
+            <th class="gantt-cell">2026/9</th>
+            <th class="gantt-cell">2026/10</th>
+            <th class="gantt-cell">2026/11</th>
+            <th class="gantt-cell">2026/12</th>
+            <th class="gantt-cell">2027/1</th>
+            <th class="gantt-cell">2027/2</th>
+            <th class="gantt-cell">2027/3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="gantt-label gantt-section">キックオフ</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">環境整理・CI・キックオフ</td>
+            <td class="gantt-cell bar bar-0"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label gantt-section">Phase1 潜在空間</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">埋め込みAPI設計・実装</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-1"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">類似度評価（Cosine）</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-1"></td>
+            <td class="gantt-cell bar bar-1"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">評価IF整備</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-1"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label gantt-section">Phase2 ハイブリッド統合</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">重み設計（静的・動的）</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-2"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">ハイブリッド実装</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-2"></td>
+            <td class="gantt-cell bar bar-2"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">5層防御ロジック統合</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-2"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label gantt-section">検証・最適化（Phase3）</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">安全性・性能検証</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-3"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">A/Bテスト・調整</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-3"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label gantt-section">仕上げ</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">ドキュメント整備</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-4"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">OSS公開準備</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-4"></td>
+            <td class="gantt-cell"></td>
+          </tr>
+          <tr>
+            <td class="gantt-label">デモ動画・報告書作成</td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell"></td>
+            <td class="gantt-cell bar bar-4"></td>
+            <td class="gantt-cell bar bar-4"></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    
+
 
     <table class="summary-table" aria-label="スケジュール一覧">
       <thead>
@@ -295,50 +533,5 @@ gantt
       <strong>提案詳細資料への挿入方法：</strong> このページをブラウザで開き、図を右クリック→「画像を別名で保存」でPNG保存するか、印刷→PDFで保存してください。
     </p>
   </div>
-  <script>
-    (function() {
-      var sectionColors = ['#4a90a4', '#2e7d6e', '#6b5b95', '#c45a2b', '#8b6914'];
-      var sectionForBarIndex = [0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4];
-      function colorizeBars() {
-        var wrap = document.querySelector('.mermaid-wrap');
-        if (!wrap) return;
-        var svg = wrap.querySelector('svg');
-        if (!svg) return;
-        var rects = Array.prototype.slice.call(svg.querySelectorAll('rect'));
-        var bars = rects.filter(function(r) {
-          var w = parseFloat(r.getAttribute('width')) || 0;
-          var h = parseFloat(r.getAttribute('height')) || 0;
-          return w > 60 && h >= 15 && h <= 45;
-        });
-        bars.sort(function(a, b) {
-          var ya = parseFloat(a.getAttribute('y')) || 0;
-          var yb = parseFloat(b.getAttribute('y')) || 0;
-          return ya - yb;
-        });
-        bars.forEach(function(r, i) {
-          var idx = i < sectionForBarIndex.length ? sectionForBarIndex[i] : 0;
-          var color = sectionColors[idx];
-          r.setAttribute('fill', color);
-          r.setAttribute('stroke', '#333');
-          r.style.setProperty('fill', color, 'important');
-        });
-        var texts = svg.querySelectorAll('text');
-        texts.forEach(function(t) {
-          t.setAttribute('fill', '#1a1a1a');
-        });
-      }
-      function run() {
-        setTimeout(colorizeBars, 500);
-        setTimeout(colorizeBars, 1500);
-        setTimeout(colorizeBars, 2500);
-      }
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', run);
-      } else {
-        run();
-      }
-      window.addEventListener('load', function() { setTimeout(colorizeBars, 3000); });
-    })();
-  </script>
 </body>
 </html>
