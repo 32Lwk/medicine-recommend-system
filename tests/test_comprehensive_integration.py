@@ -1595,25 +1595,28 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
         ]
         
         for user_input, symptom_name in test_cases:
-            # NSAIDs含有医薬品を検索（生理痛専用医薬品を除外）
+            # NSAIDs含有医薬品を検索（生理痛専用・乗り物酔い専用を除外、炎症系症状に効能を持つものを優先）
             if medicine_df is not None:
-                # 生理痛専用医薬品のリスト
                 menstrual_only_products = [
                     'ノーシンピュア', 'オトナノーシンピュア', 'ノーシン', 'ノーシンホワイト',
                     'エルペインコーワ', 'バファリンルナ', 'バファリンルナi', 'バファリンルナJ',
                     'A錠EX', 'イブA錠EX', 'イントウェル', 'ウラック', 'メディペイン', 'ユニトップファースト',
                     'マルコミンEV', 'ノーチカ', 'クミアイ新頭痛錠'
                 ]
-                
-                # 生理痛専用医薬品を除外
                 mask = ~medicine_df['製品名'].str.contains('|'.join(menstrual_only_products), na=False, regex=True)
                 nsaid_medicines = medicine_df[
                     medicine_df['成分'].str.contains('イブプロフェン|ロキソプロフェン', na=False, regex=True) &
                     mask
                 ]
+                # ロキソニン・イブプロフェン錠等の一般解熱鎮痛NSAIDを優先（乗り物酔い専用のセイブ等を避ける）
+                product_col = '製品名' if '製品名' in nsaid_medicines.columns else 'product_name'
+                general_nsaid = nsaid_medicines[nsaid_medicines[product_col].str.contains(
+                    'ロキソニン|イブプロフェン錠|トキワイブ', na=False, regex=True
+                )]
+                use_df = general_nsaid if len(general_nsaid) > 0 else nsaid_medicines
                 
-                if len(nsaid_medicines) > 0:
-                    candidate = nsaid_medicines.iloc[0].to_dict()
+                if len(use_df) > 0:
+                    candidate = use_df.iloc[0].to_dict()
                     nlu_result = {'symptoms': [{'name': symptom_name}]}
                     user_info = {}
                     
