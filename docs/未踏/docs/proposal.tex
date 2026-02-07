@@ -2,18 +2,19 @@
 \usepackage{zxjatype}
 \usepackage{xeCJK}
 \usepackage{fontspec}
-% report.texと同様のスタイル／余白。字体はHiragino（Mac）に近い游ゴシック系
-\setCJKmainfont{Yu Gothic UI}
-\setCJKsansfont{Yu Gothic UI}
-\setCJKmonofont{Yu Gothic UI}
-\setmainfont{Yu Gothic UI}
+\setmainfont{Times New Roman}
+\setCJKmainfont{Yu Gothic}
+\setCJKsansfont{Yu Gothic}
+\setCJKmonofont{Yu Gothic}
+\setmainfont{Yu Gothic}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{url}
-\usepackage{xurl}  % URLの改行を柔軟に（Overfull防止）
+\usepackage{xurl} 
 \usepackage{geometry}
-\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{pifont}
@@ -38,7 +39,6 @@
 潜在空間ベクトルとルールベースを統合したOTC医薬品推奨システムの実装\\[2em]
 {\large \textbf{提案者名}}\\[0.5em]
 川嶋 宥翔\\[0.5em]
-\footnotesize ※本資料の背景説明等の一部に、生成AIを用いた推敲・補足がある。\\[2em]
 \end{center}
 \vspace{1em}
 \hrule
@@ -61,7 +61,7 @@
 \item \textbf{目標}: 未踏期間中に、(1) 潜在空間ベクトル類似度の実装（Phase1）、(2) ハイブリッドスコアリングの統合（Phase2）、(3) 評価とチューニング（Phase3）を完了し、既存の安全性指標（禁忌判定99\%以上、アレルギー100\%除外）を維持したまま、推薦精度を評価可能な形でシステムを完成させる。潜在空間は現時点では未実装であり、未踏期間で実装・統合する。
 \end{itemize}
 
-\subsection*{システムの概要（図の挿入）}
+\subsection*{システムの概要}
 
 \begin{figure}[H]
 \centering
@@ -109,7 +109,7 @@
 \subsection*{評価指標（どこまで測るか）}
 \begin{table}[H]
 \centering
-\begin{tabular}{lll}
+\begin{tabularx}{\linewidth}{llX}
 \toprule
 種別 & 指標 & 目標 \\
 \midrule
@@ -119,7 +119,7 @@
 品質・性能 & 推奨一致率 & ルールベースと同等以上、ハイブリッドで改善を目指す \\
 品質・性能 & 応答時間 & 平均3秒以内など、既存と同等または短縮 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 % ========== ④ 具体的な進め方と予算 ==========
@@ -151,7 +151,7 @@ Python 3.11, Flask 3.x, Gunicorn, PostgreSQL（本番）, SQLite（開発）, Op
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{clp{8cm}}
+\begin{tabular}{@{}c@{\quad}l@{\quad}>{\raggedright\arraybackslash}p{\dimexpr\linewidth-15em\relax}@{}}
 \toprule
 時期 & 月 & 主な内容 \\
 \midrule
@@ -176,7 +176,7 @@ Python 3.11, Flask 3.x, Gunicorn, PostgreSQL（本番）, SQLite（開発）, Op
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lll}
+\begin{tabularx}{\linewidth}{l>{\raggedright\arraybackslash}Xr}
 \toprule
 費目 & 内容 & 概算（円） \\
 \midrule
@@ -185,7 +185,7 @@ AWS & デプロイ・ホスティング（ECS または EC2 等、Render から�
 書籍・文献 & 機械学習・NLP・医薬品・セキュリティ関連 & 15,000～25,000 \\
 ドメイン・その他 & ドメイン更新、開発用ツール等 & 5,000～10,000 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 実際の支出は作業進捗に応じて行い、実績報告書で報告する。DeepL API は無料枠で利用する。
