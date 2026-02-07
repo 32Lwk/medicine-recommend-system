@@ -3,10 +3,10 @@
 \usepackage{xeCJK}
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
-\setCJKmainfont{Yu Gothic}
-\setCJKsansfont{Yu Gothic}
-\setCJKmonofont{Yu Gothic}
-\setmainfont{Yu Gothic}
+\setmainfont{Hiragino Sans}
+\setCJKmainfont{Hiragino Sans}
+\setCJKsansfont{Hiragino Sans}
+\setCJKmonofont{Hiragino Sans}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -129,10 +129,29 @@
 自宅（Windows 11、デスクトップ）および大学・外出先（MacBook Pro、ノートPC）。
 
 \subsection*{(2) 使用する計算機環境（ハード・OS）}
-自宅: Windows 11 Home、AMD Ryzen 9 9950X（16コア/32スレッド）、メモリ64GB、NVIDIA GeForce RTX 4070 SUPER。大学・外出先: MacBook Pro（Intel Core i7、16GB、macOS）。開発は主に自宅のデスクトップで行い、大学・外出先ではノートPCを使用する。
+\begin{itemize}[nosep,leftmargin=1em]
+  \item \textbf{自宅}：Windows 11 Home、AMD Ryzen 9 9950X（16コア/32スレッド）、メモリ64GB、NVIDIA GeForce RTX 4070 SUPER
+  \item \textbf{大学・外出先}：MacBook Pro（Intel Core i7、16GB、macOS）
+\end{itemize}
+開発は主に自宅のデスクトップで行い、大学・外出先ではノートPCを使用する。
 
 \subsection*{(3) 使用する言語・ツール}
-Python 3.11, Flask 3.x, Gunicorn, PostgreSQL（本番）, SQLite（開発）, OpenAI API（GPT-4o-mini, text-embedding-3-small）, DeepL API（無料枠）, pandas, numpy, pytest, GitHub Actions, AWS（ECS または EC2）。現状は Render.com。
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+カテゴリ & ツール・言語 \\
+\midrule
+言語・フレームワーク & Python 3.11, Flask 3.x, Gunicorn \\
+データベース & PostgreSQL（本番）, SQLite（開発） \\
+API & OpenAI API（GPT-4o-mini, text-embedding-3-small）, DeepL API（無料枠） \\
+ライブラリ & pandas, numpy \\
+テスト・CI & pytest, GitHub Actions \\
+インフラ & AWS（ECS または EC2）。現状は Render.com \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection*{(4) 作業の分担}
 個人開発のため、該当なし。
@@ -208,7 +227,6 @@ AWS & デプロイ・ホスティング（ECS または EC2 等、Render から�
 \item \textbf{学業との両立}: 名古屋大学理学部物理学科2年生（在学中）。指導教員はいない。学業との両立は自己管理で対応する。
 \item \textbf{組織・上司}: 該当なし（学生・個人開発）。マツモトキヨシでのアルバイトは継続するが、プロジェクト開発を優先する時間を確保する。
 \item \textbf{進学・就職・転職・転居}: 開発期間中は特になし。
-\item \textbf{未成年・保護者}: 2026年4月1日時点で満20歳のため、保護者の承諾は不要。
 \item \textbf{チーム}: 個人開発のため、メンバー構成・分担は該当しない。
 \item \textbf{PM・IPAへの要望・固有の事情}: 特になし。
 \end{itemize}
