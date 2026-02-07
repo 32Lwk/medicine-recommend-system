@@ -13,7 +13,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.core.medicine_logic import is_diagnosis_term
+from src.core.diagnosis_detection import is_diagnosis_term
 
 
 class TestDiagnosisDetection(unittest.TestCase):

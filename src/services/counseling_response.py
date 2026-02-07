@@ -2301,7 +2301,7 @@ def process_counseling_answer(
         
         if completion_reason == 'crisis_detected':
             # 希死念慮が検出された場合、即座に専門機関案内へ
-            from src.core.medicine_logic import get_crisis_support_resources
+            from src.core.crisis_detection import get_crisis_support_resources
             try:
                 crisis_resources = get_crisis_support_resources('ja')
             except:

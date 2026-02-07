@@ -33,7 +33,7 @@ from src.core.scoring_utils import (
     initialize_dialect_resources
 )
 from src.core.rule_based_recommendation import calculate_ingredient_based_boost
-from src.core.medicine_logic import is_diagnosis_term
+from src.core.diagnosis_detection import is_diagnosis_term
 
 # ログ設定
 logging.basicConfig(level=logging.INFO)
