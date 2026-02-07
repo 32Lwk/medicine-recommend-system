@@ -50,6 +50,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
 from src.core.scoring_utils import normalize_text
+from src.utils.candidate_normalizer import normalize_candidate_for_scoring
 
 # ロガー設定
 logger = logging.getLogger(__name__)
@@ -2548,6 +2549,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             }
         }
     """
+    # 日本語キー（製品名・成分・効能効果）の候補を英語キーに正規化（テスト・本番の両対応）
+    normalize_candidate_for_scoring(candidate)
+
     # 禁忌事項の優先ハードチェック（スコアリング計算の前）
     contraindication_check = is_contraindicated(candidate, user_info, nlu_result)
     if contraindication_check.get("is_contraindicated", False):
@@ -2597,8 +2601,15 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     has_acetaminophen_only_early = 'アセトアミノフェン' in ingredients_check_early and 'イブプロフェン' not in ingredients_check_early
     is_pediatric_exception_early = is_pediatric_noshin_early and has_acetaminophen_only_early
     
+    # カロナール・タイレノールの例外（一般用解熱鎮痛薬。CSVの効能が「生理痛」のみでも頭痛・発熱に推奨する）
+    is_general_acetaminophen_early = ('カロナール' in product_name_early or 'タイレノール' in product_name_early) and has_acetaminophen_only_early
+    
+    # ロキソニン系の例外（一般用NSAIDs。CSVの効能が「生理痛」のみでも頭痛・筋肉痛・発熱に推奨する）
+    has_loxoprofen_early = 'ロキソプロフェン' in ingredients_check_early
+    is_general_loxonin_early = 'ロキソニン' in product_name_early and has_loxoprofen_early
+    
     # 生理痛専用医薬品の判定（製品名ベースで判定、効能効果に関係なく除外）
-    if (is_menstrual_only_product or has_menstrual_only_efficacy) and not is_pediatric_exception_early:
+    if (is_menstrual_only_product or has_menstrual_only_efficacy) and not is_pediatric_exception_early and not is_general_acetaminophen_early and not is_general_loxonin_early:
         # 生理痛関連キーワードのチェック
         menstrual_keywords_early = [
             "生理痛", "月経痛", "生理の痛み", "下腹部痛", "生理中",
