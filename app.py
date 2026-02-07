@@ -31,6 +31,7 @@ from src.core.medicine_logic import select_symptoms_via_gpt, comprehensive_medic
 from src.core.medicine_logic import rule_based_medicine_recommendation, analyze_symptoms_and_medicine_type, client
 from src.core.medicine_logic import detect_language, extract_user_attributes_multilingual, translate_medicine_recommendation
 from src.utils.debug_logger import performance_stats, network_logs, add_network_log
+from src.utils.user_attribute_registration import register_user_attributes_from_message
 from src.services.analytics import log_access_analytics, get_access_statistics
 from src.utils.performance_monitor import get_global_monitor, log_performance_metrics, check_performance_alerts
 from src.services.database import init_database, get_database
@@ -760,6 +761,12 @@ def index():
         if session_data:
             # 会話履歴は常に完全な履歴を復元する（管理者要請メッセージのみで上書きしない）
             session['messages'] = session_data.get('messages', []).copy()
+            # user_attributes（妊娠・授乳等）をDBから復元（Otherフローで登録した属性を次回以降も利用）
+            db_attrs = session_data.get('user_attributes', {})
+            if db_attrs:
+                current_attrs = session.get('user_attributes', {}) or {}
+                merged = {**current_attrs, **db_attrs}
+                session['user_attributes'] = merged
             logger.info(f"📥 Session messages restored from DB: {len(session['messages'])} messages (full history)")
     
     # current_messagesは安全に取得
@@ -770,6 +777,19 @@ def index():
         user_message = request.form.get('message', '').strip()
         logger.info(f"📝 受信メッセージ: {user_message}")
         if user_message:
+            # 絶対ブロックリスト（100%不適切）チェック - 最優先で必ずはじく
+            try:
+                from src.security.absolute_blocklist import is_absolutely_blocked
+                blocked, _ = is_absolutely_blocked(user_message)
+                if blocked:
+                    logger.warning(f"🚫 絶対ブロックリストにより入力が拒否されました")
+                    return jsonify({
+                        'error': True,
+                        'response': '申し訳ございませんが、その内容にはお答えできません。症状や医薬品に関するご相談がありましたら、お気軽にお尋ねください。'
+                    })
+            except ImportError:
+                pass  # モジュール未導入時はスキップ
+
             # セキュリティ検証を一時的に無効化（デプロイメント問題のため）
             try:
                 from src.security.security_validator import validate_user_input
@@ -824,9 +844,21 @@ def index():
                 sanitized_message = user_message
                 log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
             
+            # ステップ0: ユーザー情報登録（全フロー共通・チャット返信の前に常に実行）
+            try:
+                register_user_attributes_from_message(
+                    session,
+                    session.get('_id'),
+                    sanitized_message,
+                    save_to_db_fn=save_session_to_db,
+                    get_session_from_db_fn=get_session_from_db
+                )
+            except Exception as e:
+                logger.warning(f"⚠️ ユーザー属性登録でエラー: {e}")
+            
             # 危機関連ワード検出（「終了」ワード検知の前）
             try:
-                from src.core.medicine_logic import detect_crisis_keywords, get_crisis_support_resources
+                from src.core.crisis_detection import detect_crisis_keywords, get_crisis_support_resources
                 from src.security.security_logger import log_crisis_keyword_detection
                 
                 # 危機関連ワードをチェック
@@ -2333,6 +2365,30 @@ def index():
             # ステップ1.8.5: 店舗案内ではないと判定された場合、カウンセリングフローに流す
             if store_inquiry_result is None and triage_result and triage_result.get("category") == "Other":
                 logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
+                # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
+                # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
+                try:
+                    if 'user_attributes' not in session:
+                        session['user_attributes'] = {}
+                    user_attributes = session['user_attributes']
+                    msg_for_attr = sanitized_message
+                    if '妊娠' in msg_for_attr or 'pregnant' in msg_for_attr.lower():
+                        if any(kw in msg_for_attr for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
+                            user_attributes['pregnant'] = False
+                            logger.info(f"📝 妊娠状態を登録（Otherフロー）: False")
+                        elif any(kw in msg_for_attr for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
+                            user_attributes['pregnant'] = True
+                            logger.info(f"📝 妊娠状態を登録（Otherフロー）: True")
+                    if '授乳' in msg_for_attr or 'breastfeeding' in msg_for_attr.lower():
+                        if any(kw in msg_for_attr for kw in ['授乳していません', '授乳中ではありません', '授乳していない']):
+                            user_attributes['breastfeeding'] = False
+                            logger.info(f"📝 授乳状態を登録（Otherフロー）: False")
+                        elif any(kw in msg_for_attr for kw in ['授乳中です', '授乳中', '授乳しています', '授乳しました', '授乳してます']):
+                            user_attributes['breastfeeding'] = True
+                            logger.info(f"📝 授乳状態を登録（Otherフロー）: True")
+                    session.modified = True
+                except Exception as e:
+                    logger.warning(f"⚠️ Otherフローでの妊娠・授乳抽出でエラー: {e}")
                 # カウンセリングフローに流す
                 try:
                     from src.services.counseling_response import (
@@ -2435,6 +2491,8 @@ def index():
                                 session_data['messages'] = []
                             session_data['messages'].append(bot_response)
                             session_data['last_activity'] = datetime.now()
+                            # 妊娠・授乳などのuser_attributesをDBに反映（Otherフローで抽出した属性を永続化）
+                            session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
                             save_session_to_db(sid, session_data)
                     
                     from src.services.counseling_response import log_counseling_response
@@ -4354,10 +4412,10 @@ def index():
                             
                             # 妊娠・授乳（フォールバック処理）
                             if '妊娠' in user_message:
-                                if '妊娠していません' in user_message or '妊娠中ではありません' in user_message or '妊娠していない' in user_message:
+                                if any(kw in user_message for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
                                     user_attributes['pregnant'] = False
                                     logger.info(f"📝 妊娠状態を更新: False（妊娠していない）")
-                                elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message:
+                                elif any(kw in user_message for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
                                     user_attributes['pregnant'] = True
                                     logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
                                 updated = True
@@ -4797,6 +4855,71 @@ def index():
             # 注意: should_handle_other_categoryフラグが設定されていた場合は、is_questionがFalseに変更されていても質問処理として扱う
             force_question_mode = session.get('should_handle_other_category', False)
             if not is_question and not force_question_mode:
+                # レッドフラッグ（妊娠・授乳）チェック：症状解析の前に応答を返す
+                ua = session.get('user_attributes', {}) or {}
+                if ua.get('pregnant') is True:
+                    escalation_msg = '妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
+                    logger.warning(f"⚠️ 妊娠中検出: 症状解析をスキップしてエスカレーションメッセージを返却")
+                    bot_response = {
+                        'type': 'bot',
+                        'content': escalation_msg,
+                        'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': ua,
+                                'session_active': True
+                            }
+                        else:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
+                    return jsonify({'status': 'ok', 'message_count': len(session['messages'])})
+                if ua.get('breastfeeding') is True:
+                    escalation_msg = '授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
+                    logger.warning(f"⚠️ 授乳中検出: 症状解析をスキップしてエスカレーションメッセージを返却")
+                    bot_response = {
+                        'type': 'bot',
+                        'content': escalation_msg,
+                        'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': session['messages'].copy(),
+                                'last_activity': datetime.now(),
+                                'client_ip': request.remote_addr,
+                                'user_agent': request.headers.get('User-Agent', ''),
+                                'user_attributes': ua,
+                                'session_active': True
+                            }
+                        else:
+                            session_data['messages'] = session['messages'].copy()
+                            session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid, session_data)
+                    return jsonify({'status': 'ok', 'message_count': len(session['messages'])})
+                
                 # 言語を検出（症状入力時にも実行）
                 detected_language = detect_language(user_message)
                 session['detected_language'] = detected_language
@@ -5162,7 +5285,7 @@ def index():
                                         'message': '妊娠状態: 妊娠していない'
                                     }
                                     logger.info(f"📝 妊娠状態を登録: False")
-                            elif '妊娠中です' in user_message or '妊娠中' in user_message or '妊娠しています' in user_message or 'pregnant' in user_message.lower():
+                            elif any(kw in user_message for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']) or 'pregnant' in user_message.lower():
                                 if user_attributes.get('pregnant') != True:
                                     user_attributes['pregnant'] = True
                                     registered_info['pregnant'] = {
@@ -8051,10 +8174,15 @@ def api_sessions():
             session.modified = True
             logger.info(f"📝 Session cookie size reduced - messages only in DB")
         
-        # user_attributesを取得（セッションまたはDBから）
-        user_attributes = session.get('user_attributes', {})
-        if not user_attributes:
-            user_attributes = session_data.get('user_attributes', {})
+        # user_attributesを取得（DB/ストアを優先＝非同期抽出結果を確実に反映）
+        db_attrs = session_data.get('user_attributes') or {}
+        flask_attrs = session.get('user_attributes') or {}
+        # DB側が非同期LLM抽出等で更新されるため、DBを優先してマージ
+        user_attributes = {**flask_attrs, **db_attrs}
+        # マージ結果をストアに反映（モーダル表示の確実な反映のため）
+        if user_attributes and session_data.get('user_attributes') != user_attributes:
+            session_data['user_attributes'] = user_attributes
+            save_session_to_db(sid, session_data)
         
         session_data = {
             'session_id': sid,
