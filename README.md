@@ -1,6 +1,10 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2026年2月7日**（候補医薬品キー正規化・主要解熱鎮痛薬テスト修正・生理痛専用医薬品の例外追加）
+**最終更新日: 2026年2月8日**（SRPリファクタリング・chat_handler移行・エラー表示改善）
+
+---
+
+**2026年2月8日の更新:** SRP改善計画に基づく大規模リファクタリング完了。Phase 1-5を実施：app.pyの重複排除（session_manager・request_logger・input_helpers・chat_response_serviceの活用）、app.pyの責務分離（RequestSafeSession→request_safe_session、port_utils、error_handlers、Blueprint分割：main/admin/api/feedback）、チャットPOST処理のchat_handler移行（index POST→handle_chat_post）、candidate_scoringの分割（medicine_classifiers・ingredient_utils・score_calculators・influenza_detector）、medicine_logicの軽量化（text_formatter・generate_usage_notes→explanation_generator）、rule_based_recommendationの漢方ロジック分離（kampo_logic）、counseling_responseの分割（counseling_triage・counseling_followup）。chat_handlerへの不足インポート追加（is_symptom_input・is_ambiguous_input・detect_language・select_symptoms_via_gpt・analyze_symptoms_and_medicine_type・rule_based_medicine_recommendation・log_medicine_logic_call・log_network_request・check_missing_attributes・generate_personalized_advice）。妊娠・授乳時レッドフラッグのエスカレーション表示をformat_escalation_displayで統一。エラー時のUIメッセージをユーザーフレンドリーに改善（技術的エラー内容を非表示、再試行案内を表示）。
 
 ---
 
@@ -1386,7 +1390,7 @@ python debug_app.py
 セッション更新（PostgreSQL） + 推奨結果返却
 
 【重要】Physicalカテゴリでは、LLMで症状を理解（NLU）した後、
-rule_based_recommendation.pyの辞書で薬を選定し、薬情報を返信します。
+src/core/rule_based_recommendation.py の辞書で薬を選定し、薬情報を返信します。
 LLMは薬の選定には使用しません（ハルシネーション防止）。
 ```
 
@@ -1692,7 +1696,7 @@ LLM分類（信頼度0.7以上の場合のみ、classify_inquiry_with_llm）
 ### 1. システム全体の推奨プロセス
 
 #### 1.1 入力検証とセキュリティチェック
-1. **セキュリティ検証** (`security_validator.py`)
+1. **セキュリティ検証** (`src/security/security_validator.py`)
    - ユーザー入力を `validate_user_input` で検証
    - リスクスコア計算（0-100）
    - ブロック判定（Phase 3以降、スコア80以上で医薬品推奨を完全停止）
@@ -1702,16 +1706,16 @@ LLM分類（信頼度0.7以上の場合のみ、classify_inquiry_with_llm）
    - プロンプトインジェクション攻撃の検出とブロック
 
 #### 1.2 言語検出と多言語対応
-1. **言語検出** (`medicine_logic.py` - `detect_language`)
+1. **言語検出** (`src/core/medicine_logic.py` - `detect_language`)
    - 日本語、英語、中国語、韓国語の自動検出
    - 言語に応じた属性抽出プロンプトの生成
 
-2. **多言語属性抽出** (`medicine_logic.py` - `extract_user_attributes_multilingual`)
+2. **多言語属性抽出** (`src/core/medicine_logic.py` - `extract_user_attributes_multilingual`)
    - 言語別のプロンプトを使用した属性抽出
    - 年齢、性別、妊娠・授乳状態、アレルギー、服用中薬などを抽出
 
 #### 1.3 インフルエンザ検出（2025年11月1日追加）
-1. **インフルエンザリスク検出** (`rule_based_recommendation.py` - `detect_influenza_risk`)
+1. **インフルエンザリスク検出** (`src/core/rule_based_recommendation.py` - `detect_influenza_risk`、実装は`src/core/influenza_detector.py`)
    - ユーザー入力テキストに「インフルエンザ」キーワードが含まれる場合
    - 高熱（38.5度以上）と複数の風邪症状（2つ以上）が検出された場合
    - 検出時はアスピリン含有医薬品を自動除外
@@ -1719,7 +1723,7 @@ LLM分類（信頼度0.7以上の場合のみ、classify_inquiry_with_llm）
 
 ### 2. NLU（自然言語理解）プロセス（2025年12月更新）
 
-#### 2.1 ハイブリッドNLUアプローチ (`rule_based_recommendation.py`)
+#### 2.1 ハイブリッドNLUアプローチ (`src/core/rule_based_recommendation.py`)
 1. **ルールベースNLU優先**
    - `simple_pattern_matching_nlu` を最初に実行
    - 症状辞書（SYMPTOM_DICTIONARY）によるマッチング
@@ -2877,13 +2881,14 @@ safe_json_parse(result, schema='medicine_recommendation')
 ## ファイル構成
 
 ### メインプログラム
-- `app.py`: Flask Webアプリケーション（統合版・監視機能強化・フィードバック機能・多言語対応）
+- `app.py`: Flask Webアプリケーション（Blueprint登録・ルート委譲・監視機能強化・フィードバック機能・多言語対応）
 - `admin_app.py`: 管理者用Webアプリケーション（独立版）
 - `debug_app.py`: デバッグ用Webアプリケーション
 
 ### コアモジュール
-- `medicine_logic.py`: 医薬品推奨ロジック（多言語対応・医薬品検索・翻訳機能）
-- `rule_based_recommendation.py`: ルールベースアルゴリズム（全医薬品種類対応・漢方薬対応）
+- `src/core/medicine_logic.py`: 医薬品推奨ロジック（多言語対応・医薬品検索・翻訳機能）
+- `src/core/rule_based_recommendation.py`: ルールベースアルゴリズム（全医薬品種類対応・漢方薬対応）
+- `src/handlers/chat_handler.py`: チャットPOST処理（医薬品相談のメイン処理を担当）
 - `database.py`: PostgreSQLデータベース管理（フィードバック保存・セッション管理・グローバル状態管理・マルチインスタンス対応）
 - `scoring_utils.py`: スコアリングユーティリティ
 - `enhanced_safety_checker.py`: 安全性チェック強化モジュール
@@ -2908,14 +2913,14 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `analytics.py`: アクセス分析モジュール
 - `performance_monitor.py`: パフォーマンス監視モジュール
 - `debug_logger.py`: ログ管理モジュール
-- `structured_logger.py`: 構造化ログモジュール（app.logとJSONLファイルの両方に構造化ログを出力）
+- `src/utils/structured_logger.py`: 構造化ログモジュール（app.logとJSONLファイルの両方に構造化ログを出力）
 
 ### 店舗案内・緊急事案対応モジュール
-- `store_inquiry_handler.py`: 店舗案内・遺失物対応ハンドラー（店舗案内や遺失物関連の質問を検出し、適切な案内を提供）
-- `store_emergency_handler.py`: 緊急事案検出ハンドラー（不審者、傷病人、刃物などの緊急事案を検出し、適切な案内を提供）
+- `src/services/store_inquiry_handler.py`: 店舗案内・遺失物対応ハンドラー（店舗案内や遺失物関連の質問を検出し、適切な案内を提供）
+- `src/services/store_emergency_handler.py`: 緊急事案検出ハンドラー（不審者、傷病人、刃物などの緊急事案を検出し、適切な案内を提供）
 
 ### UI・表示関連モジュール
-- `season_manager.py`: シーズン管理モジュール（日時からシーズンを判定し、適切な装飾画像のパスを生成）
+- `src/core/season_manager.py`: シーズン管理モジュール（日時からシーズンを判定し、適切な装飾画像のパスを生成）
 
 ### データファイル（data/フォルダ）
 - `data/otc_medicine_data.csv`: 市販薬データベース（7495件）
@@ -2987,31 +2992,59 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `config/requirements.txt`: 依存パッケージリスト（ルートにもコピーを保持）
 - `config/runtime.txt`: Pythonランタイムバージョン（ルートにもコピーを保持）
 
-### フォルダ構造（2025年12月31日更新）
+### フォルダ構造（2026年2月8日更新）
 ```
 medicine-recommend-system/
 ├── config/          # 設定ファイル
 ├── data/            # データファイル（CSV、JSON）
 ├── docs/            # ドキュメント
 ├── log/             # ログファイル
-├── tools/           # ツール・スクリプト
+├── scripts/         # スクリプト（extract_post_to_chat_handler等）
 ├── static/          # 静的ファイル（CSS、JS、画像）
 │   ├── css/         # CSSスタイルシート
 │   ├── js/          # JavaScriptファイル
 │   │   └── games/   # ゲームファイル
 │   └── img/         # 画像ファイル
 ├── templates/       # テンプレート（HTML）
-├── ios/             # iOSアプリ関連ファイル
-├── photo/           # 写真・画像ファイル
-├── app.py           # メインアプリケーション
+├── tests/           # テストファイル
+├── src/             # アプリケーションソースコード
+│   ├── core/        # コアロジック
+│   │   ├── rule_based_recommendation.py  # ルールベース推奨アルゴリズム
+│   │   ├── medicine_logic.py             # 医薬品推奨ロジック
+│   │   ├── candidate_scoring.py          # 候補スコアリング
+│   │   ├── medicine_classifiers.py       # 医薬品タイプ判定（SRP分離）
+│   │   ├── ingredient_utils.py           # 成分抽出・重複チェック（SRP分離）
+│   │   ├── score_calculators.py          # スコア計算（SRP分離）
+│   │   ├── influenza_detector.py         # インフルエンザ検出（SRP分離）
+│   │   ├── kampo_logic.py                # 漢方証判定（SRP分離）
+│   │   ├── nlu_service.py                # NLU・症状抽出
+│   │   └── ...
+│   ├── handlers/    # リクエストハンドラー
+│   │   ├── chat_handler.py               # チャットPOST処理（医薬品相談）
+│   │   └── error_handlers.py             # エラーハンドラー
+│   ├── routes/      # Flask Blueprintルート
+│   │   ├── main_routes.py                # メイン画面・チャット
+│   │   ├── admin_routes.py               # 管理画面
+│   │   ├── api_routes.py                 # 汎用API
+│   │   └── feedback_routes.py            # フィードバックAPI
+│   ├── services/    # サービス層
+│   │   ├── counseling_response.py        # カウンセリング応答
+│   │   ├── counseling_triage.py          # 相談トリアージ（SRP分離）
+│   │   ├── counseling_followup.py        # フォローアップ質問（SRP分離）
+│   │   ├── store_inquiry_handler.py      # 店舗案内・遺失物対応
+│   │   ├── store_emergency_handler.py    # 緊急事案検出
+│   │   ├── text_formatter.py             # テキスト変換（SRP分離）
+│   │   └── ...
+│   ├── utils/       # ユーティリティ
+│   │   ├── request_safe_session.py       # セッションラッパー（SRP分離）
+│   │   ├── port_utils.py                 # ポート検出（SRP分離）
+│   │   ├── candidate_normalizer.py       # 候補キー正規化
+│   │   └── ...
+│   ├── security/    # セキュリティ
+│   └── analysis/    # ログ分析
+├── app.py           # メインアプリケーション（Blueprint登録・ルート委譲）
 ├── admin_app.py     # 管理者用Webアプリケーション
 ├── debug_app.py     # デバッグ用Webアプリケーション
-├── medicine_logic.py  # 医薬品推奨ロジック
-├── rule_based_recommendation.py  # ルールベース推奨アルゴリズム
-├── store_inquiry_handler.py  # 店舗案内・遺失物対応ハンドラー
-├── store_emergency_handler.py  # 緊急事案検出ハンドラー
-├── season_manager.py  # シーズン管理モジュール
-├── structured_logger.py  # 構造化ログモジュール
 ├── requirements.txt # デプロイ用（ルートに保持）
 ├── runtime.txt      # デプロイ用（ルートに保持）
 └── README.md        # メインドキュメント（ルートに保持）
@@ -3019,21 +3052,21 @@ medicine-recommend-system/
 
 ## プロジェクト統計
 
-### コード行数と言語別の割合（2025年12月31日時点）
+### コード行数と言語別の割合（2026年2月8日時点）
 
 | 言語 | ファイル数 | 行数 | 割合 |
 |------|-----------|------|------|
 | **CSV** | 5 | 108,162 | 63.48% |
-| **Python** | 29 | 39,194 | 23.00% |
+| **Python** | 90+ | 約45,000 | 約26% |
 | **Markdown** | 31 | 13,676 | 8.03% |
 | **JavaScript** | 5 | 13,897 | 8.16% |
 | **CSS** | 3 | 6,928 | 4.07% |
 | **HTML** | 4 | 2,636 | 1.55% |
 | **Other** | 9 | 195 | 0.11% |
 | **Config** | 2 | 14 | 0.01% |
-| **合計** | **88** | **170,302** | **100.00%** |
+| **合計** | **約150** | **約185,508** | **100.00%** |
 
-#### 主要ファイル（各言語の上位5ファイル）
+#### 主要ファイル（各言語の上位ファイル・2026年2月8日時点）
 
 **CSVファイル（data/フォルダ）:**
 - `data/otc_medicine_data.csv` - 93,814行（市販薬データベース）
@@ -3042,14 +3075,18 @@ medicine-recommend-system/
 - `data/medicine_interactions.csv` - 83行（相互作用データ）
 - `data/medicine_side_effects.csv` - 51行（副作用データ）
 
-**Pythonファイル:**
-- `rule_based_recommendation.py` - 10,370行（ルールベース推奨アルゴリズム）
-- `app.py` - 9,249行（メインアプリケーション）
-- `medicine_logic.py` - 4,187行（医薬品推奨ロジック）
-- `store_inquiry_handler.py` - 1,625行（店舗案内・遺失物対応ハンドラー）
-- `tools/test_comprehensive.py` - 1,789行（包括的テストスイート）
-- `security_validator.py` - 1,282行（セキュリティ検証モジュール）
-- `store_emergency_handler.py` - 771行（緊急事案検出ハンドラー）
+**Pythonファイル（src/リファクタリング後）:**
+- `src/handlers/chat_handler.py` - 約6,920行（チャットPOST処理・医薬品相談）
+- `src/core/rule_based_recommendation.py` - 約6,190行（ルールベース推奨アルゴリズム）
+- `src/services/counseling_response.py` - 約2,580行（カウンセリング応答）
+- `src/core/scoring_utils.py` - 約2,570行（スコアリングユーティリティ）
+- `tests/test_comprehensive_integration.py` - 約2,160行（包括的テストスイート）
+- `src/core/candidate_scoring.py` - 約2,116行（候補スコアリング）
+- `app.py` - 約1,740行（メインアプリケーション・Blueprint登録）
+- `src/services/store_inquiry_handler.py` - 約1,625行（店舗案内・遺失物対応）
+- `src/security/security_validator.py` - 約1,280行（セキュリティ検証）
+- `test_menstrual_recommendations.py` - 約1,270行（月経・生理痛テスト）
+- `src/core/medicine_logic.py` - 約1,100行（医薬品推奨ロジック）
 
 **Markdownファイル（docs/フォルダ）:**
 - `docs/会社向け概要書類.md` - 3,342行
@@ -3078,13 +3115,13 @@ medicine-recommend-system/
 
 #### 統計のまとめ
 
-- **合計行数**: 約170,302行（2025年12月31日時点、主要ファイルの更新により増加）
-- **合計ファイル数**: 88ファイル（2025年12月31日時点、新規モジュール追加により増加）
+- **合計行数**: 約185,508行（2026年2月8日時点、SRPリファクタリングによりモジュール分割・増加）
+- **合計ファイル数**: 約150ファイル（2026年2月8日時点、src/配下の新規モジュール追加により増加）
 - **最大の言語**: CSV（63.48%）—主に医薬品データベース
-- **コード言語**: Python（23.00%）—アプリケーションの主要ロジック
+- **コード言語**: Python（約26%）—アプリケーションの主要ロジック
 - **フロントエンド**: JavaScript（8.16%）+ CSS（4.07%）+ HTML（1.55%）= 約13.78%
 
-**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。2025年12月21日にフォルダ構造を整理し、ファイルを`config/`、`data/`、`docs/`、`tools/`フォルダに分類しました。2025年12月31日時点で、店舗案内・緊急事案対応モジュール、シーズン管理モジュール、構造化ログモジュール、イースターエッグ機能などが追加されています。
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。2026年2月8日のSRPリファクタリングにより、app.pyからchat_handler、Blueprintルート、各種ユーティリティ・サービスが分離され、rule_based_recommendation・candidate_scoring・counseling_responseがサブモジュールに分割されました。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
 
 ## セキュリティと安全性
 
@@ -3620,8 +3657,8 @@ POST /api/admin_mode      # 管理者モード切り替え
 
 ### カスタマイズ
 
-- `rule_based_recommendation.py`: ルールベースアルゴリズムのカスタマイズ
-- `medicine_logic.py`: AI推奨ロジックのカスタマイズ
+- `src/core/rule_based_recommendation.py`: ルールベースアルゴリズムのカスタマイズ
+- `src/core/medicine_logic.py`: AI推奨ロジックのカスタマイズ
 - `templates/index.html`: UIのカスタマイズ
 
 ## 技術スタック
@@ -3704,12 +3741,23 @@ POST /api/admin_mode      # 管理者モード切り替え
 
 ## 📝 最近の更新履歴
 
+### 2026年2月8日（SRPリファクタリング・chat_handler移行・エラー表示改善）
+- **SRP改善計画に基づく大規模リファクタリング完了**
+  - **Phase 1（重複排除）**: app.pyのグローバル状態・セッション・ログ・入力判定を session_manager、request_logger、input_helpers、chat_response_service からの import に置換
+  - **Phase 2（app.py責務分離）**: RequestSafeSession→`src/utils/request_safe_session.py`、port_utils→`src/utils/port_utils.py`、エラーハンドラー→`src/handlers/error_handlers.py`、Blueprint分割（main/admin/api/feedback）、チャットPOST処理→`src/handlers/chat_handler.py`（handle_chat_post）に移行
+  - **Phase 3（candidate_scoring分割）**: medicine_classifiers、ingredient_utils、score_calculators、influenza_detector を新規作成・分割
+  - **Phase 4（medicine_logic軽量化）**: text_formatter、generate_usage_notes→explanation_generator へ移管
+  - **Phase 5（rule_based/counseling分割）**: kampo_logic（漢方証判定）、counseling_triage（相談トリアージ）、counseling_followup（フォローアップ質問）を新規作成・分割
+- **chat_handlerへの不足インポート追加**: is_symptom_input、is_ambiguous_input、detect_language、select_symptoms_via_gpt、analyze_symptoms_and_medicine_type、rule_based_medicine_recommendation、log_medicine_logic_call、log_network_request、check_missing_attributes、generate_personalized_advice
+- **妊娠・授乳時レッドフラッグ表示の改善**: 簡潔なメッセージから format_escalation_display による詳細HTML表示に統一
+- **エラー時のUIメッセージ改善**: 技術的エラー内容（NameError等）を非表示にし、ユーザーフレンドリーな再試行案内を表示
+
 ### 2026年2月7日（候補医薬品キー正規化・主要解熱鎮痛薬推奨テスト修正）
 - **候補医薬品のキー正規化モジュールの新規作成（SRP遵守）**
   - **`src/utils/candidate_normalizer.py`**: CSV由来の候補（製品名・成分・効能効果など日本語キー）をスコアリングロジック用の英語キー（product_name・ingredients・efficacyなど）に正規化する専用モジュールを追加
     - `normalize_candidate_for_scoring()`: 日本語キーから英語キーへのエイリアスを in-place で追加
     - 単一責務（キー名マッピングのみ担当）で設計
-  - **`rule_based_recommendation.py`**: `calculate_final_score` 冒頭で `normalize_candidate_for_scoring()` を呼び出し、テスト・本番の両方で候補のキー形式を統一
+  - **`src/core/rule_based_recommendation.py`**: `calculate_final_score` 冒頭で `normalize_candidate_for_scoring()` を呼び出し、テスト・本番の両方で候補のキー形式を統一
 - **主要解熱鎮痛薬の生理痛専用医薬品除外ルールの例外追加**
   - **カロナール・タイレノールの例外**: CSVの効能が「生理痛」のみでも、頭痛・発熱では一般用解熱鎮痛薬として推奨（アセトアミノフェン含有の一般医薬品として扱う）
   - **ロキソニン系の例外**: 同様に、頭痛・筋肉痛・発熱では一般用NSAIDsとして推奨（ロキソプロフェン含有のロキソニン製品として扱う）
