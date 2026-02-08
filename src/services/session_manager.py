@@ -27,6 +27,7 @@ _ai_auto_reply = True
 _admin_mode = False
 _manual_reply_queue = []
 _manual_reply_message_cache = None
+_admin_sessions = {}  # 管理者用詳細診断キャッシュ {sid: {'detailed_diagnosis': ..., 'last_updated': ...}}
 
 DEFAULT_MANUAL_REPLY_MESSAGE = (
     '申し訳ございません。現在、AI自動応答が一時停止されています。'
@@ -150,6 +151,11 @@ def set_manual_reply_message(value):
     _manual_reply_message_cache = value
 
 
+def get_admin_sessions():
+    """管理者用詳細診断キャッシュを取得（mutate可能な辞書を返す）"""
+    return _admin_sessions
+
+
 # --- セッション管理ヘルパー ---
 
 def get_next_user_number():
@@ -240,7 +246,9 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
     Args:
         force: Trueの場合、間隔を無視して強制実行
         exclude_current_session: Trueの場合、現在のセッションを削除から除外
-        current_sid: 現在のセッションID（除外用、exclude_current_sessionがTrueの場合）
+        current_sid: 現在のセッションID（除外用、exclude_current_sessionがTrueの場合）。
+            Webリクエストハンドラーから呼ぶ場合は、
+            current_sid=session.get('_id') if has_request_context() else None を渡すこと。
     """
     global _last_cleanup_time
     current_time = time.time()

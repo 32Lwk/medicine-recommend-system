@@ -14,9 +14,175 @@ from typing import Dict, List
 from openai import OpenAI
 
 from src.core.recommendation_constants import IRRITANT_LAXATIVE_INGREDIENTS
+from src.services.text_formatter import convert_markdown_bold
 
 logger = logging.getLogger(__name__)
 _DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+
+# 使用上の注意生成のキャッシュ（generate_usage_notes 用）
+_usage_notes_cache = {}
+
+
+def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dict = None, symptoms: list = None) -> str:
+    """
+    ChatGPTを使用して医薬品の使用上の注意を自動生成（キャッシュ機能付き）
+
+    Args:
+        medicine_name: 医薬品名
+        medicine_info: 医薬品情報（成分、効能、年齢制限など）
+        user_info: ユーザー情報（年齢、妊娠状態など）
+        symptoms: ユーザーの症状情報（リスト形式、例：['眠気', '不眠']）
+
+    Returns:
+        str: 生成された使用上の注意
+    """
+    try:
+        from src.core.medicine_logic import client
+        if client is None:
+            return "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。"
+
+        # カフェイン含有の確認（キャッシュキーにも含める）
+        ingredients_str = str(medicine_info.get('ingredients', '')).lower()
+        efficacy_str = str(medicine_info.get('efficacy', '')).lower()
+        contains_caffeine = any(keyword in ingredients_str or keyword in efficacy_str
+                               for keyword in ['カフェイン', 'caffeine', '眠気', '眠気の除去', '眠気・倦怠感の除去'])
+
+        # キャッシュキーの生成
+        symptoms_str = ','.join(sorted(symptoms)) if symptoms else ''
+        cache_key = f"{medicine_name}_{hash(str(user_info))}_{contains_caffeine}_{symptoms_str}"
+
+        if cache_key in _usage_notes_cache:
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+                logger.debug(f"📋 使用上の注意をキャッシュから取得: {medicine_name}")
+            return _usage_notes_cache[cache_key]
+
+        user_context = ""
+        if user_info:
+            if user_info.get('age'):
+                user_context += f"年齢: {user_info['age']}歳\n"
+            if user_info.get('pregnant'):
+                user_context += "妊娠中\n"
+            if user_info.get('breastfeeding'):
+                user_context += "授乳中\n"
+            if user_info.get('allergies'):
+                user_context += f"アレルギー: {', '.join(user_info['allergies'])}\n"
+
+        doping_info = ""
+        if medicine_info.get('doping_prohibited') == '禁止物質あり':
+            doping_info = f"""
+ドーピング禁止物質情報:
+- 禁止物質あり: {medicine_info.get('doping_prohibited', 'なし')}
+- 競技会区分: {medicine_info.get('competition_category', '情報なし')}
+- 条件: {medicine_info.get('conditions', '情報なし')}
+"""
+
+        caffeine_note = ""
+        if contains_caffeine:
+            caffeine_note = """
+【カフェイン剤に関する重要な注意事項】
+- 添付文書に記載された服用期間や用法・用量を守り、短期間の服用にとどめるようにしてください
+- 1日の摂取量を守ること（過剰摂取は避ける）
+- カフェインを多く含む飲料と併用した場合には、カフェインの過量摂取となり、重大な健康被害につながるおそれがあります。そのため、コーヒーやお茶、エナジードリンクなどのカフェイン含有飲料と同時に服用しないでください
+- 就寝前の使用は避ける（不眠の原因になる可能性がある）
+- 常用化のリスクがあるため、一時的な使用に留める
+- 慢性的な眠気の場合は医師にご相談ください
+
+【服用してはいけない方】
+- 胃酸過多の症状がある方、胃潰瘍と診断された方（カフェインは胃を刺激して胃酸の分泌をうながす働きがあり、胃を荒らすおそれがあるため）
+- 心臓病と診断された方（カフェインは中枢神経に作用して眠気を除去するとともに、心臓の収縮や脈拍数を増やし、心臓に負担をかけて症状を悪化させる可能性があるため）
+
+【悪影響のない1日あたりのカフェイン最大摂取量目安】
+- 健康な成人：400mg（コーヒーマグカップ3杯分）
+- 妊娠中の方：200〜300mg/日（コーヒーマグカップ2杯分）
+- 授乳中の方：200mg/日
+
+【15歳未満の小児について】
+市販薬としては販売されていないため、薬以外の眠気を覚ます方法を試すか、生活リズムを整えたり、睡眠を見直してみることをおすすめします。
+
+"""
+
+        caffeine_instruction = ""
+        if contains_caffeine:
+            caffeine_instruction = """カフェイン剤の場合、以下の内容を必ず含めてください：
+- 添付文書に記載された服用期間や用法・用量を守り、短期間の服用にとどめる
+- 1日の摂取量上限（健康な成人400mg、妊娠中200-300mg/日、授乳中200mg/日）
+- カフェイン含有飲料（コーヒー、お茶、エナジードリンクなど）との併用禁止
+- 就寝前の使用を避けること
+- 胃酸過多・胃潰瘍、心臓病の方は服用不可
+- 15歳未満の小児は市販薬として販売されていない
+
+【重要な注意事項】
+- カフェイン剤は眠気覚ましの薬であり、不眠症向けの睡眠改善薬ではありません
+- 「睡眠改善薬」や「不眠症」に関する注意事項は含めないでください
+- 緑内障や前立腺肥大の禁忌事項は含めないでください（カフェイン剤には一般的に該当しません）
+- 「使ってはいけない人」には、胃酸過多・胃潰瘍、心臓病の方のみを含めてください
+"""
+
+        caffeine_item = '9. カフェイン剤としての注意事項（1日の摂取量、使用期間、就寝前の使用について）' if contains_caffeine else ''
+        system_message = "あなたは医薬品の専門家です。症状に適した医薬品を推奨し、使用上の注意を説明してください。効能・効果が限定された特殊用途の医薬品（例：「食あたり等」「便秘」など）は、ユーザーの症状がその限定用途と完全に一致する場合のみ推奨してください。一般的な症状に対して特殊用途の医薬品を無理に推奨することは避けてください。"
+        if contains_caffeine:
+            system_message += " カフェイン剤（眠気覚まし）の場合、不眠症向けの睡眠改善薬に関する注意事項（例：「睡眠改善薬は一時的な不眠にのみ効果があります」「不眠症と診断されている場合は医師にご相談ください」など）は含めないでください。また、緑内障や前立腺肥大の禁忌事項も含めないでください。"
+
+        symptoms_context = ""
+        if symptoms:
+            symptoms_list = [s.get('name', s) if isinstance(s, dict) else s for s in symptoms]
+            symptoms_context = f"ユーザーの症状: {', '.join(symptoms_list)}\n"
+
+        prompt = f"""
+以下の医薬品について、使用上の注意を生成してください。
+
+医薬品名: {medicine_name}
+成分: {medicine_info.get('ingredients', '情報なし')}
+効能・効果: {medicine_info.get('efficacy', '情報なし')}
+年齢制限: {medicine_info.get('age_restriction', '情報なし')}
+用法・用量: {medicine_info.get('usage', '情報なし')}
+{doping_info}
+{caffeine_note}
+
+ユーザー情報:
+{user_context if user_context else '情報なし'}
+{symptoms_context}
+
+以下の形式で使用上の注意を生成してください：
+1. 基本的な使用上の注意
+2. 年齢・性別による注意点（年齢制限の詳細を含む）
+3. 妊娠・授乳中の注意点
+4. アレルギーに関する注意点
+5. 副作用について
+6. 他の薬との相互作用
+7. 保存方法・保管上の注意
+8. ドーピング禁止物質に関する注意（該当する場合）
+{f'{caffeine_item}' if contains_caffeine else ''}
+
+各項目は簡潔で分かりやすく、実際の使用場面で役立つ内容にしてください。
+特に年齢制限とドーピング禁止物質については、具体的で明確な注意事項を含めてください。
+{symptoms_context and f'ユーザーの症状（{symptoms_context.split(":")[1].strip()}）に合わせた注意事項を含めてください。' or ''}
+{caffeine_instruction}
+"""
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1200,
+            temperature=0.7
+        )
+
+        usage_notes = response.choices[0].message.content.strip()
+        usage_notes = convert_markdown_bold(usage_notes)
+
+        if len(_usage_notes_cache) < 100:
+            _usage_notes_cache[cache_key] = usage_notes
+            if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
+                logger.debug(f"💾 使用上の注意をキャッシュに保存: {medicine_name}")
+
+        return usage_notes
+
+    except Exception as e:
+        logger.error(f"使用上の注意生成エラー: {e}")
+        return "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。"
 
 
 def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict, user_info: Dict) -> str:
