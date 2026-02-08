@@ -1,125 +1,125 @@
 {
-  "timestamp": "2025-12-26T05:05:14.863958",
+  "timestamp": "2026-02-08T14:56:22.593060",
   "summary": {
     "passed": 8,
     "failed": 9,
     "skipped": 0,
     "total": 17,
-    "total_elapsed_time": 294.79151940345764,
+    "total_elapsed_time": 152.46077299118042,
     "success_rate": 47.05882352941176,
-    "average_test_time": 17.340677611968097
+    "average_test_time": 8.968280764187083
   },
   "test_results": [
     {
       "test_name": "基本テスト: 生理不順+イライラ",
       "status": "FAILED",
-      "elapsed_time": 13.522274732589722,
-      "timestamp": "2025-12-26T05:00:33.593817",
+      "elapsed_time": 6.386487245559692,
+      "timestamp": "2026-02-08T14:53:56.518774",
       "test_function": "test_basic_menstrual_irregularity_with_irritability"
     },
     {
       "test_name": "成分・バランス重視",
       "status": "FAILED",
-      "elapsed_time": 11.364396333694458,
-      "timestamp": "2025-12-26T05:00:44.958414",
+      "elapsed_time": 6.998053073883057,
+      "timestamp": "2026-02-08T14:54:03.517824",
       "test_function": "test_ingredient_balance_preference"
     },
     {
       "test_name": "飲みやすさ重視",
       "status": "FAILED",
-      "elapsed_time": 10.249434232711792,
-      "timestamp": "2025-12-26T05:00:55.208024",
+      "elapsed_time": 5.614104986190796,
+      "timestamp": "2026-02-08T14:54:09.131929",
       "test_function": "test_ease_of_taking_preference"
     },
     {
       "test_name": "随伴症状対応",
       "status": "FAILED",
-      "elapsed_time": 10.80955457687378,
-      "timestamp": "2025-12-26T05:01:06.017741",
+      "elapsed_time": 7.251048564910889,
+      "timestamp": "2026-02-08T14:54:16.382978",
       "test_function": "test_accompanying_symptoms_preference"
     },
     {
       "test_name": "お腹を壊しやすい",
       "status": "PASSED",
-      "elapsed_time": 11.750785112380981,
-      "timestamp": "2025-12-26T05:01:17.768668"
+      "elapsed_time": 5.169460296630859,
+      "timestamp": "2026-02-08T14:54:21.552438"
     },
     {
       "test_name": "産後",
       "status": "PASSED",
-      "elapsed_time": 10.535465002059937,
-      "timestamp": "2025-12-26T05:01:28.304143"
+      "elapsed_time": 6.1210713386535645,
+      "timestamp": "2026-02-08T14:54:27.673509"
     },
     {
       "test_name": "妊娠可能性",
       "status": "PASSED",
-      "elapsed_time": 10.644762754440308,
-      "timestamp": "2025-12-26T05:01:38.948916"
+      "elapsed_time": 4.567265748977661,
+      "timestamp": "2026-02-08T14:54:32.240775"
     },
     {
       "test_name": "重症度エスカレーション",
       "status": "PASSED",
-      "elapsed_time": 0.0007574558258056641,
-      "timestamp": "2025-12-26T05:01:38.949684"
+      "elapsed_time": 0.0009996891021728516,
+      "timestamp": "2026-02-08T14:54:32.241775"
     },
     {
       "test_name": "痛み主訴",
       "status": "FAILED",
-      "elapsed_time": 5.8696582317352295,
-      "timestamp": "2025-12-26T05:01:44.819352",
+      "elapsed_time": 7.744983911514282,
+      "timestamp": "2026-02-08T14:54:39.986759",
       "test_function": "test_pain_urgency_primary"
     },
     {
       "test_name": "年齢層補正",
       "status": "FAILED",
-      "elapsed_time": 33.83114957809448,
-      "timestamp": "2025-12-26T05:02:18.650629",
+      "elapsed_time": 14.149312496185303,
+      "timestamp": "2026-02-08T14:54:54.136071",
       "test_function": "test_life_stage_correction"
     },
     {
       "test_name": "作用機序多様性",
       "status": "FAILED",
-      "elapsed_time": 11.625723123550415,
-      "timestamp": "2025-12-26T05:02:30.276655",
+      "elapsed_time": 4.542192697525024,
+      "timestamp": "2026-02-08T14:54:58.679263",
       "test_function": "test_mechanism_diversity"
     },
     {
       "test_name": "スコア検証",
       "status": "PASSED",
-      "elapsed_time": 11.603707790374756,
-      "timestamp": "2025-12-26T05:02:41.880544"
+      "elapsed_time": 4.840543746948242,
+      "timestamp": "2026-02-08T14:55:03.520807"
     },
     {
       "test_name": "複合症状",
       "status": "FAILED",
-      "elapsed_time": 24.190919399261475,
-      "timestamp": "2025-12-26T05:03:06.071473",
+      "elapsed_time": 14.38621187210083,
+      "timestamp": "2026-02-08T14:55:17.907019",
       "test_function": "test_complex_symptoms"
     },
     {
       "test_name": "エッジケース",
       "status": "PASSED",
-      "elapsed_time": 29.43240213394165,
-      "timestamp": "2025-12-26T05:03:35.504029"
+      "elapsed_time": 12.761472940444946,
+      "timestamp": "2026-02-08T14:55:30.668492"
     },
     {
       "test_name": "ユーザー要望組み合わせ",
       "status": "FAILED",
-      "elapsed_time": 23.539079427719116,
-      "timestamp": "2025-12-26T05:03:59.043118",
+      "elapsed_time": 9.316733598709106,
+      "timestamp": "2026-02-08T14:55:39.985226",
       "test_function": "test_user_preference_combinations"
     },
     {
       "test_name": "パフォーマンス",
       "status": "PASSED",
-      "elapsed_time": 53.63197183609009,
-      "timestamp": "2025-12-26T05:04:52.675254"
+      "elapsed_time": 26.362255096435547,
+      "timestamp": "2026-02-08T14:56:06.347481"
     },
     {
       "test_name": "スコアリング境界値",
       "status": "PASSED",
-      "elapsed_time": 22.187784910202026,
-      "timestamp": "2025-12-26T05:05:14.863050"
+      "elapsed_time": 16.24557876586914,
+      "timestamp": "2026-02-08T14:56:22.593060"
     }
   ],
   "failure_analysis": {
