@@ -37,8 +37,11 @@ from src.core.medicine_logic import (
     rule_based_medicine_recommendation,
 )
 from src.services.chat_response_service import generate_personalized_advice
+from src.handlers.chat.chat_input_validator import validate_and_block_input
+from src.handlers.chat.chat_response_builder import build_success_response
 
 logger = logging.getLogger(__name__)
+
 
 def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
     """
@@ -61,198 +64,9 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
     user_message = request.form.get('message', '').strip()
     logger.info(f"📝 受信メッセージ: {user_message}")
     if user_message:
-        # 絶対ブロックリスト（100%不適切）チェック - 最優先で必ずはじく
-        try:
-            from src.security.absolute_blocklist import is_absolutely_blocked
-            blocked, _ = is_absolutely_blocked(user_message)
-            if blocked:
-                logger.warning(f"🚫 絶対ブロックリストにより入力が拒否されました")
-                return jsonify({
-                    'error': True,
-                    'response': '申し訳ございませんが、その内容にはお答えできません。症状や医薬品に関するご相談がありましたら、お気軽にお尋ねください。'
-                })
-        except ImportError:
-            pass  # モジュール未導入時はスキップ
-
-        # セキュリティ検証を一時的に無効化（デプロイメント問題のため）
-        try:
-            from src.security.security_validator import validate_user_input
-            from src.security.security_config import should_block_input
-            from src.security.security_logger import log_input_validation
-                
-            # 入力検証
-            is_safe, risk_score, warnings, sanitized_message = validate_user_input(
-                user_message, context='chat'
-            )
-                
-            # ログ記録
-            log_input_validation(
-                user_id=session.get('username', 'unknown'),
-                input_text=user_message,
-                risk_score=risk_score,
-                is_safe=is_safe,
-                warnings=warnings,
-                sanitized_text=sanitized_message
-            )
-                
-            # ブロック判定（Phase 1でも高リスクは警告表示）
-            if should_block_input(risk_score):
-                logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
-                return jsonify({
-                    'error': True,
-                    'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。',
-                    'risk_score': risk_score
-                })
-                
-            # Phase 1でも高リスクの場合は警告表示
-            if risk_score >= 80:
-                logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
-                return jsonify({
-                    'warning': True,
-                    'response': '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。',
-                    'risk_score': risk_score
-                })
-                
-            # ユーザーインタラクションをログ出力
-            log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
-        except ImportError as e:
-            logger.warning(f"⚠️ セキュリティモジュールのインポートに失敗: {e}")
-            logger.info("🔓 セキュリティ機能をスキップして続行します")
-            # セキュリティ機能をスキップして通常の処理を続行
-            sanitized_message = user_message
-            log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
-        except Exception as e:
-            logger.error(f"❌ セキュリティ検証でエラー: {e}")
-            logger.info("🔓 セキュリティ機能をスキップして続行します")
-            # セキュリティ機能をスキップして通常の処理を続行
-            sanitized_message = user_message
-            log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
-            
-        # ステップ0: ユーザー情報登録（全フロー共通・チャット返信の前に常に実行）
-        try:
-            register_user_attributes_from_message(
-                session,
-                session.get('_id'),
-                sanitized_message,
-                save_to_db_fn=save_session_to_db,
-                get_session_from_db_fn=get_session_from_db
-            )
-        except Exception as e:
-            logger.warning(f"⚠️ ユーザー属性登録でエラー: {e}")
-            
-        # 危機関連ワード検出（「終了」ワード検知の前）
-        try:
-            from src.core.crisis_detection import detect_crisis_keywords, get_crisis_support_resources
-            from src.security.security_logger import log_crisis_keyword_detection
-                
-            # 危機関連ワードをチェック
-            has_crisis_keywords, detected_keywords = detect_crisis_keywords(sanitized_message)
-                
-            if has_crisis_keywords:
-                logger.warning(f"🚨 危機関連ワード検出: {detected_keywords}")
-                    
-                # ユーザーメッセージをセッションに追加
-                if 'messages' not in session:
-                    session['messages'] = []
-                    
-                from datetime import datetime
-                import uuid
-                    
-                # 重複チェック
-                user_message_exists = any(
-                    msg.get('type') == 'user' and 
-                    msg.get('content') == sanitized_message and
-                    msg.get('uuid')
-                    for msg in session.get('messages', [])
-                )
-                    
-                if not user_message_exists:
-                    session['messages'].append({
-                        'type': 'user',
-                        'content': sanitized_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())
-                    })
-                    
-                # 言語設定を取得（デフォルトは日本語）
-                user_language = session.get('language', 'ja')
-                crisis_resources = get_crisis_support_resources(user_language)
-                    
-                # 危機対応の特別な応答メッセージを作成
-                bot_response = {
-                    'type': 'bot',
-                    'content': crisis_resources['message'],
-                    'crisis_support': True,
-                    'crisis_title': crisis_resources['title'],
-                    'resources': crisis_resources['resources'],
-                    'emergency_message': crisis_resources['emergency_message'],
-                    'timestamp': datetime.now().isoformat()
-                }
-                    
-                # セッションに追加
-                session['messages'].append(bot_response)
-                session.modified = True
-                    
-                # セッションに危機検出フラグを設定
-                session['crisis_detected'] = True
-                    
-                # DBを更新
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if not session_data:
-                        session_data = {
-                            'session_id': sid,
-                            'username': session.get('username', 'Unknown'),
-                            'messages': session['messages'].copy(),
-                            'last_activity': datetime.now(),
-                            'client_ip': request.remote_addr,
-                            'user_agent': request.headers.get('User-Agent', ''),
-                            'user_attributes': session.get('user_attributes', {}),
-                            'session_active': True,
-                            'crisis_detected': True
-                        }
-                    else:
-                        session_data['messages'] = session['messages'].copy()
-                        session_data['crisis_detected'] = True
-                        session_data['last_activity'] = datetime.now()
-                    save_session_to_db(sid, session_data)
-                    
-                # セキュリティログに記録
-                log_crisis_keyword_detection(
-                    user_id=session.get('username', 'unknown'),
-                    input_text=sanitized_message,
-                    detected_keywords=detected_keywords,
-                    session_id=sid
-                )
-                    
-                # 危機対応セッションを手動返信キューに追加
-                crisis_queue_item = {
-                    'session_id': sid,
-                    'user_message': sanitized_message,
-                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'status': 'crisis_detected',
-                    'crisis_keywords': detected_keywords,
-                    'priority': 'high'
-                }
-                queue = get_manual_reply_queue()
-                queue.append(crisis_queue_item)
-                set_manual_reply_queue(queue)
-                logger.info(f"🚨 危機対応セッションを手動返信キューに追加: {sid}")
-                    
-                message_count = len(session['messages'])
-                logger.info(f"✅ 危機対応完了: {message_count} messages")
-                return jsonify({
-                    'status': 'ok', 
-                    'message_count': message_count, 
-                    'crisis_support': True
-                })
-                    
-        except ImportError as e:
-            logger.warning(f"⚠️ 危機対応機能のインポートに失敗: {e}")
-            # 機能をスキップして通常処理を続行
-        except Exception as e:
-            logger.error(f"❌ 危機対応機能でエラー: {e}")
-            # 機能をスキップして通常処理を続行
+        sanitized_message, error_response = validate_and_block_input(session, request, user_message, sid)
+        if error_response is not None:
+            return error_response
 
         # ユーザーメッセージをセッションに追加（通常フロー）
         # 危機検出や心臓緊急チェックで早期リターンする場合は既に追加済み
@@ -350,7 +164,7 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                     # admin_requestがない場合のみ、新しいメッセージをキューに追加
                     pending_message = {
                         'session_id': sid_for_queue,
-                        'user_message': user_message,
+                        'user_message': sanitized_message,
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'status': 'pending'
                     }
@@ -361,7 +175,7 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                 add_network_log(
                     'POST',
                     'メインサイト - 手動返信待ち',
-                    {'symptom': user_message},
+                    {'symptom': sanitized_message},
                     {'status': 'pending_manual_reply'},
                     0,
                     'pending'
@@ -6891,11 +6705,8 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                     logger.debug(f"  Manual reply {i+1}: {reply.get('content', '')[:50]}...")
     
         # POSTリクエストの場合はJSON形式で成功を返す
-        # レスポンスを先に準備（最小限のDB読み取りのみ）
-        # メッセージ数は既にsessionに保存されているため、DB読み取りを最小限に
         message_count = len(session.get('messages', []))
-        response_data = {'status': 'ok', 'message_count': message_count}
-        response = jsonify(response_data)
+        response = build_success_response(session, message_count)
         
         # レスポンス返却後にログ出力（非同期化）
         try:
