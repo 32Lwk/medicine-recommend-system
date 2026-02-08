@@ -14,7 +14,15 @@
 \usepackage{url}
 \usepackage{xurl} 
 \usepackage{geometry}
-\geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
+\geometry{left=2cm,right=2cm,top=2.5cm,bottom=2cm,headheight=14pt,headsep=10pt}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\parbox[t]{\dimexpr\headwidth-1em\relax}{\small プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
+審査員名: 川嶋宥翔}}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyhead[L]{\parbox[t]{\dimexpr\headwidth-1em\relax}{\small プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
+審査員名: 川嶋宥翔}}\renewcommand{\headrulewidth}{0.4pt}}
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{pifont}
@@ -42,6 +50,11 @@
 \end{center}
 \vspace{1em}
 \hrule
+\vspace{2em}
+
+\begin{center}
+【提案プロジェクト詳細】
+\end{center}
 \vspace{2em}
 
 % ========== ① 何を作るか ==========
