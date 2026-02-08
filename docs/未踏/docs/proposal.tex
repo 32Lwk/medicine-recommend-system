@@ -3,9 +3,9 @@
 \usepackage{xeCJK}
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
-\setCJKmainfont{Yu Gothic UI}
-\setCJKsansfont{Yu Gothic UI}
-\setCJKmonofont{Yu Gothic UI}
+\setCJKmainfont{Yu Gothic}
+\setCJKsansfont{Yu Mincho}
+\setCJKmonofont{Yu Mincho}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -13,15 +13,33 @@
 \usepackage{url}
 \usepackage{xurl} 
 \usepackage{geometry}
-\geometry{left=2cm,right=2cm,top=2.5cm,bottom=2cm,headheight=14pt,headsep=10pt}
+\geometry{left=2cm,right=2cm,top=2.5cm,bottom=2cm,headheight=25pt,headsep=8pt}
 \usepackage{fancyhdr}
+% ----- ヘッダーの記入場所（ここで位置を調整） -----
+\newcommand{\HeaderLeftIndent}{15pt}   % 左からの余白（例: 0pt, 1em, 5mm）。増やすと右に寄る
+\newcommand{\HeaderVerticalShift}{7pt}% 上下のずれ。正で上に、負で下に（例: 3pt で上へ, -3pt で下へ）
+% -------------------------------------------------
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\parbox[t]{\dimexpr\headwidth-1em\relax}{\small プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
-審査員名: 川嶋宥翔}}
-\renewcommand{\headrulewidth}{0.4pt}
-\fancypagestyle{plain}{\fancyhf{}\fancyhead[L]{\parbox[t]{\dimexpr\headwidth-1em\relax}{\small プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
-審査員名: 川嶋宥翔}}\renewcommand{\headrulewidth}{0.4pt}}
+\fancyheadoffset[L]{\HeaderLeftIndent}
+\fancyhead[L]{\raisebox{\HeaderVerticalShift}{\parbox[t]{\dimexpr\headwidth-1em\relax}{\fontsize{10.5}{13}\selectfont プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
+提案者名: 川嶋宥翔}}}
+\fancypagestyle{plain}{\fancyhf{}\fancyheadoffset[L]{\HeaderLeftIndent}\fancyhead[L]{\raisebox{\HeaderVerticalShift}{\parbox[t]{\dimexpr\headwidth-1em\relax}{\fontsize{10.5}{13}\selectfont プロジェクト名: 潜在空間とルールベースを統合したOTC医薬品推奨システムの実装\\
+提案者名: 川嶋宥翔}}}\renewcommand{\headrulewidth}{0pt}}
+\renewcommand{\headrulewidth}{0pt}
+\newcommand{\SectionFontSize}{12}      % セクション見出し
+\newcommand{\SectionBaseline}{15}       % セクション見出しの行送り
+\newcommand{\SubsectionFontSize}{10.5}  % サブセクション見出し
+\newcommand{\SubsectionBaseline}{13}    % サブセクション見出しの行送り
+% 本文の文字サイズは \documentclass[11pt,...] の 11pt で指定（10pt/11pt/12pt などに変更可）
+\newcommand{\BodyBaselineSkip}{13pt}  % 本文の行間
+\usepackage{titlesec}
+\titleformat{\section}{\fontsize{\SectionFontSize}{\SectionBaseline}\selectfont\bfseries}{\thesection}{0em}{}
+\titleformat{name=\section,numberless}{\fontsize{\SectionFontSize}{\SectionBaseline}\selectfont\bfseries}{}{0em}{}
+\titleformat{\subsection}{\fontsize{\SubsectionFontSize}{\SubsectionBaseline}\selectfont\bfseries}{\thesubsection}{0em}{}
+\titleformat{name=\subsection,numberless}{\fontsize{\SubsectionFontSize}{\SubsectionBaseline}\selectfont\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{1em}{0.25em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.2em}
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{pifont}
@@ -33,28 +51,18 @@
     urlcolor=blue
 }
 
-\title{提案プロジェクト詳細資料}
 \author{}
 \date{}
 
 \begin{document}
-
-% ========== 表紙 ==========
-\begin{center}
-\vspace*{1cm}
-{\Large \textbf{開発テーマ名}}\\[0.8em]
-潜在空間ベクトルとルールベースを統合したOTC医薬品推奨システムの実装\\[2em]
-{\large \textbf{提案者名}}\\[0.5em]
-川嶋 宥翔\\[0.5em]
-\end{center}
-\vspace{1em}
-\hrule
-\vspace{2em}
+\setlength{\baselineskip}{\BodyBaselineSkip}
+\setlength{\lineskip}{0.3em}
 
 \begin{center}
+\fontsize{14}{17}\selectfont\bfseries
 【提案プロジェクト詳細】
 \end{center}
-\vspace{2em}
+\vspace{1em}
 
 % ========== ① 何を作るか ==========
 \section*{\ding{172} 何を作るか}
@@ -77,19 +85,19 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth,keepaspectratio]{../../LaTex/photo/system.png}
+\includegraphics[width=0.8\textwidth,keepaspectratio]{../../LaTex/photo/system.png}
 \caption{図1-1: システム構成（5段階パイプライン：リスク→NLU→禁忌→スコアリング→上位3件推奨）。LLMはNLUに限定。}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth,keepaspectratio]{../../LaTex/photo/dataflow_detailed.png}
+\includegraphics[width=0.8\textwidth,keepaspectratio]{../../LaTex/photo/dataflow_detailed.png}
 \caption{図1-2: データフロー（ルールベース＋潜在空間の流れ）}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth,keepaspectratio]{../../LaTex/photo/defense_layers.png}
+\includegraphics[width=0.8\textwidth,keepaspectratio]{../../LaTex/photo/defense_layers.png}
 \caption{図1-3: 5層防御のイメージ}
 \end{figure}
 
@@ -104,7 +112,7 @@
 \item \textbf{長期（修了後）}: 就職・実務経験を積んだうえで、ドラッグストア向けSaaSやAPI提供を\textbf{未踏アドバンスト}等の枠組みで検討する。第一義は「広く使ってもらう」「社会に出す責任を果たす」であり、ビジネス化はその一形態として位置づける。
 \end{itemize}
 
-\textbf{要約}: 開発物は無料で公開し続け、コアをOSS化して再利用を促す。学会等で技術的評価を得たうえで、修了後は未踏アドバンスト等も視野に実用化を検討する。
+\textbf{要約}: 無料公開とコアのOSS化で利用を促し、学会等で評価を得たうえで、修了後は未踏アドバンスト等も視野に実用化を検討する。
 
 % ========== ③ 斬新さの主張・期待される効果 ==========
 \section*{\ding{174} 斬新さの主張・期待される効果}
@@ -145,7 +153,6 @@
   \item \textbf{自宅}：Windows 11 Home、AMD Ryzen 9 9950X（16コア/32スレッド）、メモリ64GB、NVIDIA GeForce RTX 4070 SUPER
   \item \textbf{大学・外出先}：MacBook Pro（Intel Core i7、16GB、macOS）
 \end{itemize}
-開発は主に自宅のデスクトップで行い、大学・外出先ではノートPCを使用する。
 
 \subsection*{(3) 使用する言語・ツール}
 \begin{table}[H]
@@ -212,7 +219,7 @@ API & OpenAI API（GPT-4o-mini, text-embedding-3-small）, DeepL API（無料枠
 費目 & 内容 & 概算（円） \\
 \midrule
 OpenAI API & 埋め込み・LLM呼び出し（開発・検証・本番） & 40,000～60,000 \\
-AWS & デプロイ・ホスティング（ECS または EC2 等、Render から移行） & 設計確定後に見積もり \\
+AWS & デプロイ・ホスティング（ECS または EC2 等、Render から移行） & AWS移行設計確定後に見積もり \\
 書籍・文献 & 機械学習・NLP・医薬品・セキュリティ関連 & 15,000～25,000 \\
 ドメイン・その他 & ドメイン更新、開発用ツール等 & 5,000～10,000 \\
 \bottomrule
@@ -225,7 +232,7 @@ AWS & デプロイ・ホスティング（ECS または EC2 等、Render から�
 \section*{\ding{176} 提案者（たち）の腕前を証明できるもの}
 
 \begin{itemize}[nosep]
-\item \textbf{本システム}: OTC医薬品推奨システムを個人で設計・開発し、公開運用中（\url{https://medicine-recommend-system.onrender.com}）。5層防御・ルールベーススコアリング・ハイブリッドNLU（辞書＋LLMフォールバック）を実装済み。多言語4言語対応、PostgreSQL 本番運用の実績あり。
+\item \textbf{本システム}: OTC医薬品推奨システムを個人で設計・開発し、公開運用中（\url{https://medicine-recommend-system.onrender.com}）。5層防御・ルールベーススコアリング・ハイブリッドNLU（辞書＋LLMフォールバック）を実装済み。4言語対応、PostgreSQL 本番運用の実績あり。
 \item \textbf{技術スタック}: Python（中級）、Flask、PostgreSQL、OpenAI API を実務レベルで使用している。登録販売者資格を2025年10月に取得しており、医薬品・相談業務の知識を開発に活かしている。
 \item \textbf{受賞歴}: 学生生成AIコンテスト（ユメカタリ）最優秀賞、椙山女学園大学第13回ビジネスコンペティション優秀賞、dodaキャリアゲートウェイ2025アイデアコンペティション審査員特別賞、AWSデジタル社会実現ツアー2025名古屋本戦出場、第9回和歌山県データ利活用コンペティションクオリティソフト賞。
 \item \textbf{資格}: 基本情報技術者、登録販売者。
@@ -239,7 +246,7 @@ AWS & デプロイ・ホスティング（ECS または EC2 等、Render から�
 \item \textbf{学業との両立}: 名古屋大学理学部物理学科2年生（在学中）。指導教員はいない。学業との両立は自己管理で対応する。
 \item \textbf{組織・上司}: 該当なし（学生・個人開発）。マツモトキヨシでのアルバイトは継続するが、プロジェクト開発を優先する時間を確保する。
 \item \textbf{進学・就職・転職・転居}: 開発期間中は特になし。
-\item \textbf{チーム}: 個人開発のため、メンバー構成・分担は該当しない。
+\item \textbf{チーム}: 個人開発のため、該当なし。
 \item \textbf{PM・IPAへの要望・固有の事情}: 特になし。
 \end{itemize}
 
