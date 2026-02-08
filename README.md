@@ -1,10 +1,19 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2026年2月8日**（SRPリファクタリング・chat_handler移行・エラー表示改善）
+**最終更新日: 2026年2月8日**（SRP改善計画完了・ディレクトリ構造・統計情報更新）
 
 ---
 
-**2026年2月8日の更新:** SRP改善計画に基づく大規模リファクタリング完了。Phase 1-5を実施：app.pyの重複排除（session_manager・request_logger・input_helpers・chat_response_serviceの活用）、app.pyの責務分離（RequestSafeSession→request_safe_session、port_utils、error_handlers、Blueprint分割：main/admin/api/feedback）、チャットPOST処理のchat_handler移行（index POST→handle_chat_post）、candidate_scoringの分割（medicine_classifiers・ingredient_utils・score_calculators・influenza_detector）、medicine_logicの軽量化（text_formatter・generate_usage_notes→explanation_generator）、rule_based_recommendationの漢方ロジック分離（kampo_logic）、counseling_responseの分割（counseling_triage・counseling_followup）。chat_handlerへの不足インポート追加（is_symptom_input・is_ambiguous_input・detect_language・select_symptoms_via_gpt・analyze_symptoms_and_medicine_type・rule_based_medicine_recommendation・log_medicine_logic_call・log_network_request・check_missing_attributes・generate_personalized_advice）。妊娠・授乳時レッドフラッグのエスカレーション表示をformat_escalation_displayで統一。エラー時のUIメッセージをユーザーフレンドリーに改善（技術的エラー内容を非表示、再試行案内を表示）。
+**2026年2月8日の更新（SRP改善計画の全Phase完了）:**
+
+- **app.py のスリム化**: アプリ作成・設定（CORS・セッション・DB初期化）・エラーハンドラー登録・Blueprint の import/register・起動処理のみに限定（**約89行**）。ビュー定義はすべて各ルートモジュールに移管。
+- **ルートの責務分離**: `main_routes.py` / `admin_routes.py` / `api_routes.py` / **`feedback_routes.py`** でビューを自モジュール内に定義し、`create_*_routes()` は引数なしで Blueprint を返す形に統一。登録は `app.register_blueprint(create_feedback_routes())` 等。
+- **rule_based_recommendation の分割**: 定数は `recommendation_constants.py` へ。新規 `src/core/recommendation/` に `life_stage_preference.py`・`symptom_pattern_matcher.py`・`recommendation_finalizer.py`・`recommendation_scoring.py` を配置。`rule_based_recommendation.py` はオーケストレーションと re-export のみ（約5,417行）。
+- **medicine_logic の分割**: `src/core/openai_client.py` で OpenAI クライアント初期化を集約。新規 `src/core/medicine/` に `medicine_recommendation_gpt.py`・`medicine_response_builder.py` を配置。`medicine_logic.py` はエントリポイントと re-export のみ（約225行）。
+- **counseling_response の分割**: 新規 `src/services/counseling/` にテンプレート・ログ・プロンプト・生成・質問・満足度・要約・話題転換・モード制御・プロセッサを配置。`counseling_response.py` はファサード（re-export 維持、約112行）。
+- **chat_handler の分割**: 新規 `src/handlers/chat/` に `chat_input_validator.py`（入力検証・ブロック・危機検出）・`chat_response_builder.py`（成功レスポンス組み立て）・`chat_triage.py`・`chat_counseling_flow.py`・`chat_recommendation_flow.py`（インターフェース定義）を配置。`chat_handler.py` は `validate_and_block_input` と `build_success_response` を chat サブモジュールから利用（約6,732行）。
+- **scripts と src の役割**: **scripts/** はリファクタ・コード生成等の開発用スクリプト（build_api_routes、remove_*_views、extract_* 等）。**src/** はアプリケーション本体（core・handlers・routes・services・utils・security・analysis）。実行時は src のみが import される。
+- **妊娠・授乳時レッドフラッグ**のエスカレーション表示を `format_escalation_display` で統一。**エラー表示**をユーザーフレンドリーに改善（技術的エラー内容を非表示、再試行案内を表示）。
 
 ---
 
@@ -194,15 +203,19 @@
 4. **ログファイル** → `log/` フォルダ
    - `app.log`のパス参照を`log/app.log`に更新（次回起動時から適用）
 
-5. **ツール・スクリプト** → `tools/` フォルダ
-   - `auto_log_analyzer.py`（自動ログ分析ツール）
-   - `test_comprehensive.py`（包括的テストスイート）
+5. **テスト・スクリプトの配置**
+   - **テストファイル** → `tests/` フォルダ（`test_comprehensive_integration.py` 等のテストスイート）
+   - **開発・リファクタ用スクリプト** → `scripts/` フォルダ（`build_api_routes.py`、`extract_*`、`remove_*_views.py` 等）
 
 ### 効果
 - プロジェクト構造の明確化
 - ファイル検索の容易化
 - メンテナンス性の向上
 - デプロイ時の設定ファイル管理の簡素化
+
+**scripts/ と src/ の違い（2026年2月8日）:**  
+- **src/** はアプリケーション本体で、実行時に `app.py` 等から import される（core・handlers・routes・services・utils・security・analysis）。  
+- **scripts/** は開発・リファクタ用の補助スクリプトで、リファクタ時のコード生成・抽出・削除等に使い、通常のアプリ起動では読み込まれない。
 
 ## ⚠️ β版（試験運用版）について
 
@@ -2935,9 +2948,13 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `templates/username_input.html`: ユーザー名入力UI
 - `templates/debug_index.html`: デバッグUI
 
-### テスト・ツールファイル（tools/フォルダ）
-- `tools/test_comprehensive.py`: 包括的テストスイート（61個以上のテスト関数を含む）
-- `tools/auto_log_analyzer.py`: 自動ログ分析ツール（包括的なログ分析とMarkdown形式レポート生成）
+### テスト・スクリプト（tests/ と scripts/）
+- **tests/**  
+  - `tests/test_comprehensive_integration.py`: 包括的統合テストスイート（約2,163行）  
+  - `tests/test_diagnosis_detection.py`, `tests/test_dialect_conversion.py`, `tests/test_recommendation_output.py`, `tests/test_scoring_utils.py` 等
+- **scripts/**（開発・リファクタ用。アプリ実行時には読み込まれない）  
+  - `scripts/build_api_routes.py`: APIルート生成  
+  - `scripts/extract_*.py`, `scripts/remove_*_views.py`, `scripts/remove_*.py`: リファクタ用抽出・削除スクリプト
 
 ### ドキュメント（docs/フォルダ）
 - `README.md`: このファイル（ルートに保持）
@@ -2992,72 +3009,83 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `config/requirements.txt`: 依存パッケージリスト（ルートにもコピーを保持）
 - `config/runtime.txt`: Pythonランタイムバージョン（ルートにもコピーを保持）
 
-### フォルダ構造（2026年2月8日更新）
+### フォルダ構造（2026年2月8日更新・SRP分割後）
 ```
-medicine-recommend-system/
-├── config/          # 設定ファイル
-├── data/            # データファイル（CSV、JSON）
-├── docs/            # ドキュメント
-├── log/             # ログファイル
-├── scripts/         # スクリプト（extract_post_to_chat_handler等）
-├── static/          # 静的ファイル（CSS、JS、画像）
-│   ├── css/         # CSSスタイルシート
-│   ├── js/          # JavaScriptファイル
-│   │   └── games/   # ゲームファイル
-│   └── img/         # 画像ファイル
-├── templates/       # テンプレート（HTML）
-├── tests/           # テストファイル
-├── src/             # アプリケーションソースコード
-│   ├── core/        # コアロジック
-│   │   ├── rule_based_recommendation.py  # ルールベース推奨アルゴリズム
-│   │   ├── medicine_logic.py             # 医薬品推奨ロジック
-│   │   ├── candidate_scoring.py          # 候補スコアリング
-│   │   ├── medicine_classifiers.py       # 医薬品タイプ判定（SRP分離）
-│   │   ├── ingredient_utils.py           # 成分抽出・重複チェック（SRP分離）
-│   │   ├── score_calculators.py          # スコア計算（SRP分離）
-│   │   ├── influenza_detector.py         # インフルエンザ検出（SRP分離）
-│   │   ├── kampo_logic.py                # 漢方証判定（SRP分離）
-│   │   ├── nlu_service.py                # NLU・症状抽出
+medicine-recommend/
+├── config/              # 設定（app_config, gunicorn, keywords, dialect_dictionary, settings, requirements.txt, runtime.txt）
+├── data/                # データ（CSV、JSON：医薬品・漢方・相互作用・店舗商品等）
+├── docs/                # ドキュメント・図
+├── log/                 # ログ出力先
+├── scripts/             # 開発・リファクタ用スクリプト（build_api_routes, extract_*, remove_*_views 等）
+├── static/              # 静的ファイル（css/, js/, img/）
+├── templates/           # HTMLテンプレート
+├── tests/               # テスト（test_comprehensive_integration 等）
+├── src/                 # アプリケーション本体（実行時に import される）
+│   ├── core/            # コアロジック
+│   │   ├── recommendation/           # ルールベース推奨の部品
+│   │   │   ├── life_stage_preference.py
+│   │   │   ├── symptom_pattern_matcher.py
+│   │   │   ├── recommendation_finalizer.py
+│   │   │   └── recommendation_scoring.py
+│   │   ├── medicine/                 # 医薬品推奨の部品（GPT・レスポンス組み立て）
+│   │   │   ├── medicine_recommendation_gpt.py
+│   │   │   └── medicine_response_builder.py
+│   │   ├── openai_client.py         # OpenAI クライアント初期化
+│   │   ├── rule_based_recommendation.py  # 推奨オーケストレーション・re-export
+│   │   ├── medicine_logic.py        # 総合推奨エントリ・re-export
+│   │   ├── candidate_scoring.py
+│   │   ├── nlu_service.py
+│   │   ├── scoring_utils.py
+│   │   ├── kampo_logic.py
 │   │   └── ...
-│   ├── handlers/    # リクエストハンドラー
-│   │   ├── chat_handler.py               # チャットPOST処理（医薬品相談）
-│   │   └── error_handlers.py             # エラーハンドラー
-│   ├── routes/      # Flask Blueprintルート
-│   │   ├── main_routes.py                # メイン画面・チャット
-│   │   ├── admin_routes.py               # 管理画面
-│   │   ├── api_routes.py                 # 汎用API
-│   │   └── feedback_routes.py            # フィードバックAPI
-│   ├── services/    # サービス層
-│   │   ├── counseling_response.py        # カウンセリング応答
-│   │   ├── counseling_triage.py          # 相談トリアージ（SRP分離）
-│   │   ├── counseling_followup.py        # フォローアップ質問（SRP分離）
-│   │   ├── store_inquiry_handler.py      # 店舗案内・遺失物対応
-│   │   ├── store_emergency_handler.py    # 緊急事案検出
-│   │   ├── text_formatter.py             # テキスト変換（SRP分離）
+│   ├── handlers/
+│   │   ├── chat/                     # チャットPOSTの部品
+│   │   │   ├── chat_input_validator.py
+│   │   │   ├── chat_response_builder.py
+│   │   │   ├── chat_triage.py
+│   │   │   ├── chat_counseling_flow.py
+│   │   │   └── chat_recommendation_flow.py
+│   │   ├── chat_handler.py           # チャットPOSTオーケストレーション
+│   │   └── error_handlers.py
+│   ├── routes/          # 各Blueprintでビューも定義
+│   │   ├── main_routes.py
+│   │   ├── admin_routes.py
+│   │   ├── api_routes.py
+│   │   └── feedback_routes.py
+│   ├── services/
+│   │   ├── counseling/               # カウンセリングの部品
+│   │   │   ├── counseling_templates.py
+│   │   │   ├── counseling_logger.py
+│   │   │   ├── counseling_prompts.py
+│   │   │   ├── counseling_generator.py
+│   │   │   ├── counseling_questions.py
+│   │   │   ├── counseling_satisfaction.py
+│   │   │   ├── counseling_summary.py
+│   │   │   ├── counseling_topic_shift.py
+│   │   │   ├── counseling_mode_handler.py
+│   │   │   └── counseling_processor.py
+│   │   ├── counseling_response.py   # ファサード・re-export
+│   │   ├── counseling_triage.py
+│   │   ├── counseling_followup.py
+│   │   ├── store_inquiry_handler.py
 │   │   └── ...
-│   ├── utils/       # ユーティリティ
-│   │   ├── request_safe_session.py       # セッションラッパー（SRP分離）
-│   │   ├── port_utils.py                 # ポート検出（SRP分離）
-│   │   ├── candidate_normalizer.py       # 候補キー正規化
-│   │   └── ...
-│   ├── security/    # セキュリティ
-│   └── analysis/    # ログ分析
-├── app.py           # メインアプリケーション（Blueprint登録・ルート委譲）
-├── admin_app.py     # 管理者用Webアプリケーション
-├── debug_app.py     # デバッグ用Webアプリケーション
-├── requirements.txt # デプロイ用（ルートに保持）
-├── runtime.txt      # デプロイ用（ルートに保持）
-└── README.md        # メインドキュメント（ルートに保持）
+│   ├── utils/
+│   ├── security/
+│   └── analysis/
+├── app.py               # エントリ（作成・設定・Blueprint登録・起動のみ、約89行）
+├── requirements.txt     # ルートと config/ に保持
+├── runtime.txt
+└── README.md
 ```
 
 ## プロジェクト統計
 
-### コード行数と言語別の割合（2026年2月8日時点）
+### コード行数と言語別の割合（2026年2月8日時点・SRP分割後）
 
 | 言語 | ファイル数 | 行数 | 割合 |
 |------|-----------|------|------|
 | **CSV** | 5 | 108,162 | 63.48% |
-| **Python** | 90+ | 約45,000 | 約26% |
+| **Python** | 90+ | 約43,000（src 約40,879 + tests/scripts/ルート等） | 約26% |
 | **Markdown** | 31 | 13,676 | 8.03% |
 | **JavaScript** | 5 | 13,897 | 8.16% |
 | **CSS** | 3 | 6,928 | 4.07% |
@@ -3075,18 +3103,20 @@ medicine-recommend-system/
 - `data/medicine_interactions.csv` - 83行（相互作用データ）
 - `data/medicine_side_effects.csv` - 51行（副作用データ）
 
-**Pythonファイル（src/リファクタリング後）:**
-- `src/handlers/chat_handler.py` - 約6,920行（チャットPOST処理・医薬品相談）
-- `src/core/rule_based_recommendation.py` - 約6,190行（ルールベース推奨アルゴリズム）
-- `src/services/counseling_response.py` - 約2,580行（カウンセリング応答）
-- `src/core/scoring_utils.py` - 約2,570行（スコアリングユーティリティ）
-- `tests/test_comprehensive_integration.py` - 約2,160行（包括的テストスイート）
+**Pythonファイル（SRP分割後・2026年2月8日）:**
+- `src/handlers/chat_handler.py` - 約6,732行（チャットPOSTオーケストレーション・医薬品相談）
+- `src/core/rule_based_recommendation.py` - 約5,417行（ルールベース推奨オーケストレーション・re-export）
+- `src/core/scoring_utils.py` - 約2,574行（スコアリングユーティリティ）
+- `tests/test_comprehensive_integration.py` - 約2,163行（包括的テストスイート）
 - `src/core/candidate_scoring.py` - 約2,116行（候補スコアリング）
-- `app.py` - 約1,740行（メインアプリケーション・Blueprint登録）
+- `src/routes/api_routes.py` - 約988行（APIルート・ビュー定義）
 - `src/services/store_inquiry_handler.py` - 約1,625行（店舗案内・遺失物対応）
-- `src/security/security_validator.py` - 約1,280行（セキュリティ検証）
+- `src/security/security_validator.py` - 約1,282行（セキュリティ検証）
 - `test_menstrual_recommendations.py` - 約1,270行（月経・生理痛テスト）
-- `src/core/medicine_logic.py` - 約1,100行（医薬品推奨ロジック）
+- `src/routes/admin_routes.py` - 約383行（管理画面ルート・ビュー）
+- `src/core/medicine_logic.py` - 約225行（総合推奨エントリ・re-export）
+- `src/services/counseling_response.py` - 約112行（カウンセリングファサード・re-export）
+- `app.py` - **約89行**（Flask作成・設定・Blueprint登録・起動のみ）
 
 **Markdownファイル（docs/フォルダ）:**
 - `docs/会社向け概要書類.md` - 3,342行
@@ -3115,13 +3145,14 @@ medicine-recommend-system/
 
 #### 統計のまとめ
 
-- **合計行数**: 約185,508行（2026年2月8日時点、SRPリファクタリングによりモジュール分割・増加）
-- **合計ファイル数**: 約150ファイル（2026年2月8日時点、src/配下の新規モジュール追加により増加）
+- **合計行数**: 約185,508行（2026年2月8日時点）
+- **合計ファイル数**: 約150ファイル
+- **src/ 配下 Python**: 約40,879行（core・handlers・routes・services・utils・security・analysis）
 - **最大の言語**: CSV（63.48%）—主に医薬品データベース
 - **コード言語**: Python（約26%）—アプリケーションの主要ロジック
 - **フロントエンド**: JavaScript（8.16%）+ CSS（4.07%）+ HTML（1.55%）= 約13.78%
 
-**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。2026年2月8日のSRPリファクタリングにより、app.pyからchat_handler、Blueprintルート、各種ユーティリティ・サービスが分離され、rule_based_recommendation・candidate_scoring・counseling_responseがサブモジュールに分割されました。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。2026年2月8日のSRP改善計画完了により、app.py は約89行のエントリにスリム化され、ビューは各 routes に、推奨ロジックは core/recommendation/ と core/medicine/、カウンセリングは services/counseling/、チャット処理の一部は handlers/chat/ に分割されています。scripts/ は開発・リファクタ用スクリプト、src/ は実行時に import されるアプリ本体です。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
 
 ## セキュリティと安全性
 
@@ -3524,11 +3555,15 @@ DEBUG_MODE=true
 
 ### 包括的テストスイート
 ```bash
-python test_comprehensive.py      # 全機能の統合テスト
-python test_comprehensive_security.py  # セキュリティ機能テスト
-python test_enhanced_safety.py    # 安全性チェックテスト
-python test_security_validator.py # セキュリティ検証テスト
+# 統合テスト（tests/ 配下）
+python -m pytest tests/test_comprehensive_integration.py -v
+# または
+python -m pytest tests/ -v
+
+# ルートに配置されているテスト
+python test_menstrual_recommendations.py   # 月経・生理痛推奨テスト
 ```
+（`test_comprehensive_security.py`・`test_enhanced_safety.py`・`test_security_validator.py` 等がルートまたは tests に存在する場合は、同様に `python -m pytest パス` または `python パス/スクリプト.py` で実行）
 
 ### テスト内容
 - **ルールベース推奨**: 全医薬品種類の推奨テスト
@@ -5035,9 +5070,7 @@ POST /api/admin_mode      # 管理者モード切り替え
   - **ドキュメントの整理**: 技術ドキュメントと日本語ドキュメントを`docs/`フォルダに集約
     - `ASYNC_IMPLEMENTATION_GUIDE.md`、`ASYNC_QUICK_START.md`、`C_OPTIMIZATION_ANALYSIS.md`、`REGRESSION_TEST_GUIDE.md`、`SCALING_SETUP.md`、`SECURITY_IMPLEMENTATION.md`を移動
     - 日本語ドキュメント（アプリ概要.md、プライバシーポリシー.md など）も`docs/`フォルダに移動
-  - **ツール・スクリプトの整理**: `tools/`フォルダを作成し、分析ツールとテストを集約
-    - `auto_log_analyzer.py`（自動ログ分析ツール）を`tools/`フォルダに移動
-    - `test_comprehensive.py`（包括的テストスイート）を`tools/`フォルダに移動
+  - **テスト・スクリプトの配置**: テストは`tests/`フォルダ（例: `test_comprehensive_integration.py`）、開発・リファクタ用スクリプトは`scripts/`フォルダに配置（2026年2月8日時点では`scripts/`に build_api_routes、extract_*、remove_* 等）
   - **ログファイルの整理**: `app.log`のパス参照を`log/app.log`に更新（次回起動時から適用）
   - **効果**: プロジェクト構造の明確化、ファイル検索の容易化、メンテナンス性の向上
 
