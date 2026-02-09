@@ -1,6 +1,16 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2026年2月8日**（SRP改善計画完了・ディレクトリ構造・統計情報更新）
+**最終更新日: 2026年2月9日**（不適切ワード対応・UI表示改善・統計情報更新）
+
+---
+
+**2026年2月9日の更新:**
+
+- **不適切入力のブロックとUI表示の改善**: 絶対ブロック・セキュリティブロック時に、従来の `error: true` レスポンスではフロントが何も表示しなかった問題を解消。ブロック時もセッションに「（この入力はブロックされました）」＋案内メッセージを追加し、**DB（またはメモリ）に永続化**して `status: 'ok'` と `message_count` で返すように変更。これにより GET /api/sessions でメッセージが取得され、UI に案内が表示される。
+- **ブロック時の永続化**: `chat_input_validator.py` に `_persist_block_messages_to_db(session, request, sid)` を追加。絶対ブロック・セキュリティブロック・高リスク警告のいずれでも、Flask session に追加したメッセージを `save_session_to_db` で保存するようにした。
+- **不適切ワードの拡張**: `config/keywords.py` の `INAPPROPRIATE_MESSAGE_KEYWORDS` を拡張。**スカトロ**に加え、**パパ活**（ぱぱかつ、ぱぱ活、逆援助、sugar daddy / sugar baby）、**おっぱぶ**（オッパブ、おっぱいぶ）、**ナンパ・出会い系**、**ロリコン・ショタコン**、**ビッチ・ヤリマン・種付け**、**オーラル**などを追加し、多様な不適切表現に対応。
+- **セキュリティブロック以外はユーザーフレンドリーなプレーンテキスト**: 絶対ブロック時の案内文を「ご入力いただいた内容にはお答えできかねます。お体の不調やお薬のご相談がありましたら、お気軽にメッセージをお送りください。」に変更（プレーンテキスト・ユーザーフレンドリー）。
+- **UI に元入力を表示（正規化でひらがなにならないように）**: `basic_normalize_text()` によりカタカナ→ひらがな変換した結果がそのまま UI に表示されていた問題を修正。ユーザー発言としてセッションに追加する際は **正規化前の元入力**（`original_user_message` / `user_message`）を使用するように変更。`chat_handler.py`（Other ブロック）と `chat_triage_follow_ups.py`（医薬的予防・不適切要求の 2 箇所）で対応。
 
 ---
 
@@ -8,10 +18,10 @@
 
 - **app.py のスリム化**: アプリ作成・設定（CORS・セッション・DB初期化）・エラーハンドラー登録・Blueprint の import/register・起動処理のみに限定（**約89行**）。ビュー定義はすべて各ルートモジュールに移管。
 - **ルートの責務分離**: `main_routes.py` / `admin_routes.py` / `api_routes.py` / **`feedback_routes.py`** でビューを自モジュール内に定義し、`create_*_routes()` は引数なしで Blueprint を返す形に統一。登録は `app.register_blueprint(create_feedback_routes())` 等。
-- **rule_based_recommendation の分割**: 定数は `recommendation_constants.py` へ。新規 `src/core/recommendation/` に `life_stage_preference.py`・`symptom_pattern_matcher.py`・`recommendation_finalizer.py`・`recommendation_scoring.py` を配置。`rule_based_recommendation.py` はオーケストレーションと re-export のみ（約5,417行）。
-- **medicine_logic の分割**: `src/core/openai_client.py` で OpenAI クライアント初期化を集約。新規 `src/core/medicine/` に `medicine_recommendation_gpt.py`・`medicine_response_builder.py` を配置。`medicine_logic.py` はエントリポイントと re-export のみ（約225行）。
-- **counseling_response の分割**: 新規 `src/services/counseling/` にテンプレート・ログ・プロンプト・生成・質問・満足度・要約・話題転換・モード制御・プロセッサを配置。`counseling_response.py` はファサード（re-export 維持、約112行）。
-- **chat_handler の分割**: 新規 `src/handlers/chat/` に `chat_input_validator.py`（入力検証・ブロック・危機検出）・`chat_response_builder.py`（成功レスポンス組み立て）・`chat_triage.py`・`chat_counseling_flow.py`・`chat_recommendation_flow.py`（インターフェース定義）を配置。`chat_handler.py` は `validate_and_block_input` と `build_success_response` を chat サブモジュールから利用（約6,732行）。
+- **rule_based_recommendation の分割**: 定数は `recommendation_constants.py` へ。新規 `src/core/recommendation/` に `life_stage_preference.py`・`symptom_pattern_matcher.py`・`recommendation_finalizer.py`・`recommendation_scoring.py`・`ingredient_diversity.py`・`final_score_calculator.py` を配置。`rule_based_recommendation.py` はオーケストレーションと re-export のみ（約1,580行）。
+- **medicine_logic の分割**: `src/core/openai_client.py` で OpenAI クライアント初期化を集約。新規 `src/core/medicine/` に `medicine_recommendation_gpt.py`・`medicine_response_builder.py` を配置。`medicine_logic.py` はエントリポイントと re-export のみ（約215行）。
+- **counseling_response の分割**: 新規 `src/services/counseling/` にテンプレート・ログ・プロンプト・生成・質問・満足度・要約・話題転換・モード制御・プロセッサを配置。`counseling_response.py` はファサード（re-export 維持、約104行）。
+- **chat_handler の分割**: 新規 `src/handlers/chat/` に `chat_input_validator.py`（入力検証・ブロック・危機検出・ブロック時のDB保存）・`chat_response_builder.py`・`chat_triage.py`・`chat_counseling_flow.py`・`chat_recommendation_flow.py`・`chat_manual_reply.py`・`chat_emergency_handler.py`・`chat_diagnosis_handler.py`・`chat_store_inquiry.py`・`chat_triage_follow_ups.py` を配置。`chat_handler.py` はオーケストレーション（約2,641行）。
 - **scripts と src の役割**: **scripts/** はリファクタ・コード生成等の開発用スクリプト（build_api_routes、remove_*_views、extract_* 等）。**src/** はアプリケーション本体（core・handlers・routes・services・utils・security・analysis）。実行時は src のみが import される。
 - **妊娠・授乳時レッドフラッグ**のエスカレーション表示を `format_escalation_display` で統一。**エラー表示**をユーザーフレンドリーに改善（技術的エラー内容を非表示、再試行案内を表示）。
 
@@ -3009,7 +3019,7 @@ safe_json_parse(result, schema='medicine_recommendation')
 - `config/requirements.txt`: 依存パッケージリスト（ルートにもコピーを保持）
 - `config/runtime.txt`: Pythonランタイムバージョン（ルートにもコピーを保持）
 
-### フォルダ構造（2026年2月8日更新・SRP分割後）
+### フォルダ構造（2026年2月9日更新・SRP分割後）
 ```
 medicine-recommend/
 ├── config/              # 設定（app_config, gunicorn, keywords, dialect_dictionary, settings, requirements.txt, runtime.txt）
@@ -3026,12 +3036,15 @@ medicine-recommend/
 │   │   │   ├── life_stage_preference.py
 │   │   │   ├── symptom_pattern_matcher.py
 │   │   │   ├── recommendation_finalizer.py
-│   │   │   └── recommendation_scoring.py
+│   │   │   ├── recommendation_scoring.py
+│   │   │   ├── ingredient_diversity.py
+│   │   │   └── final_score_calculator.py
 │   │   ├── medicine/                 # 医薬品推奨の部品（GPT・レスポンス組み立て）
 │   │   │   ├── medicine_recommendation_gpt.py
 │   │   │   └── medicine_response_builder.py
 │   │   ├── openai_client.py         # OpenAI クライアント初期化
 │   │   ├── rule_based_recommendation.py  # 推奨オーケストレーション・re-export
+│   │   ├── recommendation_constants.py   # 定数・データ構造
 │   │   ├── medicine_logic.py        # 総合推奨エントリ・re-export
 │   │   ├── candidate_scoring.py
 │   │   ├── nlu_service.py
@@ -3040,11 +3053,16 @@ medicine-recommend/
 │   │   └── ...
 │   ├── handlers/
 │   │   ├── chat/                     # チャットPOSTの部品
-│   │   │   ├── chat_input_validator.py
+│   │   │   ├── chat_input_validator.py   # 入力検証・絶対/セキュリティブロック・DB保存
 │   │   │   ├── chat_response_builder.py
 │   │   │   ├── chat_triage.py
 │   │   │   ├── chat_counseling_flow.py
-│   │   │   └── chat_recommendation_flow.py
+│   │   │   ├── chat_recommendation_flow.py
+│   │   │   ├── chat_manual_reply.py
+│   │   │   ├── chat_emergency_handler.py
+│   │   │   ├── chat_diagnosis_handler.py
+│   │   │   ├── chat_store_inquiry.py
+│   │   │   └── chat_triage_follow_ups.py
 │   │   ├── chat_handler.py           # チャットPOSTオーケストレーション
 │   │   └── error_handlers.py
 │   ├── routes/          # 各Blueprintでビューも定義
@@ -3080,12 +3098,12 @@ medicine-recommend/
 
 ## プロジェクト統計
 
-### コード行数と言語別の割合（2026年2月8日時点・SRP分割後）
+### コード行数と言語別の割合（2026年2月9日時点・SRP分割後）
 
 | 言語 | ファイル数 | 行数 | 割合 |
 |------|-----------|------|------|
 | **CSV** | 5 | 108,162 | 63.48% |
-| **Python** | 90+ | 約43,000（src 約40,879 + tests/scripts/ルート等） | 約26% |
+| **Python** | 90+ | 約43,000（src 約37,967 + tests/scripts/ルート等） | 約26% |
 | **Markdown** | 31 | 13,676 | 8.03% |
 | **JavaScript** | 5 | 13,897 | 8.16% |
 | **CSS** | 3 | 6,928 | 4.07% |
@@ -3094,7 +3112,7 @@ medicine-recommend/
 | **Config** | 2 | 14 | 0.01% |
 | **合計** | **約150** | **約185,508** | **100.00%** |
 
-#### 主要ファイル（各言語の上位ファイル・2026年2月8日時点）
+#### 主要ファイル（各言語の上位ファイル・2026年2月9日時点）
 
 **CSVファイル（data/フォルダ）:**
 - `data/otc_medicine_data.csv` - 93,814行（市販薬データベース）
@@ -3103,24 +3121,26 @@ medicine-recommend/
 - `data/medicine_interactions.csv` - 83行（相互作用データ）
 - `data/medicine_side_effects.csv` - 51行（副作用データ）
 
-**Pythonファイル（SRP分割後・2026年2月8日）:**
-- `src/handlers/chat_handler.py` - 約6,732行（チャットPOSTオーケストレーション・医薬品相談）
-- `src/core/rule_based_recommendation.py` - 約5,417行（ルールベース推奨オーケストレーション・re-export）
-- `src/core/scoring_utils.py` - 約2,574行（スコアリングユーティリティ）
-- `tests/test_comprehensive_integration.py` - 約2,163行（包括的テストスイート）
-- `src/core/candidate_scoring.py` - 約2,116行（候補スコアリング）
-- `src/routes/api_routes.py` - 約988行（APIルート・ビュー定義）
+**Pythonファイル（SRP分割後・2026年2月9日）:**
+- `src/handlers/chat/chat_recommendation_flow.py` - 約2,573行（医薬品推奨フロー）
+- `src/handlers/chat_handler.py` - 約2,641行（チャットPOSTオーケストレーション・医薬品相談）
+- `src/core/rule_based_recommendation.py` - 約1,580行（ルールベース推奨オーケストレーション・re-export）
+- `src/core/scoring_utils.py` - 約2,493行（スコアリングユーティリティ）
+- `tests/test_comprehensive_integration.py` - 約2,151行（包括的テストスイート）
+- `src/core/candidate_scoring.py` - 約1,911行（候補スコアリング）
+- `src/routes/api_routes.py` - 約948行（APIルート・ビュー定義）
 - `src/services/store_inquiry_handler.py` - 約1,625行（店舗案内・遺失物対応）
 - `src/security/security_validator.py` - 約1,282行（セキュリティ検証）
+- `src/core/recommendation_constants.py` - 約623行（ルールベース推奨用定数）
 - `test_menstrual_recommendations.py` - 約1,270行（月経・生理痛テスト）
 - `src/routes/admin_routes.py` - 約383行（管理画面ルート・ビュー）
-- `src/core/medicine_logic.py` - 約225行（総合推奨エントリ・re-export）
-- `src/services/counseling_response.py` - 約112行（カウンセリングファサード・re-export）
+- `src/core/medicine_logic.py` - 約215行（総合推奨エントリ・re-export）
+- `src/services/counseling_response.py` - 約104行（カウンセリングファサード・re-export）
 - `app.py` - **約89行**（Flask作成・設定・Blueprint登録・起動のみ）
 
 **Markdownファイル（docs/フォルダ）:**
 - `docs/会社向け概要書類.md` - 3,342行
-- `README.md` - 3,914行（このファイル）
+- `README.md` - 約5,279行（このファイル・2026年2月9日更新）
 - `docs/ASYNC_IMPLEMENTATION_GUIDE.md` - 1,045行
 - `docs/企業向け簡略版概要資料.md` - 717行
 - その他のドキュメントファイル
@@ -3145,14 +3165,14 @@ medicine-recommend/
 
 #### 統計のまとめ
 
-- **合計行数**: 約185,508行（2026年2月8日時点）
+- **合計行数**: 約185,508行（2026年2月9日時点）
 - **合計ファイル数**: 約150ファイル
-- **src/ 配下 Python**: 約40,879行（core・handlers・routes・services・utils・security・analysis）
+- **src/ 配下 Python**: 約37,967行（core・handlers・routes・services・utils・security・analysis）
 - **最大の言語**: CSV（63.48%）—主に医薬品データベース
 - **コード言語**: Python（約26%）—アプリケーションの主要ロジック
 - **フロントエンド**: JavaScript（8.16%）+ CSS（4.07%）+ HTML（1.55%）= 約13.78%
 
-**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。2026年2月8日のSRP改善計画完了により、app.py は約89行のエントリにスリム化され、ビューは各 routes に、推奨ロジックは core/recommendation/ と core/medicine/、カウンセリングは services/counseling/、チャット処理の一部は handlers/chat/ に分割されています。scripts/ は開発・リファクタ用スクリプト、src/ は実行時に import されるアプリ本体です。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
+**注意**: データファイル（CSV）が大部分を占めており、実装コードは主にPythonで記述されています。2026年2月8日のSRP改善計画完了により、app.py は約89行のエントリにスリム化され、ビューは各 routes に、推奨ロジックは core/recommendation/ と core/medicine/、カウンセリングは services/counseling/、チャット処理の一部は handlers/chat/ に分割されています。2026年2月9日に不適切ワード対応の拡充・ブロック時のDB保存・UI表示の改善（元入力表示・案内メッセージ表示）を実施。scripts/ は開発・リファクタ用スクリプト、src/ は実行時に import されるアプリ本体です。フロントエンドはバニラJavaScriptとCSSで実装されており、フレームワークは使用していません。
 
 ## セキュリティと安全性
 
@@ -3775,6 +3795,17 @@ POST /api/admin_mode      # 管理者モード切り替え
 - 開発リポジトリ: https://github.com/32Lwk
 
 ## 📝 最近の更新履歴
+
+### 2026年2月9日（不適切ワード対応・ブロック時のUI/DB改善・元入力表示）
+- **不適切入力のブロックとUI表示の改善**
+  - 絶対ブロック・セキュリティブロック時に、従来の `error: true` レスポンスではフロントが何も表示しなかった問題を解消。ブロック時もセッションに「（この入力はブロックされました）」＋案内メッセージを追加し、**DB（またはメモリ）に永続化**して `status: 'ok'` と `message_count` で返すように変更（`chat_input_validator.py` に `_persist_block_messages_to_db` を追加）。
+  - これにより GET /api/sessions でメッセージが取得され、UI に案内が表示される。
+- **不適切ワードの拡張**（`config/keywords.py`）
+  - **スカトロ**に加え、**パパ活**（ぱぱかつ、ぱぱ活、逆援助、sugar daddy / sugar baby）、**おっぱぶ**（オッパブ、おっぱいぶ）、**ナンパ・出会い系**、**ロリコン・ショタコン**、**ビッチ・ヤリマン・種付け**、**オーラル**などを `INAPPROPRIATE_MESSAGE_KEYWORDS` に追加。
+- **セキュリティブロック以外はユーザーフレンドリーなプレーンテキスト**
+  - 絶対ブロック時の案内文を「ご入力いただいた内容にはお答えできかねます。お体の不調やお薬のご相談がありましたら、お気軽にメッセージをお送りください。」に変更。
+- **UI に元入力を表示（正規化でひらがなにならないように）**
+  - `basic_normalize_text()` によりカタカナ→ひらがな変換した結果がそのまま UI に表示されていた問題を修正。ユーザー発言としてセッションに追加する際は **正規化前の元入力**（`original_user_message` / `user_message`）を使用するように変更（`chat_handler.py` の Other ブロック、`chat_triage_follow_ups.py` の医薬的予防・不適切要求の 2 箇所）。
 
 ### 2026年2月8日（SRPリファクタリング・chat_handler移行・エラー表示改善）
 - **SRP改善計画に基づく大規模リファクタリング完了**
