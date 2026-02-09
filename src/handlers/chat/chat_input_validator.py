@@ -21,6 +21,28 @@ from src.services.session_manager import (
 logger = logging.getLogger(__name__)
 
 
+def _persist_block_messages_to_db(session, request, sid):
+    """ブロック時にFlask sessionへ追加したメッセージをDB（またはメモリ）に保存する。"""
+    if not sid:
+        return
+    session_data = get_session_from_db(sid)
+    if not session_data:
+        session_data = {
+            'session_id': sid,
+            'username': session.get('username', 'Unknown'),
+            'messages': list(session.get('messages', [])),
+            'last_activity': datetime.now(),
+            'client_ip': request.remote_addr,
+            'user_agent': request.headers.get('User-Agent', ''),
+            'user_attributes': session.get('user_attributes', {}),
+            'session_active': True,
+        }
+    else:
+        session_data['messages'] = list(session.get('messages', []))
+        session_data['last_activity'] = datetime.now()
+    save_session_to_db(sid, session_data)
+
+
 def validate_and_block_input(session, request, user_message, sid):
     """
     入力の検証・ブロック・危機検出を行う。
@@ -32,9 +54,31 @@ def validate_and_block_input(session, request, user_message, sid):
         blocked, _ = is_absolutely_blocked(user_message)
         if blocked:
             logger.warning("🚫 絶対ブロックリストにより入力が拒否されました")
+            # セキュリティブロック以外の不適切内容はユーザーフレンドリーなプレーンテキストで返す
+            block_message = (
+                'ご入力いただいた内容にはお答えできかねます。'
+                'お体の不調やお薬のご相談がありましたら、お気軽にメッセージをお送りください。'
+            )
+            if 'messages' not in session:
+                session['messages'] = []
+            session['messages'].append({
+                'type': 'user',
+                'content': '（この入力はブロックされました）',
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4())
+            })
+            session['messages'].append({
+                'type': 'bot',
+                'content': block_message,
+                'timestamp': datetime.now().isoformat()
+            })
+            session.modified = True
+            _persist_block_messages_to_db(session, request, sid)
+            message_count = len(session['messages'])
             return (None, jsonify({
-                'error': True,
-                'response': '申し訳ございませんが、その内容にはお答えできません。症状や医薬品に関するご相談がありましたら、お気軽にお尋ねください。'
+                'status': 'ok',
+                'message_count': message_count,
+                'response': block_message
             }))
     except ImportError:
         pass
@@ -56,17 +100,49 @@ def validate_and_block_input(session, request, user_message, sid):
         )
         if should_block_input(risk_score):
             logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
+            block_message = '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
+            if 'messages' not in session:
+                session['messages'] = []
+            session['messages'].append({
+                'type': 'user',
+                'content': '（この入力はブロックされました）',
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4())
+            })
+            session['messages'].append({
+                'type': 'bot',
+                'content': block_message,
+                'timestamp': datetime.now().isoformat()
+            })
+            session.modified = True
+            _persist_block_messages_to_db(session, request, sid)
             return (None, jsonify({
-                'error': True,
-                'response': '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。',
-                'risk_score': risk_score
+                'status': 'ok',
+                'message_count': len(session['messages']),
+                'response': block_message
             }))
         if risk_score >= 80:
             logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
+            warn_message = '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
+            if 'messages' not in session:
+                session['messages'] = []
+            session['messages'].append({
+                'type': 'user',
+                'content': '（この入力はブロックされました）',
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4())
+            })
+            session['messages'].append({
+                'type': 'bot',
+                'content': warn_message,
+                'timestamp': datetime.now().isoformat()
+            })
+            session.modified = True
+            _persist_block_messages_to_db(session, request, sid)
             return (None, jsonify({
-                'warning': True,
-                'response': '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。',
-                'risk_score': risk_score
+                'status': 'ok',
+                'message_count': len(session['messages']),
+                'response': warn_message
             }))
         log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
     except ImportError as e:
