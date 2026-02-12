@@ -5,6 +5,16 @@
 
 ---
 
+## 移行完了後の状況（2026年2月）
+
+- **アプリ**: GCP Cloud Run へ移行済み。GitHub 連携で継続的デプロイ。
+- **データベース**: **Neon PostgreSQL** を採用（Cloud SQL は使用しない）。無料枠で運用可能。
+- **本番 URL**: [https://medicine-recommend-340042923793.asia-northeast1.run.app/](https://medicine-recommend-340042923793.asia-northeast1.run.app/)
+
+以下は移行時の計画・手順の記録です。Neon を採用したため、Cloud SQL 関連の手順は参考用として残しています。
+
+---
+
 ## 1. 移行の全体像
 
 | フェーズ | 内容 | 目安期間 |
@@ -44,14 +54,38 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 | 2.3.1 | **シークレットの作成** | Secret Manager で以下を作成し、値を登録: `OPENAI_API_KEY`, `DEEPL_API_KEY`（使用時）, `SECRET_KEY`, `DATABASE_URL`（本番用接続文字列）。 |
 | 2.3.2 | **バージョン管理** | 各シークレットは「バージョン」で管理。Cloud Run では「latest」または特定バージョンを指定可能。 |
 
-### 2.4 Cloud SQL（PostgreSQL）（Phase 2）
+### 2.4 データベース: Neon を採用した場合（推奨・本プロジェクトで採用）
+
+本プロジェクトでは **Neon PostgreSQL**（サーバーレス）を採用しています。Cloud SQL は使用しません。
 
 | # | 作業内容 | 手順・補足 |
 |---|----------|------------|
-| 2.4.1 | **Cloud SQL インスタンス作成** | Cloud SQL → PostgreSQL を選択。世代は第2世代推奨。リージョンは Cloud Run と同じ（例: `asia-northeast1`）にするとレイテンシが良い。 |
-| 2.4.2 | **DB 作成・ユーザ設定** | インスタンス内にデータベース（例: `medicine_recommend`）とユーザを作成。パスワードを Secret Manager に登録し、`DATABASE_URL` として参照する形を推奨。 |
-| 2.4.3 | **接続方式** | Cloud Run からは「プライベート IP」または「Cloud SQL Auth Proxy」利用を推奨。パブリック IP の場合は「承認済みネットワーク」を最小限に。 |
-| 2.4.4 | **SSL** | 本番では SSL 接続を有効にし、`DATABASE_URL` に `?sslmode=require` 等を付与（アプリ側で対応）。 |
+| 2.4.1 | **Neon でプロジェクト作成** | [Neon](https://neon.tech) でサインアップし、プロジェクト作成。リージョンは Tokyo や Singapore などアジアを選択するとレイテンシが良い。 |
+| 2.4.2 | **接続文字列の取得** | Neon コンソールの「Connect」から Connection string をコピー。**Connection pooling** を有効にしたプール接続（ホスト名に `-pooler` が付く）を推奨。 |
+| 2.4.3 | **DATABASE_URL の設定** | Cloud Run の環境変数に `DATABASE_URL` を設定。形式例: `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require` |
+| 2.4.4 | **Cloud SQL 接続は不要** | Neon 利用時は Cloud Run の「Cloud SQL 接続」は追加しない。 |
+
+**Neon 無料枠の接続数について**
+
+- Neon のプラン表には「接続数」の単独項目はありません。接続は **接続プール（PgBouncer）** と **Postgres の max_connections** で決まります。
+- **プール経由（推奨）**: PgBouncer は最大 **10,000 クライアント接続** を受け付けます。実際の Postgres への接続数は compute サイズに応じた `max_connections` で制限され、その約 90% がプールサイズになります。
+- **Compute サイズと max_connections**（[Neon ドキュメント](https://neon.tech/docs/connect/connection-pooling) より）:
+  - 0.25 CU: **104**（アプリ利用は約 **97**、7 は予約）
+  - 0.5 CU: 209
+  - 1 CU: 419
+  - 2 CU: 839
+- 無料枠は 100 CU-hours/月・最大 2 CU までオートスケール。スケールゼロ時は 0.25 CU 程度で起動することが多いため、**実質的には約 97 本** を目安にするとよいです。
+- **推奨**: Cloud Run のようにインスタンスが増減する場合は、アプリ側の `DB_MAX_CONNECTIONS` を **5〜10** 程度に抑えると、無料枠内で安定しやすくなります。
+
+### 2.4' Cloud SQL（PostgreSQL）を使う場合（参考・本プロジェクトでは未使用）
+
+Neon の代わりに Cloud SQL を使う場合の手順です。
+
+| # | 作業内容 | 手順・補足 |
+|---|----------|------------|
+| 2.4'.1 | **Cloud SQL インスタンス作成** | Cloud SQL → PostgreSQL を選択。リージョンは Cloud Run と同じ（例: `asia-northeast1`）にするとレイテンシが良い。 |
+| 2.4'.2 | **DB 作成・ユーザ設定** | インスタンス内にデータベースとユーザを作成。`DATABASE_URL` を Secret Manager に登録。 |
+| 2.4'.3 | **Cloud Run で Cloud SQL 接続を追加** | 「接続」タブで Cloud SQL インスタンスを追加。Unix ソケット用の `DATABASE_URL` を設定。 |
 
 ### 2.5 Artifact Registry（Phase 2）
 
@@ -73,7 +107,7 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 | 2.6.7 | **最大インスタンス数** | 同時アクセスに応じて設定（例: 10）。 |
 | 2.6.8 | **環境変数** | `PORT=8080` は Cloud Run が自動設定。その他、非機密のもの（例: `GUNICORN_TIMEOUT=120`, `DB_MIN_CONNECTIONS=2`）は「環境変数」で設定。 |
 | 2.6.9 | **シークレットのマウント** | 「シークレット」タブで、Secret Manager のシークレットを「環境変数としてマウント」または「ボリュームとしてマウント」を選択。例: `OPENAI_API_KEY` → 環境変数 `OPENAI_API_KEY`。 |
-| 2.6.10 | **Cloud SQL 接続** | 「接続」タブで「Cloud SQL 接続を追加」し、作成したインスタンスを選択。アプリ側では `DATABASE_URL` で接続（Unix ソケットまたは Private IP のホスト名を指定）。 |
+| 2.6.10 | **Cloud SQL 接続** | **Neon 利用時は不要**。Cloud SQL を使う場合のみ「接続」タブでインスタンスを追加。アプリ側では `DATABASE_URL` で接続。 |
 
 ### 2.7 CI/CD（Cloud Build）（Phase 3）※GitHub 連携する場合
 
@@ -122,11 +156,21 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 
 ### 3.4 データベース移行（Phase 4）
 
+**Neon を採用した場合**
+
 | # | 作業内容 | 手順・補足 |
 |---|----------|------------|
-| 3.4.1 | **Render PostgreSQL のダンプ** | Render の DB から `pg_dump` でダンプ取得。または Render のバックアップ機能を利用。 |
-| 3.4.2 | **Cloud SQL へのリストア** | Cloud SQL の PostgreSQL にリストア。接続は Cloud SQL Proxy やコンソールの「Cloud Shell」から実行可能。 |
-| 3.4.3 | **接続文字列の切り替え** | 本番の `DATABASE_URL` を Cloud SQL 用に更新（Secret Manager に登録した値）。SSL パラメータを必要に応じて追加。 |
+| 3.4.1 | **Neon でプロジェクト・DB 作成** | Neon コンソールでプロジェクト作成。接続文字列（プール接続推奨）を取得。 |
+| 3.4.2 | **既存データがある場合** | Render 等から `pg_dump` でダンプし、Neon の DB に `psql` でリストア。不要ならアプリ起動時の `initialize_tables()` でテーブル自動作成。 |
+| 3.4.3 | **接続文字列の切り替え** | Cloud Run の環境変数 `DATABASE_URL` を Neon の接続文字列に更新。 |
+
+**Cloud SQL を使う場合（参考）**
+
+| # | 作業内容 | 手順・補足 |
+|---|----------|------------|
+| 3.4'.1 | **Render PostgreSQL のダンプ** | Render の DB から `pg_dump` でダンプ取得。 |
+| 3.4'.2 | **Cloud SQL へのリストア** | Cloud SQL の PostgreSQL にリストア。 |
+| 3.4'.3 | **接続文字列の切り替え** | 本番の `DATABASE_URL` を Cloud SQL 用に更新。 |
 
 ### 3.5 CI/CD 設定（Phase 3）
 
@@ -149,13 +193,13 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 ### GCP側（インフラ・コンソール）
 
 - [ ] プロジェクト作成・課金リンク
-- [ ] 必要な API 有効化
-- [ ] サービスアカウント作成・Secret Manager / Cloud SQL 権限付与
-- [ ] Secret Manager にシークレット登録（OPENAI_API_KEY, SECRET_KEY, DATABASE_URL 等）
-- [ ] Cloud SQL（PostgreSQL）インスタンス・DB・ユーザ作成
+- [ ] 必要な API 有効化（Cloud Run, Artifact Registry, Cloud Build。Neon 利用時は Cloud SQL API は不要）
+- [ ] サービスアカウント作成・Secret Manager 権限付与
+- [ ] Secret Manager にシークレット登録（任意。環境変数で渡す場合は不要）
+- [ ] **Neon 利用時**: Cloud SQL は作成しない。Neon でプロジェクト作成し接続文字列を取得。
 - [ ] Artifact Registry リポジトリ作成
-- [ ] Cloud Run サービス作成（イメージ、タイムアウト 120 秒、メモリ・vCPU、環境変数・シークレット、Cloud SQL 接続）
-- [ ] Cloud Build トリガー設定（任意）
+- [ ] Cloud Run サービス作成（イメージ、タイムアウト 120 秒、メモリ・vCPU、環境変数に DATABASE_URL 等。Neon 利用時は Cloud SQL 接続は追加しない）
+- [ ] Cloud Build トリガー設定（継続的デプロイ）
 - [ ] 監視・予算アラートの設定（推奨）
 
 ### こちら側（開発・リポジトリ）
@@ -164,10 +208,10 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 - [ ] .dockerignore 作成
 - [ ] start.sh の PORT デフォルトを 8080 に変更（任意・推奨）
 - [ ] 環境変数一覧のドキュメント化
-- [ ] cloudbuild.yaml または GitHub Actions で CI/CD 作成
-- [ ] Render DB のダンプ取得
-- [ ] Cloud SQL へリストア
-- [ ] 本番 DATABASE_URL の切り替え
+- [ ] Cloud Build は Cloud Run の「継続的デプロイ」で自動生成されるため、追加設定は不要の場合あり
+- [ ] **Neon 利用時**: Neon の接続文字列を Cloud Run の DATABASE_URL に設定。既存データがある場合は pg_dump → Neon へリストア。
+- [ ] 本番 DATABASE_URL の切り替え（Neon のプール接続推奨）
+- [ ] DB_MAX_CONNECTIONS を 5〜10 程度に設定（Neon 無料枠推奨）
 - [ ] 動作検証（ヘルスチェック、長時間リクエスト、DB 接続、外部 API）
 - [ ] README / 運用ドキュメント更新
 
@@ -189,4 +233,7 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 - [Cloud Run の料金](https://cloud.google.com/run/pricing)
 - [Cloud Run ドキュメント](https://cloud.google.com/run/docs)
 - [Secret Manager](https://cloud.google.com/secret-manager/docs)
-- [Cloud SQL for PostgreSQL](https://cloud.google.com/sql/docs/postgres)
+- [Neon - Serverless Postgres](https://neon.tech)
+- [Neon プラン・利用量](https://neon.tech/docs/introduction/usage-metrics)
+- [Neon 接続プール（接続数の考え方）](https://neon.tech/docs/connect/connection-pooling)
+- [Cloud SQL for PostgreSQL](https://cloud.google.com/sql/docs/postgres)（Cloud SQL を利用する場合）
