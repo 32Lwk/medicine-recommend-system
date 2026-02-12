@@ -29,7 +29,7 @@ def log_recommendation_session(
     推奨セッションをログに保存（監査用）
     """
     try:
-        from structured_logger import log_recommendation_detail
+        from src.utils.structured_logger import log_recommendation_detail
     except ImportError:
         logger.warning("structured_loggerがインポートできません。旧形式のログを出力します。")
         log_recommendation_detail = None

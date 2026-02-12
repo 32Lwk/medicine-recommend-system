@@ -8,6 +8,8 @@ import logging
 import os
 from typing import Dict, List, Optional, Tuple
 
+from src.core.scoring_utils import _is_kampo_or_herbal_medicine
+
 logger = logging.getLogger(__name__)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
@@ -168,5 +170,13 @@ def apply_user_preference_bonus(candidate: Dict, user_preferences: Dict, nlu_res
         if accompanying_symptoms_bonus > 0:
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"💊 随伴症状対応ボーナス: {product_name} = +{accompanying_symptoms_bonus:.2f} (確信度: {confidence:.2f})")
+
+    # 漢方薬希望: 漢方薬・生薬製剤に +0.15〜0.20 のボーナス
+    if user_preferences.get('prefers_kampo', False) and not user_preferences.get('prefers_not_kampo', False):
+        if _is_kampo_or_herbal_medicine(candidate):
+            kampo_preference_bonus = 0.18
+            bonus += kampo_preference_bonus
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"💊 漢方薬希望ボーナス: {product_name} = +{kampo_preference_bonus:.2f}")
 
     return min(0.25, bonus)  # 最大0.25まで

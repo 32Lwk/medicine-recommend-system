@@ -24,6 +24,7 @@ from src.core.scoring_utils import (
     calculate_efficacy_specificity_score,
     _is_kampo_or_herbal_medicine,
     normalize_text,
+    normalize_medicine_name_to_hankaku,
 )
 from src.core.user_detection import determine_pain_urgency
 from src.core.dictionary_loader import load_symptom_dictionary
@@ -230,6 +231,14 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         core_count = sum(1 for kw in core_ingredients if kw.lower() in ingredients_str)
         return core_count >= 2
 
+    # イブプロフェンのみを主成分とする解熱鎮痛薬の同一成分グループを識別（イブプロフェン錠200S/200SC等の重複を避ける）
+    def _is_ibuprofen_only_group(ingredients: set) -> bool:
+        """イブプロフェンのみを主成分とする医薬品かどうかを判定"""
+        if not ingredients:
+            return False
+        ingredients_str = ' '.join(ingredients).lower()
+        return 'イブプロフェン' in ingredients_str or 'ibuprofen' in ingredients_str
+
     for candidate in filtered_candidates:
         # 保留中の特別枠はスキップ
         if reserved_liquid and candidate == reserved_liquid:
@@ -352,7 +361,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         selected_sets.append(set(extract_main_ingredients(reserved_liquid.get("ingredients", ""))))
 
     # まだ不足している場合は重複を許容して埋める
-    # ただし、葛根湯の重複は避ける
+    # ただし、葛根湯の重複およびイブプロフェン錠200S/200SC等の同一成分重複は避ける
     if len(selected) < top_n:
         for candidate, ingredient_set in fallback:
             if candidate in selected:
@@ -365,6 +374,12 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                 if any("葛根湯" in name for name in existing_product_names):
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
                         logger.debug(f"葛根湯の重複を回避: {candidate_product_name} (既に選択済み: {[name for name in existing_product_names if '葛根湯' in name]})")
+                    continue
+            # イブプロフェンのみを主成分とする医薬品の重複チェック（200Sと200SC等が2位・3位に並ぶのを避ける）
+            if _is_ibuprofen_only_group(ingredient_set):
+                if any(_is_ibuprofen_only_group(es) for es in selected_sets):
+                    if DEBUG_MODE or logger.level <= logging.DEBUG:
+                        logger.debug(f"イブプロフェン系の同一成分重複を回避: {candidate_product_name}")
                     continue
             selected.append(candidate)
             selected_sets.append(ingredient_set)
@@ -760,7 +775,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                     if candidate not in top_2_candidates:
                         # 主要解熱鎮痛薬を優先
                         is_major_analgesic = any(
-                            major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                            normalize_medicine_name_to_hankaku(m) in normalize_medicine_name_to_hankaku(candidate.get('product_name', '')) for m in MAJOR_ANALGESIC_MEDICINES
                         )
                         if is_major_analgesic or len(top_2_candidates) < 2:
                             top_2_candidates.append(candidate)
@@ -781,7 +796,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                     
                     # 主要解熱鎮痛薬を優先
                     is_major_analgesic = any(
-                        major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                        normalize_medicine_name_to_hankaku(m) in normalize_medicine_name_to_hankaku(candidate.get('product_name', '')) for m in MAJOR_ANALGESIC_MEDICINES
                     )
                     if is_major_analgesic:
                         third_candidate = candidate
@@ -828,7 +843,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                     continue  # 除外される場合はスキップ
             # 主要解熱鎮痛薬を優先
             is_major_analgesic = any(
-                major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                normalize_medicine_name_to_hankaku(m) in normalize_medicine_name_to_hankaku(candidate.get('product_name', '')) for m in MAJOR_ANALGESIC_MEDICINES
             )
             if is_major_analgesic:
                 final_selected.append(candidate)
@@ -856,7 +871,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                         if len(filtered_temp) == 0:
                             continue  # 除外される場合はスキップ
                         is_major_analgesic = any(
-                            major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                            normalize_medicine_name_to_hankaku(m) in normalize_medicine_name_to_hankaku(candidate.get('product_name', '')) for m in MAJOR_ANALGESIC_MEDICINES
                         )
                         if is_major_analgesic:
                             final_selected.append(candidate)
@@ -1195,7 +1210,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
                         continue  # 除外される場合はスキップ
                     
                     is_major_analgesic = any(
-                        major_name in candidate.get('product_name', '') for major_name in MAJOR_ANALGESIC_MEDICINES
+                        normalize_medicine_name_to_hankaku(m) in normalize_medicine_name_to_hankaku(candidate.get('product_name', '')) for m in MAJOR_ANALGESIC_MEDICINES
                     )
                     if is_major_analgesic:
                         final_selected_deduplicated.append(candidate)

@@ -1,6 +1,16 @@
 # チャット型医薬品相談ツール - 統合ドキュメント
 
-**最終更新日: 2026年2月11日**（GCP + Neon へのクラウド移行完了）
+**最終更新日: 2026年2月12日**（改善計画の実装完了）
+
+---
+
+**2026年2月12日の更新（改善計画の実装）:**
+
+- **「15歳以上以上」の重複表現を修正**: `chat_recommendation_flow.py` の usage_notes パース処理で、年齢制限が「15歳以上」などの場合に「15歳以上以上の方が対象です。」と重複表示されていた問題を修正。`re.search(r'(\d+)歳以上')` で数値を抽出し、「〇歳以上の方が対象です。」と正しく表示するように変更。
+- **カロナールA・タイレノールAの効能データを修正**: `otc_medicine_data.csv` で、カロナールＡ・タイレノールＡの効能が「生理痛」のみとなっていた問題を修正。`summarized_efficacy_data.csv` に合わせて「頭痛・月経痛（生理痛）・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛」などの包括的な効能に更新。これにより、頭痛・発熱時の推奨精度が向上。
+- **イブプロフェン200S/200SCの同一成分重複を回避**: `ingredient_diversity.py` に `_is_ibuprofen_only_group` 関数を追加し、fallback 追加時にイブプロフェン系の同一成分チェックを実施。イブプロフェン錠200S とイブプロフェン錠200SC が2位・3位に並ばないように改善。
+- **HTMLタイポ検索手順のドキュメント化**: `docs/改善計画.md` に HTML タイポ検索手順セクションを追加。`conteent`、`classs=`、`ddiv` などの typo パターンと検索対象ディレクトリ、grep 例を記載。
+- **医薬品名の半角統一機能追加**: `scoring_utils.py` に `normalize_medicine_name_to_hankaku` 関数を追加。数字・アルファベットを半角に統一し、比較・検索時に使用。`MAJOR_ANALGESIC_MEDICINES` との比較時に半角正規化を適用（`candidate_scoring.py`、`final_score_calculator.py`、`rule_based_recommendation.py`、`recommendation_finalizer.py`、`ingredient_diversity.py` を更新）。これにより、全角・半角混在の医薬品名でも正しくマッチングされるように改善。
 
 ---
 

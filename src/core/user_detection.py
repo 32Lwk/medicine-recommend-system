@@ -188,7 +188,7 @@ def detect_digestive_sensitivity(user_message: str, nlu_result: dict, user_info:
 def extract_user_preferences(user_message: str, nlu_result: dict = None, user_info: dict = None) -> dict:
     """ユーザー要望を抽出（成分・バランス、飲みやすさ、随伴症状など）"""
     if not user_message:
-        return {"ingredient_balance": False, "ease_of_taking": False, "accompanying_symptoms": False, "confidence": 0.0, "reasons": []}
+        return {"ingredient_balance": False, "ease_of_taking": False, "accompanying_symptoms": False, "confidence": 0.0, "reasons": [], "prefers_kampo": False, "prefers_not_kampo": False}
     user_message_lower = user_message.lower()
     reasons = []
     ingredient_balance_keywords = ["成分", "バランス", "配合", "ビタミン", "栄養", "総合", "複合", "成分重視", "バランス重視", "配合成分", "成分のバランス", "ビタミン配合", "栄養補給", "総合的な", "複合的な", "成分・バランス", "成分・バランス重視", "成分バランス", "生薬重視", "漢方重視", "複合成分"]
@@ -223,8 +223,30 @@ def extract_user_preferences(user_message: str, nlu_result: dict = None, user_in
         ac = True
         reasons.append("随伴症状対応: 複数の症状から推測")
     confidence = min(1.0, 0.7 + (total - 3) * 0.1) if total >= 3 else (0.5 + (total - 2) * 0.1 if total >= 2 else (0.3 + (total - 1) * 0.1 if total >= 1 else 0.0))
-    logger.info(f"📋 ユーザー要望抽出: 成分・バランス={ib}, 飲みやすさ={et}, 随伴症状={ac}, 確信度={confidence:.2f}")
-    return {"ingredient_balance": ib, "ease_of_taking": et, "accompanying_symptoms": ac, "confidence": confidence, "reasons": reasons}
+
+    # 漢方薬希望/忌避の抽出
+    prefers_kampo_keywords = ["漢方", "漢方薬", "漢方希望", "漢方がいい", "漢方の方が", "生薬", "生薬希望", "漢方で", "漢方を使って", "漢方が良い", "漢方薬がいい"]
+    prefers_not_kampo_keywords = [
+        "漢方はいや", "漢方いや", "漢方薬はいや", "漢方は嫌", "漢方嫌", "漢方薬嫌", "漢方薬は避けたい",
+        "漢方以外", "漢方以外がいい", "漢方以外が良い", "西洋薬がいい", "西洋薬希望", "西洋薬で",
+        "漢方は苦手", "漢方薬は苦手", "漢方が苦手", "漢方薬が苦手"
+    ]
+    prefers_kampo = any(kw in user_message_lower for kw in prefers_kampo_keywords)
+    prefers_not_kampo = any(kw in user_message_lower for kw in prefers_not_kampo_keywords)
+    # 両方検出された場合はprefers_not_kampo（避けたい）を優先
+    if prefers_kampo and prefers_not_kampo:
+        prefers_kampo = False
+
+    logger.info(f"📋 ユーザー要望抽出: 成分・バランス={ib}, 飲みやすさ={et}, 随伴症状={ac}, 漢方希望={prefers_kampo}, 漢方忌避={prefers_not_kampo}, 確信度={confidence:.2f}")
+    return {
+        "ingredient_balance": ib,
+        "ease_of_taking": et,
+        "accompanying_symptoms": ac,
+        "confidence": confidence,
+        "reasons": reasons,
+        "prefers_kampo": prefers_kampo,
+        "prefers_not_kampo": prefers_not_kampo,
+    }
 
 
 def detect_postpartum_breastfeeding(user_message: str, nlu_result: dict, user_info: dict) -> dict:

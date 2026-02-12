@@ -11,6 +11,7 @@ from typing import Dict
 from src.utils.candidate_normalizer import normalize_candidate_for_scoring
 from src.core.recommendation_constants import (
     CHICKENPOX_KEYWORDS,
+    KAMPO_PREFERRED_SYMPTOMS,
     MAJOR_ANALGESIC_MEDICINES,
     MENSTRUAL_GENERAL_EFFICACY_KEYWORDS,
     MENSTRUAL_ONLY_PRODUCTS,
@@ -37,6 +38,7 @@ from src.core.scoring_utils import (
     _is_kampo_or_herbal_medicine,
     _is_goreisan,
     normalize_text,
+    normalize_medicine_name_to_hankaku,
 )
 from src.core.candidate_scoring import (
     is_contraindicated,
@@ -479,8 +481,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # --- 主要解熱鎮痛薬の追加ボーナス（強化版） ---
     # カロナールA、ロキソニンS、タイレノールを第一選択として推奨
     major_analgesic_bonus = 0.0
+    product_name_norm = normalize_medicine_name_to_hankaku(product_name)
     is_major_analgesic = any(
-        major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+        normalize_medicine_name_to_hankaku(major_name) in product_name_norm
+        for major_name in MAJOR_ANALGESIC_MEDICINES
     )
     
     if is_major_analgesic:
@@ -1657,12 +1661,37 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     is_hangover_case = candidate.get('is_hangover', False)
     hangover_boost = candidate.get('hangover_boost', 0.0)
     
+    # 漢方薬希望/忌避のユーザー意向
+    prefers_kampo = user_info.get('prefers_kampo', False)
+    prefers_not_kampo = user_info.get('prefers_not_kampo', False)
+    kampo_symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    user_message_for_kampo = (user_text or user_info.get('user_message', '') or '').lower()
+    is_kampo_preferred_scenario = (
+        bool(set(kampo_symptom_names) & KAMPO_PREFERRED_SYMPTOMS) or
+        any(kw in user_message_for_kampo for kw in KAMPO_PREFERRED_SYMPTOMS)
+    )
+    
     if _is_kampo_or_herbal_medicine(candidate):
+        # ユーザーが漢方薬を希望する場合、ペナルティを適用しない
+        if prefers_kampo and not prefers_not_kampo:
+            kampo_adjustment = 0.0
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"漢方薬希望のため漢方薬ペナルティを無効化: {candidate.get('product_name', '')}")
+        # ユーザーが漢方薬を避けたい場合、追加ペナルティ
+        elif prefers_not_kampo:
+            kampo_adjustment = -0.35
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"漢方薬忌避のため漢方薬に追加ペナルティ: {candidate.get('product_name', '')} = -0.35")
         # 二日酔いが検出されている場合、漢方薬ペナルティを適用しない
-        if is_hangover_case or hangover_boost > 0:
+        elif is_hangover_case or hangover_boost > 0:
             kampo_adjustment = 0.0
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"二日酔いのため漢方薬ペナルティを無効化: {candidate.get('product_name', '')}")
+        # 漢方薬推奨シナリオ（生理痛・頻尿・更年期等）の場合、ペナルティを適用しない
+        elif is_kampo_preferred_scenario:
+            kampo_adjustment = 0.0
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"漢方薬推奨シナリオのため漢方薬ペナルティを無効化: {candidate.get('product_name', '')}")
         else:
             # 症状パターンに基づく漢方薬ボーナス/ペナルティ
             pattern_info = match_symptom_pattern(nlu_result)
@@ -1716,19 +1745,19 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                     
                     if has_restrictive_expression:
                         # 縛り表現がある場合は非常に大きなペナルティ（発熱のみには不適切）
-                        kampo_adjustment = -0.50
+                        kampo_adjustment = -0.60
                         if DEBUG_MODE or logger.level <= logging.DEBUG:
-                            logger.debug(f"単一症状（強度: {nlu_severity}）+ 縛り表現ありのため漢方薬に大きなペナルティ: {product_name} = -0.50")
+                            logger.debug(f"単一症状（強度: {nlu_severity}）+ 縛り表現ありのため漢方薬に大きなペナルティ: {product_name} = -0.60")
                     else:
                         # 中等度以上の場合は大きなペナルティ
                         if nlu_severity in ["中等度", "重度"]:
+                            kampo_adjustment = -0.40
+                            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                                logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.40")
+                        else:
                             kampo_adjustment = -0.30
                             if DEBUG_MODE or logger.level <= logging.DEBUG:
                                 logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.30")
-                        else:
-                            kampo_adjustment = -0.20
-                            if DEBUG_MODE or logger.level <= logging.DEBUG:
-                                logger.debug(f"単一症状（強度: {nlu_severity}）のため漢方薬にペナルティ: {product_name} = -0.20")
                 # 風邪の初期症状（悪寒+発熱）の場合、葛根湯にボーナス（ただし症状強度が中等度以上の場合はペナルティ）
                 elif frozenset({"悪寒", "発熱"}) in SYMPTOM_PATTERN_OPTIMIZATION and is_kakkonto_medicine_check:
                     # 症状の強度判定を取得（検出できない場合は中等度として扱う）
@@ -1762,16 +1791,16 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 elif frozenset({"吐き気", "胃もたれ", "むかつき"}) in SYMPTOM_PATTERN_OPTIMIZATION:
                     # 既にpattern_bonusで処理済み
                     kampo_adjustment = 0.0
-                # その他の症状パターン: 西洋薬を優先（漢方薬は-0.05のペナルティ）
+                # その他の症状パターン: 西洋薬を優先（漢方薬は-0.10のペナルティ）
                 else:
-                    kampo_adjustment = -0.05
+                    kampo_adjustment = -0.10
                     if DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"その他の症状パターンのため漢方薬にペナルティ: {product_name} = -0.05")
+                        logger.debug(f"その他の症状パターンのため漢方薬にペナルティ: {product_name} = -0.10")
             else:
                 # 症状パターンがマッチしない場合、ペナルティを適用（西洋薬を優先）
-                kampo_adjustment = -0.2
+                kampo_adjustment = -0.35
                 if DEBUG_MODE or logger.level <= logging.DEBUG:
-                    logger.debug(f"症状パターンがマッチしないため漢方薬にペナルティ: {product_name} = -0.2")
+                    logger.debug(f"症状パターンがマッチしないため漢方薬にペナルティ: {product_name} = -0.35")
     else:
         kampo_adjustment = 0.0
     
@@ -1832,8 +1861,10 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # 解熱鎮痛薬と外用薬（のど）の場合、調整スコアの上限を0.30に引き上げ（2位・3位優先のため強化）
     # 総合風邪薬の場合、調整スコアの上限を0.40に引き上げ（1位優先のため強化）
     is_comprehensive_cold = is_comprehensive_cold_medicine(candidate)
+    product_name_norm_adj = normalize_medicine_name_to_hankaku(product_name)
     is_major_analgesic = any(
-        major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+        normalize_medicine_name_to_hankaku(major_name) in product_name_norm_adj
+        for major_name in MAJOR_ANALGESIC_MEDICINES
     )
     if is_major_analgesic:
         # 主要解熱鎮痛薬の場合、調整スコアの上限を0.80に引き上げ（major_analgesic_bonusを反映させるため、0.6 → 0.8に強化）

@@ -40,6 +40,28 @@ _side_effects_df = None
 _interactions_df = None
 
 
+def normalize_medicine_name_to_hankaku(text: str) -> str:
+    """医薬品名の数字・アルファベットを半角に統一（比較・検索用）
+
+    医薬品名の表記ゆれ（全角・半角混在）を統一する。
+    表示には元の値をそのまま使うことを推奨。比較・検索時に使用する。
+
+    Args:
+        text: 正規化前の医薬品名
+
+    Returns:
+        数字・アルファベットを半角に変換した文字列
+    """
+    if not text or not isinstance(text, str):
+        return ""
+    normalized = unicodedata.normalize('NFKC', text)
+    normalized = normalized.translate(str.maketrans(
+        '０１２３４５６７８９ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ',
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    ))
+    return normalized
+
+
 def normalize_text(text: str) -> str:
     """文字列をNFKC正規化・小文字化し、空白や記号を除去"""
     if not text or not isinstance(text, str):
@@ -1101,7 +1123,7 @@ def _is_kampo_or_herbal_medicine(candidate: Dict) -> bool:
     ingredients = str(candidate.get('ingredients', '')).lower()
     medicine_type = str(candidate.get('medicine_type', '')).lower()
     
-    # 漢方・生薬のキーワード（拡張版）
+    # 漢方・生薬のキーワード（製品名・医薬品種類用）
     kampo_keywords = ["漢方", "生薬", "エキス", "湯", "散", "丸", "膏", "桂枝", "茯苓", "釣藤", "葛根",
                      "カッコン", "カンゾウ", "ケイヒ", "タイソウ", "ショウキョウ", "シャクヤク", "マオウ"]
     
@@ -1112,6 +1134,18 @@ def _is_kampo_or_herbal_medicine(candidate: Dict) -> bool:
     # 成分に生薬エキスが含まれているか
     herbal_keywords = ["エキス", "乾燥エキス", "エキス末", "エキス顆粒"]
     if any(kw in ingredients for kw in herbal_keywords):
+        return True
+    
+    # 成分に生薬名が含まれているか（暖中錠、トーガックＮ等、エキスを使わない漢方製剤を検出）
+    herbal_ingredient_keywords = [
+        "甘草", "桂枝", "茯苓", "葛根", "大黄", "桃仁", "生姜", "芍薬", "当帰", "人参", "柴胡",
+        "桔梗", "川芎", "呉茱萸", "大棗", "麻黄", "杏仁", "石膏", "厚朴", "半夏", "細辛",
+        "五味子", "附子", "乾姜", "白朮", "防風", "黄耆", "遠志", "酸棗仁", "知母", "麦門冬",
+        "地黄", "山茱萸", "枸杞子", "杜仲", "牛膝", "車前子", "山薬", "牡丹皮", "沢瀉",
+        "ゴシュユ", "ショウキョウ", "タイソウ", "ニンジン", "ブクリョウ", "サイコ", "オウゴン",
+        "ボウショウ", "カンゾウ", "ケイヒ", "マオウ", "ニンジン", "トウキ", "シャクヤク"
+    ]
+    if any(kw in ingredients for kw in herbal_ingredient_keywords):
         return True
     
     return False
