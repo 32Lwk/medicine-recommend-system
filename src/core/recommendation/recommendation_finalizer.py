@@ -14,6 +14,7 @@ from src.core.recommendation_constants import (
     MIN_SYMPTOM_MATCH_MULTI,
     MIN_SYMPTOM_MATCH_SINGLE,
 )
+from src.core.scoring_utils import normalize_medicine_name_to_hankaku
 from src.core.candidate_scoring import (
     _check_influenza_compatibility,
     _detect_body_part_specificity,
@@ -56,8 +57,10 @@ def _enforce_symptom_match_threshold(
 
         # 主要解熱鎮痛薬の場合は除外しない（発熱のみの場合）
         product_name = candidate.get("product_name", "")
+        product_name_norm = normalize_medicine_name_to_hankaku(product_name)
         is_major_analgesic = any(
-            major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+            normalize_medicine_name_to_hankaku(m) in product_name_norm
+            for m in MAJOR_ANALGESIC_MEDICINES
         )
         cold_symptoms = [
             "発熱",

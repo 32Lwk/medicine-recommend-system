@@ -53,6 +53,11 @@ def get_session_from_db(session_id):
     return _all_sessions.get(session_id)
 
 
+def get_session_from_memory(session_id):
+    """メモリフォールバックからセッションを取得（DB失敗時の最新データ）"""
+    return _all_sessions.get(session_id)
+
+
 def save_session_to_db(session_id, data):
     """セッションをDBに保存、失敗時はメモリに保存"""
     db = get_database()

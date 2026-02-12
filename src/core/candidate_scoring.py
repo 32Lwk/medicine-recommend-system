@@ -39,7 +39,7 @@ from src.core.recommendation_constants import (
     RISK_INGREDIENTS_OVERLAP,
     RED_FLAG_SYMPTOMS,
 )
-from src.core.scoring_utils import normalize_text, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
+from src.core.scoring_utils import normalize_text, normalize_medicine_name_to_hankaku, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
 from src.core.medicine_classifiers import (
     is_specific_use_medicine,
     _is_pediatric_specific,
@@ -493,7 +493,11 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
                     continue
 
         if symptom_names:
-            is_major_analgesic = any(major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES)
+            product_name_norm = normalize_medicine_name_to_hankaku(product_name)
+            is_major_analgesic = any(
+                normalize_medicine_name_to_hankaku(major_name) in product_name_norm
+                for major_name in MAJOR_ANALGESIC_MEDICINES
+            )
             hangover_boost = candidate.get('hangover_boost', 0.0)
             is_hangover_medicine = candidate.get('is_hangover', False)
             is_hangover_specialized = hangover_boost > 0 or is_hangover_medicine
@@ -846,19 +850,23 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
     )
 
     if has_headache_or_fever and '解熱鎮痛薬' in medicine_types:
-        for major_name in MAJOR_ANALGESIC_MEDICINES:
-            major_mask = (
-                medicine_df['製品名'].astype(str).str.contains(major_name, na=False, case=False) &
-                (medicine_df['医薬品の種類'].astype(str) == '解熱鎮痛薬')
+        def _matches_major_analgesic(name: str) -> bool:
+            name_norm = normalize_medicine_name_to_hankaku(str(name))
+            return any(
+                normalize_medicine_name_to_hankaku(m) in name_norm
+                for m in MAJOR_ANALGESIC_MEDICINES
             )
-            major_rows = medicine_df[major_mask]
-
-            for idx, row in major_rows.iterrows():
-                efficacy = str(row.get('効能効果', ''))
-                if any(kw in efficacy for kw in ['頭痛', '発熱', '解熱', '鎮痛']):
-                    append_candidate(row)
-                    if _DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"⭐ 主要解熱鎮痛薬を優先検索: {row.get('製品名', '')} (効能: {efficacy[:100]}...)")
+        major_mask = (
+            medicine_df['製品名'].astype(str).apply(_matches_major_analgesic) &
+            (medicine_df['医薬品の種類'].astype(str) == '解熱鎮痛薬')
+        )
+        major_rows = medicine_df[major_mask]
+        for idx, row in major_rows.iterrows():
+            efficacy = str(row.get('効能効果', ''))
+            if any(kw in efficacy for kw in ['頭痛', '発熱', '解熱', '鎮痛']):
+                append_candidate(row)
+                if _DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"⭐ 主要解熱鎮痛薬を優先検索: {row.get('製品名', '')} (効能: {efficacy[:100]}...)")
 
         logger.info(f"頭痛・発熱が検出されました。主要解熱鎮痛薬を優先的に検索しました。")
 
