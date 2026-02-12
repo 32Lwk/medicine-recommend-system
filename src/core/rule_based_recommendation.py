@@ -50,7 +50,7 @@ import math
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
-from src.core.scoring_utils import normalize_text
+from src.core.scoring_utils import normalize_text, normalize_medicine_name_to_hankaku
 from src.utils.candidate_normalizer import normalize_candidate_for_scoring
 
 # ロガー設定
@@ -301,8 +301,22 @@ def rule_based_recommendation(
     # 意味のない文字列のチェック
     user_text_stripped = user_text.strip()
     
-    # 極端に短い文字列（3文字未満）
-    if len(user_text_stripped) < 3:
+    # 症状辞書との照合: canonical_name または synonyms に完全一致する場合は3文字チェックをスキップ
+    symptom_dict = load_symptom_dictionary()
+    is_valid_short_symptom = False
+    for canonical_name, entry in symptom_dict.items():
+        if user_text_stripped == canonical_name:
+            is_valid_short_symptom = True
+            break
+        for syn in entry.get("synonyms", []):
+            if user_text_stripped == syn:
+                is_valid_short_symptom = True
+                break
+        if is_valid_short_symptom:
+            break
+    
+    # 極端に短い文字列（3文字未満）: 症状辞書に完全一致しない場合のみエラー
+    if not is_valid_short_symptom and len(user_text_stripped) < 3:
         logger.warning(f"極端に短い入力が検出されました: {user_text_stripped}")
         return {
             "status": "error",
@@ -823,17 +837,20 @@ def rule_based_recommendation(
         efficacy_score = calculate_efficacy_specificity_score(candidate, nlu_result)
         age_score = calculate_age_fit_score(candidate, user_info)
         
-        # 主要解熱鎮痛薬のボーナス（発熱のみの場合）
+        # 主要解熱鎮痛薬のボーナス（発熱のみまたは頭痛のみの場合）
         major_analgesic_bonus = 0.0
         symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
         cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
         cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
         is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+        is_headache_only = cold_symptom_count == 1 and "頭痛" in symptom_names
         
-        if is_fever_only:
+        if is_fever_only or is_headache_only:
             product_name = candidate.get('product_name', '')
+            product_name_norm = normalize_medicine_name_to_hankaku(product_name)
             is_major_analgesic = any(
-                major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+                normalize_medicine_name_to_hankaku(m) in product_name_norm
+                for m in MAJOR_ANALGESIC_MEDICINES
             )
             if is_major_analgesic and '解熱鎮痛薬' in candidate.get('medicine_type', ''):
                 # 主要解熱鎮痛薬にボーナスを付与（quick_scoreで優先されるように）
@@ -948,16 +965,19 @@ def rule_based_recommendation(
     cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
     cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
     is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+    is_headache_only = cold_symptom_count == 1 and "頭痛" in symptom_names
     
-    # 発熱のみの場合、主要解熱鎮痛薬を優先的に含める
-    if is_fever_only:
-        logger.info(f"🔥 発熱のみを検出: symptom_names={symptom_names}, cold_symptom_count={cold_symptom_count}, is_fever_only={is_fever_only}")
+    # 発熱のみまたは頭痛のみの場合、主要解熱鎮痛薬を優先的に含める
+    if is_fever_only or is_headache_only:
+        logger.info(f"🔥 発熱/頭痛のみを検出: symptom_names={symptom_names}, cold_symptom_count={cold_symptom_count}, is_fever_only={is_fever_only}, is_headache_only={is_headache_only}")
         # 主要解熱鎮痛薬を抽出
         major_analgesic_candidates = []
         for score, candidate in quick_scores:
             product_name = candidate.get('product_name', '')
+            product_name_norm = normalize_medicine_name_to_hankaku(product_name)
             is_major_analgesic = any(
-                major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+                normalize_medicine_name_to_hankaku(m) in product_name_norm
+                for m in MAJOR_ANALGESIC_MEDICINES
             )
             if is_major_analgesic and '解熱鎮痛薬' in candidate.get('medicine_type', ''):
                 major_analgesic_candidates.append((score, candidate))
@@ -1128,21 +1148,23 @@ def rule_based_recommendation(
     excluded_candidates = []
     valid_candidates_for_scoring = []
     
-    # 発熱のみの場合、主要解熱鎮痛薬を優先的に含める
+    # 発熱のみまたは頭痛のみの場合、主要解熱鎮痛薬を優先的に含める
     symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
     cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
     cold_symptom_count = sum(1 for symptom in symptom_names if symptom in cold_symptoms)
     is_fever_only = cold_symptom_count == 1 and "発熱" in symptom_names
+    is_headache_only = cold_symptom_count == 1 and "頭痛" in symptom_names
     
     for score, candidate in top_candidates_for_scoring:
         raw_score = candidate.get('raw_score', 0.0)
         product_name = candidate.get('product_name', '')
-        
-        # 発熱のみの場合、主要解熱鎮痛薬は優先的に含める（閾値を下回っていても）
+        product_name_norm = normalize_medicine_name_to_hankaku(product_name)
+        # 発熱のみまたは頭痛のみの場合、主要解熱鎮痛薬は優先的に含める（閾値を下回っていても）
         is_major_analgesic = any(
-            major_name in product_name for major_name in MAJOR_ANALGESIC_MEDICINES
+            normalize_medicine_name_to_hankaku(m) in product_name_norm
+            for m in MAJOR_ANALGESIC_MEDICINES
         )
-        if is_fever_only and is_major_analgesic and raw_score >= 0.2:  # 閾値を0.2に緩和
+        if (is_fever_only or is_headache_only) and is_major_analgesic and raw_score >= 0.2:  # 閾値を0.2に緩和
             valid_candidates_for_scoring.append((score, candidate))
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"主要解熱鎮痛薬を優先的に含める: {product_name} raw_score={raw_score:.3f} (閾値緩和)")

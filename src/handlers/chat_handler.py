@@ -24,6 +24,7 @@ from src.services.session_manager import (
     get_manual_reply_queue,
     set_manual_reply_queue,
     get_session_from_db,
+    get_session_from_memory,
     save_session_to_db,
     remove_duplicate_user_messages_after_ai_response,
     get_admin_sessions,
@@ -364,166 +365,221 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
             logger.info(f"⏭️ 不適切な要求が検出されたため、店舗案内処理をスキップ")
 
         # ステップ1.8.5: 店舗案内ではないと判定された場合、カウンセリングフローに流す
+        # 漢方希望/忌避のフォローアップ: 直近の推奨結果に対して「漢方はいや」等と言った場合、再推奨フローへ
         if store_inquiry_result is None and triage_result and triage_result.get("category") == "Other":
-            logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
-            # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
-            # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
-            try:
-                if 'user_attributes' not in session:
-                    session['user_attributes'] = {}
-                user_attributes = session['user_attributes']
-                msg_for_attr = sanitized_message
-                if '妊娠' in msg_for_attr or 'pregnant' in msg_for_attr.lower():
-                    if any(kw in msg_for_attr for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
-                        user_attributes['pregnant'] = False
-                        logger.info(f"📝 妊娠状態を登録（Otherフロー）: False")
-                    elif any(kw in msg_for_attr for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
-                        user_attributes['pregnant'] = True
-                        logger.info(f"📝 妊娠状態を登録（Otherフロー）: True")
-                if '授乳' in msg_for_attr or 'breastfeeding' in msg_for_attr.lower():
-                    if any(kw in msg_for_attr for kw in ['授乳していません', '授乳中ではありません', '授乳していない']):
-                        user_attributes['breastfeeding'] = False
-                        logger.info(f"📝 授乳状態を登録（Otherフロー）: False")
-                    elif any(kw in msg_for_attr for kw in ['授乳中です', '授乳中', '授乳しています', '授乳しました', '授乳してます']):
-                        user_attributes['breastfeeding'] = True
-                        logger.info(f"📝 授乳状態を登録（Otherフロー）: True")
-                session.modified = True
-            except Exception as e:
-                logger.warning(f"⚠️ Otherフローでの妊娠・授乳抽出でエラー: {e}")
-            # カウンセリングフローに流す
-            try:
-                from src.services.counseling_response import (
-                    generate_counseling_response,
-                    generate_follow_up_questions,
-                    start_counseling_mode,
-                    has_specific_symptom
-                )
-                    
-                # ユーザーメッセージをセッションに追加（重複チェック付き）
-                if 'messages' not in session:
-                    session['messages'] = []
-                    
-                # 重複チェック（診断名検出時に既に追加されている可能性がある）
-                # UI表示用には正規化前の元入力を使用（カタカナ→ひらがな変換で表示が変わらないように）
-                user_message_exists = any(
-                    msg.get('type') == 'user' and 
-                    msg.get('content') == original_user_message and
-                    msg.get('uuid')
-                    for msg in session.get('messages', [])
-                )
-                    
-                if not user_message_exists:
-                    import uuid
-                    user_msg = {
-                        'type': 'user',
-                        'content': original_user_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())
-                    }
-                    session['messages'].append(user_msg)
+            is_kampo_preference_refinement = False
+            prefers_not_kampo_keywords = ["漢方はいや", "漢方いや", "漢方薬はいや", "漢方は嫌", "漢方嫌", "漢方以外", "西洋薬がいい", "西洋薬希望"]
+            prefers_kampo_keywords = ["漢方がいい", "漢方の方が", "漢方希望", "漢方薬がいい", "漢方で"]
+            has_kampo_pref = any(kw in sanitized_message for kw in prefers_not_kampo_keywords + prefers_kampo_keywords)
+
+            if has_kampo_pref and sid:
+                session_data_for_kampo = get_session_from_db(sid)
+                messages_from_db = (session_data_for_kampo or {}).get('messages', [])
+                # DB失敗時はメモリフォールバックに最新データがある可能性があるため併用
+                memory_data = get_session_from_memory(sid)
+                messages_from_memory = (memory_data or {}).get('messages', [])
+                messages_for_kampo = messages_from_db if len(messages_from_db) >= len(messages_from_memory) else messages_from_memory
+                messages_for_kampo = messages_for_kampo or session.get('messages', [])
+                logger.info(f"🔍 漢方フォローアップ: messages_count={len(messages_for_kampo)}, db={len(messages_from_db)}, memory={len(messages_from_memory)}")
+                found_recommendation = False
+                prev_user_msg = None
+                for msg in reversed(messages_for_kampo[-8:]):
+                    if msg.get('type') == 'user':
+                        if found_recommendation and prev_user_msg is None:
+                            prev_user_msg = msg.get('content', '').strip()
+                            break
+                    elif msg.get('type') == 'bot' and msg.get('diagnosis'):
+                        diag = msg.get('diagnosis', {})
+                        rec = diag.get('recommended_medicines')
+                        if not rec and isinstance(diag.get('recommendation'), dict):
+                            rec = diag.get('recommendation', {}).get('recommended_medicines', [])
+                        if rec and len(rec) > 0:
+                            found_recommendation = True
+
+                if found_recommendation and prev_user_msg and len(prev_user_msg) >= 2:
+                    is_kampo_preference_refinement = True
+                    triage_result['category'] = 'Physical'
+                    triage_result['subcategory'] = 'headache'
+                    triage_result['reasoning'] = '漢方希望/忌避のフォローアップのため再推奨フローへ'
+                    sanitized_message = prev_user_msg + '。' + sanitized_message.strip()
+                    user_message = sanitized_message
+                    processed_message = sanitized_message
+                    logger.info(f"🔄 漢方希望/忌避のフォローアップを検出: 再推奨フローへ（症状: {prev_user_msg[:30]}...）")
+
+            if not is_kampo_preference_refinement:
+                logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
+                # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
+                # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
+                try:
+                    if 'user_attributes' not in session:
+                        session['user_attributes'] = {}
+                    user_attributes = session['user_attributes']
+                    msg_for_attr = sanitized_message
+                    if '妊娠' in msg_for_attr or 'pregnant' in msg_for_attr.lower():
+                        if any(kw in msg_for_attr for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
+                            user_attributes['pregnant'] = False
+                            logger.info(f"📝 妊娠状態を登録（Otherフロー）: False")
+                        elif any(kw in msg_for_attr for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
+                            user_attributes['pregnant'] = True
+                            logger.info(f"📝 妊娠状態を登録（Otherフロー）: True")
+                    if '授乳' in msg_for_attr or 'breastfeeding' in msg_for_attr.lower():
+                        if any(kw in msg_for_attr for kw in ['授乳していません', '授乳中ではありません', '授乳していない']):
+                            user_attributes['breastfeeding'] = False
+                            logger.info(f"📝 授乳状態を登録（Otherフロー）: False")
+                        elif any(kw in msg_for_attr for kw in ['授乳中です', '授乳中', '授乳しています', '授乳しました', '授乳してます']):
+                            user_attributes['breastfeeding'] = True
+                            logger.info(f"📝 授乳状態を登録（Otherフロー）: True")
                     session.modified = True
+                except Exception as e:
+                    logger.warning(f"⚠️ Otherフローでの妊娠・授乳抽出でエラー: {e}")
+                # カウンセリングフローに流す
+                try:
+                    from src.services.counseling_response import (
+                        generate_counseling_response,
+                        generate_follow_up_questions,
+                        start_counseling_mode,
+                        has_specific_symptom
+                    )
+                    
+                    # ユーザーメッセージをセッションに追加（重複チェック付き）
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    
+                    # 重複チェック（診断名検出時に既に追加されている可能性がある）
+                    # UI表示用には正規化前の元入力を使用（カタカナ→ひらがな変換で表示が変わらないように）
+                    user_message_exists = any(
+                        msg.get('type') == 'user' and 
+                        msg.get('content') == original_user_message and
+                        msg.get('uuid')
+                        for msg in session.get('messages', [])
+                    )
+                    
+                    if not user_message_exists:
+                        import uuid
+                        user_msg = {
+                            'type': 'user',
+                            'content': original_user_message,
+                            'timestamp': datetime.now().isoformat(),
+                            'uuid': str(uuid.uuid4())
+                        }
+                        session['messages'].append(user_msg)
+                        session.modified = True
                         
-                    # ユーザーメッセージをDBに保存
+                        # ユーザーメッセージをDBに保存
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                # DB側でも重複チェック
+                                db_message_exists = any(
+                                    msg.get('type') == 'user' and 
+                                    msg.get('content') == original_user_message and
+                                    msg.get('uuid')
+                                    for msg in session_data.get('messages', [])
+                                )
+                                if not db_message_exists:
+                                    session_data['messages'].append(user_msg)
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            else:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                    'messages': [user_msg],
+                                    'session_active': True,
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {})
+                                }
+                                save_session_to_db(sid, session_data)
+                    
+                    # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
+                    has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
+                    if has_symptom:
+                        # 症状が検出されている場合は、一般的な症状相談として扱う
+                        symptom_type = "general_symptom"
+                    else:
+                        # 症状が検出されていない場合は、不明な要求として扱う
+                        symptom_type = "inappropriate_request/unknown"
+                    
+                    # カウンセリングフロー開始（不明な要求専用）
+                    symptom_type = "inappropriate_request/unknown"
+                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+                    
+                    initial_response = generate_counseling_response(
+                        symptom_type, sanitized_message, recommendation_client,
+                        conversation_history=conversation_history,
+                        session_id=sid
+                    )
+                    # 多言語対応: 入力言語が日本語以外の場合は翻訳（Hello等の挨拶を英語入力時に英語で返す）
+                    detected_language = detect_language(sanitized_message)
+                    session['detected_language'] = detected_language
+                    if detected_language != 'ja' and initial_response:
+                        try:
+                            from src.core.translation_service import translate_medicine_recommendation
+                            translated = translate_medicine_recommendation(
+                                initial_response, detected_language, recommendation_client, session_id=sid
+                            )
+                            if translated and translated != initial_response:
+                                initial_response = translated
+                                logger.info(f"✅ カウンセリング返信翻訳完了: {detected_language}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ カウンセリング返信の翻訳エラー（日本語で返却）: {e}")
+                    initial_questions = generate_follow_up_questions(
+                        symptom_type, {}, recommendation_client
+                    )
+                    start_counseling_mode(session, symptom_type, initial_questions)
+                    
+                    bot_response = {
+                        'type': 'bot',
+                        'content': initial_response,
+                        'counseling': True,
+                        'inappropriate_request': True,
+                        'request_type': 'unknown',
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    session['messages'].append(bot_response)
+                    
                     if sid:
                         session_data = get_session_from_db(sid)
                         if session_data:
                             if 'messages' not in session_data:
                                 session_data['messages'] = []
-                            # DB側でも重複チェック
-                            db_message_exists = any(
-                                msg.get('type') == 'user' and 
-                                msg.get('content') == original_user_message and
-                                msg.get('uuid')
-                                for msg in session_data.get('messages', [])
-                            )
-                            if not db_message_exists:
-                                session_data['messages'].append(user_msg)
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                'session_id': sid,
-                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                                'messages': [user_msg],
-                                'session_active': True,
-                                'last_activity': datetime.now(),
-                                'client_ip': request.remote_addr,
-                                'user_agent': request.headers.get('User-Agent', ''),
-                                'user_attributes': session.get('user_attributes', {})
-                            }
+                            session_data['messages'].append(bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            # 妊娠・授乳などのuser_attributesをDBに反映（Otherフローで抽出した属性を永続化）
+                            session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
                             save_session_to_db(sid, session_data)
                     
-                # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
-                has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
-                if has_symptom:
-                    # 症状が検出されている場合は、一般的な症状相談として扱う
-                    symptom_type = "general_symptom"
-                else:
-                    # 症状が検出されていない場合は、不明な要求として扱う
-                    symptom_type = "inappropriate_request/unknown"
+                    from src.services.counseling_response import log_counseling_response
+                    log_counseling_response(
+                        session_id=sid,
+                        response_content=initial_response,
+                        response_type="counseling_unknown_request",
+                        category="Other",
+                        confidence=triage_result.get('confidence', 0.5),
+                        counseling_mode=session.get('counseling_mode'),
+                        user_input=user_message,
+                        conversation_history=None
+                    )
                     
-                # カウンセリングフロー開始（不明な要求専用）
-                symptom_type = "inappropriate_request/unknown"
-                conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                    
-                initial_response = generate_counseling_response(
-                    symptom_type, sanitized_message, recommendation_client,
-                    conversation_history=conversation_history,
-                    session_id=sid
-                )
-                initial_questions = generate_follow_up_questions(
-                    symptom_type, {}, recommendation_client
-                )
-                start_counseling_mode(session, symptom_type, initial_questions)
-                    
-                bot_response = {
-                    'type': 'bot',
-                    'content': initial_response,
-                    'counseling': True,
-                    'inappropriate_request': True,
-                    'request_type': 'unknown',
-                    'timestamp': datetime.now().isoformat()
-                }
-                session['messages'].append(bot_response)
-                    
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        session_data['messages'].append(bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        # 妊娠・授乳などのuser_attributesをDBに反映（Otherフローで抽出した属性を永続化）
-                        session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
-                        save_session_to_db(sid, session_data)
-                    
-                from src.services.counseling_response import log_counseling_response
-                log_counseling_response(
-                    session_id=sid,
-                    response_content=initial_response,
-                    response_type="counseling_unknown_request",
-                    category="Other",
-                    confidence=triage_result.get('confidence', 0.5),
-                    counseling_mode=session.get('counseling_mode'),
-                    user_input=user_message,
-                    conversation_history=None
-                )
-                    
-                session.modified = True
-                message_count = len(session['messages'])
-                logger.info(f"✅ 不明な要求のカウンセリングフロー処理完了: {message_count} messages")
-                return jsonify({
-                    'status': 'ok',
-                    'message_count': message_count
-                })
-            except ImportError as e:
-                logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ カウンセリングフロー処理でエラー: {e}")
-                import traceback
-                traceback.print_exc()
-                # エラー時は既存の汎用応答処理に進む
-                session['should_handle_other_category'] = True
+                    session.modified = True
+                    message_count = len(session['messages'])
+                    logger.info(f"✅ 不明な要求のカウンセリングフロー処理完了: {message_count} messages")
+                    return jsonify({
+                        'status': 'ok',
+                        'message_count': message_count
+                    })
+                except ImportError as e:
+                    logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
+                except Exception as e:
+                    logger.error(f"❌ カウンセリングフロー処理でエラー: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # エラー時は既存の汎用応答処理に進む
+                    session['should_handle_other_category'] = True
             
         # ステップ1.9: 眠気関連キーワードのチェック（カウンセリングモードチェックの前、重複チェックの前に実行）
         # 注意: このチェックは重複チェックの前に実行する必要がある（カウンセリングフローにリダイレクトするため）

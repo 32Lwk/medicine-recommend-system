@@ -19,7 +19,7 @@ from flask import jsonify
 from src.utils.request_logger import log_medicine_logic_call, log_network_request
 from src.utils.performance_monitor import log_performance_metrics
 from src.utils.debug_logger import add_network_log
-from src.utils.input_helpers import check_missing_attributes
+from src.utils.input_helpers import check_missing_attributes, is_ambiguous_input
 from src.services.analytics import log_access_analytics
 from src.services.chat_response_service import generate_personalized_advice
 from src.services.session_manager import (
@@ -33,6 +33,7 @@ from src.core.medicine_logic import (
     analyze_symptoms_and_medicine_type,
     rule_based_medicine_recommendation,
 )
+from src.core.translation_service import translate_medicine_recommendation
 from src.handlers.chat.chat_response_builder import build_success_response
 
 logger = logging.getLogger(__name__)
@@ -1136,6 +1137,8 @@ def run_recommendation_flow(
                     user_preferences = extract_user_preferences(user_message, nlu_result_for_preferences, user_info)
                     user_info['user_preferences'] = user_preferences
                     user_info['user_message'] = user_message  # user_messageも追加（証判定などで使用）
+                    user_info['prefers_kampo'] = user_preferences.get('prefers_kampo', False)
+                    user_info['prefers_not_kampo'] = user_preferences.get('prefers_not_kampo', False)
                     logger.info(f"📋 ユーザー要望を抽出: {user_preferences}")
                 except Exception as e:
                     logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
@@ -2252,8 +2255,14 @@ def run_recommendation_flow(
                                                 # 「歳以上の方が対象です」の場合はそのまま表示
                                                 current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
                                             else:
-                                                # その他の場合は「以上の方が対象です」を追加
-                                                current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}以上の方が対象です。</p>'
+                                                # 「〇歳以上」パターンの場合は重複を避けて「〇歳以上の方が対象です。」と表示
+                                                match = re.search(r'(\d+)歳以上', age_restriction)
+                                                if match:
+                                                    age_val = match.group(1)
+                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_val}歳以上の方が対象です。</p>'
+                                                else:
+                                                    # その他の場合は「以上の方が対象です」を追加
+                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}以上の方が対象です。</p>'
                                             age_restriction_added = True
                                 elif line.startswith('ドーピング:'):
                                     # ドーピングの処理
