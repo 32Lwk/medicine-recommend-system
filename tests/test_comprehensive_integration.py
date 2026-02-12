@@ -2157,6 +2157,128 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
                           f"期待される医薬品のスコア: {expected_scores if expected_scores else 'なし'}\n"
                           f"上位10件（スコア付き）: {top_10_candidates}")
 
+    # ============================================================
+    # 計画: 頭痛入力・推奨医薬品・漢方薬の改善
+    # ============================================================
+
+    def test_symptom_dictionary_short_input_validation(self):
+        """症状辞書に登録された短い症状名（頭痛・発熱・咳・痰）が3文字チェックをスキップすることを確認"""
+        from src.core.dictionary_loader import load_symptom_dictionary
+
+        symptom_dict = load_symptom_dictionary()
+        valid_short_inputs = ["頭痛", "発熱", "咳", "痰", "熱"]
+
+        for user_text in valid_short_inputs:
+            is_valid = False
+            for canonical_name, entry in symptom_dict.items():
+                if user_text.strip() == canonical_name:
+                    is_valid = True
+                    break
+                for syn in entry.get("synonyms", []):
+                    if user_text.strip() == syn:
+                        is_valid = True
+                        break
+                if is_valid:
+                    break
+            self.assertTrue(is_valid, f"「{user_text}」は症状辞書に登録されているべき（3文字未満でも許可）")
+
+    def test_symptom_dictionary_invalid_short_returns_error(self):
+        """症状辞書にない2文字（あい）は3文字チェックでエラーになることを確認"""
+        from src.core.dictionary_loader import load_symptom_dictionary
+
+        symptom_dict = load_symptom_dictionary()
+        user_text = "あい"
+        is_valid = False
+        for canonical_name, entry in symptom_dict.items():
+            if user_text.strip() == canonical_name:
+                is_valid = True
+                break
+            for syn in entry.get("synonyms", []):
+                if user_text.strip() == syn:
+                    is_valid = True
+                    break
+            if is_valid:
+                break
+        self.assertFalse(is_valid, "「あい」は症状辞書に登録されていないためエラーとなるべき")
+
+    def test_extract_user_preferences_kampo(self):
+        """extract_user_preferencesでprefers_kampo/prefers_not_kampoが正しく抽出されることを確認"""
+        from src.core.user_detection import extract_user_preferences
+
+        # 漢方希望
+        result = extract_user_preferences("頭痛がする。漢方がいい")
+        self.assertTrue(result.get("prefers_kampo", False), "漢方希望が検出されるべき")
+        self.assertFalse(result.get("prefers_not_kampo", False))
+
+        # 漢方忌避
+        result = extract_user_preferences("頭痛がする。漢方はいや")
+        self.assertFalse(result.get("prefers_kampo", False))
+        self.assertTrue(result.get("prefers_not_kampo", False), "漢方忌避が検出されるべき")
+
+        # 漢方以外がいい
+        result = extract_user_preferences("頭痛。漢方以外がいい")
+        self.assertTrue(result.get("prefers_not_kampo", False), "漢方忌避が検出されるべき")
+
+    def test_headache_single_symptom_major_analgesics(self):
+        """頭痛単一症状時に主要解熱鎮痛薬が上位に含まれることを確認"""
+        if medicine_df is None:
+            self.skipTest("医薬品データが読み込めません")
+
+        top_medicines = self._get_top_medicines("頭痛がします", ["頭痛"], limit=10)
+        major_analgesics_keywords = ["ロキソニン", "カロナール", "タイレノール", "バファリン", "イブ"]
+        found_major = any(
+            any(kw in name for kw in major_analgesics_keywords)
+            for name in top_medicines[:5]
+        )
+        self.assertTrue(found_major,
+                        f"頭痛単一症状時に主要解熱鎮痛薬が上位5件に含まれるべき。実際: {top_medicines[:5]}")
+
+    def test_prefers_kampo_bonus(self):
+        """prefers_kampo時、漢方薬・生薬製剤にボーナスが付与されることを確認"""
+        from src.core.rule_based_recommendation import get_candidate_medicines, calculate_medicine_score
+
+        if medicine_df is None:
+            self.skipTest("医薬品データが読み込めません")
+
+        nlu_result = {"symptoms": [{"name": "頭痛"}]}
+        user_input_with_kampo = "頭痛がする。漢方がいい"
+        user_input_without = "頭痛がする"
+
+        candidates = get_candidate_medicines(nlu_result, medicine_df, user_input_with_kampo)
+        kampo_candidates = [c for c in candidates if "葛根湯" in c.get("product_name", "") or "五苓散" in c.get("product_name", "") or "漢方" in str(c.get("efficacy", ""))]
+        western_candidates = [c for c in candidates if c not in kampo_candidates][:5]
+
+        if kampo_candidates:
+            user_info_with = {"prefers_kampo": True, "prefers_not_kampo": False, "user_preferences": {"prefers_kampo": True, "prefers_not_kampo": False}}
+            user_info_without = {"prefers_kampo": False, "prefers_not_kampo": False, "user_preferences": {"prefers_kampo": False, "prefers_not_kampo": False}}
+
+            score_with = calculate_medicine_score(kampo_candidates[0], nlu_result, user_info_with, user_input_with_kampo)
+            score_without = calculate_medicine_score(kampo_candidates[0], nlu_result, user_info_without, user_input_without)
+            self.assertGreaterEqual(score_with.get("total_score", 0), score_without.get("total_score", 0),
+                                   "prefers_kampo時、漢方薬のスコアが同等以上であるべき")
+
+    def test_prefers_not_kampo_penalty(self):
+        """prefers_not_kampo時、漢方薬に追加ペナルティが適用されることを確認"""
+        from src.core.rule_based_recommendation import get_candidate_medicines, calculate_medicine_score
+
+        if medicine_df is None:
+            self.skipTest("医薬品データが読み込めません")
+
+        nlu_result = {"symptoms": [{"name": "頭痛"}]}
+        user_input = "頭痛がする。漢方はいや"
+
+        candidates = get_candidate_medicines(nlu_result, medicine_df, user_input)
+        kampo_candidates = [c for c in candidates if "葛根湯" in c.get("product_name", "") or "五苓散" in c.get("product_name", "")][:3]
+
+        if kampo_candidates:
+            user_info_not_kampo = {"prefers_kampo": False, "prefers_not_kampo": True, "user_preferences": {"prefers_kampo": False, "prefers_not_kampo": True}}
+            user_info_neutral = {"prefers_kampo": False, "prefers_not_kampo": False, "user_preferences": {"prefers_kampo": False, "prefers_not_kampo": False}}
+
+            score_not_kampo = calculate_medicine_score(kampo_candidates[0], nlu_result, user_info_not_kampo, user_input)
+            score_neutral = calculate_medicine_score(kampo_candidates[0], nlu_result, user_info_neutral, user_input)
+            self.assertLessEqual(score_not_kampo.get("total_score", 0), score_neutral.get("total_score", 0),
+                                "prefers_not_kampo時、漢方薬のスコアが下がるべき")
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
