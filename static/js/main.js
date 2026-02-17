@@ -187,6 +187,7 @@
                         }
                     ],
                     isBetaOnly: true,
+                    hidden: true,
                     buttonText: "次へ",
                     buttonAria: "最終ステップへ進む"
                 },
@@ -394,6 +395,7 @@
                         }
                     ],
                     isBetaOnly: true,
+                    hidden: true,
                     buttonText: "Next",
                     buttonAria: "Go to the final step"
                 },
@@ -613,6 +615,7 @@
                         }
                     ],
                     isBetaOnly: true,
+                    hidden: true,
                     buttonText: "다음",
                     buttonAria: "마지막 단계로 이동"
                 },
@@ -820,6 +823,7 @@
                         }
                     ],
                     isBetaOnly: true,
+                    hidden: true,
                     buttonText: "下一步",
                     buttonAria: "前往最后一步"
                 },
@@ -973,6 +977,10 @@
         
         // フィルタリング後のスライドを取得
         const filteredSlides = slidesData.filter((slide) => {
+            // 非表示指定のスライドは表示しない
+            if (slide.hidden === true) {
+                return false;
+            }
             // β版のみのスライドは、β版の場合のみ表示
             if (slide.isBetaOnly && !isBetaVersion) {
                 return false;
