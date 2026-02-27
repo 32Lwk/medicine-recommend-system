@@ -318,6 +318,37 @@ def chat_with_medicine_context(
                 }
         except Exception as e:
             print(f"医薬品検索エラー: {e}")
+    # ここまでで推奨医薬品も医薬品名も得られていない場合は、
+    # 質問文そのものからルールベース推奨を試みる（初回相談でも推奨が出るようにする）
+    if not recommended_medicines:
+        try:
+            from src.core.rule_based_recommendation import (
+                rule_based_medicine_recommendation,
+            )
+
+            logger.info(
+                "No recommended_medicines provided. "
+                "Running rule_based_medicine_recommendation in chat_with_medicine_context."
+            )
+            rule_based_result = rule_based_medicine_recommendation(
+                user_text=user_message,
+                user_info={},
+                client=client,
+                top_n=3,
+                session_id=None,
+            )
+            if rule_based_result:
+                rb_medicines = rule_based_result.get("recommended_medicines") or []
+                if rb_medicines:
+                    recommended_medicines = rb_medicines
+                    logger.info(
+                        f"rule_based_medicine_recommendation returned "
+                        f"{len(recommended_medicines)} medicines for Q&A context."
+                    )
+        except Exception as e:
+            logger.error(
+                f"rule_based_medicine_recommendation error in chat_with_medicine_context: {e}"
+            )
     history_text = ""
     if conversation_history is not None:
         recent_messages = conversation_history[-5:]

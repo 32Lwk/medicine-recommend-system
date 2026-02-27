@@ -8,6 +8,7 @@ import os
 import time
 import logging
 import uuid
+import random
 from datetime import datetime
 
 from flask import jsonify, request, has_request_context
@@ -34,6 +35,7 @@ from src.core.medicine_logic import (
     select_symptoms_via_gpt,
     analyze_symptoms_and_medicine_type,
     rule_based_medicine_recommendation,
+    chat_with_medicine_context,
 )
 from src.services.chat_response_service import generate_personalized_advice
 from src.handlers.chat.chat_input_validator import validate_and_block_input
@@ -1968,9 +1970,15 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                 session['detected_language'] = detected_language
                 logger.info(f"🌍 検出された言語: {detected_language}")
                     
-                # 初回チャットで症状入力の場合は属性抽出をスキップして症状分析に進む
-                if len(session.get('messages', [])) <= 1 and is_symptom_input(user_message):
-                    logger.info(f"🔄 初回症状入力のため属性抽出をスキップして症状分析に進みます")
+                # 初回チャットで症状入力（または症状キーワードを含む）場合は
+                # 属性抽出をスキップして症状分析（推奨フロー）に進む
+                if len(session.get('messages', [])) <= 1 and (
+                    is_symptom_input(user_message) or has_symptom
+                ):
+                    logger.info(
+                        "🔄 初回かつ症状を含む入力のため、"
+                        "属性抽出をスキップして症状分析・推奨フローに進みます"
+                    )
                     is_question = False  # 症状分析を強制実行
                 else:
                     # ステップ1: 多言語対応ユーザー属性を抽出・更新
