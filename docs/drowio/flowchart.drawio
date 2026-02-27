@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
   <diagram name="ページ-1" id="TXDhKhsrc3soLbmnL2dR">
-    <mxGraphModel dx="2775" dy="2627" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1959" dy="2198" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -198,7 +198,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="4dTYmzKk8JVmkjGsvZIc-82" edge="1" parent="1" source="4dTYmzKk8JVmkjGsvZIc-4" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;entryX=0.996;entryY=0.677;entryDx=0;entryDy=0;exitX=0.019;exitY=0.669;exitDx=0;exitDy=0;entryPerimeter=0;exitPerimeter=0;" target="4dTYmzKk8JVmkjGsvZIc-14" value="分析結果">
-          <mxGeometry height="50" relative="1" width="50" x="-0.0755" y="2" as="geometry">
+          <mxGeometry height="50" relative="1" width="50" x="0.0328" as="geometry">
             <mxPoint as="offset" />
             <mxPoint x="810" y="125" as="sourcePoint" />
             <mxPoint x="900" y="123" as="targetPoint" />
@@ -382,13 +382,6 @@
         <mxCell id="4dTYmzKk8JVmkjGsvZIc-149" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="OpenAI API" vertex="1">
           <mxGeometry height="60" width="100" x="459" y="-309" as="geometry" />
         </mxCell>
-        <mxCell id="4dTYmzKk8JVmkjGsvZIc-150" edge="1" parent="1" source="4dTYmzKk8JVmkjGsvZIc-149" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;" value="応答生成">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint as="offset" />
-            <mxPoint x="508.4100000000001" y="-499" as="sourcePoint" />
-            <mxPoint x="509" y="-369" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="4dTYmzKk8JVmkjGsvZIc-153" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint as="offset" />
@@ -491,6 +484,13 @@
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <mxPoint x="989" y="-308" as="sourcePoint" />
             <mxPoint x="1299" y="-18" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="4dTYmzKk8JVmkjGsvZIc-150" edge="1" parent="1" source="4dTYmzKk8JVmkjGsvZIc-149" style="endArrow=classic;html=1;rounded=0;strokeColor=#F57C00;strokeWidth=2;" value="応答生成">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="508.4100000000001" y="-499" as="sourcePoint" />
+            <mxPoint x="509" y="-369" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
