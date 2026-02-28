@@ -160,6 +160,7 @@
     .gantt-table .gantt-phase.phase-2 { background: #8b5cf6; }
     .gantt-table .gantt-phase.phase-3 { background: #f97316; }
     .gantt-table .gantt-phase.phase-4 { background: #eab308; color: #1a1a1a; }
+    .gantt-table .gantt-phase.phase-5 { background: #64748b; }
 
     .gantt-table .gantt-label {
       position: sticky;
@@ -203,6 +204,7 @@
     .gantt-table .gantt-cell.bar-2 { background: #8b5cf6; }
     .gantt-table .gantt-cell.bar-3 { background: #f97316; }
     .gantt-table .gantt-cell.bar-4 { background: #eab308; }
+    .gantt-table .gantt-cell.bar-5 { background: #64748b; }
 
     .gantt-legend-inline {
       display: flex;
@@ -234,6 +236,7 @@
     .gantt-legend-swatch.phase-2 { background: #8b5cf6; }
     .gantt-legend-swatch.phase-3 { background: #f97316; }
     .gantt-legend-swatch.phase-4 { background: #eab308; }
+    .gantt-legend-swatch.phase-5 { background: #64748b; }
 
     .legend {
       background: var(--card-bg);
@@ -280,6 +283,7 @@
     .legend-list li:nth-child(3)::before { background: #8b5cf6; }
     .legend-list li:nth-child(4)::before { background: #f97316; }
     .legend-list li:nth-child(5)::before { background: #eab308; }
+    .legend-list li:nth-child(6)::before { background: #64748b; }
 
     .summary-table {
       width: 100%;
@@ -345,11 +349,12 @@
     <section class="legend" aria-label="フェーズ凡例">
       <h2 class="legend-title">フェーズ概要</h2>
       <ul class="legend-list">
-        <li><strong>キックオフ</strong> — 環境・リポジトリ整理、CI確認</li>
+        <li><strong>キックオフ</strong> — 環境・リポジトリ整理、既存テスト・CI確認、9ヶ月計画の詳細化、PM・IPAとのキックオフ</li>
         <li><strong>Phase1 潜在空間</strong> — 医薬品効能のベクトル化（埋め込みAPI利用）、コサイン類似度、ルールベース並行評価用IF</li>
         <li><strong>Phase2 ハイブリッド統合</strong> — 重み・動的重み設計、ハイブリッドスコアリング実装、5層防御結合</li>
         <li><strong>検証・Phase3</strong> — 安全性検証、A/B評価、重みチューニング、評価レポート</li>
-        <li><strong>仕上げ</strong> — ドキュメント、OSS化準備、デモ動画、成果・実績報告書</li>
+        <li><strong>仕上げ</strong> — ドキュメント整備、デモ動画、成果・実績報告書</li>
+        <li><strong>専門家監修</strong> — Phase1完了時・統合テスト前・Phase3評価前など、一定の完成段階で薬剤師・登録販売者等に監修依頼</li>
       </ul>
     </section>
 
@@ -360,6 +365,7 @@
         <span class="gantt-legend-item"><i class="gantt-legend-swatch phase-2"></i>Phase 2 ハイブリッド</span>
         <span class="gantt-legend-item"><i class="gantt-legend-swatch phase-3"></i>Phase 3 検証</span>
         <span class="gantt-legend-item"><i class="gantt-legend-swatch phase-4"></i>仕上げ</span>
+        <span class="gantt-legend-item"><i class="gantt-legend-swatch phase-5"></i>専門家監修</span>
       </div>
       <table class="gantt-table" aria-label="開発スケジュール（2026.06～2027.03）">
         <colgroup>
@@ -391,7 +397,7 @@
         <tbody>
           <tr>
             <td class="gantt-phase phase-0">キックオフ</td>
-            <td class="gantt-label">環境整理・CI</td>
+            <td class="gantt-label">環境整理・CI・詳細化</td>
             <td class="gantt-cell"></td><td class="gantt-cell bar bar-0"></td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
@@ -421,7 +427,7 @@
           </tr>
           <tr>
             <td class="gantt-phase phase-1">Phase 1</td>
-            <td class="gantt-label">類似度評価（Cosine）</td>
+            <td class="gantt-label">類似度評価</td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
             <td class="gantt-cell bar bar-1"></td><td class="gantt-cell bar bar-1"></td>
             <td class="gantt-cell bar bar-1"></td><td class="gantt-cell bar bar-1"></td>
@@ -450,8 +456,22 @@
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
           </tr>
           <tr>
+            <td class="gantt-phase phase-5">監修</td>
+            <td class="gantt-label">専門家監修</td>
+            <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            <td class="gantt-cell"></td><td class="gantt-cell bar bar-5"></td>
+            <td class="gantt-cell bar bar-5"></td><td class="gantt-cell bar bar-5"></td>
+            <td class="gantt-cell bar bar-5"></td><td class="gantt-cell bar bar-5"></td>
+            <td class="gantt-cell bar bar-5"></td><td class="gantt-cell bar bar-5"></td>
+            <td class="gantt-cell bar bar-5"></td><td class="gantt-cell bar bar-5"></td>
+            <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            <td class="gantt-cell"></td><td class="gantt-cell"></td>
+          </tr>
+          <tr>
             <td class="gantt-phase phase-2">Phase 2</td>
-            <td class="gantt-label">重み設計（静的・動的）</td>
+            <td class="gantt-label">重み設計</td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
@@ -542,22 +562,6 @@
           </tr>
           <tr>
             <td class="gantt-phase phase-4">仕上げ</td>
-            <td class="gantt-label">OSS公開準備</td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell bar bar-4"></td><td class="gantt-cell bar bar-4"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-            <td class="gantt-cell"></td><td class="gantt-cell"></td>
-          </tr>
-          <tr>
-            <td class="gantt-phase phase-4">仕上げ</td>
             <td class="gantt-label">デモ動画・報告書作成</td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
             <td class="gantt-cell"></td><td class="gantt-cell"></td>
@@ -574,6 +578,7 @@
       </table>
     </div>
 
+    <p class="note">※7月末・1月末は学業の試験期のため、開発時間を少なめに設定しています。</p>
 
     <table class="summary-table" aria-label="スケジュール一覧">
       <thead>
@@ -586,7 +591,7 @@
       <tbody>
         <tr>
           <td class="phase">キックオフ</td>
-          <td>環境・リポジトリ整理、CI確認</td>
+          <td>環境・リポジトリ整理、既存テスト・CI確認、9ヶ月計画の詳細化、PM・IPAとのキックオフ</td>
           <td class="duration">6/22～約10日</td>
         </tr>
         <tr>
@@ -597,7 +602,12 @@
         <tr>
           <td class="phase">Phase2</td>
           <td>設計、ハイブリッドスコアリング・5層防御結合</td>
-          <td class="duration">8月中旬～10月</td>
+          <td class="duration">9月</td>
+        </tr>
+        <tr>
+          <td class="phase">専門家監修</td>
+          <td>一定の完成段階で薬剤師・登録販売者等に定期的に監修依頼</td>
+          <td class="duration">8月後半～12月末</td>
         </tr>
         <tr>
           <td class="phase">検証・Phase3</td>
@@ -607,7 +617,7 @@
         <tr>
           <td class="phase">仕上げ</td>
           <td>ドキュメント、デモ、成果・実績報告書</td>
-          <td class="duration">12月～3月</td>
+          <td class="duration">12月～3月12日</td>
         </tr>
       </tbody>
     </table>
