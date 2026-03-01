@@ -1,0 +1,386 @@
+{
+    "type": "bubble",
+    "size": "kilo",
+    "header": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "あなたに合わせたアドバイス",
+          "weight": "bold",
+          "size": "lg",
+          "color": "#ffffff",
+          "align": "center"
+        }
+      ],
+      "backgroundColor": "#0D9488",
+      "paddingAll": "16px"
+    },
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "あなたに合った解熱鎮痛剤の候補を3つご用意しました。",
+          "wrap": true,
+          "size": "sm",
+          "margin": "none"
+        },
+        {
+          "type": "text",
+          "text": "・胃に負担をかけにくい方:カロナール（アセトアミノフェン）",
+          "wrap": true,
+          "size": "sm",
+          "margin": "md"
+        },
+        {
+          "type": "text",
+          "text": "・痛みが強い方:イブスリーショットプレミアム",
+          "wrap": true,
+          "size": "sm",
+          "margin": "xs"
+        },
+        {
+          "type": "text",
+          "text": "・速く効かせたい方:リングルアイビー",
+          "wrap": true,
+          "size": "sm",
+          "margin": "xs"
+        },
+        {
+          "type": "text",
+          "text": "用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
+          "wrap": true,
+          "size": "xs",
+          "color": "#666666",
+          "margin": "md"
+        }
+      ],
+      "paddingAll": "16px"
+    }
+  }
+  {
+    "type": "carousel",
+    "contents": [
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "hero": {
+          "type": "image",
+          "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987107634115_01_7ec33082a85ac55750d6c9dfe6f62b15.jpg",
+          "size": "full",
+          "aspectMode": "cover",
+          "aspectRatio": "320:213"
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "第1位",
+              "size": "xs",
+              "color": "#0D9488",
+              "weight": "bold",
+              "margin": "none"
+            },
+            {
+              "type": "text",
+              "text": "カロナール",
+              "weight": "bold",
+              "size": "lg",
+              "wrap": true,
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "第一三共ヘルスケア",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "separator",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "効能・効果",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "頭痛,生理痛(月経痛),歯痛,発熱時の解熱,筋肉痛",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "text",
+              "text": "推奨理由",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "アセトアミノフェン配合。胃にやさしく、眠くなりにくい解熱鎮痛剤です。",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "おすすめ度",
+                  "size": "xs",
+                  "color": "#8c8c8c",
+                  "flex": 0
+                },
+                {
+                  "type": "text",
+                  "text": " 高 (85%)",
+                  "size": "sm",
+                  "color": "#0D9488",
+                  "weight": "bold",
+                  "flex": 0
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "使用上の注意: 用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
+              "size": "xs",
+              "color": "#666666",
+              "wrap": true,
+              "margin": "sm"
+            }
+          ],
+          "paddingAll": "16px"
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "hero": {
+          "type": "image",
+          "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987300059807_01_157a39efa376afd73107cad071b53eb1.jpg",
+          "size": "full",
+          "aspectMode": "cover",
+          "aspectRatio": "320:213"
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "第2位",
+              "size": "xs",
+              "color": "#0D9488",
+              "weight": "bold",
+              "margin": "none"
+            },
+            {
+              "type": "text",
+              "text": "イブスリーショットプレミアム",
+              "weight": "bold",
+              "size": "lg",
+              "wrap": true,
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "エスエス製薬",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "separator",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "効能・効果",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "頭痛,歯痛,筋肉痛,発熱時の解熱,打撲痛",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "text",
+              "text": "推奨理由",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "イブプロフェンとアセトアミノフェンのダブル配合。つらい痛みに強く、胃粘膜保護成分配合です。",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "おすすめ度",
+                  "size": "xs",
+                  "color": "#8c8c8c",
+                  "flex": 0
+                },
+                {
+                  "type": "text",
+                  "text": " 高 (78%)",
+                  "size": "sm",
+                  "color": "#0D9488",
+                  "weight": "bold",
+                  "flex": 0
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "使用上の注意: 車の運転・機械操作前は服用を避けてください。用法用量を守ってご使用ください。",
+              "size": "xs",
+              "color": "#666666",
+              "wrap": true,
+              "margin": "sm"
+            }
+          ],
+          "paddingAll": "16px"
+        }
+      },
+      {
+        "type": "bubble",
+        "size": "kilo",
+        "hero": {
+          "type": "image",
+          "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987316032825_01_e2f38adb6174b457a32c91269fa9cfc4.jpg",
+          "size": "full",
+          "aspectMode": "cover",
+          "aspectRatio": "320:213"
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "第3位",
+              "size": "xs",
+              "color": "#0D9488",
+              "weight": "bold",
+              "margin": "none"
+            },
+            {
+              "type": "text",
+              "text": "リングルアイビー",
+              "weight": "bold",
+              "size": "lg",
+              "wrap": true,
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "佐藤製薬",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "separator",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "効能・効果",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "sm"
+            },
+            {
+              "type": "text",
+              "text": "頭痛,歯痛,筋肉痛,発熱時の解熱,打撲痛",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "text",
+              "text": "推奨理由",
+              "size": "xs",
+              "color": "#8c8c8c",
+              "weight": "bold",
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "イブプロフェンが速く溶けるジェルカプセル。眠くなる成分なしで、速く効く解熱鎮痛剤です。",
+              "size": "sm",
+              "wrap": true,
+              "margin": "xs"
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "おすすめ度",
+                  "size": "xs",
+                  "color": "#8c8c8c",
+                  "flex": 0
+                },
+                {
+                  "type": "text",
+                  "text": " 中 (72%)",
+                  "size": "sm",
+                  "color": "#CA8A04",
+                  "weight": "bold",
+                  "flex": 0
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "text",
+              "text": "使用上の注意: 用法用量を守り、長期連用は避けてください。",
+              "size": "xs",
+              "color": "#666666",
+              "wrap": true,
+              "margin": "sm"
+            }
+          ],
+          "paddingAll": "16px"
+        }
+      }
+    ]
+  }

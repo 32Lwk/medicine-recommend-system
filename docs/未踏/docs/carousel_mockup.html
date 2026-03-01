@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>カルーセル型UI モックアップ - チャット型医薬品推奨ツール</title>
+    <style>
+        /* ===== ベース（index.html の構造を踏襲） ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            height: 100dvh;
+            -webkit-text-size-adjust: 100%;
+        }
+        @supports (-webkit-touch-callout: none) {
+            html, body { height: -webkit-fill-available; }
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100dvh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+                height: 100dvh;
+                height: -webkit-fill-available;
+            }
+        }
+
+        /* ===== ヘッダー（index.html 準拠） ===== */
+        .chat-header {
+            background: #4CAF50;
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .chat-header h1 { font-size: 22px; font-weight: bold; }
+        .chat-header p  { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .header-btn {
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-blue   { background: #2196F3; color: white; }
+        .btn-black  { background: #000; color: white; }
+        .btn-white  { background: #fff; color: #000; border: 1px solid #fff; }
+        .btn-yellow { background: #ffc107; color: #212529; }
+
+        /* ===== チャットエリア（index.html 準拠） ===== */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            background: rgba(192,192,192,1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+        }
+
+        /* ===== メッセージバブル ===== */
+        .message { display: flex; align-items: flex-start; gap: 8px; }
+        .message.user { flex-direction: row-reverse; }
+
+        .message-content {
+            max-width: 75%;
+            background: #fff;
+            border-radius: 18px;
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .message.user .message-content {
+            background: #4CAF50;
+            color: #fff;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .message.bot .message-content {
+            border-radius: 18px 18px 18px 4px;
+        }
+        .avatar {
+            display: none !important; /* すべてのチャットでアバターを非表示 */
+        }
+
+        /* ===== 症状分析ボックス ===== */
+        .diagnosis-box {
+            background: #f0fdf4;
+            border-left: 4px solid #4CAF50;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .diagnosis-box strong { color: #166534; }
+
+        /* ===== あなたに合わせたアドバイス（line.json 風） ===== */
+        .advice-bubble {
+            max-width: 75%;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+        }
+        .advice-header {
+            background-color: #0D9488;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1rem;
+            text-align: center;
+            padding: 16px;
+        }
+        .advice-body {
+            padding: 16px;
+            font-size: 14px;
+        }
+        .advice-intro {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+        }
+        .advice-list {
+            margin: 8px 0;
+            padding-left: 1.2em;
+            line-height: 1.6;
+        }
+        .advice-list li { margin-bottom: 4px; }
+        .advice-caution {
+            margin: 12px 0 0 0;
+            font-size: 0.8em;
+            color: #666666;
+        }
+
+        /* ===== カルーセルラッパー（全幅・横スクロール） ===== */
+        .carousel-wrapper {
+            width: 100%;
+            margin-left: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 0 12px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #aaa transparent;
+        }
+        .carousel-wrapper::-webkit-scrollbar        { height: 4px; }
+        .carousel-wrapper::-webkit-scrollbar-thumb  { background: #ccc; border-radius: 2px; }
+
+        .carousel-track {
+            display: flex;
+            gap: 12px;
+            width: max-content;
+        }
+
+        /* ===== 医薬品カード ===== */
+        .medicine-card {
+            width: 220px;
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.13);
+            overflow: hidden;
+            transition: transform .15s;
+        }
+        .medicine-card:hover { transform: translateY(-2px); }
+
+        .card-hero {
+            width: 100%;
+            height: 145px;
+            object-fit: cover;
+            display: block;
+            background: #f5f5f5;
+        }
+        .card-body { padding: 14px; }
+
+        .card-rank {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0D9488;
+            letter-spacing: .5px;
+        }
+        .card-name {
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 4px;
+            line-height: 1.3;
+            color: #111;
+        }
+        .card-maker {
+            font-size: 11px;
+            color: #8c8c8c;
+            margin-top: 3px;
+        }
+        .card-separator {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 10px 0;
+        }
+        .card-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #8c8c8c;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .card-text {
+            font-size: 12px;
+            color: #333;
+            margin-top: 3px;
+            line-height: 1.5;
+        }
+        .card-score {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+        }
+        .card-score .label { font-size: 11px; color: #8c8c8c; }
+        .card-score .value { font-size: 13px; font-weight: bold; }
+        .score-high   { color: #0D9488; }
+        .score-medium { color: #CA8A04; }
+        .card-caution {
+            font-size: 10px;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+            line-height: 1.5;
+        }
+
+        /* ===== スワイプヒント ===== */
+        .swipe-hint {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-top: 4px;
+            padding: 0;
+        }
+
+        /* ===== モバイル最適化（index.html 準拠） ===== */
+        @media (max-width: 768px) {
+            .chat-messages {
+                padding: 8px;
+                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            }
+            .carousel-wrapper {
+                width: 100%;
+                margin-left: 0;
+                padding: 4px 0 12px 0;
+                -webkit-overflow-scrolling: touch;
+            }
+            .carousel-track {
+                padding-left: 0;
+            }
+            .medicine-card {
+                width: 200px;
+            }
+            .message-content,
+            .advice-bubble {
+                max-width: 90%;
+            }
+            .chat-input {
+                padding: 10px calc(5vw + env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) calc(5vw + env(safe-area-inset-right));
+            }
+        }
+        @media (max-width: 480px) {
+            .chat-messages {
+                padding: 8px;
+                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            }
+            .medicine-card {
+                width: 180px;
+            }
+            .message-content,
+            .advice-bubble {
+                max-width: 92%;
+            }
+        }
+
+        /* ===== 薬剤師要請バナー ===== */
+        .pharmacist-banner {
+            background: #fff7e6;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #7c5a00;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 75%;
+        }
+
+        /* ===== 入力エリア（画面下部に固定） ===== */
+        .chat-input {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            padding: 16px 20px;
+            padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            background: white;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mic-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .input-group textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 22px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        .input-group button[type="submit"] {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 22px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* ===== モックアップ注記バッジ ===== */
+        .mockup-badge {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 99;
+            letter-spacing: .5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+
+    <!-- ヘッダー -->
+    <div class="chat-header">
+        <h1>💊 チャット型医薬品相談ツール</h1>
+        <p>症状を入力してください。禁忌・アレルギーを確認したうえで安全にご提案します。</p>
+        <div class="header-buttons">
+            <button class="header-btn btn-blue">👤 ユーザー情報登録</button>
+            <button class="header-btn btn-black">🗑️ 履歴クリア</button>
+            <button class="header-btn btn-white">🔄 新セッション</button>
+            <button class="header-btn btn-yellow">👨‍⚕️ 薬剤師要請</button>
+        </div>
+    </div>
+
+    <!-- チャットエリア -->
+    <div class="chat-messages">
+
+        <!-- 初回挨拶 -->
+        <div class="message bot">
+            <div class="avatar">💊</div>
+            <div class="message-content">
+                こんにちは！症状を入力すると、あなたに合った市販薬を安全にご提案します。<br>
+                <small style="color:#888; display:block; margin-top:6px;">例：「頭が痛い」「鼻水が止まらない」など</small>
+            </div>
+        </div>
+
+        <!-- ユーザー入力 -->
+        <div class="message user">
+            <div class="message-content">頭が痛くて、熱もあります。</div>
+        </div>
+
+        <!-- Bot：あなたに合わせたアドバイス（line.json 風） -->
+        <div class="message bot">
+            <div class="avatar">💊</div>
+            <div class="advice-bubble">
+                <div class="advice-header">あなたに合わせたアドバイス</div>
+                <div class="advice-body">
+                    <p class="advice-intro">あなたに合った解熱鎮痛剤の候補を3つご用意しました。</p>
+                    <ul class="advice-list">
+                        <li>胃に負担をかけにくい方：カロナール（アセトアミノフェン）</li>
+                        <li>痛みが強い方：イブスリーショットプレミアム</li>
+                        <li>速く効かせたい方：リングルアイビー</li>
+                    </ul>
+                    <p class="advice-caution">用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot：症状分析 + カルーセル推奨 -->
+        <div class="message bot" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+
+            <!-- カルーセル（幅を全チャットエリアに広げて表示） -->
+            <div class="carousel-wrapper">
+                <div class="carousel-track">
+
+                    <!-- カード 1：カロナールA -->
+                    <div class="medicine-card">
+                        <img class="card-hero"
+                             src="https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987107634115_01_7ec33082a85ac55750d6c9dfe6f62b15.jpg"
+                             alt="カロナールA"
+                             onerror="this.style.background='#e8f5e9'; this.alt='カロナールA'; this.removeAttribute('src');">
+                        <div class="card-body">
+                            <div class="card-rank">🥇 第1位</div>
+                            <div class="card-name">カロナールA</div>
+                            <div class="card-maker">第一三共ヘルスケア</div>
+                            <hr class="card-separator">
+                            <div class="card-label">効能・効果</div>
+                            <div class="card-text">頭痛・発熱・生理痛・筋肉痛・歯痛</div>
+                            <div class="card-label" style="margin-top:8px;">推奨理由</div>
+                            <div class="card-text">アセトアミノフェン配合。胃にやさしく眠くなりにくい解熱鎮痛剤です。</div>
+                            <div class="card-score">
+                                <span class="label">おすすめ度</span>
+                                <span class="value score-high">● 高（85%）</span>
+                            </div>
+                            <div class="card-caution">⚠️ 用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。</div>
+                        </div>
+                    </div>
+
+                    <!-- カード 2：イブスリーショットプレミアム -->
+                    <div class="medicine-card">
+                        <img class="card-hero"
+                             src="https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987300059807_01_157a39efa376afd73107cad071b53eb1.jpg"
+                             alt="イブスリーショットプレミアム"
+                             onerror="this.style.background='#e3f2fd'; this.removeAttribute('src');">
+                        <div class="card-body">
+                            <div class="card-rank">🥈 第2位</div>
+                            <div class="card-name">イブスリーショットプレミアム</div>
+                            <div class="card-maker">エスエス製薬</div>
+                            <hr class="card-separator">
+                            <div class="card-label">効能・効果</div>
+                            <div class="card-text">頭痛・発熱・歯痛・筋肉痛・打撲痛</div>
+                            <div class="card-label" style="margin-top:8px;">推奨理由</div>
+                            <div class="card-text">イブプロフェン＋アセトアミノフェンのダブル配合。胃粘膜保護成分配合で強い痛みに。</div>
+                            <div class="card-score">
+                                <span class="label">おすすめ度</span>
+                                <span class="value score-high">● 高（78%）</span>
+                            </div>
+                            <div class="card-caution">⚠️ 車の運転・機械操作前は服用を避けてください。</div>
+                        </div>
+                    </div>
+
+                    <!-- カード 3：リングルアイビー -->
+                    <div class="medicine-card">
+                        <img class="card-hero"
+                             src="https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987316032825_01_e2f38adb6174b457a32c91269fa9cfc4.jpg"
+                             alt="リングルアイビー"
+                             onerror="this.style.background='#fce4ec'; this.removeAttribute('src');">
+                        <div class="card-body">
+                            <div class="card-rank">🥉 第3位</div>
+                            <div class="card-name">リングルアイビー</div>
+                            <div class="card-maker">佐藤製薬</div>
+                            <hr class="card-separator">
+                            <div class="card-label">効能・効果</div>
+                            <div class="card-text">頭痛・発熱・歯痛・筋肉痛・打撲痛</div>
+                            <div class="card-label" style="margin-top:8px;">推奨理由</div>
+                            <div class="card-text">速溶ジェルカプセルで素早く吸収。眠くなる成分なしで速く効く解熱鎮痛剤です。</div>
+                            <div class="card-score">
+                                <span class="label">おすすめ度</span>
+                                <span class="value score-medium">● 中（72%）</span>
+                            </div>
+                            <div class="card-caution">⚠️ 長期連用は避けてください。</div>
+                        </div>
+                    </div>
+
+                </div><!-- /carousel-track -->
+            </div><!-- /carousel-wrapper -->
+
+            <div class="swipe-hint">← スワイプして比較 →</div>
+
+        </div>
+
+        
+    </div><!-- /chat-messages -->
+
+    <!-- 入力エリア -->
+    <div class="chat-input">
+        <div class="input-group">
+            <button class="mic-btn" title="音声入力">🎤</button>
+            <textarea rows="1" placeholder="症状や質問を入力してください..."></textarea>
+            <button type="submit">送信</button>
+        </div>
+    </div>
+
+</div><!-- /chat-container -->
+
+</body>
+</html>
