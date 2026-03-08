@@ -1607,7 +1607,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 使用画像の著作権</h3>
-                        <p>本アプリで使用しているイラストの著作権は、<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(運営者個人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>、および<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>に帰属します。</p>
+                        <p>本アプリで使用しているイラストの著作権は、<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソコスト(運営者個人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>、および<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>に帰属します。</p>
                     </div>
                     
                     <div class="warning-box">
@@ -1997,7 +1997,7 @@
                     
                     <div class="info-section">
                         <h3>🎨 使用图像版权</h3>
-                        <p>本应用使用的插图的版权归<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソフコレ(运营者个人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>和<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>所有。</p>
+                        <p>本应用使用的插图的版权归<strong><a href="https://soco-st.com/" target="_blank" rel="noopener noreferrer">ソコスト(运营者个人)</a></strong>、<strong><a href="https://tegakisozai.com" target="_blank" rel="noopener noreferrer">てがきっず</a></strong>和<strong><a href="https://shigureni.com/" target="_blank" rel="noopener noreferrer">shigureni</a></strong>所有。</p>
                     </div>
                     
                     <div class="warning-box">
