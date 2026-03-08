@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1770771836.34599 "/Users/yuto/Programing/medicine-recommend-system/docs/未踏/docs/proposal.tex" "proposal.pdf" "proposal" 1770771836.71663 2
-  "/Users/yuto/Programing/medicine-recommend-system/docs/未踏/docs/proposal.tex" 1770771835.54586 21061 d4717a3d51d0e99aa882e6bab1096a0f ""
+["pdflatex"] 1772971953.15554 "/Users/yuto/Programing/medicine-recommend-system/docs/未踏/docs/proposal.tex" "proposal.pdf" "proposal" 1772971953.58465 2
+  "/Users/yuto/Programing/medicine-recommend-system/docs/未踏/docs/proposal.tex" 1772971951.9652 48063 98e1c22c523be761a47d99e5eca8e21b ""
   "/usr/local/texlive/2025/texmf-dist/tex/generic/iftex/iftex.sty" 1734129479 7984 7dbb9280f03c0a315425f1b4f35d43ee ""
   "/usr/local/texlive/2025/texmf-dist/tex/generic/iftex/ifvtex.sty" 1572645307 1057 525c2192b5febbd8c1f662c9468335bb ""
   "/usr/local/texlive/2025/texmf-dist/tex/generic/iftex/ifxetex.sty" 1572645307 488 4565444a3e75e59cb2702dc42e18f482 ""
@@ -16,8 +16,8 @@
   "/usr/local/texlive/2025/texmf-dist/web2c/texmf.cnf" 1739380943 42148 61becc7c670cd061bb319c643c27fdd4 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1770028029 3345739 04768d186806055815775890438f7ff3 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "proposal.aux" 1770771836.34506 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
-  "proposal.tex" 1770771835.54586 21061 d4717a3d51d0e99aa882e6bab1096a0f ""
+  "proposal.aux" 1772971953.15368 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "proposal.tex" 1772971951.9652 48063 98e1c22c523be761a47d99e5eca8e21b ""
   (generated)
   "proposal.aux"
   "proposal.log"
