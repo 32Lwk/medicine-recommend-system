@@ -5420,7 +5420,9 @@
         if (duration) response.push(`症状は${duration}続いています`);
         if (other) response.push(other);
         
-        const message = response.join('。') + '。';
+        // バックエンドで「追加情報モーダルからの送信」と確実に判定するためのプレフィックス
+        const PREFIX = '[ADDITIONAL_INFO_SUBMIT]';
+        const message = PREFIX + (response.join('。') + '。');
         
         console.log('属性フォーム送信:', message);
         
