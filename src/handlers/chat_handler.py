@@ -29,6 +29,7 @@ from src.services.session_manager import (
     save_session_to_db,
     remove_duplicate_user_messages_after_ai_response,
     get_admin_sessions,
+    get_next_user_number,
 )
 from src.core.medicine_logic import (
     client,
@@ -64,6 +65,14 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
 
     logger.info(f"📨 POST処理開始")
     user_message = request.form.get('message', '').strip()
+    # 「📋 追加情報の入力」モーダルからの送信を確実に検知するためのプレフィックス
+    ADDITIONAL_INFO_PREFIX = '[ADDITIONAL_INFO_SUBMIT]'
+    if user_message.startswith(ADDITIONAL_INFO_PREFIX):
+        user_message = user_message[len(ADDITIONAL_INFO_PREFIX):].strip()
+        session['from_attribute_modal'] = True
+        logger.info(f"📋 追加情報モーダルからの送信を検知")
+    else:
+        session['from_attribute_modal'] = False
     logger.info(f"📝 受信メッセージ: {user_message}")
     if user_message:
         sanitized_message, error_response = validate_and_block_input(session, request, user_message, sid)
@@ -409,6 +418,289 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                     logger.info(f"🔄 漢方希望/忌避のフォローアップを検出: 再推奨フローへ（症状: {prev_user_msg[:30]}...）")
 
             if not is_kampo_preference_refinement:
+                # 追加質問への回答かどうか判定（直前のbotが推奨＋追加質問を持ち、現メッセージが属性回答のとき再推奨へ）
+                is_attribute_answer_followup = False
+                attr_prev_user_msg = None
+                if sid:
+                    session_data_attr = get_session_from_db(sid)
+                    memory_data_attr = get_session_from_memory(sid)
+                    messages_from_db_attr = (session_data_attr or {}).get('messages', [])
+                    messages_from_memory_attr = (memory_data_attr or {}).get('messages', [])
+                    messages_attr = messages_from_db_attr if len(messages_from_db_attr) >= len(messages_from_memory_attr) else messages_from_memory_attr
+                    messages_attr = messages_attr or session.get('messages', [])
+                    last_recommendation_bot = None
+                    for msg in reversed(messages_attr[-12:]):
+                        if msg.get('type') != 'bot':
+                            continue
+                        diag = msg.get('diagnosis') or {}
+                        rec = diag.get('recommended_medicines') or (isinstance(diag.get('recommendation'), dict) and (diag.get('recommendation') or {}).get('recommended_medicines', [])) or []
+                        addq = diag.get('additional_questions') or (isinstance(diag.get('recommendation'), dict) and (diag.get('recommendation') or {}).get('additional_questions', [])) or []
+                        if (rec and len(rec) > 0) or (addq and len(addq) > 0):
+                            last_recommendation_bot = msg
+                            break
+                    if last_recommendation_bot and last_recommendation_bot in messages_attr:
+                        idx = messages_attr.index(last_recommendation_bot)
+                        for i in range(idx - 1, -1, -1):
+                            if messages_attr[i].get('type') == 'user':
+                                attr_prev_user_msg = (messages_attr[i].get('content') or '').strip()
+                                break
+                    attr_keywords = [
+                        '歳', '才', '男性', '女性', '女です', '男です', '妊娠', '授乳',
+                        'アレルギー', '服用', '飲んで', '持病', '既往', '続い', '日前から', '昨日から', '日前から'
+                    ]
+                    looks_attr = sum(1 for kw in attr_keywords if kw in sanitized_message) >= 2
+                    # 追加情報モーダルからの送信、または文章に属性キーワードが2つ以上ある場合は属性回答として再推奨へ
+                    if attr_prev_user_msg and len(attr_prev_user_msg) >= 2 and (session.get('from_attribute_modal') or looks_attr):
+                        is_attribute_answer_followup = True
+                        logger.info(f"🔄 追加質問への回答を検出: 再推奨フローへ（症状: {attr_prev_user_msg[:40]}...）")
+
+                if is_attribute_answer_followup and attr_prev_user_msg:
+                    try:
+                        if 'messages' not in session:
+                            session['messages'] = []
+                        user_msg = {
+                            'type': 'user',
+                            'content': original_user_message,
+                            'timestamp': datetime.now().isoformat(),
+                            'uuid': str(uuid.uuid4())
+                        }
+                        if not any(m.get('type') == 'user' and m.get('content') == original_user_message for m in session.get('messages', [])):
+                            session['messages'].append(user_msg)
+                            session.modified = True
+                        if sid:
+                            session_data = get_session_from_db(sid)
+                            if session_data:
+                                if 'messages' not in session_data:
+                                    session_data['messages'] = []
+                                if not any(m.get('type') == 'user' and m.get('content') == original_user_message for m in session_data.get('messages', [])):
+                                    session_data['messages'].append(user_msg)
+                                    session_data['last_activity'] = datetime.now()
+                                    session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
+                                    save_session_to_db(sid, session_data)
+                            else:
+                                session_data = {
+                                    'session_id': sid,
+                                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                    'messages': session.get('messages', []),
+                                    'session_active': True,
+                                    'last_activity': datetime.now(),
+                                    'client_ip': request.remote_addr,
+                                    'user_agent': request.headers.get('User-Agent', ''),
+                                    'user_attributes': session.get('user_attributes', {})
+                                }
+                                save_session_to_db(sid, session_data)
+                        # 妊娠中・授乳中は推奨せずエスカレーションのみ返す
+                        ua = session.get('user_attributes', {}) or {}
+                        if ua.get('pregnant') is True:
+                            from src.services.html_formatter import format_escalation_display
+                            escalation_msg = '妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
+                            logger.warning(f"⚠️ 追加質問フォローアップ: 妊娠中のため推奨せずエスカレーションのみ返却")
+                            escalation_content = format_escalation_display(
+                                doctor_consultation=escalation_msg,
+                                medicine_type="該当なし（妊娠中のため推奨中止）",
+                                algorithm="禁忌チェック（妊娠）",
+                                user_message=original_user_message,
+                                include_feedback_buttons=True
+                            )
+                            bot_response = {
+                                'type': 'bot',
+                                'content': escalation_content,
+                                'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session.get('messages', [])
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            return jsonify({'status': 'ok', 'message_count': len(session['messages'])})
+                        if ua.get('breastfeeding') is True:
+                            from src.services.html_formatter import format_escalation_display
+                            escalation_msg = '授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
+                            logger.warning(f"⚠️ 追加質問フォローアップ: 授乳中のため推奨せずエスカレーションのみ返却")
+                            escalation_content = format_escalation_display(
+                                doctor_consultation=escalation_msg,
+                                medicine_type="該当なし（授乳中のため推奨中止）",
+                                algorithm="禁忌チェック（授乳）",
+                                user_message=original_user_message,
+                                include_feedback_buttons=True
+                            )
+                            bot_response = {
+                                'type': 'bot',
+                                'content': escalation_content,
+                                'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response)
+                            session.modified = True
+                            if sid:
+                                session_data = get_session_from_db(sid)
+                                if session_data:
+                                    session_data['messages'] = session.get('messages', [])
+                                    session_data['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, session_data)
+                            return jsonify({'status': 'ok', 'message_count': len(session['messages'])})
+                        triage_result['category'] = 'Physical'
+                        triage_result['reasoning'] = '追加質問への回答のため再推奨フローへ'
+                        from openai import OpenAI
+                        api_key = os.getenv('OPENAI_API_KEY')
+                        if api_key:
+                            recommendation_client = OpenAI(api_key=api_key)
+                            resp = run_recommendation_flow(
+                                session, request, sid, monitor, client_ip, user_agent,
+                                attr_prev_user_msg, attr_prev_user_msg,
+                                triage_result, recommendation_client,
+                                user_message=attr_prev_user_msg,
+                            )
+                            message_count = len(session.get('messages', []))
+                            return resp
+                    except Exception as e:
+                        logger.warning(f"⚠️ 追加質問フォローアップでエラー: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                # 医薬品質問フォローアップ: 直前のbotが推奨結果を持ち、今回が質問文のときは医薬品相談回答に回す
+                if not is_kampo_preference_refinement and not (is_attribute_answer_followup and attr_prev_user_msg):
+                    session_data_other = get_session_from_db(sid) if sid else {}
+                    messages_other = (session_data_other.get('messages', []) if session_data_other else session.get('messages', [])) or []
+                    latest_recommended_medicines_followup = []
+                    for msg in reversed(messages_other):
+                        if msg.get('type') == 'bot' and msg.get('diagnosis'):
+                            diag = msg.get('diagnosis', {})
+                            if diag.get('recommended_medicines'):
+                                latest_recommended_medicines_followup = diag.get('recommended_medicines', [])
+                                break
+                    question_patterns = ('か？', 'ですか', 'でしょうか', '教えて', 'できますか', '使えますか', '利用できますか', 'よいですか', '大丈夫ですか', '？')
+                    looks_like_question = any(p in (sanitized_message or '') for p in question_patterns)
+                    if latest_recommended_medicines_followup and looks_like_question:
+                        try:
+                            import html as _html_mod
+                            if 'messages' not in session:
+                                session['messages'] = []
+                            user_msg_followup = {
+                                'type': 'user',
+                                'content': original_user_message,
+                                'timestamp': datetime.now().isoformat(),
+                                'uuid': str(uuid.uuid4())
+                            }
+                            session['messages'].append(user_msg_followup)
+                            session.modified = True
+                            if sid:
+                                sd = get_session_from_db(sid)
+                                if sd:
+                                    if 'messages' not in sd:
+                                        sd['messages'] = []
+                                    sd['messages'].append(user_msg_followup)
+                                    sd['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, sd)
+                                else:
+                                    sd = {
+                                        'session_id': sid,
+                                        'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                                        'messages': [user_msg_followup],
+                                        'session_active': True,
+                                        'last_activity': datetime.now(),
+                                        'client_ip': request.remote_addr,
+                                        'user_agent': request.headers.get('User-Agent', ''),
+                                        'user_attributes': session.get('user_attributes', {}),
+                                    }
+                                    save_session_to_db(sid, sd)
+                            conversation_history_followup = messages_other[-10:]
+                            chat_response_followup = chat_with_medicine_context(
+                                sanitized_message,
+                                conversation_history_followup,
+                                latest_recommended_medicines_followup
+                            )
+                            try:
+                                from src.utils.structured_logger import log_medicine_question_detail
+                                log_medicine_question_detail(
+                                    session_id=sid,
+                                    user_input=sanitized_message,
+                                    response=chat_response_followup.get('answer', '')
+                                )
+                            except Exception as _e:
+                                logger.warning(f"医薬品質疑応答ログ記録エラー: {_e}")
+                            def _safe_format(t):
+                                if not t:
+                                    return ""
+                                if isinstance(t, list):
+                                    lines = []
+                                    for item in t:
+                                        if isinstance(item, dict):
+                                            name = item.get("製品名") or item.get("name") or ""
+                                            comp = item.get("主成分") or item.get("成分") or ""
+                                            use = item.get("用途") or item.get("efficacy") or ""
+                                            summary = " / ".join(s for s in [name, comp, use] if s)
+                                            if summary:
+                                                lines.append(summary)
+                                        else:
+                                            lines.append(str(item))
+                                    t = "\n".join(lines)
+                                elif isinstance(t, dict):
+                                    t = "\n".join(f"{k}: {v}" for k, v in t.items())
+                                else:
+                                    t = str(t)
+                                return _html_mod.escape(t).replace("\n", "<br>")
+                            ans = _safe_format(chat_response_followup.get('answer', '回答を取得できませんでした'))
+                            med_det = _safe_format(chat_response_followup.get('medicine_details', ''))
+                            inter = _safe_format(chat_response_followup.get('interactions', ''))
+                            doping = _safe_format(chat_response_followup.get('doping_check', ''))
+                            side_eff = _safe_format(chat_response_followup.get('side_effects', ''))
+                            consult = _safe_format(chat_response_followup.get('consultation_advice', ''))
+                            full_html = f"""
+<div class="chat-response">
+<h4>💬 医薬品相談回答</h4>
+<p><strong>回答:</strong><br>{ans}</p>
+{f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{med_det}</div>' if med_det else ''}
+{f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{inter}</div>' if inter else ''}
+{f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping}</div>' if doping else ''}
+{f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_eff}</div>' if side_eff else ''}
+{f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consult}</div>' if consult else ''}
+</div>"""
+                            mid = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+                            bot_content_followup = full_html + f"""
+<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+<p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
+<button class="feedback-btn-positive" onclick="handlePositiveFeedback('{mid}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    適切
+</button>
+<button class="feedback-btn-negative" onclick="handleNegativeFeedback('{mid}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
+    不適切
+</button>
+</div>"""
+                            bot_response_followup = {
+                                'type': 'bot',
+                                'content': bot_content_followup,
+                                'message_id': mid,
+                                'diagnosis': {
+                                    'chat_response': chat_response_followup,
+                                    'is_question': True
+                                },
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            session['messages'].append(bot_response_followup)
+                            session.modified = True
+                            msg_count = len(session.get('messages', []))
+                            if sid:
+                                sd2 = get_session_from_db(sid)
+                                if sd2 and 'messages' in sd2:
+                                    sd2['messages'].append(bot_response_followup)
+                                    sd2['last_activity'] = datetime.now()
+                                    save_session_to_db(sid, sd2)
+                                    msg_count = len(sd2['messages'])
+                            if 'messages' in session:
+                                del session['messages']
+                                session.modified = True
+                            logger.info(f"✅ 医薬品質問フォローアップ応答完了（Other）: {sanitized_message[:50]}...")
+                            return jsonify({'status': 'ok', 'message_count': msg_count})
+                        except Exception as e_followup:
+                            logger.warning(f"⚠️ 医薬品質問フォローアップでエラー: {e_followup}")
+                            import traceback
+                            traceback.print_exc()
+
                 logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
                 # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
                 # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
@@ -1764,6 +2056,26 @@ def handle_chat_post(session, request, sid, monitor, client_ip, user_agent):
                         """テキストを安全にHTML表示用に整形"""
                         if not text:
                             return ""
+                        # LLM から dict / list が返る場合もあるので文字列に正規化
+                        if isinstance(text, list):
+                            # 医薬品ごとの辞書のリストを想定して、人が読みやすい1行に整形
+                            lines = []
+                            for item in text:
+                                if isinstance(item, dict):
+                                    name = item.get("製品名") or item.get("name") or ""
+                                    comp = item.get("主成分") or item.get("成分") or ""
+                                    use = item.get("用途") or item.get("efficacy") or ""
+                                    summary = " / ".join(s for s in [name, comp, use] if s)
+                                    if summary:
+                                        lines.append(summary)
+                                else:
+                                    lines.append(str(item))
+                            text = "\n".join(lines)
+                        elif isinstance(text, dict):
+                            # キー（医薬品名など）ごとに「名前: 説明」の形式で結合
+                            text = "\n".join(f"{k}: {v}" for k, v in text.items())
+                        else:
+                            text = str(text)
                         # XSSリスクを防ぐためにエスケープしてから改行を変換
                         escaped = html.escape(text)
                         return escaped.replace("\n", "<br>")
