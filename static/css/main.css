@@ -36,6 +36,10 @@
                     "Roboto",               /* Android標準フォント */
                     sans-serif;
             }
+            /* スマホで入力フォーカス時の画面ズームを防ぐ（iOSは16px未満で自動ズームするため） */
+            input, textarea, select {
+                font-size: 16px !important;
+            }
         }
         
         /* 文字サイズクラス */
@@ -1175,7 +1179,7 @@
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px; /* 16pxでスマホ入力時の画面ズームを防止 */
             box-sizing: border-box;
         }
         
@@ -1366,7 +1370,7 @@
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 16px; /* 16pxでスマホ入力時の画面ズームを防止 */
             font-family: inherit;
             resize: vertical;
             min-height: 100px;
@@ -1727,7 +1731,7 @@
             
             #user-input {
                 flex: 1;
-                font-size: 14px;
+                font-size: 16px; /* 16px以上でiOSの入力時ズームを防止 */
                 min-height: 40px;
                 padding: 10px 12px;
                 border: 2px solid #ddd;
@@ -1911,7 +1915,7 @@
             
             #messageInput {
                 flex: 1;
-                font-size: 14px;
+                font-size: 16px; /* 16px以上でiOSの入力時ズームを防止 */
                 padding: 10px 12px;
                 min-height: 35px;
                 max-height: 80px;
