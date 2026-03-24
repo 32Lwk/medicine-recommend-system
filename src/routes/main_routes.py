@@ -1,14 +1,16 @@
 """
 メイン画面・チャットルート
 
-責務: メイン画面（index）、favicon、clear、new_session のルート定義とビュー実装
+責務: メイン画面（index）、favicon、sitemap、clear、new_session のルート定義とビュー実装
 """
+import os
 import random
 import time
 from datetime import datetime
+from xml.sax.saxutils import escape
 
 import pytz
-from flask import Blueprint, current_app, has_request_context, jsonify, render_template, request
+from flask import Blueprint, current_app, has_request_context, jsonify, render_template, request, Response
 
 from src.services.analytics import log_access_analytics
 from src.services.session_manager import (
@@ -26,6 +28,23 @@ from src.utils.performance_monitor import get_global_monitor, log_performance_me
 def favicon():
     """favicon.icoの404エラーを防ぐ"""
     return '', 204
+
+
+def sitemap():
+    """
+    Google Search Console 向けサイトマップ。
+    公開 URL は環境変数 PUBLIC_SITE_URL（例: https://medicine.yutok.dev）で指定。未設定時は本番想定の既定値。
+    情報系画面は同一 URL 上の UI のため、インデックス対象はトップのみ。
+    """
+    base = (os.getenv('PUBLIC_SITE_URL') or 'https://medicine.yutok.dev').rstrip('/')
+    loc = escape(f'{base}/', {'"': '&quot;', "'": '&apos;'})
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f'<url><loc>{loc}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>'
+        '</urlset>'
+    )
+    return Response(body, mimetype='application/xml; charset=utf-8')
 
 
 def index():
@@ -184,6 +203,7 @@ def create_main_routes():
     """メインルートの Blueprint を作成（ビューは当モジュール内で定義）"""
     bp = Blueprint('main', __name__)
     bp.add_url_rule('/favicon.ico', view_func=favicon)
+    bp.add_url_rule('/sitemap.xml', view_func=sitemap, methods=['GET'])
     bp.add_url_rule('/', view_func=index, methods=['GET', 'POST'])
     bp.add_url_rule('/clear', view_func=clear_chat, methods=['POST'])
     bp.add_url_rule('/new_session', view_func=new_session, methods=['POST'])
