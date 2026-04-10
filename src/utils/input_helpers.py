@@ -191,10 +191,38 @@ def is_symptom_input(message: str) -> bool:
     attribute_count = sum(1 for keyword in attribute_keywords if keyword in text)
     symptom_count = sum(1 for keyword in symptom_keywords if keyword in text)
 
+    # 「症状＋おすすめ/どれが良い」等はレコメンド（症状入力）に寄せる。
+    # 一方で「副作用/飲み方/併用/ドーピング」等の “情報質問” はQ&Aに寄せたいので、
+    # 症状語が含まれていても無条件に症状入力にはしない。
+    recommendation_intent_keywords = [
+        'おすすめ', 'お勧め', 'オススメ',
+        'どの薬', 'どれ', '何がいい', 'なにがいい', '何を飲めば', 'なにを飲めば',
+        '何飲めば', 'なに飲めば', 'どれ飲めば', 'どれを飲めば',
+        '薬ありますか', '薬ある', '市販薬', '薬ください', '薬ちょうだい'
+    ]
+    informational_intent_keywords = [
+        '副作用', '飲み方', '用法', '用量', '併用', '飲み合わせ', '相互作用',
+        'ドーピング', '禁止', '陽性', '成分', '効能', '効果', '注意', '危険', '安全'
+    ]
+    has_recommendation_intent = any(k in text for k in recommendation_intent_keywords)
+    has_informational_intent = any(k in text for k in informational_intent_keywords)
+
     if attribute_count >= 3 and attribute_count > symptom_count:
         return False
 
+    # 症状を「質問形」で入力するユーザーが多いため、
+    # 症状キーワードが含まれている場合は、文末の「？」や質問語尾だけで
+    # 症状入力判定を False にしない（例:「頭痛いのでおすすめの薬ありますか？」）。
     if has_question_keyword or ends_with_question_mark:
+        if has_symptom_keyword and not (attribute_count >= 3 and attribute_count > symptom_count):
+            # 情報質問はQ&Aへ（例:「頭痛薬の副作用は？」）
+            if has_informational_intent and not has_recommendation_intent:
+                return False
+            # レコメンド意図がある質問形は症状入力へ（例:「頭痛いのでおすすめの薬ありますか？」）
+            if has_recommendation_intent:
+                return True
+            # どちらとも言えない場合は質問として扱う（誤って症状フローに寄せない）
+            return False
         return False
 
     if has_symptom_keyword:
