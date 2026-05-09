@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+from pathlib import Path
 import random
 import time
 import traceback
@@ -17,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.responses import Response as StarletteResponse
+from starlette.responses import FileResponse, Response as StarletteResponse
 from flask import Flask as FlaskApp
 from flask import request as flask_request
 
@@ -133,6 +134,8 @@ app.add_middleware(
 
 # Static
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+_FAVICON_PATH = Path(__file__).resolve().parent / "static" / "favicon.ico.png"
 
 templates = Jinja2Templates(directory="templates")
 
@@ -265,7 +268,9 @@ def get_test_root(request: Request, response: Response, sid: str = Depends(get_s
 
 @app.get("/favicon.ico")
 def favicon():
-    return StarletteResponse(status_code=204)
+    if not _FAVICON_PATH.is_file():
+        return StarletteResponse(status_code=204)
+    return FileResponse(_FAVICON_PATH, media_type="image/png")
 
 
 @app.get("/sitemap.xml")
