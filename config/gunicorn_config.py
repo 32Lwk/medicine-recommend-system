@@ -5,9 +5,11 @@ import os
 # 環境変数から取得、デフォルトは2
 workers = int(os.getenv('GUNICORN_WORKERS', 2))
 
-# ワーカークラス（同期処理で安定性重視）
-# 環境変数から取得、デフォルトはsync
-worker_class = os.getenv('GUNICORN_WORKER_CLASS', 'sync')
+# ワーカークラス（FastAPI/ASGI 用）
+# sync/gevent 等の WSGI worker では FastAPI が 500 になるため UvicornWorker を既定にする
+worker_class = os.getenv('GUNICORN_WORKER_CLASS', 'uvicorn.workers.UvicornWorker')
+if worker_class in {'sync', 'gevent', 'eventlet', 'gthread'}:
+    worker_class = 'uvicorn.workers.UvicornWorker'
 
 # タイムアウト（秒）- 処理時間を考慮して増加
 # 医薬品推奨処理（最大30秒）+ 翻訳処理（最大10秒）+ バッファ
