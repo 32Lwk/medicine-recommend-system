@@ -17,6 +17,7 @@ from src.core.candidate_scoring import (
     filter_by_efficacy_symptom_match,
     is_comprehensive_cold_medicine,
     classify_medicine_mechanism,
+    should_apply_cold_preference_rules,
 )
 from src.core.recommendation_constants import MAJOR_ANALGESIC_MEDICINES
 from src.core.recommendation.recommendation_scoring import calculate_symptom_specificity_penalty
@@ -500,8 +501,8 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
         cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
         cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
-        
-        if cold_symptom_count >= 2:
+
+        if should_apply_cold_preference_rules(nlu_result):
             # 総合風邪薬を1位に確保
             comprehensive_cold = None
             other_medicines = []
@@ -760,7 +761,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
         
         if len(top_2_candidates) < 2:
-            if cold_symptom_count >= 2:
+            if should_apply_cold_preference_rules(nlu_result):
                 # 2位: 総合風邪薬を優先（複数症状時は1,2つ目に総合感冒薬を推奨）
                 for candidate in selected_sorted:
                     if (candidate not in top_2_candidates and 
@@ -1134,7 +1135,7 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
         cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
         
-        if cold_symptom_count >= 2:
+        if should_apply_cold_preference_rules(nlu_result):
             # 現在の選定リストに総合風邪薬が含まれているかチェック
             has_comprehensive_cold = any(is_comprehensive_cold_medicine(c) for c in final_selected[:top_n])
             

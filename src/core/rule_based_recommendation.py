@@ -1287,6 +1287,10 @@ def rule_based_recommendation(
                             logger.debug(f"肩こり外用薬の最適解を優先しました: {optimal_candidate.get('product_name')} (スコア差: {score_diff:.3f}, original_rankを更新)")
                         break
     
+    # ensure_ingredient_diversity 側で「花粉症っぽさ/感染症っぽさ」を判定できるよう、原文を載せる
+    if isinstance(nlu_result, dict):
+        nlu_result.setdefault("user_text", user_text)
+
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result, user_info=user_info)
     if top_candidates is None:
         logger.warning("ensure_ingredient_diversity returned None, using empty list")
