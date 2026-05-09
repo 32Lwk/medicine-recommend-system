@@ -8,7 +8,7 @@
 |--------|------|-------|-------------|--------------|--------------|------|
 | GET | `/` | — | 200 | text/html | `get_sid` で発行 | `index.html` |
 | GET | `/test/` | — | 200 | text/html | 同上 | `app_base_path=/test` |
-| GET | `/favicon.ico` | — | 204 | (empty) | — | |
+| GET | `/favicon.ico` | — | 200 | `image/png`（`static/favicon.ico.png`、無い場合 204） | — | |
 | GET | `/sitemap.xml` | — | 200 | application/xml; charset=utf-8 | — | `PUBLIC_SITE_URL` |
 | POST | `/` | `multipart/form-data` `message` | 200 | application/json | チャット用 | Flask handler 互換層 |
 | POST | `/test/` | 同上 | 200 | application/json | 同上 | |

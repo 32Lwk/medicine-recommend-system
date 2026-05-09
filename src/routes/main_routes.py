@@ -10,7 +10,7 @@ from datetime import datetime
 from xml.sax.saxutils import escape
 
 import pytz
-from flask import Blueprint, current_app, has_request_context, jsonify, render_template, request, Response
+from flask import Blueprint, current_app, has_request_context, jsonify, render_template, request, Response, send_from_directory
 
 from src.services.analytics import log_access_analytics
 from src.services.session_manager import (
@@ -26,8 +26,11 @@ from src.utils.performance_monitor import get_global_monitor, log_performance_me
 
 
 def favicon():
-    """favicon.icoの404エラーを防ぐ"""
-    return '', 204
+    """ブラウザの /favicon.ico 要求に PNG を返す（無い場合のみ 204）。"""
+    path = os.path.join(current_app.static_folder, 'favicon.ico.png')
+    if not os.path.isfile(path):
+        return '', 204
+    return send_from_directory(current_app.static_folder, 'favicon.ico.png', mimetype='image/png')
 
 
 def sitemap():

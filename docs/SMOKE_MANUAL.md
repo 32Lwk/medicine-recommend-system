@@ -12,7 +12,7 @@
 | 6 | POST `/clear` | `curl -i -X POST -b cookies.txt` | **204** |
 | 7 | POST `/new_session` | `curl -X POST -b cookies.txt` | 200 JSON `message`, `username` |
 | 8 | `/test/clear`, `/test/new_session` | 上記と同様に `/test/...` | 同じ Status/形 |
-| 9 | GET `/favicon.ico` | `curl -i` | **204** |
+| 9 | GET `/favicon.ico` | `curl -i` | **200**、`Content-Type: image/png`（アセット無し時のみ 204） |
 |10 | GET `/sitemap.xml` | `curl -i` | 200, `application/xml; charset=utf-8` |
 |11 | GET `/admin` | 認証なし `curl -i` | **401**, `WWW-Authenticate: Basic realm="Admin Area"` |
 |12 | GET `/admin` | Basic 正しい認証情報 | 200 `admin_chat.html` |
