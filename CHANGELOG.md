@@ -6,7 +6,7 @@
 
 ---
 
-**2026年5月9日の追記（Flask → FastAPI 移行状況の棚卸し・完了内容・苦労）:**
+**2026年5月9日の追記（Flask → FastAPI 移行状況の棚卸し・完了内容）:**
 
 - **結論**: 本番運用経路としての Flask から FastAPI への移行は完了。`start.sh` / Render 起動は `gunicorn` + `uvicorn.workers.UvicornWorker` + `main:app` を前提とし、ユーザー向け UI・チャット POST・主要 API・管理画面・フィードバック API は FastAPI 側で提供する。
 - **未撤去の範囲**: Flask コードの完全削除は未実施。`app.py`、`admin_app.py`、`debug_app.py`、`src/routes/*`、`src/handlers/error_handlers.py`、一部 `scripts/*`、`requirements.txt` の `Flask` / `Werkzeug` / `flask-cors` は、レガシー比較・参照・開発補助のため残存する。
