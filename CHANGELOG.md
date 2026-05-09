@@ -6,6 +6,32 @@
 
 ---
 
+**2026年5月9日の追記（Flask → FastAPI 移行状況の棚卸し・完了内容・苦労）:**
+
+- **結論**: 本番運用経路としての Flask から FastAPI への移行は完了。`start.sh` / Render 起動は `gunicorn` + `uvicorn.workers.UvicornWorker` + `main:app` を前提とし、ユーザー向け UI・チャット POST・主要 API・管理画面・フィードバック API は FastAPI 側で提供する。
+- **未撤去の範囲**: Flask コードの完全削除は未実施。`app.py`、`admin_app.py`、`debug_app.py`、`src/routes/*`、`src/handlers/error_handlers.py`、一部 `scripts/*`、`requirements.txt` の `Flask` / `Werkzeug` / `flask-cors` は、レガシー比較・参照・開発補助のため残存する。
+- **完了内容**
+  - **本番エントリの切替**: 本番起動を WSGI/Flask ではなく ASGI/FastAPI の `main:app` に統一。WSGI worker 誤設定時は `start.sh` で ASGI 互換 worker に補正する。
+  - **主要ルートの移植**: `/`、`/test/`、`/api/*`、`/admin`、`/admin/*`、フィードバック系 API、セッション操作、管理者返信、AI 制御、ログ・パフォーマンス取得などを FastAPI 実装へ集約。
+  - **チャット処理のフレームワーク分離**: `handle_chat_post` は Flask の `request` / `jsonify` に依存せず、`message`、`ChatClientInfo`、`RequestSafeSession`、`sid`、monitor を受け取り、`tuple[dict, int]` を返す形に統一。
+  - **セッション方針の整理**: Flask 署名セッションから `sid` Cookie + DB 正の管理へ移行し、FastAPI 側で Cookie 属性を `get_session_config()` に合わせて設定。
+  - **CORS・静的ファイル・テンプレート互換**: `CORSMiddleware`、`StaticFiles`、`Jinja2Templates` を利用し、既存テンプレートの `url_for('static', filename=...)` 互換も維持。
+  - **エラー応答の整備**: 404 / 422 / 500 の HTML・JSON 応答を FastAPI 側で定義し、POST や JSON リクエストでは JSON 500 を返すよう整理。
+  - **デプロイ設定の更新**: Render 設定と README の本番起動案内を FastAPI / ASGI 前提に更新。
+  - **契約テストの追加**: `tests/test_fastapi_contract.py` で FastAPI ルートの status、content-type、主要 JSON キー、管理画面認証、チャット POST などを確認できるようにした。
+- **苦労した点**
+  - **Flask のリクエスト文脈依存の除去**: 既存処理が `request`、`session`、`jsonify`、Blueprint に広く依存していたため、チャット処理を HTTP 層から切り離し、FastAPI とレガシー Flask の両方から扱える戻り値へ揃える必要があった。
+  - **セッション移行の互換性**: Flask 署名セッションをそのまま継続せず `sid` Cookie + DB 正へ寄せたため、既存の会話履歴・属性復元・管理画面表示と矛盾しないように初期化・復元順序を慎重に調整した。
+  - **JSON / FormData の差異**: Flask の `request.form` / `request.json` と FastAPI の `Form(...)` / `await request.json()` の違いにより、チャット POST、管理 API、不正 JSON、空 payload の扱いを個別に揃える必要があった。
+  - **末尾スラッシュとリダイレクト**: POST で 307/308 が発生すると FormData 再送事故につながるため、`redirect_slashes=False` とルート定義の粒度を確認しながら移植した。
+  - **本番 worker の罠**: FastAPI は ASGI アプリのため、従来の sync/gevent など WSGI worker では 500 になり得る。起動スクリプト側で誤設定を補正する必要があった。
+  - **「完全移行」の定義整理**: 本番経路は FastAPI に移行済みだが、比較用 Flask 実装と依存は残す方針のため、「本番移行完了」と「Flask 完全撤去は未完了」を明確に分けて記録した。
+- **今後の任意作業**
+  - Flask 完全撤去を目指す場合は、`app.py` / `admin_app.py` / `debug_app.py` / `src/routes/*` / Flask 用 error handler / 開発用 scripts の要否を再判定し、削除後に `requirements.txt` から Flask 系依存を外す。
+  - レガシー比較を継続する場合は、README と本 CHANGELOG のとおり「本番は FastAPI、Flask は比較・参照用」という位置づけを維持する。
+
+---
+
 **2026年5月9日の更新（Flask → FastAPI 一括移行・挙動互換）:**
 
 - **ASGI エントリ `main.py`（新規）**
