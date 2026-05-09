@@ -9,6 +9,15 @@ GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
 # ASGI(FastAPI) では UvicornWorker を使用する
 GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-uvicorn.workers.UvicornWorker}
 
+# FastAPI は ASGI アプリのため、WSGI 用 worker（sync/gevent 等）では
+# TypeError が発生して全リクエストが 500 になる。誤設定時は安全に補正する。
+case "${GUNICORN_WORKER_CLASS}" in
+  sync|gevent|eventlet|gthread)
+    echo "⚠️ GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS} is incompatible with FastAPI/ASGI. Using uvicorn.workers.UvicornWorker instead."
+    GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker
+    ;;
+esac
+
 # ポート番号を環境変数から取得（Render.comでは自動設定される）
 PORT=${PORT:-5000}
 
