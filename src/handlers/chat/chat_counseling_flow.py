@@ -8,20 +8,18 @@
 import logging
 from datetime import datetime
 
-from flask import jsonify
-
 from src.services.session_manager import get_session_from_db, save_session_to_db
 
 logger = logging.getLogger(__name__)
 
 
-def run_counseling_flow(session, request, sid, user_message, processed_message, triage_result, recommendation_client):
+def run_counseling_flow(session, client, sid, user_message, processed_message, triage_result, recommendation_client):
     """
     カウンセリングモードが有効な場合の処理を実行する。
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequest
+        client: クライアント情報（未使用だがシグネチャ統一のため受け取る）
         sid: セッションID
         user_message: ユーザー生メッセージ（ログ用）
         processed_message: 方言変換後メッセージ
@@ -29,7 +27,7 @@ def run_counseling_flow(session, request, sid, user_message, processed_message, 
         recommendation_client: OpenAIクライアント
 
     Returns:
-        (response, triage_result): レスポンスを返す場合は (Flask Response, triage_result)、
+        (response, triage_result): レスポンスを返す場合は ((dict, status), triage_result)、
         後続の推奨フローに回す場合は (None, triage_result)。
     """
     counseling_mode = session.get("counseling_mode", {})
@@ -90,7 +88,7 @@ def run_counseling_flow(session, request, sid, user_message, processed_message, 
                     session_data["messages"] = session["messages"].copy()
                     session_data["last_activity"] = datetime.now()
                     save_session_to_db(sid, session_data)
-            return (jsonify({"status": "ok", "message_count": len(session["messages"])}), triage_result)
+            return (({"status": "ok", "message_count": len(session["messages"])}, 200), triage_result)
         if new_category == "Physical":
             medicine_request = response.get("medicine_request", False)
             symptom_type = counseling_mode.get("symptom_type")
@@ -131,7 +129,7 @@ def run_counseling_flow(session, request, sid, user_message, processed_message, 
                     session_data["counseling_mode"] = session["counseling_mode"]
                 save_session_to_db(sid, session_data)
         logger.info(f"✅ カウンセリング処理完了: {len(session['messages'])} messages")
-        return (jsonify({"status": "ok", "message_count": len(session["messages"])}), triage_result)
+        return (({"status": "ok", "message_count": len(session["messages"])}, 200), triage_result)
     except ImportError as e:
         logger.warning(f"⚠️ カウンセリング機能のインポートに失敗: {e}")
     except Exception as e:

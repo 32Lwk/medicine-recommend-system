@@ -10,8 +10,6 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from flask import jsonify
-
 from src.services.session_manager import get_session_from_db, save_session_to_db
 
 logger = logging.getLogger(__name__)
@@ -19,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def handle_store_inquiry_response(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
     recommendation_client: Any,
@@ -31,14 +29,14 @@ def handle_store_inquiry_response(
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         sanitized_message: サニタイズ済みメッセージ
         recommendation_client: OpenAIクライアント
         triage_result: トリアージ結果
 
     Returns:
-        店舗案内として処理した場合は Flask Response。それ以外は None。
+        店舗案内として処理した場合は (dict, status)。それ以外は None。
     """
     try:
         from src.services.store_inquiry_handler import handle_store_inquiry
@@ -63,13 +61,13 @@ def handle_store_inquiry_response(
 
     if store_inquiry_confidence >= 0.7:
         return _append_store_response_and_return(
-            session, request, sid, sanitized_message, store_inquiry_result
+            session, client, sid, sanitized_message, store_inquiry_result
         )
 
     reasoning = store_inquiry_result.get("reasoning", "")
     if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
         return _append_store_response_and_return(
-            session, request, sid, sanitized_message, store_inquiry_result
+            session, client, sid, sanitized_message, store_inquiry_result
         )
 
     logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
@@ -78,12 +76,12 @@ def handle_store_inquiry_response(
 
 def _append_store_response_and_return(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
     store_inquiry_result: dict,
 ) -> Any:
-    """店舗案内のメッセージをセッションに追加し、DB更新して jsonify を返す。"""
+    """店舗案内のメッセージをセッションに追加し、DB更新して (dict, status) を返す。"""
     if "messages" not in session:
         session["messages"] = []
     user_message_exists = any(
@@ -123,8 +121,8 @@ def _append_store_response_and_return(
                 "username": session.get("username", "Unknown"),
                 "messages": session["messages"].copy(),
                 "last_activity": datetime.now(),
-                "client_ip": request.remote_addr,
-                "user_agent": request.headers.get("User-Agent", ""),
+                "client_ip": client.client_ip,
+                "user_agent": client.user_agent,
                 "user_attributes": session.get("user_attributes", {}),
                 "session_active": True,
             }
@@ -136,4 +134,4 @@ def _append_store_response_and_return(
 
     message_count = len(session["messages"])
     logger.info(f"✅ 店舗案内・遺失物関連の処理完了: {message_count} messages")
-    return jsonify({"status": "ok", "message_count": message_count})
+    return ({"status": "ok", "message_count": message_count}, 200)

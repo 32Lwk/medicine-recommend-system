@@ -8,12 +8,24 @@
 
 ## クイックスタート
 
+**本番・推奨（FastAPI / ASGI）**
+
 ```bash
 pip install -r requirements.txt
 # 環境変数: OPENAI_API_KEY, SECRET_KEY 必須。DATABASE_URL, DEEPL_API_KEY 推奨
-python app.py
-# http://localhost:5000 でアクセス
+./start.sh
+# または: gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:${PORT:-5000}
+# http://localhost:5000 でアクセス（PORT 未設定時）
 ```
+
+**レガシー（Flask・ローカル比較用）**
+
+```bash
+python app.py
+# Blueprint 経路の挙動確認用。本番デプロイでは `main:app` を使用してください。
+```
+
+詳細は [docs/FASTAPI_ARCHITECTURE.md](docs/FASTAPI_ARCHITECTURE.md) を参照してください。
 
 管理者画面は `http://localhost:5000/admin`、詳細なセットアップ・環境変数・API一覧は [docs/会社向け概要書類.md](docs/会社向け概要書類.md) や [docs/アプリ概要.md](docs/アプリ概要.md) を参照してください。
 

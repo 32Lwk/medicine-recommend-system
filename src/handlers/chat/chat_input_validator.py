@@ -7,8 +7,6 @@ import logging
 import uuid
 from datetime import datetime
 
-from flask import jsonify
-
 from src.utils.request_logger import log_user_interaction
 from src.utils.user_attribute_registration import register_user_attributes_from_message
 from src.services.session_manager import (
@@ -21,7 +19,7 @@ from src.services.session_manager import (
 logger = logging.getLogger(__name__)
 
 
-def _persist_block_messages_to_db(session, request, sid):
+def _persist_block_messages_to_db(session, client, sid):
     """ブロック時にFlask sessionへ追加したメッセージをDB（またはメモリ）に保存する。"""
     if not sid:
         return
@@ -32,8 +30,8 @@ def _persist_block_messages_to_db(session, request, sid):
             'username': session.get('username', 'Unknown'),
             'messages': list(session.get('messages', [])),
             'last_activity': datetime.now(),
-            'client_ip': request.remote_addr,
-            'user_agent': request.headers.get('User-Agent', ''),
+            'client_ip': client.client_ip,
+            'user_agent': client.user_agent,
             'user_attributes': session.get('user_attributes', {}),
             'session_active': True,
         }
@@ -43,11 +41,11 @@ def _persist_block_messages_to_db(session, request, sid):
     save_session_to_db(sid, session_data)
 
 
-def validate_and_block_input(session, request, user_message, sid):
+def validate_and_block_input(session, client, user_message, sid):
     """
     入力の検証・ブロック・危機検出を行う。
     Returns:
-        (sanitized_message, error_response) - error_response が None でなければ return する。
+        (sanitized_message, error_response) - error_response が (dict, status) なら return する。
     """
     try:
         from src.security.absolute_blocklist import is_absolutely_blocked
@@ -73,13 +71,13 @@ def validate_and_block_input(session, request, user_message, sid):
                 'timestamp': datetime.now().isoformat()
             })
             session.modified = True
-            _persist_block_messages_to_db(session, request, sid)
+            _persist_block_messages_to_db(session, client, sid)
             message_count = len(session['messages'])
-            return (None, jsonify({
+            return (None, ({
                 'status': 'ok',
                 'message_count': message_count,
                 'response': block_message
-            }))
+            }, 200))
     except ImportError:
         pass
 
@@ -115,12 +113,12 @@ def validate_and_block_input(session, request, user_message, sid):
                 'timestamp': datetime.now().isoformat()
             })
             session.modified = True
-            _persist_block_messages_to_db(session, request, sid)
-            return (None, jsonify({
+            _persist_block_messages_to_db(session, client, sid)
+            return (None, ({
                 'status': 'ok',
                 'message_count': len(session['messages']),
                 'response': block_message
-            }))
+            }, 200))
         if risk_score >= 80:
             logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
             warn_message = '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
@@ -138,12 +136,12 @@ def validate_and_block_input(session, request, user_message, sid):
                 'timestamp': datetime.now().isoformat()
             })
             session.modified = True
-            _persist_block_messages_to_db(session, request, sid)
-            return (None, jsonify({
+            _persist_block_messages_to_db(session, client, sid)
+            return (None, ({
                 'status': 'ok',
                 'message_count': len(session['messages']),
                 'response': warn_message
-            }))
+            }, 200))
         log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
     except ImportError as e:
         logger.warning(f"⚠️ セキュリティモジュールのインポートに失敗: {e}")
@@ -206,8 +204,8 @@ def validate_and_block_input(session, request, user_message, sid):
                         'username': session.get('username', 'Unknown'),
                         'messages': session['messages'].copy(),
                         'last_activity': datetime.now(),
-                        'client_ip': request.remote_addr,
-                        'user_agent': request.headers.get('User-Agent', ''),
+                        'client_ip': client.client_ip,
+                        'user_agent': client.user_agent,
                         'user_attributes': session.get('user_attributes', {}),
                         'session_active': True,
                         'crisis_detected': True
@@ -236,11 +234,11 @@ def validate_and_block_input(session, request, user_message, sid):
             set_manual_reply_queue(queue)
             logger.info(f"🚨 危機対応セッションを手動返信キューに追加: {sid}")
             message_count = len(session['messages'])
-            return (None, jsonify({
+            return (None, ({
                 'status': 'ok',
                 'message_count': message_count,
                 'crisis_support': True
-            }))
+            }, 200))
     except ImportError:
         pass
     except Exception as e:

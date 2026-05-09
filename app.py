@@ -1,6 +1,7 @@
 """
-Flask アプリケーションエントリポイント
+Flask アプリケーションエントリポイント（レガシー・ローカル比較用）
 
+本番は start.sh → gunicorn main:app（FastAPI）を使用する。
 責務: アプリ作成、設定（CORS・セッション・DB初期化）、エラーハンドラー登録、
      Blueprint の import と register、起動処理のみ。
 """
@@ -8,7 +9,7 @@ import logging
 import os
 import time
 
-from flask import Flask
+from flask import Flask, current_app, session as flask_session
 from flask_cors import CORS
 
 from config.app_config import load_env, configure_logging, get_cors_config, get_session_config
@@ -21,10 +22,7 @@ load_env()
 logger = logging.getLogger(__name__)
 
 
-session = RequestSafeSession()
-
 app = Flask(__name__)
-app.extensions['safe_session'] = session  # Blueprint用
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')  # セッション管理用
 
 # CORS・セッション設定
@@ -48,8 +46,31 @@ except Exception as e:
 VERSION = str(int(time.time()))
 app.config['VERSION'] = VERSION
 
+
+@app.before_request
+def _bind_request_safe_session():
+    """リクエストごとに RequestSafeSession を flask.session から複製し extensions に載せる。"""
+    from flask import g
+
+    ws = RequestSafeSession(dict(flask_session))
+    g.safe_session_work = ws
+    current_app.extensions['safe_session'] = ws
+
+
+@app.after_request
+def _persist_request_safe_session(response):
+    from flask import g
+
+    ws = getattr(g, 'safe_session_work', None)
+    if ws is not None and ws.modified:
+        flask_session.clear()
+        for k, v in dict(ws).items():
+            flask_session[k] = v
+    return response
+
+
 # エラーハンドラーを登録
-register_error_handlers(app, session, VERSION)
+register_error_handlers(app, VERSION)
 
 # Blueprint登録
 from src.routes import create_main_routes, create_admin_routes, create_api_routes, create_feedback_routes

@@ -10,8 +10,6 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from flask import jsonify
-
 from src.services.session_manager import (
     get_manual_reply_queue,
     set_manual_reply_queue,
@@ -24,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def handle_emergency_if_detected(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
     recommendation_client: Any,
@@ -36,14 +34,14 @@ def handle_emergency_if_detected(
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         sanitized_message: サニタイズ済みメッセージ
         recommendation_client: OpenAIクライアント（handle_store_emergency 用）
         triage_result: トリアージ結果
 
     Returns:
-        緊急事案として処理した場合は Flask Response。そうでなければ None。
+        緊急事案として処理した場合は (dict, status)。そうでなければ None。
     """
     try:
         from src.services.store_emergency_handler import handle_store_emergency
@@ -106,8 +104,8 @@ def handle_emergency_if_detected(
                 "username": session.get("username", "Unknown"),
                 "messages": session["messages"].copy(),
                 "last_activity": datetime.now(),
-                "client_ip": request.remote_addr,
-                "user_agent": request.headers.get("User-Agent", ""),
+                "client_ip": client.client_ip,
+                "user_agent": client.user_agent,
                 "user_attributes": session.get("user_attributes", {}),
                 "session_active": True,
                 "emergency_detected": True,
@@ -153,8 +151,8 @@ def handle_emergency_if_detected(
 
     message_count = len(session["messages"])
     logger.info(f"✅ 緊急事案対応完了: {message_count} messages")
-    return jsonify({
+    return ({
         "status": "ok",
         "message_count": message_count,
         "emergency_detected": True,
-    })
+    }, 200)
