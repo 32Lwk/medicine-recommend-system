@@ -3941,9 +3941,21 @@
 
     // staticテンプレート変数（{{ version }}）はJSファイル内では展開されないため、
     // index.html から注入された window.APP_VERSION を参照してキャッシュバスターを付与する。
-    const APP_VERSION = (window.APP_VERSION !== undefined && window.APP_VERSION !== null)
-        ? String(window.APP_VERSION)
-        : '';
+    function normalizeInjectedAppVersion(v) {
+        if (v === undefined || v === null) return '';
+        let s = String(v).trim();
+        if (!s) return '';
+        if (/%7[bB]|%7[dD]/.test(s)) {
+            try {
+                const dec = decodeURIComponent(s.replace(/\+/g, ' '));
+                if (dec) s = dec.trim();
+            } catch (e) { /* ignore */ }
+        }
+        if (/^\{\{\s*version\s*\}\}$/i.test(s)) return '';
+        if (s.includes('{{') && s.includes('}}')) return '';
+        return s;
+    }
+    const APP_VERSION = normalizeInjectedAppVersion(window.APP_VERSION);
 
     function withVersion(url) {
         if (!APP_VERSION) return url;
