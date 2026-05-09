@@ -28,9 +28,11 @@ def test_get_test_prefix_html(client):
     assert "text/html" in r.headers.get("content-type", "")
 
 
-def test_favicon_204(client):
+def test_favicon_png(client):
     r = client.get("/favicon.ico")
-    assert r.status_code == 204
+    assert r.status_code == 200
+    assert "image/png" in r.headers.get("content-type", "")
+    assert len(r.content) > 32
 
 
 def test_sitemap_xml(client):
