@@ -8,12 +8,10 @@ GUNICORN_GRACEFUL_TIMEOUT=${GUNICORN_GRACEFUL_TIMEOUT:-30}
 GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
 # ASGI(FastAPI) では UvicornWorker を使用する
 GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-uvicorn.workers.UvicornWorker}
-
-# FastAPI は ASGI アプリのため、WSGI 用 worker（sync/gevent 等）では
-# TypeError が発生して全リクエストが 500 になる。誤設定時は安全に補正する。
+# WSGI 用ワーカー（sync 等）が環境変数で指定されていると FastAPI が TypeError で落ちる
 case "${GUNICORN_WORKER_CLASS}" in
-  sync|gevent|eventlet|gthread)
-    echo "⚠️ GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS} is incompatible with FastAPI/ASGI. Using uvicorn.workers.UvicornWorker instead."
+  sync|gevent|eventlet|gthread|tornado)
+    echo "⚠️ GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS} は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
     GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker
     ;;
 esac
