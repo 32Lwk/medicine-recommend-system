@@ -55,6 +55,7 @@ register_error_handlers(app, session, VERSION)
 from src.routes import create_main_routes, create_admin_routes, create_api_routes, create_feedback_routes
 
 app.register_blueprint(create_main_routes())
+app.register_blueprint(create_main_routes(url_prefix='/test', blueprint_name='main_test'))
 app.register_blueprint(create_admin_routes())
 app.register_blueprint(create_api_routes())
 app.register_blueprint(create_feedback_routes())

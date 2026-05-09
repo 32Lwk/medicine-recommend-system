@@ -1,8 +1,40 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年2月12日**（改善計画の実装完了）
+**最終更新日: 2026年5月9日**（Flask 3 → FastAPI 一括移行・ASGI 起動）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月9日の更新（Flask → FastAPI 一括移行・挙動互換）:**
+
+- **ASGI エントリ `main.py`（新規）**
+  - FastAPI 単体で `/`・`/test/`・`/api/*`・`/admin*`・フィードバック API を提供（Flask へのマウント・フォールバックなし）。
+  - `FastAPI(redirect_slashes=False)` により、`POST /`・`POST /test/`・`/api/*` で **307/308 リダイレクトを発生させない**（FormData 再送事故の防止）。
+  - **CORS**: `config/app_config.get_cors_config()` を `CORSMiddleware` に反映（`allow_credentials`・`origins` 等、`credentials: 'include'` 互換）。
+  - **静的ファイル**: `StaticFiles` で `/static` を配信。
+  - **Jinja2**: `Jinja2Templates` + グローバル `url_for('static', filename=...)` 互換（既存 `templates/*.html` の `url_for` を維持）。
+  - **セッション**: Flask 署名セッションは継続しない。**`sid` Cookie + DB 正**（`src/services/session_manager.py` / `database.py`）。Cookie 属性は `get_session_config()` の `SESSION_COOKIE_SECURE` / `SAMESITE` / `HTTPONLY` を `set_cookie` に反映。Cookie 名は環境変数 `SID_COOKIE_NAME`（既定 `sid`）。
+  - **チャット POST**: FormData `message` を既存 `src/handlers/chat_handler.handle_chat_post` に渡す互換層（最小 Flask `test_request_context`）で JSON 応答を `JSONResponse` に変換（`src/core/` は原則未変更）。
+  - **ルート実装（Flask 対応表どおり）**
+    - UI: `GET/POST /`・`GET/POST /test/`、`POST /clear`・`/new_session` と `/test/clear`・`/test/new_session`（204 / JSON 形は従来互換）、`GET /favicon.ico`（204）、`GET /sitemap.xml`（`application/xml; charset=utf-8`、`PUBLIC_SITE_URL`）。
+    - API: `GET/POST /api/sessions`、`/api/status`・`performance`・`logs`、`/api/all_sessions`（**JSON 配列**、Flask `jsonify(result)` 互換）、`session_stats`、`debug_manual_replies`、`ai_control`・`manual_reply_queue`（GET/POST）、`main_sessions`・`main_manual_reply_queue`・`main_ai_control`、`manual_reply_message`、`request_admin`、`admin_mode`、`user_attributes`、`set_language`、`translate`。
+    - フィードバック: `POST /api/submit_feedback`（必須項目・**60秒レート制限（sid 単位）**・本文長上限・DB 不可時 500）、`GET /api/get_feedback_reports`、`POST /api/resolve_feedback/{id}`・`delete_feedback/{id}`。
+    - 管理: `GET /admin`（**HTTP Basic**・401 + `WWW-Authenticate`）、`GET /admin/system_status`・`access_stats`・`performance_stats`・`browser_distribution`・`os_distribution`・`device_distribution`・`realtime_monitoring`・`export_monitoring_data`、`POST /admin/ai_control`・`admin/medicine_chat`、`POST /clear_logs`（DB なし時 `clear_sessions_fallback`・`log/recommendation_log.jsonl` 切り捨て、Flask 同等）、`GET/DELETE/PUT /api/admin/sessions*`・`POST /api/admin/send_message`。`GET /api/admin/sessions` で `cleanup_old_sessions`（現行 sid 除外）を呼び出し。
+  - **JSON 入力の堅牢化**: `_read_json_dict` および `submit_feedback` の `JSONDecodeError` 捕捉で不正 JSON を **400** に（ASGI 未処理例外によるプロセス終了の防止）。
+  - **例外ハンドラ**: 404 は `index.html` を **404** で返却（Flask 404 ハンドラに近い）。422 は JSON `detail`。その他未処理例外は `POST` または `Content-Type: application/json` なら JSON 500（`error` / `response` / 非本番時 `error_type`）、それ以外は簡易 HTML 500。`StarletteHTTPException` が汎用ハンドラに入った場合は HTTP 用ハンドラへ委譲。
+- **依存関係（`requirements.txt`）**
+  - 追加: `fastapi`、`uvicorn[standard]`、`python-multipart`、`jinja2`、`pytest`（契約テスト用）。既存 Flask 系は参照・比較用に残存しうる。
+- **起動（`start.sh`）**
+  - `GUNICORN_WORKER_CLASS` 既定を `uvicorn.workers.UvicornWorker` に変更。アプリを **`main:app`** に変更。既定 `PORT` を 8000 に（Cloud Run は引き続き `PORT` 注入でバインド）。
+- **ドキュメント（新規・計画の成果物）**
+  - `docs/ROUTE_SPEC.md`: 全ルートの仕様表（メソッド・入出力・ガード・根拠ファイル）。
+  - `docs/FASTAPI_ARCHITECTURE.md`: モジュール境界・CORS/Cookie・エラー方針・デプロイ。
+  - `docs/SMOKE_MANUAL.md`: 手動スモークチェックリスト。
+- **自動テスト（新規）**
+  - `tests/test_fastapi_contract.py`: `TestClient` による Status / Content-Type / 主要キー / `APP_BASE_PATH` / チャット POST JSON / 管理・周辺 API の最小回帰（`pytest` 実行）。
+- **補足**
+  - レガシー `app.py`（Flask）・`src/routes/*` はリポジトリに残り、挙動比較・ドメインロジックの参照に利用可能。本番起動スクリプトは ASGI（`main:app`）を前提。
 
 ---
 

@@ -61,6 +61,83 @@ logger = logging.getLogger(__name__)
 _DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
 
+def is_pollen_rhinitis_focus(user_text: str, symptom_names: List[str], medicine_type_hint: str = "") -> bool:
+    """
+    花粉症/アレルギー性鼻炎寄りの相談か（風邪薬を出したくない文脈）。
+
+    ルール:
+    - 明示キーワード（花粉症など）または medicine_type が鼻炎/アレルギー系
+    - ただし感染症らしい記述（発熱/咳/喉痛/風邪など）が強い場合は False
+    """
+    text = (user_text or "").lower()
+    hint = medicine_type_hint or ""
+
+    if any(k in hint for k in ["抗アレルギー", "アレルギー", "鼻炎"]):
+        # medicine_type 自体がアレルギー/鼻炎なら基本は花粉症文脈寄り
+        allergy_typed = True
+    else:
+        allergy_typed = False
+
+    hay_fever_keywords = [
+        "花粉症",
+        "花粉",
+        "アレルギー性鼻炎",
+        "季節性アレルギー性鼻炎",
+        "常年性アレルギー性鼻炎",
+        "pollinosis",
+        "hay fever",
+    ]
+    is_hay_fever_text = any(kw in text for kw in hay_fever_keywords)
+    is_hay_fever_symptom = any(
+        any(kw in name for kw in ["花粉症", "アレルギー性鼻炎", "季節性アレルギー性鼻炎", "常年性アレルギー性鼻炎"])
+        for name in (symptom_names or [])
+    )
+
+    infection_like_signs = ["発熱", "咳", "のどの痛み", "頭痛", "悪寒"]
+    has_infection_like_sign = any(s in (symptom_names or []) for s in infection_like_signs)
+
+    strong_infection_keywords = [
+        "発熱", "熱がある", "熱っぽい", "高熱", "微熱", "体温",
+        "咳", "せき", "空咳", "痰", "たん",
+        "のどの痛み", "喉の痛み", "咽頭痛", "扁桃",
+        "悪寒", "寒気", "体が痛い", "筋肉痛", "関節痛",
+        "風邪", "かぜ", "インフル", "コロナ",
+    ]
+    has_strong_infection_text = any(kw in text for kw in strong_infection_keywords)
+
+    if has_infection_like_sign or has_strong_infection_text:
+        return False
+
+    return allergy_typed or is_hay_fever_text or is_hay_fever_symptom
+
+
+def should_apply_cold_preference_rules(nlu_result: Dict) -> bool:
+    """
+    「風邪向けの並べ替え/総合感冒薬の強制配置」などを適用してよいか。
+    """
+    if not nlu_result:
+        return False
+
+    symptom_names_list = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    user_text = str(
+        nlu_result.get("user_text")
+        or nlu_result.get("original_user_text")
+        or nlu_result.get("user_message")
+        or ""
+    )
+    medicine_type_hint = str(nlu_result.get("medicine_type") or "")
+
+    if is_pollen_rhinitis_focus(user_text, symptom_names_list, medicine_type_hint):
+        return False
+
+    infection_like_signs = ["発熱", "咳", "のどの痛み", "頭痛", "悪寒"]
+    has_infection_like_sign = any(symptom in infection_like_signs for symptom in symptom_names_list)
+
+    cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり", "痰", "たん"]
+    cold_symptom_count = sum(1 for symptom in symptom_names_list if symptom in cold_symptoms)
+    return cold_symptom_count >= 2 and has_infection_like_sign
+
+
 def _is_symptom_matching_specific_use(efficacy: str, symptoms: List[Dict], pattern_name: str) -> bool:
     """
     症状が特殊用途パターンと一致するかチェック
@@ -579,6 +656,12 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
         if "風邪薬" in medicine_types and len(medicine_types) > 1:
             logger.info("アレルギー症状が検出されたため、風邪薬へのペナルティを適用します")
 
+    medicine_type_hint = str(nlu_result.get("medicine_type") or "")
+    focus_pollen = is_pollen_rhinitis_focus(user_text, symptom_names, medicine_type_hint)
+    if focus_pollen and "風邪薬" in medicine_types:
+        medicine_types.discard("風邪薬")
+        logger.info("花粉症/アレルギー性鼻炎寄りの相談のため、検索カテゴリから風邪薬を除外しました")
+
     hangover_keywords = ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ", "酒", "アルコール"]
     is_hangover = any(kw in user_text_lower for kw in hangover_keywords)
 
@@ -713,6 +796,10 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
                 is_external_medicine = any(kw in product_name.lower() for kw in ['スプレー', 'トローチ', 'うがい', '含嗽', '噴射', '塗布'])
                 if is_external_medicine:
                     medicine_type = '外用薬（のど）'
+
+        if focus_pollen and '風邪薬' in medicine_type:
+            logger.info(f"花粉症/アレルギー性鼻炎寄りの相談のため候補から除外: {product_name} (medicine_type={medicine_type})")
+            return
 
         candidate = {
             'medicine_id': len(candidates),
