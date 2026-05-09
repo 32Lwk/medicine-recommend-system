@@ -11,8 +11,6 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any, Tuple
 
-from flask import jsonify
-
 from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
@@ -24,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def run_triage_follow_ups(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
     user_message: str,
@@ -39,7 +37,7 @@ def run_triage_follow_ups(
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         sanitized_message: サニタイズ済みメッセージ
         user_message: 元のユーザーメッセージ（ログ用）
@@ -95,8 +93,8 @@ def run_triage_follow_ups(
                         "messages": [],
                         "session_active": True,
                         "last_activity": datetime.now(),
-                        "client_ip": request.remote_addr,
-                        "user_agent": request.headers.get("User-Agent", ""),
+                        "client_ip": client.client_ip,
+                        "user_agent": client.user_agent,
                         "user_attributes": {
                             "treatment_mention": True,
                             "medical_prevention_request": medical_prevention_flag,
@@ -150,8 +148,8 @@ def run_triage_follow_ups(
                                 "messages": [user_msg],
                                 "session_active": True,
                                 "last_activity": datetime.now(),
-                                "client_ip": request.remote_addr,
-                                "user_agent": request.headers.get("User-Agent", ""),
+                                "client_ip": client.client_ip,
+                                "user_agent": client.user_agent,
                                 "user_attributes": session.get("user_attributes", {}),
                             }
                             save_session_to_db(sid, session_data)
@@ -194,8 +192,8 @@ def run_triage_follow_ups(
                             "messages": session.get("messages", []),
                             "session_active": True,
                             "last_activity": datetime.now(),
-                            "client_ip": request.remote_addr,
-                            "user_agent": request.headers.get("User-Agent", ""),
+                            "client_ip": client.client_ip,
+                            "user_agent": client.user_agent,
                             "user_attributes": session.get("user_attributes", {}),
                         }
                         save_session_to_db(sid, session_data)
@@ -203,7 +201,7 @@ def run_triage_follow_ups(
                 session.modified = True
                 message_count = len(session["messages"])
                 logger.info(f"✅ 医薬的な予防要求処理完了: {message_count} messages")
-                return (jsonify({"status": "ok", "message_count": message_count}), False)
+                return (({"status": "ok", "message_count": message_count}, 200), False)
             except Exception as e:
                 logger.error(f"❌ 医薬的な予防要求処理エラー: {e}")
                 import traceback
@@ -262,8 +260,8 @@ def run_triage_follow_ups(
                                 "messages": [user_msg],
                                 "session_active": True,
                                 "last_activity": datetime.now(),
-                                "client_ip": request.remote_addr,
-                                "user_agent": request.headers.get("User-Agent", ""),
+                                "client_ip": client.client_ip,
+                                "user_agent": client.user_agent,
                                 "user_attributes": session.get("user_attributes", {}),
                             }
                             save_session_to_db(sid, session_data)
@@ -315,8 +313,8 @@ def run_triage_follow_ups(
                             "messages": session.get("messages", []),
                             "session_active": True,
                             "last_activity": datetime.now(),
-                            "client_ip": request.remote_addr,
-                            "user_agent": request.headers.get("User-Agent", ""),
+                            "client_ip": client.client_ip,
+                            "user_agent": client.user_agent,
                             "user_attributes": session.get("user_attributes", {}),
                         }
                         save_session_to_db(sid, session_data)
@@ -337,7 +335,7 @@ def run_triage_follow_ups(
                 session.modified = True
                 message_count = len(session["messages"])
                 logger.info(f"✅ 不適切な要求処理完了: {message_count} messages")
-                return (jsonify({"status": "ok", "message_count": message_count}), True)
+                return (({"status": "ok", "message_count": message_count}, 200), True)
         except Exception as e:
             logger.error(f"❌ 不適切な要求処理エラー: {e}")
             import traceback
