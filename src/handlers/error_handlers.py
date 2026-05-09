@@ -10,7 +10,7 @@ import traceback
 from datetime import datetime
 
 import pytz
-from flask import request, render_template, jsonify, has_request_context
+from flask import request, render_template, jsonify, has_request_context, session as flask_session
 
 from src.core.season_manager import get_current_season, get_season_images
 
@@ -36,20 +36,28 @@ def _get_decoration_images(session, version):
         return [], version
 
 
-def register_error_handlers(app, session, version):
+def _session_like_for_error_pages():
+    if has_request_context():
+        try:
+            return dict(flask_session)
+        except Exception:
+            return {}
+    return {}
+
+
+def register_error_handlers(app, version):
     """
     アプリにエラーハンドラーを登録する
 
     Args:
         app: Flaskアプリケーション
-        session: セッションオブジェクト（get_season_images用、None可）
         version: キャッシュバスティング用バージョン文字列
     """
     @app.errorhandler(404)
     def handle_404(e):
         """404エラーのハンドラー"""
         logger.warning(f"⚠️ 404 Not Found: {request.url}")
-        decoration_images, image_version = _get_decoration_images(session, version)
+        decoration_images, image_version = _get_decoration_images(_session_like_for_error_pages(), version)
         return render_template(
             'index.html',
             messages=[],
@@ -68,7 +76,7 @@ def register_error_handlers(app, session, version):
                 'error': True,
                 'response': 'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。'
             }), 502
-        decoration_images, image_version = _get_decoration_images(session, version)
+        decoration_images, image_version = _get_decoration_images(_session_like_for_error_pages(), version)
         return render_template(
             'index.html',
             messages=[],
@@ -89,7 +97,7 @@ def register_error_handlers(app, session, version):
 
         session_id = None
         try:
-            session_id = session.get('_id') if has_request_context() and hasattr(session, 'get') else None
+            session_id = flask_session.get('_id') if has_request_context() else None
         except Exception:
             pass
 
@@ -126,8 +134,8 @@ def register_error_handlers(app, session, version):
 
         conversation_history = None
         try:
-            if has_request_context() and hasattr(session, 'get'):
-                messages = session.get('messages', [])
+            if has_request_context():
+                messages = flask_session.get('messages', [])
                 if messages:
                     conversation_history = messages[-10:] if len(messages) > 10 else messages
         except Exception:

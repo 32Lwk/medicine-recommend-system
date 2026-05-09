@@ -9,14 +9,12 @@ import logging
 import time
 from datetime import datetime
 
-from flask import jsonify
-
 from src.services.session_manager import get_session_from_db, save_session_to_db
 
 logger = logging.getLogger(__name__)
 
 
-def run_triage(session, request, sid, user_message, sanitized_message, recommendation_client):
+def run_triage(session, client, sid, user_message, sanitized_message, recommendation_client):
     """
     トリアージを実行し、早期リターンすべきレスポンスがあれば返す。
 
@@ -26,7 +24,7 @@ def run_triage(session, request, sid, user_message, sanitized_message, recommend
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         user_message: ユーザー生メッセージ
         sanitized_message: サニタイズ済みメッセージ
@@ -34,7 +32,7 @@ def run_triage(session, request, sid, user_message, sanitized_message, recommend
 
     Returns:
         (early_response, triage_result):
-        - early_response: 心臓緊急時に jsonify の Response、それ以外は None
+        - early_response: 心臓緊急時に (dict, status)、それ以外は None
         - triage_result: LLMトリアージ結果（常に返す。インポート失敗時は None）
     """
     triage_result = None
@@ -125,8 +123,8 @@ def run_triage(session, request, sid, user_message, sanitized_message, recommend
                         "username": session.get("username", "Unknown"),
                         "messages": session["messages"].copy(),
                         "last_activity": datetime.now(),
-                        "client_ip": request.remote_addr,
-                        "user_agent": request.headers.get("User-Agent", ""),
+                        "client_ip": client.client_ip,
+                        "user_agent": client.user_agent,
                         "user_attributes": session.get("user_attributes", {}),
                         "session_active": True,
                     }
@@ -152,7 +150,7 @@ def run_triage(session, request, sid, user_message, sanitized_message, recommend
                     f"type={metaphor_info.get('detected_type')}, "
                     f"confidence={metaphor_info.get('confidence'):.2f}"
                 )
-            return (jsonify({"status": "ok", "message_count": message_count}), triage_result)
+            return ({"status": "ok", "message_count": message_count}, 200), triage_result
 
     except ImportError as e:
         logger.warning(f"⚠️ 心臓緊急チェック機能のインポートに失敗: {e}")

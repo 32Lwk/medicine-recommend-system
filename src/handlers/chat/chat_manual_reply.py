@@ -10,8 +10,6 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from flask import jsonify
-
 from src.services.session_manager import (
     get_ai_auto_reply,
     get_admin_mode,
@@ -28,24 +26,24 @@ logger = logging.getLogger(__name__)
 
 def handle_manual_reply_when_off(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
     session_data_for_ai: Optional[dict],
 ) -> Optional[Any]:
     """
-    AI自動応答がOFFの場合に手動返信待ち処理を実行し、返却用の Response を返す。
+    AI自動応答がOFFの場合に手動返信待ち処理を実行し、返却用の (dict, status) を返す。
     AI自動応答がONの場合は None を返す（呼び出し元は通常フローを継続する）。
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         sanitized_message: サニタイズ済みメッセージ
         session_data_for_ai: セッションDB取得結果（ai_auto_reply 判定用）
 
     Returns:
-        手動返信として処理した場合は Flask Response（jsonify）。AI ON の場合は None。
+        手動返信として処理した場合は (dict, HTTP status)。AI ON の場合は None。
     """
     if session_data_for_ai is None:
         session_data_for_ai = {}
@@ -89,8 +87,8 @@ def handle_manual_reply_when_off(
                 "username": session.get("username", "Unknown"),
                 "messages": session["messages"].copy(),
                 "last_activity": datetime.now(),
-                "client_ip": request.remote_addr,
-                "user_agent": request.headers.get("User-Agent", ""),
+                "client_ip": client.client_ip,
+                "user_agent": client.user_agent,
                 "user_attributes": session.get("user_attributes", {}),
                 "session_active": True,
             }
@@ -221,4 +219,4 @@ def handle_manual_reply_when_off(
     message_count = len(session["messages"])
     admin_mode_status = "管理者モード" if get_admin_mode() else "手動返信待ち"
     logger.info(f"✅ POST処理完了（AI自動応答OFF - {admin_mode_status}） - JSON返却: {message_count} messages")
-    return jsonify({"status": "ok", "message_count": message_count})
+    return ({"status": "ok", "message_count": message_count}, 200)

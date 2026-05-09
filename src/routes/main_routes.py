@@ -12,6 +12,8 @@ from xml.sax.saxutils import escape
 import pytz
 from flask import Blueprint, current_app, has_request_context, jsonify, render_template, request, Response, send_from_directory
 
+from src.utils.chat_http_context import ChatClientInfo
+
 from src.services.analytics import log_access_analytics
 from src.services.session_manager import (
     cleanup_old_sessions,
@@ -121,7 +123,13 @@ def index():
 
     if request.method == 'POST':
         from src.handlers.chat_handler import handle_chat_post
-        return handle_chat_post(session, request, sid, monitor, client_ip, user_agent)
+        message = request.form.get('message', '')
+        client_info = ChatClientInfo(
+            client_ip=request.remote_addr or '',
+            user_agent=request.headers.get('User-Agent', '') or '',
+        )
+        body, code = handle_chat_post(session, client_info, message, sid, monitor)
+        return jsonify(body), code
 
     VERSION = current_app.config.get('VERSION', str(int(time.time())))
     metrics = monitor.get_metrics()

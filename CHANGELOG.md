@@ -1,6 +1,6 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月9日**（favicon 実装・Flask 3 → FastAPI 一括移行・ASGI 起動）
+**最終更新日: 2026年5月9日**（FastAPI 仕上げ・Flask 依存整理・favicon・ASGI 本番・レガシー Flask 維持）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
 
@@ -15,7 +15,7 @@
   - **静的ファイル**: `StaticFiles` で `/static` を配信。
   - **Jinja2**: `Jinja2Templates` + グローバル `url_for('static', filename=...)` 互換（既存 `templates/*.html` の `url_for` を維持）。
   - **セッション**: Flask 署名セッションは継続しない。**`sid` Cookie + DB 正**（`src/services/session_manager.py` / `database.py`）。Cookie 属性は `get_session_config()` の `SESSION_COOKIE_SECURE` / `SAMESITE` / `HTTPONLY` を `set_cookie` に反映。Cookie 名は環境変数 `SID_COOKIE_NAME`（既定 `sid`）。
-  - **チャット POST**: FormData `message` を既存 `src/handlers/chat_handler.handle_chat_post` に渡す互換層（最小 Flask `test_request_context`）で JSON 応答を `JSONResponse` に変換（`src/core/` は原則未変更）。
+  - **チャット POST**: FormData `message` を `handle_chat_post` に**直接**渡し、戻り値 `tuple[dict, int]` を `JSONResponse` で返す（当初の Flask `test_request_context` 互換層は**撤去**済み。詳細は下記「FastAPI 仕上げ」節）。
   - **ルート実装（Flask 対応表どおり）**
     - UI: `GET/POST /`・`GET/POST /test/`、`POST /clear`・`/new_session` と `/test/clear`・`/test/new_session`（204 / JSON 形は従来互換）、`GET /favicon.ico`（`static/favicon.ico.png` を `image/png` で配信、無い場合 204）、`GET /sitemap.xml`（`application/xml; charset=utf-8`、`PUBLIC_SITE_URL`）。
     - API: `GET/POST /api/sessions`、`/api/status`・`performance`・`logs`、`/api/all_sessions`（**JSON 配列**、Flask `jsonify(result)` 互換）、`session_stats`、`debug_manual_replies`、`ai_control`・`manual_reply_queue`（GET/POST）、`main_sessions`・`main_manual_reply_queue`・`main_ai_control`、`manual_reply_message`、`request_admin`、`admin_mode`、`user_attributes`、`set_language`、`translate`。
@@ -35,6 +35,22 @@
   - `tests/test_fastapi_contract.py`: `TestClient` による Status / Content-Type / 主要キー / `APP_BASE_PATH` / チャット POST JSON / 管理・周辺 API の最小回帰（`pytest` 実行）。
 - **補足**
   - レガシー `app.py`（Flask）・`src/routes/*` はリポジトリに残り、挙動比較・ドメインロジックの参照に利用可能。本番起動スクリプトは ASGI（`main:app`）を前提。
+
+**2026年5月9日の更新（FastAPI 仕上げ・Flask 依存整理・チャットコアのフレームワーク分離）:**
+
+- **目的**: 本番 ASGI 経路（`main:app`）から Flask/Werkzeug のリクエスト文脈への依存を除き、チャットの戻り値を **`tuple[dict, int]`** に統一。FastAPI は `JSONResponse`、レガシー Flask ルートは `jsonify(body), code` に**変換のみ**残す。
+- **`src/utils/chat_http_context.py`（新規）**: `ChatClientInfo`（`client_ip`・`user_agent`）を定義。`handle_chat_post` および `src/handlers/chat/*` に渡し、ハンドラ内の `request.remote_addr` / `User-Agent` 直接参照を廃止。
+- **`src/utils/request_safe_session.py`**: Flask `has_request_context()` 直結をやめ、**内部 `dict` + `modified`** のミュータブルセッション実装に一本化。ファイル先頭コメントで、Flask 利用時はアプリ側で `flask.session` と同期する旨を記載。
+- **`app.py`（レガシー）**: `before_request` で `dict(flask.session)` から `RequestSafeSession` を生成し `g.safe_session_work`・`extensions['safe_session']` に設定。`after_request` で `modified` 時に `flask.session` へキーごと書き戻し。先頭 docstring で**本番は `main:app`・当エントリはローカル比較用**と明記。
+- **`src/handlers/chat_handler.py`**: シグネチャを `handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, monitor)` に確定。`jsonify`・`from flask`・`request.*` を除去。`src/core/medicine_logic` のクライアントは **`openai_client`** として import（引数名と HTTP クライアント情報の衝突回避）。
+- **`src/handlers/chat/*.py`**: `jsonify` をすべて `(dict, HTTPステータス)` に置換。`from flask` を除去。引数に `ChatClientInfo`（`client` 等）を受け取るよう連鎖的に整理（例: `chat_store_inquiry.py` の docstring を現行戻り値に合わせて更新）。
+- **`main.py`**: 仮想 Flask アプリ・`test_request_context`・`flask_request` 橋を**削除**。`_prime_safe_session_for_chat` で `RequestSafeSession` を用意し、`_post_chat_json_response` 内で `handle_chat_post` を呼び **`JSONResponse(content=body, status_code=status_code)`** を返す。Cookie `sid`・`get_session_config` 整合は維持。
+- **`src/routes/main_routes.py`**: POST で `request.form.get('message')` と `ChatClientInfo(...)` を組み立て、`body, code = handle_chat_post(session, client_info, message, sid, monitor)` のあと **`return jsonify(body), code`**。
+- **`src/handlers/error_handlers.py`**: `register_error_handlers(app, version)` 形式に整理。404/502/500 で Flask セッション等を参照する既存方針を維持（FastAPI の例外処理は `main.py` 側）。
+- **ドキュメント**: `README.md` のクイックスタートで本番は `./start.sh` / `gunicorn main:app`、`python app.py` はレガシーと明記。`docs/FASTAPI_ARCHITECTURE.md` を「直接 `handle_chat_post`」の現行構成に合わせて更新。
+- **依存関係**: `requirements.txt` の **Flask / flask-cors は削除せず維持**（`app.py`・`src/routes/*`・`admin_app.py`・`debug_app.py`・`scripts/*` 等）。`src/core/` は本リファクタの対象外（未変更）。
+- **テスト**: `tests/` は `app:app` 直起動に依存しない構成のまま。`pytest` 全件（`tests/test_fastapi_contract.py` のチャット POST・管理・周辺 API を含む）で回帰確認。
+- **実装メモ（内部計画との差分）**: セッション同期は計画案の「POST 入り口のみコピー／書き戻し」ではなく、**`app.py` の `before_request` / `after_request` でリクエスト単位同期**とした（GET で `extensions['safe_session']` を使う既存フローとの整合優先）。
 
 **2026年5月9日の更新（favicon）:**
 
