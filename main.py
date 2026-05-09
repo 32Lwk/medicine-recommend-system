@@ -19,12 +19,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import FileResponse, Response as StarletteResponse
-from flask import Flask as FlaskApp
-from flask import request as flask_request
 
 from config.app_config import configure_logging, get_cors_config, get_session_config, load_env
 from src.core.season_manager import get_current_season, get_season_images
 from src.handlers.chat_handler import handle_chat_post
+from src.utils.chat_http_context import ChatClientInfo
 from src.services.database import init_database
 from src.services.database import get_database
 from src.services.session_manager import (
@@ -231,10 +230,6 @@ def _startup():
         logger.warning(f"⚠️ Database initialization error: {e}. Feedback features will be disabled.")
 
 
-_flask_compat_app = FlaskApp(__name__)
-_flask_compat_app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
-
-
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
     # 互換: Flask 版は VERSION を app.config に置くが、ここでは毎プロセスで固定。
     version = os.getenv("APP_VERSION") or str(int(time.time()))
@@ -324,51 +319,22 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                 safe_session["user_attributes"] = {**current_attrs, **db_attrs}
 
 
-def _call_flask_chat_handler_via_compat(
-    path: str,
-    message: str,
-    sid: str,
-    request: Request,
-) -> JSONResponse:
+def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONResponse:
     client_ip = request.client.host if request.client else ""
     user_agent = request.headers.get("User-Agent", "")
+    client_info = ChatClientInfo(client_ip=client_ip, user_agent=user_agent or "")
     monitor = get_global_monitor()
     monitor.start_monitoring()
     monitor.increment_request()
 
-    environ_base = {"REMOTE_ADDR": client_ip}
-    headers = {"User-Agent": user_agent}
-    with _flask_compat_app.test_request_context(
-        path,
-        method="POST",
-        data={"message": message},
-        environ_base=environ_base,
-        headers=headers,
-    ):
-        safe_session = RequestSafeSession()
-        _prime_safe_session_for_chat(safe_session, sid, request)
+    safe_session = RequestSafeSession()
+    _prime_safe_session_for_chat(safe_session, sid, request)
 
-        flask_resp = handle_chat_post(
-            safe_session,
-            flask_request,
-            sid,
-            monitor,
-            client_ip,
-            user_agent,
-        )
-
-        status_code = getattr(flask_resp, "status_code", 200)
-        data = None
-        try:
-            data = flask_resp.get_json(silent=True)
-        except Exception:
-            data = None
-        if data is None:
-            # 互換: JSONでない場合はエラー扱い
-            data = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
-            status_code = 500
-
-        return JSONResponse(content=data, status_code=status_code)
+    body, status_code = handle_chat_post(safe_session, client_info, message, sid, monitor)
+    if not isinstance(body, dict) or not isinstance(status_code, int):
+        body = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
+        status_code = 500
+    return JSONResponse(content=body, status_code=status_code)
 
 
 @app.post("/", response_class=JSONResponse)
@@ -378,7 +344,7 @@ def post_root_chat(
     message: str = Form(...),
     sid: str = Depends(get_sid),
 ):
-    return _call_flask_chat_handler_via_compat("/", message, sid, request)
+    return _post_chat_json_response(request, message, sid)
 
 
 @app.post("/test/", response_class=JSONResponse)
@@ -388,7 +354,7 @@ def post_test_root_chat(
     message: str = Form(...),
     sid: str = Depends(get_sid),
 ):
-    return _call_flask_chat_handler_via_compat("/test/", message, sid, request)
+    return _post_chat_json_response(request, message, sid)
 
 
 @app.post("/clear")

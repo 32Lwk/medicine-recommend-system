@@ -14,8 +14,6 @@ import html
 import uuid
 from datetime import datetime
 
-from flask import jsonify
-
 from src.utils.request_logger import log_medicine_logic_call, log_network_request
 from src.utils.performance_monitor import log_performance_metrics
 from src.utils.debug_logger import add_network_log
@@ -41,11 +39,9 @@ logger = logging.getLogger(__name__)
 
 def run_recommendation_flow(
     session,
-    request,
+    client,
     sid,
     monitor,
-    client_ip,
-    user_agent,
     sanitized_message,
     processed_message,
     triage_result,
@@ -839,8 +835,8 @@ def run_recommendation_flow(
                             'username': session.get('username', 'Unknown'),
                             'messages': [],
                             'last_activity': datetime.now(),
-                            'client_ip': request.remote_addr,
-                            'user_agent': request.headers.get('User-Agent', ''),
+                            'client_ip': client.client_ip,
+                            'user_agent': client.user_agent,
                             'user_attributes': session.get('user_attributes', {}),
                             'session_active': True
                         }
@@ -851,7 +847,7 @@ def run_recommendation_flow(
                     save_session_to_db(sid, session_data)
                             
                 message_count = len(session['messages'])
-                return jsonify({'status': 'ok', 'message_count': message_count})
+                return {'status': 'ok', 'message_count': message_count}, 200
                         
             medicine_type = analysis_result.get('medicine_type')
             symptoms = analysis_result.get('symptoms', [])
@@ -987,8 +983,8 @@ def run_recommendation_flow(
                                 'username': session.get('username', 'Unknown'),
                                 'messages': [],
                                 'last_activity': datetime.now(),
-                                'client_ip': request.remote_addr,
-                                'user_agent': request.headers.get('User-Agent', ''),
+                                'client_ip': client.client_ip,
+                                'user_agent': client.user_agent,
                                 'user_attributes': session.get('user_attributes', {}),
                                 'session_active': True
                             }
@@ -999,7 +995,7 @@ def run_recommendation_flow(
                         save_session_to_db(sid, session_data)
                                 
                     message_count = len(session['messages'])
-                    return jsonify({'status': 'ok', 'message_count': message_count})
+                    return {'status': 'ok', 'message_count': message_count}, 200
                         
             logger.info(f"📋 Detected medicine type: {medicine_type}")
             logger.info(f"📋 Detected symptoms: {symptoms}")
@@ -2528,8 +2524,8 @@ def run_recommendation_flow(
                         'username': session.get('username', 'Unknown'),
                         'messages': [],
                         'last_activity': datetime.now(),
-                        'client_ip': request.remote_addr,
-                        'user_agent': request.headers.get('User-Agent', ''),
+                        'client_ip': client.client_ip,
+                        'user_agent': client.user_agent,
                         'user_attributes': session.get('user_attributes', {}),
                         'session_active': True
                     }
