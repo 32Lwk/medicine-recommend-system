@@ -6,7 +6,8 @@
 GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
 GUNICORN_GRACEFUL_TIMEOUT=${GUNICORN_GRACEFUL_TIMEOUT:-30}
 GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
-GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-sync}
+# ASGI(FastAPI) では UvicornWorker を使用する
+GUNICORN_WORKER_CLASS=${GUNICORN_WORKER_CLASS:-uvicorn.workers.UvicornWorker}
 
 # ポート番号を環境変数から取得（Render.comでは自動設定される）
 PORT=${PORT:-5000}
@@ -32,5 +33,5 @@ exec gunicorn \
     --error-logfile - \
     --log-level info \
     --name medicine-recommend-app \
-    app:app
+    main:app
 

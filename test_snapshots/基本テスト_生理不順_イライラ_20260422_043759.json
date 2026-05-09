@@ -1,0 +1,10 @@
+{
+  "test_name": "基本テスト_生理不順_イライラ",
+  "timestamp": "2026-04-22T04:37:59.177366",
+  "user_message": "生理不順で、なおかつイライラする",
+  "user_info": {
+    "age": 30,
+    "gender": "女性"
+  },
+  "recommendations": []
+}
