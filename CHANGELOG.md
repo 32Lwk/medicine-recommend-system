@@ -1,8 +1,19 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月9日**（FastAPI 仕上げ・Flask 依存整理・favicon・ASGI 本番・レガシー Flask 維持）
+**最終更新日: 2026年5月10日**（プロキシ配下のクライアント IP 統一・favicon 軽量化・GitHub ブランチ整理）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月10日の更新（プロキシ配下のクライアント IP・favicon・リポジトリ運用）:**
+
+- **`src/utils/chat_http_context.py`**: `resolve_client_ip` / `_first_forwarded_client_ip` を追加し、**`X-Forwarded-For` の先頭**（カンマ区切りの第1要素）を優先してクライアント IP を決定（Render / nginx 等のリバースプロキシ経由を想定。未設定時は `remote_addr` / `request.client.host` にフォールバック）。`ChatClientInfo.from_flask_request` および `from_starlette_request` で Flask と FastAPI（Starlette）の双方から**同一ルール**で組み立て。
+- **`src/routes/main_routes.py`**: `index` で `ChatClientInfo.from_flask_request` を**一度だけ**呼び出し、GET（既存セッション検索・アクセス解析など）と POST（`handle_chat_post`）で **`chat_client` を共有**。GET と POST で IP の解釈が食い違わないようにした。`new_session` の `client_ip` / `user_agent` 記録も同ファクトリに統一。
+- **`main.py`**: チャット POST の JSON 応答生成（`_post_chat_json_response`）で、単独の `request.client.host` 参照から **`ChatClientInfo.from_starlette_request(request)`** へ切り替え。
+- **`static/favicon.ico.png`**: ブランド用アイコンを差し替え、**ファイルサイズを約 2.5MB から約 62KB へ削減**（`GET /favicon.ico` の配信・HTML の `link rel="icon"` は従来どおり）。
+- **その他（同コミットに含まれる随伴変更）**: `start.sh` の ASGI 非互換ワーカー補正 `case` の**重複を整理**、`render.yaml` の `GUNICORN_WORKER_CLASS` 周りコメントを補足、`Dockerfile`・`main.py`（付随する本番・ルート周りの調整）、`static/js/main.js`・`templates/index.html` の小修正。
+- **GitHub ブランチ整理**: マージ済みのローカル作業ブランチを削除。リモートの **`cursor/*`・`codex/*` 作業ブランチを削除**し、運用上は **`main` のみ**とした（コミット履歴は `main` に保持）。
 
 ---
 
