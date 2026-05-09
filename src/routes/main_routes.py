@@ -92,6 +92,11 @@ def index():
         if existing_session:
             existing_session_data = get_session_from_db(existing_session)
             if existing_session_data:
+                # 既存セッションを見つけた場合は、SIDも含めて引き継ぐ。
+                # messagesだけコピーしてSIDを新規のままにすると、/api/sessions（DB優先）が0件になり、
+                # その後にセッションcookie内のmessagesが削除されて「履歴が消えた」ように見える。
+                sid = existing_session
+                session['_id'] = sid
                 session['username'] = existing_session_data.get('username', '')
                 session['messages'] = existing_session_data.get('messages', []).copy()
         else:
@@ -144,12 +149,15 @@ def index():
         decoration_images = []
         image_version = VERSION
 
+    app_base_path = '/test' if request.blueprint == 'main_test' else ''
+
     return render_template('index.html',
                           messages=messages,
                           version=VERSION,
                           username=session.get('username', 'Unknown'),
                           decoration_images=decoration_images,
-                          image_version=image_version)
+                          image_version=image_version,
+                          app_base_path=app_base_path)
 
 
 def clear_chat():
@@ -199,9 +207,14 @@ def new_session():
     }), 200
 
 
-def create_main_routes():
-    """メインルートの Blueprint を作成（ビューは当モジュール内で定義）"""
-    bp = Blueprint('main', __name__)
+def create_main_routes(url_prefix=None, blueprint_name='main'):
+    """
+    メインルートの Blueprint を作成（ビューは当モジュール内で定義）。
+
+    url_prefix='/test' と blueprint_name='main_test' を指定すると、
+    https://example.com/test/ で同一チャット UI を提供する（API はルートのまま）。
+    """
+    bp = Blueprint(blueprint_name, __name__, url_prefix=url_prefix)
     bp.add_url_rule('/favicon.ico', view_func=favicon)
     bp.add_url_rule('/sitemap.xml', view_func=sitemap, methods=['GET'])
     bp.add_url_rule('/', view_func=index, methods=['GET', 'POST'])

@@ -3939,9 +3939,34 @@
         return resourcesHtml;
     }
 
+    // staticテンプレート変数（{{ version }}）はJSファイル内では展開されないため、
+    // index.html から注入された window.APP_VERSION を参照してキャッシュバスターを付与する。
+    const APP_VERSION = (window.APP_VERSION !== undefined && window.APP_VERSION !== null)
+        ? String(window.APP_VERSION)
+        : '';
+
+    function withVersion(url) {
+        if (!APP_VERSION) return url;
+        const sep = url.includes('?') ? '&' : '?';
+        return `${url}${sep}v=${encodeURIComponent(APP_VERSION)}`;
+    }
+
+    /** メインチャット用パス（/test 配下では /test/clear など）。API (/api/...) には使わない。 */
+    function mainAppPath(path) {
+        const raw = (typeof window.APP_BASE_PATH === 'string') ? window.APP_BASE_PATH.trim() : '';
+        const base = raw.replace(/\/$/, '');
+        if (!path.startsWith('/')) {
+            path = '/' + path;
+        }
+        if (path === '/') {
+            return base ? base + '/' : '/';
+        }
+        return base + path;
+    }
+
     // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
-        fetch('/api/sessions?v={{ version }}', {
+        fetch(withVersion('/api/sessions'), {
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         })
@@ -4459,7 +4484,7 @@
         const formData = new FormData();
         formData.append('message', message);
         
-        fetch('/?v={{ version }}', {
+        fetch(withVersion(mainAppPath('/')), {
             method: 'POST',
             credentials: 'include',
             body: formData,
@@ -4534,7 +4559,7 @@
                     }
                 }, 2000); // 2秒でタイムアウト
                 
-                fetch('/api/sessions?v={{ version }}', {
+                fetch(withVersion('/api/sessions'), {
                     credentials: 'include',
                     headers: { 'Cache-Control': 'no-cache' }
                 })
@@ -4682,7 +4707,7 @@
     function clearChat() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmClearChat)) {
-            fetch('/clear?v={{ version }}', {
+            fetch(withVersion(mainAppPath('/clear')), {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -4839,7 +4864,7 @@
     document.getElementById('new-session-btn').onclick = function() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmNewSession)) {
-            fetch('/new_session?v={{ version }}', {
+            fetch(withVersion(mainAppPath('/new_session')), {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -5225,7 +5250,7 @@
         
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('🔄 Periodic update - fetching messages');
-        fetch('/api/sessions?v={{ version }}', {
+        fetch(withVersion('/api/sessions'), {
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         })
