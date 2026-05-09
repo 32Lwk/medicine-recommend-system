@@ -14,7 +14,7 @@
 | セッション | `sid` Cookie + DB 正 | `src/services/session_manager.py` |
 | 永続化 | PostgreSQL（Neon） | `src/services/database.py` |
 | ドメイン | 薬学ロジック・チャット処理 | `src/core/*`, `src/handlers/chat_handler.py` |
-| 互換 | Flask `test_request_context` 経由のチャット POST | `main.py` 内 `_call_flask_chat_handler_via_compat` |
+| チャット POST | `handle_chat_post` → `tuple[dict, int]`、`main.py` は `JSONResponse` に変換 | `main.py`, `src/utils/chat_http_context.py` |
 
 **原則**: `src/core/*` は変更しない。差分はアダプタ（`main.py` / handlers）に閉じる。
 

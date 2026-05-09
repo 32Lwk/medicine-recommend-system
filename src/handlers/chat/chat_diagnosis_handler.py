@@ -12,8 +12,6 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from flask import jsonify
-
 from src.services.session_manager import get_session_from_db, save_session_to_db
 
 logger = logging.getLogger(__name__)
@@ -21,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def handle_diagnosis_if_detected(
     session: Any,
-    request: Any,
+    client: Any,
     sid: Optional[str],
     sanitized_message: str,
 ) -> Optional[Any]:
@@ -31,12 +29,12 @@ def handle_diagnosis_if_detected(
 
     Args:
         session: Flaskセッション
-        request: Flaskのrequestオブジェクト
+        client: クライアント情報（IP / User-Agent）
         sid: セッションID
         sanitized_message: サニタイズ済みメッセージ
 
     Returns:
-        早期リターンすべき場合（副作用あり or 診断名のみ）は Flask Response。それ以外は None。
+        早期リターンすべき場合（副作用あり or 診断名のみ）は (dict, status)。それ以外は None。
     """
     try:
         from src.core.medicine_logic import is_diagnosis_term
@@ -105,8 +103,8 @@ def handle_diagnosis_if_detected(
                         "username": session.get("username", "Unknown"),
                         "messages": [],
                         "last_activity": datetime.now(),
-                        "client_ip": request.remote_addr,
-                        "user_agent": request.headers.get("User-Agent", ""),
+                        "client_ip": client.client_ip,
+                        "user_agent": client.user_agent,
                         "user_attributes": session.get("user_attributes", {}),
                         "session_active": True,
                     }
@@ -168,8 +166,8 @@ def handle_diagnosis_if_detected(
                     "username": session.get("username", "Unknown"),
                     "messages": [],
                     "last_activity": datetime.now(),
-                    "client_ip": request.remote_addr,
-                    "user_agent": request.headers.get("User-Agent", ""),
+                    "client_ip": client.client_ip,
+                    "user_agent": client.user_agent,
                     "user_attributes": session.get("user_attributes", {}),
                     "session_active": True,
                 }
@@ -181,7 +179,7 @@ def handle_diagnosis_if_detected(
 
         if has_side_effect or not should_show_counseling:
             message_count = len(session["messages"])
-            return jsonify({"status": "ok", "message_count": message_count})
+            return ({"status": "ok", "message_count": message_count}, 200)
 
         logger.info(f"📝 診断名+症状が検出されたため、カウンセリングフローにも流します: {sanitized_message}")
         return None

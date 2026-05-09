@@ -1,100 +1,64 @@
 """
-Flaskセッションのリクエストコンテキスト外安全ラッパー
+リクエスト単位のミュータブルセッション状態（Flask session 非依存）
 
-責務: Flaskセッションをリクエストコンテキスト外でも安全に扱うためのラッパー
+Flask では app の before_request / after_request で flask.session と同期する。
+FastAPI では都度新規インスタンスを生成し、DB・Cookie（sid）と整合させる。
 """
-from collections.abc import MutableMapping
-from threading import local
 
-from flask import session as flask_session, has_request_context
+from collections.abc import MutableMapping
 
 
 class RequestSafeSession(MutableMapping):
-    """Flaskセッションをリクエストコンテキスト外でも安全に扱うためのラッパー"""
+    """dict + modified フラグ。ネストした list の in-place 変更後は呼び出し側で modified を立てる。"""
 
-    def __init__(self):
-        self._storage = local()
+    __slots__ = ("_store", "_modified")
 
-    def _use_real_session(self) -> bool:
-        return has_request_context()
-
-    def _fallback_store(self):
-        if not hasattr(self._storage, 'data'):
-            self._storage.data = {}
-            self._storage.modified = False
-        return self._storage
-
-    def __getitem__(self, key):
-        if self._use_real_session():
-            return flask_session[key]
-        store = self._fallback_store()
-        return store.data[key]
-
-    def __setitem__(self, key, value):
-        if self._use_real_session():
-            flask_session[key] = value
-        else:
-            store = self._fallback_store()
-            store.data[key] = value
-            store.modified = True
-
-    def __delitem__(self, key):
-        if self._use_real_session():
-            del flask_session[key]
-        else:
-            store = self._fallback_store()
-            del store.data[key]
-            store.modified = True
-
-    def __iter__(self):
-        if self._use_real_session():
-            return iter(flask_session)
-        return iter(self._fallback_store().data)
-
-    def __len__(self):
-        if self._use_real_session():
-            return len(flask_session)
-        return len(self._fallback_store().data)
-
-    def get(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.get(key, default)
-        return self._fallback_store().data.get(key, default)
-
-    def setdefault(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.setdefault(key, default)
-        store = self._fallback_store()
-        if key not in store.data:
-            store.data[key] = default
-            store.modified = True
-        return store.data[key]
-
-    def pop(self, key, default=None):
-        if self._use_real_session():
-            return flask_session.pop(key, default)
-        store = self._fallback_store()
-        store.modified = True
-        return store.data.pop(key, default)
-
-    def clear(self):
-        if self._use_real_session():
-            flask_session.clear()
-        else:
-            store = self._fallback_store()
-            store.data.clear()
-            store.modified = True
+    def __init__(self, initial=None):
+        self._store = dict(initial or {})
+        self._modified = False
 
     @property
-    def modified(self):
-        if self._use_real_session():
-            return flask_session.modified
-        return self._fallback_store().modified
+    def modified(self) -> bool:
+        return self._modified
 
     @modified.setter
     def modified(self, value: bool):
-        if self._use_real_session():
-            flask_session.modified = value
-        else:
-            store = self._fallback_store()
-            store.modified = bool(value)
+        self._modified = bool(value)
+
+    def __getitem__(self, key):
+        return self._store[key]
+
+    def __setitem__(self, key, value):
+        self._store[key] = value
+        self._modified = True
+
+    def __delitem__(self, key):
+        del self._store[key]
+        self._modified = True
+
+    def __iter__(self):
+        return iter(self._store)
+
+    def __len__(self):
+        return len(self._store)
+
+    def get(self, key, default=None):
+        return self._store.get(key, default)
+
+    def setdefault(self, key, default=None):
+        if key not in self._store:
+            self._store[key] = default
+            self._modified = True
+        return self._store[key]
+
+    def pop(self, key, default=None):
+        self._modified = True
+        if key in self._store:
+            return self._store.pop(key)
+        if default is not None:
+            return default
+        raise KeyError(key)
+
+    def clear(self):
+        self._store.clear()
+        self._modified = True
