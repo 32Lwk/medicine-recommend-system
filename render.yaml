@@ -25,7 +25,7 @@ services:
       - key: GUNICORN_WORKER_CLASS
         value: uvicorn.workers.UvicornWorker
         sync: false
-        # FastAPI(ASGI) のため sync/gevent ではなく UvicornWorker を使用
+        # FastAPI(ASGI) のため sync/gevent ではなく UvicornWorker を使用。高同時は workers 数やインスタンスを調整
       - key: DB_MIN_CONNECTIONS
         value: 2
         sync: false

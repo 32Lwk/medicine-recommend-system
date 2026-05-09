@@ -67,8 +67,9 @@ def index():
     cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=current_sid)
 
     current_time = time.time()
-    client_ip = request.remote_addr
-    user_agent = request.headers.get('User-Agent', '')
+    chat_client = ChatClientInfo.from_flask_request(request)
+    client_ip = chat_client.client_ip
+    user_agent = chat_client.user_agent
 
     session.setdefault('messages', [])
     session.setdefault('user_attributes', {
@@ -124,11 +125,7 @@ def index():
     if request.method == 'POST':
         from src.handlers.chat_handler import handle_chat_post
         message = request.form.get('message', '')
-        client_info = ChatClientInfo(
-            client_ip=request.remote_addr or '',
-            user_agent=request.headers.get('User-Agent', '') or '',
-        )
-        body, code = handle_chat_post(session, client_info, message, sid, monitor)
+        body, code = handle_chat_post(session, chat_client, message, sid, monitor)
         return jsonify(body), code
 
     VERSION = current_app.config.get('VERSION', str(int(time.time())))
@@ -198,8 +195,9 @@ def new_session():
     session['messages'] = []
     session.modified = True
 
-    client_ip = request.remote_addr
-    user_agent = request.headers.get('User-Agent', '')
+    chat_client = ChatClientInfo.from_flask_request(request)
+    client_ip = chat_client.client_ip
+    user_agent = chat_client.user_agent
     session_data = {
         'session_id': sid,
         'username': session['username'],
