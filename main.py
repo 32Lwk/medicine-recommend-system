@@ -2,11 +2,13 @@ import json
 import logging
 import math
 import os
+import re
 from pathlib import Path
 import random
 import time
 import traceback
 from datetime import datetime
+from urllib.parse import unquote
 from xml.sax.saxutils import escape
 
 import pytz
@@ -138,6 +140,32 @@ _FAVICON_PATH = Path(__file__).resolve().parent / "static" / "favicon.ico.png"
 
 templates = Jinja2Templates(directory="templates")
 
+_PLACEHOLDER_APP_VERSION = re.compile(
+    r"^\s*\{\{\s*version\s*\}\}\s*$",
+    re.IGNORECASE,
+)
+
+
+def _normalized_app_version_env() -> str | None:
+    """APP_VERSION が未設定・空・Jinja 未展開っぽい値なら None（呼び出し側でフォールバック）。"""
+    raw = os.getenv("APP_VERSION")
+    if raw is None:
+        return None
+    s = raw.strip()
+    if not s:
+        return None
+    # クエリ文字列を誤ってコピーした場合（例: %7B%7B%20version%20%7D%7D）
+    if "%" in s and ("%7b" in s.lower() or "%7d" in s.lower()):
+        try:
+            dec = unquote(s)
+            if dec.strip():
+                s = dec.strip()
+        except Exception:
+            pass
+    if _PLACEHOLDER_APP_VERSION.match(s) or "{{" in s:
+        return None
+    return s
+
 
 def _compat_url_for(endpoint: str, **values) -> str:
     # templates/*.html は Flask の url_for('static', filename=...) を使用している。
@@ -232,7 +260,8 @@ def _startup():
 
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
     # 互換: Flask 版は VERSION を app.config に置くが、ここでは毎プロセスで固定。
-    version = os.getenv("APP_VERSION") or str(int(time.time()))
+    nv = _normalized_app_version_env()
+    version = nv if nv is not None else str(int(time.time()))
     session_like = {"_id": sid} if sid else {}
     decoration_images, image_version = _get_decoration_images(session_like, version)
 
@@ -320,9 +349,7 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
 
 
 def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONResponse:
-    client_ip = request.client.host if request.client else ""
-    user_agent = request.headers.get("User-Agent", "")
-    client_info = ChatClientInfo(client_ip=client_ip, user_agent=user_agent or "")
+    client_info = ChatClientInfo.from_starlette_request(request)
     monitor = get_global_monitor()
     monitor.start_monitoring()
     monitor.increment_request()
@@ -725,7 +752,7 @@ def api_status(sid: str = Depends(get_sid)):
         },
         "session_active": bool(get_session_from_db(sid)) if sid else False,
         "message_count": len((get_session_from_db(sid) or {}).get("messages", []) or []) if sid else 0,
-        "version": os.getenv("APP_VERSION") or "0",
+        "version": _normalized_app_version_env() or "0",
     }
 
 
