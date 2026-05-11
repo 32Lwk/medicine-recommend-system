@@ -3273,12 +3273,13 @@ body.onboarding-open .language-selector {
 
 .onboarding-visual {
     font-size: 3rem;
-    margin-bottom: 1rem;
+    line-height: 1;
+    margin: 0 0 0.4rem;
 }
 
 .onboarding-title {
     font-size: 1.6rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.35rem;
     color: #2c3e50;
 }
 
@@ -3452,6 +3453,19 @@ body.onboarding-open .language-selector {
 .onboarding-details {
     margin: 1rem 0;
     text-align: left;
+    min-height: 0;
+}
+
+.onboarding-slide.active > .onboarding-details {
+    min-height: 0;
+    flex-shrink: 0;
+}
+
+.onboarding-details-desc {
+    margin: 0 0 0.75rem;
+    color: #424242;
+    line-height: 1.6;
+    font-size: 0.95rem;
 }
 
 .onboarding-details summary {
@@ -3482,14 +3496,19 @@ body.onboarding-open .language-selector {
 
 .onboarding-details-content {
     margin-top: 0.75rem;
-    max-height: min(280px, 40vh);
+    max-height: min(170px, 27vh);
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 0.5rem;
     font-size: 0.95rem;
     line-height: 1.6;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     /* スクロールバーのスタイリング */
     scrollbar-width: thin;
     scrollbar-color: #4CAF50 #f0f0f0;
+    scrollbar-gutter: stable;
 }
 
 .onboarding-details-content::-webkit-scrollbar {
@@ -3562,7 +3581,7 @@ body.onboarding-open .language-selector {
     }
     
     .onboarding-details-content {
-        max-height: min(200px, 35vh);
+        max-height: min(145px, 26vh);
     }
 
     .onboarding-title {
@@ -3595,7 +3614,7 @@ body.onboarding-open .language-selector {
     }
     
     .onboarding-details-content {
-        max-height: min(180px, 30vh);
+        max-height: min(130px, 24vh);
     }
 
     .onboarding-title {
