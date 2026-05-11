@@ -1046,12 +1046,15 @@
 
         return slide.details.map(detail => {
             const summary = detail.summary || '';
-            const description = detail.description ? `<p>${detail.description}</p>` : '';
+            const description = detail.description ? `<p class="onboarding-details-desc">${detail.description}</p>` : '';
             const content = getOnboardingDetailContent(detail);
             const itemsHtml = Array.isArray(detail.items) && detail.items.length
                 ? `<ul>${detail.items.map(function(item) { return '<li>' + item + '</li>'; }).join('')}</ul>`
                 : '';
             const innerParts = [];
+            if (description) {
+                innerParts.push(description);
+            }
             if (itemsHtml) {
                 innerParts.push(itemsHtml);
             }
@@ -1065,7 +1068,6 @@
             return `
                 <details class="onboarding-details">
                     <summary>${summary}</summary>
-                    ${description}
                     ${contentHtml}
                 </details>
             `;
