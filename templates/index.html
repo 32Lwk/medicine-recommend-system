@@ -93,6 +93,8 @@
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
+            font-size: clamp(11px, 2.35vmin, 22px);
+            --particle-fall-margin: clamp(48px, 10.5vmin, 128px);
         }
         .snowflake {
             position: absolute;
@@ -120,19 +122,19 @@
         }
         @keyframes particlefall {
             0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
+                transform: translateY(calc(-1 * var(--particle-fall-margin, 100px))) translateX(0) rotate(0deg);
                 opacity: 0;
             }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% {
-                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift, 0px)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + var(--particle-fall-margin, 100px))) translateX(var(--drift, 0px)) rotate(360deg);
                 opacity: 0;
             }
         }
         @keyframes snowfall {
             0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
+                transform: translateY(calc(-1 * var(--particle-fall-margin, 100px))) translateX(0) rotate(0deg);
                 opacity: 0;
             }
             10% {
@@ -142,7 +144,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + var(--particle-fall-margin, 100px))) translateX(var(--drift)) rotate(360deg);
                 opacity: 0;
             }
         }
