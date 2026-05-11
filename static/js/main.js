@@ -3839,71 +3839,189 @@
         });
     }
     
-    // 冬仕様の雪アニメーション
-    // 雪のコンテナの高さを更新する関数
+    // 季節パーティクル（サーバプロファイル + prefers-reduced-motion 対応）
     function updateSnowContainerHeight() {
         const snowContainer = document.getElementById('snowContainer');
         const chatMessages = document.getElementById('chatMessages');
         
         if (!snowContainer || !chatMessages) return;
         
-        // チャットメッセージの実際の高さ（スクロール可能な全高さ）を取得
         const scrollHeight = chatMessages.scrollHeight;
         const clientHeight = chatMessages.clientHeight;
-        
-        // スクロール可能な高さとビューポートの高さのうち、大きい方を使用
         const containerHeight = Math.max(scrollHeight, clientHeight || window.innerHeight);
         
-        // CSS変数として設定（px単位）
         snowContainer.style.setProperty('--snow-container-height', containerHeight + 'px');
         snowContainer.style.height = containerHeight + 'px';
     }
-    
-    function createSnowAnimation() {
+
+    function readParticleProfile() {
+        const el = document.getElementById('particle-profile');
+        if (!el || !String(el.textContent || '').trim()) return null;
+        try {
+            return JSON.parse(el.textContent);
+        } catch (e) {
+            console.warn('particle-profile JSON の解析に失敗しました', e);
+            return null;
+        }
+    }
+
+    function particleStaticUrl(relativePath) {
+        if (!relativePath) return '';
+        const clean = String(relativePath).replace(/^\/+/, '');
+        return mainAppPath('/static/' + clean);
+    }
+
+    /** スプライト配列要素を { path, weight } に正規化（文字列 path のみも可） */
+    function normalizeSpriteEntry(entry) {
+        if (!entry) return null;
+        if (typeof entry === 'string') {
+            const p = entry.trim();
+            return p ? { path: p, weight: 1 } : null;
+        }
+        if (typeof entry === 'object' && entry.path) {
+            const w = Number(entry.weight);
+            return { path: String(entry.path).trim(), weight: w > 0 ? w : 1 };
+        }
+        return null;
+    }
+
+    function pickWeightedSpritePath(sprites) {
+        const list = (Array.isArray(sprites) ? sprites : [])
+            .map(normalizeSpriteEntry)
+            .filter(Boolean);
+        if (!list.length) return '';
+        let total = 0;
+        for (let i = 0; i < list.length; i++) total += list[i].weight;
+        let r = Math.random() * total;
+        for (let i = 0; i < list.length; i++) {
+            r -= list[i].weight;
+            if (r <= 0) return list[i].path;
+        }
+        return list[list.length - 1].path;
+    }
+
+    /** sRGB #rrggbb の相対輝度（WCAG）。極端に暗い色は粒子に使わない */
+    function particleRelativeLuminance(hex) {
+        const h = String(hex || '').trim();
+        const m = /^#?([0-9a-f]{6})$/i.exec(h);
+        if (!m) return 0;
+        const n = parseInt(m[1], 16);
+        const rs = (n >> 16) & 255;
+        const gs = (n >> 8) & 255;
+        const bs = n & 255;
+        const lin = function (v) {
+            v /= 255;
+            return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * lin(rs) + 0.7152 * lin(gs) + 0.0722 * lin(bs);
+    }
+
+    function sanitizeParticleColor(hex) {
+        const h = String(hex || '').trim();
+        const lower = h.toLowerCase();
+        if (lower === '#000' || lower === '#000000' || lower === 'rgb(0,0,0)') {
+            return '#eceff1';
+        }
+        const lum = particleRelativeLuminance(h.startsWith('#') ? h : '#' + h);
+        if (lum < 0.55) {
+            return '#eceff1';
+        }
+        return h.startsWith('#') ? h : '#' + h;
+    }
+
+    function createSeasonalParticles() {
         const snowContainer = document.getElementById('snowContainer');
         if (!snowContainer) return;
-        
+
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) return;
-        
-        // 雪のコンテナの高さを更新
-        updateSnowContainerHeight();
-        
-        // パフォーマンス最適化: 画面サイズに応じて雪の数を調整
-        const snowflakeCount = Math.min(30, Math.floor(window.innerWidth / 30));
-        const snowflakes = ['❄', '❅', '❆'];
-        
-        // 既存の雪をクリア
+
         snowContainer.innerHTML = '';
-        
-        // 雪を生成
+
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+
+        const profile = readParticleProfile();
+        if (!profile || profile.enabled === false) {
+            return;
+        }
+
+        const glyphs = Array.isArray(profile.glyphs) ? profile.glyphs.filter(Boolean) : [];
+        const sprites = Array.isArray(profile.sprites) ? profile.sprites : [];
+        if (!glyphs.length && !sprites.length) {
+            return;
+        }
+
+        updateSnowContainerHeight();
+
+        const density = profile.density || 'medium';
+        const capByDensity = { low: 10, medium: 22, high: 34 };
+        const cap = capByDensity[density] != null ? capByDensity[density] : 18;
+        const snowflakeCount = Math.min(cap, Math.floor(window.innerWidth / 28));
+
+        const amin = typeof profile.angleDegMin === 'number' ? profile.angleDegMin : -18;
+        const amax = typeof profile.angleDegMax === 'number' ? profile.angleDegMax : 18;
+        const dmin = typeof profile.driftPxMin === 'number' ? profile.driftPxMin : -55;
+        const dmax = typeof profile.driftPxMax === 'number' ? profile.driftPxMax : 55;
+        const durMin = typeof profile.durationSecMin === 'number' ? profile.durationSecMin : 9;
+        const durMax = typeof profile.durationSecMax === 'number' ? profile.durationSecMax : 26;
+        const delayMax = typeof profile.delaySecMax === 'number' ? profile.delaySecMax : 5;
+        const particleColor = sanitizeParticleColor(profile.particleColor || '#ffffff');
+
         for (let i = 0; i < snowflakeCount; i++) {
-            const snowflake = document.createElement('div');
-            snowflake.className = 'snowflake';
-            snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-            
-            // ランダムな位置とアニメーション時間を設定
+            const orbit = document.createElement('div');
+            orbit.className = 'particle-orbit';
             const left = Math.random() * 100;
-            const animationDuration = 10 + Math.random() * 20; // 10-30秒
-            const delay = Math.random() * 5; // 0-5秒の遅延
-            const drift = (Math.random() - 0.5) * 100; // -50px から 50px の横移動
-            
-            snowflake.style.left = left + '%';
-            snowflake.style.animationDuration = animationDuration + 's';
-            snowflake.style.animationDelay = delay + 's';
-            snowflake.style.setProperty('--drift', drift + 'px');
-            snowflake.style.fontSize = (0.5 + Math.random() * 0.5) + 'em'; // 0.5em - 1em
-            
-            snowContainer.appendChild(snowflake);
+            orbit.style.left = left + '%';
+            orbit.style.top = Math.random() * 100 + '%';
+            const angle = amin + Math.random() * (amax - amin);
+            orbit.style.setProperty('--orbit-angle', angle + 'deg');
+
+            const inner = document.createElement('div');
+            inner.className = 'snowflake-inner';
+            inner.style.color = particleColor;
+            inner.style.fontSize = (0.55 + Math.random() * 0.45) + 'em';
+
+            const useSprite = sprites.length > 0 && Math.random() < 0.35;
+            const relSprite = useSprite ? pickWeightedSpritePath(sprites) : '';
+            if (relSprite) {
+                const img = document.createElement('img');
+                img.alt = '';
+                img.className = 'particle-sprite';
+                img.style.width = '1em';
+                img.style.height = '1em';
+                img.style.objectFit = 'contain';
+                img.style.verticalAlign = 'middle';
+                img.src = particleStaticUrl(relSprite);
+                img.loading = 'lazy';
+                img.onerror = function () {
+                    img.replaceWith(document.createTextNode(glyphs.length ? glyphs[Math.floor(Math.random() * glyphs.length)] : '✨'));
+                };
+                inner.appendChild(img);
+            } else {
+                inner.textContent = glyphs[Math.floor(Math.random() * glyphs.length)] || '✨';
+            }
+
+            const animationDuration = durMin + Math.random() * Math.max(0.1, durMax - durMin);
+            // 負の delay で落下のランダム位相から開始し、読み込み直後に上辺へ溜まらないようにする
+            const delay = -Math.random() * (animationDuration + delayMax);
+            const drift = dmin + Math.random() * (dmax - dmin);
+
+            inner.style.animationDuration = animationDuration + 's';
+            inner.style.animationDelay = delay + 's';
+            inner.style.setProperty('--drift', drift + 'px');
+
+            orbit.appendChild(inner);
+            snowContainer.appendChild(orbit);
         }
     }
     
-    // リサイズ時に雪を再生成（パフォーマンス最適化）
     let resizeTimeout;
     function handleResize() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-            createSnowAnimation();
+            createSeasonalParticles();
             updateSnowContainerHeight();
         }, 250);
     }
@@ -3912,20 +4030,23 @@
     function initPage() {
         updateUI();
         
-        // 冬仕様の雪アニメーションを開始
-        createSnowAnimation();
+        createSeasonalParticles();
         window.addEventListener('resize', handleResize);
         
-        // MutationObserverでDOM変更を監視して、雪のコンテナの高さを自動更新
+        // MutationObserver: チャット DOM 変化時に高さを更新し、季節粒子をデバウンス再生成（リサイズと同方針）
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
+            let mutationParticleTimeout;
             const observer = new MutationObserver(() => {
-                // DOM変更後、少し遅延させて高さを更新（レンダリング完了を待つ）
-                setTimeout(() => {
+                clearTimeout(mutationParticleTimeout);
+                mutationParticleTimeout = setTimeout(() => {
                     updateSnowContainerHeight();
-                }, 100);
+                    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                        createSeasonalParticles();
+                    }
+                }, 500);
             });
-            
+
             observer.observe(chatMessages, {
                 childList: true,
                 subtree: true,
