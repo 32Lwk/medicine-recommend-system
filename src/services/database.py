@@ -2,6 +2,7 @@
 PostgreSQL接続管理とテーブル初期化
 """
 import os
+from typing import Optional
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
@@ -12,7 +13,10 @@ except Exception as e:
     RealDictCursor = None
     pool = None
     import logging as _logging
-    _logging.getLogger(__name__).warning(f"psycopg2 not available: {e}. Database features disabled.")
+    _logging.getLogger(__name__).info(
+        "psycopg2 が無いため PostgreSQL は使いません（任意依存）。`pip install psycopg2-binary` で有効化できます。詳細: %s",
+        e,
+    )
 import logging
 import json
 import math
@@ -25,6 +29,8 @@ class DatabaseManager:
         self.connection = None
         self.connection_pool = None
         self.database_url = os.getenv('DATABASE_URL')
+        # init_database / connect が False のときの理由（起動ログ用）
+        self.startup_skip_reason: Optional[str] = None
         # 環境変数から接続プール設定を取得（デフォルト値は小規模環境向け）
         self.min_connections = int(os.getenv('DB_MIN_CONNECTIONS', 2))
         self.max_connections = int(os.getenv('DB_MAX_CONNECTIONS', 10))
@@ -34,12 +40,13 @@ class DatabaseManager:
         
     def connect(self):
         """データベースに接続または接続プールを作成"""
+        self.startup_skip_reason = None
         try:
             if psycopg2 is None or pool is None:
-                logger.warning("psycopg2 not installed. Skipping database connection.")
+                self.startup_skip_reason = "no_driver"
                 return False
             if not self.database_url:
-                logger.warning("DATABASE_URL not found. Using fallback mode.")
+                self.startup_skip_reason = "no_url"
                 return False
             
             # 接続プールを作成
@@ -82,6 +89,7 @@ class DatabaseManager:
                             self.connection_pool.putconn(test_conn)
                     except:
                         pass
+                self.startup_skip_reason = "connect_failed"
                 return False
             except Exception as pool_error:
                 logger.warning(f"⚠️ Connection pool creation failed, using single connection: {str(pool_error)}")
@@ -105,6 +113,7 @@ class DatabaseManager:
                 return True
             
         except Exception as e:
+            self.startup_skip_reason = "connect_failed"
             logger.error(f"❌ Database connection failed: {str(e)}")
             return False
     
@@ -972,13 +981,56 @@ class DatabaseManager:
 # グローバルインスタンス
 db_manager = DatabaseManager()
 
+def _log_database_startup_outcome(success: bool) -> None:
+    """init_database から一度だけ呼び出し、起動時の DB 状態を分かりやすくログする。"""
+    if success:
+        logger.info("✅ Database initialized successfully.")
+        return
+    reason = getattr(db_manager, "startup_skip_reason", None) or "unknown"
+    if reason == "no_url":
+        logger.info(
+            "データベース未設定（DATABASE_URL なし）: フィードバック・DB セッション共有は無効。"
+            " チャット・CSV ベースの推奨は利用可能です。"
+        )
+        return
+    if reason == "no_driver":
+        logger.info(
+            "PostgreSQL ドライバ（psycopg2）未インストール: DB 機能は無効。"
+            " `pip install psycopg2-binary` で有効化できます。チャット等は利用可能です。"
+        )
+        return
+    if reason == "connect_failed":
+        logger.warning(
+            "データベース接続に失敗しました: フィードバック等は無効です。"
+            " DATABASE_URL・ネットワーク・SSL 設定を確認してください。"
+        )
+        return
+    if reason == "init_failed":
+        logger.warning(
+            "データベースには接続できましたがテーブル初期化に失敗しました。"
+            " 権限・スキーマを確認してください。"
+        )
+        return
+    logger.warning(
+        "⚠️ Database initialization failed. Feedback features will be disabled. (reason=%s)",
+        reason,
+    )
+
+
 def init_database():
     """データベースを初期化（アプリ起動時に呼び出し）"""
     try:
         if db_manager.connect():
-            return db_manager.initialize_tables()
+            if db_manager.initialize_tables():
+                _log_database_startup_outcome(True)
+                return True
+            db_manager.startup_skip_reason = "init_failed"
+            _log_database_startup_outcome(False)
+            return False
+        _log_database_startup_outcome(False)
         return False
     except Exception as e:
+        db_manager.startup_skip_reason = "error"
         logger.warning(f"⚠️ Database initialization error: {str(e)} - continuing without database")
         return False
 

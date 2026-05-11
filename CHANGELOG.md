@@ -1,8 +1,24 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月10日**（プロキシ配下のクライアント IP 統一・favicon 軽量化・GitHub ブランチ整理）
+**最終更新日: 2026年5月11日**（ローカル起動の FastAPI 既定化・オンボーディング／情報モーダル整備・DB 起動ログ改善）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月11日の更新（`app.py` FastAPI 既定化・UI／文言・DB 起動ログ）:**
+
+- **`app.py`**: 既定起動を **uvicorn + `main:app`（FastAPI）** に変更。`OPEN_BROWSER`・`ASGI_HOST` 対応、ポート競合時の代替ポート、`FLASK_LEGACY=1` 時は `app_flask_legacy` 経由で Flask 開発サーバ。
+- **`app_flask_legacy.py`（新規）**: 従来の Flask アプリ組み立て・Blueprint 登録を分離。Blueprint 比較・検証専用。
+- **`README.md` / `docs/FASTAPI_ARCHITECTURE.md`**: 上記エントリ構成に合わせてローカル手順とレガシー起動方法を更新。
+- **`main.py`**: 起動時 `init_database()` の成否ログを **`database.init_database` 側に集約**（重複 warning の整理）。
+- **`src/services/database.py`**: `startup_skip_reason` と **`_log_database_startup_outcome`** により、未設定 URL・ドライバ未導入・接続失敗・初期化失敗を**理由別に info/warning** で出し分け。psycopg2 未導入時のログレベルを整理。
+- **`requirements.txt`**: `psycopg2-binary` を **2.9.12** に更新。
+- **`templates/index.html`**: 情報モーダル **`#back-button` をヘッダー左**へ移動（一覧時は非表示）。閉じるボタンを `type="button"` に。
+- **`static/css/main.css`**: `#infoModal` ヘッダーを **グリッド**（戻る／タイトル左寄せ／閉じる）、**`.info-modal-back-btn`** の見た目。オンボーディング **ステップ2・3 のスポットライト**（`--onb-spot-*`）、**`.onboarding-links` / `.onboarding-link-btn` のコンパクト化**。**`.info-section strong`** を **本文色継承**（緑太字の羅列を抑制）。
+- **`static/js/main.js`**
+  - **オンボーディング**: ステップ2・3 で **スポットライト座標更新**・**該当ボタンの pointer-events 有効化**、`resize` 購読。1枚目を **本番停止・GCP 開発環境・改善リスト（`details` + `items`）・リンク** に更新（多言語）。補足文・長い箇条書きの整理。
+  - **情報モーダル（アプリ概要等）**: **運営者「基本情報」ブロック削除**（app-overview / operator・4言語）。**開発環境・使用ツール** を **FastAPI / MeCab / OpenAI API 表記**、**GCP（Cloud Run）+ Gunicorn UvicornWorker**、**CI/CD を Cloud Build** に更新。**Render 表記を削除**。Flask 補足・技術欄の Flask 注記を削除。**`createOnboardingDetailsMarkup`** に **`items` 配列**対応。
 
 ---
 
