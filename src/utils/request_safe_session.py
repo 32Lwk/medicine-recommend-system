@@ -1,7 +1,6 @@
 """
 リクエスト単位のミュータブルセッション状態（Flask session 非依存）
 
-Flask では app の before_request / after_request で flask.session と同期する。
 FastAPI では都度新規インスタンスを生成し、DB・Cookie（sid）と整合させる。
 """
 

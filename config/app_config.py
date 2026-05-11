@@ -104,12 +104,12 @@ def get_cors_config() -> dict:
 def get_session_config() -> dict:
     """
     セッション設定を返す。
-    環境変数FLASK_ENV, SESSION_COOKIE_SECUREにより自動調整される。
+    環境変数 APP_ENV / SESSION_COOKIE_SECURE により自動調整される。
 
     Returns:
-        dict: Flask app.config に設定するセッション関連の辞書
+        dict: Cookie 設定に利用するセッション関連の辞書
     """
-    env = os.getenv('FLASK_ENV', 'development').lower()
+    env = os.getenv('APP_ENV', 'development').lower()
     is_prod = env == 'production'
     secure_override = os.getenv('SESSION_COOKIE_SECURE')
     if secure_override is not None:
