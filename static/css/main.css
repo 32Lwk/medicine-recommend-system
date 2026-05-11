@@ -2059,6 +2059,47 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
+        }
+
+        #infoModal .modal-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #infoModal .modal-header .modal-header-left {
+            display: flex;
+            align-items: center;
+            justify-self: start;
+            min-width: 0;
+        }
+
+        #infoModal .modal-header .modal-title {
+            margin: 0;
+            text-align: left;
+            justify-self: start;
+            min-width: 0;
+        }
+
+        #infoModal .modal-header .modal-close {
+            justify-self: end;
+        }
+
+        #infoModal .info-modal-back-btn {
+            margin-bottom: 0;
+            padding: 8px 14px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: none;
+        }
+
+        #infoModal .info-modal-back-btn:hover {
+            background: rgba(255, 255, 255, 0.32);
+            color: #fff;
         }
 
         .modal-title {
@@ -2173,8 +2214,9 @@
             margin-bottom: 10px;
         }
 
+        /* ラベル強調は色を本文に揃え、緑の太字で一覧がチカチカしないようにする */
         .info-section strong {
-            color: #2e7d32;
+            color: inherit;
             font-weight: 600;
         }
 
@@ -3058,6 +3100,19 @@ body.onboarding-open {
         );
 }
 
+/* ステップ2・3: ヘッダー付近の該当ボタン位置にスポットライト（座標は JS が --onb-spot-* で設定） */
+.onboarding-overlay[data-step="2"],
+.onboarding-overlay[data-step="3"] {
+    background:
+        radial-gradient(
+            ellipse var(--onb-spot-rx, 260px) var(--onb-spot-ry, 72px) at var(--onb-spot-x, 50%) var(--onb-spot-y, 150px),
+            transparent 0%,
+            transparent 36%,
+            rgba(255, 255, 255, 0.14) 44%,
+            rgba(255, 255, 255, 0.52) 58%
+        );
+}
+
 /* ステップ0では言語選択ボタンは操作可能 */
 body.onboarding-open[data-onboarding-step="0"] .language-selector,
 body.onboarding-open[data-onboarding-step="0"] .lang-toggle {
@@ -3307,8 +3362,8 @@ body.onboarding-open .language-selector {
 .onboarding-links {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin: 1rem 0;
+    gap: 0.35rem;
+    margin: 0.5rem 0 0;
 }
 
 .onboarding-link-btn {
@@ -3316,15 +3371,15 @@ body.onboarding-open .language-selector {
     background: #2196F3;
     color: #ffffff;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+    box-shadow: 0 1px 3px rgba(33, 150, 243, 0.18);
 }
 
 .onboarding-link-btn:hover,
@@ -3346,8 +3401,8 @@ body.onboarding-open .language-selector {
 
 @media (max-width: 768px) {
     .onboarding-link-btn {
-        padding: 0.7rem 1.2rem;
-        font-size: 0.9rem;
+        padding: 0.38rem 0.65rem;
+        font-size: 0.78rem;
     }
 }
 
