@@ -222,6 +222,9 @@
             pointer-events: none;
             z-index: 0; /* チャットメッセージ（z-index: 2）の下、背景の上に配置 */
             overflow: hidden;
+            /* ビューポート連動: 子の em サイズと落下オフセット（.snowflake-inner / スプライト 1em） */
+            font-size: clamp(11px, 2.35vmin, 22px);
+            --particle-fall-margin: clamp(48px, 10.5vmin, 128px);
             /* 粒子ブランド用（.chat-messages 背景は変更しない。値は docs/PARTICLE_COLOR_POLICY.md と整合） */
             --particle-chat-bg-hex: #c0c0c0;
             --particle-glyph-luminance-floor: 0.55;
@@ -241,7 +244,7 @@
         
         @keyframes snowfall {
             0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
+                transform: translateY(calc(-1 * var(--particle-fall-margin, 100px))) translateX(0) rotate(0deg);
                 opacity: 0;
             }
             10% {
@@ -251,7 +254,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + var(--particle-fall-margin, 100px))) translateX(var(--drift)) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -278,7 +281,7 @@
         }
         @keyframes particlefall {
             0% {
-                transform: translateY(-100px) translateX(0) rotate(0deg);
+                transform: translateY(calc(-1 * var(--particle-fall-margin, 100px))) translateX(0) rotate(0deg);
                 opacity: 0;
             }
             10% {
@@ -288,7 +291,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift, 0px)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + var(--particle-fall-margin, 100px))) translateX(var(--drift, 0px)) rotate(360deg);
                 opacity: 0;
             }
         }
