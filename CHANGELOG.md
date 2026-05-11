@@ -1,8 +1,18 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月11日**（季節パーティクル・`is_in_period` 修正・バレンタイン周辺期間）
+**最終更新日: 2026年5月12日**（不要コード・資産整理・粒子スプライト整合）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月12日の更新（不要コード・資産の整理）:**
+
+- **`scripts/`**: 移行・抽出用の **`extract_*` / `remove_*` / `build_api_routes.py` / 一時 `tmp_*`** を削除し、行事装飾生成の **`gen_event_decoration_pngs.py` のみ**残した。
+- **`static/img/particles/`**: 未参照の **`hanami copy/`** を削除。敬老粒子 **`carnation-particle-soft.png.png`** を **`carnation-particle-soft.png`** にリネーム（`PARTICLE_PROFILES` と一致）。
+- **`src/core/season_manager.py`**: 実ファイルのない **`winter` 結晶・`summer` 波**のスプライト参照をやめ、**`IMAGE_ALT_MAPPING`** からも該当キーを削除。`summer` / `autumn` の空 **`images`** を **`{}`** に整理。
+- **`src/core/medicine_logic.py`**: コメントアウトされていた import 行と余分なコメント行を削除。
+- **`docs/PARTICLE_SPRITE_INVENTORY.md` / `docs/PARTICLE_AI_SPRITES.md`**: 上記スプライト方針に合わせて表を更新。
 
 ---
 
@@ -166,7 +176,7 @@
 - **medicine_logic の分割**: `src/core/openai_client.py` で OpenAI クライアント初期化を集約。新規 `src/core/medicine/` に `medicine_recommendation_gpt.py`・`medicine_response_builder.py` を配置。`medicine_logic.py` はエントリポイントと re-export のみ（約215行）。
 - **counseling_response の分割**: 新規 `src/services/counseling/` にテンプレート・ログ・プロンプト・生成・質問・満足度・要約・話題転換・モード制御・プロセッサを配置。`counseling_response.py` はファサード（re-export 維持、約104行）。
 - **chat_handler の分割**: 新規 `src/handlers/chat/` に `chat_input_validator.py`（入力検証・ブロック・危機検出・ブロック時のDB保存）・`chat_response_builder.py`・`chat_triage.py`・`chat_counseling_flow.py`・`chat_recommendation_flow.py`・`chat_manual_reply.py`・`chat_emergency_handler.py`・`chat_diagnosis_handler.py`・`chat_store_inquiry.py`・`chat_triage_follow_ups.py` を配置。`chat_handler.py` はオーケストレーション（約2,641行）。
-- **scripts と src の役割**: **scripts/** はリファクタ・コード生成等の開発用スクリプト（build_api_routes、remove_*_views、extract_* 等）。**src/** はアプリケーション本体（core・handlers・routes・services・utils・security・analysis）。実行時は src のみが import される。
+- **scripts と src の役割**: **scripts/** は開発補助（現状は行事装飾 PNG 生成の **`gen_event_decoration_pngs.py`** のみ）。**src/** はアプリケーション本体（core・handlers・routes・services・utils・security・analysis）。実行時は src のみが import される。
 - **妊娠・授乳時レッドフラッグ**のエスカレーション表示を `format_escalation_display` で統一。**エラー表示**をユーザーフレンドリーに改善（技術的エラー内容を非表示、再試行案内を表示）。
 
 ---
@@ -359,7 +369,7 @@
 
 5. **テスト・スクリプトの配置**
    - **テストファイル** → `tests/` フォルダ（`test_comprehensive_integration.py` 等のテストスイート）
-   - **開発・リファクタ用スクリプト** → `scripts/` フォルダ（`build_api_routes.py`、`extract_*`、`remove_*_views.py` 等）
+   - **開発用スクリプト** → `scripts/` フォルダ（**2026年5月現在**: 行事装飾 PNG 用の `gen_event_decoration_pngs.py` のみ。過去の Flask 移行用 `extract_*` / `remove_*` は整理済み）
 
 ### 効果
 - プロジェクト構造の明確化
@@ -367,9 +377,9 @@
 - メンテナンス性の向上
 - デプロイ時の設定ファイル管理の簡素化
 
-**scripts/ と src/ の違い（2026年2月8日）:**  
+**scripts/ と src/ の違い（2026年2月8日、2026年5月12日追記）:**  
 - **src/** はアプリケーション本体で、実行時に `app.py` 等から import される（core・handlers・routes・services・utils・security・analysis）。  
-- **scripts/** は開発・リファクタ用の補助スクリプトで、リファクタ時のコード生成・抽出・削除等に使い、通常のアプリ起動では読み込まれない。
+- **scripts/** は開発補助用で通常のアプリ起動では読み込まれない（移行完了後は **`gen_event_decoration_pngs.py`** のみを維持）。
 
 
 ---
