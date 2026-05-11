@@ -23,7 +23,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import FileResponse, Response as StarletteResponse
 
 from config.app_config import configure_logging, get_cors_config, get_session_config, load_env
-from src.core.season_manager import get_current_season, get_season_images
+from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
 from src.services.database import init_database
@@ -114,6 +114,17 @@ def _get_decoration_images(session_like: dict, version: str):
         return decoration_images, version
     except Exception:
         return [], version
+
+
+def _particle_profile_json() -> str:
+    try:
+        jst = pytz.timezone("Asia/Tokyo")
+        now = datetime.now(jst)
+        st = get_current_season(now)
+        return json.dumps(get_particle_profile(st, now), ensure_ascii=False)
+    except Exception:
+        jst = pytz.timezone("Asia/Tokyo")
+        return json.dumps(get_particle_profile(None, datetime.now(jst)), ensure_ascii=False)
 
 
 app = FastAPI(redirect_slashes=False)
@@ -260,6 +271,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     version = nv if nv is not None else str(int(time.time()))
     session_like = {"_id": sid} if sid else {}
     decoration_images, image_version = _get_decoration_images(session_like, version)
+    particle_profile_json = _particle_profile_json()
 
     return templates.TemplateResponse(
         request,
@@ -271,6 +283,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "decoration_images": decoration_images,
             "image_version": image_version,
             "app_base_path": app_base_path,
+            "particle_profile_json": particle_profile_json,
         },
         status_code=status_code,
     )
