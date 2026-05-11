@@ -4198,6 +4198,9 @@
         const durMax = typeof profile.durationSecMax === 'number' ? profile.durationSecMax : 26;
         const delayMax = typeof profile.delaySecMax === 'number' ? profile.delaySecMax : 5;
         const particleColor = sanitizeParticleColor(profile.particleColor || '#ffffff');
+        const vw = window.innerWidth || 800;
+        const vh = window.innerHeight || 600;
+        const driftScale = Math.min(1.12, Math.max(0.72, Math.min(vw, vh) / 720));
 
         for (let i = 0; i < snowflakeCount; i++) {
             const orbit = document.createElement('div');
@@ -4236,7 +4239,7 @@
             const animationDuration = durMin + Math.random() * Math.max(0.1, durMax - durMin);
             // 負の delay で落下のランダム位相から開始し、読み込み直後に上辺へ溜まらないようにする
             const delay = -Math.random() * (animationDuration + delayMax);
-            const drift = dmin + Math.random() * (dmax - dmin);
+            const drift = (dmin + Math.random() * (dmax - dmin)) * driftScale;
 
             inner.style.animationDuration = animationDuration + 's';
             inner.style.animationDelay = delay + 's';
