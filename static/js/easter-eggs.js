@@ -1085,6 +1085,17 @@ function triggerThanksAnimation() {
     }
 }
 
+/** 装飾パーティクル用スケール（短辺 640px 前後を 1.0、狭い画面で縮小・広い画面でやや拡大） */
+function eggParticleScale() {
+    if (typeof window === 'undefined') return 1;
+    const v = Math.min(window.innerWidth || 640, window.innerHeight || 640);
+    return Math.min(1.22, Math.max(0.66, v / 640));
+}
+
+function eggPx(value) {
+    return Math.round(Number(value) * eggParticleScale());
+}
+
 /**
  * パーティクル効果（花びら・星）
  */
@@ -1107,15 +1118,16 @@ function createParticleEffect() {
     
     const particles = ['🌸', '✨', '⭐', '🌟', '💫'];
     const particleCount = window.innerWidth < 768 ? 20 : 30; // モバイルでは固定削減
+    const ps = eggParticleScale();
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = particles[Math.floor(Math.random() * particles.length)];
         particle.style.cssText = `
             position: absolute;
-            font-size: ${20 + Math.random() * 20}px;
+            font-size: ${eggPx(20 + Math.random() * 20)}px;
             left: ${Math.random() * 100}%;
-            top: -20px;
+            top: ${-eggPx(20)}px;
             animation: particleFall ${2 + Math.random() * 2}s linear forwards;
             animation-delay: ${Math.random() * 1}s;
             opacity: 0.8;
@@ -1171,6 +1183,7 @@ function createEmojiParticleEffect(message) {
     // 絵文字が抽出できない場合はデフォルトの絵文字を使用
     const particles = emojis.length > 0 ? emojis : ['🎉', '✨', '⭐'];
     const particleCount = window.innerWidth < 768 ? 25 : 40; // パーティクル数を増加
+    const ps = eggParticleScale();
     
     // 各絵文字の出現頻度を計算（入力された絵文字の比率を反映）
     const emojiFrequency = {};
@@ -1217,12 +1230,13 @@ function createEmojiParticleEffect(message) {
             rotation = 360;
             opacity = 0.8;
         }
+        fontSize = eggPx(fontSize);
         
         particle.style.cssText = `
             position: absolute;
             font-size: ${fontSize}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-eggPx(50)}px;
             animation: emojiParticleFall${i} ${duration}s linear forwards;
             animation-delay: ${Math.random() * 1.5}s;
             opacity: ${opacity};
@@ -1233,7 +1247,7 @@ function createEmojiParticleEffect(message) {
         // 各パーティクルに個別のアニメーションを設定
         const style = document.createElement('style');
         style.id = `emojiParticleStyle${i}`;
-        const horizontalDrift = (Math.random() - 0.5) * 100;
+        const horizontalDrift = (Math.random() - 0.5) * 100 * ps;
         style.textContent = `
             @keyframes emojiParticleFall${i} {
                 0% {
@@ -1245,7 +1259,7 @@ function createEmojiParticleEffect(message) {
                     opacity: ${opacity * 0.9};
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(${rotation}deg) scale(0.6);
+                    transform: translateY(calc(100vh + ${eggPx(50)}px)) translateX(${horizontalDrift}px) rotate(${rotation}deg) scale(0.6);
                     opacity: 0;
                 }
             }
@@ -1518,6 +1532,8 @@ function triggerFireworks() {
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    const ps = eggParticleScale();
+    const sparkR = Math.max(1.5, 3 * ps);
     
     const particles = [];
     const particleCount = window.innerWidth < 768 ? 30 : 50; // モバイルでは固定削減
@@ -1532,8 +1548,8 @@ function triggerFireworks() {
             particles.push({
                 x,
                 y,
-                vx: (Math.random() - 0.5) * 10,
-                vy: (Math.random() - 0.5) * 10,
+                vx: (Math.random() - 0.5) * 10 * ps,
+                vy: (Math.random() - 0.5) * 10 * ps,
                 color,
                 life: 1.0,
                 decay: Math.random() * 0.02 + 0.01
@@ -1554,7 +1570,7 @@ function triggerFireworks() {
                 ctx.globalAlpha = p.life;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, sparkR, 0, Math.PI * 2);
                 ctx.fill();
             } else {
                 particles.splice(i, 1);
@@ -1600,18 +1616,20 @@ function triggerSnow() {
     
     const snowflakes = ['❄', '❅', '❆', '❄', '❅', '❆', '❄', '❅'];
     const snowCount = window.innerWidth < 768 ? 50 : 80; // 数を大幅に増加
+    const ps = eggParticleScale();
+    const fallPad = eggPx(50);
     
     for (let i = 0; i < snowCount; i++) {
         const snowflake = document.createElement('div');
         snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-        const size = 20 + Math.random() * 30; // フォントサイズを大きく（20-50px）
+        const size = eggPx(20 + Math.random() * 30); // フォントサイズを大きく（20-50px 基準をビューポートで補正）
         const fallDuration = 4 + Math.random() * 3; // 落下時間を長く（4-7秒）
-        const horizontalDrift = (Math.random() - 0.5) * 100; // 横方向の流れを増やす
+        const horizontalDrift = (Math.random() - 0.5) * 100 * ps; // 横方向の流れを増やす
         snowflake.style.cssText = `
             position: absolute;
             font-size: ${size}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-fallPad}px;
             animation: snowFall${i} ${fallDuration}s linear forwards;
             animation-delay: ${Math.random() * 2}s;
             opacity: ${0.85 + Math.random() * 0.15}; /* 透明度を上げる（0.85-1.0） */
@@ -1629,7 +1647,7 @@ function triggerSnow() {
                     opacity: ${0.85 + Math.random() * 0.15};
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(720deg);
+                    transform: translateY(calc(100vh + ${fallPad}px)) translateX(${horizontalDrift}px) rotate(720deg);
                     opacity: 0.3;
                 }
             }
@@ -1792,19 +1810,21 @@ function triggerNewYear() {
     
     const newYearParticles = ['🎊', '🎉', '🎈', '✨', '⭐', '🌟', '💫', '🎁'];
     const particleCount = window.innerWidth < 768 ? 40 : 60;
+    const ps = eggParticleScale();
+    const fallPad = eggPx(50);
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = newYearParticles[Math.floor(Math.random() * newYearParticles.length)];
-        const fontSize = 25 + Math.random() * 30;
+        const fontSize = eggPx(25 + Math.random() * 30);
         const duration = 3 + Math.random() * 2;
-        const horizontalDrift = (Math.random() - 0.5) * 150;
+        const horizontalDrift = (Math.random() - 0.5) * 150 * ps;
         
         particle.style.cssText = `
             position: absolute;
             font-size: ${fontSize}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-fallPad}px;
             animation: newYearParticleFall${i} ${duration}s linear forwards;
             animation-delay: ${Math.random() * 2}s;
             opacity: 0.9;
@@ -1826,7 +1846,7 @@ function triggerNewYear() {
                     opacity: 0.95;
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    transform: translateY(calc(100vh + ${fallPad}px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
                     opacity: 0;
                 }
             }
@@ -1868,19 +1888,21 @@ function triggerBirthday() {
     
     const birthdayParticles = ['🎂', '🎁', '🎈', '🎉', '🎊', '✨', '⭐', '🌟', '💫', '🎀'];
     const particleCount = window.innerWidth < 768 ? 50 : 70;
+    const ps = eggParticleScale();
+    const edgePad = eggPx(50);
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = birthdayParticles[Math.floor(Math.random() * birthdayParticles.length)];
-        const fontSize = 30 + Math.random() * 35;
+        const fontSize = eggPx(30 + Math.random() * 35);
         const duration = 4 + Math.random() * 2;
-        const horizontalDrift = (Math.random() - 0.5) * 200;
+        const horizontalDrift = (Math.random() - 0.5) * 200 * ps;
         const startDelay = Math.random() * 2;
         
         // 風船は上に、ケーキやプレゼントは下に落ちる
         const isBalloon = /[🎈]/.test(particle.textContent);
-        const startY = isBalloon ? 'calc(100vh + 50px)' : '-50px';
-        const endY = isBalloon ? '-50px' : 'calc(100vh + 50px)';
+        const startY = isBalloon ? `calc(100vh + ${edgePad}px)` : `${-edgePad}px`;
+        const endY = isBalloon ? `${-edgePad}px` : `calc(100vh + ${edgePad}px)`;
         const rotation = isBalloon ? -360 : 360;
         
         particle.style.cssText = `
@@ -1955,19 +1977,21 @@ function triggerChristmas() {
     
     const christmasParticles = ['🎄', '🎅', '🎁', '🎄', '⭐', '🌟', '✨', '💫', '🔔', '❄️'];
     const particleCount = window.innerWidth < 768 ? 40 : 60;
+    const ps = eggParticleScale();
+    const fallPad = eggPx(50);
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = christmasParticles[Math.floor(Math.random() * christmasParticles.length)];
-        const fontSize = 25 + Math.random() * 30;
+        const fontSize = eggPx(25 + Math.random() * 30);
         const duration = 3 + Math.random() * 2;
-        const horizontalDrift = (Math.random() - 0.5) * 150;
+        const horizontalDrift = (Math.random() - 0.5) * 150 * ps;
         
         particle.style.cssText = `
             position: absolute;
             font-size: ${fontSize}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-fallPad}px;
             animation: christmasParticleFall${i} ${duration}s linear forwards;
             animation-delay: ${Math.random() * 2}s;
             opacity: 0.9;
@@ -1988,7 +2012,7 @@ function triggerChristmas() {
                     opacity: 0.95;
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    transform: translateY(calc(100vh + ${fallPad}px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
                     opacity: 0;
                 }
             }
@@ -2028,20 +2052,22 @@ function triggerHalloween() {
     
     const halloweenParticles = ['🎃', '👻', '🦇', '🕷️', '🕸️', '💀', '☠️', '🧙', '🧛', '🧟'];
     const particleCount = window.innerWidth < 768 ? 50 : 70;
+    const ps = eggParticleScale();
+    const fallPad = eggPx(50);
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = halloweenParticles[Math.floor(Math.random() * halloweenParticles.length)];
-        const fontSize = 30 + Math.random() * 35;
+        const fontSize = eggPx(30 + Math.random() * 35);
         const duration = 4 + Math.random() * 2;
-        const horizontalDrift = (Math.random() - 0.5) * 200;
+        const horizontalDrift = (Math.random() - 0.5) * 200 * ps;
         const startDelay = Math.random() * 2;
         
         particle.style.cssText = `
             position: absolute;
             font-size: ${fontSize}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-fallPad}px;
             animation: halloweenParticleMove${i} ${duration}s linear forwards;
             animation-delay: ${startDelay}s;
             opacity: 0.9;
@@ -2062,7 +2088,7 @@ function triggerHalloween() {
                     opacity: 1;
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    transform: translateY(calc(100vh + ${fallPad}px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
                     opacity: 0;
                 }
             }
@@ -2104,19 +2130,21 @@ function triggerGenericEvent(eventId, particles, duration = 5000) {
     document.body.appendChild(eventContainer);
     
     const particleCount = window.innerWidth < 768 ? 40 : 60;
+    const ps = eggParticleScale();
+    const fallPad = eggPx(50);
     
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.textContent = particles[Math.floor(Math.random() * particles.length)];
-        const fontSize = 25 + Math.random() * 30;
+        const fontSize = eggPx(25 + Math.random() * 30);
         const animDuration = 3 + Math.random() * 2;
-        const horizontalDrift = (Math.random() - 0.5) * 150;
+        const horizontalDrift = (Math.random() - 0.5) * 150 * ps;
         
         particle.style.cssText = `
             position: absolute;
             font-size: ${fontSize}px;
             left: ${Math.random() * 100}%;
-            top: -50px;
+            top: ${-fallPad}px;
             animation: ${eventId}ParticleFall${i} ${animDuration}s linear forwards;
             animation-delay: ${Math.random() * 2}s;
             opacity: 0.9;
@@ -2137,7 +2165,7 @@ function triggerGenericEvent(eventId, particles, duration = 5000) {
                     opacity: 0.95;
                 }
                 100% {
-                    transform: translateY(calc(100vh + 50px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
+                    transform: translateY(calc(100vh + ${fallPad}px)) translateX(${horizontalDrift}px) rotate(360deg) scale(0.6);
                     opacity: 0;
                 }
             }
