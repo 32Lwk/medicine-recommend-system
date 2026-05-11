@@ -249,13 +249,9 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
 @app.on_event("startup")
 def _startup():
     try:
-        ok = init_database()
-        if not ok:
-            logger.warning("⚠️ Database initialization failed. Feedback features will be disabled.")
-        else:
-            logger.info("✅ Database initialized successfully.")
+        init_database()
     except Exception as e:
-        logger.warning(f"⚠️ Database initialization error: {e}. Feedback features will be disabled.")
+        logger.warning(f"⚠️ Database startup unexpected error: {e}. Feedback features will be disabled.")
 
 
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:

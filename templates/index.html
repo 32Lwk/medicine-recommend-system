@@ -375,9 +375,14 @@
     <!-- モーダル -->
     <div id="infoModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header" id="infoModalHeader">
+                <div class="modal-header-left">
+                    <button type="button" class="back-button info-modal-back-btn" onclick="showListPage()" id="back-button" style="display: none;" aria-hidden="true">
+                        ← 戻る
+                    </button>
+                </div>
                 <h2 class="modal-title" id="modalTitle">アプリ情報</h2>
-                <button class="modal-close" onclick="closeInfoModal()">&times;</button>
+                <button type="button" class="modal-close" onclick="closeInfoModal()">&times;</button>
             </div>
             
             <div class="modal-body">
@@ -440,9 +445,6 @@
                 
                 <!-- 詳細ページ -->
                 <div id="detailPage" class="detail-page">
-                    <button class="back-button" onclick="showListPage()" id="back-button">
-                        ← 戻る
-                    </button>
                     <div id="detailContent">
                         <!-- 詳細コンテンツは動的に生成 -->
                     </div>

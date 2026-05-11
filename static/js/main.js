@@ -97,9 +97,39 @@
                     title: "チャット型医薬品相談ツール(β版)",
                     visual: "🤝💊",
                     visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
+                    subtitle: "本番の更新は停止中です。開発環境でのみ改良を進めています。",
                     body: [
-                        "「チャット型医薬品相談ツール」へようこそ。",
-                        "症状を入力または話すだけで、AIがあなたに合った市販薬候補・成分・効能・受診の目安をまとめてお伝えします。"
+                        "症状を入力・話すだけで、市販薬候補・成分・効能・受診の目安をAIがまとめます。",
+                        "第1段階の移行目標：2026年5月31日まで。"
+                    ],
+                    details: [
+                        {
+                            summary: "主な開発・改善内容",
+                            items: [
+                                "潜在空間によるスコアリングの大規模改修",
+                                "GPT-4系からGPT-5系への移行",
+                                "UI・導線の最適化",
+                                "マルチエージェントモデルの更新",
+                                "カルーセル型UIの導入",
+                                "画像の導入",
+                                "セキュリティ向上",
+                                "音声入力の向上",
+                                "体調推定の実装（計画中）",
+                                "パーソナライズ機能の実装（計画中）"
+                            ]
+                        }
+                    ],
+                    links: [
+                        {
+                            text: "🔗 開発環境",
+                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
+                            ariaLabel: "開発環境を新しいタブで開く"
+                        },
+                        {
+                            text: "📝 クレーム・ご意見",
+                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                            ariaLabel: "Googleフォームでクレーム・ご意見を送る"
+                        }
                     ],
                     buttonText: "次へ",
                     buttonAria: "次のステップへ進む"
@@ -306,9 +336,39 @@
                     title: "Welcome to the Chat-based OTC Assistant (Beta)",
                     visual: "🤝💊",
                     visualAlt: "Illustration of a pharmacist supporting via smartphone",
+                    subtitle: "Production updates are paused. Work continues on the dev environment only.",
                     body: [
-                        "Welcome to the Chat-based Pharmaceutical Consultation Tool.",
-                        "Simply type or speak about how you feel and the AI summarizes suitable OTC options, ingredients, effects, and guidance on when to visit a doctor."
+                        "Type or speak your symptoms; the AI summarizes OTC options, ingredients, effects, and when to seek care.",
+                        "Phase 1 transition target: May 31, 2026."
+                    ],
+                    details: [
+                        {
+                            summary: "Key development & improvements",
+                            items: [
+                                "Major scoring revamp using latent space",
+                                "Migration from GPT-4 class to GPT-5 class models",
+                                "UI and user-flow optimization",
+                                "Multi-agent model updates",
+                                "Carousel-style UI",
+                                "Image support",
+                                "Security improvements",
+                                "Better voice input",
+                                "Health state estimation (planned)",
+                                "Personalization features (planned)"
+                            ]
+                        }
+                    ],
+                    links: [
+                        {
+                            text: "🔗 Dev environment",
+                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
+                            ariaLabel: "Open the Cloud Run development app in a new tab"
+                        },
+                        {
+                            text: "📝 Feedback & claims",
+                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                            ariaLabel: "Submit feedback or claims via Google Forms"
+                        }
                     ],
                     buttonText: "Next",
                     buttonAria: "Go to the next step"
@@ -526,9 +586,39 @@
                     title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                     visual: "🤝💊",
                     visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
+                    subtitle: "운영 환경 업데이트는 중단되었습니다. 개발 환경에서만 개선 중입니다.",
                     body: [
-                        "증상을 입력하거나 말하기만 하면 필요한 일반의약품 정보를 제공합니다.",
-                        "AI가 추천 의약품 후보, 성분, 효능, 병원 방문 시점을 한눈에 정리해 드립니다."
+                        "증상을 입력·말하면 AI가 일반의약품 후보·성분·효능·진료 시기 안내를 정리합니다.",
+                        "1단계 전환 목표: 2026년 5월 31일까지."
+                    ],
+                    details: [
+                        {
+                            summary: "주요 개발·개선 내용",
+                            items: [
+                                "잠재 공간 기반 스코어링 대규모 개편",
+                                "GPT-4 계열에서 GPT-5 계열로 이전",
+                                "UI·사용자 동선 최적화",
+                                "멀티 에이전트 모델 업데이트",
+                                "캐러셀형 UI 도입",
+                                "이미지 도입",
+                                "보안 강화",
+                                "음성 입력 개선",
+                                "컨디션 추정 구현(계획)",
+                                "개인화 기능 구현(계획)"
+                            ]
+                        }
+                    ],
+                    links: [
+                        {
+                            text: "🔗 개발 환경",
+                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
+                            ariaLabel: "Cloud Run 개발 환경을 새 탭에서 엽니다"
+                        },
+                        {
+                            text: "📝 클레임·의견",
+                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                            ariaLabel: "Google 양식으로 클레임·의견 제출"
+                        }
                     ],
                     buttonText: "다음",
                     buttonAria: "다음 단계로 이동"
@@ -734,9 +824,39 @@
                     title: "欢迎使用聊天式药品咨询工具（测试版）",
                     visual: "🤝💊",
                     visualAlt: "药师通过手机提供咨询的示意图",
+                    subtitle: "生产环境已暂停更新，仅在开发环境继续迭代。",
                     body: [
-                        "只需输入或说出您的症状，即可获取所需的非处方药信息。",
-                        "AI 会为您整理适合的药品候选、成分、功效以及就医建议。"
+                        "输入或说出症状，AI 会整理非处方药候选、成分、功效与就医建议。",
+                        "第一阶段迁移目标：2026 年 5 月 31 日前。"
+                    ],
+                    details: [
+                        {
+                            summary: "主要开发与改进内容",
+                            items: [
+                                "基于潜在空间的大规模评分改造",
+                                "从 GPT-4 系列迁移至 GPT-5 系列",
+                                "UI 与流程优化",
+                                "多智能体模型更新",
+                                "引入轮播式 UI",
+                                "引入图片能力",
+                                "安全加固",
+                                "语音输入改进",
+                                "身体状况推断（规划中）",
+                                "个性化功能（规划中）"
+                            ]
+                        }
+                    ],
+                    links: [
+                        {
+                            text: "🔗 开发环境",
+                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
+                            ariaLabel: "在新标签页打开 Cloud Run 开发环境"
+                        },
+                        {
+                            text: "📝 投诉与意见",
+                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                            ariaLabel: "通过 Google 表单提交投诉或意见"
+                        }
                     ],
                     buttonText: "下一步",
                     buttonAria: "前往下一步"
@@ -928,7 +1048,19 @@
             const summary = detail.summary || '';
             const description = detail.description ? `<p>${detail.description}</p>` : '';
             const content = getOnboardingDetailContent(detail);
-            const contentHtml = content ? `<div class="onboarding-details-content">${content}</div>` : '';
+            const itemsHtml = Array.isArray(detail.items) && detail.items.length
+                ? `<ul>${detail.items.map(function(item) { return '<li>' + item + '</li>'; }).join('')}</ul>`
+                : '';
+            const innerParts = [];
+            if (itemsHtml) {
+                innerParts.push(itemsHtml);
+            }
+            if (content) {
+                innerParts.push(content);
+            }
+            const contentHtml = innerParts.length
+                ? '<div class="onboarding-details-content">' + innerParts.join('') + '</div>'
+                : '';
 
             return `
                 <details class="onboarding-details">
@@ -1051,6 +1183,7 @@
         setTimeout(function() {
             highlightOnboardingElements(targetIndex);
             setOnboardingStepControls(targetIndex);
+            scheduleOnboardingSpotlightUpdate(targetIndex);
         }, 100);
     }
 
@@ -1079,6 +1212,114 @@
                 });
             }
             indicator.appendChild(dot);
+        }
+    }
+
+    const ONBOARDING_SPOTLIGHT_PROPS = ['--onb-spot-x', '--onb-spot-y', '--onb-spot-rx', '--onb-spot-ry'];
+
+    function clearOnboardingSpotlight(overlay) {
+        if (!overlay) {
+            return;
+        }
+        ONBOARDING_SPOTLIGHT_PROPS.forEach(function(prop) {
+            overlay.style.removeProperty(prop);
+        });
+    }
+
+    function unionClientRects(a, b) {
+        const left = Math.min(a.left, b.left);
+        const top = Math.min(a.top, b.top);
+        const right = Math.max(a.right, b.right);
+        const bottom = Math.max(a.bottom, b.bottom);
+        return {
+            cx: (left + right) / 2,
+            cy: (top + bottom) / 2,
+            halfW: (right - left) / 2,
+            halfH: (bottom - top) / 2
+        };
+    }
+
+    function applyOnboardingSpotlightEllipse(overlay, cx, cy, halfW, halfH, pad, grow) {
+        const rx = Math.max(halfW * grow + pad, 96);
+        const ry = Math.max(halfH * grow + pad, 36);
+        overlay.style.setProperty('--onb-spot-x', cx + 'px');
+        overlay.style.setProperty('--onb-spot-y', cy + 'px');
+        overlay.style.setProperty('--onb-spot-rx', rx + 'px');
+        overlay.style.setProperty('--onb-spot-ry', ry + 'px');
+    }
+
+    function updateOnboardingSpotlight(slideIndex) {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (!overlay) {
+            return;
+        }
+        clearOnboardingSpotlight(overlay);
+        if (slideIndex !== 2 && slideIndex !== 3) {
+            return;
+        }
+        const pad = 28;
+        if (slideIndex === 2) {
+            const el = document.getElementById('userInfoBtn');
+            if (!el) {
+                return;
+            }
+            const r = el.getBoundingClientRect();
+            applyOnboardingSpotlightEllipse(
+                overlay,
+                r.left + r.width / 2,
+                r.top + r.height / 2,
+                r.width / 2,
+                r.height / 2,
+                pad,
+                1.2
+            );
+            return;
+        }
+        const adminBtn = document.getElementById('admin-request-btn');
+        const infoBtn = document.getElementById('infoBtn');
+        if (adminBtn && infoBtn) {
+            const u = unionClientRects(adminBtn.getBoundingClientRect(), infoBtn.getBoundingClientRect());
+            applyOnboardingSpotlightEllipse(overlay, u.cx, u.cy, u.halfW, u.halfH, pad, 1.25);
+        } else if (adminBtn) {
+            const r = adminBtn.getBoundingClientRect();
+            applyOnboardingSpotlightEllipse(
+                overlay,
+                r.left + r.width / 2,
+                r.top + r.height / 2,
+                r.width / 2,
+                r.height / 2,
+                pad,
+                1.2
+            );
+        } else if (infoBtn) {
+            const r = infoBtn.getBoundingClientRect();
+            applyOnboardingSpotlightEllipse(
+                overlay,
+                r.left + r.width / 2,
+                r.top + r.height / 2,
+                r.width / 2,
+                r.height / 2,
+                pad,
+                1.35
+            );
+        }
+    }
+
+    function scheduleOnboardingSpotlightUpdate(slideIndex) {
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                updateOnboardingSpotlight(slideIndex);
+            });
+        });
+    }
+
+    function handleOnboardingResize() {
+        if (!onboardingState.initialized) {
+            return;
+        }
+        const step = onboardingState.currentSlide;
+        if (step === 2 || step === 3) {
+            updateOnboardingSpotlight(step);
         }
     }
 
@@ -1244,6 +1485,34 @@
                     inputGroup.style.pointerEvents = 'auto';
                 }
                 break;
+
+            case 2: // ステップ2: ユーザー情報登録のみ操作可能
+                const userInfoBtn = document.getElementById('userInfoBtn');
+                if (userInfoBtn) {
+                    userInfoBtn.style.pointerEvents = 'auto';
+                    userInfoBtn.style.opacity = '1';
+                    userInfoBtn.style.cursor = 'pointer';
+                }
+                break;
+
+            case 3: // ステップ3: 薬剤師要請・ℹーのみ操作可能
+                const adminRequestBtn = document.getElementById('admin-request-btn');
+                const infoBtnStep3 = document.getElementById('infoBtn');
+                const infoSelectorStep3 = document.querySelector('.info-selector');
+                if (adminRequestBtn) {
+                    adminRequestBtn.style.pointerEvents = 'auto';
+                    adminRequestBtn.style.opacity = '1';
+                    adminRequestBtn.style.cursor = 'pointer';
+                }
+                if (infoBtnStep3) {
+                    infoBtnStep3.style.pointerEvents = 'auto';
+                    infoBtnStep3.style.opacity = '1';
+                    infoBtnStep3.style.cursor = 'pointer';
+                }
+                if (infoSelectorStep3) {
+                    infoSelectorStep3.style.pointerEvents = 'auto';
+                }
+                break;
         }
 
         // オーバーレイとbodyにステップ情報を追加
@@ -1275,6 +1544,7 @@
         updateOnboardingIndicator(index);
         highlightOnboardingElements(index);
         setOnboardingStepControls(index);
+        scheduleOnboardingSpotlightUpdate(index);
     }
 
     function nextOnboardingSlide() {
@@ -1320,7 +1590,9 @@
         const overlay = document.getElementById('onboarding-overlay');
         const container = document.getElementById('onboarding-container');
         const slidesContainer = document.getElementById('onboarding-slides');
+        window.removeEventListener('resize', handleOnboardingResize);
         if (overlay) {
+            clearOnboardingSpotlight(overlay);
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');
             overlay.removeAttribute('data-step');
@@ -1414,6 +1686,8 @@
                 container.focus({ preventScroll: true });
             }
         }, 0);
+        window.removeEventListener('resize', handleOnboardingResize);
+        window.addEventListener('resize', handleOnboardingResize, { passive: true });
     }
 
     function handleOnboardingTouchStart(event) {
@@ -1567,7 +1841,7 @@
                             <li><strong>公開範囲：</strong>医療・行政・研究機関・薬剤師などの限られた関係者(一部ユーザーヒアリングを行う)</li>
                             <li><strong>目的：</strong>実証実験・検証・フィードバック収集</li>
                             <li><strong>バージョン管理：</strong>Git（GitHub）</li>
-                            <li><strong>CI/CD：</strong>現状未実装（手動デプロイ）</li>
+                            <li><strong>CI/CD：</strong>Google Cloud Build（GCP）</li>
                             <li><strong>ログ管理：</strong>JSONL形式の構造化ログ、リアルタイム監視機能</li>
                             <li><strong>運用監視：</strong>アクセス分析、パフォーマンス監視、セキュリティ監視</li>
                             <li><strong>将来的展開：</strong>一般公開に向けた改良検討</li>
@@ -1577,13 +1851,13 @@
                     <div class="info-section">
                         <h3>🛠️ 開発環境・使用ツール</h3>
                         <ul>
-                            <li><strong>バックエンド:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
-                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, ルールベースNLU（ハイブリッド推奨システム）</li>
+                            <li><strong>バックエンド:</strong> Python 3.9+、<strong>FastAPI</strong>（本番のWeb/API・ASGI）、Jinja2（テンプレート）、MeCab（日本語形態素解析）</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-4o・GPT-4o-mini 等）、ルールベースNLU（ハイブリッド推奨システム）</li>
                             <li><strong>翻訳API:</strong> DeepL API（多言語対応：日本語・英語・中国語・韓国語、高速翻訳）</li>
                             <li><strong>データベース:</strong> PostgreSQL（フィードバック永続化・セッション管理・マルチインスタンス対応）</li>
-                            <li><strong>データ処理:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>データ処理:</strong> Pandas、NumPy</li>
                             <li><strong>フロントエンド:</strong> HTML5, CSS3, JavaScript（ES6+）、バニラJavaScript（フレームワーク不使用）、レスポンシブデザイン</li>
-                            <li><strong>デプロイ環境:</strong> Render（本番環境）、Gunicorn（WSGIサーバー）</li>
+                            <li><strong>デプロイ環境:</strong> <strong>Google Cloud</strong>（Cloud Run 等）、<strong>Gunicorn + uvicorn.workers.UvicornWorker</strong>（ASGIワーカー）</li>
                             <li><strong>監視・ログ:</strong> psutil, JSONL形式記録（構造化ログ）、アクセス分析、パフォーマンス監視</li>
                             <li><strong>バージョン管理:</strong> Git（GitHub）</li>
                         </ul>
@@ -1623,22 +1897,15 @@
                         <h3>👤 運営者情報</h3>
                         
                         <div class="contact-info">
-                            <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 宥翔 （Kawashima Yuto ）</p>
-                            <p><strong>所属：</strong> 名古屋大学理学部物理学科</p>
-                            <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>連絡先</h4>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / MeCab / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-4o・GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>デプロイ環境：</strong> Render (本番環境) / Gunicorn (WSGIサーバー)</p>
+                            <p><strong>デプロイ環境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1708,13 +1975,13 @@
                     <div class="info-section">
                         <h3>🛠️ Development Environment & Tools</h3>
                         <ul>
-                            <li><strong>Backend:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
-                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, Rule-based NLU (Hybrid Recommendation System)</li>
+                            <li><strong>Backend:</strong> Python 3.9+, <strong>FastAPI</strong> (production web/API, ASGI), Jinja2 (templates), MeCab (Japanese morphological analysis)</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API (GPT-4o, GPT-4o-mini, etc.), rule-based NLU (hybrid recommendation system)</li>
                             <li><strong>Translation API:</strong> DeepL API (Multi-language support: Japanese, English, Chinese, Korean, high-speed translation)</li>
                             <li><strong>Database:</strong> PostgreSQL (Feedback persistence, session management, multi-instance support)</li>
-                            <li><strong>Data Processing:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>Data Processing:</strong> Pandas, NumPy</li>
                             <li><strong>Frontend:</strong> HTML5, CSS3, JavaScript (ES6+), Vanilla JavaScript (no framework), Responsive Design</li>
-                            <li><strong>Deployment:</strong> Render (Production), Gunicorn (WSGI Server)</li>
+                            <li><strong>Deployment:</strong> <strong>Google Cloud</strong> (e.g. Cloud Run); <strong>Gunicorn + uvicorn.workers.UvicornWorker</strong> (ASGI workers)</li>
                             <li><strong>Monitoring & Logging:</strong> psutil, JSONL format (structured logs), access analysis, performance monitoring</li>
                             <li><strong>Version Control:</strong> Git (GitHub)</li>
                         </ul>
@@ -1751,13 +2018,6 @@
                         <h3>👤 Operator Information</h3>
                         
                         <div class="contact-info">
-                            <h4>Basic Information</h4>
-                            <p><strong>Operator Name:</strong> Kawashima Yuto</p>
-                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics</p>
-                            <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>Contact Information</h4>
                             <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -1765,9 +2025,9 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-4o, GPT-4o-mini, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>Deployment:</strong> Render (Production) / Gunicorn (WSGI Server)</p>
+                            <p><strong>Deployment:</strong> Google Cloud (e.g. Cloud Run) / Gunicorn + UvicornWorker (ASGI)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1837,13 +2097,13 @@
                     <div class="info-section">
                         <h3>🛠️ 개발 환경·사용 도구</h3>
                         <ul>
-                            <li><strong>백엔드:</strong> Python 3.9+, Flask 3.0.0, Jinja2</li>
-                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini, 룰 베이스 NLU(하이브리드 추천 시스템)</li>
+                            <li><strong>백엔드:</strong> Python 3.9+, <strong>FastAPI</strong>(프로덕션 Web/API·ASGI), Jinja2(템플릿), MeCab(일본어 형태소)</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API(GPT-4o, GPT-4o-mini 등), 룰 베이스 NLU(하이브리드 추천 시스템)</li>
                             <li><strong>번역 API:</strong> DeepL API(다국어 지원: 일본어·영어·중국어·한국어, 고속 번역)</li>
                             <li><strong>데이터베이스:</strong> PostgreSQL(피드백 영속화·세션 관리·멀티 인스턴스 지원)</li>
-                            <li><strong>데이터 처리:</strong> Pandas 2.2.3, NumPy</li>
+                            <li><strong>데이터 처리:</strong> Pandas, NumPy</li>
                             <li><strong>프론트엔드:</strong> HTML5, CSS3, JavaScript(ES6+), 바닐라 JavaScript(프레임워크 미사용), 반응형 디자인</li>
-                            <li><strong>배포 환경:</strong> Render(프로덕션), Gunicorn(WSGI 서버)</li>
+                            <li><strong>배포 환경:</strong> <strong>Google Cloud</strong>(Cloud Run 등), <strong>Gunicorn + uvicorn.workers.UvicornWorker</strong>(ASGI 워커)</li>
                             <li><strong>모니터링·로그:</strong> psutil, JSONL 형태 기록(구조화 로그), 액세스 분석, 성능 모니터링</li>
                             <li><strong>버전 관리:</strong> Git(GitHub)</li>
                         </ul>
@@ -1880,13 +2140,6 @@
                         <h3>👤 운영자 정보</h3>
                         
                         <div class="contact-info">
-                            <h4>기본 정보</h4>
-                            <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
-                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과</p>
-                            <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>연락처</h4>
                             <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -1894,9 +2147,9 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-4o, GPT-4o-mini 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>배포 환경:</strong> Render (프로덕션) / Gunicorn (WSGI 서버)</p>
+                            <p><strong>배포 환경:</strong> Google Cloud(Cloud Run 등) / Gunicorn + UvicornWorker(ASGI)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -1966,14 +2219,14 @@
                     <div class="info-section">
                         <h3>🛠️ 开发环境·使用工具</h3>
                         <ul>
-                            <li><strong>后端:</strong> Python 3.9+、Flask 3.0.0、Jinja2</li>
-                            <li><strong>AI/NLP:</strong> OpenAI GPT-4o-mini、规则基础NLU（混合推荐系统）</li>
+                            <li><strong>后端:</strong> Python 3.9+、<strong>FastAPI</strong>（生产环境 Web/API、ASGI）、Jinja2（模板）、MeCab（日语形态素解析）</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-4o、GPT-4o-mini 等）、规则基础 NLU（混合推荐系统）</li>
                             <li><strong>翻译API:</strong> DeepL API（多语言支持：日语·英语·中文·韩语、高速翻译）</li>
                             <li><strong>数据库:</strong> PostgreSQL（反馈持久化·会话管理·多实例支持）</li>
-                            <li><strong>数据处理:</strong> Pandas 2.2.3、NumPy</li>
-                            <li><strong>前端:</strong> HTML5、CSS3、JavaScript（ES6+）、纯JavaScript（无框架）、响应式设计</li>
-                            <li><strong>部署环境:</strong> Render（生产环境）、Gunicorn（WSGI服务器）</li>
-                            <li><strong>监控·日志:</strong> psutil、JSONL格式记录（结构化日志）、访问分析、性能监控</li>
+                            <li><strong>数据处理:</strong> Pandas、NumPy</li>
+                            <li><strong>前端:</strong> HTML5、CSS3、JavaScript（ES6+）、纯 JavaScript（无框架）、响应式设计</li>
+                            <li><strong>部署环境:</strong> <strong>Google Cloud</strong>（Cloud Run 等）、<strong>Gunicorn + uvicorn.workers.UvicornWorker</strong>（ASGI 工作进程）</li>
+                            <li><strong>监控·日志:</strong> psutil、JSONL 格式记录（结构化日志）、访问分析、性能监控</li>
                             <li><strong>版本管理:</strong> Git（GitHub）</li>
                         </ul>
                     </div>
@@ -2009,13 +2262,6 @@
                         <h3>👤 运营者信息</h3>
                         
                         <div class="contact-info">
-                            <h4>基本信息</h4>
-                            <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科</p>
-                            <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>联系方式</h4>
                             <p><strong>联系邮箱：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>故障·咨询表单：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -2023,9 +2269,9 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-4o、GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>部署环境：</strong> Render (生产环境) / Gunicorn (WSGI服务器)</p>
+                            <p><strong>部署环境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2676,22 +2922,15 @@
                         <h3>👤 運営者情報</h3>
                         
                         <div class="contact-info">
-                            <h4>基本情報</h4>
-                            <p><strong>運営者名：</strong> 川嶋 宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong>   </p>
-                            <p><strong>所在地：</strong> 愛知県名古屋市（詳細は問い合わせ時に開示）</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>連絡先</h4>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-4o・GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>デプロイ環境：</strong> Render (本番環境) / Gunicorn (WSGIサーバー)</p>
+                            <p><strong>デプロイ環境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2705,13 +2944,6 @@
                         <h3>👤 Operator Information</h3>
                         
                         <div class="contact-info">
-                            <h4>Basic Information</h4>
-                            <p><strong>Operator Name:</strong> Kawashima Yuto</p>
-                            <p><strong>Affiliation:</strong> Nagoya University, Faculty of Science, Department of Physics, 2nd Year</p>
-                            <p><strong>Location:</strong> Nagoya City, Aichi Prefecture (details disclosed upon inquiry)</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>Contact Information</h4>
                             <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -2719,9 +2951,9 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-4o, GPT-4o-mini, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>Deployment:</strong> Render (Production) / Gunicorn (WSGI Server)</p>
+                            <p><strong>Deployment:</strong> Google Cloud (e.g. Cloud Run) / Gunicorn + UvicornWorker (ASGI)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2735,13 +2967,6 @@
                         <h3>👤 운영자 정보</h3>
                         
                         <div class="contact-info">
-                            <h4>기본 정보</h4>
-                            <p><strong>운영자명:</strong> 가와시마 유토 (Kawashima Yuto)</p>
-                            <p><strong>소속:</strong> 나고야대학 이학부 물리학과 2학년</p>
-                            <p><strong>소재지:</strong> 아이치현 나고야시 (상세는 문의 시 공개)</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>연락처</h4>
                             <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -2749,9 +2974,9 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-4o, GPT-4o-mini 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>배포 환경:</strong> Render (프로덕션) / Gunicorn (WSGI 서버)</p>
+                            <p><strong>배포 환경:</strong> Google Cloud(Cloud Run 등) / Gunicorn + UvicornWorker(ASGI)</p>
                         </div>
                         
                         <div class="contact-info">
@@ -2765,13 +2990,6 @@
                         <h3>👤 运营者信息</h3>
                         
                         <div class="contact-info">
-                            <h4>基本信息</h4>
-                            <p><strong>运营者名：</strong> 川嶋宥翔（Kawashima Yuto）</p>
-                            <p><strong>所属：</strong> 名古屋大学 理学部 物理学科 2年级</p>
-                            <p><strong>所在地：</strong> 爱知县名古屋市（详细在咨询时公开）</p>
-                        </div>
-                        
-                        <div class="contact-info">
                             <h4>联系方式</h4>
                             <p><strong>联系邮箱：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>故障·咨询表单：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
@@ -2779,9 +2997,9 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python 3.9+ / Flask 3.0.0 / OpenAI GPT-4o-mini / DeepL API / PostgreSQL / Pandas 2.2.3 / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-4o、GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
-                            <p><strong>部署环境：</strong> Render (生产环境) / Gunicorn (WSGI服务器)</p>
+                            <p><strong>部署环境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
                         
                         <div class="contact-info">
@@ -3399,6 +3617,11 @@
         document.getElementById('modalTitle').textContent = t.appInfo;
         document.getElementById('listPage').style.display = 'block';
         document.getElementById('detailPage').style.display = 'none';
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.style.display = 'none';
+            backButton.setAttribute('aria-hidden', 'true');
+        }
     }
 
     // 詳細ページを表示
@@ -3424,6 +3647,11 @@
         // 一覧ページを非表示、詳細ページを表示
         document.getElementById('listPage').style.display = 'none';
         document.getElementById('detailPage').style.display = 'block';
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.style.display = 'inline-flex';
+            backButton.setAttribute('aria-hidden', 'false');
+        }
         
         // 詳細コンテンツ更新（言語対応）
         let content = page.content;
