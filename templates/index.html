@@ -192,10 +192,10 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20251221" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260512-3" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
-<body>
+<body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
 <script type="application/json" id="particle-profile">{{ particle_profile_json | safe }}</script>
 <div class="chat-container">
     <div class="chat-header">
@@ -213,6 +213,9 @@
             </div>
         </div>
         
+        <!-- 環境バッジ（開発環境のみ表示） -->
+        <span class="env-badge env-badge--dev" id="envBadge" role="status" aria-label="開発環境(dev)" hidden>DEV</span>
+
         <!-- 情報ボタン -->
         <div class="info-selector">
             <button class="info-toggle" id="infoBtn" onclick="openInfoModal()" title="">
@@ -499,7 +502,7 @@
         window.APP_BASE_PATH = {{ (app_base_path or '') | tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260509-2" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260512-2" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
