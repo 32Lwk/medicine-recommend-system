@@ -42,6 +42,9 @@ git-sync.ps1
 # ローカル用（GitHub にプッシュしない）
 Makefile
 
+# テスト実行で生成されるスナップショット
+test_snapshots/
+
 # Python 仮想環境
 .venv/
 .venv*/

@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 
 def _compute_cookie_settings() -> dict:
     cfg = get_session_config()
-    # Flask config keys -> Starlette cookie options
+    # config keys -> Starlette cookie options
     return {
         "secure": bool(cfg.get("SESSION_COOKIE_SECURE", False)),
         "samesite": cfg.get("SESSION_COOKIE_SAMESITE", "lax"),
@@ -179,7 +179,7 @@ def _normalized_app_version_env() -> str | None:
 
 
 def _compat_url_for(endpoint: str, **values) -> str:
-    # templates/*.html は Flask の url_for('static', filename=...) を使用している。
+    # templates/*.html は Flask 互換の url_for('static', filename=...) を使用している。
     if endpoint == "static":
         filename = values.get("filename") or values.get("path") or ""
         if filename.startswith("/"):
@@ -193,7 +193,7 @@ templates.env.globals["url_for"] = _compat_url_for
 
 @app.exception_handler(StarletteHTTPException)
 async def _http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """404 は Flask 同様 index.html を返す。それ以外は JSON。"""
+    """404 は index.html を返す。それ以外は JSON。"""
     if exc.status_code == 404:
         logger.warning("⚠️ 404 Not Found: %s", request.url)
         sid = request.cookies.get(COOKIE_NAME_SID) or ""
@@ -250,7 +250,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
             {
                 "error": True,
                 "response": error_msg,
-                "error_type": error_type if os.getenv("FLASK_ENV") != "production" else None,
+                "error_type": error_type if os.getenv("APP_ENV", "").strip().lower() != "production" else None,
             },
             status_code=500,
         )
@@ -266,12 +266,14 @@ def _startup():
 
 
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
-    # 互換: Flask 版は VERSION を app.config に置くが、ここでは毎プロセスで固定。
+    # VERSION は毎プロセスで固定（キャッシュバスティング用）
     nv = _normalized_app_version_env()
     version = nv if nv is not None else str(int(time.time()))
     session_like = {"_id": sid} if sid else {}
     decoration_images, image_version = _get_decoration_images(session_like, version)
     particle_profile_json = _particle_profile_json()
+    # 開発環境かどうか（APP_ENV が production 以外なら dev 扱い）
+    is_dev_env = os.getenv('APP_ENV', 'development').lower() != 'production'
 
     return templates.TemplateResponse(
         request,
@@ -284,6 +286,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "image_version": image_version,
             "app_base_path": app_base_path,
             "particle_profile_json": particle_profile_json,
+            "is_dev_env": is_dev_env,
         },
         status_code=status_code,
     )
@@ -321,7 +324,7 @@ def sitemap():
 
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, request: Request):
     """
-    Flask 実装（main_routes.index）に近い初期化を FastAPI 側で再現し、
+    旧実装に近い初期化を FastAPI 側で再現し、
     既存の chat_handler を互換利用できるようにする。
     """
     safe_session.setdefault("messages", [])
@@ -441,7 +444,7 @@ def api_sessions_get(
     response: Response,
     sid: str = Depends(get_sid),
 ):
-    # Flask実装の互換: DBが無ければフォールバックもあるが、ここでは session_manager に委譲。
+    # 互換: DBが無ければフォールバックもあるが、ここでは session_manager に委譲。
     # まずDBから取得、無ければ最小レコードを作成
     session_data = get_session_from_db(sid)
     if not session_data:
@@ -609,7 +612,7 @@ def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(se
 
 @app.get("/api/main_sessions")
 def api_main_sessions(sid: str = Depends(get_sid)):
-    # Flask実装に寄せて force cleanup は省略（セッションDB正）
+    # 互換のため force cleanup は省略（セッションDB正）
     all_sessions = get_all_sessions_from_db()
     sessions_list = []
     for sess_id, info in all_sessions.items():

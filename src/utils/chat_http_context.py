@@ -28,14 +28,6 @@ class ChatClientInfo:
     user_agent: str
 
     @classmethod
-    def from_flask_request(cls, request) -> ChatClientInfo:
-        """Flask の request から IP / User-Agent を組み立てる。"""
-        xff = request.headers.get("X-Forwarded-For") or request.environ.get("HTTP_X_FORWARDED_FOR")
-        ip = resolve_client_ip(x_forwarded_for=xff, direct=getattr(request, "remote_addr", None))
-        ua = (request.headers.get("User-Agent", "") or "").strip()
-        return cls(client_ip=ip, user_agent=ua)
-
-    @classmethod
     def from_starlette_request(cls, request) -> ChatClientInfo:
         """Starlette / FastAPI の Request から同様に組み立てる。"""
         xff = request.headers.get("x-forwarded-for") or request.headers.get("X-Forwarded-For")

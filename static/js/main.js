@@ -92,12 +92,53 @@
             back: "← 戻る",
             close: "×",
             skipOnboarding: "スキップして始める",
+            onboardingDevFirstSlide: {
+                title: "🛠️ 開発環境(dev)へようこそ",
+                visual: "🚧💊",
+                visualAlt: "開発中の薬剤師相談ツールのアイコン",
+                subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span><br>このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
+                body: [
+                    "新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。",
+                    "通常ご利用の方は、安定版である本番環境をご利用ください。"
+                ],
+                details: [
+                    {
+                        summary: "現在開発中の主な内容",
+                        items: [
+                            "潜在空間によるスコアリングの大規模改修",
+                            "GPT-4系からGPT-5系への移行",
+                            "UI・導線の最適化",
+                            "マルチエージェントモデルの更新",
+                            "カルーセル型UIの導入",
+                            "画像の導入",
+                            "セキュリティ向上",
+                            "音声入力の向上",
+                            "体調推定の実装（計画中）",
+                            "パーソナライズ機能の実装（計画中）"
+                        ]
+                    }
+                ],
+                links: [
+                    {
+                        text: "🌐 本番環境(安定版)を開く",
+                        url: "https://medicine.yutok.dev/",
+                        ariaLabel: "本番環境(安定版)を新しいタブで開く"
+                    },
+                    {
+                        text: "📝 クレーム・ご意見",
+                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                        ariaLabel: "Googleフォームでクレーム・ご意見を送る"
+                    }
+                ],
+                buttonText: "次へ",
+                buttonAria: "次のステップへ進む"
+            },
             onboarding: [
                 {
                     title: "チャット型医薬品相談ツール(β版)",
                     visual: "🤝💊",
                     visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                    subtitle: "本番の更新は停止中です。開発環境でのみ改良を進めています。",
+                    subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境です</span><br>あなたが今ご覧になっているこのページは<span class="onboarding-env-here">開発環境</span>です。本番環境（更新停止中）とは別のサーバーで動作しており、改良はこちらでのみ進めています。',
                     body: [
                         "症状を入力・話すだけで、市販薬候補・成分・効能・受診の目安をAIがまとめます。",
                         "第1段階の移行目標：2026年5月31日まで。"
@@ -121,9 +162,9 @@
                     ],
                     links: [
                         {
-                            text: "🔗 開発環境",
+                            text: "🔗 開発環境（このサイト）を別タブで開く",
                             url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "開発環境を新しいタブで開く"
+                            ariaLabel: "現在ご覧の開発環境を新しいタブで開く"
                         },
                         {
                             text: "📝 クレーム・ご意見",
@@ -331,12 +372,53 @@
             back: "← Back",
             close: "×",
             skipOnboarding: "Skip onboarding",
+            onboardingDevFirstSlide: {
+                title: "🛠️ Welcome to the Dev environment",
+                visual: "🚧💊",
+                visualAlt: "Icon representing the OTC assistant under development",
+                subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span><br>This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
+                body: [
+                    "This is where new features and experiments are tried out first. You may see broken layouts, transient errors, or data resets.",
+                    "If you are a regular user, please use the production (stable) environment."
+                ],
+                details: [
+                    {
+                        summary: "What we are currently working on",
+                        items: [
+                            "Major scoring revamp using latent space",
+                            "Migration from GPT-4 class to GPT-5 class models",
+                            "UI and user-flow optimization",
+                            "Multi-agent model updates",
+                            "Carousel-style UI",
+                            "Image support",
+                            "Security improvements",
+                            "Better voice input",
+                            "Health state estimation (planned)",
+                            "Personalization features (planned)"
+                        ]
+                    }
+                ],
+                links: [
+                    {
+                        text: "🌐 Open production (stable)",
+                        url: "https://medicine.yutok.dev/",
+                        ariaLabel: "Open the production (stable) environment in a new tab"
+                    },
+                    {
+                        text: "📝 Feedback & claims",
+                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                        ariaLabel: "Submit feedback or claims via Google Forms"
+                    }
+                ],
+                buttonText: "Next",
+                buttonAria: "Go to the next step"
+            },
             onboarding: [
                 {
                     title: "Welcome to the Chat-based OTC Assistant (Beta)",
                     visual: "🤝💊",
                     visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                    subtitle: "Production updates are paused. Work continues on the dev environment only.",
+                    subtitle: '<span class="onboarding-env-badge">🛠️ You are on the DEV environment</span><br>The page you are viewing right now is the <span class="onboarding-env-here">development environment</span>. It runs on a separate server from production (updates paused), and all ongoing improvements happen here.',
                     body: [
                         "Type or speak your symptoms; the AI summarizes OTC options, ingredients, effects, and when to seek care.",
                         "Phase 1 transition target: May 31, 2026."
@@ -360,9 +442,9 @@
                     ],
                     links: [
                         {
-                            text: "🔗 Dev environment",
+                            text: "🔗 Open this dev environment in a new tab",
                             url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "Open the Cloud Run development app in a new tab"
+                            ariaLabel: "Open the development environment you are currently viewing in a new tab"
                         },
                         {
                             text: "📝 Feedback & claims",
@@ -581,12 +663,53 @@
             easterEggEmojiGame: "🎯 이모지 캐치 게임",
             easterEggEmojiScore: "점수: ",
             easterEggEmojiControls: "조작: 터치 또는 클릭하여 이모지를 잡으세요!",
+            onboardingDevFirstSlide: {
+                title: "🛠️ 개발 환경(dev)에 오신 것을 환영합니다",
+                visual: "🚧💊",
+                visualAlt: "개발 중인 의약품 상담 도구 아이콘",
+                subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span><br>이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
+                body: [
+                    "새 기능이나 개선안을 가장 먼저 시험할 수 있는 환경입니다. 레이아웃 깨짐·일시적 오류·데이터 리셋이 발생할 수 있습니다.",
+                    "일반적으로 이용하시는 분은 안정판인 운영 환경을 이용해 주세요."
+                ],
+                details: [
+                    {
+                        summary: "현재 개발 중인 주요 내용",
+                        items: [
+                            "잠재 공간 기반 스코어링 대규모 개편",
+                            "GPT-4 계열에서 GPT-5 계열로 이전",
+                            "UI·사용자 동선 최적화",
+                            "멀티 에이전트 모델 업데이트",
+                            "캐러셀형 UI 도입",
+                            "이미지 도입",
+                            "보안 강화",
+                            "음성 입력 개선",
+                            "컨디션 추정 구현(계획)",
+                            "개인화 기능 구현(계획)"
+                        ]
+                    }
+                ],
+                links: [
+                    {
+                        text: "🌐 운영 환경(안정판) 열기",
+                        url: "https://medicine.yutok.dev/",
+                        ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
+                    },
+                    {
+                        text: "📝 클레임·의견",
+                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                        ariaLabel: "Google 양식으로 클레임·의견 제출"
+                    }
+                ],
+                buttonText: "다음",
+                buttonAria: "다음 단계로 이동"
+            },
             onboarding: [
                 {
                     title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                     visual: "🤝💊",
                     visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                    subtitle: "운영 환경 업데이트는 중단되었습니다. 개발 환경에서만 개선 중입니다.",
+                    subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경입니다</span><br>지금 보고 계신 이 페이지는 <span class="onboarding-env-here">개발 환경</span>입니다. 운영 환경(업데이트 중단)과는 별도의 서버에서 동작하며, 모든 개선은 이곳에서만 진행됩니다.',
                     body: [
                         "증상을 입력·말하면 AI가 일반의약품 후보·성분·효능·진료 시기 안내를 정리합니다.",
                         "1단계 전환 목표: 2026년 5월 31일까지."
@@ -610,9 +733,9 @@
                     ],
                     links: [
                         {
-                            text: "🔗 개발 환경",
+                            text: "🔗 현재 개발 환경(이 사이트)을 새 탭에서 열기",
                             url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "Cloud Run 개발 환경을 새 탭에서 엽니다"
+                            ariaLabel: "현재 보고 계신 개발 환경을 새 탭에서 엽니다"
                         },
                         {
                             text: "📝 클레임·의견",
@@ -819,12 +942,53 @@
             back: "返回",
             close: "×",
             skipOnboarding: "跳过并开始",
+            onboardingDevFirstSlide: {
+                title: "🛠️ 欢迎来到开发环境(dev)",
+                visual: "🚧💊",
+                visualAlt: "开发中的药品咨询工具图标",
+                subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span><br>本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
+                body: [
+                    "可在此抢先体验新功能或试验性改动。可能出现布局错乱、临时错误或数据被重置等情况。",
+                    "如您是普通用户，请使用稳定版的生产环境。"
+                ],
+                details: [
+                    {
+                        summary: "当前开发中的主要内容",
+                        items: [
+                            "基于潜在空间的大规模评分改造",
+                            "从 GPT-4 系列迁移至 GPT-5 系列",
+                            "UI 与流程优化",
+                            "多智能体模型更新",
+                            "引入轮播式 UI",
+                            "引入图片能力",
+                            "安全加固",
+                            "语音输入改进",
+                            "身体状况推断（规划中）",
+                            "个性化功能（规划中）"
+                        ]
+                    }
+                ],
+                links: [
+                    {
+                        text: "🌐 打开生产环境（稳定版）",
+                        url: "https://medicine.yutok.dev/",
+                        ariaLabel: "在新标签页中打开生产环境（稳定版）"
+                    },
+                    {
+                        text: "📝 投诉与意见",
+                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                        ariaLabel: "通过 Google 表单提交投诉或意见"
+                    }
+                ],
+                buttonText: "下一步",
+                buttonAria: "前往下一步"
+            },
             onboarding: [
                 {
                     title: "欢迎使用聊天式药品咨询工具（测试版）",
                     visual: "🤝💊",
                     visualAlt: "药师通过手机提供咨询的示意图",
-                    subtitle: "生产环境已暂停更新，仅在开发环境继续迭代。",
+                    subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境</span><br>您当前正在访问的这个页面就是<span class="onboarding-env-here">开发环境</span>。它与生产环境（已暂停更新）运行在不同的服务器上，所有改进仅在此处进行。',
                     body: [
                         "输入或说出症状，AI 会整理非处方药候选、成分、功效与就医建议。",
                         "第一阶段迁移目标：2026 年 5 月 31 日前。"
@@ -848,9 +1012,9 @@
                     ],
                     links: [
                         {
-                            text: "🔗 开发环境",
+                            text: "🔗 在新标签页打开当前开发环境（本站）",
                             url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "在新标签页打开 Cloud Run 开发环境"
+                            ariaLabel: "在新标签页打开您当前正在访问的开发环境"
                         },
                         {
                             text: "📝 投诉与意见",
@@ -993,16 +1157,55 @@
         return translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
     }
 
+    // 開発環境かどうかを判定する
+    // 優先順位: 1) サーバが埋め込んだ body[data-env="dev"]、2) ホスト名フォールバック
+    function isDevEnv() {
+        try {
+            if (typeof document !== 'undefined' && document.body && document.body.dataset && document.body.dataset.env) {
+                return document.body.dataset.env.toLowerCase() === 'dev';
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        try {
+            const host = (typeof location !== 'undefined' && location.hostname) ? location.hostname.toLowerCase() : '';
+            if (!host) return false;
+            return (
+                host === 'localhost' ||
+                host === '127.0.0.1' ||
+                host.includes('-dev-') ||
+                host.endsWith('.local') ||
+                host.startsWith('dev.')
+            );
+        } catch (e) {
+            return false;
+        }
+    }
+
     function getOnboardingData(lang) {
         const locale = translations[lang];
+        const fallbackLocale = translations[DEFAULT_LANGUAGE];
+
+        let baseSlides = null;
         if (locale && Array.isArray(locale.onboarding) && locale.onboarding.length > 0) {
-            return locale.onboarding;
+            baseSlides = locale.onboarding;
+        } else if (fallbackLocale && Array.isArray(fallbackLocale.onboarding)) {
+            baseSlides = fallbackLocale.onboarding;
         }
-        const fallback = translations[DEFAULT_LANGUAGE];
-        if (fallback && Array.isArray(fallback.onboarding)) {
-            return fallback.onboarding;
+        if (!baseSlides) {
+            return [];
         }
-        return [];
+
+        // 開発環境では1枚目を onboardingDevFirstSlide に差し替える
+        if (isDevEnv()) {
+            const devSlide = (locale && locale.onboardingDevFirstSlide)
+                || (fallbackLocale && fallbackLocale.onboardingDevFirstSlide)
+                || null;
+            if (devSlide) {
+                return [devSlide, ...baseSlides.slice(1)];
+            }
+        }
+        return baseSlides;
     }
 
     function updateOnboardingSkipLabel() {
@@ -1103,8 +1306,10 @@
             }
             return;
         }
-        // β版判定（タイトルに「β版」が含まれているかで判定）
-        const isBetaVersion = document.title.includes('β') || document.title.includes('Beta') || 
+        // β版判定（タイトルに「β版」が含まれている、または開発環境のとき β 扱い）
+        // 開発環境(dev)では、テスター・開発者向けの資料スライド(isBetaOnly)も表示する。
+        const isBetaVersion = isDevEnv() ||
+                             document.title.includes('β') || document.title.includes('Beta') ||
                              (typeof translations !== 'undefined' && translations[currentLanguage] && 
                               translations[currentLanguage].title && 
                               (translations[currentLanguage].title.includes('β') || translations[currentLanguage].title.includes('Beta')));
@@ -3782,12 +3987,37 @@
         }
     }
     
+    // 開発環境のときタイトル中の「β版」相当表記を「dev」に置換する
+    // β版表記が無い場合は末尾に " (dev)" を追加する
+    function transformTitleForEnv(rawTitle) {
+        if (!isDevEnv() || !rawTitle) return rawTitle;
+        const betaPatterns = [
+            { re: /\(β版\)/g, replacement: '(dev)' },
+            { re: /\(Beta\)/gi, replacement: '(dev)' },
+            { re: /\(베타\)/g, replacement: '(dev)' },
+            { re: /（测试版）/g, replacement: '(dev)' },
+            { re: /\(测试版\)/g, replacement: '(dev)' },
+        ];
+        let result = rawTitle;
+        let replaced = false;
+        for (const { re, replacement } of betaPatterns) {
+            if (re.test(result)) {
+                result = result.replace(re, replacement);
+                replaced = true;
+            }
+        }
+        if (!replaced) {
+            result = rawTitle + ' (dev)';
+        }
+        return result;
+    }
+
     // UI要素の更新
     function updateUI() {
         const t = translations[currentLanguage];
         
         // ヘッダー要素の更新
-        document.getElementById('appTitle').textContent = t.title;
+        document.getElementById('appTitle').textContent = transformTitleForEnv(t.title);
         document.getElementById('appDescription').textContent = t.description;
         document.getElementById('userInfoBtn').textContent = t.userInfoBtn;
         document.getElementById('clearBtn').textContent = t.clearBtn;
@@ -4026,10 +4256,26 @@
         }, 250);
     }
 
+    // 開発環境のときヘッダーの DEV バッジを表示する
+    function applyEnvBadge() {
+        const badge = document.getElementById('envBadge');
+        if (!badge) return;
+        if (isDevEnv()) {
+            badge.hidden = false;
+            // フォールバックでホスト名から判定された場合に備え、data-env も同期する
+            if (document.body && document.body.dataset && document.body.dataset.env !== 'dev') {
+                document.body.dataset.env = 'dev';
+            }
+        } else {
+            badge.hidden = true;
+        }
+    }
+
     // ページ読み込み時に言語設定を適用
     function initPage() {
         updateUI();
-        
+        applyEnvBadge();
+
         createSeasonalParticles();
         window.addEventListener('resize', handleResize);
         

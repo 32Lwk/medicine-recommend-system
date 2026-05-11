@@ -140,20 +140,7 @@ df = pd.read_csv(CSV_PATH, encoding='utf-8')  # 同期読み込み
 
 **変更例**:
 
-**現在 (Flask)**:
-```python
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route('/api/recommend', methods=['POST'])
-def recommend():
-    user_text = request.json.get('message')
-    result = rule_based_medicine_recommendation(user_text, user_info)
-    return jsonify(result)
-```
-
-**非同期版 (FastAPI)**:
+**FastAPI (ASGI) の例**:
 ```python
 from fastapi import FastAPI, Request
 from pydantic import BaseModel

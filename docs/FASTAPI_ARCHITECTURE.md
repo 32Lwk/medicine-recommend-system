@@ -1,10 +1,9 @@
-# FastAPI 構成（Flask 一括移行後）
+# FastAPI 構成
 
 ## エントリポイント
 
 - **`main.py`**: FastAPI `app` 単体。本番は `gunicorn -k uvicorn.workers.UvicornWorker main:app`（`start.sh`）。
 - **`python app.py`**: 既定で uvicorn が `main:app` を起動（Flask 依存なし）。
-- **レガシー Flask**: `app_flask_legacy.py`、または `FLASK_LEGACY=1 python app.py`。本番起動スクリプトは ASGI を指す。
 
 ## モジュール境界
 

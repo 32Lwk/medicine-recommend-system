@@ -1,8 +1,7 @@
 """
 ローカル開発用エントリポイント。
 
-- 既定: FastAPI（`main:app`）を uvicorn で起動。Flask は不要。
-- レガシー Flask: 環境変数 `FLASK_LEGACY=1` を付けるか、`python app_flask_legacy.py`。
+- 既定: FastAPI（`main:app`）を uvicorn で起動。
 本番は `./start.sh` → gunicorn `main:app`。
 環境変数 `ASGI_HOST`（既定 `0.0.0.0`）で待ち受けアドレスを変更可能。
 `OPEN_BROWSER=0` で起動時のブラウザ自動オープンを無効化（CI 等）。
@@ -49,32 +48,21 @@ def _schedule_open_browser(port: int) -> None:
 
 
 if __name__ == '__main__':
-    legacy = os.getenv('FLASK_LEGACY', '').strip().lower() in ('1', 'true', 'yes')
-    if legacy:
-        try:
-            from app_flask_legacy import run_flask_development_server
-        except ModuleNotFoundError:
-            logger.error(
-                "Flask レガシー起動には Flask / flask-cors が必要です: pip install -r requirements.txt"
-            )
-            raise
-        run_flask_development_server()
-    else:
-        try:
-            import uvicorn
-        except ModuleNotFoundError:
-            logger.error(
-                "FastAPI 起動に uvicorn が必要です。仮想環境で次を実行してください: pip install -r requirements.txt"
-            )
-            raise
-
-        port = _resolve_port()
-        reload = os.getenv('FLASK_ENV') != 'production'
-        host = os.getenv('ASGI_HOST', '0.0.0.0')
-        logger.info(f"🚀 Starting FastAPI (uvicorn) on port {port} (reload={reload})...")
-        logger.info(
-            "ローカルで開く URL: http://127.0.0.1:%s/ （uvicorn の「0.0.0.0」は全インターフェースで待ち受けている表示で、起動失敗ではありません）",
-            port,
+    try:
+        import uvicorn
+    except ModuleNotFoundError:
+        logger.error(
+            "FastAPI 起動に uvicorn が必要です。仮想環境で次を実行してください: pip install -r requirements.txt"
         )
-        _schedule_open_browser(port)
-        uvicorn.run('main:app', host=host, port=port, reload=reload)
+        raise
+
+    port = _resolve_port()
+    reload = os.getenv('APP_ENV', '').strip().lower() != 'production'
+    host = os.getenv('ASGI_HOST', '0.0.0.0')
+    logger.info(f"🚀 Starting FastAPI (uvicorn) on port {port} (reload={reload})...")
+    logger.info(
+        "ローカルで開く URL: http://127.0.0.1:%s/ （uvicorn の「0.0.0.0」は全インターフェースで待ち受けている表示で、起動失敗ではありません）",
+        port,
+    )
+    _schedule_open_browser(port)
+    uvicorn.run('main:app', host=host, port=port, reload=reload)
