@@ -23,7 +23,9 @@ from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
 )
-from src.core.season_manager import get_current_season, get_season_images
+import json
+
+from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.utils.performance_monitor import get_global_monitor, log_performance_metrics
 
 
@@ -153,9 +155,14 @@ def index():
         if season_type:
             decoration_images = get_season_images(season_type, year, session)
         image_version = VERSION
+        particle_profile_json = json.dumps(get_particle_profile(season_type, current_date), ensure_ascii=False)
     except Exception:
         decoration_images = []
         image_version = VERSION
+        jst = pytz.timezone('Asia/Tokyo')
+        particle_profile_json = json.dumps(
+            get_particle_profile(None, datetime.now(jst)), ensure_ascii=False
+        )
 
     app_base_path = '/test' if request.blueprint == 'main_test' else ''
 
@@ -165,7 +172,8 @@ def index():
                           username=session.get('username', 'Unknown'),
                           decoration_images=decoration_images,
                           image_version=image_version,
-                          app_base_path=app_base_path)
+                          app_base_path=app_base_path,
+                          particle_profile_json=particle_profile_json)
 
 
 def clear_chat():

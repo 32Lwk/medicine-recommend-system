@@ -12,7 +12,7 @@ from datetime import datetime
 import pytz
 from flask import request, render_template, jsonify, has_request_context, session as flask_session
 
-from src.core.season_manager import get_current_season, get_season_images
+from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,17 @@ def _session_like_for_error_pages():
     return {}
 
 
+def _particle_profile_json_for_error_page():
+    try:
+        jst = pytz.timezone('Asia/Tokyo')
+        now = datetime.now(jst)
+        st = get_current_season(now)
+        return json.dumps(get_particle_profile(st, now), ensure_ascii=False)
+    except Exception:
+        jst = pytz.timezone('Asia/Tokyo')
+        return json.dumps(get_particle_profile(None, datetime.now(jst)), ensure_ascii=False)
+
+
 def register_error_handlers(app, version):
     """
     アプリにエラーハンドラーを登録する
@@ -63,7 +74,9 @@ def register_error_handlers(app, version):
             messages=[],
             version=version,
             decoration_images=decoration_images,
-            image_version=image_version
+            image_version=image_version,
+            app_base_path='',
+            particle_profile_json=_particle_profile_json_for_error_page(),
         ), 404
 
     @app.errorhandler(502)
@@ -82,7 +95,9 @@ def register_error_handlers(app, version):
             messages=[],
             version=version,
             decoration_images=decoration_images,
-            image_version=image_version
+            image_version=image_version,
+            app_base_path='',
+            particle_profile_json=_particle_profile_json_for_error_page(),
         ), 502
 
     @app.errorhandler(500)

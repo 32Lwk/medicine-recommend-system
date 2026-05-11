@@ -222,6 +222,11 @@
             pointer-events: none;
             z-index: 0; /* チャットメッセージ（z-index: 2）の下、背景の上に配置 */
             overflow: hidden;
+            /* 粒子ブランド用（.chat-messages 背景は変更しない。値は docs/PARTICLE_COLOR_POLICY.md と整合） */
+            --particle-chat-bg-hex: #c0c0c0;
+            --particle-glyph-luminance-floor: 0.55;
+            --particle-sprite-saturate: 1.06;
+            --particle-sprite-brightness: 1.03;
         }
         
         .snowflake {
@@ -247,6 +252,43 @@
             }
             100% {
                 transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 季節パーティクル（外周回転 + 内側落下、capped 斜め） */
+        .particle-orbit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotate(var(--orbit-angle, 0deg));
+            transform-origin: 50% 0%;
+            pointer-events: none;
+        }
+        .snowflake-inner {
+            position: relative;
+            display: block;
+            font-family: Arial, sans-serif;
+            animation: particlefall linear infinite;
+            will-change: transform, opacity;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.35);
+        }
+        .particle-sprite {
+            filter: saturate(var(--particle-sprite-saturate, 1.06)) brightness(var(--particle-sprite-brightness, 1.03));
+        }
+        @keyframes particlefall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift, 0px)) rotate(360deg);
                 opacity: 0;
             }
         }
