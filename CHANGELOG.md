@@ -1,8 +1,22 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月11日**（FastAPI 既定ローカル起動・オンボーディング／情報モーダル・DB 起動ログ・オンボーディング詳細のスクロール整備）
+**最終更新日: 2026年5月11日**（季節パーティクル・`is_in_period` 修正・バレンタイン周辺期間）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月11日の更新（季節パーティクル・シーズン判定）:**
+
+- **`src/core/season_manager.py`**: **`is_in_period`** を修正し、**同年で複数月にまたがる期間**（例: 6/1〜8/31、3/1〜5/31）の**中間月**が正しくマッチするようにした（従来は端の2ヶ月のみ判定されていた）。**バレンタイン**を **2/10〜2/18** に拡張。**七夕・敬老・ハロウィン・七五三**の `SEASON_CONFIG` と **`priority_seasons`** を追加。チャット用 **`PARTICLE_PROFILES`** と **`get_particle_profile`**（バレンタイン当日 high・8月のみ summer high・`None` 時は暦月フォールバック）を追加。
+- **`main.py` / `src/routes/main_routes.py` / `src/handlers/error_handlers.py`**: `index.html` 向けに **`particle_profile_json`** を渡す。
+- **`templates/index.html`**: `#particle-profile` の JSON 埋め込み、**`particlefall`** 用 critical CSS、**`snowfall` 終端**を **`--snow-container-height`** 基準に変更。
+- **`static/js/main.js`**: **`createSeasonalParticles`**（プロファイル読込・`prefers-reduced-motion` 非表示・密度・角度・ドリフト・色・任意スプライト）に置換。
+- **`static/css/main.css`**: **`.particle-orbit` / `.snowflake-inner` / `particlefall`** を追加。
+- **`docs/PARTICLE_COLOR_POLICY.md`（新規）**: 粒子色（#000 禁止・暗色回避）とチャット背景は変更しない旨を記載。
+- **`tests/test_season_manager_particles.py`（新規）**: 境界日・密度・優先順のユニットテスト。
+- **追記（同一リリース作業内）**: `static/img/particles/` に **淡色スプライト PNG**（バレンタイン・ハロウィン）を追加し、`PARTICLE_PROFILES` の **`sprites`（weight 付き）** と連携。**`docs/PARTICLE_CONTRAST_VERIFICATION.md`・`PARTICLE_DECORATION_OK_NG.md`・`PARTICLE_AI_SPRITES.md`・`STATIC_SEASON_ASSETS.md`** を追加。pytest に **輝度スナップショット・行事日パラメータ・スプライト実在・アセット無しの admin テンプレ**を追加。`main.js` に **重み付きスプライト選択**と **`sanitizeParticleColor`**。`main.css` の **`#snowContainer` / `.snow-container`** に粒子用 **CSS 変数**とスプライト用 **filter** を定義。
+- **追記**: 七夕・敬老・ハロウィン・七五三の **左右装飾**を `static/img/events/<行事>/` の淡色 PNG に切替（`scripts/gen_event_decoration_pngs.py`）。`index.html` critical の **`.snow-container`** を **`main.css` と同じ高さ変数**に揃えた。pytest に **`is_in_period` 全期間境界**・**チャット背景固定**・**#c0c0c0 対比コントラスト比スナップショット**・**admin_chat.js 非粒子**を追加。`main.js` の **MutationObserver** から **季節粒子をデバウンス再生成**（500ms）するよう接続。
 
 ---
 

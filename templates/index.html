@@ -88,7 +88,8 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
+            height: var(--snow-container-height, 100%);
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
@@ -102,6 +103,33 @@
             animation: snowfall linear infinite;
             will-change: transform, opacity;
         }
+        .particle-orbit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotate(var(--orbit-angle, 0deg));
+            transform-origin: 50% 0%;
+            pointer-events: none;
+        }
+        .snowflake-inner {
+            position: relative;
+            display: block;
+            font-family: Arial, sans-serif;
+            animation: particlefall linear infinite;
+            will-change: transform, opacity;
+        }
+        @keyframes particlefall {
+            0% {
+                transform: translateY(-100px) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift, 0px)) rotate(360deg);
+                opacity: 0;
+            }
+        }
         @keyframes snowfall {
             0% {
                 transform: translateY(-100px) translateX(0) rotate(0deg);
@@ -114,7 +142,7 @@
                 opacity: 1;
             }
             100% {
-                transform: translateY(calc(100vh + 100px)) translateX(var(--drift)) rotate(360deg);
+                transform: translateY(calc(var(--snow-container-height, 100vh) + 100px)) translateX(var(--drift)) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -168,6 +196,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body>
+<script type="application/json" id="particle-profile">{{ particle_profile_json | safe }}</script>
 <div class="chat-container">
     <div class="chat-header">
         <!-- Language Selector -->
