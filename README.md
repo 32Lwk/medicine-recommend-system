@@ -22,15 +22,7 @@ pip install -r requirements.txt
 
 ```bash
 python app.py
-# 既定で FastAPI（main:app）。Flask 不要。http://localhost:5000（PORT 未設定時）
-```
-
-**レガシー（Flask・Blueprint 比較用）**
-
-```bash
-FLASK_LEGACY=1 python app.py
-# または: python app_flask_legacy.py
-# Flask / flask-cors が必要。本番デプロイでは `main:app` を使用してください。
+# 既定で FastAPI（main:app）。http://localhost:5000（PORT 未設定時）
 ```
 
 詳細は [docs/FASTAPI_ARCHITECTURE.md](docs/FASTAPI_ARCHITECTURE.md) を参照してください。
