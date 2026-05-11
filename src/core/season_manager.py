@@ -137,16 +137,12 @@ SEASON_CONFIG = {
     },
     'summer': {
         'period': [(6, 1, 8, 31)],
-        'images': {
-            # 将来的に追加
-        },
+        'images': {},
         'base_path': 'summer'
     },
     'autumn': {
         'period': [(9, 1, 11, 30)],
-        'images': {
-            # 将来的に追加
-        },
+        'images': {},
         'base_path': 'autumn'
     },
     'keiro': {
@@ -220,7 +216,6 @@ IMAGE_ALT_MAPPING = {
     'tanzaku-soft.png': '七夕・短冊を連想する淡色粒子',
     'bamboo-soft.png': '七夕・竹を連想する淡色粒子',
     'firework-soft.png': '夏・花火を連想する淡色粒子',
-    'wave-soft.png': '夏・波を連想する淡色粒子',
     'hina-doll-soft.png': 'ひな祭りを連想する淡色粒子',
     'gift-soft.png': 'ホワイトデー・贈り物を連想する淡色粒子',
     'cap-soft.png': '卒業・角帽を連想する淡色粒子',
@@ -233,7 +228,6 @@ IMAGE_ALT_MAPPING = {
     'ornament-soft.png': 'クリスマス・オーナメントを連想する淡色粒子',
     'maple-soft.png': '秋・もみじを連想する淡色粒子',
     'tulip-soft.png': '母の日・チューリップを連想する淡色粒子',
-    'crystal-soft.png': '冬・雪の結晶を連想する淡色粒子',
     # 行事装飾（img/events/）
     'tanabata-bamboo.png': '七夕・竹を連想する淡色装飾',
     'tanabata-streamer.png': '七夕・短冊を連想する淡色装飾',
@@ -454,7 +448,6 @@ PARTICLE_PROFILES = {
         ['❄', '❅', '❆'],
         '#ffffff',
         'medium',
-        sprites=[{'path': 'img/particles/winter/crystal-soft.png', 'weight': 1}],
     ),
     'setubun': _particle_profile(
         ['·', '✨'],
@@ -543,10 +536,7 @@ PARTICLE_PROFILES = {
         ['✨', '☀', '·'],
         '#fff9c4',
         'medium',
-        sprites=[
-            {'path': 'img/particles/summer/firework-soft.png', 'weight': 1},
-            {'path': 'img/particles/summer/wave-soft.png', 'weight': 1},
-        ],
+        sprites=[{'path': 'img/particles/summer/firework-soft.png', 'weight': 1}],
     ),
     'keiro': _particle_profile(
         ['✨', '🌸'],

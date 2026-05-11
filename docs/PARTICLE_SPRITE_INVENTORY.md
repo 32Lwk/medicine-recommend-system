@@ -8,7 +8,7 @@
 | halloween | `halloween/pumpkin-soft.png` |
 | christmas | `christmas/ornament-soft.png` |
 | newyear | `newyear/kadomatsu-soft.png` |
-| winter | `winter/crystal-soft.png` |
+| winter | なし（絵文字のみ） |
 | setubun | `setubun/soybean-soft.png` |
 | hinamatsuri | `hinamatsuri/hina-doll-soft.png` |
 | whiteday | `whiteday/gift-soft.png` |
@@ -20,7 +20,7 @@
 | mothersday | `mothersday/tulip-soft.png` |
 | spring | `spring/butterfly-soft.png` |
 | tanabata | `tanabata/tanzaku-soft.png`, `tanabata/bamboo-soft.png` |
-| summer | `summer/firework-soft.png`, `summer/wave-soft.png` |
+| summer | `summer/firework-soft.png` |
 | keiro | `keiro/carnation-particle-soft.png` |
 | shichigosan | `shichigosan/fan-soft.png` |
 | autumn | `autumn/maple-soft.png` |

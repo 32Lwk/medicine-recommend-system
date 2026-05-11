@@ -6,8 +6,6 @@ import logging
 from typing import Dict
 from src.utils.debug_logger import add_network_log, performance_stats
 from datetime import datetime
-# from typing import List
-# from openai.types.chat import ChatCompletionMessageParam ←不要なので削除
 
 # ログ設定
 logger = logging.getLogger(__name__)
@@ -31,8 +29,6 @@ from src.core.attribute_extractor import (
     create_multilingual_attribute_extraction_prompt,
     extract_user_attributes_multilingual,
 )
-# 後方互換: medicine_logic 経由の import を許容
-
 
 from src.core.translation_service import translate_medicine_recommendation
 from src.core.user_detection import (

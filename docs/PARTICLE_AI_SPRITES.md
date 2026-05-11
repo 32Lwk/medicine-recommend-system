@@ -33,7 +33,7 @@
 | `car-soft.png` / `plane-soft.png` | GW・車・飛行機のシルエット、透明背景 |
 | `carp-streamer-soft.png` / `kabuto-soft.png` | こいのぼり・兜、透明背景 |
 | `tanzaku-soft.png` / `bamboo-soft.png` | 七夕・短冊・竹、透明背景 |
-| `firework-soft.png` / `wave-soft.png` | 夏・花火・波、透明背景 |
+| `firework-soft.png` | 夏・花火、透明背景（波用スプライトは未コミットのため未登録） |
 | `hina-doll-soft.png` | ひな祭り・人形シルエット抽象、透明背景 |
 | `gift-soft.png` | ホワイトデー・ギフト箱、透明背景 |
 | `cap-soft.png` / `bag-soft.png` | 卒業角帽・ランドセル、透明背景 |
@@ -41,7 +41,7 @@
 | `carnation-particle-soft.png` | 敬老・カーネーション、透明背景 |
 | `fan-soft.png` | 七五三・扇子風、透明背景 |
 | `kadomatsu-soft.png` / `ornament-soft.png` | 正月門松・クリスマスオーナメント、透明背景 |
-| `maple-soft.png` / `tulip-soft.png` / `crystal-soft.png` | 秋もみじ・母の日チューリップ・雪結晶、透明背景 |
+| `maple-soft.png` / `tulip-soft.png` | 秋もみじ・母の日チューリップ、透明背景（冬の雪結晶スプライトは未コミットのため未登録） |
 
 ※ ツール出力の PNG は **真の完全アルファ**にならない場合がある。縁が気になる場合は画像編集でアルファ調整する。
 
