@@ -1,6 +1,6 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月11日**（ローカル起動の FastAPI 既定化・オンボーディング／情報モーダル整備・DB 起動ログ改善）
+**最終更新日: 2026年5月11日**（FastAPI 既定ローカル起動・オンボーディング／情報モーダル・DB 起動ログ・オンボーディング詳細のスクロール整備）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
 
@@ -19,6 +19,8 @@
 - **`static/js/main.js`**
   - **オンボーディング**: ステップ2・3 で **スポットライト座標更新**・**該当ボタンの pointer-events 有効化**、`resize` 購読。1枚目を **本番停止・GCP 開発環境・改善リスト（`details` + `items`）・リンク** に更新（多言語）。補足文・長い箇条書きの整理。
   - **情報モーダル（アプリ概要等）**: **運営者「基本情報」ブロック削除**（app-overview / operator・4言語）。**開発環境・使用ツール** を **FastAPI / MeCab / OpenAI API 表記**、**GCP（Cloud Run）+ Gunicorn UvicornWorker**、**CI/CD を Cloud Build** に更新。**Render 表記を削除**。Flask 補足・技術欄の Flask 注記を削除。**`createOnboardingDetailsMarkup`** に **`items` 配列**対応。
+- **`static/css/main.css`（追記・同日）**: オンボーディング **`<details>` 内スクロール**（`.onboarding-details-content`）の **最大高さを縮小**（ビューポート別に `min(…px, …vh)` を調整）、**`scrollbar-gutter: stable`**・**`overscroll-behavior: contain`**・**`-webkit-overflow-scrolling: touch`**・**`overflow-x: hidden`** でスクロール挙動を整理。説明文用 **`.onboarding-details-desc`**。`.onboarding-visual` / `.onboarding-title` の余白、**アクティブスライド**の **`.onboarding-details` の `min-height` / `flex-shrink`** でレイアウトのはみ出しを抑制。
+- **`static/js/main.js`（追記・同日）**: **`createOnboardingDetailsMarkup`** で `detail.description` を **`<p class="onboarding-details-desc">`** とし、**`.onboarding-details-content` 内**（箇条書き・ポリシー本文と同じスクロール領域）に **先頭で結合**。`<summary>` 直下に裸の説明を置かない構造に変更。
 
 ---
 
