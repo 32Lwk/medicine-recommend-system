@@ -96,15 +96,18 @@
                 title: "🛠️ 開発環境(dev)へようこそ",
                 visual: "🚧💊",
                 visualAlt: "開発中の薬剤師相談ツールのアイコン",
-                subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span><br>このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
+                subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span>',
                 body: [
+                    'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
                     "新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。",
                     "通常ご利用の方は、安定版である本番環境をご利用ください。"
                 ],
                 details: [
                     {
                         summary: "現在開発中の主な内容",
+                        itemsChecklist: true,
                         items: [
+                            { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
                             "潜在空間によるスコアリングの大規模改修",
                             "GPT-4系からGPT-5系への移行",
                             "UI・導線の最適化",
@@ -138,8 +141,9 @@
                     title: "チャット型医薬品相談ツール(β版)",
                     visual: "🤝💊",
                     visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境です</span><br>あなたが今ご覧になっているこのページは<span class="onboarding-env-here">開発環境</span>です。本番環境（更新停止中）とは別のサーバーで動作しており、改良はこちらでのみ進めています。',
+                    subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境です</span>',
                     body: [
+                        'あなたが今ご覧になっているこのページは<span class="onboarding-env-here">開発環境</span>です。本番環境（更新停止中）とは別のサーバーで動作しており、改良はこちらでのみ進めています。',
                         "症状を入力・話すだけで、市販薬候補・成分・効能・受診の目安をAIがまとめます。",
                         "第1段階の移行目標：2026年5月31日まで。"
                     ],
@@ -182,7 +186,7 @@
                     body: [
                         "「頭が痛い」「咳が止まらない」など、感じている症状を自由に入力してください。",
                         "テキストと音声入力に対応し、左上のボタンから英語・中国語・韓国語へ切り替えられます。",
-                        "※返信の自動翻訳機能はβ版のため現在停止しています。"
+                        "※AIの返信は、送信した文章の言語を自動検出し、日本語以外（英語・中国語・韓国語など）と判定された場合に自動翻訳されます。左上の切替は主に画面の文言表示です。"
                     ],
                     buttonText: "次へ",
                     buttonAria: "ステップ2へ進む"
@@ -277,12 +281,10 @@
                     details: [
                         {
                             summary: "📄 免責事項・利用規約を表示",
-                            description: "詳しい利用条件はこちらをご確認ください。",
                             policyKey: 'disclaimer'
                         },
                         {
                             summary: "🔒 プライバシーポリシーを表示",
-                            description: "個人情報の取り扱いについてはこちらをご確認ください。",
                             policyKey: 'privacy'
                         }
                     ],
@@ -376,15 +378,18 @@
                 title: "🛠️ Welcome to the Dev environment",
                 visual: "🚧💊",
                 visualAlt: "Icon representing the OTC assistant under development",
-                subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span><br>This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
+                subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span>',
                 body: [
+                    'This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
                     "This is where new features and experiments are tried out first. You may see broken layouts, transient errors, or data resets.",
                     "If you are a regular user, please use the production (stable) environment."
                 ],
                 details: [
                     {
                         summary: "What we are currently working on",
+                        itemsChecklist: true,
                         items: [
+                            { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
                             "Major scoring revamp using latent space",
                             "Migration from GPT-4 class to GPT-5 class models",
                             "UI and user-flow optimization",
@@ -418,14 +423,16 @@
                     title: "Welcome to the Chat-based OTC Assistant (Beta)",
                     visual: "🤝💊",
                     visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ You are on the DEV environment</span><br>The page you are viewing right now is the <span class="onboarding-env-here">development environment</span>. It runs on a separate server from production (updates paused), and all ongoing improvements happen here.',
+                    subtitle: '<span class="onboarding-env-badge">🛠️ You are on the DEV environment</span>',
                     body: [
+                        'The page you are viewing right now is the <span class="onboarding-env-here">development environment</span>. It runs on a separate server from production (updates paused), and all ongoing improvements happen here.',
                         "Type or speak your symptoms; the AI summarizes OTC options, ingredients, effects, and when to seek care.",
                         "Phase 1 transition target: May 31, 2026."
                     ],
                     details: [
                         {
                             summary: "Key development & improvements",
+                            itemsChecklist: true,
                             items: [
                                 "Major scoring revamp using latent space",
                                 "Migration from GPT-4 class to GPT-5 class models",
@@ -461,7 +468,8 @@
                     visualAlt: "Icons representing symptom input",
                     body: [
                         "Tell us anything such as “I have a headache” or “I can't stop coughing.”",
-                        "Both text and voice input are supported. Use the button in the upper left to switch between Japanese, English, Chinese, and Korean."
+                        "Both text and voice input are supported. Use the button in the upper left to switch between Japanese, English, Chinese, and Korean.",
+                        "* AI replies are translated when your message is detected as non-Japanese (e.g. English, Chinese, or Korean). The upper-left control mainly changes on-screen UI language."
                     ],
                     buttonText: "Next",
                     buttonAria: "Go to step 2"
@@ -556,12 +564,10 @@
                     details: [
                         {
                             summary: "📄 View Disclaimer & Terms",
-                            description: "Please check the detailed terms of use before continuing.",
                             policyKey: 'disclaimer'
                         },
                         {
                             summary: "🔒 View Privacy Policy",
-                            description: "Review how we handle your information.",
                             policyKey: 'privacy'
                         }
                     ],
@@ -667,15 +673,18 @@
                 title: "🛠️ 개발 환경(dev)에 오신 것을 환영합니다",
                 visual: "🚧💊",
                 visualAlt: "개발 중인 의약품 상담 도구 아이콘",
-                subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span><br>이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
+                subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span>',
                 body: [
+                    '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
                     "새 기능이나 개선안을 가장 먼저 시험할 수 있는 환경입니다. 레이아웃 깨짐·일시적 오류·데이터 리셋이 발생할 수 있습니다.",
                     "일반적으로 이용하시는 분은 안정판인 운영 환경을 이용해 주세요."
                 ],
                 details: [
                     {
                         summary: "현재 개발 중인 주요 내용",
+                        itemsChecklist: true,
                         items: [
+                            { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
                             "잠재 공간 기반 스코어링 대규모 개편",
                             "GPT-4 계열에서 GPT-5 계열로 이전",
                             "UI·사용자 동선 최적화",
@@ -709,14 +718,16 @@
                     title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                     visual: "🤝💊",
                     visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경입니다</span><br>지금 보고 계신 이 페이지는 <span class="onboarding-env-here">개발 환경</span>입니다. 운영 환경(업데이트 중단)과는 별도의 서버에서 동작하며, 모든 개선은 이곳에서만 진행됩니다.',
+                    subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경입니다</span>',
                     body: [
+                        '지금 보고 계신 이 페이지는 <span class="onboarding-env-here">개발 환경</span>입니다. 운영 환경(업데이트 중단)과는 별도의 서버에서 동작하며, 모든 개선은 이곳에서만 진행됩니다.',
                         "증상을 입력·말하면 AI가 일반의약품 후보·성분·효능·진료 시기 안내를 정리합니다.",
                         "1단계 전환 목표: 2026년 5월 31일까지."
                     ],
                     details: [
                         {
                             summary: "주요 개발·개선 내용",
+                            itemsChecklist: true,
                             items: [
                                 "잠재 공간 기반 스코어링 대규모 개편",
                                 "GPT-4 계열에서 GPT-5 계열로 이전",
@@ -752,7 +763,8 @@
                     visualAlt: "증상 입력을 상징하는 아이콘",
                     body: [
                         "“머리가 아파요”, “기침이 멈추지 않아요”와 같이 자유롭게 입력하세요.",
-                        "텍스트와 음성 입력을 모두 지원하며, 왼쪽 상단 버튼으로 일본어·영어·중국어·한국어를 전환할 수 있습니다."
+                        "텍스트와 음성 입력을 모두 지원하며, 왼쪽 상단 버튼으로 일본어·영어·중국어·한국어를 전환할 수 있습니다.",
+                        "* AI 답변은 보낸 문장의 언어를 자동 감지하여 일본어가 아닐 때(영어·중국어·한국어 등) 자동 번역됩니다. 왼쪽 상단 전환은 주로 화면 문구 표시용입니다."
                     ],
                     buttonText: "다음",
                     buttonAria: "스텝 2로 이동"
@@ -847,12 +859,10 @@
                     details: [
                         {
                             summary: "📄 면책 조항·이용약관 보기",
-                            description: "자세한 이용 조건을 확인해 주세요.",
                             policyKey: 'disclaimer'
                         },
                         {
                             summary: "🔒 개인정보 처리방침 보기",
-                            description: "개인정보 취급 방법을 확인해 주세요.",
                             policyKey: 'privacy'
                         }
                     ],
@@ -946,15 +956,18 @@
                 title: "🛠️ 欢迎来到开发环境(dev)",
                 visual: "🚧💊",
                 visualAlt: "开发中的药品咨询工具图标",
-                subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span><br>本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
+                subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span>',
                 body: [
+                    '本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
                     "可在此抢先体验新功能或试验性改动。可能出现布局错乱、临时错误或数据被重置等情况。",
                     "如您是普通用户，请使用稳定版的生产环境。"
                 ],
                 details: [
                     {
                         summary: "当前开发中的主要内容",
+                        itemsChecklist: true,
                         items: [
+                            { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
                             "基于潜在空间的大规模评分改造",
                             "从 GPT-4 系列迁移至 GPT-5 系列",
                             "UI 与流程优化",
@@ -988,14 +1001,16 @@
                     title: "欢迎使用聊天式药品咨询工具（测试版）",
                     visual: "🤝💊",
                     visualAlt: "药师通过手机提供咨询的示意图",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境</span><br>您当前正在访问的这个页面就是<span class="onboarding-env-here">开发环境</span>。它与生产环境（已暂停更新）运行在不同的服务器上，所有改进仅在此处进行。',
+                    subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境</span>',
                     body: [
+                        '您当前正在访问的这个页面就是<span class="onboarding-env-here">开发环境</span>。它与生产环境（已暂停更新）运行在不同的服务器上，所有改进仅在此处进行。',
                         "输入或说出症状，AI 会整理非处方药候选、成分、功效与就医建议。",
                         "第一阶段迁移目标：2026 年 5 月 31 日前。"
                     ],
                     details: [
                         {
                             summary: "主要开发与改进内容",
+                            itemsChecklist: true,
                             items: [
                                 "基于潜在空间的大规模评分改造",
                                 "从 GPT-4 系列迁移至 GPT-5 系列",
@@ -1031,7 +1046,8 @@
                     visualAlt: "症状输入界面的图示",
                     body: [
                         "例如“头很痛”“咳嗽停不下来”等，可自由描述。",
-                        "支持文字和语音输入，可通过左上角按钮切换日语、英语、韩语、中文。"
+                        "支持文字和语音输入，可通过左上角按钮切换日语、英语、韩语、中文。",
+                        "* AI 的回复会根据您发送内容的语言自动检测；若判定为日语以外（如英语、中文、韩语），会进行自动翻译。左上角切换主要影响界面用语。"
                     ],
                     buttonText: "下一步",
                     buttonAria: "前往步骤2"
@@ -1126,12 +1142,10 @@
                     details: [
                         {
                             summary: "📄 查看免责声明与使用条款",
-                            description: "继续前请确认详细条款。",
                             policyKey: 'disclaimer'
                         },
                         {
                             summary: "🔒 查看隐私政策",
-                            description: "了解我们如何处理您的信息。",
                             policyKey: 'privacy'
                         }
                     ],
@@ -1152,6 +1166,101 @@
         totalSlides: 0,
         touchStartX: 0
     };
+
+    let onboardingModalResizeObserver = null;
+
+    function syncOnboardingModalHeightVar() {
+        const container = document.getElementById('onboarding-container');
+        if (!container || container.classList.contains('hidden')) {
+            return;
+        }
+        const h = container.offsetHeight;
+        if (h > 0) {
+            container.style.setProperty('--onb-modal-height', h + 'px');
+        }
+    }
+
+    function teardownOnboardingModalHeightTracking() {
+        if (onboardingModalResizeObserver) {
+            onboardingModalResizeObserver.disconnect();
+            onboardingModalResizeObserver = null;
+        }
+        window.removeEventListener('resize', syncOnboardingModalHeightVar);
+        const container = document.getElementById('onboarding-container');
+        if (container) {
+            container.style.removeProperty('--onb-modal-height');
+        }
+    }
+
+    function setupOnboardingModalHeightTracking(container) {
+        teardownOnboardingModalHeightTracking();
+        if (!container) {
+            return;
+        }
+        window.addEventListener('resize', syncOnboardingModalHeightVar);
+        if (typeof ResizeObserver !== 'undefined') {
+            onboardingModalResizeObserver = new ResizeObserver(function() {
+                syncOnboardingModalHeightVar();
+            });
+            onboardingModalResizeObserver.observe(container);
+        }
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                syncOnboardingModalHeightVar();
+            });
+        });
+    }
+
+    let onboardingDetailsToggleBound = false;
+
+    function syncOnboardingDetailsDenseClass() {
+        const scrollEl = document.querySelector('#onboarding-slides .onboarding-slide.active .onboarding-slide-scroll');
+        if (!scrollEl) {
+            return;
+        }
+        const openCount = scrollEl.querySelectorAll('details.onboarding-details[open]').length;
+        scrollEl.classList.toggle('onboarding-details-dense', openCount >= 2);
+    }
+
+    function handleOnboardingDetailsToggleEvent(event) {
+        const t = event.target;
+        if (!t || typeof t.matches !== 'function' || !t.matches('details.onboarding-details')) {
+            return;
+        }
+        syncOnboardingDetailsDenseClass();
+    }
+
+    function ensureOnboardingDetailsToggleListener() {
+        const slides = document.getElementById('onboarding-slides');
+        if (!slides || onboardingDetailsToggleBound) {
+            return;
+        }
+        slides.addEventListener('toggle', handleOnboardingDetailsToggleEvent, true);
+        onboardingDetailsToggleBound = true;
+    }
+
+    function teardownOnboardingDetailsToggleListener() {
+        const slides = document.getElementById('onboarding-slides');
+        if (!slides || !onboardingDetailsToggleBound) {
+            return;
+        }
+        slides.removeEventListener('toggle', handleOnboardingDetailsToggleEvent, true);
+        onboardingDetailsToggleBound = false;
+    }
+
+    /** オンボーディングの読み取り専用チェックリスト用。{ text, defaultChecked: true } で実装済み表示（コード側のみ変更可） */
+    function normalizeOnboardingDetailItem(item) {
+        if (item == null) {
+            return { text: '', defaultChecked: false };
+        }
+        if (typeof item === 'string') {
+            return { text: item, defaultChecked: false };
+        }
+        return {
+            text: item.text != null ? String(item.text) : '',
+            defaultChecked: !!item.defaultChecked
+        };
+    }
 
     function getActiveTranslations() {
         return translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
@@ -1208,6 +1317,42 @@
         return baseSlides;
     }
 
+    function getFilteredOnboardingSlides() {
+        const slidesData = getOnboardingData(currentLanguage);
+        if (!slidesData.length) {
+            return [];
+        }
+        const isBetaVersion = isDevEnv() ||
+            document.title.includes('β') || document.title.includes('Beta') ||
+            (typeof translations !== 'undefined' && translations[currentLanguage] &&
+                translations[currentLanguage].title &&
+                (translations[currentLanguage].title.includes('β') || translations[currentLanguage].title.includes('Beta')));
+        return slidesData.filter((slide) => {
+            if (slide.hidden === true) {
+                return false;
+            }
+            if (slide.isBetaOnly && !isBetaVersion) {
+                return false;
+            }
+            return true;
+        });
+    }
+
+    function syncOnboardingActiveVisual(slide) {
+        const holder = document.getElementById('onboarding-active-visual');
+        if (!holder) {
+            return;
+        }
+        if (slide && slide.visual) {
+            const alt = escapeHtml(String(slide.visualAlt || ''));
+            holder.innerHTML = '<div class="onboarding-visual" role="img" aria-label="' + alt + '">' + slide.visual + '</div>';
+            holder.removeAttribute('aria-hidden');
+        } else {
+            holder.innerHTML = '';
+            holder.setAttribute('aria-hidden', 'true');
+        }
+    }
+
     function updateOnboardingSkipLabel() {
         const skipBtn = document.getElementById('onboarding-skip-btn');
         if (!skipBtn) {
@@ -1249,15 +1394,29 @@
 
         return slide.details.map(detail => {
             const summary = detail.summary || '';
-            const description = detail.description ? `<p class="onboarding-details-desc">${detail.description}</p>` : '';
             const content = getOnboardingDetailContent(detail);
-            const itemsHtml = Array.isArray(detail.items) && detail.items.length
-                ? `<ul>${detail.items.map(function(item) { return '<li>' + item + '</li>'; }).join('')}</ul>`
-                : '';
-            const innerParts = [];
-            if (description) {
-                innerParts.push(description);
+            let itemsHtml = '';
+            if (Array.isArray(detail.items) && detail.items.length) {
+                if (detail.itemsChecklist) {
+                    const lis = detail.items.map(function (item) {
+                        const norm = normalizeOnboardingDetailItem(item);
+                        const doneClass = norm.defaultChecked ? ' is-done' : '';
+                        return (
+                            '<li class="onboarding-checklist-item' + doneClass + '">' +
+                            '<span class="onboarding-checklist-marker" aria-hidden="true"></span>' +
+                            '<span class="onboarding-checklist-text">' + escapeHtml(norm.text) + '</span>' +
+                            '</li>'
+                        );
+                    }).join('');
+                    itemsHtml = '<ul class="onboarding-checklist onboarding-checklist-readonly" role="list">' + lis + '</ul>';
+                } else {
+                    itemsHtml = '<ul>' + detail.items.map(function (item) {
+                        const t = typeof item === 'string' ? item : (item && item.text != null ? String(item.text) : '');
+                        return '<li>' + t + '</li>';
+                    }).join('') + '</ul>';
+                }
             }
+            const innerParts = [];
             if (itemsHtml) {
                 innerParts.push(itemsHtml);
             }
@@ -1295,9 +1454,10 @@
         if (!slidesContainer) {
             return;
         }
-        const slidesData = getOnboardingData(currentLanguage);
-        if (!slidesData.length) {
+        const filteredSlides = getFilteredOnboardingSlides();
+        if (!filteredSlides.length) {
             slidesContainer.innerHTML = '';
+            syncOnboardingActiveVisual(null);
             onboardingState.totalSlides = 0;
             onboardingState.currentSlide = 0;
             const indicator = document.getElementById('slide-indicator');
@@ -1306,27 +1466,7 @@
             }
             return;
         }
-        // β版判定（タイトルに「β版」が含まれている、または開発環境のとき β 扱い）
-        // 開発環境(dev)では、テスター・開発者向けの資料スライド(isBetaOnly)も表示する。
-        const isBetaVersion = isDevEnv() ||
-                             document.title.includes('β') || document.title.includes('Beta') ||
-                             (typeof translations !== 'undefined' && translations[currentLanguage] && 
-                              translations[currentLanguage].title && 
-                              (translations[currentLanguage].title.includes('β') || translations[currentLanguage].title.includes('Beta')));
-        
-        // フィルタリング後のスライドを取得
-        const filteredSlides = slidesData.filter((slide) => {
-            // 非表示指定のスライドは表示しない
-            if (slide.hidden === true) {
-                return false;
-            }
-            // β版のみのスライドは、β版の場合のみ表示
-            if (slide.isBetaOnly && !isBetaVersion) {
-                return false;
-            }
-            return true;
-        });
-        
+
         // フィルタリング後のスライド数に基づいてtargetIndexを計算
         const filteredTotal = filteredSlides.length;
         let targetIndex = Math.max(0, Math.min(activeIndex, filteredTotal - 1));
@@ -1364,34 +1504,45 @@
                     ? createOnboardingFinalActions(slide)
                     : `<button type="button" class="onboarding-btn" onclick="nextOnboardingSlide()" aria-label="${slide.buttonAria || slide.buttonText}">${slide.buttonText}</button>`;
                 const subtitleHtml = slide.subtitle ? `<p class="onboarding-subtitle">${slide.subtitle}</p>` : '';
-                const visualHtml = slide.visual ? `<div class="onboarding-visual" role="img" aria-label="${slide.visualAlt || ''}">${slide.visual}</div>` : '';
                 return `
                     <div class="onboarding-slide${isActive ? ' active' : ''}" role="tabpanel" data-slide-index="${filteredIndex}" aria-hidden="${isActive ? 'false' : 'true'}">
-                        ${visualHtml}
-                        <h2 class="onboarding-title">${slide.title}</h2>
-                        ${subtitleHtml}
-                        <div class="onboarding-desc">
-                            ${bodyHtml}
-                            ${listHtml}
-                            ${bulletsHtml}
-                            ${customHtml}
-                            ${linksHtml}
+                        <div class="onboarding-slide-header">
+                            <h2 class="onboarding-title">${slide.title}</h2>
+                            ${subtitleHtml}
                         </div>
-                        ${detailsHtml}
-                        ${actionsHtml}
+                        <div class="onboarding-slide-scroll">
+                            <div class="onboarding-desc">
+                                ${bodyHtml}
+                                ${listHtml}
+                                ${bulletsHtml}
+                                ${customHtml}
+                                ${linksHtml}
+                            </div>
+                            ${detailsHtml}
+                        </div>
+                        <div class="onboarding-slide-footer">
+                            ${actionsHtml}
+                        </div>
                     </div>
                 `;
             }).join('');
         slidesContainer.innerHTML = html;
+        syncOnboardingActiveVisual(filteredSlides[targetIndex] || null);
         updateOnboardingIndicator(targetIndex);
         updateOnboardingSkipLabel();
         onboardingState.touchStartX = 0;
-        // 初期表示時にも要素を強調し、制御を設定
-        setTimeout(function() {
-            highlightOnboardingElements(targetIndex);
-            setOnboardingStepControls(targetIndex);
-            scheduleOnboardingSpotlightUpdate(targetIndex);
-        }, 100);
+        // 初期表示時にも要素を強調し、制御を設定（レイアウト確定後すぐ。100ms だとオーバーレイがクリック遮断になるまでに隙ができる）
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                setOnboardingStepControls(targetIndex);
+                highlightOnboardingElements(targetIndex);
+                syncOnboardingChatTabstops(getOnboardingInteractionMode(targetIndex));
+                if (onboardingState.initialized) {
+                    syncOnboardingModalHeightVar();
+                    syncOnboardingDetailsDenseClass();
+                }
+            });
+        });
     }
 
     function updateOnboardingIndicator(activeIndex) {
@@ -1422,114 +1573,6 @@
         }
     }
 
-    const ONBOARDING_SPOTLIGHT_PROPS = ['--onb-spot-x', '--onb-spot-y', '--onb-spot-rx', '--onb-spot-ry'];
-
-    function clearOnboardingSpotlight(overlay) {
-        if (!overlay) {
-            return;
-        }
-        ONBOARDING_SPOTLIGHT_PROPS.forEach(function(prop) {
-            overlay.style.removeProperty(prop);
-        });
-    }
-
-    function unionClientRects(a, b) {
-        const left = Math.min(a.left, b.left);
-        const top = Math.min(a.top, b.top);
-        const right = Math.max(a.right, b.right);
-        const bottom = Math.max(a.bottom, b.bottom);
-        return {
-            cx: (left + right) / 2,
-            cy: (top + bottom) / 2,
-            halfW: (right - left) / 2,
-            halfH: (bottom - top) / 2
-        };
-    }
-
-    function applyOnboardingSpotlightEllipse(overlay, cx, cy, halfW, halfH, pad, grow) {
-        const rx = Math.max(halfW * grow + pad, 96);
-        const ry = Math.max(halfH * grow + pad, 36);
-        overlay.style.setProperty('--onb-spot-x', cx + 'px');
-        overlay.style.setProperty('--onb-spot-y', cy + 'px');
-        overlay.style.setProperty('--onb-spot-rx', rx + 'px');
-        overlay.style.setProperty('--onb-spot-ry', ry + 'px');
-    }
-
-    function updateOnboardingSpotlight(slideIndex) {
-        const overlay = document.getElementById('onboarding-overlay');
-        if (!overlay) {
-            return;
-        }
-        clearOnboardingSpotlight(overlay);
-        if (slideIndex !== 2 && slideIndex !== 3) {
-            return;
-        }
-        const pad = 28;
-        if (slideIndex === 2) {
-            const el = document.getElementById('userInfoBtn');
-            if (!el) {
-                return;
-            }
-            const r = el.getBoundingClientRect();
-            applyOnboardingSpotlightEllipse(
-                overlay,
-                r.left + r.width / 2,
-                r.top + r.height / 2,
-                r.width / 2,
-                r.height / 2,
-                pad,
-                1.2
-            );
-            return;
-        }
-        const adminBtn = document.getElementById('admin-request-btn');
-        const infoBtn = document.getElementById('infoBtn');
-        if (adminBtn && infoBtn) {
-            const u = unionClientRects(adminBtn.getBoundingClientRect(), infoBtn.getBoundingClientRect());
-            applyOnboardingSpotlightEllipse(overlay, u.cx, u.cy, u.halfW, u.halfH, pad, 1.25);
-        } else if (adminBtn) {
-            const r = adminBtn.getBoundingClientRect();
-            applyOnboardingSpotlightEllipse(
-                overlay,
-                r.left + r.width / 2,
-                r.top + r.height / 2,
-                r.width / 2,
-                r.height / 2,
-                pad,
-                1.2
-            );
-        } else if (infoBtn) {
-            const r = infoBtn.getBoundingClientRect();
-            applyOnboardingSpotlightEllipse(
-                overlay,
-                r.left + r.width / 2,
-                r.top + r.height / 2,
-                r.width / 2,
-                r.height / 2,
-                pad,
-                1.35
-            );
-        }
-    }
-
-    function scheduleOnboardingSpotlightUpdate(slideIndex) {
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                updateOnboardingSpotlight(slideIndex);
-            });
-        });
-    }
-
-    function handleOnboardingResize() {
-        if (!onboardingState.initialized) {
-            return;
-        }
-        const step = onboardingState.currentSlide;
-        if (step === 2 || step === 3) {
-            updateOnboardingSpotlight(step);
-        }
-    }
-
     function highlightOnboardingElements(slideIndex) {
         // すべての強調を解除
         document.querySelectorAll('.onboarding-highlight').forEach(el => {
@@ -1539,26 +1582,14 @@
             el.classList.remove('onboarding-highlight-parent');
         });
 
-        // 各ステップに応じて要素を強調
+        // 各ステップに応じて要素を強調（言語 UI の強調はスライド0・1のみ）
         switch(slideIndex) {
-            case 0: // ステップ0: 言語選択ボタン
-                const langToggle0 = document.querySelector('.lang-toggle');
-                const languageSelector0 = document.querySelector('.language-selector');
-                
-                if (langToggle0) {
-                    langToggle0.classList.add('onboarding-highlight');
-                    // 親要素も強調対象にする（z-indexを確実に適用するため）
-                    if (languageSelector0) {
-                        languageSelector0.classList.add('onboarding-highlight-parent');
-                    }
-                }
+            case 0: // ステップ0: 言語選択（視覚強調は末尾で共通適用）
                 break;
             
             case 1: // ステップ1: 入力欄、マイクボタン、言語選択ボタン
                 const messageInput = document.getElementById('messageInput');
                 const micBtn = document.getElementById('micBtn');
-                const langToggle = document.querySelector('.lang-toggle');
-                const languageSelector = document.querySelector('.language-selector');
                 
                 if (messageInput) {
                     const inputGroup = messageInput.closest('.input-group');
@@ -1570,13 +1601,6 @@
                 }
                 if (micBtn) {
                     micBtn.classList.add('onboarding-highlight');
-                }
-                if (langToggle) {
-                    langToggle.classList.add('onboarding-highlight');
-                    // 親要素も強調対象にする（z-indexを確実に適用するため）
-                    if (languageSelector) {
-                        languageSelector.classList.add('onboarding-highlight-parent');
-                    }
                 }
                 break;
             
@@ -1605,13 +1629,172 @@
                 break;
             
             default:
-                // ステップ4（免責事項）では強調なし
                 break;
+        }
+
+        if (slideIndex === 0 || slideIndex === 1) {
+            const langToggleAlways = document.querySelector('.lang-toggle');
+            const languageSelectorAlways = document.querySelector('.language-selector');
+            if (langToggleAlways) {
+                langToggleAlways.classList.add('onboarding-highlight');
+            }
+            if (languageSelectorAlways) {
+                languageSelectorAlways.classList.add('onboarding-highlight-parent');
+            }
         }
     }
 
+    function getOnboardingInteractionMode(slideIndex) {
+        if (typeof slideIndex !== 'number' || slideIndex < 0) {
+            return 'locked';
+        }
+        if (slideIndex >= 4) {
+            return 'locked';
+        }
+        return String(slideIndex);
+    }
+
+    const ONBOARDING_TAB_STASH = 'data-onb-tabindex-stash';
+
+    function restoreAllOnboardingChatTabstops() {
+        const chat = document.querySelector('.chat-container');
+        if (!chat) {
+            return;
+        }
+        chat.querySelectorAll('[' + ONBOARDING_TAB_STASH + ']').forEach(function(el) {
+            const prev = el.getAttribute(ONBOARDING_TAB_STASH);
+            el.removeAttribute(ONBOARDING_TAB_STASH);
+            if (prev === '__default__') {
+                el.removeAttribute('tabindex');
+            } else {
+                el.setAttribute('tabindex', prev);
+            }
+        });
+    }
+
+    function isChatElementAllowedInOnboardingInteraction(el, interactionMode) {
+        const chat = document.querySelector('.chat-container');
+        if (!chat || !chat.contains(el)) {
+            return false;
+        }
+        if (el.closest('.language-selector')) {
+            return true;
+        }
+        if (interactionMode === 'locked') {
+            return false;
+        }
+        if (interactionMode === '0') {
+            return false;
+        }
+        if (interactionMode === '1') {
+            return false;
+        }
+        if (interactionMode === '2') {
+            return false;
+        }
+        if (interactionMode === '3') {
+            return false;
+        }
+        return false;
+    }
+
+    function syncOnboardingChatTabstops(interactionMode) {
+        const chat = document.querySelector('.chat-container');
+        if (!chat || !document.body.classList.contains('onboarding-open')) {
+            return;
+        }
+        restoreAllOnboardingChatTabstops();
+        const sel = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]';
+        chat.querySelectorAll(sel).forEach(function(el) {
+            if (!isChatElementAllowedInOnboardingInteraction(el, interactionMode)) {
+                if (!el.hasAttribute(ONBOARDING_TAB_STASH)) {
+                    const had = el.hasAttribute('tabindex');
+                    const prev = had ? el.getAttribute('tabindex') : '__default__';
+                    el.setAttribute(ONBOARDING_TAB_STASH, prev);
+                    el.tabIndex = -1;
+                }
+            }
+        });
+        const ae = document.activeElement;
+        if (ae && chat.contains(ae) && !isChatElementAllowedInOnboardingInteraction(ae, interactionMode)) {
+            try {
+                ae.blur();
+            } catch (eBlur) {
+                /* noop */
+            }
+            const modal = document.getElementById('onboarding-container');
+            if (modal && typeof modal.focus === 'function') {
+                modal.focus({ preventScroll: true });
+            }
+        }
+    }
+
+    let onboardingChatGuardAttached = false;
+    const ONBOARDING_TOUCH_GUARD_OPTS = { capture: true, passive: false };
+
+    function onboardingChatInteractionGuardHandler(event) {
+        if (!document.body.classList.contains('onboarding-open')) {
+            return;
+        }
+        const mode = document.body.getAttribute('data-onboarding-interaction');
+        if (mode === null || mode === '') {
+            return;
+        }
+        let raw = event.target;
+        if (!raw) {
+            return;
+        }
+        if (raw.nodeType === 3) {
+            raw = raw.parentElement;
+        }
+        if (!(raw instanceof Element)) {
+            return;
+        }
+        const chat = document.querySelector('.chat-container');
+        if (!chat || !chat.contains(raw)) {
+            return;
+        }
+        if (isChatElementAllowedInOnboardingInteraction(raw, mode)) {
+            return;
+        }
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+    }
+
+    function attachOnboardingChatInteractionGuard() {
+        if (onboardingChatGuardAttached) {
+            return;
+        }
+        onboardingChatGuardAttached = true;
+        document.addEventListener('pointerdown', onboardingChatInteractionGuardHandler, true);
+        document.addEventListener('click', onboardingChatInteractionGuardHandler, true);
+        document.addEventListener('touchstart', onboardingChatInteractionGuardHandler, ONBOARDING_TOUCH_GUARD_OPTS);
+    }
+
+    function detachOnboardingChatInteractionGuard() {
+        if (!onboardingChatGuardAttached) {
+            return;
+        }
+        onboardingChatGuardAttached = false;
+        document.removeEventListener('pointerdown', onboardingChatInteractionGuardHandler, true);
+        document.removeEventListener('click', onboardingChatInteractionGuardHandler, true);
+        document.removeEventListener('touchstart', onboardingChatInteractionGuardHandler, ONBOARDING_TOUCH_GUARD_OPTS);
+    }
+
     function setOnboardingStepControls(index) {
-        // すべてのボタンを一旦無効化
+        const overlay = document.getElementById('onboarding-overlay');
+        if (overlay) {
+            overlay.setAttribute('data-step', index);
+        }
+        document.body.setAttribute('data-onboarding-step', index);
+        document.body.setAttribute('data-onboarding-interaction', getOnboardingInteractionMode(index));
+
+        // クリック可否は CSS（body.onboarding-open .chat-container * + ステップ別許可）に任せ、ここでは見た目の淡色のみ制御
         const disabledButtons = [
             '#infoBtn',
             '#micBtn',
@@ -1626,108 +1809,76 @@
             '#messageInput'
         ];
 
-        // すべての要素を無効化
         disabledButtons.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                el.style.pointerEvents = 'none';
+            document.querySelectorAll(selector).forEach(el => {
                 el.style.opacity = '0.6';
-                el.style.cursor = 'not-allowed';
             });
         });
 
         disabledElements.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                el.style.pointerEvents = 'none';
+            document.querySelectorAll(selector).forEach(el => {
                 el.style.opacity = '0.6';
-                if (selector === '#messageInput') {
-                    el.style.cursor = 'not-allowed';
-                }
             });
         });
 
-        // ステップに応じて要素を有効化
+        const languageSelectorDim = document.querySelector('.language-selector');
+        const langToggleDim = document.querySelector('.lang-toggle');
+        if (languageSelectorDim) {
+            languageSelectorDim.style.opacity = '1';
+        }
+        if (langToggleDim) {
+            langToggleDim.style.opacity = '1';
+        }
+
+        const inputGroupDim = document.querySelector('.input-group');
+        if (inputGroupDim) {
+            inputGroupDim.style.opacity = index === 1 ? '1' : '0.6';
+        }
+
         switch(index) {
-            case 0: // ステップ0: 言語選択ボタンのみ操作可能
-                const langToggle = document.querySelector('.lang-toggle');
-                const languageSelector = document.querySelector('.language-selector');
-                if (langToggle) {
-                    langToggle.style.pointerEvents = 'auto';
-                    langToggle.style.opacity = '1';
-                    langToggle.style.cursor = 'pointer';
-                }
-                if (languageSelector) {
-                    languageSelector.style.pointerEvents = 'auto';
-                }
+            case 0:
                 break;
-            
-            case 1: // ステップ1: メッセージ入力エリア、送信ボタン、🎤ボタンを操作可能
+
+            case 1: {
                 const messageInput = document.getElementById('messageInput');
                 const micBtn = document.getElementById('micBtn');
                 const sendButton = document.querySelector('#chatForm button[type="submit"]');
                 const chatForm = document.getElementById('chatForm');
-                
                 if (messageInput) {
-                    messageInput.style.pointerEvents = 'auto';
                     messageInput.style.opacity = '1';
-                    messageInput.style.cursor = 'text';
                 }
                 if (micBtn) {
-                    micBtn.style.pointerEvents = 'auto';
                     micBtn.style.opacity = '1';
-                    micBtn.style.cursor = 'pointer';
                 }
                 if (sendButton) {
-                    sendButton.style.pointerEvents = 'auto';
                     sendButton.style.opacity = '1';
-                    sendButton.style.cursor = 'pointer';
                 }
                 if (chatForm) {
-                    chatForm.style.pointerEvents = 'auto';
-                }
-                // 入力エリアのコンテナも有効化
-                const inputGroup = document.querySelector('.input-group');
-                if (inputGroup) {
-                    inputGroup.style.pointerEvents = 'auto';
+                    chatForm.style.opacity = '1';
                 }
                 break;
+            }
 
-            case 2: // ステップ2: ユーザー情報登録のみ操作可能
+            case 2: {
                 const userInfoBtn = document.getElementById('userInfoBtn');
                 if (userInfoBtn) {
-                    userInfoBtn.style.pointerEvents = 'auto';
                     userInfoBtn.style.opacity = '1';
-                    userInfoBtn.style.cursor = 'pointer';
                 }
                 break;
+            }
 
-            case 3: // ステップ3: 薬剤師要請・ℹーのみ操作可能
+            case 3: {
                 const adminRequestBtn = document.getElementById('admin-request-btn');
                 const infoBtnStep3 = document.getElementById('infoBtn');
-                const infoSelectorStep3 = document.querySelector('.info-selector');
                 if (adminRequestBtn) {
-                    adminRequestBtn.style.pointerEvents = 'auto';
                     adminRequestBtn.style.opacity = '1';
-                    adminRequestBtn.style.cursor = 'pointer';
                 }
                 if (infoBtnStep3) {
-                    infoBtnStep3.style.pointerEvents = 'auto';
                     infoBtnStep3.style.opacity = '1';
-                    infoBtnStep3.style.cursor = 'pointer';
-                }
-                if (infoSelectorStep3) {
-                    infoSelectorStep3.style.pointerEvents = 'auto';
                 }
                 break;
+            }
         }
-
-        // オーバーレイとbodyにステップ情報を追加
-        const overlay = document.getElementById('onboarding-overlay');
-        if (overlay) {
-            overlay.setAttribute('data-step', index);
-        }
-        document.body.setAttribute('data-onboarding-step', index);
     }
 
     function goToOnboardingSlide(index) {
@@ -1748,10 +1899,19 @@
             }
         });
         onboardingState.currentSlide = index;
+        const filtered = getFilteredOnboardingSlides();
+        syncOnboardingActiveVisual(filtered[index] || null);
         updateOnboardingIndicator(index);
-        highlightOnboardingElements(index);
         setOnboardingStepControls(index);
-        scheduleOnboardingSpotlightUpdate(index);
+        highlightOnboardingElements(index);
+        syncOnboardingChatTabstops(getOnboardingInteractionMode(index));
+        const slidesRoot = document.getElementById('onboarding-slides');
+        if (slidesRoot) {
+            const scrollArea = slidesRoot.querySelector('.onboarding-slide.active .onboarding-slide-scroll');
+            if (scrollArea) {
+                scrollArea.scrollTop = 0;
+            }
+        }
     }
 
     function nextOnboardingSlide() {
@@ -1794,12 +1954,11 @@
     }
 
     function hideOnboardingOverlay() {
+        detachOnboardingChatInteractionGuard();
         const overlay = document.getElementById('onboarding-overlay');
         const container = document.getElementById('onboarding-container');
         const slidesContainer = document.getElementById('onboarding-slides');
-        window.removeEventListener('resize', handleOnboardingResize);
         if (overlay) {
-            clearOnboardingSpotlight(overlay);
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');
             overlay.removeAttribute('data-step');
@@ -1808,9 +1967,13 @@
             container.classList.add('hidden');
             container.setAttribute('aria-hidden', 'true');
             container.removeEventListener('keydown', handleOnboardingKeydown);
+            teardownOnboardingModalHeightTracking();
+            teardownOnboardingDetailsToggleListener();
         }
+        restoreAllOnboardingChatTabstops();
         document.body.classList.remove('onboarding-open');
         document.body.removeAttribute('data-onboarding-step');
+        document.body.removeAttribute('data-onboarding-interaction');
         if (slidesContainer) {
             slidesContainer.removeEventListener('touchstart', handleOnboardingTouchStart);
             slidesContainer.removeEventListener('touchend', handleOnboardingTouchEnd);
@@ -1831,7 +1994,6 @@
                 el.style.cursor = '';
             }
         });
-        document.body.classList.remove('onboarding-open');
         onboardingState.initialized = false;
         const messageInput = document.getElementById('messageInput');
         if (messageInput) {
@@ -1876,8 +2038,12 @@
         container.classList.remove('hidden');
         container.setAttribute('aria-hidden', 'false');
         document.body.classList.add('onboarding-open');
-        document.body.setAttribute('data-onboarding-step', '0');
+        attachOnboardingChatInteractionGuard();
+        setOnboardingStepControls(0);
+        syncOnboardingChatTabstops(getOnboardingInteractionMode(0));
         renderOnboardingSlides(0);
+        setupOnboardingModalHeightTracking(container);
+        ensureOnboardingDetailsToggleListener();
         container.addEventListener('keydown', handleOnboardingKeydown);
         const slidesContainer = document.getElementById('onboarding-slides');
         if (slidesContainer) {
@@ -1893,8 +2059,6 @@
                 container.focus({ preventScroll: true });
             }
         }, 0);
-        window.removeEventListener('resize', handleOnboardingResize);
-        window.addEventListener('resize', handleOnboardingResize, { passive: true });
     }
 
     function handleOnboardingTouchStart(event) {
@@ -1941,10 +2105,10 @@
         if (!onboardingState.initialized) {
             return;
         }
-        const slidesData = getOnboardingData(currentLanguage);
+        const filtered = getFilteredOnboardingSlides();
         let targetIndex = onboardingState.currentSlide;
-        if (targetIndex >= slidesData.length) {
-            targetIndex = slidesData.length ? slidesData.length - 1 : 0;
+        if (targetIndex >= filtered.length) {
+            targetIndex = filtered.length ? filtered.length - 1 : 0;
         }
         renderOnboardingSlides(targetIndex);
     }
@@ -3233,7 +3397,7 @@
                             <p><strong>A:</strong> ブラウザのマイクアクセス許可を確認してください。ChromeやSafariでは、URLバーの左側のアイコンからマイクの許可状態を確認できます。また、HTTPS接続（またはlocalhost）でのみ音声入力が利用可能です。</p>
                             
                             <h5>Q2. 言語切替ボタンで表示言語を変えても、AIの返信が日本語のままです</h5>
-                            <p><strong>A:</strong> 現在β版の制限により、AIの返信の自動翻訳機能は停止しています。表示言語はUIの表示のみに影響します。現在、翻訳精度向上のため、改善を進めています。</p>
+                            <p><strong>A:</strong> 左上の切替は主にUI（画面のラベルや初期メッセージなど）の言語変更です。AIの返信は、送信テキストの言語を自動検出し、日本語以外と判定された場合に英語・中国語・韓国語へ翻訳して返します。日本語のみで入力していると、表示だけ英語等にしても返信は日本語のままです。</p>
                             
                             <h5>Q3. 複数の症状を同時に相談できますか？</h5>
                             <p><strong>A:</strong> はい、可能です。「頭が痛くて、咳も出る」のように、複数の症状を一度に入力できます。AIが総合的に判断して、適切な市販薬を提案します。</p>
@@ -3308,7 +3472,7 @@
                             <p><strong>A:</strong> Please check your browser's microphone permission. In Chrome or Safari, you can check the microphone permission status from the icon on the left side of the URL bar. Also, voice input is only available on HTTPS connections (or localhost).</p>
                             
                             <h5>Q2. Even after changing the display language with the language toggle button, the AI's reply remains in Japanese</h5>
-                            <p><strong>A:</strong> Currently, due to beta version limitations, the automatic translation function for AI replies is disabled. The display language only affects the UI display. We are working on improvements to enhance translation accuracy.</p>
+                            <p><strong>A:</strong> The upper-left toggle mainly changes UI strings (labels, greeting, etc.). AI replies are translated when your <em>message text</em> is detected as non-Japanese (English, Chinese, or Korean). If you keep typing in Japanese, replies stay in Japanese even if the UI is in another language.</p>
                             
                             <h5>Q3. Can I consult about multiple symptoms at the same time?</h5>
                             <p><strong>A:</strong> Yes, you can. You can input multiple symptoms at once, such as "I have a headache and a cough." The AI will comprehensively evaluate and suggest appropriate over-the-counter medicines.</p>
@@ -3382,7 +3546,7 @@
                             <p><strong>A:</strong> 브라우저의 마이크 액세스 허용을 확인해 주세요. Chrome이나 Safari에서는 URL 바의 왼쪽 아이콘에서 마이크 허용 상태를 확인할 수 있습니다. 또한 HTTPS 연결(또는 localhost)에서만 음성 입력을 사용할 수 있습니다.</p>
                             
                             <h5>Q2. 언어 전환 버튼으로 표시 언어를 바꿔도 AI의 답변이 일본어로 남아 있습니다</h5>
-                            <p><strong>A:</strong> 현재 β판의 제한으로 인해 AI 답변의 자동 번역 기능은 중지되어 있습니다. 표시 언어는 UI 표시에만 영향을 줍니다. 번역 정확도 향상을 위해 개선을 진행하고 있습니다.</p>
+                            <p><strong>A:</strong> 왼쪽 상단 전환은 주로 UI(화면 문구·초기 메시지 등) 언어 변경입니다. AI 답변은 보낸 메시지의 언어를 자동 감지하여 일본어가 아닐 때 영어·중국어·한국어로 번역해 반환합니다. 일본어로만 입력하면 UI만 영어 등으로 바꿔도 답변은 일본어로 유지됩니다.</p>
                             
                             <h5>Q3. 여러 증상을 동시에 상담할 수 있나요?</h5>
                             <p><strong>A:</strong> 네, 가능합니다. "머리가 아프고 기침도 나온다"와 같이 여러 증상을 한 번에 입력할 수 있습니다. AI가 종합적으로 판단하여 적절한 일반의약품을 제안합니다.</p>
@@ -3456,7 +3620,7 @@
                             <p><strong>A:</strong> 请检查浏览器的麦克风访问权限。Chrome或Safari中，可从地址栏左侧图标确认麦克风权限状态。另外，语音输入仅在HTTPS连接（或localhost）下可用。</p>
                             
                             <h5>Q2. 即使通过语言切换按钮更改显示语言，AI的回复仍然是日语</h5>
-                            <p><strong>A:</strong> 由于测试版限制，AI回复的自动翻译功能目前暂停。显示语言仅影响UI显示。我们正在改进以提高翻译精度。</p>
+                            <p><strong>A:</strong> 左上角切换主要改变界面用语（标签、欢迎语等）。AI回复会根据您<strong>发送的正文</strong>检测语言；若判定为日语以外（英语、中文、韩语等），会翻译后返回。若您一直用日语输入，即使界面设为其他语言，回复仍可能保持日语。</p>
                             
                             <h5>Q3. 可以同时咨询多个症状吗？</h5>
                             <p><strong>A:</strong> 可以。您可以一次输入多个症状，例如“头痛且咳嗽”。AI会综合判断并推荐合适的非处方药。</p>
@@ -4282,17 +4446,15 @@
         createSeasonalParticles();
         window.addEventListener('resize', handleResize);
         
-        // MutationObserver: チャット DOM 変化時に高さを更新し、季節粒子をデバウンス再生成（リサイズと同方針）
+        // MutationObserver: チャット DOM 変化時に落下距離用 CSS 変数だけ更新する。
+        // 粒子の createSeasonalParticles はここで呼ばない（innerHTML 全消しで毎回ちらつくため）。
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
-            let mutationParticleTimeout;
+            let mutationLayoutTimeout;
             const observer = new MutationObserver(() => {
-                clearTimeout(mutationParticleTimeout);
-                mutationParticleTimeout = setTimeout(() => {
+                clearTimeout(mutationLayoutTimeout);
+                mutationLayoutTimeout = setTimeout(() => {
                     updateSnowContainerHeight();
-                    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                        createSeasonalParticles();
-                    }
                 }, 500);
             });
 
