@@ -1,8 +1,30 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月12日**（不要コード・資産整理・粒子スプライト整合）
+**最終更新日: 2026年5月14日**（オンボーディングUI・季節粒子の観測最適化・静的アセットキャッシュ）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月14日の更新（オンボーディング・季節粒子・CHANGELOG 追記）:**
+
+- **`templates/index.html`**
+  - **`main.css` / `main.js` のキャッシュバスター**を `?v=20260514-7` に更新。
+  - **オンボーディング DOM**: `#onboarding-container` 内を **`div.onboarding-body`** で包み、**`div.onboarding-top-row`** に **`#onboarding-active-visual`**（アクティブスライドのビジュアル用ホルダー）と **スキップボタン**を横並び配置。スライド本体・インジケータは `onboarding-body` 内の縦フローに整理。
+- **`static/js/main.js`**
+  - **オンボーディング文言（日・英・韓・中）**: 開発環境系スライドで **バッジのみを `subtitle`** にし、長文は **`body` の段落**へ移動。改善リストの **`items` に `itemsChecklist: true`** を付与し、**完了済みスタイル付きチェックリスト**（例: **Flask→FastAPI 大規模移行**を `defaultChecked`）を表示。
+  - **`createOnboardingDetailsMarkup`**: `itemsChecklist` 時は **読み取り専用チェックリスト**（`onboarding-checklist-readonly`）を生成。文字列／`{ text, defaultChecked }` 形式の **項目正規化**（`normalizeOnboardingDetailItem`）に対応。
+  - **免責・プライバシー**: `policyKey` のみの詳細から **`description` 行を削除**（重複説明の整理）。
+  - **翻訳の説明**: 旧「自動翻訳はβで停止」表記をやめ、**ユーザー文が非日本語と判定されたときに AI 返信が自動翻訳される**旨と、**左上の言語切替は主に UI 文言**である旨を各言語で追記。
+  - **ビジュアル同期**: **`syncOnboardingActiveVisual`** で `#onboarding-active-visual` にアクティブスライドの **`visual` / `visualAlt`** を反映。`renderOnboardingSlides` / `goToOnboardingSlide` から呼び出し。
+  - **モーダル高さ**: **`ResizeObserver`** で `#onboarding-container` の高さ変化を監視し、**`--onb-modal-height`** を同期（詳細エリアの `max-height` 計算用）。**`syncOnboardingDetailsDenseClass`** で `<details>` が複数開いたとき **`.onboarding-details-dense`** を付与。
+  - **季節粒子（`createSeasonalParticles`）**: 水平ドリフトに **`driftScale = clamp(0.72, 1.12, min(vw, vh) / 720)`** を乗算し、**ビューポート短辺に応じた揺れ幅**に調整。**`MutationObserver`** では **`updateSnowContainerHeight` のみ**実行し、チャット DOM 更新のたびの **粒子 `innerHTML` 全消しを避けてちらつきを抑制**（**2026/5/11** に入っていた「Observer で粒子をデバウンス再生成」から方針変更。**リサイズ**時の再生成デバウンスは従来どおり）。
+- **`static/css/main.css`**
+  - **`.onboarding-body` / `.onboarding-top-row` / `.onboarding-active-visual`** ほか、**モーダル内 flex・スクロール領域**の整理。**`#onboarding-container .onboarding-body .slide-indicator`** の余白・背景でフッター帯を明確化。
+  - **WebKit スクロールバー**（`::-webkit-scrollbar-*`）のトラック／サムの角・**`padding-box` クリップ**で操作性を調整。
+  - **`.onboarding-checklist` 系**（マーカー・`.is-done`）と、**`.onboarding-details-dense`** 時の **`.onboarding-details-content` の `max-height`**（ビューポート別メディアクエリ含む）を追加・調整。
+- **CHANGELOG 追記（本節）**: 直前まで本文に含めていなかった **`7e022c6`（2026/5/12）** の内容を以下に整理。
+  - **`feat(ui): パーティクルをビューポートに応じてスケール`**: **`.snow-container`** に **vmin / clamp ベースの `font-size` と落下マージン用 CSS 変数**。季節パーティクルの **横揺れを画面短辺に比例**。**`static/js/easter-eggs.js`**: 花火・粒子などの **px 系サイズ／ドリフトを `eggParticleScale` で補正**。
 
 ---
 
