@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="{{ meta_description | e }}">
+    <title>{{ html_title | e }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico.png') }}" type="image/png" sizes="64x64">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v={{ version | e }}" media="all">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ version | e }}" media="all">
+</head>
+<body class="about-page">
+<div class="about-root">
+    <a class="about-skip" href="#about-main">{{ skip_to_content | e }}</a>
+    <div class="about-layout">
+        <header class="about-header chat-header about-header--about" role="banner">
+            <div class="about-header-top">
+                <div class="about-header-top-left">
+                    <div class="language-selector">
+                        <button type="button" class="lang-toggle" id="aboutLangToggle" aria-expanded="false" aria-haspopup="true" aria-controls="aboutLangDropdown" aria-label="{{ lang_nav_label | e }}">
+                            <span id="aboutCurrentFlag">{% if lang == 'ja' %}🇯🇵{% elif lang == 'en' %}🇺🇸{% elif lang == 'ko' %}🇰🇷{% else %}🇨🇳{% endif %}</span>
+                            <span class="dropdown-arrow" aria-hidden="true">▼</span>
+                        </button>
+                        <div class="lang-dropdown" id="aboutLangDropdown" role="menu">
+                            <a href="{{ request.url.path }}?lang=ja" role="menuitem" class="lang-option{% if lang == 'ja' %} active{% endif %}" data-lang="ja" data-flag="🇯🇵">🇯🇵 日本語</a>
+                            <a href="{{ request.url.path }}?lang=en" role="menuitem" class="lang-option{% if lang == 'en' %} active{% endif %}" data-lang="en" data-flag="🇺🇸">🇺🇸 English</a>
+                            <a href="{{ request.url.path }}?lang=ko" role="menuitem" class="lang-option{% if lang == 'ko' %} active{% endif %}" data-lang="ko" data-flag="🇰🇷">🇰🇷 한국어</a>
+                            <a href="{{ request.url.path }}?lang=zh" role="menuitem" class="lang-option{% if lang == 'zh' %} active{% endif %}" data-lang="zh" data-flag="🇨🇳">🇨🇳 中文</a>
+                        </div>
+                    </div>
+                    <nav class="about-nav about-nav--header" aria-label="{{ section_nav_label | e }}">
+                        <ul class="about-nav-list">
+                            {% for item in nav_entries %}
+                            <li>
+                                <a href="{{ item.href }}?lang={{ lang }}"
+                                   {% if item.current %}aria-current="page"{% endif %}>{{ item.label | e }}</a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                </div>
+                <a href="{{ chat_href }}" class="about-header-chat-icon" aria-label="{{ cta_aria_label | e }}" title="{{ header_chat_title | e }}">
+                    <img src="{{ url_for('static', filename='favicon.ico.png') }}" alt="" width="28" height="28" decoding="async">
+                </a>
+            </div>
+            <p class="about-brand about-brand--header">{{ site_name_label | e }}</p>
+        </header>
+        <div class="about-shell">
+            {% include "about/_breadcrumb.html" %}
+            <article id="about-main" class="about-main about-prose" role="main">
+                {% block page_main %}{% endblock %}
+            </article>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    var t = document.getElementById('aboutLangToggle');
+    var d = document.getElementById('aboutLangDropdown');
+    if (!t || !d) return;
+    t.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = !d.classList.contains('show');
+        d.classList.toggle('show', open);
+        t.classList.toggle('open', open);
+        t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.language-selector')) return;
+        d.classList.remove('show');
+        t.classList.remove('open');
+        t.setAttribute('aria-expanded', 'false');
+    });
+})();
+</script>
+</body>
+</html>
