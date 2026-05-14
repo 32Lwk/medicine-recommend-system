@@ -54,6 +54,17 @@ from src.services.session_manager import (
 from src.utils.performance_monitor import get_global_monitor
 from src.utils.request_safe_session import RequestSafeSession
 from src.utils.debug_logger import performance_stats, network_logs, add_network_log
+from src.content.about_i18n import (
+    VALID_LANGS,
+    about_lang_switch_rows,
+    about_nav_entries,
+    about_shell_labels,
+    about_subpage_links,
+    get_about_bundle,
+    normalize_query_lang,
+)
+from src.content.about_modal_html import get_mirror_html
+from src.services.analytics import log_access_analytics
 
 configure_logging()
 load_env()
@@ -300,6 +311,84 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     )
 
 
+def _public_chat_root_url(request: Request) -> str:
+    raw = os.getenv("PUBLIC_SITE_URL")
+    if raw and str(raw).strip():
+        return str(raw).strip().rstrip("/")
+    return str(request.base_url).rstrip("/")
+
+
+def _resolve_about_lang(request: Request, sid: str) -> str:
+    q = normalize_query_lang(request.query_params.get("lang"))
+    if q:
+        return q
+    if sid:
+        session_data = get_session_from_db(sid)
+        if session_data:
+            uil = session_data.get("ui_language")
+            if uil in VALID_LANGS:
+                return uil
+    return "ja"
+
+
+def _render_about_page(
+    request: Request,
+    page_id: str,
+    app_base_path: str,
+    sid: str,
+    template_name: str,
+) -> HTMLResponse:
+    lang = _resolve_about_lang(request, sid)
+    shell = about_shell_labels(lang)
+    index_bundle = get_about_bundle("index", lang)
+    cta_aria = (index_bundle.get("cta_aria_label") or "").strip()
+
+    user_agent = request.headers.get("user-agent", "") or ""
+    client_ip = request.client.host if request.client else ""
+    try:
+        log_access_analytics(
+            sid or "",
+            user_agent,
+            client_ip,
+            0.0,
+            {
+                "access_kind": "about_get",
+                "page": page_id,
+                "path": request.url.path,
+                "ui_language": lang,
+                "query_lang": request.query_params.get("lang"),
+            },
+        )
+    except Exception as ex:
+        logger.warning("about page analytics log failed: %s", ex)
+
+    bundle = dict(get_about_bundle(page_id, lang))
+    mirrored = get_mirror_html(page_id, lang, app_base_path or "")
+    if mirrored is not None:
+        bundle["body_html_safe"] = mirrored
+
+    chat_href = _public_chat_root_url(request) + "/"
+    nv = _normalized_app_version_env()
+    version = nv if nv is not None else str(int(time.time()))
+
+    ctx: dict = {
+        "lang": lang,
+        "page_id": page_id,
+        "nav_entries": about_nav_entries(page_id, lang, app_base_path),
+        "lang_switch": about_lang_switch_rows(),
+        "chat_href": chat_href,
+        "version": version,
+        **shell,
+        **bundle,
+        "cta_aria_label": cta_aria,
+        "cta_visible_text": shell["cta_visible_text"],
+        "cta_footer_note": shell.get("cta_footer_note") or "",
+    }
+    if page_id == "index":
+        ctx["subpage_links"] = about_subpage_links(lang, app_base_path)
+    return templates.TemplateResponse(request, template_name, ctx)
+
+
 @app.get("/", response_class=HTMLResponse)
 def get_root(request: Request, response: Response, sid: str = Depends(get_sid)):
     return _render_index(request, sid, app_base_path="")
@@ -308,6 +397,86 @@ def get_root(request: Request, response: Response, sid: str = Depends(get_sid)):
 @app.get("/test/", response_class=HTMLResponse)
 def get_test_root(request: Request, response: Response, sid: str = Depends(get_sid)):
     return _render_index(request, sid, app_base_path="/test")
+
+
+@app.get("/about", response_class=HTMLResponse)
+def get_about(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "index", "", sid, "about/index.html")
+
+
+@app.get("/about/info", response_class=HTMLResponse)
+def get_about_info(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "info", "", sid, "about/subpage.html")
+
+
+@app.get("/about/privacy", response_class=HTMLResponse)
+def get_about_privacy(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "privacy", "", sid, "about/subpage.html")
+
+
+@app.get("/about/terms", response_class=HTMLResponse)
+def get_about_terms(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "terms", "", sid, "about/subpage.html")
+
+
+@app.get("/about/usage", response_class=HTMLResponse)
+def get_about_usage(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "usage", "", sid, "about/subpage.html")
+
+
+@app.get("/about/faq", response_class=HTMLResponse)
+def get_about_faq(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "faq", "", sid, "about/subpage.html")
+
+
+@app.get("/about/consultation", response_class=HTMLResponse)
+def get_about_consultation(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "consultation", "", sid, "about/subpage.html")
+
+
+@app.get("/about/settings", response_class=HTMLResponse)
+def get_about_settings(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "settings", "", sid, "about/settings.html")
+
+
+@app.get("/test/about", response_class=HTMLResponse)
+def get_test_about(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "index", "/test", sid, "about/index.html")
+
+
+@app.get("/test/about/info", response_class=HTMLResponse)
+def get_test_about_info(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "info", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/privacy", response_class=HTMLResponse)
+def get_test_about_privacy(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "privacy", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/terms", response_class=HTMLResponse)
+def get_test_about_terms(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "terms", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/usage", response_class=HTMLResponse)
+def get_test_about_usage(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "usage", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/faq", response_class=HTMLResponse)
+def get_test_about_faq(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "faq", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/consultation", response_class=HTMLResponse)
+def get_test_about_consultation(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "consultation", "/test", sid, "about/subpage.html")
+
+
+@app.get("/test/about/settings", response_class=HTMLResponse)
+def get_test_about_settings(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "settings", "/test", sid, "about/settings.html")
 
 
 @app.get("/favicon.ico")
@@ -319,14 +488,32 @@ def favicon():
 
 @app.get("/sitemap.xml")
 def sitemap():
+    # Canonical paths only (?lang は含めない). hreflang / 言語別 URL は別スコープ。
     base = (os.getenv("PUBLIC_SITE_URL") or "https://medicine.yutok.dev").rstrip("/")
-    loc = escape(f"{base}/", {'"': "&quot;", "'": "&apos;"})
-    body = (
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        f"<url><loc>{loc}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>"
-        "</urlset>"
-    )
+    esc = {'"': "&quot;", "'": "&apos;"}
+    paths_priority = [
+        ("/", "1.0"),
+        ("/about", "0.75"),
+        ("/about/info", "0.65"),
+        ("/about/usage", "0.65"),
+        ("/about/faq", "0.65"),
+        ("/about/terms", "0.65"),
+        ("/about/privacy", "0.65"),
+        ("/about/consultation", "0.65"),
+        ("/about/settings", "0.55"),
+    ]
+    chunks = [
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for path, priority in paths_priority:
+        loc_raw = f"{base}/" if path == "/" else f"{base}{path}"
+        loc = escape(loc_raw, esc)
+        chunks.append(
+            f"<url><loc>{loc}</loc><changefreq>weekly</changefreq><priority>{priority}</priority></url>"
+        )
+    chunks.append("</urlset>")
+    body = "".join(chunks)
     return StarletteResponse(content=body, media_type="application/xml; charset=utf-8")
 
 

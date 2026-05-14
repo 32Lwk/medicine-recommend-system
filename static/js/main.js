@@ -89,6 +89,8 @@
             consultationDesc: "公的機関の相談窓口情報",
             siteAboutTitle: "詳しい説明",
             siteAboutDesc: "ウェブ上の説明サイト（概要・規約・プライバシー等）へ移動します",
+            settingsTitle: "設定",
+            settingsDesc: "文字サイズなどの表示設定",
             faq: "よくある質問（FAQ）",
             faqDesc: "よくある質問と回答",
             back: "← 戻る",
@@ -376,6 +378,8 @@
             consultationDesc: "Public institution consultation information",
             siteAboutTitle: "Detailed info (website)",
             siteAboutDesc: "Open the web-based about pages (overview, terms, privacy, etc.)",
+            settingsTitle: "Settings",
+            settingsDesc: "Display options such as text size",
             faq: "FAQ",
             faqDesc: "Frequently asked questions and answers",
             back: "← Back",
@@ -663,6 +667,8 @@
             consultationDesc: "공공기관 상담창구 정보",
             siteAboutTitle: "자세한 설명",
             siteAboutDesc: "웹 설명 페이지(개요·약관·개인정보 등)로 이동합니다",
+            settingsTitle: "설정",
+            settingsDesc: "글자 크기 등 표시 설정",
             faq: "자주 묻는 질문 (FAQ)",
             faqDesc: "자주 묻는 질문과 답변",
             back: "← 뒤로",
@@ -962,6 +968,8 @@
             consultationDesc: "公共机构咨询窗口信息",
             siteAboutTitle: "详细说明",
             siteAboutDesc: "前往网站版说明页（概览、条款、隐私等）",
+            settingsTitle: "设置",
+            settingsDesc: "字号等显示设置",
             faq: "常见问题 (FAQ)",
             faqDesc: "常见问题与回答",
             back: "返回",
@@ -4283,7 +4291,8 @@
             { id: 'usage', title: t.usage || '使い方・FAQ', desc: t.usageDesc || 'アプリの使い方と安全に利用するための注意' },
             { id: 'disclaimer', title: t.disclaimer, desc: t.disclaimerDesc },
             { id: 'privacy', title: t.privacy, desc: t.privacyDesc },
-            { id: 'consultation', title: t.consultation, desc: t.consultationDesc }
+            { id: 'consultation', title: t.consultation, desc: t.consultationDesc },
+            { id: 'settings', title: t.settingsTitle, desc: t.settingsDesc },
         ];
         
         items.forEach(item => {
