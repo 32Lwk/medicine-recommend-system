@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="{{ lang }}" class="about-doc">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -10,9 +10,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ version | e }}" media="all">
 </head>
 <body class="about-page">
-<div class="about-root">
-    <a class="about-skip" href="#about-main">{{ skip_to_content | e }}</a>
-    <header class="about-header chat-header about-header--about about-header--site-top" role="banner">
+<a class="about-skip" href="#about-main">{{ skip_to_content | e }}</a>
+<header class="about-header chat-header about-header--about about-header--site-top" role="banner">
         <div class="about-header-top">
             <div class="about-header-top-left">
                 <div class="language-selector">
@@ -43,26 +42,29 @@
                 {% endfor %}
             </ul>
         </nav>
-    </header>
-    <div class="about-layout">
-        <div class="about-shell">
-            {% include "about/_breadcrumb.html" %}
-            <article id="about-main" class="about-main about-prose" role="main">
-                {% block page_main %}{% endblock %}
-            </article>
+</header>
+<div class="about-scroll">
+    <div class="about-root">
+        <div class="about-layout">
+            <div class="about-shell">
+                {% include "about/_breadcrumb.html" %}
+                <article id="about-main" class="about-main about-prose" role="main">
+                    {% block page_main %}{% endblock %}
+                </article>
+            </div>
         </div>
+        <footer class="about-site-footer" role="contentinfo">
+            <div class="about-site-footer-inner">
+                <p class="about-site-footer-note">{{ footer_note | e }}</p>
+                <p class="about-site-footer-links">
+                    <a href="{{ chat_href }}">{{ footer_chat_label | e }}</a>
+                    <span class="about-site-footer-sep" aria-hidden="true">·</span>
+                    <a href="{{ footer_policies_href }}?lang={{ lang }}">{{ footer_policies_label | e }}</a>
+                </p>
+                <p class="about-site-footer-rights">{{ footer_rights | e }}</p>
+            </div>
+        </footer>
     </div>
-    <footer class="about-site-footer" role="contentinfo">
-        <div class="about-site-footer-inner">
-            <p class="about-site-footer-note">{{ footer_note | e }}</p>
-            <p class="about-site-footer-links">
-                <a href="{{ chat_href }}">{{ footer_chat_label | e }}</a>
-                <span class="about-site-footer-sep" aria-hidden="true">·</span>
-                <a href="{{ footer_policies_href }}?lang={{ lang }}">{{ footer_policies_label | e }}</a>
-            </p>
-            <p class="about-site-footer-rights">{{ footer_rights | e }}</p>
-        </div>
-    </footer>
 </div>
 <script>
 (function () {
