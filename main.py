@@ -339,7 +339,7 @@ def _render_about_page(
     template_name: str,
 ) -> HTMLResponse:
     lang = _resolve_about_lang(request, sid)
-    shell = about_shell_labels(lang)
+    shell = about_shell_labels(lang, app_base_path)
     index_bundle = get_about_bundle("index", lang)
     cta_aria = (index_bundle.get("cta_aria_label") or "").strip()
 
@@ -419,6 +419,11 @@ def get_about_terms(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "terms", "", sid, "about/subpage.html")
 
 
+@app.get("/about/policies", response_class=HTMLResponse)
+def get_about_policies(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "policies", "", sid, "about/subpage.html")
+
+
 @app.get("/about/usage", response_class=HTMLResponse)
 def get_about_usage(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "usage", "", sid, "about/subpage.html")
@@ -432,11 +437,6 @@ def get_about_faq(request: Request, sid: str = Depends(get_sid)):
 @app.get("/about/consultation", response_class=HTMLResponse)
 def get_about_consultation(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "consultation", "", sid, "about/subpage.html")
-
-
-@app.get("/about/settings", response_class=HTMLResponse)
-def get_about_settings(request: Request, sid: str = Depends(get_sid)):
-    return _render_about_page(request, "settings", "", sid, "about/settings.html")
 
 
 @app.get("/test/about", response_class=HTMLResponse)
@@ -459,6 +459,11 @@ def get_test_about_terms(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "terms", "/test", sid, "about/subpage.html")
 
 
+@app.get("/test/about/policies", response_class=HTMLResponse)
+def get_test_about_policies(request: Request, sid: str = Depends(get_sid)):
+    return _render_about_page(request, "policies", "/test", sid, "about/subpage.html")
+
+
 @app.get("/test/about/usage", response_class=HTMLResponse)
 def get_test_about_usage(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "usage", "/test", sid, "about/subpage.html")
@@ -472,11 +477,6 @@ def get_test_about_faq(request: Request, sid: str = Depends(get_sid)):
 @app.get("/test/about/consultation", response_class=HTMLResponse)
 def get_test_about_consultation(request: Request, sid: str = Depends(get_sid)):
     return _render_about_page(request, "consultation", "/test", sid, "about/subpage.html")
-
-
-@app.get("/test/about/settings", response_class=HTMLResponse)
-def get_test_about_settings(request: Request, sid: str = Depends(get_sid)):
-    return _render_about_page(request, "settings", "/test", sid, "about/settings.html")
 
 
 @app.get("/favicon.ico")
@@ -497,10 +497,10 @@ def sitemap():
         ("/about/info", "0.65"),
         ("/about/usage", "0.65"),
         ("/about/faq", "0.65"),
-        ("/about/terms", "0.65"),
-        ("/about/privacy", "0.65"),
+        ("/about/policies", "0.65"),
+        ("/about/terms", "0.6"),
+        ("/about/privacy", "0.6"),
         ("/about/consultation", "0.65"),
-        ("/about/settings", "0.55"),
     ]
     chunks = [
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
