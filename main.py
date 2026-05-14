@@ -22,7 +22,13 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import FileResponse, Response as StarletteResponse
 
-from config.app_config import configure_logging, get_cors_config, get_session_config, load_env
+from config.app_config import (
+    configure_logging,
+    get_cors_config,
+    get_session_config,
+    is_development_runtime,
+    load_env,
+)
 from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
@@ -250,7 +256,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
             {
                 "error": True,
                 "response": error_msg,
-                "error_type": error_type if os.getenv("APP_ENV", "").strip().lower() != "production" else None,
+                "error_type": error_type if is_development_runtime() else None,
             },
             status_code=500,
         )
@@ -272,8 +278,8 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     session_like = {"_id": sid} if sid else {}
     decoration_images, image_version = _get_decoration_images(session_like, version)
     particle_profile_json = _particle_profile_json()
-    # 開発環境かどうか（APP_ENV が production 以外なら dev 扱い）
-    is_dev_env = os.getenv('APP_ENV', 'development').lower() != 'production'
+    # 開発環境かどうか（config.app_config.is_development_runtime をテンプレート data-env に反映）
+    is_dev_env = is_development_runtime()
 
     return templates.TemplateResponse(
         request,
