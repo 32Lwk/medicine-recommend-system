@@ -198,6 +198,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
+<script type="application/json" id="app-runtime-config">{{ runtime_client_config_json | safe }}</script>
 <script type="application/json" id="particle-profile">{{ particle_profile_json | safe }}</script>
 <div class="chat-container">
     <div class="chat-header">
@@ -504,7 +505,7 @@
         window.APP_BASE_PATH = {{ (app_base_path or '') | tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260514-7" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260514-8" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
