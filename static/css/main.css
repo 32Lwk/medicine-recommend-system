@@ -2806,6 +2806,12 @@
         .list-item:hover .list-item-arrow {
             transform: translateX(5px);
         }
+
+        a.list-item {
+            text-decoration: none;
+            color: inherit;
+            box-sizing: border-box;
+        }
         
         /* 詳細ページスタイル */
         .detail-page {

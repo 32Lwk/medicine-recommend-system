@@ -275,6 +275,9 @@ def calculate_avg_response_time(log_file: str = None) -> float:
         for line in f:
             try:
                 data = json.loads(line.strip())
+                ui = data.get("user_info") or {}
+                if ui.get("access_kind") == "about_get":
+                    continue
                 response_time = data.get('response_time_ms', 0)
                 if response_time > 0:
                     response_times.append(response_time)
