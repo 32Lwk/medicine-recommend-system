@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>チャット型医薬品相談ツール - チャット</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico.png') }}" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico.png') }}" type="image/png" sizes="64x64">
     <!-- Critical CSS (Above the fold) -->
     <style>
         body { 
@@ -423,6 +423,14 @@
             <div class="modal-body">
                 <!-- 一覧ページ -->
                 <div id="listPage" class="list-page">
+                    <a class="list-item" href="{{ (app_base_path or '') }}/about" id="about-site-link">
+                        <div class="list-item-icon">📄</div>
+                        <div class="list-item-content">
+                            <div class="list-item-title" id="list-site-about-title">詳しい説明</div>
+                            <div class="list-item-description" id="list-site-about-desc">ウェブ上の説明サイトへ</div>
+                        </div>
+                        <div class="list-item-arrow">→</div>
+                    </a>
                     <div class="list-item" onclick="showDetailPage('app-overview')">
                         <div class="list-item-icon">📱</div>
                         <div class="list-item-content">
@@ -505,7 +513,7 @@
         window.APP_BASE_PATH = {{ (app_base_path or '') | tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260514-10" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260514-12" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
