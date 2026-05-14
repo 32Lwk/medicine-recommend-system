@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import re
 from functools import lru_cache
@@ -19,7 +20,7 @@ PAGE_ID_TO_MODAL: dict[str, str] = {
 }
 
 _DETAIL_SLUG: dict[str, str] = {
-    "privacy": "privacy",
+    "privacy": "policies",
     "faq": "faq",
 }
 
@@ -53,7 +54,7 @@ def adapt_modal_html_for_about(html: str, app_base_path: str, lang: str) -> str:
     return _JS_VOID_LINK.sub(repl, html)
 
 
-def get_mirror_html(page_id: str, lang: str, app_base_path: str) -> str | None:
+def _mirror_single(page_id: str, lang: str, app_base_path: str) -> str | None:
     modal_key = PAGE_ID_TO_MODAL.get(page_id)
     if not modal_key:
         return None
@@ -62,3 +63,48 @@ def get_mirror_html(page_id: str, lang: str, app_base_path: str) -> str | None:
     if not raw:
         return None
     return adapt_modal_html_for_about(raw, app_base_path, lang)
+
+
+_H3_HEAD = re.compile(r"<h3\b[^>]*>(.*?)</h3>", re.DOTALL | re.IGNORECASE)
+_H3_BLOCK = re.compile(r"<h3\b[^>]*>.*?</h3>\s*", re.DOTALL | re.IGNORECASE)
+
+
+def _wrap_policy_root_section(fragment: str) -> str:
+    """Wrap the mirrored root .info-section in <details open> (accordion), first <h3> → <summary>."""
+    frag = fragment.strip()
+    hm = _H3_HEAD.search(frag)
+    if not hm:
+        return (
+            '<details class="about-policy-accordion" open>'
+            '<summary class="about-policy-accordion-summary">'
+            '<span class="about-policy-accordion-summary-inner"></span></summary>'
+            f'<div class="about-policy-accordion-panel">{frag}</div></details>'
+        )
+    summary_inner = html.escape(hm.group(1).strip(), quote=False)
+    body = _H3_BLOCK.sub("", frag, count=1)
+    return (
+        '<details class="about-policy-accordion" open>'
+        '<summary class="about-policy-accordion-summary">'
+        f'<span class="about-policy-accordion-summary-inner">{summary_inner}</span></summary>'
+        f'<div class="about-policy-accordion-panel">{body}</div>'
+        "</details>"
+    )
+
+
+def get_policies_mirror_html(lang: str, app_base_path: str) -> str | None:
+    """Disclaimer (terms) + privacy on one page for compact site nav."""
+    t = _mirror_single("terms", lang, app_base_path)
+    p = _mirror_single("privacy", lang, app_base_path)
+    if not t or not p:
+        return None
+    return (
+        _wrap_policy_root_section(t)
+        + '<hr class="about-policies-separator" />'
+        + _wrap_policy_root_section(p)
+    )
+
+
+def get_mirror_html(page_id: str, lang: str, app_base_path: str) -> str | None:
+    if page_id == "policies":
+        return get_policies_mirror_html(lang, app_base_path)
+    return _mirror_single(page_id, lang, app_base_path)
