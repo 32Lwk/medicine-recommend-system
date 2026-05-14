@@ -280,6 +280,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     particle_profile_json = _particle_profile_json()
     # 開発環境かどうか（config.app_config.is_development_runtime をテンプレート data-env に反映）
     is_dev_env = is_development_runtime()
+    runtime_client_config_json = json.dumps({"isDevelopment": bool(is_dev_env)})
 
     return templates.TemplateResponse(
         request,
@@ -293,6 +294,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "app_base_path": app_base_path,
             "particle_profile_json": particle_profile_json,
             "is_dev_env": is_dev_env,
+            "runtime_client_config_json": runtime_client_config_json,
         },
         status_code=status_code,
     )
