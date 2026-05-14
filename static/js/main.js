@@ -1267,11 +1267,28 @@
     }
 
     // 開発環境かどうかを判定する
-    // 優先順位: 1) サーバが埋め込んだ body[data-env="dev"]、2) ホスト名フォールバック
+    // 優先順位: 1) サーバが埋め込んだ #app-runtime-config（本番判定の単一ソース）、2) body[data-env]、3) ホスト名フォールバック
     function isDevEnv() {
         try {
-            if (typeof document !== 'undefined' && document.body && document.body.dataset && document.body.dataset.env) {
-                return document.body.dataset.env.toLowerCase() === 'dev';
+            const cfgEl = typeof document !== 'undefined' ? document.getElementById('app-runtime-config') : null;
+            if (cfgEl && cfgEl.textContent) {
+                const cfg = JSON.parse(cfgEl.textContent.trim());
+                if (cfg && typeof cfg.isDevelopment === 'boolean') {
+                    return cfg.isDevelopment;
+                }
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        try {
+            if (typeof document !== 'undefined' && document.body) {
+                const attr = (document.body.getAttribute('data-env') || document.body.dataset.env || '').toString().toLowerCase().trim();
+                if (attr === 'dev' || attr === 'development') {
+                    return true;
+                }
+                if (attr === 'prod' || attr === 'production') {
+                    return false;
+                }
             }
         } catch (e) {
             // フォールスルー

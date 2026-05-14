@@ -27,13 +27,14 @@ def load_env() -> bool:
             log.debug(f"[app_config] .env path: {env_path}")
             log.debug(f"[app_config] .env exists: {os.path.exists(env_path)}")
 
+        # プロジェクトルートの .env を最優先。ここで読めた場合は cwd 探索をしない
+        # （ルートに APP_ENV=production があるのに、別ディレクトリの .env が上書きする事故を防ぐ）
         loaded = False
         if os.path.exists(env_path):
             loaded = load_dotenv(env_path, override=True)
             if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
                 log.debug(f"[app_config] load_dotenv({env_path}) result: {loaded}")
-
-        if not loaded:
+        else:
             loaded = load_dotenv(override=True)
             if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
                 log.debug(f"[app_config] load_dotenv() (no args) result: {loaded}")
@@ -82,6 +83,14 @@ def configure_logging(log_dir: str = None) -> None:
     )
 
 
+def _normalized_app_env() -> str:
+    """APP_ENV の BOM・余分な空白・外側クォートを除いた小文字トークン。"""
+    raw = (os.getenv("APP_ENV") or "").replace("\ufeff", "").strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in "\"'":
+        raw = raw[1:-1].strip()
+    return raw.lower()
+
+
 def is_development_runtime() -> bool:
     """
     開発向けUI（オンボーディングの dev スライド、DEV バッジ等）および
@@ -94,7 +103,7 @@ def is_development_runtime() -> bool:
 
     Render の PR プレビュー（IS_PULL_REQUEST=true）のみ開発扱いとする。
     """
-    raw = os.getenv("APP_ENV", "").strip().lower()
+    raw = _normalized_app_env()
     if raw == "production":
         return False
     if raw in ("development", "dev", "local", "staging", "test"):
