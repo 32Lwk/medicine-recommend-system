@@ -2,8 +2,16 @@
 
 body.about-page {
     margin: 0;
+    position: relative;
+    box-sizing: border-box;
     min-height: 100dvh;
     min-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    overflow-x: hidden;
     text-align: left;
     -webkit-text-size-adjust: 100%;
     /* 淡いグリーン〜グレー（医療系の落ち着いたトーン、紫なし） */
@@ -11,16 +19,75 @@ body.about-page {
     background-attachment: fixed;
 }
 
-.about-root {
+html.about-doc {
+    height: 100%;
     min-height: 100dvh;
-    box-sizing: border-box;
-    /* 上はヘッダーをビューポート上端に張り付け可能にするため 0（左右・下のみガター） */
-    padding: 0 clamp(10px, 2.5vw, 18px) clamp(20px, 4vw, 32px);
-    max-width: 920px;
-    margin: 0 auto;
+    min-height: 100vh;
+    overflow: hidden;
+    overflow-x: hidden;
 }
 
-.about-root .about-skip {
+/* ビューポート右端のスクロールバー用に全幅。ヘッダー下〜画面下端まで flex で占有 */
+body.about-page > .about-scroll {
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100%;
+    align-self: stretch;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    --onb-scrollbar-track: #f0f0f0;
+    --onb-scrollbar-thumb: var(--focus-color, #4CAF50);
+    --onb-scrollbar-thumb-hover: #43a047;
+    scrollbar-width: thin;
+    scrollbar-color: var(--onb-scrollbar-thumb) var(--onb-scrollbar-track);
+}
+
+body.about-page > .about-scroll::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    background: transparent;
+    border-radius: 999px;
+}
+
+body.about-page > .about-scroll::-webkit-scrollbar-track {
+    background: var(--onb-scrollbar-track);
+    border-radius: 999px;
+    margin-block: 20px;
+    margin-inline-end: 2px;
+}
+
+body.about-page > .about-scroll::-webkit-scrollbar-track-piece {
+    border-radius: 999px;
+}
+
+body.about-page > .about-scroll::-webkit-scrollbar-thumb {
+    background: var(--onb-scrollbar-thumb);
+    background-clip: padding-box;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--onb-scrollbar-thumb-hover);
+    background-clip: padding-box;
+}
+
+.about-root {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 920px;
+    margin: 0 auto;
+    /* 短いページでもスクロール枠いっぱいに伸ばし、下端までレイアウト領域を確保 */
+    min-height: 100%;
+    /* 上はヘッダー直下のため 0（左右・下のみガター） */
+    padding: 0 clamp(10px, 2.5vw, 18px) clamp(20px, 4vw, 32px);
+}
+
+body.about-page > .about-skip {
     position: absolute;
     left: -9999px;
     z-index: 9999;
@@ -33,7 +100,7 @@ body.about-page {
     font-size: 0.9rem;
 }
 
-.about-root .about-skip:focus {
+body.about-page > .about-skip:focus {
     left: clamp(12px, 3vw, 24px);
     top: clamp(12px, 3vw, 24px);
     outline: 3px solid #fff;
@@ -48,19 +115,24 @@ body.about-page {
         0 12px 36px rgba(15, 60, 40, 0.1);
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, 0.06);
-    /* ヘッダー（兄弟）と本文カードを分離 */
+    /* ヘッダー直下の本文カードとの余白 */
     margin-top: clamp(10px, 2.2vw, 16px);
 }
 
-/* チャットと同じ緑ヘッダー：上段＝言語＋サイト名＋右上チャット、下段＝サイト内ナビ */
+/* チャットと同じ緑ヘッダー：ビューポート幅（100vw は使わず横スクロールを防ぐ） */
 body.about-page .about-header.about-header--about.about-header--site-top {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-top: env(safe-area-inset-top, 0);
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    position: sticky;
-    top: env(safe-area-inset-top, 0);
+    position: relative;
     z-index: 2000;
-    border-radius: 16px;
+    /* 上端は画面幅いっぱいなので角は下側のみ丸める */
+    border-radius: 0 0 16px 16px;
     overflow: hidden;
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.08),
