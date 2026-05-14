@@ -92,81 +92,83 @@
             back: "← 戻る",
             close: "×",
             skipOnboarding: "スキップして始める",
-            onboardingDevFirstSlide: {
-                title: "🛠️ 開発環境(dev)へようこそ",
-                visual: "🚧💊",
-                visualAlt: "開発中の薬剤師相談ツールのアイコン",
-                subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span>',
-                body: [
-                    'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
-                    "新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。",
-                    "通常ご利用の方は、安定版である本番環境をご利用ください。"
-                ],
-                details: [
-                    {
-                        summary: "現在開発中の主な内容",
-                        itemsChecklist: true,
-                        items: [
-                            { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
-                            "潜在空間によるスコアリングの大規模改修",
-                            "GPT-4系からGPT-5系への移行",
-                            "UI・導線の最適化",
-                            "マルチエージェントモデルの更新",
-                            "カルーセル型UIの導入",
-                            "画像の導入",
-                            "セキュリティ向上",
-                            "音声入力の向上",
-                            "体調推定の実装（計画中）",
-                            "パーソナライズ機能の実装（計画中）"
-                        ]
-                    }
-                ],
-                links: [
-                    {
-                        text: "🌐 本番環境(安定版)を開く",
-                        url: "https://medicine.yutok.dev/",
-                        ariaLabel: "本番環境(安定版)を新しいタブで開く"
-                    },
-                    {
-                        text: "📝 クレーム・ご意見",
-                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                        ariaLabel: "Googleフォームでクレーム・ご意見を送る"
-                    }
-                ],
-                buttonText: "次へ",
-                buttonAria: "次のステップへ進む"
-            },
             onboarding: [
                 {
-                    title: "チャット型医薬品相談ツール(β版)",
-                    visual: "🤝💊",
-                    visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                    subtitle: "β版（試験運用）— より安全で分かりやすい情報提供に向けて改善を続けています",
-                    body: [
-                        "症状を文章や音声で伝えるだけで、市販薬の候補・成分・効能・受診の目安などをAIが整理してお手伝いします。医療の診断に代わるものではありません。",
-                        "追加の質問で状況を確認したり、「ユーザー情報登録」にアレルギーや服用中の医薬品があれば、より慎重な案内に繋げられます。",
-                        "ご不明点は右上の ℹ️ から利用方法・免責事項をご確認ください。"
-                    ],
-                    details: [
-                        {
-                            summary: "β版で進めている強化の例",
-                            items: [
-                                "回答の根拠となる説明の見直し",
-                                "スコアリングと表示（カルーセル等）の改善",
-                                "多言語・音声入力の使い勝手向上",
-                                "セキュリティとプライバシー保護の強化"
-                            ]
-                        }
-                    ],
-                    links: [
-                        {
-                            text: "📝 ご意見・不具合の報告",
-                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Googleフォームでご意見・不具合を送る"
-                        }
-                    ],
-                    buttonText: "次へ",
-                    buttonAria: "次のステップへ進む"
+                    production: {
+                        title: "チャット型医薬品相談ツール(β版)",
+                        visual: "🤝💊",
+                        visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
+                        subtitle: "β版（試験運用）— より安全で分かりやすい情報提供に向けて改善を続けています",
+                        body: [
+                            "症状を文章や音声で伝えるだけで、市販薬の候補・成分・効能・受診の目安などをAIが整理してお手伝いします。医療の診断に代わるものではありません。",
+                            "追加の質問で状況を確認したり、「ユーザー情報登録」にアレルギーや服用中の医薬品があれば、より慎重な案内に繋げられます。",
+                            "ご不明点は右上の ℹ️ から利用方法・免責事項をご確認ください。"
+                        ],
+                        details: [
+                            {
+                                summary: "β版で進めている強化の例",
+                                items: [
+                                    "回答の根拠となる説明の見直し",
+                                    "スコアリングと表示（カルーセル等）の改善",
+                                    "多言語・音声入力の使い勝手向上",
+                                    "セキュリティとプライバシー保護の強化"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "📝 ご意見・不具合の報告",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Googleフォームでご意見・不具合を送る"
+                            }
+                        ],
+                        buttonText: "次へ",
+                        buttonAria: "次のステップへ進む"
+                    },
+                    development: {
+                        title: "🛠️ 開発環境(dev)へようこそ",
+                        visual: "🚧💊",
+                        visualAlt: "開発中の薬剤師相談ツールのアイコン",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span>',
+                        body: [
+                            'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
+                            "新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。",
+                            "通常ご利用の方は、安定版である本番環境をご利用ください。"
+                        ],
+                        details: [
+                            {
+                                summary: "現在開発中の主な内容",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
+                                    "潜在空間によるスコアリングの大規模改修",
+                                    "GPT-4系からGPT-5系への移行",
+                                    "UI・導線の最適化",
+                                    "マルチエージェントモデルの更新",
+                                    "カルーセル型UIの導入",
+                                    "画像の導入",
+                                    "セキュリティ向上",
+                                    "音声入力の向上",
+                                    "体調推定の実装（計画中）",
+                                    "パーソナライズ機能の実装（計画中）"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 本番環境(安定版)を開く",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "本番環境(安定版)を新しいタブで開く"
+                            },
+                            {
+                                text: "📝 クレーム・ご意見",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Googleフォームでクレーム・ご意見を送る"
+                            }
+                        ],
+                        buttonText: "次へ",
+                        buttonAria: "次のステップへ進む"
+                    }
                 },
                 {
                     title: "🩺 ステップ1：今の症状を伝える",
@@ -363,81 +365,83 @@
             back: "← Back",
             close: "×",
             skipOnboarding: "Skip onboarding",
-            onboardingDevFirstSlide: {
-                title: "🛠️ Welcome to the Dev environment",
-                visual: "🚧💊",
-                visualAlt: "Icon representing the OTC assistant under development",
-                subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span>',
-                body: [
-                    'This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
-                    "This is where new features and experiments are tried out first. You may see broken layouts, transient errors, or data resets.",
-                    "If you are a regular user, please use the production (stable) environment."
-                ],
-                details: [
-                    {
-                        summary: "What we are currently working on",
-                        itemsChecklist: true,
-                        items: [
-                            { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
-                            "Major scoring revamp using latent space",
-                            "Migration from GPT-4 class to GPT-5 class models",
-                            "UI and user-flow optimization",
-                            "Multi-agent model updates",
-                            "Carousel-style UI",
-                            "Image support",
-                            "Security improvements",
-                            "Better voice input",
-                            "Health state estimation (planned)",
-                            "Personalization features (planned)"
-                        ]
-                    }
-                ],
-                links: [
-                    {
-                        text: "🌐 Open production (stable)",
-                        url: "https://medicine.yutok.dev/",
-                        ariaLabel: "Open the production (stable) environment in a new tab"
-                    },
-                    {
-                        text: "📝 Feedback & claims",
-                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                        ariaLabel: "Submit feedback or claims via Google Forms"
-                    }
-                ],
-                buttonText: "Next",
-                buttonAria: "Go to the next step"
-            },
             onboarding: [
                 {
-                    title: "Welcome to the Chat-based OTC Assistant (Beta)",
-                    visual: "🤝💊",
-                    visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                    subtitle: "Beta release — we keep improving clarity and safety.",
-                    body: [
-                        "Describe your symptoms in text or voice; the AI summarizes OTC options, ingredients, effects, and when to seek care. This is not a substitute for a medical diagnosis.",
-                        "We may ask follow-up questions, and registered allergies or medications help us guide you more cautiously.",
-                        "Tap ℹ️ in the top right for usage notes and disclaimers whenever you need them."
-                    ],
-                    details: [
-                        {
-                            summary: "Examples of what we are improving in beta",
-                            items: [
-                                "Clearer explanations behind recommendations",
-                                "Scoring and presentation (including carousel-style results)",
-                                "Multilingual UI and voice input experience",
-                                "Security and privacy safeguards"
-                            ]
-                        }
-                    ],
-                    links: [
-                        {
-                            text: "📝 Feedback or bug reports",
-                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Submit feedback or report issues via Google Forms"
-                        }
-                    ],
-                    buttonText: "Next",
-                    buttonAria: "Go to the next step"
+                    production: {
+                        title: "Welcome to the Chat-based OTC Assistant (Beta)",
+                        visual: "🤝💊",
+                        visualAlt: "Illustration of a pharmacist supporting via smartphone",
+                        subtitle: "Beta release — we keep improving clarity and safety.",
+                        body: [
+                            "Describe your symptoms in text or voice; the AI summarizes OTC options, ingredients, effects, and when to seek care. This is not a substitute for a medical diagnosis.",
+                            "We may ask follow-up questions, and registered allergies or medications help us guide you more cautiously.",
+                            "Tap ℹ️ in the top right for usage notes and disclaimers whenever you need them."
+                        ],
+                        details: [
+                            {
+                                summary: "Examples of what we are improving in beta",
+                                items: [
+                                    "Clearer explanations behind recommendations",
+                                    "Scoring and presentation (including carousel-style results)",
+                                    "Multilingual UI and voice input experience",
+                                    "Security and privacy safeguards"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "📝 Feedback or bug reports",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Submit feedback or report issues via Google Forms"
+                            }
+                        ],
+                        buttonText: "Next",
+                        buttonAria: "Go to the next step"
+                    },
+                    development: {
+                        title: "🛠️ Welcome to the Dev environment",
+                        visual: "🚧💊",
+                        visualAlt: "Icon representing the OTC assistant under development",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span>',
+                        body: [
+                            'This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
+                            "This is where new features and experiments are tried out first. You may see broken layouts, transient errors, or data resets.",
+                            "If you are a regular user, please use the production (stable) environment."
+                        ],
+                        details: [
+                            {
+                                summary: "What we are currently working on",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
+                                    "Major scoring revamp using latent space",
+                                    "Migration from GPT-4 class to GPT-5 class models",
+                                    "UI and user-flow optimization",
+                                    "Multi-agent model updates",
+                                    "Carousel-style UI",
+                                    "Image support",
+                                    "Security improvements",
+                                    "Better voice input",
+                                    "Health state estimation (planned)",
+                                    "Personalization features (planned)"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 Open production (stable)",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "Open the production (stable) environment in a new tab"
+                            },
+                            {
+                                text: "📝 Feedback & claims",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Submit feedback or claims via Google Forms"
+                            }
+                        ],
+                        buttonText: "Next",
+                        buttonAria: "Go to the next step"
+                    }
                 },
                 {
                     title: "Step 1: Describe your symptoms",
@@ -646,81 +650,83 @@
             easterEggEmojiGame: "🎯 이모지 캐치 게임",
             easterEggEmojiScore: "점수: ",
             easterEggEmojiControls: "조작: 터치 또는 클릭하여 이모지를 잡으세요!",
-            onboardingDevFirstSlide: {
-                title: "🛠️ 개발 환경(dev)에 오신 것을 환영합니다",
-                visual: "🚧💊",
-                visualAlt: "개발 중인 의약품 상담 도구 아이콘",
-                subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span>',
-                body: [
-                    '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
-                    "새 기능이나 개선안을 가장 먼저 시험할 수 있는 환경입니다. 레이아웃 깨짐·일시적 오류·데이터 리셋이 발생할 수 있습니다.",
-                    "일반적으로 이용하시는 분은 안정판인 운영 환경을 이용해 주세요."
-                ],
-                details: [
-                    {
-                        summary: "현재 개발 중인 주요 내용",
-                        itemsChecklist: true,
-                        items: [
-                            { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
-                            "잠재 공간 기반 스코어링 대규모 개편",
-                            "GPT-4 계열에서 GPT-5 계열로 이전",
-                            "UI·사용자 동선 최적화",
-                            "멀티 에이전트 모델 업데이트",
-                            "캐러셀형 UI 도입",
-                            "이미지 도입",
-                            "보안 강화",
-                            "음성 입력 개선",
-                            "컨디션 추정 구현(계획)",
-                            "개인화 기능 구현(계획)"
-                        ]
-                    }
-                ],
-                links: [
-                    {
-                        text: "🌐 운영 환경(안정판) 열기",
-                        url: "https://medicine.yutok.dev/",
-                        ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
-                    },
-                    {
-                        text: "📝 클레임·의견",
-                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                        ariaLabel: "Google 양식으로 클레임·의견 제출"
-                    }
-                ],
-                buttonText: "다음",
-                buttonAria: "다음 단계로 이동"
-            },
             onboarding: [
                 {
-                    title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
-                    visual: "🤝💊",
-                    visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                    subtitle: "베타(시험 운영) — 더 안전하고 이해하기 쉬운 안내를 위해 계속 개선합니다",
-                    body: [
-                        "증상을 글이나 음성으로 알려주면 AI가 일반의약품 후보·성분·효능·진료 시기 안내 등을 정리해 도와드립니다. 의료 진단을 대신하는 것은 아닙니다.",
-                        "추가 질문으로 상황을 확인하고, “사용자 정보 등록”에 알레르기나 복용 중인 약이 있으면 더 신중한 안내로 이어질 수 있습니다.",
-                        "이용 방법·면책 사항은 오른쪽 상단 ℹ️에서 확인하세요."
-                    ],
-                    details: [
-                        {
-                            summary: "베타에서 강화 중인 예시",
-                            items: [
-                                "추천 근거 설명의 정리",
-                                "스코어링과 표시(캐러셀 등) 개선",
-                                "다국어·음성 입력 사용성 향상",
-                                "보안과 개인정보 보호 강화"
-                            ]
-                        }
-                    ],
-                    links: [
-                        {
-                            text: "📝 의견·오류 신고",
-                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Google 양식으로 의견·오류 신고"
-                        }
-                    ],
-                    buttonText: "다음",
-                    buttonAria: "다음 단계로 이동"
+                    production: {
+                        title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
+                        visual: "🤝💊",
+                        visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
+                        subtitle: "베타(시험 운영) — 더 안전하고 이해하기 쉬운 안내를 위해 계속 개선합니다",
+                        body: [
+                            "증상을 글이나 음성으로 알려주면 AI가 일반의약품 후보·성분·효능·진료 시기 안내 등을 정리해 도와드립니다. 의료 진단을 대신하는 것은 아닙니다.",
+                            "추가 질문으로 상황을 확인하고, “사용자 정보 등록”에 알레르기나 복용 중인 약이 있으면 더 신중한 안내로 이어질 수 있습니다.",
+                            "이용 방법·면책 사항은 오른쪽 상단 ℹ️에서 확인하세요."
+                        ],
+                        details: [
+                            {
+                                summary: "베타에서 강화 중인 예시",
+                                items: [
+                                    "추천 근거 설명의 정리",
+                                    "스코어링과 표시(캐러셀 등) 개선",
+                                    "다국어·음성 입력 사용성 향상",
+                                    "보안과 개인정보 보호 강화"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "📝 의견·오류 신고",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Google 양식으로 의견·오류 신고"
+                            }
+                        ],
+                        buttonText: "다음",
+                        buttonAria: "다음 단계로 이동"
+                    },
+                    development: {
+                        title: "🛠️ 개발 환경(dev)에 오신 것을 환영합니다",
+                        visual: "🚧💊",
+                        visualAlt: "개발 중인 의약품 상담 도구 아이콘",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span>',
+                        body: [
+                            '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
+                            "새 기능이나 개선안을 가장 먼저 시험할 수 있는 환경입니다. 레이아웃 깨짐·일시적 오류·데이터 리셋이 발생할 수 있습니다.",
+                            "일반적으로 이용하시는 분은 안정판인 운영 환경을 이용해 주세요."
+                        ],
+                        details: [
+                            {
+                                summary: "현재 개발 중인 주요 내용",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
+                                    "잠재 공간 기반 스코어링 대규모 개편",
+                                    "GPT-4 계열에서 GPT-5 계열로 이전",
+                                    "UI·사용자 동선 최적화",
+                                    "멀티 에이전트 모델 업데이트",
+                                    "캐러셀형 UI 도입",
+                                    "이미지 도입",
+                                    "보안 강화",
+                                    "음성 입력 개선",
+                                    "컨디션 추정 구현(계획)",
+                                    "개인화 기능 구현(계획)"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 운영 환경(안정판) 열기",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
+                            },
+                            {
+                                text: "📝 클레임·의견",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Google 양식으로 클레임·의견 제출"
+                            }
+                        ],
+                        buttonText: "다음",
+                        buttonAria: "다음 단계로 이동"
+                    }
                 },
                 {
                     title: "🩺 스텝 1: 현재 증상을 알려주세요",
@@ -917,81 +923,83 @@
             back: "返回",
             close: "×",
             skipOnboarding: "跳过并开始",
-            onboardingDevFirstSlide: {
-                title: "🛠️ 欢迎来到开发环境(dev)",
-                visual: "🚧💊",
-                visualAlt: "开发中的药品咨询工具图标",
-                subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span>',
-                body: [
-                    '本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
-                    "可在此抢先体验新功能或试验性改动。可能出现布局错乱、临时错误或数据被重置等情况。",
-                    "如您是普通用户，请使用稳定版的生产环境。"
-                ],
-                details: [
-                    {
-                        summary: "当前开发中的主要内容",
-                        itemsChecklist: true,
-                        items: [
-                            { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
-                            "基于潜在空间的大规模评分改造",
-                            "从 GPT-4 系列迁移至 GPT-5 系列",
-                            "UI 与流程优化",
-                            "多智能体模型更新",
-                            "引入轮播式 UI",
-                            "引入图片能力",
-                            "安全加固",
-                            "语音输入改进",
-                            "身体状况推断（规划中）",
-                            "个性化功能（规划中）"
-                        ]
-                    }
-                ],
-                links: [
-                    {
-                        text: "🌐 打开生产环境（稳定版）",
-                        url: "https://medicine.yutok.dev/",
-                        ariaLabel: "在新标签页中打开生产环境（稳定版）"
-                    },
-                    {
-                        text: "📝 投诉与意见",
-                        url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                        ariaLabel: "通过 Google 表单提交投诉或意见"
-                    }
-                ],
-                buttonText: "下一步",
-                buttonAria: "前往下一步"
-            },
             onboarding: [
                 {
-                    title: "欢迎使用聊天式药品咨询工具（测试版）",
-                    visual: "🤝💊",
-                    visualAlt: "药师通过手机提供咨询的示意图",
-                    subtitle: "测试版（试运行）— 我们持续改进说明的清晰度与安全性",
-                    body: [
-                        "用文字或语音描述症状，AI 会整理非处方药候选、成分、功效与就医建议等。不能替代医疗机构的诊断。",
-                        "我们可能会追问以确认情况；在「用户信息」中登记过敏与正在服用的药物，有助于给出更谨慎的建议。",
-                        "使用方式与免责声明请随时通过右上角 ℹ️ 查看。"
-                    ],
-                    details: [
-                        {
-                            summary: "测试版中重点改进的方向（示例）",
-                            items: [
-                                "让推荐理由更易理解",
-                                "评分与展示方式（含轮播等）的优化",
-                                "多语言与语音输入体验",
-                                "安全与隐私保护"
-                            ]
-                        }
-                    ],
-                    links: [
-                        {
-                            text: "📝 意见或问题反馈",
-                            url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "通过 Google 表单提交意见或问题"
-                        }
-                    ],
-                    buttonText: "下一步",
-                    buttonAria: "前往下一步"
+                    production: {
+                        title: "欢迎使用聊天式药品咨询工具（测试版）",
+                        visual: "🤝💊",
+                        visualAlt: "药师通过手机提供咨询的示意图",
+                        subtitle: "测试版（试运行）— 我们持续改进说明的清晰度与安全性",
+                        body: [
+                            "用文字或语音描述症状，AI 会整理非处方药候选、成分、功效与就医建议等。不能替代医疗机构的诊断。",
+                            "我们可能会追问以确认情况；在「用户信息」中登记过敏与正在服用的药物，有助于给出更谨慎的建议。",
+                            "使用方式与免责声明请随时通过右上角 ℹ️ 查看。"
+                        ],
+                        details: [
+                            {
+                                summary: "测试版中重点改进的方向（示例）",
+                                items: [
+                                    "让推荐理由更易理解",
+                                    "评分与展示方式（含轮播等）的优化",
+                                    "多语言与语音输入体验",
+                                    "安全与隐私保护"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "📝 意见或问题反馈",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "通过 Google 表单提交意见或问题"
+                            }
+                        ],
+                        buttonText: "下一步",
+                        buttonAria: "前往下一步"
+                    },
+                    development: {
+                        title: "🛠️ 欢迎来到开发环境(dev)",
+                        visual: "🚧💊",
+                        visualAlt: "开发中的药品咨询工具图标",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span>',
+                        body: [
+                            '本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
+                            "可在此抢先体验新功能或试验性改动。可能出现布局错乱、临时错误或数据被重置等情况。",
+                            "如您是普通用户，请使用稳定版的生产环境。"
+                        ],
+                        details: [
+                            {
+                                summary: "当前开发中的主要内容",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
+                                    "基于潜在空间的大规模评分改造",
+                                    "从 GPT-4 系列迁移至 GPT-5 系列",
+                                    "UI 与流程优化",
+                                    "多智能体模型更新",
+                                    "引入轮播式 UI",
+                                    "引入图片能力",
+                                    "安全加固",
+                                    "语音输入改进",
+                                    "身体状况推断（规划中）",
+                                    "个性化功能（规划中）"
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 打开生产环境（稳定版）",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "在新标签页中打开生产环境（稳定版）"
+                            },
+                            {
+                                text: "📝 投诉与意见",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "通过 Google 表单提交投诉或意见"
+                            }
+                        ],
+                        buttonText: "下一步",
+                        buttonAria: "前往下一步"
+                    }
                 },
                 {
                     title: "🩺 步骤1：告诉我们当前症状",
@@ -1261,6 +1269,38 @@
         }
     }
 
+    /**
+     * onboarding[0] が { production, development } のとき、isDevEnv() に応じて実スライドを返す。
+     * 従来の単一オブジェクトのままの onboarding[0] はそのまま返す（2〜枚目は常に通常スライド）。
+     */
+    function resolveOnboardingFirstSlide(firstSlide, locale, fallbackLocale) {
+        if (!firstSlide || typeof firstSlide !== 'object') {
+            return firstSlide;
+        }
+        const prod = firstSlide.production;
+        const dev = firstSlide.development;
+        if (prod && dev) {
+            return isDevEnv() ? dev : prod;
+        }
+        if (prod || dev) {
+            if (isDevEnv() && dev) {
+                return dev;
+            }
+            if (prod) {
+                return prod;
+            }
+            return dev;
+        }
+        if (isDevEnv()) {
+            const legacy = (locale && locale.onboardingDevFirstSlide)
+                || (fallbackLocale && fallbackLocale.onboardingDevFirstSlide);
+            if (legacy) {
+                return legacy;
+            }
+        }
+        return firstSlide;
+    }
+
     function getOnboardingData(lang) {
         const locale = translations[lang];
         const fallbackLocale = translations[DEFAULT_LANGUAGE];
@@ -1271,20 +1311,15 @@
         } else if (fallbackLocale && Array.isArray(fallbackLocale.onboarding)) {
             baseSlides = fallbackLocale.onboarding;
         }
-        if (!baseSlides) {
+        if (!baseSlides || !baseSlides.length) {
             return [];
         }
 
-        // 開発環境では1枚目を onboardingDevFirstSlide に差し替える
-        if (isDevEnv()) {
-            const devSlide = (locale && locale.onboardingDevFirstSlide)
-                || (fallbackLocale && fallbackLocale.onboardingDevFirstSlide)
-                || null;
-            if (devSlide) {
-                return [devSlide, ...baseSlides.slice(1)];
-            }
+        const first = resolveOnboardingFirstSlide(baseSlides[0], locale, fallbackLocale);
+        if (!first) {
+            return baseSlides.slice(1);
         }
-        return baseSlides;
+        return [first, ...baseSlides.slice(1)];
     }
 
     function getFilteredOnboardingSlides() {
