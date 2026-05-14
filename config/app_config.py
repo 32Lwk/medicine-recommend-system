@@ -82,6 +82,38 @@ def configure_logging(log_dir: str = None) -> None:
     )
 
 
+def is_development_runtime() -> bool:
+    """
+    開発向けUI（オンボーディングの dev スライド、DEV バッジ等）および
+    セッション Cookie の本番扱いの判定に使う。
+
+    優先順位:
+    1. APP_ENV が明示されていればそれに従う（production なら本番）。
+    2. 未設定時は代表的なホスティングの本番シグナル（VERCEL_ENV / RAILWAY_ENVIRONMENT / Render 本番サービス）で本番扱い。
+    3. それ以外（ローカルや不明なデプロイ）は開発扱い。
+
+    Render の PR プレビュー（IS_PULL_REQUEST=true）のみ開発扱いとする。
+    """
+    raw = os.getenv("APP_ENV", "").strip().lower()
+    if raw == "production":
+        return False
+    if raw in ("development", "dev", "local", "staging", "test"):
+        return True
+    if raw:
+        return True
+
+    if os.getenv("VERCEL_ENV", "").strip().lower() == "production":
+        return False
+    if os.getenv("RAILWAY_ENVIRONMENT", "").strip().lower() == "production":
+        return False
+    if os.getenv("RENDER", "").strip().lower() == "true":
+        if os.getenv("IS_PULL_REQUEST", "").strip().lower() == "true":
+            return True
+        return False
+
+    return True
+
+
 def get_cors_config() -> dict:
     """
     CORS設定を返す。
@@ -104,13 +136,13 @@ def get_cors_config() -> dict:
 def get_session_config() -> dict:
     """
     セッション設定を返す。
-    環境変数 APP_ENV / SESSION_COOKIE_SECURE により自動調整される。
+    is_development_runtime()（APP_ENV・ホスティングの慣例変数）と
+    SESSION_COOKIE_SECURE により自動調整される。
 
     Returns:
         dict: Cookie 設定に利用するセッション関連の辞書
     """
-    env = os.getenv('APP_ENV', 'development').lower()
-    is_prod = env == 'production'
+    is_prod = not is_development_runtime()
     secure_override = os.getenv('SESSION_COOKIE_SECURE')
     if secure_override is not None:
         secure_flag = secure_override.lower() == 'true'
