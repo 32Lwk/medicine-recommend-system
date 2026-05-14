@@ -1,0 +1,8 @@
+{% if page_id != 'index' %}
+<nav class="about-breadcrumb" aria-label="{{ breadcrumb_label | e }}">
+    <ol class="about-breadcrumb-list">
+        <li><a href="{{ nav_entries[0].href }}?lang={{ lang }}">{{ nav_entries[0].label | e }}</a></li>
+        <li aria-current="page">{{ h1 | e }}</li>
+    </ol>
+</nav>
+{% endif %}

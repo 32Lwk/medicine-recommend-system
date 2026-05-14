@@ -1,0 +1,443 @@
+/* About サイト — 紫は使わず。チャットヘッダー（.chat-header + .language-selector）と揃える */
+
+body.about-page {
+    margin: 0;
+    min-height: 100dvh;
+    min-height: 100vh;
+    text-align: left;
+    -webkit-text-size-adjust: 100%;
+    /* 淡いグリーン〜グレー（医療系の落ち着いたトーン、紫なし） */
+    background: linear-gradient(165deg, #e8f2ec 0%, #eef2f5 42%, #e4e8ec 100%);
+    background-attachment: fixed;
+}
+
+.about-root {
+    min-height: 100dvh;
+    box-sizing: border-box;
+    padding: clamp(12px, 3vw, 24px) clamp(10px, 2.5vw, 18px) 28px;
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.about-root .about-skip {
+    position: absolute;
+    left: -9999px;
+    z-index: 9999;
+    padding: 0.55rem 1rem;
+    background: #2e7d32;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.about-root .about-skip:focus {
+    left: clamp(12px, 3vw, 24px);
+    top: clamp(12px, 3vw, 24px);
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+.about-root .about-layout {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        0 12px 36px rgba(15, 60, 40, 0.1);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* チャットと同じ緑ヘッダー：上段＝言語＋ナビ＋右上チャット（favicon）、下段＝サイト名 */
+body.about-page .about-layout .about-header.chat-header.about-header--about {
+    padding: 0 0 10px;
+    text-align: left;
+}
+
+body.about-page .about-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px 4px;
+    flex-wrap: wrap;
+}
+
+body.about-page .about-header-top-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* main.css の absolute を打ち消し、トグル右隣にナビが並ぶ通常フローに */
+body.about-page .about-header--about .language-selector {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: 1001;
+    flex-shrink: 0;
+}
+
+body.about-page .about-nav--header {
+    position: static;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+}
+
+body.about-page .about-nav--header .about-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    justify-content: flex-start;
+}
+
+body.about-page .about-nav--header .about-nav-list a {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    line-height: 1.2;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+body.about-page .about-nav--header .about-nav-list a:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+body.about-page .about-nav--header .about-nav-list a:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+body.about-page .about-nav--header .about-nav-list a[aria-current="page"] {
+    background: rgba(255, 255, 255, 0.38);
+    border-color: rgba(255, 255, 255, 0.75);
+}
+
+body.about-page .about-header-chat-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.22);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+body.about-page .about-header-chat-icon:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.65);
+    transform: translateY(-1px);
+}
+
+body.about-page .about-header-chat-icon:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+body.about-page .about-header-chat-icon img {
+    display: block;
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+}
+
+body.about-page .language-selector a.lang-option {
+    box-sizing: border-box;
+    text-decoration: none;
+    color: inherit;
+}
+
+body.about-page .about-brand--header {
+    margin: 0;
+    padding: 4px 16px 12px;
+    text-align: center;
+    font-size: clamp(1rem, 2.8vw, 1.2rem);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    color: #fff;
+}
+
+@media (max-width: 520px) {
+    body.about-page .about-nav--header .about-nav-list a {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+
+    body.about-page .about-brand--header {
+        font-size: 0.95rem;
+        padding-bottom: 10px;
+    }
+}
+
+.about-root .about-shell {
+    padding: clamp(14px, 3vw, 22px) clamp(14px, 3vw, 24px) clamp(20px, 4vw, 32px);
+}
+
+.about-root .about-breadcrumb {
+    margin-bottom: 0.85rem;
+}
+
+.about-root .about-breadcrumb-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.45rem 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    color: #495057;
+    background: #f8faf9;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.about-root .about-breadcrumb-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.about-root .about-breadcrumb-list li:not(:last-child)::after {
+    content: "›";
+    color: #adb5bd;
+    font-weight: 500;
+    margin-left: 0.35rem;
+    font-size: 0.95em;
+}
+
+.about-root .about-breadcrumb-list a {
+    color: #2e7d32;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.about-root .about-breadcrumb-list a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.about-root .about-breadcrumb-list a:focus-visible {
+    outline: 2px solid var(--focus-color, #4CAF50);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.about-root .about-breadcrumb-list li[aria-current="page"] {
+    font-weight: 700;
+    color: #212529;
+}
+
+.about-root .about-main {
+    padding: clamp(4px, 1vw, 8px) 0 0;
+}
+
+.about-root .about-subheading {
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    margin: 1.75rem 0 0.75rem;
+    font-weight: 700;
+    color: #1b5e20;
+    letter-spacing: 0.01em;
+}
+
+.about-root .about-prose h1 {
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    margin: 0 0 1.1rem;
+    color: #212529;
+    line-height: 1.3;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding: 0 0 0 0.65rem;
+    border-left: 4px solid #4CAF50;
+}
+
+.about-root .about-prose h2 {
+    font-size: clamp(1.02rem, 2.4vw, 1.15rem);
+    margin: 1.65rem 0 0.55rem;
+    color: #2e7d32;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.about-root .about-prose h2:first-of-type {
+    margin-top: 0.25rem;
+}
+
+.about-root .about-prose p {
+    margin: 0 0 1rem;
+    color: #37474f;
+    max-width: 62ch;
+    line-height: 1.75;
+    font-size: clamp(0.9375rem, 2.2vw, 1.02rem);
+}
+
+.about-root .about-intro p:last-child {
+    margin-bottom: 0;
+}
+
+/* 概要ページ：本文のあとに1枚だけ参考スクリーン（キャプション付き） */
+.about-root .about-hero {
+    margin: 1.35rem 0 0.25rem;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+    background: #f8faf9;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.about-root .about-hero-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: middle;
+    max-height: min(320px, 48vh);
+    object-fit: cover;
+    object-position: top center;
+}
+
+.about-root .about-hero-caption {
+    margin: 0;
+    padding: 0.55rem 0.75rem 0.65rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #546e7a;
+    background: #f1f8f4;
+    border-top: 1px solid #e8f0ea;
+}
+
+.about-root .about-subpages {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+}
+
+@media (min-width: 560px) {
+    .about-root .about-subpages {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+}
+
+.about-root .about-subpages a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.95rem 1.1rem;
+    background: linear-gradient(180deg, #fafbfc 0%, #f1f3f5 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    color: #212529;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.about-root .about-subpages a::after {
+    content: "→";
+    color: #4CAF50;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.about-root .about-subpages a:hover {
+    border-color: rgba(76, 175, 80, 0.45);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.about-root .about-subpages a:focus-visible {
+    outline: 2px solid var(--focus-color, #4CAF50);
+    outline-offset: 2px;
+}
+
+.about-root .about-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.65rem;
+    padding: 0.82rem 1.65rem;
+    background: linear-gradient(135deg, #66bb6a 0%, #4CAF50 45%, #43a047 100%);
+    color: #fff !important;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 999px;
+    box-shadow:
+        0 2px 8px rgba(76, 175, 80, 0.35),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.about-root .about-cta-primary:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.about-root .about-cta-primary:focus-visible {
+    outline: 3px solid #2e7d32;
+    outline-offset: 3px;
+}
+
+.about-root .about-footer-cta {
+    margin-top: 2.25rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.about-root .about-footer-cta .about-cta-primary {
+    margin-top: 0;
+}
+
+.about-root .about-footer-note {
+    margin-top: 0.85rem;
+    font-size: 0.8125rem;
+    color: #6c757d;
+    max-width: 62ch;
+    line-height: 1.55;
+}
+
+.about-root .about-h1 {
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    margin: 0 0 1rem;
+    line-height: 1.25;
+    color: #1b5e20;
+}
+
+.about-root .about-modal-mirror {
+    margin-top: 0.25rem;
+    text-align: left;
+}
+
+.about-root .about-modal-mirror .info-section {
+    text-align: left;
+}

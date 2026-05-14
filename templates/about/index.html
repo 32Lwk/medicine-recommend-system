@@ -1,0 +1,22 @@
+{% extends "about/base_about.html" %}
+{% block page_main %}
+<h1>{{ h1 | e }}</h1>
+<div class="about-intro">
+    {% for p in intro %}
+    <p>{{ p | e }}</p>
+    {% endfor %}
+</div>
+{% if hero_image %}
+<figure class="about-hero">
+    <img class="about-hero-img" src="{{ url_for('static', filename=hero_image) }}" alt="" width="880" height="495" loading="lazy" decoding="async">
+    <figcaption class="about-hero-caption">{{ hero_caption | e }}</figcaption>
+</figure>
+{% endif %}
+<h2 class="about-subheading">{{ subpages_heading | e }}</h2>
+<ul class="about-subpages">
+    {% for sp in subpage_links %}
+    <li><a href="{{ sp.href }}?lang={{ lang }}">{{ sp.label | e }}</a></li>
+    {% endfor %}
+</ul>
+<a href="{{ chat_href }}" class="about-cta-primary" aria-label="{{ cta_aria_label | e }}">{{ cta_visible_text | e }}</a>
+{% endblock %}
