@@ -33,6 +33,8 @@ def test_favicon_png(client):
     assert r.status_code == 200
     assert "image/png" in r.headers.get("content-type", "")
     assert len(r.content) > 32
+    # 実体が PNG であること（JPEG を image/png で返すと Safari が採用しない）
+    assert r.content.startswith(b"\x89PNG\r\n\x1a\n")
 
 
 def test_sitemap_xml(client):
