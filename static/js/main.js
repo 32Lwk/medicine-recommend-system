@@ -141,39 +141,28 @@
                     title: "チャット型医薬品相談ツール(β版)",
                     visual: "🤝💊",
                     visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境です</span>',
+                    subtitle: "β版（試験運用）— より安全で分かりやすい情報提供に向けて改善を続けています",
                     body: [
-                        'あなたが今ご覧になっているこのページは<span class="onboarding-env-here">開発環境</span>です。本番環境（更新停止中）とは別のサーバーで動作しており、改良はこちらでのみ進めています。',
-                        "症状を入力・話すだけで、市販薬候補・成分・効能・受診の目安をAIがまとめます。",
-                        "第1段階の移行目標：2026年5月31日まで。"
+                        "症状を文章や音声で伝えるだけで、市販薬の候補・成分・効能・受診の目安などをAIが整理してお手伝いします。医療の診断に代わるものではありません。",
+                        "追加の質問で状況を確認したり、「ユーザー情報登録」にアレルギーや服用中の医薬品があれば、より慎重な案内に繋げられます。",
+                        "ご不明点は右上の ℹ️ から利用方法・免責事項をご確認ください。"
                     ],
                     details: [
                         {
-                            summary: "主な開発・改善内容",
+                            summary: "β版で進めている強化の例",
                             items: [
-                                "潜在空間によるスコアリングの大規模改修",
-                                "GPT-4系からGPT-5系への移行",
-                                "UI・導線の最適化",
-                                "マルチエージェントモデルの更新",
-                                "カルーセル型UIの導入",
-                                "画像の導入",
-                                "セキュリティ向上",
-                                "音声入力の向上",
-                                "体調推定の実装（計画中）",
-                                "パーソナライズ機能の実装（計画中）"
+                                "回答の根拠となる説明の見直し",
+                                "スコアリングと表示（カルーセル等）の改善",
+                                "多言語・音声入力の使い勝手向上",
+                                "セキュリティとプライバシー保護の強化"
                             ]
                         }
                     ],
                     links: [
                         {
-                            text: "🔗 開発環境（このサイト）を別タブで開く",
-                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "現在ご覧の開発環境を新しいタブで開く"
-                        },
-                        {
-                            text: "📝 クレーム・ご意見",
+                            text: "📝 ご意見・不具合の報告",
                             url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Googleフォームでクレーム・ご意見を送る"
+                            ariaLabel: "Googleフォームでご意見・不具合を送る"
                         }
                     ],
                     buttonText: "次へ",
@@ -423,40 +412,28 @@
                     title: "Welcome to the Chat-based OTC Assistant (Beta)",
                     visual: "🤝💊",
                     visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ You are on the DEV environment</span>',
+                    subtitle: "Beta release — we keep improving clarity and safety.",
                     body: [
-                        'The page you are viewing right now is the <span class="onboarding-env-here">development environment</span>. It runs on a separate server from production (updates paused), and all ongoing improvements happen here.',
-                        "Type or speak your symptoms; the AI summarizes OTC options, ingredients, effects, and when to seek care.",
-                        "Phase 1 transition target: May 31, 2026."
+                        "Describe your symptoms in text or voice; the AI summarizes OTC options, ingredients, effects, and when to seek care. This is not a substitute for a medical diagnosis.",
+                        "We may ask follow-up questions, and registered allergies or medications help us guide you more cautiously.",
+                        "Tap ℹ️ in the top right for usage notes and disclaimers whenever you need them."
                     ],
                     details: [
                         {
-                            summary: "Key development & improvements",
-                            itemsChecklist: true,
+                            summary: "Examples of what we are improving in beta",
                             items: [
-                                "Major scoring revamp using latent space",
-                                "Migration from GPT-4 class to GPT-5 class models",
-                                "UI and user-flow optimization",
-                                "Multi-agent model updates",
-                                "Carousel-style UI",
-                                "Image support",
-                                "Security improvements",
-                                "Better voice input",
-                                "Health state estimation (planned)",
-                                "Personalization features (planned)"
+                                "Clearer explanations behind recommendations",
+                                "Scoring and presentation (including carousel-style results)",
+                                "Multilingual UI and voice input experience",
+                                "Security and privacy safeguards"
                             ]
                         }
                     ],
                     links: [
                         {
-                            text: "🔗 Open this dev environment in a new tab",
-                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "Open the development environment you are currently viewing in a new tab"
-                        },
-                        {
-                            text: "📝 Feedback & claims",
+                            text: "📝 Feedback or bug reports",
                             url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Submit feedback or claims via Google Forms"
+                            ariaLabel: "Submit feedback or report issues via Google Forms"
                         }
                     ],
                     buttonText: "Next",
@@ -718,40 +695,28 @@
                     title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                     visual: "🤝💊",
                     visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경입니다</span>',
+                    subtitle: "베타(시험 운영) — 더 안전하고 이해하기 쉬운 안내를 위해 계속 개선합니다",
                     body: [
-                        '지금 보고 계신 이 페이지는 <span class="onboarding-env-here">개발 환경</span>입니다. 운영 환경(업데이트 중단)과는 별도의 서버에서 동작하며, 모든 개선은 이곳에서만 진행됩니다.',
-                        "증상을 입력·말하면 AI가 일반의약품 후보·성분·효능·진료 시기 안내를 정리합니다.",
-                        "1단계 전환 목표: 2026년 5월 31일까지."
+                        "증상을 글이나 음성으로 알려주면 AI가 일반의약품 후보·성분·효능·진료 시기 안내 등을 정리해 도와드립니다. 의료 진단을 대신하는 것은 아닙니다.",
+                        "추가 질문으로 상황을 확인하고, “사용자 정보 등록”에 알레르기나 복용 중인 약이 있으면 더 신중한 안내로 이어질 수 있습니다.",
+                        "이용 방법·면책 사항은 오른쪽 상단 ℹ️에서 확인하세요."
                     ],
                     details: [
                         {
-                            summary: "주요 개발·개선 내용",
-                            itemsChecklist: true,
+                            summary: "베타에서 강화 중인 예시",
                             items: [
-                                "잠재 공간 기반 스코어링 대규모 개편",
-                                "GPT-4 계열에서 GPT-5 계열로 이전",
-                                "UI·사용자 동선 최적화",
-                                "멀티 에이전트 모델 업데이트",
-                                "캐러셀형 UI 도입",
-                                "이미지 도입",
-                                "보안 강화",
-                                "음성 입력 개선",
-                                "컨디션 추정 구현(계획)",
-                                "개인화 기능 구현(계획)"
+                                "추천 근거 설명의 정리",
+                                "스코어링과 표시(캐러셀 등) 개선",
+                                "다국어·음성 입력 사용성 향상",
+                                "보안과 개인정보 보호 강화"
                             ]
                         }
                     ],
                     links: [
                         {
-                            text: "🔗 현재 개발 환경(이 사이트)을 새 탭에서 열기",
-                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "현재 보고 계신 개발 환경을 새 탭에서 엽니다"
-                        },
-                        {
-                            text: "📝 클레임·의견",
+                            text: "📝 의견·오류 신고",
                             url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "Google 양식으로 클레임·의견 제출"
+                            ariaLabel: "Google 양식으로 의견·오류 신고"
                         }
                     ],
                     buttonText: "다음",
@@ -1001,40 +966,28 @@
                     title: "欢迎使用聊天式药品咨询工具（测试版）",
                     visual: "🤝💊",
                     visualAlt: "药师通过手机提供咨询的示意图",
-                    subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境</span>',
+                    subtitle: "测试版（试运行）— 我们持续改进说明的清晰度与安全性",
                     body: [
-                        '您当前正在访问的这个页面就是<span class="onboarding-env-here">开发环境</span>。它与生产环境（已暂停更新）运行在不同的服务器上，所有改进仅在此处进行。',
-                        "输入或说出症状，AI 会整理非处方药候选、成分、功效与就医建议。",
-                        "第一阶段迁移目标：2026 年 5 月 31 日前。"
+                        "用文字或语音描述症状，AI 会整理非处方药候选、成分、功效与就医建议等。不能替代医疗机构的诊断。",
+                        "我们可能会追问以确认情况；在「用户信息」中登记过敏与正在服用的药物，有助于给出更谨慎的建议。",
+                        "使用方式与免责声明请随时通过右上角 ℹ️ 查看。"
                     ],
                     details: [
                         {
-                            summary: "主要开发与改进内容",
-                            itemsChecklist: true,
+                            summary: "测试版中重点改进的方向（示例）",
                             items: [
-                                "基于潜在空间的大规模评分改造",
-                                "从 GPT-4 系列迁移至 GPT-5 系列",
-                                "UI 与流程优化",
-                                "多智能体模型更新",
-                                "引入轮播式 UI",
-                                "引入图片能力",
-                                "安全加固",
-                                "语音输入改进",
-                                "身体状况推断（规划中）",
-                                "个性化功能（规划中）"
+                                "让推荐理由更易理解",
+                                "评分与展示方式（含轮播等）的优化",
+                                "多语言与语音输入体验",
+                                "安全与隐私保护"
                             ]
                         }
                     ],
                     links: [
                         {
-                            text: "🔗 在新标签页打开当前开发环境（本站）",
-                            url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                            ariaLabel: "在新标签页打开您当前正在访问的开发环境"
-                        },
-                        {
-                            text: "📝 投诉与意见",
+                            text: "📝 意见或问题反馈",
                             url: "https://forms.gle/UB8kZHd4VHenmRUN6",
-                            ariaLabel: "通过 Google 表单提交投诉或意见"
+                            ariaLabel: "通过 Google 表单提交意见或问题"
                         }
                     ],
                     buttonText: "下一步",
