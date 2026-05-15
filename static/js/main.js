@@ -4654,7 +4654,7 @@
     let isSubmitting = false;
     let submitWatchdogTimer = null;
     let slowRequestTimerId = null;
-    let streamingAdviceEl = null;
+    let streamingRecommendationEl = null;
     const SUBMIT_WATCHDOG_MS = 120000;
 
     function clearSubmitWatchdog() {
@@ -5548,6 +5548,7 @@
             typingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator"><span>AIが診断中...</span></div></div>';
         }
         chatMessages.appendChild(typingDiv);
+        attachSlowRequestButtonToTypingIndicator();
         scrollToBottom();
 
         if (!usesChatSse() && window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
@@ -5564,6 +5565,45 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /** 推奨結果用の diagnosis オブジェクトか（診断名検出時の diagnosis_type 文字列と区別） */
+    function isDiagnosisPayload(diagnosis) {
+        return diagnosis !== null && typeof diagnosis === 'object' && !Array.isArray(diagnosis);
+    }
+
+    function isStatusCardHtml(content) {
+        if (!content || typeof content !== 'string') {
+            return false;
+        }
+        if (
+            content.includes('chat-status-card') ||
+            content.includes('class="chat-status-card') ||
+            content.includes("class='chat-status-card")
+        ) {
+            return true;
+        }
+        return /<div[^>]*\bchat-status-card\b/i.test(content);
+    }
+
+    function looksLikeHtmlContent(content) {
+        if (!content || typeof content !== 'string') {
+            return false;
+        }
+        return /<(?:div|p|section|ul|ol|h[1-6]|span|button|details|form)\b/i.test(content);
+    }
+
+    /** サーバー生成のステータスカードを bot メッセージ用に一貫してラップ */
+    function wrapBotStatusCardHtml(html) {
+        const trimmed = (html || '').trim();
+        if (!trimmed) {
+            return '<div class="message-content message-content--status-card"></div>';
+        }
+        const temp = document.createElement('div');
+        temp.innerHTML = trimmed;
+        const card = temp.querySelector('.chat-status-card');
+        const inner = card ? card.outerHTML : trimmed;
+        return `<div class="message-content message-content--status-card">${inner}</div>`;
     }
     
     function decodeHtmlEntities(text) {
@@ -5790,20 +5830,86 @@
     window.retryLastMessage = retryLastMessage;
     window.clearPersistentStatusMessages = clearPersistentStatusMessages;
 
+    function setSlowRequestButtonLabel(slowBtn, text) {
+        if (!slowBtn) return;
+        const textEl = slowBtn.querySelector('.slow-request-btn-text');
+        if (textEl) {
+            textEl.textContent = text;
+        } else {
+            slowBtn.textContent = text;
+        }
+    }
+
+    function getOrCreateSlowRequestButton() {
+        let slowBtn = document.getElementById('slowRequestBtn');
+        if (!slowBtn) {
+            slowBtn = document.createElement('button');
+            slowBtn.type = 'button';
+            slowBtn.id = 'slowRequestBtn';
+            slowBtn.className = 'slow-request-btn';
+            slowBtn.setAttribute('aria-label', '処理に時間がかかっていることを運営に通知する');
+            slowBtn.innerHTML =
+                '<span class="slow-request-btn-icon" aria-hidden="true">⏱</span>' +
+                '<span class="slow-request-btn-text">時間がかかっています</span>';
+            slowBtn.addEventListener('click', notifySlowRequest);
+        }
+        return slowBtn;
+    }
+
+    function ensureSlowRequestSlot(bubble) {
+        let slot = bubble.querySelector('.processing-slow-request-slot');
+        if (!slot) {
+            slot = document.createElement('div');
+            slot.className = 'processing-slow-request-slot';
+            bubble.appendChild(slot);
+        }
+        return slot;
+    }
+
+    function attachSlowRequestButtonToTypingIndicator() {
+        const typing = document.getElementById('currentTypingIndicator');
+        const slowBtn = getOrCreateSlowRequestButton();
+        if (!typing) {
+            return slowBtn;
+        }
+        const bubble =
+            typing.querySelector('.processing-status-bubble') ||
+            typing.querySelector('.message-content') ||
+            typing;
+        const slot = ensureSlowRequestSlot(bubble);
+        if (slowBtn.parentElement !== slot) {
+            slot.appendChild(slowBtn);
+        }
+        return slowBtn;
+    }
+
+    function resetSlowRequestButton(slowBtn) {
+        if (!slowBtn) return;
+        const slot = slowBtn.closest('.processing-slow-request-slot');
+        if (slot) slot.classList.remove('is-visible');
+        slowBtn.disabled = false;
+        slowBtn.classList.remove('is-sent');
+        setSlowRequestButtonLabel(slowBtn, '時間がかかっています');
+    }
+
     function clearSlowRequestTimer() {
         if (slowRequestTimerId) {
             clearTimeout(slowRequestTimerId);
             slowRequestTimerId = null;
         }
-        const slowBtn = document.getElementById('slowRequestBtn');
-        if (slowBtn) slowBtn.style.display = 'none';
+        resetSlowRequestButton(document.getElementById('slowRequestBtn'));
     }
 
     function scheduleSlowRequestButton() {
         clearSlowRequestTimer();
         slowRequestTimerId = setTimeout(function () {
-            const slowBtn = document.getElementById('slowRequestBtn');
-            if (slowBtn && isSubmitting) slowBtn.style.display = 'inline-block';
+            if (!isSubmitting) return;
+            const slowBtn = attachSlowRequestButtonToTypingIndicator();
+            if (slowBtn) {
+                const slot = slowBtn.closest('.processing-slow-request-slot');
+                if (slot) slot.classList.add('is-visible');
+                scrollToBottom();
+            }
         }, 8000);
     }
 
@@ -5818,7 +5924,8 @@
         const slowBtn = document.getElementById('slowRequestBtn');
         if (slowBtn) {
             slowBtn.disabled = true;
-            slowBtn.textContent = '通知を送信しました';
+            slowBtn.classList.add('is-sent');
+            setSlowRequestButtonLabel(slowBtn, '通知を送信しました');
         }
     }
     window.notifySlowRequest = notifySlowRequest;
@@ -5829,77 +5936,159 @@
         chatMessages.querySelectorAll('[data-temporary="true"]').forEach(function (n) { n.remove(); });
     }
 
-    function ensureStreamingAdviceBubble() {
-        if (streamingAdviceEl && streamingAdviceEl.isConnected) return streamingAdviceEl;
+    function ensureStreamingRecommendationResult() {
+        if (streamingRecommendationEl && streamingRecommendationEl.isConnected) {
+            return streamingRecommendationEl;
+        }
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) return null;
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'message bot streaming-advice';
-        messageDiv.setAttribute('data-streaming-advice', 'true');
-        messageDiv.innerHTML = '<div class="message-content advice-stream-body"></div>';
+        messageDiv.className = 'message bot streaming-recommendation';
+        messageDiv.setAttribute('data-streaming-recommendation', 'true');
+        messageDiv.innerHTML =
+            '<div class="recommendation-result" data-streaming-skeleton="true">' +
+            '<div class="warning-info streaming-advice-section" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">' +
+            '<h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>' +
+            '<p class="streaming-personalized-advice" style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;"></p>' +
+            '</div>' +
+            '<div class="streaming-medicines-section" style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">' +
+            '<h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>' +
+            '<div class="streaming-medicines-container"></div>' +
+            '</div>' +
+            '</div>';
         chatMessages.appendChild(messageDiv);
-        streamingAdviceEl = messageDiv.querySelector('.advice-stream-body');
+        streamingRecommendationEl = messageDiv;
         scrollToBottom();
-        return streamingAdviceEl;
+        return streamingRecommendationEl;
+    }
+
+    function buildStreamingMedicineScoreHtml(med) {
+        let html = '';
+        const scoreLevel = med.score_level || '中';
+        const completenessPenalty = med.completeness_penalty || 0;
+        if (med.display_score != null && med.display_score !== '') {
+            const scorePercent = Math.round(Number(med.display_score) * 10) / 10;
+            html += '<p style="margin: 5px 0;"><strong>📊 最適度:</strong> ' + scorePercent + '% <span style="color: #666;">(' + escapeHtml(scoreLevel) + ')</span></p>';
+            if (completenessPenalty > 0) {
+                const penaltyPercent = Math.round(Number(completenessPenalty) * 1000) / 10;
+                html += '<p style="margin: 5px 0; color: #f57c00; font-size: 0.9em;"><strong>ℹ️ 情報:</strong> 年齢などの情報が入力されると、より正確な判定が可能です（不足情報により' + penaltyPercent + '%低下中）</p>';
+            }
+        } else if (med.relative_score != null && med.relative_score !== '') {
+            const scorePercent = Math.round(Number(med.relative_score) * 100);
+            html += '<p style="margin: 5px 0;"><strong>📊 最適度:</strong> ' + scorePercent + '% <span style="color: #666;">(' + escapeHtml(scoreLevel) + ')</span></p>';
+        } else if (med.score != null && med.score !== '') {
+            const scorePercent = Math.round(Number(med.score) * 100);
+            html += '<p style="margin: 5px 0;"><strong>📊 最適度:</strong> ' + scorePercent + '%</p>';
+        }
+        return html;
+    }
+
+    function buildStreamingAgeRestrictionHtml(ageRestriction) {
+        if (!ageRestriction || typeof ageRestriction !== 'string' || !ageRestriction.trim()) {
+            return '';
+        }
+        if (ageRestriction.indexOf('15歳未満') >= 0) {
+            return '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳以上の方が対象です。</span></p>';
+        }
+        if (ageRestriction.indexOf('7歳未満') >= 0) {
+            return '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">7歳以上の方が対象です。</span></p>';
+        }
+        if (ageRestriction.indexOf('12歳未満') >= 0) {
+            return '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳以上の方が対象です。</span></p>';
+        }
+        const match = ageRestriction.match(/(\d+)歳/);
+        if (match) {
+            return '<p><strong>年齢制限:</strong> ' + escapeHtml(ageRestriction) + '</p>';
+        }
+        return '';
+    }
+
+    function buildStreamingAuxiliaryNoteHtml(med) {
+        const medicineType = med.medicine_type || '';
+        if (medicineType.indexOf('外用薬（のど）') < 0) {
+            return '';
+        }
+        const productNameLower = (med.product_name || '').toLowerCase();
+        const isExternal = ['スプレー', 'トローチ', 'うがい', '含嗽', '噴射', '塗布'].some(function (kw) {
+            return productNameLower.indexOf(kw) >= 0;
+        });
+        const isKampo = ['湯', '散', '丸', 'エキス'].some(function (kw) {
+            return productNameLower.indexOf(kw) >= 0;
+        });
+        if (!isExternal || isKampo) {
+            return '';
+        }
+        return '<p style="margin: 5px 0; padding: 8px; background: #f0f7ff; border-left: 3px solid #2196f3; font-size: 0.9em; color: #1976d2;">' +
+            '💡 <strong>補助的な使用について</strong><br>' +
+            'この外用薬は、内服薬と併用して喉を直接ケアする補助的な製品です。飲み薬にプラスして使うことで、喉の痛みをより和らげることができます。' +
+            '</p>';
+    }
+
+    function buildStreamingMedicineItemHtml(med) {
+        const rank = med.rank || 1;
+        const name = med.product_name || '';
+        const mfr = med.manufacturer || '';
+        let html = '<div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">';
+        html += '<h5 style="margin: 0 0 10px 0;">🏆 ' + rank + 'つ目: ' + escapeHtml(name);
+        if (mfr) {
+            html += ' <span style="color: #666; font-size: 0.9em;">(' + escapeHtml(mfr) + ')</span>';
+        }
+        html += '</h5>';
+        html += buildStreamingMedicineScoreHtml(med);
+        if (med.explanation) {
+            html += '<p style="margin: 5px 0;"><strong>推奨理由:</strong> ' + escapeHtml(med.explanation) + '</p>';
+        }
+        html += buildStreamingAuxiliaryNoteHtml(med);
+        html += buildStreamingAgeRestrictionHtml(med.age_restriction);
+        if (med.risk_warning) {
+            html += '<p style="margin: 5px 0; color: #d32f2f;"><strong>⚠️ 注意:</strong> ' + escapeHtml(med.risk_warning) + '</p>';
+        }
+        if (med.low_score_warning) {
+            html += '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に薬剤師または登録販売者にご相談ください。</p>';
+        }
+        if (med.efficacy) {
+            html += '<p style="margin: 5px 0;"><strong>効能効果:</strong> ' + escapeHtml(med.efficacy) + '</p>';
+        }
+        html += '</div>';
+        return html;
     }
 
     function appendAdviceDelta(text) {
         if (!text) return;
-        const el = ensureStreamingAdviceBubble();
+        const wrapper = ensureStreamingRecommendationResult();
+        if (!wrapper) return;
+        const el = wrapper.querySelector('.streaming-personalized-advice');
         if (el) {
             el.textContent += text;
+            wrapper.classList.add('has-advice');
             scrollToBottom();
         }
     }
 
-    function removeStreamingAdviceBubble() {
+    function removeStreamingRecommendation() {
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
-            chatMessages.querySelectorAll('[data-streaming-advice="true"]').forEach(function (n) { n.remove(); });
+            chatMessages.querySelectorAll('[data-streaming-recommendation="true"]').forEach(function (n) { n.remove(); });
         }
-        streamingAdviceEl = null;
+        streamingRecommendationEl = null;
+    }
+
+    function removeStreamingAdviceBubble() {
+        removeStreamingRecommendation();
     }
 
     function removeStreamingMedicineCards() {
-        const chatMessages = document.getElementById('chatMessages');
-        if (chatMessages) {
-            chatMessages.querySelectorAll('[data-streaming-cards="true"]').forEach(function (n) { n.remove(); });
-        }
+        removeStreamingRecommendation();
     }
 
     function renderStreamingMedicineCards(medicines) {
         if (!medicines || !medicines.length) return;
-        const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
-        let wrapper = chatMessages.querySelector('[data-streaming-cards="true"]');
-        if (!wrapper) {
-            wrapper = document.createElement('div');
-            wrapper.className = 'message bot streaming-cards';
-            wrapper.setAttribute('data-streaming-cards', 'true');
-            const title = (typeof t === 'function' && t('recommendedMedicines')) || '推奨医薬品';
-            wrapper.innerHTML =
-                '<div class="message-content streaming-cards-body">' +
-                '<h4 class="streaming-cards-title">💊 ' + escapeHtml(title) + '</h4>' +
-                '<ol class="streaming-medicine-list"></ol>' +
-                '</div>';
-            chatMessages.appendChild(wrapper);
-        }
-        const list = wrapper.querySelector('.streaming-medicine-list');
-        if (!list) return;
-        list.innerHTML = '';
-        medicines.forEach(function (med) {
-            const li = document.createElement('li');
-            li.className = 'streaming-medicine-item';
-            const rank = med.rank ? med.rank + '. ' : '';
-            const name = med.product_name || '';
-            const mfr = med.manufacturer ? ' <span class="streaming-medicine-mfr">(' + escapeHtml(med.manufacturer) + ')</span>' : '';
-            let eff = '';
-            if (med.efficacy) {
-                eff = '<p class="streaming-medicine-efficacy">' + escapeHtml(med.efficacy) + '</p>';
-            }
-            li.innerHTML = '<strong>' + escapeHtml(rank + name) + '</strong>' + mfr + eff;
-            list.appendChild(li);
-        });
+        const wrapper = ensureStreamingRecommendationResult();
+        if (!wrapper) return;
+        const container = wrapper.querySelector('.streaming-medicines-container');
+        if (!container) return;
+        container.innerHTML = medicines.map(buildStreamingMedicineItemHtml).join('');
+        wrapper.classList.add('has-medicines');
         scrollToBottom();
     }
 
@@ -6611,6 +6800,7 @@
             newTypingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator">AIが診断中...</div></div>';
         }
         chatMessages.appendChild(newTypingDiv);
+        attachSlowRequestButtonToTypingIndicator();
         return newTypingDiv;
     }
 
@@ -6790,10 +6980,17 @@
                     // HTMLをそのまま表示（エスケープしない）
                     messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
                 }
+                // ステータスカード（診断名通知・エラーUI等）
+                else if (isStatusCardHtml(message.content)) {
+                    messageDiv.innerHTML = wrapBotStatusCardHtml(message.content);
+                }
                 // message.contentにHTMLが直接含まれている場合（ルールベースアルゴリズムの結果）
                 else if (message.content && (message.content.includes('<div class="recommendation-result') || 
                                        message.content.includes('class="chat-response') || 
                                        message.content.includes("class='chat-response"))) {
+                    if (isStatusCardHtml(message.content)) {
+                        messageDiv.innerHTML = wrapBotStatusCardHtml(message.content);
+                    } else {
                     // 診断結果の場合は詳細を表示し、評価ボタンも表示
                     // 管理画面専用のスコア情報を除去
                     let cleanedContent = message.content;
@@ -6848,6 +7045,7 @@
                         // message-contentクラスでラップしてHTMLを正しくレンダリング
                         messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
                     }
+                    }
                 }
                 // 緊急事案メッセージの特別表示
                 else if (message.emergency_detected && message.content) {
@@ -6871,6 +7069,16 @@
                 }
                 // 従来の形式
                 else {
+                    if (message.content && isStatusCardHtml(message.content)) {
+                        messageDiv.innerHTML = wrapBotStatusCardHtml(message.content);
+                        fragment.appendChild(messageDiv);
+                        return;
+                    }
+                    if (message.content && looksLikeHtmlContent(message.content)) {
+                        messageDiv.innerHTML = `<div class="message-content">${message.content}</div>`;
+                        fragment.appendChild(messageDiv);
+                        return;
+                    }
                     let content = `<div class="message-content${message.manual_reply ? ' manual-reply' : ''}${message.style_class ? ' ' + message.style_class : ''}">`;
                     
                     if (message.manual_reply) {
@@ -6878,7 +7086,7 @@
                     }
                     
                     // 新しい推奨結果の形式に対応
-                    if (message.diagnosis) {
+                    if (isDiagnosisPayload(message.diagnosis)) {
                     // 医薬品相談回答の場合
                     if (message.diagnosis.is_question && message.diagnosis.chat_response) {
                         const chatResponse = message.diagnosis.chat_response;
@@ -6946,11 +7154,9 @@
                         content += `<div class="question-prompt"><strong>❓ 他にご質問はありますか？</strong><br>薬の飲み方、副作用、他の症状との関係など、お気軽にお聞きください。</div>`;
                     }
                     } else {
-                        // 診断名の返信メッセージなど、改行を含むテキストを適切に表示
+                        // プレーンテキストのみ pre-line（HTML・ステータスカードは上で処理済み）
                         if (message.content) {
-                            // 改行を含むメッセージの場合、white-space: pre-line;スタイルを適用して改行を表示
                             if (message.content.includes('\n') || message.escalation_required) {
-                                // 改行を保持しつつHTMLタグをエスケープ
                                 const escapedContent = escapeHtml(message.content);
                                 content += `<div style="white-space: pre-line;">${escapedContent}</div>`;
                             } else {
