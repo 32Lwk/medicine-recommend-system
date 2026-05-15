@@ -42,7 +42,11 @@ _GPT5 = {
     "explain": "gpt-5.5",
     "ask": "gpt-5.4-mini",
     "admin": "gpt-5.4-mini",
+    "store": "gpt-5.4-mini",
+    "moderation": "gpt-5.4-mini",
 }
+
+RESPONSES_API_ROLES = frozenset({"triage", "explain"})
 
 _PROFILE_MODELS = _GPT5 if LLM_MODEL_PROFILE == "gpt5" else _LEGACY
 
@@ -67,6 +71,27 @@ def get_model(role: str) -> str:
 
 def use_responses_api() -> bool:
     return _get_bool("OPENAI_USE_RESPONSES_API", False)
+
+
+def use_responses_api_for_role(role: str) -> bool:
+    if use_responses_api():
+        return True
+    return role in RESPONSES_API_ROLES
+
+
+_ROLE_TIMEOUT_SEC = {
+    "triage": 8.0,
+    "explain": 15.0,
+    "counsel": 20.0,
+    "moderation": 8.0,
+    "nlu": 15.0,
+    "ask": 20.0,
+    "store": 15.0,
+}
+
+
+def get_role_timeout_sec(role: str) -> float:
+    return _ROLE_TIMEOUT_SEC.get(role, 30.0)
 
 
 def get_reasoning_effort(role: str = "triage") -> str:

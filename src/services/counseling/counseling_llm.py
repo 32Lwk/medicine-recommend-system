@@ -37,20 +37,52 @@ def counseling_chat(
     temperature: float = 0.7,
     response_format: Optional[Dict] = None,
     lang: str = "ja",
+    session_id: Optional[str] = None,
 ) -> Any:
+    from src.core.llm_client import chat_completion_stream, text_completion_adapter
+    from src.services.sse_emit import emit_advice_delta, get_stream_sink, is_streaming_active, pseudo_stream_advice
+
     kwargs: Dict[str, Any] = {
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
     if response_format:
         kwargs["response_format"] = response_format
-    return chat_completion_create(
+
+    msgs = _with_lang(messages, lang)
+    sink = get_stream_sink()
+    sid = session_id or (sink.session_id if sink else None)
+    use_stream = not response_format and is_streaming_active(sid)
+
+    if use_stream and lang == "ja":
+        text = chat_completion_stream(
+            client,
+            model_role="counsel",
+            path=path,
+            messages=msgs,
+            on_delta=lambda c: emit_advice_delta(c, sid),
+            session_id=sid,
+            **kwargs,
+        )
+        return text_completion_adapter(text)
+
+    response = chat_completion_create(
         client,
         model_role="counsel",
         path=path,
-        messages=_with_lang(messages, lang),
+        messages=msgs,
         **kwargs,
     )
+    if use_stream and lang != "ja":
+        raw = (response.choices[0].message.content or "").strip()
+        if raw:
+            from src.core.translation_service import translate_medicine_recommendation
+
+            translated = translate_medicine_recommendation(raw, lang, session_id=sid)
+            pseudo_stream_advice(translated, sid)
+        return response
+
+    return response
 
 
 def counseling_chat_parallel(

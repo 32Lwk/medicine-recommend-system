@@ -44,3 +44,36 @@ def emotional_handoff(symptom_type: str) -> HandoffResult:
 
 def emergency_handoff(reason: str) -> HandoffResult:
     return HandoffResult("EmergencyHandler", {"reason": reason}, stop=True)
+
+
+def store_handoff(inquiry_type: str = "general") -> HandoffResult:
+    return HandoffResult("StoreInquiryAgent", {"inquiry_type": inquiry_type})
+
+
+def nlu_handoff(user_text: str, user_info: Dict[str, Any]) -> HandoffResult:
+    return HandoffResult("NLUAgent", {"user_text": user_text, "user_info": user_info})
+
+
+class ModerationResult:
+    """ModerationAgent 出力の薄いラッパ"""
+
+    def __init__(
+        self,
+        label: str,
+        confidence: float = 0.0,
+        reasoning: str = "",
+        raw: Optional[Dict[str, Any]] = None,
+    ):
+        self.label = label
+        self.confidence = confidence
+        self.reasoning = reasoning
+        self.raw = raw or {}
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ModerationResult":
+        return cls(
+            label=str(data.get("label") or "safe"),
+            confidence=float(data.get("confidence") or 0.0),
+            reasoning=str(data.get("reasoning") or ""),
+            raw=data,
+        )

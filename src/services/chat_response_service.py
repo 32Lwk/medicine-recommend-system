@@ -75,7 +75,8 @@ def generate_personalized_advice(
     client,
     user_text: str = "",
     influenza_risk: bool = False,
-    influenza_reason: str = ""
+    influenza_reason: str = "",
+    session_id: Optional[str] = None,
 ) -> str:
     """
     ユーザー属性に基づいた個別アドバイスをChatGPTで生成（インフルエンザリスク対応含む）
@@ -161,23 +162,50 @@ def generate_personalized_advice(
 """
 
     try:
-        from src.core.llm_client import chat_completion_create
-        from src.core.i18n_prompts import append_language_instruction, normalize_lang
+        from src.core.i18n_prompts import normalize_lang
+        from src.core.llm_client import chat_completion_create, chat_completion_stream
+        from src.core.translation_service import translate_medicine_recommendation
+        from src.services.sse_emit import emit_advice_delta, is_streaming_active, pseudo_stream_advice
 
         lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
-        response = chat_completion_create(
-            client,
-            model_role="counsel",
-            path="chat_response_service.personalized_advice",
-            messages=[
-                {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
-                {"role": "user", "content": append_language_instruction(prompt, lang)},
-            ],
-            temperature=0.7,
-            max_tokens=200,
-        )
+        messages = [
+            {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
+            {"role": "user", "content": prompt},
+        ]
+        sid = session_id
+        stream_active = is_streaming_active(sid)
 
-        advice = response.choices[0].message.content.strip()
+        if stream_active and lang == "ja":
+            advice = chat_completion_stream(
+                client,
+                model_role="counsel",
+                path="chat_response_service.personalized_advice",
+                messages=messages,
+                on_delta=lambda c: emit_advice_delta(c, sid),
+                session_id=sid,
+                temperature=0.7,
+                max_tokens=200,
+            ).strip()
+        else:
+            from src.core.i18n_prompts import append_language_instruction
+
+            response = chat_completion_create(
+                client,
+                model_role="counsel",
+                path="chat_response_service.personalized_advice",
+                messages=[
+                    messages[0],
+                    {"role": "user", "content": append_language_instruction(prompt, lang)},
+                ],
+                temperature=0.7,
+                max_tokens=200,
+            )
+            advice = response.choices[0].message.content.strip()
+            if stream_active and lang != "ja":
+                translated = translate_medicine_recommendation(advice, lang, session_id=sid)
+                pseudo_stream_advice(translated, sid)
+                advice = translated
+
         logger.info(f"✅ 個別アドバイス生成完了: {len(advice)}字")
         return advice
 
@@ -402,8 +430,13 @@ def build_question_response(
 # 後方互換のため html_formatter の ERROR_MESSAGES を再エクスポート
 from src.services.html_formatter import (
     ERROR_MESSAGES,
+    format_diagnosis_notification,
     format_error_display,
     format_escalation_display,
+    format_feedback_buttons,
+    format_medicine_type_notice,
+    format_status_card,
+    format_system_error,
 )
 
 

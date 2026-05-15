@@ -1,8 +1,159 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月15日**（LLM 段階移行 Phase 0–3・エージェント経路・処理進捗 UI・予算ガード）
+**最終更新日: 2026年5月16日**（GPT-5 / 9エージェント・SSE ストリーム・チャット POST 分割・エラー UI 統一）
 
-本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。
+
+---
+
+## 2026年5月16日 — GPT-5 完全移行 + 9エージェント + SSE + チャット基盤リファクタ
+
+### 概要
+
+- **`LLM_MODEL_PROFILE=gpt5`** を既定とし、トリアージ・NLU・説明・カウンセリングを **9 エージェント経路**に集約（`LLM_AGENT_ENABLED` + カナリア対象セッション）。
+- **`chat_handler.py`** の巨大 POST 処理を **`chat_post_pipeline` ほか分割モジュール**へ移し、**`ChatOrchestrator`** がトリアージ後の Physical / Emotional / Ask / Other を一点集約。
+- **`POST /api/chat/stream`** による **SSE ストリーミング**（`cards` → `advice_delta` → `done`、Last-Event-ID 再接続）。
+- **統一エラー UI**・**開発用 7 パターンのエラー UI プレビュー**・セッション保存ログ改善・観測用トレース／日次 Markdown ログを追加。
+
+### LLM 設定・機能フラグ（`config/`）
+
+- **`llm_config.py`**: ロール別モデル名（`OPENAI_MODEL_TRIAGE` / `NLU` / `EXPLAIN` / `COUNSEL`）、`OPENAI_USE_RESPONSES_API`、本番/ステージング API キー分離。
+- **`llm_canary.py`**: 新規 sid のみ gpt5 プロファイルへ段階切替（`effective_model_profile`）。
+- **`app_config.py`**: `APP_ENV` に応じた開発ログ・Markdown ログの有効化。
+- **`.env.example`**: 上記変数・開発用エラートリガー・`DEV_MARKDOWN_LOG_*` のテンプレートを追記。
+- **`docs/CLOUD_RUN_LLM_ENV.md`**: Cloud Run 向け環境変数を gpt5 / エージェント / SSE 前提に更新。
+
+### OpenAI 呼び出し（`src/core/llm_client.py`）
+
+- **Responses API** と Chat Completions の単一ラッパを拡張（同期・非同期・ストリーミング）。
+- **ストリーミングアドバイス**: `stream_advice` コールバック経由で `advice_delta` を SSE に投入。
+- レイテンシ・トークン計測、`budget_guard` / `llm_metrics` 連携を維持。
+
+### 9 エージェント（`src/agents/`）
+
+| エージェント | 役割 |
+|-------------|------|
+| `triage_agent` | カテゴリ分類・handoff 解決 |
+| `safety_gate` | LLM 前の決定的安全チェック（緊急・不適切・グレーゾーン判定） |
+| `moderation_agent` | グレーゾーンの LLM モデレーション |
+| `nlu_agent` | 症状・属性の構造化抽出 |
+| `physical_orchestrator` | ルールベース推奨ツール呼び出し |
+| `ask_agent` | 医薬品 Q&A |
+| `counseling_manager` | 感情・メンタル系カウンセリング |
+| `explanation_agent` | 推奨理由の並列説明生成 |
+| `store_inquiry_agent` | 店舗・営業時間等の問い合わせ |
+
+- **新規**: `safety_gate.py` / `moderation_agent.py` / `nlu_agent.py` / `store_inquiry_agent.py`
+- **`protocols.py`**: `HandoffResult`・ツール ACL 型を拡張。
+- **`explanation_agent.py`**: 推奨カード説明の並列生成に対応。
+
+### チャット POST 分割・オーケストレーション（`src/handlers/`）
+
+- **`chat_handler.py`**: POST 本体を **`run_chat_post_pipeline`** へ委譲（約 2,000 行削減）。
+- **新規ルートモジュール**:
+  - **`chat/chat_post_pipeline.py`**: POST 全ステップのオーケストレーション（`ChatPostContext`）。
+  - **`chat/chat_post_init.py`**: 空メッセージ・入力パース。
+  - **`chat/chat_preprocess_route.py`**: 前処理・トリアージ・SafetyGate・Moderation。
+  - **`chat/chat_session_route.py`**: メッセージ追記・感情キーワード・チャット終了・管理画面同期。
+  - **`chat/chat_llm_gate.py`**: 予算ブロック・LLM プロファイル解決。
+  - **`chat/chat_inappropriate_route.py`**: 不適切リクエスト経路。
+  - **`chat/chat_dev_triggers.py`**: 開発用エラー UI トリガー（7 パターン）。
+- **`chat_orchestrator.py`（新規）**: `ChatOrchestrator` — トリアージ後の handoff を一点集約。`try_orchestrator_route` で既存ルートと接続。
+- **`chat_pipeline.py`**: エージェント経路とレガシー経路の切替・重複 triage 回避。
+- **`docs/AGENT_DEDUP_AUDIT.md`（新規）**: 1 POST あたり `llm_triage` / `run_triage_agent` は原則 1 回にする監査メモ。
+
+### SSE ストリーミング
+
+- **`main.py`**: **`POST /api/chat/stream`** — `text/event-stream`、`Last-Event-ID` ヘッダ対応。
+- **`chat_stream.py`（新規）**: `handle_chat_post` をワーカースレッドで実行しつつイベント配信。
+- **`sse_events.py`（新規）**: SSE イベント名・ペイロード型の定義。
+- **`sse_emit.py`（新規）**: `StreamSink`・ContextVar・セッション単位リングバッファ（TTL 120s / 最大 512 件）。
+- **`static/js/chat_sse.js`（新規）**: `ChatSSE.submitStream` — 再接続・`advice_delta` / `cards` / `done` ハンドラ。
+- **`static/js/main.js`**: `CHAT_USE_SSE` 時はストリーム POST を優先。`streaming-advice` / `streaming-cards` DOM を逐次更新。
+
+### 安全・危機検知
+
+- **`src/core/crisis_detection.py`**: SafetyGate 連携・グレーゾーン表現の調整。
+- **`chat_triage.py` / `llm_triage.py`**: エージェント経路・キャッシュ TTL・トリアージ呼び出し回数の最適化。
+
+### セッション・DB・フィードバック
+
+- **`session_manager.py`**: DB 未設定時の WARNING 抑制、`GET /api/sessions` ポーリング時の保存間引き、メッセージマージ改善。
+- **`database.py`**: `resolve_database_url()`（`POSTGRES_*` からの組み立て）。
+- **`feedback_store.py`（新規）**: `DATABASE_URL` 未設定時の開発用フィードバック（`log/feedback_dev.jsonl`）。
+- **`main.py`**: **`POST /api/slow-request-notify`** — 遅延通知（ログ + 任意 SMTP）。`slow_request_notify.py`（新規）。
+
+### 統一エラー UI・開発プレビュー
+
+- **`html_formatter.py`**: `chat-status-card` 系（診断名通知・エスカレーション・システムエラー等）とフィードバックのカード内フッター化。
+- **`static/css/main.css` / `static/js/main.js`**: `showErrorMessage` / `showWarningMessage`、ユーザー向け文言変換、成功時のエラーカード自動削除、「もう一度試す」再送。
+- **開発用トリガー 7 件**: 下記「開発用エラー UI プレビュー」参照。`docs/DEV_ERROR_UI_PREVIEW.md`（新規）。
+
+### 観測・開発ログ
+
+- **`agent_trace.py`（新規）**: エージェント handoff / ステップの JSONL（`log/agent_trace.jsonl`）。
+- **`daily_markdown_log.py`（新規）**: 開発環境の日次 Markdown（`log/log/yyyy-mm-dd-n.md`）、非同期書き込み。推薦スコアリング DEBUG は除外可能。
+
+### 処理進捗・その他サービス
+
+- **`processing_status.py`**: SSE 中の `advice_preview` 追記、ステップラベル調整。
+- **`chat_response_service.py`**: ストリーム完了時のレスポンス整形。
+- **`counseling_llm.py` / `counseling_processor.py`**: `llm_client` 経由・エージェント handoff 連携。
+
+### フロントエンド
+
+- **`templates/index.html`**: `chat_sse.js` 読込、`CHAT_USE_SSE` フラグ。
+- **`static/js/processing_status.js`**: SSE 併用時の進捗表示調整。
+- **`static/js/admin_chat.js` / `templates/admin_chat.html`**: 管理画面の微調整。
+
+### 回帰テスト（新規・更新）
+
+| テスト | 内容 |
+|--------|------|
+| `test_chat_orchestrator.py` | Orchestrator handoff・経路分岐 |
+| `test_chat_post_pipeline.py` | POST パイプライン統合 |
+| `test_chat_preprocess_route.py` | 前処理・SafetyGate |
+| `test_chat_inappropriate_route.py` | 不適切リクエスト |
+| `test_chat_triage_agent_path.py` | エージェント triage 経路 |
+| `test_chat_stream_api.py` | SSE API 契約 |
+| `test_sse_emit.py` | リングバッファ・再接続 |
+| `test_safety_gate.py` / `test_moderation_agent.py` | 安全・モデレーション |
+| `test_nlu_agent.py` / `test_store_inquiry_agent.py` | NLU・店舗 |
+| `test_explanation_agent_parallel.py` | 説明の並列生成 |
+| `test_agent_trace.py` / `test_daily_markdown_log.py` | 観測ログ |
+| `test_llm_canary_profile.py` / `test_llm_stream.py` | カナリア・ストリーム |
+| `test_triage_cache_ttl.py` / `test_triage_call_count.py` | triage 最適化 |
+| `test_tool_acl.py` | ツール ACL |
+| `test_chat_dev_triggers.py` | 開発用エラー UI |
+| `test_html_formatter.py` | ステータスカード HTML |
+| `test_session_manager_db_fallback.py` / `test_session_message_merge.py` | セッション |
+| `test_slow_request_notify.py` / `test_feedback_dev_fallback.py` | 遅延通知・フィードバック |
+| `test_chat_confidence_route.py` / `test_chat_store_inquiry.py` / `test_crisis_detection.py` | 既存経路の回帰 |
+| `test_llm_phase1.py`（更新） | `llm_client` 拡張 |
+
+### README
+
+- [開発用エラー UI プレビュー（7パターン）](docs/DEV_ERROR_UI_PREVIEW.md) へのリンクを追加。
+
+---
+
+## 開発用エラー UI プレビュー（7パターン・すべて実装済み）
+
+**`APP_ENV=development` のときのみ有効。** 本番ではトリガー語を送っても通常メッセージとして処理されます。  
+詳細・環境変数・使い方: **[docs/DEV_ERROR_UI_PREVIEW.md](docs/DEV_ERROR_UI_PREVIEW.md)**
+
+| # | トリガー（完全一致で送信） | 種類 | 表示 |
+|---|---------------------------|------|------|
+| 01 | `mrcdev00000000000001` | クライアント・エラー | 赤カード（`showErrorMessage`） |
+| 02 | `mrcdev00000000000002` | クライアント・警告 | 赤枠・セキュリティ（`showWarningMessage`） |
+| 03 | `mrcdev00000000000003` | HTTP 500 | 通信エラー系カード（fetch 失敗扱い） |
+| 04 | `mrcdev00000000000004` | HTML・システム | 赤 `chat-status-card`（サーバー生成） |
+| 05 | `mrcdev00000000000005` | HTML・注意 | 黄 `chat-status-card` + フィードバック |
+| 06 | `mrcdev00000000000006` | HTML・通知 | 青（診断名検出風） |
+| 07 | `mrcdev00000000000007` | HTML・重要 | 赤・critical（エスカレーション風） |
+
+実装: `src/handlers/chat/chat_dev_triggers.py` / テスト: `tests/test_chat_dev_triggers.py`  
+POST 入口: `chat_post_pipeline.run_chat_post_pipeline` で `try_dev_error_trigger` を評価。
 
 ---
 

@@ -31,14 +31,24 @@ def generate_explanations_for_recommendation(
     notes_bundle = generate_usage_notes_and_consultation_with_gpt(
         recommended_medicines, nlu_result, user_info, client
     )
-    explanations: List[str] = []
-    for med in recommended_medicines[:3]:
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    meds = recommended_medicines[:3]
+
+    def _one(med: Dict[str, Any]) -> str:
         try:
-            explanations.append(
-                generate_explanation(med, nlu_result, safety_result, user_info)
-            )
+            return generate_explanation(med, nlu_result, safety_result, user_info) or ""
         except Exception as e:
             logger.warning("ExplanationAgent per-medicine skip: %s", e)
+            return ""
+
+    explanations: List[str] = [""] * len(meds)
+    if meds:
+        with ThreadPoolExecutor(max_workers=min(3, len(meds))) as pool:
+            futures = {pool.submit(_one, m): i for i, m in enumerate(meds)}
+            for fut in as_completed(futures):
+                idx = futures[fut]
+                explanations[idx] = fut.result()
 
     return {
         "agent": "ExplanationAgent",

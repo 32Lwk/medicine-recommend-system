@@ -115,24 +115,23 @@ def try_agent_pipeline(
     recommendation_client: OpenAI,
     monitor: Any,
 ) -> Optional[ResponseTuple]:
-    """
-    エージェント経路が有効な場合にパイプラインを実行。
-    処理済みレスポンスがあれば返し、なければ None（既存フロー継続）。
-    """
-    if not is_agent_enabled():
+    """非推奨: ChatOrchestrator へ委譲（後方互換）。"""
+    if not is_agent_enabled() or not is_agent_session_eligible(sid) or not triage_result:
         return None
-    if not is_agent_session_eligible(sid):
-        return None
-    if not triage_result:
-        return None
+    from src.handlers.chat.chat_post_pipeline import ChatPostContext
+    from src.handlers.chat_orchestrator import try_orchestrator_route
 
-    pipeline = ChatPipeline(recommendation_client)
-    result = pipeline.after_triage(
-        session, client_info, sid, user_message, sanitized_message, triage_result, monitor
+    ctx = ChatPostContext(
+        session=session,
+        client_info=client_info,
+        sid=sid,
+        monitor=monitor,
+        user_agent=getattr(client_info, "user_agent", ""),
+        client_ip=getattr(client_info, "client_ip", ""),
+        user_message=user_message,
+        sanitized_message=sanitized_message,
+        processed_message=sanitized_message,
+        triage_result=triage_result,
+        recommendation_client=recommendation_client,
     )
-    if result.handled and result.response:
-        logger.info("🤖 Agent pipeline handled: %s", result.handoff.target if result.handoff else "?")
-        return result.response
-    if result.handoff:
-        logger.info("🤖 Agent handoff → %s (legacy flow continues)", result.handoff.target)
-    return None
+    return try_orchestrator_route(ctx, monitor)
