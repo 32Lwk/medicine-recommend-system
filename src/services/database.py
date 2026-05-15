@@ -338,6 +338,22 @@ class DatabaseManager:
             except Exception as e:
                 # カラムが既に存在する場合はエラーを無視
                 logger.debug(f"session_active column may already exist: {e}")
+
+            try:
+                alter_processing_sql = """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='sessions' AND column_name='processing_status'
+                    ) THEN
+                        ALTER TABLE sessions ADD COLUMN processing_status JSONB;
+                    END IF;
+                END $$;
+                """
+                cursor.execute(alter_processing_sql)
+            except Exception as e:
+                logger.debug(f"processing_status column may already exist: {e}")
             
             # global_stateテーブルを作成（グローバル変数の共有）
             create_global_state_table_sql = """
@@ -383,6 +399,11 @@ class DatabaseManager:
             self.put_connection(conn)
             
             logger.info("✅ Database tables initialized successfully")
+            try:
+                from src.services.admin_settings_service import ensure_llm_tables
+                ensure_llm_tables()
+            except Exception as llm_tbl_err:
+                logger.warning("LLM auxiliary tables init skipped: %s", llm_tbl_err)
             return True
             
         except Exception as e:
@@ -621,6 +642,63 @@ class DatabaseManager:
                 conn.rollback()
                 self.put_connection(conn)
             return False
+
+    def update_processing_status_only(self, session_id, status_dict):
+        """processing_status カラムのみ更新（messages は触らない）"""
+        conn = self.get_connection()
+        if not conn:
+            logger.error("❌ No database connection")
+            return False
+        try:
+            cursor = conn.cursor()
+            status_json = json.dumps(status_dict, ensure_ascii=False) if status_dict is not None else None
+            update_sql = """
+            UPDATE sessions
+            SET processing_status = %s::jsonb, last_activity = %s
+            WHERE session_id = %s;
+            """
+            cursor.execute(
+                update_sql,
+                (status_json, datetime.now(), session_id),
+            )
+            conn.commit()
+            cursor.close()
+            self.put_connection(conn)
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to update processing_status: {str(e)}")
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
+            return False
+
+    def get_processing_status_only(self, session_id):
+        """processing_status カラムのみ取得"""
+        conn = self.get_connection()
+        if not conn:
+            return None
+        try:
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute(
+                "SELECT processing_status FROM sessions WHERE session_id = %s;",
+                (session_id,),
+            )
+            result = cursor.fetchone()
+            cursor.close()
+            self.put_connection(conn)
+            if not result:
+                return None
+            raw = result.get("processing_status")
+            if raw is None:
+                return None
+            if isinstance(raw, str):
+                return json.loads(raw)
+            return dict(raw)
+        except Exception as e:
+            logger.error(f"❌ Failed to get processing_status: {str(e)}")
+            if conn:
+                self.put_connection(conn)
+            return None
     
     def get_session(self, session_id):
         """セッションをデータベースから取得"""

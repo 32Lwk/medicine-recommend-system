@@ -35,6 +35,9 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         - early_response: 心臓緊急時に (dict, status)、それ以外は None
         - triage_result: LLMトリアージ結果（常に返す。インポート失敗時は None）
     """
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "triage")
     triage_result = None
     try:
         from src.services.llm_triage import llm_triage

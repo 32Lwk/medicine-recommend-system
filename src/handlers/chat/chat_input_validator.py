@@ -14,6 +14,7 @@ from src.services.session_manager import (
     save_session_to_db,
     get_manual_reply_queue,
     set_manual_reply_queue,
+    append_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -169,19 +170,7 @@ def validate_and_block_input(session, client, user_message, sid):
         has_crisis_keywords, detected_keywords = detect_crisis_keywords(sanitized_message)
         if has_crisis_keywords:
             logger.warning(f"🚨 危機関連ワード検出: {detected_keywords}")
-            if 'messages' not in session:
-                session['messages'] = []
-            user_message_exists = any(
-                msg.get('type') == 'user' and msg.get('content') == sanitized_message and msg.get('uuid')
-                for msg in session.get('messages', [])
-            )
-            if not user_message_exists:
-                session['messages'].append({
-                    'type': 'user',
-                    'content': sanitized_message,
-                    'timestamp': datetime.now().isoformat(),
-                    'uuid': str(uuid.uuid4())
-                })
+            append_user_message(session, sanitized_message)
             user_language = session.get('language', 'ja')
             crisis_resources = get_crisis_support_resources(user_language)
             bot_response = {

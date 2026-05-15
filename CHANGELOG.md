@@ -1,8 +1,57 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月14日**（オンボーディングUI・季節粒子の観測最適化・静的アセットキャッシュ）
+**最終更新日: 2026年5月15日**（LLM 段階移行 Phase 0–3・エージェント経路・処理進捗 UI・予算ガード）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](../README.md) を参照してください。
+
+---
+
+**2026年5月15日の更新（LLM 段階移行・エージェント・処理進捗・管理画面）:**
+
+- **LLM 設定・機能フラグ（`config/`）**
+  - **`llm_config.py`**: 本番/ステージング API キー分離、`LLM_MODEL_PROFILE`（`legacy` / `gpt5`）、用途別モデル名、`OPENAI_USE_RESPONSES_API`、月額・セッション予算の既定値。
+  - **`llm_flags.py`**: `LLM_AGENT_ENABLED`・`LLM_AGENT_CANARY_PERCENT`・`LLM_GPT_RECOMMEND_FALLBACK`（本番既定 OFF）・`LLM_CANARY_PERCENT` と、セッション ID ハッシュによるカナリア判定。
+  - **`llm_canary.py` / `llm_runtime.py`**: 新規 sid のみ gpt5 プロファイルへ段階切替。
+  - **`.env.example`**: 上記変数のテンプレートを追加。
+- **OpenAI 呼び出しの統一（Phase 2）**
+  - **`src/core/llm_client.py`（新規）**: Chat Completions / Responses API の単一ラッパ。同期・非同期、レイテンシ・トークン計測、予算チェック、`llm_metrics` / `budget_guard` 連携。
+  - **`src/core/openai_client.py`** および **`llm_triage`・カウンセリング・NLU・説明生成** 等: `chat.completions` 直呼びを廃止し `llm_client` 経由に集約。
+  - **`src/core/i18n_prompts.py`（新規）**: 多言語プロンプト断片の共通化。
+- **予算・計測（Phase 0）**
+  - **`src/services/budget_guard.py`（新規）**: 月額 `OPENAI_MONTHLY_BUDGET_JPY` の hard_stop、セッションコストアラート（SMTP 任意）、管理用文言の DB 保持。
+  - **`src/services/llm_metrics.py`（新規）**: セッション単位の LLM 呼び出し回数・コスト・レイテンシ集計。
+  - **`scripts/baseline_llm_metrics.py`（新規）**: P50/P95・セッションコストのベースライン記録用 CLI。
+  - **`main.py`**: **`GET/POST /admin/llm_settings`** — 予算到達時メッセージ・アラートメールの設定 UI。
+- **エージェント経路（Phase 3）**
+  - **`src/agents/`（新規）**: `triage_agent`・`physical_orchestrator`・`ask_agent`・`explanation_agent`・`counseling_manager`、`protocols`（Handoff）、`tools/recommendation_tool`（ルールベース推奨のみをツール化。GPT による OTC 選定はしない）。
+  - **`src/handlers/chat_pipeline.py`（新規）**: `LLM_AGENT_ENABLED` かつカナリア対象 sid のとき、トリアージ後の Emotional / Physical 等をエージェントへ委譲。
+  - **`src/handlers/chat_handler.py`**: 巨大分岐を **`chat_*_route.py`** へ分割（`chat_category_route`・`chat_physical_route`・`chat_symptom_route`・`chat_emotional_route`・`chat_ask_route`・`chat_confidence_route`・`chat_recommendation_followup`・`chat_medicine_qa_html` 等）。オーケストレーション層として大幅スリム化。
+  - **`src/services/counseling/counseling_llm.py`（新規）**: カウンセリング LLM 呼び出しの分離。
+- **チャット処理進捗 UI**
+  - **`src/services/processing_status.py`（新規）**: 14 ステップの加重進捗（インメモリ即時更新 + DB デバウンス書き込み）。日本語・英語・韓国語・中国語ラベル。
+  - **`main.py`**: **`GET /api/processing-status`**（`sid` または管理者セッション指定）。
+  - **`static/js/processing_status.js`（新規）**: ユーザー/管理チャットでのポーリングとバッジ表示。医療用語は翻訳せず日本語のまま表示。
+  - **`templates/index.html` / `admin_chat.html`**: 進捗スクリプト読込。キャッシュバスター `?v=20260515-i18n`。
+  - **各ハンドラ**: `mark_processing_step` をトリアージ・診断・緊急・店舗・推奨・翻訳などの節目で呼び出し。
+- **管理画面認証・DB**
+  - **`src/services/admin_auth.py`（新規）**: Cookie ベース管理認証（Basic 認証が使えないブラウザ向け）。`templates/admin_login.html` と **`main.py`** のログイン POST。
+  - **`src/services/database.py`**: `global_state`（月次コスト・LLM 管理設定）、`update_processing_status_only` 等を拡張。
+  - **`src/services/session_manager.py`**: 処理進捗・エージェント handoff メタデータの永続化対応。
+- **回帰テスト・フィクスチャ**
+  - **`tests/test_llm_phase0.py`–`test_llm_phase3.py`**: フラグ既定値・モデルプロファイル・`llm_client`・エージェント handoff・カナリア。
+  - **`tests/test_golden_regression.py`**: **`tests/fixtures/golden/sample_cases.jsonl`**（40 件: Physical 16 / Emotional 10 / Ask 6 / Emergency 4 / Other 4）のスキーマ・オフライン triage 検証。
+  - **`tests/test_safety_regression.py`**: **`tests/fixtures/safety/red_team.jsonl`**（50 件）— 緊急 handoff・推奨ツールがランキング以外を返さないこと。
+  - **`tests/test_processing_status.py` / `test_processing_status_api.py`**: 進捗サービスと API 契約。
+  - **`tests/test_chat_category_routes.py` / `test_chat_emotional_route.py` / `test_user_message_dedup.py`**: ルート分割後の振る舞い。
+  - **`scripts/golden_regression_cli.py`（新規）**: ゴールデンケースの CLI 実行。
+- **ドキュメント（`docs/`）**
+  - **`CLOUD_RUN_LLM_ENV.md`**: Cloud Run 向け環境変数一覧（本番 `medicine-recommend` / dev `medicine-recommend-dev`）。
+  - **`LLM_ROLLBACK.md`**: 本番切り戻し手順（`LLM_MODEL_PROFILE=legacy` 等）。
+  - **`PHASE_EXIT_CHECKLISTS.md`**: Phase 0–3 の出口チェックリスト（薬剤師レビュー用）。
+  - **`SDK_SPIKE.md`**: Responses API / SDK 調査メモ。
+- **フロントエンド（追記）**
+  - **`static/css/main.css` / `static/js/main.js`**: 処理進捗バッジ・多言語ステップ表示のスタイルと連携。
+  - **`static/css/admin_chat.css` / `static/js/admin_chat.js`**: 管理画面での進捗表示・セッション操作の調整。
 
 ---
 

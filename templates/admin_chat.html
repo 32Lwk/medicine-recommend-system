@@ -33,6 +33,10 @@
                         <i class="fa-solid fa-chart-line"></i>
                         <span>監視</span>
                     </button>
+                    <button class="header-control-btn" id="llmSettingsBtn" onclick="showModal('llmSettingsModal'); loadLlmSettings();" title="LLM設定・ゴールデン">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>LLM</span>
+                    </button>
                     <button class="header-control-btn" id="medicineChatBtn" onclick="showModal('medicineChatModal')" title="医薬品相談テスト">
                         <i class="fa-solid fa-vial"></i>
                         <span>テスト</span>
@@ -173,6 +177,7 @@
                         </div>
                     </div>
                 <div class="chat-area">
+                    <div id="ai-processing-banner" class="ai-processing-banner" aria-live="polite"></div>
                     <div class="chat-messages" id="chat-messages">
                         <div class="empty-state">
                             <i class="fa-regular fa-comments"></i>
@@ -325,6 +330,35 @@
                         このメッセージは、自動応答OFF時にユーザーに自動送信されます。
                     </p>
                 </div>
+
+                <div id="systemMessagesSection" style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
+                    <label style="display: block; margin-bottom: var(--spacing-sm); font-weight: var(--font-weight-semibold); color: var(--text-main);">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>LLMシステム文案</span>
+                    </label>
+                    <p style="font-size: 0.875rem; color: var(--text-sub); margin-bottom: var(--spacing-md);">
+                        予算超過・非対応タイプ時にチャットへ表示する文言です。
+                    </p>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">予算超過時 (budget_hard_stop)</label>
+                    <textarea id="msgBudgetHardStop" rows="3" placeholder="例：申し訳ございません。現在、AI自動応答を一時停止しています。"
+                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-md); resize: vertical;"></textarea>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">非対応 medicine_type (unsupported_medicine_type)</label>
+                    <textarea id="msgUnsupportedType" rows="3" placeholder="例：お近くの登録販売者にご相談ください。"
+                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-md); resize: vertical;"></textarea>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">セッションコストアラート送信先メール</label>
+                    <input type="email" id="llmAlertEmail" value="yuto.k051028@gmail.com"
+                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-sm);" />
+                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
+                        <button type="button" onclick="saveLlmSystemMessages()" class="btn btn-info" style="flex: 1;">
+                            <i class="fa-solid fa-save"></i>
+                            <span>システム文案を保存</span>
+                        </button>
+                        <button type="button" onclick="loadLlmSystemMessages()" class="btn btn-secondary" style="flex: 1;">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>再読み込み</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -363,6 +397,29 @@
                         <p>セッション情報を読み込み中...</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="llmSettingsModal" class="admin-modal modal">
+        <div class="admin-modal-content modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-flask"></i> ゴールデンケース</h2>
+                <button class="close-btn close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.875rem;color:var(--text-sub);margin-bottom:12px;">薬剤師入力用ゴールデンケース（Neon DB）</p>
+                <textarea id="goldenInputText" placeholder="入力文" rows="2" style="width:100%;margin-bottom:6px;"></textarea>
+                <select id="goldenCategory" style="width:100%;margin-bottom:8px;padding:8px;">
+                    <option value="Physical">Physical</option>
+                    <option value="Emotional">Emotional</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="Ask">Ask</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button type="button" class="btn btn-primary" onclick="addGoldenCase()">ゴールデン追加</button>
+                <a href="/admin/golden_cases/export" style="margin-left:8px;">JSONLエクスポート</a>
+                <div id="goldenCasesList" style="margin-top:12px;max-height:180px;overflow:auto;font-size:0.85rem;"></div>
             </div>
         </div>
     </div>
@@ -559,6 +616,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260515-i18n"></script>
     <script src="{{ url_for('static', filename='js/admin_chat.js') }}"></script>
 </body>
 </html>

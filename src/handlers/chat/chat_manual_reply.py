@@ -18,10 +18,42 @@ from src.services.session_manager import (
     get_manual_reply_message,
     get_session_from_db,
     save_session_to_db,
+    append_user_message,
 )
 from src.utils.debug_logger import add_network_log
 
 logger = logging.getLogger(__name__)
+
+
+def _save_triage_metadata_only(sid: str, sanitized_message: str, client: Any) -> None:
+    """AI自動応答OFF時: トリアージメタデータのみDBに保存（応答本文は生成しない）"""
+    if not sid or client is None:
+        return
+    try:
+        from src.services.llm_triage import llm_triage
+
+        triage = llm_triage(sanitized_message, client, use_cache=True)
+        metadata = {
+            "category": triage.get("category"),
+            "subcategory": triage.get("subcategory"),
+            "confidence": triage.get("confidence"),
+            "requires_immediate_action": triage.get("requires_immediate_action"),
+            "reasoning": (triage.get("reasoning") or "")[:500],
+            "saved_at": datetime.now().isoformat(),
+            "ai_auto_reply": False,
+        }
+        session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+        session_data["triage_metadata"] = metadata
+        save_session_to_db(sid, session_data)
+        logger.info(
+            "💾 トリアージメタデータ保存（AI OFF）: %s / confidence=%.2f",
+            metadata.get("category"),
+            float(metadata.get("confidence") or 0),
+        )
+    except RuntimeError as e:
+        logger.warning("トリアージメタデータ保存スキップ（予算等）: %s", e)
+    except Exception as e:
+        logger.warning("トリアージメタデータ保存失敗: %s", e)
 
 
 def handle_manual_reply_when_off(
@@ -62,22 +94,8 @@ def handle_manual_reply_when_off(
 
     logger.info(f"⚠️ AI自動応答OFF検出 - セッションID: {sid}, 管理者モード: {get_admin_mode()}")
 
-    if "messages" not in session:
-        session["messages"] = []
-    user_message_exists = any(
-        msg.get("type") == "user"
-        and msg.get("content") == sanitized_message
-        and msg.get("uuid")
-        for msg in session.get("messages", [])
-    )
-    if not user_message_exists:
-        session["messages"].append({
-            "type": "user",
-            "content": sanitized_message,
-            "timestamp": datetime.now().isoformat(),
-            "uuid": str(uuid.uuid4()),
-        })
-        logger.info(f"✅ ユーザーメッセージ追加（AI自動応答OFF）: {sanitized_message[:50]}...")
+    append_user_message(session, sanitized_message)
+    logger.info(f"✅ ユーザーメッセージ追加（AI自動応答OFF）: {sanitized_message[:50]}...")
 
     if sid:
         session_data = get_session_from_db(sid)
@@ -108,6 +126,8 @@ def handle_manual_reply_when_off(
                 session_data["messages"] = existing_messages
                 session_data["last_activity"] = datetime.now()
                 save_session_to_db(sid, session_data)
+
+        _save_triage_metadata_only(sid, sanitized_message, client)
 
     if not get_admin_mode():
         queue = get_manual_reply_queue()

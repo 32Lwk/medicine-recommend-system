@@ -38,11 +38,19 @@ def log_recommendation_session(
         import uuid
         session_id = str(uuid.uuid4())
 
+    llm_meta = {}
+    try:
+        from src.services.llm_metrics import get_llm_summary
+        llm_meta = get_llm_summary()
+    except Exception:
+        pass
+
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "user_text": user_text,
         "user_info": user_info,
-        "result": result
+        "result": result,
+        "llm_metrics": llm_meta,
     }
 
     log_dir = os.path.join(BASE_DIR, 'log')

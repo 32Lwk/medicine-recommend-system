@@ -415,8 +415,12 @@ def chat_with_medicine_context(
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="explain",
+            path="medicine_response_builder.chat_context",
             messages=[
                 {
                     "role": "system",

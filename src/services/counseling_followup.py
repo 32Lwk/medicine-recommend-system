@@ -137,15 +137,18 @@ JSON形式で回答してください：
 
 最大4つの質問を生成してください。
 """
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
+            from src.core.llm_client import chat_completion_create
+            response = chat_completion_create(
+                client,
+                model_role="counsel",
+                path="counseling_followup",
                 messages=[
                     {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。適切なフォローアップ質問を生成してください。"},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
                 max_tokens=300,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             content = response.choices[0].message.content
@@ -242,15 +245,18 @@ JSON形式で回答してください：
     """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+        response = chat_completion_create(
+            client,
+            model_role="counsel",
+            path="counseling_followup.alt",
             messages=[
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。自然な会話形式のフォローアップ質問を生成してください。「もう少し詳しく教えていただけますか？」という質問は生成しないでください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.7,
             max_tokens=200,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
 
         content = response.choices[0].message.content

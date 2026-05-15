@@ -161,14 +161,20 @@ def generate_personalized_advice(
 """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+        from src.core.i18n_prompts import append_language_instruction, normalize_lang
+
+        lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
+        response = chat_completion_create(
+            client,
+            model_role="counsel",
+            path="chat_response_service.personalized_advice",
             messages=[
                 {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": append_language_instruction(prompt, lang)},
             ],
             temperature=0.7,
-            max_tokens=200
+            max_tokens=200,
         )
 
         advice = response.choices[0].message.content.strip()

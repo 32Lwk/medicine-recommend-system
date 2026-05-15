@@ -82,15 +82,17 @@ def detect_topic_shift(
     """
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_topic_shift",
+            [
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の文脈を理解し、話題転換を正確に検知してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.1,
             max_tokens=300,
-            response_format={"type": "json_object"}
+            temperature=0.1,
+            response_format={"type": "json_object"},
         )
         
         return json.loads(response.choices[0].message.content)

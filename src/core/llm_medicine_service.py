@@ -51,8 +51,14 @@ def gpt_guess_symptom(user_text, symptom_list, client=None):
         "【症状リスト】\n" + "\n".join(f"{i+1}. {s}" for i, s in enumerate(symptom_list))
         + f"\nユーザーの症状: {user_text}"
     )
-    response = client.chat.completions.create(
-        model="gpt-4o", messages=[{"role": "system", "content": prompt}], temperature=0
+    from src.core.llm_client import chat_completion_create
+
+    response = chat_completion_create(
+        client,
+        model_role="nlu",
+        path="llm_medicine_service.guess_symptom",
+        messages=[{"role": "system", "content": prompt}],
+        temperature=0,
     )
     content = response.choices[0].message.content or ""
     if os.getenv("DEBUG_MODE", "false").lower() == "true" or logger.level <= logging.DEBUG:
@@ -72,8 +78,14 @@ def gpt_select_best_otc(user_text, candidates, client=None):
             for i, (_, row) in enumerate(candidates.iterrows())
         )
     )
-    response = client.chat.completions.create(
-        model="gpt-4o", messages=[{"role": "system", "content": prompt}], temperature=0
+    from src.core.llm_client import chat_completion_create
+
+    response = chat_completion_create(
+        client,
+        model_role="admin",
+        path="llm_medicine_service.select_best_otc",
+        messages=[{"role": "system", "content": prompt}],
+        temperature=0,
     )
     content = response.choices[0].message.content or ""
     if os.getenv("DEBUG_MODE", "false").lower() == "true" or logger.level <= logging.DEBUG:
@@ -147,8 +159,15 @@ def select_symptoms_via_gpt(user_text, symptoms_csv_path=None, client=None, max_
         return {"status": "error", "symptoms": [], "message": str(e)}
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini", messages=messages, temperature=0.1, max_tokens=500
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="llm_medicine_service.select_symptoms",
+            messages=messages,
+            temperature=0.1,
+            max_tokens=500,
         )
         content = response.choices[0].message.content or ""
     except Exception as e:
@@ -317,8 +336,12 @@ def analyze_symptoms_and_medicine_type(user_text, client=None):
 該当する症状がない場合は：{{"symptoms": [], "medicine_type": "その他"}}
 """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="llm_medicine_service.symptom_and_type",
             messages=[
                 {"role": "system", "content": "あなたは医薬品の専門家です。症状に適した医薬品を推奨してください。"},
                 {"role": "user", "content": prompt},

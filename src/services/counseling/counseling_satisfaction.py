@@ -58,15 +58,17 @@ JSON形式で回答してください：
 }}
 """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_satisfaction",
+            [
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。ユーザーの満足度を正確に分析してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.1,
             max_tokens=200,
-            response_format={"type": "json_object"}
+            temperature=0.1,
+            response_format={"type": "json_object"},
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:

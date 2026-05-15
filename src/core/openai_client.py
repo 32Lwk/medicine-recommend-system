@@ -16,7 +16,12 @@ try:
 except ImportError:
     pass
 
-api_key = os.getenv("OPENAI_API_KEY")
+try:
+    from config.llm_config import get_openai_api_key
+    api_key = get_openai_api_key()
+except ImportError:
+    api_key = os.getenv("OPENAI_API_KEY")
+
 if not api_key:
     logger.warning("WARNING: OpenAI API keyが環境変数に設定されていません。")
 

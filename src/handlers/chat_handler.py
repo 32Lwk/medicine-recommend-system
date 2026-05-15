@@ -26,7 +26,8 @@ from src.services.session_manager import (
     get_session_from_db,
     get_session_from_memory,
     save_session_to_db,
-    remove_duplicate_user_messages_after_ai_response,
+    append_user_message,
+    was_last_user_message,
     get_admin_sessions,
     get_next_user_number,
 )
@@ -110,6 +111,41 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     manual_resp = handle_manual_reply_when_off(session, client_info, sid, sanitized_message, session_data_for_ai)
     if manual_resp is not None:
         return manual_resp
+
+    from src.services.llm_metrics import reset_llm_metrics, merge_into_user_info, get_session_cost_jpy
+    from src.services.budget_guard import check_llm_allowed, get_admin_message, maybe_alert_session_cost
+
+    reset_llm_metrics()
+    try:
+        from config.llm_canary import effective_model_profile
+        from config.llm_runtime import set_request_profile
+
+        session_data = get_session_from_db(sid) if sid else {}
+        last_act = session_data.get("last_activity") if session_data else None
+        set_request_profile(effective_model_profile(sid, last_activity=last_act))
+    except Exception as prof_err:
+        logger.debug("LLM profile resolution skipped: %s", prof_err)
+
+    llm_allowed, _block_reason = check_llm_allowed()
+    if not llm_allowed:
+        block_msg = get_admin_message("budget_hard_stop") or (
+            "申し訳ございません。現在、AI自動応答を一時停止しています。"
+            "担当者が確認次第、回答いたします。"
+        )
+        session.setdefault("messages", []).append({
+            "type": "bot",
+            "content": block_msg,
+            "timestamp": datetime.now().isoformat(),
+            "uuid": str(uuid.uuid4()),
+            "budget_blocked": True,
+        })
+        session.modified = True
+        if sid:
+            sd = get_session_from_db(sid) or {}
+            sd["messages"] = session.get("messages", [])
+            sd["last_activity"] = datetime.now()
+            save_session_to_db(sid, sd)
+        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
     # ステップ1: LLMトリアージ＋心臓緊急チェック（chat_triage に委譲）
     recommendation_client = openai_client  # medicine_logic の OpenAI クライアント
@@ -312,6 +348,9 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
         
     # ステップ1.7.6: 方言変換（新規追加）
     processed_message = sanitized_message  # 内部処理用のメッセージ
+    if sid:
+        from src.services.processing_status import mark_processing_step
+        mark_processing_step(sid, "dialect")
         
     try:
         from src.core.scoring_utils import convert_dialect_to_standard, check_escalation_threshold
@@ -392,563 +431,212 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     else:
         logger.info(f"⏭️ 不適切な要求が検出されたため、店舗案内処理をスキップ")
 
-    # ステップ1.8.5: 店舗案内ではないと判定された場合、カウンセリングフローに流す
-    # 漢方希望/忌避のフォローアップ: 直近の推奨結果に対して「漢方はいや」等と言った場合、再推奨フローへ
+    # ステップ1.8.5: 推奨フォローアップ（漢方・属性回答・医薬品質問）→ chat_recommendation_followup
     if store_inquiry_result is None and triage_result and triage_result.get("category") == "Other":
-        is_kampo_preference_refinement = False
-        prefers_not_kampo_keywords = ["漢方はいや", "漢方いや", "漢方薬はいや", "漢方は嫌", "漢方嫌", "漢方以外", "西洋薬がいい", "西洋薬希望"]
-        prefers_kampo_keywords = ["漢方がいい", "漢方の方が", "漢方希望", "漢方薬がいい", "漢方で"]
-        has_kampo_pref = any(kw in sanitized_message for kw in prefers_not_kampo_keywords + prefers_kampo_keywords)
+        from src.handlers.chat.chat_recommendation_followup import run_recommendation_followups
 
-        if has_kampo_pref and sid:
-            session_data_for_kampo = get_session_from_db(sid)
-            messages_from_db = (session_data_for_kampo or {}).get('messages', [])
-            # DB失敗時はメモリフォールバックに最新データがある可能性があるため併用
-            memory_data = get_session_from_memory(sid)
-            messages_from_memory = (memory_data or {}).get('messages', [])
-            messages_for_kampo = messages_from_db if len(messages_from_db) >= len(messages_from_memory) else messages_from_memory
-            messages_for_kampo = messages_for_kampo or session.get('messages', [])
-            logger.info(f"🔍 漢方フォローアップ: messages_count={len(messages_for_kampo)}, db={len(messages_from_db)}, memory={len(messages_from_memory)}")
-            found_recommendation = False
-            prev_user_msg = None
-            for msg in reversed(messages_for_kampo[-8:]):
-                if msg.get('type') == 'user':
-                    if found_recommendation and prev_user_msg is None:
-                        prev_user_msg = msg.get('content', '').strip()
-                        break
-                elif msg.get('type') == 'bot' and msg.get('diagnosis'):
-                    diag = msg.get('diagnosis', {})
-                    rec = diag.get('recommended_medicines')
-                    if not rec and isinstance(diag.get('recommendation'), dict):
-                        rec = diag.get('recommendation', {}).get('recommended_medicines', [])
-                    if rec and len(rec) > 0:
-                        found_recommendation = True
+        followup = run_recommendation_followups(
+            session,
+            client_info,
+            sid,
+            monitor,
+            triage_result=triage_result,
+            sanitized_message=sanitized_message,
+            user_message=user_message,
+            processed_message=processed_message,
+            original_user_message=original_user_message,
+            recommendation_client=recommendation_client,
+        )
+        if followup.response is not None:
+            return followup.response
+        if followup.sanitized_message is not None:
+            sanitized_message = followup.sanitized_message
+        if followup.user_message is not None:
+            user_message = followup.user_message
+        if followup.processed_message is not None:
+            processed_message = followup.processed_message
 
-            if found_recommendation and prev_user_msg and len(prev_user_msg) >= 2:
-                is_kampo_preference_refinement = True
-                triage_result['category'] = 'Physical'
-                triage_result['subcategory'] = 'headache'
-                triage_result['reasoning'] = '漢方希望/忌避のフォローアップのため再推奨フローへ'
-                sanitized_message = prev_user_msg + '。' + sanitized_message.strip()
-                user_message = sanitized_message
-                processed_message = sanitized_message
-                logger.info(f"🔄 漢方希望/忌避のフォローアップを検出: 再推奨フローへ（症状: {prev_user_msg[:30]}...）")
-
-        if not is_kampo_preference_refinement:
-            # 追加質問への回答かどうか判定（直前のbotが推奨＋追加質問を持ち、現メッセージが属性回答のとき再推奨へ）
-            is_attribute_answer_followup = False
-            attr_prev_user_msg = None
-            if sid:
-                session_data_attr = get_session_from_db(sid)
-                memory_data_attr = get_session_from_memory(sid)
-                messages_from_db_attr = (session_data_attr or {}).get('messages', [])
-                messages_from_memory_attr = (memory_data_attr or {}).get('messages', [])
-                messages_attr = messages_from_db_attr if len(messages_from_db_attr) >= len(messages_from_memory_attr) else messages_from_memory_attr
-                messages_attr = messages_attr or session.get('messages', [])
-                last_recommendation_bot = None
-                for msg in reversed(messages_attr[-12:]):
-                    if msg.get('type') != 'bot':
-                        continue
-                    diag = msg.get('diagnosis') or {}
-                    rec = diag.get('recommended_medicines') or (isinstance(diag.get('recommendation'), dict) and (diag.get('recommendation') or {}).get('recommended_medicines', [])) or []
-                    addq = diag.get('additional_questions') or (isinstance(diag.get('recommendation'), dict) and (diag.get('recommendation') or {}).get('additional_questions', [])) or []
-                    if (rec and len(rec) > 0) or (addq and len(addq) > 0):
-                        last_recommendation_bot = msg
-                        break
-                if last_recommendation_bot and last_recommendation_bot in messages_attr:
-                    idx = messages_attr.index(last_recommendation_bot)
-                    for i in range(idx - 1, -1, -1):
-                        if messages_attr[i].get('type') == 'user':
-                            attr_prev_user_msg = (messages_attr[i].get('content') or '').strip()
-                            break
-                attr_keywords = [
-                    '歳', '才', '男性', '女性', '女です', '男です', '妊娠', '授乳',
-                    'アレルギー', '服用', '飲んで', '持病', '既往', '続い', '日前から', '昨日から', '日前から'
-                ]
-                looks_attr = sum(1 for kw in attr_keywords if kw in sanitized_message) >= 2
-                # 追加情報モーダルからの送信、または文章に属性キーワードが2つ以上ある場合は属性回答として再推奨へ
-                if attr_prev_user_msg and len(attr_prev_user_msg) >= 2 and (session.get('from_attribute_modal') or looks_attr):
-                    is_attribute_answer_followup = True
-                    logger.info(f"🔄 追加質問への回答を検出: 再推奨フローへ（症状: {attr_prev_user_msg[:40]}...）")
-
-            if is_attribute_answer_followup and attr_prev_user_msg:
-                try:
-                    if 'messages' not in session:
-                        session['messages'] = []
-                    user_msg = {
-                        'type': 'user',
-                        'content': original_user_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())
-                    }
-                    if not any(m.get('type') == 'user' and m.get('content') == original_user_message for m in session.get('messages', [])):
-                        session['messages'].append(user_msg)
-                        session.modified = True
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            if 'messages' not in session_data:
-                                session_data['messages'] = []
-                            if not any(m.get('type') == 'user' and m.get('content') == original_user_message for m in session_data.get('messages', [])):
-                                session_data['messages'].append(user_msg)
-                                session_data['last_activity'] = datetime.now()
-                                session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
-                                save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                'session_id': sid,
-                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                                'messages': session.get('messages', []),
-                                'session_active': True,
-                                'last_activity': datetime.now(),
-                                'client_ip': client_info.client_ip,
-                                'user_agent': client_info.user_agent,
-                                'user_attributes': session.get('user_attributes', {})
-                            }
-                            save_session_to_db(sid, session_data)
-                    # 妊娠中・授乳中は推奨せずエスカレーションのみ返す
-                    ua = session.get('user_attributes', {}) or {}
-                    if ua.get('pregnant') is True:
-                        from src.services.html_formatter import format_escalation_display
-                        escalation_msg = '妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
-                        logger.warning(f"⚠️ 追加質問フォローアップ: 妊娠中のため推奨せずエスカレーションのみ返却")
-                        escalation_content = format_escalation_display(
-                            doctor_consultation=escalation_msg,
-                            medicine_type="該当なし（妊娠中のため推奨中止）",
-                            algorithm="禁忌チェック（妊娠）",
-                            user_message=original_user_message,
-                            include_feedback_buttons=True
-                        )
-                        bot_response = {
-                            'type': 'bot',
-                            'content': escalation_content,
-                            'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if session_data:
-                                session_data['messages'] = session.get('messages', [])
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
-                        return ({'status': 'ok', 'message_count': len(session['messages'])}, 200)
-                    if ua.get('breastfeeding') is True:
-                        from src.services.html_formatter import format_escalation_display
-                        escalation_msg = '授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
-                        logger.warning(f"⚠️ 追加質問フォローアップ: 授乳中のため推奨せずエスカレーションのみ返却")
-                        escalation_content = format_escalation_display(
-                            doctor_consultation=escalation_msg,
-                            medicine_type="該当なし（授乳中のため推奨中止）",
-                            algorithm="禁忌チェック（授乳）",
-                            user_message=original_user_message,
-                            include_feedback_buttons=True
-                        )
-                        bot_response = {
-                            'type': 'bot',
-                            'content': escalation_content,
-                            'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response)
-                        session.modified = True
-                        if sid:
-                            session_data = get_session_from_db(sid)
-                            if session_data:
-                                session_data['messages'] = session.get('messages', [])
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
-                        return ({'status': 'ok', 'message_count': len(session['messages'])}, 200)
-                    triage_result['category'] = 'Physical'
-                    triage_result['reasoning'] = '追加質問への回答のため再推奨フローへ'
-                    from openai import OpenAI
-                    api_key = os.getenv('OPENAI_API_KEY')
-                    if api_key:
-                        recommendation_client = OpenAI(api_key=api_key)
-                        resp = run_recommendation_flow(
-                            session, client_info, sid, monitor,
-                            attr_prev_user_msg, attr_prev_user_msg,
-                            triage_result, recommendation_client,
-                            user_message=attr_prev_user_msg,
-                        )
-                        message_count = len(session.get('messages', []))
-                        return resp
-                except Exception as e:
-                    logger.warning(f"⚠️ 追加質問フォローアップでエラー: {e}")
-                    import traceback
-                    traceback.print_exc()
-
-            # 医薬品質問フォローアップ: 直前のbotが推奨結果を持ち、今回が質問文のときは医薬品相談回答に回す
-            if not is_kampo_preference_refinement and not (is_attribute_answer_followup and attr_prev_user_msg):
-                session_data_other = get_session_from_db(sid) if sid else {}
-                messages_other = (session_data_other.get('messages', []) if session_data_other else session.get('messages', [])) or []
-                latest_recommended_medicines_followup = []
-                for msg in reversed(messages_other):
-                    if msg.get('type') == 'bot' and msg.get('diagnosis'):
-                        diag = msg.get('diagnosis', {})
-                        if diag.get('recommended_medicines'):
-                            latest_recommended_medicines_followup = diag.get('recommended_medicines', [])
-                            break
-                question_patterns = ('か？', 'ですか', 'でしょうか', '教えて', 'できますか', '使えますか', '利用できますか', 'よいですか', '大丈夫ですか', '？')
-                looks_like_question = any(p in (sanitized_message or '') for p in question_patterns)
-                if latest_recommended_medicines_followup and looks_like_question:
-                    try:
-                        import html as _html_mod
-                        if 'messages' not in session:
-                            session['messages'] = []
-                        user_msg_followup = {
-                            'type': 'user',
-                            'content': original_user_message,
-                            'timestamp': datetime.now().isoformat(),
-                            'uuid': str(uuid.uuid4())
-                        }
-                        session['messages'].append(user_msg_followup)
-                        session.modified = True
-                        if sid:
-                            sd = get_session_from_db(sid)
-                            if sd:
-                                if 'messages' not in sd:
-                                    sd['messages'] = []
-                                sd['messages'].append(user_msg_followup)
-                                sd['last_activity'] = datetime.now()
-                                save_session_to_db(sid, sd)
-                            else:
-                                sd = {
-                                    'session_id': sid,
-                                    'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                                    'messages': [user_msg_followup],
-                                    'session_active': True,
-                                    'last_activity': datetime.now(),
-                                    'client_ip': client_info.client_ip,
-                                    'user_agent': client_info.user_agent,
-                                    'user_attributes': session.get('user_attributes', {}),
-                                }
-                                save_session_to_db(sid, sd)
-                        conversation_history_followup = messages_other[-10:]
-                        chat_response_followup = chat_with_medicine_context(
-                            sanitized_message,
-                            conversation_history_followup,
-                            latest_recommended_medicines_followup
-                        )
-                        try:
-                            from src.utils.structured_logger import log_medicine_question_detail
-                            log_medicine_question_detail(
-                                session_id=sid,
-                                user_input=sanitized_message,
-                                response=chat_response_followup.get('answer', '')
-                            )
-                        except Exception as _e:
-                            logger.warning(f"医薬品質疑応答ログ記録エラー: {_e}")
-                        def _safe_format(t):
-                            if not t:
-                                return ""
-                            if isinstance(t, list):
-                                lines = []
-                                for item in t:
-                                    if isinstance(item, dict):
-                                        name = item.get("製品名") or item.get("name") or ""
-                                        comp = item.get("主成分") or item.get("成分") or ""
-                                        use = item.get("用途") or item.get("efficacy") or ""
-                                        summary = " / ".join(s for s in [name, comp, use] if s)
-                                        if summary:
-                                            lines.append(summary)
-                                    else:
-                                        lines.append(str(item))
-                                t = "\n".join(lines)
-                            elif isinstance(t, dict):
-                                t = "\n".join(f"{k}: {v}" for k, v in t.items())
-                            else:
-                                t = str(t)
-                            return _html_mod.escape(t).replace("\n", "<br>")
-                        ans = _safe_format(chat_response_followup.get('answer', '回答を取得できませんでした'))
-                        med_det = _safe_format(chat_response_followup.get('medicine_details', ''))
-                        inter = _safe_format(chat_response_followup.get('interactions', ''))
-                        doping = _safe_format(chat_response_followup.get('doping_check', ''))
-                        side_eff = _safe_format(chat_response_followup.get('side_effects', ''))
-                        consult = _safe_format(chat_response_followup.get('consultation_advice', ''))
-                        full_html = f"""
-<div class="chat-response">
-<h4>💬 医薬品相談回答</h4>
-<p><strong>回答:</strong><br>{ans}</p>
-{f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{med_det}</div>' if med_det else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{inter}</div>' if inter else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping}</div>' if doping else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_eff}</div>' if side_eff else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consult}</div>' if consult else ''}
-</div>"""
-                        mid = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
-                        bot_content_followup = full_html + f"""
-<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-<p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-<button class="feedback-btn-positive" onclick="handlePositiveFeedback('{mid}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-    適切
-</button>
-<button class="feedback-btn-negative" onclick="handleNegativeFeedback('{mid}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-    不適切
-</button>
-</div>"""
-                        bot_response_followup = {
-                            'type': 'bot',
-                            'content': bot_content_followup,
-                            'message_id': mid,
-                            'diagnosis': {
-                                'chat_response': chat_response_followup,
-                                'is_question': True
-                            },
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(bot_response_followup)
-                        session.modified = True
-                        msg_count = len(session.get('messages', []))
-                        if sid:
-                            sd2 = get_session_from_db(sid)
-                            if sd2 and 'messages' in sd2:
-                                sd2['messages'].append(bot_response_followup)
-                                sd2['last_activity'] = datetime.now()
-                                save_session_to_db(sid, sd2)
-                                msg_count = len(sd2['messages'])
-                        if 'messages' in session:
-                            del session['messages']
-                            session.modified = True
-                        logger.info(f"✅ 医薬品質問フォローアップ応答完了（Other）: {sanitized_message[:50]}...")
-                        return ({'status': 'ok', 'message_count': msg_count}, 200)
-                    except Exception as e_followup:
-                        logger.warning(f"⚠️ 医薬品質問フォローアップでエラー: {e_followup}")
-                        import traceback
-                        traceback.print_exc()
-
-            logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
-            # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
-            # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
-            try:
-                if 'user_attributes' not in session:
-                    session['user_attributes'] = {}
-                user_attributes = session['user_attributes']
-                msg_for_attr = sanitized_message
-                if '妊娠' in msg_for_attr or 'pregnant' in msg_for_attr.lower():
-                    if any(kw in msg_for_attr for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
-                        user_attributes['pregnant'] = False
-                        logger.info(f"📝 妊娠状態を登録（Otherフロー）: False")
-                    elif any(kw in msg_for_attr for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
-                        user_attributes['pregnant'] = True
-                        logger.info(f"📝 妊娠状態を登録（Otherフロー）: True")
-                if '授乳' in msg_for_attr or 'breastfeeding' in msg_for_attr.lower():
-                    if any(kw in msg_for_attr for kw in ['授乳していません', '授乳中ではありません', '授乳していない']):
-                        user_attributes['breastfeeding'] = False
-                        logger.info(f"📝 授乳状態を登録（Otherフロー）: False")
-                    elif any(kw in msg_for_attr for kw in ['授乳中です', '授乳中', '授乳しています', '授乳しました', '授乳してます']):
-                        user_attributes['breastfeeding'] = True
-                        logger.info(f"📝 授乳状態を登録（Otherフロー）: True")
-                session.modified = True
-            except Exception as e:
-                logger.warning(f"⚠️ Otherフローでの妊娠・授乳抽出でエラー: {e}")
-            # カウンセリングフローに流す
-            try:
-                from src.services.counseling_response import (
-                    generate_counseling_response,
-                    generate_follow_up_questions,
-                    start_counseling_mode,
-                    has_specific_symptom
-                )
-                
-                # ユーザーメッセージをセッションに追加（重複チェック付き）
-                if 'messages' not in session:
-                    session['messages'] = []
-                
-                # 重複チェック（診断名検出時に既に追加されている可能性がある）
-                # UI表示用には正規化前の元入力を使用（カタカナ→ひらがな変換で表示が変わらないように）
-                user_message_exists = any(
-                    msg.get('type') == 'user' and 
-                    msg.get('content') == original_user_message and
-                    msg.get('uuid')
-                    for msg in session.get('messages', [])
-                )
-                
-                if not user_message_exists:
-                    import uuid
-                    user_msg = {
-                        'type': 'user',
-                        'content': original_user_message,
-                        'timestamp': datetime.now().isoformat(),
-                        'uuid': str(uuid.uuid4())
-                    }
-                    session['messages'].append(user_msg)
-                    session.modified = True
-                    
-                    # ユーザーメッセージをDBに保存
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            if 'messages' not in session_data:
-                                session_data['messages'] = []
-                            # DB側でも重複チェック
-                            db_message_exists = any(
-                                msg.get('type') == 'user' and 
-                                msg.get('content') == original_user_message and
-                                msg.get('uuid')
-                                for msg in session_data.get('messages', [])
-                            )
-                            if not db_message_exists:
-                                session_data['messages'].append(user_msg)
-                                session_data['last_activity'] = datetime.now()
-                                save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                'session_id': sid,
-                                'username': session.get('username', f'ユーザー{get_next_user_number()}'),
-                                'messages': [user_msg],
-                                'session_active': True,
-                                'last_activity': datetime.now(),
-                                'client_ip': client_info.client_ip,
-                                'user_agent': client_info.user_agent,
-                                'user_attributes': session.get('user_attributes', {})
-                            }
-                            save_session_to_db(sid, session_data)
-                
-                # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
-                has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
-                if has_symptom:
-                    # 症状が検出されている場合は、一般的な症状相談として扱う
-                    symptom_type = "general_symptom"
-                else:
-                    # 症状が検出されていない場合は、不明な要求として扱う
-                    symptom_type = "inappropriate_request/unknown"
-                
-                # カウンセリングフロー開始（不明な要求専用）
-                symptom_type = "inappropriate_request/unknown"
-                conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                
-                initial_response = generate_counseling_response(
-                    symptom_type, sanitized_message, recommendation_client,
-                    conversation_history=conversation_history,
-                    session_id=sid
-                )
-                # 多言語対応: 入力言語が日本語以外の場合は翻訳（Hello等の挨拶を英語入力時に英語で返す）
-                detected_language = detect_language(sanitized_message)
-                session['detected_language'] = detected_language
-                if detected_language != 'ja' and initial_response:
-                    try:
-                        from src.core.translation_service import translate_medicine_recommendation
-                        translated = translate_medicine_recommendation(
-                            initial_response, detected_language, recommendation_client, session_id=sid
-                        )
-                        if translated and translated != initial_response:
-                            initial_response = translated
-                            logger.info(f"✅ カウンセリング返信翻訳完了: {detected_language}")
-                    except Exception as e:
-                        logger.warning(f"⚠️ カウンセリング返信の翻訳エラー（日本語で返却）: {e}")
-                initial_questions = generate_follow_up_questions(
-                    symptom_type, {}, recommendation_client
-                )
-                start_counseling_mode(session, symptom_type, initial_questions)
-                
-                bot_response = {
-                    'type': 'bot',
-                    'content': initial_response,
-                    'counseling': True,
-                    'inappropriate_request': True,
-                    'request_type': 'unknown',
-                    'timestamp': datetime.now().isoformat()
-                }
-                session['messages'].append(bot_response)
-                
+        logger.info(f"🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
+        # 妊娠・授乳などユーザー属性のみのメッセージを先に抽出してuser_attributesに登録
+        # （カウンセリングフローではユーザー情報登録処理を通らないため、ここで登録する）
+        try:
+            if 'user_attributes' not in session:
+                session['user_attributes'] = {}
+            user_attributes = session['user_attributes']
+            msg_for_attr = sanitized_message
+            if '妊娠' in msg_for_attr or 'pregnant' in msg_for_attr.lower():
+                if any(kw in msg_for_attr for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
+                    user_attributes['pregnant'] = False
+                    logger.info(f"📝 妊娠状態を登録（Otherフロー）: False")
+                elif any(kw in msg_for_attr for kw in ['妊娠中です', '妊娠中', '妊娠しています', '妊娠しました', '妊娠してます', '妊娠した', '妊婦です']):
+                    user_attributes['pregnant'] = True
+                    logger.info(f"📝 妊娠状態を登録（Otherフロー）: True")
+            if '授乳' in msg_for_attr or 'breastfeeding' in msg_for_attr.lower():
+                if any(kw in msg_for_attr for kw in ['授乳していません', '授乳中ではありません', '授乳していない']):
+                    user_attributes['breastfeeding'] = False
+                    logger.info(f"📝 授乳状態を登録（Otherフロー）: False")
+                elif any(kw in msg_for_attr for kw in ['授乳中です', '授乳中', '授乳しています', '授乳しました', '授乳してます']):
+                    user_attributes['breastfeeding'] = True
+                    logger.info(f"📝 授乳状態を登録（Otherフロー）: True")
+            session.modified = True
+        except Exception as e:
+            logger.warning(f"⚠️ Otherフローでの妊娠・授乳抽出でエラー: {e}")
+        # カウンセリングフローに流す
+        try:
+            from src.services.counseling_response import (
+                generate_counseling_response,
+                generate_follow_up_questions,
+                start_counseling_mode,
+                has_specific_symptom
+            )
+            
+            # ユーザーメッセージをセッションに追加（同一リクエスト内の二重追加のみ防止）
+            if not was_last_user_message(session, original_user_message):
+                user_msg = append_user_message(session, original_user_message)
                 if sid:
                     session_data = get_session_from_db(sid)
                     if session_data:
                         if 'messages' not in session_data:
                             session_data['messages'] = []
-                        session_data['messages'].append(bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        # 妊娠・授乳などのuser_attributesをDBに反映（Otherフローで抽出した属性を永続化）
-                        session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
+                        if not was_last_user_message(session_data, original_user_message):
+                            session_data['messages'].append(user_msg)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                    else:
+                        session_data = {
+                            'session_id': sid,
+                            'username': session.get('username', f'ユーザー{get_next_user_number()}'),
+                            'messages': [user_msg],
+                            'session_active': True,
+                            'last_activity': datetime.now(),
+                            'client_ip': client_info.client_ip,
+                            'user_agent': client_info.user_agent,
+                            'user_attributes': session.get('user_attributes', {})
+                        }
                         save_session_to_db(sid, session_data)
-                
-                from src.services.counseling_response import log_counseling_response
-                log_counseling_response(
-                    session_id=sid,
-                    response_content=initial_response,
-                    response_type="counseling_unknown_request",
-                    category="Other",
-                    confidence=triage_result.get('confidence', 0.5),
-                    counseling_mode=session.get('counseling_mode'),
-                    user_input=user_message,
-                    conversation_history=None
-                )
-                
-                session.modified = True
-                message_count = len(session['messages'])
-                logger.info(f"✅ 不明な要求のカウンセリングフロー処理完了: {message_count} messages")
-                return ({
-                    'status': 'ok',
-                    'message_count': message_count
-                }, 200)
-            except ImportError as e:
-                logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ カウンセリングフロー処理でエラー: {e}")
-                import traceback
-                traceback.print_exc()
-                # エラー時は既存の汎用応答処理に進む
-                session['should_handle_other_category'] = True
-        
-    # ステップ1.9: 眠気関連キーワードのチェック（カウンセリングモードチェックの前、重複チェックの前に実行）
-    # 注意: このチェックは重複チェックの前に実行する必要がある（カウンセリングフローにリダイレクトするため）
-    sleepiness_keywords = [
-        "寝てしまう", "眠くて寝てしまう", "眠すぎて寝てしまう",
-        "仕事中に寝てしまう", "居眠り", "眠くてたまらない",
-        "眠気に襲われる", "眠くて仕方がない", "眠すぎる",
-        "眠気が強い", "眠い", "眠たい", "寝むたい", "寝たい", "眠気", "だるい", "いつも眠い",
-        "眠くて", "眠すぎ", "眠気で", "眠気です", "眠気が", "眠気の",
-        "日中の眠気", "昼間の眠気", "眠くて困る", "眠くて仕方ない",
-        "眠気が取れない", "眠気が強い", "強い眠気", "眠気がひどい",
-        "日中に寝てしまう", "日中に寝てしま", "日中寝てしまう", "日中寝てしま"
-    ]
-    has_sleepiness_keyword = any(keyword in sanitized_message for keyword in sleepiness_keywords)
-    # 後続処理で使用するため、セッションに保存
-    session['has_sleepiness_keyword'] = has_sleepiness_keyword
-        
-    # 眠気が検出された場合、カウンセリングフローにリダイレクト（薬推奨フローからの切り替えでない場合）
-    if has_sleepiness_keyword and not session.get('sleepiness_medicine_recommendation'):
-        logger.info(f"🔄 眠気関連キーワードを検出: カウンセリングフローにリダイレクト (category={triage_result.get('category', 'N/A') if triage_result else 'N/A'})")
-        # トリアージ結果をEmotionalカテゴリに変更
-        if triage_result:
-            triage_result['category'] = 'Emotional'
-            triage_result['subcategory'] = 'drowsiness'
-            triage_result['reasoning'] = '眠気関連キーワードを検出したため、カウンセリングフローにリダイレクト'
-        category = 'Emotional'
-        # Emotionalカテゴリの処理に進む（後続処理で実行される）
-        
-    # 重複チェック（ステップ1.9の後に実行）
-    # 元のユーザーメッセージで重複チェック
-    user_message_exists = any(
-        msg.get('type') == 'user' and 
-        msg.get('content') == original_user_message and
-        msg.get('uuid')
-        for msg in session.get('messages', [])
-    )
-        
-    if not user_message_exists:
-        user_msg = {
-            'type': 'user',
-            'content': original_user_message,  # 元のユーザーメッセージを表示（方言変換前）
-            'timestamp': datetime.now().isoformat(),
-            'uuid': str(uuid.uuid4())
-        }
-        session['messages'].append(user_msg)
-        session.modified = True
             
-        # ユーザーメッセージをDBに保存
+            # 症状が検出されている場合は、より適切なカウンセリングタイプを使用
+            has_symptom = has_specific_symptom(processed_message)  # 方言変換後のテキストを使用
+            if has_symptom:
+                # 症状が検出されている場合は、一般的な症状相談として扱う
+                symptom_type = "general_symptom"
+            else:
+                # 症状が検出されていない場合は、不明な要求として扱う
+                symptom_type = "inappropriate_request/unknown"
+            
+            # カウンセリングフロー開始（不明な要求専用）
+            symptom_type = "inappropriate_request/unknown"
+            conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
+            
+            initial_response = generate_counseling_response(
+                symptom_type, sanitized_message, recommendation_client,
+                conversation_history=conversation_history,
+                session_id=sid
+            )
+            # 多言語対応: 入力言語が日本語以外の場合は翻訳（Hello等の挨拶を英語入力時に英語で返す）
+            detected_language = detect_language(sanitized_message)
+            session['detected_language'] = detected_language
+            if detected_language != 'ja' and initial_response:
+                try:
+                    from src.core.translation_service import translate_medicine_recommendation
+                    translated = translate_medicine_recommendation(
+                        initial_response, detected_language, recommendation_client, session_id=sid
+                    )
+                    if translated and translated != initial_response:
+                        initial_response = translated
+                        logger.info(f"✅ カウンセリング返信翻訳完了: {detected_language}")
+                except Exception as e:
+                    logger.warning(f"⚠️ カウンセリング返信の翻訳エラー（日本語で返却）: {e}")
+            initial_questions = generate_follow_up_questions(
+                symptom_type, {}, recommendation_client
+            )
+            start_counseling_mode(session, symptom_type, initial_questions)
+            
+            bot_response = {
+                'type': 'bot',
+                'content': initial_response,
+                'counseling': True,
+                'inappropriate_request': True,
+                'request_type': 'unknown',
+                'timestamp': datetime.now().isoformat()
+            }
+            session['messages'].append(bot_response)
+            
+            if sid:
+                session_data = get_session_from_db(sid)
+                if session_data:
+                    if 'messages' not in session_data:
+                        session_data['messages'] = []
+                    session_data['messages'].append(bot_response)
+                    session_data['last_activity'] = datetime.now()
+                    # 妊娠・授乳などのuser_attributesをDBに反映（Otherフローで抽出した属性を永続化）
+                    session_data['user_attributes'] = session.get('user_attributes', session_data.get('user_attributes', {}))
+                    save_session_to_db(sid, session_data)
+            
+            from src.services.counseling_response import log_counseling_response
+            log_counseling_response(
+                session_id=sid,
+                response_content=initial_response,
+                response_type="counseling_unknown_request",
+                category="Other",
+                confidence=triage_result.get('confidence', 0.5),
+                counseling_mode=session.get('counseling_mode'),
+                user_input=user_message,
+                conversation_history=None
+            )
+            
+            session.modified = True
+            message_count = len(session['messages'])
+            logger.info(f"✅ 不明な要求のカウンセリングフロー処理完了: {message_count} messages")
+            return ({
+                'status': 'ok',
+                'message_count': message_count
+            }, 200)
+        except ImportError as e:
+            logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
+        except Exception as e:
+            logger.error(f"❌ カウンセリングフロー処理でエラー: {e}")
+            import traceback
+            traceback.print_exc()
+            # エラー時は既存の汎用応答処理に進む
+            session['should_handle_other_category'] = True
+    
+    # ステップ1.9: 眠気関連キーワードのチェック（カウンセリングモードチェックの前、重複チェックの前に実行）
+    from src.handlers.chat.chat_emotional_route import (
+        apply_emotional_keyword_triage_overrides,
+        detect_insomnia_keyword,
+        detect_sleepiness_keyword,
+    )
+
+    has_sleepiness_keyword = detect_sleepiness_keyword(sanitized_message)
+    session['has_sleepiness_keyword'] = has_sleepiness_keyword
+
+    if has_sleepiness_keyword and not session.get('sleepiness_medicine_recommendation'):
+        logger.info(
+            "🔄 眠気関連キーワードを検出: カウンセリングフローにリダイレクト (category=%s)",
+            triage_result.get('category', 'N/A') if triage_result else 'N/A',
+        )
+        overridden = apply_emotional_keyword_triage_overrides(
+            triage_result,
+            sanitized_message,
+            has_sleepiness_keyword=True,
+            has_insomnia_keyword=False,
+            session=session,
+        )
+        if overridden:
+            category = overridden
+        
+    if not was_last_user_message(session, original_user_message):
+        user_msg = append_user_message(session, original_user_message)
         if sid:
             session_data = get_session_from_db(sid)
             if session_data:
                 if 'messages' not in session_data:
                     session_data['messages'] = []
-                session_data['messages'].append(user_msg)
-                session_data['last_activity'] = datetime.now()
-                save_session_to_db(sid, session_data)
-    else:
-        logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {original_user_message[:50]}...")
+                if not was_last_user_message(session_data, original_user_message):
+                    session_data['messages'].append(user_msg)
+                    session_data['last_activity'] = datetime.now()
+                    save_session_to_db(sid, session_data)
         
     # ステップ2: カウンセリングモード中かチェック（chat_counseling_flow に委譲）
     from src.handlers.chat.chat_counseling_flow import run_counseling_flow
@@ -963,32 +651,25 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     has_sleepiness_keyword = session.get('has_sleepiness_keyword', False)
     skip_insomnia_check = has_sleepiness_keyword
         
-    # ステップ2.5: 不眠関連キーワードのチェック（トリアージ結果に関係なく、必ずカウンセリングフローにリダイレクト）
-    # 注意: 「不眠症」は診断名としてステップ1.7で既に検出されているため、ここから除外
-    insomnia_keywords = [
-        "不眠", "眠れない", "睡眠不足", "寝つきが悪い", "眠れません", "眠れないです", 
-        "眠れない", "夜眠れない", "最近眠れない", "最近眠れません", "夜眠れません",
-        "寝れない", "寝れません", "寝れないです", "夜寝れない", "最近寝れない",
-        "眠れなくて", "眠れなく", "寝つけない", "寝つけません", "寝つけないです",
-        # "不眠症" は診断名としてステップ1.7で検出されるため除外
-        "不眠で", "不眠です", "不眠の", "不眠が",
-        "睡眠薬", "睡眠薬を", "睡眠薬について", "睡眠薬を教えて", "睡眠薬を知りたい",
-        "睡眠改善薬", "睡眠改善薬を", "睡眠改善薬について", "睡眠改善薬を教えて",
-        "睡眠薬を紹介", "睡眠薬を紹介して", "睡眠改善薬を紹介", "睡眠改善薬を紹介して"
-    ]
-    has_insomnia_keyword = any(keyword in sanitized_message for keyword in insomnia_keywords)
-        
-    # 不眠関連キーワードが検出された場合、必ずカウンセリングフローにリダイレクト（薬推奨フローからの切り替えでない場合）
-    # ただし、眠気が検出された場合は不眠フローには入らない
+    # ステップ2.5: 不眠関連キーワードのチェック（「不眠症」はステップ1.7で診断名として検出）
+    has_insomnia_keyword = detect_insomnia_keyword(sanitized_message)
+    session['has_insomnia_keyword'] = has_insomnia_keyword
+
     if has_insomnia_keyword and not session.get('insomnia_medicine_recommendation') and not skip_insomnia_check:
-        logger.info(f"🔄 不眠関連キーワードを検出: カウンセリングフローにリダイレクト (category={triage_result.get('category', 'N/A') if triage_result else 'N/A'})")
-        # トリアージ結果をEmotionalカテゴリに変更
-        if triage_result:
-            triage_result['category'] = 'Emotional'
-            triage_result['subcategory'] = 'insomnia'
-            triage_result['reasoning'] = '不眠関連キーワードを検出したため、カウンセリングフローにリダイレクト'
-        category = 'Emotional'
-        # Emotionalカテゴリの処理に進む（後続処理で実行される）
+        logger.info(
+            "🔄 不眠関連キーワードを検出: カウンセリングフローにリダイレクト (category=%s)",
+            triage_result.get('category', 'N/A') if triage_result else 'N/A',
+        )
+        overridden = apply_emotional_keyword_triage_overrides(
+            triage_result,
+            sanitized_message,
+            has_sleepiness_keyword=has_sleepiness_keyword,
+            has_insomnia_keyword=True,
+            skip_insomnia_check=skip_insomnia_check,
+            session=session,
+        )
+        if overridden:
+            category = overridden
         
     # ステップ3: confidenceスコアをチェック（Emergency例外処理を含む）
     if triage_result:
@@ -1157,616 +838,51 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
             import traceback
             traceback.print_exc()
         
-    # ステップ4: カテゴリに応じて処理を分岐
+    # ステップ3.9: エージェントパイプライン（LLM_AGENT_ENABLED + カナリア）
+    try:
+        from src.handlers.chat_pipeline import try_agent_pipeline
+
+        agent_resp = try_agent_pipeline(
+            session,
+            client_info,
+            sid,
+            user_message,
+            sanitized_message,
+            triage_result,
+            recommendation_client,
+            monitor,
+        )
+        if agent_resp is not None:
+            return agent_resp
+    except Exception as agent_err:
+        logger.warning("⚠️ エージェントパイプラインをスキップ: %s", agent_err)
+
+    # ステップ4: カテゴリに応じて処理を分岐（chat_category_route に委譲）
+    pending_route_is_question = None
     if triage_result:
-        category = triage_result.get('category', 'Other')
-        subcategory = triage_result.get('subcategory', '').lower()
-            
-        # ステップ4.5: 不適切な要求の検出（トリアージ結果確認後）
-        # 注意: 既にステップ1.7.5で検出されている場合はスキップ
-        if category == 'Other' and 'inappropriate_request' in subcategory and not inappropriate_request_detected:
-            try:
-                from src.services.counseling_response import (
-                    detect_inappropriate_request,
-                    generate_counseling_response,
-                    generate_follow_up_questions,
-                    start_counseling_mode
-                )
-                    
-                request_type = detect_inappropriate_request(sanitized_message, triage_result)
-                    
-                if request_type:
-                    # カウンセリングフロー開始
-                    symptom_type = f"inappropriate_request/{request_type}"
-                        
-                    # 会話履歴を取得
-                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                        
-                    # カウンセリング応答を生成
-                    initial_response = generate_counseling_response(
-                        symptom_type, sanitized_message, recommendation_client,
-                        conversation_history=conversation_history,
-                        session_id=sid
-                    )
-                        
-                    # フォローアップ質問を生成（違法薬物・規制薬物の場合は空リスト）
-                    initial_questions = generate_follow_up_questions(
-                        symptom_type, {}, recommendation_client
-                    )
-                        
-                    # 違法薬物・規制薬物の場合は、カウンセリングモードを開始しない（単一メッセージで完結）
-                    if request_type not in ['illegal', 'controlled']:
-                        # カウンセリングモードを開始
-                        start_counseling_mode(session, symptom_type, initial_questions)
-                        
-                    # セッションにフラグを設定
-                    if 'inappropriate_requests' not in session:
-                        session['inappropriate_requests'] = []
-                    session['inappropriate_requests'].append({
-                        'type': request_type,
-                        'timestamp': datetime.now().isoformat(),
-                        'user_message': sanitized_message
-                    })
-                        
-                    # 応答をセッションに追加
-                    bot_response = {
-                        'type': 'bot',
-                        'content': initial_response,
-                        'counseling': request_type not in ['illegal', 'controlled'],
-                        'inappropriate_request': True,
-                        'request_type': request_type,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    session['messages'].append(bot_response)
-                        
-                    # ログ記録
-                    from src.services.counseling_response import log_counseling_response
-                    log_counseling_response(
-                        session_id=sid,
-                        response_content=initial_response,
-                        response_type="counseling_inappropriate_request",
-                        category=category,
-                        confidence=confidence,
-                        counseling_mode=session.get('counseling_mode'),
-                        user_input=user_message,
-                        conversation_history=None
-                    )
-                        
-                    # 検出ログ
-                    logger.warning(f"⚠️ 不適切な要求検出: type={request_type}, session_id={sid}")
-                        
-                    # 早期リターン（通常の処理フローをスキップ）
-                    session.modified = True
-                    save_session_to_db(sid, session)
-                    return ({
-                        'response': initial_response,
-                        'questions': initial_questions if request_type not in ['illegal', 'controlled'] else [],
-                        'counseling': request_type not in ['illegal', 'controlled'],
-                        'inappropriate_request': True
-                    }, 200)
-            except Exception as e:
-                logger.error(f"❌ 不適切な要求処理エラー: {e}")
-                import traceback
-                traceback.print_exc()
-                # エラー時は通常の処理フローに戻る（安全側に倒す）
-                # フォールバックメッセージを表示
-                fallback_message = "申し訳ございませんが、システムエラーが発生しました。通常の相談フローに戻ります。"
-                logger.warning(f"⚠️ 不適切な要求処理でエラーが発生しましたが、通常の処理フローに戻ります: {e}")
-            
-        # 月経不順関連の症状が含まれている場合は、Emotionalカテゴリでも医薬品推奨フローに進む
-        menstrual_keywords = ['生理不順', '月経不順', '生理が遅れ', '生理が来ない', '生理周期', 
-                             '月経異常', '血の道症', '生理痛', '月経痛', '生理の遅れ']
-        has_menstrual_symptom = any(keyword in sanitized_message for keyword in menstrual_keywords)
-            
-        # 月経不順関連の症状がある場合は、カテゴリをPhysicalに変更して医薬品推奨フローに進む
-        if has_menstrual_symptom and category == 'Emotional':
-            category = 'Physical'
-            logger.info(f"🔄 月経不順関連症状検出により、カテゴリをEmotionalからPhysicalに変更")
-            
-        if category == 'Emotional':
-            # カウンセリングフロー開始（月経不順関連の症状がない場合のみ）
-            try:
-                from src.services.counseling_response import (
-                    detect_emotional_symptom_type,
-                    generate_counseling_response,
-                    generate_follow_up_questions,
-                    start_counseling_mode
-                )
-                    
-                symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
-                    
-                # 眠気関連キーワードが検出された場合、symptom_typeを強制的に"drowsiness"に設定
-                if has_sleepiness_keyword and symptom_type != "drowsiness":
-                    symptom_type = "drowsiness"
-                    logger.info(f"🔄 眠気関連キーワード直接検出により、symptom_typeを'drowsiness'に変更しました")
-                    
-                # 不眠関連キーワードが検出された場合、symptom_typeを強制的に"insomnia"に設定（眠気が優先されない場合のみ）
-                if has_insomnia_keyword and symptom_type != "insomnia" and not has_sleepiness_keyword:
-                    symptom_type = "insomnia"
-                    logger.info(f"🔄 不眠関連キーワード直接検出により、symptom_typeを'insomnia'に変更しました")
-                    
-                # 会話履歴を取得（直近10件）
-                conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                    
-                initial_response = generate_counseling_response(
-                    symptom_type, sanitized_message, recommendation_client,
-                    conversation_history=conversation_history,
-                    session_id=sid
-                )
-                initial_questions = generate_follow_up_questions(
-                    symptom_type, {}, recommendation_client
-                )
-                    
-                # カウンセリングモードを開始
-                start_counseling_mode(session, symptom_type, initial_questions)
-                    
-                # 初期応答と最初の質問を送信
-                bot_response = {
-                    'type': 'bot',
-                    'content': initial_response,
-                    'counseling': True,
-                    'timestamp': datetime.now().isoformat()
-                }
-                session['messages'].append(bot_response)
-                    
-                # 初期返信のログ記録（通常時は会話履歴なし）
-                from src.services.counseling_response import log_counseling_response
-                log_counseling_response(
-                    session_id=sid,
-                    response_content=initial_response,
-                    response_type="counseling_initial_response",
-                    category=category,
-                    confidence=confidence,
-                    counseling_mode=session.get('counseling_mode'),
-                    user_input=user_message,
-                    conversation_history=None
-                )
-                    
-                # 不眠カウンセリングの場合、「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」というメッセージを別途送信
-                # symptom_typeが"insomnia"の場合、またはtriage_resultのsubcategoryが"insomnia"の場合、または不眠関連キーワードが検出された場合に送信
-                is_insomnia_counseling = (
-                    symptom_type == "insomnia" or 
-                    triage_result.get("subcategory", "").lower() == "insomnia" or
-                    "insomnia" in triage_result.get("subcategory", "").lower() or
-                    has_insomnia_keyword
-                )
-                if is_insomnia_counseling:
-                    # 不眠カウンセリングであることを確実にするため、symptom_typeを強制的に"insomnia"に設定
-                    if symptom_type != "insomnia":
-                        symptom_type = "insomnia"
-                        # カウンセリングモードのsymptom_typeも更新
-                        if session.get('counseling_mode'):
-                            session['counseling_mode']['symptom_type'] = "insomnia"
-                        logger.info(f"🔄 不眠関連キーワード検出により、symptom_typeを'insomnia'に変更しました")
-                        
-                    # 既に同じメッセージが存在するかチェック（重複防止）
-                    medicine_info_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
-                    existing_medicine_info = False
-                    for msg in session.get('messages', []):
-                        if (msg.get('type') == 'bot' and 
-                            msg.get('counseling_medicine_info') and 
-                            msg.get('content') == medicine_info_message):
-                            existing_medicine_info = True
-                            logger.info(f"⏭️ 既に医薬品情報メッセージが存在するため、追加をスキップします")
-                            break
-                        
-                    if not existing_medicine_info:
-                        medicine_info_response = {
-                            'type': 'bot',
-                            'content': medicine_info_message,
-                            'counseling': True,
-                            'counseling_medicine_info': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(medicine_info_response)
-                        session.modified = True  # セッション変更を明示的に設定
-                            
-                        # 医薬品情報メッセージのログ記録（通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=medicine_info_message,
-                            response_type="counseling_medicine_info",
-                            category=category,
-                            confidence=confidence,
-                            counseling_mode=session.get('counseling_mode'),
-                            user_input=user_message,
-                            conversation_history=None
-                        )
-                            
-                        logger.info(f"✅ 不眠カウンセリング開始: 医薬品情報メッセージを送信しました (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                    else:
-                        logger.info(f"✅ 不眠カウンセリング開始: 医薬品情報メッセージは既に存在します (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                    
-                # 眠気カウンセリングの場合、「眠気で、推奨される医薬品を知りたい場合は教えて下さい。」というメッセージを別途送信
-                # symptom_typeが"drowsiness"の場合、またはtriage_resultのsubcategoryが"drowsiness"の場合、または眠気関連キーワードが検出された場合に送信
-                is_sleepiness_counseling = (
-                    symptom_type == "drowsiness" or 
-                    triage_result.get("subcategory", "").lower() == "drowsiness" or
-                    "drowsiness" in triage_result.get("subcategory", "").lower() or
-                    has_sleepiness_keyword
-                )
-                if is_sleepiness_counseling:
-                    # 眠気カウンセリングであることを確実にするため、symptom_typeを強制的に"drowsiness"に設定
-                    if symptom_type != "drowsiness":
-                        symptom_type = "drowsiness"
-                        # カウンセリングモードのsymptom_typeも更新
-                        if session.get('counseling_mode'):
-                            session['counseling_mode']['symptom_type'] = "drowsiness"
-                        logger.info(f"🔄 眠気関連キーワード検出により、symptom_typeを'drowsiness'に変更しました")
-                        
-                    # 既に同じメッセージが存在するかチェック（重複防止）
-                    medicine_info_message = "眠気で、推奨される医薬品を知りたい場合は教えて下さい。"
-                    existing_medicine_info = False
-                    for msg in session.get('messages', []):
-                        if (msg.get('type') == 'bot' and 
-                            msg.get('counseling_medicine_info') and 
-                            msg.get('content') == medicine_info_message):
-                            existing_medicine_info = True
-                            logger.info(f"⏭️ 既に医薬品情報メッセージが存在するため、追加をスキップします")
-                            break
-                        
-                    if not existing_medicine_info:
-                        medicine_info_response = {
-                            'type': 'bot',
-                            'content': medicine_info_message,
-                            'counseling': True,
-                            'counseling_medicine_info': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(medicine_info_response)
-                        session.modified = True  # セッション変更を明示的に設定
-                            
-                        # 医薬品情報メッセージのログ記録（通常時は会話履歴なし）
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=medicine_info_message,
-                            response_type="counseling_medicine_info",
-                            category=category,
-                            confidence=confidence,
-                            counseling_mode=session.get('counseling_mode'),
-                            user_input=user_message,
-                            conversation_history=None
-                        )
-                        logger.info(f"✅ 眠気カウンセリング開始: 医薬品情報メッセージを送信しました (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                    else:
-                        logger.info(f"✅ 眠気カウンセリング開始: 医薬品情報メッセージは既に存在します (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                    
-                if initial_questions:
-                    first_question = initial_questions[0]
-                    # 質問履歴に追加
-                    session['counseling_mode']['question_history'].append({
-                        'question': first_question,
-                        'asked_at': datetime.now().isoformat(),
-                        'question_type': 'initial'
-                    })
-                        
-                    question_response = {
-                        'type': 'bot',
-                        'content': first_question,
-                        'counseling': True,
-                        'counseling_question': True,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    session['messages'].append(question_response)
-                        
-                    # 初期質問のログ記録
-                    log_counseling_response(
-                        session_id=sid,
-                        response_content=first_question,
-                        response_type="counseling_initial_question",
-                        category=category,
-                        confidence=confidence,
-                        counseling_mode=session.get('counseling_mode')
-                    )
-                    
-                session.modified = True
-                    
-                # DBを更新
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        session_data['messages'] = session['messages'].copy()
-                        session_data['last_activity'] = datetime.now()
-                        session_data['counseling_mode'] = session['counseling_mode']
-                        save_session_to_db(sid, session_data)
-                    
-                message_count = len(session['messages'])
-                logger.info(f"✅ カウンセリングフロー開始: {message_count} messages")
-                return ({'status': 'ok', 'message_count': message_count}, 200)
-                    
-            except ImportError as e:
-                logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
-            except Exception as e:
-                logger.error(f"❌ カウンセリングフロー機能でエラー: {e}")
-                import traceback
-                traceback.print_exc()
-            
-        elif category == 'Physical':
-            # Physicalカテゴリの場合は従来の薬推奨フローへ
-            # 不眠カウンセリングから薬推奨への切り替えの場合
-            if session.get('insomnia_medicine_recommendation'):
-                # 不眠の薬推奨フローを実行
-                user_text_for_recommendation = session.get('insomnia_user_text', '一時的な不眠')
-                # フラグをクリア
-                session.pop('insomnia_medicine_recommendation', None)
-                session.pop('insomnia_user_text', None)
-                session.modified = True
-                    
-                # 不眠の症状で薬推奨を実行（後続処理で実行される）
-                # ここではユーザーメッセージを「一時的な不眠」に置き換えて処理を継続
-                sanitized_message = user_text_for_recommendation
-                user_message = user_text_for_recommendation  # user_messageも更新
-                # 症状入力として処理されるように設定
-                is_question = False
-                logger.info(f"✅ 不眠の薬推奨フローに移行: {user_text_for_recommendation}")
-            # 眠気カウンセリングから薬推奨への切り替えの場合
-            elif session.get('sleepiness_medicine_recommendation'):
-                # 眠気の薬推奨フローを実行
-                user_text_for_recommendation = session.get('sleepiness_user_text', '日中の眠気')
-                # フラグをクリア
-                session.pop('sleepiness_medicine_recommendation', None)
-                session.pop('sleepiness_user_text', None)
-                session.modified = True
-                    
-                # 眠気の症状で薬推奨を実行（後続処理で実行される）
-                # ここではユーザーメッセージを「眠気」に置き換えて処理を継続
-                sanitized_message = user_text_for_recommendation
-                user_message = user_text_for_recommendation  # user_messageも更新
-                # 症状入力として処理されるように設定
-                is_question = False
-                logger.info(f"✅ 眠気の薬推奨フローに移行: {user_text_for_recommendation}")
-            # （既存の処理を継続）
-            pass
-            
-        elif category == 'Ask':
-            # 医薬品質問フロー
-            # カウンセリングモード中または直後に「薬を知りたい」という回答が来た場合、不眠・眠気の薬推奨として処理
-            counseling_mode_check = session.get('counseling_mode', {})
-            is_insomnia_medicine_request = False
-            is_sleepiness_medicine_request = False
-                
-            # 直前のメッセージを確認（カウンセリングモードが終了していても確認）
-            messages = session.get('messages', [])
-            if messages:
-                # 直前のbotメッセージを確認
-                for msg in reversed(messages[-5:]):  # 直近5件を確認
-                    if msg.get('type') == 'bot' and msg.get('counseling_medicine_info'):
-                        # カウンセリングモードのsymptom_typeを確認
-                        symptom_type_in_msg = counseling_mode_check.get('symptom_type', '')
-                        if symptom_type_in_msg == 'insomnia' or '不眠' in msg.get('content', ''):
-                            # 「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」に対する回答
-                            is_insomnia_medicine_request = True
-                            logger.info(f"✅ 不眠カウンセリング関連の薬推奨リクエストを検出: {sanitized_message}")
-                            break
-                        elif symptom_type_in_msg == 'drowsiness' or '眠気' in msg.get('content', ''):
-                            # 眠気カウンセリング関連の薬推奨リクエスト
-                            is_sleepiness_medicine_request = True
-                            logger.info(f"✅ 眠気カウンセリング関連の薬推奨リクエストを検出: {sanitized_message}")
-                            break
-                
-            # カウンセリングモード中または直前のメッセージが医薬品情報メッセージの場合
-            if (counseling_mode_check.get('active') and counseling_mode_check.get('symptom_type') == 'insomnia') or is_insomnia_medicine_request:
-                # 不眠の薬推奨フローに移行
-                logger.info(f"✅ 不眠カウンセリング関連の薬推奨フローに移行: {sanitized_message}")
-                    
-                # カウンセリングモードを終了
-                if counseling_mode_check.get('active'):
-                    counseling_mode_check['active'] = False
-                    session['counseling_mode'] = counseling_mode_check
-                    session.modified = True
-                    
-                # 不眠の症状で薬推奨フローを実行
-                # トリアージ結果をPhysicalカテゴリに変更
-                if triage_result:
-                    triage_result['category'] = 'Physical'
-                    triage_result['subcategory'] = 'insomnia'
-                    triage_result['reasoning'] = '不眠カウンセリングから薬推奨への切り替え'
-                    
-                # ユーザーメッセージを「一時的な不眠」に置き換えて処理を継続（3文字以上の要件を満たすため）
-                sanitized_message = '一時的な不眠'
-                user_message = '一時的な不眠'  # user_messageも更新
-                category = 'Physical'
-                # 症状入力として処理されるように設定
-                is_question = False
-                # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
-                session.pop('should_handle_other_category', None)
-                logger.info(f"✅ カテゴリをPhysicalに変更して薬推奨フローへ: {sanitized_message}")
-            elif (counseling_mode_check.get('active') and counseling_mode_check.get('symptom_type') == 'drowsiness') or is_sleepiness_medicine_request:
-                # 眠気の薬推奨フローに移行
-                logger.info(f"✅ 眠気カウンセリング関連の薬推奨フローに移行: {sanitized_message}")
-                    
-                # カウンセリングモードを終了
-                if counseling_mode_check.get('active'):
-                    counseling_mode_check['active'] = False
-                    session['counseling_mode'] = counseling_mode_check
-                    session.modified = True
-                    
-                # 眠気の症状で薬推奨フローを実行
-                # トリアージ結果をPhysicalカテゴリに変更
-                if triage_result:
-                    triage_result['category'] = 'Physical'
-                    triage_result['subcategory'] = 'drowsiness'
-                    triage_result['reasoning'] = '眠気カウンセリングから薬推奨への切り替え'
-                    
-                # ユーザーメッセージを「日中の眠気」に置き換えて処理を継続（3文字以上の要件を満たすため）
-                sanitized_message = '日中の眠気'
-                user_message = '日中の眠気'  # user_messageも更新
-                category = 'Physical'
-                # 症状入力として処理されるように設定
-                is_question = False
-                # should_handle_other_categoryフラグをクリア（薬推奨フローに移行するため）
-                session.pop('should_handle_other_category', None)
-                logger.info(f"✅ カテゴリをPhysicalに変更して薬推奨フローへ: {sanitized_message}")
-                
-            # 睡眠薬関連の質問の場合は不眠カウンセリングにリダイレクト
-            sleep_medicine_keywords = [
-                "睡眠薬", "睡眠薬を", "睡眠薬について", "睡眠薬を教えて", "睡眠薬を知りたい",
-                "睡眠改善薬", "睡眠改善薬を", "睡眠改善薬について", "睡眠改善薬を教えて"
-            ]
-            if any(keyword in sanitized_message for keyword in sleep_medicine_keywords):
-                # 不眠カウンセリングフローにリダイレクト
-                try:
-                    from src.services.counseling_response import (
-                        detect_emotional_symptom_type,
-                        generate_counseling_response,
-                        generate_follow_up_questions,
-                        start_counseling_mode
-                    )
-                        
-                    # トリアージ結果を修正してEmotionalカテゴリとして扱う
-                    triage_result['category'] = 'Emotional'
-                    triage_result['subcategory'] = 'insomnia'
-                        
-                    symptom_type = "insomnia"
-                        
-                    # 会話履歴を取得（直近10件）
-                    conversation_history = session.get('messages', [])[-10:] if len(session.get('messages', [])) > 10 else session.get('messages', [])
-                        
-                    initial_response = generate_counseling_response(
-                        symptom_type, sanitized_message, recommendation_client,
-                        conversation_history=conversation_history,
-                        session_id=sid
-                    )
-                    initial_questions = generate_follow_up_questions(
-                        symptom_type, {}, recommendation_client
-                    )
-                        
-                    # カウンセリングモードを開始
-                    start_counseling_mode(session, symptom_type, initial_questions)
-                        
-                    # 初期応答を送信
-                    bot_response = {
-                        'type': 'bot',
-                        'content': initial_response,
-                        'counseling': True,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    session['messages'].append(bot_response)
-                        
-                    # 初期返信のログ記録
-                    from src.services.counseling_response import log_counseling_response
-                    log_counseling_response(
-                        session_id=sid,
-                        response_content=initial_response,
-                        response_type="counseling_initial_response",
-                        category='Emotional',
-                        confidence=confidence,
-                        counseling_mode=session.get('counseling_mode')
-                    )
-                        
-                    # 不眠カウンセリングの場合、「一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。」というメッセージを別途送信
-                    # symptom_typeが"insomnia"の場合、またはtriage_resultのsubcategoryが"insomnia"の場合、または不眠関連キーワードが検出された場合に送信
-                    # Askカテゴリからリダイレクトされた場合は、必ず不眠カウンセリングなので、常に送信
-                    is_insomnia_counseling = (
-                        symptom_type == "insomnia" or 
-                        triage_result.get("subcategory", "").lower() == "insomnia" or
-                        "insomnia" in triage_result.get("subcategory", "").lower() or
-                        has_insomnia_keyword
-                    )
-                    if is_insomnia_counseling:
-                        # 不眠カウンセリングであることを確実にするため、symptom_typeを強制的に"insomnia"に設定
-                        if symptom_type != "insomnia":
-                            symptom_type = "insomnia"
-                            # カウンセリングモードのsymptom_typeも更新
-                            if session.get('counseling_mode'):
-                                session['counseling_mode']['symptom_type'] = "insomnia"
-                            logger.info(f"🔄 不眠関連キーワード検出により、symptom_typeを'insomnia'に変更しました（Askカテゴリから）")
-                            
-                        # 既に同じメッセージが存在するかチェック（重複防止）
-                        medicine_info_message = "一時的な不眠で、推奨される医薬品を知りたい場合は教えて下さい。"
-                        existing_medicine_info = False
-                        for msg in session.get('messages', []):
-                            if (msg.get('type') == 'bot' and 
-                                msg.get('counseling_medicine_info') and 
-                                msg.get('content') == medicine_info_message):
-                                existing_medicine_info = True
-                                logger.info(f"⏭️ 既に医薬品情報メッセージが存在するため、追加をスキップします（Askカテゴリから）")
-                                break
-                            
-                        if not existing_medicine_info:
-                            medicine_info_response = {
-                                'type': 'bot',
-                                'content': medicine_info_message,
-                                'counseling': True,
-                                'counseling_medicine_info': True,
-                                'timestamp': datetime.now().isoformat()
-                            }
-                            session['messages'].append(medicine_info_response)
-                            session.modified = True  # セッション変更を明示的に設定
-                                
-                            # 医薬品情報メッセージのログ記録
-                            log_counseling_response(
-                                session_id=sid,
-                                response_content=medicine_info_message,
-                                response_type="counseling_medicine_info",
-                                category='Emotional',
-                                confidence=confidence,
-                                counseling_mode=session.get('counseling_mode')
-                            )
-                                
-                            logger.info(f"✅ 不眠カウンセリング開始（Askカテゴリから）: 医薬品情報メッセージを送信しました (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                        else:
-                            logger.info(f"✅ 不眠カウンセリング開始（Askカテゴリから）: 医薬品情報メッセージは既に存在します (symptom_type={symptom_type}, subcategory={triage_result.get('subcategory', 'N/A')})")
-                        
-                    if initial_questions:
-                        first_question = initial_questions[0]
-                        # 質問履歴に追加
-                        session['counseling_mode']['question_history'].append({
-                            'question': first_question,
-                            'asked_at': datetime.now().isoformat(),
-                            'question_type': 'initial'
-                        })
-                            
-                        question_response = {
-                            'type': 'bot',
-                            'content': first_question,
-                            'counseling': True,
-                            'counseling_question': True,
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        session['messages'].append(question_response)
-                            
-                        # 初期質問のログ記録
-                        log_counseling_response(
-                            session_id=sid,
-                            response_content=first_question,
-                            response_type="counseling_initial_question",
-                            category='Emotional',
-                            confidence=confidence,
-                            counseling_mode=session.get('counseling_mode')
-                        )
-                        
-                    session.modified = True
-                        
-                    # DBを更新
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            session_data['messages'] = session['messages'].copy()
-                            session_data['last_activity'] = datetime.now()
-                            session_data['counseling_mode'] = session['counseling_mode']
-                            save_session_to_db(sid, session_data)
-                        
-                    message_count = len(session['messages'])
-                    logger.info(f"✅ 睡眠薬質問から不眠カウンセリングフロー開始: {message_count} messages")
-                    return ({'status': 'ok', 'message_count': message_count}, 200)
-                        
-                except ImportError as e:
-                    logger.warning(f"⚠️ カウンセリングフロー機能のインポートに失敗: {e}")
-                except Exception as e:
-                    logger.error(f"❌ 睡眠薬質問から不眠カウンセリングフローへのリダイレクトでエラー: {e}")
-                    import traceback
-                    traceback.print_exc()
-                
-            # その他の医薬品質問フロー
-            # （既存の処理を継続）
-            pass
-            
-        elif category == 'Other':
-            # 汎用応答フロー
-            # （既存の処理を継続）
-            pass
-        
+        from src.handlers.chat.chat_category_route import route_triage_category
+
+        cat_route = route_triage_category(
+            session,
+            sid,
+            user_message,
+            sanitized_message,
+            triage_result,
+            recommendation_client,
+            inappropriate_request_detected=inappropriate_request_detected,
+            has_sleepiness_keyword=has_sleepiness_keyword,
+            has_insomnia_keyword=has_insomnia_keyword,
+        )
+        if cat_route.response is not None:
+            return cat_route.response
+        category = cat_route.category
+        sanitized_message = cat_route.sanitized_message
+        user_message = cat_route.user_message
+        triage_result = cat_route.triage_result or triage_result
+        if cat_route.is_question is not None:
+            pending_route_is_question = cat_route.is_question
+
+    
     # 「終了」ワード検知（サニタイズされたメッセージでチェック）
     if sanitized_message in ['終了', 'end', 'おわり', '終わり', 'quit', 'exit']:
         logger.info(f"🔚 CHAT ENDED by user: {session.get('username', 'unknown')}")
@@ -1790,31 +906,9 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
         logger.info(f"✅ POST処理完了（チャット終了） - JSON返却: {message_count} messages")
         return ({'status': 'ok', 'message_count': message_count}, 200)
         
-    # ユーザーメッセージを追加（AI自動応答ON/OFF問わず）
-    if 'messages' not in session:
-        session['messages'] = []
-        
-    from datetime import datetime
-    import uuid
-        
-    # 重複チェック：同じ内容のユーザーメッセージが既に存在するかチェック
-    user_message_exists = any(
-        msg.get('type') == 'user' and 
-        msg.get('content') == original_user_message and
-        msg.get('uuid')  # UUIDが存在する場合は既存メッセージ
-        for msg in session.get('messages', [])
-    )
-        
-    if not user_message_exists:
-        session['messages'].append({
-            'type': 'user',
-            'content': original_user_message,  # 元のユーザーメッセージを表示（方言変換前）
-            'timestamp': datetime.now().isoformat(),  # タイムスタンプを追加
-            'uuid': str(uuid.uuid4())  # 一意な識別子を追加（将来のtemp_idフローに統合可能）
-        })
+    if not was_last_user_message(session, original_user_message):
+        append_user_message(session, original_user_message)
         logger.info(f"✅ ユーザーメッセージ追加: {original_user_message[:50]}...")
-    else:
-        logger.info(f"⏭️ 重複ユーザーメッセージをスキップ: {sanitized_message[:50]}...")
     # 管理画面表示用にDBへも即時反映（ユーザーメッセージが見えるように）
     if sid:
         session_data = get_session_from_db(sid)
@@ -1913,6 +1007,9 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
         logger.info(f"🔍 フラグ固定により、is_question=Trueに再設定: {user_message}")
         
     logger.info(f"🔍 is_question最終判定: is_question={is_question}, force_question_mode={force_question_mode}, user_message={user_message}")
+    if pending_route_is_question is not None:
+        is_question = pending_route_is_question
+        logger.info(f"🔍 カテゴリルートにより is_question={is_question} に上書き")
     if is_question:
         # システム紹介質問を検出
         system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能', '自己紹介']
@@ -2869,193 +1966,22 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     # 注意: should_handle_other_categoryフラグが設定されていた場合は、is_questionがFalseに変更されていても質問処理として扱う
     force_question_mode = session.get('should_handle_other_category', False)
     if not is_question and not force_question_mode:
-        # レッドフラッグ（妊娠・授乳）チェック：症状解析の前に応答を返す
-        ua = session.get('user_attributes', {}) or {}
-        if ua.get('pregnant') is True:
-            from src.services.html_formatter import format_escalation_display
-            escalation_msg = '妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
-            logger.warning(f"⚠️ 妊娠中検出: 症状解析をスキップしてエスカレーションメッセージを返却")
-            escalation_content = format_escalation_display(
-                doctor_consultation=escalation_msg,
-                medicine_type="該当なし（妊娠中のため推奨中止）",
-                algorithm="禁忌チェック（妊娠）",
-                user_message=user_message,
-                include_feedback_buttons=True
-            )
-            bot_response = {
-                'type': 'bot',
-                'content': escalation_content,
-                'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
-                'timestamp': datetime.now().isoformat()
-            }
-            if 'messages' not in session:
-                session['messages'] = []
-            session['messages'].append(bot_response)
-            session.modified = True
-            if sid:
-                session_data = get_session_from_db(sid)
-                if not session_data:
-                    session_data = {
-                        'session_id': sid,
-                        'username': session.get('username', 'Unknown'),
-                        'messages': session['messages'].copy(),
-                        'last_activity': datetime.now(),
-                        'client_ip': client_info.client_ip,
-                        'user_agent': client_info.user_agent,
-                        'user_attributes': ua,
-                        'session_active': True
-                    }
-                else:
-                    session_data['messages'] = session['messages'].copy()
-                    session_data['last_activity'] = datetime.now()
-                save_session_to_db(sid, session_data)
-            return ({'status': 'ok', 'message_count': len(session['messages'])}, 200)
-        if ua.get('breastfeeding') is True:
-            from src.services.html_formatter import format_escalation_display
-            escalation_msg = '授乳中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。'
-            logger.warning(f"⚠️ 授乳中検出: 症状解析をスキップしてエスカレーションメッセージを返却")
-            escalation_content = format_escalation_display(
-                doctor_consultation=escalation_msg,
-                medicine_type="該当なし（授乳中のため推奨中止）",
-                algorithm="禁忌チェック（授乳）",
-                user_message=user_message,
-                include_feedback_buttons=True
-            )
-            bot_response = {
-                'type': 'bot',
-                'content': escalation_content,
-                'diagnosis': {'doctor_consultation': escalation_msg, 'escalation': True},
-                'timestamp': datetime.now().isoformat()
-            }
-            if 'messages' not in session:
-                session['messages'] = []
-            session['messages'].append(bot_response)
-            session.modified = True
-            if sid:
-                session_data = get_session_from_db(sid)
-                if not session_data:
-                    session_data = {
-                        'session_id': sid,
-                        'username': session.get('username', 'Unknown'),
-                        'messages': session['messages'].copy(),
-                        'last_activity': datetime.now(),
-                        'client_ip': client_info.client_ip,
-                        'user_agent': client_info.user_agent,
-                        'user_attributes': ua,
-                        'session_active': True
-                    }
-                else:
-                    session_data['messages'] = session['messages'].copy()
-                    session_data['last_activity'] = datetime.now()
-                save_session_to_db(sid, session_data)
-            return ({'status': 'ok', 'message_count': len(session['messages'])}, 200)
-            
-        # 言語を検出（症状入力時にも実行）
-        detected_language = detect_language(user_message)
-        session['detected_language'] = detected_language
-        logger.info(f"🌍 検出された言語: {detected_language}")
-            
-        # 医薬品相談回答処理の開始時にフラグを設定
-        session['is_medicine_consultation'] = True
-        logger.info(f"🏥 SYMPTOM INPUT DETECTED: {user_message}")
-        logger.info(f"💊 医薬品相談回答処理開始 - フラグ設定完了")
-        last_diagnosis = None
-            
-        # ユーザー症状文をselect_symptoms_via_gptに渡してChatGPT返答をターミナルに表示
-        try:
-            logger.info(f"🔍 Calling select_symptoms_via_gpt...")
-            start_time = time.time()
-            matched_symptoms = select_symptoms_via_gpt(processed_message)  # 方言変換後のテキストを使用
-            end_time = time.time()
-            execution_time = round(end_time - start_time, 3)
-                
-            # medicine_logic.pyの呼び出しをログ出力
-            log_medicine_logic_call(
-                "select_symptoms_via_gpt",
-                {"user_message": processed_message},  # 方言変換後のテキストをログに表示
-                {"matched_symptoms": matched_symptoms},
-                execution_time
-            )
-                
-            # No symptoms detectedの場合は早期リターン
-            if matched_symptoms.get('status') == 'success' and matched_symptoms.get('message') == 'No symptoms detected':
-                logger.warning(f"⚠️ 症状が検出できませんでした: {user_message}")
-                bot_response = {
-                    'type': 'bot',
-                    'content': '申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、具体的な症状を入力してください。',
-                    'diagnosis': None
-                }
-                session['messages'].append(bot_response)
-                session.modified = True
-                    
-                # DB保存処理
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if not session_data:
-                        session_data = {
-                            'session_id': sid,
-                            'username': session.get('username', 'Unknown'),
-                            'messages': session['messages'].copy(),
-                            'last_activity': datetime.now(),
-                            'client_ip': client_info.client_ip,
-                            'user_agent': client_info.user_agent,
-                            'user_attributes': session.get('user_attributes', {}),
-                            'session_active': True
-                        }
-                        save_session_to_db(sid, session_data)
-                    else:
-                        session_data['messages'] = session['messages'].copy()
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                    
-                message_count = len(session['messages'])
-                logger.info(f"✅ POST処理完了（症状検出失敗） - JSON返却: {message_count} messages")
-                return ({'status': 'ok', 'message_count': message_count}, 200)
-        except Exception as e:
-            logger.error(f"❌ select_symptoms_via_gpt実行時エラー: {e}")
-            
-        # ハイブリッド医薬品推奨システム（ルールベース + ChatGPT）
-        logger.info(f"💊 Hybrid medicine recommendation system starting...")
-            
-        # OpenAI clientを初期化（推奨システム用）
-        from openai import OpenAI
-        api_key = os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            return ({
-                'error': True,
-                'response': '⚠️ システムエラー: OpenAI APIキーが設定されていません。管理者に連絡してください。'
-            }, 200)
-        recommendation_client = OpenAI(api_key=api_key)
-            
-        resp = run_recommendation_flow(
-            session, client_info, sid, monitor,
-            sanitized_message, processed_message,
-            triage_result, recommendation_client,
-            user_message=user_message,
+        from src.handlers.chat.chat_symptom_route import run_symptom_recommendation
+        from src.services.analytics import merge_into_user_info
+
+        return run_symptom_recommendation(
+            session,
+            client_info,
+            sid,
+            monitor,
+            user_message,
+            sanitized_message,
+            processed_message,
+            triage_result,
+            recommendation_client,
+            user_agent=user_agent,
+            client_ip=client_ip,
+            merge_into_user_info=merge_into_user_info,
         )
 
-        message_count = len(session.get('messages', []))
-        response = resp
 
-        # レスポンス返却後にログ出力（非同期化）
-        try:
-            # パフォーマンスメトリクスをログに記録
-            metrics = monitor.get_metrics()
-            log_performance_metrics(monitor, sid, 'POST_request', {
-                'user_agent': user_agent,
-                'client_ip': client_ip
-            })
-            
-            # アクセス分析ログを記録（DB読み取りは最小限に）
-            session_data = get_session_from_db(sid) if sid else None
-            actual_message_count = len(session_data.get('messages', [])) if session_data else message_count
-            log_access_analytics(sid, user_agent, client_ip, metrics['response_time_ms'], {
-                'username': session.get('username', ''),
-                'message_count': actual_message_count
-            })
-            
-            logger.info(f"✅ POST処理完了 - JSON返却: {actual_message_count} messages")
-        except Exception as e:
-            logger.warning(f"ログ出力エラー（無視）: {e}")
-        
-        return response

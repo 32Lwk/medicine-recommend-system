@@ -201,14 +201,18 @@ def extract_user_attributes_multilingual(user_text, client=None, user_info=None)
     prompt = create_multilingual_attribute_extraction_prompt(user_text, detected_language, user_info)
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="attribute_extractor",
             messages=[
                 {"role": "system", "content": "You are a medical AI assistant that extracts user attributes from text."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.1,
-            max_tokens=1000
+            max_tokens=1000,
         )
 
         result = response.choices[0].message.content
