@@ -12,7 +12,11 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from src.services.session_manager import get_session_from_db, save_session_to_db
+from src.services.session_manager import (
+    get_session_from_db,
+    save_session_to_db,
+    append_user_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +40,9 @@ def handle_diagnosis_if_detected(
     Returns:
         早期リターンすべき場合（副作用あり or 診断名のみ）は (dict, status)。それ以外は None。
     """
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "diagnosis")
     try:
         from src.core.medicine_logic import is_diagnosis_term
     except ImportError as e:
@@ -78,41 +85,25 @@ def handle_diagnosis_if_detected(
                     session_data["last_activity"] = datetime.now()
                     save_session_to_db(sid, session_data)
 
-        if "messages" not in session:
-            session["messages"] = []
-        user_message_exists = any(
-            msg.get("type") == "user"
-            and msg.get("content") == sanitized_message
-            and msg.get("uuid")
-            for msg in session.get("messages", [])
-        )
-        if not user_message_exists:
-            user_msg = {
-                "type": "user",
-                "content": sanitized_message,
-                "timestamp": datetime.now().isoformat(),
-                "uuid": str(uuid.uuid4()),
-            }
-            session["messages"].append(user_msg)
-            session.modified = True
-            if sid:
-                session_data = get_session_from_db(sid)
-                if not session_data:
-                    session_data = {
-                        "session_id": sid,
-                        "username": session.get("username", "Unknown"),
-                        "messages": [],
-                        "last_activity": datetime.now(),
-                        "client_ip": client.client_ip,
-                        "user_agent": client.user_agent,
-                        "user_attributes": session.get("user_attributes", {}),
-                        "session_active": True,
-                    }
-                if "messages" not in session_data:
-                    session_data["messages"] = []
-                session_data["messages"].append(user_msg)
-                session_data["last_activity"] = datetime.now()
-                save_session_to_db(sid, session_data)
+        user_msg = append_user_message(session, sanitized_message)
+        if sid:
+            session_data = get_session_from_db(sid)
+            if not session_data:
+                session_data = {
+                    "session_id": sid,
+                    "username": session.get("username", "Unknown"),
+                    "messages": [],
+                    "last_activity": datetime.now(),
+                    "client_ip": client.client_ip,
+                    "user_agent": client.user_agent,
+                    "user_attributes": session.get("user_attributes", {}),
+                    "session_active": True,
+                }
+            if "messages" not in session_data:
+                session_data["messages"] = []
+            session_data["messages"].append(user_msg)
+            session_data["last_activity"] = datetime.now()
+            save_session_to_db(sid, session_data)
 
         escaped_user_message = html.escape(sanitized_message)
         escaped_diagnosis_message = html.escape(diagnosis_message)

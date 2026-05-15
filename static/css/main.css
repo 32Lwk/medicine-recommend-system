@@ -104,11 +104,14 @@
             top: 10px;
             left: 10px;
             z-index: 1000;
+            overflow: visible;
             text-align: left;
             direction: ltr;
         }
         
         .lang-toggle {
+            position: relative;
+            z-index: 1;
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
@@ -147,11 +150,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             min-width: 150px;
             display: none;
-            z-index: 1001;
+            z-index: 1002;
         }
         
         .lang-dropdown.show {
             display: block;
+            z-index: 1002;
         }
         
         .lang-option {
@@ -549,6 +553,120 @@
             text-align: left;
             min-height: 20px;
             box-sizing: border-box;
+        }
+        /* 処理進捗カード（AI分析中） */
+        #currentTypingIndicator .message-content.processing-status-bubble,
+        .message.bot .message-content.processing-status-bubble {
+            background: linear-gradient(145deg, #f6fbf7 0%, #ffffff 55%, #f9fafb 100%);
+            border: 1px solid rgba(76, 175, 80, 0.22);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.1), 0 1px 3px rgba(0, 0, 0, 0.04);
+            padding: 14px 16px 16px;
+            min-width: 248px;
+            max-width: min(340px, 88vw);
+            font-style: normal;
+        }
+        .processing-status-wrapper {
+            display: block;
+            width: 100%;
+        }
+        .processing-status-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .processing-status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .processing-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: #2e7d32;
+            background: rgba(76, 175, 80, 0.14);
+            padding: 5px 11px;
+            border-radius: 999px;
+            line-height: 1;
+        }
+        .processing-status-badge::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4CAF50;
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.45);
+            animation: processing-status-pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes processing-status-pulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.45);
+            }
+            50% {
+                opacity: 0.75;
+                box-shadow: 0 0 0 5px rgba(76, 175, 80, 0);
+            }
+        }
+        .processing-status-step-pill {
+            font-size: 11px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            color: #64748b;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 999px;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+        .processing-status-label {
+            margin: 0 0 12px;
+            padding: 0;
+            font-size: calc(var(--font-size-base) * 0.9375);
+            font-weight: 500;
+            line-height: 1.5;
+            color: #1e293b;
+            font-style: normal;
+        }
+        .processing-status-track {
+            height: 6px;
+            background: #e8f5e9;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .processing-status-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #81c784 0%, #4CAF50 50%, #43a047 100%);
+            border-radius: 999px;
+            transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* 旧クラス互換（未使用時のフォールバック） */
+        .processing-status-row,
+        .processing-status-meta,
+        .processing-status-spinner {
+            display: none;
+        }
+        #ai-processing-banner {
+            display: none;
+            margin: 0 16px 10px;
+            padding: 12px 14px;
+            background: linear-gradient(145deg, #f6fbf7 0%, #ffffff 100%);
+            border: 1px solid rgba(76, 175, 80, 0.22);
+            border-left: 4px solid #4CAF50;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #1e293b;
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.08);
+        }
+        #ai-processing-banner.active {
+            display: block;
         }
         .question-prompt {
             background: #e3f2fd;
@@ -3190,7 +3308,7 @@ body.onboarding-open[data-onboarding-interaction="locked"] .chat-container .lang
 body.onboarding-open[data-onboarding-interaction="locked"] .chat-container .language-selector * {
     pointer-events: auto !important;
     opacity: 1 !important;
-    z-index: 11002 !important;
+    z-index: 11030 !important;
 }
 
 body.onboarding-open[data-onboarding-interaction="locked"] .chat-container .lang-dropdown {
@@ -3200,6 +3318,7 @@ body.onboarding-open[data-onboarding-interaction="locked"] .chat-container .lang
     cursor: default !important;
 }
 
+/* オンボーディングの重なり順: overlay 11000 < modal 11020 < language UI 11030 */
 .onboarding-overlay {
     position: fixed;
     top: 0;
@@ -3280,7 +3399,7 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector * {
 
 body.onboarding-open[data-onboarding-interaction="1"] .language-selector {
     position: relative;
-    z-index: 11002 !important;
+    z-index: 11030 !important;
 }
 
 body.onboarding-open[data-onboarding-interaction="1"] .lang-toggle,
@@ -3332,7 +3451,7 @@ body.onboarding-open[data-onboarding-interaction="2"] .chat-container .language-
 body.onboarding-open[data-onboarding-interaction="2"] .chat-container .language-selector * {
     pointer-events: auto !important;
     opacity: 1 !important;
-    z-index: 11002 !important;
+    z-index: 11030 !important;
 }
 
 body.onboarding-open[data-onboarding-interaction="2"] .chat-container .lang-dropdown {
@@ -3372,7 +3491,7 @@ body.onboarding-open[data-onboarding-interaction="3"] .chat-container .language-
 body.onboarding-open[data-onboarding-interaction="3"] .chat-container .language-selector * {
     pointer-events: auto !important;
     opacity: 1 !important;
-    z-index: 11002 !important;
+    z-index: 11030 !important;
 }
 
 body.onboarding-open[data-onboarding-interaction="3"] .chat-container .lang-dropdown {
@@ -3475,7 +3594,7 @@ body.onboarding-open[data-onboarding-interaction="3"] .info-selector.onboarding-
 /* 言語 UI を前面に固定するのは操作モード 0・1 のみ（2以降はチャットを触れないように z-index を上げない） */
 body.onboarding-open[data-onboarding-interaction="0"] .language-selector.onboarding-highlight-parent,
 body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboarding-highlight-parent {
-    z-index: 11002 !important;
+    z-index: 11030 !important;
     position: absolute !important;
     top: 10px !important;
     left: 10px !important;
@@ -3506,9 +3625,23 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
     left: 0 !important;
 }
 
+/* オンボーディング中: 言語セレクタ全体をモーダル(11020)より上へ（子だけ上げても親のスタッキングを越えられない） */
+body.onboarding-open .chat-container .language-selector {
+    z-index: 11030 !important;
+}
+
+body.onboarding-open .chat-container .language-selector .lang-toggle {
+    position: relative;
+    z-index: 1;
+}
+
+body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
+    z-index: 2;
+}
+
 .language-selector.onboarding-highlight-parent .lang-toggle.onboarding-highlight {
     position: relative;
-    z-index: 11003 !important;
+    z-index: 1;
 }
 
 .onboarding-container {
@@ -3536,6 +3669,8 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
     margin: 0;
     display: flex;
     flex-direction: column;
+    container-type: inline-size;
+    container-name: onboarding-modal;
     /* --onb-modal-height: main.js が #onboarding-container の offsetHeight を px で同期（詳細本文の max-height 20%／2つ開いたとき 15% 用） */
 }
 
@@ -3587,6 +3722,7 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
 
 .onboarding-top-row {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
@@ -3597,8 +3733,8 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
 }
 
 .onboarding-active-visual {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 0 0 auto;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -3868,8 +4004,9 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
 }
 
 .onboarding-skip {
-    flex-shrink: 0;
-    margin: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0 0 0 auto;
     background: #ffffff;
     box-shadow: 0 6px 12px -10px rgba(0, 0, 0, 0.07);
     color: #4f6b95;
@@ -3882,7 +4019,12 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
+    white-space: nowrap;
+    text-align: right;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
     z-index: 11021;
 }
 
@@ -4133,6 +4275,18 @@ body.onboarding-open[data-onboarding-interaction="1"] .language-selector.onboard
 
     .onboarding-slide-scroll.onboarding-details-dense .onboarding-details-content {
         max-height: calc(var(--onb-modal-height, 85vh) * 0.15);
+    }
+}
+
+/* モーダル幅が狭いときも横一行のままコンパクト化 */
+@container onboarding-modal (max-width: 360px) {
+    .onboarding-skip {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.45rem;
+    }
+
+    .onboarding-visual {
+        font-size: 2.25rem;
     }
 }
 

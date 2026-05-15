@@ -113,10 +113,10 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
+                                    { text: "GPT-4系からGPT-5系への移行（カナリア運用中）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け（段階ロールアウト中）", defaultChecked: true },
                                     "潜在空間によるスコアリングの大規模改修",
-                                    "GPT-4系からGPT-5系への移行",
                                     "UI・導線の最適化",
-                                    "マルチエージェントモデルの更新",
                                     "カルーセル型UIの導入",
                                     "画像の導入",
                                     "セキュリティ向上",
@@ -157,10 +157,10 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
+                                    { text: "GPT-4系からGPT-5系への移行（カナリア運用中）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け（段階ロールアウト中）", defaultChecked: true },
                                     "潜在空間によるスコアリングの大規模改修",
-                                    "GPT-4系からGPT-5系への移行",
                                     "UI・導線の最適化",
-                                    "マルチエージェントモデルの更新",
                                     "カルーセル型UIの導入",
                                     "画像の導入",
                                     "セキュリティ向上",
@@ -402,10 +402,10 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
+                                    { text: "Migration from GPT-4 class to GPT-5 class models (canary)", defaultChecked: true },
+                                    { text: "Multi-agent routing (gradual rollout)", defaultChecked: true },
                                     "Major scoring revamp using latent space",
-                                    "Migration from GPT-4 class to GPT-5 class models",
                                     "UI and user-flow optimization",
-                                    "Multi-agent model updates",
                                     "Carousel-style UI",
                                     "Image support",
                                     "Security improvements",
@@ -446,10 +446,10 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
+                                    { text: "Migration from GPT-4 class to GPT-5 class models (canary)", defaultChecked: true },
+                                    { text: "Multi-agent routing (gradual rollout)", defaultChecked: true },
                                     "Major scoring revamp using latent space",
-                                    "Migration from GPT-4 class to GPT-5 class models",
                                     "UI and user-flow optimization",
-                                    "Multi-agent model updates",
                                     "Carousel-style UI",
                                     "Image support",
                                     "Security improvements",
@@ -2189,6 +2189,7 @@
 
     // 現在の言語設定
     let currentLanguage = sessionStorage.getItem('language') || 'ja';
+    window.currentLanguage = currentLanguage;
     const GOOGLE_FORM_URL = 'https://forms.gle/UB8kZHd4VHenmRUN6';
     let currentFeedbackData = null;
     let feedbackTriggerElement = null;
@@ -4161,6 +4162,7 @@
     // 言語選択
     function selectLanguage(lang) {
         currentLanguage = lang;
+        window.currentLanguage = lang;
         sessionStorage.setItem('language', lang);
         
         // サーバーに言語設定を送信
@@ -4559,11 +4561,18 @@
         // ドロップダウン外をクリックしたら閉じる
         document.addEventListener('click', function(e) {
             const selector = document.querySelector('.language-selector');
+            if (!selector) {
+                return;
+            }
             if (!selector.contains(e.target)) {
                 const dropdown = document.getElementById('langDropdown');
                 const toggle = document.querySelector('.lang-toggle');
-                dropdown.classList.remove('show');
-                toggle.classList.remove('open');
+                if (dropdown) {
+                    dropdown.classList.remove('show');
+                }
+                if (toggle) {
+                    toggle.classList.remove('open');
+                }
             }
         });
         
@@ -4585,11 +4594,23 @@
     
     // 送信中フラグ（グローバル変数）
     let isSubmitting = false;
+
+    function getChatSubmitButton() {
+        return document.querySelector('#chatForm button[type="submit"]');
+    }
     
-    document.getElementById('chatForm').addEventListener('submit', function(e) {
+    const chatFormEl = document.getElementById('chatForm');
+    if (!chatFormEl) {
+        console.error('chatForm element not found — message submit disabled');
+    } else {
+    chatFormEl.addEventListener('submit', function(e) {
         try {
             e.preventDefault();
             const input = document.getElementById('messageInput');
+            if (!input) {
+                console.error('messageInput element not found');
+                return;
+            }
             const message = input.value.trim();
             
             if (message === '') {
@@ -4606,20 +4627,30 @@
             isSubmitting = true;
             
             // 送信ボタンを無効化
-            const submitBtn = document.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ 処理中...';
-            submitBtn.style.background = '#6c757d';
-            submitBtn.style.cursor = 'not-allowed';
+            const submitBtn = getChatSubmitButton();
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '⏳ 処理中...';
+                submitBtn.style.background = '#6c757d';
+                submitBtn.style.cursor = 'not-allowed';
+            }
             
             // 入力フィールドを無効化
             input.disabled = true;
-            input.placeholder = 'AI処理中です。しばらくお待ちください...';
+            const tBusy = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
+            input.placeholder = tBusy.processingPlaceholder || 'AI処理中です。しばらくお待ちください...';
 
             // 直近のユーザーメッセージを保存（重複防止の補助や評価用）
             try {
                 sessionStorage.setItem('lastUserMessage', message);
             } catch (e) {}
+
+            // 進捗表示は UI 言語ではなく入力言語に合わせる
+            if (window.ProcessingStatus && typeof ProcessingStatus.detectInputLanguage === 'function') {
+                ProcessingStatus.setProcessingLanguage(
+                    ProcessingStatus.detectInputLanguage(message, currentLanguage)
+                );
+            }
             
             // イースターエッグチェック（通常処理より優先）
             if (typeof checkEasterEggs === 'function' && checkEasterEggs(message)) {
@@ -4629,8 +4660,6 @@
                 input.style.height = 'auto';
                 isSubmitting = false;
                 restoreSubmitButton();
-                input.disabled = false;
-                input.placeholder = translations[currentLang].placeholder || '症状を入力してください...';
                 return;
             }
             
@@ -4659,6 +4688,10 @@
             restoreSubmitButton();
         }
     });
+    }
+
+    // 前回の送信中断などでボタンが無効のまま残っている場合に復旧
+    restoreSubmitButton();
 
     // Alt+Enterで送信、通常のEnterは改行（エラーハンドリング付き）
     document.getElementById('messageInput').addEventListener('keydown', function(e) {
@@ -4835,17 +4868,23 @@
 
     // 送信ボタンを元の状態に復元
     function restoreSubmitButton() {
-        const submitBtn = document.querySelector('button[type="submit"]');
+        const submitBtn = getChatSubmitButton();
         const input = document.getElementById('messageInput');
         
         isSubmitting = false;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '送信';
-        submitBtn.style.background = '';
-        submitBtn.style.cursor = '';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            const t = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
+            submitBtn.innerHTML = t.sendButton || '送信';
+            submitBtn.style.background = '';
+            submitBtn.style.cursor = '';
+        }
         
-        input.disabled = false;
-        input.placeholder = '症状を入力してください...';
+        if (input) {
+            input.disabled = false;
+            const t = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
+            input.placeholder = t.placeholder || '症状を入力してください...';
+        }
     }
 
     // 処理中メッセージを表示する関数
@@ -5189,18 +5228,24 @@
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message bot';
         typingDiv.id = 'currentTypingIndicator';
-        typingDiv.innerHTML = `
-            <div class="message-content">
-                <div class="typing-indicator">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="spinner" style="width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                        <span>AIが診断中...</span>
-                    </div>
-                </div>
-            </div>
-        `;
+        if (window.ProcessingStatus && ProcessingStatus.getTypingIndicatorHtml) {
+            typingDiv.innerHTML = ProcessingStatus.getTypingIndicatorHtml();
+        } else {
+            typingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator"><span>AIが診断中...</span></div></div>';
+        }
         chatMessages.appendChild(typingDiv);
         scrollToBottom();
+
+        if (window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
+            ProcessingStatus.startProcessingPoll({
+                onUpdate: function (data) {
+                    const el = document.getElementById('currentTypingIndicator');
+                    if (!el || !data || !data.active) return;
+                    ProcessingStatus.renderProcessingStatus(el, data);
+                },
+                interval: 1000
+            });
+        }
     }
 
     // HTMLエスケープ関数
@@ -5510,6 +5555,9 @@
 
     // タイピングインジケーターを削除
     function removeTypingIndicator() {
+        if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
+            ProcessingStatus.stopProcessingPoll();
+        }
         const typingIndicator = document.getElementById('currentTypingIndicator');
         if (typingIndicator) {
             typingIndicator.remove();
@@ -5774,6 +5822,12 @@
         }
     };
 
+    function getMessageDomKey(message, index) {
+        if (message && message.uuid) return message.uuid;
+        if (message && message.message_id) return String(message.message_id);
+        return `idx-${index}`;
+    }
+
     function renderChatMessages(messages) {
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
@@ -5791,12 +5845,12 @@
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('hasTypingIndicator:', hasTypingIndicator);
         
-        // 既存メッセージのインデックスをチェック（重複防止）
-        const existingMessages = chatMessages.querySelectorAll('[data-message-index]');
-        const existingIndices = new Set();
+        // 既存メッセージのIDをチェック（重複防止・同一文言の再送は uuid で区別）
+        const existingMessages = chatMessages.querySelectorAll('[data-message-id], [data-message-index]');
+        const existingIds = new Set();
         existingMessages.forEach(msg => {
-            const index = msg.getAttribute('data-message-index');
-            if (index) existingIndices.add(parseInt(index));
+            const id = msg.getAttribute('data-message-id') || msg.getAttribute('data-message-index');
+            if (id) existingIds.add(id);
         });
         
         // レイアウトの安定性を向上させるため、一括更新
@@ -5820,12 +5874,14 @@
         
         messages.forEach((message, index) => {
             // 既存メッセージの場合はスキップ（重複防止）
-            if (existingIndices.has(index)) {
+            const messageKey = getMessageDomKey(message, index);
+            if (existingIds.has(messageKey)) {
                 return;
             }
             
             const messageDiv = document.createElement('div');
-            messageDiv.setAttribute('data-message-index', index);
+            messageDiv.setAttribute('data-message-id', messageKey);
+            messageDiv.setAttribute('data-message-index', String(index));
             
             if (message.type === 'user') {
                 messageDiv.className = 'message user';
@@ -6045,14 +6101,22 @@
                 const newTypingDiv = document.createElement('div');
                 newTypingDiv.className = 'message bot';
                 newTypingDiv.id = 'currentTypingIndicator';
-                newTypingDiv.innerHTML = `
-                    <div class="message-content">
-                        <div class="typing-indicator">
-                            AIが診断中...
-                        </div>
-                    </div>
-                `;
+                if (window.ProcessingStatus && ProcessingStatus.getTypingIndicatorHtml) {
+                    newTypingDiv.innerHTML = ProcessingStatus.getTypingIndicatorHtml();
+                } else {
+                    newTypingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator">AIが診断中...</div></div>';
+                }
                 chatMessages.appendChild(newTypingDiv);
+                if (isSubmitting && window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
+                    ProcessingStatus.startProcessingPoll({
+                        onUpdate: function (data) {
+                            const el = document.getElementById('currentTypingIndicator');
+                            if (!el || !data || !data.active) return;
+                            ProcessingStatus.renderProcessingStatus(el, data);
+                        },
+                        interval: 1000
+                    });
+                }
             }
         }
         

@@ -131,14 +131,15 @@ def generate_counseling_response(
 【返信を生成してください】
 """
                 try:
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
+                    from src.services.counseling.counseling_llm import counseling_chat
+                    response = counseling_chat(
+                        client,
+                        "counseling_generator.sexual_assault",
+                        [
                             {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。"},
-                            {"role": "user", "content": sexual_assault_prompt}
+                            {"role": "user", "content": sexual_assault_prompt},
                         ],
-                        temperature=0.7,
-                        max_tokens=600
+                        max_tokens=600,
                     )
                     # マークダウン記号を削除
                     response_text = response.choices[0].message.content.strip()
@@ -214,14 +215,15 @@ def generate_counseling_response(
 【返信を生成してください】
 """
                 try:
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
+                    from src.services.counseling.counseling_llm import counseling_chat
+                    response = counseling_chat(
+                        client,
+                        "counseling_generator.emergency_contraception",
+                        [
                             {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。"},
-                            {"role": "user", "content": emergency_contraception_prompt}
+                            {"role": "user", "content": emergency_contraception_prompt},
                         ],
-                        temperature=0.7,
-                        max_tokens=500
+                        max_tokens=500,
                     )
                     # マークダウン記号を削除
                     response_text = response.choices[0].message.content.strip()
@@ -324,22 +326,21 @@ def generate_counseling_response(
 【返信を生成してください】
 """
             try:
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
+                from src.services.counseling.counseling_llm import counseling_chat
+                response = counseling_chat(
+                    client,
+                    "counseling_generator.sexual_assault_general",
+                    [
                         {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。性被害を受けた方に対して、親身で適切な情報とサポートを提供してください。"},
-                        {"role": "user", "content": sexual_assault_prompt}
+                        {"role": "user", "content": sexual_assault_prompt},
                     ],
-                    temperature=0.7,
-                    max_tokens=600
+                    max_tokens=600,
                 )
-                # マークダウン記号を削除
                 response_text = response.choices[0].message.content.strip()
                 response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
                 return response_text
             except Exception as e:
                 logger.error(f"性被害応答生成エラー: {e}")
-                # フォールバック: 一般的な応答を返す（後続処理で実行される）
         elif is_emergency_contraception_general:
             # 緊急避妊薬専用のプロンプトを使用
             history_text = ""
@@ -405,22 +406,21 @@ def generate_counseling_response(
 【返信を生成してください】
 """
             try:
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
+                from src.services.counseling.counseling_llm import counseling_chat
+                response = counseling_chat(
+                    client,
+                    "counseling_generator.emergency_contraception_general",
+                    [
                         {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。緊急避妊薬に関する質問に対して、親身で適切な情報を提供してください。"},
-                        {"role": "user", "content": emergency_contraception_prompt}
+                        {"role": "user", "content": emergency_contraception_prompt},
                     ],
-                    temperature=0.7,
-                    max_tokens=500
+                    max_tokens=500,
                 )
-                # マークダウン記号を削除
                 response_text = response.choices[0].message.content.strip()
                 response_text = response_text.replace('**', '').replace('*', '').replace('__', '').replace('_', '')
                 return response_text
             except Exception as e:
                 logger.error(f"緊急避妊薬応答生成エラー: {e}")
-                # フォールバック: 一般的な応答を返す（後続処理で実行される）
     
     # アプリケーションの技術仕様に関する質問を検出
     # general_otherまたはinappropriate_request/unknownの場合に技術仕様質問をチェック
@@ -481,14 +481,15 @@ def generate_counseling_response(
 【返信を生成してください】
 """
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
+            from src.services.counseling.counseling_llm import counseling_chat
+            response = counseling_chat(
+                client,
+                "counseling_generator.app_spec",
+                [
                     {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。アプリケーションの技術仕様や対応内容に関する質問に対して、正確で分かりやすい説明を提供してください。"},
-                    {"role": "user", "content": app_spec_prompt}
+                    {"role": "user", "content": app_spec_prompt},
                 ],
-                temperature=0.7,
-                max_tokens=400
+                max_tokens=400,
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -522,14 +523,15 @@ def generate_counseling_response(
         # 不眠と眠気の場合は長めの応答を許可（max_tokensを増やす）
         max_tokens_value = max_length * 2 if symptom_type in ["insomnia", "drowsiness"] else max_length
         
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_generator.main",
+            [
                 {"role": "system", "content": f"{template['system_message']} 返信は{max_length}文字以内に収めてください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.7,
-            max_tokens=max_tokens_value
+            max_tokens=max_tokens_value,
         )
         
         response_text = response.choices[0].message.content.strip()

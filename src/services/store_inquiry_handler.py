@@ -324,15 +324,19 @@ JSON形式で回答してください：
 }
 """
         
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="triage",
+            path="store_inquiry_handler.classify",
             messages=[
                 {"role": "system", "content": "あなたは薬剤師です。店舗案内・遺失物関連の質問を正確に分類してください。"},
-                {"role": "user", "content": f"{prompt}\n\n【ユーザーの入力】\n{user_text}"}
+                {"role": "user", "content": f"{prompt}\n\n【ユーザーの入力】\n{user_text}"},
             ],
             temperature=0.1,
             max_tokens=200,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
         
         content = response.choices[0].message.content

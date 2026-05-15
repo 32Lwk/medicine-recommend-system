@@ -15,7 +15,7 @@ import pytz
 from fastapi import Depends, FastAPI, Form, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -556,6 +556,13 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
 
 
 def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONResponse:
+    from src.core.language_utils import detect_language
+    from src.services.processing_status import (
+        clear_processing_status,
+        mark_processing_step,
+        set_processing_language,
+    )
+
     client_info = ChatClientInfo.from_starlette_request(request)
     monitor = get_global_monitor()
     monitor.start_monitoring()
@@ -564,11 +571,19 @@ def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONRe
     safe_session = RequestSafeSession()
     _prime_safe_session_for_chat(safe_session, sid, request)
 
-    body, status_code = handle_chat_post(safe_session, client_info, message, sid, monitor)
-    if not isinstance(body, dict) or not isinstance(status_code, int):
-        body = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
-        status_code = 500
-    return JSONResponse(content=body, status_code=status_code)
+    if sid and (message or "").strip():
+        set_processing_language(sid, detect_language((message or "").strip()))
+        mark_processing_step(sid, "validate")
+
+    try:
+        body, status_code = handle_chat_post(safe_session, client_info, message, sid, monitor)
+        if not isinstance(body, dict) or not isinstance(status_code, int):
+            body = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
+            status_code = 500
+        return JSONResponse(content=body, status_code=status_code)
+    finally:
+        if sid:
+            clear_processing_status(sid)
 
 
 @app.post("/", response_class=JSONResponse)
@@ -631,6 +646,23 @@ def new_session(request: Request, response: Response):
 @app.post("/test/new_session")
 def new_session_test(request: Request, response: Response):
     return new_session(request, response)
+
+
+@app.get("/api/processing-status")
+def api_processing_status_get(
+    request: Request,
+    session_id: str | None = None,
+    sid: str = Depends(get_sid),
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    from src.services.processing_status import get_processing_status
+
+    target_sid = sid
+    if session_id:
+        if not _require_admin(request, creds):
+            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        target_sid = session_id
+    return get_processing_status(target_sid)
 
 
 @app.get("/api/sessions")
@@ -790,18 +822,79 @@ def delete_feedback(feedback_id: int):
     return JSONResponse({"error": "Failed to delete feedback"}, status_code=500)
 
 
-def _require_admin(credentials: HTTPBasicCredentials | None) -> bool:
-    if not credentials:
-        return False
-    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
-    return credentials.username == "admin" and credentials.password == admin_password
+def _require_admin(
+    request: Request,
+    credentials: HTTPBasicCredentials | None = None,
+) -> bool:
+    from src.services.admin_auth import (
+        ADMIN_COOKIE_NAME,
+        credentials_match,
+        verify_admin_token,
+    )
+
+    if credentials and credentials_match(credentials.username, credentials.password):
+        return True
+    return verify_admin_token(request.cookies.get(ADMIN_COOKIE_NAME))
+
+
+def _set_admin_cookie(response: Response) -> None:
+    from src.services.admin_auth import ADMIN_COOKIE_NAME, create_admin_token
+
+    response.set_cookie(
+        ADMIN_COOKIE_NAME,
+        create_admin_token(),
+        max_age=60 * 60 * 24 * 7,
+        httponly=True,
+        samesite=COOKIE_SETTINGS.get("samesite", "lax"),
+        secure=bool(COOKIE_SETTINGS.get("secure", False)),
+        path="/",
+    )
+
+
+def _clear_admin_cookie(response: Response) -> None:
+    from src.services.admin_auth import ADMIN_COOKIE_NAME
+
+    response.delete_cookie(ADMIN_COOKIE_NAME, path="/")
+
+
+@app.get("/admin/login", response_class=HTMLResponse)
+def admin_login_page(request: Request, creds: HTTPBasicCredentials | None = Depends(security_basic)):
+    if _require_admin(request, creds):
+        return RedirectResponse(url="/admin", status_code=302)
+    return templates.TemplateResponse(request, "admin_login.html", {"error": None})
+
+
+@app.post("/admin/login", response_class=HTMLResponse)
+async def admin_login_post(
+    request: Request,
+    username: str = Form(""),
+    password: str = Form(""),
+):
+    from src.services.admin_auth import credentials_match
+
+    if credentials_match(username.strip(), password):
+        response = RedirectResponse(url="/admin", status_code=302)
+        _set_admin_cookie(response)
+        return response
+    return templates.TemplateResponse(
+        request,
+        "admin_login.html",
+        {"error": "ユーザー名またはパスワードが正しくありません"},
+        status_code=401,
+    )
+
+
+@app.get("/admin/logout")
+def admin_logout():
+    response = RedirectResponse(url="/admin/login", status_code=302)
+    _clear_admin_cookie(response)
+    return response
 
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(security_basic)):
-    if not _require_admin(creds):
-        headers = {"WWW-Authenticate": 'Basic realm="Admin Area"'}
-        return Response(content="認証が必要です", status_code=401, headers=headers)
+    if not _require_admin(request, creds):
+        return RedirectResponse(url="/admin/login", status_code=302)
     return templates.TemplateResponse(request, "admin_chat.html", {})
 
 
@@ -1233,8 +1326,12 @@ async def api_translate(request: Request):
 翻訳:
 """
     try:
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        resp = chat_completion_create(
+            client,
+            model_role="ask",
+            path="main.translate",
             messages=[
                 {
                     "role": "system",
@@ -1349,6 +1446,109 @@ def admin_export_monitoring_data():
     }
 
 
+@app.get("/admin/llm_settings")
+def admin_llm_settings_get(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    if not _require_admin(request, creds):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    from src.services.budget_guard import ensure_llm_admin_defaults, get_admin_settings, get_monthly_usage
+
+    ensure_llm_admin_defaults()
+    from config.llm_config import OPENAI_MONTHLY_BUDGET_JPY, OPENAI_SESSION_COST_ALERT_JPY
+
+    return {
+        "settings": get_admin_settings(),
+        "monthly_usage": get_monthly_usage(),
+        "budget_jpy": OPENAI_MONTHLY_BUDGET_JPY,
+        "session_alert_jpy": OPENAI_SESSION_COST_ALERT_JPY,
+    }
+
+
+@app.post("/admin/llm_settings")
+async def admin_llm_settings_post(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    if not _require_admin(request, creds):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    from src.services.budget_guard import (
+        set_admin_settings,
+        set_admin_message,
+        set_alert_email,
+        get_admin_settings,
+    )
+
+    if "alert_email" in data:
+        set_alert_email(data.get("alert_email") or "")
+    messages = data.get("messages")
+    if isinstance(messages, dict):
+        settings = get_admin_settings()
+        merged = dict(settings.get("messages") or {})
+        merged.update(messages)
+        for key, text in merged.items():
+            set_admin_message(key, text or "")
+    if data.get("replace_settings"):
+        set_admin_settings(data["replace_settings"])
+    return {"status": "ok", "settings": get_admin_settings()}
+
+
+@app.get("/admin/golden_cases")
+def admin_golden_cases_list(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    if not _require_admin(request, creds):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    from src.services.admin_settings_service import list_golden_cases
+
+    return {"cases": list_golden_cases()}
+
+
+@app.get("/admin/golden_cases/export")
+def admin_golden_cases_export(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    if not _require_admin(request, creds):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    from src.services.admin_settings_service import export_golden_jsonl
+
+    body = export_golden_jsonl()
+    return Response(
+        content=body,
+        media_type="application/x-ndjson",
+        headers={"Content-Disposition": 'attachment; filename="golden_cases.jsonl"'},
+    )
+
+
+@app.post("/admin/golden_cases")
+async def admin_golden_cases_create(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    if not _require_admin(request, creds):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    if not data.get("input_text") or not data.get("expected_category"):
+        return JSONResponse(
+            {"status": "error", "message": "input_text and expected_category are required"},
+            status_code=400,
+        )
+    from src.services.admin_settings_service import insert_golden_case
+
+    new_id = insert_golden_case(data)
+    if new_id is None:
+        return JSONResponse({"status": "error", "message": "DB unavailable"}, status_code=503)
+    return {"status": "ok", "id": new_id}
+
+
 @app.post("/admin/ai_control")
 async def admin_ai_control_route(request: Request):
     data, err = await _read_json_dict(request)
@@ -1416,6 +1616,37 @@ async def admin_medicine_chat_route(request: Request):
                     user_text=user_message, user_info={}, client=test_client
                 )
                 clean_recommendation = _clean_nan(recommendation)
+                rule_names = [
+                    (m.get("product_name") or m.get("name") or "")
+                    for m in (recommendation.get("recommended_medicines") or [])[:3]
+                ]
+                gpt_names: list = []
+                try:
+                    from src.core.medicine.medicine_recommendation_gpt import recommend_medicines_with_retry
+
+                    gpt_rec = recommend_medicines_with_retry(
+                        user_message,
+                        symptoms,
+                        [],
+                        user_info={},
+                        client=test_client,
+                    )
+                    gpt_names = [
+                        (m.get("product_name") or m.get("name") or "")
+                        for m in (gpt_rec.get("recommended_medicines") or [])[:3]
+                    ]
+                except Exception as cmp_err:
+                    logger.debug("GPT compare skipped: %s", cmp_err)
+                try:
+                    from src.services.admin_settings_service import log_medicine_compare
+
+                    log_medicine_compare(
+                        session_id=f"admin-{int(time.time())}",
+                        rule_meds=rule_names,
+                        gpt_meds=gpt_names,
+                    )
+                except Exception as log_err:
+                    logger.debug("compare log skipped: %s", log_err)
                 response_time = time.time() - start_time
                 add_network_log(
                     "POST",
@@ -1433,6 +1664,7 @@ async def admin_medicine_chat_route(request: Request):
                     "symptoms": symptoms,
                     "medicine_type": medicine_type_result["medicine_type"],
                     "recommendation": clean_recommendation,
+                    "compare": {"rule": rule_names, "gpt": gpt_names},
                 }
             recommendation = comprehensive_medicine_recommendation(user_text=user_message, client=test_client)
             clean_recommendation = _clean_nan(recommendation)
