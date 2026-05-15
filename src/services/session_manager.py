@@ -215,32 +215,35 @@ def update_session_activity(sid):
         save_session_to_db(sid, session_data)
 
 
+def was_last_user_message(session, content: str) -> bool:
+    """直前のメッセージが同一内容のユーザー発言か（同一リクエスト内の二重追加防止用）。"""
+    messages = session.get('messages') or []
+    if not messages:
+        return False
+    last = messages[-1]
+    return last.get('type') == 'user' and last.get('content') == content
+
+
+def append_user_message(session, content: str) -> dict:
+    """セッションにユーザーメッセージを追加する（同一文言の再送も別メッセージとして保持）。"""
+    import uuid
+
+    if 'messages' not in session:
+        session['messages'] = []
+    user_msg = {
+        'type': 'user',
+        'content': content,
+        'timestamp': datetime.now().isoformat(),
+        'uuid': str(uuid.uuid4()),
+    }
+    session['messages'].append(user_msg)
+    if hasattr(session, 'modified'):
+        session.modified = True
+    return user_msg
+
+
 def remove_duplicate_user_messages_after_ai_response(sid):
-    """AI応答後に重複するユーザーメッセージを削除"""
-    if not sid:
-        return False
-    session_data = get_session_from_db(sid)
-    if not session_data:
-        return False
-    messages = session_data.get('messages', [])
-    original_count = len(messages)
-    seen_contents = set()
-    unique_messages = []
-    for msg in messages:
-        if msg.get('type') == 'user':
-            content = msg.get('content', '')
-            if content not in seen_contents:
-                seen_contents.add(content)
-                unique_messages.append(msg)
-            else:
-                logger.info(f"⏭️ 重複ユーザーメッセージを削除: {content[:50]}...")
-        else:
-            unique_messages.append(msg)
-    if len(unique_messages) < original_count:
-        session_data['messages'] = unique_messages
-        save_session_to_db(sid, session_data)
-        logger.info(f"✅ 重複削除完了: {original_count} → {len(unique_messages)} messages")
-        return True
+    """後方互換のため残置。文言ベースの重複削除は行わない（同一内容の再送を保持）。"""
     return False
 
 

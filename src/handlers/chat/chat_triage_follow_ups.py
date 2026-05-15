@@ -15,6 +15,7 @@ from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
     get_next_user_number,
+    append_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -115,44 +116,27 @@ def run_triage_follow_ups(
                     start_counseling_mode,
                 )
 
-                if "messages" not in session:
-                    session["messages"] = []
-                # UI表示用には正規化前の元入力（user_message）を使用
-                user_message_exists = any(
-                    msg.get("type") == "user"
-                    and msg.get("content") == user_message
-                    and msg.get("uuid")
-                    for msg in session.get("messages", [])
-                )
-                if not user_message_exists:
-                    user_msg = {
-                        "type": "user",
-                        "content": user_message,
-                        "timestamp": datetime.now().isoformat(),
-                        "uuid": str(uuid.uuid4()),
-                    }
-                    session["messages"].append(user_msg)
-                    session.modified = True
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            if "messages" not in session_data:
-                                session_data["messages"] = []
-                            session_data["messages"].append(user_msg)
-                            session_data["last_activity"] = datetime.now()
-                            save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                "session_id": sid,
-                                "username": session.get("username", f"ユーザー{get_next_user_number()}"),
-                                "messages": [user_msg],
-                                "session_active": True,
-                                "last_activity": datetime.now(),
-                                "client_ip": client.client_ip,
-                                "user_agent": client.user_agent,
-                                "user_attributes": session.get("user_attributes", {}),
-                            }
-                            save_session_to_db(sid, session_data)
+                user_msg = append_user_message(session, user_message)
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        if "messages" not in session_data:
+                            session_data["messages"] = []
+                        session_data["messages"].append(user_msg)
+                        session_data["last_activity"] = datetime.now()
+                        save_session_to_db(sid, session_data)
+                    else:
+                        session_data = {
+                            "session_id": sid,
+                            "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+                            "messages": [user_msg],
+                            "session_active": True,
+                            "last_activity": datetime.now(),
+                            "client_ip": client.client_ip,
+                            "user_agent": client.user_agent,
+                            "user_attributes": session.get("user_attributes", {}),
+                        }
+                        save_session_to_db(sid, session_data)
 
                 symptom_type = "inappropriate_request/prevention"
                 conversation_history = (
@@ -227,44 +211,27 @@ def run_triage_follow_ups(
                 inappropriate_request_detected = True
                 logger.info(f"⚠️ 不適切な要求を検出（店舗案内処理の前）: type={request_type}, session_id={sid}")
 
-                if "messages" not in session:
-                    session["messages"] = []
-                # UI表示用には正規化前の元入力（user_message）を使用
-                user_message_exists = any(
-                    msg.get("type") == "user"
-                    and msg.get("content") == user_message
-                    and msg.get("uuid")
-                    for msg in session.get("messages", [])
-                )
-                if not user_message_exists:
-                    user_msg = {
-                        "type": "user",
-                        "content": user_message,
-                        "timestamp": datetime.now().isoformat(),
-                        "uuid": str(uuid.uuid4()),
-                    }
-                    session["messages"].append(user_msg)
-                    session.modified = True
-                    if sid:
-                        session_data = get_session_from_db(sid)
-                        if session_data:
-                            if "messages" not in session_data:
-                                session_data["messages"] = []
-                            session_data["messages"].append(user_msg)
-                            session_data["last_activity"] = datetime.now()
-                            save_session_to_db(sid, session_data)
-                        else:
-                            session_data = {
-                                "session_id": sid,
-                                "username": session.get("username", f"ユーザー{get_next_user_number()}"),
-                                "messages": [user_msg],
-                                "session_active": True,
-                                "last_activity": datetime.now(),
-                                "client_ip": client.client_ip,
-                                "user_agent": client.user_agent,
-                                "user_attributes": session.get("user_attributes", {}),
-                            }
-                            save_session_to_db(sid, session_data)
+                user_msg = append_user_message(session, user_message)
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if session_data:
+                        if "messages" not in session_data:
+                            session_data["messages"] = []
+                        session_data["messages"].append(user_msg)
+                        session_data["last_activity"] = datetime.now()
+                        save_session_to_db(sid, session_data)
+                    else:
+                        session_data = {
+                            "session_id": sid,
+                            "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+                            "messages": [user_msg],
+                            "session_active": True,
+                            "last_activity": datetime.now(),
+                            "client_ip": client.client_ip,
+                            "user_agent": client.user_agent,
+                            "user_attributes": session.get("user_attributes", {}),
+                        }
+                        save_session_to_db(sid, session_data)
 
                 symptom_type = f"inappropriate_request/{request_type}"
                 conversation_history = (

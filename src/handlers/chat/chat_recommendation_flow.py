@@ -25,7 +25,6 @@ from src.services.session_manager import (
     save_session_to_db,
     get_admin_sessions,
     get_manual_reply_queue,
-    remove_duplicate_user_messages_after_ai_response,
 )
 from src.core.medicine_logic import (
     analyze_symptoms_and_medicine_type,
@@ -51,6 +50,9 @@ def run_recommendation_flow(
 ):
     if user_message is None:
         user_message = processed_message or sanitized_message or ""
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "attributes")
     ADMIN_SESSIONS = get_admin_sessions()
     if True:  # main recommendation flow (body is 8-space indented)
         # ステップ0: ユーザー情報登録処理（NLU解析の前に実行）
@@ -764,6 +766,7 @@ def run_recommendation_flow(
         start_time = time.time()
         try:
             logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
+            mark_processing_step(sid, "symptom_analysis")
             analysis_result = analyze_symptoms_and_medicine_type(processed_message, recommendation_client)  # 方言変換後のテキストを使用
                         
             # 診断名が検出された場合の処理（早期リターンでAPIコストを削減）
@@ -1140,6 +1143,8 @@ def run_recommendation_flow(
                     logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
                     user_info['user_preferences'] = None
                             
+                mark_processing_step(sid, "safety")
+                mark_processing_step(sid, "medicine_select")
                 recommendation_result = rule_based_medicine_recommendation(
                     processed_message,  # 方言変換後のテキストを使用
                     user_info, 
@@ -1261,6 +1266,7 @@ def run_recommendation_flow(
                     recommended_medicines = recommendation_result.get('recommended_medicines', [])
                                 
                     # 使用上の注意をChatGPTで自動生成（最適化版）
+                    mark_processing_step(sid, "usage_notes")
                     usage_notes = recommendation_result.get('usage_notes', '')
                     if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
                         # 推奨された医薬品の使用上の注意を一括生成
@@ -1429,37 +1435,48 @@ def run_recommendation_flow(
                         'technical_details': f"ステータス: {status}, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
                     }
             else:
-                # ChatGPTベースのアルゴリズムを使用
-                logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
-                            
-                # ユーザー属性データをセッションから取得
-                user_attributes = session.get('user_attributes', {
-                    'age': None,
-                    'gender': None,
-                    'pregnant': None,
-                    'breastfeeding': None,
-                    'current_medications': [],
-                    'allergies': [],
-                    'medical_history': [],
-                    'symptom_duration_days': None,
-                    'other_info': None
-                })
-                            
-                # ChatGPTベース推奨用のuser_infoを構築
-                user_info = {
-                    'age': user_attributes.get('age'),
-                    'gender': user_attributes.get('gender'),
-                    'pregnant': user_attributes.get('pregnant'),
-                    'breastfeeding': user_attributes.get('breastfeeding'),
-                    'current_medications': user_attributes.get('current_medications', []),
-                    'allergies': user_attributes.get('allergies', []),
-                    'symptom_duration_days': user_attributes.get('symptom_duration_days')
-                }
-                            
-                recommendation_result = comprehensive_medicine_recommendation(user_message)
-                recommendation_result['algorithm'] = 'chatgpt'
-                # API呼び出し回数を記録
-                monitor.increment_api_calls()
+                from config.llm_flags import is_gpt_recommend_fallback_enabled
+                from src.services.budget_guard import get_admin_message
+
+                if is_gpt_recommend_fallback_enabled():
+                    from src.core.medicine_logic import comprehensive_medicine_recommendation
+
+                    logger.info(f"✅ Using ChatGPT-BASED algorithm for {medicine_type}")
+                    user_attributes = session.get('user_attributes', {
+                        'age': None,
+                        'gender': None,
+                        'pregnant': None,
+                        'breastfeeding': None,
+                        'current_medications': [],
+                        'allergies': [],
+                        'medical_history': [],
+                        'symptom_duration_days': None,
+                        'other_info': None
+                    })
+                    recommendation_result = comprehensive_medicine_recommendation(user_message)
+                    recommendation_result['algorithm'] = 'chatgpt'
+                    monitor.increment_api_calls()
+                else:
+                    logger.info(
+                        "⚠️ Unsupported medicine_type for rule_based (%s) — escalation (GPT fallback OFF)",
+                        medicine_type,
+                    )
+                    esc_msg = get_admin_message("unsupported_medicine_type") or (
+                        "お近くの医療機関や薬剤師にご相談ください。"
+                        "当てはまる市販薬の自動提案ができない内容のため、"
+                        "症状の詳細をお知らせいただくか、店頭でご相談ください。"
+                    )
+                    recommendation_result = {
+                        'symptoms': symptoms,
+                        'medicine_type': medicine_type,
+                        'recommended_medicines': [],
+                        'usage_notes': '',
+                        'doctor_consultation': esc_msg,
+                        'escalation': True,
+                        'algorithm': 'rule_based_escalation',
+                        'status': 'escalation_required',
+                        'reason': esc_msg,
+                    }
                             
                 # ChatGPTベースでも個別の医薬品の使用上の注意を表示
                 recommended_medicines = recommendation_result.get('recommended_medicines', [])
@@ -2339,6 +2356,7 @@ def run_recommendation_flow(
                 if detected_language != 'ja' and bot_content:
                     try:
                         logger.info(f"🌍 翻訳開始: {detected_language}")
+                        mark_processing_step(sid, "translate")
                         translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client, session_id=sid)
                         if translated_content and translated_content != bot_content:
                             bot_content = translated_content
@@ -2544,12 +2562,6 @@ def run_recommendation_flow(
                 save_session_to_db(sid, session_data)
                 logger.info(f"💾 メッセージ保存完了: {len(session_data.get('messages', []))} messages")
                             
-                # 医薬品相談回答処理後の重複削除を実行
-                if remove_duplicate_user_messages_after_ai_response(sid):
-                    updated_session = get_session_from_db(sid)
-                    if updated_session:
-                        logger.info(f"✅ 重複削除完了: {len(updated_session.get('messages', []))} messages")
-                            
                 # セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
                 if 'messages' in session:
                     del session['messages']
@@ -2582,5 +2594,6 @@ def run_recommendation_flow(
                 logger.debug(f"  Manual reply {i+1}: {reply.get('content', '')[:50]}...")
         
     # POSTリクエストの場合はJSON形式で成功を返す
+    mark_processing_step(sid, "finalize")
     message_count = len(session.get('messages', []))
     return build_success_response(session, message_count)

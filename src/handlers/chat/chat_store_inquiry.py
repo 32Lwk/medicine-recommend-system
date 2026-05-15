@@ -10,7 +10,11 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from src.services.session_manager import get_session_from_db, save_session_to_db
+from src.services.session_manager import (
+    get_session_from_db,
+    save_session_to_db,
+    append_user_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +42,9 @@ def handle_store_inquiry_response(
     Returns:
         店舗案内として処理した場合は (dict, status)。それ以外は None。
     """
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "store")
     try:
         from src.services.store_inquiry_handler import handle_store_inquiry
     except ImportError as e:
@@ -82,21 +89,7 @@ def _append_store_response_and_return(
     store_inquiry_result: dict,
 ) -> Any:
     """店舗案内のメッセージをセッションに追加し、DB更新して (dict, status) を返す。"""
-    if "messages" not in session:
-        session["messages"] = []
-    user_message_exists = any(
-        msg.get("type") == "user"
-        and msg.get("content") == sanitized_message
-        and msg.get("uuid")
-        for msg in session.get("messages", [])
-    )
-    if not user_message_exists:
-        session["messages"].append({
-            "type": "user",
-            "content": sanitized_message,
-            "timestamp": datetime.now().isoformat(),
-            "uuid": str(uuid.uuid4()),
-        })
+    append_user_message(session, sanitized_message)
 
     response_data = store_inquiry_result.get("response", {})
     simple_message = response_data.get("simple_message", "")

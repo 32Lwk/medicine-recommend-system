@@ -131,9 +131,13 @@ def recommend_otc_medicines_from_summarized(
             for i, (_, row) in enumerate(candidates.iterrows())
         )
     )
+    from src.core.llm_client import chat_completion_create
+
     messages = [{"role": "system", "content": prompt}]
-    response = client.chat.completions.create(
-        model="gpt-4o",
+    response = chat_completion_create(
+        client,
+        model_role="admin",
+        path="medicine_recommendation_gpt.select_otc",
         messages=messages,
         temperature=0,
     )
@@ -177,9 +181,13 @@ def gpt_select_efficacy_candidates(
         "【効能効果リスト】\n"
         + "\n".join(f"{i+1}. {e}" for i, e in enumerate(efficacy_list))
     )
+    from src.core.llm_client import chat_completion_create
+
     messages = [{"role": "system", "content": prompt}]
-    response = client.chat.completions.create(
-        model="gpt-4o",
+    response = chat_completion_create(
+        client,
+        model_role="admin",
+        path="medicine_recommendation_gpt.efficacy_candidates",
         messages=messages,
         temperature=0,
     )
@@ -293,8 +301,12 @@ def recommend_medicines_with_retry(
 - 単一症状の場合は、総合感冒薬よりも特化した医薬品を優先してください
 """
         try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
+            from src.core.llm_client import chat_completion_create
+
+            response = chat_completion_create(
+                client,
+                model_role="admin",
+                path="medicine_recommendation_gpt.recommend_with_retry",
                 messages=[
                     {
                         "role": "system",

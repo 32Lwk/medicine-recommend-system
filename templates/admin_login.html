@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理画面ログイン | 医薬品相談ツール</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .login-box {
+            background: white;
+            padding: 40px 36px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: min(360px, 90vw);
+        }
+        .login-box h2 {
+            margin: 0 0 8px;
+            color: #1e3a5f;
+            font-size: 1.25rem;
+        }
+        .login-box p {
+            margin: 0 0 24px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #444;
+            font-size: 0.85rem;
+        }
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2d6a4f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover { background: #1b4332; }
+        .error {
+            background: #fde8e8;
+            color: #b91c1c;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <form class="login-box" method="post" action="/admin/login">
+        <h2>管理画面ログイン</h2>
+        <p>ユーザー名とパスワードを入力してください。</p>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        <label for="username">ユーザー名</label>
+        <input id="username" type="text" name="username" value="admin" autocomplete="username" required>
+        <label for="password">パスワード</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required autofocus>
+        <button type="submit">ログイン</button>
+    </form>
+</body>
+</html>

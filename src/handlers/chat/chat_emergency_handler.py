@@ -15,6 +15,7 @@ from src.services.session_manager import (
     set_manual_reply_queue,
     get_session_from_db,
     save_session_to_db,
+    append_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,9 @@ def handle_emergency_if_detected(
     Returns:
         緊急事案として処理した場合は (dict, status)。そうでなければ None。
     """
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "emergency")
     try:
         from src.services.store_emergency_handler import handle_store_emergency
     except ImportError as e:
@@ -62,21 +66,7 @@ def handle_emergency_if_detected(
 
     logger.warning(f"🚨 緊急事案を検出: {emergency_result.get('emergency_type')}")
 
-    if "messages" not in session:
-        session["messages"] = []
-    user_message_exists = any(
-        msg.get("type") == "user"
-        and msg.get("content") == sanitized_message
-        and msg.get("uuid")
-        for msg in session.get("messages", [])
-    )
-    if not user_message_exists:
-        session["messages"].append({
-            "type": "user",
-            "content": sanitized_message,
-            "timestamp": datetime.now().isoformat(),
-            "uuid": str(uuid.uuid4()),
-        })
+    append_user_message(session, sanitized_message)
 
     emergency_type = emergency_result.get("emergency_type")
     emergency_response = emergency_result.get("response", {})

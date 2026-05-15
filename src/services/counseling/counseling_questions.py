@@ -90,14 +90,15 @@ def generate_supportive_question(
 【質問を生成してください】
 """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_questions",
+            [
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。支援的で親しみやすい質問を生成してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.7,
-            max_tokens=100
+            max_tokens=100,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
