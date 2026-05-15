@@ -11,6 +11,7 @@ LLMトリアージモジュール
 import json
 import logging
 import re
+import time
 from typing import Dict, Optional, List
 from openai import OpenAI
 
@@ -288,28 +289,43 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
             "reasoning": f"キーワードマッチングにより{drug_type}薬物を検出"
         }
     
+    from src.services.budget_guard import check_llm_allowed
+
+    allowed, _ = check_llm_allowed()
+    if not allowed:
+        return {
+            "category": "Other",
+            "confidence": 1.0,
+            "subcategory": "system/budget_blocked",
+            "requires_immediate_action": False,
+            "reasoning": "OpenAI monthly budget limit reached",
+        }
+
     # キャッシュをチェック（完全一致のみ）
     if use_cache:
         cache_key = user_text.strip()
         if cache_key in _triage_cache:
             logger.debug(f"💾 キャッシュからLLMトリアージ結果を取得: {cache_key[:50]}...")
             return _triage_cache[cache_key].copy()
-    
+
     try:
-        # 第一段階：5つのカテゴリに分類
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="triage",
+            path="llm_triage.stage1",
             messages=[
                 {"role": "system", "content": "あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。"},
-                {"role": "user", "content": f"{FIRST_STAGE_TRIAGE_PROMPT}\n\n【ユーザーの入力】\n{user_text}"}
+                {"role": "user", "content": f"{FIRST_STAGE_TRIAGE_PROMPT}\n\n【ユーザーの入力】\n{user_text}"},
             ],
             temperature=0.1,
             max_tokens=300,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
-        
+
         content = response.choices[0].message.content
-        
+
         # JSONをパース
         try:
             first_stage_result = json.loads(content)
@@ -347,17 +363,19 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
         # 第二段階：Otherカテゴリの場合は詳細分類を実行
         if category == "Other":
             try:
-                second_response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                second_response = chat_completion_create(
+                    client,
+                    model_role="triage",
+                    path="llm_triage.stage2",
                     messages=[
                         {"role": "system", "content": "あなたは薬剤師です。Otherカテゴリに分類された入力を詳細に分類してください。"},
-                        {"role": "user", "content": f"{SECOND_STAGE_OTHER_PROMPT}\n\n【ユーザーの入力】\n{user_text}"}
+                        {"role": "user", "content": f"{SECOND_STAGE_OTHER_PROMPT}\n\n【ユーザーの入力】\n{user_text}"},
                     ],
                     temperature=0.1,
                     max_tokens=200,
-                    response_format={"type": "json_object"}
+                    response_format={"type": "json_object"},
                 )
-                
+
                 second_content = second_response.choices[0].message.content
                 
                 # JSONをパース

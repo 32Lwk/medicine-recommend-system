@@ -747,8 +747,12 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
 """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="nlu_service.extract_symptoms",
             messages=[
                 {"role": "system", "content": """あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。
 

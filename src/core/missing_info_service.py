@@ -86,17 +86,21 @@ def generate_symptom_detail_questions_with_gpt(
 """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="missing_info_service",
             messages=[
                 {
                     "role": "system",
-                    "content": "あなたは医薬品推奨システムの質問生成アシスタントです。症状の詳細を把握するための適切な質問を生成してください。"
+                    "content": "あなたは医薬品推奨システムの質問生成アシスタントです。症状の詳細を把握するための適切な質問を生成してください。",
                 },
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.3,
-            max_tokens=300
+            max_tokens=300,
         )
 
         result = response.choices[0].message.content.strip()

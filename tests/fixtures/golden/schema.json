@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GoldenTestCase",
+  "type": "object",
+  "required": ["input_text", "expected_category"],
+  "properties": {
+    "input_text": {"type": "string", "minLength": 1},
+    "expected_category": {
+      "type": "string",
+      "enum": ["Physical", "Emotional", "Emergency", "Ask", "Other"]
+    },
+    "expected_subcategory": {"type": "string"},
+    "expected_medicines": {
+      "type": "array",
+      "items": {"type": "string"},
+      "maxItems": 3
+    },
+    "source": {"type": "string", "enum": ["pharmacist", "developer", "template"]},
+    "notes": {"type": "string"}
+  }
+}

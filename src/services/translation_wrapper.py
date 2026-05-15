@@ -99,14 +99,21 @@ class TranslationService:
         else:
             max_tokens = 3000
         
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="nlu",
+            path="translation_wrapper",
             messages=[
-                {"role": "system", "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology and preserving all HTML structure and tags."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "You are a medical translator specializing in medicine recommendations. Translate accurately while maintaining medical terminology and preserving all HTML structure and tags.",
+                },
+                {"role": "user", "content": prompt},
             ],
             temperature=0.1,
-            max_tokens=max_tokens
+            max_tokens=max_tokens,
         )
         
         return response.choices[0].message.content.strip()

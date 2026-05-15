@@ -1,0 +1,216 @@
+"""
+トリアージ後のカテゴリ別ルーティング（Emotional / Physical / Ask）
+"""
+from __future__ import annotations
+
+import logging
+import traceback
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, Optional, Tuple
+
+from openai import OpenAI
+
+from src.handlers.chat.chat_ask_route import route_ask_category
+from src.handlers.chat.chat_emotional_route import handle_emotional_category
+from src.handlers.chat.chat_physical_route import (
+    apply_menstrual_physical_override,
+    prepare_physical_category,
+)
+from src.services.session_manager import save_session_to_db
+
+logger = logging.getLogger(__name__)
+
+ResponseTuple = Tuple[dict, int]
+
+
+@dataclass
+class CategoryRouteResult:
+    """カテゴリルート結果"""
+
+    response: Optional[ResponseTuple] = None
+    category: str = "Other"
+    sanitized_message: str = ""
+    user_message: str = ""
+    is_question: Optional[bool] = None
+    triage_result: Optional[Dict[str, Any]] = field(default_factory=dict)
+
+
+def route_triage_category(
+    session: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    triage_result: Dict[str, Any],
+    recommendation_client: OpenAI,
+    *,
+    inappropriate_request_detected: bool,
+    has_sleepiness_keyword: bool = False,
+    has_insomnia_keyword: bool = False,
+    is_question: Optional[bool] = None,
+) -> CategoryRouteResult:
+    """
+    ステップ4: カテゴリ別分岐（不適切要求・Emotional・Physical・Ask）。
+    """
+    category = triage_result.get("category", "Other")
+    subcategory = (triage_result.get("subcategory") or "").lower()
+    confidence = float(triage_result.get("confidence", 1.0))
+
+    if category == "Other" and "inappropriate_request" in subcategory and not inappropriate_request_detected:
+        early = _handle_inappropriate_from_triage(
+            session,
+            sid,
+            user_message,
+            sanitized_message,
+            triage_result,
+            recommendation_client,
+            category=category,
+            confidence=confidence,
+        )
+        if early is not None:
+            return CategoryRouteResult(response=early)
+
+    category = apply_menstrual_physical_override(category, sanitized_message)
+
+    if category == "Emotional":
+        emo_resp = handle_emotional_category(
+            session,
+            sid,
+            user_message,
+            sanitized_message,
+            triage_result,
+            recommendation_client,
+            has_sleepiness_keyword=has_sleepiness_keyword,
+            has_insomnia_keyword=has_insomnia_keyword,
+        )
+        if emo_resp is not None:
+            return CategoryRouteResult(response=emo_resp)
+
+    elif category == "Physical":
+        phys = prepare_physical_category(
+            session,
+            sanitized_message,
+            user_message,
+            category,
+            recommendation_client,
+            sid,
+            is_question=is_question,
+        )
+        return CategoryRouteResult(
+            category=phys.category,
+            sanitized_message=phys.sanitized_message,
+            user_message=phys.user_message,
+            is_question=phys.is_question,
+            triage_result=triage_result,
+        )
+
+    elif category == "Ask":
+        ask = route_ask_category(
+            session,
+            sid,
+            user_message,
+            sanitized_message,
+            triage_result,
+            recommendation_client,
+        )
+        if ask.response is not None:
+            return CategoryRouteResult(response=ask.response)
+        return CategoryRouteResult(
+            category=ask.category,
+            sanitized_message=ask.sanitized_message,
+            user_message=ask.user_message,
+            is_question=ask.is_question,
+            triage_result=ask.triage_result or triage_result,
+        )
+
+    return CategoryRouteResult(
+        category=category,
+        sanitized_message=sanitized_message,
+        user_message=user_message,
+        is_question=is_question,
+        triage_result=triage_result,
+    )
+
+
+def _handle_inappropriate_from_triage(
+    session: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    triage_result: Dict[str, Any],
+    recommendation_client: OpenAI,
+    *,
+    category: str,
+    confidence: float,
+) -> Optional[ResponseTuple]:
+    try:
+        from src.services.counseling_response import (
+            detect_inappropriate_request,
+            generate_counseling_response,
+            generate_follow_up_questions,
+            log_counseling_response,
+            start_counseling_mode,
+        )
+
+        request_type = detect_inappropriate_request(sanitized_message, triage_result)
+        if not request_type:
+            return None
+
+        symptom_type = f"inappropriate_request/{request_type}"
+        conversation_history = (
+            session.get("messages", [])[-10:]
+            if len(session.get("messages", [])) > 10
+            else session.get("messages", [])
+        )
+        initial_response = generate_counseling_response(
+            symptom_type,
+            sanitized_message,
+            recommendation_client,
+            conversation_history=conversation_history,
+            session_id=sid,
+        )
+        initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
+
+        if request_type not in ("illegal", "controlled"):
+            start_counseling_mode(session, symptom_type, initial_questions)
+
+        session.setdefault("inappropriate_requests", []).append({
+            "type": request_type,
+            "timestamp": datetime.now().isoformat(),
+            "user_message": sanitized_message,
+        })
+
+        session.setdefault("messages", []).append({
+            "type": "bot",
+            "content": initial_response,
+            "counseling": request_type not in ("illegal", "controlled"),
+            "inappropriate_request": True,
+            "request_type": request_type,
+            "timestamp": datetime.now().isoformat(),
+        })
+
+        log_counseling_response(
+            session_id=sid,
+            response_content=initial_response,
+            response_type="counseling_inappropriate_request",
+            category=category,
+            confidence=confidence,
+            counseling_mode=session.get("counseling_mode"),
+            user_input=user_message,
+            conversation_history=None,
+        )
+
+        logger.warning("⚠️ 不適切な要求検出: type=%s, session_id=%s", request_type, sid)
+        if hasattr(session, "modified"):
+            session.modified = True
+        save_session_to_db(sid, session)
+        return ({
+            "response": initial_response,
+            "questions": initial_questions if request_type not in ("illegal", "controlled") else [],
+            "counseling": request_type not in ("illegal", "controlled"),
+            "inappropriate_request": True,
+        }, 200)
+    except Exception as e:
+        logger.error("❌ 不適切な要求処理エラー: %s", e)
+        traceback.print_exc()
+        return None

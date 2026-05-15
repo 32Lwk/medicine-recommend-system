@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('aiControlBtn').addEventListener('click', function() {
         showModal('aiControlModal');
-        // モーダル表示時にメッセージを読み込む
         loadManualReplyMessage();
+        loadLlmSystemMessages();
     });
     
     document.getElementById('systemStatusBtn').addEventListener('click', function() {
@@ -967,6 +967,7 @@ function renderCurrentSession(sessionData) {
 }
 
 function loadChatHistory(sessionId) {
+    startAdminProcessingPoll(sessionId);
     // ローディング表示
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = `
@@ -2637,12 +2638,27 @@ function refreshSessionList() {
             if (tabletTotalSessions) tabletTotalSessions.textContent = totalSessions;
             
             console.log('Session list refresh completed');
+            if (currentSessionId) {
+                refreshAdminProcessingBannerOnce(currentSessionId);
+            }
         })
         .catch(error => {
             console.error('Session list error:', error);
             renderSessionList([]);
             document.getElementById('total-sessions').textContent = '0';
         });
+}
+
+function refreshAdminProcessingBannerOnce(sessionId) {
+    if (!sessionId) return;
+    const url = '/api/processing-status?session_id=' + encodeURIComponent(sessionId);
+    fetch(url, { credentials: 'include', headers: { 'Cache-Control': 'no-cache' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (currentSessionId !== sessionId) return;
+            updateAdminProcessingBanner(data || { active: false });
+        })
+        .catch(function () { /* ignore */ });
 }
 
 // セッション検索機能
@@ -5395,3 +5411,154 @@ renderQueue = function(queue) {
 // };
 
 // ページ読み込み時のモバイル要素の表示/非表示は、最初のDOMContentLoadedイベントリスナーで処理される
+
+function loadLlmSystemMessages() {
+    fetch('/admin/llm_settings', { headers: { 'Cache-Control': 'no-cache' } })
+        .then(r => r.json())
+        .then(data => {
+            const msgs = (data.settings && data.settings.messages) || {};
+            const elBudget = document.getElementById('msgBudgetHardStop');
+            const elUnsup = document.getElementById('msgUnsupportedType');
+            const elMail = document.getElementById('llmAlertEmail');
+            if (elBudget) elBudget.value = msgs.budget_hard_stop || '';
+            if (elUnsup) elUnsup.value = msgs.unsupported_medicine_type || '';
+            if (elMail) {
+                elMail.value = (data.settings && data.settings.alert_email) || 'yuto.k051028@gmail.com';
+            }
+        })
+        .catch(err => {
+            console.error('loadLlmSystemMessages', err);
+            showNotification('システム文案の読み込みに失敗しました', 'error');
+        });
+}
+
+function saveLlmSystemMessages() {
+    const payload = {
+        alert_email: document.getElementById('llmAlertEmail')?.value || 'yuto.k051028@gmail.com',
+        messages: {
+            budget_hard_stop: document.getElementById('msgBudgetHardStop')?.value || '',
+            unsupported_medicine_type: document.getElementById('msgUnsupportedType')?.value || '',
+        },
+    };
+    fetch('/admin/llm_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+        .then(r => r.json())
+        .then(() => showNotification('システム文案を保存しました', 'success'))
+        .catch(err => {
+            console.error('saveLlmSystemMessages', err);
+            showNotification('保存に失敗しました', 'error');
+        });
+}
+
+window.loadLlmSystemMessages = loadLlmSystemMessages;
+window.saveLlmSystemMessages = saveLlmSystemMessages;
+
+function loadLlmSettings() {
+    fetch('/admin/llm_settings')
+        .then(r => r.json())
+        .then(data => {
+            const msgs = (data.settings && data.settings.messages) || {};
+            const elBudget = document.getElementById('msgBudgetHardStop');
+            const elUnsup = document.getElementById('msgUnsupportedType');
+            const elMail = document.getElementById('llmAlertEmail');
+            if (elBudget) elBudget.value = msgs.budget_hard_stop || '';
+            if (elUnsup) elUnsup.value = msgs.unsupported_medicine_type || '';
+            if (elMail) elMail.value = (data.settings && data.settings.alert_email) || '';
+            return fetch('/admin/golden_cases');
+        })
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('goldenCasesList');
+            if (!list) return;
+            const cases = data.cases || [];
+            list.innerHTML = cases.length
+                ? cases.slice(0, 20).map(c => `<div style="padding:4px 0;border-bottom:1px solid #eee;">#${c.id} [${c.expected_category}] ${(c.input_text || '').slice(0, 60)}</div>`).join('')
+                : '<p>登録ケースなし（DB未接続時は空）</p>';
+        })
+        .catch(err => console.error('loadLlmSettings', err));
+}
+
+function saveLlmSettings() {
+    const payload = {
+        alert_email: document.getElementById('llmAlertEmail')?.value || '',
+        messages: {
+            budget_hard_stop: document.getElementById('msgBudgetHardStop')?.value || '',
+            unsupported_medicine_type: document.getElementById('msgUnsupportedType')?.value || '',
+        },
+    };
+    fetch('/admin/llm_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+        .then(r => r.json())
+        .then(() => alert('LLM設定を保存しました'))
+        .catch(err => alert('保存に失敗しました: ' + err));
+}
+
+function addGoldenCase() {
+    const input_text = document.getElementById('goldenInputText')?.value?.trim();
+    const expected_category = document.getElementById('goldenCategory')?.value;
+    if (!input_text) {
+        alert('入力文を入力してください');
+        return;
+    }
+    fetch('/admin/golden_cases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input_text, expected_category, source: 'pharmacist' }),
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                document.getElementById('goldenInputText').value = '';
+                loadLlmSettings();
+                alert('ゴールデンケースを追加しました (id=' + data.id + ')');
+            } else {
+                alert('追加失敗: ' + (data.message || 'unknown'));
+            }
+        })
+        .catch(err => alert('追加失敗: ' + err));
+}
+
+function updateAdminProcessingBanner(data) {
+    const banner = document.getElementById('ai-processing-banner');
+    if (!banner) return;
+    if (!data || !data.active) {
+        banner.classList.remove('active');
+        banner.innerHTML = '';
+        return;
+    }
+    banner.classList.add('active');
+    if (window.ProcessingStatus && ProcessingStatus.renderProcessingStatus) {
+        ProcessingStatus.renderProcessingStatus(banner, data);
+    } else {
+        banner.textContent = data.label || 'AI処理中...';
+    }
+}
+
+function startAdminProcessingPoll(sessionId) {
+    if (!sessionId || !window.ProcessingStatus || !ProcessingStatus.startProcessingPoll) {
+        return;
+    }
+    refreshAdminProcessingBannerOnce(sessionId);
+    ProcessingStatus.startProcessingPoll({
+        sessionId: sessionId,
+        adminSession: true,
+        interval: 1000,
+        onUpdate: function (data) {
+            if (currentSessionId !== sessionId) return;
+            updateAdminProcessingBanner(data);
+        }
+    });
+}
+
+function stopAdminProcessingPoll() {
+    if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
+        ProcessingStatus.stopProcessingPoll();
+    }
+    updateAdminProcessingBanner(null);
+}

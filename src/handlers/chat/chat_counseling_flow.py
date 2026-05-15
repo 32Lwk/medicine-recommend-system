@@ -30,6 +30,9 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         (response, triage_result): レスポンスを返す場合は ((dict, status), triage_result)、
         後続の推奨フローに回す場合は (None, triage_result)。
     """
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "counseling")
     counseling_mode = session.get("counseling_mode", {})
     if not counseling_mode.get("active"):
         return (None, triage_result)

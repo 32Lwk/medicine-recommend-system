@@ -160,14 +160,18 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
 {caffeine_instruction}
 """
 
-        response = client.chat.completions.create(
-            model="gpt-4",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="explain",
+            path="explanation_generator.usage_notes",
             messages=[
                 {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             max_tokens=1200,
-            temperature=0.7
+            temperature=0.7,
         )
 
         usage_notes = response.choices[0].message.content.strip()
@@ -325,14 +329,18 @@ def generate_individual_usage_notes_with_gpt(
 """
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="explain",
+            path="explanation_generator.individual_usage",
             messages=[
                 {"role": "system", "content": "あなたは登録販売者です。効能は詳細に、用法用量の注意は簡潔に要約してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.2,
-            max_tokens=300
+            max_tokens=300,
         )
 
         result = response.choices[0].message.content
@@ -469,15 +477,19 @@ def generate_usage_notes_and_consultation_with_gpt(
 {symptoms_context and f'ユーザーの症状に合わせた注意事項を含めてください。' or ''}"""
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        from src.core.llm_client import chat_completion_create
+
+        response = chat_completion_create(
+            client,
+            model_role="explain",
+            path="explanation_generator.batch_usage_notes",
             messages=[
                 {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             temperature=0.1,
             max_tokens=600,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
 
         result_text = response.choices[0].message.content

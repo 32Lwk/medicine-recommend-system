@@ -69,14 +69,15 @@ def generate_counseling_summary(
     """
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_summary",
+            [
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。総合的な返信を生成してください。返信は200文字以内に収めてください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.7,
-            max_tokens=200  # 200文字に制限（日本語は1文字≈1トークン）
+            max_tokens=200,
         )
         
         response_text = response.choices[0].message.content.strip()

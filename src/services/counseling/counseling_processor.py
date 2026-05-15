@@ -128,15 +128,17 @@ def process_counseling_answer(
     """
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        from src.services.counseling.counseling_llm import counseling_chat
+        response = counseling_chat(
+            client,
+            "counseling_processor",
+            [
                 {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の文脈を理解し、ユーザーの回答を正確に解釈してください。"},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.1,
             max_tokens=500,
-            response_format={"type": "json_object"}
+            temperature=0.1,
+            response_format={"type": "json_object"},
         )
         
         # 回答を解釈
@@ -295,14 +297,15 @@ def process_counseling_answer(
 【返信を生成してください】
 """
             try:
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
+                from src.services.counseling.counseling_llm import counseling_chat
+                response = counseling_chat(
+                    client,
+                    "counseling_processor.insomnia_reply",
+                    [
                         {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。会話の流れを考慮した簡潔な返信を生成してください。"},
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": prompt},
                     ],
-                    temperature=0.7,
-                    max_tokens=200
+                    max_tokens=200,
                 )
                 counseling_response_text = response.choices[0].message.content.strip()
             except Exception as e:
