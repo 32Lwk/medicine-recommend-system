@@ -15,7 +15,8 @@ from src.core.language_utils import detect_language
 from src.core.medicine_logic import select_symptoms_via_gpt
 from src.handlers.chat.chat_recommendation_flow import run_recommendation_flow
 from src.services.analytics import log_access_analytics
-from src.services.budget_guard import maybe_alert_session_cost, get_session_cost_jpy
+from src.services.budget_guard import maybe_alert_session_cost
+from src.services.llm_metrics import get_session_cost_jpy
 from src.services.session_manager import get_session_from_db, save_session_to_db
 from src.utils.performance_monitor import log_performance_metrics
 from src.utils.request_logger import log_medicine_logic_call

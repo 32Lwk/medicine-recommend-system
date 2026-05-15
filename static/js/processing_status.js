@@ -4,10 +4,16 @@
 (function (global) {
     'use strict';
 
-    var pollTimer = null;
-    var pollSessionId = null;
-    var pollUseAdminSession = false;
-    var pollOnUpdate = null;
+    var pollRoot = global.__mrcProcessingPoll = global.__mrcProcessingPoll || {
+        timer: null,
+        sessionId: null,
+        useAdminSession: false,
+        onUpdate: null,
+        onInactive: null,
+        hasSeenActive: false,
+        inactiveStreak: 0,
+        generation: 0,
+    };
     var lastRenderedKey = '';
     var lastApiLanguage = null;
     var INPUT_LANG_KEY = 'processingInputLanguage';
@@ -228,13 +234,14 @@
             percent: data.percent,
             language: lang,
             badge: locale.badge,
-            progressAria: locale.progressAria
+            progressAria: locale.progressAria,
+            advice_preview: data.advice_preview || ''
         };
     }
 
     function statusKey(data) {
         if (!data || !data.active) return 'inactive';
-        return [getCurrentLang(data), data.step_id, data.step, data.percent, data.label].join(':');
+        return [getCurrentLang(data), data.step_id, data.step, data.percent, data.label, data.advice_preview || ''].join(':');
     }
 
     function buildProcessingCardElement(label, step, total, percent, badge, progressAria) {
@@ -334,6 +341,18 @@
         }
         if (!wrapper) return;
 
+        var previewEl = wrapper.querySelector('.processing-advice-preview');
+        if (localized.advice_preview) {
+            if (!previewEl) {
+                previewEl = document.createElement('div');
+                previewEl.className = 'processing-advice-preview';
+                wrapper.appendChild(previewEl);
+            }
+            previewEl.textContent = localized.advice_preview;
+        } else if (previewEl) {
+            previewEl.remove();
+        }
+
         if (key !== lastRenderedKey || !wrapper.querySelector('.processing-status-label')) {
             mountProcessingCard(wrapper, label, step, total, percent, badge, progressAria);
             lastRenderedKey = key;
@@ -357,16 +376,54 @@
         lastRenderedKey = key;
     }
 
+    function shouldStopPollingForInactive() {
+        if (pollRoot.hasSeenActive && pollRoot.inactiveStreak >= 2) {
+            return true;
+        }
+        if (!pollRoot.hasSeenActive && pollRoot.inactiveStreak >= 3) {
+            return true;
+        }
+        return false;
+    }
+
+    function finishPollingInactive() {
+        var cb = pollRoot.onInactive;
+        var hadActive = pollRoot.hasSeenActive;
+        stopProcessingPoll();
+        if (typeof cb === 'function') {
+            try {
+                cb({ hasSeenActive: hadActive });
+            } catch (e) { /* ignore */ }
+        }
+    }
+
     function pollOnce() {
+        if (!pollRoot.timer) {
+            return;
+        }
+        var gen = pollRoot.generation;
         var url = '/api/processing-status';
-        if (pollUseAdminSession && pollSessionId) {
-            url += '?session_id=' + encodeURIComponent(pollSessionId);
+        if (pollRoot.useAdminSession && pollRoot.sessionId) {
+            url += '?session_id=' + encodeURIComponent(pollRoot.sessionId);
         }
         fetch(url, { credentials: 'include', headers: { 'Cache-Control': 'no-cache' } })
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (data) {
-                if (typeof pollOnUpdate === 'function') {
-                    pollOnUpdate(localizeStatusData(data || { active: false }) || { active: false });
+                if (!pollRoot.timer || gen !== pollRoot.generation) {
+                    return;
+                }
+                var payload = localizeStatusData(data || { active: false }) || { active: false };
+                if (payload.active) {
+                    pollRoot.hasSeenActive = true;
+                    pollRoot.inactiveStreak = 0;
+                } else {
+                    pollRoot.inactiveStreak += 1;
+                }
+                if (typeof pollRoot.onUpdate === 'function') {
+                    pollRoot.onUpdate(payload);
+                }
+                if (!payload.active && shouldStopPollingForInactive()) {
+                    finishPollingInactive();
                 }
             })
             .catch(function () { /* ignore */ });
@@ -375,26 +432,53 @@
     function startProcessingPoll(options) {
         options = options || {};
         stopProcessingPoll();
-        pollSessionId = options.sessionId || null;
-        pollUseAdminSession = Boolean(options.adminSession);
-        pollOnUpdate = options.onUpdate || null;
+        pollRoot.generation += 1;
+        pollRoot.sessionId = options.sessionId || null;
+        pollRoot.useAdminSession = Boolean(options.adminSession);
+        pollRoot.onUpdate = options.onUpdate || null;
+        pollRoot.onInactive = options.onInactive || null;
+        pollRoot.hasSeenActive = false;
+        pollRoot.inactiveStreak = 0;
         var interval = options.interval || 1000;
+        var maxPolls = options.maxPolls || 180;
+        var pollCount = 0;
         lastRenderedKey = '';
         lastApiLanguage = null;
         pollOnce();
-        pollTimer = setInterval(pollOnce, interval);
+        pollCount += 1;
+        pollRoot.timer = setInterval(function () {
+            pollCount += 1;
+            if (pollCount >= maxPolls) {
+                finishPollingInactive();
+                return;
+            }
+            pollOnce();
+        }, interval);
     }
 
     function stopProcessingPoll() {
-        if (pollTimer) {
-            clearInterval(pollTimer);
-            pollTimer = null;
+        pollRoot.generation += 1;
+        if (pollRoot.timer) {
+            clearInterval(pollRoot.timer);
+            pollRoot.timer = null;
         }
-        pollSessionId = null;
-        pollUseAdminSession = false;
-        pollOnUpdate = null;
+        pollRoot.sessionId = null;
+        pollRoot.useAdminSession = false;
+        pollRoot.onUpdate = null;
+        pollRoot.onInactive = null;
+        pollRoot.hasSeenActive = false;
+        pollRoot.inactiveStreak = 0;
         lastRenderedKey = '';
         lastApiLanguage = null;
+    }
+
+    if (typeof document !== 'undefined') {
+        document.addEventListener('DOMContentLoaded', function () {
+            stopProcessingPoll();
+        });
+        window.addEventListener('pagehide', function () {
+            stopProcessingPoll();
+        });
     }
 
     global.ProcessingStatus = {

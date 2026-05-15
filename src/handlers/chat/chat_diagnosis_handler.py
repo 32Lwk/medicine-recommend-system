@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
+from src.services.html_formatter import format_diagnosis_notification
 from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
@@ -117,30 +118,15 @@ def handle_diagnosis_if_detected(
             "detected_diagnoses": detected_diagnoses,
             "selected_diagnosis": selected_diagnosis,
         }
-        feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
         bug_report_data_attrs = (
             f'data-user-message="{escaped_user_message}" '
             f'data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
         )
-        bot_content = f"""
-<div class="chat-response error-notification">
-<h4>🏥 診断名が検出されました</h4>
-<div class="error-message-content">{diagnosis_message_html}</div>
-<div class="feedback-buttons">
-    <p class="feedback-question">このメッセージはいかがでしたか？</p>
-    <div class="feedback-buttons-container">
-        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})">
-            適切
-        </button>
-        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})">
-            不適切
-        </button>
-        <button class="bug-report-btn" onclick="handleSecurityReportFromButton(this)" {bug_report_data_attrs}>
-            🐛 不具合報告
-        </button>
-    </div>
-</div>
-</div>"""
+        bot_content = format_diagnosis_notification(
+            diagnosis_message_html,
+            feedback_data,
+            bug_report_attrs=bug_report_data_attrs,
+        )
         bot_response = {
             "type": "bot",
             "content": bot_content,

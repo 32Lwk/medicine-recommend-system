@@ -63,6 +63,7 @@ def configure_logging(log_dir: str = None) -> None:
     """
     ログ設定を行う。
     log_dirが未指定の場合はプロジェクトルートのlog/を使用する。
+    日次 Markdown ログは log/log/yyyy-mm-dd-n.md に出力する。
 
     Args:
         log_dir: ログファイルの出力ディレクトリ
@@ -72,15 +73,51 @@ def configure_logging(log_dir: str = None) -> None:
         log_dir = os.path.join(base_dir, 'log')
 
     os.makedirs(log_dir, exist_ok=True)
+    markdown_log_dir = os.path.join(log_dir, 'log')
+    os.makedirs(markdown_log_dir, exist_ok=True)
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(os.path.join(log_dir, 'app.log'), encoding='utf-8'),
-        ],
+    log_format = '%(asctime)s - %(levelname)s - %(message)s'
+    dev_runtime = is_development_runtime()
+    level = logging.DEBUG if dev_runtime else logging.INFO
+    if os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        level = logging.DEBUG
+
+    root = logging.getLogger()
+    if root.handlers:
+        root.handlers.clear()
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(logging.Formatter(log_format))
+
+    file_handler = logging.FileHandler(
+        os.path.join(log_dir, 'app.log'), encoding='utf-8'
     )
+    file_handler.setFormatter(logging.Formatter(log_format))
+
+    root.setLevel(level)
+    root.addHandler(stream_handler)
+    root.addHandler(file_handler)
+
+    if dev_runtime:
+        from src.utils.daily_markdown_log import (
+            DEFAULT_EXCLUDED_LOGGER_PREFIXES,
+            DailyMarkdownFileHandler,
+        )
+
+        md_level_name = os.getenv("DEV_MARKDOWN_LOG_LEVEL", "INFO").upper()
+        md_level = getattr(logging, md_level_name, logging.INFO)
+        include_scoring = os.getenv(
+            "DEV_MARKDOWN_LOG_INCLUDE_SCORING", ""
+        ).lower() in ("1", "true", "yes")
+        excluded = () if include_scoring else DEFAULT_EXCLUDED_LOGGER_PREFIXES
+
+        md_handler = DailyMarkdownFileHandler(
+            markdown_log_dir,
+            excluded_logger_prefixes=excluded,
+        )
+        md_handler.setFormatter(logging.Formatter(log_format))
+        md_handler.setLevel(md_level)
+        root.addHandler(md_handler)
 
 
 def _normalized_app_env() -> str:

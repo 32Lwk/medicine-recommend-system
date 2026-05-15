@@ -26,6 +26,7 @@ def handle_store_inquiry_response(
     sanitized_message: str,
     recommendation_client: Any,
     triage_result: Optional[dict],
+    display_user_message: Optional[str] = None,
 ) -> Optional[Any]:
     """
     店舗案内・遺失物関連の質問を検出した場合に応答処理を実行し、返却用の Response を返す。
@@ -35,9 +36,10 @@ def handle_store_inquiry_response(
         session: Flaskセッション
         client: クライアント情報（IP / User-Agent）
         sid: セッションID
-        sanitized_message: サニタイズ済みメッセージ
+        sanitized_message: サニタイズ済み・正規化済みメッセージ（検出用）
         recommendation_client: OpenAIクライアント
         triage_result: トリアージ結果
+        display_user_message: UI表示用の元入力（未指定時は sanitized_message）
 
     Returns:
         店舗案内として処理した場合は (dict, status)。それ以外は None。
@@ -66,15 +68,17 @@ def handle_store_inquiry_response(
         f"confidence: {store_inquiry_confidence:.2f}"
     )
 
+    user_content = display_user_message if display_user_message is not None else sanitized_message
+
     if store_inquiry_confidence >= 0.7:
         return _append_store_response_and_return(
-            session, client, sid, sanitized_message, store_inquiry_result
+            session, client, sid, user_content, store_inquiry_result
         )
 
     reasoning = store_inquiry_result.get("reasoning", "")
     if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
         return _append_store_response_and_return(
-            session, client, sid, sanitized_message, store_inquiry_result
+            session, client, sid, user_content, store_inquiry_result
         )
 
     logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
@@ -85,11 +89,11 @@ def _append_store_response_and_return(
     session: Any,
     client: Any,
     sid: Optional[str],
-    sanitized_message: str,
+    display_user_message: str,
     store_inquiry_result: dict,
 ) -> Any:
     """店舗案内のメッセージをセッションに追加し、DB更新して (dict, status) を返す。"""
-    append_user_message(session, sanitized_message)
+    append_user_message(session, display_user_message)
 
     response_data = store_inquiry_result.get("response", {})
     simple_message = response_data.get("simple_message", "")

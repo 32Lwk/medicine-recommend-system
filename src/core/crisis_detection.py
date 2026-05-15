@@ -79,15 +79,29 @@ def detect_crisis_keywords(user_message):
 
     detected_keywords = []
     for keyword in crisis_keywords:
-        if keyword.lower() in user_message_lower:
-            # 「苦しい」は身体的症状の文脈では検出しない
-            if keyword == '苦しい':
-                # 身体的症状の文脈または恋愛文脈の場合は検出しない
-                if has_physical_context or has_romantic_context:
-                    continue
-            detected_keywords.append(keyword)
+        if not _keyword_matches(keyword, user_message_lower):
+            continue
+        # 「苦しい」は身体的症状の文脈では検出しない
+        if keyword == '苦しい':
+            if has_physical_context or has_romantic_context:
+                continue
+        detected_keywords.append(keyword)
 
     return len(detected_keywords) > 0, detected_keywords
+
+
+def _keyword_matches(keyword: str, user_message_lower: str) -> bool:
+    """危機キーワードの部分一致。短い英字は単語境界で誤検出（例: nodo→OD）を防ぐ。"""
+    kw = keyword.lower()
+    if kw.isascii() and len(kw) <= 3:
+        return bool(
+            re.search(
+                r"(?<![a-zA-Z])" + re.escape(kw) + r"(?![a-zA-Z])",
+                user_message_lower,
+                re.IGNORECASE,
+            )
+        )
+    return kw in user_message_lower
 
 
 def get_crisis_support_resources(language='ja'):

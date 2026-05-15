@@ -40,11 +40,16 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
     mark_processing_step(sid, "triage")
     triage_result = None
     try:
-        from src.services.llm_triage import llm_triage
+        from src.agents.triage_agent import run_triage_agent
         from src.services.triage_analytics import log_triage_result
 
+        user_info = session.get("user_attributes") if session else None
         start_time = time.time()
-        triage_result = llm_triage(sanitized_message, recommendation_client)
+        triage_result = run_triage_agent(
+            sanitized_message,
+            recommendation_client,
+            user_info=user_info,
+        )
         processing_time = (time.time() - start_time) * 1000
 
         log_triage_result(
