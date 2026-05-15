@@ -967,7 +967,7 @@ function renderCurrentSession(sessionData) {
 }
 
 function loadChatHistory(sessionId) {
-    startAdminProcessingPoll(sessionId);
+    stopAdminProcessingPoll();
     // ローディング表示
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = `
@@ -1020,11 +1020,13 @@ function loadChatHistory(sessionId) {
                 currentMessages = [];
                 renderChatMessages([]);
             }
+            refreshAdminProcessingPollIfActive(sessionId);
         })
         .catch(error => {
             console.error('Chat history error:', error);
             showNotification('セッション情報取得エラー', 'error');
             renderChatMessages([]);
+            stopAdminProcessingPoll();
         });
 }
 
@@ -5552,8 +5554,28 @@ function startAdminProcessingPoll(sessionId) {
         onUpdate: function (data) {
             if (currentSessionId !== sessionId) return;
             updateAdminProcessingBanner(data);
+        },
+        onInactive: function () {
+            if (currentSessionId !== sessionId) return;
+            updateAdminProcessingBanner({ active: false });
         }
     });
+}
+
+function refreshAdminProcessingPollIfActive(sessionId) {
+    if (!sessionId) return;
+    const url = '/api/processing-status?session_id=' + encodeURIComponent(sessionId);
+    fetch(url, { credentials: 'include', headers: { 'Cache-Control': 'no-cache' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (currentSessionId !== sessionId) return;
+            if (data && data.active) {
+                startAdminProcessingPoll(sessionId);
+            } else {
+                stopAdminProcessingPoll();
+            }
+        })
+        .catch(function () { /* ignore */ });
 }
 
 function stopAdminProcessingPoll() {

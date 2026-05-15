@@ -40,3 +40,27 @@ def test_canary_bucket():
     from config.llm_canary import session_in_canary
 
     assert session_in_canary("test-session-abc", None) in (True, False)
+
+
+def test_responses_api_for_role():
+    from config.llm_config import use_responses_api_for_role
+
+    assert use_responses_api_for_role("triage") is True
+    assert use_responses_api_for_role("counsel") is False
+
+
+def test_prepare_chat_completion_kwargs_gpt5():
+    from src.core.llm_client import _prepare_chat_completion_kwargs
+
+    out = _prepare_chat_completion_kwargs("gpt-5.4-mini", {"max_tokens": 300, "temperature": 0.1})
+    assert "max_tokens" not in out
+    assert out["max_completion_tokens"] == 300
+    assert out["temperature"] == 0.1
+
+
+def test_prepare_chat_completion_kwargs_legacy():
+    from src.core.llm_client import _prepare_chat_completion_kwargs
+
+    out = _prepare_chat_completion_kwargs("gpt-4o-mini", {"max_tokens": 300})
+    assert out["max_tokens"] == 300
+    assert "max_completion_tokens" not in out

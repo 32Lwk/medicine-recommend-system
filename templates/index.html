@@ -31,11 +31,13 @@
             margin: 0 auto; 
             background: #fff; 
             min-height: 100dvh;
-            height: -webkit-fill-available;
+            height: 100dvh;
+            max-height: 100dvh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+            overflow: hidden;
         }
         .chat-header {
             background: #4CAF50;
@@ -53,7 +55,7 @@
             flex: 1;
             overflow-y: auto; 
             padding: 20px;
-            padding-bottom: 120px;
+            padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
             background: rgba(192, 192, 192, 1);
             text-align: left;
             min-height: 0;
@@ -64,7 +66,7 @@
         .season-decoration {
             position: absolute;
             pointer-events: none;
-            z-index: 1; /* メッセージ(z-index: 2)の下に配置 */
+            z-index: 1; /* メッセージ(z-index: 2)の下、入力欄より下 */
             will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -73,14 +75,18 @@
             height: auto;
         }
         .season-decoration.position-right {
-            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
+            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
             right: 20px;
             width: 120px;
+            max-height: min(140px, 22vh);
+            object-fit: contain;
         }
         .season-decoration.position-left {
-            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
+            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
             left: 20px;
             width: 100px;
+            max-height: min(120px, 20vh);
+            object-fit: contain;
         }
         /* 雪のアニメーション */
         .snow-container {
@@ -150,29 +156,33 @@
         }
         @media (max-width: 768px) {
             .chat-messages {
-                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration.position-right {
                 width: 80px;
-                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
                 right: 10px;
+                max-height: min(100px, 18vh);
             }
             .season-decoration.position-left {
                 width: 70px;
-                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
                 left: 10px;
+                max-height: min(90px, 16vh);
             }
         }
         @media (max-width: 480px) {
             .season-decoration.position-right {
                 width: 60px;
-                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
                 right: 5px;
+                max-height: min(80px, 16vh);
             }
             .season-decoration.position-left {
                 width: 50px;
-                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
                 left: 5px;
+                max-height: min(70px, 14vh);
             }
         }
         .chat-input { 
@@ -182,6 +192,7 @@
             flex-shrink: 0;
             position: sticky;
             bottom: 0;
+            z-index: 5;
             width: 100%;
             max-width: 100%;
             margin: 0;
@@ -194,7 +205,7 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260515-4" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260516-2" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
@@ -504,6 +515,7 @@
                 <button type="submit">送信</button>
             </div>
         </form>
+        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 
@@ -511,10 +523,12 @@
         // static/js/main.js から参照（静的JSはJinja変数を展開できないため）
         window.APP_VERSION = {{ version | tojson }};
         window.APP_BASE_PATH = {{ (app_base_path or '') | tojson }};
+        window.CHAT_USE_SSE = true;
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260515-i18n" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260515-submit" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260516-poll-fix2" defer></script>
+    <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260516-tdz-fix" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
@@ -576,7 +590,7 @@
             </div>
             
             <div class="form-group">
-                <label for="attr_duration">症状が続いている期間（いつから？）</label>
+                <label for="attr_duration_date">症状が続いている期間（いつから？）</label>
                 <input type="date" id="attr_duration_date" max="" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;">
                 <small style="color: #666; display: block; margin-top: 5px;">カレンダーから症状が始まった日を選択してください</small>
             </div>
@@ -588,6 +602,7 @@
             
             <button type="submit" class="submit-attributes-btn">📤 送信して再分析</button>
         </form>
+        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 
@@ -656,6 +671,7 @@
             
             <button type="submit" class="submit-attributes-btn">💾 保存</button>
         </form>
+        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 
@@ -683,10 +699,10 @@
 <div id="successModal" class="modal">
     <div class="modal-content success-modal">
         <div class="modal-header">
-            <h3 class="modal-title">✅ 報告ありがとうございます</h3>
+            <h3 class="modal-title" id="successTitle">✅ ありがとうございます</h3>
         </div>
         <div class="modal-body">
-            <p id="successMessage">報告ありがとうございます。報告いただいた内容は早急に修復します。</p>
+            <p id="successMessage"></p>
         </div>
     </div>
 </div>

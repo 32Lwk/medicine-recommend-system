@@ -1,5 +1,5 @@
 """
-質問モード判定・挨拶・医薬品 Q&A・属性抽出（chat_handler から移行）
+質問モード判定・挨拶・医薬品 Q&A・属性抽出
 """
 from __future__ import annotations
 
@@ -8,13 +8,16 @@ import re
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from openai import OpenAI
 
 from src.core.language_utils import detect_language
-from src.core.medicine_logic import chat_with_medicine_context, client as openai_client
-from src.handlers.chat.chat_medicine_qa_html import append_feedback_buttons, build_medicine_qa_html
+from src.core.medicine_logic import (
+    chat_with_medicine_context,
+    client as openai_client,
+    extract_user_attributes_multilingual,
+)
 from src.services.session_manager import get_session_from_db, save_session_to_db
 from src.utils.input_helpers import is_symptom_input, is_operation_command
 
@@ -61,7 +64,7 @@ def handle_question_flow(
     else:
         # フラグが設定されていない場合のみ、通常の判定を実行
         is_question = None  # 未初期化状態
-    
+        
     # まず挨拶を検出（症状検出の前に実行）
     greeting_keywords = [
         'こんにちは', 'こんばんは', 'おはよう', 'おはようございます',
@@ -73,7 +76,7 @@ def handle_question_flow(
         'hello', 'hi', 'good morning', 'good evening', 'good night',
         'thanks', 'thank you', 'bye', 'goodbye'
     ]
-    
+        
     # 症状キーワード（is_symptom_input関数と同じリストを使用）
     symptom_keywords = [
         '痛い', '痛み', '熱', '発熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '嘔吐', '下痢', '便秘',
@@ -82,29 +85,29 @@ def handle_question_flow(
         '寒気', '寒気がする', '寒気がします', '寒気があります', '寒気があり', '寒気が',
         '痺れ', 'しびれ', 'むくみ', '倦怠', '倦怠感', 'だるさ'
     ]
-    
+        
     # 挨拶キーワードが含まれているかチェック
     has_greeting = any(greeting in user_message for greeting in greeting_keywords)
     # 症状キーワードが含まれているかチェック
     has_symptom = any(symptom in user_message for symptom in symptom_keywords)
-    
+        
     # 質問か症状入力かを判定（フラグが設定されていない場合のみ）
     if is_question is None:
         is_question = not is_symptom_input(user_message)
         logger.info(f"🔍 is_symptom_input判定結果: is_question={is_question}, user_message={user_message}")
     add_reanalysis_message = False  # 再分析メッセージフラグ
     original_user_message = None  # 元のユーザーメッセージ
-    
+        
     # 挨拶のみで症状キーワードが含まれていない場合は質問処理に進む（フラグが設定されていない場合のみ）
     if not force_question_mode and has_greeting and not has_symptom:
         is_question = True
         logger.info(f"🔍 挨拶検出により、is_question=Trueに設定: {user_message}")
-    
+        
     # フラグが設定されている場合は、is_questionをTrueに固定（後続処理で変更されないようにする）
     if force_question_mode:
         is_question = True
         logger.info(f"🔍 フラグ固定により、is_question=Trueに再設定: {user_message}")
-    
+        
     logger.info(f"🔍 is_question最終判定: is_question={is_question}, force_question_mode={force_question_mode}, user_message={user_message}")
     if pending_route_is_question is not None:
         is_question = pending_route_is_question
@@ -113,11 +116,11 @@ def handle_question_flow(
         # システム紹介質問を検出
         system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能', '自己紹介']
         is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
-    
+            
         # 医薬品名検索を検出
         medicine_search_keywords = ['の薬', '薬を', '医薬品', 'について教えて', 'を教えて', 'お勧め', 'おすすめ']
         is_medicine_search = any(keyword in user_message for keyword in medicine_search_keywords)
-    
+            
         # 質問かどうかを判定（質問キーワードがあるか確認）
         has_question_keyword = False
         question_keywords = [
@@ -144,12 +147,12 @@ def handle_question_flow(
             if keyword in user_message:
                 has_question_keyword = True
                 break
-    
+            
         # 挨拶のみの場合は挨拶への返答を生成
         if has_greeting and not has_symptom and not (is_system_intro or is_medicine_search or has_question_keyword or
             has_question_suffix or ends_with_question_mark):
             logger.info(f"👋 GREETING DETECTED: {user_message}")
-    
+                
             # 挨拶への返答を生成
             greeting_responses = {
                 'こんにちは': 'こんには！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
@@ -169,14 +172,14 @@ def handle_question_flow(
                 'thanks': "You're welcome! If you have any other questions or symptoms, please feel free to let me know.",
                 'thank you': "You're welcome! If you have any other questions or symptoms, please feel free to let me know."
             }
-    
+                
             # 挨拶に応じた返答を選択（デフォルトは汎用挨拶）
             greeting_response = 'こんにちは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。'
             for greeting_key, response in greeting_responses.items():
                 if greeting_key in user_message.lower():
                     greeting_response = response
                     break
-    
+                
             bot_response = {
                 'type': 'bot',
                 'content': greeting_response,
@@ -184,7 +187,7 @@ def handle_question_flow(
             }
             session['messages'].append(bot_response)
             session.modified = True
-    
+                
             # DB保存処理
             if sid:
                 session_data = get_session_from_db(sid)
@@ -204,16 +207,16 @@ def handle_question_flow(
                     session_data['messages'] = session['messages'].copy()
                     session_data['last_activity'] = datetime.now()
                     save_session_to_db(sid, session_data)
-    
+                
             message_count = len(session['messages'])
             logger.info(f"✅ POST処理完了（挨拶返答） - JSON返却: {message_count} messages")
-            return QuestionFlowResult(response=({
-    
+            return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
+            
         # システム紹介、医薬品検索、明確な質問、または語尾・記号から質問と判断できる場合は質問回答に進む
         if (is_system_intro or is_medicine_search or has_question_keyword or
             has_question_suffix or ends_with_question_mark):
             logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
-    
+                
             # ユーザーメッセージは既に1回目の保存処理で保存済み（重複を避けるため削除）
             # import uuid
             # user_response = {
@@ -224,7 +227,7 @@ def handle_question_flow(
             # }
             # ALL_SESSIONS[sid]['messages'].append(user_response)
             # logger.info(f"💾 ユーザー質問を保存: {user_message}")
-    
+                
             # 質問回答に直接進む
             try:
                 # 最新の推奨医薬品を取得
@@ -236,19 +239,19 @@ def handle_question_flow(
                         if diagnosis.get('recommended_medicines'):
                             latest_recommended_medicines = diagnosis.get('recommended_medicines', [])
                             break
-    
+                    
                 logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
-    
+                    
                 # 会話履歴を取得
                 conversation_history = session_data_for_medicines.get('messages', [])[-10:]
-    
+                    
                 # ChatGPTに質問を送信
                 chat_response = chat_with_medicine_context(
                     user_message, 
                     conversation_history, 
                     latest_recommended_medicines
                 )
-    
+                    
                 # 医薬品質疑応答のログを記録
                 try:
                     from src.utils.structured_logger import log_medicine_question_detail
@@ -259,11 +262,11 @@ def handle_question_flow(
                     )
                 except Exception as e:
                     logger.warning(f"医薬品質疑応答ログ記録エラー: {e}")
-    
+                    
                 # 評価ボタン用のデータを準備
                 import json
                 import html
-    
+                    
                 # HTML整形用ヘルパー関数
                 def safe_format(text):
                     """テキストを安全にHTML表示用に整形"""
@@ -292,7 +295,7 @@ def handle_question_flow(
                     # XSSリスクを防ぐためにエスケープしてから改行を変換
                     escaped = html.escape(text)
                     return escaped.replace("\n", "<br>")
-    
+                    
                 # 回答の全文を作成（全項目を含める）
                 answer_text = safe_format(chat_response.get('answer', '回答を取得できませんでした'))
                 medicine_details = safe_format(chat_response.get('medicine_details', ''))
@@ -300,7 +303,7 @@ def handle_question_flow(
                 doping_check = safe_format(chat_response.get('doping_check', ''))
                 side_effects = safe_format(chat_response.get('side_effects', ''))
                 consultation_advice = safe_format(chat_response.get('consultation_advice', ''))
-    
+                    
                 full_response_html = f"""
     <div class="chat-response">
     <h4>💬 医薬品相談回答</h4>
@@ -316,7 +319,7 @@ def handle_question_flow(
     
     {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
     </div>"""
-    
+                    
                 # デバッグログ：ChatGPT応答の内容確認
                 logger.info("-" * 40)
                 logger.info(f"[DEBUG] ChatGPT response fields:")
@@ -326,21 +329,21 @@ def handle_question_flow(
                 logger.info(f"  - doping_check: {'✓' if doping_check else '✗'} ({len(doping_check) if doping_check else 0} chars)")
                 logger.info(f"  - side_effects: {'✓' if side_effects else '✗'} ({len(side_effects) if side_effects else 0} chars)")
                 logger.info(f"  - consultation_advice: {'✓' if consultation_advice else '✗'} ({len(consultation_advice) if consultation_advice else 0} chars)")
-    
+                    
                 # デバッグログ：HTML構造の整合性確認
                 opening_divs = full_response_html.count('<div')
                 closing_divs = full_response_html.count('</div>')
                 logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
                 logger.info("-" * 40)
-    
+                    
                 # メッセージIDを生成
                 message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
                 logger.info(f"[DEBUG] Generated message_id: {message_id}")
-    
+                    
                 # [SECURITY NOTE]: full_response_html is generated only from safe, pre-sanitized templates.
                 # All user input is escaped via safe_format (html.escape + newline conversion).
                 # Do not re-escape, otherwise structured HTML (icons, sections) will break.
-    
+                    
                 # 評価ボタンを追加（メッセージIDベース方式）
                 bot_content = full_response_html + f"""
     <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
@@ -352,7 +355,7 @@ def handle_question_flow(
     不適切
     </button>
     </div>"""
-    
+                    
                 bot_response = {
                     'type': 'bot',
                     'content': bot_content,
@@ -363,7 +366,7 @@ def handle_question_flow(
                     },
                     'timestamp': datetime.now().isoformat()
                 }
-    
+                    
                 # 質問応答をDBに保存
                 if sid:
                     session_data = get_session_from_db(sid)
@@ -383,13 +386,13 @@ def handle_question_flow(
                     session_data['messages'].append(bot_response)
                     session_data['last_activity'] = datetime.now()
                     save_session_to_db(sid, session_data)
-    
+                    
                 # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
                 if 'messages' in session:
                     del session['messages']
                     session.modified = True
                 logger.info(f"✅ 質問応答完了: {user_message}")
-    
+                    
                 # 質問応答の場合は、user_attributesを初期化してセッションに保存
                 user_attributes = session.get('user_attributes', {
                     'age': None,
@@ -404,12 +407,12 @@ def handle_question_flow(
                 })
                 session['user_attributes'] = user_attributes
                 session.modified = True
-    
+                    
                 # JSONレスポンスを返す
                 updated_session = get_session_from_db(sid) if sid else {}
                 message_count = len(updated_session.get('messages', []))
-                return QuestionFlowResult(response=({
-    
+                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
+                    
             except Exception as e:
                 logger.error(f"❌ 医薬品相談機能実行時エラー: {e}", exc_info=True)
                 bot_response = {
@@ -418,7 +421,7 @@ def handle_question_flow(
                     'diagnosis': None,
                     'timestamp': datetime.now().isoformat()
                 }
-    
+                    
                 # エラー応答をDBに保存
                 if sid:
                     session_data = get_session_from_db(sid)
@@ -432,7 +435,7 @@ def handle_question_flow(
                 if 'messages' in session:
                     del session['messages']
                     session.modified = True
-    
+                    
                 # エラーの場合もuser_attributesを初期化
                 user_attributes = session.get('user_attributes', {
                     'age': None,
@@ -447,54 +450,54 @@ def handle_question_flow(
                 })
                 session['user_attributes'] = user_attributes
                 session.modified = True
-    
+                    
                 # JSONレスポンスを返す
                 updated_session = get_session_from_db(sid) if sid else {}
                 message_count = len(updated_session.get('messages', []))
-                return QuestionFlowResult(response=({
+                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
         else:
             # 操作指示の検出（セキュリティ検証の後）
             if is_operation_command(user_message):
                 logger.info(f"🔄 操作指示を検出: {user_message}")
-    
+                    
                 # セッションから過去の症状文を取得
                 session_messages = session.get('messages', [])
                 previous_symptom_text = None
-    
+                    
                 # 過去のメッセージから症状文を探す（最初のユーザーメッセージ）
                 for msg in session_messages:
                     if msg.get('type') == 'user':
                         previous_symptom_text = msg.get('content', '')
                         break
-    
+                    
                 # 症状文が見つからない場合は、現在のメッセージを症状として扱う
                 if not previous_symptom_text:
                     previous_symptom_text = user_message
-    
+                    
                 # ユーザー属性情報を取得
                 user_attributes = session.get('user_attributes', {})
-    
+                    
                 # 推奨医薬品の再分析を実行
                 # 既存の医薬品推奨処理を再利用するため、user_messageを一時的にprevious_symptom_textに置き換える
                 original_user_message = user_message
                 user_message = previous_symptom_text
                 # sanitized_messageも更新（再分析用）
                 sanitized_message = previous_symptom_text
-    
+                    
                 # 再分析フラグを設定
                 session['is_reanalysis'] = True
                 is_question = False  # 症状分析を強制実行
-    
+                    
                 logger.info(f"🔄 再分析を実行: 症状文={previous_symptom_text[:50]}...")
-    
+                
             # 属性応答の可能性がある場合のみ属性抽出を実行
             logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
-    
+                
             # 言語を検出（すべての入力に対して実行）
             detected_language = detect_language(user_message)
             session['detected_language'] = detected_language
             logger.info(f"🌍 検出された言語: {detected_language}")
-    
+                
             # 初回チャットで症状入力（または症状キーワードを含む）場合は
             # 属性抽出をスキップして症状分析（推奨フロー）に進む
             if len(session.get('messages', [])) <= 1 and (
@@ -506,7 +509,6 @@ def handle_question_flow(
                 )
                 is_question = False  # 症状分析を強制実行
             else:
-                updated = False
                 # ステップ1: 多言語対応ユーザー属性を抽出・更新
                 user_attributes = session.get('user_attributes', {
                     'age': None,
@@ -519,7 +521,7 @@ def handle_question_flow(
                     'symptom_duration_days': None,
                     'other_info': None
                 })
-    
+                    
                 # 多言語対応の属性抽出を実行（言語検出は既に上で実行済み）
                 try:
                     extracted_attrs = extract_user_attributes_multilingual(
@@ -527,9 +529,9 @@ def handle_question_flow(
                         openai_client, 
                         user_attributes
                     )
-    
+                        
                     logger.info(f"🤖 多言語属性抽出結果: {extracted_attrs}")
-    
+                        
                     # 抽出された情報をセッションに保存
                     for key, value in extracted_attrs.items():
                         if value is not None and value != [] and value != "" and key != 'detected_language':
@@ -583,20 +585,20 @@ def handle_question_flow(
                                     r'他に服用.*(?:あり|なし|ありません|ない)'
                                 ]
                                 is_medication_info = any(re.search(pattern, value, re.IGNORECASE) for pattern in medication_patterns)
-    
+                                    
                                 if not is_medication_info:
                                     user_attributes['other_info'] = value
                                     logger.info(f"📝 その他情報を更新: {user_attributes['other_info']}")
                                     updated = True
                                 else:
                                     logger.info(f"📝 薬に関する情報のためother_infoには設定しません: {value}")
-    
+                    
                 except Exception as e:
                     logger.error(f"多言語属性抽出エラー: {e}")
                     logger.info("フォールバック: 正規表現による抽出に切り替えます")
-    
+                        
                     # フォールバック: 正規表現による抽出
-    
+                        
                     # 年齢（日本語と英語）
                     age_match = re.search(r'(\d+)歳', user_message)
                     if age_match:
@@ -610,7 +612,7 @@ def handle_question_flow(
                             user_attributes['age'] = int(age_match_en.group(1))
                             logger.info(f"📝 年齢を更新: {user_attributes['age']}")
                             updated = True
-    
+                        
                     # 性別（日本語と英語）
                     if '男性' in user_message or '男' in user_message or 'male' in user_message.lower():
                         user_attributes['gender'] = '男性'
@@ -620,7 +622,7 @@ def handle_question_flow(
                         user_attributes['gender'] = '女性'
                         logger.info(f"📝 性別を更新: 女性")
                         updated = True
-    
+                        
                     # 妊娠・授乳（フォールバック処理）
                     if '妊娠' in user_message:
                         if any(kw in user_message for kw in ['妊娠していません', '妊娠中ではありません', '妊娠していない', '妊娠してない']):
@@ -630,7 +632,7 @@ def handle_question_flow(
                             user_attributes['pregnant'] = True
                             logger.info(f"📝 妊娠状態を更新: True（妊娠中）")
                         updated = True
-    
+                        
                     if '授乳' in user_message:
                         if '授乳していません' in user_message or '授乳中ではありません' in user_message or '授乳していない' in user_message:
                             user_attributes['breastfeeding'] = False
@@ -639,7 +641,7 @@ def handle_question_flow(
                             user_attributes['breastfeeding'] = True
                             logger.info(f"📝 授乳状態を更新: True（授乳中）")
                         updated = True
-    
+                        
                     # アレルギー（日本語と英語）
                     if 'アレルギー' in user_message or 'allergy' in user_message.lower() or 'allergies' in user_message.lower():
                         if ('ない' in user_message or 'いいえ' in user_message or 'ありません' in user_message or 'なし' in user_message or 
@@ -701,7 +703,7 @@ def handle_question_flow(
                             logger.info(f"📝 症状期間を更新: {user_attributes.get('symptom_duration_days')}日前から")
                             updated = True
                             break
-    
+            
         # 服用中の薬（日本語と英語）
         # 除外パターン：市販薬を探している、薬を探しているなどの文脈を除外
         medication_exclusion_patterns = [
@@ -718,7 +720,7 @@ def handle_question_flow(
             r'相談'
         ]
         is_medication_search = any(re.search(pattern, user_message) for pattern in medication_exclusion_patterns)
-    
+            
         if ('服用している薬はありません' in user_message or '他に服用している薬はありません' in user_message or '薬は飲んでいません' in user_message or
             'not taking' in user_message.lower() or 'no medication' in user_message.lower()):
             user_attributes['current_medications'] = []
@@ -738,7 +740,7 @@ def handle_question_flow(
                 r'medication[:\s]+([^,\n]+)',
                 r'medicine[:\s]+([^,\n]+)'
             ]
-    
+                
             for pattern in medication_patterns:
                 match = re.search(pattern, user_message)
                 if match:
@@ -750,7 +752,7 @@ def handle_question_flow(
                             logger.info(f"📝 服用中の薬を抽出: {medication_name}")
                             updated = True
                             break
-    
+            
         # 既往症の抽出（日本語と英語）
         if ('既往症' in user_message or '病気' in user_message or '疾患' in user_message or
             'history' in user_message.lower() or 'disease' in user_message.lower() or 'condition' in user_message.lower()):
@@ -766,7 +768,7 @@ def handle_question_flow(
                 r'disease[:\s]+([^,\n]+)',
                 r'condition[:\s]+([^,\n]+)'
             ]
-    
+                
             for pattern in history_patterns:
                 match = re.search(pattern, user_message)
                 if match:
@@ -776,7 +778,7 @@ def handle_question_flow(
                         logger.info(f"📝 既往症を抽出: {history_name}")
                         updated = True
                         break
-    
+            
         # その他伝えたいことの抽出（日本語と英語）
         # 薬に関する情報（「他に服用している薬はありません」など）を除外
         medication_exclusion_patterns = [
@@ -787,7 +789,7 @@ def handle_question_flow(
             r'薬.*(?:あり|なし|ありません|ない)'
         ]
         is_medication_message = any(re.search(pattern, user_message, re.IGNORECASE) for pattern in medication_exclusion_patterns)
-    
+            
         if not is_medication_message and ('その他' in user_message or '伝えたい' in user_message or 
             'want to know' in user_message.lower() or 'ask about' in user_message.lower() or 'tell you' in user_message.lower()):
             # その他の情報を抽出（「他に」は薬に関する情報の可能性があるため除外）
@@ -799,7 +801,7 @@ def handle_question_flow(
                 r'ask about\s+([^,\n]+)',
                 r'tell you\s+([^,\n]+)'
             ]
-    
+                
             for pattern in other_patterns:
                 match = re.search(pattern, user_message)
                 if match:
@@ -813,7 +815,7 @@ def handle_question_flow(
                             r'薬.*(?:あり|なし|ありません|ない)'
                         ]
                         is_medication_info = any(re.search(pattern, other_info, re.IGNORECASE) for pattern in medication_patterns)
-    
+                            
                         if not is_medication_info:
                             user_attributes['other_info'] = other_info
                             logger.info(f"📝 その他情報を抽出: {other_info}")
@@ -822,11 +824,11 @@ def handle_question_flow(
                         else:
                             logger.info(f"📝 薬に関する情報のためother_infoには設定しません: {other_info}")
                             break
-    
+            
         # セッションに保存
         session['user_attributes'] = user_attributes
         session.modified = True
-    
+            
         # DBも更新
         sid = session.get('_id')
         if sid:
@@ -835,7 +837,7 @@ def handle_question_flow(
                 session_data['user_attributes'] = user_attributes
                 session_data['last_activity'] = datetime.now()
                 save_session_to_db(sid, session_data)
-    
+            
         # ステップ2: 属性が更新された場合の追加処理
         if updated:
             logger.info("✅ 属性データが更新されました。前回の症状に対して再推奨を実行します。")
@@ -846,7 +848,7 @@ def handle_question_flow(
             symptom_duration = user_attributes.get('symptom_duration_days')
             if symptom_duration and symptom_duration > 7:
                 logger.info(f"⚠️ 症状期間が7日を超えています: {symptom_duration}日")
-    
+                    
                 # ユーザーメッセージをDBに保存（症状期間チェック前に保存）
                 if sid:
                     session_data = get_session_from_db(sid)
@@ -855,7 +857,7 @@ def handle_question_flow(
                         session_data['last_activity'] = datetime.now()
                         save_session_to_db(sid, session_data)
                     logger.info(f"💾 ユーザーメッセージをDBに保存: {len(session['messages'])} messages")
-    
+                    
                 # 医療機関受診案内を追加
                 medical_advice = {
                     'type': 'bot',
@@ -873,16 +875,16 @@ def handle_question_flow(
                         session_data['messages'].append(medical_advice)
                         session_data['last_activity'] = datetime.now()
                         save_session_to_db(sid, session_data)
-    
+                    
                 # 症状期間が7日を超える場合は医薬品推奨を停止
                 logger.info(f"🚫 症状期間が7日を超えるため医薬品推奨を停止します")
                 session.modified = True
                 message_count = len(session['messages'])
-                return QuestionFlowResult(response=({
-    
+                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
+                
             # 属性更新後、前回の症状メッセージを取得して再推奨を実行
             logger.info(f"🔄 属性更新後、前回の症状に対して再推奨を実行します")
-    
+                
             # セッションから前回の症状メッセージを取得
             previous_symptom_message = None
             if sid:
@@ -893,7 +895,7 @@ def handle_question_flow(
                     for msg in reversed(messages):
                         if msg.get('type') == 'user':
                             content = msg.get('content', '')
-    
+                                
                             # 属性情報のみのメッセージを除外（年齢、性別、妊娠、授乳、アレルギー、薬などのみのメッセージ）
                             # 症状キーワードを含むかチェック
                             symptom_keywords = [
@@ -905,7 +907,7 @@ def handle_question_flow(
                                 '遅れ', '不順', '異常', '周期', '来ない', '来ていない'
                             ]
                             has_symptom_keyword = any(keyword in content for keyword in symptom_keywords)
-    
+                                
                             # 属性情報のみのパターンをチェック
                             attribute_only_patterns = [
                                 r'^\d+歳です?[。.]?$',
@@ -917,7 +919,7 @@ def handle_question_flow(
                                 if re.match(pattern, content.strip()):
                                     is_attribute_only = True
                                     break
-    
+                                
                             # 複数の属性情報のみが含まれている場合も除外
                             if not is_attribute_only and not has_symptom_keyword:
                                 attribute_count = 0
@@ -932,17 +934,17 @@ def handle_question_flow(
                                 # 属性情報が2つ以上で、症状キーワードが含まれていない場合は属性情報のみと判断
                                 if attribute_count >= 2:
                                     is_attribute_only = True
-    
+                                
                             if is_attribute_only:
                                 logger.info(f"⏭️ 属性情報のみのメッセージをスキップ: {content[:50]}...")
                                 continue
-    
+                                
                             # 症状キーワードを含むメッセージを探す
                             if has_symptom_keyword:
                                 previous_symptom_message = content
                                 logger.info(f"📋 前回の症状メッセージを取得: {content[:50]}...")
                                 break
-    
+                
             # 前回の症状が見つかった場合、更新された属性情報で再推奨を実行
             if previous_symptom_message:
                 logger.info(f"💊 更新された属性情報で再推奨を開始: {previous_symptom_message[:50]}...")
@@ -961,7 +963,7 @@ def handle_question_flow(
                     'diagnosis': None,
                     'attribute_update_confirmation': True
                 }
-    
+                    
                 # ユーザーメッセージをDBに保存
                 if sid:
                     session_data = get_session_from_db(sid)
@@ -982,23 +984,23 @@ def handle_question_flow(
                     session_data['last_activity'] = datetime.now()
                     save_session_to_db(sid, session_data)
                     logger.info(f"💾 属性更新確認メッセージを保存: {len(session_data.get('messages', []))} messages")
-    
+                    
                 # Cookieサイズ削減（メッセージはDBのみに保存）
                 if 'messages' in session:
                     del session['messages']
                     session.modified = True
                     logger.info(f"📝 Session cookie size reduced - messages only in DB")
-    
+                    
                 # セッションの他の大きなデータも最小限に
                 if sid:
                     session_data = get_session_from_db(sid)
                     if session_data:
                         session_data['last_activity'] = datetime.now()
                         save_session_to_db(sid, session_data)
-    
+                    
                 message_count = len(session_data.get('messages', [])) if sid and session_data else 0
                 logger.info(f"✅ POST処理完了 - 属性更新確認メッセージ返却: {message_count} messages")
-                return QuestionFlowResult(response=({
+                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
         else:
             # 属性が更新されていない場合は通常の質問応答
             logger.info(f"❓ 通常の質問として処理します")
@@ -1024,7 +1026,7 @@ def handle_question_flow(
                     conversation_history,
                     latest_recommended_medicines
                 )
-    
+                    
                 # 医薬品質疑応答のログを記録
                 try:
                     from src.utils.structured_logger import log_medicine_question_detail
@@ -1060,7 +1062,7 @@ def handle_question_flow(
                 if 'messages' in session:
                     del session['messages']
                     session.modified = True
-    
+            
     return QuestionFlowResult(
         is_question=is_question,
         user_message=user_message,

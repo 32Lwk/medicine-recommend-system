@@ -8,11 +8,17 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from openai import AsyncOpenAI, OpenAI
 
-from config.llm_config import get_model, get_openai_api_key, use_responses_api
+from config.llm_config import (
+    get_model,
+    get_openai_api_key,
+    get_role_timeout_sec,
+    use_responses_api,
+    use_responses_api_for_role,
+)
 from src.services.budget_guard import check_llm_allowed
 
 logger = logging.getLogger(__name__)
@@ -45,12 +51,23 @@ class _CompletionAdapter:
     usage: Any
 
 
+def text_completion_adapter(text: str) -> _CompletionAdapter:
+    return _CompletionAdapter(choices=[_Choice(message=_Message(content=text))], usage=None)
+
+
 def _estimate_cost_jpy(model: str, prompt_tokens: int, completion_tokens: int) -> float:
     rate = _COST_PER_1K.get(model, 0.05)
     return (prompt_tokens + completion_tokens) / 1000.0 * rate
 
 
-def _record_response(model: str, path: str, latency_ms: float, response: Any) -> None:
+def _record_response(
+    model: str,
+    path: str,
+    latency_ms: float,
+    response: Any,
+    *,
+    api_kind: Optional[str] = None,
+) -> None:
     from src.services.llm_metrics import record_llm_call
     from src.services.budget_guard import add_monthly_cost
 
@@ -65,7 +82,7 @@ def _record_response(model: str, path: str, latency_ms: float, response: Any) ->
         prompt_tokens=pt,
         completion_tokens=ct,
         cost_jpy=cost,
-        prompt_version="responses" if use_responses_api() else "completions",
+        prompt_version=api_kind or ("responses" if use_responses_api() else "completions"),
     )
     if cost > 0:
         add_monthly_cost(cost)
@@ -75,6 +92,24 @@ def _budget_guard_or_raise():
     allowed, reason = check_llm_allowed()
     if not allowed:
         raise RuntimeError(reason or "llm_budget_blocked")
+
+
+def _uses_max_completion_tokens(model: str) -> bool:
+    """gpt-5 / o 系は Chat Completions で max_tokens 非対応のことがある。"""
+    name = (model or "").strip().lower()
+    if not name:
+        return False
+    if name.startswith("gpt-5") or name.startswith("o1") or name.startswith("o3") or name.startswith("o4"):
+        return True
+    return False
+
+
+def _prepare_chat_completion_kwargs(model: str, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """Chat Completions 向けにトークン上限パラメータを正規化する。"""
+    prepared = dict(kwargs)
+    if "max_tokens" in prepared and _uses_max_completion_tokens(model):
+        prepared["max_completion_tokens"] = prepared.pop("max_tokens")
+    return prepared
 
 
 def _extract_responses_text(resp: Any) -> str:
@@ -110,14 +145,21 @@ def _invoke_llm(
     *,
     model: str,
     messages: List[Dict[str, str]],
+    model_role: Optional[str] = None,
     **kwargs: Any,
 ) -> Any:
-    if use_responses_api():
+    use_resp = use_responses_api() or (
+        model_role is not None and use_responses_api_for_role(model_role)
+    )
+    if model_role:
+        kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
+    if use_resp:
         try:
             return _responses_create(client, model, messages, **kwargs)
         except Exception as e:
             logger.warning("Responses API failed, fallback to Chat Completions: %s", e)
-    return client.chat.completions.create(model=model, messages=messages, **kwargs)
+    chat_kwargs = _prepare_chat_completion_kwargs(model, kwargs)
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs)
 
 
 def chat_completion_create(
@@ -132,9 +174,176 @@ def chat_completion_create(
     _budget_guard_or_raise()
     resolved = model or get_model(model_role)
     t0 = time.time()
-    response = _invoke_llm(client, model=resolved, messages=messages, **kwargs)
-    _record_response(resolved, path, (time.time() - t0) * 1000, response)
+    response = _invoke_llm(
+        client, model=resolved, messages=messages, model_role=model_role, **kwargs
+    )
+    api_kind = "responses" if use_responses_api_for_role(model_role) else "completions"
+    _record_response(resolved, path, (time.time() - t0) * 1000, response, api_kind=api_kind)
     return response
+
+
+def chat_completion_stream(
+    client: OpenAI,
+    *,
+    model_role: str,
+    path: str,
+    messages: List[Dict[str, str]],
+    model: Optional[str] = None,
+    on_delta: Optional[Callable[[str], None]] = None,
+    session_id: Optional[str] = None,
+    **kwargs: Any,
+) -> str:
+    """
+    Chat Completions ストリーミング（自然文アドバイス用）。
+    Responses API ロールは非ストリームの completions にフォールバック。
+    """
+    _budget_guard_or_raise()
+    resolved = model or get_model(model_role)
+    if use_responses_api_for_role(model_role):
+        response = chat_completion_create(
+            client,
+            model_role=model_role,
+            path=path,
+            messages=messages,
+            model=model,
+            **kwargs,
+        )
+        text = response.choices[0].message.content or ""
+        if on_delta and text:
+            on_delta(text)
+        elif session_id and text:
+            from src.services.sse_emit import emit_advice_delta
+
+            emit_advice_delta(text, session_id)
+        return text
+
+    stream_kwargs = dict(kwargs)
+    stream_kwargs.pop("response_format", None)
+    if model_role:
+        stream_kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
+    stream_kwargs = _prepare_chat_completion_kwargs(resolved, stream_kwargs)
+
+    t0 = time.time()
+    parts: List[str] = []
+    stream = client.chat.completions.create(
+        model=resolved,
+        messages=messages,
+        stream=True,
+        **stream_kwargs,
+    )
+    for chunk in stream:
+        if not chunk.choices:
+            continue
+        delta = chunk.choices[0].delta.content
+        if not delta:
+            continue
+        parts.append(delta)
+        if on_delta:
+            on_delta(delta)
+        elif session_id:
+            from src.services.sse_emit import emit_advice_delta
+
+            emit_advice_delta(delta, session_id)
+
+    text = "".join(parts)
+    pt_est = max(1, sum(len(m.get("content", "")) for m in messages) // 4)
+    ct_est = max(1, len(text) // 4)
+    cost = _estimate_cost_jpy(resolved, pt_est, ct_est)
+    from src.services.llm_metrics import record_llm_call
+
+    record_llm_call(
+        model=resolved,
+        path=path,
+        latency_ms=(time.time() - t0) * 1000,
+        prompt_tokens=pt_est,
+        completion_tokens=ct_est,
+        cost_jpy=cost,
+        prompt_version="completions_stream",
+    )
+    if cost > 0:
+        from src.services.budget_guard import add_monthly_cost
+
+        add_monthly_cost(cost)
+    return text
+
+
+def responses_stream(
+    client: OpenAI,
+    *,
+    model_role: str,
+    path: str,
+    messages: List[Dict[str, str]],
+    model: Optional[str] = None,
+    on_delta: Optional[Callable[[str], None]] = None,
+    session_id: Optional[str] = None,
+    **kwargs: Any,
+) -> str:
+    """Responses API ストリーミング（未対応時は一括生成＋疑似デルタ）"""
+    if not use_responses_api_for_role(model_role):
+        return chat_completion_stream(
+            client,
+            model_role=model_role,
+            path=path,
+            messages=messages,
+            model=model,
+            on_delta=on_delta,
+            session_id=session_id,
+            **kwargs,
+        )
+
+    _budget_guard_or_raise()
+    resolved = model or get_model(model_role)
+    req: Dict[str, Any] = {"model": resolved, "input": messages, "stream": True}
+    if "max_tokens" in kwargs:
+        req["max_output_tokens"] = kwargs.pop("max_tokens")
+    if model_role:
+        kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
+
+    t0 = time.time()
+    parts: List[str] = []
+    try:
+        stream = client.responses.create(**req)
+        for event in stream:
+            delta = getattr(event, "delta", None) or ""
+            if not delta and hasattr(event, "type"):
+                if getattr(event, "type", "") == "response.output_text.delta":
+                    delta = getattr(event, "delta", "") or ""
+            if delta:
+                parts.append(delta)
+                if on_delta:
+                    on_delta(delta)
+                elif session_id:
+                    from src.services.sse_emit import emit_advice_delta
+
+                    emit_advice_delta(delta, session_id)
+    except Exception as e:
+        logger.warning("responses_stream fallback to batch: %s", e)
+        return chat_completion_stream(
+            client,
+            model_role=model_role,
+            path=path,
+            messages=messages,
+            model=model,
+            on_delta=on_delta,
+            session_id=session_id,
+            **kwargs,
+        )
+
+    text = "".join(parts)
+    pt_est = max(1, sum(len(m.get("content", "")) for m in messages) // 4)
+    ct_est = max(1, len(text) // 4)
+    from src.services.llm_metrics import record_llm_call
+
+    record_llm_call(
+        model=resolved,
+        path=path,
+        latency_ms=(time.time() - t0) * 1000,
+        prompt_tokens=pt_est,
+        completion_tokens=ct_est,
+        cost_jpy=_estimate_cost_jpy(resolved, pt_est, ct_est),
+        prompt_version="responses_stream",
+    )
+    return text
 
 
 async def _invoke_llm_async(
@@ -142,9 +351,15 @@ async def _invoke_llm_async(
     *,
     model: str,
     messages: List[Dict[str, str]],
+    model_role: Optional[str] = None,
     **kwargs: Any,
 ) -> Any:
-    if use_responses_api():
+    use_resp = use_responses_api() or (
+        model_role is not None and use_responses_api_for_role(model_role)
+    )
+    if model_role:
+        kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
+    if use_resp:
         try:
             req: Dict[str, Any] = {"model": model, "input": messages}
             if "max_tokens" in kwargs:
@@ -159,7 +374,8 @@ async def _invoke_llm_async(
             return _CompletionAdapter(choices=[_Choice(message=_Message(content=text))], usage=resp.usage)
         except Exception as e:
             logger.warning("Async Responses API failed, fallback: %s", e)
-    return await async_client.chat.completions.create(model=model, messages=messages, **kwargs)
+    chat_kwargs = _prepare_chat_completion_kwargs(model, kwargs)
+    return await async_client.chat.completions.create(model=model, messages=messages, **chat_kwargs)
 
 
 async def chat_completion_create_async(
@@ -174,8 +390,11 @@ async def chat_completion_create_async(
     _budget_guard_or_raise()
     resolved = model or get_model(model_role)
     t0 = time.time()
-    response = await _invoke_llm_async(async_client, model=resolved, messages=messages, **kwargs)
-    _record_response(resolved, path, (time.time() - t0) * 1000, response)
+    response = await _invoke_llm_async(
+        async_client, model=resolved, messages=messages, model_role=model_role, **kwargs
+    )
+    api_kind = "responses" if use_responses_api_for_role(model_role) else "completions"
+    _record_response(resolved, path, (time.time() - t0) * 1000, response, api_kind=api_kind)
     return response
 
 

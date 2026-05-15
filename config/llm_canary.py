@@ -41,9 +41,12 @@ def effective_model_profile(
     カナリア有効時は新規セッションのみ gpt5。
     """
     env_profile = (os.getenv("LLM_MODEL_PROFILE") or "legacy").strip().lower()
-    if env_profile == "gpt5" and _canary_percent() >= 100:
-        return "gpt5"
-    if env_profile == "gpt5" and _canary_percent() <= 0:
+    pct = _canary_percent()
+    if env_profile == "gpt5":
+        if pct >= 100 or pct <= 0:
+            return "gpt5"
+        if session_in_canary(session_id, session_created_at):
+            return "gpt5"
         return "legacy"
     if session_in_canary(session_id, session_created_at):
         return "gpt5"

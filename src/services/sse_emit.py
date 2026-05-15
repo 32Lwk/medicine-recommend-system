@@ -1,0 +1,264 @@
+"""
+SSE ストリーム用イベントバス（同期チャット処理スレッド → async ジェネレータ）
+
+stream_chat_events が StreamSink を ContextVar にセットし、
+LLM コールバックから advice_delta / cards をキューへ投入する。
+セッション単位のリングバッファで Last-Event-ID 再接続に対応する。
+"""
+from __future__ import annotations
+
+import queue
+import threading
+import time
+from contextvars import ContextVar
+from typing import Any, Dict, List, Optional, Tuple
+
+from src.services.processing_status import append_advice_preview
+
+_stream_sink: ContextVar[Optional["StreamSink"]] = ContextVar("sse_stream_sink", default=None)
+
+_SENTINEL = object()
+_RING_TTL_SEC = 120.0
+_RING_MAX = 512
+
+_lock = threading.Lock()
+_session_rings: Dict[str, List[Tuple[str, Dict[str, Any], str, float]]] = {}
+_active_sinks: Dict[str, "StreamSink"] = {}
+_stream_results: Dict[str, Tuple[Any, int, float]] = {}
+
+
+class StreamSink:
+    """スレッドセーフな SSE イベントキュー"""
+
+    def __init__(self, session_id: str, *, max_buffer: int = 256) -> None:
+        self.session_id = session_id
+        self._q: queue.Queue = queue.Queue()
+        self._closed = False
+        self._seq = 0
+        self._buffer: List[Tuple[str, Dict[str, Any], str]] = []
+        self._max_buffer = max_buffer
+
+    def emit(self, event: str, data: Dict[str, Any], event_id: Optional[str] = None) -> None:
+        if self._closed:
+            return
+        self._seq += 1
+        eid = event_id or str(self._seq)
+        item = (event, data, eid)
+        self._buffer.append(item)
+        if len(self._buffer) > self._max_buffer:
+            self._buffer.pop(0)
+        _append_session_ring(self.session_id, item)
+        self._q.put(item)
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        self._q.put(_SENTINEL)
+
+    def get(self, timeout: float = 0.05) -> Any:
+        return self._q.get(timeout=timeout)
+
+    def drain_nowait(self) -> List[Tuple[str, Dict[str, Any], str]]:
+        out: List[Tuple[str, Dict[str, Any], str]] = []
+        while True:
+            try:
+                item = self._q.get_nowait()
+            except queue.Empty:
+                break
+            if item is _SENTINEL:
+                continue
+            out.append(item)
+        return out
+
+    def events_after(self, last_event_id: Optional[str]) -> List[Tuple[str, Dict[str, Any], str]]:
+        if not last_event_id:
+            return list(self._buffer)
+        out: List[Tuple[str, Dict[str, Any], str]] = []
+        found = False
+        for event, data, eid in self._buffer:
+            if found:
+                out.append((event, data, eid))
+            elif eid == last_event_id:
+                found = True
+        return out
+
+
+def _purge_stale_rings() -> None:
+    now = time.time()
+    with _lock:
+        stale = [sid for sid, ring in _session_rings.items() if ring and now - ring[-1][3] > _RING_TTL_SEC]
+        for sid in stale:
+            _session_rings.pop(sid, None)
+            _stream_results.pop(sid, None)
+        stale_res = [sid for sid, (_, _, ts) in _stream_results.items() if now - ts > _RING_TTL_SEC]
+        for sid in stale_res:
+            _stream_results.pop(sid, None)
+
+
+def _append_session_ring(session_id: str, item: Tuple[str, Dict[str, Any], str]) -> None:
+    _purge_stale_rings()
+    with _lock:
+        ring = _session_rings.setdefault(session_id, [])
+        ring.append((item[0], item[1], item[2], time.time()))
+        if len(ring) > _RING_MAX:
+            del ring[: len(ring) - _RING_MAX]
+
+
+def replay_session_events(
+    session_id: str,
+    last_event_id: Optional[str],
+) -> List[Tuple[str, Dict[str, Any], str]]:
+    """再接続時: リングバッファから Last-Event-ID 以降を返す"""
+    _purge_stale_rings()
+    with _lock:
+        ring = list(_session_rings.get(session_id, []))
+    if not last_event_id:
+        return [(e, d, i) for e, d, i, _ in ring]
+    out: List[Tuple[str, Dict[str, Any], str]] = []
+    found = False
+    for event, data, eid, _ in ring:
+        if found:
+            out.append((event, data, eid))
+        elif eid == last_event_id:
+            found = True
+    return out
+
+
+def is_session_stream_active(session_id: str) -> bool:
+    with _lock:
+        return session_id in _active_sinks
+
+
+def get_active_session_sink(session_id: str) -> Optional[StreamSink]:
+    with _lock:
+        return _active_sinks.get(session_id)
+
+
+def set_stream_result(session_id: str, body: Any, status_code: int) -> None:
+    with _lock:
+        _stream_results[session_id] = (body, status_code, time.time())
+
+
+def pop_stream_result(session_id: str) -> Optional[Tuple[Any, int]]:
+    with _lock:
+        raw = _stream_results.pop(session_id, None)
+    if not raw:
+        return None
+    return raw[0], raw[1]
+
+
+def get_stream_sink() -> Optional[StreamSink]:
+    return _stream_sink.get()
+
+
+def activate_stream_sink(session_id: str) -> Tuple[StreamSink, bool]:
+    """
+    StreamSink を有効化。
+    Returns:
+        (sink, reattach): 既存ストリームへの再接続なら reattach=True
+    """
+    _purge_stale_rings()
+    with _lock:
+        existing = _active_sinks.get(session_id)
+        if existing and not existing._closed:
+            _stream_sink.set(existing)
+            return existing, True
+        sink = StreamSink(session_id)
+        _active_sinks[session_id] = sink
+        if session_id not in _session_rings:
+            _session_rings[session_id] = []
+    _stream_sink.set(sink)
+    return sink, False
+
+
+def deactivate_stream_sink(session_id: Optional[str] = None) -> None:
+    _stream_sink.set(None)
+    if not session_id:
+        return
+    with _lock:
+        _active_sinks.pop(session_id, None)
+
+
+def clear_session_stream_state(session_id: str) -> None:
+    with _lock:
+        _active_sinks.pop(session_id, None)
+        _session_rings.pop(session_id, None)
+        _stream_results.pop(session_id, None)
+
+
+def is_streaming_active(session_id: Optional[str] = None) -> bool:
+    sink = get_stream_sink()
+    if not sink:
+        return False
+    if session_id and sink.session_id != session_id:
+        return False
+    return True
+
+
+def emit_sse_event(
+    event: str,
+    data: Dict[str, Any],
+    *,
+    session_id: Optional[str] = None,
+    event_id: Optional[str] = None,
+) -> None:
+    sink = get_stream_sink()
+    if not sink:
+        return
+    if session_id and sink.session_id != session_id:
+        return
+    sink.emit(event, data, event_id=event_id)
+
+
+def emit_advice_delta(chunk: str, session_id: Optional[str] = None) -> None:
+    if not chunk:
+        return
+    sid = session_id
+    sink = get_stream_sink()
+    if sink and not sid:
+        sid = sink.session_id
+    if sid:
+        append_advice_preview(sid, chunk)
+    emit_sse_event("advice_delta", {"text": chunk}, session_id=sid)
+
+
+def emit_cards(
+    medicines: List[Dict[str, Any]],
+    *,
+    session_id: Optional[str] = None,
+) -> None:
+    payload = []
+    for i, med in enumerate(medicines[:5], 1):
+        efficacy = med.get("efficacy") or ""
+        if isinstance(efficacy, str) and len(efficacy) > 80:
+            efficacy = efficacy[:80] + "…"
+        payload.append(
+            {
+                "rank": i,
+                "product_name": med.get("product_name") or med.get("name") or "",
+                "manufacturer": med.get("manufacturer") or "",
+                "efficacy": efficacy,
+            }
+        )
+    emit_sse_event(
+        "cards",
+        {"medicines": payload, "count": len(payload)},
+        session_id=session_id,
+    )
+
+
+def pseudo_stream_advice(
+    text: str,
+    session_id: Optional[str] = None,
+    *,
+    chunk_size: int = 14,
+    delay_sec: float = 0.018,
+) -> None:
+    """DeepL 翻訳後など、完成テキストを疑似ストリーム配信"""
+    if not text or not is_streaming_active(session_id):
+        return
+    for i in range(0, len(text), chunk_size):
+        emit_advice_delta(text[i : i + chunk_size], session_id)
+        if delay_sec > 0:
+            time.sleep(delay_sec)

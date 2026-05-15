@@ -14,12 +14,12 @@ OPENAI_API_KEY_PRODUCTION=sk-...   # 本番
 OPENAI_API_KEY_STAGING=sk-...      # dev
 APP_ENV=production                 # または development
 
-LLM_MODEL_PROFILE=legacy         # 段階的に gpt5
-LLM_CANARY_PERCENT=0             # 新規 sid のみ gpt5
-OPENAI_USE_RESPONSES_API=false
+LLM_MODEL_PROFILE=gpt5           # staging 一括
+LLM_CANARY_PERCENT=100
+OPENAI_USE_RESPONSES_API=false   # triage/explain はロール別 Responses
 
-LLM_AGENT_ENABLED=false
-LLM_AGENT_CANARY_PERCENT=0
+LLM_AGENT_ENABLED=true
+LLM_AGENT_CANARY_PERCENT=100
 LLM_GPT_RECOMMEND_FALLBACK=false
 
 OPENAI_MONTHLY_BUDGET_JPY=50000

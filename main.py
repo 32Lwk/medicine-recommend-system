@@ -20,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.responses import FileResponse, Response as StarletteResponse
+from starlette.responses import FileResponse, Response as StarletteResponse, StreamingResponse
 
 from config.app_config import (
     configure_logging,
@@ -45,6 +45,7 @@ from src.services.session_manager import (
     get_manual_reply_queue,
     get_next_user_number,
     get_session_from_db,
+    maybe_persist_session_activity,
     save_session_to_db,
     set_admin_mode,
     set_ai_auto_reply,
@@ -583,6 +584,10 @@ def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONRe
         return JSONResponse(content=body, status_code=status_code)
     finally:
         if sid:
+            try:
+                persist_session_from_chat_state(sid, safe_session, request)
+            except Exception as e:
+                logger.warning("⚠️ チャットセッションの永続化に失敗: %s", e)
             clear_processing_status(sid)
 
 
@@ -604,6 +609,29 @@ def post_test_root_chat(
     sid: str = Depends(get_sid),
 ):
     return _post_chat_json_response(request, message, sid)
+
+
+@app.post("/api/chat/stream")
+async def post_chat_stream(
+    request: Request,
+    message: str = Form(...),
+    sid: str = Depends(get_sid),
+):
+    """SSE チャット（advice_delta / cards をリアルタイム配信）"""
+    from src.handlers.chat_stream import stream_chat_events
+
+    monitor = get_global_monitor()
+    monitor.start_monitoring()
+    monitor.increment_request()
+    return StreamingResponse(
+        stream_chat_events(request, message, sid, monitor),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.post("/clear")
@@ -648,6 +676,33 @@ def new_session_test(request: Request, response: Response):
     return new_session(request, response)
 
 
+@app.post("/api/slow-request-notify")
+async def api_slow_request_notify(
+    request: Request,
+    sid: str = Depends(get_sid),
+):
+    from src.services.slow_request_notify import notify_slow_request
+
+    client_info = ChatClientInfo.from_starlette_request(request)
+    last_msg = ""
+    try:
+        if request.headers.get("content-type", "").startswith("application/json"):
+            body = await request.json()
+            if isinstance(body, dict):
+                last_msg = (body.get("last_user_message") or body.get("message") or "").strip()
+    except Exception:
+        pass
+    if not last_msg:
+        last_msg = request.query_params.get("message", "")
+    notify_slow_request(
+        sid,
+        client_ip=client_info.client_ip,
+        user_agent=client_info.user_agent,
+        last_user_message=last_msg,
+    )
+    return {"status": "ok"}
+
+
 @app.get("/api/processing-status")
 def api_processing_status_get(
     request: Request,
@@ -688,7 +743,7 @@ def api_sessions_get(
         save_session_to_db(sid, session_data)
     else:
         session_data["last_activity"] = datetime.now()
-        save_session_to_db(sid, session_data)
+        maybe_persist_session_activity(sid, session_data)
 
     messages = session_data.get("messages", []) or []
     user_attributes = session_data.get("user_attributes", {}) or {}
@@ -711,6 +766,58 @@ def api_sessions_get(
         "messages": messages,
         "user_attributes": user_attributes,
         "latest_usage_notes": latest_usage_notes,
+    }
+
+
+@app.post("/api/sessions/restore")
+async def api_sessions_restore(
+    request: Request,
+    response: Response,
+    sid: str = Depends(get_sid),
+):
+    """タブ内キャッシュからサーバー側セッションを復元（メモリ喪失・再起動後など）。"""
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    client_messages = data.get("messages")
+    if not isinstance(client_messages, list):
+        return JSONResponse({"error": "messages must be a list"}, status_code=400)
+
+    session_data = get_session_from_db(sid)
+    if not session_data:
+        session_data = {
+            "session_id": sid,
+            "username": f"ユーザー{get_next_user_number()}",
+            "messages": [],
+            "session_active": True,
+            "last_activity": datetime.now(),
+            "client_ip": request.client.host if request.client else "",
+            "user_agent": request.headers.get("User-Agent", ""),
+            "user_attributes": {},
+        }
+
+    server_messages = session_data.get("messages") or []
+    if server_messages:
+        return {
+            "status": "ok",
+            "session_id": sid,
+            "messages_count": len(server_messages),
+            "restored": False,
+            "messages": server_messages,
+        }
+
+    merged = merge_session_messages([], client_messages)
+    session_data["messages"] = merged
+    session_data["last_activity"] = datetime.now()
+    session_data["session_active"] = True
+    save_session_to_db(sid, session_data)
+
+    return {
+        "status": "ok",
+        "session_id": sid,
+        "messages_count": len(merged),
+        "restored": len(merged) > 0,
+        "messages": merged,
     }
 
 
@@ -752,35 +859,46 @@ async def submit_feedback(
     if not isinstance(data, dict):
         return JSONResponse({"error": "Invalid payload"}, status_code=400)
 
-    db = get_database()
-    if not (db and (db.connection or db.connection_pool)):
-        return JSONResponse({"error": "Database not available"}, status_code=500)
-
     required_fields = ["report_type", "user_message", "ai_response"]
     for field in required_fields:
         if field not in data:
             return JSONResponse({"error": f"Missing required field: {field}"}, status_code=400)
 
-    # レート制限（sid単位、60秒）
+    # 同一メッセージへの重複送信のみ制限（チャット内の別メッセージは評価可能）
     if sid:
         session_data = get_session_from_db(sid) or {}
         current_time = time.time()
-        last_feedback_time = session_data.get("last_feedback_time", 0) or 0
-        if current_time - last_feedback_time < 60:
-            return JSONResponse({"error": "Rate limit exceeded. Please wait 60 seconds."}, status_code=429)
-        session_data["last_feedback_time"] = current_time
-        save_session_to_db(sid, session_data)
+        dedupe_key = "|".join(
+            [
+                str(data.get("report_type", "")),
+                str(data.get("user_message", ""))[:500],
+                str(data.get("ai_response", ""))[:500],
+            ]
+        )
+        recent = session_data.get("feedback_recent_keys") or {}
+        if isinstance(recent, dict):
+            last_at = float(recent.get(dedupe_key, 0) or 0)
+            if current_time - last_at < 60:
+                return JSONResponse(
+                    {"error": "Already submitted for this message. Please wait 60 seconds."},
+                    status_code=429,
+                )
+            recent[dedupe_key] = current_time
+            # 古いキーを間引き
+            session_data["feedback_recent_keys"] = {
+                k: v for k, v in recent.items() if current_time - float(v) < 3600
+            }
+            save_session_to_db(sid, session_data)
 
     feedback_text = data.get("feedback_text", "") or ""
     if len(feedback_text) > 1000:
         return JSONResponse({"error": "Feedback text too long (max 1000 characters)"}, status_code=400)
 
-    # DBへ保存
     session_data = get_session_from_db(sid) or {}
     username = session_data.get("username") or "Unknown"
-    feedback_id = db.insert_feedback(
+    payload = dict(
         report_type=data["report_type"],
-        session_id=sid,
+        session_id=sid or "",
         username=username,
         user_message=data["user_message"],
         ai_response=data["ai_response"],
@@ -788,38 +906,73 @@ async def submit_feedback(
         feedback_text=feedback_text,
         is_google_form=bool(data.get("is_google_form", False)),
     )
-    if feedback_id:
-        return {"status": "success", "feedback_id": feedback_id}
-    return JSONResponse({"error": "Failed to save feedback"}, status_code=500)
+
+    db = get_database()
+    if db and (db.connection or db.connection_pool):
+        feedback_id = db.insert_feedback(**payload)
+        if feedback_id:
+            return {"status": "success", "feedback_id": feedback_id}
+        return JSONResponse({"error": "Failed to save feedback"}, status_code=500)
+
+    if is_development_runtime():
+        from src.services.feedback_store import save_feedback_dev
+
+        feedback_id = save_feedback_dev(**payload)
+        return {
+            "status": "success",
+            "feedback_id": feedback_id,
+            "storage": "dev_fallback",
+        }
+
+    return JSONResponse({"error": "Database not available"}, status_code=500)
 
 
 @app.get("/api/get_feedback_reports")
 def get_feedback_reports(limit: int = 100, unresolved_only: bool = False):
     db = get_database()
-    if not (db and (db.connection or db.connection_pool)):
-        return JSONResponse({"error": "Database not available"}, status_code=500)
-    reports = db.get_feedback_reports(limit=limit, unresolved_only=unresolved_only)
-    return {"reports": reports}
+    if db and (db.connection or db.connection_pool):
+        reports = db.get_feedback_reports(limit=limit, unresolved_only=unresolved_only)
+        return {"reports": reports}
+    if is_development_runtime():
+        from src.services.feedback_store import list_feedback_dev
+
+        return {
+            "reports": list_feedback_dev(limit=limit, unresolved_only=unresolved_only),
+            "storage": "dev_fallback",
+        }
+    return JSONResponse({"error": "Database not available"}, status_code=500)
 
 
 @app.post("/api/resolve_feedback/{feedback_id}")
 def resolve_feedback(feedback_id: int):
     db = get_database()
-    if not (db and (db.connection or db.connection_pool)):
-        return JSONResponse({"error": "Database not available"}, status_code=500)
-    if db.resolve_feedback(feedback_id):
-        return {"status": "success"}
-    return JSONResponse({"error": "Failed to resolve feedback"}, status_code=500)
+    if db and (db.connection or db.connection_pool):
+        if db.resolve_feedback(feedback_id):
+            return {"status": "success"}
+        return JSONResponse({"error": "Failed to resolve feedback"}, status_code=500)
+    if is_development_runtime():
+        from src.services.feedback_store import resolve_feedback_dev
+
+        if resolve_feedback_dev(feedback_id):
+            return {"status": "success", "storage": "dev_fallback"}
+        return JSONResponse({"error": "Feedback not found"}, status_code=404)
+    return JSONResponse({"error": "Database not available"}, status_code=500)
 
 
 @app.post("/api/delete_feedback/{feedback_id}")
 def delete_feedback(feedback_id: int):
     db = get_database()
-    if not (db and (db.connection or db.connection_pool)):
-        return JSONResponse({"error": "Database not available"}, status_code=500)
-    if db.delete_feedback(feedback_id):
-        return {"status": "success"}
-    return JSONResponse({"error": "Failed to delete feedback"}, status_code=500)
+    if db and (db.connection or db.connection_pool):
+        if db.delete_feedback(feedback_id):
+            return {"status": "success"}
+        return JSONResponse({"error": "Failed to delete feedback"}, status_code=500)
+    if is_development_runtime():
+        from src.services.feedback_store import delete_feedback_dev
+
+        if delete_feedback_dev(feedback_id):
+            return {"status": "success", "storage": "dev_fallback"}
+        return JSONResponse({"error": "Feedback not found"}, status_code=404)
+    return JSONResponse({"error": "Database not available"}, status_code=500)
 
 
 def _require_admin(

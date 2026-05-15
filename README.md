@@ -32,7 +32,8 @@ python app.py
 ## ドキュメント・リンク
 
 - [アプリ概要](docs/アプリ概要.md)
-- [開発・更新履歴](docs/CHANGELOG.md)
+- [開発・更新履歴](CHANGELOG.md)
+- [開発用エラー UI プレビュー（7パターン）](docs/DEV_ERROR_UI_PREVIEW.md) — `APP_ENV=development` 時のみ
 - [プライバシーポリシー](docs/プライバシーポリシー.md) / [免責事項・利用規約](docs/免責事項・利用規約.md)
 - [運営者情報・連絡先](docs/運営者情報.md)  
   不具合報告: https://forms.gle/UB8kZHd4VHenmRUN6  

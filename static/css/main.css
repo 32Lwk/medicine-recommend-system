@@ -3,6 +3,7 @@
             --line-height-base: 1.8; /* ベース行間 */
             --section-spacing: 30px;
             --focus-color: #4CAF50; /* フォーカスリングの色（CSS変数） */
+            --chat-input-height: 91px; /* JS ResizeObserver で更新 */
         }
         
         body { 
@@ -65,11 +66,13 @@
             margin: 0 auto; 
             background: #fff; 
             min-height: 100dvh;
-            height: -webkit-fill-available;
+            height: 100dvh;
+            max-height: 100dvh;
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+            overflow: hidden;
         }
         
         @supports (-webkit-touch-callout: none) {
@@ -184,7 +187,7 @@
             flex: 1;
             overflow-y: auto; 
             padding: 20px;
-            padding-bottom: 120px;
+            padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
             background: rgba(192, 192, 192, 1);
             text-align: left;
             min-height: 0;
@@ -196,7 +199,7 @@
         .season-decoration {
             position: absolute;
             pointer-events: none; /* クリックを無効化 */
-            z-index: 1; /* メッセージ(z-index: 2)の下に配置 */
+            z-index: 1; /* メッセージ(z-index: 2)の下、入力欄より下 */
             will-change: transform; /* パフォーマンス最適化 */
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -206,15 +209,19 @@
         }
         
         .season-decoration.position-right {
-            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
+            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
             right: 20px;
             width: 120px;
+            max-height: min(140px, 22vh);
+            object-fit: contain;
         }
         
         .season-decoration.position-left {
-            bottom: calc(91px + 20px); /* chat-inputの高さ(91px) + padding(20px) */
+            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
             left: 20px;
             width: 100px;
+            max-height: min(120px, 20vh);
+            object-fit: contain;
         }
         
         /* 雪のアニメーション */
@@ -306,28 +313,32 @@
         @media (max-width: 768px) {
             .season-decoration.position-right {
                 width: 80px;
-                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
                 right: 10px;
+                max-height: min(100px, 18vh);
             }
             
             .season-decoration.position-left {
                 width: 70px;
-                bottom: calc(80px + 10px); /* chat-inputの高さ(約80px) + padding(10px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
                 left: 10px;
+                max-height: min(90px, 16vh);
             }
         }
         
         @media (max-width: 480px) {
             .season-decoration.position-right {
                 width: 60px;
-                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
                 right: 5px;
+                max-height: min(80px, 16vh);
             }
             
             .season-decoration.position-left {
                 width: 50px;
-                bottom: calc(80px + 8px); /* chat-inputの高さ(約80px) + padding(8px) */
+                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
                 left: 5px;
+                max-height: min(70px, 14vh);
             }
         }
         .message {
@@ -420,6 +431,7 @@
             border-top: 1px solid #ddd;
             flex-shrink: 0;
             position: relative;
+            z-index: 5; /* シーズン装飾(z-index:1)より手前に表示 */
             width: 100%;
             max-width: 100%;
             margin: 0;
@@ -462,6 +474,63 @@
         }
         .chat-input button:hover {
             background: #45a049;
+        }
+        .slow-request-btn {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .slow-request-btn:disabled {
+            opacity: 0.7;
+            cursor: default;
+        }
+        .message.streaming-advice .advice-stream-body {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .message.streaming-cards .streaming-cards-body {
+            padding: 12px 14px;
+            background: #f8fbff;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .message.streaming-cards .streaming-cards-title {
+            margin: 0 0 8px 0;
+            font-size: 1em;
+            color: #1976d2;
+        }
+        .message.streaming-cards .streaming-medicine-list {
+            margin: 0;
+            padding-left: 1.2em;
+        }
+        .message.streaming-cards .streaming-medicine-item {
+            margin-bottom: 8px;
+            line-height: 1.45;
+        }
+        .message.streaming-cards .streaming-medicine-mfr {
+            color: #666;
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+        .message.streaming-cards .streaming-medicine-efficacy {
+            margin: 4px 0 0 0;
+            font-size: 0.85em;
+            color: #444;
+        }
+        .processing-advice-preview {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #333;
+            white-space: pre-wrap;
+            max-height: 120px;
+            overflow-y: auto;
         }
         .mic-btn {
             background: #3498db !important;
@@ -1153,23 +1222,334 @@
             background: #117a8b;
         }
         
-        /* エラー通知のスタイル */
-        .chat-response.error-notification {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 15px;
+        /* 統一ステータスカード（エラー・注意・通知） */
+        .chat-status-card {
+            margin: 12px 0;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            line-height: 1.6;
         }
-        
+
+        .chat-status-card__header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .chat-status-card__icon {
+            font-size: 1.25rem;
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+
+        .chat-status-card__title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .chat-status-card__subtitle {
+            margin: 0 0 12px 0;
+            font-size: 0.95rem;
+        }
+
+        .chat-status-card__body {
+            font-size: 0.95rem;
+        }
+
+        .chat-status-card__message {
+            margin: 0 0 10px 0;
+        }
+
+        .chat-status-card__reason {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .chat-status-card__hints,
+        .chat-status-card__list {
+            margin: 8px 0 0 0;
+            padding-left: 1.25rem;
+        }
+
+        .chat-status-card__hints li,
+        .chat-status-card__list li {
+            margin-bottom: 6px;
+        }
+
+        .chat-status-card__section {
+            margin-top: 16px;
+        }
+
+        .chat-status-card__section-title {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .chat-status-card__section-desc {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .chat-status-card__details {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            font-size: 0.85rem;
+        }
+
+        .chat-status-card__details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .chat-status-card__tech {
+            margin: 8px 0 0 0;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chat-status-card__footer {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-status-card__footer-prompt {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .chat-status-card .feedback-buttons.chat-status-card__feedback {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .chat-status-card__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chat-status-card__btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease, background-color 0.2s ease;
+        }
+
+        .chat-status-card__btn--positive {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .chat-status-card__btn--positive:hover {
+            background: #15803d;
+        }
+
+        .chat-status-card__btn--negative {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .chat-status-card__btn--negative:hover {
+            background: #cbd5e1;
+        }
+
+        .chat-status-card__btn--report {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .chat-status-card__btn--report:hover {
+            background: #475569;
+        }
+
+        .chat-status-card__meta {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .chat-status-card--error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .chat-status-card--error .chat-status-card__title {
+            color: #991b1b;
+        }
+
+        .chat-status-card--caution {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        .chat-status-card--caution .chat-status-card__title {
+            color: #92400e;
+        }
+
+        .chat-status-card--notice {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+
+        .chat-status-card--notice .chat-status-card__title {
+            color: #1e40af;
+        }
+
+        .chat-status-card--security {
+            background: #fef2f2;
+            border-color: #f87171;
+            border-width: 2px;
+            color: #7f1d1d;
+        }
+
+        .chat-status-card--security .chat-status-card__title {
+            color: #7f1d1d;
+        }
+
+        .chat-status-card--critical {
+            background: #fff1f2;
+            border-color: #fda4af;
+            color: #9f1239;
+        }
+
+        .chat-status-card--critical .chat-status-card__title {
+            color: #9f1239;
+        }
+
+        .chat-status-card--processing {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1e3a8a;
+        }
+
+        .chat-status-card--processing .chat-status-card__title {
+            color: #1e3a8a;
+        }
+
+        .chat-status-card__spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            flex-shrink: 0;
+        }
+
+        /* レガシー互換 */
+        .chat-response.error-notification {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
         .chat-response.error-notification h4 {
             margin: 0 0 10px 0;
-            color: #856404;
+            color: #1e40af;
             font-size: 16px;
         }
-        
+
         .error-message-content {
             margin: 10px 0;
-            color: #856404;
             white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        /* クライアント側エラーメッセージ（showErrorMessage 等） */
+        .message.bot.error-message .message-content,
+        .message.bot.warning-message .message-content {
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
+
+        .chat-status-card__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .chat-status-card__btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .chat-status-card__btn--primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .chat-status-card__btn--primary:hover {
+            background: #1d4ed8;
+        }
+
+        .chat-status-card__btn--secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+
+        .chat-status-card__btn--secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .chat-status-card__btn--report {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .chat-status-card__btn--report:hover {
+            background: #475569;
+        }
+
+        .chat-status-card__dismiss {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.6;
+            padding: 4px 8px;
+        }
+
+        .chat-status-card__dismiss:hover {
+            opacity: 1;
+        }
+
+        .chat-status-card--with-dismiss {
+            position: relative;
+            padding-right: 40px;
         }
         
         /* フィードバックボタンエリアのスタイル */
@@ -1660,38 +2040,66 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        /* 成功モーダル */
-        .success-modal {
+        /* 成功モーダル（コンパクト・中央配置） */
+        #successModal.modal {
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        #successModal .modal-content.success-modal {
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
+            width: auto;
+            max-width: min(340px, calc(100vw - 32px));
+            margin: 0;
+            padding: 14px 16px;
+            max-height: none;
+            overflow: visible;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+            flex-shrink: 0;
         }
-        
-        .success-modal .modal-title {
+
+        #successModal .modal-header {
+            display: block;
+            padding: 0;
+            margin: 0 0 6px;
+            border-bottom: none;
+            background: transparent;
+        }
+
+        #successModal .modal-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.35;
             color: #155724;
         }
-        
-        /* 成功モーダルのサイズ調整 */
-        #successModal .modal-content {
-            padding: 15px;
-            margin: 10% auto;
-            max-width: 400px;
-        }
-        
-        #successModal .modal-header {
-            padding: 12px 15px;
-            margin-bottom: 10px;
-        }
-        
+
         #successModal .modal-body {
-            padding: 10px 15px;
-            margin-bottom: 0;
+            padding: 0;
+            margin: 0;
+            max-height: none;
+            overflow: visible;
+            line-height: 1.4;
         }
-        
+
         #successModal .modal-body p {
             margin: 0;
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #155724;
+        }
+
+        #successModal .success-modal__note {
+            display: block;
+            margin-top: 4px;
+            font-size: 11px;
+            line-height: 1.35;
+            color: #2e6b3e;
+            opacity: 0.9;
         }
         
         /* デスクトップ版の基本スタイル（768px以上） */
@@ -1755,7 +2163,7 @@
             .chat-messages {
                 flex: 1 !important;
                 min-height: 0 !important;
-                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* chat-inputの高さを考慮 */
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
                 overflow-y: auto !important;
             }
         }
@@ -1789,7 +2197,7 @@
             }
             
             .chat-messages {
-                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* chat-inputの高さを考慮（padding 10px + input-group約60px + 余裕10px） */
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
                 flex: 1 !important; /* flexレイアウトで適切にサイズ調整 */
                 min-height: 0 !important; /* flexレイアウトで適切に縮小 */
             }
@@ -1846,7 +2254,7 @@
             
             .chat-messages {
                 padding: 8px;
-                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* chat-inputの高さを考慮（padding 10px + input-group約60px + 余裕10px） */
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
                 max-height: none !important; /* max-heightを削除してflexレイアウトに任せる */
                 min-height: 0 !important; /* min-heightを削除してflexレイアウトに任せる */
                 overflow-y: auto;
@@ -2002,7 +2410,7 @@
             
             .chat-messages {
                 padding: 8px;
-                padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; /* chat-inputの高さを考慮（padding 8px + input-group約60px + 余裕12px） */
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
                 flex: 1 !important; /* flexレイアウトで適切にサイズ調整 */
                 overflow-y: auto;
                 min-height: 0 !important; /* flexレイアウトで適切に縮小 */
@@ -2999,20 +3407,9 @@
                 padding: 6px 15px 10px; /* パディングを削減 */
             }
             
-            /* 成功モーダルのスマホ向け調整 */
-            #successModal .modal-content {
-                padding: 12px;
-                margin: 8% auto;
-                max-width: 90%;
-            }
-            
-            #successModal .modal-header {
-                padding: 10px;
-                margin-bottom: 8px;
-            }
-            
-            #successModal .modal-body {
-                padding: 8px 10px;
+            #successModal .modal-content.success-modal {
+                max-width: min(320px, calc(100vw - 24px));
+                padding: 12px 14px;
             }
             
             .list-page {
@@ -3138,24 +3535,16 @@
                 min-width: calc(50% - 3px);
             }
             
-            /* 成功モーダルの小さなスマホ向け調整 */
-            #successModal .modal-content {
-                padding: 10px;
-                margin: 5% auto;
-                max-width: 95%;
+            #successModal .modal-content.success-modal {
+                padding: 10px 12px;
             }
-            
-            #successModal .modal-header {
-                padding: 8px;
-                margin-bottom: 6px;
+
+            #successModal .modal-title {
+                font-size: 14px;
             }
-            
-            #successModal .modal-body {
-                padding: 6px 8px;
-            }
-            
+
             #successModal .modal-body p {
-                font-size: 13px;
+                font-size: 12px;
             }
             
             .list-item {
