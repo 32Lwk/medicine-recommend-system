@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 _all_sessions = {}
 _user_counter = 1
 _last_cleanup_time = 0
+_db_persist_enabled = None  # None=未判定, True/False=キャッシュ
+_memory_fallback_logged = False
+_last_db_persist_at: dict[str, float] = {}
+_ACTIVITY_PERSIST_INTERVAL_SEC = 30
 
 # グローバル状態（モジュール変数で管理、globals()は使用しない）
 _ai_auto_reply = True
@@ -58,16 +62,90 @@ def get_session_from_memory(session_id):
     return _all_sessions.get(session_id)
 
 
+def is_db_persist_enabled() -> bool:
+    """PostgreSQL へのセッション永続化が有効か（起動時接続プールの有無）。"""
+    global _db_persist_enabled
+    if _db_persist_enabled is not None:
+        return _db_persist_enabled
+    db = get_database()
+    _db_persist_enabled = bool(db and db.connection_pool)
+    return _db_persist_enabled
+
+
+def touch_session_in_memory(session_id, data):
+    """メモリ上のセッション辞書を更新（DB 未使用時・間引き時）。"""
+    _all_sessions[session_id] = data
+
+
+def _log_memory_fallback_once(*, db_save_failed: bool = False):
+    """DB 未使用・保存失敗時の案内を初回のみ出力する。"""
+    global _memory_fallback_logged
+    if _memory_fallback_logged:
+        return
+    _memory_fallback_logged = True
+    db = get_database()
+    reason = getattr(db, 'startup_skip_reason', None) if db else 'no_url'
+    if db_save_failed:
+        logger.warning(
+            'DB へのセッション保存に失敗したためメモリに保持します（以降この警告は抑制）。'
+            ' DATABASE_URL・ネットワークを確認してください。'
+        )
+        return
+    if reason == 'no_url':
+        logger.info(
+            'セッションはメモリに保存します（DATABASE_URL 未設定）。'
+            ' 永続化する場合は .env に DATABASE_URL を設定してください。'
+        )
+    elif reason == 'no_driver':
+        logger.info(
+            'セッションはメモリに保存します（psycopg2 未インストール）。'
+            ' `pip install psycopg2-binary` で DB 永続化を有効化できます。'
+        )
+    else:
+        logger.info(
+            'セッションはメモリに保存します（DB 接続不可）。'
+            ' DATABASE_URL・SSL 設定を確認してください。'
+        )
+
+
 def save_session_to_db(session_id, data):
     """セッションをDBに保存、失敗時はメモリに保存"""
+    global _db_persist_enabled
     db = get_database()
     if db and (db.connection or db.connection_pool):
         success = db.save_session(session_id, data)
         if success:
+            _db_persist_enabled = True
+            touch_session_in_memory(session_id, data)
             return True
-    _all_sessions[session_id] = data
-    logger.warning(f"⚠️ DB save failed, using memory fallback for session {session_id}")
+        _db_persist_enabled = False
+        touch_session_in_memory(session_id, data)
+        _log_memory_fallback_once(db_save_failed=True)
+        return True
+    touch_session_in_memory(session_id, data)
+    _log_memory_fallback_once()
     return True
+
+
+def maybe_persist_session_activity(session_id, data, min_interval_sec=None):
+    """
+    last_activity 更新など軽量な同期用。
+    DB 未使用時はメモリのみ。DB 利用時は min_interval_sec ごとに永続化する。
+    """
+    interval = (
+        _ACTIVITY_PERSIST_INTERVAL_SEC
+        if min_interval_sec is None
+        else min_interval_sec
+    )
+    touch_session_in_memory(session_id, data)
+    if not is_db_persist_enabled():
+        return
+    now = time.time()
+    last = _last_db_persist_at.get(session_id, 0)
+    if now - last < interval:
+        return
+    save_session_to_db(session_id, data)
+    _last_db_persist_at[session_id] = now
 
 
 def get_all_sessions_from_db():
@@ -212,7 +290,7 @@ def update_session_activity(sid):
     session_data = get_session_from_db(sid)
     if session_data:
         session_data['last_activity'] = datetime.now()
-        save_session_to_db(sid, session_data)
+        maybe_persist_session_activity(sid, session_data)
 
 
 def was_last_user_message(session, content: str) -> bool:
@@ -245,6 +323,73 @@ def append_user_message(session, content: str) -> dict:
 def remove_duplicate_user_messages_after_ai_response(sid):
     """後方互換のため残置。文言ベースの重複削除は行わない（同一内容の再送を保持）。"""
     return False
+
+
+def _message_merge_key(msg: dict, index: int = 0) -> str:
+    uid = msg.get('uuid') or msg.get('message_id')
+    if uid:
+        return f'id:{uid}'
+    ts = msg.get('timestamp') or ''
+    content = (msg.get('content') or '')[:200]
+    return f'c:{msg.get("type")}:{ts}:{content}'
+
+
+def merge_session_messages(server_messages, client_messages):
+    """サーバー・クライアント双方のメッセージを uuid 等で重複排除しつつマージする。"""
+    server = list(server_messages or [])
+    client = list(client_messages or [])
+    if not client:
+        return server
+    if not server:
+        return client
+    seen = set()
+    merged = []
+    for i, msg in enumerate(server):
+        key = _message_merge_key(msg, i)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(msg)
+    base = len(merged)
+    for j, msg in enumerate(client):
+        key = _message_merge_key(msg, base + j)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(msg)
+    return merged
+
+
+def persist_session_from_chat_state(sid, session, request=None):
+    """チャット POST 終了時にセッション状態（メッセージ含む）を永続化する。"""
+    if not sid:
+        return
+    session_data = get_session_from_db(sid) or {}
+    client_ip = ''
+    user_agent = ''
+    if request is not None:
+        client_ip = request.client.host if getattr(request, 'client', None) else ''
+        user_agent = request.headers.get('User-Agent', '') or ''
+    messages = session.get('messages')
+    if messages is None:
+        messages = session_data.get('messages') or []
+    session_data.update({
+        'session_id': sid,
+        'messages': messages,
+        'user_attributes': session.get('user_attributes')
+        or session_data.get('user_attributes')
+        or {},
+        'last_activity': datetime.now(),
+        'session_active': True,
+        'client_ip': client_ip or session_data.get('client_ip', ''),
+        'user_agent': user_agent or session_data.get('user_agent', ''),
+    })
+    username = session.get('username')
+    if username:
+        session_data['username'] = username
+    elif not session_data.get('username'):
+        session_data['username'] = f'ユーザー{get_next_user_number()}'
+    save_session_to_db(sid, session_data)
 
 
 def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=None):

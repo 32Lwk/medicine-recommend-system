@@ -108,9 +108,31 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
     
     return None
 
-# LLMトリアージ結果のキャッシュ（完全一致のみ）
-_triage_cache: Dict[str, Dict] = {}
-_MAX_CACHE_SIZE = 1000
+# LLMトリアージ結果のキャッシュ（完全一致のみ・TTL 24h）
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+_TRIAGE_CACHE_TTL = timedelta(hours=24)
+_MAX_CACHE_SIZE = 500
+
+
+@dataclass
+class _TriageCacheEntry:
+    result: Dict
+    created_at: datetime
+
+
+_triage_cache: Dict[str, _TriageCacheEntry] = {}
+
+
+def _purge_triage_cache() -> None:
+    now = datetime.now()
+    expired = [k for k, v in _triage_cache.items() if now - v.created_at > _TRIAGE_CACHE_TTL]
+    for k in expired:
+        del _triage_cache[k]
+    while len(_triage_cache) >= _MAX_CACHE_SIZE:
+        oldest = next(iter(_triage_cache))
+        del _triage_cache[oldest]
 
 # 第一段階：5つのカテゴリに分類
 FIRST_STAGE_TRIAGE_PROMPT = """
@@ -304,9 +326,11 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
     # キャッシュをチェック（完全一致のみ）
     if use_cache:
         cache_key = user_text.strip()
-        if cache_key in _triage_cache:
+        _purge_triage_cache()
+        entry = _triage_cache.get(cache_key)
+        if entry and datetime.now() - entry.created_at <= _TRIAGE_CACHE_TTL:
             logger.debug(f"💾 キャッシュからLLMトリアージ結果を取得: {cache_key[:50]}...")
-            return _triage_cache[cache_key].copy()
+            return entry.result.copy()
 
     try:
         from src.core.llm_client import chat_completion_create
@@ -428,13 +452,11 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
         # キャッシュに保存（完全一致のみ）
         if use_cache:
             cache_key = user_text.strip()
-            if len(_triage_cache) >= _MAX_CACHE_SIZE:
-                # 最も古いエントリを削除（FIFO方式）
-                oldest_key = next(iter(_triage_cache))
-                del _triage_cache[oldest_key]
-                logger.debug(f"💾 キャッシュが満杯のため、最も古いエントリを削除: {oldest_key[:50]}...")
-            
-            _triage_cache[cache_key] = result.copy()
+            _purge_triage_cache()
+            _triage_cache[cache_key] = _TriageCacheEntry(
+                result=result.copy(),
+                created_at=datetime.now(),
+            )
             logger.debug(f"💾 LLMトリアージ結果をキャッシュに保存: {cache_key[:50]}...")
         
         return result

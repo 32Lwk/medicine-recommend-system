@@ -38,6 +38,7 @@ _TOTAL_STEPS = len(PROCESSING_STEPS)
 
 _lock = threading.Lock()
 _cache: Dict[str, Dict[str, Any]] = {}
+_advice_preview: Dict[str, str] = {}
 _last_step: Dict[str, str] = {}
 _last_flush_at: Dict[str, float] = {}
 _pending_flush: Dict[str, bool] = {}
@@ -91,7 +92,7 @@ def set_processing_language(session_id: Optional[str], language: Optional[str]) 
 
 def _active_response(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     lang = payload.get("language") or _session_lang.get(session_id)
-    return {
+    out = {
         "active": True,
         "step_id": payload.get("step_id"),
         "label": payload.get("label"),
@@ -100,6 +101,25 @@ def _active_response(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]
         "percent": payload.get("percent", 0),
         "language": lang,
     }
+    preview = payload.get("advice_preview")
+    if preview is None:
+        with _lock:
+            preview = _advice_preview.get(session_id)
+    if preview:
+        out["advice_preview"] = preview
+    return out
+
+
+def append_advice_preview(session_id: Optional[str], chunk: str) -> None:
+    """ストリーミング中のアドバイス本文プレビュー（admin/ポーリング用）"""
+    if not session_id or not chunk:
+        return
+    with _lock:
+        prev = _advice_preview.get(session_id, "")
+        _advice_preview[session_id] = prev + chunk
+        cached = _cache.get(session_id)
+        if cached:
+            cached["advice_preview"] = _advice_preview[session_id]
 
 
 def _schedule_flush(session_id: str, payload: Dict[str, Any]) -> None:
@@ -157,6 +177,24 @@ def mark_processing_step(session_id: Optional[str], step_id: str) -> None:
         _cache[session_id] = payload
         _last_step[session_id] = step_id
     _schedule_flush(session_id, payload)
+    try:
+        from src.services.sse_emit import emit_sse_event, is_session_stream_active
+
+        if is_session_stream_active(session_id):
+            emit_sse_event(
+                "status",
+                {
+                    "step_id": payload.get("step_id"),
+                    "label": payload.get("label"),
+                    "step": payload.get("step"),
+                    "total": payload.get("total"),
+                    "percent": payload.get("percent"),
+                    "language": payload.get("language"),
+                },
+                session_id=session_id,
+            )
+    except Exception as exc:
+        logger.debug("processing_status sse emit skipped: %s", exc)
 
 
 def clear_processing_status(session_id: Optional[str]) -> None:
@@ -168,6 +206,7 @@ def clear_processing_status(session_id: Optional[str]) -> None:
         _last_flush_at.pop(session_id, None)
         _pending_flush.pop(session_id, None)
         _session_lang.pop(session_id, None)
+        _advice_preview.pop(session_id, None)
     try:
         from src.services.database import get_database
 

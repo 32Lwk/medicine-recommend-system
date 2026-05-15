@@ -3,6 +3,7 @@ PostgreSQL接続管理とテーブル初期化
 """
 import os
 from typing import Optional
+from urllib.parse import quote_plus
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
@@ -24,11 +25,32 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
+def resolve_database_url() -> Optional[str]:
+    """DATABASE_URL または POSTGRES_* / PG* から接続文字列を解決する。"""
+    url = (os.getenv('DATABASE_URL') or '').strip()
+    if url:
+        return url
+    user = (os.getenv('POSTGRES_USER') or os.getenv('PGUSER') or '').strip()
+    password = os.getenv('POSTGRES_PASSWORD') or os.getenv('PGPASSWORD') or ''
+    host = (os.getenv('POSTGRES_HOST') or os.getenv('PGHOST') or '').strip()
+    port = (os.getenv('POSTGRES_PORT') or os.getenv('PGPORT') or '5432').strip()
+    dbname = (os.getenv('POSTGRES_DB') or os.getenv('PGDATABASE') or '').strip()
+    if not (host and user and dbname):
+        return None
+    password_part = f":{quote_plus(password)}" if password else ''
+    sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+    return (
+        f"postgresql://{quote_plus(user)}{password_part}@"
+        f"{host}:{port}/{quote_plus(dbname)}?sslmode={sslmode}"
+    )
+
+
 class DatabaseManager:
     def __init__(self):
         self.connection = None
         self.connection_pool = None
-        self.database_url = os.getenv('DATABASE_URL')
+        self.database_url = resolve_database_url()
         # init_database / connect が False のときの理由（起動ログ用）
         self.startup_skip_reason: Optional[str] = None
         # 環境変数から接続プール設定を取得（デフォルト値は小規模環境向け）

@@ -4321,6 +4321,61 @@
         snowContainer.style.height = containerHeight + 'px';
     }
 
+    /** 入力欄の実高さを CSS 変数に反映（シーズン装飾の bottom 位置を追従） */
+    function syncChatInputHeight() {
+        const chatInput = document.querySelector('.chat-input');
+        if (!chatInput) return;
+        const height = Math.ceil(chatInput.getBoundingClientRect().height);
+        if (!height) return;
+        document.documentElement.style.setProperty('--chat-input-height', height + 'px');
+        updateSnowContainerHeight();
+    }
+
+    function resizeMessageInput(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        const maxHeight = parseInt(window.getComputedStyle(textarea).maxHeight, 10) || 100;
+        textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+        syncChatInputHeight();
+    }
+
+    let chatInputResizeObserver = null;
+
+    function initSeasonDecorationLayout() {
+        document.querySelectorAll('.season-decoration').forEach((img) => {
+            const onReady = () => syncChatInputHeight();
+            if (img.complete) {
+                onReady();
+            } else {
+                img.addEventListener('load', onReady, { once: true });
+                img.addEventListener('error', onReady, { once: true });
+            }
+        });
+    }
+
+    function initChatInputLayout() {
+        const chatInput = document.querySelector('.chat-input');
+        const messageInput = document.getElementById('messageInput');
+        if (!chatInput) return;
+
+        initSeasonDecorationLayout();
+        syncChatInputHeight();
+
+        if (typeof ResizeObserver !== 'undefined') {
+            if (chatInputResizeObserver) {
+                chatInputResizeObserver.disconnect();
+            }
+            chatInputResizeObserver = new ResizeObserver(() => {
+                syncChatInputHeight();
+            });
+            chatInputResizeObserver.observe(chatInput);
+        }
+
+        if (messageInput) {
+            resizeMessageInput(messageInput);
+        }
+    }
+
     function readParticleProfile() {
         const el = document.getElementById('particle-profile');
         if (!el || !String(el.textContent || '').trim()) return null;
@@ -4491,6 +4546,7 @@
     function handleResize() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
+            syncChatInputHeight();
             createSeasonalParticles();
             updateSnowContainerHeight();
         }, 250);
@@ -4516,6 +4572,7 @@
         updateUI();
         applyEnvBadge();
 
+        initChatInputLayout();
         createSeasonalParticles();
         window.addEventListener('resize', handleResize);
         
@@ -4527,6 +4584,7 @@
             const observer = new MutationObserver(() => {
                 clearTimeout(mutationLayoutTimeout);
                 mutationLayoutTimeout = setTimeout(() => {
+                    syncChatInputHeight();
                     updateSnowContainerHeight();
                 }, 500);
             });
@@ -4594,6 +4652,38 @@
     
     // 送信中フラグ（グローバル変数）
     let isSubmitting = false;
+    let submitWatchdogTimer = null;
+    let slowRequestTimerId = null;
+    let streamingAdviceEl = null;
+    const SUBMIT_WATCHDOG_MS = 120000;
+
+    function clearSubmitWatchdog() {
+        if (submitWatchdogTimer) {
+            clearTimeout(submitWatchdogTimer);
+            submitWatchdogTimer = null;
+        }
+    }
+
+    function armSubmitWatchdog() {
+        clearSubmitWatchdog();
+        submitWatchdogTimer = setTimeout(function () {
+            if (!isSubmitting) {
+                return;
+            }
+            console.warn('Submit watchdog: resetting stuck submitting state');
+            removeTypingIndicator();
+            removeProcessingMessage();
+            removeStreamingAdviceBubble();
+            removeStreamingMedicineCards();
+            clearSlowRequestTimer();
+            restoreSubmitButton();
+            showErrorMessage('処理がタイムアウトしました。もう一度お試しください。');
+        }, SUBMIT_WATCHDOG_MS);
+    }
+
+    function usesChatSse() {
+        return window.CHAT_USE_SSE !== false && !!window.ChatSSE;
+    }
 
     function getChatSubmitButton() {
         return document.querySelector('#chatForm button[type="submit"]');
@@ -4625,6 +4715,7 @@
             
             // 送信処理開始
             isSubmitting = true;
+            armSubmitWatchdog();
             
             // 送信ボタンを無効化
             const submitBtn = getChatSubmitButton();
@@ -4657,7 +4748,7 @@
                 // イースターエッグ発動時は通常処理をスキップ
                 // 入力フィールドをクリア（イースターエッグ発動時もクリアする）
                 input.value = '';
-                input.style.height = 'auto';
+                resizeMessageInput(input);
                 isSubmitting = false;
                 restoreSubmitButton();
                 return;
@@ -4665,7 +4756,7 @@
             
             // 入力フィールドをクリア
             input.value = '';
-            input.style.height = 'auto';
+            resizeMessageInput(input);
             
             // ユーザーメッセージを即座に表示
             addUserMessage(message);
@@ -4693,34 +4784,43 @@
     // 前回の送信中断などでボタンが無効のまま残っている場合に復旧
     restoreSubmitButton();
 
-    // Alt+Enterで送信、通常のEnterは改行（エラーハンドリング付き）
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
-        try {
-            if (e.key === 'Enter' && e.altKey) {
-                e.preventDefault();
-                const form = document.getElementById('chatForm');
-                form.dispatchEvent(new Event('submit'));
-            }
-        } catch (error) {
-            // Chrome拡張機能関連のエラーを無視
-            if (!error.message || !error.message.includes('chrome-extension')) {
-                console.log('Keydown event error:', error);
-            }
+    function setupChatInputHandlers() {
+        const input = document.getElementById('messageInput');
+        const form = document.getElementById('chatForm');
+        if (!input || !form) {
+            console.error('chat input handlers skipped: messageInput or chatForm missing');
+            return;
         }
-    });
-
-    // textareaの高さを自動調整（エラーハンドリング付き）
-    document.getElementById('messageInput').addEventListener('input', function() {
-        try {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-        } catch (error) {
-            // Chrome拡張機能関連のエラーを無視
-            if (!error.message || !error.message.includes('chrome-extension')) {
-                console.log('Input event error:', error);
+        input.addEventListener('keydown', function (e) {
+            try {
+                if (e.key !== 'Enter' || e.isComposing) {
+                    return;
+                }
+                if (e.altKey || e.ctrlKey) {
+                    e.preventDefault();
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                    }
+                }
+            } catch (error) {
+                if (!error.message || !error.message.includes('chrome-extension')) {
+                    console.log('Keydown event error:', error);
+                }
             }
-        }
-    });
+        });
+        input.addEventListener('input', function () {
+            try {
+                resizeMessageInput(this);
+            } catch (error) {
+                if (!error.message || !error.message.includes('chrome-extension')) {
+                    console.log('Input event error:', error);
+                }
+            }
+        });
+    }
+    setupChatInputHandlers();
 
     // ユーザーメッセージをチャット画面に追加
     function addUserMessage(message) {
@@ -4842,6 +4942,180 @@
         return base + path;
     }
 
+    // --- タブを開いている間のチャット履歴バックアップ（sessionStorage） ---
+    const CHAT_CACHE_PREFIX = 'mrc_chat_cache:';
+    const CHAT_RESTORE_DONE_PREFIX = 'mrc_restore_done:';
+    const SID_COOKIE_NAME = 'sid';
+    let chatRestoreInFlight = false;
+    let lastRenderedMessagesFingerprint = '';
+
+    function getSidFromCookie() {
+        const pattern = new RegExp('(?:^|;\\s*)' + SID_COOKIE_NAME + '=([^;]*)');
+        const match = document.cookie.match(pattern);
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    function chatCacheKey(sid) {
+        return CHAT_CACHE_PREFIX + (sid || getSidFromCookie() || 'unknown');
+    }
+
+    function loadChatCache(sid) {
+        try {
+            const raw = sessionStorage.getItem(chatCacheKey(sid));
+            if (!raw) {
+                return [];
+            }
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed.messages) ? parsed.messages : [];
+        } catch (e) {
+            console.warn('loadChatCache failed:', e);
+            return [];
+        }
+    }
+
+    function saveChatCache(sid, messages) {
+        if (!messages || messages.length === 0) {
+            return;
+        }
+        try {
+            sessionStorage.setItem(
+                chatCacheKey(sid),
+                JSON.stringify({ messages: messages, updatedAt: Date.now() })
+            );
+        } catch (e) {
+            console.warn('saveChatCache failed:', e);
+        }
+    }
+
+    function clearChatCache(sid) {
+        const id = sid || getSidFromCookie();
+        if (id) {
+            sessionStorage.removeItem(chatCacheKey(id));
+            sessionStorage.removeItem(CHAT_RESTORE_DONE_PREFIX + id);
+        }
+        sessionStorage.removeItem(chatCacheKey('unknown'));
+        sessionStorage.removeItem(CHAT_RESTORE_DONE_PREFIX + 'unknown');
+        lastRenderedMessagesFingerprint = '';
+    }
+
+    function stableMessageKey(message) {
+        if (message && message.uuid) {
+            return 'u:' + message.uuid;
+        }
+        if (message && message.message_id) {
+            return 'm:' + message.message_id;
+        }
+        const ts = (message && message.timestamp) ? String(message.timestamp) : '';
+        const type = (message && message.type) ? String(message.type) : '';
+        const content = (message && message.content) ? String(message.content).slice(0, 200) : '';
+        return 'c:' + type + ':' + ts + ':' + content;
+    }
+
+    function dedupeMessageList(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        const seen = new Set();
+        const out = [];
+        list.forEach(function(m) {
+            const k = stableMessageKey(m);
+            if (seen.has(k)) {
+                return;
+            }
+            seen.add(k);
+            out.push(m);
+        });
+        return out;
+    }
+
+    function messagesFingerprint(messages) {
+        return dedupeMessageList(messages).map(stableMessageKey).join('\n');
+    }
+
+    function mergeMessageLists(serverMsgs, localMsgs) {
+        return dedupeMessageList(
+            (Array.isArray(serverMsgs) ? serverMsgs : []).concat(
+                Array.isArray(localMsgs) ? localMsgs : []
+            )
+        );
+    }
+
+    function maybeRestoreSessionToServer(messages, sid) {
+        const sessionId = sid || getSidFromCookie();
+        if (
+            chatRestoreInFlight
+            || !messages
+            || messages.length === 0
+            || !sessionId
+        ) {
+            return;
+        }
+        if (sessionStorage.getItem(CHAT_RESTORE_DONE_PREFIX + sessionId) === '1') {
+            return;
+        }
+        chatRestoreInFlight = true;
+        fetch(withVersion('/api/sessions/restore'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({ messages: dedupeMessageList(messages) })
+        })
+            .then(function(res) {
+                return res.ok ? res.json() : null;
+            })
+            .then(function(data) {
+                if (data && (data.restored || data.messages_count > 0)) {
+                    sessionStorage.setItem(CHAT_RESTORE_DONE_PREFIX + sessionId, '1');
+                }
+            })
+            .catch(function(err) {
+                console.warn('session restore failed:', err);
+            })
+            .finally(function() {
+                chatRestoreInFlight = false;
+            });
+    }
+
+    function resolveSessionMessages(sessionData, options) {
+        const opts = options || {};
+        const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
+        const server = dedupeMessageList((sessionData && sessionData.messages) ? sessionData.messages : []);
+        const cached = dedupeMessageList(loadChatCache(sid));
+        const merged = mergeMessageLists(server, cached);
+
+        if (server.length === 0 && merged.length > 0 && opts.allowRestore !== false) {
+            saveChatCache(sid, merged);
+            maybeRestoreSessionToServer(merged, sid);
+        } else if (merged.length > 0) {
+            saveChatCache(sid, merged);
+        }
+        return merged;
+    }
+
+    function applySessionMessages(sessionData, options) {
+        const opts = options || {};
+        const merged = resolveSessionMessages(sessionData || {}, {
+            allowRestore: opts.allowRestore !== false
+        });
+        if (merged.length === 0) {
+            return;
+        }
+        const fp = messagesFingerprint(merged);
+        if (!opts.forceRender && fp === lastRenderedMessagesFingerprint) {
+            return;
+        }
+        lastRenderedMessagesFingerprint = fp;
+        renderChatMessages(merged, opts);
+    }
+
+    function touchSessionActivity() {
+        fetch(withVersion('/api/sessions'), {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+        }).catch(function() {});
+    }
+
     // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
         fetch(withVersion('/api/sessions'), {
@@ -4855,14 +5129,16 @@
                 return response.json();
             })
             .then(data => {
-                if (data.messages) {
-                    renderChatMessages(data.messages);
-                }
+                applySessionMessages(data);
             })
             .catch(error => {
                 const t = translations[currentLanguage];
                 console.error(t.loadError + ':', error);
-                // エラーが発生してもアプリケーションを継続
+                const cached = loadChatCache(getSidFromCookie());
+                if (cached.length > 0) {
+                    renderChatMessages(cached);
+                    maybeRestoreSessionToServer(cached, getSidFromCookie());
+                }
             });
     }
 
@@ -4872,6 +5148,11 @@
         const input = document.getElementById('messageInput');
         
         isSubmitting = false;
+        clearSubmitWatchdog();
+        clearSlowRequestTimer();
+        try {
+            sessionStorage.removeItem('chatSubmitBaselineLength');
+        } catch (e) { /* ignore */ }
         if (submitBtn) {
             submitBtn.disabled = false;
             const t = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
@@ -5217,6 +5498,39 @@
     window.submitFeedback = submitFeedback;
     window.openGoogleForm = openGoogleForm;
 
+    function applySseProcessingStatus(data) {
+        if (!data || !window.ProcessingStatus || !isSubmitting) {
+            return;
+        }
+        const el = document.getElementById('currentTypingIndicator');
+        if (!el) {
+            return;
+        }
+        const localized = ProcessingStatus.localizeStatusData({
+            active: true,
+            step_id: data.step_id,
+            label: data.label,
+            step: data.step,
+            total: data.total || 14,
+            percent: data.percent || 0,
+            language: data.language,
+        });
+        ProcessingStatus.renderProcessingStatus(el, localized);
+    }
+
+    function buildProcessingPollOptions(onUpdate) {
+        return {
+            onUpdate: onUpdate,
+            onInactive: function () {
+                removeTypingIndicator();
+                if (isSubmitting) {
+                    restoreSubmitButton();
+                }
+            },
+            interval: 1000,
+        };
+    }
+
     // タイピングインジケーターを追加
     function addTypingIndicator() {
         // 処理中メッセージが既に表示されている場合は追加しない
@@ -5236,15 +5550,12 @@
         chatMessages.appendChild(typingDiv);
         scrollToBottom();
 
-        if (window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
-            ProcessingStatus.startProcessingPoll({
-                onUpdate: function (data) {
-                    const el = document.getElementById('currentTypingIndicator');
-                    if (!el || !data || !data.active) return;
-                    ProcessingStatus.renderProcessingStatus(el, data);
-                },
-                interval: 1000
-            });
+        if (!usesChatSse() && window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
+            ProcessingStatus.startProcessingPoll(buildProcessingPollOptions(function (data) {
+                const el = document.getElementById('currentTypingIndicator');
+                if (!el || !data || !data.active) return;
+                ProcessingStatus.renderProcessingStatus(el, data);
+            }));
         }
     }
 
@@ -5264,113 +5575,508 @@
         return div.value;
     }
     
-    // エラーメッセージを表示
-    function showErrorMessage(message, riskScore = null) {
-        const chatMessages = document.getElementById('chatMessages');
-        
-        // 既存のエラーメッセージを削除
-        const existingErrors = chatMessages.querySelectorAll('.error-message');
-        existingErrors.forEach(error => error.remove());
-        
-        // risk_scoreがnullまたはundefinedの場合は、セッションストレージから取得を試みる
-        let securityScore = riskScore;
-        if (securityScore === null || securityScore === undefined) {
-            // セッションストレージから最後のリスクスコアを取得
-            const lastRiskScore = sessionStorage.getItem('lastRiskScore');
-            if (lastRiskScore) {
-                securityScore = parseFloat(lastRiskScore);
-            }
-        } else {
-            // セッションストレージに保存
-            sessionStorage.setItem('lastRiskScore', securityScore.toString());
+
+    function resolveSecurityScore(riskScore) {
+        if (riskScore !== null && riskScore !== undefined) {
+            sessionStorage.setItem('lastRiskScore', riskScore.toString());
+            return riskScore;
         }
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'message bot error-message';
-        errorDiv.innerHTML = `
-            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; position: relative;">
-                <strong>⚠️ エラー</strong><br>
-                ${escapeHtml(message)}
-                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer;">×</button>
-            </div>
-            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">このエラーについて報告しますか？</p>
-                <button class="report-bug-btn" 
-                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
-                    data-ai-response="${escapeHtml(message)}" 
-                    data-security-score="${securityScore !== null && securityScore !== undefined ? securityScore : ''}"
-                    onclick="handleSecurityReportFromButton(this)" 
-                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
-                    不具合を報告する
-                </button>
-            </div>
-        `;
-        chatMessages.appendChild(errorDiv);
-        scrollToBottom();
-        
-        // エラーメッセージを永続化（自動削除しない）
-        console.log('Error message displayed:', message);
-        
-        // エラーメッセージの永続化を強化
-        errorDiv.setAttribute('data-persistent', 'true');
-        errorDiv.style.display = 'block';
-    }
-    
-    // 警告メッセージを表示
-    function showWarningMessage(message, riskScore = null) {
-        const chatMessages = document.getElementById('chatMessages');
-        
-        // 既存の警告メッセージを削除
-        const existingWarnings = chatMessages.querySelectorAll('.warning-message');
-        existingWarnings.forEach(warning => warning.remove());
-        
-        // risk_scoreがnullまたはundefinedの場合は、セッションストレージから取得を試みる
-        let securityScore = riskScore;
-        if (securityScore === null || securityScore === undefined) {
-            // セッションストレージから最後のリスクスコアを取得
-            const lastRiskScore = sessionStorage.getItem('lastRiskScore');
-            if (lastRiskScore) {
-                securityScore = parseFloat(lastRiskScore);
-            }
-        } else {
-            // セッションストレージに保存
-            sessionStorage.setItem('lastRiskScore', securityScore.toString());
-        }
-        
-        const warningDiv = document.createElement('div');
-        warningDiv.className = 'message bot warning-message';
-        warningDiv.innerHTML = `
-            <div class="message-content" style="background: #f8d7da; color: #721c24; border: 2px solid #dc3545; padding: 15px; border-radius: 8px; position: relative; font-weight: bold;">
-                <strong>🚨 セキュリティ警告</strong><br>
-                ${escapeHtml(message)}
-                <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: none; border: none; color: #721c24; font-size: 16px; cursor: pointer; font-weight: bold;">×</button>
-            </div>
-            <div class="feedback-buttons" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この警告について報告しますか？</p>
-                <button class="report-bug-btn" 
-                    data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}" 
-                    data-ai-response="${escapeHtml(message)}" 
-                    data-security-score="${securityScore !== null && securityScore !== undefined ? securityScore : ''}"
-                    onclick="handleSecurityReportFromButton(this)" 
-                    style="background: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 120px;">
-                    不具合を報告する
-                </button>
-            </div>
-        `;
-        chatMessages.appendChild(warningDiv);
-        
-        scrollToBottom();
-        
-        // 警告メッセージを永続化（自動削除しない）
-        console.log('Warning message displayed:', message);
-        
-        // 警告メッセージの永続化を強化
-        warningDiv.setAttribute('data-persistent', 'true');
-        warningDiv.style.display = 'block';
+        const lastRiskScore = sessionStorage.getItem('lastRiskScore');
+        return lastRiskScore ? parseFloat(lastRiskScore) : null;
     }
 
-    // フォームを送信
+    function mapToUserFriendlyError(rawMessage) {
+        const msg = (rawMessage || '').trim();
+        const lower = msg.toLowerCase();
+
+        if (msg.includes('開発プレビュー')) {
+            const isSecurity = msg.includes('警告') || msg.includes('セキュリティ');
+            return {
+                title: isSecurity ? 'セキュリティ上の注意' : 'ご案内',
+                subtitle: msg,
+                hints: ['本番環境では表示されません'],
+            };
+        }
+
+        if (!msg || lower.includes('failed to fetch') || lower.includes('networkerror')) {
+            return {
+                title: '接続できませんでした',
+                subtitle: 'サーバーに接続できませんでした。通信環境をご確認ください。',
+                hints: [
+                    'インターネット接続を確認してください',
+                    'しばらく待ってからもう一度お試しください',
+                    '問題が続く場合はページを再読み込みしてください',
+                ],
+            };
+        }
+        if (/server error:\s*\d+/i.test(msg) || /internal server error/i.test(msg)) {
+            return {
+                title: '一時的なエラーが発生しました',
+                subtitle: 'サーバーで問題が発生しました。しばらく時間をおいてからもう一度お試しください。',
+                hints: [
+                    '入力内容を変えずに、もう一度送信してみてください',
+                    'ページを再読み込みしてからお試しください',
+                    '問題が続く場合は不具合を報告してください',
+                ],
+            };
+        }
+        if (msg.includes('応答の取得に時間がかか')) {
+            return {
+                title: '応答に時間がかかっています',
+                subtitle: msg.split('\n')[0],
+                hints: ['ページを再読み込みしてから、もう一度お試しください'],
+            };
+        }
+        if (msg.includes('通信エラー')) {
+            return {
+                title: '通信エラーが発生しました',
+                subtitle: 'メッセージの送信中に問題が発生しました。',
+                hints: ['もう一度お試しください', '問題が続く場合は不具合を報告してください'],
+            };
+        }
+
+        const lines = msg.split('\n').map((l) => l.trim()).filter(Boolean);
+        const userLines = lines.filter((l) => !l.startsWith('エラー詳細:'));
+        return {
+            title: 'ご案内',
+            subtitle: userLines[0] || '申し訳ございません。処理中にエラーが発生しました。',
+            hints: userLines.length > 1
+                ? userLines.slice(1)
+                : ['しばらく待ってからもう一度お試しください', '問題が続く場合は不具合を報告してください'],
+        };
+    }
+
+    function buildStatusCardHTML(options) {
+        const {
+            variant = 'error',
+            title,
+            subtitle = '',
+            hints = [],
+            dismissible = true,
+            showRetry = true,
+            showReport = true,
+            reportDataAttrs = '',
+        } = options;
+
+        const icons = { error: '⚠️', caution: '⚠️', notice: 'ℹ️', security: '🚨', critical: '⚠️' };
+        const icon = icons[variant] || '⚠️';
+        const hintsHtml = hints.length
+            ? `<ul class="chat-status-card__hints">${hints.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}</ul>`
+            : '';
+        const dismissBtn = dismissible
+            ? `<button type="button" class="chat-status-card__dismiss" aria-label="閉じる" onclick="this.closest('.message').remove()">×</button>`
+            : '';
+        const dismissClass = dismissible ? ' chat-status-card--with-dismiss' : '';
+
+        let actionsHtml = '';
+        if (showRetry || showReport) {
+            const retryBtn = showRetry
+                ? '<button type="button" class="chat-status-card__btn chat-status-card__btn--primary" onclick="retryLastMessage()">もう一度試す</button>'
+                : '';
+            const reportBtn = showReport
+                ? `<button type="button" class="chat-status-card__btn chat-status-card__btn--report report-bug-btn" ${reportDataAttrs} onclick="handleSecurityReportFromButton(this)">不具合を報告</button>`
+                : '';
+            actionsHtml = `<div class="chat-status-card__actions">${retryBtn}${reportBtn}</div>`;
+        }
+
+        return `
+            <div class="message-content">
+                <div class="chat-status-card chat-status-card--${variant}${dismissClass}" role="alert">
+                    ${dismissBtn}
+                    <div class="chat-status-card__header">
+                        <span class="chat-status-card__icon" aria-hidden="true">${icon}</span>
+                        <h4 class="chat-status-card__title">${escapeHtml(title)}</h4>
+                    </div>
+                    ${subtitle ? `<p class="chat-status-card__subtitle">${escapeHtml(subtitle)}</p>` : ''}
+                    <div class="chat-status-card__body">
+                        ${hintsHtml}
+                        ${actionsHtml}
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function insertStatusCardAfterAnchor(chatMessages, wrapper, anchorIndex) {
+        const anchorNode = findMessageNodeByIndex(anchorIndex);
+        if (anchorNode && anchorNode.parentNode === chatMessages) {
+            let insertBefore = anchorNode.nextElementSibling;
+            while (
+                insertBefore
+                && insertBefore.getAttribute('data-status-after-index') === String(anchorIndex)
+            ) {
+                insertBefore = insertBefore.nextElementSibling;
+            }
+            chatMessages.insertBefore(wrapper, insertBefore);
+        } else {
+            const typing = document.getElementById('currentTypingIndicator');
+            if (typing) {
+                chatMessages.insertBefore(wrapper, typing);
+            } else {
+                chatMessages.appendChild(wrapper);
+            }
+        }
+    }
+
+    function showStatusMessage(messageClass, variant, rawMessage, riskScore = null, anchorIndex = null) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return;
+        }
+
+        const securityScore = resolveSecurityScore(riskScore);
+        const friendly = mapToUserFriendlyError(rawMessage);
+        const reportAttrs = [
+            `data-user-message="${escapeHtml(sessionStorage.getItem('lastUserMessage') || '')}"`,
+            `data-ai-response="${escapeHtml(friendly.subtitle)}"`,
+            `data-security-score="${securityScore !== null && securityScore !== undefined ? securityScore : ''}"`,
+        ].join(' ');
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `message bot ${messageClass}`;
+        wrapper.setAttribute('data-persistent', 'true');
+        wrapper.setAttribute('data-status-persistent', 'true');
+        wrapper.setAttribute('data-message-id', `status-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+        if (anchorIndex !== null && anchorIndex !== undefined) {
+            wrapper.setAttribute('data-status-after-index', String(anchorIndex));
+        } else {
+            wrapper.setAttribute('data-status-after-index', '__end__');
+        }
+        wrapper.innerHTML = buildStatusCardHTML({
+            variant,
+            title: friendly.title,
+            subtitle: friendly.subtitle,
+            hints: friendly.hints,
+            showRetry: variant === 'error',
+            showReport: true,
+            reportDataAttrs: reportAttrs,
+        });
+        insertStatusCardAfterAnchor(chatMessages, wrapper, anchorIndex);
+        scrollToBottom();
+    }
+
+    function showErrorMessage(message, riskScore = null, anchorIndex = null) {
+        showStatusMessage('error-message', 'error', message, riskScore, anchorIndex);
+    }
+
+    function showWarningMessage(message, riskScore = null, anchorIndex = null) {
+        showStatusMessage('warning-message', 'security', message, riskScore, anchorIndex);
+    }
+
+    function clearPersistentStatusMessages() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return;
+        }
+        chatMessages.querySelectorAll('[data-status-persistent="true"]').forEach((node) => node.remove());
+    }
+
+    function retryLastMessage() {
+        const lastMessage = sessionStorage.getItem('lastUserMessage');
+        if (!lastMessage) {
+            return;
+        }
+        clearPersistentStatusMessages();
+        const input = document.getElementById('messageInput');
+        const form = document.getElementById('chatForm');
+        if (input) {
+            input.value = lastMessage;
+            input.focus();
+        }
+        if (form && !isSubmitting) {
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+    }
+
+    window.retryLastMessage = retryLastMessage;
+    window.clearPersistentStatusMessages = clearPersistentStatusMessages;
+
+    function clearSlowRequestTimer() {
+        if (slowRequestTimerId) {
+            clearTimeout(slowRequestTimerId);
+            slowRequestTimerId = null;
+        }
+        const slowBtn = document.getElementById('slowRequestBtn');
+        if (slowBtn) slowBtn.style.display = 'none';
+    }
+
+    function scheduleSlowRequestButton() {
+        clearSlowRequestTimer();
+        slowRequestTimerId = setTimeout(function () {
+            const slowBtn = document.getElementById('slowRequestBtn');
+            if (slowBtn && isSubmitting) slowBtn.style.display = 'inline-block';
+        }, 8000);
+    }
+
+    function notifySlowRequest() {
+        const lastMessage = sessionStorage.getItem('lastUserMessage') || '';
+        fetch(withVersion('/api/slow-request-notify'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ last_user_message: lastMessage }),
+        }).catch(function (e) { console.warn('slow-request-notify failed', e); });
+        const slowBtn = document.getElementById('slowRequestBtn');
+        if (slowBtn) {
+            slowBtn.disabled = true;
+            slowBtn.textContent = '通知を送信しました';
+        }
+    }
+    window.notifySlowRequest = notifySlowRequest;
+
+    function removeTemporaryUserMessages() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        chatMessages.querySelectorAll('[data-temporary="true"]').forEach(function (n) { n.remove(); });
+    }
+
+    function ensureStreamingAdviceBubble() {
+        if (streamingAdviceEl && streamingAdviceEl.isConnected) return streamingAdviceEl;
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return null;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot streaming-advice';
+        messageDiv.setAttribute('data-streaming-advice', 'true');
+        messageDiv.innerHTML = '<div class="message-content advice-stream-body"></div>';
+        chatMessages.appendChild(messageDiv);
+        streamingAdviceEl = messageDiv.querySelector('.advice-stream-body');
+        scrollToBottom();
+        return streamingAdviceEl;
+    }
+
+    function appendAdviceDelta(text) {
+        if (!text) return;
+        const el = ensureStreamingAdviceBubble();
+        if (el) {
+            el.textContent += text;
+            scrollToBottom();
+        }
+    }
+
+    function removeStreamingAdviceBubble() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.querySelectorAll('[data-streaming-advice="true"]').forEach(function (n) { n.remove(); });
+        }
+        streamingAdviceEl = null;
+    }
+
+    function removeStreamingMedicineCards() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.querySelectorAll('[data-streaming-cards="true"]').forEach(function (n) { n.remove(); });
+        }
+    }
+
+    function renderStreamingMedicineCards(medicines) {
+        if (!medicines || !medicines.length) return;
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        let wrapper = chatMessages.querySelector('[data-streaming-cards="true"]');
+        if (!wrapper) {
+            wrapper = document.createElement('div');
+            wrapper.className = 'message bot streaming-cards';
+            wrapper.setAttribute('data-streaming-cards', 'true');
+            const title = (typeof t === 'function' && t('recommendedMedicines')) || '推奨医薬品';
+            wrapper.innerHTML =
+                '<div class="message-content streaming-cards-body">' +
+                '<h4 class="streaming-cards-title">💊 ' + escapeHtml(title) + '</h4>' +
+                '<ol class="streaming-medicine-list"></ol>' +
+                '</div>';
+            chatMessages.appendChild(wrapper);
+        }
+        const list = wrapper.querySelector('.streaming-medicine-list');
+        if (!list) return;
+        list.innerHTML = '';
+        medicines.forEach(function (med) {
+            const li = document.createElement('li');
+            li.className = 'streaming-medicine-item';
+            const rank = med.rank ? med.rank + '. ' : '';
+            const name = med.product_name || '';
+            const mfr = med.manufacturer ? ' <span class="streaming-medicine-mfr">(' + escapeHtml(med.manufacturer) + ')</span>' : '';
+            let eff = '';
+            if (med.efficacy) {
+                eff = '<p class="streaming-medicine-efficacy">' + escapeHtml(med.efficacy) + '</p>';
+            }
+            li.innerHTML = '<strong>' + escapeHtml(rank + name) + '</strong>' + mfr + eff;
+            list.appendChild(li);
+        });
+        scrollToBottom();
+    }
+
+    function fetchMessagesAfterPost(data, onComplete) {
+        let retryCount = 0;
+        const maxRetries = 3;
+        const retryInterval = 500;
+
+        const fetchMessages = function () {
+            const timeoutId = setTimeout(function () {
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    setTimeout(fetchMessages, retryInterval);
+                } else {
+                    removeTypingIndicator();
+                    removeProcessingMessage();
+                    removeStreamingAdviceBubble();
+                    removeStreamingMedicineCards();
+                    showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                    restoreSubmitButton();
+                    clearSlowRequestTimer();
+                    if (onComplete) onComplete();
+                }
+            }, 2000);
+
+            fetch(withVersion('/api/sessions'), {
+                credentials: 'include',
+                headers: { 'Cache-Control': 'no-cache' },
+            })
+                .then(function (response) {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(function (sessionData) {
+                    clearTimeout(timeoutId);
+                    const mergedAfterPost = resolveSessionMessages(sessionData || {});
+                    if (mergedAfterPost.length > 0) {
+                        removeTypingIndicator();
+                        const latestMessage = mergedAfterPost[mergedAfterPost.length - 1];
+                        if (latestMessage && latestMessage.type === 'bot') {
+                            let messageId = latestMessage.message_id;
+                            if (!messageId) {
+                                messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                            }
+                            sessionStorage.setItem(
+                                'message_' + messageId,
+                                JSON.stringify({
+                                    user_message: sessionStorage.getItem('lastUserMessage') || '',
+                                    ai_response: latestMessage.content || '',
+                                    security_score: null,
+                                    message_id: messageId,
+                                })
+                            );
+                        }
+                        applySessionMessages(sessionData, { preserveStatusCards: false, forceRender: true });
+                        removeProcessingMessage();
+                        removeStreamingAdviceBubble();
+                        removeStreamingMedicineCards();
+                        restoreSubmitButton();
+                        clearSlowRequestTimer();
+                        if (onComplete) onComplete();
+                    } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        restoreSubmitButton();
+                        clearSlowRequestTimer();
+                        if (onComplete) onComplete();
+                    } else if (retryCount < maxRetries) {
+                        retryCount++;
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        removeStreamingAdviceBubble();
+                        removeStreamingMedicineCards();
+                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        restoreSubmitButton();
+                        clearSlowRequestTimer();
+                        if (onComplete) onComplete();
+                    }
+                })
+                .catch(function () {
+                    clearTimeout(timeoutId);
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        setTimeout(fetchMessages, retryInterval);
+                    } else {
+                        removeTypingIndicator();
+                        removeProcessingMessage();
+                        removeStreamingMedicineCards();
+                        showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
+                        restoreSubmitButton();
+                        clearSlowRequestTimer();
+                        if (onComplete) onComplete();
+                    }
+                });
+        };
+        setTimeout(fetchMessages, retryInterval);
+    }
+
+    function submitFormViaSse(message) {
+        if (!window.ChatSSE) {
+            return submitFormLegacy(message);
+        }
+        scheduleSlowRequestButton();
+        const lastEventId = sessionStorage.getItem('chatSseLastEventId') || null;
+        return window.ChatSSE.submitStream({
+            url: mainAppPath('/api/chat/stream'),
+            message: message,
+            withVersion: withVersion,
+            lastEventId: lastEventId,
+            onEvent: function (ev) {
+                if (ev.id) {
+                    sessionStorage.setItem('chatSseLastEventId', ev.id);
+                }
+                if (ev.event === 'status' && ev.data) {
+                    applySseProcessingStatus(ev.data);
+                }
+                if (ev.event === 'done') {
+                    removeTypingIndicator();
+                }
+                if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
+                    removeTypingIndicator();
+                    appendAdviceDelta(ev.data.text);
+                }
+                if (ev.event === 'cards' && ev.data && ev.data.medicines) {
+                    renderStreamingMedicineCards(ev.data.medicines);
+                }
+                if (ev.event === 'error') {
+                    sessionStorage.removeItem('chatSseLastEventId');
+                    removeTypingIndicator();
+                    removeProcessingMessage();
+                    removeStreamingAdviceBubble();
+                    removeStreamingMedicineCards();
+                    clearSlowRequestTimer();
+                    restoreSubmitButton();
+                    if (ev.data && ev.data.message) {
+                        showErrorMessage(ev.data.message);
+                    }
+                }
+            },
+            onDone: function () {
+                sessionStorage.removeItem('chatSseLastEventId');
+                fetchMessagesAfterPost({ message_count: 1 }, null);
+            },
+            onError: function () {
+                sessionStorage.removeItem('chatSseLastEventId');
+                removeTypingIndicator();
+                removeProcessingMessage();
+                removeStreamingAdviceBubble();
+                removeStreamingMedicineCards();
+                clearSlowRequestTimer();
+                restoreSubmitButton();
+            },
+        }).catch(function () {
+            sessionStorage.removeItem('chatSseLastEventId');
+            removeTypingIndicator();
+            removeProcessingMessage();
+            removeStreamingAdviceBubble();
+            removeStreamingMedicineCards();
+            clearSlowRequestTimer();
+            restoreSubmitButton();
+            return submitFormLegacy(message);
+        });
+    }
+
     function submitForm(message) {
+        if (window.CHAT_USE_SSE !== false && window.ChatSSE) {
+            return submitFormViaSse(message);
+        }
+        return submitFormLegacy(message);
+    }
+
+    // フォームを送信（従来 JSON POST）
+    function submitFormLegacy(message) {
+        scheduleSlowRequestButton();
         const formData = new FormData();
         formData.append('message', message);
         
@@ -5412,7 +6118,11 @@
                 console.error('Server error:', data.response);
                 removeTypingIndicator();
                 removeProcessingMessage();
-                showErrorMessage(data.response, data.risk_score);
+                const errorAnchor = typeof data.message_count === 'number'
+                    ? data.message_count - 1
+                    : null;
+                showErrorMessage(data.response, data.risk_score, errorAnchor);
+                mergeSessionMessagesWithoutClearingStatus();
                 restoreSubmitButton();
                 return;
             }
@@ -5421,7 +6131,11 @@
                 console.warn('Server warning:', data.response);
                 removeTypingIndicator();
                 removeProcessingMessage();
-                showWarningMessage(data.response, data.risk_score);
+                const warningAnchor = typeof data.message_count === 'number'
+                    ? data.message_count - 1
+                    : null;
+                showWarningMessage(data.response, data.risk_score, warningAnchor);
+                mergeSessionMessagesWithoutClearingStatus();
                 restoreSubmitButton();
                 return;
             }
@@ -5466,13 +6180,14 @@
                     console.log('Messages count:', sessionData?.messages?.length);
                     console.log('Expected message count:', data.message_count);
                     
-                    if (sessionData && sessionData.messages && sessionData.messages.length > 0) {
-                        // メッセージが存在する場合は表示（厳密な数値比較を緩和）
+                    const mergedAfterPost = resolveSessionMessages(sessionData || {});
+                    if (mergedAfterPost.length > 0) {
+                        // メッセージが存在する場合は表示（サーバー空でもタブ内キャッシュを復元）
                         console.log('✓ All messages loaded, rendering...');
                         removeTypingIndicator();
                         
                         // 最新のAI応答をセッションストレージに保存（評価ボタン用）
-                        const latestMessage = sessionData.messages[sessionData.messages.length - 1];
+                        const latestMessage = mergedAfterPost[mergedAfterPost.length - 1];
                         if (latestMessage && latestMessage.type === 'bot') {
                             // 既存のメッセージIDを確認または新規生成
                             let messageId = latestMessage.message_id;
@@ -5488,7 +6203,10 @@
                             sessionStorage.setItem(`message_${messageId}`, JSON.stringify(messageData));
                         }
                         
-                        renderChatMessages(sessionData.messages);
+                        applySessionMessages(sessionData, {
+                            preserveStatusCards: false,
+                            forceRender: true
+                        });
                         removeProcessingMessage();
                         restoreSubmitButton();
                     } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
@@ -5543,13 +6261,7 @@
             restoreSubmitButton();
             
             // エラーメッセージを表示
-            let errorMsg = '申し訳ございません。送信中にエラーが発生しました。';
-            if (error.message.includes('Failed to fetch')) {
-                errorMsg += '\nサーバーに接続できません。サーバーが起動しているか確認してください。';
-            } else {
-                errorMsg += `\nエラー詳細: ${error.message}`;
-            }
-            showErrorMessage(errorMsg);
+            showErrorMessage(error.message || '申し訳ございません。送信中にエラーが発生しました。');
         });
     }
 
@@ -5579,6 +6291,13 @@
 
     // ページ読み込み時の初期化
     window.onload = function() {
+        if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
+            ProcessingStatus.stopProcessingPoll();
+        }
+        const orphanTyping = document.getElementById('currentTypingIndicator');
+        if (orphanTyping) {
+            orphanTyping.remove();
+        }
         const input = document.getElementById('messageInput');
         if (input) {
             const pending = sessionStorage.getItem('pendingMessage');
@@ -5594,12 +6313,16 @@
         scrollToBottom();
         // 初回ロード時にAPIから現在の履歴を取得
         loadMessages();
+        // セッション last_activity を維持（タブを開いている間のタイムアウト回避）
+        touchSessionActivity();
+        setInterval(touchSessionActivity, 120000);
     };
 
     // チャット履歴をクリアする関数
     function clearChat() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmClearChat)) {
+            clearChatCache();
             fetch(withVersion(mainAppPath('/clear')), {
                 method: 'POST',
                 credentials: 'include',
@@ -5757,6 +6480,7 @@
     document.getElementById('new-session-btn').onclick = function() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmNewSession)) {
+            clearChatCache();
             fetch(withVersion(mainAppPath('/new_session')), {
                 method: 'POST',
                 credentials: 'include',
@@ -5823,12 +6547,188 @@
     };
 
     function getMessageDomKey(message, index) {
-        if (message && message.uuid) return message.uuid;
-        if (message && message.message_id) return String(message.message_id);
-        return `idx-${index}`;
+        return stableMessageKey(message);
     }
 
-    function renderChatMessages(messages) {
+    function findMessageNodeByIndex(index) {
+        if (index === null || index === undefined || index < 0) {
+            return null;
+        }
+        return document.querySelector(
+            `#chatMessages [data-message-index="${String(index)}"]`
+        );
+    }
+
+    function shouldPreserveStatusCards(messages) {
+        if (!messages || messages.length === 0) {
+            return true;
+        }
+        const last = messages[messages.length - 1];
+        if (last && last.type === 'bot' && !last.error) {
+            return false;
+        }
+        return true;
+    }
+
+    /** サーバー応答が確定したか（最後のメッセージが bot かつエラーでない） */
+    function isChatResponseComplete(messages) {
+        if (!messages || messages.length === 0) {
+            return false;
+        }
+        const last = messages[messages.length - 1];
+        return !!(last && last.type === 'bot' && !last.error);
+    }
+
+    /** 処理中バブル（#currentTypingIndicator）を表示し続けるべきか */
+    function shouldShowTypingIndicator(messages, options) {
+        if (options && options.suppressTypingIndicator) {
+            return false;
+        }
+        if (!isSubmitting) {
+            return false;
+        }
+        if (isChatResponseComplete(messages)) {
+            return false;
+        }
+        return true;
+    }
+
+    function ensureTypingIndicatorElement() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return null;
+        }
+        let el = document.getElementById('currentTypingIndicator');
+        if (el) {
+            return el;
+        }
+        const newTypingDiv = document.createElement('div');
+        newTypingDiv.className = 'message bot';
+        newTypingDiv.id = 'currentTypingIndicator';
+        if (window.ProcessingStatus && ProcessingStatus.getTypingIndicatorHtml) {
+            newTypingDiv.innerHTML = ProcessingStatus.getTypingIndicatorHtml();
+        } else {
+            newTypingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator">AIが診断中...</div></div>';
+        }
+        chatMessages.appendChild(newTypingDiv);
+        return newTypingDiv;
+    }
+
+    function collectStatusCardsByAnchor(chatMessages, preserveStatusCards) {
+        const cardsByAnchor = new Map();
+        if (!preserveStatusCards) {
+            clearPersistentStatusMessages();
+            return cardsByAnchor;
+        }
+        chatMessages.querySelectorAll('[data-status-persistent="true"]').forEach((node) => {
+            const anchor = node.getAttribute('data-status-after-index');
+            const key = anchor !== null && anchor !== '' ? anchor : '__end__';
+            if (!cardsByAnchor.has(key)) {
+                cardsByAnchor.set(key, []);
+            }
+            cardsByAnchor.get(key).push(node);
+            node.remove();
+        });
+        return cardsByAnchor;
+    }
+
+    function syncChatMessageOrder(messages, cardsByAnchor, chatMessages) {
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        const insertBefore = typingIndicator || null;
+        const existingNodes = new Map();
+
+        chatMessages.querySelectorAll('.message[data-message-id]').forEach((node) => {
+            if (node.getAttribute('data-initial-message') === 'true') {
+                return;
+            }
+            if (node.getAttribute('data-status-persistent') === 'true' || node.getAttribute('data-persistent') === 'true') {
+                return;
+            }
+            if (node.id === 'currentTypingIndicator') {
+                return;
+            }
+            const key = node.getAttribute('data-message-id');
+            if (key) {
+                existingNodes.set(key, node);
+            }
+        });
+
+        const pendingNodes = [];
+        chatMessages.querySelectorAll('[data-temporary="true"]').forEach((node) => {
+            pendingNodes.push(node);
+            node.remove();
+        });
+
+        const ordered = [];
+        (messages || []).forEach((message, index) => {
+            const key = getMessageDomKey(message, index);
+            const node = existingNodes.get(key);
+            if (node) {
+                existingNodes.delete(key);
+                if (node.parentNode) {
+                    node.remove();
+                }
+                ordered.push(node);
+            }
+            const cards = cardsByAnchor.get(String(index)) || [];
+            ordered.push(...cards);
+            cardsByAnchor.delete(String(index));
+        });
+
+        pendingNodes.forEach((node) => {
+            const text = (node.querySelector('.message-content')?.textContent || '').trim();
+            const onServer = (messages || []).some(
+                (m) => m.type === 'user' && String(m.content || '').trim() === text
+            );
+            if (!onServer) {
+                ordered.push(node);
+            }
+        });
+
+        const endCards = cardsByAnchor.get('__end__') || [];
+        ordered.push(...endCards);
+        cardsByAnchor.forEach((cards) => {
+            ordered.push(...cards);
+        });
+
+        existingNodes.forEach((node) => node.remove());
+
+        ordered.forEach((node) => {
+            if (insertBefore) {
+                chatMessages.insertBefore(node, insertBefore);
+            } else {
+                chatMessages.appendChild(node);
+            }
+        });
+    }
+
+    function mergeSessionMessagesWithoutClearingStatus() {
+        fetch(withVersion('/api/sessions'), {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((sessionData) => {
+                applySessionMessages(sessionData, {
+                    preserveStatusCards: true,
+                    forceRender: true
+                });
+            })
+            .catch((error) => {
+                console.warn('mergeSessionMessagesWithoutClearingStatus failed:', error);
+                const cached = loadChatCache(getSidFromCookie());
+                if (cached.length > 0) {
+                    renderChatMessages(cached, { preserveStatusCards: true });
+                }
+            });
+    }
+
+    function renderChatMessages(messages, options = {}) {
         // ログ出力を削減（デバッグ時のみ有効）
         // console.log('renderChatMessages called with:', messages ? messages.length : 0, 'messages');
         const chatMessages = document.getElementById('chatMessages');
@@ -5839,11 +6739,7 @@
         
         // 一時的なユーザーメッセージは、新規メッセージ反映後に安全に除去する
         
-        // タイピングインジケーターの状態を保存
-        const typingIndicator = document.getElementById('currentTypingIndicator');
-        const hasTypingIndicator = typingIndicator !== null;
-        // ログ出力を削減（デバッグ時のみ有効）
-        // console.log('hasTypingIndicator:', hasTypingIndicator);
+        const keepTypingIndicator = shouldShowTypingIndicator(messages, options);
         
         // 既存メッセージのIDをチェック（重複防止・同一文言の再送は uuid で区別）
         const existingMessages = chatMessages.querySelectorAll('[data-message-id], [data-message-index]');
@@ -6075,51 +6971,28 @@
         const currentScrollHeight = chatMessages.scrollHeight;
         const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 10;
         
-        // 永続化された警告メッセージを保持
-        const persistentWarnings = chatMessages.querySelectorAll('[data-persistent="true"]');
-        const warningElements = Array.from(persistentWarnings);
-        
+        const preserveStatusCards = options.preserveStatusCards !== undefined
+            ? options.preserveStatusCards
+            : shouldPreserveStatusCards(messages);
+        const cardsByAnchor = collectStatusCardsByAnchor(chatMessages, preserveStatusCards);
+
         // 新規メッセージのみ追加（既存メッセージは保持）
         if (fragment.children.length > 0) {
             chatMessages.appendChild(fragment);
-            // 新規メッセージが反映できた場合のみ、仮表示のユーザーメッセージを除去
-            const tempMessages = chatMessages.querySelectorAll('[data-temporary="true"]');
-            tempMessages.forEach(msg => msg.remove());
         }
-        
-        // 永続化された警告メッセージを復元
-        warningElements.forEach(warning => {
-            chatMessages.appendChild(warning);
-        });
+
+        // サーバー履歴順に並べ替え（エラー/警告カードは該当ユーザー発言の直後）
+        syncChatMessageOrder(messages, cardsByAnchor, chatMessages);
         
         // 評価ボタンを追加（削除済み - HTMLに直接組み込み）
         
-        // タイピングインジケーターを復元
-        if (hasTypingIndicator) {
-            const existingTypingIndicator = document.getElementById('currentTypingIndicator');
-            if (!existingTypingIndicator) {
-                const newTypingDiv = document.createElement('div');
-                newTypingDiv.className = 'message bot';
-                newTypingDiv.id = 'currentTypingIndicator';
-                if (window.ProcessingStatus && ProcessingStatus.getTypingIndicatorHtml) {
-                    newTypingDiv.innerHTML = ProcessingStatus.getTypingIndicatorHtml();
-                } else {
-                    newTypingDiv.innerHTML = '<div class="message-content"><div class="typing-indicator">AIが診断中...</div></div>';
-                }
-                chatMessages.appendChild(newTypingDiv);
-                if (isSubmitting && window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
-                    ProcessingStatus.startProcessingPoll({
-                        onUpdate: function (data) {
-                            const el = document.getElementById('currentTypingIndicator');
-                            if (!el || !data || !data.active) return;
-                            ProcessingStatus.renderProcessingStatus(el, data);
-                        },
-                        interval: 1000
-                    });
-                }
-            }
+        // 応答確定後は処理中バブルと bot 応答の二重表示を防ぐ
+        if (keepTypingIndicator) {
+            ensureTypingIndicatorElement();
+        } else {
+            removeTypingIndicator();
         }
-        
+
         // AI応答メッセージに評価ボタンを追加（削除済み - HTMLに直接組み込み）
         
         // 折りたたみ機能を初期化
@@ -6141,6 +7014,8 @@
             // メッセージ追加後、雪のコンテナの高さを更新
             updateSnowContainerHeight();
         });
+
+        saveChatCache(getSidFromCookie(), dedupeMessageList(messages));
     }
 
     // 定期的にメッセージ部分だけAPIで取得して再描画（間隔10秒）
@@ -6165,17 +7040,13 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data && data.messages) {
-                // メッセージがある場合のみログ出力
-                if (data.messages.length > 0) {
-                    console.log('🔄 Periodic update - rendering', data.messages.length, 'messages');
-                }
-                renderChatMessages(data.messages);
-            }
+            applySessionMessages(data || {}, { allowRestore: false });
         })
         .catch(error => {
-            // エラーログを削減
-            // console.log('Session update error:', error);
+            const cached = loadChatCache(getSidFromCookie());
+            if (cached.length > 0) {
+                renderChatMessages(cached);
+            }
         });
     }, 10000);
     
@@ -6832,10 +7703,7 @@
             }
             
             // textareaの高さを調整
-            messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
-            
-            // inputイベントを発火して他のリスナーにも通知
+            // inputイベントを発火して他のリスナーにも通知（resizeMessageInput も実行）
             const inputEvent = new Event('input', { bubbles: true, cancelable: true });
             messageInput.dispatchEvent(inputEvent);
         };

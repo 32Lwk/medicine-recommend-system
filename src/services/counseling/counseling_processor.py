@@ -306,6 +306,7 @@ def process_counseling_answer(
                         {"role": "user", "content": prompt},
                     ],
                     max_tokens=200,
+                    session_id=session_id,
                 )
                 counseling_response_text = response.choices[0].message.content.strip()
             except Exception as e:
