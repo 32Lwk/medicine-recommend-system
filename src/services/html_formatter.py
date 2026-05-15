@@ -112,7 +112,7 @@ def format_status_card(
     )
 
     return (
-        f'<div class="chat-status-card chat-status-card--{variant} chat-response" '
+        f'<div class="chat-status-card chat-status-card--{variant}" '
         f'role="alert" aria-label="{label}">'
         f'<div class="chat-status-card__header">'
         f'<span class="chat-status-card__icon" aria-hidden="true">{icon}</span>'

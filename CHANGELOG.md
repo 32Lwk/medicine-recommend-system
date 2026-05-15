@@ -1,8 +1,73 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月16日**（GPT-5 / 9エージェント・SSE ストリーム・チャット POST 分割・エラー UI 統一）
+**最終更新日: 2026年5月16日**（スクロールバー統一・SSE 推奨 UI 本格化・ステータスカード表示修正・診断名フィールド分離・遅延通知 UI）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。
+
+---
+
+## 2026年5月16日（続）— スクロールバー統一・SSE 推奨 UI・ステータスカード・診断名分離
+
+### 概要
+
+- スクロールバー定義を **`static/css/scrollbar.css`** に一元化し、メイン・管理・About・デバッグ画面から重複 `::-webkit-scrollbar` を削除。
+- **SSE ストリーミング**の推奨表示を、簡易リストから **本番と同等の `recommendation-result` レイアウト**（アドバイス＋医薬品カード・スコア・注意書き）へ統合。
+- **診断名検出**と **推奨結果オブジェクト**の `diagnosis` フィールド衝突を解消（`diagnosis_type` 分離・`isDiagnosisPayload` 判定）。
+- **ステータスカード**（診断名通知・エラー UI）の二重スタイル・HTML エスケープ表示を修正。
+- **遅延通知ボタン**を処理中バブル内スロットへ移設。属性・ユーザー情報モーダルのスクロール構造を改善。
+
+### スクロールバー統一
+
+- **`static/css/scrollbar.css`（新規）**: 緑・細（7px）・角丸の共通スタイル。Firefox `scrollbar-color` / WebKit `::-webkit-scrollbar*` を 4 セレクタグループで定義。`.app-scrollbar` クラスと既知 UI セレクタ（`.chat-messages`・モーダルフォーム・オンボーディング等）に適用。
+- **`docs/SCROLLBAR_STYLE.md`（新規）**: デザイン仕様・読み込み方法・新規スクロール領域の追加手順・禁止事項。
+- **`.cursor/rules/scrollbar.mdc`（新規）**: Cursor 向け必須ルール（新規スクロール領域は `app-scrollbar`、他 CSS に `::-webkit-scrollbar` を書かない）。
+- **`static/css/main.css` / `admin_chat.css` / `about.css`**: 先頭で `@import url('scrollbar.css')`。各ファイル内の重複スクロールバー定義を削除。
+- **`templates/debug_index.html`**: `scrollbar.css` を `<link>` で読み込み。メッセージ履歴に `app-scrollbar` を付与。
+- **`static/js/admin_chat.js`**: 医薬品チャット JSON 詳細表示に `app-scrollbar` を付与。
+- **管理画面モバイルキュー**: 非表示だった `mobile-queue-slider` のスクロールバーを共通スタイルに復帰。
+
+### SSE ストリーミング UI（`static/js/main.js`・`sse_emit.py`）
+
+- **`emit_cards`（`sse_emit.py`）**: 効能の 80 文字切り詰めを廃止。`explanation`・`display_score` / `relative_score` / `score`・`score_level`・`completeness_penalty`・`age_restriction`・`risk_warning`・`low_score_warning`・`medicine_type` を SSE `cards` ペイロードに追加。
+- **フロント**: `streaming-advice` / `streaming-cards` の二重バブルを **`streaming-recommendation`** 1 本に統合。`ensureStreamingRecommendationResult` で本番同等の HTML 骨格（アドバイス枠・推奨医薬品枠）を構築。
+- **`buildStreamingMedicineItemHtml`**: ランク・メーカー・最適度・推奨理由・外用薬補助注記・年齢制限・リスク警告・低スコア警告・効能を逐次描画。
+- **`appendAdviceDelta` / `renderStreamingMedicineCards`**: 同一バブル内でアドバイス追記と医薬品一覧更新。プレースホルダ（「医薬品を選定しています…」）を CSS で表示。
+
+### ステータスカード・メッセージ表示（`html_formatter.py`・`main.js`・`main.css`）
+
+- **`format_status_card`**: ルート要素から `chat-response` クラスを除去（ステータスカード専用スタイルと推奨結果 `.chat-response` の衝突回避）。
+- **`main.js`**: `isStatusCardHtml`・`wrapBotStatusCardHtml`・`looksLikeHtmlContent` を追加。履歴復元・新規メッセージでステータスカードを `message-content--status-card` でラップ。
+- **`main.css`**: `.message.bot .message-content--status-card` と `.chat-status-card` の余白・背景を調整。旧メッセージ互換用 `.chat-status-card.chat-response` リセットを追加。
+
+### 診断名検出・メッセージスキーマ
+
+- **`chat_diagnosis_handler.py` / `chat_recommendation_flow.py`**: ボット応答の診断名種別を `diagnosis: None` + **`diagnosis_type`** に分離（フロントの `message.diagnosis` オブジェクト判定と衝突しないよう）。
+- **`main.js`**: `isDiagnosisPayload()` — `diagnosis` がオブジェクトのときのみ推奨結果 UI を適用。
+- **`config/dialect_dictionary.py`**: 感情ネガティブ語に「酷い」「くるしい」を追加。
+- **診断ロジック**: 「花粉症が酷いです。」のように **疾患名＋重症度** の入力は `diagnosis_only` ではなくカウンセリング経路へ（`test_032_hay_fever_with_severity_kurai`）。
+
+### 遅延通知 UI（処理中バブル内）
+
+- **`templates/index.html`**: フォーム・モーダル直下の固定 `#slowRequestBtn` を削除。
+- **`main.js` / `processing_status.js`**: `processing-slow-request-slot` を処理中バブル末尾に生成。8 秒経過でスロット表示・アイコン付きボタンを動的生成・`attachSlowRequestButtonToTypingIndicator` で typing 表示と同期。
+- **`main.css`**: `.processing-slow-request-slot` のフェードイン、緑系ボタンスタイル（送信済みはグレーアウト）。
+
+### モーダル・レイアウト
+
+- **`#userInfoModal` / `#attributeModal`**: オーバーレイ中央配置、`modal-content` は `overflow: hidden` + flex、**`#userInfoForm` / `#attributeForm` のみ** `overflow-y: auto`（ヘッダー固定・角丸崩れ防止）。モバイル余白・ヘッダーサイズを調整。
+- **`templates/index.html`**: モーダル inline `overflow-y` を削除し CSS に委譲。キャッシュバスター `?v=20260516-slow-in-bubble`。
+
+### その他
+
+- **`main.py`**: `merge_session_messages` を import（セッションメッセージマージ利用）。
+
+### 回帰テスト（更新）
+
+| テスト | 内容 |
+|--------|------|
+| `test_sse_emit.py` | `emit_cards` の拡張フィールド（`explanation`・`display_score` 等） |
+| `test_html_formatter.py` | ステータスカードに `chat-response` が付かないこと |
+| `test_diagnosis_detection.py` | 花粉症＋「酷い」→ カウンセリング経路（`test_032`） |
 
 ---
 

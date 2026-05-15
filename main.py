@@ -46,6 +46,7 @@ from src.services.session_manager import (
     get_next_user_number,
     get_session_from_db,
     maybe_persist_session_activity,
+    merge_session_messages,
     save_session_to_db,
     set_admin_mode,
     set_ai_auto_reply,
