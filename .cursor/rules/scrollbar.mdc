@@ -1,0 +1,25 @@
+---
+description: スクロールバーは scrollbar.css / app-scrollbar で統一する
+alwaysApply: true
+---
+
+# スクロールバー統一
+
+本プロジェクトのスクロールバーは **`static/css/scrollbar.css`** が唯一の定義元。詳細は `docs/SCROLLBAR_STYLE.md`。
+
+## 必須ルール
+
+1. **新しいスクロール可能領域**には `class="app-scrollbar"` を付与し、`overflow-y: auto`（または `overflow: auto`）と高さ制限をセットする。
+2. **再利用される固定 UI**（例: 新しい一覧パネル）は、`scrollbar.css` の 4 グループ（thin/color・scrollbar・track・thumb・thumb:hover）すべてにセレクタを追加する。他 CSS に `::-webkit-scrollbar` を書かない。
+3. **新しい CSS ファイル**を作る場合は先頭で `@import url('scrollbar.css');` する。単体 HTML は `<link>` で `scrollbar.css` を読み込む。
+4. **モーダル**は `.modal-content` を `overflow: hidden` + flex にし、ヘッダー固定・`#xxxForm` または `.modal-body` のみスクロール（`#userInfoModal` / `#attributeModal` 参照）。
+5. **スクロールバー非表示**は例外のみ（現状: `.mobile-queue-slider`）。非表示にする場合は `scrollbar.css` と `docs/SCROLLBAR_STYLE.md` に理由を記載。
+
+## 禁止
+
+- ブラウザ標準のグレーバーや、グレー系の独自 `::-webkit-scrollbar` を `main.css` / `admin_chat.css` / インライン style に追加すること
+- `--onb-scrollbar-*` の新規定義（既存エイリアスは `scrollbar.css` のみ）
+
+## 実装後の確認
+
+スクロールが発生する UI を追加・変更したら、Chrome/Edge で緑の細いスクロールバーになっているか確認する。

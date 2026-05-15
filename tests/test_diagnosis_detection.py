@@ -279,6 +279,15 @@ class TestDiagnosisDetection(unittest.TestCase):
         is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
         self.assertFalse(is_diagnosis, "一般的な症状のみの入力は診断名として検出されない")
 
+    def test_032_hay_fever_with_severity_kurai(self):
+        """花粉症+重症度（酷い）は診断名のみ扱いにせずカウンセリングへ"""
+        text = "花粉症が酷いです。"
+        is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
+        self.assertTrue(is_diagnosis)
+        self.assertIsNotNone(response)
+        self.assertFalse(response.get("diagnosis_only", True))
+        self.assertTrue(response.get("should_show_counseling", False))
+
 
 if __name__ == '__main__':
     # テストを実行

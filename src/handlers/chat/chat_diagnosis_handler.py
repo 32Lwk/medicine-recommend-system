@@ -130,7 +130,8 @@ def handle_diagnosis_if_detected(
         bot_response = {
             "type": "bot",
             "content": bot_content,
-            "diagnosis": diagnosis_type,
+            "diagnosis": None,
+            "diagnosis_type": diagnosis_type,
             "timestamp": datetime.now().isoformat(),
         }
         session["messages"].append(bot_response)

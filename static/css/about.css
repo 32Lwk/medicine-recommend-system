@@ -1,5 +1,7 @@
 /* About サイト — 紫は使わず。チャットヘッダー（.chat-header + .language-selector）と揃える */
 
+@import url('scrollbar.css');
+
 body.about-page {
     margin: 0;
     position: relative;
@@ -39,41 +41,6 @@ body.about-page > .about-scroll {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     padding-bottom: env(safe-area-inset-bottom, 0);
-    --onb-scrollbar-track: #f0f0f0;
-    --onb-scrollbar-thumb: var(--focus-color, #4CAF50);
-    --onb-scrollbar-thumb-hover: #43a047;
-    scrollbar-width: thin;
-    scrollbar-color: var(--onb-scrollbar-thumb) var(--onb-scrollbar-track);
-}
-
-body.about-page > .about-scroll::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-    background: transparent;
-    border-radius: 999px;
-}
-
-body.about-page > .about-scroll::-webkit-scrollbar-track {
-    background: var(--onb-scrollbar-track);
-    border-radius: 999px;
-    margin-block: 20px;
-    margin-inline-end: 2px;
-}
-
-body.about-page > .about-scroll::-webkit-scrollbar-track-piece {
-    border-radius: 999px;
-}
-
-body.about-page > .about-scroll::-webkit-scrollbar-thumb {
-    background: var(--onb-scrollbar-thumb);
-    background-clip: padding-box;
-    border-radius: 999px;
-    border: 1px solid transparent;
-}
-
-body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--onb-scrollbar-thumb-hover);
-    background-clip: padding-box;
 }
 
 .about-root {
