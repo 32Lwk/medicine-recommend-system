@@ -2,8 +2,11 @@
    Admin Chat - Modern Design System
    ============================================ */
 
+@import url('scrollbar.css');
+
 /* CSS Variables - Modern Color System (example.html style) */
 :root {
+    --focus-color: #4CAF50;
     /* Primary Colors */
     --primary: #0ea5e9;
     --primary-dark: #0284c7;
@@ -540,23 +543,6 @@ main {
     -webkit-overflow-scrolling: touch;
 }
 
-.session-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.session-list::-webkit-scrollbar-track {
-    background: var(--background);
-}
-
-.session-list::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: var(--radius-full);
-}
-
-.session-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-sub);
-}
-
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -636,23 +622,6 @@ main {
     gap: var(--spacing-md);
     min-height: 0;
     -webkit-overflow-scrolling: touch;
-}
-
-.chat-messages::-webkit-scrollbar {
-    width: 6px;
-}
-
-.chat-messages::-webkit-scrollbar-track {
-    background: var(--background);
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: var(--radius-full);
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--text-sub);
 }
 
 .message {
@@ -2525,7 +2494,6 @@ td .ai-response {
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
       gap: var(--spacing-sm);
       padding: var(--spacing-xs) 60px;
       justify-content: flex-start;
@@ -2535,10 +2503,6 @@ td .ai-response {
       z-index: 0;
       /* 最初と最後のアイテムが中央に来るようにスクロールパディングを設定 */
       scroll-padding: 0 calc((100vw - 120px) / 2);
-  }
-  
-  .mobile-queue-slider::-webkit-scrollbar {
-      display: none;
   }
   
   /* スライダーアイテム */

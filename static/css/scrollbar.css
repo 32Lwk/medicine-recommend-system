@@ -1,0 +1,195 @@
+/*
+ * アプリ共通スクロールバー（緑・細・角丸）
+ *
+ * 【保守】新規のスクロール領域は docs/SCROLLBAR_STYLE.md に従うこと。
+ *   - 推奨: 要素に class="app-scrollbar" + overflow-y: auto
+ *   - 固定 UI: 本ファイルの 4 セレクタグループへセレクタを追加（他 CSS に ::-webkit-scrollbar を書かない）
+ *   - 新 CSS ファイル: @import url('scrollbar.css');
+ */
+
+:root {    --app-scrollbar-track: #f0f0f0;
+    --app-scrollbar-thumb: var(--focus-color, #4CAF50);
+    --app-scrollbar-thumb-hover: #43a047;
+    /* オンボーディング等の既存参照との互換 */
+    --onb-scrollbar-track: var(--app-scrollbar-track);
+    --onb-scrollbar-thumb: var(--app-scrollbar-thumb);
+    --onb-scrollbar-thumb-hover: var(--app-scrollbar-thumb-hover);
+}
+
+/* スクロール可能領域（クラス付与または下記セレクタで自動適用） */
+.app-scrollbar,
+.chat-messages,
+.modal-body,
+.processing-advice-preview,
+.onboarding-slide-scroll,
+.onboarding-details-content,
+#userInfoForm,
+#attributeForm,
+.session-list,
+#session-list,
+.mobile-chat-messages,
+#right-panel #manual-reply-queue,
+.admin-modal-content,
+.modal-content,
+#session-management-list,
+#goldenCasesList,
+#medicineChatResult,
+#aiFullTextBody,
+body.about-page > .about-scroll,
+.chat-input textarea,
+.button-group,
+.logs-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+    -webkit-overflow-scrolling: touch;
+}
+
+.app-scrollbar::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.processing-advice-preview::-webkit-scrollbar,
+.onboarding-slide-scroll::-webkit-scrollbar,
+.onboarding-details-content::-webkit-scrollbar,
+#userInfoForm::-webkit-scrollbar,
+#attributeForm::-webkit-scrollbar,
+.session-list::-webkit-scrollbar,
+#session-list::-webkit-scrollbar,
+.mobile-chat-messages::-webkit-scrollbar,
+#right-panel #manual-reply-queue::-webkit-scrollbar,
+.admin-modal-content::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar,
+#session-management-list::-webkit-scrollbar,
+#goldenCasesList::-webkit-scrollbar,
+#medicineChatResult::-webkit-scrollbar,
+#aiFullTextBody::-webkit-scrollbar,
+body.about-page > .about-scroll::-webkit-scrollbar,
+.chat-input textarea::-webkit-scrollbar,
+.button-group::-webkit-scrollbar,
+.logs-container::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    background: transparent;
+    border-radius: 999px;
+}
+
+.app-scrollbar::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track,
+.processing-advice-preview::-webkit-scrollbar-track,
+.onboarding-slide-scroll::-webkit-scrollbar-track,
+.onboarding-details-content::-webkit-scrollbar-track,
+#userInfoForm::-webkit-scrollbar-track,
+#attributeForm::-webkit-scrollbar-track,
+.session-list::-webkit-scrollbar-track,
+#session-list::-webkit-scrollbar-track,
+.mobile-chat-messages::-webkit-scrollbar-track,
+#right-panel #manual-reply-queue::-webkit-scrollbar-track,
+.admin-modal-content::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track,
+#session-management-list::-webkit-scrollbar-track,
+#goldenCasesList::-webkit-scrollbar-track,
+#medicineChatResult::-webkit-scrollbar-track,
+#aiFullTextBody::-webkit-scrollbar-track,
+body.about-page > .about-scroll::-webkit-scrollbar-track,
+.chat-input textarea::-webkit-scrollbar-track,
+.button-group::-webkit-scrollbar-track,
+.logs-container::-webkit-scrollbar-track {
+    background: var(--app-scrollbar-track);
+    border-radius: 999px;
+    margin-block: 8px;
+    margin-inline-end: 2px;
+}
+
+.app-scrollbar::-webkit-scrollbar-track-piece,
+.chat-messages::-webkit-scrollbar-track-piece,
+.modal-body::-webkit-scrollbar-track-piece,
+.processing-advice-preview::-webkit-scrollbar-track-piece,
+.onboarding-slide-scroll::-webkit-scrollbar-track-piece,
+.onboarding-details-content::-webkit-scrollbar-track-piece,
+#userInfoForm::-webkit-scrollbar-track-piece,
+#attributeForm::-webkit-scrollbar-track-piece,
+.session-list::-webkit-scrollbar-track-piece,
+#session-list::-webkit-scrollbar-track-piece,
+.mobile-chat-messages::-webkit-scrollbar-track-piece,
+#right-panel #manual-reply-queue::-webkit-scrollbar-track-piece,
+.admin-modal-content::-webkit-scrollbar-track-piece,
+.modal-content::-webkit-scrollbar-track-piece,
+#session-management-list::-webkit-scrollbar-track-piece,
+#goldenCasesList::-webkit-scrollbar-track-piece,
+#medicineChatResult::-webkit-scrollbar-track-piece,
+#aiFullTextBody::-webkit-scrollbar-track-piece,
+body.about-page > .about-scroll::-webkit-scrollbar-track-piece,
+.chat-input textarea::-webkit-scrollbar-track-piece,
+.button-group::-webkit-scrollbar-track-piece,
+.logs-container::-webkit-scrollbar-track-piece {
+    border-radius: 999px;
+}
+
+.app-scrollbar::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb,
+.processing-advice-preview::-webkit-scrollbar-thumb,
+.onboarding-slide-scroll::-webkit-scrollbar-thumb,
+.onboarding-details-content::-webkit-scrollbar-thumb,
+#userInfoForm::-webkit-scrollbar-thumb,
+#attributeForm::-webkit-scrollbar-thumb,
+.session-list::-webkit-scrollbar-thumb,
+#session-list::-webkit-scrollbar-thumb,
+.mobile-chat-messages::-webkit-scrollbar-thumb,
+#right-panel #manual-reply-queue::-webkit-scrollbar-thumb,
+.admin-modal-content::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb,
+#session-management-list::-webkit-scrollbar-thumb,
+#goldenCasesList::-webkit-scrollbar-thumb,
+#medicineChatResult::-webkit-scrollbar-thumb,
+#aiFullTextBody::-webkit-scrollbar-thumb,
+body.about-page > .about-scroll::-webkit-scrollbar-thumb,
+.chat-input textarea::-webkit-scrollbar-thumb,
+.button-group::-webkit-scrollbar-thumb,
+.logs-container::-webkit-scrollbar-thumb {
+    background: var(--app-scrollbar-thumb);
+    background-clip: padding-box;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+.app-scrollbar::-webkit-scrollbar-thumb:hover,
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover,
+.processing-advice-preview::-webkit-scrollbar-thumb:hover,
+.onboarding-slide-scroll::-webkit-scrollbar-thumb:hover,
+.onboarding-details-content::-webkit-scrollbar-thumb:hover,
+#userInfoForm::-webkit-scrollbar-thumb:hover,
+#attributeForm::-webkit-scrollbar-thumb:hover,
+.session-list::-webkit-scrollbar-thumb:hover,
+#session-list::-webkit-scrollbar-thumb:hover,
+.mobile-chat-messages::-webkit-scrollbar-thumb:hover,
+#right-panel #manual-reply-queue::-webkit-scrollbar-thumb:hover,
+.admin-modal-content::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover,
+#session-management-list::-webkit-scrollbar-thumb:hover,
+#goldenCasesList::-webkit-scrollbar-thumb:hover,
+#medicineChatResult::-webkit-scrollbar-thumb:hover,
+#aiFullTextBody::-webkit-scrollbar-thumb:hover,
+body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover,
+.chat-input textarea::-webkit-scrollbar-thumb:hover,
+.button-group::-webkit-scrollbar-thumb:hover,
+.logs-container::-webkit-scrollbar-thumb:hover {
+    background: var(--app-scrollbar-thumb-hover);
+    background-clip: padding-box;
+}
+
+/* オンボーディングスライド: 角丸からトラックを離す */
+.onboarding-slide-scroll::-webkit-scrollbar-track,
+body.about-page > .about-scroll::-webkit-scrollbar-track {
+    margin-block: 20px;
+}
+
+/* 意図的にスクロールバー非表示 */
+.mobile-queue-slider {
+    scrollbar-width: none;
+}
+
+.mobile-queue-slider::-webkit-scrollbar {
+    display: none;
+}

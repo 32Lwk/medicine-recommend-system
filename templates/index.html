@@ -205,7 +205,7 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260516-2" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260516-slow-in-bubble" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
@@ -515,7 +515,6 @@
                 <button type="submit">送信</button>
             </div>
         </form>
-        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 
@@ -526,13 +525,13 @@
         window.CHAT_USE_SSE = true;
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260516-poll-fix2" defer></script>
+    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260516-slow-in-bubble" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260516-tdz-fix" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260516-slow-in-bubble" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
-    <div class="modal-content" style="max-height: 60%; overflow-y: auto;">
+    <div class="modal-content">
         <div class="modal-header">
             <h3>📋 追加情報の入力</h3>
             <span class="close-modal" onclick="closeAttributeModal()">&times;</span>
@@ -602,13 +601,12 @@
             
             <button type="submit" class="submit-attributes-btn">📤 送信して再分析</button>
         </form>
-        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 
 <!-- ユーザー情報登録モーダル -->
 <div id="userInfoModal" class="modal">
-    <div class="modal-content" style="max-width: 600px; max-height: 70%; overflow-y: auto;">
+    <div class="modal-content">
         <div class="modal-header">
             <h3>👤 ユーザー情報登録</h3>
             <span class="close-modal" onclick="closeUserInfoModal()">&times;</span>
@@ -671,7 +669,6 @@
             
             <button type="submit" class="submit-attributes-btn">💾 保存</button>
         </form>
-        <button type="button" id="slowRequestBtn" class="slow-request-btn" style="display:none" onclick="notifySlowRequest()">時間がかかっています</button>
     </div>
 </div>
 

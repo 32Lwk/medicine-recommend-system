@@ -1,3 +1,5 @@
+@import url('scrollbar.css');
+
         :root {
             --font-size-base: 1rem; /* 標準サイズ */
             --line-height-base: 1.8; /* ベース行間 */
@@ -475,54 +477,91 @@
         .chat-input button:hover {
             background: #45a049;
         }
-        .slow-request-btn {
+        .processing-slow-request-slot {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(76, 175, 80, 0.2);
+        }
+        .processing-slow-request-slot.is-visible {
             display: block;
+            animation: processing-slow-slot-in 0.35s ease-out;
+        }
+        @keyframes processing-slow-slot-in {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .processing-status-bubble .slow-request-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%;
-            margin-top: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .slow-request-btn:disabled {
-            opacity: 0.7;
-            cursor: default;
-        }
-        .message.streaming-advice .advice-stream-body {
-            white-space: pre-wrap;
-            line-height: 1.5;
-        }
-        .message.streaming-cards .streaming-cards-body {
-            padding: 12px 14px;
-            background: #f8fbff;
-            border-radius: 8px;
-            border-left: 4px solid #2196f3;
-        }
-        .message.streaming-cards .streaming-cards-title {
-            margin: 0 0 8px 0;
-            font-size: 1em;
-            color: #1976d2;
-        }
-        .message.streaming-cards .streaming-medicine-list {
+            box-sizing: border-box;
             margin: 0;
-            padding-left: 1.2em;
+            padding: 10px 14px;
+            min-height: 44px;
+            font-size: calc(var(--font-size-base) * 0.875);
+            font-weight: 600;
+            font-family: inherit;
+            line-height: 1.35;
+            color: #2e7d32;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.35);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .message.streaming-cards .streaming-medicine-item {
-            margin-bottom: 8px;
-            line-height: 1.45;
+        .processing-status-bubble .slow-request-btn:hover:not(:disabled) {
+            background: rgba(76, 175, 80, 0.16);
+            border-color: rgba(76, 175, 80, 0.5);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
         }
-        .message.streaming-cards .streaming-medicine-mfr {
-            color: #666;
+        .processing-status-bubble .slow-request-btn:focus-visible {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+        .processing-status-bubble .slow-request-btn-icon {
+            font-size: 1.05em;
+            line-height: 1;
+            opacity: 0.9;
+        }
+        .processing-status-bubble .slow-request-btn-text {
+            text-align: center;
+        }
+        .processing-status-bubble .slow-request-btn.is-sent,
+        .processing-status-bubble .slow-request-btn:disabled {
+            color: #64748b;
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            cursor: default;
+            box-shadow: none;
+        }
+        .processing-status-bubble .slow-request-btn.is-sent .slow-request-btn-icon {
+            opacity: 0.65;
+        }
+        .message.streaming-recommendation .recommendation-result {
+            margin: 0;
+        }
+        .message.streaming-recommendation:not(.has-advice) .streaming-advice-section .streaming-personalized-advice:empty::before {
+            content: '…';
+            color: #90a4ae;
+        }
+        .message.streaming-recommendation:not(.has-medicines) .streaming-medicines-container:empty::before {
+            content: '医薬品を選定しています…';
+            display: block;
+            color: #558b2f;
             font-size: 0.9em;
-            font-weight: normal;
         }
-        .message.streaming-cards .streaming-medicine-efficacy {
-            margin: 4px 0 0 0;
-            font-size: 0.85em;
-            color: #444;
+        .message.streaming-recommendation .streaming-personalized-advice {
+            white-space: pre-wrap;
+            line-height: 1.6;
         }
         .processing-advice-preview {
             margin-top: 8px;
@@ -1483,6 +1522,30 @@
             padding: 0;
             background: transparent;
             border: none;
+        }
+
+        /* ステータスカード（診断名・エラー・注意）を message-content 内で正しく表示 */
+        .message.bot .message-content.message-content--status-card,
+        .message.bot .message-content:has(> .chat-status-card) {
+            padding: 0;
+            background: transparent;
+            border: none;
+            max-width: min(95%, 640px);
+            display: block;
+        }
+
+        .message.bot .message-content--status-card .chat-status-card,
+        .message.bot .message-content > .chat-status-card {
+            margin: 0;
+        }
+
+        /* 旧メッセージ互換: chat-response が付いたステータスカード */
+        .chat-status-card.chat-response {
+            min-height: auto;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
         }
 
         .chat-status-card__actions {
@@ -3606,11 +3669,54 @@
         }
 
         /* ===== 入力モーダルの可読性改善（左右余白の拡大） ===== */
-        #userInfoModal .modal-content,
+        /* display:flex 時に子がビューポート全高へ伸びないよう中央配置 */
+        #userInfoModal {
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        #userInfoModal .modal-content {
+            padding: 0;
+            margin: 0;
+            width: 90%;
+            max-width: 600px;
+            max-height: min(80vh, calc(100vh - 32px));
+            height: auto;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        #userInfoModal #userInfoForm {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-gutter: stable;
+            overscroll-behavior: contain;
+        }
+
         #attributeModal .modal-content {
-            padding: 0 0 24px 0; /* ヘッダーをモーダル幅いっぱいに、上下のみ余白 */
-            max-height: 80vh; /* 高さ制限を設定して下部余白を抑制 */
-            overflow-y: auto; /* 内容が多い場合はスクロール可能 */
+            padding: 0;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #attributeModal #attributeForm {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-gutter: stable;
+            overscroll-behavior: contain;
         }
 
         /* コンテンツ本体に内側余白を付与（ヘッダーは余白なしでフル幅） */
@@ -3631,41 +3737,101 @@
             border-radius: 10px;
         }
 
-        /* モーダルヘッダーの緑色背景を大きく（アプリ概要モーダルと同様のスタイル） */
-        #userInfoModal .modal-header,
-        #attributeModal .modal-header {
+        /* モーダルヘッダーの緑色背景 */
+        #userInfoModal .modal-header {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
-            padding: 20px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 0; /* デフォルトのmarginをリセット */
-            border-radius: 15px 15px 0 0; /* 上部の角丸を維持 */
-            /* スクロールバーによる角の角ばりを防ぐ */
-            position: relative;
-            z-index: 1;
+            margin: 0;
+            border-radius: 15px 15px 0 0;
+            flex-shrink: 0;
         }
 
-        #userInfoModal .modal-header h3,
+        #userInfoModal .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        #userInfoModal .modal-header .close-modal {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1;
+        }
+
+        #userInfoModal .modal-header .close-modal:hover {
+            color: #fff;
+        }
+
+        #attributeModal .modal-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
+            border-radius: 15px 15px 0 0;
+            flex-shrink: 0;
+        }
+
         #attributeModal .modal-header h3 {
             margin: 0;
-            font-size: 20px; /* アプリ概要モーダルと同じサイズ */
-            font-weight: bold; /* アプリ概要モーダルと同じウェイト */
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        #attributeModal .modal-header .close-modal {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1;
+        }
+
+        #attributeModal .modal-header .close-modal:hover {
+            color: #fff;
         }
 
         /* モバイル時の余白最適化（はみ出し防止） */
         @media (max-width: 480px) {
-            #userInfoModal .modal-content,
+            #userInfoModal {
+                padding: 12px;
+            }
+
+            #userInfoModal .modal-content {
+                width: 95%;
+                max-height: min(85vh, calc(100vh - 24px));
+            }
+
+            #userInfoModal form {
+                padding: 16px 18px;
+            }
+
+            #userInfoModal .modal-header {
+                padding: 10px 14px;
+            }
+
+            #userInfoModal .modal-header h3 {
+                font-size: 15px;
+            }
+
             #attributeModal .modal-content {
                 width: 95%;
-                padding: 14px 16px; /* 端末幅が狭いときは少し控えめに */
-                max-height: 85vh; /* モバイルでは少し高めに設定 */
+                max-height: 85vh;
             }
-            
-            #userInfoModal .modal-header,
+
+            #attributeModal form {
+                padding: 16px 18px;
+            }
+
             #attributeModal .modal-header {
-                padding: 15px; /* モバイルでは少し控えめに */
+                padding: 10px 14px;
+            }
+
+            #attributeModal .modal-header h3 {
+                font-size: 15px;
             }
         }
 
@@ -4043,9 +4209,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     max-height: 90vh;
     overflow-x: hidden;
     overflow-y: hidden;
-    --onb-scrollbar-track: #f0f0f0;
-    --onb-scrollbar-thumb: var(--focus-color, #4CAF50);
-    --onb-scrollbar-thumb-hover: #43a047;
     animation: fadeInUp 0.4s ease;
     position: fixed !important;
     top: 50%;
@@ -4061,41 +4224,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     container-type: inline-size;
     container-name: onboarding-modal;
     /* --onb-modal-height: main.js が #onboarding-container の offsetHeight を px で同期（詳細本文の max-height 20%／2つ開いたとき 15% 用） */
-}
-
-.onboarding-slide-scroll::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-    background: transparent;
-    border-radius: 999px;
-}
-
-/*
- * WebKit: トラックに margin-block で角弧からトラックを離す（Firefox では再現不可）。
- * サムは細い透明 border で実描画幅を抑え、長い margin でも極端に潰れにくくする。
- */
-.onboarding-slide-scroll::-webkit-scrollbar-track {
-    background: var(--onb-scrollbar-track);
-    border-radius: 999px;
-    margin-block: 20px;
-    margin-inline-end: 2px;
-}
-
-.onboarding-slide-scroll::-webkit-scrollbar-track-piece {
-    border-radius: 999px;
-}
-
-/* サム: 透明 border + padding-box で実幅より内側に描画（角との干渉をさらに弱める） */
-.onboarding-slide-scroll::-webkit-scrollbar-thumb {
-    background: var(--onb-scrollbar-thumb);
-    background-clip: padding-box;
-    border-radius: 999px;
-    border: 1px solid transparent;
-}
-
-.onboarding-slide-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--onb-scrollbar-thumb-hover);
-    background-clip: padding-box;
 }
 
 /* 縦スクロールはアクティブスライドの .onboarding-slide-scroll のみ。ヘッダー・フッター・インジケータは固定 */
@@ -4288,9 +4416,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--onb-scrollbar-thumb) var(--onb-scrollbar-track);
 }
 
 .onboarding-slide-footer {
@@ -4494,9 +4619,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     overflow-x: hidden;
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--onb-scrollbar-thumb) var(--onb-scrollbar-track);
     padding-right: 0.35rem;
     box-sizing: border-box;
     font-size: 0.95rem;
@@ -4505,32 +4627,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
 
 .onboarding-slide-scroll.onboarding-details-dense .onboarding-details-content {
     max-height: calc(var(--onb-modal-height, 90vh) * 0.15);
-}
-
-.onboarding-details-content::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-    background: transparent;
-    border-radius: 999px;
-}
-
-.onboarding-details-content::-webkit-scrollbar-track {
-    background: var(--onb-scrollbar-track);
-    border-radius: 999px;
-    margin-block: 8px;
-    margin-inline-end: 2px;
-}
-
-.onboarding-details-content::-webkit-scrollbar-thumb {
-    background: var(--onb-scrollbar-thumb);
-    background-clip: padding-box;
-    border-radius: 999px;
-    border: 1px solid transparent;
-}
-
-.onboarding-details-content::-webkit-scrollbar-thumb:hover {
-    background: var(--onb-scrollbar-thumb-hover);
-    background-clip: padding-box;
 }
 
 .onboarding-details-content .info-section {

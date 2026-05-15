@@ -310,7 +310,10 @@
             locale.badge,
             locale.progressAria
         ));
+        var slowSlot = document.createElement('div');
+        slowSlot.className = 'processing-slow-request-slot';
         bubble.appendChild(wrapper);
+        bubble.appendChild(slowSlot);
         return bubble.outerHTML;
     }
 

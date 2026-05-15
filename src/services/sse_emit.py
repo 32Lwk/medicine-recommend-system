@@ -231,14 +231,24 @@ def emit_cards(
     payload = []
     for i, med in enumerate(medicines[:5], 1):
         efficacy = med.get("efficacy") or ""
-        if isinstance(efficacy, str) and len(efficacy) > 80:
-            efficacy = efficacy[:80] + "…"
+        if not isinstance(efficacy, str):
+            efficacy = str(efficacy) if efficacy is not None else ""
         payload.append(
             {
                 "rank": i,
                 "product_name": med.get("product_name") or med.get("name") or "",
                 "manufacturer": med.get("manufacturer") or "",
                 "efficacy": efficacy,
+                "explanation": med.get("explanation") or med.get("reason") or "",
+                "display_score": med.get("display_score"),
+                "relative_score": med.get("relative_score"),
+                "score": med.get("score"),
+                "score_level": med.get("score_level") or "",
+                "completeness_penalty": med.get("completeness_penalty", 0.0),
+                "age_restriction": med.get("age_restriction") or "",
+                "risk_warning": med.get("risk_warning") or "",
+                "low_score_warning": bool(med.get("low_score_warning")),
+                "medicine_type": med.get("medicine_type") or "",
             }
         )
     emit_sse_event(

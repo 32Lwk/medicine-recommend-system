@@ -54,15 +54,28 @@ def test_emit_cards_payload():
     sink, _ = activate_stream_sink("s")
     try:
         emit_cards(
-            [{"product_name": "薬A", "manufacturer": "社A", "efficacy": "風邪"},
-             {"name": "薬B"}],
+            [
+                {
+                    "product_name": "薬A",
+                    "manufacturer": "社A",
+                    "efficacy": "風邪",
+                    "explanation": "症状に適した医薬品です",
+                    "display_score": 85.5,
+                    "score_level": "高",
+                },
+                {"name": "薬B"},
+            ],
             session_id="s",
         )
         ev = sink.drain_nowait()[0]
         assert ev[0] == "cards"
         assert ev[1]["count"] == 2
-        assert ev[1]["medicines"][0]["product_name"] == "薬A"
-        assert ev[1]["medicines"][0]["manufacturer"] == "社A"
+        med0 = ev[1]["medicines"][0]
+        assert med0["product_name"] == "薬A"
+        assert med0["manufacturer"] == "社A"
+        assert med0["explanation"] == "症状に適した医薬品です"
+        assert med0["display_score"] == 85.5
+        assert med0["score_level"] == "高"
     finally:
         deactivate_stream_sink("s")
 

@@ -51,6 +51,7 @@ def test_format_diagnosis_notification():
     assert 'chat-status-card__footer' in html
     assert 'bug-report-btn' in html
     assert html.count('chat-status-card chat-status-card--notice') == 1
+    assert 'chat-status-card--notice chat-response' not in html
     assert html.index('chat-status-card__footer') > html.index('chat-status-card__body')
 
 
