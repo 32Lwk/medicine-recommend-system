@@ -302,6 +302,23 @@ def was_last_user_message(session, content: str) -> bool:
     return last.get('type') == 'user' and last.get('content') == content
 
 
+def has_recent_counseling_reply_for_user(session, user_content: str) -> bool:
+    """直前が同一内容 user へのカウンセリング bot 返信なら True（並列 POST 防止）。
+
+    呼び出し前に user を追記済みの場合、意図的な再送では末尾が user になるため False。
+    """
+    messages = session.get("messages") or []
+    if len(messages) < 2:
+        return False
+    last = messages[-1]
+    prev = messages[-2]
+    if last.get("type") != "bot":
+        return False
+    if not (last.get("counseling") or last.get("inappropriate_request")):
+        return False
+    return prev.get("type") == "user" and prev.get("content") == user_content
+
+
 def append_user_message(session, content: str) -> dict:
     """セッションにユーザーメッセージを追加する（同一文言の再送も別メッセージとして保持）。"""
     import uuid
@@ -389,6 +406,17 @@ def persist_session_from_chat_state(sid, session, request=None):
         session_data['username'] = username
     elif not session_data.get('username'):
         session_data['username'] = f'ユーザー{get_next_user_number()}'
+    for flag_key in (
+        'medical_emergency_otc_locked',
+        'otc_lock_released',
+        'store_incident_soft_banner',
+        'store_incident_otc_opt_in',
+        'emergency_subtype',
+        'emergency_detected',
+        'store_incident_emergency',
+    ):
+        if flag_key in session:
+            session_data[flag_key] = session[flag_key]
     save_session_to_db(sid, session_data)
 
 

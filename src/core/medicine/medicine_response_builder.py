@@ -232,6 +232,7 @@ def chat_with_medicine_context(
     conversation_history,
     recommended_medicines,
     client=None,
+    session_id=None,
 ):
     """
     会話履歴と推奨医薬品の情報をChatGPTに渡して、医薬品に関する質問に回答する
@@ -415,19 +416,65 @@ def chat_with_medicine_context(
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
     try:
-        from src.core.llm_client import chat_completion_create
+        from src.core.llm_client import chat_completion_create, chat_completion_stream
+        from src.services.sse_emit import (
+            emit_qa_delta,
+            emit_qa_sections_from_response,
+            is_streaming_active,
+        )
+
+        system_msg = (
+            "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。"
+            "医薬品の詳細（medicine_details）は、効能の全文羅列ではなく、製品名・主成分・質問に関係する用途を2〜3文で簡潔に書いてください。"
+            "推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。"
+        )
+        messages = [
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": prompt},
+        ]
+
+        stream_active = is_streaming_active(session_id)
+        streamed_answer = ""
+        if stream_active and session_id:
+            try:
+                from src.services.processing_status import mark_processing_step, set_processing_flow
+
+                set_processing_flow(session_id, "ask_qa")
+                mark_processing_step(session_id, "medicine_qa")
+            except Exception:
+                pass
+
+            answer_prompt = f"""
+【会話履歴】
+{history_text}
+
+【推奨医薬品】
+{medicines_text}
+
+【質問】
+{user_message}
+
+上記を踏まえ、ユーザーへの直接的な回答のみを200字以内で自然な日本語で書いてください。JSONや見出しは不要です。
+"""
+            streamed_answer = chat_completion_stream(
+                client,
+                model_role="explain",
+                path="medicine_response_builder.chat_context.answer_stream",
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": answer_prompt},
+                ],
+                on_delta=lambda c: emit_qa_delta(c, session_id, section="answer"),
+                session_id=session_id,
+                temperature=0.3,
+                max_tokens=400,
+            ).strip()
 
         response = chat_completion_create(
             client,
             model_role="explain",
             path="medicine_response_builder.chat_context",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。医薬品の詳細（medicine_details）は、効能の全文羅列ではなく、製品名・主成分・質問に関係する用途を2〜3文で簡潔に書いてください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。",
-                },
-                {"role": "user", "content": prompt},
-            ],
+            messages=messages,
             temperature=0.3,
             max_tokens=1000,
         )
@@ -458,9 +505,14 @@ def chat_with_medicine_context(
                         "side_effects": "推奨医薬品の情報では回答できません",
                         "consultation_advice": "お近くの登録販売者にご相談ください",
                     }
+                if stream_active and session_id and streamed_answer:
+                    parsed_result["answer"] = streamed_answer
+                    emit_qa_sections_from_response(parsed_result, session_id)
+                elif stream_active and session_id:
+                    emit_qa_sections_from_response(parsed_result, session_id)
                 return parsed_result
             else:
-                return {
+                fallback = {
                     "answer": result,
                     "medicine_details": "詳細情報を取得できませんでした",
                     "interactions": "飲み合わせ情報を取得できませんでした",
@@ -468,6 +520,11 @@ def chat_with_medicine_context(
                     "side_effects": "副作用情報を取得できませんでした",
                     "consultation_advice": "お近くの登録販売者にご相談ください",
                 }
+                if stream_active and session_id:
+                    if streamed_answer:
+                        fallback["answer"] = streamed_answer
+                    emit_qa_sections_from_response(fallback, session_id)
+                return fallback
         except json.JSONDecodeError as e:
             print(f"JSON解析エラー: {e}")
             return {

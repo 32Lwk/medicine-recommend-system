@@ -34,13 +34,15 @@ def ctx():
     )
 
 
-@patch("src.handlers.chat_orchestrator.is_agent_session_eligible", return_value=True)
 @patch("src.handlers.chat_orchestrator.is_agent_enabled", return_value=True)
 @patch("src.handlers.chat_orchestrator.ChatOrchestrator")
-def test_try_orchestrator_route_delegates(mock_orch_cls, _enabled, _eligible, ctx):
-    mock_orch_cls.return_value.route.return_value = (
-        {"status": "ok", "message_count": 1},
-        200,
+def test_try_orchestrator_route_delegates(mock_orch_cls, _enabled, ctx):
+    from src.handlers.orchestrator_route_result import OrchestratorRouteResult, RouteReason
+
+    mock_orch_cls.return_value.route.return_value = OrchestratorRouteResult(
+        resolved=True,
+        response=({"status": "ok", "message_count": 1}, 200),
+        reason=RouteReason.RESOLVED,
     )
     from src.handlers.chat_orchestrator import try_orchestrator_route
 
@@ -50,7 +52,7 @@ def test_try_orchestrator_route_delegates(mock_orch_cls, _enabled, _eligible, ct
     mock_orch_cls.return_value.route.assert_called_once()
 
 
-@patch("config.llm_flags.is_agent_enabled", return_value=False)
+@patch("src.handlers.chat_orchestrator.is_agent_enabled", return_value=False)
 def test_try_orchestrator_disabled(_mock, ctx):
     from src.handlers.chat_orchestrator import try_orchestrator_route
 

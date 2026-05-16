@@ -57,7 +57,8 @@ if __name__ == '__main__':
         raise
 
     port = _resolve_port()
-    reload = os.getenv('APP_ENV', '').strip().lower() != 'production'
+    # 既定は reload OFF（Windows でチャット中に再起動すると全 API がハングするため）
+    reload = os.getenv('UVICORN_RELOAD', '').strip().lower() in ('1', 'true', 'yes')
     host = os.getenv('ASGI_HOST', '0.0.0.0')
     logger.info(f"🚀 Starting FastAPI (uvicorn) on port {port} (reload={reload})...")
     logger.info(
@@ -65,4 +66,22 @@ if __name__ == '__main__':
         port,
     )
     _schedule_open_browser(port)
-    uvicorn.run('main:app', host=host, port=port, reload=reload)
+    # reload 時に log/ やキャッシュ変更で再起動すると SSE が切れ「接続できません」になるため監視範囲を限定
+    uvicorn_kwargs = {
+        'host': host,
+        'port': port,
+        'reload': reload,
+    }
+    if reload:
+        uvicorn_kwargs['reload_dirs'] = ['src', 'config', 'templates', 'static']
+        uvicorn_kwargs['reload_excludes'] = [
+            'log',
+            'log/*',
+            '**/__pycache__',
+            '**/__pycache__/*',
+            '.pytest_cache',
+            '.pytest_cache/*',
+            '*.pyc',
+            '*.jsonl',
+        ]
+    uvicorn.run('main:app', **uvicorn_kwargs)

@@ -43,10 +43,25 @@
                 attributes: 'お客様情報を確認しています',
                 symptom_analysis: '症状を詳しく分析しています',
                 medicine_select: 'お薬を選定しています',
+                medicine_qa: '医薬品の質問に回答しています',
                 safety: '安全性を確認しています',
                 usage_notes: '使用上の注意を作成しています',
                 translate: '回答を整えています',
                 finalize: '回答を仕上げています'
+            },
+            stepDetails: {
+                emergency: {
+                    crisis_language: 'クライシス対応を準備しています',
+                    medical_self: '医療緊急の案内を準備しています',
+                    store_incident: '店舗インシデント対応を準備しています',
+                    emergency_dispatch: '緊急応答を準備しています'
+                },
+                medicine_select: {
+                    explanation: '推奨理由を作成しています'
+                },
+                attributes: {
+                    nlu: '症状と属性を整理しています'
+                }
             }
         },
         en: {
@@ -68,6 +83,17 @@
                 usage_notes: 'Preparing usage instructions',
                 translate: 'Preparing your answer',
                 finalize: 'Finalizing response'
+            },
+            stepDetails: {
+                emergency: {
+                    crisis_language: 'Preparing crisis support response',
+                    medical_self: 'Preparing medical emergency guidance',
+                    store_incident: 'Preparing store incident response',
+                    emergency_dispatch: 'Preparing emergency response'
+                },
+                medicine_select: {
+                    explanation: 'Generating recommendation reasons'
+                }
             }
         },
         ko: {
@@ -89,6 +115,17 @@
                 usage_notes: '사용상의 주의를 작성하고 있습니다',
                 translate: '답변을 정리하고 있습니다',
                 finalize: '답변을 마무리하고 있습니다'
+            },
+            stepDetails: {
+                emergency: {
+                    crisis_language: '위기 대응을 준비하고 있습니다',
+                    medical_self: '의료 응급 안내를 준비하고 있습니다',
+                    store_incident: '매장 인시던트 대응을 준비하고 있습니다',
+                    emergency_dispatch: '응급 응답을 준비하고 있습니다'
+                },
+                medicine_select: {
+                    explanation: '추천 이유를 작성하고 있습니다'
+                }
             }
         },
         zh: {
@@ -110,6 +147,17 @@
                 usage_notes: '正在生成使用注意事项',
                 translate: '正在整理回复',
                 finalize: '正在完成回复'
+            },
+            stepDetails: {
+                emergency: {
+                    crisis_language: '正在准备危机支援回复',
+                    medical_self: '正在准备医疗紧急指引',
+                    store_incident: '正在准备店内事件应对',
+                    emergency_dispatch: '正在准备紧急回复'
+                },
+                medicine_select: {
+                    explanation: '正在生成推荐理由'
+                }
             }
         }
     };
@@ -225,26 +273,43 @@
         var locale = getLocale(lang);
         var stepId = data.step_id;
         var label = (stepId && locale.steps[stepId]) ? locale.steps[stepId] : (data.label || locale.defaultLabel);
+        var detailLabel = data.detail_label || '';
+        if (!detailLabel && data.detail_code && stepId && locale.stepDetails && locale.stepDetails[stepId]) {
+            detailLabel = locale.stepDetails[stepId][data.detail_code] || '';
+        }
         return {
             active: true,
             step_id: stepId,
             label: label,
+            detail_label: detailLabel,
+            detail_code: data.detail_code || '',
             step: data.step,
             total: data.total,
             percent: data.percent,
             language: lang,
             badge: locale.badge,
             progressAria: locale.progressAria,
-            advice_preview: data.advice_preview || ''
+            advice_preview: data.advice_preview || '',
+            flow_id: data.flow_id || '',
+            flow_description: data.flow_description || '',
+            flow_hint: data.flow_hint || '',
+            agent_name: data.agent_name || '',
+            agent_role: data.agent_role || '',
+            agent_description: data.agent_description || ''
         };
     }
 
     function statusKey(data) {
         if (!data || !data.active) return 'inactive';
-        return [getCurrentLang(data), data.step_id, data.step, data.percent, data.label, data.advice_preview || ''].join(':');
+        return [
+            getCurrentLang(data), data.flow_id, data.step_id, data.detail_code,
+            data.agent_name, data.step, data.percent, data.label,
+            data.detail_label, data.flow_hint, data.advice_preview || ''
+        ].join(':');
     }
 
-    function buildProcessingCardElement(label, step, total, percent, badge, progressAria) {
+    function buildProcessingCardElement(label, step, total, percent, badge, progressAria, detailLabel, meta) {
+        meta = meta || {};
         var safePercent = Math.min(100, Math.max(0, percent || 0));
 
         var card = document.createElement('div');
@@ -283,16 +348,55 @@
         track.appendChild(fill);
         card.appendChild(header);
         card.appendChild(labelEl);
+        if (detailLabel) {
+            var detailEl = document.createElement('p');
+            detailEl.className = 'processing-status-detail';
+            detailEl.style.cssText = 'margin: 4px 0 0; font-size: 0.85em; color: #555;';
+            detailEl.textContent = detailLabel;
+            card.appendChild(detailEl);
+        }
+        if (meta.agent_name) {
+            var agentEl = document.createElement('p');
+            agentEl.className = 'processing-status-agent';
+            agentEl.style.cssText = 'margin: 6px 0 0; font-size: 0.8em; color: #2e7d32; font-weight: 600;';
+            var agentLine = '【' + meta.agent_name + '】';
+            if (meta.agent_role) {
+                agentLine += ' ' + meta.agent_role;
+            }
+            agentEl.textContent = agentLine;
+            card.appendChild(agentEl);
+        }
+        if (meta.agent_description) {
+            var agentDescEl = document.createElement('p');
+            agentDescEl.className = 'processing-status-agent-desc';
+            agentDescEl.style.cssText = 'margin: 2px 0 0; font-size: 0.75em; color: #666;';
+            agentDescEl.textContent = meta.agent_description;
+            card.appendChild(agentDescEl);
+        }
+        if (meta.flow_description) {
+            var flowEl = document.createElement('p');
+            flowEl.className = 'processing-status-flow';
+            flowEl.style.cssText = 'margin: 4px 0 0; font-size: 0.75em; color: #1565c0;';
+            flowEl.textContent = 'フロー: ' + meta.flow_description;
+            card.appendChild(flowEl);
+        }
+        if (meta.flow_hint) {
+            var hintEl = document.createElement('p');
+            hintEl.className = 'processing-status-flow-hint';
+            hintEl.style.cssText = 'margin: 2px 0 0; font-size: 0.75em; color: #555;';
+            hintEl.textContent = meta.flow_hint;
+            card.appendChild(hintEl);
+        }
         card.appendChild(track);
 
         return card;
     }
 
-    function mountProcessingCard(container, label, step, total, percent, badge, progressAria) {
+    function mountProcessingCard(container, label, step, total, percent, badge, progressAria, detailLabel, meta) {
         while (container.firstChild) {
             container.removeChild(container.firstChild);
         }
-        container.appendChild(buildProcessingCardElement(label, step, total, percent, badge, progressAria));
+        container.appendChild(buildProcessingCardElement(label, step, total, percent, badge, progressAria, detailLabel, meta));
     }
 
     function getTypingIndicatorHtml() {
@@ -322,6 +426,7 @@
 
         var localized = localizeStatusData(data);
         var label = localized.label;
+        var detailLabel = localized.detail_label || '';
         var step = localized.step || 0;
         var total = localized.total || 14;
         var percent = Math.min(100, Math.max(0, localized.percent || 0));
@@ -356,20 +461,49 @@
             previewEl.remove();
         }
 
+        var meta = {
+            agent_name: localized.agent_name,
+            agent_role: localized.agent_role,
+            agent_description: localized.agent_description,
+            flow_description: localized.flow_description,
+            flow_hint: localized.flow_hint
+        };
         if (key !== lastRenderedKey || !wrapper.querySelector('.processing-status-label')) {
-            mountProcessingCard(wrapper, label, step, total, percent, badge, progressAria);
+            mountProcessingCard(wrapper, label, step, total, percent, badge, progressAria, detailLabel, meta);
             lastRenderedKey = key;
             return;
         }
 
         var badgeEl = wrapper.querySelector('.processing-status-badge');
         var labelEl = wrapper.querySelector('.processing-status-label');
+        var detailEl = wrapper.querySelector('.processing-status-detail');
+        var agentEl = wrapper.querySelector('.processing-status-agent');
+        var flowEl = wrapper.querySelector('.processing-status-flow');
         var fillEl = wrapper.querySelector('.processing-status-bar-fill');
         var trackEl = wrapper.querySelector('.processing-status-track');
         var pillEl = wrapper.querySelector('.processing-status-step-pill');
 
         if (badgeEl) badgeEl.textContent = badge;
         if (labelEl) labelEl.textContent = label;
+        if (detailLabel) {
+            if (!detailEl) {
+                detailEl = document.createElement('p');
+                detailEl.className = 'processing-status-detail';
+                detailEl.style.cssText = 'margin: 4px 0 0; font-size: 0.85em; color: #555;';
+                if (labelEl && labelEl.parentNode) {
+                    labelEl.parentNode.insertBefore(detailEl, labelEl.nextSibling);
+                }
+            }
+            detailEl.textContent = detailLabel;
+        } else if (detailEl) {
+            detailEl.remove();
+        }
+        if (agentEl && meta.agent_name) {
+            agentEl.textContent = '【' + meta.agent_name + '】' + (meta.agent_role ? ' ' + meta.agent_role : '');
+        }
+        if (flowEl && meta.flow_description) {
+            flowEl.textContent = 'フロー: ' + meta.flow_description;
+        }
         if (pillEl) pillEl.textContent = step + ' / ' + total;
         if (fillEl) fillEl.style.width = percent + '%';
         if (trackEl) {

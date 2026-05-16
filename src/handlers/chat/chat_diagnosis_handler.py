@@ -45,7 +45,7 @@ def handle_diagnosis_if_detected(
 
     mark_processing_step(sid, "diagnosis")
     try:
-        from src.core.medicine_logic import is_diagnosis_term
+        from src.core.diagnosis_detection import is_diagnosis_term
     except ImportError as e:
         logger.warning(f"⚠️ 診断名検出機能のインポートに失敗: {e}")
         return None

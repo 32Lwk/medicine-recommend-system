@@ -20,4 +20,13 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     Returns:
         tuple[dict, int]: JSON 本文と HTTP ステータス
     """
-    return run_chat_post_pipeline(session, client_info, message, sid, monitor)
+    from src.services.chat_inflight import end_chat_job, try_begin_chat_job
+
+    if not try_begin_chat_job(sid):
+        logger.warning("Skipping duplicate chat POST sid=%s", sid)
+        count = len(session.get("messages") or []) if session else 0
+        return ({"status": "ok", "message_count": count}, 200)
+    try:
+        return run_chat_post_pipeline(session, client_info, message, sid, monitor)
+    finally:
+        end_chat_job(sid)

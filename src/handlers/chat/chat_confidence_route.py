@@ -45,80 +45,27 @@ def check_triage_confidence(
         confidence = float(triage_result.get("confidence", 1.0))
 
         if category == "Emergency":
-            if confidence < 0.5:
-                emergency_message = """
-⚠️ 緊急症状の可能性がありますが、確信度が低いため確認が必要です。
+            from src.handlers.chat.emergency_dispatch import dispatch_emergency
 
-心臓の痛みや呼吸困難などの緊急症状はありますか？
-緊急の場合は119番（救急）に連絡してください。
-"""
-                bot_response = {
-                    "type": "bot",
-                    "content": emergency_message,
-                    "emergency_warning": True,
-                    "requires_confirmation": True,
-                    "triage_result": triage_result,
-                    "timestamp": datetime.now().isoformat(),
-                }
-                session.setdefault("messages", []).append(bot_response)
-                _mark_session_modified(session)
-                log_counseling_response(
-                    session_id=sid,
-                    response_content=emergency_message.strip(),
-                    response_type="emergency_low_confidence_confirmation",
-                    category="Emergency",
-                    confidence=confidence,
-                    counseling_mode=None,
-                    user_input=user_message,
-                    conversation_history=None,
-                )
-                log_confidence_check(
-                    session_id=sid,
-                    user_input=sanitized_message,
-                    triage_result=triage_result,
-                    confidence_threshold=0.5,
-                    was_confirmation_requested=True,
-                )
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        session_data["messages"] = session["messages"].copy()
-                        session_data["last_activity"] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                return ({"status": "ok", "message_count": len(session["messages"])}, 200)
-
-            emergency_message = """⚠️ 緊急対応が必要な症状の可能性があります。
-速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
-市販薬での対応は推奨できません。医師の診断を受けてください。
-"""
-            bot_response = {
-                "type": "bot",
-                "content": emergency_message,
-                "emergency": True,
-                "medical_consultation": "urgent",
-                "timestamp": datetime.now().isoformat(),
-            }
-            session.setdefault("messages", []).append(bot_response)
-            _mark_session_modified(session)
-            log_counseling_response(
-                session_id=sid,
-                response_content=emergency_message.strip(),
-                response_type="emergency_response",
-                category="Emergency",
-                confidence=confidence,
-                counseling_mode=None,
-                user_input=user_message,
-                conversation_history=None,
+            emerg = dispatch_emergency(
+                session,
+                recommendation_client,
+                sid,
+                sanitized_message,
+                recommendation_client,
+                triage_result,
             )
-            if sid:
-                session_data = get_session_from_db(sid)
-                if session_data:
-                    session_data["messages"] = session["messages"].copy()
-                    session_data["last_activity"] = datetime.now()
-                    save_session_to_db(sid, session_data)
-            return ({"status": "ok", "message_count": len(session["messages"])}, 200)
+            if emerg is not None:
+                return emerg
 
         if confidence < 0.7:
+            if sid:
+                try:
+                    from src.services.processing_status import set_processing_flow
+
+                    set_processing_flow(sid, "confidence_check")
+                except Exception:
+                    pass
             conversation_history = (
                 session.get("messages", [])[-10:]
                 if len(session.get("messages", [])) > 10

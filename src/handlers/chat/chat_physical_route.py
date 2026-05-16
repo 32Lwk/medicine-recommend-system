@@ -79,9 +79,9 @@ def prepare_physical_category(
     後続の推奨フローへ fall-through するため状態のみ返す。
     """
     try:
-        from config.llm_flags import is_agent_enabled, is_agent_session_eligible
+        from config.llm_flags import is_agent_enabled
 
-        if is_agent_enabled() and is_agent_session_eligible(sid):
+        if is_agent_enabled():
             prepare_physical_recommendation(
                 session, sanitized_message, recommendation_client, sid
             )

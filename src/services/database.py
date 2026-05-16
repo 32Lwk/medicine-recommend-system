@@ -59,6 +59,19 @@ class DatabaseManager:
         self.reconnect_retries = 3
         self.reconnect_backoff = 1  # 秒
         self._reconnecting = False  # 再帰防止フラグ
+
+    def is_available(self) -> bool:
+        """接続プールまたは単一接続が有効か。"""
+        return bool(self.connection_pool or self.connection)
+
+    def is_intentionally_disabled(self) -> bool:
+        """DATABASE_URL 未設定など、起動時に DB を使わない想定か。"""
+        reason = self.startup_skip_reason
+        if reason in ("no_url", "no_driver"):
+            return True
+        if not self.database_url and not self.is_available():
+            return True
+        return False
         
     def connect(self):
         """データベースに接続または接続プールを作成"""
@@ -196,6 +209,10 @@ class DatabaseManager:
     
     def get_connection(self):
         """接続プールから接続を取得、または単一接続を返す"""
+        if not self.is_available():
+            if not self.is_intentionally_disabled():
+                logger.error("❌ No database connection available")
+            return None
         if self.connection_pool:
             try:
                 conn = self.connection_pool.getconn()
@@ -283,9 +300,9 @@ class DatabaseManager:
                 if self._reconnect_with_retry():
                     return self.connection
                 return None
-        else:
+        if not self.is_intentionally_disabled():
             logger.error("❌ No database connection available")
-            return None
+        return None
     
     def put_connection(self, conn):
         """接続をプールに返す"""
@@ -299,7 +316,6 @@ class DatabaseManager:
         """テーブルを初期化"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
             
         try:
@@ -441,7 +457,6 @@ class DatabaseManager:
         """フィードバックをデータベースに保存"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
             
         try:
@@ -479,7 +494,6 @@ class DatabaseManager:
         """フィードバック報告一覧を取得"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return []
         
         if RealDictCursor is None:
@@ -540,7 +554,6 @@ class DatabaseManager:
         """フィードバックを解決済みにマーク"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
             
         try:
@@ -571,7 +584,6 @@ class DatabaseManager:
         """フィードバックを削除"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
 
         try:
@@ -612,7 +624,6 @@ class DatabaseManager:
         """セッションをデータベースに保存"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
         
         try:
@@ -669,7 +680,6 @@ class DatabaseManager:
         """processing_status カラムのみ更新（messages は触らない）"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
         try:
             cursor = conn.cursor()
@@ -726,7 +736,6 @@ class DatabaseManager:
         """セッションをデータベースから取得"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return None
         
         try:
@@ -770,7 +779,6 @@ class DatabaseManager:
         """セッションをデータベースから削除"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
         
         try:
@@ -805,7 +813,6 @@ class DatabaseManager:
         """
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return 0
         
         try:
@@ -869,7 +876,6 @@ class DatabaseManager:
         """セッションを削除"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
         
         try:
@@ -897,7 +903,6 @@ class DatabaseManager:
         """全セッションを削除"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return 0
         
         try:
@@ -925,7 +930,6 @@ class DatabaseManager:
         """全てのセッションを取得（管理用）"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return []
         
         try:
@@ -991,7 +995,6 @@ class DatabaseManager:
         """グローバル状態を取得"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return default_value
         
         try:
@@ -1033,7 +1036,6 @@ class DatabaseManager:
         """グローバル状態を設定"""
         conn = self.get_connection()
         if not conn:
-            logger.error("❌ No database connection")
             return False
         
         try:

@@ -1,22 +1,9 @@
 """
-心臓以外の緊急事案検出・応答処理
-
-責務: 緊急事案の検出（handle_store_emergency）、メッセージ追加・DB更新・
-手動返信キュー追加・ログ記録を行い、緊急時は返却用の Response を返す。
+緊急事案検出・応答処理（店舗 / メディカル / クライシス統合）
 """
 
 import logging
-import uuid
-from datetime import datetime
-from typing import Optional, Any
-
-from src.services.session_manager import (
-    get_manual_reply_queue,
-    set_manual_reply_queue,
-    get_session_from_db,
-    save_session_to_db,
-    append_user_message,
-)
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -28,121 +15,23 @@ def handle_emergency_if_detected(
     sanitized_message: str,
     recommendation_client: Any,
     triage_result: Optional[dict],
+    *,
+    moderation_label: Optional[str] = None,
+    trace_id: Optional[str] = None,
 ) -> Optional[Any]:
     """
     緊急事案を検出した場合に応答処理を実行し、返却用の Response を返す。
-    緊急でない場合は None を返す。
-
-    Args:
-        session: Flaskセッション
-        client: クライアント情報（IP / User-Agent）
-        sid: セッションID
-        sanitized_message: サニタイズ済みメッセージ
-        recommendation_client: OpenAIクライアント（handle_store_emergency 用）
-        triage_result: トリアージ結果
-
-    Returns:
-        緊急事案として処理した場合は (dict, status)。そうでなければ None。
+    緊急でない場合は None。triage が Emergency でも店舗キーワードが無い場合はメディカルへフォールバック。
     """
-    from src.services.processing_status import mark_processing_step
+    from src.handlers.chat.emergency_dispatch import dispatch_emergency
 
-    mark_processing_step(sid, "emergency")
-    try:
-        from src.services.store_emergency_handler import handle_store_emergency
-    except ImportError as e:
-        logger.warning(f"⚠️ 緊急事案検出機能のインポートに失敗: {e}")
-        return None
-
-    user_language = session.get("language", "ja")
-    emergency_result = handle_store_emergency(
+    return dispatch_emergency(
+        session,
+        client,
+        sid,
         sanitized_message,
         recommendation_client,
         triage_result,
-        user_language,
+        moderation_label=moderation_label,
+        trace_id=trace_id,
     )
-
-    if not emergency_result or not emergency_result.get("is_emergency"):
-        return None
-
-    logger.warning(f"🚨 緊急事案を検出: {emergency_result.get('emergency_type')}")
-
-    append_user_message(session, sanitized_message)
-
-    emergency_type = emergency_result.get("emergency_type")
-    emergency_response = emergency_result.get("response", {})
-    bot_response = {
-        "type": "bot",
-        "content": emergency_response.get("structured_html", emergency_response.get("simple_message", "")),
-        "emergency_detected": True,
-        "emergency_type": emergency_type,
-        "emergency_types": emergency_result.get("emergency_types", []),
-        "emergency_keywords": emergency_result.get("detected_keywords", []),
-        "icon": emergency_result.get("icon", "🔴"),
-        "color": emergency_result.get("color", "#d32f2f"),
-        "priority_score": emergency_result.get("priority_score", 999),
-        "timestamp": datetime.now().isoformat(),
-    }
-    session["messages"].append(bot_response)
-    session.modified = True
-    session["emergency_detected"] = True
-
-    if sid:
-        session_data = get_session_from_db(sid)
-        if not session_data:
-            session_data = {
-                "session_id": sid,
-                "username": session.get("username", "Unknown"),
-                "messages": session["messages"].copy(),
-                "last_activity": datetime.now(),
-                "client_ip": client.client_ip,
-                "user_agent": client.user_agent,
-                "user_attributes": session.get("user_attributes", {}),
-                "session_active": True,
-                "emergency_detected": True,
-            }
-        else:
-            session_data["messages"] = session["messages"].copy()
-            session_data["emergency_detected"] = True
-            session_data["last_activity"] = datetime.now()
-        save_session_to_db(sid, session_data)
-
-    try:
-        from src.security.security_logger import log_emergency_detection
-        log_emergency_detection(
-            user_id=session.get("username", "unknown"),
-            input_text=sanitized_message,
-            emergency_type=emergency_type,
-            emergency_types=emergency_result.get("emergency_types", []),
-            detected_keywords=emergency_result.get("detected_keywords", []),
-            session_id=sid,
-        )
-    except ImportError:
-        logger.warning("⚠️ 緊急事案ログ機能のインポートに失敗")
-    except Exception as e:
-        logger.error(f"❌ 緊急事案ログ記録エラー: {e}")
-
-    emergency_queue_item = {
-        "session_id": sid,
-        "user_message": sanitized_message,
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "emergency_detected",
-        "emergency_type": emergency_type,
-        "emergency_types": emergency_result.get("emergency_types", []),
-        "emergency_keywords": emergency_result.get("detected_keywords", []),
-        "icon": emergency_result.get("icon", "🔴"),
-        "color": emergency_result.get("color", "#d32f2f"),
-        "priority": "highest",
-        "priority_score": emergency_result.get("priority_score", 999),
-    }
-    queue = get_manual_reply_queue()
-    queue.append(emergency_queue_item)
-    set_manual_reply_queue(queue)
-    logger.info(f"🚨 緊急事案セッションを手動返信キューに追加: {sid}")
-
-    message_count = len(session["messages"])
-    logger.info(f"✅ 緊急事案対応完了: {message_count} messages")
-    return ({
-        "status": "ok",
-        "message_count": message_count,
-        "emergency_detected": True,
-    }, 200)

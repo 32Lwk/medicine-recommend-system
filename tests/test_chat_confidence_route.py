@@ -15,7 +15,7 @@ def test_emergency_high_confidence_returns_early(mock_log):
     )
     assert resp is not None
     assert resp[0]["status"] == "ok"
-    assert session["messages"][-1].get("emergency") is True
+    assert session["messages"][-1].get("emergency_detected") is True
 
 
 @patch("src.services.counseling_response.log_counseling_response")

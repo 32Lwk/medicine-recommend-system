@@ -46,9 +46,9 @@ def test_sitemap_xml(client):
 
 
 def test_admin_unauthorized(client):
-    r = client.get("/admin")
-    assert r.status_code == 401
-    assert "WWW-Authenticate" in r.headers
+    r = client.get("/admin", follow_redirects=False)
+    assert r.status_code == 302
+    assert r.headers.get("location", "").endswith("/admin/login")
 
 
 def test_api_sessions_json_shape(client):

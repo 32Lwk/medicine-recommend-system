@@ -2,7 +2,7 @@
 from unittest.mock import MagicMock, patch
 
 
-@patch("src.handlers.chat.chat_triage.run_triage_agent", return_value={"category": "Physical", "confidence": 0.9})
+@patch("src.agents.triage_agent.run_triage_agent", return_value={"category": "Physical", "confidence": 0.9})
 @patch("src.services.triage_analytics.log_triage_result")
 def test_run_triage_calls_agent_once(_log, mock_agent):
     from src.handlers.chat.chat_triage import run_triage

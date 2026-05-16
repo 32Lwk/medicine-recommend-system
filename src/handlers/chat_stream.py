@@ -10,6 +10,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
+import time
 from typing import Any, AsyncIterator, Dict, Optional
 
 from starlette.requests import Request
@@ -24,6 +26,7 @@ from src.utils.request_safe_session import RequestSafeSession
 from src.services.sse_emit import (
     StreamSink,
     activate_stream_sink,
+    bind_worker_stream_sink,
     deactivate_stream_sink,
     get_active_session_sink,
     is_session_stream_active,
@@ -35,7 +38,8 @@ from src.utils.chat_http_context import ChatClientInfo
 
 logger = logging.getLogger(__name__)
 
-
+_STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "90"))
+_KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str) -> None:
     safe_session.setdefault("messages", [])
     safe_session.setdefault(
@@ -83,6 +87,7 @@ def _run_chat_post(
     sid: str,
     monitor: Any,
 ) -> tuple:
+    bind_worker_stream_sink(sid)
     return handle_chat_post(safe_session, client_info, message, sid, monitor)
 
 
@@ -122,35 +127,57 @@ async def stream_chat_events(
     sink: Optional[StreamSink] = None
     reattach = False
     if sid:
-        sink, reattach = activate_stream_sink(sid)
+        sink, reattach = activate_stream_sink(sid, allow_reattach=bool(last_event_id))
     elif not sid:
         pass
 
-    worker: Optional[asyncio.Task] = None
+    worker: Optional[asyncio.Future] = None
     owns_worker = False
 
     if reattach:
         sink = get_active_session_sink(sid) or sink
     else:
         owns_worker = True
-        worker = asyncio.create_task(
-            asyncio.to_thread(
-                _run_chat_post,
-                safe_session,
-                client_info,
-                message,
-                sid,
-                monitor,
-            )
+        loop = asyncio.get_running_loop()
+        from src.services.chat_worker import get_chat_executor
+
+        # run_in_executor は await 可能な Future を返す（create_task 不可）
+        worker = loop.run_in_executor(
+            get_chat_executor(),
+            _run_chat_post,
+            safe_session,
+            client_info,
+            message,
+            sid,
+            monitor,
         )
 
+    started_at = time.monotonic()
+    last_keepalive = started_at
     try:
         while True:
             if sink:
                 for line in _yield_sink_events(sink):
                     yield line
 
+            now = time.monotonic()
+            if now - last_keepalive >= _KEEPALIVE_SEC:
+                yield ": keepalive\n\n"
+                last_keepalive = now
+
             if owns_worker and worker and worker.done():
+                break
+            if owns_worker and worker and (time.monotonic() - started_at) > _STREAM_TIMEOUT_SEC:
+                logger.error("SSE chat worker timeout after %.0fs sid=%s", _STREAM_TIMEOUT_SEC, sid)
+                yield _sse_line(
+                    "error",
+                    {
+                        "code": "stream_timeout",
+                        "message": "処理に時間がかかりすぎています。もう一度お試しください。",
+                        "fallback_hint": "POST /",
+                    },
+                    event_id="error",
+                )
                 break
             if reattach and sid and not is_session_stream_active(sid):
                 cached = pop_stream_result(sid)
@@ -168,7 +195,7 @@ async def stream_chat_events(
             for line in _yield_sink_events(sink):
                 yield line
 
-        if owns_worker and worker:
+        if owns_worker and worker and worker.done():
             body, status_code = await worker
             if sid:
                 set_stream_result(sid, body, status_code)
@@ -184,6 +211,8 @@ async def stream_chat_events(
                 trace_id=trace_id,
             )
             yield _sse_line("done", done.to_payload(), event_id="done")
+        elif owns_worker and worker and not worker.done():
+            logger.warning("SSE stream ended before worker completed sid=%s", sid)
 
     except Exception as e:
         logger.exception("SSE stream failed: %s", e)

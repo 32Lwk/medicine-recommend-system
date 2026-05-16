@@ -19,6 +19,7 @@ def reset_cache():
 
     with ps._lock:
         ps._cache.clear()
+        ps._flow_context.clear()
         ps._last_step.clear()
         ps._last_flush_at.clear()
         ps._pending_flush.clear()
@@ -26,6 +27,7 @@ def reset_cache():
     yield
     with ps._lock:
         ps._cache.clear()
+        ps._flow_context.clear()
         ps._last_step.clear()
         ps._last_flush_at.clear()
         ps._pending_flush.clear()
@@ -41,7 +43,7 @@ def test_mark_increases_percent_monotonically():
     mark_processing_step(sid, "medicine_select")
     p3 = get_processing_status(sid)["percent"]
     assert p1 < p2 < p3
-    assert get_processing_status(sid)["step"] == 10
+    assert get_processing_status(sid)["step"] >= 3
 
 
 def test_same_step_skipped():
@@ -78,11 +80,15 @@ def test_debounced_flush_single_call():
     assert mock_db.update_processing_status_only.call_count >= 1
 
 
-def test_total_steps_matches_catalog():
+def test_total_steps_matches_flow():
     sid = "test-session-5"
+    from src.services.processing_status import set_processing_flow
+
+    set_processing_flow(sid, "greeting")
     mark_processing_step(sid, "finalize")
     status = get_processing_status(sid)
-    assert status["total"] == len(PROCESSING_STEPS)
+    assert status["total"] == 4
+    assert status.get("flow_id") == "greeting"
 
 
 def test_processing_language_in_status():
