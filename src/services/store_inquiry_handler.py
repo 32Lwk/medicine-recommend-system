@@ -8,8 +8,11 @@ import json
 import logging
 import os
 import re
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+
 from openai import OpenAI
+
+from src.services.routing_keyword_policy import attach_routing_keyword_candidates
 
 logger = logging.getLogger(__name__)
 
@@ -79,9 +82,15 @@ SYMPTOM_KEYWORDS = [
     "薬", "医薬品", "治療", "治したい", "治る", "改善", "緩和"
 ]
 
-# 周辺施設関連のキーワード
-FACILITIES_KEYWORDS = [
+# 周辺施設: 空間的な文脈（これがない限り曖昧施設名だけでは facilities にしない）
+FACILITIES_SPATIAL_KEYWORDS = [
     "近くに", "周辺に", "近くの", "周辺の", "近所に", "近所の",
+    "この辺", "付近", "近辺", "周り", "最寄り", "最寄", "徒歩圏",
+    "店から", "店舗から", "ここから", "店の近く", "お店の近く",
+]
+
+# 周辺施設: 施設タイプ（コンビニ等）。単独では弱シグナル — 位置質問・空間文脈と組み合わせる
+FACILITY_TYPE_KEYWORDS = [
     # 買い物
     "コンビニ", "セブンイレブン", "ファミリーマート", "ローソン", "ミニストップ",
     "スーパー", "スーパーマーケット", "ショッピングモール", "デパート", "百貨店",
@@ -94,9 +103,8 @@ FACILITIES_KEYWORDS = [
     "病院", "総合病院", "クリニック", "診療所", "医院", "歯科医院", "整骨院", "接骨院", "介護施設", "老人ホーム",
     # 交通・インフラ
     "駅", "バス停", "タクシー乗り場", "駐車場", "ガソリンスタンド", "道の駅", "サービスエリア", "コインランドリー",
-    # 公共施設・教育
+    # 公共施設（教育施設は FACILITY_NAMES_AMBIGUOUS で別管理）
     "公園", "図書館", "公民館", "市役所", "区役所", "役場", "警察署", "交番", "消防署",
-    "小学校", "中学校", "高校", "大学", "幼稚園", "保育園", "塾", "予備校",
     # 宿泊・入浴・リラクゼーション
     "ホテル", "旅館", "銭湯", "温泉", "サウナ", "マッサージ店", "整体院", "エステサロン", "美容室", "理容室",
     # 娯楽・スポーツ
@@ -105,6 +113,21 @@ FACILITIES_KEYWORDS = [
     # その他
     "神社", "寺院", "教会", "葬儀場"
 ]
+
+FACILITIES_LOCATION_QUESTION_KEYWORDS = [
+    "どこに", "どこで", "どこですか", "どこにあり", "どこにある",
+    "場所は", "場所を", "行き方", "アクセス", "道順",
+]
+
+# 店舗案内の「どこ」単独マッチを抑止（文脈ありのときのみ許可）
+STORE_LOCATION_BARE_KEYWORDS = frozenset({
+    "どこ", "場所", "どこに", "どこですか", "どこにありますか",
+})
+
+# 運営者情報・メタ質問と紛れやすい施設名（周辺案内には空間文脈が必須）
+FACILITY_NAMES_AMBIGUOUS = frozenset({
+    "大学", "小学校", "中学校", "高校", "幼稚園", "保育園", "塾", "予備校",
+})
 
 # 周辺施設名リスト
 FACILITY_NAMES = [
@@ -131,6 +154,64 @@ FACILITY_NAMES = [
     # その他
     "神社", "寺院", "教会", "葬儀場"
 ]
+
+
+def _text_lower(user_text: str) -> str:
+    return (user_text or "").lower()
+
+
+def has_facilities_spatial_context(user_text: str) -> bool:
+    t = _text_lower(user_text)
+    return any(k in t for k in FACILITIES_SPATIAL_KEYWORDS)
+
+
+def has_facilities_location_question(user_text: str) -> bool:
+    t = _text_lower(user_text)
+    if any(k in t for k in FACILITIES_LOCATION_QUESTION_KEYWORDS):
+        return True
+    if "どこ" in t or "場所" in t:
+        return True
+    return False
+
+
+def has_store_scoped_location_context(user_text: str) -> bool:
+    """店内・売場・トイレなど、店舗案内としての位置質問文脈。"""
+    t = _text_lower(user_text)
+    scoped = (
+        "トイレ", "お手洗い", "便所", "化粧室", "洗面所",
+        "レジ", "店内", "売り場", "棚", "コーナー", "フロア", "階",
+        "案内", "受付",
+    )
+    return any(k in t for k in scoped)
+
+
+def should_defer_store_to_concierge(
+    user_text: str,
+    triage_result: Optional[Dict] = None,
+) -> bool:
+    """
+    キーワードだけで店舗案内にせず Concierge / メタ応答へ譲る。
+    オーケストレーターが付与した concierge_intent があれば常に譲る。
+    """
+    triage = triage_result or {}
+    if triage.get("concierge_intent"):
+        logger.info(
+            "🔍 店舗案内をスキップ: concierge_intent=%s",
+            triage.get("concierge_intent"),
+        )
+        return True
+    t = _text_lower(user_text)
+    if not t:
+        return False
+    for name in FACILITY_NAMES_AMBIGUOUS:
+        if name.lower() in t and has_facilities_location_question(user_text):
+            if not has_facilities_spatial_context(user_text) and not has_store_scoped_location_context(user_text):
+                logger.info(
+                    "🔍 店舗案内をスキップ: 曖昧施設「%s」+ 位置質問（周辺文脈なし）",
+                    name,
+                )
+                return True
+    return False
 
 
 # 免税対応関連のキーワード
@@ -172,15 +253,42 @@ SERVICES_KEYWORDS = [
 ]
 
 
+def probe_store_keyword_candidates(user_text: str) -> List[str]:
+    """店舗案内系キーワード候補（確定ではない）。"""
+    detected, inquiry_type = _probe_store_inquiry_keywords(user_text)
+    if not detected:
+        return []
+    tag = f"store_{inquiry_type}" if inquiry_type else "store_inquiry"
+    extras: List[str] = []
+    if detect_facilities_inquiry(user_text)[0]:
+        extras.append("store_facilities")
+    if detect_inventory_inquiry(user_text)[0]:
+        extras.append("store_inventory")
+    if detect_tax_free_inquiry(user_text):
+        extras.append("store_tax_free")
+    if detect_tourism_inquiry(user_text):
+        extras.append("store_tourism")
+    if detect_business_hours_inquiry(user_text):
+        extras.append("store_business_hours")
+    if detect_payment_inquiry(user_text):
+        extras.append("store_payment")
+    if detect_parking_inquiry(user_text):
+        extras.append("store_parking")
+    if detect_services_inquiry(user_text):
+        extras.append("store_services")
+    return [tag, *extras]
+
+
 def detect_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
     """
-    キーワードマッチングで店舗案内・遺失物関連の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        (is_detected, inquiry_type): (検出されたか, 質問タイプ: "store_inquiry" | "lost_and_found" | None)
+    後方互換: 候補プローブ結果。単独ではルート確定に使わないこと。
+    """
+    return _probe_store_inquiry_keywords(user_text)
+
+
+def _probe_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
+    """
+    キーワード候補のプローブ（店舗案内・遺失物）。最終判定は LLM + 文脈ゲート。
     """
     user_text_lower = user_text.lower()
     
@@ -206,25 +314,33 @@ def detect_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
             return True, "store_inquiry"
     
     # その他の店舗案内関連のキーワードをチェック
-    # 注意: 「教えてください」「教えて」は単独では検出しない（文脈依存）
-    # 店舗案内関連のキーワード（「場所」「どこ」「案内」など）と組み合わせて検出
-    store_inquiry_context_keywords = ["場所", "どこ", "案内", "トイレ", "お手洗い"]
-    has_store_context = any(keyword in user_text_lower for keyword in store_inquiry_context_keywords)
-    
+    # 「どこ」「場所」単独は文脈依存（店内・周辺・トイレ等と組み合わせ時のみ）
+    store_inquiry_context_keywords = [
+        "案内", "トイレ", "お手洗い", "店内", "売り場", "レジ", "棚",
+    ]
+    has_store_context = (
+        any(keyword in user_text_lower for keyword in store_inquiry_context_keywords)
+        or has_store_scoped_location_context(user_text)
+        or has_facilities_spatial_context(user_text)
+    )
+
     for keyword in STORE_INQUIRY_KEYWORDS:
-        if keyword in user_text_lower:
-            # 「教えてください」「教えて」は店舗案内関連の文脈がある場合のみ検出
-            if keyword in ["教えてください", "教えて"]:
-                if has_store_context:
-                    logger.info(f"🔍 店舗案内関連キーワード検出（文脈あり）: {keyword}")
-                    return True, "store_inquiry"
-                else:
-                    # 店舗案内関連の文脈がない場合は検出しない
-                    logger.debug(f"🔍 「{keyword}」は検出されたが、店舗案内関連の文脈がないためスキップ")
-                    continue
-            else:
-                logger.info(f"🔍 店舗案内関連キーワード検出: {keyword}")
+        if keyword not in user_text_lower:
+            continue
+        if keyword in ["教えてください", "教えて"]:
+            if has_store_context:
+                logger.info(f"🔍 店舗案内関連キーワード検出（文脈あり）: {keyword}")
                 return True, "store_inquiry"
+            logger.debug(f"🔍 「{keyword}」は店舗文脈なしのためスキップ")
+            continue
+        if keyword in STORE_LOCATION_BARE_KEYWORDS:
+            if has_store_context or has_facilities_spatial_context(user_text):
+                logger.info(f"🔍 店舗案内関連キーワード検出（位置+文脈）: {keyword}")
+                return True, "store_inquiry"
+            logger.debug(f"🔍 「{keyword}」は位置質問のみのためスキップ")
+            continue
+        logger.info(f"🔍 店舗案内関連キーワード検出: {keyword}")
+        return True, "store_inquiry"
     
     return False, None
 
@@ -278,12 +394,23 @@ def classify_inquiry_with_llm(user_text: str, client: OpenAI, triage_result: Opt
         if triage_result and triage_result.get("category") == "Other":
             subcategory = triage_result.get("subcategory", "").lower()
             if "store_inquiry" in subcategory or "lost_and_found" in subcategory:
+                if should_defer_store_to_concierge(user_text, triage_result):
+                    logger.info(
+                        "🔍 トリアージ store 候補だが Concierge 優先のため店舗案内しない: %s",
+                        subcategory,
+                    )
+                    return {
+                        "is_store_inquiry": False,
+                        "inquiry_type": None,
+                        "confidence": 0.0,
+                        "reasoning": "トリアージ候補を文脈ゲートが Concierge に譲渡",
+                    }
                 logger.info(f"🔍 トリアージ結果から店舗案内・遺失物関連を検出: {subcategory}")
                 return {
                     "is_store_inquiry": True,
                     "inquiry_type": "store_inquiry" if "store_inquiry" in subcategory else "lost_and_found",
                     "confidence": triage_result.get("confidence", 0.8),
-                    "reasoning": f"トリアージ結果から検出: {subcategory}"
+                    "reasoning": f"トリアージ LLM 結果: {subcategory}",
                 }
             # general_otherの場合は店舗案内として扱わない（カウンセリングフローに流す）
             elif "general_other" in subcategory or subcategory == "":
@@ -1064,6 +1191,16 @@ def handle_store_inquiry_with_two_stage(
         logger.debug(f"🔍 第1段階: Otherカテゴリではないため、店舗案内処理をスキップ")
         return None
     
+    if should_defer_store_to_concierge(user_text, triage_result):
+        return None
+
+    if triage_result is not None:
+        candidates = probe_store_keyword_candidates(user_text)
+        if candidates:
+            merged = attach_routing_keyword_candidates(triage_result, candidates)
+            triage_result.clear()
+            triage_result.update(merged)
+
     # 第2段階: 店舗案内の詳細分類
     llm_result = classify_inquiry_with_llm(user_text, client, triage_result)
     confidence = llm_result.get("confidence", 0.0)
@@ -1201,117 +1338,98 @@ def detect_inventory_inquiry(user_text: str) -> Tuple[bool, Optional[Dict]]:
 
 def detect_facilities_inquiry(user_text: str) -> Tuple[bool, Optional[str]]:
     """
-    周辺施設の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        (is_facilities_inquiry, facility_name): 
-        - is_facilities_inquiry: 周辺施設の質問かどうか
-        - facility_name: 施設名（検出された場合）
+    周辺施設の質問を検出（空間文脈 + 施設名/タイプの組み合わせ。単語ヒットのみでは検出しない）。
     """
-    user_text_lower = user_text.lower()
-    
-    # 周辺施設キーワードをチェック
-    has_facility_keyword = any(keyword in user_text_lower for keyword in FACILITIES_KEYWORDS)
-    
-    if not has_facility_keyword:
+    user_text_lower = _text_lower(user_text)
+    if not user_text_lower:
         return False, None
-    
-    # 施設名をチェック
-    for facility_name in FACILITY_NAMES:
-        if facility_name.lower() in user_text_lower:
+
+    spatial = has_facilities_spatial_context(user_text)
+    loc_q = has_facilities_location_question(user_text)
+    store_scope = has_store_scoped_location_context(user_text)
+
+    facility_name: Optional[str] = None
+    for name in sorted(FACILITY_NAMES, key=len, reverse=True):
+        if name.lower() in user_text_lower:
+            facility_name = name
+            break
+
+    has_type = any(k in user_text_lower for k in FACILITY_TYPE_KEYWORDS)
+
+    if facility_name and facility_name in FACILITY_NAMES_AMBIGUOUS:
+        if spatial:
+            logger.info(f"🔍 周辺施設の質問を検出（曖昧施設+空間文脈）: {facility_name}")
+            return True, facility_name
+        logger.info(
+            f"🔍 周辺施設スキップ: 「{facility_name}」は位置質問のみ（運営者/メタと区別）"
+        )
+        return False, None
+
+    if facility_name:
+        if spatial or store_scope or (loc_q and (has_type or facility_name not in FACILITY_NAMES_AMBIGUOUS)):
             logger.info(f"🔍 周辺施設の質問を検出: {facility_name}")
             return True, facility_name
-    
-    # キーワードはあるが施設名が特定できない場合
-    logger.info(f"🔍 周辺施設の質問を検出（施設名未特定）")
-    return True, None
+        logger.debug(f"🔍 周辺施設スキップ: {facility_name}（周辺/店内文脈なし）")
+        return False, None
+
+    if has_type and (spatial or (loc_q and not should_defer_store_to_concierge(user_text))):
+        logger.info("🔍 周辺施設の質問を検出（施設タイプ+文脈）")
+        return True, None
+
+    if spatial and loc_q:
+        logger.info("🔍 周辺施設の質問を検出（空間+位置質問）")
+        return True, None
+
+    return False, None
+
+
+def _store_subtype_keyword_hit(
+    user_text: str,
+    keywords: List[str],
+    *,
+    require_store_scope: bool = False,
+) -> bool:
+    t = _text_lower(user_text)
+    if not any(k in t for k in keywords):
+        return False
+    if require_store_scope and not (
+        has_store_scoped_location_context(user_text)
+        or has_facilities_spatial_context(user_text)
+    ):
+        return False
+    return True
 
 
 def detect_tax_free_inquiry(user_text: str) -> bool:
-    """
-    免税対応の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        免税対応の質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in TAX_FREE_KEYWORDS)
+    return _store_subtype_keyword_hit(user_text, TAX_FREE_KEYWORDS)
 
 
 def detect_tourism_inquiry(user_text: str) -> bool:
-    """
-    周辺観光地の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        周辺観光地の質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in TOURISM_KEYWORDS)
+    if not _store_subtype_keyword_hit(user_text, TOURISM_KEYWORDS):
+        return False
+    return has_facilities_spatial_context(user_text) or has_facilities_location_question(user_text)
 
 
 def detect_business_hours_inquiry(user_text: str) -> bool:
-    """
-    営業時間・アクセスの質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        営業時間・アクセスの質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in BUSINESS_HOURS_KEYWORDS)
+    return _store_subtype_keyword_hit(user_text, BUSINESS_HOURS_KEYWORDS)
 
 
 def detect_payment_inquiry(user_text: str) -> bool:
-    """
-    支払い方法の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        支払い方法の質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in PAYMENT_KEYWORDS)
+    return _store_subtype_keyword_hit(
+        user_text, PAYMENT_KEYWORDS, require_store_scope=True
+    )
 
 
 def detect_parking_inquiry(user_text: str) -> bool:
-    """
-    駐車場の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        駐車場の質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in PARKING_KEYWORDS)
+    return _store_subtype_keyword_hit(
+        user_text, PARKING_KEYWORDS, require_store_scope=True
+    )
 
 
 def detect_services_inquiry(user_text: str) -> bool:
-    """
-    店舗サービスの質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        店舗サービスの質問かどうか
-    """
-    user_text_lower = user_text.lower()
-    return any(keyword in user_text_lower for keyword in SERVICES_KEYWORDS)
+    return _store_subtype_keyword_hit(
+        user_text, SERVICES_KEYWORDS, require_store_scope=True
+    )
 
 
 def process_detailed_classification(
@@ -1435,10 +1553,14 @@ def process_detailed_classification(
             "reasoning": llm_result.get("reasoning", "")
         }
     
+    if should_defer_store_to_concierge(user_text, triage_result):
+        logger.info("🔍 汎用店舗案内をスキップ（Concierge 優先）")
+        return None
+
     # その他の店舗案内
     store_location = detect_store_location(user_text)
     response = generate_store_inquiry_response(user_text, inquiry_type, store_location)
-    
+
     return {
         "is_store_inquiry": True,
         "inquiry_type": inquiry_type,
@@ -1458,6 +1580,8 @@ def process_generic_classification(
     """
     中確信度の場合の汎用分類処理
     """
+    if should_defer_store_to_concierge(user_text, triage_result):
+        return None
     inquiry_type = llm_result.get("inquiry_type") or "store_inquiry"
     store_location = detect_store_location(user_text)
     response = generate_store_inquiry_response(user_text, inquiry_type, store_location)
@@ -1489,42 +1613,15 @@ def process_low_confidence_case(
         logger.info(f"🔍 症状キーワードが検出されたため、医薬品推奨フローへ")
         return None
     
-    # キーワードマッチングで高速判定
-    is_detected, inquiry_type = detect_store_inquiry_keywords(user_text)
-    
-    if is_detected:
-        # キーワードで検出された場合は、その結果を優先
-        logger.info(f"🔍 キーワードフォールバック: {inquiry_type}を検出")
-        
-        # 在庫確認の可能性もチェック
-        is_inventory, product_category_info = detect_inventory_inquiry(user_text)
-        if is_inventory:
-            store_location = detect_store_location(user_text)
-            response = generate_inventory_inquiry_response(user_text, product_category_info, store_location)
-            return {
-                "is_store_inquiry": True,
-                "inquiry_type": "inventory",
-                "store_location": store_location,
-                "product_category": product_category_info,
-                "response": response,
-                "confidence": 0.6,  # キーワードベースなので低め
-                "reasoning": "キーワードマッチングで検出"
-            }
-        
-        store_location = detect_store_location(user_text)
-        response = generate_store_inquiry_response(user_text, inquiry_type, store_location)
-        return {
-            "is_store_inquiry": True,
-            "inquiry_type": inquiry_type,
-            "store_location": store_location,
-            "product_category": None,
-            "response": response,
-            "confidence": 0.6,  # キーワードベースなので低め
-            "reasoning": "キーワードマッチングで検出"
-        }
-    
-    # キーワードで検出されなかった場合、第1段階を再実行
-    logger.info(f"🔍 キーワードフォールバック: 検出されず、第1段階を再実行")
+  # キーワードは候補のみ — 低確信時は LLM 再実行へ（単独確定しない）
+    candidates = probe_store_keyword_candidates(user_text)
+    if candidates and triage_result is not None:
+        merged = attach_routing_keyword_candidates(triage_result, candidates)
+        triage_result.clear()
+        triage_result.update(merged)
+        logger.info("🔍 店舗キーワード候補を記録（確定せず）: %s", candidates)
+
+    logger.info("🔍 低確信: キーワード単独確定は行わず第1段階を再実行")
     retry_result = retry_first_stage_with_modified_prompt(user_text, client)
     
     if retry_result and retry_result.get("category") == "Other":

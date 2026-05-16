@@ -44,8 +44,9 @@ def handle_store_inquiry_response(
     Returns:
         店舗案内として処理した場合は (dict, status)。それ以外は None。
     """
-    from src.services.processing_status import mark_processing_step
+    from src.services.processing_status import mark_processing_step, set_processing_flow
 
+    set_processing_flow(sid, "store")
     mark_processing_step(sid, "store")
     try:
         from src.services.store_inquiry_handler import handle_store_inquiry
@@ -71,17 +72,24 @@ def handle_store_inquiry_response(
     user_content = display_user_message if display_user_message is not None else sanitized_message
 
     if store_inquiry_confidence >= 0.7:
+        try:
+            from src.services.routing_validator import verify_routing_async
+
+            verify_routing_async(
+                route_kind="store_inquiry",
+                user_text=sanitized_message,
+                decided_category="Other",
+                client=recommendation_client,
+                session_id=sid,
+                extra={"inquiry_type": store_inquiry_result.get("inquiry_type")},
+            )
+        except Exception:
+            pass
         return _append_store_response_and_return(
             session, client, sid, user_content, store_inquiry_result
         )
 
-    reasoning = store_inquiry_result.get("reasoning", "")
-    if "キーワードマッチング" in reasoning or "キーワード" in reasoning:
-        return _append_store_response_and_return(
-            session, client, sid, user_content, store_inquiry_result
-        )
-
-    logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ため、症状検出も実行")
+    logger.info(f"🔍 店舗案内のconfidenceが低い（{store_inquiry_confidence:.2f}）ためスキップ")
     return None
 
 
@@ -128,6 +136,13 @@ def _append_store_response_and_return(
             session_data["messages"] = session["messages"].copy()
             session_data["last_activity"] = datetime.now()
             save_session_to_db(sid, session_data)
+
+    try:
+        from src.services.processing_status import mark_processing_step
+
+        mark_processing_step(sid, "finalize")
+    except Exception:
+        pass
 
     message_count = len(session["messages"])
     logger.info(f"✅ 店舗案内・遺失物関連の処理完了: {message_count} messages")

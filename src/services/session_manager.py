@@ -319,6 +319,23 @@ def has_recent_counseling_reply_for_user(session, user_content: str) -> bool:
     return prev.get("type") == "user" and prev.get("content") == user_content
 
 
+def has_recent_concierge_reply_for_user(session, user_content: str) -> bool:
+    """直前が同一内容 user への Concierge bot 返信なら True（並列 POST 防止）。
+
+    パイプラインで user が先に追記済みの場合、末尾は user のままなので False（応答生成を続行）。
+    """
+    messages = session.get("messages") or []
+    if len(messages) < 2:
+        return False
+    last = messages[-1]
+    prev = messages[-2]
+    if last.get("type") != "bot":
+        return False
+    if not last.get("concierge"):
+        return False
+    return prev.get("type") == "user" and prev.get("content") == user_content
+
+
 def append_user_message(session, content: str) -> dict:
     """セッションにユーザーメッセージを追加する（同一文言の再送も別メッセージとして保持）。"""
     import uuid
@@ -349,6 +366,26 @@ def _message_merge_key(msg: dict, index: int = 0) -> str:
     ts = msg.get('timestamp') or ''
     content = (msg.get('content') or '')[:200]
     return f'c:{msg.get("type")}:{ts}:{content}'
+
+
+def normalize_session_messages(messages):
+    """連続する同一カウンセリング bot（並列 POST の残骸）を除去。user は保持。"""
+    items = list(messages or [])
+    if not items:
+        return []
+    out = []
+    for msg in items:
+        if (
+            out
+            and msg.get("type") == "bot"
+            and out[-1].get("type") == "bot"
+            and (msg.get("counseling") or msg.get("inappropriate_request"))
+            and (out[-1].get("counseling") or out[-1].get("inappropriate_request"))
+            and (msg.get("content") or "").strip() == (out[-1].get("content") or "").strip()
+        ):
+            continue
+        out.append(msg)
+    return out
 
 
 def merge_session_messages(server_messages, client_messages):

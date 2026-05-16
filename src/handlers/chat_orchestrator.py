@@ -95,7 +95,10 @@ class ChatOrchestrator:
             elif category == "Ask":
                 resp = self._route_ask(ctx)
             elif category == "Other":
-                resp = self._route_store(ctx)
+                self._enrich_concierge_intent(ctx)
+                resp = self._route_concierge(ctx, monitor)
+                if resp is None:
+                    resp = self._route_store(ctx)
             else:
                 resp = None
 
@@ -224,7 +227,65 @@ class ChatOrchestrator:
             ctx.triage_result = dict(ctx.triage_result or {})
             ctx.triage_result["category"] = "Physical"
             return self._route_physical(ctx, None)
+        from src.services.medicine_discovery_routing import (
+            cold_start_needs_recommendation_flow,
+            session_is_medical_cold_start,
+        )
+
+        if session_is_medical_cold_start(
+            ctx.session, ctx.sid
+        ) and cold_start_needs_recommendation_flow(ctx.sanitized_message):
+            ctx.triage_result = dict(ctx.triage_result or {})
+            ctx.triage_result["category"] = "Physical"
+            ctx.triage_result["subcategory"] = "medicine_discovery"
+            logger.info("💊 初回セッション: オーケストレーターが Ask→Physical 推奨へ")
+            return self._route_physical(ctx, None)
         return None
+
+    def _enrich_concierge_intent(self, ctx: Any) -> None:
+        from src.services.concierge_orchestrator import enrich_other_concierge_intent
+
+        if not ctx.triage_result:
+            return
+        history = ctx.session.get("messages", [])[-10:]
+        enriched = enrich_other_concierge_intent(
+            ctx.triage_result,
+            ctx.sanitized_message or ctx.user_message,
+            self._client,
+            conversation_history=history,
+            session_id=ctx.sid,
+        )
+        ctx.triage_result = enriched
+        if hasattr(ctx.session, "modified"):
+            ctx.session["last_triage_result"] = enriched
+            ctx.session.modified = True
+        else:
+            ctx.session["last_triage_result"] = enriched
+
+    def _route_concierge(self, ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.chat_concierge_route import try_concierge_response
+
+        t0 = time.time()
+        resp = try_concierge_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.original_user_message or ctx.user_message,
+            ctx.sanitized_message,
+            ctx.triage_result,
+            self._client,
+            monitor=monitor,
+            processed_message=ctx.processed_message or ctx.sanitized_message,
+        )
+        log_agent_step(
+            self._trace_id,
+            "ConciergeAgent",
+            "complete",
+            sid=ctx.sid,
+            ms=(time.time() - t0) * 1000,
+            payload={"handled": resp is not None},
+        )
+        return resp
 
     def _route_store(self, ctx: Any) -> Optional[ResponseTuple]:
         from src.agents.store_inquiry_agent import handle_store_inquiry

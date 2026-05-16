@@ -38,7 +38,7 @@ from src.utils.chat_http_context import ChatClientInfo
 
 logger = logging.getLogger(__name__)
 
-_STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "90"))
+_STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "180"))
 _KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str) -> None:
     safe_session.setdefault("messages", [])
@@ -100,6 +100,24 @@ def _yield_sink_events(sink: StreamSink) -> list[str]:
 
 def _last_event_id_from_request(request: Request) -> Optional[str]:
     return request.headers.get("last-event-id") or request.headers.get("Last-Event-ID")
+
+
+def _extract_done_messages(messages: list) -> tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    """末尾が user でも、直近の bot とその直前 user を done ペイロード用に返す。"""
+    if not messages:
+        return None, None
+    bot_message: Optional[Dict[str, Any]] = None
+    user_message: Optional[Dict[str, Any]] = None
+    for msg in reversed(messages):
+        if not isinstance(msg, dict):
+            continue
+        if bot_message is None and msg.get("type") == "bot":
+            bot_message = msg
+            continue
+        if bot_message is not None and msg.get("type") == "user":
+            user_message = msg
+            break
+    return bot_message, user_message
 
 
 async def stream_chat_events(
@@ -183,10 +201,22 @@ async def stream_chat_events(
                 cached = pop_stream_result(sid)
                 if cached:
                     body, status_code = cached
-                    payload: Dict[str, Any] = {"http_status": status_code, "reattach": True}
-                    if isinstance(body, dict):
-                        payload["status"] = body.get("status", "ok")
-                        payload["message_count"] = body.get("message_count", 0)
+                    from src.handlers.sse_events import SseDoneEvent
+
+                    bot_message = None
+                    user_message = None
+                    session_data = get_session_from_db(sid) or {}
+                    messages = list(session_data.get("messages") or [])
+                    bot_message, user_message = _extract_done_messages(messages)
+                    done = SseDoneEvent(
+                        http_status=status_code,
+                        status=body.get("status", "ok") if isinstance(body, dict) else "ok",
+                        message_count=body.get("message_count", 0) if isinstance(body, dict) else 0,
+                        bot_message=bot_message,
+                        user_message=user_message,
+                    )
+                    payload = done.to_payload()
+                    payload["reattach"] = True
                     yield _sse_line("done", payload, event_id="done")
                 return
             await asyncio.sleep(0.02)
@@ -199,16 +229,22 @@ async def stream_chat_events(
             body, status_code = await worker
             if sid:
                 set_stream_result(sid, body, status_code)
+                try:
+                    persist_session_from_chat_state(sid, safe_session, request)
+                except Exception:
+                    logger.exception("SSE persist before done failed sid=%s", sid)
             from src.handlers.sse_events import SseDoneEvent
 
-            trace_id = None
-            if isinstance(safe_session, dict):
-                trace_id = safe_session.get("last_trace_id")
+            trace_id = safe_session.get("last_trace_id")
+            messages = list(safe_session.get("messages") or [])
+            bot_message, user_message = _extract_done_messages(messages)
             done = SseDoneEvent(
                 http_status=status_code,
                 status=body.get("status", "ok") if isinstance(body, dict) else "ok",
                 message_count=body.get("message_count", 0) if isinstance(body, dict) else 0,
                 trace_id=trace_id,
+                bot_message=bot_message,
+                user_message=user_message,
             )
             yield _sse_line("done", done.to_payload(), event_id="done")
         elif owns_worker and worker and not worker.done():

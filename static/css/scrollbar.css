@@ -36,7 +36,7 @@
 #medicineChatResult,
 #aiFullTextBody,
 body.about-page > .about-scroll,
-.chat-input textarea,
+#messageInput,
 .button-group,
 .logs-container {
     scrollbar-width: thin;
@@ -63,7 +63,7 @@ body.about-page > .about-scroll,
 #medicineChatResult::-webkit-scrollbar,
 #aiFullTextBody::-webkit-scrollbar,
 body.about-page > .about-scroll::-webkit-scrollbar,
-.chat-input textarea::-webkit-scrollbar,
+#messageInput::-webkit-scrollbar,
 .button-group::-webkit-scrollbar,
 .logs-container::-webkit-scrollbar {
     width: 7px;
@@ -91,7 +91,7 @@ body.about-page > .about-scroll::-webkit-scrollbar,
 #medicineChatResult::-webkit-scrollbar-track,
 #aiFullTextBody::-webkit-scrollbar-track,
 body.about-page > .about-scroll::-webkit-scrollbar-track,
-.chat-input textarea::-webkit-scrollbar-track,
+#messageInput::-webkit-scrollbar-track,
 .button-group::-webkit-scrollbar-track,
 .logs-container::-webkit-scrollbar-track {
     background: var(--app-scrollbar-track);
@@ -119,7 +119,7 @@ body.about-page > .about-scroll::-webkit-scrollbar-track,
 #medicineChatResult::-webkit-scrollbar-track-piece,
 #aiFullTextBody::-webkit-scrollbar-track-piece,
 body.about-page > .about-scroll::-webkit-scrollbar-track-piece,
-.chat-input textarea::-webkit-scrollbar-track-piece,
+#messageInput::-webkit-scrollbar-track-piece,
 .button-group::-webkit-scrollbar-track-piece,
 .logs-container::-webkit-scrollbar-track-piece {
     border-radius: 999px;
@@ -144,7 +144,7 @@ body.about-page > .about-scroll::-webkit-scrollbar-track-piece,
 #medicineChatResult::-webkit-scrollbar-thumb,
 #aiFullTextBody::-webkit-scrollbar-thumb,
 body.about-page > .about-scroll::-webkit-scrollbar-thumb,
-.chat-input textarea::-webkit-scrollbar-thumb,
+#messageInput::-webkit-scrollbar-thumb,
 .button-group::-webkit-scrollbar-thumb,
 .logs-container::-webkit-scrollbar-thumb {
     background: var(--app-scrollbar-thumb);
@@ -172,7 +172,7 @@ body.about-page > .about-scroll::-webkit-scrollbar-thumb,
 #medicineChatResult::-webkit-scrollbar-thumb:hover,
 #aiFullTextBody::-webkit-scrollbar-thumb:hover,
 body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover,
-.chat-input textarea::-webkit-scrollbar-thumb:hover,
+#messageInput::-webkit-scrollbar-thumb:hover,
 .button-group::-webkit-scrollbar-thumb:hover,
 .logs-container::-webkit-scrollbar-thumb:hover {
     background: var(--app-scrollbar-thumb-hover);
@@ -183,6 +183,12 @@ body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover,
 .onboarding-slide-scroll::-webkit-scrollbar-track,
 body.about-page > .about-scroll::-webkit-scrollbar-track {
     margin-block: 20px;
+}
+
+/* メッセージ入力: ピル型ラッパー内でサムを角丸に合わせる */
+#messageInput::-webkit-scrollbar-track {
+    margin-block: 10px;
+    margin-inline-end: 3px;
 }
 
 /* 意図的にスクロールバー非表示 */

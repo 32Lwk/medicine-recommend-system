@@ -182,6 +182,39 @@ def route_ask_category(
             logger.info("✅ 睡眠薬質問から不眠カウンセリングフロー開始")
             return AskRouteState(response=emo_resp)
 
+    from src.services.medicine_discovery_routing import (
+        cold_start_needs_recommendation_flow,
+        session_is_medical_cold_start,
+        should_route_medicine_discovery_to_recommendation,
+    )
+
+    if session_is_medical_cold_start(session, sid) and cold_start_needs_recommendation_flow(
+        sanitized_message
+    ):
+        logger.info("💊 初回セッション（Ask）→ Physical 推奨フローへ")
+        return _transition_counseling_to_physical(
+            session,
+            triage_result,
+            subcategory="medicine_discovery",
+            symptom_text=sanitized_message,
+            reasoning="初回セッションの薬探索は推奨フローで案内",
+        )
+
+    if should_route_medicine_discovery_to_recommendation(
+        session,
+        sid,
+        sanitized_message,
+        triage_category="Ask",
+    ):
+        logger.info("💊 初回の薬探索（Ask）→ Physical 推奨フローへ")
+        return _transition_counseling_to_physical(
+            session,
+            triage_result,
+            subcategory="medicine_discovery",
+            symptom_text=sanitized_message,
+            reasoning="初回の薬探索は推奨フローで案内",
+        )
+
     return AskRouteState(
         category="Ask",
         sanitized_message=sanitized_message,

@@ -3,33 +3,19 @@
 """
 from __future__ import annotations
 
-import html
+import logging
 import random
 import time
-from typing import Any, Dict
+from datetime import datetime
+from typing import Any, Dict, Optional, Tuple
+
+from src.services.text_formatter import safe_format_qa_html
+
+logger = logging.getLogger(__name__)
 
 
 def safe_format_html(text: Any) -> str:
-    if not text:
-        return ""
-    if isinstance(text, list):
-        lines = []
-        for item in text:
-            if isinstance(item, dict):
-                name = item.get("製品名") or item.get("name") or ""
-                comp = item.get("主成分") or item.get("成分") or ""
-                use = item.get("用途") or item.get("efficacy") or ""
-                summary = " / ".join(s for s in [name, comp, use] if s)
-                if summary:
-                    lines.append(summary)
-            else:
-                lines.append(str(item))
-        text = "\n".join(lines)
-    elif isinstance(text, dict):
-        text = "\n".join(f"{k}: {v}" for k, v in text.items())
-    else:
-        text = str(text)
-    return html.escape(text).replace("\n", "<br>")
+    return safe_format_qa_html(text)
 
 
 def build_medicine_qa_html(chat_response: Dict[str, Any]) -> str:
@@ -60,3 +46,100 @@ def append_feedback_buttons(html_body: str) -> tuple[str, str]:
 <button class="feedback-btn-negative" onclick="handleNegativeFeedback('{message_id}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">不適切</button>
 </div>"""
     return full, message_id
+
+
+def finalize_medicine_qa_response(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    chat_response: Dict[str, Any],
+) -> int:
+    """Q&A HTML 生成・セッション/DB 保存まで一括実行。message_count を返す。"""
+    from src.services.session_manager import get_session_from_db, save_session_to_db
+
+    full_response_html = build_medicine_qa_html(chat_response)
+    bot_content, message_id = append_feedback_buttons(full_response_html)
+    bot_response = {
+        "type": "bot",
+        "content": bot_content,
+        "message_id": message_id,
+        "diagnosis": {
+            "chat_response": chat_response,
+            "is_question": True,
+        },
+        "timestamp": datetime.now().isoformat(),
+    }
+    if sid:
+        session_data = get_session_from_db(sid)
+        if not session_data:
+            session_data = {
+                "session_id": sid,
+                "username": session.get("username", "Unknown"),
+                "messages": [],
+                "last_activity": datetime.now(),
+                "client_ip": client_info.client_ip,
+                "user_agent": client_info.user_agent,
+                "user_attributes": session.get("user_attributes", {}),
+                "session_active": True,
+            }
+        if "messages" not in session_data:
+            session_data["messages"] = []
+        session_data["messages"].append(bot_response)
+        session_data["last_activity"] = datetime.now()
+        save_session_to_db(sid, session_data)
+    if "messages" in session:
+        del session["messages"]
+        if hasattr(session, "modified"):
+            session.modified = True
+    logger.info("✅ 質問応答完了: %s", user_message)
+    updated = get_session_from_db(sid) if sid else {}
+    return len(updated.get("messages", []))
+
+
+def run_medicine_question_qa(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+) -> Tuple[int, Dict[str, Any]]:
+    """推奨履歴付きで chat_with_medicine_context を呼び、応答を保存する。"""
+    from src.core.medicine_logic import chat_with_medicine_context
+    from src.services.session_manager import get_session_from_db
+    from src.utils.structured_logger import log_medicine_question_detail
+
+    session_data = get_session_from_db(sid) if sid else {}
+    latest_recommended_medicines = []
+    for msg in reversed(session_data.get("messages", [])):
+        if msg.get("type") == "bot" and msg.get("diagnosis"):
+            diagnosis = msg.get("diagnosis", {})
+            if diagnosis.get("recommended_medicines"):
+                latest_recommended_medicines = diagnosis.get("recommended_medicines", [])
+                break
+    conversation_history = session_data.get("messages", [])[-10:]
+    if sid:
+        try:
+            from src.services.processing_status import mark_processing_step, set_processing_flow
+
+            set_processing_flow(sid, "ask_qa")
+            mark_processing_step(sid, "medicine_qa", detail_code="context_load")
+        except Exception:
+            pass
+    chat_response = chat_with_medicine_context(
+        user_message,
+        conversation_history,
+        latest_recommended_medicines,
+        session_id=sid,
+    )
+    try:
+        log_medicine_question_detail(
+            session_id=sid,
+            user_input=user_message,
+            response=chat_response.get("answer", ""),
+        )
+    except Exception as exc:
+        logger.warning("医薬品質疑応答ログ記録エラー: %s", exc)
+    count = finalize_medicine_qa_response(
+        session, client_info, sid, user_message, chat_response
+    )
+    return count, chat_response

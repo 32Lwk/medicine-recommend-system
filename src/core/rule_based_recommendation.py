@@ -626,6 +626,9 @@ def rule_based_recommendation(
     # ステップ3: 安全性チェック
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ3: 安全性チェック ---")
+    from src.services.processing_mark import mark_phase
+
+    mark_phase(session_id, "safety", detail_code="contra_check")
     safety_result = check_safety_contraindications(user_info, nlu_result)
     
     if safety_result["requires_escalation"]:
@@ -677,6 +680,7 @@ def rule_based_recommendation(
     # ステップ4: 候補医薬品取得（インフルエンザリスクを考慮）
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
+    mark_phase(session_id, "medicine_select", detail_code="candidate_search")
     candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
     
     # 初期候補数を記録
@@ -833,6 +837,7 @@ def rule_based_recommendation(
     else:
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug("ステップ5: スコアリング開始")
+    mark_phase(session_id, "medicine_select", detail_code="scoring")
     
     # ステップ5.1: 簡易スコアリング（高速）
     def calculate_quick_score(candidate: Dict, nlu_result: Dict, user_info: Dict) -> float:
@@ -1296,6 +1301,7 @@ def rule_based_recommendation(
     if isinstance(nlu_result, dict):
         nlu_result.setdefault("user_text", user_text)
 
+    mark_phase(session_id, "medicine_select", detail_code="ranking")
     top_candidates = ensure_ingredient_diversity(candidates_sorted, top_n=top_n, nlu_result=nlu_result, user_info=user_info)
     if top_candidates is None:
         logger.warning("ensure_ingredient_diversity returned None, using empty list")

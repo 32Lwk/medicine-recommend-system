@@ -128,20 +128,29 @@ def run_other_unknown_counseling(
     店舗案内でない Other 向け不明要求カウンセリング。
     成功時は応答 tuple、失敗時は should_handle_other_category を立てて None。
     """
-    from src.services.input_classifier import classify_input
+    from src.agents.concierge_agent import should_concierge_handle
 
-    if classify_input((original_user_message or "").strip()) == "greeting":
-        logger.info("⏭️ 挨拶のため不明要求カウンセリングをスキップ")
+    check_text = (sanitized_message or original_user_message or "").strip()
+    if should_concierge_handle(check_text, triage_result):
+        logger.info("⏭️ Concierge 対象のため不明要求カウンセリングをスキップ")
         return None
+
+    # 末尾が bot のままの重複送信は user 追記前に抑止（末尾 user 残りで SSE 完了判定が壊れるのを防ぐ）
+    if has_recent_counseling_reply_for_user(session, original_user_message):
+        logger.info("⏭️ 同一ユーザー発言へのカウンセリング返信済みのためスキップ")
+        if sid:
+            try:
+                from src.services.processing_mark import mark_phase
+
+                mark_phase(sid, "finalize")
+            except Exception:
+                pass
+        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
     logger.info("🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
     _ensure_user_message_for_counseling(
         session, client_info, sid, original_user_message
     )
-    # user 追記後に評価（再送時は末尾が user になり、直前 bot への重複返信のみ抑止）
-    if has_recent_counseling_reply_for_user(session, original_user_message):
-        logger.info("⏭️ 同一ユーザー発言へのカウンセリング返信済みのためスキップ")
-        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
     if sid:
         try:
             from src.services.processing_status import set_processing_flow
@@ -206,14 +215,13 @@ def run_other_unknown_counseling(
         session.setdefault("messages", []).append(bot_response)
 
         if sid:
-            session_data = get_session_from_db(sid)
-            if session_data:
-                session_data.setdefault("messages", []).append(bot_response)
-                session_data["last_activity"] = datetime.now()
-                session_data["user_attributes"] = session.get(
-                    "user_attributes", session_data.get("user_attributes", {})
-                )
-                save_session_to_db(sid, session_data)
+            session_data = get_session_from_db(sid) or {}
+            session_data["messages"] = list(session.get("messages") or [])
+            session_data["last_activity"] = datetime.now()
+            session_data["user_attributes"] = session.get(
+                "user_attributes", session_data.get("user_attributes", {})
+            )
+            save_session_to_db(sid, session_data)
 
         log_counseling_response(
             session_id=sid,

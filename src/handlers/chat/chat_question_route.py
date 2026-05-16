@@ -14,7 +14,6 @@ from openai import OpenAI
 
 from src.core.language_utils import detect_language
 from src.core.medicine_logic import (
-    chat_with_medicine_context,
     client as openai_client,
     extract_user_attributes_multilingual,
 )
@@ -39,6 +38,128 @@ def _mark_session_modified(session: Any) -> None:
         session.modified = True
 
 
+def _should_route_medicine_discovery_to_recommendation(
+    session: Any,
+    sid: Optional[str],
+    user_message: str,
+    *,
+    triage_category: Optional[str] = None,
+) -> bool:
+    from src.services.medicine_discovery_routing import (
+        should_route_medicine_discovery_to_recommendation,
+    )
+
+    return should_route_medicine_discovery_to_recommendation(
+        session,
+        sid,
+        user_message,
+        triage_category=triage_category,
+    )
+
+
+def _execute_medicine_qa_flow(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+) -> QuestionFlowResult:
+    """医薬品 Q&A を実行し JSON 応答用の QuestionFlowResult を返す。"""
+    try:
+        from src.handlers.chat.chat_medicine_qa_html import run_medicine_question_qa
+
+        count, _ = run_medicine_question_qa(session, client_info, sid, user_message)
+        return QuestionFlowResult(
+            response=({"status": "ok", "message_count": count}, 200),
+            is_question=True,
+            user_message=user_message,
+            sanitized_message=sanitized_message,
+        )
+    except Exception as exc:
+        logger.error("❌ 医薬品相談機能実行時エラー: %s", exc, exc_info=True)
+        bot_response = {
+            "type": "bot",
+            "content": (
+                "申し訳ございません。一時的にエラーが発生しました。"
+                "しばらく時間をおいてもう一度お試しいただくか、"
+                "症状を詳しく入力して再度ご相談ください。"
+            ),
+            "diagnosis": None,
+        }
+        if sid:
+            session_data = get_session_from_db(sid)
+            if session_data:
+                if "messages" not in session_data:
+                    session_data["messages"] = []
+                session_data["messages"].append(bot_response)
+                session_data["last_activity"] = datetime.now()
+                save_session_to_db(sid, session_data)
+        if "messages" in session:
+            del session["messages"]
+            _mark_session_modified(session)
+        updated = get_session_from_db(sid) if sid else {}
+        count = len(updated.get("messages", []))
+        return QuestionFlowResult(
+            response=({"status": "ok", "message_count": count}, 200),
+            is_question=True,
+            user_message=user_message,
+            sanitized_message=sanitized_message,
+        )
+
+
+def _try_triage_ask_qa(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    routing: Any = None,
+) -> Optional[QuestionFlowResult]:
+    """エージェント ON かつトリアージ Ask かつ医療コンテキストありのときのみ Q&A 直行。"""
+    from config.llm_flags import is_agent_enabled
+    from src.services.medicine_discovery_routing import session_is_medical_cold_start
+
+    if not is_agent_enabled():
+        return None
+    if session_is_medical_cold_start(session, sid):
+        logger.info(
+            "⏭️ 初回セッションのため Ask Q&A 直行を禁止（オーケストレーター分類に委譲）"
+        )
+        return None
+    if routing is not None:
+        category = routing.triage_category
+    else:
+        category = (session.get("last_triage_result") or {}).get("category")
+    if category != "Ask":
+        return None
+    if _should_route_medicine_discovery_to_recommendation(
+        session, sid, user_message, triage_category="Ask"
+    ):
+        logger.info("💊 初回の薬探索 → 推奨フローへ（Ask Q&A を迂回）")
+        return None
+    logger.info("❓ トリアージ Ask → 医薬品 Q&A 直行（推奨履歴あり）")
+    return _execute_medicine_qa_flow(
+        session, client_info, sid, user_message, sanitized_message
+    )
+
+
+def _concierge_meta_skip(user_message: str) -> Optional[QuestionFlowResult]:
+    """Concierge が応答済みの挨拶・感謝・雑談・メタ質問は二重応答しない。"""
+    from src.services.concierge_intent import classify_concierge_intent
+
+    text = (user_message or "").strip()
+    intent = classify_concierge_intent(text)
+    if intent in ("greeting", "thanks", "chitchat"):
+        logger.info("⏭️ Concierge 対象のため question_route をスキップ: intent=%s", intent)
+        return QuestionFlowResult(
+            response=None,
+            is_question=False,
+            user_message=user_message,
+            sanitized_message=user_message,
+        )
+    return None
+
+
 def handle_question_flow(
     session: Any,
     client_info: Any,
@@ -49,7 +170,68 @@ def handle_question_flow(
     recommendation_client: OpenAI,
     *,
     pending_route_is_question: Optional[bool] = None,
+    routing: Any = None,
 ) -> QuestionFlowResult:
+    if routing is None:
+        from src.services.routing_context import RoutingContext
+
+        routing = RoutingContext.from_session(
+            session, sid, user_message, sanitized_message
+        )
+    if pending_route_is_question is None and routing.pending_route_is_question is not None:
+        pending_route_is_question = routing.pending_route_is_question
+
+    from config.llm_flags import is_agent_enabled
+    from src.services.medicine_discovery_routing import (
+        cold_start_needs_recommendation_flow,
+        session_is_medical_cold_start,
+    )
+
+    cold_start = session_is_medical_cold_start(session, sid)
+
+    if is_agent_enabled() and routing.triage_category:
+        cat = routing.triage_category
+        if cold_start and cat == "Ask" and cold_start_needs_recommendation_flow(
+            user_message
+        ):
+            logger.info(
+                "💊 初回セッション（トリアージ Ask）→ 推奨フローへ（キーワード Q&A 禁止）"
+            )
+            return QuestionFlowResult(
+                is_question=False,
+                user_message=user_message,
+                sanitized_message=sanitized_message,
+            )
+        if cat == "Ask":
+            if _should_route_medicine_discovery_to_recommendation(
+                session, sid, user_message, triage_category=cat
+            ):
+                logger.info(
+                    "💊 初回の薬探索（トリアージ Ask）→ 推奨フローへ"
+                )
+                return QuestionFlowResult(
+                    is_question=False,
+                    user_message=user_message,
+                    sanitized_message=sanitized_message,
+                )
+            ask_qa = _try_triage_ask_qa(
+                session,
+                client_info,
+                sid,
+                user_message,
+                sanitized_message,
+                routing=routing,
+            )
+            if ask_qa is not None:
+                return ask_qa
+        if cat in ("Physical", "Emotional", "Emergency"):
+            logger.info("🔍 トリアージ %s のため question_route をスキップ", cat)
+            return QuestionFlowResult(
+                is_question=False,
+                user_message=user_message,
+                sanitized_message=sanitized_message,
+            )
+
     # ステップ1.8.5の続き: 店舗案内ではないと判定された場合、既存のOtherカテゴリの汎用応答処理（自己紹介、挨拶など）を実行
     should_handle_other_category = session.get('should_handle_other_category', False)
     # フラグが設定されている場合は、is_questionをTrueに固定（後続処理で変更されないようにする）
@@ -64,7 +246,11 @@ def handle_question_flow(
     else:
         # フラグが設定されていない場合のみ、通常の判定を実行
         is_question = None  # 未初期化状態
-        
+
+    skip = _concierge_meta_skip(user_message)
+    if skip is not None:
+        return skip
+
     # まず挨拶を検出（症状検出の前に実行）
     greeting_keywords = [
         'こんにちは', 'こんばんは', 'おはよう', 'おはようございます',
@@ -95,6 +281,9 @@ def handle_question_flow(
     if is_question is None:
         is_question = not is_symptom_input(user_message)
         logger.info(f"🔍 is_symptom_input判定結果: is_question={is_question}, user_message={user_message}")
+    if cold_start and cold_start_needs_recommendation_flow(user_message):
+        is_question = False
+        logger.info("💊 初回セッション: キーワード質問判定を抑止し推奨フローへ")
     add_reanalysis_message = False  # 再分析メッセージフラグ
     original_user_message = None  # 元のユーザーメッセージ
         
@@ -112,7 +301,34 @@ def handle_question_flow(
     if pending_route_is_question is not None:
         is_question = pending_route_is_question
         logger.info(f"🔍 カテゴリルートにより is_question={is_question} に上書き")
+    elif is_question is None:
+        from config.llm_flags import is_agent_enabled
+
+        if is_agent_enabled() and routing.triage_category:
+            cat = routing.triage_category
+            if cat == "Ask":
+                if cold_start:
+                    is_question = False
+                    logger.info(
+                        "🔍 初回セッション: トリアージ Ask でも is_question=False（Q&A 禁止）"
+                    )
+                else:
+                    is_question = True
+                    logger.info("🔍 トリアージ Ask のため is_question=True")
+            elif cat in ("Physical", "Emotional", "Emergency"):
+                is_question = False
+                logger.info("🔍 トリアージ %s のため is_question=False", cat)
     if is_question:
+        ask_qa = _try_triage_ask_qa(
+            session,
+            client_info,
+            sid,
+            user_message,
+            sanitized_message,
+            routing=routing,
+        )
+        if ask_qa is not None:
+            return ask_qa
         # システム紹介質問を検出
         system_intro_keywords = ['あなたについて', 'あなたは', 'システムについて', 'どんなシステム', '何ができる', '機能', '自己紹介']
         is_system_intro = any(keyword in user_message for keyword in system_intro_keywords)
@@ -161,32 +377,9 @@ def handle_question_flow(
                 except Exception:
                     pass
                 
-            # 挨拶への返答を生成
-            greeting_responses = {
-                'こんにちは': 'こんには！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'こんばんは': 'こんばんは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'おはよう': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'おはようございます': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'はじめまして': 'はじめまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                '初めまして': '初めまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'よろしく': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'よろしくお願いします': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-                'ありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-                'ありがとうございます': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-                'どうも': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-                'どうもありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-                'hello': 'Hello! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
-                'hi': 'Hi! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
-                'thanks': "You're welcome! If you have any other questions or symptoms, please feel free to let me know.",
-                'thank you': "You're welcome! If you have any other questions or symptoms, please feel free to let me know."
-            }
-                
-            # 挨拶に応じた返答を選択（デフォルトは汎用挨拶）
-            greeting_response = 'こんにちは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。'
-            for greeting_key, response in greeting_responses.items():
-                if greeting_key in user_message.lower():
-                    greeting_response = response
-                    break
+            from src.services.chat_response_service import build_greeting_response
+
+            greeting_response = build_greeting_response(user_message)
                 
             bot_response = {
                 'type': 'bot',
@@ -223,254 +416,47 @@ def handle_question_flow(
         # システム紹介、医薬品検索、明確な質問、または語尾・記号から質問と判断できる場合は質問回答に進む
         if (is_system_intro or is_medicine_search or has_question_keyword or
             has_question_suffix or ends_with_question_mark):
-            logger.info(f"❓ CLEAR QUESTION DETECTED: {user_message}")
-                
-            # ユーザーメッセージは既に1回目の保存処理で保存済み（重複を避けるため削除）
-            # import uuid
-            # user_response = {
-            #     'type': 'user',
-            #     'content': user_message,
-            #     'timestamp': datetime.now().isoformat(),
-            #     'uuid': str(uuid.uuid4())  # 一意な識別子を追加
-            # }
-            # ALL_SESSIONS[sid]['messages'].append(user_response)
-            # logger.info(f"💾 ユーザー質問を保存: {user_message}")
-                
-            # 質問回答に直接進む
-            try:
-                # 最新の推奨医薬品を取得
-                session_data_for_medicines = get_session_from_db(sid) if sid else {}
-                latest_recommended_medicines = []
-                for msg in reversed(session_data_for_medicines.get('messages', [])):
-                    if msg.get('type') == 'bot' and msg.get('diagnosis'):
-                        diagnosis = msg.get('diagnosis', {})
-                        if diagnosis.get('recommended_medicines'):
-                            latest_recommended_medicines = diagnosis.get('recommended_medicines', [])
-                            break
-                    
-                logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
-                    
-                # 会話履歴を取得
-                conversation_history = session_data_for_medicines.get('messages', [])[-10:]
-                    
-                # ChatGPTに質問を送信
-                if sid:
-                    try:
-                        from src.services.processing_status import set_processing_flow
-
-                        set_processing_flow(sid, "ask_qa")
-                    except Exception:
-                        pass
-                chat_response = chat_with_medicine_context(
-                    user_message,
-                    conversation_history,
-                    latest_recommended_medicines,
-                    session_id=sid,
+            logger.info("❓ CLEAR QUESTION DETECTED: %s", user_message)
+            if cold_start and not is_system_intro:
+                logger.info(
+                    "⏭️ 初回セッション: キーワード一致による Q&A 直行をスキップ"
                 )
-                    
-                # 医薬品質疑応答のログを記録
-                try:
-                    from src.utils.structured_logger import log_medicine_question_detail
-                    log_medicine_question_detail(
-                        session_id=sid,
-                        user_input=user_message,
-                        response=chat_response.get('answer', '')
-                    )
-                except Exception as e:
-                    logger.warning(f"医薬品質疑応答ログ記録エラー: {e}")
-                    
-                # 評価ボタン用のデータを準備
-                import json
-                import html
-                    
-                # HTML整形用ヘルパー関数
-                def safe_format(text):
-                    """テキストを安全にHTML表示用に整形"""
-                    if not text:
-                        return ""
-                    # LLM から dict / list が返る場合もあるので文字列に正規化
-                    if isinstance(text, list):
-                        # 医薬品ごとの辞書のリストを想定して、人が読みやすい1行に整形
-                        lines = []
-                        for item in text:
-                            if isinstance(item, dict):
-                                name = item.get("製品名") or item.get("name") or ""
-                                comp = item.get("主成分") or item.get("成分") or ""
-                                use = item.get("用途") or item.get("efficacy") or ""
-                                summary = " / ".join(s for s in [name, comp, use] if s)
-                                if summary:
-                                    lines.append(summary)
-                            else:
-                                lines.append(str(item))
-                        text = "\n".join(lines)
-                    elif isinstance(text, dict):
-                        # キー（医薬品名など）ごとに「名前: 説明」の形式で結合
-                        text = "\n".join(f"{k}: {v}" for k, v in text.items())
-                    else:
-                        text = str(text)
-                    # XSSリスクを防ぐためにエスケープしてから改行を変換
-                    escaped = html.escape(text)
-                    return escaped.replace("\n", "<br>")
-                    
-                # 回答の全文を作成（全項目を含める）
-                answer_text = safe_format(chat_response.get('answer', '回答を取得できませんでした'))
-                medicine_details = safe_format(chat_response.get('medicine_details', ''))
-                interactions = safe_format(chat_response.get('interactions', ''))
-                doping_check = safe_format(chat_response.get('doping_check', ''))
-                side_effects = safe_format(chat_response.get('side_effects', ''))
-                consultation_advice = safe_format(chat_response.get('consultation_advice', ''))
-                    
-                full_response_html = f"""
-    <div class="chat-response">
-    <h4>💬 医薬品相談回答</h4>
-    <p><strong>回答:</strong><br>{answer_text}</p>
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{medicine_details}</div>' if medicine_details else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{interactions}</div>' if interactions else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping_check}</div>' if doping_check else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_effects}</div>' if side_effects else ''}
-    
-    {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consultation_advice}</div>' if consultation_advice else ''}
-    </div>"""
-                    
-                # デバッグログ：ChatGPT応答の内容確認
-                logger.info("-" * 40)
-                logger.info(f"[DEBUG] ChatGPT response fields:")
-                logger.info(f"  - answer: {'✓' if answer_text else '✗'} ({len(answer_text) if answer_text else 0} chars)")
-                logger.info(f"  - medicine_details: {'✓' if medicine_details else '✗'} ({len(medicine_details) if medicine_details else 0} chars)")
-                logger.info(f"  - interactions: {'✓' if interactions else '✗'} ({len(interactions) if interactions else 0} chars)")
-                logger.info(f"  - doping_check: {'✓' if doping_check else '✗'} ({len(doping_check) if doping_check else 0} chars)")
-                logger.info(f"  - side_effects: {'✓' if side_effects else '✗'} ({len(side_effects) if side_effects else 0} chars)")
-                logger.info(f"  - consultation_advice: {'✓' if consultation_advice else '✗'} ({len(consultation_advice) if consultation_advice else 0} chars)")
-                    
-                # デバッグログ：HTML構造の整合性確認
-                opening_divs = full_response_html.count('<div')
-                closing_divs = full_response_html.count('</div>')
-                logger.info(f"[DEBUG] HTML structure: {opening_divs} opening divs, {closing_divs} closing divs {'✓' if opening_divs == closing_divs else '✗ MISMATCH'}")
-                logger.info("-" * 40)
-                    
-                # メッセージIDを生成
-                message_id = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
-                logger.info(f"[DEBUG] Generated message_id: {message_id}")
-                    
-                # [SECURITY NOTE]: full_response_html is generated only from safe, pre-sanitized templates.
-                # All user input is escaped via safe_format (html.escape + newline conversion).
-                # Do not re-escape, otherwise structured HTML (icons, sections) will break.
-                    
-                # 評価ボタンを追加（メッセージIDベース方式）
-                bot_content = full_response_html + f"""
-    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-    <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-    <button class="feedback-btn-positive" onclick="handlePositiveFeedback('{message_id}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-    適切
-    </button>
-    <button class="feedback-btn-negative" onclick="handleNegativeFeedback('{message_id}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">
-    不適切
-    </button>
-    </div>"""
-                    
-                bot_response = {
-                    'type': 'bot',
-                    'content': bot_content,
-                    'message_id': message_id,
-                    'diagnosis': {
-                        'chat_response': chat_response,
-                        'is_question': True
-                    },
-                    'timestamp': datetime.now().isoformat()
-                }
-                    
-                # 質問応答をDBに保存
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if not session_data:
-                        session_data = {
-                            'session_id': sid,
-                            'username': session.get('username', 'Unknown'),
-                            'messages': [],
-                            'last_activity': datetime.now(),
-                            'client_ip': client_info.client_ip,
-                            'user_agent': client_info.user_agent,
-                            'user_attributes': session.get('user_attributes', {}),
-                            'session_active': True
-                        }
-                    if 'messages' not in session_data:
-                        session_data['messages'] = []
-                    session_data['messages'].append(bot_response)
-                    session_data['last_activity'] = datetime.now()
-                    save_session_to_db(sid, session_data)
-                    
-                # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
-                if 'messages' in session:
-                    del session['messages']
-                    session.modified = True
-                logger.info(f"✅ 質問応答完了: {user_message}")
-                    
-                # 質問応答の場合は、user_attributesを初期化してセッションに保存
-                user_attributes = session.get('user_attributes', {
-                    'age': None,
-                    'gender': None,
-                    'pregnant': None,
-                    'breastfeeding': None,
-                    'current_medications': [],
-                    'allergies': [],
-                    'medical_history': [],
-                    'symptom_duration_days': None,
-                    'other_info': None
-                })
-                session['user_attributes'] = user_attributes
-                session.modified = True
-                    
-                # JSONレスポンスを返す
-                updated_session = get_session_from_db(sid) if sid else {}
-                message_count = len(updated_session.get('messages', []))
-                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
-                    
-            except Exception as e:
-                logger.error(f"❌ 医薬品相談機能実行時エラー: {e}", exc_info=True)
-                bot_response = {
-                    'type': 'bot',
-                    'content': "申し訳ございません。一時的にエラーが発生しました。しばらく時間をおいてもう一度お試しいただくか、症状を詳しく入力して再度ご相談ください。",
-                    'diagnosis': None,
-                    'timestamp': datetime.now().isoformat()
-                }
-                    
-                # エラー応答をDBに保存
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        session_data['messages'].append(bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
-                if 'messages' in session:
-                    del session['messages']
-                    session.modified = True
-                    
-                # エラーの場合もuser_attributesを初期化
-                user_attributes = session.get('user_attributes', {
-                    'age': None,
-                    'gender': None,
-                    'pregnant': None,
-                    'breastfeeding': None,
-                    'current_medications': [],
-                    'allergies': [],
-                    'medical_history': [],
-                    'symptom_duration_days': None,
-                    'other_info': None
-                })
-                session['user_attributes'] = user_attributes
-                session.modified = True
-                    
-                # JSONレスポンスを返す
-                updated_session = get_session_from_db(sid) if sid else {}
-                message_count = len(updated_session.get('messages', []))
-                return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
+                return QuestionFlowResult(
+                    is_question=False,
+                    user_message=user_message,
+                    sanitized_message=sanitized_message,
+                )
+            if _should_route_medicine_discovery_to_recommendation(
+                session,
+                sid,
+                user_message,
+                triage_category=(routing.triage_category if routing else None),
+            ):
+                logger.info("💊 初回の薬探索 → 推奨フローへ（CLEAR QUESTION を迂回）")
+                return QuestionFlowResult(
+                    is_question=False,
+                    user_message=user_message,
+                    sanitized_message=sanitized_message,
+                )
+            result = _execute_medicine_qa_flow(
+                session, client_info, sid, user_message, sanitized_message
+            )
+            session.setdefault(
+                "user_attributes",
+                {
+                    "age": None,
+                    "gender": None,
+                    "pregnant": None,
+                    "breastfeeding": None,
+                    "current_medications": [],
+                    "allergies": [],
+                    "medical_history": [],
+                    "symptom_duration_days": None,
+                    "other_info": None,
+                },
+            )
+            _mark_session_modified(session)
+            return result
         else:
             # 操作指示の検出（セキュリティ検証の後）
             if is_operation_command(user_message):
@@ -1018,67 +1004,11 @@ def handle_question_flow(
                 logger.info(f"✅ POST処理完了 - 属性更新確認メッセージ返却: {message_count} messages")
                 return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
         else:
-            # 属性が更新されていない場合は通常の質問応答
-            logger.info(f"❓ 通常の質問として処理します")
-            try:
-                # 最新の推奨医薬品を取得（DBを参照）
-                session_data_for_medicines2 = get_session_from_db(sid) if sid else {}
-                latest_recommended_medicines = []
-                for msg in reversed(session_data_for_medicines2.get('messages', [])):
-                    if msg.get('type') == 'bot' and msg.get('diagnosis'):
-                        diagnosis = msg.get('diagnosis', {})
-                        if diagnosis.get('recommended_medicines'):
-                            latest_recommended_medicines = diagnosis.get('recommended_medicines', [])
-                            break
-    
-                logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
-    
-                # 会話履歴を取得（DBから直近10件）
-                conversation_history = session_data_for_medicines2.get('messages', [])[-10:]
-    
-                # ChatGPTに質問を送信
-                chat_response = chat_with_medicine_context(
-                    user_message,
-                    conversation_history,
-                    latest_recommended_medicines
-                )
-                    
-                # 医薬品質疑応答のログを記録
-                try:
-                    from src.utils.structured_logger import log_medicine_question_detail
-                    log_medicine_question_detail(
-                        session_id=sid,
-                        user_input=user_message,
-                        response=chat_response.get('answer', '')
-                    )
-                except Exception as e:
-                    logger.warning(f"医薬品質疑応答ログ記録エラー: {e}")
-    
-                # 医薬品相談回答の処理は既に上記で実装済み
-                # 重複コードを削除
-    
-            except Exception as e:
-                logger.error(f"❌ 医薬品相談機能実行時エラー: {e}", exc_info=True)
-                bot_response = {
-                    'type': 'bot',
-                    'content': "申し訳ございません。一時的にエラーが発生しました。しばらく時間をおいてもう一度お試しいただくか、症状を詳しく入力して再度ご相談ください。",
-                    'diagnosis': None
-                }
-    
-                # エラー応答をDBに保存
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        session_data['messages'].append(bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                # セッションCookie肥大化を防ぐため、Flaskセッションからmessagesを削除
-                if 'messages' in session:
-                    del session['messages']
-                    session.modified = True
-            
+            logger.info("❓ 通常の質問として処理します")
+            return _execute_medicine_qa_flow(
+                session, client_info, sid, user_message, sanitized_message
+            )
+
     return QuestionFlowResult(
         is_question=is_question,
         user_message=user_message,

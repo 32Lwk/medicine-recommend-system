@@ -172,6 +172,7 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 - **「覚醒剤」「アンフェタミン」「メタンフェタミン」「大麻」「マリファナ」「THC」「ヘロイン」「モルヒネ」「オキシコドン」「LSD」「MDMA」「エクスタシー」「コカイン」「危険ドラッグ」「違法薬物」「フェンタニル」「メタドン」「合成カンナビノイド」「スパイス」「MDPV」「α-PVP」「4-MMC」「メフェドロン」「バルビツール酸系（違法使用）」などの違法薬物、または「大麻をください」などの違法薬物の要求 → Other**
 - **「向精神薬」「麻薬」「指定薬物」「処方薬の乱用」「医療用麻薬」「精神安定剤（違法使用）」「睡眠薬（違法使用）」「鎮痛薬（違法使用）」「オピオイド（違法使用）」「ベンゾジアゼピン系（違法使用）」などの規制薬物 → Other**
 - **その他の挨拶や不明な入力 → Other**
+- **「できること」「マルチエージェント」「あなたは誰」「自己紹介」などアプリ説明・構成の質問 → Other（ConciergeAgent が応答）**
 
 【比喩的表現・アニメ・小説のセリフの検出】
 以下のような表現は比喩的表現やアニメ・小説のセリフの可能性が高いため、OtherカテゴリまたはEmotionalカテゴリとして分類してください：
@@ -192,7 +193,15 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 
 【confidence（確信度）の重要性】
 - confidenceは0.0-1.0の範囲で、判定の確信度を示します
-- 0.7未満の場合は、判定に不確実性があることを示します
+- 0.75未満の場合は、判定に不確実性があることを示します（ConfidenceGate で再判定）
+
+【分類例（参考）】
+- 「こんにちは」「おはよう」→ Other（挨拶。症状なし）
+- 「頭が痛い」「風邪をひいた」→ Physical
+- 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨）
+- 「推奨された薬は競技で使えますか」→ Ask（既存推奨への追質問）
+- 「このチャットでできることを教えて」→ Other（アプリ説明。capabilities は Concierge）
+- 「眠れない」→ Emotional / 「眠気が強い」→ Physical
 - 低い確信度の場合は、ユーザーに確認を求める必要があります
 - 比喩的表現の可能性がある場合は、confidenceを低めに設定する
 
@@ -266,7 +275,15 @@ SECOND_STAGE_OTHER_PROMPT = """
 
 【confidence（確信度）の重要性】
 - confidenceは0.0-1.0の範囲で、判定の確信度を示します
-- 0.7未満の場合は、判定に不確実性があることを示します
+- 0.75未満の場合は、判定に不確実性があることを示します（ConfidenceGate で再判定）
+
+【分類例（参考）】
+- 「こんにちは」「おはよう」→ Other（挨拶。症状なし）
+- 「頭が痛い」「風邪をひいた」→ Physical
+- 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨）
+- 「推奨された薬は競技で使えますか」→ Ask（既存推奨への追質問）
+- 「このチャットでできることを教えて」→ Other（アプリ説明。capabilities は Concierge）
+- 「眠れない」→ Emotional / 「眠気が強い」→ Physical
 - 低い確信度の場合は、general_otherに分類することを検討してください
 
 【回答形式】
@@ -279,7 +296,13 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
 """
 
 
-def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
+def llm_triage(
+    user_text: str,
+    client: OpenAI,
+    use_cache: bool = True,
+    *,
+    conversation_history: Optional[List] = None,
+) -> Dict:
     """
     LLMを使用してユーザー入力をカテゴリに分類（2段階トリアージシステム）
     
@@ -303,6 +326,18 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
     drug_type = detect_illegal_or_controlled_drug(user_text)
     if drug_type:
         logger.info(f"🚫 違法薬物・規制薬物を検出（キーワードマッチング）: {drug_type}")
+        try:
+            from src.services.routing_validator import verify_routing_async
+
+            verify_routing_async(
+                route_kind="illegal_drug",
+                user_text=user_text,
+                decided_category="Other",
+                client=client,
+                extra={"drug_type": drug_type},
+            )
+        except Exception:
+            pass
         return {
             "category": "Other",
             "confidence": 1.0,
@@ -323,14 +358,32 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
             "reasoning": "OpenAI monthly budget limit reached",
         }
 
-    # キャッシュをチェック（完全一致のみ）
+    hist_d = ""
+    if conversation_history:
+        from src.services.triage_history import history_digest as _hd
+
+        hist_d = _hd(conversation_history)
+
     if use_cache:
-        cache_key = user_text.strip()
+        from src.services.triage_cache import build_cache_key
+
+        cache_key = build_cache_key(user_text, None, history_digest=hist_d)
         _purge_triage_cache()
         entry = _triage_cache.get(cache_key)
         if entry and datetime.now() - entry.created_at <= _TRIAGE_CACHE_TTL:
             logger.debug(f"💾 キャッシュからLLMトリアージ結果を取得: {cache_key[:50]}...")
             return entry.result.copy()
+
+    history_block = ""
+    if conversation_history:
+        from src.services.triage_history import format_triage_history_block
+
+        history_block = format_triage_history_block(conversation_history)
+    history_section = (
+        f"\n\n【直近の会話履歴】\n{history_block}\n"
+        if history_block and history_block != "（なし）"
+        else ""
+    )
 
     try:
         from src.core.llm_client import chat_completion_create
@@ -341,7 +394,13 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
             path="llm_triage.stage1",
             messages=[
                 {"role": "system", "content": "あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。"},
-                {"role": "user", "content": f"{FIRST_STAGE_TRIAGE_PROMPT}\n\n【ユーザーの入力】\n{user_text}"},
+                {
+                    "role": "user",
+                    "content": (
+                        f"{FIRST_STAGE_TRIAGE_PROMPT}{history_section}\n\n"
+                        f"【ユーザーの入力】\n{user_text}"
+                    ),
+                },
             ],
             temperature=0.1,
             max_tokens=300,
@@ -439,7 +498,9 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
         
         # 不適切な要求が検出された場合、キャッシュを無効化（誤分類を防ぐため）
         if use_cache:
-            cache_key = user_text.strip()
+            from src.services.triage_cache import build_cache_key
+
+            cache_key = build_cache_key(user_text, None, history_digest=hist_d)
             subcategory_lower = result.get("subcategory", "").lower()
             if "inappropriate_request" in subcategory_lower:
                 # キャッシュから削除（誤分類を防ぐため）
@@ -451,7 +512,9 @@ def llm_triage(user_text: str, client: OpenAI, use_cache: bool = True) -> Dict:
         
         # キャッシュに保存（完全一致のみ）
         if use_cache:
-            cache_key = user_text.strip()
+            from src.services.triage_cache import build_cache_key
+
+            cache_key = build_cache_key(user_text, None, history_digest=hist_d)
             _purge_triage_cache()
             _triage_cache[cache_key] = _TriageCacheEntry(
                 result=result.copy(),
