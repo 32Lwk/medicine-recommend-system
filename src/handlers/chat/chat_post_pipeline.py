@@ -55,6 +55,24 @@ class ChatPostContext:
     has_insomnia_keyword: bool = False
     trace_id: str = ""
     recommendation_client: OpenAI = field(default_factory=lambda: openai_client)
+    routing: Any = None  # RoutingContext | None
+
+
+def sync_routing_context(ctx: ChatPostContext) -> None:
+    """トリアージ・履歴・ゲート状態を RoutingContext に同期する。"""
+    from src.services.routing_context import RoutingContext
+
+    ctx.routing = RoutingContext.build(
+        ctx.session,
+        ctx.sid,
+        ctx.user_message,
+        ctx.sanitized_message,
+        ctx.triage_result,
+        pending_route_is_question=ctx.pending_route_is_question,
+    )
+    triage = ctx.routing.triage_result
+    if triage:
+        ctx.session["last_triage_result"] = triage
 
 
 def run_chat_post_pipeline(
@@ -121,6 +139,19 @@ def run_chat_post_pipeline(
     if pre_gate.blocked and pre_gate.response:
         return pre_gate.response
 
+    from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
+
+    dup_concierge = try_concierge_duplicate_skip(
+        session,
+        client_info,
+        sid,
+        ctx.user_message,
+        ctx.sanitized_message,
+    )
+    if dup_concierge is not None:
+        session["last_trace_id"] = ctx.trace_id
+        return dup_concierge
+
     from src.handlers.chat.chat_triage import run_triage
 
     early_response, ctx.triage_result = run_triage(
@@ -133,6 +164,17 @@ def run_chat_post_pipeline(
     )
     if early_response is not None:
         return early_response
+
+    from src.services.medicine_discovery_routing import apply_cold_start_triage_override
+
+    ctx.triage_result = apply_cold_start_triage_override(
+        session,
+        ctx.triage_result,
+        ctx.user_message,
+        sid=sid,
+    )
+
+    sync_routing_context(ctx)
 
     from src.agents.safety_gate import run_safety_gate
 
@@ -168,17 +210,6 @@ def run_chat_post_pipeline(
     )
     if early_resp is not None:
         return early_resp
-
-    from src.handlers.chat.chat_greeting_route import try_greeting_response
-
-    greeting_resp = try_greeting_response(
-        session,
-        client_info,
-        sid,
-        ctx.original_user_message,
-    )
-    if greeting_resp is not None:
-        return greeting_resp
 
     resp = _run_store_and_other_followups(ctx)
     if resp is not None:
@@ -219,9 +250,13 @@ def run_chat_post_pipeline(
             ctx.sanitized_message,
             ctx.triage_result,
             ctx.recommendation_client,
+            client_info=client_info,
         )
         if conf_resp is not None:
             return conf_resp
+        if session.get("_last_triage_result"):
+            ctx.triage_result = session["_last_triage_result"]
+        sync_routing_context(ctx)
 
     _run_moderation_if_needed(ctx)
 
@@ -236,6 +271,24 @@ def run_chat_post_pipeline(
                 return orch_resp
         except Exception as orch_err:
             logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
+
+    if session.get("_confidence_gate_concierge") and ctx.triage_result:
+        from src.handlers.chat.chat_concierge_route import try_concierge_response
+
+        concierge_resp = try_concierge_response(
+            session,
+            client_info,
+            sid,
+            ctx.user_message,
+            ctx.sanitized_message,
+            ctx.triage_result,
+            ctx.recommendation_client,
+            monitor=monitor,
+            processed_message=ctx.processed_message,
+        )
+        session.pop("_confidence_gate_concierge", None)
+        if concierge_resp is not None:
+            return concierge_resp
     elif ctx.triage_result:
         from src.handlers.chat.chat_category_route import route_triage_category
 
@@ -267,6 +320,8 @@ def run_chat_post_pipeline(
     append_user_message_if_needed(session, sid, client_info, ctx.original_user_message)
     sync_messages_to_db_for_admin(session, sid, client_info)
 
+    sync_routing_context(ctx)
+
     from src.handlers.chat.chat_question_route import handle_question_flow
 
     q_result = handle_question_flow(
@@ -278,6 +333,7 @@ def run_chat_post_pipeline(
         ctx.processed_message,
         ctx.recommendation_client,
         pending_route_is_question=ctx.pending_route_is_question,
+        routing=ctx.routing,
     )
     if q_result.response is not None:
         return q_result.response
@@ -368,7 +424,43 @@ def _run_moderation_if_needed(ctx: ChatPostContext) -> None:
         ctx.inappropriate_request_detected = True
 
 
+def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    """Other では ChatOrchestrator と同様、店舗案内より Concierge を先に試す。"""
+    triage = ctx.triage_result or {}
+    if triage.get("category") != "Other" or ctx.inappropriate_request_detected:
+        return None
+    try:
+        from src.services.concierge_orchestrator import enrich_other_concierge_intent
+        from src.handlers.chat.chat_concierge_route import try_concierge_response
+
+        history = (ctx.session.get("messages") or [])[-10:]
+        ctx.triage_result = enrich_other_concierge_intent(
+            dict(triage),
+            ctx.sanitized_message or ctx.user_message,
+            ctx.recommendation_client,
+            conversation_history=history,
+            session_id=ctx.sid,
+        )
+        return try_concierge_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.original_user_message or ctx.user_message,
+            ctx.sanitized_message,
+            ctx.triage_result,
+            ctx.recommendation_client,
+            processed_message=ctx.processed_message,
+        )
+    except Exception as exc:
+        logger.warning("⚠️ Concierge 先行ルートをスキップ: %s", exc)
+        return None
+
+
 def _run_store_and_other_followups(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    conc = _try_concierge_before_store(ctx)
+    if conc is not None:
+        return conc
+
     store_inquiry_result = None
     if not ctx.inappropriate_request_detected:
         try:

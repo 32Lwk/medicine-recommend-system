@@ -10,6 +10,16 @@ from typing import Dict, Optional, List
 
 from src import PROJECT_ROOT
 
+
+def _confidence_threshold() -> float:
+    try:
+        from config.routing_config import triage_confidence_threshold
+
+        return triage_confidence_threshold()
+    except Exception:
+        return 0.75
+
+
 def log_triage_result(
     session_id: str,
     user_input: str,
@@ -41,7 +51,7 @@ def log_triage_result(
         "reasoning": triage_result.get("reasoning"),
         "processing_time_ms": processing_time_ms,
         "user_action": user_action,  # 確認を求めた場合のユーザー応答
-        "confidence_threshold": 0.7,  # 現在の閾値（設定値として保存）
+        "confidence_threshold": _confidence_threshold(),
         "emergency_threshold": 0.5,  # Emergencyカテゴリの閾値
     }
     

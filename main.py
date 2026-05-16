@@ -47,6 +47,7 @@ from src.services.session_manager import (
     get_session_from_db,
     maybe_persist_session_activity,
     merge_session_messages,
+    normalize_session_messages,
     persist_session_from_chat_state,
     save_session_to_db,
     set_admin_mode,
@@ -755,7 +756,7 @@ async def api_sessions_get(
         session_data["last_activity"] = datetime.now()
         maybe_persist_session_activity(sid, session_data)
 
-    messages = session_data.get("messages", []) or []
+    messages = normalize_session_messages(session_data.get("messages", []) or [])
     user_attributes = session_data.get("user_attributes", {}) or {}
 
     latest_usage_notes = None

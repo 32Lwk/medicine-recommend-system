@@ -1,0 +1,74 @@
+"""
+ルーティングにおけるキーワードの役割定義。
+
+重大問題（違法・不適切・セキュリティ・緊急）以外では、
+キーワードは「候補」に留め、最終判定は文脈ゲートまたは LLM（オーケストレーター）に委ねる。
+"""
+from __future__ import annotations
+
+from typing import Any, Dict, Iterable, List, Optional
+
+# キーワード単独でルートを確定してよいドメイン
+DECISIVE_KEYWORD_DOMAINS = frozenset({
+    "security",
+    "illegal_drug",
+    "controlled_drug",
+    "crisis",
+    "emergency",
+    "inappropriate",
+})
+
+# 完全一致のみ即応答可（部分一致キーワードではない）
+EXACT_MATCH_GATE_DOMAINS = frozenset({
+    "concierge_greeting",
+    "concierge_thanks",
+})
+
+
+def is_decisive_keyword_domain(domain: str) -> bool:
+    return domain in DECISIVE_KEYWORD_DOMAINS
+
+
+def is_exact_match_gate_domain(domain: str) -> bool:
+    return domain in EXACT_MATCH_GATE_DOMAINS
+
+
+def attach_routing_keyword_candidates(
+    triage_result: Optional[Dict[str, Any]],
+    candidates: Iterable[str],
+    *,
+    source: str = "keyword_probe",
+) -> Dict[str, Any]:
+    """トリアージ結果にキーワード候補を付与（確定ではない）。"""
+    out = dict(triage_result or {})
+    existing = list(out.get("routing_keyword_candidates") or [])
+    for c in candidates:
+        tag = str(c).strip()
+        if tag and tag not in existing:
+            existing.append(tag)
+    out["routing_keyword_candidates"] = existing
+    if existing:
+        out["routing_keyword_candidate_source"] = source
+    return out
+
+
+def get_routing_keyword_candidates(triage_result: Optional[Dict[str, Any]]) -> List[str]:
+    raw = (triage_result or {}).get("routing_keyword_candidates") or []
+    return [str(x) for x in raw if x]
+
+
+def keyword_finalize_allowed(
+    *,
+    domain: str,
+    llm_confirmed: bool = False,
+    context_gate_passed: bool = False,
+) -> bool:
+    """
+    キーワードだけで応答・ルートを確定してよいか。
+    重大ドメイン、または LLM 確認済みかつ文脈ゲート通過が必要。
+    """
+    if is_decisive_keyword_domain(domain):
+        return True
+    if is_exact_match_gate_domain(domain):
+        return context_gate_passed
+    return llm_confirmed and context_gate_passed

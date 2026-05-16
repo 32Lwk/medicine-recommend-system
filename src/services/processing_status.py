@@ -23,7 +23,7 @@ PROCESSING_STEPS: List[Dict[str, Any]] = [
     {"id": "store", "label": "店舗案内か確認しています", "weight": 5},
     {"id": "counseling", "label": "お話を整理しています", "weight": 10},
     {"id": "attributes", "label": "お客様情報を確認しています", "weight": 7},
-    {"id": "symptom_analysis", "label": "症状を詳しく分析しています", "weight": 12},
+    {"id": "symptom_analysis", "label": "症状の内容を読み取り、該当する市販薬の種類を判定しています", "weight": 12},
     {"id": "medicine_select", "label": "お薬を選定しています", "weight": 15},
     {"id": "medicine_qa", "label": "医薬品の質問に回答しています", "weight": 14},
     {"id": "safety", "label": "安全性を確認しています", "weight": 8},
@@ -76,19 +76,139 @@ STEP_DETAILS: Dict[str, Dict[str, Dict[str, str]]] = {
         },
     },
     "medicine_select": {
+        "candidate_search": {
+            "ja": "症状に合うお薬候補を探しています",
+            "en": "Searching medicine candidates for your symptoms",
+            "ko": "증상에 맞는 의약품 후보를 찾고 있습니다",
+            "zh": "正在查找符合症状的药品候选",
+        },
         "explanation": {
             "ja": "推奨理由を作成しています",
             "en": "Generating recommendation reasons",
             "ko": "추천 이유를 작성하고 있습니다",
             "zh": "正在生成推荐理由",
         },
+        "rule_match": {
+            "ja": "症状に合うお薬候補を照合しています",
+            "en": "Matching medicine candidates to your symptoms",
+            "ko": "증상에 맞는 의약품 후보를 대조하고 있습니다",
+            "zh": "正在比对符合症状的药品候选",
+        },
+        "scoring": {
+            "ja": "候補のお薬の適合度を評価しています",
+            "en": "Scoring how well each medicine fits",
+            "ko": "후보 의약품의 적합도를 평가하고 있습니다",
+            "zh": "正在评估候选药品的匹配度",
+        },
+        "ranking": {
+            "ja": "おすすめ順に並べ替えています",
+            "en": "Sorting recommendations",
+            "ko": "추천 순으로 정렬하고 있습니다",
+            "zh": "正在按推荐顺序排列",
+        },
+        "filter_contra": {
+            "ja": "飲んではいけない組み合わせを除外しています",
+            "en": "Filtering unsafe combinations",
+            "ko": "복용하면 안 되는 조합을 제외하고 있습니다",
+            "zh": "正在排除不宜同服的组合",
+        },
     },
     "attributes": {
+        "profile_register": {
+            "ja": "お話から年齢・性別などを読み取っています",
+            "en": "Reading age and profile from your message",
+            "ko": "대화에서 나이·성별 등을 읽고 있습니다",
+            "zh": "正在从对话中读取年龄与性别等信息",
+        },
         "nlu": {
-            "ja": "症状と属性を整理しています",
+            "ja": "症状とお客様情報を整理しています",
             "en": "Analyzing symptoms and profile",
             "ko": "증상과 정보를 정리하고 있습니다",
             "zh": "正在整理症状与属性",
+        },
+    },
+    "medicine_qa": {
+        "context_load": {
+            "ja": "これまでの推奨お薬を確認しています",
+            "en": "Reviewing previously recommended medicines",
+            "ko": "이전에 추천한 의약품을 확인하고 있습니다",
+            "zh": "正在确认此前推荐的药品",
+        },
+        "history_read": {
+            "ja": "会話の流れを読み取っています",
+            "en": "Reading the conversation context",
+            "ko": "대화 흐름을 읽고 있습니다",
+            "zh": "正在读取对话内容",
+        },
+        "question_parse": {
+            "ja": "ご質問の要点を整理しています",
+            "en": "Summarizing your question",
+            "ko": "질문 요점을 정리하고 있습니다",
+            "zh": "正在整理您的问题要点",
+        },
+        "interaction_check": {
+            "ja": "飲み合わせの注意を確認しています",
+            "en": "Checking drug interaction cautions",
+            "ko": "병용 주의를 확인하고 있습니다",
+            "zh": "正在确认药物相互作用注意事项",
+        },
+        "doping_check": {
+            "ja": "競技・検査向けの注意を確認しています",
+            "en": "Checking sports and testing cautions",
+            "ko": "경기·검사 관련 주의를 확인하고 있습니다",
+            "zh": "正在确认竞技与检测相关注意事项",
+        },
+        "side_effect_check": {
+            "ja": "副作用の情報を確認しています",
+            "en": "Reviewing side effect information",
+            "ko": "부작용 정보를 확인하고 있습니다",
+            "zh": "正在确认副作用信息",
+        },
+        "answer_draft": {
+            "ja": "回答の下書きを作成しています",
+            "en": "Drafting the answer",
+            "ko": "답변 초안을 작성하고 있습니다",
+            "zh": "正在起草回答",
+        },
+        "answer_compose": {
+            "ja": "わかりやすい回答文に整えています",
+            "en": "Composing an easy-to-read answer",
+            "ko": "이해하기 쉬운 답변으로 정리하고 있습니다",
+            "zh": "正在整理为易懂的回答",
+        },
+        "safety_review": {
+            "ja": "安全面の注意を最終確認しています",
+            "en": "Final safety review",
+            "ko": "안전 주의를 최종 확인하고 있습니다",
+            "zh": "正在进行安全注意事项的最终确认",
+        },
+        "format_response": {
+            "ja": "回答を見やすい形にまとめています",
+            "en": "Formatting the response for display",
+            "ko": "답변을 보기 쉽게 정리하고 있습니다",
+            "zh": "正在将回答整理为易读格式",
+        },
+    },
+    "symptom_analysis": {
+        "llm_classify": {
+            "ja": "症状から市販薬の種類を判定しています",
+            "en": "Classifying symptoms and OTC medicine type with AI",
+            "ko": "AI로 증상과 의약품 종류를 분류하고 있습니다",
+            "zh": "正在用 AI 分类症状与药品类型",
+        },
+        "symptom_extract": {
+            "ja": "お話から症状キーワードを抽出しています",
+            "en": "Extracting symptom keywords from your message",
+            "ko": "대화에서 증상 키워드를 추출하고 있습니다",
+            "zh": "正在从对话中提取症状关键词",
+        },
+    },
+    "safety": {
+        "contra_check": {
+            "ja": "年齢・妊娠・併用薬の安全性を確認しています",
+            "en": "Checking safety for age, pregnancy, and other medicines",
+            "ko": "연령·임신·병용 약의 안전성을 확인하고 있습니다",
+            "zh": "正在确认年龄、妊娠与合并用药的安全性",
         },
     },
 }
@@ -162,6 +282,14 @@ def _payload_for_step(
         payload["agent_description"] = agent_desc
     if flow_hint:
         payload["flow_hint"] = flow_hint
+    from src.services.processing_agent_display import slow_hint_for_phase, user_agent_display
+
+    agent_display = user_agent_display(agent_name, step_id, detail_code, flow_id)
+    if agent_display:
+        payload["agent_display"] = agent_display
+    slow_hint = slow_hint_for_phase(flow_id, step_id, detail_code)
+    if slow_hint:
+        payload["slow_hint"] = slow_hint
     return payload
 
 
@@ -214,6 +342,8 @@ def _active_response(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]
         "agent_name",
         "agent_role",
         "agent_description",
+        "agent_display",
+        "slow_hint",
     ):
         if payload.get(key) is not None:
             out[key] = payload[key]
@@ -316,6 +446,8 @@ def mark_processing_step(
                 "agent_name",
                 "agent_role",
                 "agent_description",
+                "agent_display",
+                "slow_hint",
             ):
                 if payload.get(extra):
                     sse_payload[extra] = payload[extra]

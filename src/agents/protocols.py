@@ -50,6 +50,10 @@ def store_handoff(inquiry_type: str = "general") -> HandoffResult:
     return HandoffResult("StoreInquiryAgent", {"inquiry_type": inquiry_type})
 
 
+def concierge_handoff(intent: str = "general") -> HandoffResult:
+    return HandoffResult("ConciergeAgent", {"intent": intent})
+
+
 def nlu_handoff(user_text: str, user_info: Dict[str, Any]) -> HandoffResult:
     return HandoffResult("NLUAgent", {"user_text": user_text, "user_info": user_info})
 

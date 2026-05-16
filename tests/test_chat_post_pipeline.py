@@ -29,3 +29,29 @@ def test_context_dataclass_defaults():
     )
     assert ctx.triage_result is None
     assert ctx.inappropriate_request_detected is False
+
+
+def test_sync_routing_context_sets_ask_category():
+    """Ask トリアージ後に RoutingContext が同期される（capabilities 誤爆防止の前提）。"""
+    from src.handlers.chat.chat_post_pipeline import sync_routing_context
+    from src.services.concierge_intent import classify_concierge_intent
+
+    session = {
+        "messages": [],
+        "last_triage_result": {"category": "Ask", "confidence": 0.95},
+    }
+    ctx = ChatPostContext(
+        session=session,
+        client_info=ChatClientInfo(client_ip="127.0.0.1", user_agent="test"),
+        sid="sid-ask",
+        monitor=MagicMock(),
+        user_agent="test",
+        client_ip="127.0.0.1",
+        user_message="陸上競技でも使える風邪薬を教えてください。",
+        sanitized_message="陸上競技でも使える風邪薬を教えてください。",
+        triage_result={"category": "Ask", "confidence": 0.95},
+    )
+    sync_routing_context(ctx)
+    assert ctx.routing is not None
+    assert ctx.routing.triage_category == "Ask"
+    assert classify_concierge_intent(ctx.user_message) is None

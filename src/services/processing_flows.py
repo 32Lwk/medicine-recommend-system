@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # flow_id -> このフローで進捗に使う step_id の順序（weight は表示順のみ）
 FLOW_STEP_SEQUENCES: Dict[str, List[str]] = {
     "greeting": ["validate", "triage", "counseling", "finalize"],
+    "concierge": ["validate", "triage", "concierge", "finalize"],
     "other_counseling": ["validate", "triage", "store", "counseling", "finalize"],
     "emotional": ["validate", "triage", "counseling", "finalize"],
     "confidence_check": ["validate", "triage", "counseling", "finalize"],
@@ -51,6 +52,7 @@ FLOW_WEIGHTS: Dict[str, int] = {
     "dialect": 5,
     "store": 8,
     "counseling": 12,
+    "concierge": 10,
     "attributes": 9,
     "symptom_analysis": 14,
     "medicine_select": 16,
@@ -84,7 +86,11 @@ AGENT_META: Dict[str, Dict[str, str]] = {
     },
     "CounselingManager": {
         "role_ja": "カウンセリング",
-        "desc_ja": "感情・不明要求・挨拶への共感的応答",
+        "desc_ja": "感情・心理症状への共感的応答",
+    },
+    "ConciergeAgent": {
+        "role_ja": "窓口案内",
+        "desc_ja": "挨拶・できること・構成説明・軽い雑談",
     },
     "StoreInquiryAgent": {
         "role_ja": "店舗案内",
@@ -123,8 +129,15 @@ _pool("greeting", "triage",
       "挨拶かどうかを判定しています", "会話の意図を軽く分類しています", "トリアージ: 挨拶・雑談ルートを確認",
       "TriageAgent: 症状相談か挨拶かを切り分け", "入力が症状説明か社交辞令かを分析")
 _pool("greeting", "counseling",
-      "挨拶への返答を作成しています", "ようこそメッセージを準備しています", "CounselingManager: 導入の挨拶を生成",
+      "挨拶への返答を作成しています", "ようこそメッセージを準備しています", "ConciergeAgent: 導入の挨拶を生成",
       "窓口案内の文言を整えています", "次に伺う質問を組み立てています")
+
+# --- concierge ---
+_pool("concierge", "validate", "ご入力を確認しています", "メッセージを検証しています")
+_pool("concierge", "triage", "窓口案内かどうかを判定", "ConciergeAgent: 意図を分類")
+_pool("concierge", "concierge",
+      "ConciergeAgent: 案内を作成", "できること・構成を整理", "挨拶・雑談への返答を準備")
+_pool("concierge", "finalize", "返答をチャットへ反映")
 _pool("greeting", "finalize",
       "返答を表示用に整えています", "メッセージを仕上げています", "チャットへ反映しています")
 
@@ -145,8 +158,23 @@ _pool("ask_qa", "finalize",
 _pool("physical", "validate", "症状入力を確認", "入力テキストを検証", "ユーザー属性の前置確認")
 _pool("physical", "triage", "Physical ルートを確定", "TriageAgent: 身体症状として分類", "推奨フローへハンドオフ")
 _pool("physical", "attributes", "NLUAgent: 年齢・性別・妊娠を抽出", "症状と属性を整理", "ユーザー情報をマージ")
-_pool("physical", "symptom_analysis", "症状パターンを詳細分析", "禁忌・併用の前提を確認", "スコアリング用特徴量を準備")
-_pool("physical", "medicine_select", "最適な市販薬を選定", "ルールベース候補をランキング", "推奨カードを先行配信")
+_pool(
+    "physical",
+    "symptom_analysis",
+    "AIで症状と医薬品の種類を分類しています",
+    "お話から症状キーワードを抽出しています",
+    "年齢・妊娠・併用薬など禁忌の前提を確認しています",
+    "該当する市販薬カテゴリを判定しています",
+    "症状の強さ・続き方を整理しています",
+)
+_pool(
+    "physical",
+    "medicine_select",
+    "症状に合う市販薬候補をルールで照合しています",
+    "禁忌・年齢制限を踏まえて候補を絞り込んでいます",
+    "おすすめの市販薬をランキングしています",
+    "推奨カードを画面に送信中です",
+)
 _pool("physical", "safety", "安全性・禁忌を最終確認", "年齢制限とリスク警告を付与", "妊娠・授乳の注意を確認")
 _pool("physical", "usage_notes", "使用上の注意を生成", "服用方法の要点を整理", "薬剤師相談が必要か判定")
 _pool("physical", "finalize", "推奨結果を仕上げ", "個別アドバイスを統合", "SSE 完了シグナルを送信")
@@ -178,7 +206,7 @@ _pool("other_counseling", "finalize", "応答を保存")
 
 # --- confidence_check ---
 _pool("confidence_check", "validate", "確認質問の入力を検証")
-_pool("confidence_check", "triage", "確信度が低いカテゴリを再確認", "TriageAgent: confidence < 0.7")
+_pool("confidence_check", "triage", "確信度が低いカテゴリを再確認", "TriageAgent: confidence < 0.75")
 _pool("confidence_check", "counseling", "確認メッセージを生成", "追加情報をお願いする文案を作成")
 _pool("confidence_check", "finalize", "確認応答を送信")
 
@@ -198,6 +226,32 @@ _DEFAULT_STEP_POOLS: Dict[str, List[str]] = {
     "medicine_qa": [
         "MedicineQAAgent: 医薬品質問に回答", "推奨薬コンテキストで Q&A 生成",
     ],
+    "symptom_analysis": [
+        "AIで症状と医薬品の種類を分類しています",
+        "お話から症状キーワードを抽出しています",
+        "該当する市販薬カテゴリを判定しています",
+        "年齢・妊娠・併用薬など禁忌の前提を確認しています",
+    ],
+    "attributes": [
+        "年齢・性別・妊娠の有無を確認しています",
+        "症状とお客様情報を整理しています",
+        "併用中のお薬・アレルギーを確認しています",
+    ],
+    "medicine_select": [
+        "症状に合う市販薬候補をルールで照合しています",
+        "禁忌・年齢制限を踏まえて候補を絞り込んでいます",
+        "おすすめの市販薬をランキングしています",
+    ],
+    "safety": [
+        "禁忌・併用注意を最終確認しています",
+        "年齢制限と服用リスクを確認しています",
+        "妊娠・授乳中の注意点を確認しています",
+    ],
+    "usage_notes": [
+        "服用方法と用量の要点を整理しています",
+        "使用上の注意を作成しています",
+        "薬剤師への相談が必要か判定しています",
+    ],
     "finalize": [
         "回答を仕上げています", "表示用に整形", "セッションへ反映",
     ],
@@ -211,10 +265,23 @@ STEP_DETAIL_AGENTS: Dict[str, Dict[str, Tuple[str, str]]] = {
         "emergency_dispatch": ("EmergencyRouter", "緊急応答をディスパッチ"),
     },
     "medicine_select": {
-        "explanation": ("ExplanationAgent", "各薬の推奨理由をストリーム"),
+        "candidate_search": ("PhysicalOrchestrator", "候補医薬品の検索"),
+        "scoring": ("PhysicalOrchestrator", "適合度の評価"),
+        "ranking": ("PhysicalOrchestrator", "おすすめ順の決定"),
+        "filter_contra": ("SafetyGate", "禁忌候補の除外"),
+        "explanation": ("ExplanationAgent", "各薬の推奨理由"),
+        "rule_match": ("PhysicalOrchestrator", "候補の照合"),
     },
     "attributes": {
-        "nlu": ("NLUAgent", "症状・属性の抽出"),
+        "profile_register": ("NLUAgent", "お客様情報の読み取り"),
+        "nlu": ("NLUAgent", "症状・属性の整理"),
+    },
+    "symptom_analysis": {
+        "llm_classify": ("PhysicalOrchestrator", "症状と薬の種類の判定"),
+        "symptom_extract": ("PhysicalOrchestrator", "症状キーワードの整理"),
+    },
+    "safety": {
+        "contra_check": ("SafetyGate", "年齢・妊娠・併用の安全確認"),
     },
 }
 
@@ -246,10 +313,9 @@ def pick_label(
     *,
     detail_code: Optional[str] = None,
 ) -> str:
-    pool = _LABEL_POOLS.get((flow_id, step_id)) or _DEFAULT_STEP_POOLS.get(step_id) or ["処理中..."]
-    key = f"{session_id or ''}:{flow_id}:{step_id}:{detail_code or ''}:{len(pool)}"
-    idx = int(hashlib.sha256(key.encode()).hexdigest(), 16) % len(pool)
-    return pool[idx]
+    from src.services.processing_user_labels import get_user_label
+
+    return get_user_label(flow_id, step_id, session_id, detail_code=detail_code)
 
 
 def agent_detail_for_step(
@@ -266,7 +332,8 @@ def agent_detail_for_step(
             return name, meta.get("role_ja"), hint
 
     flow_agent_map = {
-        "greeting": ("CounselingManager", "挨拶・導入"),
+        "greeting": ("ConciergeAgent", "挨拶・導入"),
+        "concierge": ("ConciergeAgent", "窓口・メタ質問"),
         "ask_qa": ("MedicineQAAgent", "医薬品 Q&A"),
         "physical": ("PhysicalOrchestrator", "症状に基づく推奨"),
         "emotional": ("CounselingManager", "感情・心理ケア"),
@@ -279,6 +346,21 @@ def agent_detail_for_step(
         return "TriageAgent", AGENT_META["TriageAgent"]["role_ja"], "カテゴリ分類とハンドオフ"
     if step_id == "validate":
         return "ChatOrchestrator", AGENT_META["ChatOrchestrator"]["role_ja"], "リクエスト受付"
+    if step_id == "finalize":
+        finalize_agents = {
+            "store": ("StoreInquiryAgent", "店舗・遺失物"),
+            "concierge": ("ConciergeAgent", "窓口・メタ質問"),
+            "greeting": ("ConciergeAgent", "挨拶・導入"),
+            "ask_qa": ("MedicineQAAgent", "医薬品 Q&A"),
+            "physical": ("PhysicalOrchestrator", "症状に基づく推奨"),
+            "emotional": ("CounselingManager", "感情・心理ケア"),
+            "emergency": ("EmergencyRouter", "緊急対応"),
+            "other_counseling": ("CounselingManager", "一般窓口案内"),
+            "confidence_check": ("TriageAgent", "低確信度の再確認"),
+        }
+        if flow_id in finalize_agents:
+            name, hint = finalize_agents[flow_id]
+            return name, AGENT_META.get(name, {}).get("role_ja"), hint
     if flow_id in flow_agent_map:
         name, hint = flow_agent_map[flow_id]
         return name, AGENT_META.get(name, {}).get("role_ja"), hint
@@ -287,7 +369,8 @@ def agent_detail_for_step(
 
 def flow_description_ja(flow_id: str) -> str:
     desc = {
-        "greeting": "挨拶 → 窓口案内（推奨なし）",
+        "greeting": "挨拶 → ConciergeAgent（推奨なし）",
+        "concierge": "Other/挨拶 → ConciergeAgent（できること・構成・雑談）",
         "ask_qa": "Ask → MedicineQAAgent（chat-response 形式）",
         "physical": "Physical → NLU → 選定 → cards/SSE → 使用注意",
         "emotional": "Emotional → CounselingManager",

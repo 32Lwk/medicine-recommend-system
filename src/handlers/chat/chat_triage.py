@@ -43,12 +43,16 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         from src.agents.triage_agent import run_triage_agent
         from src.services.triage_analytics import log_triage_result
 
+        from src.services.triage_history import get_recent_messages
+
         user_info = session.get("user_attributes") if session else None
+        conversation_history = get_recent_messages(session, sid)
         start_time = time.time()
         triage_result = run_triage_agent(
             sanitized_message,
             recommendation_client,
             user_info=user_info,
+            conversation_history=conversation_history,
         )
         processing_time = (time.time() - start_time) * 1000
 
@@ -64,6 +68,9 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
             f"subcategory: {triage_result.get('subcategory', 'N/A')}, "
             f"confidence: {triage_result.get('confidence'):.2f}"
         )
+        if triage_result:
+            session["last_triage_result"] = triage_result
+            session.modified = True
         if sid and triage_result:
             try:
                 from src.services.processing_flows import flow_for_triage_category

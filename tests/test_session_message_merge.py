@@ -2,6 +2,7 @@
 from src.services.session_manager import (
     has_recent_counseling_reply_for_user,
     merge_session_messages,
+    normalize_session_messages,
 )
 
 
@@ -40,6 +41,17 @@ def test_has_recent_counseling_reply_for_user():
     }
     assert has_recent_counseling_reply_for_user(session, "こんにちは") is True
     assert has_recent_counseling_reply_for_user(session, "別の文") is False
+
+
+def test_normalize_session_messages_drops_duplicate_counseling_bot():
+    messages = [
+        {"type": "user", "content": "こんにちは", "uuid": "u1"},
+        {"type": "bot", "content": "返信", "counseling": True, "uuid": "b1"},
+        {"type": "bot", "content": "返信", "counseling": True, "uuid": "b2"},
+    ]
+    normalized = normalize_session_messages(messages)
+    assert len(normalized) == 2
+    assert normalized[1]["uuid"] == "b1"
 
 
 def test_has_recent_counseling_false_after_resend_user_appended():

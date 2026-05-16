@@ -19,7 +19,7 @@ def is_agent_enabled() -> bool:
     ON: 全セッションで ChatOrchestrator 経路。OFF: 従来経路のみ。
     本番既定は ON（docs/ARCHITECTURE_MULTI_AGENT.md 参照）。
     """
-    return _flag("LLM_AGENT_ENABLED", False)
+    return _flag("LLM_AGENT_ENABLED", True)
 
 
 def is_gpt_recommend_fallback_enabled() -> bool:
