@@ -3,32 +3,13 @@
 """
 from __future__ import annotations
 
-import html
 from typing import Any, Dict
+
+from src.services.text_formatter import safe_format_qa_html
 
 
 def safe_format_html(text: Any) -> str:
-    if not text:
-        return ""
-    if isinstance(text, list):
-        lines = []
-        for item in text:
-            if isinstance(item, dict):
-                name = item.get("製品名") or item.get("name") or ""
-                comp = item.get("主成分") or item.get("成分") or ""
-                use = item.get("用途") or item.get("efficacy") or ""
-                summary = " / ".join(s for s in [name, comp, use] if s)
-                if summary:
-                    lines.append(summary)
-            else:
-                lines.append(str(item))
-        text = "\n".join(lines)
-    elif isinstance(text, dict):
-        text = "\n".join(f"{k}: {v}" for k, v in text.items())
-    else:
-        text = str(text)
-    escaped = html.escape(text)
-    return escaped.replace("\n", "<br>")
+    return safe_format_qa_html(text)
 
 
 def build_chat_response_inner_html(chat_response: Dict[str, Any]) -> str:

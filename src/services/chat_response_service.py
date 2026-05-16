@@ -27,45 +27,107 @@ DEFAULT_USER_ATTRIBUTES = {
     'other_info': None
 }
 
-# 挨拶キーワードに対する応答マップ
+# 汎用挨拶（こんにちは等）— ランダムに1つ選ぶ
+GREETING_INTRO_POOL: List[str] = [
+    'こんにちは。こちらは医薬品相談の窓口です。頭痛やのどの痛み、お薬の選び方など、お気軽にご相談ください。',
+    'こんにちは。症状やお薬についてのご質問を承ります。今お困りのことがあれば、具体的に教えてください。',
+    'こんにちは。市販薬の選び方や飲み合わせなど、できる範囲でお手伝いします。まずはお困りの内容をお聞かせください。',
+    'こんにちは。お体の不調や薬のご相談でしたら、こちらでサポートいたします。気になる症状があれば教えてください。',
+    'こんにちは。医薬品相談AIです。のどの痛み、発熱、胃のむかつきなど、気になることがあればお知らせください。',
+    'こんにちは。症状・お薬名・服用状況などを教えていただければ、できる限りご案内します。お気軽にどうぞ。',
+    'こんにちは。お薬選びのお手伝いをしています。今のお悩みや症状を、よろしければメッセージでお送りください。',
+    'こんにちは。こちらでは市販薬に関するご相談を受け付けています。お困りごとがございましたら、お書きください。',
+    'こんにちは。症状のつらさや薬について、落ち着いてご案内します。どのようなことでお悩みか教えてください。',
+    'こんにちは。医薬品に関することなら、できる範囲でお答えします。具体的な症状やご質問をお待ちしています。',
+]
+
+# 時間帯・初対面など固定トーンの挨拶
 GREETING_RESPONSES: Dict[str, str] = {
-    'こんにちは': 'こんには！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'こんばんは': 'こんばんは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'おはよう': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'おはようございます': 'おはようございます！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'はじめまして': 'はじめまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    '初めまして': '初めまして！医薬品相談ツールです。どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'よろしく': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'よろしくお願いします': 'よろしくお願いします！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。',
-    'ありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-    'ありがとうございます': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-    'どうも': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-    'どうもありがとう': 'どういたしまして！他にご質問や症状がございましたら、お気軽にお聞かせください。',
-    'hello': 'Hello! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
-    'hi': 'Hi! What symptoms are you experiencing? Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.',
+    'ありがとう': 'どういたしまして。ほかにご質問や症状がございましたら、お気軽にお聞かせください。',
+    'ありがとうございます': 'どういたしまして。ほかにご質問や症状がございましたら、お気軽にお聞かせください。',
+    'どうも': 'どういたしまして。ほかにご質問や症状がございましたら、お気軽にお聞かせください。',
+    'どうもありがとう': 'どういたしまして。ほかにご質問や症状がございましたら、お気軽にお聞かせください。',
+    'hello': (
+        'Hello! What symptoms are you experiencing? '
+        'Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.'
+    ),
+    'hi': (
+        'Hi! What symptoms are you experiencing? '
+        'Please tell me your specific symptoms, and I will recommend appropriate over-the-counter medicines.'
+    ),
     'thanks': "You're welcome! If you have any other questions or symptoms, please feel free to let me know.",
-    'thank you': "You're welcome! If you have any other questions or symptoms, please feel free to let me know."
+    'thank you': "You're welcome! If you have any other questions or symptoms, please feel free to let me know.",
 }
 
-DEFAULT_GREETING_RESPONSE = (
-    'こんにちは！どのような症状でお困りですか？具体的な症状を教えていただければ、適切な市販薬をご提案いたします。'
-)
+# キーワード → ランダムプール（汎用 intro と同系統だが冒頭を合わせる）
+_GREETING_POOL_BY_PREFIX: Dict[str, List[str]] = {
+    'こんばんは': [
+        f'こんばんは。{body}'
+        for body in (
+            'お疲れさまです。体調のことやお薬のご相談があれば、お気軽にお聞かせください。',
+            '今夜もお体の不調があれば、症状を教えていただければご案内します。',
+            '市販薬の選び方など、できる範囲でお手伝いします。お困りのことがあればどうぞ。',
+        )
+    ],
+    'おはようございます': [
+        f'おはようございます。{body}'
+        for body in (
+            '本日もお体のご相談を承ります。気になる症状があれば教えてください。',
+            'お薬のことでお困りでしたら、具体的にお書きください。',
+            'のどの痛みや胃の不調など、お気軽にご相談ください。',
+        )
+    ],
+    'おはよう': [
+        f'おはようございます。{body}'
+        for body in (
+            '本日もお体のご相談を承ります。気になる症状があれば教えてください。',
+            'お薬のことでお困りでしたら、具体的にお書きください。',
+        )
+    ],
+    'はじめまして': [
+        f'はじめまして。{body}'
+        for body in (
+            '医薬品相談の窓口です。症状やお薬のご質問をお待ちしています。',
+            '市販薬に関するご相談を承ります。お困りのことがあれば教えてください。',
+        )
+    ],
+    '初めまして': [
+        f'初めまして。{body}'
+        for body in (
+            '医薬品相談の窓口です。症状やお薬のご質問をお待ちしています。',
+            '市販薬に関するご相談を承ります。お困りのことがあれば教えてください。',
+        )
+    ],
+    'よろしくお願いします': [
+        f'よろしくお願いします。{body}'
+        for body in (
+            '医薬品相談の窓口です。症状やお薬のことでしたら、お気軽にどうぞ。',
+            'お体の不調やお薬選びでお困りのことがあれば、お聞かせください。',
+        )
+    ],
+    'よろしく': [
+        f'よろしくお願いします。{body}'
+        for body in (
+            '医薬品相談の窓口です。症状やお薬のことでしたら、お気軽にどうぞ。',
+            'お体の不調やお薬選びでお困りのことがあれば、お聞かせください。',
+        )
+    ],
+}
 
 
 def build_greeting_response(user_message: str) -> str:
     """
     ユーザーメッセージに応じた挨拶返答を生成する。
-
-    Args:
-        user_message: ユーザーが入力したメッセージ
-
-    Returns:
-        挨拶に対応した応答テキスト
+    汎用の「こんにちは」系は GREETING_INTRO_POOL からランダムに選択する。
     """
+    lowered = (user_message or '').lower()
     for greeting_key, response in GREETING_RESPONSES.items():
-        if greeting_key in user_message.lower():
+        if greeting_key in lowered:
             return response
-    return DEFAULT_GREETING_RESPONSE
+    for prefix, pool in _GREETING_POOL_BY_PREFIX.items():
+        if prefix in lowered:
+            return random.choice(pool)
+    return random.choice(GREETING_INTRO_POOL)
 
 
 def generate_personalized_advice(
@@ -258,10 +320,9 @@ def generate_personalized_advice(
 
 def _safe_format_html(text: Optional[str]) -> str:
     """テキストを安全にHTML表示用に整形"""
-    if not text:
-        return ""
-    escaped = html.escape(text)
-    return escaped.replace("\n", "<br>")
+    from src.services.text_formatter import safe_format_qa_html
+
+    return safe_format_qa_html(text)
 
 
 def build_question_response(

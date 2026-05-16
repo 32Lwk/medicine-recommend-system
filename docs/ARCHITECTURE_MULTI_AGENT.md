@@ -15,6 +15,7 @@
 | NLUAgent | 属性・症状 NLU（`resolve_nlu_for_recommendation` 経由） |
 | ExplanationAgent | カード先行後の推奨理由（SSE `explanations`） |
 | CounselingManager | Emotional 系 |
+| ConciergeAgent | 挨拶・できること・構成説明・軽い雑談（Other の窓口） |
 | StoreInquiryAgent | Other / 店舗案内 |
 | ModerationAgent | 境界クライシス検知 |
 

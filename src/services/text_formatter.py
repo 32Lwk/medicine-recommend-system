@@ -5,7 +5,9 @@ medicine_logic から分離（SRP改善）。
 Markdown→HTML変換、表示用テキスト整形を行う。
 """
 
+import html
 import re
+from typing import Any
 
 
 def convert_markdown_bold(text):
@@ -56,3 +58,48 @@ def format_text_for_display(text):
     text = convert_markdown_bold(text)
 
     return text
+
+
+def _normalize_qa_text(text: Any) -> str:
+    if not text:
+        return ""
+    if isinstance(text, list):
+        lines = []
+        for item in text:
+            if isinstance(item, dict):
+                name = item.get("製品名") or item.get("name") or ""
+                comp = item.get("主成分") or item.get("成分") or ""
+                use = item.get("用途") or item.get("efficacy") or ""
+                summary = " / ".join(s for s in [name, comp, use] if s)
+                if summary:
+                    lines.append(summary)
+            else:
+                lines.append(str(item))
+        return "\n".join(lines)
+    if isinstance(text, dict):
+        return "\n".join(f"{k}: {v}" for k, v in text.items())
+    return str(text)
+
+
+def _normalize_llm_html_fragments(text: str) -> str:
+    """LLM が返した簡易 HTML を Markdown 風に直してから整形する。"""
+    if not text or "<" not in text:
+        return text
+    result = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+    result = re.sub(
+        r"<strong>(.*?)</strong>",
+        r"**\1**",
+        result,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    result = re.sub(r"</?p>", "\n", result, flags=re.IGNORECASE)
+    return result.strip()
+
+
+def safe_format_qa_html(text: Any) -> str:
+    """医薬品Q&A表示用: XSSエスケープ後にMarkdown太字・改行をHTML化"""
+    normalized = _normalize_qa_text(text)
+    if not normalized:
+        return ""
+    normalized = _normalize_llm_html_fragments(normalized)
+    return format_text_for_display(html.escape(normalized))

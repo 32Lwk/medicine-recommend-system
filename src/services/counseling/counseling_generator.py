@@ -9,7 +9,6 @@ from src.services.counseling.counseling_templates import generate_illegal_drug_r
 from src.services.counseling.counseling_logger import log_counseling_response
 from src.services.counseling.counseling_prompts import get_counseling_prompt_template
 from src.services.counseling.counseling_format import format_conversation_history
-from src.services.counseling_triage import detect_app_specification_question
 
 logger = logging.getLogger(__name__)
 
@@ -422,80 +421,8 @@ def generate_counseling_response(
             except Exception as e:
                 logger.error(f"緊急避妊薬応答生成エラー: {e}")
     
-    # アプリケーションの技術仕様に関する質問を検出
-    # general_otherまたはinappropriate_request/unknownの場合に技術仕様質問をチェック
-    if (symptom_type == "general_other" or symptom_type == "inappropriate_request/unknown") and detect_app_specification_question(user_text):
-        # アプリケーションの技術仕様に関する質問に特化したプロンプトを使用
-        app_spec_prompt = f"""
-あなたは医薬品相談AIアシスタントです。ユーザーからのアプリケーションの技術仕様や対応内容に関する質問に対して、正確で分かりやすい説明を提供してください。
+    # app_spec / メタ質問は ConciergeAgent（chat_concierge_route）で処理
 
-【ユーザーの質問】
-{user_text}
-
-【アプリケーションの基本情報】
-- 名称: チャット型医薬品相談ツール（β版）
-- 目的: 症状に基づいて一般用医薬品（OTC薬）をチャット形式で安全かつ柔軟に提案
-- 対象: 企業・行政関係者・薬剤師・登録販売者など、限られた専門関係者（β版）
-
-【主な機能】
-1. 自然なチャット形式での相談
-2. AI × 薬学知識による安全性の担保
-3. 受診勧奨システムの導入
-4. 多言語・多環境対応（日本語・英語・中国語・韓国語）
-5. データの安全管理
-
-【技術仕様】
-- バックエンド: Python 3.9+, Flask 3.0.0, Jinja2
-- AI/NLP: OpenAI GPT-4o-mini, ルールベースNLU（ハイブリッド推奨システム）
-- 翻訳API: DeepL API（多言語対応：日本語・英語・中国語・韓国語、高速翻訳）
-- データベース: PostgreSQL（フィードバック永続化・セッション管理・マルチインスタンス対応）
-- データ処理: Pandas 2.2.3, NumPy
-- フロントエンド: HTML5, CSS3, JavaScript（ES6+）、バニラJavaScript（フレームワーク不使用）、レスポンシブデザイン
-- デプロイ環境: Render（本番環境）、Gunicorn（WSGIサーバー）
-- 監視・ログ: psutil, JSONL形式記録（構造化ログ）、アクセス分析、パフォーマンス監視
-- バージョン管理: Git（GitHub）
-
-【独自のアルゴリズム】
-本アプリの心臓部となる「医薬品選定アルゴリズム」は、大規模言語モデルによる柔軟な言語理解と、薬効・禁忌・ユーザー属性情報・症状などの要素を統合的に評価する独自のアルゴリズムで構成されています。これにより、単なるAI応答ではなく、根拠に基づいた薬選びを実現しています。
-
-【対応内容】
-- 一般用医薬品（OTC薬）の相談・推奨
-- 症状に基づいた医薬品選定
-- 医薬品の相互作用チェック
-- アレルギー対応
-- 受診勧奨（重篤な症状が疑われる場合）
-- 多言語対応（日本語・英語・中国語・韓国語）
-
-【対応できない内容】
-- 処方薬の推奨・処方
-- 診断・治療行為
-- 違法薬物・規制薬物に関する相談
-- 重篤な疾患の完治・予防を目的とした薬の要求
-
-【返信の要件】
-- **正確性**: アプリケーションの技術仕様や対応内容について、正確な情報を提供してください
-- **分かりやすさ**: 専門用語を使う場合は、分かりやすく説明してください
-- **簡潔さ**: 200-300文字程度で簡潔に説明してください
-- **丁寧さ**: ユーザーの質問に対して、丁寧に回答してください
-
-【返信を生成してください】
-"""
-        try:
-            from src.services.counseling.counseling_llm import counseling_chat
-            response = counseling_chat(
-                client,
-                "counseling_generator.app_spec",
-                [
-                    {"role": "system", "content": "あなたは医薬品相談AIアシスタントです。アプリケーションの技術仕様や対応内容に関する質問に対して、正確で分かりやすい説明を提供してください。"},
-                    {"role": "user", "content": app_spec_prompt},
-                ],
-                max_tokens=400,
-            )
-            return response.choices[0].message.content.strip()
-        except Exception as e:
-            logger.error(f"アプリケーション仕様質問応答生成エラー: {e}")
-            return "申し訳ございませんが、システムエラーが発生しました。アプリケーションの技術仕様については、右上のℹ️ボタンから「アプリ概要・運営者情報」をご確認ください。"
-    
     # プロンプトテンプレートを取得
     template = get_counseling_prompt_template(symptom_type)
     

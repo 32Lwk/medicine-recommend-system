@@ -147,7 +147,7 @@ def run_symptom_recommendation(
 
     session["is_medicine_consultation"] = True
     logger.info("🏥 SYMPTOM INPUT DETECTED: %s", user_message)
-    logger.info("💊 医薬品相談回答処理開始 - フラグ設定完了")
+    logger.info("💊 推奨フロー処理開始（Physical） - フラグ設定完了")
 
     try:
         from config.llm_flags import is_agent_enabled

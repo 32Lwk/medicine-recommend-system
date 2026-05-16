@@ -140,49 +140,36 @@ def apply_emotional_keyword_routing(
     phase: str,
 ) -> Optional[str]:
     """
-    眠気/不眠キーワードで triage を Emotional に上書き。
+    眠気/不眠キーワードを候補として記録（triage カテゴリは LLM 判定を維持）。
     phase: "sleepiness" | "insomnia"
-    上書き後の category 文字列、または None。
     """
     from src.handlers.chat.chat_emotional_route import (
-        apply_emotional_keyword_triage_overrides,
         detect_insomnia_keyword,
         detect_sleepiness_keyword,
     )
+    from src.services.routing_keyword_policy import attach_routing_keyword_candidates
 
     if phase == "sleepiness":
         has_sleepiness = detect_sleepiness_keyword(sanitized_message)
         session["has_sleepiness_keyword"] = has_sleepiness
-        if has_sleepiness and not session.get("sleepiness_medicine_recommendation"):
-            logger.info(
-                "🔄 眠気関連キーワードを検出: カウンセリングフローにリダイレクト (category=%s)",
-                triage_result.get("category", "N/A") if triage_result else "N/A",
+        if has_sleepiness and triage_result is not None:
+            merged = attach_routing_keyword_candidates(
+                triage_result, ["emotional_sleepiness"]
             )
-            return apply_emotional_keyword_triage_overrides(
-                triage_result,
-                sanitized_message,
-                has_sleepiness_keyword=True,
-                has_insomnia_keyword=False,
-                session=session,
-            )
+            triage_result.clear()
+            triage_result.update(merged)
+            logger.info("🔍 眠気キーワード候補を記録（LLM トリアージは上書きしない）")
         return None
 
     has_sleepiness = session.get("has_sleepiness_keyword", False)
-    skip_insomnia = has_sleepiness
     has_insomnia = detect_insomnia_keyword(sanitized_message)
     session["has_insomnia_keyword"] = has_insomnia
-
-    if has_insomnia and not session.get("insomnia_medicine_recommendation") and not skip_insomnia:
-        logger.info(
-            "🔄 不眠関連キーワードを検出: カウンセリングフローにリダイレクト (category=%s)",
-            triage_result.get("category", "N/A") if triage_result else "N/A",
-        )
-        return apply_emotional_keyword_triage_overrides(
-            triage_result,
-            sanitized_message,
-            has_sleepiness_keyword=has_sleepiness,
-            has_insomnia_keyword=True,
-            skip_insomnia_check=skip_insomnia,
-            session=session,
-        )
+    if has_insomnia and triage_result is not None:
+        if not has_sleepiness:
+            merged = attach_routing_keyword_candidates(
+                triage_result, ["emotional_insomnia"]
+            )
+            triage_result.clear()
+            triage_result.update(merged)
+            logger.info("🔍 不眠キーワード候補を記録（LLM トリアージは上書きしない）")
     return None

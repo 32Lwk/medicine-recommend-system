@@ -59,6 +59,20 @@ def dispatch_emergency(
 
     mark_processing_step(sid, "emergency", detail_code=classification.subtype)
 
+    try:
+        from src.services.routing_validator import verify_routing_async
+
+        verify_routing_async(
+            route_kind="emergency",
+            user_text=sanitized_message,
+            decided_category="Emergency",
+            client=recommendation_client,
+            session_id=sid,
+            extra={"subtype": classification.subtype},
+        )
+    except Exception:
+        pass
+
     if classification.subtype == "store_incident":
         return _dispatch_store_incident(
             session,

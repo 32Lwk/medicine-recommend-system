@@ -10,6 +10,10 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico.png') }}" type="image/png" sizes="64x64">
     <!-- Critical CSS (Above the fold) -->
     <style>
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; 
@@ -17,6 +21,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             height: 100dvh;
+            overflow: hidden;
             text-align: left;
             -webkit-text-size-adjust: 100%;
         }
@@ -61,29 +66,39 @@
             min-height: 0;
             position: relative;
             overflow-x: hidden; /* 横スクロールを防止 */
+            display: flex;
+            flex-direction: column;
         }
-        /* シーズン装飾画像（chat-inputの上に固定、チャットメッセージの下に配置） */
-        .season-decoration {
-            position: absolute;
+        /* シーズン装飾（スクロール領域内 sticky・メッセージ z-index:2 の下） */
+        .season-decoration-layer {
+            order: 9999;
+            position: sticky;
+            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
+            z-index: 1;
+            height: 0;
+            width: 100%;
             pointer-events: none;
-            z-index: 1; /* メッセージ(z-index: 2)の下、入力欄より下 */
-            will-change: transform;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+        .season-decoration-layer .season-decoration {
+            position: absolute;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
             opacity: 0.7;
-            transform: translateZ(0);
             height: auto;
         }
-        .season-decoration.position-right {
-            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
-            right: 20px;
+        .season-decoration-layer .season-decoration.position-right {
+            right: 0;
             width: 120px;
             max-height: min(140px, 22vh);
             object-fit: contain;
         }
-        .season-decoration.position-left {
-            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
-            left: 20px;
+        .season-decoration-layer .season-decoration.position-left {
+            left: 0;
             width: 100px;
             max-height: min(120px, 20vh);
             object-fit: contain;
@@ -158,30 +173,28 @@
             .chat-messages {
                 padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             }
-            .season-decoration.position-right {
-                width: 80px;
+            .season-decoration-layer {
                 bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
-                right: 10px;
+            }
+            .season-decoration-layer .season-decoration.position-right {
+                width: 80px;
                 max-height: min(100px, 18vh);
             }
-            .season-decoration.position-left {
+            .season-decoration-layer .season-decoration.position-left {
                 width: 70px;
-                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
-                left: 10px;
                 max-height: min(90px, 16vh);
             }
         }
         @media (max-width: 480px) {
-            .season-decoration.position-right {
-                width: 60px;
+            .season-decoration-layer {
                 bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
-                right: 5px;
+            }
+            .season-decoration-layer .season-decoration.position-right {
+                width: 60px;
                 max-height: min(80px, 16vh);
             }
-            .season-decoration.position-left {
+            .season-decoration-layer .season-decoration.position-left {
                 width: 50px;
-                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
-                left: 5px;
                 max-height: min(70px, 14vh);
             }
         }
@@ -205,7 +218,7 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260516-slow-in-bubble" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260517-scroll-fix" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
@@ -237,8 +250,10 @@
             </button>
         </div>
         
-        <h1 id="appTitle"></h1>
-        <p id="appDescription"></p>
+        <div class="chat-header-brand">
+            <h1 id="appTitle"></h1>
+            <p id="appDescription"></p>
+        </div>
         <div class="button-group" style="margin-top: 10px;">
             <button onclick="openUserInfoModal()" style="background: #2196F3; border: 1px solid #2196F3; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" id="userInfoBtn">👤 ユーザー情報登録</button>
             <button onclick="clearChat()" style="background: black; border: 1px solid black; color: white; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 12px; margin-left: 8px;" id="clearBtn">🗑️ 履歴クリア</button>
@@ -247,16 +262,16 @@
         </div>
     </div>
     
-    <!-- シーズン装飾（chat-inputの上に固定） -->
-    {% if decoration_images %}
-        {% for image in decoration_images %}
-            <img src="{{ url_for('static', filename=image.path) }}?v={{ image_version }}" 
-                 alt="{{ image.alt }}" 
-                 class="season-decoration {{ image.position_class }}">
-        {% endfor %}
-    {% endif %}
-    
     <div class="chat-messages" id="chatMessages">
+        {% if decoration_images %}
+        <div class="season-decoration-layer" aria-hidden="true">
+            {% for image in decoration_images %}
+            <img src="{{ url_for('static', filename=image.path) }}?v={{ image_version }}"
+                 alt=""
+                 class="season-decoration {{ image.position_class }}">
+            {% endfor %}
+        </div>
+        {% endif %}
         <!-- 冬仕様の装飾 -->
         <div class="snow-container" id="snowContainer" aria-hidden="true"></div>
         
@@ -511,7 +526,9 @@
         <form method="post" id="chatForm">
             <div class="input-group">
                 <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="音声入力">🎤</button>
-                <textarea name="message" id="messageInput" placeholder="症状を入力してください..." required rows="1"></textarea>
+                <div class="message-input-field">
+                    <textarea name="message" id="messageInput" class="app-scrollbar" placeholder="症状を入力してください..." required rows="1"></textarea>
+                </div>
                 <button type="submit">送信</button>
             </div>
         </form>
@@ -525,9 +542,9 @@
         window.CHAT_USE_SSE = true;
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
-    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260516-slow-in-bubble" defer></script>
+    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260517-agent-slow" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260516-slow-in-bubble" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260517-post-unlock4" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">

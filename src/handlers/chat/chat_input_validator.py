@@ -69,7 +69,8 @@ def validate_and_block_input(session, client, user_message, sid):
             session['messages'].append({
                 'type': 'bot',
                 'content': block_message,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4()),
             })
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
@@ -111,7 +112,8 @@ def validate_and_block_input(session, client, user_message, sid):
             session['messages'].append({
                 'type': 'bot',
                 'content': block_message,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4()),
             })
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
@@ -134,7 +136,8 @@ def validate_and_block_input(session, client, user_message, sid):
             session['messages'].append({
                 'type': 'bot',
                 'content': warn_message,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'uuid': str(uuid.uuid4()),
             })
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)

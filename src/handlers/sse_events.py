@@ -52,6 +52,8 @@ class SseDoneEvent:
     status: str = "ok"
     message_count: int = 0
     trace_id: Optional[str] = None
+    bot_message: Optional[Dict[str, Any]] = None
+    user_message: Optional[Dict[str, Any]] = None
 
     def to_payload(self) -> Dict[str, Any]:
         p = {
@@ -61,6 +63,10 @@ class SseDoneEvent:
         }
         if self.trace_id:
             p["trace_id"] = self.trace_id
+        if self.bot_message:
+            p["bot_message"] = self.bot_message
+        if self.user_message:
+            p["user_message"] = self.user_message
         return p
 
 

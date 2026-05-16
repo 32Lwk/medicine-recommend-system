@@ -57,14 +57,29 @@ def run_triage_agent(
     *,
     user_info: Optional[Dict[str, Any]] = None,
     use_cache: bool = True,
+    conversation_history: Optional[list] = None,
 ) -> Dict[str, Any]:
     pre = keyword_pre_triage(user_text)
     if pre:
+        try:
+            from src.services.routing_validator import verify_routing_async
+
+            verify_routing_async(
+                route_kind="emergency_keyword",
+                user_text=user_text,
+                decided_category="Emergency",
+                client=client,
+                extra={"pre_triage": True},
+            )
+        except Exception:
+            pass
         return pre
 
     from src.services.triage_cache import build_cache_key, get_triage_cache
+    from src.services.triage_history import history_digest
 
-    cache_key = build_cache_key(user_text, user_info)
+    hist_d = history_digest(conversation_history or [])
+    cache_key = build_cache_key(user_text, user_info, history_digest=hist_d)
     if use_cache:
         cached = get_triage_cache().get(cache_key)
         if cached:
@@ -75,7 +90,12 @@ def run_triage_agent(
 
     from src.services.llm_triage import llm_triage
 
-    result = llm_triage(user_text, client, use_cache=use_cache)
+    result = llm_triage(
+        user_text,
+        client,
+        use_cache=use_cache,
+        conversation_history=conversation_history,
+    )
     result["agent"] = "TriageAgent"
     if use_cache:
         get_triage_cache().set(cache_key, result)

@@ -135,62 +135,36 @@ def comprehensive_medicine_recommendation(user_text, user_info=None, client=None
 # ルールベース推奨システム（新規追加）
 # ================================================================================
 
-def rule_based_medicine_recommendation(user_text, user_info, client=None, session_id=None):
+def rule_based_medicine_recommendation(
+    user_text,
+    user_info,
+    client=None,
+    session_id=None,
+    *,
+    precomputed_nlu=None,
+    top_n=3,
+):
     """
-    ルールベース医薬品推奨システムのラッパー関数
-    風邪薬、解熱鎮痛薬、鼻炎用薬に限定
-    
-    Args:
-        user_text: ユーザーの症状入力
-        user_info: ユーザー情報（年齢、妊娠など）
-        client: OpenAIクライアント
-        session_id: セッションID（オプション、ログ用）
-    
-    Returns:
-        推奨結果
+    ルールベース医薬品推奨システムのラッパー関数（後方互換）。
+    実装は src.core.rule_based_recommendation.rule_based_medicine_recommendation に委譲。
     """
     if client is None:
         client = _default_openai_client
-    
-    # ルールベース推奨モジュールをインポート
+
     try:
-        # モジュールをインポート（関数内でインポートすることで循環インポートを回避）
-        import src.core.rule_based_recommendation as rbr_module
-        
-        # 関数が存在するか確認
-        if not hasattr(rbr_module, 'rule_based_recommendation'):
-            raise AttributeError(f"rule_based_recommendation関数が見つかりません。利用可能な属性: {[attr for attr in dir(rbr_module) if not attr.startswith('_')][:20]}")
-        
-        if not hasattr(rbr_module, 'log_recommendation_session'):
-            raise AttributeError(f"log_recommendation_session関数が見つかりません。")
-        
-        # 関数を取得
-        rule_based_recommendation = rbr_module.rule_based_recommendation
-        log_recommendation_session = rbr_module.log_recommendation_session
-        
-        # グローバルdfを使用
-        global df
-        if df is None:
-            return {
-                "status": "error",
-                "reason": "医薬品データが読み込まれていません"
-            }
-        
-        # ルールベース推奨を実行
-        result = rule_based_recommendation(
-            user_text=user_text,
-            user_info=user_info,
-            medicine_df=df,
-            client=client,
-            top_n=3,
-            session_id=session_id
+        from src.core.rule_based_recommendation import (
+            rule_based_medicine_recommendation as _rbr,
         )
-        
-        # ログ保存はapp.pyでbot_contentが生成された後に実行されるため、ここではスキップ
-        # （app.pyから完全なapp_outputを渡してログを記録する）
-        
-        return result
-        
+
+        return _rbr(
+            user_text,
+            user_info,
+            client,
+            top_n=top_n,
+            session_id=session_id,
+            precomputed_nlu=precomputed_nlu,
+        )
+
     except ImportError as e:
         logger.error(f"ルールベース推奨モジュールのインポートエラー: {e}")
         import traceback

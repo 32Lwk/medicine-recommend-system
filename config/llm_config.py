@@ -30,20 +30,24 @@ _LEGACY = {
     "triage": "gpt-4o-mini",
     "nlu": "gpt-4o-mini",
     "counsel": "gpt-4o-mini",
+    "concierge": "gpt-4o-mini",
     "explain": "gpt-4o",
     "ask": "gpt-4o-mini",
     "admin": "gpt-4o-mini",
+    "validator": "gpt-4o-mini",
 }
 
 _GPT5 = {
     "triage": "gpt-5.4-mini",
     "nlu": "gpt-5.4-mini",
     "counsel": "gpt-5.4-mini",
+    "concierge": "gpt-5.4-mini",
     "explain": "gpt-5.5",
     "ask": "gpt-5.4-mini",
     "admin": "gpt-5.4-mini",
     "store": "gpt-5.4-mini",
     "moderation": "gpt-5.4-mini",
+    "validator": "gpt-5.4-mini",
 }
 
 RESPONSES_API_ROLES = frozenset({"triage", "explain"})
@@ -52,7 +56,7 @@ _PROFILE_MODELS = _GPT5 if LLM_MODEL_PROFILE == "gpt5" else _LEGACY
 
 
 def get_model(role: str) -> str:
-    """role: triage | nlu | counsel | explain | ask | admin"""
+    """role: triage | nlu | counsel | concierge | explain | ask | admin"""
     try:
         from config.llm_runtime import get_request_profile
         req_profile = get_request_profile()
@@ -81,8 +85,9 @@ def use_responses_api_for_role(role: str) -> bool:
 
 _ROLE_TIMEOUT_SEC = {
     "triage": 8.0,
-    "explain": 15.0,
+    "explain": 60.0,
     "counsel": 20.0,
+    "concierge": 12.0,
     "moderation": 8.0,
     "nlu": 15.0,
     "ask": 20.0,

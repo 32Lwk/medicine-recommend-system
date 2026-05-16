@@ -88,7 +88,15 @@ def register_user_attributes_from_message(
                 logger.warning(f"⚠️ ユーザー属性のDB保存でエラー: {e}")
 
     if schedule_async_extraction and sid and get_session_from_db_fn and save_to_db_fn and message.strip():
-        _schedule_async(sid, message, get_session_from_db_fn, save_to_db_fn)
+        try:
+            from src.services.input_routing import is_greeting_only_message
+
+            if is_greeting_only_message(message.strip()):
+                logger.debug("挨拶のみのため非同期属性抽出をスキップ")
+            else:
+                _schedule_async(sid, message, get_session_from_db_fn, save_to_db_fn)
+        except Exception:
+            _schedule_async(sid, message, get_session_from_db_fn, save_to_db_fn)
 
     return updated, extracted
 

@@ -33,10 +33,7 @@ from src.services.session_manager import (
     get_admin_sessions,
     get_manual_reply_queue,
 )
-from src.core.medicine_logic import (
-    analyze_symptoms_and_medicine_type,
-    rule_based_medicine_recommendation,
-)
+from src.core.medicine_logic import analyze_symptoms_and_medicine_type
 from src.core.translation_service import translate_medicine_recommendation
 from src.handlers.chat.chat_response_builder import build_success_response
 
@@ -90,6 +87,27 @@ def _emit_explanation_followup_sse(
         logger.debug("explanation SSE follow-up skipped: %s", exc)
 
 
+def _invoke_rule_based_recommendation(
+    user_text: str,
+    user_info: dict,
+    client,
+    session_id,
+    nlu_result: dict | None,
+):
+    """rule_based_medicine_recommendation を毎回正しいモジュールから呼ぶ（古いキャッシュ回避）。"""
+    from src.core.rule_based_recommendation import (
+        rule_based_medicine_recommendation as _rbr,
+    )
+
+    return _rbr(
+        user_text,
+        user_info,
+        client,
+        session_id=session_id,
+        precomputed_nlu=nlu_result or None,
+    )
+
+
 def run_recommendation_flow(
     session,
     client,
@@ -106,7 +124,7 @@ def run_recommendation_flow(
         user_message = processed_message or sanitized_message or ""
     from src.services.processing_status import mark_processing_step
 
-    mark_processing_step(sid, "attributes")
+    mark_processing_step(sid, "attributes", detail_code="profile_register")
     ADMIN_SESSIONS = get_admin_sessions()
     if True:  # main recommendation flow (body is 8-space indented)
         # ステップ0: ユーザー情報登録処理（NLU解析の前に実行）
@@ -821,8 +839,9 @@ def run_recommendation_flow(
         start_time = time.time()
         try:
             logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
-            mark_processing_step(sid, "symptom_analysis")
+            mark_processing_step(sid, "symptom_analysis", detail_code="llm_classify")
             analysis_result = analyze_symptoms_and_medicine_type(processed_message, recommendation_client)  # 方言変換後のテキストを使用
+            mark_processing_step(sid, "symptom_analysis", detail_code="symptom_extract")
                         
             # 診断名が検出された場合の処理（早期リターンでAPIコストを削減）
             if analysis_result.get('is_diagnosis', False):
@@ -1163,14 +1182,12 @@ def run_recommendation_flow(
                     logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
                     user_info['user_preferences'] = None
                             
-                mark_processing_step(sid, "safety")
-                mark_processing_step(sid, "medicine_select")
-                recommendation_result = rule_based_medicine_recommendation(
-                    processed_message,  # 方言変換後のテキストを使用
+                recommendation_result = _invoke_rule_based_recommendation(
+                    processed_message,
                     user_info,
                     recommendation_client,
-                    session_id=sid,
-                    precomputed_nlu=nlu_result if nlu_result else None,
+                    sid,
+                    nlu_result,
                 )
                             
                 # ルールベース結果のデバッグログ
@@ -2442,7 +2459,7 @@ def run_recommendation_flow(
                     # 医薬品相談回答処理の終了時にフラグをクリア
                     if session.get('is_medicine_consultation', False):
                         session['is_medicine_consultation'] = False
-                        logger.info(f"💊 医薬品相談回答処理終了 - フラグクリア完了")
+                        logger.info("💊 推奨フロー処理終了 - フラグクリア完了")
         else:
             logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
     else:

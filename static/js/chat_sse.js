@@ -61,11 +61,12 @@
             const decoder = new TextDecoder();
             let buffer = '';
             let lastEventId = null;
+            let lastDonePayload = null;
 
             function pump() {
                 return reader.read().then(function (result) {
                     if (result.done) {
-                        onDone({ lastEventId: lastEventId });
+                        onDone({ lastEventId: lastEventId, done: lastDonePayload });
                         return;
                     }
                     buffer += decoder.decode(result.value, { stream: true });
@@ -73,6 +74,9 @@
                     buffer = parsed.rest;
                     parsed.events.forEach(function (ev) {
                         if (ev.id) lastEventId = ev.id;
+                        if (ev.event === 'done' && ev.data) {
+                            lastDonePayload = ev.data;
+                        }
                         onEvent(ev);
                     });
                     return pump();

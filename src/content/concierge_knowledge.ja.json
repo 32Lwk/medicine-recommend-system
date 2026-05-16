@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "version": "2026-05-16",
+    "locale": "ja"
+  },
+  "app": {
+    "name": "チャット型医薬品相談ツール（β版）",
+    "audience": "企業・行政関係者・薬剤師・登録販売者など、限られた専門関係者向けの試験運用",
+    "purpose": "症状に基づいて一般用医薬品（OTC薬）をチャット形式で安全に案内する"
+  },
+  "capabilities": [
+    {"id": "otc_recommend", "title": "OTC薬の相談・提案", "body": "症状・年齢・持病・服薬状況を踏まえ、一般用医薬品の候補を提示します。"},
+    {"id": "safety", "title": "安全性の確認", "body": "相互作用やアレルギー、受診が必要な症状の目安をお伝えします。"},
+    {"id": "i18n", "title": "多言語対応", "body": "日本語・英語・中国語・韓国語での相談に対応します。"},
+    {"id": "store", "title": "店舗案内", "body": "店内の場所や遺失物など、店舗に関するご質問にも回答します。"}
+  ],
+  "limitations": [
+    "処方薬の推奨・処方は行いません",
+    "診断・治療行為は行いません",
+    "違法薬物・規制薬物に関する相談には対応できません",
+    "参考情報であり、最終判断は医師・薬剤師・登録販売者などの専門家にご相談ください"
+  ],
+  "agents": [
+    {"id": "TriageAgent", "name_ja": "TriageAgent", "role_one_liner": "お話の内容を分類し、適切な担当へ振り分けます"},
+    {"id": "PhysicalOrchestrator", "name_ja": "PhysicalOrchestrator", "role_one_liner": "症状を解析し、ルールベースのスコアリングで市販薬候補を提示します"},
+    {"id": "AskAgent", "name_ja": "AskAgent", "role_one_liner": "推奨後の医薬品に関する質問に答えます"},
+    {"id": "StoreInquiryAgent", "name_ja": "StoreInquiryAgent", "role_one_liner": "店舗・遺失物などの案内を行います"},
+    {"id": "ConciergeAgent", "name_ja": "ConciergeAgent", "role_one_liner": "挨拶・アプリの説明・軽い雑談への案内を行います"},
+    {"id": "CounselingManager", "name_ja": "CounselingManager", "role_one_liner": "感情や心理的なお悩みへの傾聴・支援を行います"},
+    {"id": "EmergencyRouter", "name_ja": "EmergencyRouter", "role_one_liner": "緊急時の受診・119などの案内を行います"},
+    {"id": "ExplanationAgent", "name_ja": "ExplanationAgent", "role_one_liner": "推奨医薬品の理由をわかりやすく説明します"}
+  ],
+  "policy_snippet": "あなたは医薬品相談窓口の案内役です。診断・処方は行いません。市販薬の候補選定はルールベースアルゴリズムのみで行われ、LLMが自由に薬名を創作して決めることはありません。雑談には短く応じ、症状やお薬の相談を促してください。",
+  "handoff_intro_physical": "症状の内容に沿って、市販薬の候補を確認します。少々お待ちください。"
+}
