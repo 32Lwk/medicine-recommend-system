@@ -104,11 +104,49 @@ def _uses_max_completion_tokens(model: str) -> bool:
     return False
 
 
+def _supports_custom_temperature(model: str) -> bool:
+    """gpt-5 / o 系は temperature カスタム値非対応（既定 1 のみ）。"""
+    name = (model or "").strip().lower()
+    if not name:
+        return True
+    if name.startswith("gpt-5") or name.startswith("o1") or name.startswith("o3") or name.startswith("o4"):
+        return False
+    return True
+
+
+def extract_completion_text(response: Any) -> str:
+    """Chat Completions / Responses ラッパから本文を取り出す（空・拒否応答に耐える）。"""
+    if response is None:
+        return ""
+    try:
+        choices = getattr(response, "choices", None) or []
+        if choices:
+            msg = getattr(choices[0], "message", None)
+            if msg is not None:
+                content = getattr(msg, "content", None)
+                if isinstance(content, str) and content.strip():
+                    return content.strip()
+                refusal = getattr(msg, "refusal", None)
+                if isinstance(refusal, str) and refusal.strip():
+                    return refusal.strip()
+    except Exception:
+        pass
+    text = getattr(response, "output_text", None)
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    return ""
+
+
+_LLM_INTERNAL_KWARGS = frozenset({"session_id", "on_delta"})
+
+
 def _prepare_chat_completion_kwargs(model: str, kwargs: Dict[str, Any]) -> Dict[str, Any]:
-    """Chat Completions 向けにトークン上限パラメータを正規化する。"""
-    prepared = dict(kwargs)
+    """Chat Completions 向けにトークン上限・temperature を正規化する。"""
+    prepared = {k: v for k, v in kwargs.items() if k not in _LLM_INTERNAL_KWARGS}
     if "max_tokens" in prepared and _uses_max_completion_tokens(model):
         prepared["max_completion_tokens"] = prepared.pop("max_tokens")
+    if not _supports_custom_temperature(model) and "temperature" in prepared:
+        prepared.pop("temperature")
     return prepared
 
 
@@ -125,9 +163,12 @@ def _extract_responses_text(resp: Any) -> str:
 
 
 def _responses_create(client: OpenAI, model: str, messages: List[Dict[str, str]], **kwargs: Any) -> _CompletionAdapter:
+    kwargs = _prepare_chat_completion_kwargs(model, kwargs)
     req: Dict[str, Any] = {"model": model, "input": messages}
     if "max_tokens" in kwargs:
         req["max_output_tokens"] = kwargs.pop("max_tokens")
+    if "max_completion_tokens" in kwargs:
+        req["max_output_tokens"] = kwargs.pop("max_completion_tokens")
     if "temperature" in kwargs:
         req["temperature"] = kwargs["temperature"]
     rf = kwargs.pop("response_format", None)
@@ -148,8 +189,12 @@ def _invoke_llm(
     model_role: Optional[str] = None,
     **kwargs: Any,
 ) -> Any:
-    use_resp = use_responses_api() or (
-        model_role is not None and use_responses_api_for_role(model_role)
+    use_resp = (
+        hasattr(client, "responses")
+        and (
+            use_responses_api()
+            or (model_role is not None and use_responses_api_for_role(model_role))
+        )
     )
     if model_role:
         kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
@@ -354,16 +399,23 @@ async def _invoke_llm_async(
     model_role: Optional[str] = None,
     **kwargs: Any,
 ) -> Any:
-    use_resp = use_responses_api() or (
-        model_role is not None and use_responses_api_for_role(model_role)
+    use_resp = (
+        hasattr(async_client, "responses")
+        and (
+            use_responses_api()
+            or (model_role is not None and use_responses_api_for_role(model_role))
+        )
     )
     if model_role:
         kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
     if use_resp:
         try:
+            kwargs = _prepare_chat_completion_kwargs(model, kwargs)
             req: Dict[str, Any] = {"model": model, "input": messages}
             if "max_tokens" in kwargs:
                 req["max_output_tokens"] = kwargs.pop("max_tokens")
+            if "max_completion_tokens" in kwargs:
+                req["max_output_tokens"] = kwargs.pop("max_completion_tokens")
             if "temperature" in kwargs:
                 req["temperature"] = kwargs["temperature"]
             rf = kwargs.pop("response_format", None)

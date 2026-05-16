@@ -2,6 +2,7 @@
 
 from src.services.session_manager import (
     append_user_message,
+    has_recent_concierge_reply_for_user,
     was_last_user_message,
     remove_duplicate_user_messages_after_ai_response,
 )
@@ -25,3 +26,19 @@ def test_was_last_user_message_prevents_same_request_double_add():
 
 def test_remove_duplicate_user_messages_is_noop():
     assert remove_duplicate_user_messages_after_ai_response('nonexistent') is False
+
+
+def test_has_recent_concierge_reply_false_when_user_appended_before_bot():
+    """パイプライン先追記後は Concierge 応答を許可する。"""
+    session = {"messages": [{"type": "user", "content": "あんたについて教えて"}]}
+    assert has_recent_concierge_reply_for_user(session, "あんたについて教えて") is False
+
+
+def test_has_recent_concierge_reply_true_after_bot():
+    session = {
+        "messages": [
+            {"type": "user", "content": "あんたについて教えて"},
+            {"type": "bot", "content": "自己紹介", "concierge": True},
+        ]
+    }
+    assert has_recent_concierge_reply_for_user(session, "あんたについて教えて") is True

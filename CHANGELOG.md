@@ -1,8 +1,141 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月16日**（マルチエージェント本格化・Emergency 統合・トリアージキャッシュ・SSE explanations・処理進捗 UI・管理画面 PII 運用）
+**最終更新日: 2026年5月17日**（ルーティング刷新・ConfidenceGate・メタ LLM トリアージ）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年5月17日 — ルーティング刷新・ConciergeAgent・ConfidenceGate・処理進捗 UI 拡充
+
+### 概要
+
+- **ルーティング一本化**: LLM トリアージを主軸に、キーワード誤爆（「教えて」等）を抑制。`chat_post_pipeline` からオーケストレーター前の Concierge 先行呼び出しを削除し、`Other` は `ChatOrchestrator` → Concierge → 店舗の順で処理。
+- **ConciergeAgent（新規）**: 挨拶・感謝・できること・アーキテクチャ説明・ドキュメント参照・軽い雑談・Physical ハンドオフ。ナレッジは `concierge_knowledge.ja.json`、ドキュメント要約は `concierge_docs.py`。
+- **ConfidenceGate**: 閾値 `0.75`。低信頼時は `explain` モデルで再トリアージ → セッション 1 回まで確認質問 → 仍あいまいなら Concierge フォールバック。
+- **トリアージ履歴**: 直近 5 件を `llm_triage` / `TriageAgent` に常時付与。キャッシュキーに履歴ダイジェストを含める。
+- **初回薬探索**: コールドスタートで「教えて」「おすすめ」等は Ask ではなく Physical 推奨へ（`medicine_discovery_routing.py`）。
+- **処理進捗 UI**: ユーザー向け非技術ラベル約 50 種（`processing_user_labels.py`）、エージェント名表示（`processing_agent_display.py`）、医薬品 Q&A / 推奨の `detail_code` 細分化。
+- **フロント**: チャット全体のスクロール構造修正（`html/body` 固定・入力欄 sticky）、シーズン装飾レイヤー、Concierge ステータスカード、SSE 推奨 UI の改善。
+- **店舗案内**: 施設・場所の文脈判定強化、Concierge への委譲条件、キーワードプローブ統合。
+- **`LLM_AGENT_ENABLED`**: コード既定を `true` に変更。
+
+### ルーティング・ConfidenceGate
+
+- **`config/routing_config.py`（新規）**: `TRIAGE_CONFIDENCE_THRESHOLD`（既定 `0.75`）、`TRIAGE_HISTORY_MESSAGES`（既定 `5`）。
+- **`src/services/confidence_gate.py`（新規）**: `apply_confidence_gate` — 無意味入力検出、再トリアージ、確認質問 1 回、Concierge フォールバック。
+- **`src/services/triage_history.py`（新規）**: 直近メッセージ抽出・トリアージ用履歴ブロック整形。
+- **`src/services/routing_context.py`（新規）**: `sync_routing_context` — 履歴ダイジェスト・ゲート状態をセッションに同期。
+- **`src/services/input_routing.py`（新規）**: `is_greeting_only_message` 等、挨拶・入力正規化の一本化。
+- **`src/services/routing_keyword_policy.py`（新規）**: トリアージ結果へのキーワード候補付与（監査・デバッグ用）。
+- **`src/services/routing_validator.py`（新規）**: 緊急・違法薬物・店舗のクリティカル路で `model_role=validator` 非同期監査（`log/routing_validator.jsonl`）。
+- **`src/services/meta_triage.py`（新規）**: Other 向けメタ意図 LLM 分類（`model_role=concierge`）、LRU 風キャッシュ。
+- **`chat_post_pipeline.py`**: トリアージ → ConfidenceGate → オーケストレーター → カテゴリルートの順序確定。Concierge 先行削除。
+- **`chat_confidence_route.py`**: `apply_confidence_gate` への委譲ラッパに整理。
+- **`llm_triage.py` / `triage_agent.py`**: 履歴付きプロンプト、キャッシュキーに履歴ダイジェスト、`triage_cache` 無効化フック。
+- **`chat_session_route.py`**: 眠気/不眠の Emotional 上書きを `confidence < 0.75` または Physical|Ask + 睡眠キーワード時のみに限定。
+
+### ConciergeAgent
+
+- **`src/agents/concierge_agent.py`（新規）**: 意図解決・ペイロード生成・オフトピック管理・Physical ハンドオフ。
+- **`src/handlers/chat/chat_concierge_route.py`（新規）**: `try_concierge_response` — 早期 Concierge 応答・DB 同期・重複抑止。
+- **`src/services/concierge_orchestrator.py`（新規）**: `enrich_other_concierge_intent` — 完全一致（挨拶/感謝）→ メタ LLM の 2 段階。
+- **`src/services/concierge_intent.py`（新規）**: 完全一致ゲート、医薬品相談キーワード除外、オフトピックリセット判定。
+- **`src/services/concierge_keyword_probe.py`（新規）**: 雑談系キーワード候補プローブ。
+- **`src/services/concierge_templates.py`（新規）**: 挨拶・感謝・リダイレクト・capabilities / architecture カード HTML。
+- **`src/services/concierge_llm.py`（新規）**: 雑談向け短応答 LLM（ポリシースニペット付与）。
+- **`src/content/concierge_knowledge.ja.json`（新規）**: アプリ概要・エージェント一覧・制限事項・ハンドオフ文言。
+- **`src/content/concierge_knowledge.py` / `concierge_docs.py`（新規）**: ナレッジ読込・`docs/` 参照ドキュメント要約（プライバシー・利用規約等）。
+- **`chat_orchestrator.py`**: `Other` で `_enrich_concierge_intent` → `_route_concierge` → 未処理時 `_route_store`。Ask コールドスタートを Physical 推奨へ昇格。
+- **`chat_greeting_route.py`**: Concierge 委譲ラッパに変更（後方互換維持）。
+- **`agents/protocols.py`**: Concierge 関連プロトコル拡張。
+
+### 質問ルート・医薬品 Q&A・薬探索
+
+- **`src/services/medicine_discovery_routing.py`（新規）**: 初回セッションの薬探索 vs 追質問 Q&A 切り分け。スポーツ・ドーピング文脈キーワード。
+- **`chat_question_route.py`**: 大規模整理 — トリアージ `Ask`/`Physical` 優先、`_execute_medicine_qa_flow`、薬探索→推奨の分岐を `medicine_discovery_routing` に委譲。
+- **`chat_medicine_qa_html.py`**: `run_medicine_question_qa` に Q&A 実行を集約。CLEAR QUESTION・属性更新後・トリアージ Ask 直行を統合。
+- **`medicine_qa_html.py` / `chat_response_service.py`**: Q&A HTML 生成・応答整形の共通化強化。
+- **`medicine_response_builder.py`**: 構造化 Q&A ストリーム、用途ヒント、Physical ハンドオフヒント、処理 `detail_code` 連携。
+- **`explanation_generator.py` / `medicine_logic.py`**: 推奨・説明フローとの連携調整。
+
+### 店舗案内・その他ルート
+
+- **`store_inquiry_handler.py`**: 施設・場所の空間文脈（`has_facilities_spatial_context` 等）、Concierge 委譲（`should_defer_store_to_concierge`）、キーワードプローブ、在庫・遺失物・免税等の分類強化。
+- **`chat_store_inquiry.py`**: ルーティングコンテキスト・ConfidenceGate 連携。
+- **`chat_other_counseling_route.py` / `counseling_generator.py`**: カウンセリング生成・ルート整理。
+- **`chat_ask_route.py`**: Ask ルート拡張。
+- **`emergency_dispatch.py`**: RoutingValidator 非同期監査フック。
+
+### 処理進捗 UI
+
+- **`processing_user_labels.py`（新規）**: flow/step/detail_code ごとのユーザー向け日本語ラベル（約 50 種）。
+- **`processing_agent_display.py`（新規）**: 担当エージェント名の日本語表示マッピング。
+- **`processing_mark.py`（新規）**: ステップマーク用ユーティリティ。
+- **`processing_flows.py`**: `concierge` / `medicine_qa` / `confidence_check` 等フロー追加、閾値表示 0.75 に更新。
+- **`processing_status.py`**: `detail_label`・エージェント名・ユーザーラベルの SSE/GET 反映。
+- **`static/js/processing_status.js`**: 新ラベル・エージェント表示のフロント反映。
+
+### LLM 設定
+
+- **`config/llm_config.py`**: `model_role=concierge` / `validator` を追加（legacy: `gpt-4o-mini`、gpt5: `gpt-5.4-mini`）。
+- **`config/llm_flags.py`**: `LLM_AGENT_ENABLED` 既定 `true`。
+- **`.env.example`**: `TRIAGE_CONFIDENCE_THRESHOLD` / `TRIAGE_HISTORY_MESSAGES` を追記。
+
+### フロントエンド
+
+- **`templates/index.html`**: `html/body` を `overflow: hidden` + flex 化しチャット領域のみスクロール。シーズン装飾を `.season-decoration-layer`（sticky・入力欄上）に移動。ヘッダーブランド構造追加。
+- **`static/css/main.css`**: レイアウト・Concierge カード・ステータスカード・モバイル対応の大幅更新。
+- **`static/css/scrollbar.css`**: 新スクロール領域セレクタ追加。
+- **`static/js/main.js`**: Concierge 応答表示、SSE 推奨 UI、メッセージ重複抑止、スクロール挙動修正。
+- **`static/js/chat_sse.js`**: ストリームイベント連携の微調整。
+
+### セッション・チャット基盤
+
+- **`session_manager.py`**: Concierge 重複応答検出（`has_recent_concierge_reply_for_user` 等）、メッセージマージ改善。
+- **`chat_stream.py` / `sse_events.py`**: ストリーム完了・イベント拡張。
+- **`chat_recommendation_flow.py`**: 推奨フローと処理ステップ連携。
+- **`text_formatter.py`**: 整形ユーティリティ拡張。
+- **`user_attribute_registration.py`**: 属性登録後のルーティング連携。
+- **`triage_analytics.py`**: 閾値を `routing_config` から取得。
+- **`main.py`**: 起動・ルーティング関連の微調整。
+
+### ドキュメント
+
+- **`docs/ROUTING_ARCHITECTURE_AUDIT.md`（新規）**: A0 環境調査・パイプライン early return 図・confidence 0.75 統合一覧・E3 管理画面スモーク手順。
+- **`docs/ARCHITECTURE_MULTI_AGENT.md`**: ConciergeAgent をエージェント一覧に追加。
+
+### 回帰テスト（新規・更新）
+
+| テスト | 内容 |
+|--------|------|
+| `test_confidence_gate.py` | 再トリアージ・確認質問・Concierge フォールバック |
+| `test_meta_triage.py` | メタ意図 LLM 分類・キャッシュ |
+| `test_routing_context.py` | RoutingContext 同期 |
+| `test_routing_keyword_policy.py` | キーワード候補付与 |
+| `test_routing_golden.py` | ゴールデンルーティング（`fixtures/routing_golden.jsonl`） |
+| `test_concierge_agent.py` / `test_concierge_route.py` | Concierge 応答・ルート |
+| `test_concierge_orchestrator.py` | Other 意図付与 |
+| `test_concierge_intent.py` / `test_concierge_intent_extended.py` | 意図分類・除外 |
+| `test_concierge_templates.py` / `test_concierge_card_snapshots.py` | テンプレート・カード HTML |
+| `test_concierge_docs.py` / `test_concierge_knowledge_sync.py` | ドキュメント・ナレッジ同期 |
+| `test_concierge_acceptance.py` | 受け入れシナリオ |
+| `test_medicine_qa_flow.py` | 医薬品 Q&A フロー |
+| `test_question_route_agent.py` | エージェント ON 時の質問ルート |
+| `test_sports_medicine_routing.py` | スポーツ・ドーピング文脈 |
+| `test_store_facilities_context.py` | 店舗施設・場所文脈 |
+| `test_processing_user_labels.py` / `test_processing_agent_display.py` | 進捗ラベル・エージェント表示 |
+| `test_safe_format_qa_html.py` | Q&A HTML エスケープ |
+| `test_rule_based_import.py` | ルールベース import 安全性 |
+| `test_chat_post_pipeline.py` / `test_chat_stream_api.py` | パイプライン・ストリーム API |
+| `test_chat_greeting_route.py` | 挨拶 → Concierge 委譲 |
+| `test_processing_status_detail.py` / `test_session_message_merge.py` / `test_user_message_dedup.py` | 進捗 detail・マージ・重複抑止 |
+| `test_llm_phase1.py` | フラグ既定変更に追随 |
+
+### 環境変数（`config/routing_config.py`・`.env.example`）
+
+- `TRIAGE_CONFIDENCE_THRESHOLD`（既定 `0.75`）
+- `TRIAGE_HISTORY_MESSAGES`（既定 `5`）
 
 ---
 

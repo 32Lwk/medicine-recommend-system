@@ -343,7 +343,9 @@ def generate_individual_usage_notes_with_gpt(
             max_tokens=300,
         )
 
-        result = response.choices[0].message.content
+        from src.core.llm_client import extract_completion_text
+
+        result = extract_completion_text(response)
         return result.strip()
 
     except Exception as e:
@@ -492,7 +494,11 @@ def generate_usage_notes_and_consultation_with_gpt(
             response_format={"type": "json_object"},
         )
 
-        result_text = response.choices[0].message.content
+        from src.core.llm_client import extract_completion_text
+
+        result_text = extract_completion_text(response)
+        if not result_text:
+            raise ValueError("empty completion content")
         result_json = json.loads(result_text)
 
         individual_notes = []

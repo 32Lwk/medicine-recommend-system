@@ -90,11 +90,17 @@ def attrs_digest(user_attributes: Optional[Dict[str, Any]]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
-def build_cache_key(text: str, user_attributes: Optional[Dict[str, Any]] = None) -> str:
-    """sha256(canonical_text + attrs_digest) — 生本文はキーに含めない。"""
+def build_cache_key(
+    text: str,
+    user_attributes: Optional[Dict[str, Any]] = None,
+    *,
+    history_digest: str = "",
+) -> str:
+    """sha256(canonical_text + attrs_digest + history_digest) — 生本文はキーに含めない。"""
     norm = normalize_triage_text(text)
     digest = attrs_digest(user_attributes)
-    raw = f"{norm}|{digest}"
+    hist = (history_digest or "").strip()
+    raw = f"{norm}|{digest}|{hist}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -181,3 +187,23 @@ _cache = TriageCache()
 
 def get_triage_cache() -> TriageCache:
     return _cache
+
+
+def invalidate_cache_key(cache_key: str) -> None:
+    """再トリアージ・緊急・確認質問後など、当該ターンのキャッシュを破棄。"""
+    if not cache_key:
+        return
+    get_triage_cache()._store.pop(cache_key, None)
+    record_cache_event("skip_lookup", reason="invalidated")
+
+
+def invalidate_triage_for_turn(
+    user_text: str,
+    user_attributes: Optional[Dict[str, Any]] = None,
+    *,
+    history_digest: str = "",
+) -> str:
+    """現在ターン用キーを無効化し、キー文字列を返す（ログ用）。"""
+    key = build_cache_key(user_text, user_attributes, history_digest=history_digest)
+    invalidate_cache_key(key)
+    return key
