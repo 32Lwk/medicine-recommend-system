@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
-from config.llm_flags import is_agent_enabled, is_agent_session_eligible
+from config.llm_flags import is_agent_enabled
 from src.agents.protocols import HandoffResult
 from src.agents.triage_agent import resolve_handoff, run_triage_agent
 
@@ -115,8 +115,15 @@ def try_agent_pipeline(
     recommendation_client: OpenAI,
     monitor: Any,
 ) -> Optional[ResponseTuple]:
-    """非推奨: ChatOrchestrator へ委譲（後方互換）。"""
-    if not is_agent_enabled() or not is_agent_session_eligible(sid) or not triage_result:
+    """非推奨: ChatOrchestrator へ委譲。新規コードは try_orchestrator_route を使用。"""
+    import warnings
+
+    warnings.warn(
+        "try_agent_pipeline is deprecated; use try_orchestrator_route",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    if not is_agent_enabled() or not triage_result:
         return None
     from src.handlers.chat.chat_post_pipeline import ChatPostContext
     from src.handlers.chat_orchestrator import try_orchestrator_route

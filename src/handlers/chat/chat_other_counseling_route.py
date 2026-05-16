@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 import traceback
+import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
@@ -15,6 +16,7 @@ from src.services.session_manager import (
     append_user_message,
     get_next_user_number,
     get_session_from_db,
+    has_recent_counseling_reply_for_user,
     save_session_to_db,
     was_last_user_message,
 )
@@ -66,6 +68,51 @@ def _extract_pregnancy_breastfeeding_from_other(session: Any, sanitized_message:
     _mark_session_modified(session)
 
 
+def _sync_user_message_to_db(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_msg: dict,
+) -> None:
+    if not sid:
+        return
+    session_data = get_session_from_db(sid)
+    if session_data:
+        session_data.setdefault("messages", [])
+        if not was_last_user_message(session_data, user_msg.get("content", "")):
+            session_data["messages"].append(user_msg)
+            session_data["last_activity"] = datetime.now()
+            save_session_to_db(sid, session_data)
+    else:
+        save_session_to_db(
+            sid,
+            {
+                "session_id": sid,
+                "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+                "messages": [user_msg],
+                "session_active": True,
+                "last_activity": datetime.now(),
+                "client_ip": client_info.client_ip,
+                "user_agent": client_info.user_agent,
+                "user_attributes": session.get("user_attributes", {}),
+            },
+        )
+
+
+def _ensure_user_message_for_counseling(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    original_user_message: str,
+) -> None:
+    """カウンセリング判定の前に user を追記（再送時も履歴に残す）。"""
+    if was_last_user_message(session, original_user_message):
+        return
+    user_msg = append_user_message(session, original_user_message)
+    _sync_user_message_to_db(session, client_info, sid, user_msg)
+    _mark_session_modified(session)
+
+
 def run_other_unknown_counseling(
     session: Any,
     client_info: Any,
@@ -81,7 +128,27 @@ def run_other_unknown_counseling(
     店舗案内でない Other 向け不明要求カウンセリング。
     成功時は応答 tuple、失敗時は should_handle_other_category を立てて None。
     """
+    from src.services.input_classifier import classify_input
+
+    if classify_input((original_user_message or "").strip()) == "greeting":
+        logger.info("⏭️ 挨拶のため不明要求カウンセリングをスキップ")
+        return None
+
     logger.info("🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
+    _ensure_user_message_for_counseling(
+        session, client_info, sid, original_user_message
+    )
+    # user 追記後に評価（再送時は末尾が user になり、直前 bot への重複返信のみ抑止）
+    if has_recent_counseling_reply_for_user(session, original_user_message):
+        logger.info("⏭️ 同一ユーザー発言へのカウンセリング返信済みのためスキップ")
+        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+    if sid:
+        try:
+            from src.services.processing_status import set_processing_flow
+
+            set_processing_flow(sid, "other_counseling")
+        except Exception:
+            pass
     try:
         _extract_pregnancy_breastfeeding_from_other(session, sanitized_message)
     except Exception as e:
@@ -95,33 +162,6 @@ def run_other_unknown_counseling(
             log_counseling_response,
             start_counseling_mode,
         )
-
-        if not was_last_user_message(session, original_user_message):
-            user_msg = append_user_message(session, original_user_message)
-            if sid:
-                session_data = get_session_from_db(sid)
-                if session_data:
-                    session_data.setdefault("messages", [])
-                    if not was_last_user_message(session_data, original_user_message):
-                        session_data["messages"].append(user_msg)
-                        session_data["last_activity"] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                else:
-                    save_session_to_db(
-                        sid,
-                        {
-                            "session_id": sid,
-                            "username": session.get(
-                                "username", f"ユーザー{get_next_user_number()}"
-                            ),
-                            "messages": [user_msg],
-                            "session_active": True,
-                            "last_activity": datetime.now(),
-                            "client_ip": client_info.client_ip,
-                            "user_agent": client_info.user_agent,
-                            "user_attributes": session.get("user_attributes", {}),
-                        },
-                    )
 
         symptom_type = "inappropriate_request/unknown"
         conversation_history = (
@@ -161,6 +201,7 @@ def run_other_unknown_counseling(
             "inappropriate_request": True,
             "request_type": "unknown",
             "timestamp": datetime.now().isoformat(),
+            "uuid": str(uuid.uuid4()),
         }
         session.setdefault("messages", []).append(bot_response)
 

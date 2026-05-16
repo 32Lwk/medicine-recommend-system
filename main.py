@@ -47,6 +47,7 @@ from src.services.session_manager import (
     get_session_from_db,
     maybe_persist_session_activity,
     merge_session_messages,
+    persist_session_from_chat_state,
     save_session_to_db,
     set_admin_mode,
     set_ai_auto_reply,
@@ -110,7 +111,7 @@ def _clean_nan(obj):
     return obj
 
 
-def get_sid(request: Request, response: Response) -> str:
+async def get_sid(request: Request, response: Response) -> str:
     sid = request.cookies.get(COOKIE_NAME_SID)
     if sid:
         return sid
@@ -651,8 +652,16 @@ def clear_chat_test(request: Request, response: Response, sid: str = Depends(get
 
 
 @app.post("/new_session")
-def new_session(request: Request, response: Response):
+async def new_session(request: Request, response: Response):
     # 新規SIDを発行してcookieを書き換える
+    old_sid = request.cookies.get(COOKIE_NAME_SID)
+    if old_sid:
+        try:
+            from src.services.sse_emit import clear_session_stream_state
+
+            clear_session_stream_state(old_sid)
+        except Exception:
+            pass
     sid = str(int(time.time() * 1000)) + str(random.randint(100000, 999999))
     response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
     username = f"ユーザー{get_next_user_number()}"
@@ -722,7 +731,7 @@ def api_processing_status_get(
 
 
 @app.get("/api/sessions")
-def api_sessions_get(
+async def api_sessions_get(
     request: Request,
     response: Response,
     sid: str = Depends(get_sid),
@@ -767,7 +776,49 @@ def api_sessions_get(
         "messages": messages,
         "user_attributes": user_attributes,
         "latest_usage_notes": latest_usage_notes,
+        "medical_emergency_otc_locked": bool(session_data.get("medical_emergency_otc_locked")),
+        "otc_lock_released": bool(session_data.get("otc_lock_released")),
+        "store_incident_soft_banner": bool(session_data.get("store_incident_soft_banner")),
+        "emergency_subtype": session_data.get("emergency_subtype"),
     }
+
+
+@app.post("/api/chat/otc_unlock")
+async def api_chat_otc_unlock(
+    request: Request,
+    sid: str = Depends(get_sid),
+):
+    """メディカル緊急後の OTC ハードロックを明示解除（ユーザーの自己判断）。"""
+    session_data = get_session_from_db(sid) or {}
+    if not session_data.get("medical_emergency_otc_locked"):
+        return JSONResponse(
+            content={"status": "ok", "otc_unlocked": False, "message": "ロックは有効ではありません"},
+            status_code=200,
+        )
+    session_data["otc_lock_released"] = True
+    session_data["medical_emergency_otc_unlocked_at"] = datetime.now().isoformat()
+    save_session_to_db(sid, session_data)
+    return JSONResponse(
+        content={
+            "status": "ok",
+            "otc_unlocked": True,
+            "message": "市販薬の相談を再開できます。緊急でないことをご確認のうえご利用ください。",
+        },
+        status_code=200,
+    )
+
+
+@app.post("/api/chat/store_incident_ack")
+async def api_chat_store_incident_ack(
+    request: Request,
+    sid: str = Depends(get_sid),
+):
+    """店舗インシデント後のソフトバナーを閉じ、OTC 相談へ進む意思を記録。"""
+    session_data = get_session_from_db(sid) or {}
+    session_data["store_incident_soft_banner"] = False
+    session_data["store_incident_otc_opt_in"] = True
+    save_session_to_db(sid, session_data)
+    return JSONResponse(content={"status": "ok", "banner_dismissed": True}, status_code=200)
 
 
 @app.post("/api/sessions/restore")
@@ -1087,8 +1138,20 @@ def api_main_sessions(sid: str = Depends(get_sid)):
 
 
 @app.get("/api/main_manual_reply_queue")
-def api_main_manual_reply_queue():
-    return get_manual_reply_queue()
+def api_main_manual_reply_queue(priority_tag: str | None = None):
+    from src.utils.admin_snippet import truncate_user_text
+
+    queue = get_manual_reply_queue()
+    enriched = []
+    for item in queue:
+        row = dict(item)
+        msg = row.get("user_message") or ""
+        row.setdefault("user_message_snippet", truncate_user_text(msg, "list"))
+        row["user_message_detail"] = truncate_user_text(msg, "detail")
+        if priority_tag and row.get("priority_tag") != priority_tag:
+            continue
+        enriched.append(row)
+    return enriched
 
 
 @app.post("/api/main_manual_reply_queue")
@@ -1107,6 +1170,42 @@ async def api_main_manual_reply_queue_post(request: Request):
         queue = [q for q in queue if q.get("session_id") != session_id]
         set_manual_reply_queue(queue)
         return {"status": "success", "queue": get_manual_reply_queue()}
+
+    if action == "acknowledge" and session_id:
+        for item in queue:
+            if item.get("session_id") != session_id:
+                continue
+            item["acknowledged"] = True
+            ns = dict(item.get("notification_status") or {})
+            ns["admin"] = "acknowledged"
+            item["notification_status"] = ns
+            break
+        set_manual_reply_queue(queue)
+        return {"status": "success", "queue": get_manual_reply_queue()}
+
+    if action == "retry_email" and session_id:
+        from src.services.emergency_notify import (
+            build_notification_status,
+            notify_emergency_detected,
+        )
+
+        target = next((q for q in queue if q.get("session_id") == session_id), None)
+        if not target:
+            return JSONResponse({"status": "error", "message": "キューにありません"}, status_code=404)
+        email_status = notify_emergency_detected(
+            session_id=session_id,
+            user_message=target.get("user_message") or "",
+            priority_tag=target.get("priority_tag") or "store_high",
+            emergency_subtype=target.get("emergency_subtype") or "medical_self",
+            emergency_type=target.get("emergency_type"),
+            trace_id=target.get("trace_id"),
+        )
+        ns = dict(target.get("notification_status") or {})
+        ns["email"] = email_status
+        target["notification_status"] = build_notification_status(email_status)
+        target["notification_status"]["admin"] = ns.get("admin", "pending")
+        set_manual_reply_queue(queue)
+        return {"status": "success", "email": email_status, "queue": get_manual_reply_queue()}
 
     if action == "reply":
         message = data.get("reply_message") or data.get("message")

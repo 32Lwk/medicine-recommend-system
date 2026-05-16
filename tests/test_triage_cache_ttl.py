@@ -1,8 +1,18 @@
 """Triage cache TTL / LRU"""
+import uuid
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.services import llm_triage as lt
+
+
+@pytest.fixture(autouse=True)
+def _clear_legacy_triage_cache():
+    lt._triage_cache.clear()
+    yield
+    lt._triage_cache.clear()
 
 
 def test_triage_cache_entry_eviction():
@@ -14,12 +24,20 @@ def test_triage_cache_entry_eviction():
 
 
 def test_llm_triage_cache_hit_skips_api():
-    lt._triage_cache.clear()
-    text = "テスト頭痛"
+    text = f"テスト頭痛キャッシュ専用_{uuid.uuid4().hex}"
     lt._triage_cache[text.strip()] = lt._TriageCacheEntry(
         created_at=datetime.now(),
         result={"category": "Physical", "confidence": 0.9},
     )
-    with patch("src.core.llm_client.chat_completion_create", side_effect=AssertionError("no api")):
-        r = lt.llm_triage(text, MagicMock(), use_cache=True)
+    api_calls = []
+
+    def _forbid_api(*_args, **_kwargs):
+        api_calls.append(1)
+        raise AssertionError("no api")
+
+    with patch("src.services.budget_guard.check_llm_allowed", return_value=(True, None)):
+        with patch("src.services.llm_triage.detect_illegal_or_controlled_drug", return_value=None):
+            with patch("src.core.llm_client.chat_completion_create", side_effect=_forbid_api):
+                r = lt.llm_triage(text, MagicMock(), use_cache=True)
+    assert not api_calls
     assert r["category"] == "Physical"

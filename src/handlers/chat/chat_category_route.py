@@ -56,6 +56,20 @@ def route_triage_category(
     subcategory = (triage_result.get("subcategory") or "").lower()
     confidence = float(triage_result.get("confidence", 1.0))
 
+    if category == "Emergency":
+        from src.handlers.chat.emergency_dispatch import dispatch_emergency
+
+        emerg = dispatch_emergency(
+            session,
+            recommendation_client,
+            sid,
+            sanitized_message,
+            recommendation_client,
+            triage_result,
+        )
+        if emerg is not None:
+            return CategoryRouteResult(response=emerg)
+
     if category == "Other" and "inappropriate_request" in subcategory and not inappropriate_request_detected:
         early = _handle_inappropriate_from_triage(
             session,

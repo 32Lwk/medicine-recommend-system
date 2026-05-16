@@ -9,6 +9,7 @@ import logging
 import traceback
 import uuid
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
@@ -168,6 +169,17 @@ def run_chat_post_pipeline(
     if early_resp is not None:
         return early_resp
 
+    from src.handlers.chat.chat_greeting_route import try_greeting_response
+
+    greeting_resp = try_greeting_response(
+        session,
+        client_info,
+        sid,
+        ctx.original_user_message,
+    )
+    if greeting_resp is not None:
+        return greeting_resp
+
     resp = _run_store_and_other_followups(ctx)
     if resp is not None:
         return resp
@@ -213,9 +225,9 @@ def run_chat_post_pipeline(
 
     _run_moderation_if_needed(ctx)
 
-    from config.llm_flags import is_agent_enabled, is_agent_session_eligible
+    from config.llm_flags import is_agent_enabled
 
-    if is_agent_enabled() and is_agent_session_eligible(sid):
+    if is_agent_enabled():
         try:
             from src.handlers.chat_orchestrator import try_orchestrator_route
 
@@ -274,8 +286,41 @@ def run_chat_post_pipeline(
     ctx.user_message = q_result.user_message
     ctx.sanitized_message = q_result.sanitized_message
 
+    if ctx.triage_result and ctx.triage_result.get("category") == "Emergency":
+        from src.handlers.chat.emergency_dispatch import dispatch_emergency
+
+        mod_label = ctx.triage_result.get("_moderation_label")
+        emerg = dispatch_emergency(
+            session,
+            client_info,
+            sid,
+            ctx.sanitized_message,
+            ctx.recommendation_client,
+            ctx.triage_result,
+            moderation_label=mod_label,
+            trace_id=ctx.trace_id,
+        )
+        if emerg is not None:
+            return emerg
+
     force_question_mode = session.get("should_handle_other_category", False)
     if not is_question and not force_question_mode:
+        from src.handlers.chat.emergency_dispatch import is_otc_flow_blocked
+
+        if is_otc_flow_blocked(session):
+            from src.services.medical_emergency_templates import build_medical_emergency_html
+
+            lang = session.get("detected_language") or session.get("language", "ja")
+            html = build_medical_emergency_html(subtype="medical_self", language=lang if lang in ("ja", "en", "ko", "zh") else "ja")
+            session.setdefault("messages", []).append({
+                "type": "bot",
+                "content": html,
+                "emergency_detected": True,
+                "otc_blocked": True,
+                "timestamp": datetime.now().isoformat(),
+            })
+            return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
+
         from src.handlers.chat.chat_symptom_route import run_symptom_recommendation
         from src.services.llm_metrics import merge_into_user_info
 
@@ -318,6 +363,7 @@ def _run_moderation_if_needed(ctx: ChatPostContext) -> None:
         ctx.triage_result = dict(ctx.triage_result or {})
         ctx.triage_result["category"] = "Emergency"
         ctx.triage_result["requires_immediate_action"] = True
+        ctx.triage_result["_moderation_label"] = "crisis"
     elif label == "inappropriate":
         ctx.inappropriate_request_detected = True
 

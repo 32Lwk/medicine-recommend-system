@@ -81,7 +81,6 @@
             return pump();
         }).catch(function (err) {
             onError(err);
-            throw err;
         });
     }
 

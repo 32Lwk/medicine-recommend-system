@@ -4,7 +4,6 @@ LLM 機能フラグ（環境変数）
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 
 def _flag(name: str, default: bool = False) -> bool:
@@ -15,6 +14,11 @@ def _flag(name: str, default: bool = False) -> bool:
 
 
 def is_agent_enabled() -> bool:
+    """
+    エージェント経路のキルスイッチ。
+    ON: 全セッションで ChatOrchestrator 経路。OFF: 従来経路のみ。
+    本番既定は ON（docs/ARCHITECTURE_MULTI_AGENT.md 参照）。
+    """
     return _flag("LLM_AGENT_ENABLED", False)
 
 
@@ -28,34 +32,8 @@ def is_gpt5_profile() -> bool:
 
 
 def get_canary_percent() -> int:
+    """非エージェント LLM カナリア（レガシー LLM 経路用）。エージェントカナリアは廃止。"""
     try:
         return max(0, min(100, int(os.getenv("LLM_CANARY_PERCENT", "0"))))
     except ValueError:
         return 0
-
-
-def get_agent_canary_percent() -> int:
-    """エージェント経路の本番カナリア（50→100% 段階ロールアウト）"""
-    if not is_agent_enabled():
-        return 0
-    try:
-        val = os.getenv("LLM_AGENT_CANARY_PERCENT")
-        if val is not None:
-            return max(0, min(100, int(val)))
-        return get_canary_percent()
-    except ValueError:
-        return 0
-
-
-def is_agent_session_eligible(session_id: Optional[str]) -> bool:
-    if not session_id:
-        return False
-    pct = get_agent_canary_percent()
-    if pct <= 0:
-        return False
-    if pct >= 100:
-        return True
-    import hashlib
-
-    digest = int(hashlib.sha256(f"agent:{session_id}".encode()).hexdigest(), 16)
-    return (digest % 100) < pct
