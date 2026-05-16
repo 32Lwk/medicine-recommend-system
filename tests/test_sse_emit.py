@@ -4,10 +4,12 @@ from src.services.sse_emit import (
     activate_stream_sink,
     deactivate_stream_sink,
     emit_advice_delta,
+    emit_chat_delta,
     emit_cards,
     get_stream_sink,
     is_streaming_active,
     pseudo_stream_advice,
+    pseudo_stream_chat,
     replay_session_events,
 )
 
@@ -80,5 +82,28 @@ def test_emit_cards_payload():
         deactivate_stream_sink("s")
 
 
+def test_emit_chat_delta():
+    sink, _ = activate_stream_sink("chat-s")
+    try:
+        emit_chat_delta("こんにちは", "chat-s")
+        events = sink.drain_nowait()
+        assert events[0][0] == "chat_delta"
+        assert events[0][1]["text"] == "こんにちは"
+    finally:
+        deactivate_stream_sink("chat-s")
+
+
 def test_pseudo_stream_noop_without_sink():
     pseudo_stream_advice("text", "no-sink")
+    pseudo_stream_chat("text", "no-sink")
+
+
+def test_activate_new_message_replaces_active_sink():
+    first, reattach1 = activate_stream_sink("sess-new", allow_reattach=True)
+    assert reattach1 is False
+    first.emit("status", {"step_id": "triage"})
+    second, reattach2 = activate_stream_sink("sess-new", allow_reattach=False)
+    assert reattach2 is False
+    assert second is not first
+    assert first._closed
+    deactivate_stream_sink("sess-new")

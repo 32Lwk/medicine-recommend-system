@@ -32,7 +32,7 @@ python app.py
 ## ドキュメント・リンク
 
 - [アプリ概要](docs/アプリ概要.md)
-- [開発・更新履歴](CHANGELOG.md)
+- [開発・更新履歴](CHANGELOG.md) — 機能変更時は `docs/ARCHITECTURE_MULTI_AGENT.md` 等の正本ドキュメントと相互リンクを PR で確認すること
 - [開発用エラー UI プレビュー（7パターン）](docs/DEV_ERROR_UI_PREVIEW.md) — `APP_ENV=development` 時のみ
 - [プライバシーポリシー](docs/プライバシーポリシー.md) / [免責事項・利用規約](docs/免責事項・利用規約.md)
 - [運営者情報・連絡先](docs/運営者情報.md)  

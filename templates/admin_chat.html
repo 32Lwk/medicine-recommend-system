@@ -251,6 +251,23 @@
                         <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600;">手動返信待ちキュー</h4>
                         <span id="crisis-count" style="background: #fee2e2; color: var(--danger); padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;"></span>
                     </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <label for="queue-view-filter" style="font-size: 0.75rem; color: #666; display: block; margin-bottom: 0.25rem;">表示フィルタ</label>
+                        <select id="queue-view-filter" class="form-control" style="width: 100%; font-size: 0.8rem; padding: 0.35rem; margin-bottom: 0.35rem;" onchange="refreshQueue()">
+                            <option value="all">すべて</option>
+                            <option value="critical">クリティカル（未確認）</option>
+                            <option value="store">店舗インシデント</option>
+                            <option value="acknowledged">確認済み</option>
+                        </select>
+                        <label for="queue-priority-filter" style="font-size: 0.75rem; color: #666; display: block; margin-bottom: 0.25rem;">優先度フィルタ</label>
+                        <select id="queue-priority-filter" class="form-control" style="width: 100%; font-size: 0.8rem; padding: 0.35rem;" onchange="refreshQueue()">
+                            <option value="">すべて</option>
+                            <option value="critical_crisis">クライシス（最優先）</option>
+                            <option value="critical_medical">メディカル緊急</option>
+                            <option value="store_high">店舗・高</option>
+                            <option value="store_low">店舗・低</option>
+                        </select>
+                    </div>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
                         <button class="btn btn-success" id="refresh-btn" onclick="manualRefresh()" style="flex: 1; padding: 0.5rem; font-size: 0.8rem;">
                             <i class="fa-solid fa-rotate-right"></i> 更新
@@ -259,7 +276,7 @@
                             <i class="fa-solid fa-list"></i> キュー
                         </button>
                     </div>
-                    <div id="manual-reply-queue" style="flex: 1; overflow-y: auto; min-height: 200px; height: 0; margin: 0; padding: 0;">
+                    <div id="manual-reply-queue" class="app-scrollbar" style="flex: 1; overflow-y: auto; min-height: 200px; height: 0; margin: 0; padding: 0;">
                         <div class="empty-state">
                             <i class="fa-regular fa-inbox"></i>
                             <p>手動返信待ちなし</p>

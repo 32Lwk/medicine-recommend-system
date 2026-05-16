@@ -757,11 +757,82 @@ function refreshQueue() {
 // 現在のセッション情報を保持する変数
 let currentSessionData = null;
 
+const QUEUE_PRIORITY_ORDER = {
+    critical_crisis: 0,
+    critical_medical: 1,
+    store_high: 2,
+    store_low: 3,
+};
+
+const QUEUE_PRIORITY_LABELS = {
+    critical_crisis: 'クライシス',
+    critical_medical: 'メディカル',
+    store_high: '店舗・高',
+    store_low: '店舗・低',
+};
+
+const QUEUE_SUBTYPE_LABELS = {
+    crisis_language: 'クライシス',
+    medical_self: 'メディカル',
+    store_incident: '店舗',
+};
+
+function _queueListSnippet(item) {
+    if (item.user_message_snippet) return item.user_message_snippet;
+    const msg = item.user_message || '';
+    return msg.length > 120 ? msg.substring(0, 119) + '…' : (msg || 'メッセージなし');
+}
+
+function _queueDetailMessage(item) {
+    if (item.user_message_detail) return item.user_message_detail;
+    const msg = item.user_message || '';
+    return msg.length > 800 ? msg.substring(0, 799) + '…' : (msg || 'メッセージなし');
+}
+
+function _formatEmailNotifyStatus(item) {
+    const st = (item.notification_status && item.notification_status.email) || '';
+    const labels = {
+        sent: '✉️ 送信済',
+        failed: '✉️ 送信失敗',
+        smtp_not_configured: '✉️ SMTP未設定',
+        skipped_no_email: '✉️ 宛先未設定',
+        skipped_disabled: '✉️ 通知OFF',
+        stub: '✉️ スタブ',
+        pending: '✉️ 待機'
+    };
+    return labels[st] || (st ? '✉️ ' + st : '');
+}
+
 function renderQueue(queue) {
     const content = document.getElementById('manual-reply-queue');
-    
+    const filterEl = document.getElementById('queue-priority-filter');
+    const filterTag = filterEl ? filterEl.value : '';
+    const viewEl = document.getElementById('queue-view-filter');
+    const viewFilter = viewEl ? viewEl.value : 'all';
+
     if (!content) return;
-    
+
+    if (Array.isArray(queue) && viewFilter && viewFilter !== 'all') {
+        queue = queue.filter(function (item) {
+            const tag = item.priority_tag || '';
+            const subtype = item.emergency_subtype || item.emergency_type || '';
+            if (viewFilter === 'critical') {
+                return (tag === 'critical_crisis' || tag === 'critical_medical') && !item.acknowledged;
+            }
+            if (viewFilter === 'store') {
+                return tag.indexOf('store_') === 0 || subtype === 'store_incident';
+            }
+            if (viewFilter === 'acknowledged') {
+                return !!item.acknowledged;
+            }
+            return true;
+        });
+    }
+
+    if (Array.isArray(queue) && filterTag) {
+        queue = queue.filter((item) => item.priority_tag === filterTag);
+    }
+
     if (!Array.isArray(queue) || queue.length === 0) {
         content.innerHTML = `
             <div class="empty-state">
@@ -773,29 +844,15 @@ function renderQueue(queue) {
     }
     
     let html = '';
-    // 優先度に基づいてソート（緊急事案が最優先）
     const sortedQueue = [...queue].sort((a, b) => {
-        const aIsEmergency = a.status === 'emergency_detected';
-        const bIsEmergency = b.status === 'emergency_detected';
-        const aIsCrisis = a.status === 'crisis_detected' || a.priority === 'high';
-        const bIsCrisis = b.status === 'crisis_detected' || b.priority === 'high';
-        
-        // 緊急事案が最優先
-        if (aIsEmergency && !bIsEmergency) return -1;
-        if (!aIsEmergency && bIsEmergency) return 1;
-        
-        // 緊急事案同士の場合は優先度スコアで比較
-        if (aIsEmergency && bIsEmergency) {
-            const aScore = a.priority_score || 999;
-            const bScore = b.priority_score || 999;
-            return aScore - bScore;
-        }
-        
-        // 危機対応が次に優先
-        if (aIsCrisis && !bIsCrisis) return -1;
-        if (!aIsCrisis && bIsCrisis) return 1;
-        
-        return 0;
+        const aTag = a.priority_tag || '';
+        const bTag = b.priority_tag || '';
+        const aPri = QUEUE_PRIORITY_ORDER[aTag] ?? 99;
+        const bPri = QUEUE_PRIORITY_ORDER[bTag] ?? 99;
+        if (aPri !== bPri) return aPri - bPri;
+        const aScore = a.priority_score || 999;
+        const bScore = b.priority_score || 999;
+        return aScore - bScore;
     });
     
     sortedQueue.forEach((item, index) => {
@@ -815,18 +872,23 @@ function renderQueue(queue) {
             itemIcon = item.icon || '🔴';
             itemColor = item.color || '#d32f2f';
             itemTitle = item.emergency_type || '緊急事案';
-            // 緊急事案の種類名を取得
             const emergencyTypeNames = {
                 'fire': '火災',
                 'weapon': '刃物',
                 'medical_emergency': '医療緊急',
+                'medical_self': 'メディカル',
+                'crisis_language': 'クライシス',
                 'violence': '暴力',
                 'injured_person': '傷病人',
                 'suspicious_person': '不審者',
-                'theft': '窃盗'
+                'theft': '窃盗',
+                'store_incident': '店舗',
             };
-            const typeName = emergencyTypeNames[item.emergency_type] || '緊急事案';
-            itemBadge = `<span class="emergency-badge" title="${typeName}">${itemIcon} ${typeName}</span>`;
+            const subtype = item.emergency_subtype || item.emergency_type;
+            const typeName = QUEUE_SUBTYPE_LABELS[subtype] || emergencyTypeNames[subtype] || emergencyTypeNames[item.emergency_type] || '緊急';
+            const priLabel = QUEUE_PRIORITY_LABELS[item.priority_tag] || '';
+            const priBadge = priLabel ? `<span class="priority-tag-badge" style="font-size:0.65rem;background:#fff3e0;color:#e65100;padding:1px 4px;border-radius:3px;margin-left:4px;">${priLabel}</span>` : '';
+            itemBadge = `<span class="emergency-badge" title="${typeName}">${itemIcon} ${typeName}</span>${priBadge}`;
         } else if (isCrisisItem) {
             itemClass = 'queue-item crisis-queue-item';
             itemIcon = '🚨';
@@ -838,10 +900,7 @@ function renderQueue(queue) {
         const accordionId = `queue-accordion-${index}`;
         const accordionContentId = `queue-accordion-content-${index}`;
         
-        // メッセージを短縮表示（30文字まで）
-        const shortMessage = item.user_message && item.user_message.length > 30 
-            ? item.user_message.substring(0, 30) + '...' 
-            : (item.user_message || 'メッセージなし');
+        const shortMessage = _queueListSnippet(item);
         
         // セッションIDを短縮表示（8文字まで）
         const shortSessionId = item.session_id ? item.session_id.substring(0, 8) + '...' : '不明';
@@ -875,15 +934,19 @@ function renderQueue(queue) {
                 <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
                     <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
                         <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
-                            <strong>👤 ユーザー:</strong> ${escapeHtml(item.user_message || 'メッセージなし')}
+                            <strong>👤 ユーザー:</strong> ${escapeHtml(_queueDetailMessage(item))}
                         </div>
                         ${keywordsDisplay}
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666; margin-bottom: 6px;">
                             <span><strong>🕐</strong> ${escapeHtml(item.timestamp || '不明')}</span>
+                            ${_formatEmailNotifyStatus(item) ? '<span>' + escapeHtml(_formatEmailNotifyStatus(item)) + '</span>' : ''}
                         </div>
                         <div style="font-size: 0.65rem; color: #999; margin-bottom: 6px; word-break: break-all;">
                             ID: ${escapeHtml(item.session_id || '不明')}
                         </div>
+                        ${item.trace_id ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">trace: ' + escapeHtml(item.trace_id) + '</div>' : ''}
+                        ${item.triage_summary ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">triage: ' + escapeHtml(JSON.stringify(item.triage_summary)) + '</div>' : ''}
+                        ${item.moderation_label ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">moderation: ' + escapeHtml(item.moderation_label) + '</div>' : ''}
                         <div class="reply-section" style="margin-top: 6px;">
                             <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..." style="width: 100%; padding: 6px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.8rem; resize: vertical; min-height: 50px; max-height: 100px;"></textarea>
                             <div style="display: flex; gap: 6px; margin-top: 6px;">
@@ -893,6 +956,8 @@ function renderQueue(queue) {
                                 <button class="btn btn-info" onclick="selectSession(event, '${item.session_id}', ${index}); event.stopPropagation();" style="flex: 1; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                     <i class="fa-solid fa-comments"></i> 移動
                                 </button>
+                                ${!item.acknowledged ? `<button type="button" class="btn btn-secondary" onclick="acknowledgeQueueItem('${item.session_id}', event)" style="flex: 1; padding: 6px; font-size: 0.75rem;">確認済</button>` : '<span style="font-size:0.7rem;color:#28a745;">✓ 確認済</span>'}
+                                ${item.notification_status && item.notification_status.email && item.notification_status.email !== 'sent' ? `<button type="button" class="btn btn-warning" onclick="retryEmergencyEmail('${item.session_id}', event)" style="flex: 1; padding: 6px; font-size: 0.75rem;">メール再送</button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -942,8 +1007,26 @@ function toggleQueueAccordion(accordionId, contentId) {
     }
 }
 
+function updateCriticalQueueBadge(queue) {
+    const items = Array.isArray(queue) ? queue : [];
+    const critical = items.filter(function (item) {
+        const tag = item.priority_tag || '';
+        return (tag === 'critical_crisis' || tag === 'critical_medical') && !item.acknowledged;
+    }).length;
+    const el = document.getElementById('crisis-count');
+    if (!el) return;
+    if (critical > 0) {
+        el.textContent = '未確認クリティカル: ' + critical + '件';
+        el.style.background = '#ffebee';
+        el.style.color = '#c62828';
+    } else {
+        el.textContent = '';
+    }
+}
+
 function updateStats(queue) {
     const queueCount = Array.isArray(queue) ? queue.length : 0;
+    updateCriticalQueueBadge(queue);
     const queueCountEl = document.getElementById('queue-count');
     if (queueCountEl) queueCountEl.textContent = queueCount;
     
@@ -2866,6 +2949,45 @@ function openManualReply(messageIndex) {
         sendManualReply(replyMessage.trim());
     }
 }
+
+function _postManualQueueAction(body, successMessage) {
+    return fetch('/api/main_manual_reply_queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    })
+        .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function (data) {
+            if (data.error || data.status === 'error') {
+                showNotification(data.message || data.error || '操作に失敗しました', 'error');
+                return;
+            }
+            if (successMessage) showNotification(successMessage, 'success');
+            refreshQueue();
+        })
+        .catch(function (err) {
+            showNotification('エラー: ' + err.message, 'error');
+        });
+}
+
+window.acknowledgeQueueItem = function (sessionId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    _postManualQueueAction({ action: 'acknowledge', session_id: sessionId }, '確認済にしました');
+};
+
+window.retryEmergencyEmail = function (sessionId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    _postManualQueueAction({ action: 'retry_email', session_id: sessionId }, 'メール再送を実行しました');
+};
 
 // キューアイテムからの返信送信（グローバルスコープに配置）
 window.sendReplyFromQueue = function(sessionId, index, event) {

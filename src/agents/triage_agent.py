@@ -62,10 +62,23 @@ def run_triage_agent(
     if pre:
         return pre
 
+    from src.services.triage_cache import build_cache_key, get_triage_cache
+
+    cache_key = build_cache_key(user_text, user_info)
+    if use_cache:
+        cached = get_triage_cache().get(cache_key)
+        if cached:
+            out = dict(cached)
+            out["agent"] = "TriageAgent"
+            out["cache_hit"] = True
+            return out
+
     from src.services.llm_triage import llm_triage
 
     result = llm_triage(user_text, client, use_cache=use_cache)
     result["agent"] = "TriageAgent"
+    if use_cache:
+        get_triage_cache().set(cache_key, result)
     return result
 
 

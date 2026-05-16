@@ -1,4 +1,4 @@
-"""Phase 3: エージェントパイプライン・カナリア"""
+"""Phase 3: エージェントパイプライン"""
 from __future__ import annotations
 
 import os
@@ -6,20 +6,19 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from config.llm_flags import get_agent_canary_percent, is_agent_session_eligible
+from config.llm_flags import is_agent_enabled
 from src.agents.triage_agent import resolve_handoff, run_triage_agent
-from src.handlers.chat_pipeline import ChatPipeline, PipelineResult
+from src.handlers.chat_pipeline import PipelineResult
 
 
-@patch("config.llm_flags.is_agent_enabled", return_value=False)
-def test_agent_canary_percent_when_disabled(_mock_enabled):
-    assert get_agent_canary_percent() == 0
+@patch.dict(os.environ, {"LLM_AGENT_ENABLED": "0"}, clear=False)
+def test_agent_disabled():
+    assert is_agent_enabled() is False
 
 
-@patch("config.llm_flags.is_agent_enabled", return_value=True)
-@patch.dict(os.environ, {"LLM_AGENT_CANARY_PERCENT": "100"})
-def test_agent_session_eligible_100(_mock_enabled):
-    assert is_agent_session_eligible("test-session-123") is True
+@patch.dict(os.environ, {"LLM_AGENT_ENABLED": "1"}, clear=False)
+def test_agent_enabled():
+    assert is_agent_enabled() is True
 
 
 def test_resolve_handoff_physical():

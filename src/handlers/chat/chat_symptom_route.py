@@ -107,6 +107,26 @@ def run_symptom_recommendation(
     """
     症状入力として医薬品推奨を実行（chat_handler 末尾ブロックの委譲先）。
     """
+    from src.handlers.chat.emergency_dispatch import is_otc_flow_blocked
+
+    if is_otc_flow_blocked(session):
+        from src.services.medical_emergency_templates import build_medical_emergency_html
+
+        lang = session.get("detected_language") or session.get("language", "ja")
+        html = build_medical_emergency_html(
+            subtype="medical_self",
+            language=lang if lang in ("ja", "en", "ko", "zh") else "ja",
+        )
+        session.setdefault("messages", []).append({
+            "type": "bot",
+            "content": html,
+            "emergency_detected": True,
+            "otc_blocked": True,
+            "timestamp": datetime.now().isoformat(),
+        })
+        _mark_session_modified(session)
+        return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
+
     ua = session.get("user_attributes", {}) or {}
     if ua.get("pregnant") is True:
         resp = _pregnancy_breastfeeding_escalation(
@@ -130,53 +150,58 @@ def run_symptom_recommendation(
     logger.info("💊 医薬品相談回答処理開始 - フラグ設定完了")
 
     try:
-        logger.info("🔍 Calling select_symptoms_via_gpt...")
-        start_time = time.time()
-        matched_symptoms = select_symptoms_via_gpt(processed_message)
-        execution_time = round(time.time() - start_time, 3)
-        log_medicine_logic_call(
-            "select_symptoms_via_gpt",
-            {"user_message": processed_message},
-            {"matched_symptoms": matched_symptoms},
-            execution_time,
-        )
-        if (
-            matched_symptoms.get("status") == "success"
-            and matched_symptoms.get("message") == "No symptoms detected"
-        ):
-            logger.warning("⚠️ 症状が検出できませんでした: %s", user_message)
-            bot_response = {
-                "type": "bot",
-                "content": (
-                    "申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。"
-                    "もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、"
-                    "具体的な症状を入力してください。"
-                ),
-                "diagnosis": None,
-            }
-            session.setdefault("messages", []).append(bot_response)
-            _mark_session_modified(session)
-            if sid:
-                session_data = get_session_from_db(sid)
-                if not session_data:
-                    session_data = {
-                        "session_id": sid,
-                        "username": session.get("username", "Unknown"),
-                        "messages": session["messages"].copy(),
-                        "last_activity": datetime.now(),
-                        "client_ip": client_info.client_ip,
-                        "user_agent": client_info.user_agent,
-                        "user_attributes": session.get("user_attributes", {}),
-                        "session_active": True,
-                    }
-                    save_session_to_db(sid, session_data)
-                else:
-                    session_data["messages"] = session["messages"].copy()
-                    session_data["last_activity"] = datetime.now()
-                    save_session_to_db(sid, session_data)
-            message_count = len(session["messages"])
-            logger.info("✅ POST処理完了（症状検出失敗） - JSON返却: %s messages", message_count)
-            return ({"status": "ok", "message_count": message_count}, 200)
+        from config.llm_flags import is_agent_enabled
+
+        if is_agent_enabled():
+            logger.info("🔍 select_symptoms_via_gpt をスキップ（エージェント経路は NLUAgent で症状抽出）")
+        else:
+            logger.info("🔍 Calling select_symptoms_via_gpt...")
+            start_time = time.time()
+            matched_symptoms = select_symptoms_via_gpt(processed_message)
+            execution_time = round(time.time() - start_time, 3)
+            log_medicine_logic_call(
+                "select_symptoms_via_gpt",
+                {"user_message": processed_message},
+                {"matched_symptoms": matched_symptoms},
+                execution_time,
+            )
+            if (
+                matched_symptoms.get("status") == "success"
+                and matched_symptoms.get("message") == "No symptoms detected"
+            ):
+                logger.warning("⚠️ 症状が検出できませんでした: %s", user_message)
+                bot_response = {
+                    "type": "bot",
+                    "content": (
+                        "申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。"
+                        "もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、"
+                        "具体的な症状を入力してください。"
+                    ),
+                    "diagnosis": None,
+                }
+                session.setdefault("messages", []).append(bot_response)
+                _mark_session_modified(session)
+                if sid:
+                    session_data = get_session_from_db(sid)
+                    if not session_data:
+                        session_data = {
+                            "session_id": sid,
+                            "username": session.get("username", "Unknown"),
+                            "messages": session["messages"].copy(),
+                            "last_activity": datetime.now(),
+                            "client_ip": client_info.client_ip,
+                            "user_agent": client_info.user_agent,
+                            "user_attributes": session.get("user_attributes", {}),
+                            "session_active": True,
+                        }
+                        save_session_to_db(sid, session_data)
+                    else:
+                        session_data["messages"] = session["messages"].copy()
+                        session_data["last_activity"] = datetime.now()
+                        save_session_to_db(sid, session_data)
+                message_count = len(session["messages"])
+                logger.info("✅ POST処理完了（症状検出失敗） - JSON返却: %s messages", message_count)
+                return ({"status": "ok", "message_count": message_count}, 200)
     except Exception as e:
         logger.error("❌ select_symptoms_via_gpt実行時エラー: %s", e)
 

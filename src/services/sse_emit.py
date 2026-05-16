@@ -152,7 +152,11 @@ def get_stream_sink() -> Optional[StreamSink]:
     return _stream_sink.get()
 
 
-def activate_stream_sink(session_id: str) -> Tuple[StreamSink, bool]:
+def activate_stream_sink(
+    session_id: str,
+    *,
+    allow_reattach: bool = True,
+) -> Tuple[StreamSink, bool]:
     """
     StreamSink を有効化。
     Returns:
@@ -162,14 +166,25 @@ def activate_stream_sink(session_id: str) -> Tuple[StreamSink, bool]:
     with _lock:
         existing = _active_sinks.get(session_id)
         if existing and not existing._closed:
-            _stream_sink.set(existing)
-            return existing, True
+            if allow_reattach:
+                _stream_sink.set(existing)
+                return existing, True
+            existing.close()
         sink = StreamSink(session_id)
         _active_sinks[session_id] = sink
         if session_id not in _session_rings:
             _session_rings[session_id] = []
     _stream_sink.set(sink)
     return sink, False
+
+
+def bind_worker_stream_sink(session_id: Optional[str]) -> None:
+    """ワーカースレッドで ContextVar に StreamSink を束縛（SSE 配信を有効化）。"""
+    if not session_id:
+        return
+    sink = get_active_session_sink(session_id)
+    if sink:
+        _stream_sink.set(sink)
 
 
 def deactivate_stream_sink(session_id: Optional[str] = None) -> None:
@@ -212,6 +227,7 @@ def emit_sse_event(
 
 
 def emit_advice_delta(chunk: str, session_id: Optional[str] = None) -> None:
+    """医薬品推奨の個別アドバイス用ストリーム（推奨カード UI）"""
     if not chunk:
         return
     sid = session_id
@@ -221,6 +237,13 @@ def emit_advice_delta(chunk: str, session_id: Optional[str] = None) -> None:
     if sid:
         append_advice_preview(sid, chunk)
     emit_sse_event("advice_delta", {"text": chunk}, session_id=sid)
+
+
+def emit_chat_delta(chunk: str, session_id: Optional[str] = None) -> None:
+    """カウンセリング・挨拶など通常チャット吹き出し用ストリーム"""
+    if not chunk:
+        return
+    emit_sse_event("chat_delta", {"text": chunk}, session_id=session_id)
 
 
 def emit_cards(
@@ -258,17 +281,133 @@ def emit_cards(
     )
 
 
+def emit_bot_followup(
+    *,
+    session_id: Optional[str] = None,
+    message_type: str = "explanations_ready",
+    payload: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Explanation 完了など第2応答のシグナル（クライアントは /api/sessions で本文取得）。"""
+    emit_sse_event(
+        "bot_followup",
+        {"type": message_type, **(payload or {})},
+        session_id=session_id,
+    )
+
+
+def emit_explanations(
+    medicines: List[Dict[str, Any]],
+    explanations: List[str],
+    *,
+    session_id: Optional[str] = None,
+) -> None:
+    """カード先行後の推奨理由（第2 SSE 応答）"""
+    items = []
+    for i, (med, text) in enumerate(zip(medicines[:5], explanations[:5]), 1):
+        if not (text or "").strip():
+            continue
+        items.append(
+            {
+                "rank": med.get("rank") or i,
+                "product_name": med.get("product_name") or med.get("name") or "",
+                "explanation": text,
+            }
+        )
+    if not items:
+        return
+    emit_sse_event(
+        "explanations",
+        {"items": items, "count": len(items)},
+        session_id=session_id,
+    )
+
+
 def pseudo_stream_advice(
     text: str,
     session_id: Optional[str] = None,
     *,
-    chunk_size: int = 14,
-    delay_sec: float = 0.018,
+    chunk_size: int = 24,
+    delay_sec: float = 0.006,
 ) -> None:
-    """DeepL 翻訳後など、完成テキストを疑似ストリーム配信"""
+    """DeepL 翻訳後など、完成テキストを推奨アドバイス用に疑似ストリーム配信"""
     if not text or not is_streaming_active(session_id):
         return
     for i in range(0, len(text), chunk_size):
         emit_advice_delta(text[i : i + chunk_size], session_id)
+        if delay_sec > 0:
+            time.sleep(delay_sec)
+
+
+def emit_qa_delta(
+    chunk: str,
+    session_id: Optional[str] = None,
+    *,
+    section: str = "answer",
+) -> None:
+    """医薬品 Q&A: 回答本文などセクション単位のテキストストリーム"""
+    if not chunk:
+        return
+    emit_sse_event(
+        "qa_delta",
+        {"section": section, "text": chunk},
+        session_id=session_id,
+    )
+
+
+def emit_qa_section(
+    section: str,
+    html: str,
+    *,
+    session_id: Optional[str] = None,
+) -> None:
+    """医薬品 Q&A: 構造化セクション（相互作用等）の HTML 追送"""
+    if not html or not section:
+        return
+    emit_sse_event(
+        "qa_section",
+        {"section": section, "html": html},
+        session_id=session_id,
+    )
+
+
+def emit_qa_sections_from_response(
+    chat_response: Dict[str, Any],
+    session_id: Optional[str] = None,
+) -> None:
+    """完成した Q&A 応答から追加セクションを SSE 配信"""
+    from src.services.medicine_qa_html import safe_format_html
+
+    mapping = [
+        ("medicine_details", "💊 医薬品の詳細", "#e3f2fd", "qa-medicine-details"),
+        ("interactions", "⚠️ 相互作用の注意", "#fff3e0", "qa-interactions"),
+        ("doping_check", "🏃 ドーピングチェック", "#ffebee", "qa-doping"),
+        ("side_effects", "⚕️ 副作用情報", "#fce4ec", "qa-side-effects"),
+        ("consultation_advice", "🩺 相談アドバイス", "#f1f8e9", "qa-consultation"),
+    ]
+    for key, title, bg, css_class in mapping:
+        raw = chat_response.get(key) or ""
+        if not raw:
+            continue
+        body = safe_format_html(raw)
+        block = (
+            f'<motion class="qa-section {css_class}" data-qa-section="{key}" '
+            f'style="margin-top: 15px; padding: 10px; background: {bg}; border-radius: 5px;">'
+            f"<strong>{title}:</strong><br>{body}</motion>"
+        ).replace("<motion ", "<div ").replace("</motion>", "</div>")
+        emit_qa_section(key, block, session_id=session_id)
+
+
+def pseudo_stream_chat(
+    text: str,
+    session_id: Optional[str] = None,
+    *,
+    chunk_size: int = 24,
+    delay_sec: float = 0.006,
+) -> None:
+    """DeepL 翻訳後など、完成テキストを通常チャット吹き出し用に疑似ストリーム配信"""
+    if not text or not is_streaming_active(session_id):
+        return
+    for i in range(0, len(text), chunk_size):
+        emit_chat_delta(text[i : i + chunk_size], session_id)
         if delay_sec > 0:
             time.sleep(delay_sec)

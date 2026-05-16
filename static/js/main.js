@@ -4652,9 +4652,14 @@
     
     // 送信中フラグ（グローバル変数）
     let isSubmitting = false;
+    let chatSubmitGeneration = 0;
+    const SUBMIT_DEBOUNCE_MS = 2500;
+    let lastSubmitPayload = { message: '', at: 0 };
     let submitWatchdogTimer = null;
     let slowRequestTimerId = null;
     let streamingRecommendationEl = null;
+    let streamingChatEl = null;
+    let streamingQaEl = null;
     const SUBMIT_WATCHDOG_MS = 120000;
 
     function clearSubmitWatchdog() {
@@ -4675,6 +4680,8 @@
             removeProcessingMessage();
             removeStreamingAdviceBubble();
             removeStreamingMedicineCards();
+                removeStreamingChatBubble();
+                removeStreamingQaResponse();
             clearSlowRequestTimer();
             restoreSubmitButton();
             showErrorMessage('処理がタイムアウトしました。もう一度お試しください。');
@@ -4706,6 +4713,15 @@
             if (message === '') {
                 return;
             }
+
+            const nowMs = Date.now();
+            if (
+                message === lastSubmitPayload.message &&
+                nowMs - lastSubmitPayload.at < SUBMIT_DEBOUNCE_MS
+            ) {
+                return;
+            }
+            lastSubmitPayload = { message: message, at: nowMs };
             
             // 送信処理中の場合
             if (isSubmitting) {
@@ -4998,7 +5014,7 @@
         lastRenderedMessagesFingerprint = '';
     }
 
-    function stableMessageKey(message) {
+    function stableMessageKey(message, index) {
         if (message && message.uuid) {
             return 'u:' + message.uuid;
         }
@@ -5008,16 +5024,39 @@
         const ts = (message && message.timestamp) ? String(message.timestamp) : '';
         const type = (message && message.type) ? String(message.type) : '';
         const content = (message && message.content) ? String(message.content).slice(0, 200) : '';
-        return 'c:' + type + ':' + ts + ':' + content;
+        const pos = index !== undefined && index !== null ? String(index) : '';
+        return 'c:' + pos + ':' + type + ':' + ts + ':' + content;
     }
 
     function dedupeMessageList(messages) {
         const list = Array.isArray(messages) ? messages : [];
         const seen = new Set();
         const out = [];
-        list.forEach(function(m) {
-            const k = stableMessageKey(m);
-            if (seen.has(k)) {
+        list.forEach(function(m, index) {
+            if (
+                m &&
+                m.type === 'bot' &&
+                (m.counseling || m.inappropriate_request) &&
+                out.length >= 2
+            ) {
+                const last = out[out.length - 1];
+                const before = out[out.length - 2];
+                if (
+                    last.type === 'bot' &&
+                    (last.counseling || last.inappropriate_request) &&
+                    before.type === 'user'
+                ) {
+                    seen.delete(stableMessageKey(last));
+                    out.pop();
+                }
+            }
+            const k = stableMessageKey(m, index);
+            if (m && (m.uuid || m.message_id) && seen.has(k)) {
+                return;
+            }
+            if (!m || (!m.uuid && !m.message_id)) {
+                seen.add(k);
+                out.push(m);
                 return;
             }
             seen.add(k);
@@ -5027,7 +5066,9 @@
     }
 
     function messagesFingerprint(messages) {
-        return dedupeMessageList(messages).map(stableMessageKey).join('\n');
+        return dedupeMessageList(messages).map(function(m, i) {
+            return stableMessageKey(m, i);
+        }).join('\n');
     }
 
     function mergeMessageLists(serverMsgs, localMsgs) {
@@ -5107,6 +5148,7 @@
         }
         lastRenderedMessagesFingerprint = fp;
         renderChatMessages(merged, opts);
+        updateSessionSafetyBanners(sessionData);
     }
 
     function touchSessionActivity() {
@@ -5510,6 +5552,8 @@
             active: true,
             step_id: data.step_id,
             label: data.label,
+            detail_code: data.detail_code,
+            detail_label: data.detail_label,
             step: data.step,
             total: data.total || 14,
             percent: data.percent || 0,
@@ -5517,6 +5561,79 @@
         });
         ProcessingStatus.renderProcessingStatus(el, localized);
     }
+
+    function updateSessionSafetyBanners(sessionData) {
+        const host = document.getElementById('chatMessages');
+        if (!host) return;
+        let bar = document.getElementById('session-safety-banners');
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'session-safety-banners';
+            bar.className = 'session-safety-banners';
+            bar.style.cssText = 'margin: 8px 12px; display: flex; flex-direction: column; gap: 8px;';
+            host.insertBefore(bar, host.firstChild);
+        }
+        bar.innerHTML = '';
+        const data = sessionData || {};
+        if (data.medical_emergency_otc_locked && !data.otc_lock_released) {
+            const box = document.createElement('div');
+            box.className = 'chat-status-card chat-status-card--caution';
+            box.setAttribute('role', 'alert');
+            box.innerHTML =
+                '<div class="chat-status-card__header"><span class="chat-status-card__icon" aria-hidden="true">🚑</span>' +
+                '<h4 class="chat-status-card__title">緊急対応後のご案内</h4></div>' +
+                '<p class="chat-status-card__subtitle">市販薬の自己判断での選択はお控えください。緊急でないと判断できる場合のみ、相談を再開できます。</p>' +
+                '<div class="chat-status-card__actions">' +
+                '<button type="button" class="chat-status-card__btn chat-status-card__btn--primary" id="otc-unlock-btn">緊急ではないので相談を再開する</button>' +
+                '</div>';
+            bar.appendChild(box);
+            const btn = box.querySelector('#otc-unlock-btn');
+            if (btn) {
+                btn.onclick = function () {
+                    fetch(withVersion('/api/chat/otc_unlock'), { method: 'POST', credentials: 'include' })
+                        .then(function (r) { return r.json(); })
+                        .then(function () {
+                            fetch(withVersion('/api/sessions'), { credentials: 'include' })
+                                .then(function (r) { return r.json(); })
+                                .then(updateSessionSafetyBanners)
+                                .catch(function () {});
+                        })
+                        .catch(function () { showErrorMessage('解除に失敗しました'); });
+                };
+            }
+        }
+        if (data.store_incident_soft_banner) {
+            const box = document.createElement('div');
+            box.className = 'chat-status-card chat-status-card--notice';
+            box.setAttribute('role', 'region');
+            box.innerHTML =
+                '<div class="chat-status-card__header"><span class="chat-status-card__icon" aria-hidden="true">🏪</span>' +
+                '<h4 class="chat-status-card__title">店舗での対応を優先してください</h4></div>' +
+                '<p class="chat-status-card__subtitle">スタッフへの連絡後、症状の相談が必要な場合のみ市販薬の相談を続けられます。</p>' +
+                '<div class="chat-status-card__actions">' +
+                '<button type="button" class="chat-status-card__btn chat-status-card__btn--primary" id="store-otc-optin-btn">症状の相談を続ける</button>' +
+                '</div>';
+            bar.appendChild(box);
+            const btn = box.querySelector('#store-otc-optin-btn');
+            if (btn) {
+                btn.onclick = function () {
+                    fetch(withVersion('/api/chat/store_incident_ack'), { method: 'POST', credentials: 'include' })
+                        .then(function (r) { return r.json(); })
+                        .then(function () {
+                            fetch(withVersion('/api/sessions'), { credentials: 'include' })
+                                .then(function (r) { return r.json(); })
+                                .then(updateSessionSafetyBanners)
+                                .catch(function () {});
+                        })
+                        .catch(function () { showErrorMessage('操作に失敗しました'); });
+                };
+            }
+        }
+        if (!bar.children.length) {
+            bar.remove();
+        }
+    }
+    window.updateSessionSafetyBanners = updateSessionSafetyBanners;
 
     function buildProcessingPollOptions(onUpdate) {
         return {
@@ -5936,6 +6053,25 @@
         chatMessages.querySelectorAll('[data-temporary="true"]').forEach(function (n) { n.remove(); });
     }
 
+    function ensureStreamingChatBubble() {
+        if (streamingChatEl && streamingChatEl.isConnected) {
+            return streamingChatEl;
+        }
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return null;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot streaming-chat';
+        messageDiv.setAttribute('data-streaming-chat', 'true');
+        messageDiv.innerHTML =
+            '<div class="message-content">' +
+            '<span class="streaming-chat-text" style="white-space: pre-wrap;"></span>' +
+            '</div>';
+        chatMessages.appendChild(messageDiv);
+        streamingChatEl = messageDiv;
+        scrollToBottom();
+        return streamingChatEl;
+    }
+
     function ensureStreamingRecommendationResult() {
         if (streamingRecommendationEl && streamingRecommendationEl.isConnected) {
             return streamingRecommendationEl;
@@ -6065,6 +6201,87 @@
         }
     }
 
+    function appendChatDelta(text) {
+        if (!text) return;
+        const wrapper = ensureStreamingChatBubble();
+        if (!wrapper) return;
+        const el = wrapper.querySelector('.streaming-chat-text');
+        if (el) {
+            el.textContent += text;
+            scrollToBottom();
+        }
+    }
+
+        function ensureStreamingQaResponse() {
+        if (streamingQaEl && streamingQaEl.isConnected) {
+            return streamingQaEl;
+        }
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return null;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot streaming-qa';
+        messageDiv.setAttribute('data-streaming-qa', 'true');
+        messageDiv.innerHTML =
+            '<div class="chat-response" data-streaming-qa-skeleton="true">' +
+            '<h4>💬 医薬品相談回答</h4>' +
+            '<p class="qa-answer"><strong>回答:</strong><br><span class="streaming-qa-answer" style="white-space: pre-wrap;"></span></p>' +
+            '<div class="streaming-qa-sections"></div>' +
+            '</div>';
+        chatMessages.appendChild(messageDiv);
+        streamingQaEl = messageDiv;
+        scrollToBottom();
+        return streamingQaEl;
+    }
+
+function appendQaDelta(text, section) {
+        if (!text) return;
+        const wrapper = ensureStreamingQaResponse();
+        if (!wrapper) return;
+        const sec = section || 'answer';
+        if (sec === 'answer') {
+            const el = wrapper.querySelector('.streaming-qa-answer');
+            if (el) {
+                el.textContent += text;
+                scrollToBottom();
+            }
+        }
+    }
+
+    function appendQaSectionHtml(section, html) {
+        if (!html) return;
+        const wrapper = ensureStreamingQaResponse();
+        if (!wrapper) return;
+        const container = wrapper.querySelector('.streaming-qa-sections');
+        if (!container) return;
+        const existing = container.querySelector('[data-qa-section="' + section + '"]');
+        if (existing) {
+            existing.outerHTML = html;
+        } else {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            while (tmp.firstChild) {
+                container.appendChild(tmp.firstChild);
+            }
+        }
+        scrollToBottom();
+    }
+
+    function removeStreamingQaResponse() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.querySelectorAll('[data-streaming-qa="true"]').forEach(function (n) { n.remove(); });
+        }
+        streamingQaEl = null;
+    }
+
+    function removeStreamingChatBubble() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.querySelectorAll('[data-streaming-chat="true"]').forEach(function (n) { n.remove(); });
+        }
+        streamingChatEl = null;
+    }
+
     function removeStreamingRecommendation() {
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
@@ -6092,10 +6309,255 @@
         scrollToBottom();
     }
 
+    function updateStreamingExplanations(items) {
+        if (!items || !items.length) return;
+        const wrapper = document.querySelector('[data-streaming-recommendation="true"]') || streamingRecommendationEl;
+        if (!wrapper) return;
+        const medBlocks = wrapper.querySelectorAll('.streaming-medicines-container .medicine-item');
+        items.forEach(function (item) {
+            const exp = (item.explanation || '').trim();
+            if (!exp) return;
+            const rank = item.rank || 0;
+            const name = (item.product_name || '').trim();
+            let target = null;
+            medBlocks.forEach(function (block, idx) {
+                if (rank && idx + 1 === rank) target = block;
+                else if (name && block.textContent.indexOf(name) >= 0) target = block;
+            });
+            if (!target) return;
+            let p = target.querySelector('.streaming-explanation');
+            if (!p) {
+                p = document.createElement('p');
+                p.className = 'streaming-explanation';
+                p.style.margin = '5px 0';
+                const h5 = target.querySelector('h5');
+                if (h5 && h5.nextSibling) {
+                    target.insertBefore(p, h5.nextSibling);
+                } else {
+                    target.appendChild(p);
+                }
+            }
+            p.innerHTML = '<strong>推奨理由:</strong> ' + escapeHtml(exp);
+        });
+        scrollToBottom();
+    }
+
+    function hasActiveStreamingContent() {
+        const chatText = document.querySelector('[data-streaming-chat="true"] .streaming-chat-text');
+        if (chatText && chatText.textContent && chatText.textContent.trim()) {
+            return true;
+        }
+        const rec = document.querySelector('[data-streaming-recommendation="true"]');
+        if (rec) {
+            const advice = rec.querySelector('.streaming-personalized-advice');
+            if (advice && advice.textContent && advice.textContent.trim()) {
+                return true;
+            }
+            if (rec.querySelector('.medicine-item')) {
+                return true;
+            }
+        }
+        const qaAnswer = document.querySelector('.streaming-qa-answer');
+        if (qaAnswer && qaAnswer.textContent && qaAnswer.textContent.trim()) {
+            return true;
+        }
+        return false;
+    }
+
+    function streamingTextsMatch(streamed, finalText) {
+        const a = (streamed || '').trim();
+        const b = (finalText || '').trim();
+        if (!a) {
+            return !b;
+        }
+        if (!b) {
+            return true;
+        }
+        if (a === b) {
+            return true;
+        }
+        return b.indexOf(a) === 0 || a.indexOf(b) === 0;
+    }
+
+    function isSimplePlainBotMessage(message) {
+        if (!message || message.type !== 'bot') {
+            return false;
+        }
+        if (message.store_inquiry || message.emergency_detected || message.crisis_support) {
+            return false;
+        }
+        const content = message.content || '';
+        if (
+            content.includes('recommendation-result') ||
+            content.includes('chat-response') ||
+            content.includes('emergency-response-modern') ||
+            isStatusCardHtml(content) ||
+            looksLikeHtmlContent(content)
+        ) {
+            return false;
+        }
+        if (isDiagnosisPayload(message.diagnosis)) {
+            return false;
+        }
+        return true;
+    }
+
+    function getActiveStreamingChatBubble() {
+        if (streamingChatEl && streamingChatEl.isConnected) {
+            return streamingChatEl;
+        }
+        return document.querySelector('[data-streaming-chat="true"]');
+    }
+
+    function tryPromoteStreamingChatBubble(message, index) {
+        if (!isSimplePlainBotMessage(message)) {
+            return false;
+        }
+        const bubble = getActiveStreamingChatBubble();
+        if (!bubble) {
+            return false;
+        }
+        const span = bubble.querySelector('.streaming-chat-text');
+        const streamed = (span ? span.textContent : bubble.textContent || '').trim();
+        const finalContent = (message.content || '').trim();
+        if (streamed && finalContent && !streamingTextsMatch(streamed, finalContent)) {
+            return false;
+        }
+        const messageKey = getMessageDomKey(message, index);
+        bubble.classList.remove('streaming-chat');
+        bubble.removeAttribute('data-streaming-chat');
+        bubble.className = 'message bot';
+        bubble.setAttribute('data-message-id', messageKey);
+        bubble.setAttribute('data-message-index', String(index));
+        if (span) {
+            if (finalContent && finalContent.length > streamed.length) {
+                span.textContent = finalContent;
+            }
+            span.classList.remove('streaming-chat-text');
+            span.removeAttribute('style');
+        } else if (finalContent) {
+            bubble.innerHTML = '<' + 'div class="message-content">' + escapeHtml(finalContent) + '</' + 'div>';
+        }
+        streamingChatEl = null;
+        return true;
+    }
+
+    function removeOrphanedStreamingBubbles() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return;
+        }
+        function botWithSameTextExists(text) {
+            if (!text) {
+                return false;
+            }
+            const bots = chatMessages.querySelectorAll('.message.bot[data-message-id]');
+            for (let i = 0; i < bots.length; i++) {
+                const botText = (bots[i].textContent || '').trim();
+                if (botText === text || (botText && botText.indexOf(text) >= 0)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        chatMessages.querySelectorAll('[data-streaming-chat="true"]').forEach(function (node) {
+            const streamed = (node.querySelector('.streaming-chat-text')?.textContent || node.textContent || '').trim();
+            if (!streamed || botWithSameTextExists(streamed)) {
+                node.remove();
+            }
+        });
+        if (streamingChatEl && !streamingChatEl.isConnected) {
+            streamingChatEl = null;
+        } else if (streamingChatEl && !streamingChatEl.hasAttribute('data-streaming-chat')) {
+            streamingChatEl = null;
+        }
+        chatMessages.querySelectorAll('[data-streaming-qa="true"]').forEach(function (node) {
+            const answer = (node.querySelector('.streaming-qa-answer')?.textContent || '').trim();
+            if (!answer || botWithSameTextExists(answer)) {
+                node.remove();
+            }
+        });
+        if (streamingQaEl && !streamingQaEl.isConnected) {
+            streamingQaEl = null;
+        }
+        chatMessages.querySelectorAll('[data-streaming-recommendation="true"]').forEach(function (node) {
+            if (node.querySelector('.medicine-item') || node.classList.contains('has-advice')) {
+                const advice = (node.querySelector('.streaming-personalized-advice')?.textContent || '').trim();
+                if (!advice || botWithSameTextExists(advice)) {
+                    node.remove();
+                }
+            } else {
+                node.remove();
+            }
+        });
+        if (streamingRecommendationEl && !streamingRecommendationEl.isConnected) {
+            streamingRecommendationEl = null;
+        }
+    }
+
+    function finalizeStreamingUiAfterPost() {
+        removeTypingIndicator();
+        removeProcessingMessage();
+        restoreSubmitButton();
+        clearSlowRequestTimer();
+    }
+
+    function scheduleDeferredSessionRecovery(generation) {
+        setTimeout(function () {
+            if (generation !== chatSubmitGeneration) {
+                return;
+            }
+            fetch(withVersion('/api/sessions'), {
+                credentials: 'include',
+                headers: { 'Cache-Control': 'no-cache' },
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function (sessionData) {
+                    if (generation !== chatSubmitGeneration) {
+                        return;
+                    }
+                    const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
+                    const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+                    let botAfterUser = false;
+                    if (lastUser && merged.length >= 2) {
+                        for (let i = merged.length - 1; i >= 1; i--) {
+                            if (
+                                merged[i].type === 'bot' &&
+                                merged[i - 1].type === 'user' &&
+                                String(merged[i - 1].content || '').trim() === lastUser
+                            ) {
+                                botAfterUser = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!botAfterUser) {
+                        return;
+                    }
+                    clearPersistentStatusMessages();
+                    removeTypingIndicator();
+                    removeProcessingMessage();
+                    applySessionMessages(sessionData, {
+                        preserveStatusCards: false,
+                        forceRender: true,
+                    });
+                    removeOrphanedStreamingBubbles();
+                    restoreSubmitButton();
+                    clearSlowRequestTimer();
+                })
+                .catch(function () { /* ignore */ });
+        }, 1800);
+    }
+
     function fetchMessagesAfterPost(data, onComplete) {
         let retryCount = 0;
-        const maxRetries = 3;
-        const retryInterval = 500;
+        const maxRetries = 5;
+        const retryInterval = 400;
 
         const fetchMessages = function () {
             const timeoutId = setTimeout(function () {
@@ -6107,6 +6569,8 @@
                     removeProcessingMessage();
                     removeStreamingAdviceBubble();
                     removeStreamingMedicineCards();
+                    removeStreamingChatBubble();
+                    removeStreamingQaResponse();
                     showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                     restoreSubmitButton();
                     clearSlowRequestTimer();
@@ -6146,8 +6610,7 @@
                         }
                         applySessionMessages(sessionData, { preserveStatusCards: false, forceRender: true });
                         removeProcessingMessage();
-                        removeStreamingAdviceBubble();
-                        removeStreamingMedicineCards();
+                        removeOrphanedStreamingBubbles();
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
@@ -6160,11 +6623,16 @@
                     } else if (retryCount < maxRetries) {
                         retryCount++;
                         setTimeout(fetchMessages, retryInterval);
+                } else if (hasActiveStreamingContent()) {
+                        finalizeStreamingUiAfterPost();
+                        if (onComplete) onComplete();
                     } else {
                         removeTypingIndicator();
                         removeProcessingMessage();
                         removeStreamingAdviceBubble();
                         removeStreamingMedicineCards();
+                        removeStreamingChatBubble();
+                        removeStreamingQaResponse();
                         showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                         restoreSubmitButton();
                         clearSlowRequestTimer();
@@ -6176,10 +6644,15 @@
                     if (retryCount < maxRetries) {
                         retryCount++;
                         setTimeout(fetchMessages, retryInterval);
+                    } else if (hasActiveStreamingContent()) {
+                        finalizeStreamingUiAfterPost();
+                        if (onComplete) onComplete();
                     } else {
                         removeTypingIndicator();
                         removeProcessingMessage();
                         removeStreamingMedicineCards();
+                        removeStreamingChatBubble();
+                        removeStreamingQaResponse();
                         showErrorMessage('通信エラーが発生しました。もう一度お試しください。');
                         restoreSubmitButton();
                         clearSlowRequestTimer();
@@ -6194,6 +6667,7 @@
         if (!window.ChatSSE) {
             return submitFormLegacy(message);
         }
+        const gen = ++chatSubmitGeneration;
         scheduleSlowRequestButton();
         const lastEventId = sessionStorage.getItem('chatSseLastEventId') || null;
         return window.ChatSSE.submitStream({
@@ -6211,6 +6685,18 @@
                 if (ev.event === 'done') {
                     removeTypingIndicator();
                 }
+                if (ev.event === 'chat_delta' && ev.data && ev.data.text) {
+                    removeTypingIndicator();
+                    appendChatDelta(ev.data.text);
+                }
+                if (ev.event === 'qa_delta' && ev.data && ev.data.text) {
+                    removeTypingIndicator();
+                    appendQaDelta(ev.data.text, ev.data.section);
+                }
+                if (ev.event === 'qa_section' && ev.data && ev.data.html) {
+                    removeTypingIndicator();
+                    appendQaSectionHtml(ev.data.section, ev.data.html);
+                }
                 if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
                     removeTypingIndicator();
                     appendAdviceDelta(ev.data.text);
@@ -6218,41 +6704,68 @@
                 if (ev.event === 'cards' && ev.data && ev.data.medicines) {
                     renderStreamingMedicineCards(ev.data.medicines);
                 }
+                if (ev.event === 'explanations' && ev.data && ev.data.items) {
+                    updateStreamingExplanations(ev.data.items);
+                }
+                if (ev.event === 'bot_followup' && ev.data) {
+                    if (ev.data.type === 'explanations_ready') {
+                        fetchMessagesAfterPost({ message_count: 1 }, null);
+                    }
+                }
                 if (ev.event === 'error') {
                     sessionStorage.removeItem('chatSseLastEventId');
                     removeTypingIndicator();
                     removeProcessingMessage();
                     removeStreamingAdviceBubble();
                     removeStreamingMedicineCards();
+                    removeStreamingChatBubble();
+                    removeStreamingQaResponse();
                     clearSlowRequestTimer();
                     restoreSubmitButton();
-                    if (ev.data && ev.data.message) {
-                        showErrorMessage(ev.data.message);
+                    if (!hasActiveStreamingContent()) {
+                        showErrorMessage((ev.data && ev.data.message) || '');
                     }
                 }
             },
             onDone: function () {
+                if (gen !== chatSubmitGeneration) {
+                    return;
+                }
                 sessionStorage.removeItem('chatSseLastEventId');
+                removeTypingIndicator();
                 fetchMessagesAfterPost({ message_count: 1 }, null);
             },
-            onError: function () {
+            onError: function (err) {
+                if (gen !== chatSubmitGeneration) {
+                    return;
+                }
                 sessionStorage.removeItem('chatSseLastEventId');
                 removeTypingIndicator();
                 removeProcessingMessage();
                 removeStreamingAdviceBubble();
                 removeStreamingMedicineCards();
+                removeStreamingChatBubble();
+                removeStreamingQaResponse();
                 clearSlowRequestTimer();
+                if (hasActiveStreamingContent()) {
+                    finalizeStreamingUiAfterPost();
+                    fetchMessagesAfterPost({ message_count: 1 }, null);
+                    return;
+                }
+                const errMsg = (err && err.message) || '';
+                const isNetwork = !errMsg || /failed to fetch|networkerror|load failed/i.test(errMsg);
+                const isSseHttpError = /^SSE HTTP [45]\d\d/i.test(errMsg);
+                if (isNetwork || isSseHttpError) {
+                    if (isNetwork) {
+                        showErrorMessage(errMsg);
+                    }
+                    scheduleDeferredSessionRecovery(gen);
+                    return;
+                }
                 restoreSubmitButton();
+                showErrorMessage(errMsg);
+                scheduleDeferredSessionRecovery(gen);
             },
-        }).catch(function () {
-            sessionStorage.removeItem('chatSseLastEventId');
-            removeTypingIndicator();
-            removeProcessingMessage();
-            removeStreamingAdviceBubble();
-            removeStreamingMedicineCards();
-            clearSlowRequestTimer();
-            restoreSubmitButton();
-            return submitFormLegacy(message);
         });
     }
 
@@ -6670,15 +7183,19 @@
         const t = translations[currentLanguage];
         if (confirm(t.confirmNewSession)) {
             clearChatCache();
+            const abortCtrl = new AbortController();
+            const abortTimer = setTimeout(function () { abortCtrl.abort(); }, 15000);
             fetch(withVersion(mainAppPath('/new_session')), {
                 method: 'POST',
                 credentials: 'include',
+                signal: abortCtrl.signal,
                 headers: {
                     'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache'
                 }
             })
             .then(response => {
+                clearTimeout(abortTimer);
                 if (response.ok) {
                     // オンボーディングガイドを再表示するため、localStorageから削除
                     try {
@@ -6691,8 +7208,13 @@
                     alert('新しいセッションの開始に失敗しました');
                 }
             })
-            .catch(() => {
-                alert('通信エラーが発生しました');
+            .catch(function (err) {
+                clearTimeout(abortTimer);
+                if (err && err.name === 'AbortError') {
+                    alert('サーバーが応答しません。ターミナルで app.py を Ctrl+C で止めてから再起動してください。');
+                } else {
+                    alert('通信エラーが発生しました。サーバーがチャット処理で止まっている場合は再起動してください。');
+                }
             });
         }
     };
@@ -6736,7 +7258,7 @@
     };
 
     function getMessageDomKey(message, index) {
-        return stableMessageKey(message);
+        return stableMessageKey(message, index);
     }
 
     function findMessageNodeByIndex(index) {
@@ -6884,12 +7406,20 @@
         existingNodes.forEach((node) => node.remove());
 
         ordered.forEach((node) => {
+            if (node.id === 'snowContainer') {
+                return;
+            }
             if (insertBefore) {
                 chatMessages.insertBefore(node, insertBefore);
             } else {
                 chatMessages.appendChild(node);
             }
         });
+
+        const snowContainer = document.getElementById('snowContainer');
+        if (snowContainer && snowContainer.parentNode === chatMessages && chatMessages.firstChild !== snowContainer) {
+            chatMessages.insertBefore(snowContainer, chatMessages.firstChild);
+        }
     }
 
     function mergeSessionMessagesWithoutClearingStatus() {
@@ -6962,6 +7492,11 @@
             // 既存メッセージの場合はスキップ（重複防止）
             const messageKey = getMessageDomKey(message, index);
             if (existingIds.has(messageKey)) {
+                return;
+            }
+
+            if (tryPromoteStreamingChatBubble(message, index)) {
+                existingIds.add(messageKey);
                 return;
             }
             
@@ -7182,6 +7717,8 @@
             : shouldPreserveStatusCards(messages);
         const cardsByAnchor = collectStatusCardsByAnchor(chatMessages, preserveStatusCards);
 
+        const snowContainer = document.getElementById('snowContainer');
+
         // 新規メッセージのみ追加（既存メッセージは保持）
         if (fragment.children.length > 0) {
             chatMessages.appendChild(fragment);
@@ -7189,6 +7726,12 @@
 
         // サーバー履歴順に並べ替え（エラー/警告カードは該当ユーザー発言の直後）
         syncChatMessageOrder(messages, cardsByAnchor, chatMessages);
+
+        // 装飾レイヤーは常に先頭（メッセージ並べ替えの影響を受けない）
+        if (snowContainer && snowContainer.parentNode === chatMessages && chatMessages.firstChild !== snowContainer) {
+            chatMessages.insertBefore(snowContainer, chatMessages.firstChild);
+        }
+        removeOrphanedStreamingBubbles();
         
         // 評価ボタンを追加（削除済み - HTMLに直接組み込み）
         

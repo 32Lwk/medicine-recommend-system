@@ -304,7 +304,8 @@ def build_question_response(
         chat_response = chat_with_medicine_context(
             user_message,
             conversation_history,
-            latest_recommended_medicines
+            latest_recommended_medicines,
+            session_id=sid,
         )
 
         try:

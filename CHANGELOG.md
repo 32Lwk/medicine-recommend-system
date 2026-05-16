@@ -1,8 +1,107 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月16日**（スクロールバー統一・SSE 推奨 UI 本格化・ステータスカード表示修正・診断名フィールド分離・遅延通知 UI）
+**最終更新日: 2026年5月16日**（マルチエージェント本格化・Emergency 統合・トリアージキャッシュ・SSE explanations・処理進捗 UI・管理画面 PII 運用）
 
-本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。
+本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年5月16日（続2）— マルチエージェント本格化・Emergency 統合・トリアージキャッシュ・処理進捗 UI
+
+### 概要
+
+- **エージェントカナリア廃止**: `LLM_AGENT_ENABLED` をキルスイッチとし、ON 時は全セッションが `ChatOrchestrator` 経路（OFF は従来経路のみ）。`LLM_AGENT_CANARY_PERCENT` / `is_agent_session_eligible` を削除。
+- **Emergency 統合ディスパッチ**: `store_incident` / `medical_self` / `crisis_language` の 3 サブタイプ分類、優先度タグ、手動キュー登録、SMTP 緊急メール通知、OTC ハードロック／ソフトバナー方針を一本化。
+- **トリアージ LRU キャッシュ**: 正規化テキスト + 属性ダイジェストのプロセス内キャッシュ（`TRIAGE_CACHE_*`）。
+- **SSE 2 段階推奨**: `cards` 先行 → `explanations` 追送 → `bot_followup`（`explanations_ready`）でクライアントが messages 再取得。
+- **処理進捗 UI 刷新**: フロー別ステップ定義（`processing_flows.py`）、`detail_code` / エージェント名表示、処理中バブル内アドバイスプレビュー。
+- **チャット重複実行防止**: セッション単位 inflight ロック（JSON POST / SSE ワーカー共有）と専用 `chat_worker` スレッドプール。
+- **挨拶の早期応答**: LLM カウンセリングより前に `chat_greeting_route` で定型返信。
+- **開発サーバー安定化**: Windows での uvicorn reload 既定 OFF、`reload_dirs` / `reload_excludes` で log・キャッシュ監視を除外。
+
+### ドキュメント
+
+- **`docs/ARCHITECTURE_MULTI_AGENT.md`（新規）**: 9 エージェント役割、Emergency シーケンス、SSE イベント一覧、トリアージキャッシュ、管理画面・緊急メールの正本。
+- **`docs/ADMIN_PII_PLAYBOOK.md`（新規）**: 管理画面の PII 運用（自動マスクなし、一覧 120 / 詳細 800 文字抜粋、エスカレーション優先度）。
+- **`README.md`**: CHANGELOG とアーキテクチャ正本ドキュメントの相互リンクを明記。
+- **`docs/CLOUD_RUN_LLM_ENV.md`**: エージェント全量・トリアージキャッシュ・緊急メール変数を追記。
+
+### 機能フラグ・環境変数（`config/llm_flags.py`・`.env.example`）
+
+- **`LLM_AGENT_ENABLED`**: 既定 `true`（全セッションエージェント経路）。`LLM_AGENT_CANARY_PERCENT` を削除。
+- **`LLM_CANARY_PERCENT`**: レガシー LLM 経路用のみ（既定 `0`）。
+- **`TRIAGE_CACHE_MAX_ENTRIES` / `TRIAGE_CACHE_TTL_SEC`**: トリアージキャッシュ（既定 256 件 / 600 秒）。
+- **`ADMIN_LIST_SNIPPET_MAX_CHARS` / `ADMIN_DETAIL_USER_MESSAGE_MAX_CHARS`**: 管理画面抜粋長（120 / 800）。
+- **`EMERGENCY_EMAIL_ENABLED`**: 緊急検出時の SMTP 通知（既定 `true`）。
+
+### Emergency フロー（`src/agents/emergency_classifier.py`・`src/handlers/chat/emergency_dispatch.py`）
+
+- **`classify_emergency()`**: サブタイプと `priority_tag`（`critical_crisis` > `critical_medical` > `store_high` > `store_low`）を決定。
+- **`dispatch_emergency()`**: 店舗インシデントカード or メディカル HTML（119 明示）、300 秒デデュープ、手動キュー `enqueue`。
+- **`medical_emergency_templates.py`（新規）**: メディカル緊急・クライシス向け HTML テンプレート。`medical_emergency_otc_locked`（ハード）/ `store_incident_soft_banner`（ソフト）。
+- **`emergency_notify.py` / `email_notifier.py`（新規）**: キュー登録時に `budget_guard.get_alert_email` 宛て通知。`smtp_not_configured` 等を `notification_status` に記録。
+- **`chat_emergency_handler.py`**: ロジックを `emergency_dispatch` へ集約（重複分岐削減）。
+
+### トリアージ・NLU・オーケストレーション
+
+- **`src/services/triage_cache.py`（新規）**: canonical 正規化 + SHA256 キー、LRU・TTL、短文本・低信頼度の skip 行列、ヒット率メトリクス。
+- **`src/handlers/chat/nlu_resolve.py`（新規）**: `resolve_nlu_for_recommendation` — エージェント ON 時は `NLUAgent`、OFF 時は `hybrid_nlu_extraction`。
+- **`nlu_agent.py`**: 属性抽出の拡張・処理ステップ `detail_code=nlu` 連携。
+- **`chat_orchestrator.py` / `orchestrator_route_result.py`（新規）**: ルート結果型の整理、Emergency / Physical / Ask 等の handoff 統合。
+- **`chat_greeting_route.py`（新規）**: 純粋挨拶の早期定型応答・再送抑止。
+- **`chat_confidence_route.py` / `chat_symptom_route.py` / `chat_other_counseling_route.py`**: `set_processing_flow` 連携・エージェント経路整理。
+
+### SSE・推奨フロー・フロント
+
+- **`sse_emit.py`**: `emit_explanations`・`emit_bot_followup`・ストリーム状態クリア（`clear_session_stream_state`）。`cards` ペイロード拡張を維持。
+- **`chat_recommendation_flow.py` / `medicine_response_builder.py`**: カード先行 → `ExplanationAgent` 並列生成 → SSE `explanations` → `bot_followup`。
+- **`chat_stream.py`**: `chat_worker.submit_chat_job`・`chat_inflight`・`persist_session_from_chat_state` 連携。
+- **`static/js/main.js`**: `explanations` イベントでカード内推奨理由を逐次更新、`bot_followup` で messages 再取得、ストリーミング推奨 UI の統合維持。
+- **`static/js/chat_sse.js`**: 不要コード整理。
+
+### 処理進捗 UI（`processing_flows.py`・`processing_status.py`・`processing_status.js`）
+
+- **フロー定義**: `greeting` / `physical` / `emergency` / `ask_qa` / `confidence_check` 等、ステップ順と weight。
+- **`mark_processing_step`**: `detail_code`・`detail_label`・担当エージェント名（日本語）を SSE `status` / GET `/api/processing_status` に反映。
+- **`append_advice_preview`**: 処理中バブル内へアドバイス断片のプレビュー表示。
+- **各ルート**: トリアージ後に `set_processing_flow(flow_for_triage_category(...))` を設定。
+
+### チャット基盤・セッション・DB
+
+- **`chat_inflight.py`（新規）**: `try_begin_chat_job` / `end_chat_job`（TTL 120 秒）— 同一 sid の並行 POST を 409 相当で拒否。
+- **`chat_worker.py`（新規）**: `ThreadPoolExecutor(max_workers=1)` — Starlette スレッドプール枯渇防止。
+- **`session_manager.py`**: `persist_session_from_chat_state` — SSE 完了後の DB 永続化。
+- **`database.py`**: 接続不可時のフォールバック・エラーハンドリング強化。
+- **`main.py`**: `get_sid` / `new_session` を async 化。新規セッション時に SSE ストリーム状態をクリア。
+
+### 管理画面
+
+- **`admin_snippet.py`（新規）**: `truncate_user_text`（list / detail モード）。
+- **`static/js/admin_chat.js` / `templates/admin_chat.html`**: `priority_tag` バッジ、緊急サブタイプ表示、抜粋長制限、通知ステータス表示。
+- **`medicine_qa_html.py`（新規）**: 医薬品 Q&A 応答 HTML 生成の共通化。
+
+### ルールベース・予算・その他
+
+- **`rule_based_recommendation.py`**: DataFrame キャッシュ（`test_rule_based_cached_df`）。
+- **`budget_guard.py`**: アラートメール取得の整理。
+- **`app.py`**: `UVICORN_RELOAD` 明示時のみ reload。`reload_dirs` は `src` / `config` / `templates` / `static`、`log`・`__pycache__`・`.pytest_cache` を除外。
+
+### 回帰テスト（新規・更新）
+
+| テスト | 内容 |
+|--------|------|
+| `test_emergency_dispatch.py` | `dispatch_emergency` の店舗／メディカル分岐 |
+| `test_emergency_flow_matrix.py` | サブタイプ・優先度・OTC ロック行列 |
+| `test_emergency_notify.py` | 緊急メール通知の有効／無効・SMTP 未設定 |
+| `test_triage_cache_matrix.py` / `test_triage_cache_ttl.py` | キャッシュ hit/skip/TTL |
+| `test_chat_inflight.py` | 同一 sid 重複ジョブ拒否 |
+| `test_chat_greeting_route.py` | 挨拶早期応答 |
+| `test_nlu_resolve.py` | エージェント ON/OFF の NLU 解決 |
+| `test_processing_flows.py` / `test_processing_status_detail.py` | フロー定義・detail 表示 |
+| `test_chat_post_agent_rollout.py` / `test_llm_flags_agent.py` | カナリア廃止後のフラグ挙動 |
+| `test_database_unavailable.py` | DB 接続不可時の挙動 |
+| `test_chat_orchestrator.py` / `test_sse_emit.py` | オーケストレータ・SSE explanations |
+| `test_session_message_merge.py` | セッションメッセージマージ |
 
 ---
 

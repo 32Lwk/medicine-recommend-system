@@ -43,6 +43,53 @@ from src.handlers.chat.chat_response_builder import build_success_response
 logger = logging.getLogger(__name__)
 
 
+def _emit_explanation_followup_sse(
+    session,
+    sid,
+    recommended_medicines,
+    recommendation_result,
+    recommendation_client,
+) -> None:
+    """カード先行後に ExplanationAgent で推奨理由を生成し SSE で追送する。"""
+    if not sid or not recommended_medicines:
+        return
+    try:
+        from config.llm_flags import is_agent_enabled
+        from src.services.sse_emit import emit_explanations, is_streaming_active
+
+        if not is_agent_enabled() or not is_streaming_active(sid):
+            return
+        from src.agents.explanation_agent import generate_explanations_for_recommendation
+        from src.services.processing_status import mark_processing_step
+
+        mark_processing_step(sid, "medicine_select", detail_code="explanation")
+        nlu = recommendation_result.get("nlu_result") or {}
+        user_info = dict(session.get("user_attributes") or {})
+        safety = recommendation_result.get("safety_result") or {}
+        out = generate_explanations_for_recommendation(
+            recommended_medicines,
+            nlu,
+            user_info,
+            recommendation_client,
+            safety_result=safety,
+        )
+        explanations = out.get("explanations") or []
+        for i, med in enumerate(recommended_medicines[: len(explanations)]):
+            if explanations[i]:
+                med["explanation"] = explanations[i]
+                med["reason"] = explanations[i]
+        emit_explanations(recommended_medicines, explanations, session_id=sid)
+        from src.services.sse_emit import emit_bot_followup
+
+        emit_bot_followup(
+            session_id=sid,
+            message_type="explanations_ready",
+            payload={"count": len([e for e in explanations if e])},
+        )
+    except Exception as exc:
+        logger.debug("explanation SSE follow-up skipped: %s", exc)
+
+
 def run_recommendation_flow(
     session,
     client,
@@ -578,16 +625,17 @@ def run_recommendation_flow(
         }
         logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                     
-        # ステップ1: NLU解析を常に実行（性別自動判定・妊娠可能性検出のため）
-        from src.core.rule_based_recommendation import hybrid_nlu_extraction
+        # ステップ1: NLU解析（エージェント ON 時は NLUAgent 経由）
+        from src.handlers.chat.nlu_resolve import resolve_nlu_for_recommendation
+
         nlu_result = {}
         try:
             logger.info(f"🔍 NLU解析を実行中: processed_message={processed_message[:50]}...")
-            nlu_result = hybrid_nlu_extraction(
-                processed_message,  # 方言変換後のテキストを使用
+            nlu_result = resolve_nlu_for_recommendation(
+                processed_message,
                 user_info,
                 recommendation_client,
-                session_id=sid
+                session_id=sid,
             )
             logger.info(f"✅ NLU解析完了: nlu_result keys={list(nlu_result.keys())}")
             logger.info(f"✅ NLU解析完了: gender_detected={nlu_result.get('gender_detected')}, pregnancy_possible={nlu_result.get('pregnancy_possible')}")
@@ -1119,9 +1167,10 @@ def run_recommendation_flow(
                 mark_processing_step(sid, "medicine_select")
                 recommendation_result = rule_based_medicine_recommendation(
                     processed_message,  # 方言変換後のテキストを使用
-                    user_info, 
+                    user_info,
                     recommendation_client,
-                    session_id=sid
+                    session_id=sid,
+                    precomputed_nlu=nlu_result if nlu_result else None,
                 )
                             
                 # ルールベース結果のデバッグログ
@@ -1564,6 +1613,13 @@ def run_recommendation_flow(
                         from src.services.sse_emit import emit_cards
 
                         emit_cards(recommended_medicines, session_id=sid)
+                        _emit_explanation_followup_sse(
+                            session,
+                            sid,
+                            recommended_medicines,
+                            recommendation_result,
+                            recommendation_client,
+                        )
                     except Exception:
                         pass
 
