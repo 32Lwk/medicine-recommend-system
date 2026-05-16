@@ -152,6 +152,14 @@ def handle_question_flow(
         if has_greeting and not has_symptom and not (is_system_intro or is_medicine_search or has_question_keyword or
             has_question_suffix or ends_with_question_mark):
             logger.info(f"👋 GREETING DETECTED: {user_message}")
+            if sid:
+                try:
+                    from src.services.processing_status import mark_processing_step, set_processing_flow
+
+                    set_processing_flow(sid, "greeting")
+                    mark_processing_step(sid, "counseling")
+                except Exception:
+                    pass
                 
             # 挨拶への返答を生成
             greeting_responses = {
@@ -246,10 +254,18 @@ def handle_question_flow(
                 conversation_history = session_data_for_medicines.get('messages', [])[-10:]
                     
                 # ChatGPTに質問を送信
+                if sid:
+                    try:
+                        from src.services.processing_status import set_processing_flow
+
+                        set_processing_flow(sid, "ask_qa")
+                    except Exception:
+                        pass
                 chat_response = chat_with_medicine_context(
-                    user_message, 
-                    conversation_history, 
-                    latest_recommended_medicines
+                    user_message,
+                    conversation_history,
+                    latest_recommended_medicines,
+                    session_id=sid,
                 )
                     
                 # 医薬品質疑応答のログを記録

@@ -40,7 +40,7 @@ def counseling_chat(
     session_id: Optional[str] = None,
 ) -> Any:
     from src.core.llm_client import chat_completion_stream, text_completion_adapter
-    from src.services.sse_emit import emit_advice_delta, get_stream_sink, is_streaming_active, pseudo_stream_advice
+    from src.services.sse_emit import emit_chat_delta, get_stream_sink, is_streaming_active, pseudo_stream_chat
 
     kwargs: Dict[str, Any] = {
         "temperature": temperature,
@@ -60,7 +60,7 @@ def counseling_chat(
             model_role="counsel",
             path=path,
             messages=msgs,
-            on_delta=lambda c: emit_advice_delta(c, sid),
+            on_delta=lambda c: emit_chat_delta(c, sid),
             session_id=sid,
             **kwargs,
         )
@@ -79,7 +79,7 @@ def counseling_chat(
             from src.core.translation_service import translate_medicine_recommendation
 
             translated = translate_medicine_recommendation(raw, lang, session_id=sid)
-            pseudo_stream_advice(translated, sid)
+            pseudo_stream_chat(translated, sid)
         return response
 
     return response

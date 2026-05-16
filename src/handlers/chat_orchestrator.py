@@ -9,9 +9,10 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
-from config.llm_flags import is_agent_enabled, is_agent_session_eligible
+from config.llm_flags import is_agent_enabled
 from src.agents.protocols import HandoffResult
 from src.agents.triage_agent import resolve_handoff
+from src.handlers.orchestrator_route_result import OrchestratorRouteResult, RouteReason
 from src.utils.agent_trace import log_agent_step
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,10 @@ _AGENT_STEP_MAP = {
     "Emergency": "emergency",
 }
 
+_ORCH_FALLBACK_MSG = (
+    "一時的に自動処理を完了できませんでした。お手数ですが、もう一度お試しください。"
+)
+
 
 class ChatOrchestrator:
     def __init__(self, client: OpenAI, *, trace_id: Optional[str] = None):
@@ -36,10 +41,10 @@ class ChatOrchestrator:
         self,
         ctx: Any,
         monitor: Any,
-    ) -> Optional[ResponseTuple]:
+    ) -> OrchestratorRouteResult:
         triage = ctx.triage_result
         if not triage:
-            return None
+            return OrchestratorRouteResult(resolved=False, reason=RouteReason.NO_TRIAGE)
 
         sid = ctx.sid
         session = ctx.session
@@ -64,29 +69,73 @@ class ChatOrchestrator:
         self._mark_step(sid, triage.get("category", "Other"))
 
         if handoff.stop or triage.get("category") == "Emergency":
-            return None
+            resp = self._route_emergency(ctx)
+            if resp:
+                return OrchestratorRouteResult(
+                    resolved=True,
+                    response=resp,
+                    reason=RouteReason.EMERGENCY,
+                    category="Emergency",
+                    subtype=session.get("emergency_subtype"),
+                )
+            return OrchestratorRouteResult(
+                resolved=False,
+                reason=RouteReason.EMERGENCY,
+                category="Emergency",
+            )
 
         category = triage.get("category", "Other")
         confidence = float(triage.get("confidence") or 1.0)
 
-        if category == "Emotional" and confidence >= 0.5:
-            return self._route_emotional(ctx)
+        try:
+            if category == "Emotional" and confidence >= 0.5:
+                resp = self._route_emotional(ctx)
+            elif category == "Physical":
+                resp = self._route_physical(ctx, monitor)
+            elif category == "Ask":
+                resp = self._route_ask(ctx)
+            elif category == "Other":
+                resp = self._route_store(ctx)
+            else:
+                resp = None
 
-        if category == "Physical":
-            return self._route_physical(ctx, monitor)
+            if resp is not None:
+                return OrchestratorRouteResult(
+                    resolved=True,
+                    response=resp,
+                    reason=RouteReason.RESOLVED,
+                    category=category,
+                )
+        except Exception as exc:
+            logger.exception("ChatOrchestrator route failed: %s", exc)
+            session.setdefault("messages", []).append({
+                "type": "bot",
+                "content": _ORCH_FALLBACK_MSG,
+                "orchestrator_fallback": True,
+                "timestamp": time.time(),
+            })
+            if hasattr(session, "modified"):
+                session.modified = True
+            return OrchestratorRouteResult(
+                resolved=True,
+                response=({"status": "ok", "message_count": len(session.get("messages", []))}, 200),
+                reason=RouteReason.EXCEPTION_FALLBACK,
+                category=category,
+                meta={"error": str(exc)},
+            )
 
-        if category == "Ask":
-            return self._route_ask(ctx)
-
-        if category == "Other":
-            return self._route_store(ctx)
-
-        return None
+        return OrchestratorRouteResult(
+            resolved=False,
+            reason=RouteReason.UNHANDLED_CATEGORY,
+            category=category,
+        )
 
     def _mark_step(self, sid: Optional[str], category: str) -> None:
         try:
-            from src.services.processing_status import mark_processing_step
+            from src.services.processing_flows import flow_for_triage_category
+            from src.services.processing_status import mark_processing_step, set_processing_flow
 
+            set_processing_flow(sid, flow_for_triage_category(category))
             step = _AGENT_STEP_MAP.get(category, "triage")
             mark_processing_step(sid, step)
         except Exception as e:
@@ -202,13 +251,31 @@ class ChatOrchestrator:
         )
         return resp
 
+    def _route_emergency(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.emergency_dispatch import dispatch_emergency
+
+        mod_label = None
+        if ctx.triage_result:
+            mod_label = ctx.triage_result.get("_moderation_label")
+        return dispatch_emergency(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.sanitized_message,
+            self._client,
+            ctx.triage_result,
+            moderation_label=mod_label,
+            trace_id=self._trace_id,
+        )
+
 
 def try_orchestrator_route(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
     if not is_agent_enabled():
         return None
-    if not is_agent_session_eligible(ctx.sid):
-        return None
     if not ctx.triage_result:
         return None
     orch = ChatOrchestrator(ctx.recommendation_client, trace_id=getattr(ctx, "trace_id", None))
-    return orch.route(ctx, monitor)
+    result = orch.route(ctx, monitor)
+    if result.resolved and result.response:
+        return result.response
+    return None

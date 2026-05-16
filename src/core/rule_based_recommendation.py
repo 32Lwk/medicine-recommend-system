@@ -243,7 +243,9 @@ def rule_based_recommendation(
     medicine_df: pd.DataFrame,
     client: OpenAI,
     top_n: int = 3,
-    session_id: str = None
+    session_id: str = None,
+    *,
+    precomputed_nlu: Optional[Dict] = None,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのメイン関数（全医薬品種類対応）
@@ -471,7 +473,10 @@ def rule_based_recommendation(
     # ステップ1: NLU（症状抽出）- キーワードチェックの前に実行して、症状が検出される場合はキーワードチェックをスキップ
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ1: NLU（症状抽出） ---")
-    nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
+    if precomputed_nlu is not None:
+        nlu_result = dict(precomputed_nlu)
+    else:
+        nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
     
     # やけどの場合、NLU結果から強度を確認（ガードレールで検出されなかった場合）
     if burn_severity is not None and not is_burn_doctor_referral:
@@ -1574,7 +1579,9 @@ def rule_based_medicine_recommendation(
     user_info: Dict,
     client: OpenAI,
     top_n: int = 3,
-    session_id: str = None
+    session_id: str = None,
+    *,
+    precomputed_nlu: Optional[Dict] = None,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのラッパー関数（app.pyから呼び出し用）
@@ -1585,12 +1592,17 @@ def rule_based_medicine_recommendation(
         client: OpenAI client
         top_n: 推奨医薬品数
         session_id: セッションID（キャッシュ用）
+        precomputed_nlu: 推奨フローで既に取得済みの NLU（再実行を避ける）
     
     Returns:
         推奨結果
     """
-    # CSVデータを読み込み
-    medicine_df = pd.read_csv(CSV_PATH)
+    from src.core.medicine_data import CSV_PATH, df as cached_medicine_df
+
+    medicine_df = cached_medicine_df
+    if medicine_df is None:
+        logger.warning("キャッシュ df 未ロードのため CSV を再読み込みします")
+        medicine_df = pd.read_csv(CSV_PATH)
     
     # メイン関数を呼び出し
     result = rule_based_recommendation(
@@ -1599,7 +1611,8 @@ def rule_based_medicine_recommendation(
         medicine_df=medicine_df,
         client=client,
         top_n=top_n,
-        session_id=session_id
+        session_id=session_id,
+        precomputed_nlu=precomputed_nlu,
     )
     
     return result

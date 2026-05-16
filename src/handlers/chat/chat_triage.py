@@ -64,6 +64,17 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
             f"subcategory: {triage_result.get('subcategory', 'N/A')}, "
             f"confidence: {triage_result.get('confidence'):.2f}"
         )
+        if sid and triage_result:
+            try:
+                from src.services.processing_flows import flow_for_triage_category
+                from src.services.processing_status import set_processing_flow
+
+                set_processing_flow(
+                    sid,
+                    flow_for_triage_category(triage_result.get("category")),
+                )
+            except Exception:
+                pass
     except ImportError as e:
         logger.warning(f"⚠️ LLMトリアージ機能のインポートに失敗: {e}")
     except Exception as e:

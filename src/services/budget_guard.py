@@ -24,14 +24,19 @@ def _db():
     return get_database()
 
 
+def _db_ready(db) -> bool:
+    return bool(db and db.is_available())
+
+
 def _current_month() -> str:
     return datetime.now().strftime("%Y-%m")
 
 
 def get_monthly_usage() -> Dict[str, Any]:
     db = _db()
-    if not db:
-        return {"month": _current_month(), "cost_jpy": 0.0, "hard_stopped": False}
+    default = {"month": _current_month(), "cost_jpy": 0.0, "hard_stopped": False}
+    if not _db_ready(db):
+        return default
     data = db.get_global_state(
         _STATE_KEY,
         default_value={"month": _current_month(), "cost_jpy": 0.0, "hard_stopped": False},
@@ -55,7 +60,7 @@ def add_monthly_cost(cost_jpy: float) -> Dict[str, Any]:
             usage["cost_jpy"],
             OPENAI_MONTHLY_BUDGET_JPY,
         )
-    if db:
+    if _db_ready(db):
         db.set_global_state(_STATE_KEY, usage)
     return usage
 
@@ -74,14 +79,14 @@ def check_llm_allowed() -> Tuple[bool, Optional[str]]:
 def get_admin_settings() -> Dict[str, Any]:
     db = _db()
     default = {"messages": {}, "alert_email": ""}
-    if not db:
+    if not _db_ready(db):
         return default
     return db.get_global_state(_SETTINGS_KEY, default_value=default) or default
 
 
 def set_admin_settings(settings: Dict[str, Any]) -> bool:
     db = _db()
-    if not db:
+    if not _db_ready(db):
         return False
     return db.set_global_state(_SETTINGS_KEY, settings)
 
@@ -136,7 +141,7 @@ def maybe_alert_session_cost(session_id: str, session_cost_jpy: float) -> None:
     _send_email(email, subject, body)
 
 
-def _send_email(to_addr: str, subject: str, body: str) -> None:
+def _send_email(to_addr: str, subject: str, body: str) -> bool:
     host = os.getenv("SMTP_HOST")
     port = int(os.getenv("SMTP_PORT", "587"))
     user = os.getenv("SMTP_USER")
@@ -144,7 +149,7 @@ def _send_email(to_addr: str, subject: str, body: str) -> None:
     from_addr = os.getenv("SMTP_FROM", user or "noreply@localhost")
     if not host or not user:
         logger.warning("SMTP not configured; alert logged only: %s", subject)
-        return
+        return False
     try:
         msg = MIMEText(body, "plain", "utf-8")
         msg["Subject"] = subject
@@ -154,5 +159,7 @@ def _send_email(to_addr: str, subject: str, body: str) -> None:
             smtp.starttls()
             smtp.login(user, password)
             smtp.sendmail(from_addr, [to_addr], msg.as_string())
+        return True
     except Exception as e:
         logger.error("Failed to send alert email: %s", e)
+        return False

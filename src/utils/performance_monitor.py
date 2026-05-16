@@ -45,7 +45,7 @@ class PerformanceMonitor:
             # システムリソース情報
             if PSUTIL_AVAILABLE:
                 memory_info = psutil.virtual_memory()
-                cpu_percent = psutil.cpu_percent(interval=1)
+                cpu_percent = psutil.cpu_percent(interval=None)
             else:
                 # psutilが利用できない場合のフォールバック
                 memory_info = type('obj', (object,), {'used': 0, 'percent': 0})()
