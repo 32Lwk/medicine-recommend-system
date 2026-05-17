@@ -56,6 +56,14 @@
             margin: 0;
             font-size: 28px;
         }
+        .chat-messages-viewport {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
         .chat-messages { 
             flex: 1;
             overflow-y: auto; 
@@ -69,17 +77,17 @@
             display: flex;
             flex-direction: column;
         }
-        /* シーズン装飾（スクロール領域内 sticky・メッセージ z-index:2 の下） */
-        .season-decoration-layer {
-            order: 9999;
-            position: sticky;
-            bottom: calc(var(--chat-input-height, 91px) + var(--season-decoration-gap, 16px));
+        /* シーズン装飾（スクロール外オーバーレイ・表示領域下端に固定） */
+        .chat-messages-viewport > .season-decoration-layer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: calc(var(--season-decoration-gap, 16px) + env(safe-area-inset-bottom, 0px));
             z-index: 1;
             height: 0;
             width: 100%;
+            overflow: visible;
             pointer-events: none;
-            flex-shrink: 0;
-            margin-top: auto;
         }
         .season-decoration-layer .season-decoration {
             position: absolute;
@@ -92,13 +100,13 @@
             height: auto;
         }
         .season-decoration-layer .season-decoration.position-right {
-            right: 0;
+            right: 9pt;
             width: 120px;
             max-height: min(140px, 22vh);
             object-fit: contain;
         }
         .season-decoration-layer .season-decoration.position-left {
-            left: 0;
+            left: 9pt;
             width: 100px;
             max-height: min(120px, 20vh);
             object-fit: contain;
@@ -109,8 +117,8 @@
             top: 0;
             left: 0;
             width: 100%;
+            height: 100%;
             min-height: 100%;
-            height: var(--snow-container-height, 100%);
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
@@ -173,8 +181,8 @@
             .chat-messages {
                 padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             }
-            .season-decoration-layer {
-                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 12px));
+            .chat-messages-viewport > .season-decoration-layer {
+                bottom: calc(var(--season-decoration-gap, 12px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
                 width: 80px;
@@ -186,8 +194,8 @@
             }
         }
         @media (max-width: 480px) {
-            .season-decoration-layer {
-                bottom: calc(var(--chat-input-height, 80px) + var(--season-decoration-gap, 10px));
+            .chat-messages-viewport > .season-decoration-layer {
+                bottom: calc(var(--season-decoration-gap, 10px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
                 width: 60px;
@@ -218,7 +226,7 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260517-scroll-fix" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260518-snow-scroll-fix" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
@@ -262,7 +270,7 @@
         </div>
     </div>
     
-    <div class="chat-messages" id="chatMessages">
+    <div class="chat-messages-viewport">
         {% if decoration_images %}
         <div class="season-decoration-layer" aria-hidden="true">
             {% for image in decoration_images %}
@@ -272,6 +280,7 @@
             {% endfor %}
         </div>
         {% endif %}
+        <div class="chat-messages" id="chatMessages">
         <!-- 冬仕様の装飾 -->
         <div class="snow-container" id="snowContainer" aria-hidden="true"></div>
         
@@ -432,6 +441,7 @@
         {% endif %}
         
     </div>
+    </div>
     
     <!-- モーダル -->
     <div id="infoModal" class="modal">
@@ -544,7 +554,7 @@
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
     <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260517-agent-slow" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260517-post-unlock4" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260518-periodic-sync" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
