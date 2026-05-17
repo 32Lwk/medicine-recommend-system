@@ -2335,10 +2335,12 @@
                     </div>
                     
                     <div class="info-section">
-                        <h3>👤 運営者情報</h3>
+                        <h3>📮 お問い合わせ・試験運用</h3>
+                        <p>本ツールは研究・検証目的のβ版（試験運用）です。運営者の氏名・所属など個人を特定できる情報は開示していません。</p>
                         
                         <div class="contact-info">
-                            <h4>連絡先</h4>
+                            <h4>お問い合わせ</h4>
+                            <p><strong>E-mail：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
@@ -2456,10 +2458,11 @@
                     </div>
                     
                     <div class="info-section">
-                        <h3>👤 Operator Information</h3>
+                        <h3>📮 Contact & Beta Operation</h3>
+                        <p>This tool is a beta version for research and validation. We do not disclose personally identifiable operator details such as name or affiliation.</p>
                         
                         <div class="contact-info">
-                            <h4>Contact Information</h4>
+                            <h4>Contact</h4>
                             <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
@@ -2578,10 +2581,11 @@
                     </div>
                     
                     <div class="info-section">
-                        <h3>👤 운영자 정보</h3>
+                        <h3>📮 문의·시험 운용</h3>
+                        <p>본 도구는 연구·검증 목적의 β판(시험 운용)입니다. 운영자의 성명·소속 등 개인을 특정할 수 있는 정보는 공개하지 않습니다.</p>
                         
                         <div class="contact-info">
-                            <h4>연락처</h4>
+                            <h4>문의</h4>
                             <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
@@ -2700,7 +2704,8 @@
                     </div>
                     
                     <div class="info-section">
-                        <h3>👤 运营者信息</h3>
+                        <h3>📮 联系与试运行</h3>
+                        <p>本工具为研究·验证目的的β版（试运行）。不公开运营者姓名、所属等可识别个人的信息。</p>
                         
                         <div class="contact-info">
                             <h4>联系方式</h4>
@@ -3356,14 +3361,16 @@
         },
         
         operator: {
-            title: '運営者情報',
+            title: 'お問い合わせ・試験運用',
             content: {
                 ja: `
                     <div class="info-section">
-                        <h3>👤 運営者情報</h3>
+                        <h3>📮 お問い合わせ・試験運用</h3>
+                        <p>本ツールは研究・検証目的のβ版（試験運用）です。運営者の氏名・所属など個人を特定できる情報は開示していません。</p>
                         
                         <div class="contact-info">
-                            <h4>連絡先</h4>
+                            <h4>お問い合わせ</h4>
+                            <p><strong>E-mail：</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>不具合・お問い合わせフォーム：</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
                         
@@ -3382,10 +3389,11 @@
                 `,
                 en: `
                     <div class="info-section">
-                        <h3>👤 Operator Information</h3>
+                        <h3>📮 Contact & Beta Operation</h3>
+                        <p>This tool is a beta version for research and validation. We do not disclose personally identifiable operator details such as name or affiliation.</p>
                         
                         <div class="contact-info">
-                            <h4>Contact Information</h4>
+                            <h4>Contact</h4>
                             <p><strong>Contact Email:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>Bug Report & Inquiry Form:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
@@ -3405,10 +3413,11 @@
                 `,
                 ko: `
                     <div class="info-section">
-                        <h3>👤 운영자 정보</h3>
+                        <h3>📮 문의·시험 운용</h3>
+                        <p>본 도구는 연구·검증 목적의 β판(시험 운용)입니다. 운영자의 성명·소속 등 개인을 특정할 수 있는 정보는 공개하지 않습니다.</p>
                         
                         <div class="contact-info">
-                            <h4>연락처</h4>
+                            <h4>문의</h4>
                             <p><strong>연락처 메일:</strong> weary-scoots.7y@icloud.com</p>
                             <p><strong>불구·문의 폼:</strong> <a href="https://forms.gle/UB8kZHd4VHenmRUN6" target="_blank">https://forms.gle/UB8kZHd4VHenmRUN6</a></p>
                         </div>
@@ -3428,7 +3437,8 @@
                 `,
                 zh: `
                     <div class="info-section">
-                        <h3>👤 运营者信息</h3>
+                        <h3>📮 联系与试运行</h3>
+                        <p>本工具为研究·验证目的的β版（试运行）。不公开运营者姓名、所属等可识别个人的信息。</p>
                         
                         <div class="contact-info">
                             <h4>联系方式</h4>
@@ -4360,27 +4370,22 @@
     function updateSnowContainerHeight() {
         const snowContainer = document.getElementById('snowContainer');
         const chatMessages = document.getElementById('chatMessages');
-        
+
         if (!snowContainer || !chatMessages) return;
-        
-        const scrollHeight = chatMessages.scrollHeight;
+
         const clientHeight = chatMessages.clientHeight;
         if (!clientHeight) return;
-        
-        // 落下アニメーション距離（表示領域または全メッセージ高さ）
-        const animationHeight = Math.max(scrollHeight, clientHeight);
+
+        // レイアウト高さは CSS の height:100% のみ（px 指定や --snow-container-height を
+        // レイアウトに使うと scrollHeight が膨らみ、下端に大きな余白ができる）
+        snowContainer.style.removeProperty('height');
+
+        const contentScrollHeight = chatMessages.scrollHeight;
+        const animationHeight = Math.max(contentScrollHeight, clientHeight);
         snowContainer.style.setProperty('--snow-container-height', animationHeight + 'px');
-        
-        // コンテンツが表示領域以下のとき clientHeight で height を固定すると
-        // 絶対配置の雪レイヤーが scrollHeight を膨らませ、不要なスクロールバーが出る
-        if (scrollHeight > clientHeight + 1) {
-            snowContainer.style.height = scrollHeight + 'px';
-        } else {
-            snowContainer.style.removeProperty('height');
-        }
     }
 
-    /** 入力欄の実高さを CSS 変数に反映（シーズン装飾の bottom 位置を追従） */
+    /** 入力欄の実高さを CSS 変数に反映（将来のレイアウト調整用） */
     function syncChatInputHeight() {
         const chatInput = document.querySelector('.chat-input');
         if (!chatInput) return;
@@ -4935,6 +4940,7 @@
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message user';
+        messageDiv.setAttribute('data-message-id', pendingUserDomKey(message));
         messageDiv.setAttribute('data-temporary', 'true'); // 一時的なマーク
         messageDiv.innerHTML = `
             <div class="message-content">${escapeHtml(message)}</div>
@@ -5136,6 +5142,114 @@
         return 'c:' + type + ':' + ts + ':' + content;
     }
 
+    /** 送信直後の楽観 user バブル用 DOM キー（サーバー uuid 確定前） */
+    function pendingUserDomKey(text) {
+        return 'pending-user:' + String(text || '').trim().slice(0, 200);
+    }
+
+    /** data-message-id と message.type（user/bot）が一致するノードのみ返す */
+    function getMessageNodeByKey(chatMessages, messageKey, messageType) {
+        if (!chatMessages || !messageKey || !messageType) {
+            return null;
+        }
+        const node = chatMessages.querySelector('[data-message-id="' + CSS.escape(messageKey) + '"]');
+        if (!node || !node.classList.contains('message') || !node.classList.contains(messageType)) {
+            return null;
+        }
+        return node;
+    }
+
+    function isMessageNodeInDom(chatMessages, message, messageKey) {
+        if (!chatMessages || !message || !message.type) {
+            return false;
+        }
+        const key = messageKey || getMessageDomKey(message);
+        return !!getMessageNodeByKey(chatMessages, key, message.type);
+    }
+
+    function takeExistingNodeForMessage(existingNodes, message) {
+        if (!message || !message.type) {
+            return null;
+        }
+        const key = getMessageDomKey(message);
+        const node = existingNodes.get(key);
+        if (!node) {
+            return null;
+        }
+        if (!node.classList.contains(message.type)) {
+            return null;
+        }
+        existingNodes.delete(key);
+        if (node.parentNode) {
+            node.remove();
+        }
+        return node;
+    }
+
+    function findLastUserMessageInList(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        for (let i = list.length - 1; i >= 0; i--) {
+            if (list[i] && list[i].type === 'user') {
+                return list[i];
+            }
+        }
+        return null;
+    }
+
+    /** 直近ターンの user が DOM にあるか（楽観バブル・確定 uuid・直前 bot より後） */
+    function isLatestUserMessageRendered(messages) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return false;
+        }
+        const lastUserMsg = findLastUserMessageInList(messages);
+        const lastUserText = lastUserMsg
+            ? String(lastUserMsg.content || '').trim()
+            : (sessionStorage.getItem('lastUserMessage') || '').trim();
+        if (!lastUserText) {
+            return true;
+        }
+        if (lastUserMsg) {
+            if (getMessageNodeByKey(chatMessages, stableMessageKey(lastUserMsg), 'user')) {
+                return true;
+            }
+            if (getMessageNodeByKey(chatMessages, pendingUserDomKey(lastUserText), 'user')) {
+                return true;
+            }
+        }
+        const userNodes = chatMessages.querySelectorAll('.message.user');
+        if (userNodes.length === 0) {
+            return false;
+        }
+        const lastUserNode = userNodes[userNodes.length - 1];
+        const nodeText = (lastUserNode.querySelector('.message-content')?.textContent || '').trim();
+        if (nodeText !== lastUserText && nodeText !== BLOCKED_USER_PLACEHOLDER) {
+            return false;
+        }
+        const lastBotMsg = findLastBotMessage(messages);
+        if (!lastBotMsg) {
+            return true;
+        }
+        const botKey = stableMessageKey(lastBotMsg);
+        let lastBotNode = getMessageNodeByKey(chatMessages, botKey, 'bot');
+        if (!lastBotNode) {
+            const botNodes = chatMessages.querySelectorAll('.message.bot:not([data-initial-message="true"])');
+            if (botNodes.length === 0) {
+                return false;
+            }
+            lastBotNode = botNodes[botNodes.length - 1];
+        }
+        return !!(lastBotNode.compareDocumentPosition(lastUserNode) & Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+
+    /** 直近ターン（user + bot）が DOM に揃っているか */
+    function isLatestTurnRenderedInDom(messages) {
+        if (!isBotResponseRendered(messages)) {
+            return false;
+        }
+        return isLatestUserMessageRendered(messages);
+    }
+
     function findLastBotMessage(messages) {
         const list = Array.isArray(messages) ? messages : [];
         for (let i = list.length - 1; i >= 0; i--) {
@@ -5175,12 +5289,18 @@
         if (!chatMessages) {
             return false;
         }
-        const last = messages[messages.length - 1];
-        const key = stableMessageKey(last);
-        if (chatMessages.querySelector('[data-message-id="' + CSS.escape(key) + '"]')) {
+        const lastBotMsg = findLastBotMessage(messages) || messages[messages.length - 1];
+        if (!lastBotMsg || lastBotMsg.type !== 'bot') {
+            return false;
+        }
+        const key = stableMessageKey(lastBotMsg);
+        if (getMessageNodeByKey(chatMessages, key, 'bot')) {
             return true;
         }
-        if (last.store_inquiry) {
+        if (lastBotMsg.uuid || lastBotMsg.message_id) {
+            return false;
+        }
+        if (lastBotMsg.store_inquiry) {
             const storeBots = chatMessages.querySelectorAll(
                 '.message.bot:not(#currentTypingIndicator) .message-content'
             );
@@ -5191,32 +5311,32 @@
                 }
             }
         }
-        const normalized = String(last.content || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+        const normalized = String(lastBotMsg.content || '').replace(/\s+/g, ' ').trim().slice(0, 120);
         if (!normalized) {
             return false;
         }
-        const botNodes = chatMessages.querySelectorAll('.message.bot[data-message-id]');
-        for (let i = botNodes.length - 1; i >= 0; i--) {
-            const node = botNodes[i];
-            if (node.id === 'currentTypingIndicator') {
-                continue;
-            }
-            const text = (node.textContent || '').replace(/\s+/g, ' ').trim();
-            if (!text) {
-                continue;
-            }
-            const snippet = normalized.slice(0, 80);
-            if (text.includes(snippet) || normalized.includes(text.slice(0, 80))) {
-                return true;
-            }
+        const botNodes = chatMessages.querySelectorAll(
+            '.message.bot:not([data-initial-message="true"]):not(#currentTypingIndicator)'
+        );
+        if (botNodes.length === 0) {
+            return false;
         }
-        return false;
+        const lastBotNode = botNodes[botNodes.length - 1];
+        const text = (lastBotNode.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!text) {
+            return false;
+        }
+        const snippet = normalized.slice(0, 80);
+        return text.includes(snippet) || normalized.includes(text.slice(0, 80));
     }
 
     /** ストリーミングまたは確定 bot が画面上に見えているか */
     function isResponseVisibleInDom(messages) {
         if (hasActiveStreamingContent()) {
             return true;
+        }
+        if (messages && messages.length > 0 && isChatResponseComplete(messages)) {
+            return isLatestTurnRenderedInDom(messages);
         }
         return isBotResponseRendered(messages);
     }
@@ -5269,9 +5389,11 @@
         while (msgs.length > 0 && msgs[msgs.length - 1].type === 'user') {
             const tail = msgs[msgs.length - 1];
             const tailText = String(tail.content || '').trim();
+            const isServerConfirmed = !!(tail.uuid || tail.message_id);
             const isPending =
-                (lastUser && tailText === lastUser) ||
-                (userMsg && stableMessageKey(tail) === stableMessageKey(userMsg));
+                !isServerConfirmed &&
+                ((lastUser && tailText === lastUser) ||
+                    (userMsg && stableMessageKey(tail) === stableMessageKey(userMsg)));
             if (!isPending) {
                 break;
             }
@@ -5313,6 +5435,9 @@
         if (tail.type !== 'user' || String(tail.content || '').trim() !== lastUser) {
             return msgs;
         }
+        if (tail.uuid || tail.message_id) {
+            return msgs;
+        }
         const without = msgs.slice(0, -1);
         if (without.length > 0 && without[without.length - 1].type === 'bot') {
             return without;
@@ -5340,20 +5465,18 @@
             }
         }
 
-        removeTemporaryUserMessages();
-
         if (!isChatResponseComplete(merged)) {
             return false;
         }
 
         const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
         saveChatCache(sid, merged);
-        const botAlreadyVisible = isBotResponseRendered(merged);
+        const turnAlreadyVisible = isLatestTurnRenderedInDom(merged);
         const applied = applyBotResponseSession(
             { session_id: sid, messages: merged },
             {
                 preserveStatusCards: false,
-                forceRender: !botAlreadyVisible,
+                forceRender: !turnAlreadyVisible,
             }
         );
         if (applied) {
@@ -5449,7 +5572,7 @@
 
     function applySessionMessages(sessionData, options) {
         let opts = Object.assign({}, options || {});
-        if (shouldDeferSessionSync() && !opts.allowWhileStreaming) {
+        if (shouldDeferSessionSync() && !opts.allowWhileStreaming && !opts.periodicSync) {
             updateSessionSafetyBanners(sessionData);
             return;
         }
@@ -5462,23 +5585,67 @@
         if (isChatResponseComplete(merged)) {
             opts = Object.assign({ suppressTypingIndicator: true }, opts);
         }
-        if (sessionHasResolvedUserMessage(merged)) {
-            removeTemporaryUserMessages();
-        }
         const fp = messagesFingerprint(merged);
-        const botRendered = isBotResponseRendered(merged);
+        const turnRendered = isLatestTurnRenderedInDom(merged);
         if (!opts.forceRender && fp === lastRenderedMessagesFingerprint) {
-            if (opts.suppressTypingIndicator && botRendered) {
+            if (opts.suppressTypingIndicator && isBotResponseRendered(merged)) {
                 dismissTypingIndicator(merged);
             }
-            if (botRendered) {
+            if (turnRendered) {
+                updateSessionSafetyBanners(sessionData);
                 return;
             }
             opts = Object.assign({ forceRender: true }, opts);
         }
-        lastRenderedMessagesFingerprint = fp;
         renderChatMessages(merged, opts);
+        if (isLatestTurnRenderedInDom(merged)) {
+            lastRenderedMessagesFingerprint = fp;
+        }
         updateSessionSafetyBanners(sessionData);
+    }
+
+    /** 10秒ポーリング・デバウンス復旧用: サーバーに応答があるのに DOM 未反映なら強制同期 */
+    function applyPeriodicSessionSync(sessionData) {
+        const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
+        if (merged.length === 0) {
+            return;
+        }
+        const typingEl = document.getElementById('currentTypingIndicator');
+        if (typingEl && (awaitingPostResponse || isSubmitting)) {
+            if (completePostResponseIfReady(sessionData, null)) {
+                return;
+            }
+        }
+        if (isChatResponseComplete(merged) && !isLatestTurnRenderedInDom(merged)) {
+            endAwaitingPostResponse();
+            isSubmitting = false;
+            clearPersistentStatusMessages();
+            dismissTypingIndicator(merged, { force: true });
+            restoreSubmitButton();
+            applySessionMessages(sessionData, {
+                allowRestore: false,
+                forceRender: true,
+                suppressTypingIndicator: true,
+                periodicSync: true,
+            });
+            return;
+        }
+        if (!shouldDeferSessionSync()) {
+            applySessionMessages(sessionData, {
+                allowRestore: false,
+                periodicSync: true,
+            });
+            return;
+        }
+        if (isChatResponseComplete(merged)) {
+            applySessionMessages(sessionData, {
+                allowRestore: false,
+                forceRender: !isLatestTurnRenderedInDom(merged),
+                suppressTypingIndicator: true,
+                allowWhileStreaming: true,
+                periodicSync: true,
+            });
+        }
     }
 
     /** bot / ストリーミングが DOM に載るまでバブルを維持 */
@@ -5511,7 +5678,6 @@
     /** SSE done 後に応答反映・バブル除去・送信ボタン復帰を試みる */
     function unlockPostResponseUI(donePayload) {
         try {
-            removeTemporaryUserMessages();
             const sid = getSidFromCookie();
             let payload = donePayload;
             if (payload && !payload.bot_message) {
@@ -5545,7 +5711,6 @@
 
             if (!resolved && isResponseVisibleInDom(null)) {
                 dismissTypingIndicator(null, { force: true });
-                removeTemporaryUserMessages();
                 restoreSubmitButton();
                 markPostResponseResolved();
                 return true;
@@ -5619,7 +5784,7 @@
             : false;
         applySessionMessages(sessionData, {
             preserveStatusCards: opts.preserveStatusCards !== false,
-            forceRender: opts.forceRender === true || !isBotResponseRendered(merged),
+            forceRender: opts.forceRender === true || !isLatestTurnRenderedInDom(merged),
             suppressTypingIndicator: true,
             allowRestore: opts.allowRestore,
         });
@@ -6945,6 +7110,19 @@ function appendQaDelta(text, section) {
         return document.querySelector('[data-streaming-chat="true"]');
     }
 
+    function discardStreamingChatBubbleIfStatusCardFinal(message) {
+        if (!message || !message.content || !isStatusCardHtml(message.content)) {
+            return false;
+        }
+        const bubble = getActiveStreamingChatBubble();
+        if (!bubble) {
+            return false;
+        }
+        bubble.remove();
+        streamingChatEl = null;
+        return false;
+    }
+
     function tryPromoteStreamingChatBubble(message, index) {
         if (!isSimplePlainBotMessage(message)) {
             return false;
@@ -7102,6 +7280,20 @@ function appendQaDelta(text, section) {
                     removeProcessingMessage();
                     rememberLatestBotForFeedback(merged);
                     if (!completePostResponseIfReady(sessionData, null)) {
+                        if (!isLatestTurnRenderedInDom(merged)) {
+                            applySessionMessages(sessionData, {
+                                allowRestore: false,
+                                forceRender: true,
+                                suppressTypingIndicator: true,
+                                periodicSync: true,
+                            });
+                            if (isLatestTurnRenderedInDom(merged)) {
+                                markPostResponseResolved();
+                                restoreSubmitButton();
+                                clearSlowRequestTimer();
+                                return;
+                            }
+                        }
                         if (tryNum < 12) {
                             scheduleDeferredSessionRecovery(generation, tryNum + 1);
                         }
@@ -8184,15 +8376,26 @@ function appendQaDelta(text, section) {
         const ordered = [];
         (messages || []).forEach((message, index) => {
             const key = getMessageDomKey(message);
-            const node = existingNodes.get(key);
+            const node = takeExistingNodeForMessage(existingNodes, message);
             if (node) {
-                existingNodes.delete(key);
-                if (node.parentNode) {
-                    node.remove();
-                }
                 ordered.push(node);
             } else if (message && message.type === 'user') {
                 const text = String(message.content || '').trim();
+                const pendingKey = pendingUserDomKey(text);
+                const pendingNode = existingNodes.get(pendingKey);
+                if (pendingNode) {
+                    existingNodes.delete(pendingKey);
+                    if (pendingNode.parentNode) {
+                        pendingNode.remove();
+                    }
+                    pendingNode.setAttribute('data-message-id', key);
+                    pendingNode.removeAttribute('data-temporary');
+                    const pendingIdx = pendingNodes.indexOf(pendingNode);
+                    if (pendingIdx >= 0) {
+                        pendingNodes.splice(pendingIdx, 1);
+                    }
+                    ordered.push(pendingNode);
+                } else {
                 const fallback = chatMessages.querySelectorAll('.message.user[data-message-id]');
                 for (let i = fallback.length - 1; i >= 0; i--) {
                     const candidate = fallback[i];
@@ -8210,6 +8413,7 @@ function appendQaDelta(text, section) {
                         ordered.push(candidate);
                         break;
                     }
+                }
                 }
             }
             const cards = cardsByAnchor.get(String(index)) || [];
@@ -8281,6 +8485,53 @@ function appendQaDelta(text, section) {
             });
     }
 
+    function appendMessageNodeToChat(chatMessages, messageDiv) {
+        const typingIndicator = document.getElementById('currentTypingIndicator');
+        if (typingIndicator && typingIndicator.parentNode === chatMessages) {
+            chatMessages.insertBefore(messageDiv, typingIndicator);
+        } else {
+            chatMessages.appendChild(messageDiv);
+        }
+    }
+
+    /** 同期後に欠けている user/bot バブルを補完（型不一致キー等の取りこぼし対策） */
+    function ensureSessionMessagesInDom(messages) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages || !Array.isArray(messages)) {
+            return;
+        }
+        messages.forEach(function (message, index) {
+            if (!message || (message.type !== 'user' && message.type !== 'bot')) {
+                return;
+            }
+            const messageKey = getMessageDomKey(message);
+            if (isMessageNodeInDom(chatMessages, message, messageKey)) {
+                return;
+            }
+            const messageDiv = document.createElement('div');
+            messageDiv.setAttribute('data-message-id', messageKey);
+            messageDiv.setAttribute('data-message-index', String(index));
+            if (message.type === 'user') {
+                messageDiv.className = 'message user';
+                messageDiv.innerHTML =
+                    '<div class="message-content">' + escapeHtml(message.content || '') + '</div>';
+            } else {
+                messageDiv.className = 'message bot';
+                if (message.store_inquiry && message.content) {
+                    messageDiv.innerHTML = '<div class="message-content">' + message.content + '</div>';
+                } else if (isStatusCardHtml(message.content)) {
+                    messageDiv.innerHTML = wrapBotStatusCardHtml(message.content);
+                } else if (message.content && looksLikeHtmlContent(message.content)) {
+                    messageDiv.innerHTML = '<div class="message-content">' + message.content + '</div>';
+                } else {
+                    messageDiv.innerHTML =
+                        '<div class="message-content">' + formatPlainBotText(message.content || '') + '</div>';
+                }
+            }
+            appendMessageNodeToChat(chatMessages, messageDiv);
+        });
+    }
+
     function clearRenderedChatMessagesExceptInitial() {
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) {
@@ -8308,10 +8559,6 @@ function appendQaDelta(text, section) {
 
         if (options.forceRender && !shouldDeferSessionSync()) {
             clearRenderedChatMessagesExceptInitial();
-        }
-
-        if (sessionHasResolvedUserMessage(messages)) {
-            removeTemporaryUserMessages();
         }
 
         const keepTypingIndicator = shouldShowTypingIndicator(messages, options);
@@ -8346,9 +8593,11 @@ function appendQaDelta(text, section) {
         messages.forEach((message, index) => {
             // 既存メッセージの場合はスキップ（重複防止）
             const messageKey = getMessageDomKey(message);
-            if (existingIds.has(messageKey)) {
+            if (isMessageNodeInDom(chatMessages, message, messageKey)) {
                 return;
             }
+
+            discardStreamingChatBubbleIfStatusCardFinal(message);
 
             if (tryPromoteStreamingChatBubble(message, index)) {
                 existingIds.add(messageKey);
@@ -8566,7 +8815,10 @@ function appendQaDelta(text, section) {
         });
 
         const hasNewMessages = fragment.children.length > 0;
-        if (isSubmitting && !hasNewMessages) {
+        const shouldRecoverStuckSubmit = options.periodicSync
+            || options.forceRender
+            || (isChatResponseComplete(messages) && !isLatestTurnRenderedInDom(messages));
+        if (isSubmitting && !hasNewMessages && !shouldRecoverStuckSubmit) {
             if (keepTypingIndicator || !isResponseVisibleInDom(messages)) {
                 ensureTypingIndicatorElement();
             } else {
@@ -8593,6 +8845,11 @@ function appendQaDelta(text, section) {
         }
 
         syncChatMessageOrder(messages, cardsByAnchor, chatMessages);
+
+        ensureSessionMessagesInDom(messages);
+        if (sessionHasResolvedUserMessage(messages)) {
+            removeTemporaryUserMessages();
+        }
 
         // 装飾レイヤーは常に先頭（メッセージ並べ替えの影響を受けない）
         if (snowContainer && snowContainer.parentNode === chatMessages && chatMessages.firstChild !== snowContainer) {
@@ -8637,27 +8894,13 @@ function appendQaDelta(text, section) {
 
     // 定期的にメッセージ部分だけAPIで取得して再描画（間隔10秒）
     setInterval(function refreshMessagesPeriodically() {
-        if (isSubmitting && !awaitingPostResponse) {
-            return;
-        }
-
-        const stuckTyping = document.getElementById('currentTypingIndicator');
-        if (stuckTyping && !awaitingPostResponse) {
-            return;
-        }
-
         fetch(withVersion('/api/sessions'), {
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         })
         .then(response => response.json())
         .then(data => {
-            if (awaitingPostResponse && stuckTyping) {
-                if (completePostResponseIfReady(data, null)) {
-                    return;
-                }
-            }
-            applySessionMessages(data || {}, { allowRestore: false });
+            applyPeriodicSessionSync(data || {});
         })
         .catch(error => {
             const cached = loadChatCache(getSidFromCookie());

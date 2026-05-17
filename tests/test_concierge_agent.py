@@ -18,20 +18,39 @@ def test_architecture_payload_card():
     assert "TriageAgent" in p["content"]
 
 
-def test_redirect_after_chitchat_turns():
+@patch("src.agents.concierge_agent.classify_concierge_intent", return_value="chitchat")
+def test_redirect_after_chitchat_turns(_mock_classify):
     session = {"concierge_state": {"off_topic_turns": 2}}
-    assert resolve_concierge_intent("今日はいい天気ですね", session) == "redirect"
+    assert resolve_concierge_intent("weather small talk", session) == "redirect"
 
 
-def test_doc_operator_returns_card_with_links():
-    p = build_concierge_payload("doc_operator", "運営者の連絡先は？", MagicMock())
-    assert p["llm_used"] is False
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_doc_operator_returns_status_card_with_links(mock_chat):
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(
+            message=MagicMock(
+                content=(
+                    "本ツールは試験運用のβ版です。"
+                    "個人名や所属は開示していません。"
+                )
+            )
+        )
+    ]
+    mock_chat.return_value = mock_resp
+    client = MagicMock()
+    p = build_concierge_payload("doc_operator", "運営者の連絡先は？", client)
+    assert p["llm_used"] is True
     assert p["content_format"] == "status_card"
-    assert "川嶋" in p["content"]
+    assert "chat-status-card--notice" in p["content"]
+    assert "お問い合わせ・試験運用について" in p["content"]
+    assert "川嶋" not in p["content"]
+    assert "名古屋大学" not in p["content"]
+    assert 'href="mailto:weary-scoots.7y@icloud.com"' in p["content"]
     assert 'href="https://forms.gle/UB8kZHd4VHenmRUN6"' in p["content"]
-    assert 'href="https://github.com/32Lwk"' in p["content"]
-    assert "weary-scoots.7y@icloud.com" in p["content"]
     assert "診断や処方" not in p["content"]
+    mock_chat.assert_called_once()
+    assert mock_chat.call_args.kwargs.get("allow_stream") is False
 
 
 @patch("src.agents.concierge_agent.concierge_chat")

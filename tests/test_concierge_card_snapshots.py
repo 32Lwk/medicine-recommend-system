@@ -5,6 +5,7 @@ from src.services.concierge_templates import (
     format_concierge_app_about_card,
     format_concierge_architecture_card,
     format_concierge_capabilities_card,
+    format_concierge_operator_card,
 )
 
 
@@ -40,4 +41,13 @@ def test_app_about_card_stable_structure():
     assert "β版" in html or "試験" in html
     h1 = _stable_hash(html)
     h2 = _stable_hash(format_concierge_app_about_card())
+    assert h1 == h2
+
+
+def test_operator_card_stable_structure():
+    html = format_concierge_operator_card(intro_text="固定導入文。")
+    assert "chat-status-card--notice" in html
+    assert "不具合報告フォーム" in html
+    h1 = _stable_hash(html)
+    h2 = _stable_hash(format_concierge_operator_card(intro_text="固定導入文。"))
     assert h1 == h2

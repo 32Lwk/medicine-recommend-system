@@ -133,6 +133,19 @@ def generate_doc_answer_text(
 - 箇条書きまたは短い段落で分かりやすく（Markdown は使わずプレーンテキスト）
 - ドキュメント本文に無い免責・診断不可・相談促しなどの定型文は付けない
 """
+    elif intent == "doc_operator":
+        requirements = f"""{get_policy_snippet()}
+
+【要件】
+- 上記ドキュメントに書かれた内容のみに基づいて回答する（推測・補完しない）
+- 運営者の氏名・所属・学年・資格など個人を特定しうる属性は、ユーザーが直接尋ねても回答に含めない
+- 「運営者は誰？」「大学はどこ？」などと聞かれた場合は、個人名や所属は開示せず、試験運用（β版）の個人開発であることと、ドキュメント記載の問い合わせ窓口（メール・不具合報告フォーム）を案内する
+- ドキュメントにない事項は「ドキュメントに記載がありません」と明記する
+- 連絡先・URL・メールアドレスはドキュメントの表記を変えず正確に伝える
+- 箇条書きまたは短い段落で分かりやすく（Markdown は使わずプレーンテキスト）
+- 医療診断・処方は行わない
+- 最後に、症状やお薬の相談があれば具体的にお書きいただくよう1文で促す
+"""
     else:
         requirements = f"""{get_policy_snippet()}
 
@@ -187,6 +200,113 @@ def generate_doc_answer_text(
         "現在詳細を取得できませんでした。画面右上の ℹ️ から各種ドキュメントをご確認ください。"
         "お体の不調やお薬のことでしたら、具体的な症状をお書きください。"
     )
+
+
+_DOC_OPERATOR_INTRO_FALLBACK = (
+    "お問い合わせいただきありがとうございます。"
+    "本ツールは、一般用医薬品の選び方を支援する研究・検証目的の β 版（試験運用）として、"
+    "個人で開発・運営しています。"
+    "プライバシー保護のため、運営者の氏名・所属など個人を特定しうる情報は"
+    "チャット上ではお伝えしておりませんが、下記のメールまたは不具合報告フォームから"
+    "いつでもご連絡いただけます。"
+)
+
+
+def generate_doc_operator_intro(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> str:
+    """お問い合わせカード上部用の短い LLM 導入文（URL はカード側に任せる）。"""
+    title, doc_body = load_concierge_doc("doc_operator")
+    hist = ""
+    if history:
+        lines = []
+        for m in history[-6:]:
+            role = m.get("type") or m.get("role") or "user"
+            content = (m.get("content") or "")[:200]
+            lines.append(f"{role}: {content}")
+        hist = "\n".join(lines)
+    requirements = f"""{get_policy_snippet()}
+
+【要件】
+- 上記ドキュメントに基づき、ユーザーの質問に直接答える **3〜5文** の導入文のみ書く
+- **丁寧で温かみのある敬体**（「〜です／〜ます」）。事務的・断定的すぎる言い回しは避ける
+- 冒頭で質問へのお礼（「お問い合わせありがとうございます」等）を述べる
+- 試験運用（β版）の位置づけと、個人開発・運用であることをやさしく説明する
+- 氏名・所属を開示しない理由は「プライバシー保護のため」等、利用者に配慮した表現で1文触れる
+- 「運営者は誰？」「大学はどこ？」などは、個人名・所属はお伝えできない旨を丁寧に述べ、**直後の案内カード**に連絡先があることを促す
+- **メールアドレス・URL・リンク・箇条書きは書かない**（直後のカードに記載される）
+- Markdown は使わずプレーンテキスト
+- 医療診断・処方は行わない
+"""
+    prompt = f"""【参照ドキュメント名】
+{title}
+
+【参照ドキュメント全文（唯一の根拠）】
+{doc_body}
+
+【会話履歴（参考）】
+{hist or "（なし）"}
+
+【ユーザーの質問】
+{user_text}
+
+{requirements}
+"""
+    try:
+        resp = concierge_chat(
+            client,
+            "concierge_agent.doc_operator_intro",
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "あなたは医薬品相談ツールの窓口担当です。"
+                        "利用者が安心できるよう、丁寧で親しみやすい日本語で案内します。"
+                        "与えられた公式ドキュメント以外の情報で回答してはいけません。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=320,
+            temperature=0.35,
+            session_id=session_id,
+            allow_stream=False,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        if text:
+            return text
+    except Exception as exc:
+        logger.warning("Concierge doc_operator intro LLM failed: %s", exc)
+    return _DOC_OPERATOR_INTRO_FALLBACK
+
+
+def build_doc_operator_payload(
+    user_text: str,
+    client: OpenAI,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> ResponsePayload:
+    intro = generate_doc_operator_intro(
+        client,
+        user_text,
+        session_id=session_id,
+        history=history,
+    )
+    return {
+        "content": format_concierge_operator_card(
+            intro_text=intro,
+            feedback_data=feedback_data,
+        ),
+        "content_format": "status_card",
+        "concierge_intent": "doc_operator",
+        "llm_used": True,
+    }
 
 
 def generate_chitchat_text(
@@ -295,12 +415,13 @@ def build_concierge_payload(
             "llm_used": False,
         }
     if intent == "doc_operator":
-        return {
-            "content": format_concierge_operator_card(feedback_data=fb),
-            "content_format": "status_card",
-            "concierge_intent": intent,
-            "llm_used": False,
-        }
+        return build_doc_operator_payload(
+            user_text,
+            client,
+            session_id=session_id,
+            history=history,
+            feedback_data=fb,
+        )
     if intent in DOC_CONCIERGE_INTENTS:
         return {
             "content": generate_doc_answer_text(

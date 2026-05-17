@@ -32,6 +32,7 @@ def concierge_chat(
     temperature: float = 0.6,
     lang: str = "ja",
     session_id: Optional[str] = None,
+    allow_stream: bool = True,
 ) -> Any:
     kwargs: Dict[str, Any] = {
         "temperature": temperature,
@@ -40,7 +41,7 @@ def concierge_chat(
     msgs = _with_lang(messages, normalize_lang(lang))
     sink = get_stream_sink()
     sid = session_id or (sink.session_id if sink else None)
-    use_stream = is_streaming_active(sid)
+    use_stream = allow_stream and is_streaming_active(sid)
 
     if use_stream and normalize_lang(lang) == "ja":
         text = chat_completion_stream(

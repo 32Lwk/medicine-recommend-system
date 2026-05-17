@@ -10,12 +10,10 @@ from src.content.concierge_knowledge import (
     get_capabilities,
     get_limitations,
 )
-from src.content.concierge_docs import load_concierge_doc
 from src.services.chat_response_service import build_greeting_response
 from src.services.html_formatter import format_feedback_buttons, format_status_card
 
 _OPERATOR_BUG_FORM_URL = "https://forms.gle/UB8kZHd4VHenmRUN6"
-_OPERATOR_REPO_URL = "https://github.com/32Lwk"
 _OPERATOR_EMAIL = "weary-scoots.7y@icloud.com"
 
 
@@ -24,6 +22,13 @@ def _external_link(url: str, label: str) -> str:
         f'<a href="{html.escape(url, quote=True)}" target="_blank" '
         f'rel="noopener noreferrer">{html.escape(label)}</a>'
     )
+
+
+def _intro_paragraphs_html(intro_text: str) -> str:
+    parts = [p.strip() for p in (intro_text or "").split("\n") if p.strip()]
+    if not parts:
+        return ""
+    return "".join(f"<p>{html.escape(p)}</p>" for p in parts)
 
 
 def build_thanks_text() -> str:
@@ -147,32 +152,42 @@ def build_greeting_text(user_message: str) -> str:
 
 def format_concierge_operator_card(
     *,
+    intro_text: str = "",
     feedback_data: Optional[Dict[str, Any]] = None,
 ) -> str:
-    """docs/運営者情報.md に基づく固定カード（LLM 不要・リンク付き）。"""
-    _title, _doc_body = load_concierge_doc("doc_operator")
+    """docs/concierge/お問い合わせ・試験運用.md に基づくカード（リンク付き・個人属性なし）。"""
     email = _OPERATOR_EMAIL
-    body = (
+    body_parts = [_intro_paragraphs_html(intro_text)]
+    body_parts.append(
         '<section class="chat-status-card__section">'
-        '<h5 class="chat-status-card__section-title">運営者</h5>'
+        '<h5 class="chat-status-card__section-title">このサービスについて</h5>'
         "<ul>"
-        "<li><strong>氏名:</strong> 川嶋 宥翔（Kawashima Yuto）</li>"
-        "<li><strong>所属:</strong> 名古屋大学 理学部 物理学科 2年</li>"
-        "<li><strong>資格:</strong> 登録販売者資格保有</li>"
+        "<li>研究・検証目的の <strong>β 版（試験運用）</strong> です</li>"
+        "<li><strong>医療行為・診断・処方の代替ではありません</strong></li>"
+        "<li>運営は個人による開発・運用です</li>"
+        "<li>運営者の<strong>氏名・所属・資格など個人を特定しうる情報は開示しません</strong></li>"
+        "</ul></section>"
+    )
+    body_parts.append(
+        '<section class="chat-status-card__section">'
+        '<h5 class="chat-status-card__section-title">お問い合わせ</h5>'
+        "<ul>"
         f'<li><strong>E-mail:</strong> <a href="mailto:{html.escape(email, quote=True)}">'
         f"{html.escape(email)}</a></li>"
-        f"<li><strong>不具合報告フォーム:</strong> "
+        f"<li><strong>不具合・お問い合わせフォーム:</strong> "
         f'{_external_link(_OPERATOR_BUG_FORM_URL, "不具合報告フォーム")}</li>'
-        f"<li><strong>開発リポジトリ:</strong> "
-        f'{_external_link(_OPERATOR_REPO_URL, "GitHub（32Lwk）")}</li>'
+        "<li>画面上の <strong>🐛</strong> ボタンからも同じフォームに進めます</li>"
         "</ul></section>"
-        '<section class="chat-status-card__section">'
-        '<h5 class="chat-status-card__section-title">免責事項</h5>'
-        "<ul>"
-        "<li>本システムは試験運用段階のため、動作の保証はありません</li>"
-        "<li>医薬品の使用に際しては、必ず薬剤師または登録販売者に相談してください</li>"
-        "<li>最終的な判断は、医師や薬剤師の専門的なアドバイスに従うことが重要です</li>"
-        "</ul></section>"
+    )
+    body_parts.append(
+        _list_section(
+            "ご利用上の注意",
+            [
+                "試験運用のため、動作・表示内容の正確性・安全性を保証しません",
+                "お薬の使用は薬剤師・登録販売者・医師などの専門家にご相談ください",
+                "詳細な規約は画面右上 ℹ️ の免責事項・利用規約をご確認ください",
+            ],
+        )
     )
     footer = ""
     if feedback_data:
@@ -182,8 +197,13 @@ def format_concierge_operator_card(
         )
     return format_status_card(
         variant="notice",
-        title="運営者情報",
-        body_html=body,
-        hints=["詳細は画面右上の ℹ️ からもご確認いただけます。"],
+        title="お問い合わせ・試験運用について",
+        subtitle="研究・検証目的の β 版（試験運用）",
+        body_html="".join(body_parts),
+        hints=[
+            "症状やお薬のことは、具体的にお書きください。",
+            "プライバシーポリシー等は画面右上 ℹ️ からご確認いただけます。",
+        ],
         footer_html=footer,
+        aria_label="お問い合わせ・試験運用について",
     )
