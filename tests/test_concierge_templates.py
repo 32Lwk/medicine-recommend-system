@@ -21,9 +21,15 @@ def test_architecture_card_lists_agents():
     assert "案内できません" not in html
 
 
-def test_operator_card_has_clickable_links():
-    html = format_concierge_operator_card()
+def test_operator_card_has_clickable_links_without_personal_attributes():
+    html = format_concierge_operator_card(
+        intro_text="試験運用中のβ版です。",
+    )
     assert "chat-status-card" in html
-    assert "川嶋" in html
+    assert "お問い合わせ・試験運用について" in html
+    assert "試験運用中のβ版です。" in html
     assert 'href="https://forms.gle/UB8kZHd4VHenmRUN6"' in html
     assert 'href="mailto:weary-scoots.7y@icloud.com"' in html
+    assert "川嶋" not in html
+    assert "名古屋大学" not in html
+    assert "GitHub" not in html

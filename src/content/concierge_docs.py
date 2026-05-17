@@ -10,7 +10,7 @@ _DOCS_ROOT = Path(__file__).resolve().parents[2] / "docs"
 DOC_INTENT_TO_FILENAME: Dict[str, str] = {
     "doc_privacy": "プライバシーポリシー.md",
     "doc_terms": "免責事項・利用規約.md",
-    "doc_operator": "運営者情報.md",
+    "doc_operator": "concierge/お問い合わせ・試験運用.md",
     "doc_consultation": "医薬品相談先.md",
     "doc_app_overview": "アプリ概要.md",
 }
@@ -18,7 +18,7 @@ DOC_INTENT_TO_FILENAME: Dict[str, str] = {
 DOC_INTENT_TITLES: Dict[str, str] = {
     "doc_privacy": "プライバシーポリシー（試験運用版）",
     "doc_terms": "免責事項・利用規約（試験運用版）",
-    "doc_operator": "運営者情報",
+    "doc_operator": "お問い合わせ・試験運用について",
     "doc_consultation": "医薬品・健康相談窓口（公的情報）",
     "doc_app_overview": "アプリ概要（β版・限定公開）",
 }
