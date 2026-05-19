@@ -1123,10 +1123,10 @@ function showUserAttributesModal() {
         return;
     }
     
-    // 他のモーダルを閉じる
+    // 他のモーダルを閉じる（モバイルチャットは背面に残す）
     const allModals = document.querySelectorAll('.admin-modal, .modal');
     allModals.forEach(modal => {
-        if (modal.id !== 'userAttributesModal') {
+        if (modal.id !== 'userAttributesModal' && modal.id !== 'mobile-chat-modal') {
             modal.style.display = 'none';
             modal.classList.remove('show');
         }
@@ -1179,20 +1179,17 @@ function showUserAttributesModal() {
     modal.style.setProperty('height', '100%', 'important');
     modal.style.setProperty('background-color', 'rgba(0, 0, 0, 0.5)', 'important');
     modal.style.setProperty('backdrop-filter', 'blur(5px)', 'important');
-    modal.style.setProperty('align-items', 'center', 'important');
-    modal.style.setProperty('justify-content', 'center', 'important');
+    if (isMobile()) {
+        modal.style.setProperty('align-items', 'flex-end', 'important');
+        modal.style.setProperty('justify-content', 'flex-end', 'important');
+    } else {
+        modal.style.setProperty('align-items', 'center', 'important');
+        modal.style.setProperty('justify-content', 'center', 'important');
+    }
     
-    // モーダルコンテンツも確認し、スタイルを確実に設定
     const modalContent = modal.querySelector('.admin-modal-content');
     if (modalContent) {
-        console.log('✅ Modal content found:', modalContent);
-        // モーダルコンテンツのopacityを確実に1に設定
-        modalContent.style.setProperty('opacity', '1', 'important');
-        modalContent.style.setProperty('visibility', 'visible', 'important');
-        modalContent.style.setProperty('display', 'block', 'important');
-        console.log('✅ Modal content styles set');
-    } else {
-        console.warn('⚠️ Modal content not found!');
+        modalContent.removeAttribute('style');
     }
     
     // 少し待ってから表示状態を確認（レンダリングの完了を待つ）
@@ -1280,7 +1277,7 @@ function showUserAttributesModal() {
             modal.style.cssText = 'display: flex !important; position: fixed !important; z-index: 1051 !important; visibility: visible !important; opacity: 1 !important; left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important; background-color: rgba(0, 0, 0, 0.5) !important; backdrop-filter: blur(5px) !important; align-items: center !important; justify-content: center !important; margin: 0 !important; padding: 0 !important;';
             
             if (modalContent) {
-                modalContent.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: block !important; position: relative !important;';
+                modalContent.style.cssText = 'opacity: 1 !important; visibility: visible !important; display: flex !important; flex-direction: column !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important;';
             }
             
             // 再確認
@@ -1306,26 +1303,26 @@ function showUserAttributesModal() {
     loadUserAttributes(currentSessionId);
 }
 
+function restoreMobileChatModalAfterAttributesClose() {
+    if (!isMobile() || !currentSessionId) return;
+    const mobileChatModal = document.getElementById('mobile-chat-modal');
+    if (!mobileChatModal) return;
+    mobileChatModal.style.display = 'flex';
+    mobileChatModal.classList.add('show');
+}
+
 // ユーザー属性情報モーダルを閉じる
 function closeUserAttributesModal() {
-    console.log('🔴 closeUserAttributesModal called');
     const modal = document.getElementById('userAttributesModal');
     if (modal) {
-        console.log('🔴 Modal found, closing...');
-        console.log('🔴 Modal classes before close:', modal.className);
-        
-        // showクラスを削除
         modal.classList.remove('show');
-        
-        // displayをnoneに設定
         modal.style.display = 'none';
-        
-        console.log('✅ Modal classes after close:', modal.className);
-        console.log('✅ Modal computed display after close:', window.getComputedStyle(modal).display);
-        console.log('✅ Modal closed successfully');
-    } else {
-        console.error('❌ userAttributesModal element not found when closing');
+        const modalContent = modal.querySelector('.user-attributes-modal-content');
+        if (modalContent) {
+            modalContent.removeAttribute('style');
+        }
     }
+    restoreMobileChatModalAfterAttributesClose();
 }
 
 // グローバルスコープに明示的に割り当て（onclick属性から呼び出せるように）
@@ -4560,7 +4557,8 @@ function toggleMobileElements() {
         if (centerPanel) {
             centerPanel.style.display = 'flex';
             centerPanel.style.flexDirection = 'column';
-            centerPanel.style.height = 'calc(100vh - 50px)';
+            /* main が既に calc(100vh - 50px)。高さは flex:1（CSS）で残り領域に合わせる */
+            centerPanel.style.height = '';
             
             if (currentSessionId) {
                 // チャット画面を表示
@@ -4832,7 +4830,10 @@ function openMobileChatModal(sessionId, username) {
             formattedDate = lastActivity;
         }
     }
-    
+
+    const shortSessionId = sessionId && sessionId.length > 16
+        ? sessionId.substring(0, 12) + '…'
+        : sessionId;
     // モーダルを作成または取得
     let modal = document.getElementById('mobile-chat-modal');
     if (!modal) {
@@ -4846,32 +4847,22 @@ function openMobileChatModal(sessionId, username) {
     modal.innerHTML = `
         <div class="admin-modal-content mobile-chat-modal-content">
             <div class="mobile-chat-header">
-                <button class="mobile-chat-close-btn" onclick="closeMobileChatModal()" aria-label="閉じる">
-                    <i class="fa-solid fa-times"></i>
+                <button type="button" class="mobile-chat-close-btn" onclick="closeMobileChatModal()" aria-label="閉じる">
+                    <i class="fa-solid fa-times" aria-hidden="true"></i>
                 </button>
-                <div class="mobile-chat-title-wrapper">
-                    <span class="mobile-chat-title" id="mobile-chat-title">${escapeHtml(displayUsername)}</span>
-                    <div class="mobile-chat-details" id="mobile-chat-details">
-                        <div class="mobile-chat-detail-item">
-                            <span class="detail-label">ID:</span>
-                            <span class="detail-value">${escapeHtml(sessionId)}</span>
-                        </div>
-                        <div class="mobile-chat-detail-item">
-                            <span class="detail-label">更新日時:</span>
-                            <span class="detail-value">${escapeHtml(formattedDate)}</span>
-                        </div>
-                        <div class="mobile-chat-detail-item">
-                            <span class="detail-label">メッセージ数:</span>
-                            <span class="detail-value">${messageCount}件</span>
-                        </div>
-                        <div class="mobile-chat-detail-item full-width">
-                            <span class="detail-label">最新メッセージ:</span>
-                            <span class="detail-value">${escapeHtml(shortLastMessage)}</span>
-                        </div>
-                    </div>
+                <div class="mobile-chat-header-body" id="mobile-chat-details">
+                    <h2 class="mobile-chat-title" id="mobile-chat-title">${escapeHtml(displayUsername)}</h2>
+                    <dl class="mobile-chat-meta-list">
+                        <dt>件数・更新</dt>
+                        <dd>${escapeHtml(String(messageCount))}件 · ${escapeHtml(formattedDate)}</dd>
+                        <dt>セッションID</dt>
+                        <dd title="${escapeHtml(sessionId)}">${escapeHtml(shortSessionId)}</dd>
+                        <dt>最新メッセージ</dt>
+                        <dd class="mobile-chat-last-message">${escapeHtml(shortLastMessage)}</dd>
+                    </dl>
                 </div>
-                <button class="mobile-chat-attributes-btn" onclick="showUserAttributesModal()" id="mobile-chat-attributes-btn" aria-label="ユーザー属性">
-                    <i class="fa-solid fa-user-circle"></i>
+                <button type="button" class="mobile-chat-attributes-btn" onclick="showUserAttributesModal()" id="mobile-chat-attributes-btn" aria-label="ユーザー属性">
+                    <i class="fa-solid fa-user-circle" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="mobile-chat-messages" id="mobile-chat-messages"></div>
