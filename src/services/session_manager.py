@@ -529,7 +529,12 @@ def persist_session_from_chat_state(sid, session, request=None):
     ensure_session_persisted(sid, payload, request)
 
 
-def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=None):
+def cleanup_old_sessions(
+    force=False,
+    exclude_current_session=True,
+    current_sid=None,
+    skip_empty_sessions=False,
+):
     """
     古いセッションをクリーンアップ（メモリ最適化）
 
@@ -539,6 +544,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
         current_sid: 現在のセッションID（除外用、exclude_current_sessionがTrueの場合）。
             Webリクエストハンドラーから呼ぶ場合は、
             current_sid=session.get('_id') if has_request_context() else None を渡すこと。
+        skip_empty_sessions: True のときメッセージ0件セッションは削除しない
     """
     global _last_cleanup_time
     current_time = time.time()
@@ -560,6 +566,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
                 exclude_session_ids=exclude_session_ids if exclude_session_ids else None,
                 chat_end_timeout_seconds=CHAT_END_TIMEOUT,
                 empty_session_timeout_seconds=EMPTY_SESSION_TIMEOUT,
+                skip_empty_sessions=skip_empty_sessions,
             )
             if isinstance(deleted_count, int) and deleted_count > 0:
                 logger.info(f"🧹 セッションクリーンアップ完了: {deleted_count}件削除")
@@ -581,7 +588,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
         messages = session_info.get('messages') or []
         last_ts = _session_last_activity_ts(session_info)
         if not messages:
-            if current_time - last_ts > EMPTY_SESSION_TIMEOUT:
+            if not skip_empty_sessions and current_time - last_ts > EMPTY_SESSION_TIMEOUT:
                 sessions_to_remove.append(sid)
             continue
         if current_time - last_ts > SESSION_TIMEOUT:
@@ -623,3 +630,26 @@ def clear_sessions_fallback():
     """フォールバック用メモリのセッションをクリア（管理者用）"""
     global _all_sessions
     _all_sessions.clear()
+
+
+def delete_session_by_id(session_id: str) -> bool:
+    """DB とメモリの両方からセッションを削除（一覧 API と同じデータソース）。"""
+    if not session_id:
+        return False
+    deleted = False
+    db = get_database()
+    if db and db.is_available():
+        try:
+            if db.delete_session(session_id):
+                deleted = True
+        except Exception as e:
+            logger.warning("DB delete_session failed for %s: %s", session_id, e)
+    if session_id in _all_sessions:
+        del _all_sessions[session_id]
+        deleted = True
+    queue = get_manual_reply_queue()
+    filtered = [item for item in queue if str(item.get("session_id")) != str(session_id)]
+    if len(filtered) != len(queue):
+        set_manual_reply_queue(filtered)
+        deleted = True
+    return deleted

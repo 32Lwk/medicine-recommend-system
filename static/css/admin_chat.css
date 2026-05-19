@@ -559,12 +559,85 @@ main {
     opacity: 0.5;
 }
 
+.session-list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.session-list-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+}
+
+.session-list-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.session-list-action-btn {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-main);
+    cursor: pointer;
+    line-height: 1.3;
+}
+
+.session-list-action-btn:hover {
+    background: #f1f5f9;
+}
+
+.session-list-action-btn--active {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.session-list-action-btn--danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.session-list-action-btn--danger:hover {
+    background: #fef2f2;
+}
+
 .session-item {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     transition: var(--transition-base);
     position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.session-item--selectable {
+    cursor: default;
+}
+
+.session-select-cb {
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.session-item-body {
+    flex: 1;
+    min-width: 0;
 }
 
 .session-item:hover {

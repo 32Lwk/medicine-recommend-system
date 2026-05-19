@@ -53,6 +53,7 @@ from src.services.session_manager import (
     ensure_session_persisted,
     find_existing_session,
     purge_empty_sessions_on_startup,
+    delete_session_by_id,
     get_manual_reply_session_ids,
     get_cleanup_exclude_session_ids,
     save_session_to_db,
@@ -1191,7 +1192,12 @@ def api_main_sessions(
         return auth_err
     raw = request.query_params.get("meaningful_only", "1")
     meaningful_only = str(raw).strip().lower() not in ("0", "false", "no")
-    cleanup_old_sessions(force=False, exclude_current_session=False, current_sid=None)
+    cleanup_old_sessions(
+        force=False,
+        exclude_current_session=False,
+        current_sid=None,
+        skip_empty_sessions=not meaningful_only,
+    )
     return {"sessions": _list_admin_sessions(meaningful_only=meaningful_only)}
 
 
@@ -2080,7 +2086,12 @@ def api_admin_sessions(
     auth_err = _admin_json_guard(request, creds)
     if auth_err:
         return auth_err
-    cleanup_old_sessions(force=True, exclude_current_session=False, current_sid=None)
+    cleanup_old_sessions(
+        force=True,
+        exclude_current_session=False,
+        current_sid=None,
+        skip_empty_sessions=True,
+    )
     sessions_data = []
     all_sessions = get_all_sessions_from_db()
     for sess_id, info in all_sessions.items():
@@ -2120,13 +2131,17 @@ def api_admin_purge_empty_sessions(
 
 
 @app.delete("/api/admin/sessions/{session_id}")
-def api_admin_delete_session(session_id: str):
-    db = get_database()
-    if db and (db.connection or db.connection_pool):
-        if db.delete_session(session_id):
-            return {"status": "success", "message": "セッションを削除しました"}
-        return JSONResponse({"status": "error", "message": "セッションが見つかりませんでした"}, status_code=404)
-    return JSONResponse({"status": "error", "message": "データベース接続エラー"}, status_code=500)
+def api_admin_delete_session(
+    session_id: str,
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    if delete_session_by_id(session_id):
+        return {"status": "success", "message": "セッションを削除しました"}
+    return JSONResponse({"status": "error", "message": "セッションが見つかりませんでした"}, status_code=404)
 
 
 @app.delete("/api/admin/sessions/delete_all")
