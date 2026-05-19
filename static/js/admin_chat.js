@@ -13,6 +13,103 @@ console.log('📄 Script loaded successfully');
 
 let currentSessionId = null;
 let allSessions = [];
+let sessionListMeaningfulOnly = true;
+
+function showAdminToast(message, durationMs) {
+    const ms = durationMs || 6000;
+    let el = document.getElementById('admin-toast-banner');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'admin-toast-banner';
+        el.setAttribute('role', 'alert');
+        el.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2000;max-width:90%;padding:10px 16px;border-radius:8px;background:#c62828;color:#fff;font-size:0.9rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:none;';
+        document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.style.display = 'block';
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(function() {
+        el.style.display = 'none';
+    }, ms);
+}
+
+function buildMainSessionsUrl() {
+    return '/api/main_sessions?meaningful_only=' + (sessionListMeaningfulOnly ? '1' : '0');
+}
+
+function adminFetchOptions(extra) {
+    const opts = {
+        credentials: 'include',
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    };
+    if (extra) {
+        const extraHeaders = extra.headers;
+        Object.assign(opts, extra);
+        if (extraHeaders) {
+            opts.headers = Object.assign({}, opts.headers, extraHeaders);
+        }
+    }
+    return opts;
+}
+
+function adminFetchJson(url, extra) {
+    return fetch(url, adminFetchOptions(extra)).then(function(res) {
+        if (!checkAdminApiResponse(res)) {
+            return Promise.reject(new Error('Unauthorized'));
+        }
+        if (!res.ok) {
+            return res.json().catch(function() { return {}; }).then(function(data) {
+                throw new Error(data.error || ('HTTP ' + res.status));
+            });
+        }
+        return res.json();
+    });
+}
+
+function checkAdminApiResponse(response) {
+    if (response.status === 401) {
+        showAdminToast('管理者ログインが必要です。再度ログインしてください。');
+        return false;
+    }
+    return true;
+}
+
+function onSessionListFilterToggle() {
+    const el = document.getElementById('show-empty-sessions');
+    sessionListMeaningfulOnly = !(el && el.checked);
+    refreshSessionList();
+}
+
+function purgeEmptySessions() {
+    if (!confirm('メッセージのない空セッションを一括削除します。手動返信キュー内のセッションは除外されます。よろしいですか？')) {
+        return;
+    }
+    fetch('/api/admin/sessions/purge_empty', adminFetchOptions({ method: 'POST' }))
+        .then(function(res) {
+            if (!checkAdminApiResponse(res)) {
+                return null;
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            if (!data) {
+                return;
+            }
+            if (data.status === 'success') {
+                showAdminToast((data.message || '空セッションを削除しました'), 4000);
+                refreshSessionManagement();
+                refreshSessionList();
+            } else {
+                showAdminToast(data.message || '削除に失敗しました');
+            }
+        })
+        .catch(function() {
+            showAdminToast('空セッションの削除に失敗しました');
+        });
+}
 let currentDetailedDiagnosis = null; // 管理APIからの詳細診断（スコア内訳含む）
 let currentMessages = []; // 現在のセッションのメッセージ（診断情報のフォールバック用）
 let socket = null;
@@ -183,20 +280,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadInitialData() {
         // キューとセッション情報を一度に更新
         Promise.all([
-            fetch('/api/main_manual_reply_queue', {
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            }).then(res => res.json()),
-            fetch('/api/main_sessions', {
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
-                }
-            }).then(res => res.json())
+            adminFetchJson('/api/main_manual_reply_queue').catch(function() { return { error: true }; }),
+            adminFetchJson(buildMainSessionsUrl()).catch(function() { return { error: true }; })
         ])
         .then(([queueData, sessionsData]) => {
+            if (queueData && queueData.error) {
+                return;
+            }
+            if (sessionsData && sessionsData.error) {
+                return;
+            }
             console.log('✅ Initial data loaded successfully');
             renderQueue(queueData);
             updateStats(queueData);
@@ -498,28 +591,8 @@ document.addEventListener('click', function(event) {
 function manualRefresh() {
     // キューとセッション情報を一度に更新
     Promise.all([
-        fetch('/api/main_manual_reply_queue', {
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
-        }).then(res => {
-            if (!res.ok) {
-                throw new Error(`キュー取得エラー: ${res.status} ${res.statusText}`);
-            }
-            return res.json();
-        }),
-        fetch('/api/main_sessions', {
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
-        }).then(res => {
-            if (!res.ok) {
-                throw new Error(`セッション取得エラー: ${res.status} ${res.statusText}`);
-            }
-            return res.json();
-        })
+        adminFetchJson('/api/main_manual_reply_queue'),
+        adminFetchJson(buildMainSessionsUrl())
     ])
     .then(([queueData, sessionsData]) => {
         renderQueue(queueData);
@@ -622,20 +695,10 @@ function setAIMode(mode) {
     
     console.log('🔵 Sending request with normalizedMode:', normalizedMode);
     
-    fetch('/api/main_ai_control', {
+    adminFetchJson('/api/main_ai_control', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({mode: normalizedMode})
-    })
-    .then(res => {
-        if (!res.ok) {
-            return res.json().then(data => {
-                throw new Error(data.error || `HTTP error! status: ${res.status}`);
-            });
-        }
-        return res.json();
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: normalizedMode })
     })
     .then(data => {
         console.log('✅ setAIMode response:', data);
@@ -656,13 +719,7 @@ function setAIMode(mode) {
 }
 
 function refreshAIStatus() {
-    fetch('/api/main_ai_control', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-        .then(res => res.json())
+    adminFetchJson('/api/main_ai_control')
         .then(data => {
             const statusElement = document.getElementById('ai-status');
             const statusText = document.getElementById('status-text');
@@ -717,13 +774,7 @@ function refreshAIStatus() {
 }
 
 function refreshQueue() {
-    fetch('/api/main_manual_reply_queue', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-        .then(res => res.json())
+    adminFetchJson('/api/main_manual_reply_queue')
         .then(data => {
             renderQueue(data);
             updateStats(data);
@@ -733,17 +784,14 @@ function refreshQueue() {
             }, 100);
         })
         .catch(error => {
+            if (error && error.message === 'Unauthorized') {
+                return;
+            }
             showNotification('キュー取得エラー', 'error');
         });
     
     // 現在のセッション情報も取得（AI自動応答ONでも表示）
-    fetch('/api/main_sessions', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-        .then(res => res.json())
+    adminFetchJson(buildMainSessionsUrl())
         .then(data => {
             // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
             const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
@@ -1077,13 +1125,7 @@ function loadChatHistory(sessionId) {
         }
     }
     
-    fetch('/api/main_sessions', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-        .then(res => res.json())
+    adminFetchJson(buildMainSessionsUrl())
         .then(data => {
             console.log('All sessions data:', data);
             
@@ -2596,18 +2638,15 @@ window.sendReplyFromChat = function() {
     const sendBtn = document.getElementById('send-btn');
     sendBtn.disabled = true;
     
-    fetch('/api/main_manual_reply_queue', {
+    adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'reply',
             session_id: currentSessionId,
             reply_message: replyMessage
         })
     })
-    .then(res => res.json())
     .then(data => {
         typingIndicator.classList.remove('show');
         
@@ -2623,13 +2662,7 @@ window.sendReplyFromChat = function() {
             
             // 即座にチャット履歴を更新（1回のみ）
             setTimeout(() => {
-                fetch('/api/main_sessions', {
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                })
-                    .then(res => res.json())
+                adminFetchJson(buildMainSessionsUrl())
                     .then(sessionsData => {
                         console.log('Updated sessions data after reply:', sessionsData);
                         // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
@@ -2677,8 +2710,7 @@ function updateSendButtonState() {
 // サイドバーに全セッション一覧を表示
 function refreshSessionList() {
     console.log('Refreshing session list...');
-    fetch('/api/main_sessions')
-        .then(res => res.json())
+    adminFetchJson(buildMainSessionsUrl())
         .then(data => {
             console.log('Sessions data received:', data);
             // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
@@ -2775,6 +2807,54 @@ function stripHtml(html) {
     return tempDiv.textContent || tempDiv.innerText || '';
 }
 
+function getSessionMessageCount(session) {
+    if (!session) return 0;
+    if (typeof session.messages_count === 'number') return session.messages_count;
+    if (typeof session.message_count === 'number') return session.message_count;
+    return Array.isArray(session.messages) ? session.messages.length : 0;
+}
+
+function formatSessionListTime(value) {
+    if (value == null || value === '' || value === '不明') return null;
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString('ja-JP', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getSessionLastUpdateLabel(session) {
+    if (!session) return '不明';
+    const messages = session.messages;
+    if (Array.isArray(messages) && messages.length > 0) {
+        const lastMsg = messages[messages.length - 1];
+        const fromMsg = formatSessionListTime(lastMsg?.timestamp);
+        if (fromMsg) return fromMsg;
+    }
+    const activity = session.last_activity;
+    if (activity != null && activity !== '' && activity !== 0) {
+        const fromActivity = formatSessionListTime(
+            typeof activity === 'number' ? activity * 1000 : activity
+        );
+        if (fromActivity) return fromActivity;
+    }
+    return '不明';
+}
+
+function resolveSessionDisplayUsername(session, idx) {
+    const raw = (session?.username || '').trim();
+    if (raw && raw !== 'Unknown' && raw !== '不明なユーザー') {
+        return raw;
+    }
+    if (session?.session_id) {
+        return `ユーザー${session.session_id.slice(-4)}`;
+    }
+    return `ユーザー${idx + 1}`;
+}
+
 function renderSessionList(sessions) {
     const sidebar = document.getElementById('session-list');
     const sessionCount = document.getElementById('session-count');
@@ -2805,18 +2885,8 @@ function renderSessionList(sessions) {
     
     let html = '';
     sessions.forEach((session, idx) => {
-        // ユーザー名の取得を改善
-        let username = '不明なユーザー';
-        if (session.username && session.username.trim()) {
-            username = session.username;
-        } else if (session.session_id) {
-            // セッションIDからユーザー名を生成
-            username = `ユーザー${session.session_id.slice(-4)}`;
-        } else {
-            username = `ユーザー${idx + 1}`;
-        }
-        
-        const messageCount = session.messages_count || 0;
+        const username = resolveSessionDisplayUsername(session, idx);
+        const messageCount = getSessionMessageCount(session);
         const isSelected = currentSessionId === session.session_id;
         
         // 最後のメッセージを取得（HTMLタグを除去）
@@ -2834,28 +2904,7 @@ function renderSessionList(sessions) {
             }
         }
         
-        // 最終更新時刻を計算
-        let lastUpdate = '不明';
-        if (session.messages && session.messages.length > 0) {
-            const lastMsg = session.messages[session.messages.length - 1];
-            if (lastMsg.timestamp) {
-                const date = new Date(lastMsg.timestamp);
-                lastUpdate = date.toLocaleString('ja-JP', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } else {
-                // タイムスタンプがない場合は現在時刻を使用
-                lastUpdate = new Date().toLocaleString('ja-JP', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-        }
+        const lastUpdate = getSessionLastUpdateLabel(session);
         
         // 危機対応セッションかどうかをチェック
         const isCrisisSession = session.crisis_detected === true;
@@ -2948,15 +2997,11 @@ function openManualReply(messageIndex) {
 }
 
 function _postManualQueueAction(body, successMessage) {
-    return fetch('/api/main_manual_reply_queue', {
+    return adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
     })
-        .then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
         .then(function (data) {
             if (data.error || data.status === 'error') {
                 showNotification(data.message || data.error || '操作に失敗しました', 'error');
@@ -3012,22 +3057,14 @@ window.sendReplyFromQueue = function(sessionId, index, event) {
         replyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 送信中...';
     }
     
-    fetch('/api/main_manual_reply_queue', {
+    adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'reply',
             session_id: sessionId,
             reply_message: replyMessage
         })
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
     })
     .then(data => {
         if (replyBtn) {
@@ -3067,18 +3104,15 @@ function sendManualReply(replyMessage) {
     const typingIndicator = document.getElementById('typing-indicator');
     typingIndicator.classList.add('show');
     
-    fetch('/api/main_manual_reply_queue', {
+    adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'reply',
             session_id: currentSessionId,
             reply_message: replyMessage
         })
     })
-    .then(res => res.json())
     .then(data => {
         typingIndicator.classList.remove('show');
         
@@ -3913,9 +3947,17 @@ function refreshSessionManagement() {
     const listContainer = document.getElementById('session-management-list');
     listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">読み込み中...</div>';
     
-    fetch('/api/admin/sessions')
-        .then(response => response.json())
+    fetch('/api/admin/sessions', adminFetchOptions())
+        .then(function(response) {
+            if (!checkAdminApiResponse(response)) {
+                return null;
+            }
+            return response.json();
+        })
         .then(data => {
+            if (!data) {
+                return;
+            }
             if (data.sessions && data.sessions.length > 0) {
                 renderSessionManagementList(data.sessions);
             } else {
@@ -4760,9 +4802,9 @@ function renderMobileChatListInCenterPanel(sessions) {
         }
         
         const shortMessage = lastMessage.length > 50 ? lastMessage.substring(0, 50) + '...' : lastMessage;
-        const username = session.username || '匿名';
-        const timeStr = session.last_activity ? new Date(session.last_activity).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-        const messageCount = session.messages_count || session.messages?.length || 0;
+        const username = resolveSessionDisplayUsername(session, 0);
+        const timeStr = getSessionLastUpdateLabel(session);
+        const messageCount = getSessionMessageCount(session);
         
         html += `
             <div class="chat-card" onclick="openMobileChatModal('${session.session_id}', '${username.replace(/'/g, "\\'")}')" 
@@ -4796,11 +4838,10 @@ function openMobileChatModal(sessionId, username) {
     
     currentSessionId = sessionId;
     const session = allSessions.find(s => s.session_id === sessionId);
-    const displayUsername = username || session?.username || 'ユーザー';
+    const displayUsername = username || (session ? resolveSessionDisplayUsername(session, 0) : 'ユーザー');
     
     // セッションの詳細情報を取得
-    const messageCount = session ? (session.messages_count || session.messages?.length || 0) : 0;
-    const lastActivity = session ? (session.last_activity || '不明') : '不明';
+    const messageCount = getSessionMessageCount(session);
     const lastMessage = session && session.messages && session.messages.length > 0 
         ? session.messages[session.messages.length - 1].content || 'メッセージなし'
         : 'メッセージなし';
@@ -4814,22 +4855,7 @@ function openMobileChatModal(sessionId, username) {
     }
     const shortLastMessage = lastMessageText.length > 50 ? lastMessageText.substring(0, 50) + '...' : lastMessageText;
     
-    // 日時をフォーマット
-    let formattedDate = '不明';
-    if (lastActivity && lastActivity !== '不明') {
-        try {
-            const date = new Date(lastActivity);
-            formattedDate = date.toLocaleString('ja-JP', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch (e) {
-            formattedDate = lastActivity;
-        }
-    }
+    const formattedDate = session ? getSessionLastUpdateLabel(session) : '不明';
 
     const shortSessionId = sessionId && sessionId.length > 16
         ? sessionId.substring(0, 12) + '…'
@@ -4895,13 +4921,7 @@ function loadMobileChatHistory(sessionId) {
         </div>
     `;
     
-    fetch('/api/main_sessions', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-    .then(res => res.json())
+    adminFetchJson(buildMainSessionsUrl())
     .then(data => {
         const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
         const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
@@ -4960,22 +4980,14 @@ function sendMobileChatMessage() {
     
     input.value = '';
     
-    fetch('/api/main_manual_reply_queue', {
+    adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'reply',
             session_id: currentSessionId,
             reply_message: message
         })
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
     })
     .then(data => {
         if (sendBtn) {
@@ -5338,13 +5350,7 @@ function loadTabletChatHistory(sessionId) {
     `;
     
     // デスクトップと同じAPIを使用
-    fetch('/api/main_sessions', {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
-    .then(res => res.json())
+    adminFetchJson(buildMainSessionsUrl())
     .then(data => {
         const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
         const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
@@ -5416,18 +5422,15 @@ function sendTabletReply() {
     
     input.value = '';
     
-    fetch('/api/main_manual_reply_queue', {
+    adminFetchJson('/api/main_manual_reply_queue', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'reply',
             session_id: currentSessionId,
             reply_message: message
         })
     })
-    .then(res => res.json())
     .then(data => {
         if (sendBtn) {
             sendBtn.disabled = false;
