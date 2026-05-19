@@ -14,6 +14,8 @@ console.log('📄 Script loaded successfully');
 let currentSessionId = null;
 let allSessions = [];
 let sessionListMeaningfulOnly = true;
+let sessionListSelectMode = false;
+const selectedSidebarSessionIds = new Set();
 
 function showAdminToast(message, durationMs) {
     const ms = durationMs || 6000;
@@ -81,6 +83,102 @@ function onSessionListFilterToggle() {
     const el = document.getElementById('show-empty-sessions');
     sessionListMeaningfulOnly = !(el && el.checked);
     refreshSessionList();
+}
+
+function getFilteredSessions() {
+    const searchEl = document.getElementById('session-search');
+    const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+    if (!searchTerm) {
+        return allSessions;
+    }
+    return allSessions.filter(function(session) {
+        const username = (session.username || '').toLowerCase();
+        const sessionId = (session.session_id || '').toLowerCase();
+        return username.includes(searchTerm) || sessionId.includes(searchTerm);
+    });
+}
+
+function updateSessionListToolbar() {
+    const selectBtn = document.getElementById('session-list-select-btn');
+    const deleteBtn = document.getElementById('session-list-delete-selected-btn');
+    if (selectBtn) {
+        selectBtn.textContent = sessionListSelectMode ? '完了' : '選択';
+        selectBtn.classList.toggle('session-list-action-btn--active', sessionListSelectMode);
+    }
+    if (deleteBtn) {
+        const count = selectedSidebarSessionIds.size;
+        deleteBtn.style.display = sessionListSelectMode && count > 0 ? 'inline-flex' : 'none';
+        deleteBtn.textContent = count > 0 ? '削除 (' + count + ')' : '削除';
+    }
+}
+
+function toggleSessionListSelectMode() {
+    sessionListSelectMode = !sessionListSelectMode;
+    if (!sessionListSelectMode) {
+        selectedSidebarSessionIds.clear();
+    }
+    updateSessionListToolbar();
+    renderSessionList(getFilteredSessions());
+}
+
+function toggleSidebarSessionSelection(sessionId, checked) {
+    if (!sessionId) {
+        return;
+    }
+    if (checked) {
+        selectedSidebarSessionIds.add(sessionId);
+    } else {
+        selectedSidebarSessionIds.delete(sessionId);
+    }
+    updateSessionListToolbar();
+}
+
+function handleSessionItemClick(event, sessionId, username) {
+    if (sessionListSelectMode) {
+        event.preventDefault();
+        event.stopPropagation();
+        const cb = event.currentTarget && event.currentTarget.querySelector('.session-select-cb');
+        if (cb) {
+            cb.checked = !cb.checked;
+            toggleSidebarSessionSelection(sessionId, cb.checked);
+        }
+        return;
+    }
+    selectSession(event, sessionId, username);
+}
+
+function deleteSelectedSidebarSessions() {
+    const ids = Array.from(selectedSidebarSessionIds);
+    if (!ids.length) {
+        return;
+    }
+    if (!confirm(ids.length + '件のセッションを削除します。よろしいですか？')) {
+        return;
+    }
+    Promise.all(ids.map(function(sessionId) {
+        return fetch('/api/admin/sessions/' + encodeURIComponent(sessionId), adminFetchOptions({ method: 'DELETE' }))
+            .then(function(res) { return res.json().then(function(data) { return { sessionId: sessionId, ok: res.ok, data: data }; }); });
+    }))
+        .then(function(results) {
+            const failed = results.filter(function(r) { return !r.ok || (r.data && r.data.status !== 'success'); });
+            const deleted = results.length - failed.length;
+            if (deleted > 0) {
+                showAdminToast(deleted + '件のセッションを削除しました', 4000);
+            }
+            if (failed.length > 0) {
+                showAdminToast(failed.length + '件の削除に失敗しました');
+            }
+            selectedSidebarSessionIds.clear();
+            sessionListSelectMode = false;
+            updateSessionListToolbar();
+            if (currentSessionId && !allSessions.some(function(s) { return s.session_id === currentSessionId; })) {
+                currentSessionId = null;
+            }
+            refreshSessionList();
+        })
+        .catch(function() {
+            showAdminToast('セッションの削除に失敗しました');
+        });
 }
 
 function purgeEmptySessions() {
@@ -2729,7 +2827,8 @@ function refreshSessionList() {
                 });
             });
             
-            renderSessionList(allSessions);
+            renderSessionList(getFilteredSessions());
+            updateSessionListToolbar();
             
             // モバイルでcenter-panelにチャットカードを表示
             if (isMobile() && !currentSessionId) {
@@ -2777,13 +2876,7 @@ function refreshAdminProcessingBannerOnce(sessionId) {
 
 // セッション検索機能
 function filterSessions() {
-    const searchTerm = document.getElementById('session-search').value.toLowerCase();
-    const filteredSessions = allSessions.filter(session => {
-        const username = (session.username || '').toLowerCase();
-        const sessionId = (session.session_id || '').toLowerCase();
-        return username.includes(searchTerm) || sessionId.includes(searchTerm);
-    });
-    renderSessionList(filteredSessions);
+    renderSessionList(getFilteredSessions());
 }
 
 // セッション検索クリア
@@ -2873,7 +2966,10 @@ function renderSessionList(sessions) {
     }
     
     if (!Array.isArray(sessions) || sessions.length === 0) {
-        sidebar.innerHTML = '<div class="empty-state"><i class="fa-regular fa-users"></i><p>セッションがありません</p></div>';
+        const emptyHint = sessionListMeaningfulOnly
+            ? '会話のあるセッションがありません。「空セッションを含む」で全件表示できます。'
+            : 'セッションがありません';
+        sidebar.innerHTML = '<div class="empty-state"><i class="fa-regular fa-users"></i><p>' + escapeHtml(emptyHint) + '</p></div>';
         if (isMobile() && !currentSessionId) {
             const centerChatMessages = document.getElementById('chat-messages');
             if (centerChatMessages) {
@@ -2919,9 +3015,18 @@ function renderSessionList(sessions) {
         
         // 危機対応セッションの場合は特別なスタイルを適用
         const sessionClass = isCrisisSession ? 'session-item crisis' : (isSelected ? 'session-item active' : 'session-item');
+        const sid = String(session.session_id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeUsername = String(username).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const isChecked = selectedSidebarSessionIds.has(session.session_id);
+        const selectCheckbox = sessionListSelectMode
+            ? '<input type="checkbox" class="session-select-cb"' + (isChecked ? ' checked' : '') +
+              ' onclick="event.stopPropagation(); toggleSidebarSessionSelection(\'' + sid + '\', this.checked)">'
+            : '';
         
         html += `
-            <div class="${sessionClass}" onclick="selectSession(event, '${session.session_id}', '${username}')">
+            <div class="${sessionClass}${sessionListSelectMode ? ' session-item--selectable' : ''}" onclick="handleSessionItemClick(event, '${sid}', '${safeUsername}')">
+                ${selectCheckbox}
+                <div class="session-item-body">
                 <div class="session-meta">
                     <span class="session-time">${lastUpdate}</span>
                     <span style="background: ${isCrisisSession ? 'var(--danger)' : messageCountColor}; color: white; padding: 0.125rem 0.5rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600;">${messageCount}件</span>
@@ -2931,6 +3036,7 @@ function renderSessionList(sessions) {
                     ${escapeHtml(username)}
                 </div>
                 <div class="session-preview">${escapeHtml(lastMessage)}</div>
+                </div>
             </div>
         `;
     });
@@ -4021,14 +4127,21 @@ function deleteSession(sessionId) {
         return;
     }
     
-    fetch(`/api/admin/sessions/${sessionId}`, {
-        method: 'DELETE'
-    })
-        .then(response => response.json())
-        .then(data => {
+    fetch('/api/admin/sessions/' + encodeURIComponent(sessionId), adminFetchOptions({ method: 'DELETE' }))
+        .then(function(response) {
+            if (!checkAdminApiResponse(response)) {
+                return null;
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (!data) {
+                return;
+            }
             if (data.status === 'success') {
                 alert('✅ ' + data.message);
                 refreshSessionManagement();
+                refreshSessionList();
             } else {
                 alert('❌ エラー: ' + (data.message || '削除に失敗しました'));
             }

@@ -191,6 +191,61 @@ def test_main_sessions_with_admin(client):
     assert isinstance(j["sessions"], list)
 
 
+def test_main_sessions_meaningful_only_filter(client):
+    from unittest.mock import patch
+
+    _set_admin_cookie(client)
+    sessions = {
+        "empty-sid": {"messages": [], "username": "EmptyUser"},
+        "full-sid": {"messages": [{"type": "user", "content": "hi"}], "username": "FullUser"},
+    }
+    with patch("main.get_all_sessions_from_db", return_value=sessions), patch(
+        "main.get_manual_reply_session_ids", return_value=set()
+    ), patch("main.cleanup_old_sessions") as cleanup_mock:
+        r_filtered = client.get("/api/main_sessions?meaningful_only=1")
+        assert r_filtered.status_code == 200
+        ids_filtered = {s["session_id"] for s in r_filtered.json()["sessions"]}
+        assert ids_filtered == {"full-sid"}
+        cleanup_mock.assert_called_with(
+            force=False,
+            exclude_current_session=False,
+            current_sid=None,
+            skip_empty_sessions=False,
+        )
+
+        cleanup_mock.reset_mock()
+        r_all = client.get("/api/main_sessions?meaningful_only=0")
+        assert r_all.status_code == 200
+        ids_all = {s["session_id"] for s in r_all.json()["sessions"]}
+        assert ids_all == {"empty-sid", "full-sid"}
+        cleanup_mock.assert_called_with(
+            force=False,
+            exclude_current_session=False,
+            current_sid=None,
+            skip_empty_sessions=True,
+        )
+
+
+def test_admin_delete_session_memory_fallback(client):
+    from src.services.session_manager import delete_session_by_id, get_all_sessions_store
+
+    _set_admin_cookie(client)
+    store = get_all_sessions_store()
+    store["mem-only-sid"] = {"session_id": "mem-only-sid", "messages": [], "username": "MemUser"}
+    r = client.delete("/api/admin/sessions/mem-only-sid")
+    assert r.status_code == 200
+    assert r.json().get("status") == "success"
+    assert "mem-only-sid" not in store
+
+    r404 = client.delete("/api/admin/sessions/no-such-session-xyz")
+    assert r404.status_code == 404
+
+
+def test_admin_delete_session_requires_admin(client):
+    r = client.delete("/api/admin/sessions/any-sid")
+    assert r.status_code == 401
+
+
 def test_admin_mode_post(client):
     r = client.post("/api/admin_mode")
     assert r.status_code == 200

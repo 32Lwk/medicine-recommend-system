@@ -775,34 +775,6 @@ class DatabaseManager:
                 self.put_connection(conn)
             return None
     
-    def delete_session(self, session_id):
-        """セッションをデータベースから削除"""
-        conn = self.get_connection()
-        if not conn:
-            return False
-        
-        try:
-            cursor = conn.cursor()
-            
-            delete_sql = """
-            DELETE FROM sessions WHERE session_id = %s;
-            """
-            
-            cursor.execute(delete_sql, (session_id,))
-            conn.commit()
-            cursor.close()
-            self.put_connection(conn)
-            
-            logger.info(f"✅ Session {session_id} deleted")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Failed to delete session: {str(e)}")
-            if conn:
-                conn.rollback()
-                self.put_connection(conn)
-            return False
-    
     def _empty_messages_sql(self) -> str:
         """messages が空の行を判定する SQL 断片。"""
         return (
@@ -850,6 +822,7 @@ class DatabaseManager:
         exclude_session_ids=None,
         chat_end_timeout_seconds=None,
         empty_session_timeout_seconds=None,
+        skip_empty_sessions=False,
     ):
         """期限切れセッションを削除
         
@@ -858,6 +831,7 @@ class DatabaseManager:
             exclude_session_ids: 削除から除外するセッションIDのリスト（アクティブなセッション）
             chat_end_timeout_seconds: チャット終了後の削除タイムアウト（秒）。Noneの場合は通常のタイムアウトを使用
             empty_session_timeout_seconds: メッセージ0件セッションの削除タイムアウト（秒）
+            skip_empty_sessions: True のときメッセージ0件セッションは削除しない（管理画面の一覧表示用）
         """
         conn = self.get_connection()
         if not conn:
@@ -877,9 +851,12 @@ class DatabaseManager:
                     OR
                     (COALESCE(session_active, true) = true AND last_activity < NOW() - INTERVAL '{int(timeout_seconds)} seconds')
                 )
+            """
+            if not skip_empty_sessions:
+                expire_clause += f"""
                 OR
                 ({empty_cond} AND last_activity < NOW() - INTERVAL '{empty_timeout} seconds')
-            """
+                """
 
             if exclude_list:
                 placeholders = ','.join(['%s'] * len(exclude_list))
