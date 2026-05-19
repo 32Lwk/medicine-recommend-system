@@ -1,8 +1,22 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月17日**（ルーティング刷新・ConfidenceGate・メタ LLM トリアージ）
+**最終更新日: 2026年5月19日**（セッション増殖対策・管理 API 認証）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年5月19日 — セッション増殖対策・管理画面整理
+
+### 概要
+
+- **遅延 persist**: `GET /api/sessions` では DB 行を作成しない。初回メッセージ・属性保存・restore 等の意味あるイベントでのみ `ensure_session_persisted`。
+- **アクティビティ維持**: `PATCH /api/sessions/activity`（DB 行がある場合のみ `last_activity` 更新）。フロントの 2 分ポーリングを GET から PATCH に変更。
+- **クリーンアップ**: 起動時に空セッション一括 purge。30 分経過の空セッションを定期削除。手動返信キュー・`crisis_detected` は除外。
+- **管理 API 認証**: `/api/main_sessions`・`/api/main_manual_reply_queue`・`/api/main_ai_control`・`/api/admin/sessions` に管理者認証を必須化。`get_sid` を除去。
+- **管理 UI**: 左ペインはデフォルトで会話ありのみ（`meaningful_only`）。空セッション表示トグル・空一括削除ボタン。401 時はトースト表示。
+- **利用者 Cookie**: `sid` に 7 日 `max_age`。`localStorage` に sid フォールバック（共有端末では新規セッション推奨）。
+- **セッション再利用**: 同一 IP+UA・30 分以内の既存会話ありセッションへ Cookie を再設定。
 
 ---
 

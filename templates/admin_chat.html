@@ -151,8 +151,12 @@
 
                 <div class="search-box">
                     <input type="text" class="search-input" id="session-search" placeholder="ユーザー名で検索..." onkeyup="filterSessions()">
+                    <label class="session-list-filter" style="display:flex;align-items:center;gap:0.35rem;margin-top:0.5rem;font-size:0.8rem;color:var(--text-sub);cursor:pointer;">
+                        <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
+                        空セッションを表示
+                    </label>
                 </div>
-                <div class="session-list" id="session-list">
+                <div class="session-list app-scrollbar" id="session-list">
                     <div class="empty-state">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         <p>セッションを読み込み中...</p>
@@ -403,6 +407,7 @@
             <!-- 操作ボタン -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button class="btn btn-info" onclick="refreshSessionManagement()" style="padding: 8px 16px; font-size: 0.9em;">🔄 更新</button>
+                <button class="btn btn-warning" onclick="purgeEmptySessions()" style="padding: 8px 16px; font-size: 0.9em;">🧹 空セッション削除</button>
                 <button class="btn btn-danger" onclick="deleteAllSessions()" style="padding: 8px 16px; font-size: 0.9em;">🗑️ 全削除</button>
                 <input type="text" id="session-search-input" placeholder="🔍 セッションID/ユーザー名で検索" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;" onkeyup="filterSessionManagement()">
             </div>

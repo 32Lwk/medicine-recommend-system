@@ -16,6 +16,7 @@ from src.services.session_manager import (
     get_manual_reply_queue,
     set_manual_reply_queue,
     get_manual_reply_message,
+    ensure_session_persisted,
     get_session_from_db,
     save_session_to_db,
     append_user_message,
@@ -149,6 +150,20 @@ def handle_manual_reply_when_off(
             queue.append(pending_message)
             set_manual_reply_queue(queue)
             logger.info(f"📋 手動返信キューに追加: セッションID {sid_for_queue}")
+            msgs = session.get("messages") or []
+            if sid_for_queue and sid_for_queue != "unknown" and msgs:
+                ensure_session_persisted(
+                    sid_for_queue,
+                    {
+                        "messages": msgs,
+                        "user_attributes": session.get("user_attributes", {}),
+                        "username": session.get("username"),
+                        "session_active": True,
+                        "client_ip": client.client_ip,
+                        "user_agent": client.user_agent,
+                    },
+                    None,
+                )
         add_network_log(
             "POST",
             "メインサイト - 手動返信待ち",

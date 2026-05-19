@@ -25,3 +25,6 @@ CHAT_END_TIMEOUT = _get_int('CHAT_END_TIMEOUT_SEC', 300)  # チャット終了�
 # クリーンアップ関連
 CLEANUP_INTERVAL = _get_int('CLEANUP_INTERVAL_SEC', 60)  # クリーンアップ実行間隔（秒）- 1分ごと
 MAX_CLEANUP_DELAY = _get_int('MAX_CLEANUP_DELAY_SEC', 300)  # 高負荷時のクリーンアップ遅延（秒）- 5分
+EMPTY_SESSION_TIMEOUT = _get_int('EMPTY_SESSION_TIMEOUT_SEC', 1800)  # メッセージ0件セッションの削除（秒）- 30分
+SESSION_REUSE_WINDOW = _get_int('SESSION_REUSE_WINDOW_SEC', 1800)  # 同一IP+UAのセッション再利用窓（秒）
+SESSION_COOKIE_MAX_AGE = _get_int('SESSION_COOKIE_MAX_AGE_SEC', 604800)  # 利用者 sid Cookie（秒）- 7日

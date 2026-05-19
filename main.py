@@ -29,6 +29,7 @@ from config.app_config import (
     is_development_runtime,
     load_env,
 )
+from config.settings import SESSION_COOKIE_MAX_AGE
 from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
@@ -49,6 +50,11 @@ from src.services.session_manager import (
     merge_session_messages,
     normalize_session_messages,
     persist_session_from_chat_state,
+    ensure_session_persisted,
+    find_existing_session,
+    purge_empty_sessions_on_startup,
+    get_manual_reply_session_ids,
+    get_cleanup_exclude_session_ids,
     save_session_to_db,
     set_admin_mode,
     set_ai_auto_reply,
@@ -82,7 +88,8 @@ def _compute_cookie_settings() -> dict:
         "secure": bool(cfg.get("SESSION_COOKIE_SECURE", False)),
         "samesite": cfg.get("SESSION_COOKIE_SAMESITE", "lax"),
         "httponly": bool(cfg.get("SESSION_COOKIE_HTTPONLY", False)),
-        # domain/path/max_age are left as defaults (domain None, path '/')
+        "max_age": SESSION_COOKIE_MAX_AGE,
+        "path": "/",
     }
 
 
@@ -282,6 +289,12 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
 def _startup():
     try:
         init_database()
+        try:
+            purged = purge_empty_sessions_on_startup()
+            if purged:
+                logger.info("Startup empty-session purge: removed %s rows", purged)
+        except Exception as purge_err:
+            logger.warning("Startup empty-session purge skipped: %s", purge_err)
     except Exception as e:
         logger.warning(f"⚠️ Database startup unexpected error: {e}. Feedback features will be disabled.")
 
@@ -667,19 +680,7 @@ async def new_session(request: Request, response: Response):
     response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
     username = f"ユーザー{get_next_user_number()}"
 
-    session_data = {
-        "session_id": sid,
-        "username": username,
-        "messages": [],
-        "last_activity": datetime.now(),
-        "client_ip": request.client.host if request.client else "",
-        "user_agent": request.headers.get("User-Agent", ""),
-        "user_attributes": {},
-        "session_active": True,
-    }
-    save_session_to_db(sid, session_data)
-
-    return {"message": "新しいセッションを開始しました", "username": username}
+    return {"message": "新しいセッションを開始しました", "username": username, "session_id": sid}
 
 
 @app.post("/test/new_session")
@@ -731,33 +732,33 @@ def api_processing_status_get(
     return get_processing_status(target_sid)
 
 
+def _resolve_user_session_id(request: Request, response: Response, sid: str) -> str:
+    """Cookie sid を確定。DB に会話ありの既存行があれば同一訪問者に再利用。"""
+    client_ip = request.client.host if request.client else ""
+    user_agent = request.headers.get("User-Agent", "") or ""
+    existing = find_existing_session(client_ip, user_agent)
+    if existing and existing != sid:
+        sid = existing
+        response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
+    return sid
+
+
 @app.get("/api/sessions")
 async def api_sessions_get(
     request: Request,
     response: Response,
     sid: str = Depends(get_sid),
 ):
-    # 互換: DBが無ければフォールバックもあるが、ここでは session_manager に委譲。
-    # まずDBから取得、無ければ最小レコードを作成
+    sid = _resolve_user_session_id(request, response, sid)
     session_data = get_session_from_db(sid)
-    if not session_data:
-        session_data = {
-            "session_id": sid,
-            "username": f"ユーザー{get_next_user_number()}",
-            "messages": [],
-            "session_active": True,
-            "last_activity": datetime.now(),
-            "client_ip": request.client.host if request.client else "",
-            "user_agent": request.headers.get("User-Agent", ""),
-            "user_attributes": {},
-        }
-        save_session_to_db(sid, session_data)
-    else:
+    if session_data:
         session_data["last_activity"] = datetime.now()
         maybe_persist_session_activity(sid, session_data)
+        messages = normalize_session_messages(session_data.get("messages", []) or [])
+    else:
+        messages = []
 
-    messages = normalize_session_messages(session_data.get("messages", []) or [])
-    user_attributes = session_data.get("user_attributes", {}) or {}
+    user_attributes = (session_data or {}).get("user_attributes", {}) or {}
 
     latest_usage_notes = None
     for msg in reversed(messages):
@@ -777,11 +778,25 @@ async def api_sessions_get(
         "messages": messages,
         "user_attributes": user_attributes,
         "latest_usage_notes": latest_usage_notes,
-        "medical_emergency_otc_locked": bool(session_data.get("medical_emergency_otc_locked")),
-        "otc_lock_released": bool(session_data.get("otc_lock_released")),
-        "store_incident_soft_banner": bool(session_data.get("store_incident_soft_banner")),
-        "emergency_subtype": session_data.get("emergency_subtype"),
+        "medical_emergency_otc_locked": bool((session_data or {}).get("medical_emergency_otc_locked")),
+        "otc_lock_released": bool((session_data or {}).get("otc_lock_released")),
+        "store_incident_soft_banner": bool((session_data or {}).get("store_incident_soft_banner")),
+        "emergency_subtype": (session_data or {}).get("emergency_subtype"),
     }
+
+
+@app.patch("/api/sessions/activity")
+async def api_sessions_activity(
+    request: Request,
+    sid: str = Depends(get_sid),
+):
+    """DB 行がある場合のみ last_activity を更新（空セッションは作成しない）。"""
+    session_data = get_session_from_db(sid)
+    if not session_data:
+        return Response(status_code=204)
+    session_data["last_activity"] = datetime.now()
+    maybe_persist_session_activity(sid, session_data)
+    return {"status": "ok", "session_id": sid}
 
 
 @app.post("/api/chat/otc_unlock")
@@ -836,18 +851,11 @@ async def api_sessions_restore(
     if not isinstance(client_messages, list):
         return JSONResponse({"error": "messages must be a list"}, status_code=400)
 
-    session_data = get_session_from_db(sid)
-    if not session_data:
-        session_data = {
-            "session_id": sid,
-            "username": f"ユーザー{get_next_user_number()}",
-            "messages": [],
-            "session_active": True,
-            "last_activity": datetime.now(),
-            "client_ip": request.client.host if request.client else "",
-            "user_agent": request.headers.get("User-Agent", ""),
-            "user_attributes": {},
-        }
+    session_data = get_session_from_db(sid) or {
+        "session_id": sid,
+        "messages": [],
+        "user_attributes": {},
+    }
 
     server_messages = session_data.get("messages") or []
     if server_messages:
@@ -860,10 +868,25 @@ async def api_sessions_restore(
         }
 
     merged = merge_session_messages([], client_messages)
+    if not merged:
+        return {
+            "status": "ok",
+            "session_id": sid,
+            "messages_count": 0,
+            "restored": False,
+            "messages": [],
+        }
+    ensure_session_persisted(
+        sid,
+        {
+            "messages": merged,
+            "session_active": True,
+            "user_attributes": session_data.get("user_attributes") or {},
+        },
+        request,
+    )
+    session_data = get_session_from_db(sid) or session_data
     session_data["messages"] = merged
-    session_data["last_activity"] = datetime.now()
-    session_data["session_active"] = True
-    save_session_to_db(sid, session_data)
 
     return {
         "status": "ok",
@@ -884,19 +907,16 @@ async def api_sessions_post(
     if err:
         return err
     user_attributes = data.get("user_attributes", {}) if isinstance(data, dict) else {}
-    session_data = get_session_from_db(sid) or {
-        "session_id": sid,
-        "username": f"ユーザー{get_next_user_number()}",
-        "messages": [],
-        "session_active": True,
-        "last_activity": datetime.now(),
-        "client_ip": request.client.host if request.client else "",
-        "user_agent": request.headers.get("User-Agent", ""),
-        "user_attributes": {},
-    }
-    session_data["user_attributes"] = user_attributes
-    session_data["last_activity"] = datetime.now()
-    save_session_to_db(sid, session_data)
+    existing = get_session_from_db(sid) or {}
+    ensure_session_persisted(
+        sid,
+        {
+            "user_attributes": user_attributes,
+            "messages": existing.get("messages") or [],
+            "session_active": True,
+        },
+        request,
+    )
     return {"status": "ok", "message": "ユーザー情報を保存しました"}
 
 @app.post("/api/submit_feedback")
@@ -1028,6 +1048,10 @@ def delete_feedback(feedback_id: int):
     return JSONResponse({"error": "Database not available"}, status_code=500)
 
 
+def _admin_unauthorized_response():
+    return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+
 def _require_admin(
     request: Request,
     credentials: HTTPBasicCredentials | None = None,
@@ -1041,6 +1065,15 @@ def _require_admin(
     if credentials and credentials_match(credentials.username, credentials.password):
         return True
     return verify_admin_token(request.cookies.get(ADMIN_COOKIE_NAME))
+
+
+def _admin_json_guard(
+    request: Request,
+    creds: HTTPBasicCredentials | None = None,
+):
+    if not _require_admin(request, creds):
+        return _admin_unauthorized_response()
+    return None
 
 
 def _set_admin_cookie(response: Response) -> None:
@@ -1104,42 +1137,73 @@ def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(se
     return templates.TemplateResponse(request, "admin_chat.html", {})
 
 
-@app.get("/api/main_sessions")
-def api_main_sessions(sid: str = Depends(get_sid)):
-    # 互換のため force cleanup は省略（セッションDB正）
+def _session_row_for_admin(sess_id, info):
+    detailed_diag = None
+    if isinstance(info, dict):
+        detailed_diag = info.get("detailed_diagnosis")
+    if not detailed_diag:
+        detailed_diag = get_admin_sessions().get(sess_id, {}).get("detailed_diagnosis")
+    if isinstance(detailed_diag, dict) and "session_id" not in detailed_diag:
+        try:
+            detailed_diag = dict(detailed_diag)
+            detailed_diag["session_id"] = sess_id
+        except Exception:
+            pass
+    if not isinstance(info, dict):
+        info = {}
+    msg_count = len(info.get("messages", []) or [])
+    return {
+        "session_id": sess_id,
+        "username": info.get("username", "Unknown"),
+        "messages": info.get("messages", []),
+        "last_activity": info.get("last_activity", 0),
+        "message_count": msg_count,
+        "messages_count": msg_count,
+        "user_info": info.get("user_attributes", {}),
+        "attributes": info.get("user_attributes", {}),
+        "detailed_diagnosis": detailed_diag,
+        "crisis_detected": bool(info.get("crisis_detected")),
+    }
+
+
+def _list_admin_sessions(meaningful_only: bool = True):
+    queue_ids = get_manual_reply_session_ids()
     all_sessions = get_all_sessions_from_db()
     sessions_list = []
     for sess_id, info in all_sessions.items():
-        detailed_diag = None
-        if isinstance(info, dict):
-            detailed_diag = info.get("detailed_diagnosis")
-        if not detailed_diag:
-            detailed_diag = get_admin_sessions().get(sess_id, {}).get("detailed_diagnosis")
-        if isinstance(detailed_diag, dict) and "session_id" not in detailed_diag:
-            try:
-                detailed_diag = dict(detailed_diag)
-                detailed_diag["session_id"] = sess_id
-            except Exception:
-                pass
-        if not isinstance(info, dict):
-            info = {}
-        sessions_list.append(
-            {
-                "session_id": sess_id,
-                "username": info.get("username", "Unknown"),
-                "messages": info.get("messages", []),
-                "last_activity": info.get("last_activity", 0),
-                "message_count": len(info.get("messages", []) or []),
-                "user_info": info.get("user_attributes", {}),
-                "attributes": info.get("user_attributes", {}),
-                "detailed_diagnosis": detailed_diag,
-            }
-        )
-    return {"sessions": sessions_list}
+        row = _session_row_for_admin(sess_id, info)
+        if meaningful_only:
+            has_messages = row["message_count"] > 0
+            in_queue = str(sess_id) in queue_ids
+            if not has_messages and not in_queue:
+                continue
+        sessions_list.append(row)
+    return sessions_list
+
+
+@app.get("/api/main_sessions")
+def api_main_sessions(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    raw = request.query_params.get("meaningful_only", "1")
+    meaningful_only = str(raw).strip().lower() not in ("0", "false", "no")
+    cleanup_old_sessions(force=False, exclude_current_session=False, current_sid=None)
+    return {"sessions": _list_admin_sessions(meaningful_only=meaningful_only)}
 
 
 @app.get("/api/main_manual_reply_queue")
-def api_main_manual_reply_queue(priority_tag: str | None = None):
+def api_main_manual_reply_queue(
+    request: Request,
+    priority_tag: str | None = None,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
     from src.utils.admin_snippet import truncate_user_text
 
     queue = get_manual_reply_queue()
@@ -1156,7 +1220,13 @@ def api_main_manual_reply_queue(priority_tag: str | None = None):
 
 
 @app.post("/api/main_manual_reply_queue")
-async def api_main_manual_reply_queue_post(request: Request):
+async def api_main_manual_reply_queue_post(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1232,7 +1302,13 @@ async def api_main_manual_reply_queue_post(request: Request):
 
 
 @app.get("/api/main_ai_control")
-def api_main_ai_control():
+def api_main_ai_control(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
     return {
         "ai_auto_reply": get_ai_auto_reply(),
         "admin_mode": get_admin_mode(),
@@ -1241,7 +1317,13 @@ def api_main_ai_control():
 
 
 @app.post("/api/main_ai_control")
-async def api_main_ai_control_post(request: Request):
+async def api_main_ai_control_post(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1991,8 +2073,14 @@ def clear_logs():
 
 
 @app.get("/api/admin/sessions")
-def api_admin_sessions(request: Request, sid: str = Depends(get_sid)):
-    cleanup_old_sessions(force=True, exclude_current_session=True, current_sid=sid)
+def api_admin_sessions(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    cleanup_old_sessions(force=True, exclude_current_session=False, current_sid=None)
     sessions_data = []
     all_sessions = get_all_sessions_from_db()
     for sess_id, info in all_sessions.items():
@@ -2009,9 +2097,26 @@ def api_admin_sessions(request: Request, sid: str = Depends(get_sid)):
                 "user_agent": str(info.get("user_agent", "")),
                 "user_attributes": dict(info.get("user_attributes", {}) or {}),
                 "detailed_diagnosis": info.get("detailed_diagnosis"),
+                "message_count": len(info.get("messages", []) or []),
             }
         )
     return {"sessions": sessions_data, "admin_mode": bool(get_admin_mode()), "ai_auto_reply": bool(get_ai_auto_reply())}
+
+
+@app.post("/api/admin/sessions/purge_empty")
+def api_admin_purge_empty_sessions(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    db = get_database()
+    if not db or not (db.connection or db.connection_pool):
+        return JSONResponse({"status": "error", "message": "データベース接続エラー"}, status_code=500)
+    exclude = get_cleanup_exclude_session_ids()
+    deleted = db.purge_all_empty_sessions(exclude_session_ids=exclude)
+    return {"status": "success", "deleted_count": deleted, "message": f"{deleted}件の空セッションを削除しました"}
 
 
 @app.delete("/api/admin/sessions/{session_id}")
