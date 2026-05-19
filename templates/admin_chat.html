@@ -20,7 +20,7 @@
                     <i class="fa-solid fa-staff-snake"></i>
                     <span>医薬品相談管理画面</span>
         </div>
-                <div class="header-system-controls">
+                <div class="header-system-controls app-scrollbar">
                     <button class="header-control-btn" id="aiControlBtn" onclick="showModal('aiControlModal')" title="AI管理">
                         <i class="fa-solid fa-robot"></i>
                         <span>AI管理</span>
@@ -52,8 +52,8 @@
             </div>
         </div>
             <div class="header-controls">
-                <div id="ai-status-badge" class="status-badge">
-                    <i class="fa-solid fa-robot"></i>
+                <div id="ai-status-badge" class="status-badge" aria-label="AI状態確認中" title="AI状態確認中">
+                    <i class="fa-solid fa-robot" aria-hidden="true"></i>
                     <span id="ai-status-text">AI状態確認中...</span>
                         </div>
                 <button class="action-btn" onclick="manualRefresh()" title="データ更新">
@@ -232,8 +232,8 @@
                         <i class="fa-solid fa-chevron-down accordion-icon" id="ai-management-accordion-icon"></i>
                     </div>
                     <div class="accordion-content" id="ai-management-accordion">
-                        <div class="info-section" style="padding: var(--spacing-md);">
-                            <div id="ai-status-info" style="margin-bottom: 1rem;">
+                        <div class="info-section ai-management-body">
+                            <div id="ai-status-info">
                                 <div class="info-label">現在の状態</div>
                                 <div class="info-value" id="status-text">状態確認中...</div>
                             </div>
@@ -288,7 +288,7 @@
                     </div>
                     <div id="manual-reply-queue" class="app-scrollbar" style="flex: 1; overflow-y: auto; min-height: 200px; height: 0; margin: 0; padding: 0;">
                         <div class="empty-state">
-                            <i class="fa-regular fa-inbox"></i>
+                            <i class="fa-solid fa-inbox"></i>
                             <p>手動返信待ちなし</p>
                         </div>
                     </div>
