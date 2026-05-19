@@ -1058,7 +1058,8 @@
         }
 
         function refreshMainSessions() {
-            fetch('/api/main_sessions')
+            // 本番では管理者ログイン必須。ローカル debug は admin Cookie または Basic 認証が必要。
+            fetch('/api/main_sessions', { credentials: 'include' })
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`HTTP ${res.status}: ${res.statusText}`);

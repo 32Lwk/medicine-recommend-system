@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from src.services.session_manager import (
     append_user_message,
+    ensure_session_persisted,
     get_session_from_db,
     save_session_to_db,
     was_last_user_message,
@@ -96,28 +97,12 @@ def sync_messages_to_db_for_admin(
     """管理画面表示用に DB へユーザーメッセージを即時反映"""
     if not sid:
         return
-    session_data = get_session_from_db(sid)
-    if not session_data:
-        save_session_to_db(
-            sid,
-            {
-                "session_id": sid,
-                "username": session.get("username", "Unknown"),
-                "messages": session.get("messages", []).copy(),
-                "last_activity": datetime.now(),
-                "client_ip": client_info.client_ip,
-                "user_agent": client_info.user_agent,
-                "user_attributes": session.get("user_attributes", {}),
-                "session_active": True,
-            },
-        )
-        return
-
     if session.get("is_medicine_consultation", False):
         logger.info("📝 医薬品相談回答処理中のため、DB即時反映を完全にスキップ")
         return
 
-    existing_messages = session_data.get("messages", [])
+    session_data = get_session_from_db(sid) or {}
+    existing_messages = list(session_data.get("messages", []))
     new_user_messages = [m for m in session.get("messages", []) if m.get("type") == "user"]
     for new_msg in new_user_messages:
         if not any(
@@ -127,9 +112,20 @@ def sync_messages_to_db_for_admin(
             for ex in existing_messages
         ):
             existing_messages.append(new_msg)
-    session_data["messages"] = existing_messages
-    session_data["last_activity"] = datetime.now()
-    save_session_to_db(sid, session_data)
+    if not existing_messages:
+        return
+    ensure_session_persisted(
+        sid,
+        {
+            "messages": existing_messages,
+            "user_attributes": session.get("user_attributes", session_data.get("user_attributes", {})),
+            "username": session.get("username") or session_data.get("username"),
+            "session_active": True,
+            "client_ip": getattr(client_info, "client_ip", None),
+            "user_agent": getattr(client_info, "user_agent", None),
+        },
+        None,
+    )
 
 
 def apply_emotional_keyword_routing(

@@ -158,11 +158,37 @@ def test_ai_control_get_json(client):
     assert "ai_auto_reply" in j
 
 
+def _set_admin_cookie(client):
+    from src.services.admin_auth import ADMIN_COOKIE_NAME, create_admin_token
+
+    client.cookies.set(ADMIN_COOKIE_NAME, create_admin_token())
+
+
+def test_main_ai_control_requires_admin(client):
+    r = client.get("/api/main_ai_control")
+    assert r.status_code == 401
+
+
 def test_main_ai_control_get_json(client):
+    _set_admin_cookie(client)
     r = client.get("/api/main_ai_control")
     assert r.status_code == 200
     j = r.json()
     assert "ai_auto_reply" in j and "admin_mode" in j
+
+
+def test_main_sessions_requires_admin(client):
+    r = client.get("/api/main_sessions")
+    assert r.status_code == 401
+
+
+def test_main_sessions_with_admin(client):
+    _set_admin_cookie(client)
+    r = client.get("/api/main_sessions")
+    assert r.status_code == 200
+    j = r.json()
+    assert "sessions" in j
+    assert isinstance(j["sessions"], list)
 
 
 def test_admin_mode_post(client):
@@ -223,6 +249,7 @@ def test_admin_access_stats_json(client):
 
 
 def test_api_admin_sessions_list(client):
+    _set_admin_cookie(client)
     r = client.get("/api/admin/sessions")
     assert r.status_code == 200
     j = r.json()

@@ -13,6 +13,8 @@ from config.settings import (
     CLEANUP_INTERVAL,
     MAX_CLEANUP_DELAY,
     MAX_SESSIONS,
+    EMPTY_SESSION_TIMEOUT,
+    SESSION_REUSE_WINDOW,
 )
 
 logger = logging.getLogger(__name__)
@@ -261,26 +263,106 @@ def get_next_user_number():
     return next_number
 
 
+def _session_last_activity_ts(info) -> float:
+    last_activity = info.get('last_activity')
+    if isinstance(last_activity, datetime):
+        return last_activity.timestamp()
+    if isinstance(last_activity, str):
+        try:
+            return datetime.fromisoformat(
+                last_activity.replace('Z', '+00:00')
+            ).timestamp()
+        except Exception:
+            return 0.0
+    if isinstance(last_activity, (int, float)):
+        return float(last_activity)
+    return 0.0
+
+
+def get_manual_reply_session_ids():
+    """手動返信キューに載っている session_id の集合。"""
+    ids = set()
+    for item in get_manual_reply_queue():
+        sid = item.get('session_id')
+        if sid:
+            ids.add(str(sid))
+    return ids
+
+
+def get_cleanup_exclude_session_ids(extra_ids=None):
+    """クリーンアップ・purge から除外する session_id 一覧。"""
+    exclude = set(get_manual_reply_session_ids())
+    if extra_ids:
+        for sid in extra_ids:
+            if sid:
+                exclude.add(str(sid))
+    all_sessions = get_all_sessions_from_db()
+    for sid, info in all_sessions.items():
+        if not isinstance(info, dict):
+            continue
+        if info.get('crisis_detected'):
+            exclude.add(str(sid))
+    return list(exclude)
+
+
+def purge_empty_sessions_on_startup():
+    """起動時: 空セッションを一括削除（キュー・危機フラグは除外）。"""
+    db = get_database()
+    if not db or not (db.connection or db.connection_pool):
+        return 0
+    exclude = get_cleanup_exclude_session_ids()
+    if hasattr(db, 'purge_all_empty_sessions'):
+        return db.purge_all_empty_sessions(exclude_session_ids=exclude)
+    return 0
+
+
 def find_existing_session(client_ip, user_agent):
     """既存のセッションを検索（同じ人からのアクセスのみ）"""
+    if not client_ip and not user_agent:
+        return None
     current_time = time.time()
     all_sessions = get_all_sessions_from_db()
     for existing_sid, info in all_sessions.items():
-        last_activity = info.get('last_activity')
-        if isinstance(last_activity, datetime):
-            last_activity = last_activity.timestamp()
-        elif isinstance(last_activity, str):
-            try:
-                last_activity = datetime.fromisoformat(
-                    last_activity.replace('Z', '+00:00')
-                ).timestamp()
-            except Exception:
-                last_activity = 0
+        if not isinstance(info, dict):
+            continue
+        messages = info.get('messages') or []
+        if not messages:
+            continue
         if (info.get('client_ip') == client_ip and
                 info.get('user_agent') == user_agent and
-                current_time - (last_activity or 0) < 1800):  # 30分以内
+                current_time - _session_last_activity_ts(info) < SESSION_REUSE_WINDOW):
             return existing_sid
     return None
+
+
+def ensure_session_persisted(sid, data, request=None):
+    """意味のあるイベント時にのみ DB へセッションを保存する。"""
+    if not sid:
+        return
+    session_data = get_session_from_db(sid) or {}
+    client_ip = ''
+    user_agent = ''
+    if request is not None:
+        client_ip = request.client.host if getattr(request, 'client', None) else ''
+        user_agent = request.headers.get('User-Agent', '') or ''
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if value is not None:
+                session_data[key] = value
+
+    session_data['session_id'] = sid
+    session_data.setdefault('messages', session_data.get('messages') or [])
+    session_data['last_activity'] = datetime.now()
+    session_data.setdefault('session_active', True)
+    if client_ip:
+        session_data['client_ip'] = client_ip
+    if user_agent:
+        session_data['user_agent'] = user_agent
+    if not session_data.get('username'):
+        session_data['username'] = f'ユーザー{get_next_user_number()}'
+
+    save_session_to_db(sid, session_data)
 
 
 def update_session_activity(sid):
@@ -419,30 +501,19 @@ def persist_session_from_chat_state(sid, session, request=None):
     if not sid:
         return
     session_data = get_session_from_db(sid) or {}
-    client_ip = ''
-    user_agent = ''
-    if request is not None:
-        client_ip = request.client.host if getattr(request, 'client', None) else ''
-        user_agent = request.headers.get('User-Agent', '') or ''
     messages = session.get('messages')
     if messages is None:
         messages = session_data.get('messages') or []
-    session_data.update({
-        'session_id': sid,
+    payload = {
         'messages': messages,
         'user_attributes': session.get('user_attributes')
         or session_data.get('user_attributes')
         or {},
-        'last_activity': datetime.now(),
         'session_active': True,
-        'client_ip': client_ip or session_data.get('client_ip', ''),
-        'user_agent': user_agent or session_data.get('user_agent', ''),
-    })
+    }
     username = session.get('username')
     if username:
-        session_data['username'] = username
-    elif not session_data.get('username'):
-        session_data['username'] = f'ユーザー{get_next_user_number()}'
+        payload['username'] = username
     for flag_key in (
         'medical_emergency_otc_locked',
         'otc_lock_released',
@@ -451,10 +522,11 @@ def persist_session_from_chat_state(sid, session, request=None):
         'emergency_subtype',
         'emergency_detected',
         'store_incident_emergency',
+        'crisis_detected',
     ):
         if flag_key in session:
-            session_data[flag_key] = session[flag_key]
-    save_session_to_db(sid, session_data)
+            payload[flag_key] = session[flag_key]
+    ensure_session_persisted(sid, payload, request)
 
 
 def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=None):
@@ -478,16 +550,16 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
             return
 
     db = get_database()
-    exclude_session_ids = []
-    if exclude_current_session and current_sid:
-        exclude_session_ids.append(current_sid)
+    extra = [current_sid] if exclude_current_session and current_sid else []
+    exclude_session_ids = get_cleanup_exclude_session_ids(extra)
 
     if db and (db.connection or db.connection_pool) and hasattr(db, 'cleanup_expired_sessions'):
         try:
             deleted_count = db.cleanup_expired_sessions(
                 SESSION_TIMEOUT,
                 exclude_session_ids=exclude_session_ids if exclude_session_ids else None,
-                chat_end_timeout_seconds=CHAT_END_TIMEOUT
+                chat_end_timeout_seconds=CHAT_END_TIMEOUT,
+                empty_session_timeout_seconds=EMPTY_SESSION_TIMEOUT,
             )
             if isinstance(deleted_count, int) and deleted_count > 0:
                 logger.info(f"🧹 セッションクリーンアップ完了: {deleted_count}件削除")
@@ -502,19 +574,17 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
     sessions_to_remove = []
     all_sessions = get_all_sessions_from_db()
     for sid, session_info in all_sessions.items():
-        if sid == current_sid:
+        if sid in exclude_session_ids:
             continue
-        last_activity = session_info.get('last_activity', 0)
-        if isinstance(last_activity, datetime):
-            last_activity = last_activity.timestamp()
-        elif isinstance(last_activity, str):
-            try:
-                last_activity = datetime.fromisoformat(
-                    last_activity.replace('Z', '+00:00')
-                ).timestamp()
-            except (ValueError, AttributeError):
-                last_activity = 0
-        if current_time - last_activity > SESSION_TIMEOUT:
+        if not isinstance(session_info, dict):
+            continue
+        messages = session_info.get('messages') or []
+        last_ts = _session_last_activity_ts(session_info)
+        if not messages:
+            if current_time - last_ts > EMPTY_SESSION_TIMEOUT:
+                sessions_to_remove.append(sid)
+            continue
+        if current_time - last_ts > SESSION_TIMEOUT:
             sessions_to_remove.append(sid)
 
     all_sessions = get_all_sessions_from_db()
@@ -530,7 +600,7 @@ def cleanup_old_sessions(force=False, exclude_current_session=True, current_sid=
                 sessions_to_remove.append(sorted_sessions[i][0])
 
     for sid in sessions_to_remove:
-        if sid != current_sid:
+        if sid not in exclude_session_ids:
             if db and (db.connection or db.connection_pool):
                 db.delete_session(sid)
             elif sid in _all_sessions:
