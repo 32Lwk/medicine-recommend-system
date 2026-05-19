@@ -14,18 +14,21 @@
 | POST | `/test/` | 同上 | 200 | application/json | 同上 | |
 | POST | `/clear` | — | 204 | — | DB 更新 | |
 | POST | `/test/clear` | — | 204 | — | 同上 | |
-| POST | `/new_session` | — | 200 | application/json | 新 sid cookie | `message`, `username` |
+| POST | `/new_session` | — | 200 | application/json | 新 sid cookie（7日 max_age） | DB は初回メッセージまで遅延 |
 | POST | `/test/new_session` | — | 200 | application/json | 同上 | |
-| GET | `/api/sessions` | — | 200 | application/json | 必須 | `messages`, `user_attributes`, `latest_usage_notes` |
-| POST | `/api/sessions` | JSON `user_attributes` | 200 | application/json | 必須 | |
+| GET | `/api/sessions` | — | 200 | application/json | 必須 | DB 未作成時は読取のみ（遅延 persist） |
+| PATCH | `/api/sessions/activity` | — | 200/204 | application/json | 必須 | DB 行があるときのみ `last_activity` 更新 |
+| POST | `/api/sessions` | JSON `user_attributes` | 200 | application/json | 必須 | 初回 persist |
+| POST | `/api/sessions/restore` | JSON `messages` | 200 | application/json | 必須 | merged あり時のみ persist |
 | POST | `/api/submit_feedback` | JSON | 200/400/429/500 | application/json | 60秒レート | 必須フィールドあり |
 | GET | `/api/get_feedback_reports` | `limit`, `unresolved_only` | 200/500 | application/json | — | DB |
 | POST | `/api/resolve_feedback/{id}` | — | 200/500 | application/json | — | |
 | POST | `/api/delete_feedback/{id}` | — | 200/500 | application/json | — | |
 | GET | `/admin` | — | 200/401 | text/html | **Basic** | `admin_chat.html` |
-| GET | `/api/main_sessions` | — | 200 | application/json | | |
-| GET/POST | `/api/main_manual_reply_queue` | POST: JSON | 200/400 | application/json | | |
-| GET/POST | `/api/main_ai_control` | POST: JSON | 200/400 | application/json | | |
+| GET | `/api/main_sessions` | `meaningful_only` | 200/401 | application/json | **Admin Cookie / Basic** | 一覧取得前に cleanup |
+| GET/POST | `/api/main_manual_reply_queue` | POST: JSON | 200/400/401 | application/json | **Admin** | |
+| GET/POST | `/api/main_ai_control` | POST: JSON | 200/400/401 | application/json | **Admin** | |
+| POST | `/api/admin/sessions/purge_empty` | — | 200/401 | application/json | **Admin** | 空セッション一括削除 |
 | GET/POST | `/api/manual_reply_message` | POST: JSON | 200/400 | application/json | | |
 | GET | `/api/status` | — | 200 | application/json | Depends sid | |
 | GET | `/api/performance` | — | 200 | application/json | | |

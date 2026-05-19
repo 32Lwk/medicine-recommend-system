@@ -803,13 +803,61 @@ class DatabaseManager:
                 self.put_connection(conn)
             return False
     
-    def cleanup_expired_sessions(self, timeout_seconds, exclude_session_ids=None, chat_end_timeout_seconds=None):
+    def _empty_messages_sql(self) -> str:
+        """messages が空の行を判定する SQL 断片。"""
+        return (
+            "(messages IS NULL OR messages = '[]'::jsonb "
+            "OR (jsonb_typeof(messages) = 'array' AND jsonb_array_length(messages) = 0))"
+        )
+
+    def purge_all_empty_sessions(self, exclude_session_ids=None):
+        """メッセージ0件のセッションを一括削除（起動時・管理用）。"""
+        conn = self.get_connection()
+        if not conn:
+            return 0
+        exclude_list = list(exclude_session_ids or [])
+        try:
+            cursor = conn.cursor()
+            empty_cond = self._empty_messages_sql()
+            if exclude_list:
+                placeholders = ','.join(['%s'] * len(exclude_list))
+                delete_sql = f"""
+                DELETE FROM sessions
+                WHERE {empty_cond}
+                AND session_id NOT IN ({placeholders});
+                """
+                cursor.execute(delete_sql, tuple(exclude_list))
+            else:
+                delete_sql = f"DELETE FROM sessions WHERE {empty_cond};"
+                cursor.execute(delete_sql)
+            deleted_count = cursor.rowcount
+            conn.commit()
+            cursor.close()
+            self.put_connection(conn)
+            if deleted_count > 0:
+                logger.info("Purged %s empty sessions", deleted_count)
+            return deleted_count
+        except Exception as e:
+            logger.error("Failed to purge empty sessions: %s", e)
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
+            return 0
+
+    def cleanup_expired_sessions(
+        self,
+        timeout_seconds,
+        exclude_session_ids=None,
+        chat_end_timeout_seconds=None,
+        empty_session_timeout_seconds=None,
+    ):
         """期限切れセッションを削除
         
         Args:
             timeout_seconds: 通常のタイムアウト（秒）
             exclude_session_ids: 削除から除外するセッションIDのリスト（アクティブなセッション）
             chat_end_timeout_seconds: チャット終了後の削除タイムアウト（秒）。Noneの場合は通常のタイムアウトを使用
+            empty_session_timeout_seconds: メッセージ0件セッションの削除タイムアウト（秒）
         """
         conn = self.get_connection()
         if not conn:
@@ -818,42 +866,31 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             
-            # 除外するセッションIDのリスト
             exclude_list = exclude_session_ids or []
-            exclude_condition = ""
-            if exclude_list:
-                placeholders = ','.join(['%s'] * len(exclude_list))
-                exclude_condition = f"AND session_id NOT IN ({placeholders})"
-            
-            # チャット終了後のタイムアウト（デフォルトは通常のタイムアウト）
-            chat_end_timeout = chat_end_timeout_seconds or timeout_seconds
-            
-            # セッションがアクティブでない場合（session_active = false）は、chat_end_timeoutを使用
-            # セッションがアクティブな場合（session_active = true または NULL）は、通常のtimeoutを使用
-            if exclude_list:
-                # 除外セッションがある場合のSQL
-                placeholders = ','.join(['%s'] * len(exclude_list))
-                delete_sql = f"""
-                DELETE FROM sessions 
-                WHERE (
+            chat_end_timeout = int(chat_end_timeout_seconds or timeout_seconds)
+            empty_timeout = int(empty_session_timeout_seconds or timeout_seconds)
+            empty_cond = self._empty_messages_sql()
+
+            expire_clause = f"""
+                (
                     (session_active = false AND last_activity < NOW() - INTERVAL '{chat_end_timeout} seconds')
                     OR
-                    (COALESCE(session_active, true) = true AND last_activity < NOW() - INTERVAL '{timeout_seconds} seconds')
+                    (COALESCE(session_active, true) = true AND last_activity < NOW() - INTERVAL '{int(timeout_seconds)} seconds')
                 )
+                OR
+                ({empty_cond} AND last_activity < NOW() - INTERVAL '{empty_timeout} seconds')
+            """
+
+            if exclude_list:
+                placeholders = ','.join(['%s'] * len(exclude_list))
+                delete_sql = f"""
+                DELETE FROM sessions
+                WHERE ({expire_clause})
                 AND session_id NOT IN ({placeholders});
                 """
-                # パラメータ化クエリで実行（SQLインジェクション対策）
                 cursor.execute(delete_sql, tuple(exclude_list))
             else:
-                # 除外セッションがない場合のSQL
-                delete_sql = f"""
-                DELETE FROM sessions 
-                WHERE (
-                    (session_active = false AND last_activity < NOW() - INTERVAL '{chat_end_timeout} seconds')
-                    OR
-                    (COALESCE(session_active, true) = true AND last_activity < NOW() - INTERVAL '{timeout_seconds} seconds')
-                );
-                """
+                delete_sql = f"DELETE FROM sessions WHERE ({expire_clause});"
                 cursor.execute(delete_sql)
             deleted_count = cursor.rowcount
             conn.commit()

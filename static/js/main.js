@@ -5060,13 +5060,36 @@
     const CHAT_CACHE_PREFIX = 'mrc_chat_cache:';
     const CHAT_RESTORE_DONE_PREFIX = 'mrc_restore_done:';
     const SID_COOKIE_NAME = 'sid';
+    const SID_LOCAL_STORAGE_KEY = 'mrc_sid';
     let chatRestoreInFlight = false;
     let lastRenderedMessagesFingerprint = '';
 
     function getSidFromCookie() {
         const pattern = new RegExp('(?:^|;\\s*)' + SID_COOKIE_NAME + '=([^;]*)');
         const match = document.cookie.match(pattern);
-        return match ? decodeURIComponent(match[1]) : '';
+        if (match) {
+            const sid = decodeURIComponent(match[1]);
+            try {
+                localStorage.setItem(SID_LOCAL_STORAGE_KEY, sid);
+            } catch (e) { /* ignore */ }
+            return sid;
+        }
+        try {
+            const stored = localStorage.getItem(SID_LOCAL_STORAGE_KEY);
+            if (stored) {
+                return stored;
+            }
+        } catch (e) { /* ignore */ }
+        return '';
+    }
+
+    function rememberSid(sid) {
+        if (!sid) {
+            return;
+        }
+        try {
+            localStorage.setItem(SID_LOCAL_STORAGE_KEY, sid);
+        } catch (e) { /* ignore */ }
     }
 
     function chatCacheKey(sid) {
@@ -5799,7 +5822,8 @@
     }
 
     function touchSessionActivity() {
-        fetch(withVersion('/api/sessions'), {
+        fetch(withVersion('/api/sessions/activity'), {
+            method: 'PATCH',
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
         }).catch(function() {});
@@ -5818,6 +5842,9 @@
                 return response.json();
             })
             .then(data => {
+                if (data && data.session_id) {
+                    rememberSid(data.session_id);
+                }
                 applySessionMessages(data);
             })
             .catch(error => {
