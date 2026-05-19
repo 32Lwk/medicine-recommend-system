@@ -151,10 +151,16 @@
 
                 <div class="search-box">
                     <input type="text" class="search-input" id="session-search" placeholder="ユーザー名で検索..." onkeyup="filterSessions()">
-                    <label class="session-list-filter" style="display:flex;align-items:center;gap:0.35rem;margin-top:0.5rem;font-size:0.8rem;color:var(--text-sub);cursor:pointer;">
-                        <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
-                        空セッションを表示
-                    </label>
+                    <div class="session-list-toolbar">
+                        <label class="session-list-filter">
+                            <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
+                            空セッションを含む
+                        </label>
+                        <div class="session-list-toolbar-actions">
+                            <button type="button" id="session-list-select-btn" class="session-list-action-btn" onclick="toggleSessionListSelectMode()" title="複数選択して削除">選択</button>
+                            <button type="button" id="session-list-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger" onclick="deleteSelectedSidebarSessions()" style="display:none;" title="選択したセッションを削除">削除</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="session-list app-scrollbar" id="session-list">
                     <div class="empty-state">
