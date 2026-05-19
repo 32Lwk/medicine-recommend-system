@@ -1,8 +1,43 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月19日**（セッション増殖対策・管理 API 認証）
+**最終更新日: 2026年5月19日**（管理画面レスポンシブ・ヘッダー狭幅対応）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年5月19日（続）— 管理画面レスポンシブ・ヘッダー狭幅対応
+
+### 概要
+
+- **ヘッダー狭幅（≤1100px）**: システム操作ボタン（AI管理・セッション管理等）と AI 状態バッジをアイコンのみ表示。`aria-label` / `title` で状態を伝達。
+- **タブレット幅の再定義**: JS の `isTablet()` を 481–1024px、`isDesktop()` を 1025px 以上に変更。769–1024px では中央チャット列を非表示にし左（セッション）＋右（キュー・AI）の 2 カラムに。
+- **グリッド overflow 修正**: `minmax(0, …)` と `min-width: 0` で 3 カラム時の横はみ出しを防止。左右ペインの一覧は flex で残り高さをスクロール領域に。
+- **空状態アイコン**: Font Awesome を `fa-regular` から `fa-solid` に統一（inbox / users / file-lines）。
+- **スクロールバー**: ヘッダー操作行に `app-scrollbar` を付与（プロジェクト共通の緑細スクロールバー）。
+
+### `static/css/admin_chat.css`
+
+- **`.app-container` / `main`**: `max-width: 100%`・`min-width: 0` を追加し親からのはみ出しを抑制。
+- **ヘッダー**: `.brand-section` に `min-width: 0`。`.header-system-controls` を `flex-wrap: nowrap` + 横スクロール（`overflow-x: auto`）。ボタンに `flex-shrink: 0`。
+- **`@media (max-width: 1100px)`**: `.header-control-btn > span` と `#ai-status-text` を非表示。パディング・ギャップを縮小。
+- **グリッド**: `grid-template-columns: minmax(0, 320px) 4px minmax(0, 1fr) 4px minmax(0, 320px)` に変更。
+- **`#left-panel` / `#right-panel`**: `min-width: 0`・`min-height: 0`。`#session-list`・`#manual-reply-queue` を flex 子として `max-height: none` で可変高スクロール。
+- **`#right-panel`**: `.ai-management-body` クラスでアコーディオン内余白を整理。`#ai-status-info` の下マージンを CSS 側に移動。
+- **`@media (min-width: 769px) and (max-width: 1024px)`**: 中央パネル・左リサイザー・中央リサイザーを非表示、2 カラムグリッド。
+- **モバイル（≤768px）**: 右ペイン `.info-section` の flex 化、セッション一覧・手動返信キューの固定 `max-height: 300px` を廃止。
+
+### `static/js/admin_chat.js`
+
+- **`refreshAIStatus()`**: バッジ更新時に `aria-label`・`title` を ON/OFF 文言で同期。アイコンに `aria-hidden="true"`。
+- **`isTablet()` / `isDesktop()`**: ブレークポイントを 768px から 1024px に拡張。
+- **`toggleMobileElements()`**: タブレット幅では中央パネルを `display: none`、デスクトップのみ flex 表示。
+- **空状態**: `renderQueue`・`loadUserAttributes`・`renderSessionList`・`refreshSessionManagement` のアイコンを `fa-solid` に変更。
+
+### `templates/admin_chat.html`
+
+- **ヘッダー**: `.header-system-controls` に `app-scrollbar` を追加。初期 AI バッジに `aria-label` / `title`。
+- **右ペイン AI 管理**: インライン `style` を `.ai-management-body` に置換。手動返信キュー空状態のアイコンを `fa-solid` に。
 
 ---
 
