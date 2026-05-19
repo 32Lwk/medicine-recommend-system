@@ -290,8 +290,8 @@
             flex-direction: column;
         }
         
-        /* シーズン装飾（スクロール外オーバーレイ・表示領域下端に固定） */
-        .chat-messages-viewport > .season-decoration-layer {
+        /* シーズン装飾（表示領域下端に固定・メッセージより下のレイヤ） */
+        .chat-messages > .season-decoration-layer {
             position: absolute;
             left: 0;
             right: 0;
@@ -413,7 +413,7 @@
         
         /* モバイル対応 */
         @media (max-width: 768px) {
-            .chat-messages-viewport > .season-decoration-layer {
+            .chat-messages > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 12px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
@@ -427,7 +427,7 @@
         }
         
         @media (max-width: 480px) {
-            .chat-messages-viewport > .season-decoration-layer {
+            .chat-messages > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 10px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
@@ -4496,6 +4496,17 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     margin: 0 0 0.75rem;
     color: #424242;
     line-height: 1.6;
+}
+
+.onboarding-last-updated {
+    margin: 0.5rem 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #757575;
+    line-height: 1.5;
+}
+
+.onboarding-last-updated-label {
+    font-weight: 600;
 }
 
 .onboarding-desc ul {
