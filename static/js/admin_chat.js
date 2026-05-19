@@ -849,7 +849,9 @@ function refreshAIStatus() {
                 if (headerStatusText) headerStatusText.textContent = 'AI自動応答ON';
                 if (statusBadge) {
                     statusBadge.className = 'status-badge on';
-                    statusBadge.innerHTML = '<i class="fa-solid fa-robot"></i><span id="ai-status-text">AI自動応答ON</span>';
+                    statusBadge.setAttribute('aria-label', 'AI自動応答ON');
+                    statusBadge.title = 'AI自動応答ON';
+                    statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答ON</span>';
                 }
                 if (onBtn) onBtn.disabled = true;
                 if (offBtn) offBtn.disabled = false;
@@ -859,7 +861,9 @@ function refreshAIStatus() {
                 if (headerStatusText) headerStatusText.textContent = 'AI自動応答OFF';
                 if (statusBadge) {
                     statusBadge.className = 'status-badge off';
-                    statusBadge.innerHTML = '<i class="fa-solid fa-robot"></i><span id="ai-status-text">AI自動応答OFF</span>';
+                    statusBadge.setAttribute('aria-label', 'AI自動応答OFF');
+                    statusBadge.title = 'AI自動応答OFF';
+                    statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答OFF</span>';
                 }
                 if (onBtn) onBtn.disabled = false;
                 if (offBtn) offBtn.disabled = true;
@@ -982,7 +986,7 @@ function renderQueue(queue) {
     if (!Array.isArray(queue) || queue.length === 0) {
         content.innerHTML = `
             <div class="empty-state">
-                <i class="fa-regular fa-inbox"></i>
+                <i class="fa-solid fa-inbox"></i>
                 <p>手動返信待ちのメッセージがありません</p>
             </div>
         `;
@@ -1816,7 +1820,7 @@ function loadUserAttributes(sessionId) {
                         <span>ユーザー属性</span>
                     </h4>
                     <div class="empty-state-section">
-                        <i class="fa-regular fa-file-lines"></i>
+                        <i class="fa-solid fa-file-lines"></i>
                         <p>ユーザー属性情報はまだ入力されていません</p>
                     </div>
                 </div>
@@ -2969,7 +2973,7 @@ function renderSessionList(sessions) {
         const emptyHint = sessionListMeaningfulOnly
             ? '会話のあるセッションがありません。「空セッションを含む」で全件表示できます。'
             : 'セッションがありません';
-        sidebar.innerHTML = '<div class="empty-state"><i class="fa-regular fa-users"></i><p>' + escapeHtml(emptyHint) + '</p></div>';
+        sidebar.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i><p>' + escapeHtml(emptyHint) + '</p></div>';
         if (isMobile() && !currentSessionId) {
             const centerChatMessages = document.getElementById('chat-messages');
             if (centerChatMessages) {
@@ -4067,7 +4071,7 @@ function refreshSessionManagement() {
             if (data.sessions && data.sessions.length > 0) {
                 renderSessionManagementList(data.sessions);
             } else {
-                listContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #888;"><i class="fa-regular fa-inbox" style="font-size: 3em; display: block; margin-bottom: 10px; opacity: 0.5;"></i><p style="margin-top: 10px;">セッションがありません</p></div>';
+                listContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #888;"><i class="fa-solid fa-inbox" style="font-size: 3em; display: block; margin-bottom: 10px; opacity: 0.5;"></i><p style="margin-top: 10px;">セッションがありません</p></div>';
             }
         })
         .catch(error => {
@@ -4689,11 +4693,11 @@ function isMobile() {
 }
 
 function isTablet() {
-    return window.innerWidth > 480 && window.innerWidth <= 768;
+    return window.innerWidth > 480 && window.innerWidth <= 1024;
 }
 
 function isDesktop() {
-    return window.innerWidth > 768;
+    return window.innerWidth > 1024;
 }
 
 // モバイル用要素の表示/非表示を切り替え
@@ -4734,9 +4738,13 @@ function toggleMobileElements() {
     } else {
         // デスクトップ/タブレット表示
         if (mobileContentArea) mobileContentArea.style.display = 'none';
-        if (centerPanel && !isTablet()) {
-            centerPanel.style.display = 'flex';
-            centerPanel.style.flexDirection = 'column';
+        if (centerPanel) {
+            if (isTablet()) {
+                centerPanel.style.display = 'none';
+            } else {
+                centerPanel.style.display = 'flex';
+                centerPanel.style.flexDirection = 'column';
+            }
         }
     }
 }
