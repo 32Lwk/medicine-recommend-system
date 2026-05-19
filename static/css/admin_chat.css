@@ -119,6 +119,8 @@ body {
     flex-direction: column;
     overflow: hidden;
     background: var(--background);
+    max-width: 100%;
+    min-width: 0;
 }
 
 /* Header */
@@ -141,6 +143,7 @@ header {
     align-items: center;
     gap: var(--spacing-lg);
     flex: 1;
+    min-width: 0;
 }
 
 .brand {
@@ -165,9 +168,12 @@ header {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     flex: 1;
     justify-content: flex-start;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .header-control-btn {
@@ -183,6 +189,7 @@ header {
     align-items: center;
     gap: 0.25rem;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .header-control-btn:hover {
@@ -213,6 +220,40 @@ header {
 .status-badge.off {
     background-color: #fee2e2;
     color: #991b1b;
+}
+
+/* ヘッダー狭幅: システムボタンはアイコンのみ、AIバッジは色＋アイコンのみ */
+@media (max-width: 1100px) {
+    header {
+        gap: var(--spacing-sm);
+        padding: 0 var(--spacing-md);
+    }
+
+    .brand-section {
+        gap: var(--spacing-sm);
+    }
+
+    .header-system-controls {
+        gap: 0.25rem;
+    }
+
+    .header-control-btn {
+        padding: 0.35rem 0.45rem;
+        min-width: 2rem;
+        justify-content: center;
+    }
+
+    .header-control-btn > span {
+        display: none;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.45rem;
+    }
+
+    .status-badge #ai-status-text {
+        display: none;
+    }
 }
 
 .action-btn {
@@ -293,11 +334,13 @@ header {
 /* Main Layout */
 main {
     display: grid;
-    grid-template-columns: 320px 4px 1fr 4px 320px;
+    grid-template-columns: minmax(0, 320px) 4px minmax(0, 1fr) 4px minmax(0, 320px);
     flex: 1;
     overflow: hidden;
     position: relative;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     height: 100%;
 }
 
@@ -313,13 +356,19 @@ main {
 
 #left-panel {
     grid-column: 1;
-    min-width: 200px;
+    min-width: 0;
     max-width: 600px;
+    min-height: 0;
+}
+
+#left-panel #session-list {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 #center-panel {
     grid-column: 3;
-    min-width: 300px;
+    min-width: 0;
     /* 中央パネルは左右のパネルの間のスペースを自動的に埋める */
 }
 
@@ -327,9 +376,25 @@ main {
     grid-column: 5;
     border-right: none;
     border-left: 1px solid var(--border);
-    min-width: 200px;
+    min-width: 0;
     max-width: 600px;
     overflow: hidden;
+    min-height: 0;
+}
+
+#right-panel > .info-section {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#right-panel .ai-management-body {
+    flex: 0 0 auto;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: none;
+}
+
+#right-panel #ai-status-info {
+    margin-bottom: var(--spacing-sm);
 }
 
 #right-panel .panel-header {
@@ -3360,6 +3425,36 @@ td .ai-response {
     }
 }
 
+/* 狭いデスクトップ（769px - 1024px）: 3カラムは収まらないため2カラム */
+@media (min-width: 769px) and (max-width: 1024px) {
+    main {
+        grid-template-columns: minmax(0, 1fr) 4px minmax(0, 1fr) !important;
+    }
+
+    #left-panel {
+        grid-column: 1;
+        max-width: none;
+    }
+
+    #center-panel {
+        display: none !important;
+    }
+
+    #center-resizer,
+    #left-resizer {
+        display: none !important;
+    }
+
+    .panel-resizer {
+        display: none;
+    }
+
+    #right-panel {
+        grid-column: 3;
+        max-width: none;
+    }
+}
+
 /* Medium devices (tablets, 481px - 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
     :root {
@@ -3398,6 +3493,13 @@ td .ai-response {
     /* 右パネル */
     #right-panel {
         grid-column: 3;
+        min-height: 0;
+    }
+
+    #right-panel > .info-section {
+        flex: 1 1 auto;
+        min-height: 0;
+        padding-bottom: 0;
     }
     
     /* パネルリサイザーを非表示 */
@@ -3522,10 +3624,16 @@ td .ai-response {
         min-height: 200px !important;
     }
     
-    .session-list,
-    .manual-reply-queue,
-    .pending-queue {
-        max-height: 300px;
+    #left-panel #session-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+    }
+
+    #right-panel #manual-reply-queue {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
     }
     
     /* タッチターゲットの確保 */
