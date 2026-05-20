@@ -1,0 +1,59 @@
+{# skillicons.dev + official brand PNGs (OpenAI / DeepL / Neon). #}
+{% set tech_diagram = tech_diagram or build_tech_diagram(lang) %}
+{% set icon_theme = tech_diagram.icon_theme | default('dark') %}
+<figure class="about-tech-diagram" aria-label="{{ tech_diagram.aria | e }}">
+    {% if tech_diagram.title %}
+    <figcaption class="about-tech-diagram__title">{{ tech_diagram.title | e }}</figcaption>
+    {% endif %}
+    <div class="about-tech-diagram__grid">
+        {% for box in tech_diagram.boxes %}
+        <div class="about-tech-diagram__box about-tech-diagram__box--{{ box.id }}{% if box.dashed %} about-tech-diagram__box--dashed{% endif %}">
+            <h3 class="about-tech-diagram__label">{{ box.label | e }}</h3>
+            <ul class="about-tech-diagram__icons" role="list">
+                {% for icon in box.icons %}
+                <li>
+                    {% if icon.type == 'skillicon' %}
+                    <img class="about-tech-diagram__icon"
+                         src="https://skillicons.dev/icons?i={{ icon.name }}&theme={{ icon_theme }}&perline=1"
+                         alt=""
+                         width="48"
+                         height="48"
+                         loading="lazy"
+                         decoding="async"
+                         referrerpolicy="no-referrer">
+                    {% elif icon.type == 'brand' %}
+                    <img class="about-tech-diagram__icon about-tech-diagram__icon--brand about-tech-diagram__icon--brand-{{ icon.brand }}"
+                         src="{{ url_for('static', filename=icon.src) }}"
+                         alt=""
+                         width="48"
+                         height="48"
+                         loading="lazy"
+                         decoding="async">
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% if box.note %}
+            <p class="about-tech-diagram__note">{{ box.note | e }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <svg class="about-tech-diagram__connectors" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs>
+                <marker id="about-tech-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#90a4ae"/>
+                </marker>
+            </defs>
+            <g fill="none" stroke="#90a4ae" stroke-width="1.1" stroke-linecap="round" marker-end="url(#about-tech-arrow)">
+                <!-- フロントエンド → バックエンド -->
+                <path d="M 24 36.5 H 37"/>
+                <!-- バックエンド → 外部 API -->
+                <path d="M 63 36.5 H 76"/>
+                <!-- 外部 API → マルチエージェント（右列・縦） -->
+                <path d="M 76 44.5 V 58"/>
+                <!-- バックエンド → データベース（真下） -->
+                <path d="M 50 44.5 V 52"/>
+            </g>
+        </svg>
+    </div>
+</figure>

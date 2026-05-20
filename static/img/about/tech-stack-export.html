@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>技術スタック構成図 | チャット型医薬品相談</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem 1.25rem 2.5rem;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #fff;
+      color: #37474f;
+    }
+    h1 {
+      margin: 0 0 1.25rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .diagram {
+      max-width: 880px;
+      margin: 0 auto 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1.12fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 0.65rem 0.5rem;
+    }
+    .box {
+      border: 2px dashed #b0bec5;
+      border-radius: 12px;
+      background: #fafbfc;
+      padding: 0.75rem 0.65rem;
+      text-align: center;
+    }
+    .box--app { border-color: #8fa89a; background: #f4f8f6; }
+    .box--external { background: #f6faf8; }
+    .box--ops { grid-column: 2; grid-row: 1; }
+    .box--client { grid-column: 1; grid-row: 2; }
+    .box--app { grid-column: 2; grid-row: 2; }
+    .box--external { grid-column: 3; grid-row: 2; }
+    .box--data { grid-column: 2; grid-row: 3; }
+    .box h2 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .icons {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .icons img { width: 48px; height: 48px; display: block; border-radius: 12px; }
+    .icons img.brand {
+      padding: 9px;
+      box-sizing: border-box;
+      background: #242938;
+    }
+    .icons img.brand.neon {
+      padding: 8px;
+      background: #000;
+      object-fit: contain;
+    }
+    .note {
+      margin: 0.4rem 0 0;
+      font-size: 0.7rem;
+      color: #607d8b;
+    }
+    .hint {
+      max-width: 720px;
+      margin: 1rem auto 0;
+      font-size: 0.75rem;
+      color: #78909c;
+      text-align: center;
+      line-height: 1.6;
+    }
+    code { font-size: 0.85em; background: #f0f4f2; padding: 0.1em 0.35em; border-radius: 4px; }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .box--ops, .box--client, .box--app, .box--external, .box--data {
+        grid-column: 1; grid-row: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>インフラ構成（β版）</h1>
+  <div class="diagram">
+    <div class="grid">
+      <div class="box box--ops">
+        <h2>運用・CI/CD</h2>
+        <ul class="icons">
+          <li><img src="https://skillicons.dev/icons?i=github&theme=dark&perline=1" alt="GitHub"></li>
+          <li><img src="https://skillicons.dev/icons?i=gcp&theme=dark&perline=1" alt="GCP"></li>
+          <li><img src="https://skillicons.dev/icons?i=git&theme=dark&perline=1" alt="Git"></li>
+          <li><img src="https://skillicons.dev/icons?i=linux&theme=dark&perline=1" alt="Linux"></li>
+        </ul>
+        <p class="note">GitHub · Cloud Build</p>
+      </div>
+      <div class="box box--client">
+        <h2>クライアント</h2>
+        <ul class="icons">
+          <li><img src="https://skillicons.dev/icons?i=html&theme=dark&perline=1" alt="HTML"></li>
+          <li><img src="https://skillicons.dev/icons?i=css&theme=dark&perline=1" alt="CSS"></li>
+          <li><img src="https://skillicons.dev/icons?i=js&theme=dark&perline=1" alt="JavaScript"></li>
+        </ul>
+        <p class="note">HTML / CSS / バニラ JS</p>
+      </div>
+      <div class="box box--app">
+        <h2>アプリケーション</h2>
+        <ul class="icons">
+          <li><img src="https://skillicons.dev/icons?i=python&theme=dark&perline=1" alt="Python"></li>
+          <li><img src="https://skillicons.dev/icons?i=flask&theme=dark&perline=1" alt="Flask"></li>
+          <li><img src="https://skillicons.dev/icons?i=docker&theme=dark&perline=1" alt="Docker"></li>
+        </ul>
+        <p class="note">GCP Cloud Run · Gunicorn · ルールベース推奨</p>
+      </div>
+      <div class="box box--external">
+        <h2>外部 API</h2>
+        <ul class="icons">
+          <li><img class="brand openai" src="generated/tech/icon-openai.png" alt="OpenAI"></li>
+          <li><img class="brand deepl" src="generated/tech/icon-deepl.png" alt="DeepL"></li>
+        </ul>
+        <p class="note">OpenAI · DeepL（4言語）</p>
+      </div>
+      <div class="box box--data">
+        <h2>データベース</h2>
+        <ul class="icons">
+          <li><img class="brand neon" src="generated/tech/icon-neon.png" alt="Neon"></li>
+          <li><img src="https://skillicons.dev/icons?i=postgres&theme=dark&perline=1" alt="PostgreSQL"></li>
+        </ul>
+        <p class="note">Neon PostgreSQL</p>
+      </div>
+    </div>
+  </div>
+  <p class="hint">
+    対外資料用の静的プレビューです。ブラウザで開いてスクリーンショットし PNG 化できます。
+  </p>
+</body>
+</html>
