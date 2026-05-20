@@ -71,6 +71,7 @@ from src.content.about_i18n import (
     about_nav_entries,
     about_shell_labels,
     about_subpage_links,
+    build_tech_diagram,
     get_about_bundle,
     normalize_query_lang,
 )
@@ -218,6 +219,7 @@ def _compat_url_for(endpoint: str, **values) -> str:
 
 
 templates.env.globals["url_for"] = _compat_url_for
+templates.env.globals["build_tech_diagram"] = build_tech_diagram
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -381,6 +383,13 @@ def _render_about_page(
         logger.warning("about page analytics log failed: %s", ex)
 
     bundle = dict(get_about_bundle(page_id, lang))
+    if page_id == "index":
+        # Always use full index bundle + canonical hero (never medicine_recommended on /about).
+        bundle = dict(get_about_bundle("index", lang))
+        bundle["hero_image"] = "img/about/generated/hero-pharmacy-chat.png"
+        if not (bundle.get("hero_alt") or "").strip():
+            bundle["hero_alt"] = get_about_bundle("index", "ja")["hero_alt"]
+        bundle["tech_diagram"] = build_tech_diagram(lang)
     mirrored = get_mirror_html(page_id, lang, app_base_path or "")
     if mirrored is not None:
         bundle["body_html_safe"] = mirrored
