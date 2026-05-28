@@ -1101,6 +1101,11 @@ body.about-page .about-root .about-main.about-prose .about-index img {
     background: #0f2b46;
 }
 
+.about-root .about-tech-diagram__icon--brand-resend {
+    padding: 4px;
+    background: #000;
+}
+
 .about-root .about-tech-diagram__icon--brand-neon {
     box-sizing: border-box;
     width: 48px;
@@ -1118,16 +1123,6 @@ body.about-page .about-root .about-main.about-prose .about-index img {
     color: #607d8b;
 }
 
-.about-root .about-tech-diagram__connectors {
-    position: absolute;
-    inset: 0.35rem;
-    z-index: 1;
-    width: calc(100% - 0.7rem);
-    height: calc(100% - 0.7rem);
-    pointer-events: none;
-    overflow: visible;
-}
-
 @media (max-width: 640px) {
     .about-root .about-tech-diagram__grid {
         grid-template-columns: 1fr;
@@ -1143,19 +1138,6 @@ body.about-page .about-root .about-main.about-prose .about-index img {
     .about-root .about-tech-diagram__box--data {
         grid-column: 1;
         grid-row: auto;
-    }
-
-    .about-root .about-tech-diagram__connectors {
-        display: none;
-    }
-
-    .about-root .about-tech-diagram__box:not(:last-child)::after {
-        content: '↓';
-        display: block;
-        margin-top: 0.35rem;
-        font-size: 0.85rem;
-        color: #90a4ae;
-        line-height: 1;
     }
 
 }

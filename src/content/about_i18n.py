@@ -769,6 +769,7 @@ _TECH_DIAGRAM_ICON_THEME = "dark"
 _TECH_BRAND_ASSETS: dict[str, str] = {
     "openai": "img/about/generated/tech/icon-openai.png",
     "deepl": "img/about/generated/tech/icon-deepl.png",
+    "resend": "img/about/generated/tech/icon-resend.png",
     "neon": "img/about/generated/tech/icon-neon.png",
 }
 _TECH_DIAGRAM_ICONS: dict[str, list[dict[str, str]]] = {
@@ -779,7 +780,7 @@ _TECH_DIAGRAM_ICONS: dict[str, list[dict[str, str]]] = {
     ],
     "app": [
         {"type": "skillicon", "name": "python"},
-        {"type": "skillicon", "name": "flask"},
+        {"type": "skillicon", "name": "fastapi"},
         {"type": "skillicon", "name": "docker"},
     ],
     "agents": [
@@ -805,66 +806,82 @@ _TECH_DIAGRAM_ICONS: dict[str, list[dict[str, str]]] = {
 _TECH_DIAGRAM_LABELS: dict[str, dict[str, Any]] = {
     "ja": {
         "title": "インフラ構成（β版）",
-        "aria": "フロントエンド、Flask アプリ、マルチエージェント、外部 API、Neon PostgreSQL、GCP 運用の構成図",
+        "aria": "フロントエンド、FastAPI バックエンド、マルチエージェント、外部 API、Neon PostgreSQL、GCP 運用の構成図",
         "boxes": {
-            "ops": {"label": "運用・CI/CD", "note": "GitHub · Cloud Build"},
-            "frontend": {"label": "フロントエンド", "note": "HTML / CSS / バニラ JS（レスポンシブ）"},
-            "app": {"label": "バックエンド", "note": "GCP Cloud Run · Flask · Gunicorn"},
+            "ops": {"label": "運用・CI/CD", "note": "GitHub · GCP · Git · Linux"},
+            "frontend": {"label": "フロントエンド", "note": "HTML · CSS · JavaScript"},
+            "app": {"label": "バックエンド", "note": "Python · FastAPI · Docker · Gunicorn"},
             "agents": {
                 "label": "マルチエージェント",
-                "note": "ChatOrchestrator · Triage / Physical / Concierge ほか",
+                "note": "自前オーケストレーション · Python · OpenAI API",
                 "dashed": True,
             },
-            "external": {"label": "外部 API", "note": "OpenAI · DeepL（4言語）", "dashed": True},
-            "data": {"label": "データベース", "note": "Neon PostgreSQL"},
+            "external": {
+                "label": "外部 API",
+                "note": "OpenAI API · DeepL API",
+                "dashed": True,
+            },
+            "data": {"label": "データベース", "note": "Neon · PostgreSQL"},
         },
     },
     "en": {
         "title": "Infrastructure (beta)",
-        "aria": "Diagram: frontend, Flask backend, multi-agent layer, external APIs, Neon PostgreSQL, GCP ops",
+        "aria": "Diagram: frontend, FastAPI backend, multi-agent layer, external APIs, Neon PostgreSQL, GCP ops",
         "boxes": {
-            "ops": {"label": "Ops & CI/CD", "note": "GitHub · Cloud Build"},
-            "frontend": {"label": "Frontend", "note": "HTML / CSS / vanilla JS (responsive)"},
-            "app": {"label": "Backend", "note": "GCP Cloud Run · Flask · Gunicorn"},
+            "ops": {"label": "Ops & CI/CD", "note": "GitHub · GCP · Git · Linux"},
+            "frontend": {"label": "Frontend", "note": "HTML · CSS · JavaScript"},
+            "app": {"label": "Backend", "note": "Python · FastAPI · Docker · Gunicorn"},
             "agents": {
                 "label": "Multi-agent",
-                "note": "ChatOrchestrator · Triage / Physical / Concierge, etc.",
+                "note": "In-house orchestration · Python · OpenAI API",
                 "dashed": True,
             },
-            "external": {"label": "External APIs", "note": "OpenAI · DeepL (4 languages)", "dashed": True},
-            "data": {"label": "Database", "note": "Neon PostgreSQL"},
+            "external": {
+                "label": "External APIs",
+                "note": "OpenAI API · DeepL API",
+                "dashed": True,
+            },
+            "data": {"label": "Database", "note": "Neon · PostgreSQL"},
         },
     },
     "ko": {
         "title": "인프라 구성(β)",
-        "aria": "프론트엔드, Flask 백엔드, 멀티 에이전트, 외부 API, Neon PostgreSQL, GCP 운영 구성도",
+        "aria": "프론트엔드, FastAPI 백엔드, 멀티 에이전트, 외부 API, Neon PostgreSQL, GCP 운영 구성도",
         "boxes": {
-            "ops": {"label": "운영·CI/CD", "note": "GitHub · Cloud Build"},
-            "frontend": {"label": "프론트엔드", "note": "HTML / CSS / 바닐라 JS(반응형)"},
-            "app": {"label": "백엔드", "note": "GCP Cloud Run · Flask · Gunicorn"},
+            "ops": {"label": "운영·CI/CD", "note": "GitHub · GCP · Git · Linux"},
+            "frontend": {"label": "프론트엔드", "note": "HTML · CSS · JavaScript"},
+            "app": {"label": "백엔드", "note": "Python · FastAPI · Docker · Gunicorn"},
             "agents": {
                 "label": "멀티 에이전트",
-                "note": "ChatOrchestrator · Triage / Physical / Concierge 등",
+                "note": "자체 오케스트레이션 · Python · OpenAI API",
                 "dashed": True,
             },
-            "external": {"label": "외부 API", "note": "OpenAI · DeepL(4개 언어)", "dashed": True},
-            "data": {"label": "데이터베이스", "note": "Neon PostgreSQL"},
+            "external": {
+                "label": "외부 API",
+                "note": "OpenAI API · DeepL API",
+                "dashed": True,
+            },
+            "data": {"label": "데이터베이스", "note": "Neon · PostgreSQL"},
         },
     },
     "zh": {
         "title": "基础设施（测试版）",
-        "aria": "示意图：前端、Flask 后端、多智能体、外部 API、Neon PostgreSQL、GCP 运维",
+        "aria": "示意图：前端、FastAPI 后端、多智能体、外部 API、Neon PostgreSQL、GCP 运维",
         "boxes": {
-            "ops": {"label": "运维·CI/CD", "note": "GitHub · Cloud Build"},
-            "frontend": {"label": "前端", "note": "HTML / CSS / 原生 JS（响应式）"},
-            "app": {"label": "后端", "note": "GCP Cloud Run · Flask · Gunicorn"},
+            "ops": {"label": "运维·CI/CD", "note": "GitHub · GCP · Git · Linux"},
+            "frontend": {"label": "前端", "note": "HTML · CSS · JavaScript"},
+            "app": {"label": "后端", "note": "Python · FastAPI · Docker · Gunicorn"},
             "agents": {
                 "label": "多智能体",
-                "note": "ChatOrchestrator · Triage / Physical / Concierge 等",
+                "note": "自研编排 · Python · OpenAI API",
                 "dashed": True,
             },
-            "external": {"label": "外部 API", "note": "OpenAI · DeepL（4 种语言）", "dashed": True},
-            "data": {"label": "数据库", "note": "Neon PostgreSQL"},
+            "external": {
+                "label": "外部 API",
+                "note": "OpenAI API · DeepL API",
+                "dashed": True,
+            },
+            "data": {"label": "数据库", "note": "Neon · PostgreSQL"},
         },
     },
 }
