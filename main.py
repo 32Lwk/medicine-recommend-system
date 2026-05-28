@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import math
@@ -65,6 +66,7 @@ from src.services.session_manager import (
 from src.utils.performance_monitor import get_global_monitor
 from src.utils.request_safe_session import RequestSafeSession
 from src.utils.debug_logger import performance_stats, network_logs, add_network_log
+import src.content.about_i18n as about_i18n_module
 from src.content.about_i18n import (
     VALID_LANGS,
     about_lang_switch_rows,
@@ -219,7 +221,6 @@ def _compat_url_for(endpoint: str, **values) -> str:
 
 
 templates.env.globals["url_for"] = _compat_url_for
-templates.env.globals["build_tech_diagram"] = build_tech_diagram
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -338,6 +339,20 @@ def _public_chat_root_url(request: Request) -> str:
     return str(request.base_url).rstrip("/")
 
 
+def _about_i18n_for_request():
+    """開発時: uvicorn reload 無効でも /about の i18n・構成図を最新化する。"""
+    if is_development_runtime():
+        importlib.reload(about_i18n_module)
+    return about_i18n_module
+
+
+def _jinja_build_tech_diagram(lang: str):
+    return _about_i18n_for_request().build_tech_diagram(lang)
+
+
+templates.env.globals["build_tech_diagram"] = _jinja_build_tech_diagram
+
+
 def _resolve_about_lang(request: Request, sid: str) -> str:
     q = normalize_query_lang(request.query_params.get("lang"))
     if q:
@@ -358,9 +373,10 @@ def _render_about_page(
     sid: str,
     template_name: str,
 ) -> HTMLResponse:
+    i18n = _about_i18n_for_request()
     lang = _resolve_about_lang(request, sid)
-    shell = about_shell_labels(lang, app_base_path)
-    index_bundle = get_about_bundle("index", lang)
+    shell = i18n.about_shell_labels(lang, app_base_path)
+    index_bundle = i18n.get_about_bundle("index", lang)
     cta_aria = (index_bundle.get("cta_aria_label") or "").strip()
 
     user_agent = request.headers.get("user-agent", "") or ""
@@ -382,14 +398,14 @@ def _render_about_page(
     except Exception as ex:
         logger.warning("about page analytics log failed: %s", ex)
 
-    bundle = dict(get_about_bundle(page_id, lang))
+    bundle = dict(i18n.get_about_bundle(page_id, lang))
     if page_id == "index":
         # Always use full index bundle + canonical hero (never medicine_recommended on /about).
-        bundle = dict(get_about_bundle("index", lang))
+        bundle = dict(i18n.get_about_bundle("index", lang))
         bundle["hero_image"] = "img/about/generated/hero-pharmacy-chat.png"
         if not (bundle.get("hero_alt") or "").strip():
-            bundle["hero_alt"] = get_about_bundle("index", "ja")["hero_alt"]
-        bundle["tech_diagram"] = build_tech_diagram(lang)
+            bundle["hero_alt"] = i18n.get_about_bundle("index", "ja")["hero_alt"]
+        bundle["tech_diagram"] = i18n.build_tech_diagram(lang)
     mirrored = get_mirror_html(page_id, lang, app_base_path or "")
     if mirrored is not None:
         bundle["body_html_safe"] = mirrored
@@ -401,8 +417,8 @@ def _render_about_page(
     ctx: dict = {
         "lang": lang,
         "page_id": page_id,
-        "nav_entries": about_nav_entries(page_id, lang, app_base_path),
-        "lang_switch": about_lang_switch_rows(),
+        "nav_entries": i18n.about_nav_entries(page_id, lang, app_base_path),
+        "lang_switch": i18n.about_lang_switch_rows(),
         "chat_href": chat_href,
         "version": version,
         **shell,
@@ -412,7 +428,7 @@ def _render_about_page(
         "cta_footer_note": shell.get("cta_footer_note") or "",
     }
     if page_id == "index":
-        ctx["subpage_links"] = about_subpage_links(lang, app_base_path)
+        ctx["subpage_links"] = i18n.about_subpage_links(lang, app_base_path)
     return templates.TemplateResponse(request, template_name, ctx)
 
 
