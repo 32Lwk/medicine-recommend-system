@@ -41,20 +41,25 @@
 | 09 | `slide09-techstack-` | 技術スタック・運用 | A〜E |
 | 10 | `slide10-summary-` | まとめ・展望 | A〜E |
 
-## 推奨本番セット（例）
+## 発表用本番セット（確定）
 
-7分発表・10枚構成。各スライドで1案を選び PowerPoint / Keynote に取り込む。
+**`docs/技育祭/presentation_deck/`** に 01〜10 の PNG を配置済み。  
+`スライド1.PNG` のデザイン（クリーム和紙・セージ・3カラム・明朝縦書き）に統一。
 
-1. `slide01-title-A` — タイトル（参考レイアウトに最も近い）
-2. `slide02-problem-A` — 課題
-3. `slide03-solution-D` — ソリューション（3カラム）
-4. `slide04-demo-A` — デモ
-5. `slide05-scoring-B` — ルール + LLM
-6. `slide06-pipeline-A` — パイプライン
-7. `slide07-multiagent-A` — エージェント図
-8. `slide08-safety-A` — 5層防御
-9. `slide09-techstack-B` — クラウド構成
-10. `slide10-summary-C` — クロージング（参考レイアウト踏襲）
+| # | ファイル | 内容 |
+|---|---------|------|
+| 1 | `01-title.png` | タイトル |
+| 2 | `02-problem.png` | 課題 |
+| 3 | `03-solution.png` | ハイブリッド解決策 |
+| 4 | `04-demo.png` | デモ |
+| 5 | `05-scoring.png` | スコアリング |
+| 6 | `06-pipeline.png` | SSE・リアルタイム応答 |
+| 7 | `07-multiagent.png` | マルチエージェント分岐 |
+| 8 | `08-safety.png` | 緊急対応表 |
+| 9 | `09-techstack.png` | フロント/バック構成 |
+| 10 | `10-summary.png` | まとめ |
+
+代替案は `docs/技育祭/presentation_images/`（55枚）を参照。
 
 ## 注意（生成AI画像）
 
