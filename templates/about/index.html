@@ -1,22 +1,166 @@
 {% extends "about/base_about.html" %}
 {% block page_main %}
-<h1>{{ h1 | e }}</h1>
-<div class="about-intro">
-    {% for p in intro %}
-    <p>{{ p | e }}</p>
-    {% endfor %}
+<div class="about-index">
+    <section class="about-hero about-hero--editorial" aria-labelledby="about-hero-title">
+        <div class="about-hero__copy">
+            <h1 id="about-hero-title" class="about-hero__title">{{ hero_title | e }}</h1>
+            <p class="about-hero__subtitle">{{ hero_subtitle | e }}</p>
+            <div class="about-hero__actions">
+                <a href="{{ chat_href }}" class="about-cta-primary about-cta-primary--hero" aria-label="{{ cta_aria_label | e }}">{{ hero_cta | e }}</a>
+            </div>
+        </div>
+        <figure class="about-hero__media">
+            <img class="about-hero__img"
+                 src="{{ url_for('static', filename=hero_image or 'img/about/generated/hero-pharmacy-chat.png') }}"
+                 alt="{{ hero_alt | e }}"
+                 width="1200" height="675"
+                 loading="eager" decoding="async">
+        </figure>
+    </section>
+
+    <section class="about-section about-section--numbered about-problem" aria-labelledby="about-problem-heading">
+        <header class="about-section__head">
+            <p class="about-section__eyebrow">
+                <span class="about-section__num">{{ problem_section_num | e }}</span>
+                <span class="about-section__tag">{{ problem_section_tag | e }}</span>
+            </p>
+            <h2 id="about-problem-heading" class="about-section__heading">{{ problem_heading | e }}</h2>
+            {% if problem_lead %}
+            <p class="about-section__lead">{{ problem_lead | e }}</p>
+            {% endif %}
+        </header>
+        <ul class="about-problem__grid">
+            {% for card in problem_cards %}
+            <li class="about-card about-card--problem">
+                <div class="about-card__body">
+                    <h3 class="about-card__title"><span class="about-card__emoji" aria-hidden="true">{{ card.emoji | e }}</span> {{ card.title | e }}</h3>
+                    <p class="about-card__text">{{ card.body | e }}</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="about-section about-section--numbered about-section--alt about-how about-section--sep" aria-labelledby="about-how-heading">
+        <header class="about-section__head">
+            <p class="about-section__eyebrow">
+                <span class="about-section__num">{{ how_section_num | e }}</span>
+                <span class="about-section__tag">{{ how_section_tag | e }}</span>
+            </p>
+            <h2 id="about-how-heading" class="about-section__heading">{{ how_heading | e }}</h2>
+        </header>
+        <ol class="about-how__steps about-how__steps--timeline">
+            {% for step in how_steps %}
+            <li class="about-step">
+                <div class="about-step__marker" aria-hidden="true">
+                    <span class="about-step__num">{{ step.num | e }}</span>
+                </div>
+                <div class="about-step__body">
+                    <h3 class="about-step__title">{{ step.title | e }}</h3>
+                    <p class="about-step__text">{{ step.body | e }}</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+        {% if how_demo_image %}
+        <figure class="about-how__demo about-how__demo--product">
+            <img src="{{ url_for('static', filename=how_demo_image) }}"
+                 alt="{{ how_demo_alt | e }}"
+                 width="880" height="495"
+                 loading="lazy" decoding="async">
+            <figcaption>{{ how_demo_caption | e }}</figcaption>
+        </figure>
+        {% endif %}
+    </section>
+
+    <section class="about-section about-section--numbered about-features" aria-labelledby="about-features-heading">
+        <header class="about-section__head">
+            <p class="about-section__eyebrow">
+                <span class="about-section__num">{{ features_section_num | e }}</span>
+                <span class="about-section__tag">{{ features_section_tag | e }}</span>
+            </p>
+            <h2 id="about-features-heading" class="about-section__heading">{{ features_heading | e }}</h2>
+        </header>
+        <ul class="about-feature__grid">
+            {% for feat in feature_cards %}
+            <li class="about-card about-card--feature">
+                <h3 class="about-card__title"><span class="about-card__emoji" aria-hidden="true">{{ feat.emoji | e }}</span> {{ feat.title | e }}</h3>
+                <p class="about-card__text">{{ feat.body | e }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="about-safety about-section--numbered" aria-labelledby="about-safety-heading">
+        <div class="about-safety__inner">
+            <header class="about-section__head about-section__head--inset">
+                <p class="about-section__eyebrow">
+                    <span class="about-section__num">{{ safety_section_num | e }}</span>
+                    <span class="about-section__tag">{{ safety_section_tag | e }}</span>
+                </p>
+                <h2 id="about-safety-heading" class="about-safety__heading">{{ safety_heading | e }}</h2>
+            </header>
+            <p class="about-safety__lead">{{ safety_lead | e }}</p>
+            <ul class="about-safety__list">
+                {% for item in safety_items %}
+                <li>{{ item | e }}</li>
+                {% endfor %}
+            </ul>
+            <div class="about-safety__pharmacist">
+                <img src="{{ url_for('static', filename=pharmacist_icon) }}"
+                     alt="{{ pharmacist_alt | e }}"
+                     width="64" height="64"
+                     loading="lazy" decoding="async">
+                <p>{{ pharmacist_note | e }}</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="about-section about-section--numbered about-section--alt about-tech" aria-labelledby="about-tech-heading">
+        <header class="about-section__head">
+            <p class="about-section__eyebrow">
+                <span class="about-section__num">{{ tech_section_num | e }}</span>
+                <span class="about-section__tag">{{ tech_section_tag | e }}</span>
+            </p>
+            <h2 id="about-tech-heading" class="about-section__heading">{{ tech_heading | e }}</h2>
+        </header>
+        {% if tech_lead %}
+        <p class="about-tech__lead">{{ tech_lead | e }}</p>
+        {% endif %}
+        {% include "about/_tech_diagram.html" %}
+        <details class="about-tech__details">
+            <summary>{{ tech_details_label | e }}</summary>
+            <ul class="about-tech__bullets">
+                {% for bullet in tech_bullets %}
+                <li>{{ bullet | e }}</li>
+                {% endfor %}
+            </ul>
+        </details>
+    </section>
+
+    <section class="about-section about-section--numbered about-trust about-trust--no-head" aria-label="{{ trust_heading | e }}">
+        {% if trust_lead %}
+        <p class="about-trust__lead">{{ trust_lead | e }}</p>
+        {% endif %}
+        <ul class="about-trust__cards">
+            {% for card in trust_cards %}
+            <li class="about-trust__card">
+                <h3 class="about-trust__card-title">{{ card.title | e }}</h3>
+                <p class="about-trust__card-body">{{ card.body | e }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="about-trust__note">{{ trust_beta_note | e }}</p>
+    </section>
+
+    <section class="about-cta-band" aria-labelledby="about-footer-cta-heading">
+        <h2 id="about-footer-cta-heading" class="about-cta-band__title">{{ footer_cta_heading | e }}</h2>
+        <p class="about-cta-band__lead">{{ footer_cta_lead | e }}</p>
+        <a href="{{ chat_href }}" class="about-cta-primary about-cta-primary--large" aria-label="{{ cta_aria_label | e }}">{{ cta_visible_text | e }}</a>
+        {% if cta_footer_note %}
+        <p class="about-cta-band__note">{{ cta_footer_note | e }}</p>
+        {% endif %}
+    </section>
+
 </div>
-{% if hero_image %}
-<figure class="about-hero">
-    <img class="about-hero-img" src="{{ url_for('static', filename=hero_image) }}" alt="" width="880" height="495" loading="lazy" decoding="async">
-    <figcaption class="about-hero-caption">{{ hero_caption | e }}</figcaption>
-</figure>
-{% endif %}
-<h2 class="about-subheading">{{ subpages_heading | e }}</h2>
-<ul class="about-subpages">
-    {% for sp in subpage_links %}
-    <li><a href="{{ sp.href }}?lang={{ lang }}">{{ sp.label | e }}</a></li>
-    {% endfor %}
-</ul>
-<a href="{{ chat_href }}" class="about-cta-primary" aria-label="{{ cta_aria_label | e }}">{{ cta_visible_text | e }}</a>
 {% endblock %}

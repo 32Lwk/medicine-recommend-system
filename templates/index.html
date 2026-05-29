@@ -77,8 +77,8 @@
             display: flex;
             flex-direction: column;
         }
-        /* シーズン装飾（スクロール外オーバーレイ・表示領域下端に固定） */
-        .chat-messages-viewport > .season-decoration-layer {
+        /* シーズン装飾（表示領域下端に固定・メッセージより下のレイヤ） */
+        .chat-messages > .season-decoration-layer {
             position: absolute;
             left: 0;
             right: 0;
@@ -181,7 +181,7 @@
             .chat-messages {
                 padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             }
-            .chat-messages-viewport > .season-decoration-layer {
+            .chat-messages > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 12px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
@@ -194,7 +194,7 @@
             }
         }
         @media (max-width: 480px) {
-            .chat-messages-viewport > .season-decoration-layer {
+            .chat-messages > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 10px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
@@ -226,7 +226,7 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260518-snow-scroll-fix" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260521-info-modal" onerror="console.error('Failed to load CSS file')">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
 <body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
@@ -271,6 +271,9 @@
     </div>
     
     <div class="chat-messages-viewport">
+        <div class="chat-messages" id="chatMessages">
+        <!-- 冬仕様の装飾 -->
+        <div class="snow-container" id="snowContainer" aria-hidden="true"></div>
         {% if decoration_images %}
         <div class="season-decoration-layer" aria-hidden="true">
             {% for image in decoration_images %}
@@ -280,9 +283,6 @@
             {% endfor %}
         </div>
         {% endif %}
-        <div class="chat-messages" id="chatMessages">
-        <!-- 冬仕様の装飾 -->
-        <div class="snow-container" id="snowContainer" aria-hidden="true"></div>
         
         <div class="message bot" data-initial-message="true">
             <div class="message-content">
@@ -456,7 +456,7 @@
                 <button type="button" class="modal-close" onclick="closeInfoModal()">&times;</button>
             </div>
             
-            <div class="modal-body">
+            <div class="modal-body app-scrollbar">
                 <!-- 一覧ページ -->
                 <div id="listPage" class="list-page">
                     <a class="list-item" href="{{ (app_base_path or '') }}/about" id="about-site-link">
@@ -554,7 +554,7 @@
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
     <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260517-agent-slow" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260518-periodic-sync" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260520-onboarding-layout" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">

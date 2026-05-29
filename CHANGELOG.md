@@ -1,8 +1,71 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月19日**（管理画面レスポンシブ・ヘッダー狭幅対応）
+**最終更新日: 2026年5月21日**（`/about` サイト刷新・技術構成図・UI 簡素化）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年5月21日 — `/about` 刷新（セージ調パンフレット風・技術構成図・4言語）
+
+### 概要
+
+- **`/about` トップを全面リデザイン**: アプリアイコン（`favicon.ico.png`）とパンフレット（`static/pamphlet_C_16x9/`）に合わせたソフトセージ調のエディトリアルレイアウト。文言は HTML / i18n のみ（画像は文字なしのイラスト）。
+- **4言語 i18n**: `src/content/about_i18n.py` で日本語・英語・韓国語・中国語のヒーロー・課題・特徴・使い方・技術・CTA 等を一元管理。
+- **技術構成図（skillicons + ブランド PNG）**: LAPRAS / skillicons 風のブロック図を `templates/about/_tech_diagram.html` で表示。運用・CI/CD、フロントエンド、バックエンド、外部 API、マルチエージェント、データベースの関係を SVG コネクタで接続。
+- **UI 簡素化**: ヒーローの研究βバッジ・スクロールヒントを削除。課題・特徴カードの装飾画像を削除し、特徴は縦 4 行グリッド。skillicons 下部の一覧バナーを削除。
+- **タイポグラフィ**: `/about` 全体を **BIZ UDPGothic**（`main.css` の `--font-sans`）に統一。
+- **開発時の注意**: ポート競合で別ポート起動時、`app.py` が古いプロセス残存の WARN を出力。`/about` のルート変更は uvicorn reload 対象に `about_i18n.py` を追加。
+
+### 技術構成図のブロック構成
+
+| ブロック | 内容 | 接続 |
+|---------|------|------|
+| 運用・CI/CD | GitHub, GCP, Git, Linux（skillicons.dev） | バックエンドへ矢印なし（独立表示） |
+| フロントエンド | HTML, CSS, JavaScript | → バックエンド |
+| バックエンド | Python, Flask, Docker | → 外部 API、↓ データベース |
+| 外部 API | OpenAI, DeepL（ローカル PNG） | ↓ マルチエージェント |
+| マルチエージェント | Python + OpenAI（`docs/ARCHITECTURE_MULTI_AGENT.md` 準拠の注記） | 外部 API の下段 |
+| データベース | Neon, PostgreSQL（ローカル PNG） | バックエンド真下 |
+
+- **skillicons.dev**: `openai` / `deepl` / `neon` は単体アイコンが空になるため、ブランドは `static/img/about/generated/tech/icon-*.png` を使用。
+- **Neon アイコン**: 黒余白対策のため CSS でパディングを調整。
+
+### `src/content/about_i18n.py`（新規・拡充）
+
+- **`get_about_bundle(page_id, lang)`**: ページ別の翻訳バンドル（index / info / privacy / terms / policies / usage / faq / consultation）。
+- **`build_tech_diagram(lang)`**: 構成図のラベル・ボックス・アイコン定義・SVG コネクタ座標・`aria-label`。
+- **`about_nav_entries` / `about_lang_switch_rows` / `about_shell_labels` / `about_subpage_links`**: ナビ・言語切替・シェル文言。
+- 課題・特徴から `image` / `alt` キーを削除（テキストのみ）。
+
+### `main.py`
+
+- **`/about` 系ルート**: FastAPI で index / サブページ / `/test/about` ミラーを提供。アクセス分析に `about_get` を記録。
+- **`_render_about_page`**: index では常に `hero-pharmacy-chat.png` と `build_tech_diagram(lang)` を注入。
+- **Jinja グローバル**: `build_tech_diagram` をテンプレートから参照可能に登録。
+
+### `templates/about/`
+
+- **`base_about.html`**: 共通シェル（ヘッダー・言語切替・`about.css` / `scrollbar.css` 経由のスクロール）。
+- **`index.html`**: ヒーロー・課題・特徴・使い方・ハイブリッド説明・技術（`_tech_diagram.html` include）・CTA。ヒーロー `about-hero__badge`（研究β版）は表示しない。
+- **`_tech_diagram.html`**: skillicons + ブランド PNG + SVG 矢印の構成図パーシャル。
+
+### `static/css/about.css`（新規）
+
+- セージ調カラー変数・エディトリアルヒーロー・カード・技術図グリッド（3×3 + コネクタ SVG）。
+- `body.about-page` / `.about-root` で BIZ UDPGothic、`@import` で `scrollbar.css`（`.about-scroll.app-scrollbar`）。
+- 削除済みスタイル: スクロールヒント、skillicons バナー、課題/特徴カード画像用レイアウト。
+
+### `static/img/about/`（新規アセット）
+
+- **`generated/`**: ヒーロー・背景パターン・チャット UI モック・課題イラスト（about 本文からは未参照のものあり）・`tech-architecture.png` 等。
+- **`generated/tech/`**: OpenAI / DeepL / Neon の PNG、補助 SVG（Flask / GCP / GitHub 等）。
+- **`icons/icon-stack-python.svg`**, **`demo-ipad-product.png`**, **`tech-stack-export.html`**: 静的プレビュー・デモ用。
+
+### `app.py`
+
+- ポート自動切替時に、古い uvicorn が残っていると `/about` が古い表示になる旨を WARN ログ出力。
+- reload 監視に `src/content/about_i18n.py` を追加。
 
 ---
 
