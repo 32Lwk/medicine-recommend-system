@@ -96,6 +96,9 @@
             back: "← 戻る",
             close: "×",
             skipOnboarding: "スキップして始める",
+            onboardingLastUpdatedLabel: "最終更新日",
+            onboardingLastUpdatedIso: "2026-05-20",
+            onboardingLastUpdated: "2026年5月20日",
             onboarding: [
                 {
                     production: {
@@ -104,8 +107,7 @@
                         visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
                         subtitle: "β版（試験運用）— より安全で分かりやすい情報提供に向けて改善を続けています",
                         body: [
-                            "症状を文章や音声で伝えると、市販薬の候補・成分・効能・受診の目安などをAIが整理して案内します。医療の診断に代わるものではありません。",
-                            "利用上の注意・免責は右上の ℹ️ から。最新の試験実装の一覧は下の「現在開発中の主な内容」を開いてご確認ください。"
+                            "症状を入力すると、市販薬の候補と受診の目安をAIが案内します。医療診断の代わりではありません。"
                         ],
                         details: [
                             {
@@ -147,9 +149,8 @@
                         visualAlt: "開発中の薬剤師相談ツールのアイコン",
                         subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span>',
                         body: [
-                            'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境</span>です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。',
-                            "新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。",
-                            "通常ご利用の方は、安定版である本番環境をご利用ください。"
+                            'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境(dev)</span>です。本番とは別サーバーで最新機能を試せますが、表示崩れ・エラー・データリセットがある場合があります。',
+                            "一般の方は本番環境（安定版）をご利用ください。"
                         ],
                         details: [
                             {
@@ -385,6 +386,9 @@
             back: "← Back",
             close: "×",
             skipOnboarding: "Skip onboarding",
+            onboardingLastUpdatedLabel: "Last updated",
+            onboardingLastUpdatedIso: "2026-05-20",
+            onboardingLastUpdated: "May 20, 2026",
             onboarding: [
                 {
                     production: {
@@ -393,8 +397,7 @@
                         visualAlt: "Illustration of a pharmacist supporting via smartphone",
                         subtitle: "Beta release — we keep improving clarity and safety.",
                         body: [
-                            "Describe your symptoms in text or voice; the AI summarizes OTC options, ingredients, effects, and when to seek care. It is not a substitute for a medical diagnosis.",
-                            "See disclaimers and how to use the app via ℹ️ (top right). Open “What we are currently working on” below for the latest in-progress checklist."
+                            "Describe your symptoms; the AI suggests OTC options and when to seek care. It is not a medical diagnosis."
                         ],
                         details: [
                             {
@@ -436,9 +439,8 @@
                         visualAlt: "Icon representing the OTC assistant under development",
                         subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span>',
                         body: [
-                            'This page is the <span class="onboarding-env-here">development environment for testers and developers</span>. It runs on a separate server from production (stable), and all latest improvements happen here.',
-                            "This is where new features and experiments are tried out first. You may see broken layouts, transient errors, or data resets.",
-                            "If you are a regular user, please use the production (stable) environment."
+                            'This is the <span class="onboarding-env-here">dev environment for testers and developers</span> on a separate server from production. Try the latest here; layouts, errors, or data resets may occur.',
+                            "Regular users should use the production (stable) environment."
                         ],
                         details: [
                             {
@@ -674,6 +676,9 @@
             back: "← 뒤로",
             close: "×",
             skipOnboarding: "넘기고 시작하기",
+            onboardingLastUpdatedLabel: "최종 업데이트",
+            onboardingLastUpdatedIso: "2026-05-20",
+            onboardingLastUpdated: "2026년 5월 20일",
             
             // イースターエッグ
             easterEggThanks: "🎉 감사합니다!",
@@ -694,8 +699,7 @@
                         visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
                         subtitle: "베타(시험 운영) — 더 안전하고 이해하기 쉬운 안내를 위해 계속 개선합니다",
                         body: [
-                            "증상을 글이나 음성으로 알려주면 AI가 일반의약품 후보·성분·효능·진료 시기 안내 등을 정리합니다. 의료 진단을 대신하지 않습니다.",
-                            "면책·이용 안내는 오른쪽 상단 ℹ️에서 확인하세요. 진행 중인 구현 목록은 아래 「현재 개발 중인 주요 내용」을 펼쳐 보세요."
+                            "증상을 알려주면 AI가 일반의약품 후보와 진료 시기를 안내합니다. 의료 진단을 대신하지 않습니다."
                         ],
                         details: [
                             {
@@ -737,9 +741,8 @@
                         visualAlt: "개발 중인 의약품 상담 도구 아이콘",
                         subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span>',
                         body: [
-                            '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경</span>입니다. 운영 환경(안정판)과는 다른 서버에서 동작하며, 최신 개선은 모두 이곳에서 진행됩니다.',
-                            "새 기능이나 개선안을 가장 먼저 시험할 수 있는 환경입니다. 레이아웃 깨짐·일시적 오류·데이터 리셋이 발생할 수 있습니다.",
-                            "일반적으로 이용하시는 분은 안정판인 운영 환경을 이용해 주세요."
+                            '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경(dev)</span>입니다. 운영과 별도 서버에서 최신 기능을 시험할 수 있으나, 레이아웃 깨짐·오류·데이터 리셋이 있을 수 있습니다.',
+                            "일반 이용자는 운영 환경(안정판)을 이용해 주세요."
                         ],
                         details: [
                             {
@@ -975,6 +978,9 @@
             back: "返回",
             close: "×",
             skipOnboarding: "跳过并开始",
+            onboardingLastUpdatedLabel: "最后更新",
+            onboardingLastUpdatedIso: "2026-05-20",
+            onboardingLastUpdated: "2026年5月20日",
             onboarding: [
                 {
                     production: {
@@ -983,8 +989,7 @@
                         visualAlt: "药师通过手机提供咨询的示意图",
                         subtitle: "测试版（试运行）— 我们持续改进说明的清晰度与安全性",
                         body: [
-                            "用文字或语音描述症状，AI 会整理非处方药候选、成分、功效与就医建议等，不能替代医疗机构的诊断。",
-                            "免责与使用说明见右上角 ℹ️。进行中的实现清单请展开下方「当前开发中的主要内容」。"
+                            "描述症状后，AI 会提示非处方药候选与就医建议，不能替代医疗诊断。"
                         ],
                         details: [
                             {
@@ -1026,9 +1031,8 @@
                         visualAlt: "开发中的药品咨询工具图标",
                         subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span>',
                         body: [
-                            '本页面是<span class="onboarding-env-here">面向测试人员与开发者的开发环境</span>。它与生产环境(稳定版)运行在不同的服务器上，所有最新改进都在此处进行。',
-                            "可在此抢先体验新功能或试验性改动。可能出现布局错乱、临时错误或数据被重置等情况。",
-                            "如您是普通用户，请使用稳定版的生产环境。"
+                            '本页面是<span class="onboarding-env-here">面向测试与开发者的开发环境(dev)</span>，与生产环境分属不同服务器，可抢先试用最新功能，但可能出现布局错乱、错误或数据重置。',
+                            "普通用户请使用生产环境（稳定版）。"
                         ],
                         details: [
                             {
@@ -1548,6 +1552,11 @@
                 const bodyHtml = Array.isArray(slide.body)
                     ? slide.body.map(text => `<p>${text}</p>`).join('')
                     : (slide.body || '');
+                const locale = getActiveTranslations();
+                const lastUpdatedIso = locale.onboardingLastUpdatedIso || '2026-05-20';
+                const lastUpdatedHtml = (filteredIndex === 0 && locale.onboardingLastUpdated)
+                    ? `<p class="onboarding-last-updated">${locale.onboardingLastUpdatedLabel ? `<span class="onboarding-last-updated-label">${locale.onboardingLastUpdatedLabel}</span> ` : ''}<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time></p>`
+                    : '';
                 const listHtml = Array.isArray(slide.list)
                     ? `<ul>${slide.list.map(item => `<li>${item}</li>`).join('')}</ul>`
                     : '';
@@ -1587,6 +1596,7 @@
                                 ${customHtml}
                                 ${linksHtml}
                             </div>
+                            ${lastUpdatedHtml}
                             ${detailsHtml}
                         </div>
                         <div class="onboarding-slide-footer">

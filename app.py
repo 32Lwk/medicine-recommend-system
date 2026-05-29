@@ -24,9 +24,19 @@ def _resolve_port() -> int:
 
     requested_port = int(os.getenv('PORT', 5000))
     if is_port_in_use(requested_port):
-        logger.warning(f"⚠️ Port {requested_port} is already in use. Finding alternative port...")
+        logger.warning(
+            "⚠️ Port %s is already in use (古い uvicorn が残っている可能性があります). "
+            "Finding alternative port...",
+            requested_port,
+        )
         port = find_free_port(requested_port + 1)
-        logger.info(f"✅ Found available port: {port}")
+        logger.info("✅ Found available port: %s", port)
+        logger.warning(
+            "別ポートで起動しました。ブラウザは http://127.0.0.1:%s/ を開きます。"
+            " /about が古い表示のときは、ポート %s のプロセスを終了してから再起動してください。",
+            port,
+            requested_port,
+        )
         return port
     return requested_port
 
@@ -74,6 +84,11 @@ if __name__ == '__main__':
     }
     if reload:
         uvicorn_kwargs['reload_dirs'] = ['src', 'config', 'templates', 'static']
+        # main.py の /about ルート変更も開発時に反映する
+        uvicorn_kwargs['reload_includes'] = [
+            'main.py',
+            'src/content/about_i18n.py',
+        ]
         uvicorn_kwargs['reload_excludes'] = [
             'log',
             'log/*',
