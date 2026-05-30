@@ -5069,6 +5069,8 @@
     // --- タブを開いている間のチャット履歴バックアップ（sessionStorage） ---
     const CHAT_CACHE_PREFIX = 'mrc_chat_cache:';
     const CHAT_RESTORE_DONE_PREFIX = 'mrc_restore_done:';
+    /** 新セッション・履歴クリア直後はキャッシュ復元を無効化（reload 後も有効） */
+    const SESSION_RESET_KEY = 'mrc_session_reset';
     const SID_COOKIE_NAME = 'sid';
     const SID_LOCAL_STORAGE_KEY = 'mrc_sid';
     let chatRestoreInFlight = false;
@@ -5078,18 +5080,8 @@
         const pattern = new RegExp('(?:^|;\\s*)' + SID_COOKIE_NAME + '=([^;]*)');
         const match = document.cookie.match(pattern);
         if (match) {
-            const sid = decodeURIComponent(match[1]);
-            try {
-                localStorage.setItem(SID_LOCAL_STORAGE_KEY, sid);
-            } catch (e) { /* ignore */ }
-            return sid;
+            return decodeURIComponent(match[1]);
         }
-        try {
-            const stored = localStorage.getItem(SID_LOCAL_STORAGE_KEY);
-            if (stored) {
-                return stored;
-            }
-        } catch (e) { /* ignore */ }
         return '';
     }
 
@@ -5102,13 +5094,45 @@
         } catch (e) { /* ignore */ }
     }
 
+    function markSessionReset() {
+        try {
+            sessionStorage.setItem(SESSION_RESET_KEY, '1');
+        } catch (e) { /* ignore */ }
+    }
+
+    function isSessionResetPending() {
+        try {
+            return sessionStorage.getItem(SESSION_RESET_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function consumeSessionReset() {
+        if (!isSessionResetPending()) {
+            return false;
+        }
+        try {
+            sessionStorage.removeItem(SESSION_RESET_KEY);
+        } catch (e) { /* ignore */ }
+        return true;
+    }
+
     function chatCacheKey(sid) {
-        return CHAT_CACHE_PREFIX + (sid || getSidFromCookie() || 'unknown');
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return null;
+        }
+        return CHAT_CACHE_PREFIX + id;
     }
 
     function loadChatCache(sid) {
+        const key = chatCacheKey(sid);
+        if (!key) {
+            return [];
+        }
         try {
-            const raw = sessionStorage.getItem(chatCacheKey(sid));
+            const raw = sessionStorage.getItem(key);
             if (!raw) {
                 return [];
             }
@@ -5121,12 +5145,16 @@
     }
 
     function saveChatCache(sid, messages) {
-        if (!messages || messages.length === 0) {
+        if (!messages || messages.length === 0 || isSessionResetPending()) {
+            return;
+        }
+        const key = chatCacheKey(sid);
+        if (!key) {
             return;
         }
         try {
             sessionStorage.setItem(
-                chatCacheKey(sid),
+                key,
                 JSON.stringify({ messages: messages, updatedAt: Date.now() })
             );
         } catch (e) {
@@ -5135,13 +5163,11 @@
     }
 
     function clearChatCache(sid) {
-        const id = sid || getSidFromCookie();
+        const id = (sid || getSidFromCookie() || '').trim();
         if (id) {
-            sessionStorage.removeItem(chatCacheKey(id));
+            sessionStorage.removeItem(CHAT_CACHE_PREFIX + id);
             sessionStorage.removeItem(CHAT_RESTORE_DONE_PREFIX + id);
         }
-        sessionStorage.removeItem(chatCacheKey('unknown'));
-        sessionStorage.removeItem(CHAT_RESTORE_DONE_PREFIX + 'unknown');
         lastRenderedMessagesFingerprint = '';
     }
 
@@ -5552,6 +5578,7 @@
         const sessionId = sid || getSidFromCookie();
         if (
             chatRestoreInFlight
+            || isSessionResetPending()
             || !messages
             || messages.length === 0
             || !sessionId
@@ -5591,6 +5618,9 @@
         const opts = options || {};
         const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
         const server = dedupeMessageList((sessionData && sessionData.messages) ? sessionData.messages : []);
+        if (isSessionResetPending()) {
+            return server;
+        }
         const cached = dedupeMessageList(loadChatCache(sid));
         const merged = mergeMessageLists(server, cached);
 
@@ -5841,6 +5871,10 @@
 
     // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
+        const hadReset = consumeSessionReset();
+        if (hadReset) {
+            clearAllChatSessionStorage();
+        }
         fetch(withVersion('/api/sessions'), {
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' }
@@ -5855,11 +5889,23 @@
                 if (data && data.session_id) {
                     rememberSid(data.session_id);
                 }
+                if (hadReset && data && Array.isArray(data.messages) && data.messages.length === 0) {
+                    const chatEl = document.getElementById('chatMessages');
+                    if (chatEl) {
+                        chatEl.innerHTML = '';
+                    }
+                    lastRenderedMessagesFingerprint = '';
+                    updateSessionSafetyBanners(data);
+                    return;
+                }
                 applySessionMessages(data);
             })
             .catch(error => {
                 const t = translations[currentLanguage];
                 console.error(t.loadError + ':', error);
+                if (hadReset || isSessionResetPending()) {
+                    return;
+                }
                 const cached = loadChatCache(getSidFromCookie());
                 if (cached.length > 0) {
                     renderChatMessages(cached);
@@ -8010,7 +8056,12 @@ function appendQaDelta(text, section) {
     function clearChat() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmClearChat)) {
+            markSessionReset();
+            clearAllChatSessionStorage();
             clearChatCache();
+            try {
+                sessionStorage.removeItem('chatSseLastEventId');
+            } catch (e) { /* ignore */ }
             fetch(withVersion(mainAppPath('/clear')), {
                 method: 'POST',
                 credentials: 'include',
@@ -8164,11 +8215,42 @@ function appendQaDelta(text, section) {
         });
     }
 
+    function clearAllChatSessionStorage() {
+        const prefixes = [CHAT_CACHE_PREFIX, CHAT_RESTORE_DONE_PREFIX];
+        try {
+            const keys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (!key) {
+                    continue;
+                }
+                if (prefixes.some(function (p) { return key.indexOf(p) === 0; })) {
+                    keys.push(key);
+                }
+            }
+            keys.forEach(function (key) { sessionStorage.removeItem(key); });
+        } catch (e) { /* ignore */ }
+        try {
+            sessionStorage.removeItem('lastUserMessage');
+            sessionStorage.removeItem('chatSubmitBaselineLength');
+        } catch (e) { /* ignore */ }
+        lastRenderedMessagesFingerprint = '';
+    }
+
     // 新しいセッションを開始する関数
     document.getElementById('new-session-btn').onclick = function() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmNewSession)) {
-            clearChatCache();
+            markSessionReset();
+            const oldSid = getSidFromCookie();
+            clearChatCache(oldSid);
+            clearAllChatSessionStorage();
+            try {
+                sessionStorage.removeItem('chatSseLastEventId');
+            } catch (e) { /* ignore */ }
+            try {
+                localStorage.removeItem(SID_LOCAL_STORAGE_KEY);
+            } catch (e) { /* ignore */ }
             const abortCtrl = new AbortController();
             const abortTimer = setTimeout(function () { abortCtrl.abort(); }, 15000);
             fetch(withVersion(mainAppPath('/new_session')), {
@@ -8180,19 +8262,29 @@ function appendQaDelta(text, section) {
                     'Cache-Control': 'no-cache'
                 }
             })
-            .then(response => {
+            .then(function (response) {
                 clearTimeout(abortTimer);
-                if (response.ok) {
-                    // オンボーディングガイドを再表示するため、localStorageから削除
-                    try {
-                        localStorage.removeItem('onboardingCompleted');
-                    } catch (error) {
-                        console.warn('Failed to remove onboarding completion flag:', error);
-                    }
-                    location.reload();
-                } else {
+                if (!response.ok) {
                     alert('新しいセッションの開始に失敗しました');
+                    return null;
                 }
+                return response.json().catch(function () { return {}; });
+            })
+            .then(function (data) {
+                if (!data) {
+                    return;
+                }
+                if (data.session_id) {
+                    rememberSid(data.session_id);
+                    clearChatCache(data.session_id);
+                }
+                try {
+                    localStorage.removeItem('onboardingCompleted');
+                    localStorage.removeItem(SID_LOCAL_STORAGE_KEY);
+                } catch (error) {
+                    console.warn('Failed to clear session-local flags:', error);
+                }
+                location.reload();
             })
             .catch(function (err) {
                 clearTimeout(abortTimer);
@@ -8940,6 +9032,9 @@ function appendQaDelta(text, section) {
             applyPeriodicSessionSync(data || {});
         })
         .catch(error => {
+            if (isSessionResetPending()) {
+                return;
+            }
             const cached = loadChatCache(getSidFromCookie());
             if (cached.length > 0) {
                 renderChatMessages(cached);
