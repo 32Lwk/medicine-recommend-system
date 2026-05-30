@@ -52,9 +52,10 @@ from src.services.session_manager import (
     normalize_session_messages,
     persist_session_from_chat_state,
     ensure_session_persisted,
-    find_existing_session,
     purge_empty_sessions_on_startup,
     delete_session_by_id,
+    is_session_recently_deleted,
+    mark_session_deleted,
     get_manual_reply_session_ids,
     get_cleanup_exclude_session_ids,
     save_session_to_db,
@@ -679,6 +680,12 @@ async def post_chat_stream(
 @app.post("/clear")
 def clear_chat(request: Request, response: Response, sid: str = Depends(get_sid)):
     if sid:
+        try:
+            from src.services.sse_emit import clear_session_stream_state
+
+            clear_session_stream_state(sid)
+        except Exception:
+            pass
         session_data = get_session_from_db(sid)
         if session_data:
             session_data["messages"] = []
@@ -693,18 +700,43 @@ def clear_chat_test(request: Request, response: Response, sid: str = Depends(get
 
 @app.post("/new_session")
 async def new_session(request: Request, response: Response):
-    # 新規SIDを発行してcookieを書き換える
+    # 新規SIDを発行してcookieを書き換える（旧セッションは削除して再利用しない）
     old_sid = request.cookies.get(COOKIE_NAME_SID)
     if old_sid:
+        mark_session_deleted(old_sid)
         try:
             from src.services.sse_emit import clear_session_stream_state
 
             clear_session_stream_state(old_sid)
         except Exception:
             pass
-    sid = str(int(time.time() * 1000)) + str(random.randint(100000, 999999))
+        try:
+            delete_session_by_id(old_sid)
+        except Exception:
+            pass
+    sid = str(int(time.time() * 1000000)) + str(random.randint(100000, 999999))
     response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
     username = f"ユーザー{get_next_user_number()}"
+    ensure_session_persisted(
+        sid,
+        {
+            "messages": [],
+            "username": username,
+            "user_attributes": {
+                "age": None,
+                "gender": None,
+                "pregnant": None,
+                "breastfeeding": None,
+                "current_medications": [],
+                "allergies": [],
+                "medical_history": [],
+                "symptom_duration_days": None,
+                "other_info": None,
+            },
+            "session_active": False,
+        },
+        request,
+    )
 
     return {"message": "新しいセッションを開始しました", "username": username, "session_id": sid}
 
@@ -758,24 +790,12 @@ def api_processing_status_get(
     return get_processing_status(target_sid)
 
 
-def _resolve_user_session_id(request: Request, response: Response, sid: str) -> str:
-    """Cookie sid を確定。DB に会話ありの既存行があれば同一訪問者に再利用。"""
-    client_ip = request.client.host if request.client else ""
-    user_agent = request.headers.get("User-Agent", "") or ""
-    existing = find_existing_session(client_ip, user_agent)
-    if existing and existing != sid:
-        sid = existing
-        response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
-    return sid
-
-
 @app.get("/api/sessions")
 async def api_sessions_get(
     request: Request,
     response: Response,
     sid: str = Depends(get_sid),
 ):
-    sid = _resolve_user_session_id(request, response, sid)
     session_data = get_session_from_db(sid)
     if session_data:
         session_data["last_activity"] = datetime.now()
@@ -876,6 +896,16 @@ async def api_sessions_restore(
     client_messages = data.get("messages")
     if not isinstance(client_messages, list):
         return JSONResponse({"error": "messages must be a list"}, status_code=400)
+
+    if is_session_recently_deleted(sid):
+        return {
+            "status": "ok",
+            "session_id": sid,
+            "messages_count": 0,
+            "restored": False,
+            "messages": [],
+            "rejected": "session_deleted",
+        }
 
     session_data = get_session_from_db(sid) or {
         "session_id": sid,

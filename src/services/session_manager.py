@@ -28,6 +28,10 @@ _memory_fallback_logged = False
 _last_db_persist_at: dict[str, float] = {}
 _ACTIVITY_PERSIST_INTERVAL_SEC = 30
 
+# new_session で削除した sid（クライアントの restore が履歴を復活させないようにする）
+_recently_deleted_sids: dict[str, float] = {}
+_DELETED_SID_TTL_SEC = 3600
+
 # グローバル状態（モジュール変数で管理、globals()は使用しない）
 _ai_auto_reply = True
 _admin_mode = False
@@ -630,6 +634,32 @@ def clear_sessions_fallback():
     """フォールバック用メモリのセッションをクリア（管理者用）"""
     global _all_sessions
     _all_sessions.clear()
+
+
+def mark_session_deleted(session_id: str) -> None:
+    """明示的に終了したセッション（new_session 等）を restore 対象外にする。"""
+    if not session_id:
+        return
+    _purge_stale_deleted_sids()
+    _recently_deleted_sids[str(session_id)] = time.time()
+
+
+def is_session_recently_deleted(session_id: str) -> bool:
+    if not session_id:
+        return False
+    _purge_stale_deleted_sids()
+    return str(session_id) in _recently_deleted_sids
+
+
+def _purge_stale_deleted_sids() -> None:
+    now = time.time()
+    stale = [
+        sid
+        for sid, ts in _recently_deleted_sids.items()
+        if now - ts > _DELETED_SID_TTL_SEC
+    ]
+    for sid in stale:
+        _recently_deleted_sids.pop(sid, None)
 
 
 def delete_session_by_id(session_id: str) -> bool:
