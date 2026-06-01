@@ -14,8 +14,9 @@ OPENAI_API_KEY_PRODUCTION=sk-...   # 本番
 OPENAI_API_KEY_STAGING=sk-...      # dev
 APP_ENV=production                 # または development
 
-LLM_MODEL_PROFILE=gpt5           # staging 一括
-LLM_CANARY_PERCENT=100
+# コード既定は gpt5。明示する場合のみ:
+# LLM_MODEL_PROFILE=gpt5
+# LLM_CANARY_PERCENT=0   # gpt5 時は 0/100 とも全セッション gpt5
 OPENAI_USE_RESPONSES_API=false   # triage/explain はロール別 Responses
 
 LLM_AGENT_ENABLED=true

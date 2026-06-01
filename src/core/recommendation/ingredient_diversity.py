@@ -42,6 +42,69 @@ PRIORITY_MEDICINE_NAMES_FOR_PROTECTION = [
 ]
 
 
+def _ensure_pollen_eye_drop_slot(
+    selected: List[Dict],
+    candidates: List[Dict],
+    *,
+    user_text: str,
+    nlu_result: Dict | None,
+    top_n: int,
+) -> List[Dict]:
+    """花粉症文脈で目のかゆみがあるとき、top3 に目薬を1枠確保する。"""
+    from src.core.candidate_scoring import is_pollen_rhinitis_focus
+    from src.core.recommendation.pollen_rhinitis_scoring import pollen_symptom_profile
+
+    if not nlu_result or not selected:
+        return selected
+    symptom_names = [s.get("name") for s in nlu_result.get("symptoms", []) if s.get("name")]
+    if not is_pollen_rhinitis_focus(user_text or "", symptom_names):
+        return selected
+    if not pollen_symptom_profile(symptom_names, user_text).get("has_eye"):
+        return selected
+    if any("目薬" in str(c.get("medicine_type", "")) for c in selected):
+        return selected
+    eye_pool = [c for c in candidates if "目薬" in str(c.get("medicine_type", ""))]
+    if not eye_pool:
+        return selected
+    best_eye = max(eye_pool, key=lambda c: c.get("final_score", 0) or 0)
+    if (best_eye.get("final_score") or 0) <= 0:
+        return selected
+    out = list(selected)
+    if len(out) >= top_n:
+        out = out[: top_n - 1] + [best_eye]
+    else:
+        out.append(best_eye)
+    return sorted(out, key=lambda x: x.get("original_rank", 9999))[:top_n]
+
+
+def _finalize_diversity_selection(
+    selected: List[Dict],
+    all_candidates: List[Dict],
+    *,
+    user_text: str,
+    nlu_result: Dict | None,
+    user_info: Dict | None,
+    top_n: int,
+) -> List[Dict]:
+    user_text_for_pollen = user_text or ""
+    if nlu_result and not user_text_for_pollen:
+        user_text_for_pollen = str(
+            nlu_result.get("user_message") or nlu_result.get("user_text") or ""
+        )
+    if user_info and not user_text_for_pollen:
+        user_text_for_pollen = str(
+            user_info.get("user_message") or user_info.get("user_text") or ""
+        )
+    selected = _ensure_pollen_eye_drop_slot(
+        selected,
+        all_candidates,
+        user_text=user_text_for_pollen,
+        nlu_result=nlu_result,
+        top_n=top_n,
+    )
+    return selected[:top_n]
+
+
 def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similarity_threshold: float = 0.2, nlu_result: Dict = None, user_info: Dict = None) -> List[Dict]:
     """主要成分が重複しすぎないように候補を再選別する（剤形多様性も考慮）
     
@@ -49,8 +112,25 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     - similarity_thresholdを0.3から0.2に下げる（より厳格に重複を避ける）
     - 異なる成分の医薬品にボーナスを付与
     """
+    user_text_early = ""
+    if nlu_result:
+        user_text_early = str(
+            nlu_result.get("user_message") or nlu_result.get("user_text") or ""
+        )
+    if user_info and not user_text_early:
+        user_text_early = str(
+            user_info.get("user_message") or user_info.get("user_text") or ""
+        )
+
     if len(candidates) <= top_n:
-        return candidates
+        return _finalize_diversity_selection(
+            candidates,
+            candidates,
+            user_text=user_text_early,
+            nlu_result=nlu_result,
+            user_info=user_info,
+            top_n=top_n,
+        )
 
     # 期待される医薬品をスコアフィルタリングから保護（PRIORITY_MEDICINE_NAMES_FOR_PROTECTION はモジュール定数）
     protected_candidates = []
@@ -85,7 +165,14 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
         filtered_candidates = candidates
     
     if len(filtered_candidates) <= top_n:
-        return filtered_candidates[:top_n]
+        return _finalize_diversity_selection(
+            filtered_candidates[:top_n],
+            candidates,
+            user_text=user_text_early,
+            nlu_result=nlu_result,
+            user_info=user_info,
+            top_n=top_n,
+        )
 
     # 二日酔い特化：五苓散とL-システイン含有医薬品を優先確保
     reserved_goreisan = None
@@ -1453,4 +1540,11 @@ def ensure_ingredient_diversity(candidates: List[Dict], top_n: int = 3, similari
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"ensure_ingredient_diversity: original_rankに基づいて順序を復元: {len(final_selected_sorted)}件")
 
-    return final_selected_sorted[:top_n]
+    return _finalize_diversity_selection(
+        final_selected_sorted,
+        candidates,
+        user_text=user_text_early,
+        nlu_result=nlu_result,
+        user_info=user_info,
+        top_n=top_n,
+    )

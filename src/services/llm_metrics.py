@@ -67,7 +67,7 @@ def get_llm_summary() -> Dict[str, Any]:
         from config.llm_config import LLM_MODEL_PROFILE
         profile = LLM_MODEL_PROFILE
     except ImportError:
-        profile = "legacy"
+        profile = "gpt5"
     return {
         "llm_calls": calls,
         "llm_call_count": len(calls),

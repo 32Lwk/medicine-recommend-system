@@ -672,6 +672,22 @@
     ],
     "weight": 0.85
   },
+  "口渇": {
+    "canonical_name": "口渇",
+    "synonyms": [
+      "口が渇く",
+      "口の渇き",
+      "喉が渇く",
+      "のどが渇く",
+      "喉の渇き"
+    ],
+    "severity_tags": [
+      "軽度",
+      "中等度"
+    ],
+    "medicine_types": [],
+    "weight": 0.5
+  },
   "目のかゆみ": {
     "canonical_name": "目のかゆみ",
     "synonyms": [

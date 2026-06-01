@@ -40,7 +40,7 @@ def effective_model_profile(
     環境で LLM_MODEL_PROFILE=gpt5 なら全体適用。
     カナリア有効時は新規セッションのみ gpt5。
     """
-    env_profile = (os.getenv("LLM_MODEL_PROFILE") or "legacy").strip().lower()
+    env_profile = (os.getenv("LLM_MODEL_PROFILE") or "gpt5").strip().lower()
     pct = _canary_percent()
     if env_profile == "gpt5":
         if pct >= 100 or pct <= 0:

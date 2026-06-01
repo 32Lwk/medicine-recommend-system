@@ -11,7 +11,7 @@
 | `model_role=concierge` | `gpt-4o-mini` (legacy) | — | メタ意図 `meta_triage.py` |
 | `model_role=explain` | `gpt-4o` | — | ConfidenceGate 再トリアージ |
 
-本番は Cloud Run の実環境変数で `LLM_AGENT_ENABLED` を確認すること（`docs/CLOUD_RUN_LLM_ENV.md`）。
+本番は Cloud Run の実環境変数で `LLM_AGENT_ENABLED` を確認すること（`docs/CLOUD_RUN_LLM_ENV.md`）。`LLM_MODEL_PROFILE` 未設定時のコード既定は **gpt5**。
 
 ## A0-2 パイプライン早期 return 一覧
 

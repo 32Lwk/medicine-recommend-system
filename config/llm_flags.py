@@ -28,7 +28,7 @@ def is_gpt_recommend_fallback_enabled() -> bool:
 
 
 def is_gpt5_profile() -> bool:
-    return (os.getenv("LLM_MODEL_PROFILE") or "legacy").strip().lower() == "gpt5"
+    return (os.getenv("LLM_MODEL_PROFILE") or "gpt5").strip().lower() == "gpt5"
 
 
 def get_canary_percent() -> int:

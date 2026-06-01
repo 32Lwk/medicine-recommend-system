@@ -23,8 +23,8 @@ def _get_bool(key: str, default: bool) -> bool:
     return val.strip().lower() in ("1", "true", "yes", "on")
 
 
-# プロファイル: legacy | gpt5
-LLM_MODEL_PROFILE = (os.getenv("LLM_MODEL_PROFILE") or "legacy").strip().lower()
+# プロファイル: legacy | gpt5（未設定時は gpt5。切り戻しは LLM_MODEL_PROFILE=legacy）
+LLM_MODEL_PROFILE = (os.getenv("LLM_MODEL_PROFILE") or "gpt5").strip().lower()
 
 _LEGACY = {
     "triage": "gpt-4o-mini",
