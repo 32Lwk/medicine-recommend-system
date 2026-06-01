@@ -59,7 +59,16 @@ SCHEMAS = {
             'needs_escalation': {'type': 'boolean'},
             'escalation_reason': {'type': 'string', 'maxLength': 200}
         }
-    }
+    },
+    'preference_analysis': {
+        'type': 'object',
+        'properties': {
+            'user_preferences': {
+                'type': 'object',
+                'additionalProperties': True,
+            }
+        },
+    },
 }
 
 # 危険なパターン

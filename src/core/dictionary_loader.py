@@ -13,9 +13,11 @@ from src import PROJECT_ROOT
 _DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 _INGREDIENT_PATH = os.path.join(_DATA_DIR, "ingredient_dictionary.json")
 _SYMPTOM_PATH = os.path.join(_DATA_DIR, "symptom_dictionary.json")
+_PREFERENCE_CATALOG_PATH = os.path.join(_DATA_DIR, "user_preference_keyword_catalog.json")
 
 _cached_ingredient: Optional[Dict[str, Any]] = None
 _cached_symptom: Optional[Dict[str, Any]] = None
+_cached_preference_catalog: Optional[Dict[str, Any]] = None
 
 
 def load_ingredient_dictionary() -> Dict[str, Any]:
@@ -38,8 +40,19 @@ def load_symptom_dictionary() -> Dict[str, Any]:
     return _cached_symptom
 
 
+def load_preference_keyword_catalog() -> Dict[str, Any]:
+    """ユーザー嗜好キーワードカタログ（GPT参照・安全語・除外ルール）"""
+    global _cached_preference_catalog
+    if _cached_preference_catalog is not None:
+        return _cached_preference_catalog
+    with open(_PREFERENCE_CATALOG_PATH, "r", encoding="utf-8") as f:
+        _cached_preference_catalog = json.load(f)
+    return _cached_preference_catalog
+
+
 def clear_cache() -> None:
     """キャッシュをクリア（テスト用）"""
-    global _cached_ingredient, _cached_symptom
+    global _cached_ingredient, _cached_symptom, _cached_preference_catalog
     _cached_ingredient = None
     _cached_symptom = None
+    _cached_preference_catalog = None

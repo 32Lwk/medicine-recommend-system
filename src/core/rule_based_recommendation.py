@@ -476,7 +476,11 @@ def rule_based_recommendation(
     if precomputed_nlu is not None:
         nlu_result = dict(precomputed_nlu)
     else:
-        nlu_result = hybrid_nlu_extraction(user_text, user_info, client, session_id)
+        from src.handlers.chat.nlu_resolve import resolve_nlu_for_recommendation
+
+        nlu_result = resolve_nlu_for_recommendation(
+            user_text, user_info, client, session_id=session_id
+        )
     
     # やけどの場合、NLU結果から強度を確認（ガードレールで検出されなかった場合）
     if burn_severity is not None and not is_burn_doctor_referral:
@@ -674,12 +678,12 @@ def rule_based_recommendation(
         from src.core.user_detection import extract_user_preferences
 
         _prefs = extract_user_preferences(user_text, nlu_result, scoring_user_info)
-        scoring_user_info['user_preferences'] = _prefs
-        scoring_user_info['prefers_kampo'] = _prefs.get('prefers_kampo', False)
-        scoring_user_info['prefers_not_kampo'] = _prefs.get('prefers_not_kampo', False)
+        scoring_user_info["user_preferences"] = _prefs
+        scoring_user_info["prefers_kampo"] = _prefs.get("prefers_kampo", False)
+        scoring_user_info["prefers_not_kampo"] = _prefs.get("prefers_not_kampo", False)
     except Exception as e:
         logger.warning(f"ユーザー要望の抽出に失敗: {e}")
-        scoring_user_info.setdefault('user_preferences', None)
+        scoring_user_info.setdefault("user_preferences", None)
 
     age_imputed = False
     if scoring_user_info.get('age') is None:
@@ -697,10 +701,24 @@ def rule_based_recommendation(
         medicine_df,
         user_text,
         influenza_risk,
-        user_preferences=scoring_user_info.get('user_preferences'),
+        user_preferences=scoring_user_info.get("user_preferences"),
         preference_user_info=scoring_user_info,
     )
-    
+
+    try:
+        from src.core.recommendation.preference_candidate_filter import (
+            filter_candidates_by_preferences,
+        )
+
+        candidates = filter_candidates_by_preferences(
+            candidates,
+            scoring_user_info.get("user_preferences"),
+            nlu_result=nlu_result,
+            user_info=scoring_user_info,
+        )
+    except Exception as pref_filter_err:
+        logger.warning("嗜好候補フィルタでエラー: %s", pref_filter_err)
+
     # 初期候補数を記録
     initial_candidate_count = len(candidates)
     
@@ -1582,6 +1600,12 @@ def rule_based_recommendation(
     if sleep_critical_questions:
         all_critical_questions.extend(sleep_critical_questions)
     
+    from src.core.preference_merge import build_user_preferences_summary
+
+    user_preferences_summary = build_user_preferences_summary(
+        scoring_user_info.get("user_preferences")
+    )
+
     return {
         "status": "success",
         "recommended_medicines": recommendations,
@@ -1592,6 +1616,7 @@ def rule_based_recommendation(
         "critical_questions": all_critical_questions,  # 睡眠改善薬の質問も含める
         "missing_priority": missing_priority,
         "alternative_therapies": alternative_therapies,  # 代替療法（睡眠改善薬の場合）
+        "user_preferences_summary": user_preferences_summary,
         "nlu_result": nlu_result,
         "influenza_risk": influenza_risk,  # 新規追加
         "influenza_reason": influenza_reason,  # 新規追加

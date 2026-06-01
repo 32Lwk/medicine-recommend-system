@@ -13,8 +13,20 @@ from src.core.rule_based_recommendation import (
     simple_pattern_matching_nlu,
 )
 from src.core.recommendation.pollen_combination_advice import build_pollen_combination_advice
+from src.core.preference_merge import merge_user_preferences
 from src.core.user_detection import extract_user_preferences, preference_context_text
 from src.core.medicine_data import CSV_PATH
+
+
+def _pattern_nlu_with_merged_prefs(user_text: str, attrs=None, **llm_fields):
+    """統合テスト用: pattern NLU + 嗜好マージ結果を precomputed_nlu に載せる"""
+    nlu = simple_pattern_matching_nlu(user_text, attrs or {})
+    llm = {
+        k: {"value": v, "confidence": 0.85, "evidence": user_text}
+        for k, v in llm_fields.items()
+    }
+    nlu["user_preferences"] = merge_user_preferences(llm, user_text, None)
+    return nlu
 
 
 class TestClassifyPollenProduct:
@@ -38,41 +50,50 @@ class TestClassifyPollenProduct:
         assert classify_pollen_rhinitis_product(c) == "nasal_vasoconstrictor"
 
 
+def _nlu_with_prefs(prefs: dict):
+    return {"user_preferences": prefs}
+
+
 class TestUserPreferences:
-    def test_avoid_drowsiness_keywords(self):
-        p = extract_user_preferences("花粉症で眠気が心配です。運転もします。", {})
+    def test_avoid_drowsiness_safety_keyword(self):
+        p = extract_user_preferences("花粉症で運転もします。", {})
         assert p["avoid_drowsiness"] is True
 
-    def test_prefer_nasal(self):
-        p = extract_user_preferences("花粉症で点鼻がいいです", {})
+    def test_prefer_nasal_from_nlu_result(self):
+        p = extract_user_preferences(
+            "花粉症で点鼻がいいです",
+            _nlu_with_prefs(
+                {"prefer_nasal_route": True, "prefer_nasal_route_confidence": 0.85}
+            ),
+        )
         assert p["prefer_nasal_route"] is True
 
-    def test_other_info_from_attributes(self):
+    def test_reads_merged_prefs_from_nlu(self):
         text = preference_context_text(
             "花粉症で鼻水がひどい",
             {"other_info": "眠気が心配です"},
         )
-        p = extract_user_preferences(text, {})
+        p = extract_user_preferences(
+            text,
+            _nlu_with_prefs(
+                {"avoid_drowsiness": True, "avoid_drowsiness_confidence": 0.75}
+            ),
+        )
         assert p["avoid_drowsiness"] is True
 
-    def test_dry_mouth_from_nlu_symptom(self):
+    def test_dry_mouth_not_from_symptom_only(self):
         p = extract_user_preferences(
             "花粉症です",
             {"symptoms": [{"name": "口渇", "severity": "中等度"}]},
         )
-        assert p["avoid_dry_mouth"] is True
+        assert p["avoid_dry_mouth"] is False
 
-    @pytest.mark.parametrize(
-        "text",
-        [
-            "口が渇きにくい花粉症薬を探しています",
-            "のどの渇きの少ない薬がいい",
-            "喉の渇きが少ない鼻炎薬",
-            "口渇の少ない抗ヒスタミン",
-        ],
-    )
-    def test_avoid_dry_mouth_phrasing(self, text):
-        assert extract_user_preferences(text, {})["avoid_dry_mouth"] is True
+    def test_dry_mouth_from_llm_prefs(self):
+        p = extract_user_preferences(
+            "花粉症です",
+            _nlu_with_prefs({"avoid_dry_mouth": True, "avoid_dry_mouth_confidence": 0.7}),
+        )
+        assert p["avoid_dry_mouth"] is True
 
 
 class TestPollenRankingWithPreferences:
@@ -82,7 +103,7 @@ class TestPollenRankingWithPreferences:
 
     def test_avoid_drowsiness_prefers_second_gen(self, medicine_df):
         user_text = "花粉症で鼻水とくしゃみ。眠気が出る薬は避けたいです"
-        nlu = simple_pattern_matching_nlu(user_text, {})
+        nlu = _pattern_nlu_with_merged_prefs(user_text, avoid_drowsiness=True)
         prefs = extract_user_preferences(user_text, nlu)
         assert prefs["avoid_drowsiness"]
         result = rule_based_medicine_recommendation(
@@ -97,7 +118,7 @@ class TestPollenRankingWithPreferences:
 
     def test_congestion_not_only_vasoconstrictor_when_sneeze_also(self):
         user_text = "花粉症で鼻づまりとくしゃみがひどい。眠気は避けたい"
-        nlu = simple_pattern_matching_nlu(user_text, {})
+        nlu = _pattern_nlu_with_merged_prefs(user_text, avoid_drowsiness=True)
         result = rule_based_medicine_recommendation(
             user_text,
             {

@@ -12,7 +12,7 @@
 | SafetyGate | 診断名・不適切・緊急の決定的チェック |
 | EmergencyRouter | 店舗 / メディカル / クライシス分岐 |
 | PhysicalOrchestrator | 症状解析・rule_based 推奨 |
-| NLUAgent | 属性・症状 NLU（`resolve_nlu_for_recommendation` 経由） |
+| NLUAgent | 属性・症状 NLU + ユーザー嗜好 GPT（`resolve_nlu_for_recommendation` で症状解析 ∥ `extract_preferences_with_gpt` を並列実行しマージ後キャッシュ）。症状 GPT フォールバック（`extract_symptoms_with_gpt`）は en/ko/zh 入力を受け取り `symptoms[].name` は辞書の日本語 canonical に正規化 |
 | ExplanationAgent | カード先行後の推奨理由（SSE `explanations`） |
 | CounselingManager | Emotional 系 |
 | ConciergeAgent | 挨拶・できること・構成説明・軽い雑談（Other の窓口） |
@@ -70,6 +70,13 @@ sequenceDiagram
 ## トリアージキャッシュ
 
 `src/services/triage_cache.py` — 正規化テキスト + `user_attributes` ダイジェスト、LRU・TTL は `TRIAGE_CACHE_MAX_ENTRIES` / `TRIAGE_CACHE_TTL_SEC`。
+
+## ユーザー嗜好 NLU
+
+- 並列解決: [`src/handlers/chat/nlu_resolve.py`](../src/handlers/chat/nlu_resolve.py)
+- カタログ: [`data/user_preference_keyword_catalog.json`](../data/user_preference_keyword_catalog.json)
+- 手動 QA: [`docs/MANUAL_QA_PREFERENCES.md`](MANUAL_QA_PREFERENCES.md)
+- 開発レビュー: [`docs/PREFERENCE_NLU_DEV_REVIEW.md`](PREFERENCE_NLU_DEV_REVIEW.md)
 
 ## 管理画面
 

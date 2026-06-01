@@ -9,6 +9,7 @@
 | [golden-cases-domains.md](golden-cases-domains.md) | のど・胃腸・痛み・皮膚・目鼻・精神 | `GC-DOM` |
 | [golden-cases-safety-nlu.md](golden-cases-safety-nlu.md) | 赤旗・診断名・NLU 境界 | `GC-SAFE` |
 | [golden-cases-menstrual.md](golden-cases-menstrual.md) | 月経・女性特有 | `GC-MEN` |
+| [golden-cases-preferences.md](golden-cases-preferences.md) | 嗜好 LLM・安全強制・other_info | `GC-PREF` |
 | [diagnosis-guard-policy.md](diagnosis-guard-policy.md) | 診断名ガード現状・ギャップ | — |
 | [diagnosis-physical-block-matrix.md](diagnosis-physical-block-matrix.md) | 条件別 OTC/Physical 可否 | — |
 | [diagnosis-counseling-orchestrator.md](diagnosis-counseling-orchestrator.md) | カウンセリング→Physical ゲート | — |

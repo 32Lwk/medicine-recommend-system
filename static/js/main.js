@@ -9246,6 +9246,29 @@ function appendQaDelta(text, section) {
         
         if (duration) response.push(`症状は${duration}続いています`);
         if (other) response.push(other);
+
+        // セッションに other_info を永続（嗜好 NLU 用）
+        const attrPayload = {
+            age: age ? parseInt(age, 10) : undefined,
+            gender: gender || undefined,
+            allergies: allergies ? allergies.split('、').map(a => a.trim()).filter(Boolean) : ['なし'],
+            other_info: other || ''
+        };
+        if (gender === '女性') {
+            attrPayload.pregnant = pregnant === 'yes';
+            attrPayload.breastfeeding = breastfeeding === 'yes';
+        }
+        if (hasMedications === 'yes' && medications) {
+            attrPayload.current_medications = medications.split('、').map(m => m.trim()).filter(Boolean);
+        } else if (hasMedications === 'no') {
+            attrPayload.current_medications = [];
+        }
+        fetch('/api/sessions', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+            body: JSON.stringify({ user_attributes: attrPayload })
+        }).catch(err => console.warn('属性 other_info 保存エラー:', err));
         
         // バックエンドで「追加情報モーダルからの送信」と確実に判定するためのプレフィックス
         const PREFIX = '[ADDITIONAL_INFO_SUBMIT]';

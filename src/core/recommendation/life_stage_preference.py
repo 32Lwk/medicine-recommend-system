@@ -8,6 +8,7 @@ import logging
 import os
 from typing import Dict, List, Optional, Tuple
 
+from src.core.preference_merge import preference_field_confidence
 from src.core.scoring_utils import _is_kampo_or_herbal_medicine
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,7 @@ def apply_user_preference_bonus(candidate: Dict, user_preferences: Dict, nlu_res
 
     # 成分・バランス重視: 配合成分数、ビタミン類の配合、漢方のバランスに応じたボーナス（0.0-0.25）
     if user_preferences.get('ingredient_balance', False):
-        confidence = user_preferences.get('confidence', 0.0)
+        confidence = preference_field_confidence(user_preferences, 'ingredient_balance')
 
         # ビタミン類の配合チェック
         vitamin_keywords = ['ビタミン', 'vitamin', 'ビタミンe', 'ビタミンb', 'トコフェロール', '酢酸トコフェロール']
@@ -112,7 +113,7 @@ def apply_user_preference_bonus(candidate: Dict, user_preferences: Dict, nlu_res
 
     # 飲みやすさ重視: 錠剤タイプ、服用回数の少なさに応じたボーナス（0.0-0.20）
     if user_preferences.get('ease_of_taking', False):
-        confidence = user_preferences.get('confidence', 0.0)
+        confidence = preference_field_confidence(user_preferences, 'ease_of_taking')
 
         # 錠剤タイプのチェック
         is_tablet = any(token in usage.lower() or token in product_name.lower() for token in ['錠', '錠剤', 'カプセル'])
@@ -142,7 +143,7 @@ def apply_user_preference_bonus(candidate: Dict, user_preferences: Dict, nlu_res
 
     # 随伴症状対応: 効能効果の範囲の広さ、特定の症状の組み合わせに対応する製品にボーナス（0.0-0.20）
     if user_preferences.get('accompanying_symptoms', False):
-        confidence = user_preferences.get('confidence', 0.0)
+        confidence = preference_field_confidence(user_preferences, 'accompanying_symptoms')
 
         # 効能効果の範囲の広さをチェック
         efficacy_keywords = ['月経不順', '生理不順', '生理痛', '月経痛', 'イライラ', 'ニキビ', '肌荒れ', '腰痛', '頭痛', 'めまい', '冷え症', 'むくみ']
@@ -171,10 +172,11 @@ def apply_user_preference_bonus(candidate: Dict, user_preferences: Dict, nlu_res
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"💊 随伴症状対応ボーナス: {product_name} = +{accompanying_symptoms_bonus:.2f} (確信度: {confidence:.2f})")
 
-    # 漢方薬希望: 漢方薬・生薬製剤に +0.15〜0.20 のボーナス
+    # 漢方薬希望: 漢方薬・生薬製剤に +0.15〜0.20 のボーナス（confidence 重み）
     if user_preferences.get('prefers_kampo', False) and not user_preferences.get('prefers_not_kampo', False):
         if _is_kampo_or_herbal_medicine(candidate):
-            kampo_preference_bonus = 0.18
+            kampo_conf = preference_field_confidence(user_preferences, 'prefers_kampo')
+            kampo_preference_bonus = 0.18 * kampo_conf
             bonus += kampo_preference_bonus
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"💊 漢方薬希望ボーナス: {product_name} = +{kampo_preference_bonus:.2f}")
