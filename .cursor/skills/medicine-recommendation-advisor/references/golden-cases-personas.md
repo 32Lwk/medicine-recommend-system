@@ -76,3 +76,12 @@
 - **入力**: `生理不順で、なおかつイライラする。錠剤タイプが飲みやすいです`
 - **期待**: ルナエール / ルナフェミン 等が候補
 - **根拠**: `test_ease_of_taking_preference`
+
+### GC-PERS-I18N-001: 英語入力（翻訳後評価）
+
+- **ペルソナ**: PERS-I18N
+- **入力（原文）**: `I have a runny nose and sneezing. It's allergy season.`
+- **NLU 想定（日本語）**: 鼻水・くしゃみ・季節性アレルギー
+- **期待**: 鼻炎用薬方向（GC-COLD-ALL-001 / ALL-002 と同趣旨）。PMDA 照合は **CSV の日本語製品名**
+- **評価**: 翻訳後の `nlu_result` で症状を確認してから top3 判定。外国語 EC サイトは参照しない
+- **根拠**: SKILL「多言語」；integration 多言語カテゴリ
