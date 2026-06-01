@@ -4735,6 +4735,8 @@
     let streamingChatEl = null;
     let streamingQaEl = null;
     let chatStreamInProgress = false;
+    /** 医薬品推奨 SSE: cards 受信後は部分表示せず done で一括描画 */
+    let recommendationSseBulkMode = false;
     /** SSE done 後〜応答描画まで（この間は /api/sessions 同期を許可） */
     let awaitingPostResponse = false;
     /** 直近 POST の応答反映が完了したら true（ポーリング抑制用） */
@@ -6066,7 +6068,8 @@
             ai_response: payload.ai_response || '',
             security_score: payload.security_score,
             feedback_text: payload.feedback_text || '',
-            is_google_form: payload.is_google_form || false
+            is_google_form: payload.is_google_form || false,
+            negative_reason: payload.negative_reason || null
         };
 
         return fetch('/api/submit_feedback', {
@@ -6203,6 +6206,10 @@
         if (textarea) {
             textarea.value = '';
         }
+        const noRec = document.getElementById('feedbackNoRecommendation');
+        if (noRec) {
+            noRec.checked = false;
+        }
         if (resetState) {
             currentFeedbackData = null;
             feedbackTriggerElement = null;
@@ -6217,10 +6224,14 @@
 
         const textarea = document.getElementById('feedbackText');
         const feedbackText = textarea ? textarea.value.trim() : '';
+        const noRec = document.getElementById('feedbackNoRecommendation');
         const payload = {
             ...currentFeedbackData,
             feedback_text: feedbackText
         };
+        if (noRec && noRec.checked) {
+            payload.negative_reason = 'no_recommendation';
+        }
 
         submitFeedbackPayload(payload)
             .then(() => {
@@ -7079,6 +7090,14 @@ function appendQaDelta(text, section) {
         removeStreamingRecommendation();
     }
 
+    function resetRecommendationSseBulkState() {
+        recommendationSseBulkMode = false;
+    }
+
+    function startRecommendationSseBulkMode() {
+        recommendationSseBulkMode = true;
+    }
+
     function renderStreamingMedicineCards(medicines) {
         if (!medicines || !medicines.length) return;
         const wrapper = ensureStreamingRecommendationResult();
@@ -7623,6 +7642,7 @@ function appendQaDelta(text, section) {
         }
         const gen = ++chatSubmitGeneration;
         chatStreamInProgress = true;
+        resetRecommendationSseBulkState();
         let sseDoneHandled = false;
         scheduleSlowRequestButton();
         const lastEventId = sessionStorage.getItem('chatSseLastEventId') || null;
@@ -7633,6 +7653,7 @@ function appendQaDelta(text, section) {
             }
             sseDoneHandled = true;
             chatStreamInProgress = false;
+            resetRecommendationSseBulkState();
             sessionStorage.removeItem('chatSseLastEventId');
             awaitingPostResponse = true;
             postResponseResolved = false;
@@ -7713,15 +7734,21 @@ function appendQaDelta(text, section) {
                         appendQaSectionHtml(ev.data.section, ev.data.html);
                     });
                 }
+                if (ev.event === 'cards' && ev.data && ev.data.medicines) {
+                    startRecommendationSseBulkMode();
+                }
                 if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
+                    if (recommendationSseBulkMode) {
+                        return;
+                    }
                     revealStreamingChunk(function () {
                         appendAdviceDelta(ev.data.text);
                     });
                 }
-                if (ev.event === 'cards' && ev.data && ev.data.medicines) {
-                    renderStreamingMedicineCards(ev.data.medicines);
-                }
                 if (ev.event === 'explanations' && ev.data && ev.data.items) {
+                    if (recommendationSseBulkMode) {
+                        return;
+                    }
                     updateStreamingExplanations(ev.data.items);
                 }
                 if (ev.event === 'bot_followup' && ev.data) {
@@ -7733,12 +7760,14 @@ function appendQaDelta(text, section) {
                     const errCode = ev.data && ev.data.code;
                     if (errCode === 'stream_timeout' && hasActiveStreamingContent()) {
                         chatStreamInProgress = false;
+                        resetRecommendationSseBulkState();
                         scheduleDeferredSessionRecovery(gen);
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         return;
                     }
                     chatStreamInProgress = false;
+                    resetRecommendationSseBulkState();
                     sessionStorage.removeItem('chatSseLastEventId');
                     dismissTypingIndicator(null, { force: !hasActiveStreamingContent() });
                     removeProcessingMessage();
@@ -7768,6 +7797,7 @@ function appendQaDelta(text, section) {
                     return;
                 }
                 chatStreamInProgress = false;
+                resetRecommendationSseBulkState();
                 sessionStorage.removeItem('chatSseLastEventId');
                 dismissTypingIndicator(null, { force: !hasActiveStreamingContent() });
                 removeProcessingMessage();

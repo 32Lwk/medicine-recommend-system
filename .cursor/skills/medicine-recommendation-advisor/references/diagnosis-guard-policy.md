@@ -60,9 +60,18 @@
 | GC-SAFE-DX-010 | 眠れない → カウンセリング後 OTC 可 |
 | GC-SAFE-DX-011 | 癌+頭痛 → OTC なし |
 
-## 将来のコード変更案（別 PR）
+## ランタイム実装（2026-06）
 
-1. `diagnosis_session_active` + `diagnosis_block_types[]`
+| コンポーネント | パス |
+|----------------|------|
+| 判定ロジック | `src/core/diagnosis_guard.py` → `evaluate_physical_recommendation()` |
+| セッション更新 | `merge_diagnosis_session()`（`chat_diagnosis_handler` から呼出） |
+| Physical ブロック | `return_physical_block_if_needed()`（`chat_recommendation_flow` 内） |
+| Feedback | `feedback_reports.negative_reason` = `no_recommendation` |
+
+## 将来の拡張
+
+1. ~~`diagnosis_session_active` + `diagnosis_block_types[]`~~ 実装済み
 2. パターン判定 + 複数 type の **min strictness**
 3. chronic: 許可（高血圧・非妊娠）/ 拒否（糖尿病・CKD・心不全・肝硬変・透析中…）
 4. 不眠: オーケストレーターゲート；治療中は OTC 不可

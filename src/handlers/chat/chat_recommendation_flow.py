@@ -843,71 +843,91 @@ def run_recommendation_flow(
             analysis_result = analyze_symptoms_and_medicine_type(processed_message, recommendation_client)  # 方言変換後のテキストを使用
             mark_processing_step(sid, "symptom_analysis", detail_code="symptom_extract")
                         
-            # 診断名が検出された場合の処理（早期リターンでAPIコストを削減）
+            # 診断名が検出された場合（Physical 可否は diagnosis_guard で判定）
             if analysis_result.get('is_diagnosis', False):
                 diagnosis_response = analysis_result.get('diagnosis_response', {})
-                diagnosis_message = diagnosis_response.get('message', '診断名が検出されました。医師にご相談ください。')
                 diagnosis_type = analysis_result.get('diagnosis_type', 'unknown')
-                            
-                logger.info(f"🏥 診断名検出による早期リターン: {diagnosis_type} - {user_message}")
-                            
-                # HTMLエスケープ処理
-                import html
-                escaped_user_message = html.escape(user_message)
-                escaped_diagnosis_message = html.escape(diagnosis_message)
-                diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
-                            
-                # 評価ボタン用のデータを準備
-                import json
-                feedback_data = {
-                    'user_message': escaped_user_message,
-                    'ai_response': escaped_diagnosis_message,
-                    'security_score': None,
-                    'error_type': 'diagnosis_detected',
-                    'diagnosis_type': diagnosis_type
-                }
-                bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
-                            
-                bot_content = format_diagnosis_notification(
-                    diagnosis_message_html,
-                    feedback_data,
-                    bug_report_attrs=bug_report_data_attrs,
+                from src.core.diagnosis_guard import merge_diagnosis_session
+                from src.handlers.chat.chat_diagnosis_handler import return_physical_block_if_needed
+
+                merge_diagnosis_session(session, diagnosis_type, diagnosis_response)
+                blocked = return_physical_block_if_needed(
+                    session,
+                    client,
+                    sid,
+                    user_message,
+                    sanitized_message,
+                    user_attributes,
+                    diagnosis_response=diagnosis_response,
                 )
-                bot_response = {
-                    'type': 'bot',
-                    'content': bot_content,
-                    'diagnosis': None,
-                    'diagnosis_type': diagnosis_type,
-                    'timestamp': datetime.now().isoformat()
-                }
-                if 'messages' not in session:
-                    session['messages'] = []
-                session['messages'].append(bot_response)
-                session.modified = True
-                            
-                # DBにも保存
-                sid = session.get('_id')
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if not session_data:
-                        session_data = {
-                            'session_id': sid,
-                            'username': session.get('username', 'Unknown'),
-                            'messages': [],
-                            'last_activity': datetime.now(),
-                            'client_ip': client.client_ip,
-                            'user_agent': client.user_agent,
-                            'user_attributes': session.get('user_attributes', {}),
-                            'session_active': True
-                        }
-                    if 'messages' not in session_data:
-                        session_data['messages'] = []
-                    session_data['messages'].append(bot_response)
-                    session_data['last_activity'] = datetime.now()
-                    save_session_to_db(sid, session_data)
-                            
-                message_count = len(session['messages'])
-                return {'status': 'ok', 'message_count': message_count}, 200
+                if blocked is not None:
+                    return blocked
+
+                if diagnosis_response.get('should_show_counseling', False):
+                    logger.info(
+                        "🏥 診断名+症状・Physical 許可: %s — 推奨フロー継続",
+                        diagnosis_type,
+                    )
+                else:
+                    import html
+
+                    diagnosis_message = diagnosis_response.get(
+                        'message', '診断名が検出されました。医師にご相談ください。'
+                    )
+                    logger.info(
+                        f"🏥 診断名検出による早期リターン: {diagnosis_type} - {user_message}"
+                    )
+                    escaped_user_message = html.escape(user_message)
+                    escaped_diagnosis_message = html.escape(diagnosis_message)
+                    diagnosis_message_html = escaped_diagnosis_message.replace('\n', '<br>')
+                    feedback_data = {
+                        'user_message': escaped_user_message,
+                        'ai_response': escaped_diagnosis_message,
+                        'security_score': None,
+                        'error_type': 'diagnosis_detected',
+                        'diagnosis_type': diagnosis_type
+                    }
+                    bug_report_data_attrs = (
+                        f'data-user-message="{escaped_user_message}" '
+                        f'data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
+                    )
+                    bot_content = format_diagnosis_notification(
+                        diagnosis_message_html,
+                        feedback_data,
+                        bug_report_attrs=bug_report_data_attrs,
+                    )
+                    bot_response = {
+                        'type': 'bot',
+                        'content': bot_content,
+                        'diagnosis': None,
+                        'diagnosis_type': diagnosis_type,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    if 'messages' not in session:
+                        session['messages'] = []
+                    session['messages'].append(bot_response)
+                    session.modified = True
+                    sid_local = session.get('_id')
+                    if sid_local:
+                        session_data = get_session_from_db(sid_local)
+                        if not session_data:
+                            session_data = {
+                                'session_id': sid_local,
+                                'username': session.get('username', 'Unknown'),
+                                'messages': [],
+                                'last_activity': datetime.now(),
+                                'client_ip': client.client_ip,
+                                'user_agent': client.user_agent,
+                                'user_attributes': session.get('user_attributes', {}),
+                                'session_active': True
+                            }
+                        if 'messages' not in session_data:
+                            session_data['messages'] = []
+                        session_data['messages'].append(bot_response)
+                        session_data['last_activity'] = datetime.now()
+                        save_session_to_db(sid_local, session_data)
+                    message_count = len(session['messages'])
+                    return {'status': 'ok', 'message_count': message_count}, 200
                         
             medicine_type = analysis_result.get('medicine_type')
             symptoms = analysis_result.get('symptoms', [])
@@ -1181,6 +1201,19 @@ def run_recommendation_flow(
                 except Exception as e:
                     logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
                     user_info['user_preferences'] = None
+
+                from src.handlers.chat.chat_diagnosis_handler import return_physical_block_if_needed
+
+                physical_blocked = return_physical_block_if_needed(
+                    session,
+                    client,
+                    sid,
+                    user_message,
+                    sanitized_message,
+                    user_attributes,
+                )
+                if physical_blocked is not None:
+                    return physical_blocked
                             
                 recommendation_result = _invoke_rule_based_recommendation(
                     processed_message,
@@ -1624,22 +1657,6 @@ def run_recommendation_flow(
                     'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                 }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                             
-                # SSE: 薬カード選定完了を先に通知（アドバイスは続けてストリーム）
-                if recommended_medicines and sid:
-                    try:
-                        from src.services.sse_emit import emit_cards
-
-                        emit_cards(recommended_medicines, session_id=sid)
-                        _emit_explanation_followup_sse(
-                            session,
-                            sid,
-                            recommended_medicines,
-                            recommendation_result,
-                            recommendation_client,
-                        )
-                    except Exception:
-                        pass
-
                 # 全ての推奨結果に対してアドバイスを生成（再分析時だけでなく常時）
                 personalized_section = ""
                 try:
@@ -1666,6 +1683,22 @@ def run_recommendation_flow(
                         influenza_reason=influenza_reason,
                         session_id=sid,
                     )
+
+                    # SSE: 推奨理由・アドバイス生成後にカードを一括通知（部分表示しない）
+                    if recommended_medicines and sid:
+                        try:
+                            _emit_explanation_followup_sse(
+                                session,
+                                sid,
+                                recommended_medicines,
+                                recommendation_result,
+                                recommendation_client,
+                            )
+                            from src.services.sse_emit import emit_cards
+
+                            emit_cards(recommended_medicines, session_id=sid)
+                        except Exception:
+                            pass
                                 
                     personalized_section = f"""
     <div class="warning-info" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">

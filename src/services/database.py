@@ -378,6 +378,22 @@ class DatabaseManager:
                 logger.debug(f"session_active column may already exist: {e}")
 
             try:
+                alter_negative_reason_sql = """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='feedback_reports' AND column_name='negative_reason'
+                    ) THEN
+                        ALTER TABLE feedback_reports ADD COLUMN negative_reason VARCHAR(64);
+                    END IF;
+                END $$;
+                """
+                cursor.execute(alter_negative_reason_sql)
+            except Exception as e:
+                logger.debug(f"negative_reason column may already exist: {e}")
+
+            try:
                 alter_processing_sql = """
                 DO $$
                 BEGIN
@@ -453,7 +469,7 @@ class DatabaseManager:
     
     def insert_feedback(self, report_type, session_id, username, user_message, 
                        ai_response, security_score=None, feedback_text=None, 
-                       is_google_form=False):
+                       is_google_form=False, negative_reason=None):
         """フィードバックをデータベースに保存"""
         conn = self.get_connection()
         if not conn:
@@ -465,14 +481,14 @@ class DatabaseManager:
             insert_sql = """
             INSERT INTO feedback_reports 
             (report_type, session_id, username, user_message, ai_response, 
-             security_score, feedback_text, is_google_form)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+             security_score, feedback_text, is_google_form, negative_reason)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
             """
             
             cursor.execute(insert_sql, (
                 report_type, session_id, username, user_message, ai_response,
-                security_score, feedback_text, is_google_form
+                security_score, feedback_text, is_google_form, negative_reason
             ))
             
             feedback_id = cursor.fetchone()[0]

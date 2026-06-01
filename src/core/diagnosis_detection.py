@@ -165,6 +165,7 @@ def is_diagnosis_term(text):
         
         # 治癒表現
         '治り', '完治', '回復', '治った', '治癒', '改善', '良くなった',
+        'リミッター解除', 'もう治って', '薬やめた', '完治して', '前の病気',
         
         # 将来表現
         '将来', '未来', '怖い', '心配', '不安',
@@ -613,6 +614,7 @@ def is_diagnosis_term(text):
     
     # すべての検出された診断名のリスト
     all_diagnosis_names = [d[0] for d in detected_diagnoses]
+    all_diagnosis_types = list({t for _, t in detected_diagnoses})
     
     # フィルタリングの連鎖を適用（エラーハンドリング付き）
     # 1. 高リスクフィルター（診断名検出後にAND条件でチェック）
@@ -681,6 +683,7 @@ def is_diagnosis_term(text):
                 'diagnosis_only': diagnosis_only,
                 'detected_diagnoses': all_diagnosis_names,
                 'selected_diagnosis': selected_diagnosis,
+                'diagnosis_block_types': all_diagnosis_types,
                 'has_high_urgency_symptom': False,  # 後で実装
                 'high_risk_context': True
             })
@@ -707,6 +710,7 @@ def is_diagnosis_term(text):
             'diagnosis_only': diagnosis_only,
             'detected_diagnoses': all_diagnosis_names,
             'selected_diagnosis': selected_diagnosis,
+            'diagnosis_block_types': all_diagnosis_types,
                 'has_high_urgency_symptom': False,  # 後で実装
                 'high_risk_context': False
             })
@@ -740,6 +744,7 @@ def is_diagnosis_term(text):
                 'diagnosis_only': True,
                 'detected_diagnoses': all_diagnosis_names,
                 'selected_diagnosis': selected_diagnosis,
+                'diagnosis_block_types': all_diagnosis_types,
                 'has_high_urgency_symptom': False,  # 後で実装
                 'high_risk_context': False
             })
@@ -772,6 +777,7 @@ def is_diagnosis_term(text):
             'diagnosis_only': False,
             'detected_diagnoses': all_diagnosis_names,
             'selected_diagnosis': selected_diagnosis,
+            'diagnosis_block_types': all_diagnosis_types,
             'has_high_urgency_symptom': False,  # 後で実装
             'high_risk_context': False
         })
@@ -788,6 +794,7 @@ def is_diagnosis_term(text):
             'diagnosis_only': diagnosis_only,
             'detected_diagnoses': all_diagnosis_names,
             'selected_diagnosis': selected_diagnosis,
+            'diagnosis_block_types': all_diagnosis_types,
             'has_high_urgency_symptom': False,
             'high_risk_context': False
         })
