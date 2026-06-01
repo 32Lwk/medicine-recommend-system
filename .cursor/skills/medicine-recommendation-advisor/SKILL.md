@@ -63,7 +63,7 @@ When evaluating a recommendation, **always ground claims in CSV rows**: look up 
 | **CSV in repo** | `data/otc_medicine_data.csv` はリポジトリに含める — 未配置時は [data/DATA_CATALOG.md](../../../data/DATA_CATALOG.md) 参照 |
 | **Reviews log** | **毎回** `log/reviews/` に保存。将来 admin エクスポート想定 |
 | **小児** | **厳格** — 年齢禁忌に該当する製品は候補から除外 |
-| **花粉症** | 総合感冒薬のみ top1 は **バグ**（鼻炎用薬が妥当） |
+| **花粉症** | 総合感冒薬のみ top1 は **バグ**（鼻炎用薬が妥当）— **GC-COLD-ALL-002** |
 | **漢方 vs 西洋** | **スコア・多様性尊重**（現行アルゴリズム） |
 | **Neon feedback** | session_id があれば **任意参照** |
 
@@ -89,7 +89,8 @@ When evaluating a recommendation, **always ground claims in CSV rows**: look up 
 | うつ病+「市販睡眠薬を教えて」 | **OTC 不可**（GC-SAFE-DX-005c） |
 | **高血圧**+頭痛（非妊娠） | **OTC 可**（GC-SAFE-DX-006） |
 | 高血圧+頭痛+**妊娠** | **OTC 不可**（GC-SAFE-DX-006b） |
-| 糖尿病 / CKD / **心不全** / **肝硬変** / **透析中** + 頭痛 | **OTC 不可**（GC-SAFE-DX-004, 008, 008b） |
+| 糖尿病 / CKD / **心不全** / **肝硬変** / **透析中** + 頭痛 | **OTC 不可**（GC-SAFE-DX-004, 008〜008d） |
+| 高血圧+頭痛で推奨が出ない | **過剰ブロック**（GC-SAFE-OVER-001） |
 | IBD+腹痛 | **OTC 不可**（GC-SAFE-DX-009） |
 | 癌+頭痛 | **OTC 不可**（GC-SAFE-DX-011） |
 | てんかん+発作 | **赤旗 + OTC 不可**（GC-SAFE-DX-007） |

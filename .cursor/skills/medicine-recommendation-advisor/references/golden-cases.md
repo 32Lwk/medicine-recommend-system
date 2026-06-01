@@ -1,6 +1,6 @@
 # Golden cases（メイン入口）
 
-**索引**: [golden-cases-index.md](golden-cases-index.md) — 全 **60+ ケース**（風邪サブタイプ・ペルソナ・領域・安全・月経）
+**索引**: [golden-cases-index.md](golden-cases-index.md) — 全 **約89 ケース**（風邪サブタイプ・ペルソナ・領域・安全・月経）
 
 ## 使い方
 
