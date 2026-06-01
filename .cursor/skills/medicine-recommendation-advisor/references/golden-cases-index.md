@@ -24,12 +24,12 @@
 | golden-cases-personas.md | 7 + ペルソナ表 |
 | golden-cases-cold.md | 19 |
 | golden-cases-domains.md | 22 |
-| golden-cases-safety-nlu.md | 23 |
+| golden-cases-safety-nlu.md | 26 |
 | golden-cases-menstrual.md | 10 |
-| **合計** | **約 81** |
+| **合計** | **約 84** |
 
 ## `test_comprehensive_integration` の 300+ 件について
 
-- **推奨方針**: 全件を手書き golden にしない。現状の **代表 81 件**で推奨ランキングをカバーし、integration 側は NLU・診断検出・方言の **自動回帰**に任せる。
+- **推奨方針**: 全件を手書き golden にしない。現状の **代表 84 件**で推奨ランキングをカバーし、integration 側は NLU・診断検出・方言の **自動回帰**に任せる。
 - **将来**: `generate_test_cases()` からカテゴリ別に **NLU-only** ケース（`expected_has_symptom`）を JSON エクスポートし、`references/golden-cases-nlu-auto.json` として分割管理可。製品 rank まで含むケースは PMDA 照合コストが高いため手動代表に留める。
 - **分割**: 領域ごとファイル（本リポジトリ構成）を維持。1 ファイルに 300 件はメンテ不可。
