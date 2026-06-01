@@ -25,6 +25,7 @@ git add data/otc_medicine_data.csv   # 未追跡の場合のみ
 | `kanpo_medicine.csv` | 漢方特化ルール |
 | `summarized_efficacy_data.csv` | GPT 補助効能（Physical 主経路外） |
 | `store_products.json` | 店舗商品（推奨スコア外） |
+| `user_preference_keyword_catalog.json` | 嗜好 GPT 参照語・安全強制語・スコア前除外ルール |
 
 ## 更新時
 

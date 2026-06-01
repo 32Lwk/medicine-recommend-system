@@ -399,9 +399,14 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # ユーザー要望に基づくボーナス
     user_preference_bonus = 0.0
+    preference_sources_debug: Dict = {}
     if user_info and user_info.get('user_preferences'):
         user_preferences = user_info.get('user_preferences')
         user_preference_bonus = apply_user_preference_bonus(candidate, user_preferences, nlu_result)
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            from src.core.preference_merge import preference_sources_for_debug
+
+            preference_sources_debug = preference_sources_for_debug(user_preferences)
         if user_preference_bonus > 0:
             logger.info(f"💊 ユーザー要望ボーナス: {candidate.get('product_name', '')} = +{user_preference_bonus:.2f}")
     
@@ -2040,6 +2045,7 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
             "symptom_specificity_penalty": limited_symptom_specificity_penalty,  # 制限後の症状特異性ペナルティ
             "ingredient_boost": limited_ingredient_boost,  # 成分ベーススコア
             "user_preference_bonus": user_preference_bonus,  # ユーザー要望ボーナス
+            "preference_sources": preference_sources_debug,  # DEBUG: llm/safety 由来
             "life_stage_boost": life_stage_boost,  # ライフステージボーナス
             "sho_bonus": sho_bonus,  # 証ボーナス
             "risk_ingredient_penalty": limited_risk_penalty,  # 制限後のリスク成分ペナルティ

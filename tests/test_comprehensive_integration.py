@@ -2202,22 +2202,37 @@ class ComprehensiveIntegrationTest(unittest.TestCase):
         self.assertFalse(is_valid, "「あい」は症状辞書に登録されていないためエラーとなるべき")
 
     def test_extract_user_preferences_kampo(self):
-        """extract_user_preferencesでprefers_kampo/prefers_not_kampoが正しく抽出されることを確認"""
+        """extract_user_preferences は nlu_result.user_preferences を優先する"""
         from src.core.user_detection import extract_user_preferences
 
-        # 漢方希望
-        result = extract_user_preferences("頭痛がする。漢方がいい")
+        def _nlu(**fields):
+            prefs = {"field_sources": {}}
+            for k, v in fields.items():
+                prefs[k] = v
+                prefs[f"{k}_confidence"] = 0.9
+                prefs["field_sources"][k] = "llm"
+            return {"user_preferences": prefs}
+
+        result = extract_user_preferences(
+            "頭痛がする。漢方がいい", _nlu(prefers_kampo=True, prefers_not_kampo=False)
+        )
         self.assertTrue(result.get("prefers_kampo", False), "漢方希望が検出されるべき")
         self.assertFalse(result.get("prefers_not_kampo", False))
 
-        # 漢方忌避
-        result = extract_user_preferences("頭痛がする。漢方はいや")
+        result = extract_user_preferences(
+            "頭痛がする。漢方はいや", _nlu(prefers_kampo=False, prefers_not_kampo=True)
+        )
         self.assertFalse(result.get("prefers_kampo", False))
         self.assertTrue(result.get("prefers_not_kampo", False), "漢方忌避が検出されるべき")
 
-        # 漢方以外がいい
-        result = extract_user_preferences("頭痛。漢方以外がいい")
+        result = extract_user_preferences(
+            "頭痛。漢方以外がいい", _nlu(prefers_not_kampo=True)
+        )
         self.assertTrue(result.get("prefers_not_kampo", False), "漢方忌避が検出されるべき")
+
+        # キーワードのみでは漢方嗜好は立たない（GPT マージ結果待ち）
+        result = extract_user_preferences("頭痛がする。漢方がいい", None)
+        self.assertFalse(result.get("prefers_kampo", False))
 
     def test_headache_single_symptom_major_analgesics(self):
         """頭痛単一症状時に主要解熱鎮痛薬が上位に含まれることを確認"""

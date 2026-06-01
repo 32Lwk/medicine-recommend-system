@@ -1170,6 +1170,7 @@ def run_recommendation_flow(
                     'symptom_duration_days': user_attributes.get('symptom_duration_days'),  # 症状期間を追加
                     'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
                     'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+                    'other_info': user_attributes.get('other_info'),
                     'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
                 }
                             
@@ -1185,23 +1186,10 @@ def run_recommendation_flow(
                     'symptom_duration_days': user_attributes.get('symptom_duration_days'),
                     'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
                     'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+                    'other_info': user_attributes.get('other_info'),
                     'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
                 }
                 logger.info(f"📋 User info for recommendation（再構築後）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
-                            
-                # ユーザー要望を抽出してuser_infoに追加
-                try:
-                    from src.core.medicine_logic import extract_user_preferences
-                    nlu_result_for_preferences = recommendation_result.get('nlu_result', {}) if 'recommendation_result' in locals() else {}
-                    user_preferences = extract_user_preferences(user_message, nlu_result_for_preferences, user_info)
-                    user_info['user_preferences'] = user_preferences
-                    user_info['user_message'] = user_message  # user_messageも追加（証判定などで使用）
-                    user_info['prefers_kampo'] = user_preferences.get('prefers_kampo', False)
-                    user_info['prefers_not_kampo'] = user_preferences.get('prefers_not_kampo', False)
-                    logger.info(f"📋 ユーザー要望を抽出: {user_preferences}")
-                except Exception as e:
-                    logger.warning(f"⚠️ ユーザー要望抽出でエラー: {str(e)}")
-                    user_info['user_preferences'] = None
 
                 from src.handlers.chat.chat_diagnosis_handler import return_physical_block_if_needed
 

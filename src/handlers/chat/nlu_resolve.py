@@ -1,26 +1,32 @@
 """
-推奨フロー用 NLU 解決（NLUAgent ファサードへ委譲）
+推奨フロー用 NLU 解決（症状 hybrid + 嗜好 GPT を並列実行）
 """
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, Optional
 
 from openai import OpenAI
 
+from src.core.language_utils import detect_language
+from src.core.nlu_service import get_cached_nlu_result, hybrid_nlu_extraction, set_cached_nlu_result
+from src.core.preference_merge import merge_user_preferences
+from src.core.preference_nlu import extract_preferences_with_gpt
+from src.core.user_detection import preference_context_text
+
 logger = logging.getLogger(__name__)
 
 
-def resolve_nlu_for_recommendation(
+def _run_symptom_nlu(
     user_text: str,
     user_info: Dict[str, Any],
     client: OpenAI,
-    *,
-    session_id: Optional[str] = None,
+    session_id: Optional[str],
 ) -> Dict[str, Any]:
     from config.llm_flags import is_agent_enabled
 
-    if is_agent_enabled():
+    if is_agent_enabled() and client is not None:
         from src.agents.nlu_agent import run_nlu_agent
         from src.services.processing_status import mark_processing_step
 
@@ -34,6 +40,61 @@ def resolve_nlu_for_recommendation(
             out["_nlu_agent"] = agent_out.get("source", "hybrid")
             return out
 
-    from src.core.rule_based_recommendation import hybrid_nlu_extraction
+    return hybrid_nlu_extraction(
+        user_text, user_info, client, session_id, use_cache=False
+    )
 
-    return hybrid_nlu_extraction(user_text, user_info, client, session_id)
+
+def resolve_nlu_for_recommendation(
+    user_text: str,
+    user_info: Dict[str, Any],
+    client: OpenAI,
+    *,
+    session_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    cached = get_cached_nlu_result(user_text, session_id)
+    if cached and cached.get("user_preferences") is not None:
+        return cached
+
+    context_text = preference_context_text(user_text, user_info)
+    detected_language = detect_language(user_text or context_text)
+
+    nlu: Dict[str, Any] = {}
+    llm_prefs: Dict[str, Any] = {}
+
+    def _symptoms_task():
+        return _run_symptom_nlu(user_text, user_info, client, session_id)
+
+    def _prefs_task():
+        return extract_preferences_with_gpt(
+            user_text,
+            user_info,
+            client,
+            detected_language,
+            session_id=session_id,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        fut_sym = pool.submit(_symptoms_task)
+        fut_pref = pool.submit(_prefs_task)
+        try:
+            nlu = fut_sym.result() or {}
+        except Exception as e:
+            logger.warning("症状NLU並列タスク失敗: %s", e)
+            nlu = {}
+        try:
+            llm_prefs = fut_pref.result() or {}
+        except Exception as e:
+            logger.warning("嗜好NLU並列タスク失敗: %s", e)
+            llm_prefs = {}
+
+    if not nlu:
+        nlu = {}
+
+    nlu.setdefault("gender_detected", {"detected": False})
+    nlu.setdefault("pregnancy_possible", {"detected": False})
+
+    merged_prefs = merge_user_preferences(llm_prefs, context_text, nlu)
+    nlu["user_preferences"] = merged_prefs
+    set_cached_nlu_result(user_text, nlu, session_id)
+    return nlu

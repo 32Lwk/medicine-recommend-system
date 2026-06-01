@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "score_apply_min_confidence": 0.5,
+  "exclude_apply_min_confidence": 0.8,
+  "categories": [
+    {
+      "preference_field": "avoid_drowsiness",
+      "description_ja": "眠気・運転への影響を避けたい",
+      "gpt_reference_keywords": [
+        "眠気", "眠くなる", "眠くなり", "寝てしまう", "眠気が少ない", "眠気の少ない", "眠気が出にくい", "眠気の出にくい", "眠くなりにくい", "非鎮静", "ふらつき", "だるさが気になる", "日中の眠気", "仕事中に眠", "運転", "車を運転", "車の運転", "ドライブ", "眠らない", "起きていられる"
+      ]
+    },
+    {
+      "preference_field": "avoid_dry_mouth",
+      "description_ja": "口渇・喉の渇きが出にくい薬を希望（主訴の口渇は症状として別扱い）",
+      "gpt_reference_keywords": [
+        "口渇が少ない", "口が渇きにくい", "口の渇きが少ない", "喉の渇きが少ない", "のどの渇きが少ない", "渇きにくい", "渇きが少ない", "渇きの少ない", "口の乾燥が少ない", "乾燥感が少ない", "口が乾きにくい", "口渇の少ない"
+      ]
+    },
+    {
+      "preference_field": "prefer_nasal_route",
+      "description_ja": "点鼻・鼻からの投与を希望",
+      "gpt_reference_keywords": [
+        "点鼻", "点鼻がいい", "鼻に直接", "鼻のスプレー", "鼻喷雾", "噴霧", "鼻に入れる", "スプレー希望", "鼻腔", "鼻から"
+      ]
+    },
+    {
+      "preference_field": "avoid_nasal_route",
+      "description_ja": "点鼻・鼻への投与を避けたい",
+      "gpt_reference_keywords": [
+        "点鼻は苦手", "点鼻が苦手", "点鼻はいや", "鼻に入れたくない", "鼻に入れるのは苦手", "スプレーは苦手", "点鼻を避け", "鼻喷雾はいや"
+      ]
+    },
+    {
+      "preference_field": "prefer_fewer_daily_doses",
+      "description_ja": "1日の服用回数を少なくしたい",
+      "gpt_reference_keywords": [
+        "1日1回", "一日1回", "1回だけ", "回数が少ない", "服用回数が少ない", "飲み忘れ", "手間が少ない", "1日2回以内", "服用が楽", "飲む回数を減ら"
+      ]
+    },
+    {
+      "preference_field": "prefers_kampo",
+      "description_ja": "漢方薬・生薬を希望",
+      "gpt_reference_keywords": [
+        "漢方", "漢方薬", "漢方希望", "漢方がいい", "漢方の方が", "生薬", "漢方で", "漢方が良い", "漢方薬がいい", "生薬希望"
+      ]
+    },
+    {
+      "preference_field": "prefers_not_kampo",
+      "description_ja": "漢方薬を避け西洋薬を希望",
+      "gpt_reference_keywords": [
+        "漢方はいや", "漢方いや", "漢方薬はいや", "漢方は嫌", "漢方嫌", "漢方以外", "西洋薬", "漢方は苦手", "漢方薬は苦手"
+      ]
+    },
+    {
+      "preference_field": "ingredient_balance",
+      "description_ja": "成分バランス・総合配合・ビタミン配合を重視",
+      "gpt_reference_keywords": [
+        "成分", "バランス", "配合", "ビタミン", "栄養", "総合", "複合", "成分重視", "バランス重視", "複合成分", "生薬重視", "総合的"
+      ]
+    },
+    {
+      "preference_field": "ease_of_taking",
+      "description_ja": "飲みやすさ・錠剤・服用回数の少なさ",
+      "gpt_reference_keywords": [
+        "飲みやすい", "飲みやすさ", "錠剤", "カプセル", "顆粒が苦手", "味が苦手", "苦い", "飲みにくい", "服用しやすい", "手軽", "携帯しやすい"
+      ]
+    },
+    {
+      "preference_field": "accompanying_symptoms",
+      "description_ja": "複数症状・随伴症状への対応を重視",
+      "gpt_reference_keywords": [
+        "随伴症状", "併発", "複数の症状", "いろいろな症状", "あれこれ", "まとめて", "幅広い", "ニキビ", "肌荒れ", "腰痛", "むくみ", "冷え症"
+      ]
+    }
+  ],
+  "safety_hard_keywords": [
+    "運転",
+    "車を運転",
+    "車の運転",
+    "ドライブ",
+    "運転する",
+    "運転します",
+    "車を運転します"
+  ],
+  "risk_exclude_rules": [
+    {
+      "when": {"field": "avoid_drowsiness", "min_confidence": 0.8},
+      "exclude_ingredient_groups": ["first_gen_antihistamine"]
+    },
+    {
+      "when": {"field": "avoid_dry_mouth", "min_confidence": 0.8},
+      "exclude_ingredient_groups": ["first_gen_antihistamine", "anticholinergic_dry_mouth"]
+    },
+    {
+      "when": {"field": "avoid_nasal_route", "min_confidence": 0.8},
+      "exclude_product_classes": ["nasal_vasoconstrictor", "nasal_combo"]
+    }
+  ],
+  "ingredient_groups": {
+    "first_gen_antihistamine": [
+      "クロルフェニラミン",
+      "ジフェンヒドラミン",
+      "クレマスチン",
+      "プロメタジン",
+      "ジプロフィリン",
+      "メクリジン"
+    ],
+    "anticholinergic_dry_mouth": [
+      "イソプロパミド",
+      "ベラドンナ",
+      "スコポラミン"
+    ]
+  }
+}

@@ -1,8 +1,84 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月2日**（花粉症・アレルギー性鼻炎の推奨強化・LLM 既定プロファイル gpt5）
+**最終更新日: 2026年6月2日**（ユーザー嗜好 LLM 統合・花粉症推奨強化・LLM 既定プロファイル gpt5）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年6月2日 — ユーザー嗜好 LLM 統合（GPT 並列 NLU）
+
+### 概要
+
+- **症状 NLU と嗜好 GPT を並列実行**: `resolve_nlu_for_recommendation` で `hybrid_nlu_extraction`（症状）と `extract_preferences_with_gpt`（薬選びの希望）を `ThreadPoolExecutor` で同時実行。壁時計は max(症状, 嗜好)。マージ後の `nlu_result`（`symptoms` + `user_preferences`）を NLU キャッシュに保存。
+- **安全キーワードと LLM の役割分離**: 一般嗜好キーワードのルール直判定を廃止。GPT はカタログ参照語で嗜好を分類（confidence 付き）。**運転・車** 等の `safety_hard_keywords` のみマージ時に強制（`avoid_drowsiness` 等、source=`safety`）。
+- **閾値**: スコア加点・減点は confidence **≥ 0.5**。成分・血管収縮点鼻クラスの**スコア前除外**は **≥ 0.8**（`preference_candidate_filter`）。
+- **口渇**: 症状辞書の「口渇」は主訴のまま。`avoid_dry_mouth`（口渇の少ない薬がいい）は **GPT のみ**（旧キーワード連動は削除）。
+- **推奨 API**: 返却 JSON に `user_preferences_summary`（各フィールド・confidence・`sources`）を追加。エンドユーザー HTML には未表示（API / 将来 admin 用）。
+- **症状 GPT 多言語化**: `extract_symptoms_with_gpt` が en/ko/zh 入力を受け付け、`symptoms[].name` は常に `symptom_dictionary.json` の日本語 canonical に正規化。
+- **環境変数**: `PREFERENCE_NLU_TIMEOUT_SEC`（既定 **8** 秒）。嗜好 GPT 失敗時は症状 NLU を継続し安全キーワードのみマージ（リトライなし）。機能フラグによるロールバックは設けず開発環境へ一括反映。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `data/user_preference_keyword_catalog.json` | 全領域の嗜好フィールド・GPT 参照語・安全強制語・`risk_exclude_rules`・`ingredient_groups` |
+| `src/core/preference_nlu.py` | `extract_preferences_with_gpt`（`response_format=json_object`、ja/en/ko/zh プロンプト） |
+| `src/core/preference_merge.py` | `merge_user_preferences` / `apply_safety_preference_overrides` / `build_user_preferences_summary` / `preference_field_confidence` |
+| `src/core/recommendation/preference_candidate_filter.py` | confidence ≥ 0.8 で第1世代抗ヒスタミン・血管収縮点鼻・点鼻複合などを候補から除外（ステロイド点鼻は残す） |
+| `docs/MANUAL_QA_PREFERENCES.md` | 手動 QA チェックリスト（GC-PREF-001〜004、英語入力） |
+| `docs/PREFERENCE_NLU_DEV_REVIEW.md` | カタログ・除外ルールの開発レビュー用チェックリスト |
+| `.cursor/skills/.../golden-cases-preferences.md` | Golden `GC-PREF-*`（運転+花粉、口渇、点鼻回避、other_info） |
+
+### 変更ファイル（コア）
+
+| モジュール | 内容 |
+|-----------|------|
+| `src/handlers/chat/nlu_resolve.py` | 並列 NLU の単一入口。マージ後キャッシュ。エージェント ON 時は症状側を `run_nlu_agent` |
+| `src/core/nlu_service.py` | `hybrid_nlu_extraction(..., use_cache=)`。`extract_symptoms_with_gpt` 多言語プロンプト。GPT 呼び出し前に `detect_language` |
+| `src/core/user_detection.py` | `extract_user_preferences` は **`nlu_result.user_preferences` 優先**。未設定時は `merge_user_preferences({}, text)`（安全語のみ）。長大な一般嗜好キーワードロジックを削除 |
+| `src/core/rule_based_recommendation.py` | `precomputed_nlu` 優先で二重 NLU 回避。候補取得直後に `filter_candidates_by_preferences`。`user_preferences_summary` を返却 |
+| `src/core/dictionary_loader.py` | `load_preference_keyword_catalog()` |
+| `src/security/json_validator.py` | `preference_analysis` スキーマ追加 |
+| `src/core/recommendation/life_stage_preference.py` | `apply_user_preference_bonus` で全フィールドに `preference_field_confidence` 重み（漢方希望含む） |
+| `src/core/recommendation/pollen_rhinitis_scoring.py` | 眠気・口渇・点鼻・服用回数の boost/penalty を confidence 重み付け |
+| `src/core/recommendation/final_score_calculator.py` | DEBUG 時 `score_breakdown.preference_sources`（llm / safety 由来） |
+| `src/handlers/chat/chat_recommendation_flow.py` | 推奨前の誤った嗜好再抽出を削除。`user_info` / 再構築に `other_info` を伝播。`precomputed_nlu` で rule_based 呼び出し |
+
+### UI
+
+| ファイル | 内容 |
+|---------|------|
+| `static/js/main.js` | 属性モーダル `submitAttributes` 送信時に `/api/sessions` へ `user_attributes.other_info`（年齢・性別・アレルギー等と併せ）を POST 永続。`userInfoModal` の `user_other_info` 保存経路は既存 |
+
+### データ・ドキュメント
+
+- **`data/DATA_CATALOG.md`**: `user_preference_keyword_catalog.json` を追記。
+- **`docs/ARCHITECTURE_MULTI_AGENT.md`**: NLUAgent = 症状 + 嗜好並列。嗜好 NLU セクション・手動 QA / レビュー doc へのリンク。
+- **`.cursor/skills/.../golden-cases-index.md`**: `golden-cases-preferences.md` を索引に追加。
+
+### テスト（新規・更新）
+
+| ファイル | 内容 |
+|---------|------|
+| `tests/test_preference_merge.py` | 安全強制・confidence 閾値・漢方競合・候補除外 |
+| `tests/test_preference_candidate_filter.py` | 0.8 未満は除外しない・点鼻回避でステロイド残存 |
+| `tests/test_preference_catalog_loader.py` | カタログ読み込み・キャッシュ |
+| `tests/test_preference_nlu.py` | GPT mock・ko/zh テンプレート |
+| `tests/test_nlu_resolve_parallel.py` | 並列マージ・キャッシュ・GPT 失敗時 safety のみ |
+| `tests/test_symptom_nlu_i18n.py` | 英語プロンプト・canonical 症状名 |
+| `tests/test_pollen_rhinitis_scoring.py` | 嗜好テストを `nlu_result.user_preferences` mock に移行 |
+| `tests/test_comprehensive_integration.py` | `test_extract_user_preferences_kampo` を nlu mock 方式に更新 |
+
+### 設計上の注意（運用）
+
+| 項目 | 内容 |
+|------|------|
+| 属性 vs 嗜好 | 年齢・妊娠・授乳・アレルギーは従来どおり `attribute_extractor` / モーダル。薬選びの希望のみ嗜好 NLU |
+| 服用回数 | `prefer_fewer_daily_doses` / `preferred_max_daily_doses` は**除外せず**加点・減点のみ |
+| 点鼻回避 | 血管収縮点鼻・点鼻複合のみスコア前除外。ステロイド点鼻は花粉推奨と両立 |
+| 漢方競合 | `prefers_not_kampo` が `prefers_kampo` より優先 |
+| 二重 NLU | チャットフローは `resolve_nlu` → `precomputed_nlu` で rule_based に渡す |
 
 ---
 

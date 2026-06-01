@@ -616,16 +616,23 @@ def simple_pattern_matching_nlu(user_text: str, user_info: Dict) -> Dict:
 
 
 def hybrid_nlu_extraction(
-    user_text: str, user_info: Dict, client: OpenAI, session_id: str = None
+    user_text: str,
+    user_info: Dict,
+    client: OpenAI,
+    session_id: str = None,
+    *,
+    use_cache: bool = True,
 ) -> Dict:
     """
     ハイブリッドNLU（ルールベース優先、ChatGPT APIフォールバック）
+    use_cache=False のときキャッシュ読み書きをスキップ（resolve_nlu 側でマージ後に保存）
     """
-    cached_result = get_cached_nlu_result(user_text, session_id)
-    if cached_result:
-        if _DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug("NLUキャッシュから結果を取得")
-        return cached_result
+    if use_cache:
+        cached_result = get_cached_nlu_result(user_text, session_id)
+        if cached_result:
+            if _DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug("NLUキャッシュから結果を取得")
+            return cached_result
 
     if _DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug("ルールベースNLUを実行")
@@ -637,25 +644,167 @@ def hybrid_nlu_extraction(
     if symptoms_count == 0 or confidence_score < 0.3:
         if _DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"ルールベースNLUの信頼度が低いため、ChatGPT APIを呼び出し（信頼度: {confidence_score:.2f}）")
-        gpt_result = extract_symptoms_with_gpt(user_text, user_info, client)
+        from src.core.language_utils import detect_language
+
+        session_lang = (user_info or {}).get("language")
+        detected_lang = detect_language(user_text, session_lang)
+        gpt_result = extract_symptoms_with_gpt(
+            user_text, user_info, client, detected_language=detected_lang
+        )
 
         if 'gender_detected' in rule_based_result:
             gpt_result['gender_detected'] = rule_based_result['gender_detected']
         if 'pregnancy_possible' in rule_based_result:
             gpt_result['pregnancy_possible'] = rule_based_result['pregnancy_possible']
 
-        set_cached_nlu_result(user_text, gpt_result, session_id)
+        if use_cache:
+            set_cached_nlu_result(user_text, gpt_result, session_id)
         return gpt_result
     else:
         if _DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"ルールベースNLUの信頼度が十分（信頼度: {confidence_score:.2f}）")
-        set_cached_nlu_result(user_text, rule_based_result, session_id)
+        if use_cache:
+            set_cached_nlu_result(user_text, rule_based_result, session_id)
         return rule_based_result
 
 
-def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -> Dict:
+def _canonical_symptom_names_csv() -> str:
+    return ", ".join(load_symptom_dictionary().keys())
+
+
+_SYMPTOM_GPT_SYSTEM_JA = """あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。
+
+【最重要ルール - 症状名の正確な抽出】
+1. 「目がかゆい」「目もかゆい」「目の痒み」「目かゆい」「目が痒い」→必ず「目のかゆみ」として抽出（「かゆみ」ではない）
+2. 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
+3. 「鼻水+くしゃみ+目のかゆみ」の組み合わせはアレルギー性鼻炎の可能性が高い
+4. 「のどが痛い」「喉が痛い」→「のどの痛み」として抽出
+
+【その他の重要な注意事項】
+- 高熱（38.5度以上）と複数の風邪症状がある場合は、red_flagsに「インフルエンザ疑い」を追加してください
+- 体温情報を正確に抽出し、38.5度以上の場合は「高熱」として扱ってください
+- 症状名は必ず提供リストの日本語 canonical 名から選択してください
+- 重症疑い症状がある場合は必ずneeds_escalationをtrueにしてください"""
+
+_SYMPTOM_GPT_SYSTEM_I18N = """You are a medical NLU system for Japanese OTC medicine recommendation.
+Return valid JSON only. The user may write in a non-Japanese language.
+
+CRITICAL: Each symptoms[].name MUST be an exact Japanese label from the canonical list in the user message (not English).
+Examples: itchy eyes -> 目のかゆみ (NOT かゆみ); sore throat -> のどの痛み.
+Severity values MUST be Japanese: 軽度, 中等度, or 重度.
+red_flags and escalation_reason may be in Japanese."""
+
+
+def _build_symptom_gpt_user_prompt(
+    sanitized_text: str,
+    user_info: Dict,
+    lang: str,
+) -> str:
+    from src.core.i18n_prompts import normalize_lang
+
+    lang = normalize_lang(lang)
+    canonical = _canonical_symptom_names_csv()
+    age = user_info.get("age", "不明")
+    gender = user_info.get("gender", "不明")
+    pregnant = user_info.get("pregnant", False)
+    breastfeeding = user_info.get("breastfeeding", False)
+
+    if lang == "ja":
+        return f"""
+あなたは医療NLUシステムです。ユーザーの症状文から以下の情報を抽出してください。
+
+【ユーザー入力】
+{sanitized_text}
+
+【ユーザー情報】
+年齢: {age}
+性別: {gender}
+妊娠中: {pregnant}
+授乳中: {breastfeeding}
+
+【抽出すべき情報】
+1. 症状リスト（以下から該当するものを選択）
+   {canonical}
+
+2. 各症状の重症度（軽度/中等度/重度）
+3. 症状の期間（何日前から）
+4. 重症疑い症状の有無（呼吸困難、高熱38.5度以上、胸痛、意識障害など）
+
+【回答形式】
+以下のJSON形式で回答してください：
+{{
+    "symptoms": [
+        {{
+            "name": "症状名",
+            "severity": "軽度 or 中等度 or 重度",
+            "duration_days": 数値（不明なら null）
+        }}
+    ],
+    "red_flags": ["重症疑い症状1", "重症疑い症状2"],
+    "needs_escalation": true or false,
+    "escalation_reason": "エスカレーションが必要な理由"
+}}
+
+【重要な注意事項】
+- 症状名は必ず上記のリストから選択してください
+- 「目がかゆい」「目もかゆい」「目の痒み」などは必ず「目のかゆみ」として抽出してください（「かゆみ」ではありません）
+- 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
+- 「のどが痛い」「喉が痛い」は「のどの痛み」として抽出してください
+- 重症疑い症状がある場合は必ず needs_escalation を true にしてください
+- 情報が不明な場合は null を使用してください
+- インフルエンザの可能性がある場合（高熱38.5度以上+複数の風邪症状）は、red_flagsに「インフルエンザ疑い」を追加してください
+- 体温情報がある場合は、38.5度以上の場合は「高熱」としてred_flagsに追加してください
+"""
+
+    lang_labels = {
+        "en": "English",
+        "ko": "Korean",
+        "zh": "Chinese",
+    }
+    lang_label = lang_labels.get(lang, "English")
+    return f"""
+You are a medical NLU system. The user wrote in {lang_label}. Extract structured symptom data for Japanese OTC routing.
+
+【User input】
+{sanitized_text}
+
+【User context】
+Age: {age}
+Gender: {gender}
+Pregnant: {pregnant}
+Breastfeeding: {breastfeeding}
+
+【Canonical symptom names — use ONLY these exact Japanese strings in symptoms[].name】
+{canonical}
+
+【Extract】
+1. Matching symptoms from the canonical list (translate meaning from user language)
+2. severity per symptom: 軽度 / 中等度 / 重度 (Japanese only)
+3. duration_days (integer or null)
+4. red_flags for emergencies (high fever >=38.5C, breathing difficulty, chest pain, etc.)
+
+【JSON shape】
+{{
+    "symptoms": [{{"name": "<Japanese canonical>", "severity": "軽度|中等度|重度", "duration_days": null}}],
+    "red_flags": [],
+    "needs_escalation": false,
+    "escalation_reason": ""
+}}
+
+Rules: itchy eyes -> 目のかゆみ not かゆみ; sore throat -> のどの痛み; runny nose -> 鼻水; sneezing -> くしゃみ.
+"""
+
+
+def extract_symptoms_with_gpt(
+    user_text: str,
+    user_info: Dict,
+    client: OpenAI,
+    *,
+    detected_language: str = "ja",
+) -> Dict:
     """
-    ChatGPT APIを使用してユーザーの自由入力から症状を抽出・構造化
+    ChatGPT APIを使用してユーザーの自由入力から症状を抽出・構造化。
+    非日本語入力時も symptoms[].name は辞書の日本語 canonical に正規化する。
     """
     from src.security.security_validator import validate_user_input
     from src.security.security_config import should_block_input
@@ -695,56 +844,13 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
             "escalation_reason": "入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。"
         }
 
-    all_symptoms = []
-    for symptom_name, symptom_data in load_symptom_dictionary().items():
-        all_symptoms.append(symptom_name)
-        all_symptoms.extend(symptom_data["synonyms"])
+    from src.core.i18n_prompts import normalize_lang
 
-    prompt = f"""
-あなたは医療NLUシステムです。ユーザーの症状文から以下の情報を抽出してください。
-
-【ユーザー入力】
-{sanitized_text}
-
-【ユーザー情報】
-年齢: {user_info.get('age', '不明')}
-性別: {user_info.get('gender', '不明')}
-妊娠中: {user_info.get('pregnant', False)}
-授乳中: {user_info.get('breastfeeding', False)}
-
-【抽出すべき情報】
-1. 症状リスト（以下から該当するものを選択）
-   {', '.join(list(load_symptom_dictionary().keys()))}
-
-2. 各症状の重症度（軽度/中等度/重度）
-3. 症状の期間（何日前から）
-4. 重症疑い症状の有無（呼吸困難、高熱38.5度以上、胸痛、意識障害など）
-
-【回答形式】
-以下のJSON形式で回答してください：
-{{
-    "symptoms": [
-        {{
-            "name": "症状名",
-            "severity": "軽度 or 中等度 or 重度",
-            "duration_days": 数値（不明なら null）
-        }}
-    ],
-    "red_flags": ["重症疑い症状1", "重症疑い症状2"],
-    "needs_escalation": true or false,
-    "escalation_reason": "エスカレーションが必要な理由"
-}}
-
-【重要な注意事項】
-- 症状名は必ず上記のリストから選択してください
-- 「目がかゆい」「目もかゆい」「目の痒み」などは必ず「目のかゆみ」として抽出してください（「かゆみ」ではありません）
-- 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
-- 「のどが痛い」「喉が痛い」は「のどの痛み」として抽出してください
-- 重症疑い症状がある場合は必ず needs_escalation を true にしてください
-- 情報が不明な場合は null を使用してください
-- インフルエンザの可能性がある場合（高熱38.5度以上+複数の風邪症状）は、red_flagsに「インフルエンザ疑い」を追加してください
-- 体温情報がある場合は、38.5度以上の場合は「高熱」としてred_flagsに追加してください
-"""
+    lang = normalize_lang(detected_language)
+    prompt = _build_symptom_gpt_user_prompt(sanitized_text, user_info, lang)
+    system_content = (
+        _SYMPTOM_GPT_SYSTEM_JA if lang == "ja" else _SYMPTOM_GPT_SYSTEM_I18N
+    )
 
     try:
         from src.core.llm_client import chat_completion_create
@@ -754,19 +860,7 @@ def extract_symptoms_with_gpt(user_text: str, user_info: Dict, client: OpenAI) -
             model_role="nlu",
             path="nlu_service.extract_symptoms",
             messages=[
-                {"role": "system", "content": """あなたは医療NLUシステムです。症状文から正確に情報を抽出してください。
-
-【最重要ルール - 症状名の正確な抽出】
-1. 「目がかゆい」「目もかゆい」「目の痒み」「目かゆい」「目が痒い」→必ず「目のかゆみ」として抽出（「かゆみ」ではない）
-2. 「かゆみ」は皮膚のかゆみを指し、「目のかゆみ」とは区別してください
-3. 「鼻水+くしゃみ+目のかゆみ」の組み合わせはアレルギー性鼻炎の可能性が高い
-4. 「のどが痛い」「喉が痛い」→「のどの痛み」として抽出
-
-【その他の重要な注意事項】
-- 高熱（38.5度以上）と複数の風邪症状がある場合は、red_flagsに「インフルエンザ疑い」を追加してください
-- 体温情報を正確に抽出し、38.5度以上の場合は「高熱」として扱ってください
-- 症状名は必ずload_symptom_dictionary()に定義されている症状名から選択してください
-- 重症疑い症状がある場合は必ずneeds_escalationをtrueにしてください"""},
+                {"role": "system", "content": system_content},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,

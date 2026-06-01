@@ -173,12 +173,24 @@ def apply_pollen_candidate_adjustments(
     boost = float(candidate.get("pollen_boost", 0.0))
     penalty = float(candidate.get("pollen_penalty", 0.0))
 
+    from src.core.preference_merge import preference_field_confidence
+
     avoid_drowsiness = prefs.get("avoid_drowsiness") or prefs.get("prefer_non_sedating")
     avoid_dry_mouth = prefs.get("avoid_dry_mouth")
     prefer_nasal = prefs.get("prefer_nasal_route")
     avoid_nasal = prefs.get("avoid_nasal_route")
     prefer_fewer_doses = prefs.get("prefer_fewer_daily_doses")
     max_doses = prefs.get("preferred_max_daily_doses")
+
+    w_drowsy = preference_field_confidence(prefs, "avoid_drowsiness") if avoid_drowsiness else 0.0
+    w_dry = preference_field_confidence(prefs, "avoid_dry_mouth") if avoid_dry_mouth else 0.0
+    w_nasal_pref = preference_field_confidence(prefs, "prefer_nasal_route") if prefer_nasal else 0.0
+    w_nasal_avoid = preference_field_confidence(prefs, "avoid_nasal_route") if avoid_nasal else 0.0
+    w_dose = preference_field_confidence(prefs, "prefer_fewer_daily_doses") if (
+        prefer_fewer_doses or max_doses is not None
+    ) else 0.0
+    if max_doses is not None:
+        w_dose = max(w_dose, preference_field_confidence(prefs, "preferred_max_daily_doses"))
 
     # --- 製品クラス別の基礎スコア ---
     if product_class == "oral_2nd_gen":
@@ -193,7 +205,8 @@ def apply_pollen_candidate_adjustments(
         boost = max(boost, 0.08 if not avoid_drowsiness else 0.02)
         penalty = min(penalty, -0.32)
         if avoid_drowsiness or avoid_dry_mouth:
-            penalty = min(penalty, -0.48)
+            extra = -0.16 * max(w_drowsy, w_dry)
+            penalty = min(penalty, -0.32 + extra)
     elif product_class == "nasal_vasoconstrictor":
         if profile["congestion_primary"] or profile["mixed_nasal"]:
             boost = max(boost, 0.28)
@@ -206,7 +219,7 @@ def apply_pollen_candidate_adjustments(
         elif profile["rhinorrhea_sneeze"]:
             boost = max(boost, 0.18)
         if avoid_drowsiness:
-            penalty = min(penalty, -0.22)
+            penalty = min(penalty, -0.22 * max(0.5, w_drowsy))
     elif product_class == "nasal_other":
         if profile["has_congestion"]:
             boost = max(boost, 0.20)
@@ -230,22 +243,22 @@ def apply_pollen_candidate_adjustments(
 
     # --- ユーザー嗜好: 剤形 ---
     if prefer_nasal and product_class.startswith("nasal"):
-        boost += 0.15
+        boost += 0.15 * w_nasal_pref
     if avoid_nasal and product_class.startswith("nasal"):
-        penalty = min(penalty, -0.35)
+        penalty = min(penalty, -0.35 * max(0.5, w_nasal_avoid))
 
     # --- ユーザー嗜好: 眠気・口渇 ---
     ingredients = _normalize_ingredients(candidate)
     if avoid_drowsiness and contains_any(ingredients, FIRST_GEN_ANTIHISTAMINE_INGREDIENTS):
-        penalty = min(penalty, -0.30)
+        penalty = min(penalty, -0.30 * max(0.5, w_drowsy))
     if avoid_drowsiness and product_class == "oral_2nd_gen":
-        boost += 0.08
+        boost += 0.08 * w_drowsy
     if avoid_dry_mouth and (
         contains_any(ingredients, FIRST_GEN_ANTIHISTAMINE_INGREDIENTS)
         or "イソプロパミド" in ingredients
         or "ベラドンナ" in ingredients
     ):
-        penalty = min(penalty, -0.18)
+        penalty = min(penalty, -0.18 * max(0.5, w_dry))
 
     # --- ユーザー嗜好: 1日の服用回数 ---
     dose_count = estimate_daily_dose_count(str(candidate.get("usage", "")))
@@ -253,9 +266,9 @@ def apply_pollen_candidate_adjustments(
         target = max_doses if max_doses is not None else 2
         if dose_count is not None:
             if dose_count <= target:
-                boost += 0.10 if dose_count == 1 else 0.06
+                boost += (0.10 if dose_count == 1 else 0.06) * max(0.5, w_dose)
             elif dose_count > target:
-                penalty = min(penalty, -0.12)
+                penalty = min(penalty, -0.12 * max(0.5, w_dose))
 
     has_vaso = contains_any(ingredients, VASOCONSTRICTOR_INGREDIENTS)
     if has_vaso and is_nasal_rhinitis_product(candidate):
