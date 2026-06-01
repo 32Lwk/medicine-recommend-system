@@ -115,8 +115,8 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
-                                    { text: "GPT-4系からGPT-5系への移行（カナリア運用中）", defaultChecked: true },
-                                    { text: "マルチエージェント振り分け（段階ロールアウト中）", defaultChecked: true },
+                                    { text: "GPT-5系モデル（トリアージ・NLU・説明等）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け（ChatOrchestrator）", defaultChecked: true },
                                     "潜在空間によるスコアリングの大規模改修",
                                     "UI・導線の最適化",
                                     "カルーセル型UIの導入",
@@ -158,8 +158,8 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
-                                    { text: "GPT-4系からGPT-5系への移行（カナリア運用中）", defaultChecked: true },
-                                    { text: "マルチエージェント振り分け（段階ロールアウト中）", defaultChecked: true },
+                                    { text: "GPT-5系モデル（トリアージ・NLU・説明等）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け（ChatOrchestrator）", defaultChecked: true },
                                     "潜在空間によるスコアリングの大規模改修",
                                     "UI・導線の最適化",
                                     "カルーセル型UIの導入",
@@ -405,8 +405,8 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
-                                    { text: "Migration from GPT-4 class to GPT-5 class models (canary)", defaultChecked: true },
-                                    { text: "Multi-agent routing (gradual rollout)", defaultChecked: true },
+                                    { text: "GPT-5 class models (triage, NLU, explanations, etc.)", defaultChecked: true },
+                                    { text: "Multi-agent routing (ChatOrchestrator)", defaultChecked: true },
                                     "Major scoring revamp using latent space",
                                     "UI and user-flow optimization",
                                     "Carousel-style UI",
@@ -448,8 +448,8 @@
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
-                                    { text: "Migration from GPT-4 class to GPT-5 class models (canary)", defaultChecked: true },
-                                    { text: "Multi-agent routing (gradual rollout)", defaultChecked: true },
+                                    { text: "GPT-5 class models (triage, NLU, explanations, etc.)", defaultChecked: true },
+                                    { text: "Multi-agent routing (ChatOrchestrator)", defaultChecked: true },
                                     "Major scoring revamp using latent space",
                                     "UI and user-flow optimization",
                                     "Carousel-style UI",
@@ -708,9 +708,9 @@
                                 items: [
                                     { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
                                     "잠재 공간 기반 스코어링 대규모 개편",
-                                    "GPT-4 계열에서 GPT-5 계열로 이전",
+                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명 등)", defaultChecked: true },
+                                    { text: "멀티 에이전트 라우팅(ChatOrchestrator)", defaultChecked: true },
                                     "UI·사용자 동선 최적화",
-                                    "멀티 에이전트 모델 업데이트",
                                     "캐러셀형 UI 도입",
                                     "이미지 도입",
                                     "보안 강화",
@@ -751,9 +751,9 @@
                                 items: [
                                     { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
                                     "잠재 공간 기반 스코어링 대규모 개편",
-                                    "GPT-4 계열에서 GPT-5 계열로 이전",
+                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명 등)", defaultChecked: true },
+                                    { text: "멀티 에이전트 라우팅(ChatOrchestrator)", defaultChecked: true },
                                     "UI·사용자 동선 최적화",
-                                    "멀티 에이전트 모델 업데이트",
                                     "캐러셀형 UI 도입",
                                     "이미지 도입",
                                     "보안 강화",
@@ -998,9 +998,9 @@
                                 items: [
                                     { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
                                     "基于潜在空间的大规模评分改造",
-                                    "从 GPT-4 系列迁移至 GPT-5 系列",
+                                    { text: "GPT-5 系列模型（分流、NLU、说明等）", defaultChecked: true },
+                                    { text: "多智能体路由（ChatOrchestrator）", defaultChecked: true },
                                     "UI 与流程优化",
-                                    "多智能体模型更新",
                                     "引入轮播式 UI",
                                     "引入图片能力",
                                     "安全加固",
@@ -1041,9 +1041,9 @@
                                 items: [
                                     { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
                                     "基于潜在空间的大规模评分改造",
-                                    "从 GPT-4 系列迁移至 GPT-5 系列",
+                                    { text: "GPT-5 系列模型（分流、NLU、说明等）", defaultChecked: true },
+                                    { text: "多智能体路由（ChatOrchestrator）", defaultChecked: true },
                                     "UI 与流程优化",
-                                    "多智能体模型更新",
                                     "引入轮播式 UI",
                                     "引入图片能力",
                                     "安全加固",
@@ -2303,7 +2303,7 @@
                         <h3>🛠️ 開発環境・使用ツール</h3>
                         <ul>
                             <li><strong>バックエンド:</strong> Python 3.9+、<strong>FastAPI</strong>（本番のWeb/API・ASGI）、Jinja2（テンプレート）、MeCab（日本語形態素解析）</li>
-                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-4o・GPT-4o-mini 等）、ルールベースNLU（ハイブリッド推奨システム）</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-5.4-mini・GPT-5.5 等）、ルールベースNLU（ハイブリッド推奨システム）</li>
                             <li><strong>翻訳API:</strong> DeepL API（多言語対応：日本語・英語・中国語・韓国語、高速翻訳）</li>
                             <li><strong>データベース:</strong> PostgreSQL（フィードバック永続化・セッション管理・マルチインスタンス対応）</li>
                             <li><strong>データ処理:</strong> Pandas、NumPy</li>
@@ -2356,7 +2356,7 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-4o・GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-5.4-mini・GPT-5.5 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>デプロイ環境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
@@ -2429,7 +2429,7 @@
                         <h3>🛠️ Development Environment & Tools</h3>
                         <ul>
                             <li><strong>Backend:</strong> Python 3.9+, <strong>FastAPI</strong> (production web/API, ASGI), Jinja2 (templates), MeCab (Japanese morphological analysis)</li>
-                            <li><strong>AI/NLP:</strong> OpenAI API (GPT-4o, GPT-4o-mini, etc.), rule-based NLU (hybrid recommendation system)</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API (GPT-5.4-mini, GPT-5.5, etc.), rule-based NLU (hybrid recommendation system)</li>
                             <li><strong>Translation API:</strong> DeepL API (Multi-language support: Japanese, English, Chinese, Korean, high-speed translation)</li>
                             <li><strong>Database:</strong> PostgreSQL (Feedback persistence, session management, multi-instance support)</li>
                             <li><strong>Data Processing:</strong> Pandas, NumPy</li>
@@ -2479,7 +2479,7 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-4o, GPT-4o-mini, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-5.4-mini, GPT-5.5, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>Deployment:</strong> Google Cloud (e.g. Cloud Run) / Gunicorn + UvicornWorker (ASGI)</p>
                         </div>
@@ -2552,7 +2552,7 @@
                         <h3>🛠️ 개발 환경·사용 도구</h3>
                         <ul>
                             <li><strong>백엔드:</strong> Python 3.9+, <strong>FastAPI</strong>(프로덕션 Web/API·ASGI), Jinja2(템플릿), MeCab(일본어 형태소)</li>
-                            <li><strong>AI/NLP:</strong> OpenAI API(GPT-4o, GPT-4o-mini 등), 룰 베이스 NLU(하이브리드 추천 시스템)</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API(GPT-5.4-mini, GPT-5.5 등), 룰 베이스 NLU(하이브리드 추천 시스템)</li>
                             <li><strong>번역 API:</strong> DeepL API(다국어 지원: 일본어·영어·중국어·한국어, 고속 번역)</li>
                             <li><strong>데이터베이스:</strong> PostgreSQL(피드백 영속화·세션 관리·멀티 인스턴스 지원)</li>
                             <li><strong>데이터 처리:</strong> Pandas, NumPy</li>
@@ -2602,7 +2602,7 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-4o, GPT-4o-mini 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-5.4-mini, GPT-5.5 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>배포 환경:</strong> Google Cloud(Cloud Run 등) / Gunicorn + UvicornWorker(ASGI)</p>
                         </div>
@@ -2675,7 +2675,7 @@
                         <h3>🛠️ 开发环境·使用工具</h3>
                         <ul>
                             <li><strong>后端:</strong> Python 3.9+、<strong>FastAPI</strong>（生产环境 Web/API、ASGI）、Jinja2（模板）、MeCab（日语形态素解析）</li>
-                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-4o、GPT-4o-mini 等）、规则基础 NLU（混合推荐系统）</li>
+                            <li><strong>AI/NLP:</strong> OpenAI API（GPT-5.4-mini、GPT-5.5 等）、规则基础 NLU（混合推荐系统）</li>
                             <li><strong>翻译API:</strong> DeepL API（多语言支持：日语·英语·中文·韩语、高速翻译）</li>
                             <li><strong>数据库:</strong> PostgreSQL（反馈持久化·会话管理·多实例支持）</li>
                             <li><strong>数据处理:</strong> Pandas、NumPy</li>
@@ -2725,7 +2725,7 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-4o、GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-5.4-mini、GPT-5.5 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>部署环境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
@@ -3386,7 +3386,7 @@
                         
                         <div class="contact-info">
                             <h4>技術情報</h4>
-                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-4o・GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
+                            <p><strong>開発言語・技術：</strong> Python 3.9+ / FastAPI（本番ASGI）/ MeCab / OpenAI API（GPT-5.4-mini・GPT-5.5 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript（ES6+）</p>
                             <p><strong>開発リポジトリ：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>デプロイ環境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>
@@ -3410,7 +3410,7 @@
                         
                         <div class="contact-info">
                             <h4>Technical Information</h4>
-                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-4o, GPT-4o-mini, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>Development Languages & Technologies:</strong> Python 3.9+ / FastAPI (production ASGI) / MeCab (Japanese morphological analysis) / OpenAI API (GPT-5.4-mini, GPT-5.5, etc.) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>Development Repository:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>Deployment:</strong> Google Cloud (e.g. Cloud Run) / Gunicorn + UvicornWorker (ASGI)</p>
                         </div>
@@ -3434,7 +3434,7 @@
                         
                         <div class="contact-info">
                             <h4>기술 정보</h4>
-                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-4o, GPT-4o-mini 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>개발 언어·기술:</strong> Python 3.9+ / FastAPI(프로덕션 ASGI) / MeCab(일본어 형태소) / OpenAI API(GPT-5.4-mini, GPT-5.5 등) / DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>개발 리포지토리:</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>배포 환경:</strong> Google Cloud(Cloud Run 등) / Gunicorn + UvicornWorker(ASGI)</p>
                         </div>
@@ -3458,7 +3458,7 @@
                         
                         <div class="contact-info">
                             <h4>技术信息</h4>
-                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-4o、GPT-4o-mini 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
+                            <p><strong>开发语言·技术：</strong> Python 3.9+ / FastAPI（生产 ASGI）/ MeCab（日语形态素解析）/ OpenAI API（GPT-5.4-mini、GPT-5.5 等）/ DeepL API / PostgreSQL / Pandas / NumPy / HTML5 / CSS3 / JavaScript (ES6+)</p>
                             <p><strong>开发仓库：</strong> <a href="https://github.com/32Lwk" target="_blank">https://github.com/32Lwk</a></p>
                             <p><strong>部署环境：</strong> Google Cloud（Cloud Run 等）/ Gunicorn + UvicornWorker（ASGI）</p>
                         </div>

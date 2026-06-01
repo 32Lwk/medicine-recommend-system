@@ -1,8 +1,55 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年5月21日**（`/about` サイト刷新・技術構成図・UI 簡素化）
+**最終更新日: 2026年6月2日**（花粉症・アレルギー性鼻炎の推奨強化・LLM 既定プロファイル gpt5）
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
+
+---
+
+## 2026年6月2日 — 花粉症・アレルギー性鼻炎の推奨強化・LLM 既定 gpt5
+
+### 概要
+
+- **花粉症／アレルギー性鼻炎のルールベース推奨を大幅強化**: 風邪薬・総合感冒薬の混入を抑制し、製品クラス（第2世代内服・ステロイド点鼻・血管収縮点鼻など）と症状プロファイル・ユーザー嗜好に応じたスコア調整を追加。
+- **併用注意の自動生成**: top3 に血管収縮点鼻の重複・抗ヒスタミン内服の重複などがある場合、用法注意 HTML を付与。
+- **ユーザー嗜好の拡張**: 眠気回避・口渇回避・服用回数・点鼻希望／回避をチャット文と属性モーダル「その他」から検出しスコアに反映。
+- **LLM 既定プロファイルを gpt5 に変更**: 環境変数未設定時は `gpt5`（従来は `legacy`）。ロールバックは `LLM_MODEL_PROFILE=legacy`。
+- **オンボーディング文言**: GPT-5 系モデル・ChatOrchestrator 利用を反映（カナリア表現を整理）。
+
+### 花粉症・アレルギー性鼻炎（新規・拡充）
+
+| モジュール | 内容 |
+|-----------|------|
+| `src/core/recommendation/pollen_rhinitis_scoring.py`（新規） | 製品分類（`oral_2nd_gen` / `nasal_vasoconstrictor` 等）、症状プロファイル、嗜好反映、`pollen_boost` / `pollen_penalty`、血管収縮点鼻の用法警告 |
+| `src/core/recommendation/pollen_combination_advice.py`（新規） | top3 併用時の注意文（血管収縮点鼻×2、抗ヒスタミン内服×2、第1/2世代併用など） |
+| `src/core/candidate_scoring.py` | `is_pollen_rhinitis_focus()` — 感染兆候で花粉文脈解除。花粉寄り相談では風邪薬カテゴリ除外・抗アレルギー薬追加・候補フィルタ |
+| `src/core/recommendation/final_score_calculator.py` | 花粉文脈で総合感冒薬ボーナス抑制（-0.50）、`pollen_boost` / `pollen_penalty` を最終スコアに合算 |
+| `src/core/recommendation/ingredient_diversity.py` | 目のかゆみあり花粉相談で top3 に目薬スロット確保（`_ensure_pollen_eye_drop_slot`） |
+| `src/core/rule_based_recommendation.py` | `user_preferences` を候補取得・スコアに渡す。推奨後に併用注意を `usage_notes` に追記 |
+| `src/core/explanation_generator.py` | 血管収縮点鼻成分の短期連用警告を用法ノートに付与 |
+| `src/core/user_detection.py` | `preference_context_text()` — メッセージ + `other_info` を結合。眠気・口渇・点鼻・服用回数の嗜好キーワード |
+| `src/handlers/chat/chat_recommendation_flow.py` | `user_info` に属性モーダル `other_info` を渡す |
+| `data/symptom_dictionary.json` | 「口渇」エントリ追加（NLU・嗜好検出の補助） |
+
+### LLM 設定
+
+- **`config/llm_config.py` / `llm_canary.py` / `llm_flags.py`**: `LLM_MODEL_PROFILE` 未設定時の既定を **`gpt5`** に変更。
+- **`.env.example`**: プロファイル・ロール別モデルはコメント例に整理（コード既定 gpt5 を明記）。
+- **`docs/CLOUD_RUN_LLM_ENV.md`**, **`docs/ROUTING_ARCHITECTURE_AUDIT.md`**: 本番の既定プロファイル表記を更新。
+- **`src/services/llm_metrics.py`**: フォールバックプロファイルを `gpt5` に。
+- **`tests/test_llm_canary_profile.py`**, **`tests/test_llm_phase0.py`**: 既定 gpt5 に合わせて期待値を更新。
+
+### UI・ドキュメント・テスト
+
+- **`templates/index.html`**: 属性・ユーザー情報の「その他」プレースホルダを花粉嗜好例（眠気・1日1回・点鼻・口渇）に変更。
+- **`static/js/main.js`**: オンボーディングの完了項目文言を GPT-5 系・ChatOrchestrator に更新（日・英・韓・中）。
+- **`.cursor/skills/.../golden-cases-cold.md`**: 風邪型ゴールデンケースの微修正。
+- **`tests/test_pollen_rhinitis_scoring.py`**, **`tests/test_pollen_rhinitis_recommendation.py`**（新規）: 分類・嗜好・併用注意・統合推奨の回帰テスト。
+
+### 運用上の注意
+
+- **LLM を legacy に戻す場合**: Cloud Run / ローカルで `LLM_MODEL_PROFILE=legacy` を明示設定。
+- **花粉症と風邪の切り分け**: のど痛み・発熱など感染兆候がある入力では `is_pollen_rhinitis_focus` が false になり、従来の風邪薬ルートに戻る。
 
 ---
 

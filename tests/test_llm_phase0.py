@@ -20,6 +20,17 @@ def test_gpt_fallback_on(monkeypatch):
     assert llm_flags.is_gpt_recommend_fallback_enabled() is True
 
 
+def test_get_model_gpt5_default(monkeypatch):
+    monkeypatch.delenv("LLM_MODEL_PROFILE", raising=False)
+    import importlib
+    from config import llm_config
+
+    importlib.reload(llm_config)
+    assert llm_config.LLM_MODEL_PROFILE == "gpt5"
+    assert llm_config.get_model("triage") == "gpt-5.4-mini"
+    assert llm_config.get_model("explain") == "gpt-5.5"
+
+
 def test_get_model_legacy(monkeypatch):
     monkeypatch.setenv("LLM_MODEL_PROFILE", "legacy")
     import importlib

@@ -639,6 +639,7 @@ def run_recommendation_flow(
             'symptom_duration_days': user_attributes.get('symptom_duration_days'),
             'treatment_mention': user_attributes.get('treatment_mention', False),  # 治療中フラグ
             'medical_prevention_request': user_attributes.get('medical_prevention_request', False),  # 医薬的な予防フラグ
+            'other_info': user_attributes.get('other_info'),  # 属性モーダル「その他」（花粉嗜好など）
             'user_text': sanitized_message  # ユーザー入力テキスト（禁忌チェックで使用）
         }
         logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")

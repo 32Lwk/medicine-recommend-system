@@ -60,6 +60,27 @@ from src.core.influenza_detector import detect_influenza_risk, _check_influenza_
 logger = logging.getLogger(__name__)
 _DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
+# 花粉症文脈を解除する感染兆候（のど痛み単独は含めない）
+_POLLEN_STRONG_INFECTION_SYMPTOMS = ("発熱", "咳", "悪寒", "頭痛", "高熱", "痰", "たん")
+_POLLEN_STRONG_INFECTION_TEXT_KEYWORDS = (
+    "発熱", "熱がある", "熱っぽい", "高熱", "微熱", "体温",
+    "咳", "せき", "空咳", "痰", "たん",
+    "悪寒", "寒気", "体が痛い", "筋肉痛", "関節痛",
+    "風邪", "かぜ", "インフル", "コロナ",
+)
+_ALLERGIC_RHINITIS_EFFICACY_KEYWORDS = (
+    "アレルギー性鼻炎",
+    "花粉症",
+    "副鼻腔炎",
+)
+
+
+def has_allergic_rhinitis_efficacy(efficacy: str) -> bool:
+    """効能がアレルギー性鼻炎・花粉症向けか（総合感冒薬との切り分け用）"""
+    if not efficacy:
+        return False
+    return any(kw in str(efficacy) for kw in _ALLERGIC_RHINITIS_EFFICACY_KEYWORDS)
+
 
 def is_pollen_rhinitis_focus(user_text: str, symptom_names: List[str], medicine_type_hint: str = "") -> bool:
     """
@@ -67,13 +88,13 @@ def is_pollen_rhinitis_focus(user_text: str, symptom_names: List[str], medicine_
 
     ルール:
     - 明示キーワード（花粉症など）または medicine_type が鼻炎/アレルギー系
-    - ただし感染症らしい記述（発熱/咳/喉痛/風邪など）が強い場合は False
+    - 発熱・咳・悪寒など感染兆候が強い場合は False
+    - のどの痛みのみ（花粉症+鼻症状併存）は True のまま（GC-COLD-ALL-002 系）
     """
     text = (user_text or "").lower()
     hint = medicine_type_hint or ""
 
     if any(k in hint for k in ["抗アレルギー", "アレルギー", "鼻炎"]):
-        # medicine_type 自体がアレルギー/鼻炎なら基本は花粉症文脈寄り
         allergy_typed = True
     else:
         allergy_typed = False
@@ -93,22 +114,19 @@ def is_pollen_rhinitis_focus(user_text: str, symptom_names: List[str], medicine_
         for name in (symptom_names or [])
     )
 
-    infection_like_signs = ["発熱", "咳", "のどの痛み", "頭痛", "悪寒"]
-    has_infection_like_sign = any(s in (symptom_names or []) for s in infection_like_signs)
-
-    strong_infection_keywords = [
-        "発熱", "熱がある", "熱っぽい", "高熱", "微熱", "体温",
-        "咳", "せき", "空咳", "痰", "たん",
-        "のどの痛み", "喉の痛み", "咽頭痛", "扁桃",
-        "悪寒", "寒気", "体が痛い", "筋肉痛", "関節痛",
-        "風邪", "かぜ", "インフル", "コロナ",
-    ]
-    has_strong_infection_text = any(kw in text for kw in strong_infection_keywords)
-
-    if has_infection_like_sign or has_strong_infection_text:
+    hay_fever_context = allergy_typed or is_hay_fever_text or is_hay_fever_symptom
+    if not hay_fever_context:
         return False
 
-    return allergy_typed or is_hay_fever_text or is_hay_fever_symptom
+    has_strong_infection_sign = any(
+        s in (symptom_names or []) for s in _POLLEN_STRONG_INFECTION_SYMPTOMS
+    )
+    has_strong_infection_text = any(kw in text for kw in _POLLEN_STRONG_INFECTION_TEXT_KEYWORDS)
+
+    if has_strong_infection_sign or has_strong_infection_text:
+        return False
+
+    return True
 
 
 def should_apply_cold_preference_rules(nlu_result: Dict) -> bool:
@@ -602,7 +620,14 @@ def filter_by_efficacy_symptom_match(candidates: List[Dict], nlu_result: Dict) -
     return filtered
 
 
-def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_text: str = "", influenza_risk: bool = False) -> List[Dict]:
+def get_candidate_medicines(
+    nlu_result: Dict,
+    medicine_df: pd.DataFrame,
+    user_text: str = "",
+    influenza_risk: bool = False,
+    user_preferences: Optional[Dict] = None,
+    preference_user_info: Optional[Dict] = None,
+) -> List[Dict]:
     """
     症状に基づいて候補医薬品を取得（フィルタリング機能付き）
     """
@@ -658,9 +683,20 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
 
     medicine_type_hint = str(nlu_result.get("medicine_type") or "")
     focus_pollen = is_pollen_rhinitis_focus(user_text, symptom_names, medicine_type_hint)
-    if focus_pollen and "風邪薬" in medicine_types:
+    if focus_pollen:
+        if "風邪薬" in medicine_types:
+            medicine_types.discard("風邪薬")
+            logger.info("花粉症/アレルギー性鼻炎寄りの相談のため、検索カテゴリから風邪薬を除外しました")
+        if "鼻炎用薬" not in medicine_types:
+            medicine_types.add("鼻炎用薬")
+        if "抗アレルギー薬" not in medicine_types:
+            medicine_types.add("抗アレルギー薬")
+            logger.info("花粉症/アレルギー性鼻炎寄りの相談のため、抗アレルギー薬カテゴリを追加しました")
+        if (has_eye_itch or "目のかゆみ" in symptom_names) and "目薬" not in medicine_types:
+            medicine_types.add("目薬")
+            logger.info("花粉症文脈で目のかゆみのため、目薬カテゴリを追加しました")
+        medicine_types.discard("外用薬（皮膚）")
         medicine_types.discard("風邪薬")
-        logger.info("花粉症/アレルギー性鼻炎寄りの相談のため、検索カテゴリから風邪薬を除外しました")
 
     hangover_keywords = ["二日酔い", "二日酔", "宿酔", "悪酔い", "悪酔", "飲み過ぎ", "飲みすぎ", "酒", "アルコール"]
     is_hangover = any(kw in user_text_lower for kw in hangover_keywords)
@@ -701,6 +737,15 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
     logger.info(f"推定された医薬品の種類（拡張後）: {medicine_types}")
     if is_allergy_case:
         logger.info(f"アレルギー症状が検出されました（目のかゆみ: {has_eye_itch}, アレルギー指標: {has_allergy_indicator}）。鼻炎用薬を優先します")
+
+    resolved_preferences = user_preferences
+    if resolved_preferences is None and (user_text or preference_user_info):
+        from src.core.user_detection import extract_user_preferences
+
+        resolved_preferences = extract_user_preferences(
+            user_text, nlu_result, preference_user_info or {}
+        )
+
     if is_hangover:
         if _DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"二日酔いが検出されました（キーワードまたは症状パターン）。二日酔い向け医薬品を優先します")
@@ -801,6 +846,16 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             logger.info(f"花粉症/アレルギー性鼻炎寄りの相談のため候補から除外: {product_name} (medicine_type={medicine_type})")
             return
 
+        if focus_pollen and is_comprehensive_cold_medicine({
+            'product_name': product_name,
+            'efficacy': efficacy,
+            'medicine_type': medicine_type,
+        }) and not has_allergic_rhinitis_efficacy(efficacy):
+            logger.info(
+                f"花粉症文脈のため総合感冒薬型候補を除外: {product_name} (medicine_type={medicine_type})"
+            )
+            return
+
         candidate = {
             'medicine_id': len(candidates),
             'product_name': product_name,
@@ -829,6 +884,19 @@ def get_candidate_medicines(nlu_result: Dict, medicine_df: pd.DataFrame, user_te
             candidate['allergy_boost'] = 0.40
             if _DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"アレルギー症状検出: 鼻炎用薬 {product_name} にブースト +0.40 を適用")
+
+        if focus_pollen:
+            from src.core.recommendation.pollen_rhinitis_scoring import (
+                apply_pollen_candidate_adjustments,
+            )
+
+            apply_pollen_candidate_adjustments(
+                candidate,
+                focus_pollen=True,
+                symptom_names=symptom_names,
+                user_preferences=resolved_preferences,
+                user_text=user_text,
+            )
 
         if is_hangover:
             has_headache = any("頭痛" in str(s.get("name", "")) for s in symptoms)

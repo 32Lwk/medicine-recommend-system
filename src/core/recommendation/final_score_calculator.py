@@ -49,6 +49,7 @@ from src.core.candidate_scoring import (
     ensure_score_difference,
     is_exact_product_match,
     is_comprehensive_cold_medicine,
+    is_pollen_rhinitis_focus,
     _is_kakkonto_medicine,
     _is_motion_sickness_medicine,
     classify_medicine_mechanism,
@@ -208,8 +209,20 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
                 "contraindication_severity": "critical"
             }
     
-    # スコアリングユーティリティをインポート
-    
+    # 花粉症・アレルギー性鼻炎文脈（総合感冒薬ボーナス抑制・鼻炎用薬優先）
+    _symptom_names_for_pollen = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+    _text_for_pollen = user_text or str(
+        nlu_result.get("user_text")
+        or nlu_result.get("original_user_text")
+        or nlu_result.get("user_message")
+        or ""
+    )
+    focus_pollen = is_pollen_rhinitis_focus(
+        _text_for_pollen,
+        _symptom_names_for_pollen,
+        str(nlu_result.get("medicine_type") or ""),
+    )
+
     # 各スコアを計算
     symptom_score = calculate_symptom_match_score(candidate, nlu_result)
     efficacy_specificity_score = calculate_efficacy_specificity_score(candidate, nlu_result)
@@ -1171,7 +1184,13 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     # 総合風邪薬の優先推奨ボーナス（複数の風邪症状がある場合）
     comprehensive_cold_bonus = 0.0
-    if is_comprehensive_cold_medicine(candidate):
+    if focus_pollen and ('風邪薬' in medicine_type or is_comprehensive_cold_medicine(candidate)):
+        comprehensive_cold_bonus = -0.5
+        if DEBUG_MODE or logger.level <= logging.DEBUG:
+            logger.debug(
+                f"花粉症文脈のため総合感冒薬ボーナスを抑制: {candidate.get('product_name', '')} = -0.50"
+            )
+    elif is_comprehensive_cold_medicine(candidate):
         # 風邪の症状が複数ある場合、総合風邪薬にボーナスを付与
         # 単一症状の場合（ユーザー症状が1つの場合）はボーナスを付与しない（過剰処方を防ぐため）
         cold_symptoms = ["発熱", "咳", "鼻水", "のどの痛み", "頭痛", "悪寒", "くしゃみ", "鼻づまり"]
@@ -1284,6 +1303,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     # アレルギーペナルティとブースト（アレルギー症状が検出された場合）
     allergy_penalty = candidate.get('allergy_penalty', 0.0)
     allergy_boost = candidate.get('allergy_boost', 0.0)
+    pollen_boost = candidate.get('pollen_boost', 0.0)
+    pollen_penalty = candidate.get('pollen_penalty', 0.0)
     
     # 二日酔いブースト（二日酔いが検出された場合）
     hangover_boost = candidate.get('hangover_boost', 0.0)
@@ -1328,6 +1349,9 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     
     limited_allergy_penalty = max(-0.20, min(0.0, allergy_penalty))  # 中程度のペナルティ
     limited_allergy_boost = max(0.0, min(0.20, allergy_boost))  # 中程度のボーナス
+    pollen_boost_cap = 0.55 if focus_pollen else 0.25
+    limited_pollen_boost = max(0.0, min(pollen_boost_cap, pollen_boost))
+    limited_pollen_penalty = max(-0.35, min(0.0, pollen_penalty))
     limited_hangover_boost = max(0.0, min(0.55, hangover_boost))  # 二日酔い医薬品への非常に大幅なブースト（五苓散+頭痛優先）
     # symptom_specificity_penaltyがNoneの場合は0.0を使用
     symptom_specificity_penalty = symptom_specificity_penalty if symptom_specificity_penalty is not None else 0.0
@@ -1825,6 +1849,8 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
         limited_symptom_boost +
         limited_allergy_penalty +
         limited_allergy_boost +
+        limited_pollen_boost +
+        limited_pollen_penalty +
         limited_hangover_boost +  # 二日酔いブーストを追加
         limited_body_part_score +
         limited_pattern_bonus +

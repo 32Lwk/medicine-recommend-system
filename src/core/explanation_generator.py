@@ -177,6 +177,14 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         usage_notes = response.choices[0].message.content.strip()
         usage_notes = convert_markdown_bold(usage_notes)
 
+        from src.core.recommendation.pollen_rhinitis_scoring import (
+            append_vasoconstrictor_nasal_warning,
+            mark_vasoconstrictor_flag,
+        )
+
+        mark_vasoconstrictor_flag(medicine_info)
+        usage_notes = append_vasoconstrictor_nasal_warning(usage_notes, medicine_info)
+
         if len(_usage_notes_cache) < 100:
             _usage_notes_cache[cache_key] = usage_notes
             if os.getenv('DEBUG_MODE', 'false').lower() == 'true' or logger.level <= logging.DEBUG:
@@ -523,6 +531,18 @@ def generate_usage_notes_and_consultation_with_gpt(
                         med_result['usage_notes'] = usage_notes
                     if _DEBUG_MODE or logger.level <= logging.DEBUG:
                         logger.debug(f"刺激性下剤の警告を追加: {med.get('product_name', '')}")
+
+            from src.core.recommendation.pollen_rhinitis_scoring import (
+                append_vasoconstrictor_nasal_warning,
+                mark_vasoconstrictor_flag,
+            )
+
+            mark_vasoconstrictor_flag(med)
+            if med.get("has_vasoconstrictor_nasal"):
+                usage_notes = append_vasoconstrictor_nasal_warning(usage_notes or "", med)
+                if med_result:
+                    med_result["usage_notes"] = usage_notes
+
             if med_result:
                 individual_note = med_result.get('usage_notes', '')
             else:
@@ -596,6 +616,14 @@ def generate_usage_notes_and_consultation_with_gpt(
                     individual_note = individual_note + '\n\n' + warning_html if individual_note else warning_html
                     if _DEBUG_MODE or logger.level <= logging.DEBUG:
                         logger.debug(f"刺激性下剤の警告を追加（フォールバック）: {med.get('product_name', '')}")
+
+            from src.core.recommendation.pollen_rhinitis_scoring import (
+                append_vasoconstrictor_nasal_warning,
+                mark_vasoconstrictor_flag,
+            )
+
+            mark_vasoconstrictor_flag(med)
+            individual_note = append_vasoconstrictor_nasal_warning(individual_note or "", med)
 
             age_restriction = med.get('age_restriction', '')
             age_restriction_display = ''

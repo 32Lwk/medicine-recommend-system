@@ -669,7 +669,18 @@ def rule_based_recommendation(
     
     # user_messageを追加（痛みフラグボーナス用）
     scoring_user_info['user_message'] = user_text
-    
+
+    try:
+        from src.core.user_detection import extract_user_preferences
+
+        _prefs = extract_user_preferences(user_text, nlu_result, scoring_user_info)
+        scoring_user_info['user_preferences'] = _prefs
+        scoring_user_info['prefers_kampo'] = _prefs.get('prefers_kampo', False)
+        scoring_user_info['prefers_not_kampo'] = _prefs.get('prefers_not_kampo', False)
+    except Exception as e:
+        logger.warning(f"ユーザー要望の抽出に失敗: {e}")
+        scoring_user_info.setdefault('user_preferences', None)
+
     age_imputed = False
     if scoring_user_info.get('age') is None:
         scoring_user_info['age'] = DEFAULT_ADULT_AGE
@@ -681,7 +692,14 @@ def rule_based_recommendation(
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ4: 候補医薬品取得 ---")
     mark_phase(session_id, "medicine_select", detail_code="candidate_search")
-    candidates = get_candidate_medicines(nlu_result, medicine_df, user_text, influenza_risk)
+    candidates = get_candidate_medicines(
+        nlu_result,
+        medicine_df,
+        user_text,
+        influenza_risk,
+        user_preferences=scoring_user_info.get('user_preferences'),
+        preference_user_info=scoring_user_info,
+    )
     
     # 初期候補数を記録
     initial_candidate_count = len(candidates)
@@ -1498,6 +1516,10 @@ def rule_based_recommendation(
             recommendation_item['risk_warning'] = candidate['risk_warning']
         if candidate.get('low_score_warning'):
             recommendation_item['low_score_warning'] = True
+        if candidate.get('pollen_product_class'):
+            recommendation_item['pollen_product_class'] = candidate['pollen_product_class']
+        if candidate.get('has_vasoconstrictor_nasal'):
+            recommendation_item['has_vasoconstrictor_nasal'] = True
         
         recommendations.append(recommendation_item)
     
@@ -1507,6 +1529,27 @@ def rule_based_recommendation(
     usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
         recommendations, nlu_result, scoring_user_info, client
     )
+
+    try:
+        from src.core.candidate_scoring import is_pollen_rhinitis_focus
+        from src.core.recommendation.pollen_combination_advice import (
+            build_pollen_combination_advice,
+        )
+
+        symptom_names_for_pollen = [
+            s.get("name") for s in nlu_result.get("symptoms", []) if s.get("name")
+        ]
+        if is_pollen_rhinitis_focus(
+            user_text, symptom_names_for_pollen, str(nlu_result.get("medicine_type") or "")
+        ):
+            combo_html = build_pollen_combination_advice(recommendations)
+            if combo_html:
+                base_notes = usage_and_consultation.get("usage_notes") or ""
+                usage_and_consultation["usage_notes"] = (
+                    f"{base_notes}\n\n{combo_html}" if base_notes else combo_html
+                )
+    except Exception as combo_err:
+        logger.warning(f"花粉症併用注意の生成でエラー: {combo_err}")
     
     logger.info(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
     if DEBUG_MODE or logger.level <= logging.DEBUG:
