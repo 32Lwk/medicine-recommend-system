@@ -225,9 +225,10 @@ def generate_personalized_advice(
 
     try:
         from src.core.i18n_prompts import normalize_lang
-        from src.core.llm_client import chat_completion_create, chat_completion_stream
+        from src.core.llm_client import chat_completion_create
+        from src.core.i18n_prompts import append_language_instruction
         from src.core.translation_service import translate_medicine_recommendation
-        from src.services.sse_emit import emit_advice_delta, is_streaming_active, pseudo_stream_advice
+        from src.services.sse_emit import is_streaming_active
 
         lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
         messages = [
@@ -237,36 +238,32 @@ def generate_personalized_advice(
         sid = session_id
         stream_active = is_streaming_active(sid)
 
-        if stream_active and lang == "ja":
-            advice = chat_completion_stream(
-                client,
-                model_role="counsel",
-                path="chat_response_service.personalized_advice",
-                messages=messages,
-                on_delta=lambda c: emit_advice_delta(c, sid),
-                session_id=sid,
-                temperature=0.7,
-                max_tokens=200,
-            ).strip()
-        else:
-            from src.core.i18n_prompts import append_language_instruction
-
+        if stream_active or lang != "ja":
+            user_content = append_language_instruction(prompt, lang) if lang != "ja" else prompt
             response = chat_completion_create(
                 client,
                 model_role="counsel",
                 path="chat_response_service.personalized_advice",
                 messages=[
                     messages[0],
-                    {"role": "user", "content": append_language_instruction(prompt, lang)},
+                    {"role": "user", "content": user_content},
                 ],
                 temperature=0.7,
                 max_tokens=200,
             )
             advice = response.choices[0].message.content.strip()
-            if stream_active and lang != "ja":
-                translated = translate_medicine_recommendation(advice, lang, session_id=sid)
-                pseudo_stream_advice(translated, sid)
-                advice = translated
+            if lang != "ja":
+                advice = translate_medicine_recommendation(advice, lang, session_id=sid)
+        else:
+            response = chat_completion_create(
+                client,
+                model_role="counsel",
+                path="chat_response_service.personalized_advice",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=200,
+            )
+            advice = response.choices[0].message.content.strip()
 
         logger.info(f"✅ 個別アドバイス生成完了: {len(advice)}字")
         return advice
