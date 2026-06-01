@@ -43,7 +43,7 @@
 | `kadomatsu-soft.png` / `ornament-soft.png` | 正月門松・クリスマスオーナメント、透明背景 |
 | `maple-soft.png` / `tulip-soft.png` | 秋もみじ・母の日チューリップ、透明背景（冬の雪結晶スプライトは未コミットのため未登録） |
 
-※ ツール出力の PNG は **真の完全アルファ**にならない場合がある。縁が気になる場合は画像編集でアルファ調整する。
+※ ツール出力の PNG は **真の完全アルファ**にならない場合がある。縁が気になる場合は `python scripts/fix_particle_sprites.py` で透明画素の RGB 掃除・64px リサイズ・夏花火の再生成を行う（クライアントは `.particle-sprite` に `mix-blend-mode: screen` で黒縁の保険をかけている）。
 
 ### 左右装飾（`static/img/events/`）
 

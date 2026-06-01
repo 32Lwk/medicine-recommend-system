@@ -392,6 +392,8 @@
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.35);
         }
         .particle-sprite {
+            /* 黒ベタ・汚れたアルファ（RGB だけ残る透明画素）を #c0c0c0 背景で目立たなくする */
+            mix-blend-mode: screen;
             filter: saturate(var(--particle-sprite-saturate, 1.06)) brightness(var(--particle-sprite-brightness, 1.03));
         }
         @keyframes particlefall {
