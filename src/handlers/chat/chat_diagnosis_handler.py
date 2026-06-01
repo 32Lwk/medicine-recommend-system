@@ -67,6 +67,10 @@ def handle_diagnosis_if_detected(
             f"should_show_counseling={should_show_counseling}"
         )
 
+        from src.core.diagnosis_guard import merge_diagnosis_session
+
+        merge_diagnosis_session(session, diagnosis_type, diagnosis_response)
+
         if detected_diagnoses and not diagnosis_response.get("diagnosis_only", False):
             if "user_attributes" not in session:
                 session["user_attributes"] = {}
@@ -167,3 +171,84 @@ def handle_diagnosis_if_detected(
         import traceback
         traceback.print_exc()
         return None
+
+
+def return_physical_block_if_needed(
+    session: Any,
+    client: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    user_attributes: Optional[dict] = None,
+    diagnosis_response: Optional[dict] = None,
+) -> Optional[Any]:
+    """
+    診断ガードにより Physical 推奨をブロックする場合、ボットメッセージを返して HTTP レスポンスを返す。
+    許可時は None。
+    """
+    from src.core.diagnosis_guard import (
+        evaluate_physical_recommendation,
+        physical_block_user_message,
+    )
+
+    ua = user_attributes if user_attributes is not None else session.get("user_attributes", {})
+    decision = evaluate_physical_recommendation(
+        sanitized_message or user_message,
+        ua,
+        diagnosis_response=diagnosis_response,
+    )
+    if decision.allowed:
+        return None
+
+    block_text = physical_block_user_message(decision)
+    logger.info(
+        "🚫 Physical 推奨ブロック: reason=%s code=%s",
+        decision.reason,
+        decision.block_code,
+    )
+
+    escaped_user = html.escape(user_message or "")
+    escaped_bot = html.escape(block_text)
+    bot_html = escaped_bot.replace("\n", "<br>")
+    feedback_data = {
+        "user_message": escaped_user,
+        "ai_response": escaped_bot,
+        "security_score": None,
+        "error_type": "diagnosis_physical_blocked",
+        "block_reason": decision.reason,
+        "block_code": decision.block_code,
+    }
+    bug_attrs = (
+        f'data-user-message="{escaped_user}" data-ai-response="{escaped_bot}" data-security-score=""'
+    )
+    bot_content = format_diagnosis_notification(
+        bot_html,
+        feedback_data,
+        bug_report_attrs=bug_attrs,
+    )
+    bot_response = {
+        "type": "bot",
+        "content": bot_content,
+        "diagnosis": None,
+        "diagnosis_physical_blocked": True,
+        "timestamp": datetime.now().isoformat(),
+    }
+    session.setdefault("messages", []).append(bot_response)
+    session.modified = True
+    if sid:
+        session_data = get_session_from_db(sid) or {
+            "session_id": sid,
+            "username": session.get("username", "Unknown"),
+            "messages": [],
+            "last_activity": datetime.now(),
+            "client_ip": getattr(client, "client_ip", None),
+            "user_agent": getattr(client, "user_agent", None),
+            "user_attributes": session.get("user_attributes", {}),
+            "session_active": True,
+        }
+        session_data.setdefault("messages", []).append(bot_response)
+        session_data["last_activity"] = datetime.now()
+        session_data["user_attributes"] = session.get("user_attributes", {})
+        save_session_to_db(sid, session_data)
+
+    return ({"status": "ok", "message_count": len(session["messages"])}, 200)

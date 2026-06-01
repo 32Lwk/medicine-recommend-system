@@ -732,6 +732,8 @@ async def new_session(request: Request, response: Response):
                 "medical_history": [],
                 "symptom_duration_days": None,
                 "other_info": None,
+                "diagnosis_session_active": False,
+                "diagnosis_block_types": [],
             },
             "session_active": False,
         },
@@ -1025,6 +1027,10 @@ async def submit_feedback(
 
     session_data = get_session_from_db(sid) or {}
     username = session_data.get("username") or "Unknown"
+    negative_reason = data.get("negative_reason")
+    if negative_reason is not None:
+        negative_reason = str(negative_reason).strip()[:64] or None
+
     payload = dict(
         report_type=data["report_type"],
         session_id=sid or "",
@@ -1034,6 +1040,7 @@ async def submit_feedback(
         security_score=data.get("security_score"),
         feedback_text=feedback_text,
         is_google_form=bool(data.get("is_google_form", False)),
+        negative_reason=negative_reason,
     )
 
     db = get_database()

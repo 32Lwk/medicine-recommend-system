@@ -77,7 +77,7 @@ When evaluating a recommendation, **always ground claims in CSV rows**: look up 
 
 **評価の正**: [diagnosis-guard-policy.md](references/diagnosis-guard-policy.md) + [diagnosis-physical-block-matrix.md](references/diagnosis-physical-block-matrix.md)
 
-**コードは既にある**（`chat_diagnosis_handler` + `is_diagnosis_term`）。パターン別 Physical は **別 PR** で実装。
+**ランタイム**: `src/core/diagnosis_guard.py` + `chat_diagnosis_handler` / `chat_recommendation_flow`。評価時は [diagnosis-guard-policy.md](references/diagnosis-guard-policy.md) の golden と照合。
 
 | パターン | 評価期待 |
 |----------|----------|
