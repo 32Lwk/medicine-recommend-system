@@ -25,7 +25,8 @@ verdict: 要改善
 
 | 項目 | 決定 |
 |------|------|
-| 再評価トリガー | **ネガティブ feedback のみ** |
+| 再評価トリガー | **ネガティブ feedback**（推奨が出すぎた・不適切） |
+| 過剰ブロック再評価 | **ネガティブ**または admin が「推奨が出ない」を選んだ行 — **手動**で advisor 起動（分類: *過剰ブロック*） |
 | 自動評価 | **手動**（admin がエージェント依頼） |
 | UI 表示 | **要約 1 行 + MD パス**（全文は `log/reviews/`） |
 | 紐付け | **session_id + feedback_report_id** |
@@ -49,7 +50,7 @@ verdict: 要改善
 | 判定 | 評価レポート |
 | Case ID | golden |
 | PMDA/CureBell 不一致 | 照合表 ❌ 件数 → **データ要確認** フラグ |
-| 分類 | algorithm / data / clinical |
+| 分類 | algorithm / data / clinical / **over_block**（過剰ブロック） |
 | review_path | `log/reviews/...` |
 
 ## エージェントの参照順（session_id あり）
