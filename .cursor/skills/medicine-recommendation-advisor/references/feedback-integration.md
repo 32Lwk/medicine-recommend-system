@@ -36,9 +36,19 @@ verdict: 要改善
 | `log/reviews/` 保持 | **無期限**（手動削除） |
 | 評価優先 | **PMDA > golden**（golden 更新提案） |
 
+## Feedback DB 拡張（実装は別 PR）
+
+| カラム / 値 | 用途 |
+|-------------|------|
+| `negative_reason` | ネガティブ時の理由コード |
+| `no_recommendation` | **推奨が出ない** — 過剰ブロック再評価のトリガー（オーナー T5） |
+| （既存） | 不適切・副作用・その他 |
+
+admin UI: ネガティブ送信時に理由選択。`no_recommendation` 行は **over_block** 分類で advisor 手動再評価。
+
 ## 将来の admin 連携（実装は別 PR）
 
-1. ネガティブ `feedback_reports` 行を一覧
+1. ネガティブ `feedback_reports` 行を一覧（`negative_reason` フィルタ可）
 2. admin が「再評価」→ `@medicine-recommendation-advisor`
 3. `log/reviews/{date}_{session_id}_{feedback_id}.md` 保存
 4. UI に要約行: 判定 / Case ID / 不一致数 / 分類 / `review_path`
