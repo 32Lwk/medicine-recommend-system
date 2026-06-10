@@ -1,6 +1,83 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月10日**（LINE Flex Message E2E・Reply/Push 連携）
+**最終更新日: 2026年6月11日**（LINE フィードバック・loading UX・Flex 拡張）
+
+---
+
+## 2026年6月11日 — LINE フィードバック・loading UX・応答形式の整理
+
+### 概要
+
+- **Quick Reply フィードバック**: 推奨応答の最後のメッセージに 👍/👎 を付与。postback で Web の `POST /api/submit_feedback` と同じ DB（開発時は dev フォールバック）へ保存。60 秒 dedupe・有効期限 1 時間。
+- **loading animation**: 処理開始時の「確認中」テキスト Reply を廃止し、LINE Messaging API `chat/loading/start` で標準の「…」表示（`LINE_LOADING_SECONDS`、5〜60 秒・既定 60）。二重送信時のみ多言語の待機テキスト。
+- **応答形式**: 危機・エスカレーション・追加質問・一般案内は status Flex から**テキストメッセージ**へ変更（5000 文字分割）。推奨成功時のみ advice + carousel の Flex 2 件。医薬品 hero は常時表示（No Image プレースホルダー、`PUBLIC_SITE_URL` 未設定時は `https://medicine.yutok.dev`）。
+- **配信改善**: 1 リクエスト最大 5 件まとめて Reply/Push。先頭チャンクは Reply、続きは Push。失敗時は altText / 本文でテキストフォールバック。
+- **フィードバック共通化**: `src/services/feedback_submit.py` に保存ロジックを集約。`main.py` の `/api/submit_feedback` も同モジュール経由。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_feedback.py` | Quick Reply 生成・postback 処理・セッション pending 管理 |
+| `src/handlers/line/line_processing_reply.py` | 二重送信時の待機文言（i18n） |
+| `src/services/feedback_submit.py` | Web / LINE 共通のフィードバック保存・dedupe |
+| `tests/test_line_feedback.py` | フィードバック Quick Reply / postback テスト |
+| `tests/test_line_processing_reply.py` | loading API・待機文言テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/flex_messages.py` | 非推奨系をテキスト化。hero 常時付与。`LINE_TEXT_MAX=5000` 分割 |
+| `src/handlers/line/line_message_handler.py` | loading・`_deliver_line_messages`・postback・Reply 優先配信 |
+| `src/handlers/line/line_reply.py` | `start_loading_animation` / `LINE_LOADING_SECONDS` |
+| `src/handlers/line/line_i18n.py` | フィードバック・`processing_busy` 文言（ja/en） |
+| `main.py` | `submit_feedback_record` へ委譲 |
+| `.env.example` | `LINE_LOADING_SECONDS` コメント |
+| `scripts/export_line_flex_simulator_samples.py` | status 系 fixture をテキストメッセージ形式に更新 |
+| `tests/fixtures/line_flex_simulator/status_*.json` | Flex bubble → text メッセージ |
+| `tests/test_line_flex_messages.py` 他 | 上記仕様変更に合わせて更新 |
+
+### 環境変数
+
+| 変数 | 用途 |
+|------|------|
+| `LINE_LOADING_SECONDS` | loading animation 表示秒数（5〜60、5 秒刻み、既定 60） |
+| `PUBLIC_SITE_URL` | No Image hero のベース URL（未設定時は本番 URL を使用） |
+
+---
+
+## 2026年6月11日 — LINE Flex 拡張・Webhook 安定性・開発プレビュー
+
+### 概要
+
+- **Flex デザイン**: パステル調の status / advice / carousel bubble。`static/line/medicine-noimage-hero.png` プレースホルダー hero。`docs/未踏/docs/line.json`・`line_advice.json` を参照してレイアウト整備。
+- **Webhook 安定性**: Gunicorn タイムアウト回避のためイベント処理を専用スレッド＋スレッド内 `httpx.AsyncClient` で実行。Push 失敗時のテキストフォールバック・`resolve_latest_bot_message` による bot メッセージ解決を改善。
+- **開発プレビュー**: `line_dev_triggers.py` で特定文字列送信時に Flex/テキストサンプルを Push（本番無効）。`scripts/export_line_flex_simulator_samples.py` で Flex Simulator 用 JSON を一括出力。`docs/DEV_LINE_FLEX_PREVIEW.md` 追加。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_dev_triggers.py` | 開発専用 Flex プレビュートリガー |
+| `scripts/export_line_flex_simulator_samples.py` | Simulator 用 fixture エクスポート |
+| `static/line/medicine-noimage-hero.png` | 医薬品 No Image hero |
+| `docs/DEV_LINE_FLEX_PREVIEW.md` | dev トリガー一覧・手順 |
+| `tests/fixtures/line_flex_simulator/*.json` | success / status 各種サンプル |
+| `tests/test_line_dev_triggers.py` | dev トリガーテスト |
+| `tests/test_line_session.py` | セッション解決テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/flex_messages.py` | status bubble・hero 解決・advice/carousel 拡張 |
+| `src/handlers/line/line_message_handler.py` | dev プレビュー連携・配信ヘルパー |
+| `src/handlers/line/line_session.py` | `resolve_latest_bot_message` |
+| `src/handlers/line/line_webhook.py` | バックグラウンドスレッド実行 |
+| `config/line_config.py` | dev トリガー用設定 |
+| `start.sh` | Gunicorn タイムアウト調整 |
+| `docs/LINE_WEBHOOK_SETUP.md` / `docs/CLOUD_RUN_LLM_ENV.md` | 運用追記 |
 
 ---
 

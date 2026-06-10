@@ -10,7 +10,7 @@ import httpx
 from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
 from src.handlers.chat_handler import handle_chat_post
 from src.handlers.line.flex_messages import build_line_messages_from_bot_message
-from src.handlers.line.line_reply import push_messages, reply_messages
+from src.handlers.line.line_reply import push_messages, reply_messages, start_loading_animation
 from src.handlers.line.line_session import (
     line_sid,
     persist_line_session,
@@ -23,11 +23,9 @@ from src.utils.performance_monitor import get_global_monitor
 
 logger = logging.getLogger(__name__)
 
-CONFIRMING_TEXT = "症状を確認しています。少々お待ちください。"
 GENERIC_SAFE_TEXT = (
     "処理中に問題が発生しました。しばらくして再送するか、薬剤師にご相談ください。"
 )
-PROCESSING_WAIT_TEXT = "現在処理中です。完了後に再度お送りください。"
 GROUP_UNSUPPORTED_TEXT = "現在は個人チャットのみ対応しています。"
 NON_TEXT_HINT = (
     "スタンプ・画像には対応していません。症状はテキストでお送りください。例: 頭が痛い"
@@ -49,9 +47,16 @@ def _notify_line_error_email(user_id: str, sid: str, detail: str) -> None:
         logger.warning("LINE error email not sent (SMTP)")
 
 
-async def _push_line_messages(user_id: str, line_messages: list[dict[str, Any]]) -> None:
-    """Flex / テキストを Push。失敗時は altText または短文でテキストフォールバック。"""
-    for msg in line_messages:
+LINE_MAX_MESSAGES_PER_REQUEST = 5
+
+
+async def _push_message_chunk(user_id: str, messages: list[dict[str, Any]]) -> None:
+    """最大5件を1回の Push で送る。失敗時は1件ずつテキストフォールバック。"""
+    if not messages:
+        return
+    if await push_messages(user_id, messages):
+        return
+    for msg in messages:
         if await push_messages(user_id, [msg]):
             continue
         fallback_text = ""
@@ -63,6 +68,47 @@ async def _push_line_messages(user_id: str, line_messages: list[dict[str, Any]])
             fallback_text = GENERIC_SAFE_TEXT
         logger.warning("LINE push failed; sending text fallback userId=%s", user_id)
         await push_messages(user_id, [{"type": "text", "text": fallback_text[:5000]}])
+
+
+async def _deliver_line_messages(
+    user_id: str,
+    line_messages: list[dict[str, Any]],
+    *,
+    reply_token: str | None = None,
+    sid: str | None = None,
+    user_message: str = "",
+    bot_message: dict[str, Any] | None = None,
+    lang: str | None = None,
+) -> None:
+    """Reply（可能なら）または Push で応答。1リクエストあたり最大5件まとめて送る。"""
+    messages = line_messages
+    if sid and bot_message is not None:
+        from src.handlers.line.line_feedback import prepare_line_messages_with_feedback
+
+        messages = prepare_line_messages_with_feedback(
+            line_messages,
+            sid=sid,
+            user_message=user_message,
+            bot_message=bot_message,
+            lang=lang,
+        )
+    if not messages:
+        return
+
+    chunks = [
+        messages[i : i + LINE_MAX_MESSAGES_PER_REQUEST]
+        for i in range(0, len(messages), LINE_MAX_MESSAGES_PER_REQUEST)
+    ]
+
+    if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
+        if await reply_messages(reply_token, chunks[0]):
+            for chunk in chunks[1:]:
+                await _push_message_chunk(user_id, chunk)
+            return
+        logger.warning("LINE reply failed; falling back to push userId=%s", user_id)
+
+    for chunk in chunks:
+        await _push_message_chunk(user_id, chunk)
 
 
 async def process_line_events(events: list[dict[str, Any]]) -> None:
@@ -94,6 +140,21 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
     if event_type == "follow":
         if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
             await reply_messages(reply_token, [{"type": "text", "text": FOLLOW_WELCOME_TEXT}])
+        return
+
+    if event_type == "postback":
+        user_id = _extract_user_id(event)
+        if not user_id:
+            return
+        postback = event.get("postback")
+        data = postback.get("data") if isinstance(postback, dict) else ""
+        from src.handlers.line.line_feedback import handle_line_feedback_postback
+
+        await handle_line_feedback_postback(
+            user_id,
+            str(data or ""),
+            reply_token=reply_token,
+        )
         return
 
     if event_type == "unfollow":
@@ -152,7 +213,7 @@ async def _process_text_message(
     session = prime_line_session(user_id)
     client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
 
-    from src.handlers.line.line_dev_triggers import PREVIEW_REPLY_TEXT, try_line_dev_flex_preview
+    from src.handlers.line.line_dev_triggers import try_line_dev_flex_preview
 
     preview_bot = try_line_dev_flex_preview(
         text,
@@ -162,37 +223,50 @@ async def _process_text_message(
         user_agent=client_info.user_agent,
     )
     if preview_bot is not None:
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(reply_token, [{"type": "text", "text": PREVIEW_REPLY_TEXT}])
         if LINE_CHANNEL_ACCESS_TOKEN:
             line_messages = build_line_messages_from_bot_message(
                 preview_bot,
                 lang=session.get("detected_language") or "ja",
                 session_id=sid,
             )
-            await _push_line_messages(user_id, line_messages)
+            await _deliver_line_messages(
+                user_id,
+                line_messages,
+                reply_token=reply_token,
+                sid=sid,
+                user_message=text,
+                bot_message=preview_bot,
+                lang=session.get("detected_language") or "ja",
+            )
         persist_line_session(sid, session)
         return
 
-    if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-        await reply_messages(reply_token, [{"type": "text", "text": CONFIRMING_TEXT}])
-    elif not LINE_CHANNEL_ACCESS_TOKEN:
-        logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping reply/push")
+    from src.core.language_utils import detect_language
+    from src.handlers.line.line_processing_reply import line_processing_busy_text
+    from src.services.chat_inflight import is_chat_job_in_flight
+    from src.services.processing_status import mark_processing_step, set_processing_language
+
+    lang = detect_language(text)
+    session["detected_language"] = lang
+
+    if is_chat_job_in_flight(sid):
+        busy_text = line_processing_busy_text(lang)
+        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
+            await reply_messages(reply_token, [{"type": "text", "text": busy_text}])
+        elif LINE_CHANNEL_ACCESS_TOKEN:
+            await push_messages(user_id, [{"type": "text", "text": busy_text}])
+        return
+
+    if LINE_CHANNEL_ACCESS_TOKEN:
+        await start_loading_animation(user_id)
+    else:
+        logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
 
     monitor = get_global_monitor()
     monitor.start_monitoring()
     monitor.increment_request()
 
-    from src.core.language_utils import detect_language
-    from src.services.chat_inflight import is_chat_job_in_flight
-    from src.services.processing_status import mark_processing_step, set_processing_language
-
-    if is_chat_job_in_flight(sid):
-        if LINE_CHANNEL_ACCESS_TOKEN:
-            await push_messages(user_id, [{"type": "text", "text": PROCESSING_WAIT_TEXT}])
-        return
-
-    set_processing_language(sid, detect_language(text))
+    set_processing_language(sid, lang)
     mark_processing_step(sid, "validate")
 
     try:
@@ -213,7 +287,6 @@ async def _process_text_message(
                 await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
             return
 
-        lang = session.get("detected_language") or "ja"
         line_messages = build_line_messages_from_bot_message(
             bot_msg,
             lang=lang,
@@ -222,7 +295,15 @@ async def _process_text_message(
         if not LINE_CHANNEL_ACCESS_TOKEN:
             return
 
-        await _push_line_messages(user_id, line_messages)
+        await _deliver_line_messages(
+            user_id,
+            line_messages,
+            reply_token=reply_token,
+            sid=sid,
+            user_message=text,
+            bot_message=bot_msg,
+            lang=lang,
+        )
     except Exception as exc:
         logger.exception("LINE pipeline error sid=%s", sid)
         if LINE_CHANNEL_ACCESS_TOKEN:

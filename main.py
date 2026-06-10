@@ -1023,72 +1023,29 @@ async def submit_feedback(
         if field not in data:
             return JSONResponse({"error": f"Missing required field: {field}"}, status_code=400)
 
-    # 同一メッセージへの重複送信のみ制限（チャット内の別メッセージは評価可能）
-    if sid:
-        session_data = get_session_from_db(sid) or {}
-        current_time = time.time()
-        dedupe_key = "|".join(
-            [
-                str(data.get("report_type", "")),
-                str(data.get("user_message", ""))[:500],
-                str(data.get("ai_response", ""))[:500],
-            ]
-        )
-        recent = session_data.get("feedback_recent_keys") or {}
-        if isinstance(recent, dict):
-            last_at = float(recent.get(dedupe_key, 0) or 0)
-            if current_time - last_at < 60:
-                return JSONResponse(
-                    {"error": "Already submitted for this message. Please wait 60 seconds."},
-                    status_code=429,
-                )
-            recent[dedupe_key] = current_time
-            # 古いキーを間引き
-            session_data["feedback_recent_keys"] = {
-                k: v for k, v in recent.items() if current_time - float(v) < 3600
-            }
-            save_session_to_db(sid, session_data)
-
-    feedback_text = data.get("feedback_text", "") or ""
-    if len(feedback_text) > 1000:
-        return JSONResponse({"error": "Feedback text too long (max 1000 characters)"}, status_code=400)
-
     session_data = get_session_from_db(sid) or {}
     username = session_data.get("username") or "Unknown"
     negative_reason = data.get("negative_reason")
     if negative_reason is not None:
         negative_reason = str(negative_reason).strip()[:64] or None
 
-    payload = dict(
-        report_type=data["report_type"],
-        session_id=sid or "",
-        username=username,
-        user_message=data["user_message"],
-        ai_response=data["ai_response"],
-        security_score=data.get("security_score"),
-        feedback_text=feedback_text,
-        is_google_form=bool(data.get("is_google_form", False)),
-        negative_reason=negative_reason,
-    )
+    from src.services.feedback_submit import FeedbackSubmitError, submit_feedback_record
 
-    db = get_database()
-    if db and (db.connection or db.connection_pool):
-        feedback_id = db.insert_feedback(**payload)
-        if feedback_id:
-            return {"status": "success", "feedback_id": feedback_id}
-        return JSONResponse({"error": "Failed to save feedback"}, status_code=500)
-
-    if is_development_runtime():
-        from src.services.feedback_store import save_feedback_dev
-
-        feedback_id = save_feedback_dev(**payload)
-        return {
-            "status": "success",
-            "feedback_id": feedback_id,
-            "storage": "dev_fallback",
-        }
-
-    return JSONResponse({"error": "Database not available"}, status_code=500)
+    try:
+        return submit_feedback_record(
+            report_type=data["report_type"],
+            session_id=sid or "",
+            username=username,
+            user_message=data["user_message"],
+            ai_response=data["ai_response"],
+            security_score=data.get("security_score"),
+            feedback_text=data.get("feedback_text", "") or "",
+            is_google_form=bool(data.get("is_google_form", False)),
+            negative_reason=negative_reason,
+            dedupe=True,
+        )
+    except FeedbackSubmitError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=exc.status_code)
 
 
 @app.get("/api/get_feedback_reports")
