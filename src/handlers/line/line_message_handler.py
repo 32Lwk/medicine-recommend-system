@@ -255,8 +255,13 @@ async def _process_text_message(
             await start_loading_animation(user_id)
         return
 
+    loading_stop = asyncio.Event()
+    loading_task = None
     if LINE_CHANNEL_ACCESS_TOKEN:
         await start_loading_animation(user_id)
+        from src.handlers.line.line_loading import run_loading_keepalive
+
+        loading_task = asyncio.create_task(run_loading_keepalive(user_id, loading_stop))
     else:
         logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
 
@@ -293,10 +298,10 @@ async def _process_text_message(
         if not LINE_CHANNEL_ACCESS_TOKEN:
             return
 
-        # LLM パイプライン後は replyToken 期限切れのため常に Push
         await _deliver_line_messages(
             user_id,
             line_messages,
+            reply_token=reply_token,
             sid=sid,
             user_message=text,
             bot_message=bot_msg,
@@ -308,5 +313,12 @@ async def _process_text_message(
             await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
         _notify_line_error_email(user_id, sid, str(exc))
     finally:
+        loading_stop.set()
+        if loading_task is not None:
+            loading_task.cancel()
+            try:
+                await loading_task
+            except asyncio.CancelledError:
+                pass
         job_lock.release(sid)
         persist_line_session(sid, session)

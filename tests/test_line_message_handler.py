@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from src.handlers.line.line_message_handler import _deliver_line_messages, _process_text_message
 
 
-def test_process_text_message_pushes_after_pipeline(monkeypatch):
+def test_process_text_message_replies_after_pipeline(monkeypatch):
     monkeypatch.setattr(
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
@@ -35,6 +35,7 @@ def test_process_text_message_pushes_after_pipeline(monkeypatch):
 
     with (
         patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock) as mock_loading,
+        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
@@ -50,13 +51,14 @@ def test_process_text_message_pushes_after_pipeline(monkeypatch):
         patch("src.services.processing_status.mark_processing_step"),
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
+        mock_reply.return_value = True
         mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
         mock_monitor.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
 
     mock_loading.assert_awaited_once()
-    mock_reply.assert_not_awaited()
-    mock_push.assert_awaited()
+    mock_reply.assert_awaited_once()
+    mock_push.assert_not_awaited()
 
 
 def test_process_text_message_skips_duplicate_without_text(monkeypatch):

@@ -114,7 +114,12 @@ def run_chat_post_pipeline(
 
     session.setdefault("messages", [])
 
-    session_data_for_ai = get_session_from_db(sid) if sid else {}
+    from src.handlers.line.line_session import is_line_session_id
+
+    if sid and is_line_session_id(sid):
+        session_data_for_ai = {}
+    else:
+        session_data_for_ai = get_session_from_db(sid) if sid else {}
     manual_resp = handle_manual_reply_when_off(
         session, client_info, sid, ctx.sanitized_message, session_data_for_ai
     )
@@ -139,10 +144,7 @@ def run_chat_post_pipeline(
     if pre_gate.blocked and pre_gate.response:
         return pre_gate.response
 
-    from src.handlers.chat.chat_concierge_route import (
-        try_concierge_duplicate_skip,
-        try_concierge_pre_triage,
-    )
+    from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
 
     dup_concierge = try_concierge_duplicate_skip(
         session,
@@ -154,18 +156,6 @@ def run_chat_post_pipeline(
     if dup_concierge is not None:
         session["last_trace_id"] = ctx.trace_id
         return dup_concierge
-
-    pre_concierge = try_concierge_pre_triage(
-        session,
-        client_info,
-        sid,
-        ctx.user_message,
-        ctx.sanitized_message,
-        ctx.recommendation_client,
-    )
-    if pre_concierge is not None:
-        session["last_trace_id"] = ctx.trace_id
-        return pre_concierge
 
     from src.handlers.chat.chat_triage import run_triage
 

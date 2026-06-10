@@ -105,52 +105,6 @@ def _log_concierge_response(
         logger.debug("concierge log skipped: %s", exc)
 
 
-def try_concierge_pre_triage(
-    session: Any,
-    client_info: Any,
-    sid: Optional[str],
-    user_message: str,
-    sanitized_message: str,
-    recommendation_client: OpenAI,
-) -> Optional[ResponseTuple]:
-    """
-    挨拶・メタ質問を LLM トリアージ前に Concierge へ直行させる（LINE 応答遅延対策）。
-    """
-    from src.services.concierge_intent import resolve_pre_triage_concierge_intent
-
-    text = (sanitized_message or user_message or "").strip()
-    intent = resolve_pre_triage_concierge_intent(text)
-    if not intent:
-        return None
-
-    logger.info("⚡ Concierge 先行ルート（トリアージ省略）: intent=%s", intent)
-    synthetic_triage = {
-        "category": "Other",
-        "subcategory": "general_other",
-        "confidence": 0.99,
-        "concierge_intent": intent,
-        "concierge_intent_source": "keyword_probe",
-        "requires_immediate_action": False,
-    }
-    if sid:
-        try:
-            from src.services.processing_flows import flow_for_triage_category
-            from src.services.processing_status import set_processing_flow
-
-            set_processing_flow(sid, flow_for_triage_category("Other"))
-        except Exception:
-            pass
-    return try_concierge_response(
-        session,
-        client_info,
-        sid,
-        user_message,
-        sanitized_message,
-        synthetic_triage,
-        recommendation_client,
-    )
-
-
 def try_concierge_duplicate_skip(
     session: Any,
     client_info: Any,
@@ -195,10 +149,15 @@ def try_concierge_response(
     if not text or not should_concierge_handle(text, triage_result):
         return None
 
-    if triage_result and triage_result.get("category") == "Other":
+    if (
+        triage_result
+        and triage_result.get("category") == "Other"
+        and not triage_result.get("concierge_intent")
+    ):
         from src.services.concierge_orchestrator import enrich_other_concierge_intent
+        from src.services.triage_history import get_recent_messages
 
-        history_pre = session.get("messages", [])[-10:]
+        history_pre = get_recent_messages(session, sid)
         triage_result = enrich_other_concierge_intent(
             triage_result,
             text,
