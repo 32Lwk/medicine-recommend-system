@@ -139,7 +139,10 @@ def run_chat_post_pipeline(
     if pre_gate.blocked and pre_gate.response:
         return pre_gate.response
 
-    from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
+    from src.handlers.chat.chat_concierge_route import (
+        try_concierge_duplicate_skip,
+        try_concierge_pre_triage,
+    )
 
     dup_concierge = try_concierge_duplicate_skip(
         session,
@@ -151,6 +154,18 @@ def run_chat_post_pipeline(
     if dup_concierge is not None:
         session["last_trace_id"] = ctx.trace_id
         return dup_concierge
+
+    pre_concierge = try_concierge_pre_triage(
+        session,
+        client_info,
+        sid,
+        ctx.user_message,
+        ctx.sanitized_message,
+        ctx.recommendation_client,
+    )
+    if pre_concierge is not None:
+        session["last_trace_id"] = ctx.trace_id
+        return pre_concierge
 
     from src.handlers.chat.chat_triage import run_triage
 

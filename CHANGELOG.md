@@ -1,6 +1,39 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月11日**（LINE status Flex 再導入・方言 LLM 委譲・応答遅延対策）
+**最終更新日: 2026年6月11日**（Concierge 先行ルート・LINE セッション整理・フィードバック安定化）
+
+---
+
+## 2026年6月11日 — Concierge 先行ルート・LINE セッション整理・フィードバック安定化
+
+### 概要
+
+- **Concierge 先行ルート（トリアージ省略）**: 挨拶・感謝・メタ質問（「あなたについて」「何ができる？」等）をキーワードプローブで判定し、LLM トリアージ前に `try_concierge_pre_triage` で Concierge へ直行。LINE の応答遅延を短縮。
+- **キーワードプローブ**: `probe_meta_concierge_intent` / `resolve_pre_triage_concierge_intent` を追加。`concierge_orchestrator` でもプローブを優先し、`chitchat` / `redirect` / `none` は非同期検証をスキップ。
+- **LINE セッション上限**: `trim_line_session_messages` で会話履歴を最大 **24 件**に抑制（`prime_line_session` / `persist_line_session` 時）。プロンプト肥大化を防止。
+- **LINE チャット終了**: `clear_line_session_state` で会話・カウンセリング・一時フラグをリセット。`line:` sid の終了時は DB から `line_feedback_pending` も削除。
+- **フィードバック pending 安定化**: メモリ優先ストア（TTL **24 時間**）を追加。DB 未接続・不整合時も postback を受け付け。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `tests/test_line_session_policy.py` | trim・クリア・LINE 終了時の DB 保存テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/services/concierge_intent.py` | `probe_meta_concierge_intent`・`resolve_pre_triage_concierge_intent`・メタ意図ルール |
+| `src/handlers/chat/chat_concierge_route.py` | `try_concierge_pre_triage` |
+| `src/handlers/chat/chat_post_pipeline.py` | トリアージ前に先行 Concierge ルートを挿入 |
+| `src/services/concierge_orchestrator.py` | キーワードプローブ優先・検証スキップ条件 |
+| `src/handlers/line/line_session.py` | `trim_line_session_messages`・`clear_line_session_state`・`is_line_session_id` |
+| `src/handlers/chat/chat_session_route.py` | LINE 終了時の履歴クリア・pending 削除 |
+| `src/handlers/line/line_feedback.py` | メモリ pending・TTL 24h |
+| `tests/test_concierge_intent_extended.py` | プローブ・先行ルートテスト |
+| `tests/test_concierge_route.py` | `try_concierge_pre_triage` テスト |
+| `tests/test_line_feedback.py` | DB 不整合時の pending 生存テスト |
 
 ---
 

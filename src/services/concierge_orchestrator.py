@@ -63,6 +63,15 @@ def enrich_other_concierge_intent(
         logger.info("🛎️ ConciergeOrchestrator: exact_match intent=%s", fast)
         return out
 
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    probed = probe_meta_concierge_intent(text)
+    if probed:
+        out["concierge_intent"] = probed
+        out["concierge_intent_source"] = "keyword_probe"
+        logger.info("🛎️ ConciergeOrchestrator: keyword_probe intent=%s", probed)
+        return out
+
     from src.services.meta_triage import classify_meta_concierge_intent
 
     meta = classify_meta_concierge_intent(
@@ -74,12 +83,13 @@ def enrich_other_concierge_intent(
         out["concierge_intent"] = meta
         out["concierge_intent_source"] = "meta_triage"
         logger.info("🛎️ ConciergeOrchestrator: meta intent=%s", meta)
-        _verify_meta_async(
-            user_text=text,
-            intent=meta,
-            client=client,
-            session_id=session_id,
-        )
+        if meta not in ("chitchat", "redirect", "none"):
+            _verify_meta_async(
+                user_text=text,
+                intent=meta,
+                client=client,
+                session_id=session_id,
+            )
     else:
         logger.info("🛎️ ConciergeOrchestrator: meta intent unresolved (none)")
     return out

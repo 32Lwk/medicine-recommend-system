@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 LINE_SID_PREFIX = "line:"
 LINE_CLIENT_IP = "line-webhook"
+LINE_SESSION_MAX_MESSAGES = 24
 DEFAULT_USER_ATTRS: dict[str, Any] = {
     "age": None,
     "gender": None,
@@ -26,6 +27,37 @@ DEFAULT_USER_ATTRS: dict[str, Any] = {
 
 def line_sid(user_id: str) -> str:
     return f"{LINE_SID_PREFIX}{user_id}"
+
+
+def is_line_session_id(sid: str | None) -> bool:
+    return bool(sid and str(sid).startswith(LINE_SID_PREFIX))
+
+
+def trim_line_session_messages(session: Any, *, max_messages: int = LINE_SESSION_MAX_MESSAGES) -> None:
+    """LINE セッションの会話履歴を上限件数に抑え、プロンプト肥大化を防ぐ。"""
+    messages = session.get("messages") if hasattr(session, "get") else None
+    if not isinstance(messages, list) or len(messages) <= max_messages:
+        return
+    session["messages"] = messages[-max_messages:]
+
+
+def clear_line_session_state(session: Any) -> None:
+    """チャット終了時に LINE セッションの会話・一時フラグをリセットする。"""
+    session["messages"] = []
+    session.pop("counseling_mode", None)
+    session.pop("last_triage_result", None)
+    session.pop("_last_triage_result", None)
+    session["concierge_state"] = {"off_topic_turns": 0, "last_intent": None}
+    session["user_attributes"] = dict(DEFAULT_USER_ATTRS)
+    for flag in (
+        "medical_emergency_otc_locked",
+        "crisis_detected",
+        "emergency_detected",
+        "store_incident_emergency",
+        "has_sleepiness_keyword",
+        "has_insomnia_keyword",
+    ):
+        session.pop(flag, None)
 
 
 def prime_line_session(user_id: str) -> RequestSafeSession:
@@ -54,6 +86,7 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
         ):
             if flag in session_data:
                 session[flag] = session_data[flag]
+    trim_line_session_messages(session)
     return session
 
 
@@ -89,4 +122,5 @@ def resolve_latest_bot_message(session: Any, sid: str) -> dict | None:
 
 
 def persist_line_session(sid: str, session: RequestSafeSession) -> None:
+    trim_line_session_messages(session)
     persist_session_from_chat_state(sid, session, request=None)
