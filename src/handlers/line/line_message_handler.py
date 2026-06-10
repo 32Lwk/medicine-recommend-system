@@ -5,15 +5,17 @@ import asyncio
 import logging
 from typing import Any
 
+import httpx
+
 from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
 from src.handlers.chat_handler import handle_chat_post
 from src.handlers.line.flex_messages import build_line_messages_from_bot_message
 from src.handlers.line.line_reply import push_messages, reply_messages
 from src.handlers.line.line_session import (
-    get_latest_bot_message,
     line_sid,
     persist_line_session,
     prime_line_session,
+    resolve_latest_bot_message,
 )
 from src.services.budget_guard import _send_email, get_alert_email
 from src.utils.chat_http_context import ChatClientInfo
@@ -47,18 +49,42 @@ def _notify_line_error_email(user_id: str, sid: str, detail: str) -> None:
         logger.warning("LINE error email not sent (SMTP)")
 
 
-async def process_line_events(events: list[dict[str, Any]]) -> None:
-    for event in events:
-        if not isinstance(event, dict):
+async def _push_line_messages(user_id: str, line_messages: list[dict[str, Any]]) -> None:
+    """Flex / テキストを Push。失敗時は altText または短文でテキストフォールバック。"""
+    for msg in line_messages:
+        if await push_messages(user_id, [msg]):
             continue
+        fallback_text = ""
+        if msg.get("type") == "flex":
+            fallback_text = str(msg.get("altText") or "").strip()
+        elif msg.get("type") == "text":
+            fallback_text = str(msg.get("text") or "").strip()
+        if not fallback_text:
+            fallback_text = GENERIC_SAFE_TEXT
+        logger.warning("LINE push failed; sending text fallback userId=%s", user_id)
+        await push_messages(user_id, [{"type": "text", "text": fallback_text[:5000]}])
+
+
+async def process_line_events(events: list[dict[str, Any]]) -> None:
+    from src.handlers.line import line_reply
+
+    # lifespan の httpx クライアントはメインループ専用。バックグラウンドスレッドでは専用クライアントを使う。
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        line_reply.set_http_client(client)
         try:
-            await _dispatch_event(event)
-        except Exception:
-            logger.exception("LINE event handler error type=%s", event.get("type"))
-            user_id = _extract_user_id(event)
-            if user_id and LINE_CHANNEL_ACCESS_TOKEN:
-                await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
-                _notify_line_error_email(user_id, line_sid(user_id), "unhandled event exception")
+            for event in events:
+                if not isinstance(event, dict):
+                    continue
+                try:
+                    await _dispatch_event(event)
+                except Exception:
+                    logger.exception("LINE event handler error type=%s", event.get("type"))
+                    user_id = _extract_user_id(event)
+                    if user_id and LINE_CHANNEL_ACCESS_TOKEN:
+                        await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
+                        _notify_line_error_email(user_id, line_sid(user_id), "unhandled event exception")
+        finally:
+            line_reply.set_http_client(None)
 
 
 async def _dispatch_event(event: dict[str, Any]) -> None:
@@ -123,13 +149,36 @@ async def _process_text_message(
     sid = line_sid(user_id)
     logger.info("LINE text message userId=%s sid=%s text=%s", user_id, sid, text)
 
+    session = prime_line_session(user_id)
+    client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
+
+    from src.handlers.line.line_dev_triggers import PREVIEW_REPLY_TEXT, try_line_dev_flex_preview
+
+    preview_bot = try_line_dev_flex_preview(
+        text,
+        session,
+        sid,
+        client_ip=client_info.client_ip,
+        user_agent=client_info.user_agent,
+    )
+    if preview_bot is not None:
+        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
+            await reply_messages(reply_token, [{"type": "text", "text": PREVIEW_REPLY_TEXT}])
+        if LINE_CHANNEL_ACCESS_TOKEN:
+            line_messages = build_line_messages_from_bot_message(
+                preview_bot,
+                lang=session.get("detected_language") or "ja",
+                session_id=sid,
+            )
+            await _push_line_messages(user_id, line_messages)
+        persist_line_session(sid, session)
+        return
+
     if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
         await reply_messages(reply_token, [{"type": "text", "text": CONFIRMING_TEXT}])
     elif not LINE_CHANNEL_ACCESS_TOKEN:
         logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping reply/push")
 
-    session = prime_line_session(user_id)
-    client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
     monitor = get_global_monitor()
     monitor.start_monitoring()
     monitor.increment_request()
@@ -157,7 +206,7 @@ async def _process_text_message(
         )
         mark_processing_step(sid, "finalize")
 
-        bot_msg = get_latest_bot_message(sid)
+        bot_msg = resolve_latest_bot_message(session, sid)
         if not bot_msg:
             logger.warning("LINE no bot message after pipeline sid=%s", sid)
             if LINE_CHANNEL_ACCESS_TOKEN:
@@ -173,8 +222,7 @@ async def _process_text_message(
         if not LINE_CHANNEL_ACCESS_TOKEN:
             return
 
-        for msg in line_messages:
-            await push_messages(user_id, [msg])
+        await _push_line_messages(user_id, line_messages)
     except Exception as exc:
         logger.exception("LINE pipeline error sid=%s", sid)
         if LINE_CHANNEL_ACCESS_TOKEN:

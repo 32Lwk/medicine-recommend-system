@@ -57,6 +57,17 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
     return session
 
 
+def get_latest_bot_message_from_session(session: Any) -> dict | None:
+    """インメモリセッションから最新の bot メッセージを取得。"""
+    messages = session.get("messages") if hasattr(session, "get") else []
+    if not messages:
+        return None
+    for msg in reversed(messages):
+        if isinstance(msg, dict) and msg.get("type") == "bot":
+            return msg
+    return None
+
+
 def get_latest_bot_message(sid: str) -> dict | None:
     """DB から最新の bot メッセージを取得（末尾から最初の type=bot）。"""
     session_data = get_session_from_db(sid)
@@ -67,6 +78,14 @@ def get_latest_bot_message(sid: str) -> dict | None:
         if isinstance(msg, dict) and msg.get("type") == "bot":
             return msg
     return None
+
+
+def resolve_latest_bot_message(session: Any, sid: str) -> dict | None:
+    """パイプライン直後はインメモリを優先し、なければ DB を参照する。"""
+    bot = get_latest_bot_message_from_session(session)
+    if bot:
+        return bot
+    return get_latest_bot_message(sid)
 
 
 def persist_line_session(sid: str, session: RequestSafeSession) -> None:

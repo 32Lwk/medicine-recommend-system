@@ -1,16 +1,18 @@
 """
 LINE Flex Message JSON ビルダー（純関数・テスト可能）。
 
-hero 画像は v1 では省略（Noimage）。将来は build_medicine_bubble(..., hero_url=...) で拡張可能。
+商品画像がない場合は hero に No Image プレースホルダー（static/line/medicine-noimage-hero.png）を表示する。
 """
 from __future__ import annotations
 
 import copy
 import logging
+import os
 import re
 from html.parser import HTMLParser
 from typing import Any
 
+from config.line_config import LINE_HERO_PLACEHOLDER_URL
 from src.handlers.line.line_i18n import (
     carousel_alt_text,
     format_intro,
@@ -22,10 +24,22 @@ from src.handlers.line.line_i18n import (
 
 logger = logging.getLogger(__name__)
 
-PRIMARY = "#0D9488"
-SCORE_MEDIUM = "#CA8A04"
-LABEL = "#8c8c8c"
-NOTE = "#666666"
+# パステル寄り sage / pamphlet パレット（LINE Flex）
+PRIMARY = "#5AB8A8"
+SCORE_MEDIUM = "#C9A84C"
+SCORE_LOW = "#8FA3AD"
+LABEL = "#7A8F94"
+NOTE = "#5F7278"
+
+_STATUS_HEADER: dict[str, str] = {
+    "caution": "#E8C97A",
+    "critical": "#E8A0A8",
+    "notice": "#8EB8E8",
+    "info": PRIMARY,
+    "error": "#E8A0A0",
+}
+
+_LINE_HERO_PLACEHOLDER_PATH = "/static/line/medicine-noimage-hero.png"
 
 TRUNCATE_BULLET = 20
 TRUNCATE_EFFICACY = 120
@@ -90,7 +104,7 @@ def _score_tier(display_score: float | int | None) -> tuple[str, str, int]:
         return "high", PRIMARY, percent
     if percent >= 60:
         return "medium", SCORE_MEDIUM, percent
-    return "low", LABEL, percent
+    return "low", SCORE_LOW, percent
 
 
 def _extract_bullet_angle(explanation: str | None, ui: dict[str, str]) -> str:
@@ -152,6 +166,97 @@ def translate_flex_fields(
         if result.get(field):
             result[field] = _tr(str(result[field]))
     return result
+
+
+def _flex_text(
+    text: str,
+    *,
+    size: str = "sm",
+    color: str | None = None,
+    weight: str | None = None,
+    margin: str = "none",
+) -> dict[str, Any]:
+    block: dict[str, Any] = {
+        "type": "text",
+        "text": text,
+        "wrap": True,
+        "size": size,
+        "margin": margin,
+    }
+    if color:
+        block["color"] = color
+    if weight:
+        block["weight"] = weight
+    return block
+
+
+def build_status_bubble(
+    variant: str,
+    *,
+    title: str,
+    alt_text: str,
+    subtitle: str = "",
+    body_paragraphs: list[str] | None = None,
+    hints: list[str] | None = None,
+    footer_note: str = "",
+    ui: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """
+    Web の chat-status-card 風ステータス bubble（Flex Message 1件）。
+    Flex Simulator 用: scripts/export_line_flex_simulator_samples.py
+    """
+    header_color = _STATUS_HEADER.get(variant, PRIMARY)
+    body_contents: list[dict[str, Any]] = []
+    if subtitle:
+        body_contents.append(_flex_text(subtitle, size="xs", color=LABEL, margin="none"))
+    for i, para in enumerate(body_paragraphs or []):
+        if not para:
+            continue
+        body_contents.append(
+            _flex_text(para, size="sm", weight="bold" if i == 0 and variant == "critical" else None, margin="md" if body_contents else "none")
+        )
+    hint_items = [h for h in (hints or []) if h]
+    if hint_items:
+        hints_label = (ui or {}).get("status_hints_label", "次にできること")
+        body_contents.append(_flex_text(hints_label, size="xs", color=LABEL, weight="bold", margin="md"))
+        for j, hint in enumerate(hint_items):
+            body_contents.append(_flex_text(f"・{hint}", size="xs", margin="xs" if j else "sm"))
+    if footer_note:
+        body_contents.append(_flex_text(footer_note, size="xs", color=NOTE, margin="md"))
+    if not body_contents:
+        body_contents.append(_flex_text("—", size="sm"))
+
+    return {
+        "type": "flex",
+        "altText": alt_text,
+        "contents": {
+            "type": "bubble",
+            "size": "kilo",
+            "header": {
+                "type": "box",
+                "layout": "vertical",
+                "backgroundColor": header_color,
+                "paddingAll": "16px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": title,
+                        "weight": "bold",
+                        "size": "lg",
+                        "color": "#ffffff",
+                        "align": "center",
+                        "wrap": True,
+                    }
+                ],
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "16px",
+                "contents": body_contents,
+            },
+        },
+    }
 
 
 def build_advice_bubble(
@@ -216,12 +321,26 @@ def build_advice_bubble(
     }
 
 
+def resolve_medicine_hero_url(medicine: dict) -> str | None:
+    """商品画像 URL があればそれを、なければ No Image プレースホルダーを返す。"""
+    for key in ("image_url", "hero_url", "product_image_url"):
+        val = (medicine.get(key) or "").strip()
+        if val.startswith("https://"):
+            return val
+    if LINE_HERO_PLACEHOLDER_URL.startswith("https://"):
+        return LINE_HERO_PLACEHOLDER_URL
+    base = (os.getenv("PUBLIC_SITE_URL") or "").strip().rstrip("/")
+    if base:
+        return f"{base}{_LINE_HERO_PLACEHOLDER_PATH}"
+    return None
+
+
 def build_medicine_bubble(
     medicine: dict,
     *,
     rank: int,
     ui: dict[str, str],
-    hero_url: str | None = None,  # noqa: ARG001 — 将来 hero 画像用
+    hero_url: str | None = None,
 ) -> dict[str, Any]:
     product_name = medicine.get("product_name") or ""
     manufacturer = medicine.get("manufacturer") or ""
@@ -296,6 +415,15 @@ def build_medicine_bubble(
             "contents": body_contents,
         },
     }
+    resolved_hero = hero_url or resolve_medicine_hero_url(medicine)
+    if resolved_hero:
+        bubble["hero"] = {
+            "type": "image",
+            "url": resolved_hero,
+            "size": "full",
+            "aspectRatio": "20:13",
+            "aspectMode": "cover",
+        }
     return bubble
 
 
@@ -318,6 +446,29 @@ def _text_message(text: str) -> dict[str, Any]:
     return {"type": "text", "text": text}
 
 
+def _status_from_plain(
+    variant: str,
+    *,
+    title: str,
+    alt_text: str,
+    body: str,
+    ui: dict[str, str],
+    hints: list[str] | None = None,
+    subtitle: str = "",
+) -> dict[str, Any]:
+    paragraphs = [p.strip() for p in body.split("\n") if p.strip()] if body else []
+    return build_status_bubble(
+        variant,
+        title=title,
+        alt_text=alt_text,
+        subtitle=subtitle,
+        body_paragraphs=paragraphs,
+        hints=hints,
+        footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+        ui=ui,
+    )
+
+
 def build_line_messages_from_bot_message(
     bot_message: dict,
     *,
@@ -326,14 +477,27 @@ def build_line_messages_from_bot_message(
 ) -> list[dict[str, Any]]:
     """
     bot メッセージから LINE Messaging API 用 messages 配列を生成する。
-    成功時は flex 2件（advice + carousel）。安全系はテキストのみ。
+    成功時は flex 2件（advice + carousel）。安全系・質問・案内は status Flex。
     """
     ui = get_line_ui_strings(lang)
     code = normalize_line_lang(lang)
 
     if bot_message.get("crisis_support") or bot_message.get("emergency_detected"):
         plain = html_to_plain_text(bot_message.get("content"))
-        return [_text_message(plain or ui.get("footer_caution", FOOTER_CAUTION_JA))]
+        return [
+            build_status_bubble(
+                "critical",
+                title=ui.get("status_critical_title", "重要なお知らせ"),
+                alt_text=ui.get("status_critical_title", "重要なお知らせ"),
+                body_paragraphs=[plain] if plain else [],
+                hints=[
+                    ui.get("status_critical_hint_1", ""),
+                    ui.get("status_critical_hint_2", ""),
+                ],
+                footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+                ui=ui,
+            )
+        ]
 
     diagnosis = bot_message.get("diagnosis")
     if isinstance(diagnosis, dict):
@@ -344,10 +508,32 @@ def build_line_messages_from_bot_message(
         if status in _ESCALATION_STATUSES:
             consult = diagnosis.get("doctor_consultation") or ""
             usage = diagnosis.get("usage_notes") or ""
-            text = "\n".join(p for p in (consult, usage) if p).strip()
-            if not text:
-                text = ui.get("pharmacist_fallback", "")
-            return [_text_message(text)]
+            body = "\n".join(p for p in (consult, usage) if p).strip()
+            if not body:
+                body = ui.get("pharmacist_fallback", "")
+            variant = "critical" if status == "escalation_required" else "caution"
+            title = (
+                ui.get("status_critical_title", "重要なお知らせ")
+                if variant == "critical"
+                else ui.get("status_caution_title", "ご確認ください")
+            )
+            hints = (
+                [ui.get("status_escalation_hint_1", ""), ui.get("status_escalation_hint_2", "")]
+                if variant == "critical"
+                else [ui.get("status_caution_hint_1", ""), ui.get("status_caution_hint_2", "")]
+            )
+            return [
+                build_status_bubble(
+                    variant,
+                    title=title,
+                    alt_text=title,
+                    subtitle=ui.get("status_escalation_subtitle", "") if variant == "critical" else "",
+                    body_paragraphs=[body],
+                    hints=hints,
+                    footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+                    ui=ui,
+                )
+            ]
 
     medicines: list[dict] = []
     if isinstance(diagnosis, dict):
@@ -360,12 +546,41 @@ def build_line_messages_from_bot_message(
         if isinstance(diagnosis, dict):
             questions = diagnosis.get("additional_questions") or diagnosis.get("critical_questions") or []
         if questions:
-            qtext = "\n".join(str(q) for q in questions if q)
-            return [_text_message(qtext)]
+            q_lines = [str(q) for q in questions if q]
+            return [
+                build_status_bubble(
+                    "notice",
+                    title=ui.get("status_notice_title", "追加でお聞きしたいこと"),
+                    alt_text=ui.get("status_notice_title", "追加でお聞きしたいこと"),
+                    subtitle=ui.get("status_questions_intro", ""),
+                    body_paragraphs=[],
+                    hints=q_lines,
+                    footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+                    ui=ui,
+                )
+            ]
         plain = html_to_plain_text(bot_message.get("content"))
         if plain:
-            return [_text_message(plain)]
-        return [_text_message(ui.get("pharmacist_fallback", ""))]
+            return [
+                _status_from_plain(
+                    "info",
+                    title=ui.get("status_info_title", "ご案内"),
+                    alt_text=ui.get("status_info_title", "ご案内"),
+                    body=plain,
+                    ui=ui,
+                )
+            ]
+        return [
+            build_status_bubble(
+                "caution",
+                title=ui.get("status_caution_title", "ご確認ください"),
+                alt_text=ui.get("pharmacist_fallback", ""),
+                body_paragraphs=[ui.get("pharmacist_fallback", "")],
+                hints=[ui.get("status_caution_hint_2", "")],
+                footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+                ui=ui,
+            )
+        ]
 
     medicine_type = ""
     if isinstance(diagnosis, dict):

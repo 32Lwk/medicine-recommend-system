@@ -1,0 +1,63 @@
+{
+  "type": "bubble",
+  "size": "kilo",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "あなたに合わせたアドバイス",
+        "weight": "bold",
+        "size": "lg",
+        "color": "#ffffff",
+        "align": "center"
+      }
+    ],
+    "backgroundColor": "#0D9488",
+    "paddingAll": "16px"
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "あなたに合った解熱鎮痛剤の候補を3つご用意しました。",
+        "wrap": true,
+        "size": "sm",
+        "margin": "none"
+      },
+      {
+        "type": "text",
+        "text": "・胃に負担をかけにくい方：カロナール（アセトアミノフェン）",
+        "wrap": true,
+        "size": "sm",
+        "margin": "md"
+      },
+      {
+        "type": "text",
+        "text": "・痛みが強い方：イブスリーショットプレミアム",
+        "wrap": true,
+        "size": "sm",
+        "margin": "xs"
+      },
+      {
+        "type": "text",
+        "text": "・速く効かせたい方：リングルアイビー",
+        "wrap": true,
+        "size": "sm",
+        "margin": "xs"
+      },
+      {
+        "type": "text",
+        "text": "用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
+        "wrap": true,
+        "size": "xs",
+        "color": "#666666",
+        "margin": "md"
+      }
+    ],
+    "paddingAll": "16px"
+  }
+}

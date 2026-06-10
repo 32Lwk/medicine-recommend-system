@@ -29,7 +29,9 @@ OPENAI_SESSION_COST_ALERT_JPY=15
 
 ## timeout
 
-Cloud Run リクエスト timeout: **120s**（長い推奨フロー向け）
+Cloud Run リクエスト timeout: **300s** 推奨（LINE Webhook バックグラウンドの推奨フロー向け）
+
+Gunicorn（`start.sh` 既定）: `GUNICORN_TIMEOUT=300`, `GUNICORN_GRACEFUL_TIMEOUT=60`
 
 ## LINE Webhook（環境構築）
 
@@ -38,8 +40,9 @@ Cloud Run リクエスト timeout: **120s**（長い推奨フロー向け）
 | 変数 | 必須 | 既定 | 備考 |
 |------|------|------|------|
 | `LINE_CHANNEL_SECRET` | Webhook 有効時 | — | 署名検証用。ログに出さない |
-| `LINE_CHANNEL_ACCESS_TOKEN` | 将来の Reply 用 | — | 環境構築フェーズでは未使用可 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | Reply/Push 時 | — | 返信・Flex Push に必須 |
 | `LINE_WEBHOOK_ENABLED` | — | `false` | dev のみ `true` 推奨。本番は慎重に |
+| `GUNICORN_TIMEOUT` | — | `300`（start.sh） | WORKER TIMEOUT 回避 |
 
 **dev 例**（`medicine-recommend-dev`）:
 

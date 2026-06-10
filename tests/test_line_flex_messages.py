@@ -7,9 +7,10 @@ from pathlib import Path
 import pytest
 
 from src.handlers.line.flex_messages import (
-    LABEL,
     PRIMARY,
+    SCORE_LOW,
     SCORE_MEDIUM,
+    _STATUS_HEADER,
     build_line_messages_from_bot_message,
     html_to_plain_text,
     truncate_text,
@@ -78,13 +79,16 @@ def test_success_returns_two_flex_messages():
     assert messages[1]["type"] == "flex"
 
 
-def test_carousel_has_three_bubbles_no_hero():
+def test_carousel_has_three_bubbles_with_noimage_hero(monkeypatch):
+    monkeypatch.setenv("PUBLIC_SITE_URL", "https://medicine.yutok.dev")
     messages = build_line_messages_from_bot_message(_success_bot_message())
     carousel = messages[1]["contents"]
     assert carousel["type"] == "carousel"
     assert len(carousel["contents"]) == 3
     for bubble in carousel["contents"]:
-        assert "hero" not in bubble
+        hero = bubble["hero"]
+        assert hero["type"] == "image"
+        assert "medicine-noimage-hero" in hero["url"]
 
 
 def test_advice_contains_caution_and_bullets():
@@ -104,7 +108,7 @@ def test_fixture_meta():
     assert [m["type"] for m in messages] == meta["expected_types"]
 
 
-def test_crisis_returns_text_only():
+def test_crisis_returns_status_flex():
     bot = {
         "type": "bot",
         "crisis_support": True,
@@ -112,22 +116,34 @@ def test_crisis_returns_text_only():
     }
     messages = build_line_messages_from_bot_message(bot)
     assert len(messages) == 1
-    assert messages[0]["type"] == "text"
-    assert "相談窓口" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    header = messages[0]["contents"]["header"]["backgroundColor"]
+    assert header == _STATUS_HEADER["critical"]
+    body_text = " ".join(
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    )
+    assert "相談窓口" in body_text
 
 
-def test_empty_medicines_pharmacist_fallback():
+def test_empty_medicines_pharmacist_fallback_flex():
     bot = {
         "type": "bot",
         "content": "",
         "diagnosis": {"status": "success", "recommended_medicines": []},
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "薬剤師" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    body_text = " ".join(
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    )
+    assert "薬剤師" in body_text
 
 
-def test_escalation_text():
+def test_escalation_returns_critical_flex():
     bot = {
         "type": "bot",
         "diagnosis": {
@@ -137,18 +153,61 @@ def test_escalation_text():
         },
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert "妊娠" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == _STATUS_HEADER["critical"]
+    body_text = " ".join(
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    )
+    assert "妊娠" in body_text
 
 
-def test_emergency_returns_text_only():
+def test_questions_returns_notice_flex():
+    bot = {
+        "type": "bot",
+        "diagnosis": {
+            "status": "success",
+            "recommended_medicines": [],
+            "additional_questions": ["痛みはいつからですか？", "熱はありますか？"],
+        },
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == _STATUS_HEADER["notice"]
+    body_text = " ".join(
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    )
+    assert "痛み" in body_text
+
+
+def test_emergency_returns_critical_flex():
     bot = {
         "type": "bot",
         "emergency_detected": True,
         "content": "<p>緊急のため受診してください。</p>",
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "緊急" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    body_text = " ".join(
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    )
+    assert "緊急" in body_text
+
+
+def test_counseling_plain_content_info_flex():
+    bot = {
+        "type": "bot",
+        "content": "<p>お疲れのようですね。十分な休息をお勧めします。</p>",
+        "diagnosis": {"status": "success", "recommended_medicines": []},
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == PRIMARY
 
 
 def test_i18n_ui_strings_en():
@@ -173,7 +232,7 @@ def test_score_three_tier_colors():
 
     assert _score_color(bubbles[0]) == PRIMARY
     assert _score_color(bubbles[1]) == SCORE_MEDIUM
-    assert _score_color(bubbles[2]) == LABEL
+    assert _score_color(bubbles[2]) == SCORE_LOW
 
 
 def test_carousel_alt_includes_count():
