@@ -1,6 +1,64 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月11日**（LINE フィードバック・loading UX・Flex 拡張）
+**最終更新日: 2026年6月11日**（LINE status Flex 再導入・方言 LLM 委譲・応答遅延対策）
+
+---
+
+## 2026年6月11日 — LINE status Flex 再導入・Concierge `line_flex` スペック
+
+### 概要
+
+- **status Flex 復帰**: 危機・緊急・エスカレーション・追加質問・薬剤師フォールバックは再びパステル調 **status Flex bubble**（1 件）で配信。挨拶・雑談・カウンセリング・Concierge の短文（`greeting` / `chitchat` / `redirect` 等）は**テキスト**のまま。
+- **構造化スペック**: `flex_status_spec.py` で `line_flex` 辞書または Web `status_card` HTML を解析し、タイトル・本文・ヒントを Flex へ反映。明示 `line_flex` が HTML より優先。
+- **Concierge 連携**: capabilities / architecture / app_about / operator カードに `build_concierge_*_line_flex()` を追加。`chat_concierge_route` が bot メッセージへ `line_flex` を伝播。LINE で Web と同じカスタムヘッダー（例: 「このツールについて」）を表示。
+- **Simulator fixture**: `status_*.json` を Flex bubble 形式に戻し、エクスポートスクリプトは `contents` を出力。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/flex_status_spec.py` | `line_flex` 正規化・status_card HTML パーサ・`resolve_status_flex_spec` |
+| `tests/test_line_flex_status_spec.py` | スペック解決・Concierge タイトル一致テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/flex_messages.py` | `_plain_text_line_messages` / `_try_resolved_status_flex`・status Flex 再構築 |
+| `src/services/concierge_templates.py` | `build_concierge_*_line_flex()` 4 種 |
+| `src/agents/concierge_agent.py` | payload に `line_flex` 付与 |
+| `src/handlers/chat/chat_concierge_route.py` | bot メッセージへ `line_flex` 保存 |
+| `scripts/export_line_flex_simulator_samples.py` | status 出力を `contents` に |
+| `tests/fixtures/line_flex_simulator/status_*.json` | Flex bubble 形式に更新 |
+| `tests/test_line_flex_messages.py` / `test_line_dev_triggers.py` | status Flex・挨拶テキストの期待値更新 |
+
+---
+
+## 2026年6月11日 — 方言前処理撤廃・LINE 応答遅延対策
+
+### 概要
+
+- **方言変換**: ルールベース方言辞書の前処理初期化をスキップし初回応答を高速化。理解・口調は NLU / カウンセリング LLM プロンプトへ委譲（`i18n_prompts.py` に方言指示追加）。
+- **LINE job lock**: `line_job_lock.py` で sid 単位の排他（Linux: fcntl ファイルロック、Windows: スレッドロック）。Gunicorn 複数ワーカー間の二重処理を防止。
+- **配信**: Push のみに統一し replyToken 失効を回避（`line_processing_reply` の通常待機文言を削除）。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_job_lock.py` | LINE 処理排他ロック |
+| `tests/test_line_job_lock.py` | ロックテスト |
+| `tests/test_i18n_dialect_prompts.py` | 方言プロンプトテスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/chat/chat_preprocess_route.py` | 方言辞書前処理を削除 |
+| `src/core/nlu_service.py` / `counseling_llm.py` | 方言理解を LLM 側へ |
+| `src/handlers/line/line_message_handler.py` | job lock 連携・Push 配信 |
+| `src/services/chat_response_service.py` | 応答生成まわり調整 |
+| `tests/test_chat_preprocess_route.py` 他 | 前処理変更に合わせて更新 |
 
 ---
 

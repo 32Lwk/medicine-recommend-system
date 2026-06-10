@@ -108,7 +108,12 @@ def test_fixture_meta():
     assert [m["type"] for m in messages] == meta["expected_types"]
 
 
-def test_crisis_returns_text_message():
+def _flex_body_text(message: dict) -> str:
+    body = message["contents"]["body"]["contents"]
+    return "\n".join(c.get("text", "") for c in body if c.get("type") == "text")
+
+
+def test_crisis_returns_critical_status_flex():
     bot = {
         "type": "bot",
         "crisis_support": True,
@@ -116,22 +121,23 @@ def test_crisis_returns_text_message():
     }
     messages = build_line_messages_from_bot_message(bot)
     assert len(messages) == 1
-    assert messages[0]["type"] == "text"
-    assert "相談窓口" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == "#E8A0A8"
+    assert "相談窓口" in _flex_body_text(messages[0])
 
 
-def test_empty_medicines_pharmacist_fallback_text():
+def test_empty_medicines_pharmacist_fallback_flex():
     bot = {
         "type": "bot",
         "content": "",
         "diagnosis": {"status": "success", "recommended_medicines": []},
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "薬剤師" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert "薬剤師" in _flex_body_text(messages[0])
 
 
-def test_escalation_returns_text():
+def test_escalation_returns_critical_status_flex():
     bot = {
         "type": "bot",
         "diagnosis": {
@@ -141,11 +147,12 @@ def test_escalation_returns_text():
         },
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "妊娠" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == "#E8A0A8"
+    assert "妊娠" in _flex_body_text(messages[0])
 
 
-def test_questions_returns_text():
+def test_questions_returns_notice_status_flex():
     bot = {
         "type": "bot",
         "diagnosis": {
@@ -155,30 +162,67 @@ def test_questions_returns_text():
         },
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "痛み" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == "#8EB8E8"
+    assert "痛み" in _flex_body_text(messages[0])
 
 
-def test_emergency_returns_text():
+def test_emergency_returns_critical_status_flex():
     bot = {
         "type": "bot",
         "emergency_detected": True,
         "content": "<p>緊急のため受診してください。</p>",
     }
     messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "flex"
+    assert "緊急" in _flex_body_text(messages[0])
+
+
+def test_greeting_returns_plain_text():
+    bot = {
+        "type": "bot",
+        "content": "こんにちは。症状やお薬についてのご質問を承ります。",
+        "greeting": True,
+    }
+    messages = build_line_messages_from_bot_message(bot)
     assert messages[0]["type"] == "text"
-    assert "緊急" in messages[0]["text"]
+    assert "こんにちは" in messages[0]["text"]
 
 
-def test_counseling_plain_content_text():
+def test_chitchat_concierge_returns_plain_text():
+    bot = {
+        "type": "bot",
+        "content": "今日はいい天気ですね。お体の調子はいかがですか？",
+        "concierge": True,
+        "concierge_intent": "chitchat",
+        "content_format": "text",
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "text"
+    assert "天気" in messages[0]["text"]
+
+
+def test_counseling_flag_returns_plain_text():
+    bot = {
+        "type": "bot",
+        "content": "お疲れのようですね。十分な休息をお勧めします。",
+        "counseling": True,
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "text"
+    assert "お疲れ" in messages[0]["text"]
+
+
+def test_advisory_plain_content_without_counseling_flag_info_flex():
     bot = {
         "type": "bot",
         "content": "<p>お疲れのようですね。十分な休息をお勧めします。</p>",
         "diagnosis": {"status": "success", "recommended_medicines": []},
     }
     messages = build_line_messages_from_bot_message(bot)
-    assert messages[0]["type"] == "text"
-    assert "お疲れ" in messages[0]["text"]
+    assert messages[0]["type"] == "flex"
+    assert messages[0]["contents"]["header"]["backgroundColor"] == PRIMARY
+    assert "お疲れ" in _flex_body_text(messages[0])
 
 
 def test_i18n_ui_strings_en():

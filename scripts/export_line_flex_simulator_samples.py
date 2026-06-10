@@ -46,19 +46,19 @@ def _kinds() -> dict[str, callable]:
 
     def status_caution():
         msgs = build_line_messages_from_bot_message(sample_bot_message_for_kind("flex_escalation"))
-        return msgs[0]
+        return msgs[0]["contents"]
 
     def status_critical():
         msgs = build_line_messages_from_bot_message(sample_bot_message_for_kind("flex_crisis"))
-        return msgs[0]
+        return msgs[0]["contents"]
 
     def status_notice():
         msgs = build_line_messages_from_bot_message(sample_bot_message_for_kind("flex_questions"))
-        return msgs[0]
+        return msgs[0]["contents"]
 
     def status_pharmacist():
         msgs = build_line_messages_from_bot_message(sample_bot_message_for_kind("flex_safe_error"))
-        return msgs[0]
+        return msgs[0]["contents"]
 
     def status_info_demo():
         return build_status_bubble(

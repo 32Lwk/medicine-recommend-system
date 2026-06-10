@@ -54,6 +54,23 @@ def _list_section(title: str, items: List[str]) -> str:
     )
 
 
+def build_concierge_capabilities_line_flex() -> Dict[str, Any]:
+    app = get_app_info()
+    caps = get_capabilities()
+    limits = get_limitations()
+    body = [str(app.get("purpose", "")).strip()]
+    body.extend(f"{c.get('title', '')}: {c.get('body', '')}" for c in caps if c.get("title"))
+    if limits:
+        body.append("できないこと・ご注意: " + " / ".join(limits[:4]))
+    return {
+        "variant": "notice",
+        "title": "このチャットでできること（β版）",
+        "subtitle": app.get("name", ""),
+        "body_paragraphs": [p for p in body if p],
+        "hints": ["症状やお薬について、具体的にお書きください。"],
+    }
+
+
 def format_concierge_capabilities_card(
     *,
     feedback_data: Optional[Dict[str, Any]] = None,
@@ -81,6 +98,30 @@ def format_concierge_capabilities_card(
         hints=["症状やお薬について、具体的にお書きください。"],
         footer_html=footer,
     )
+
+
+def build_concierge_architecture_line_flex() -> Dict[str, Any]:
+    agents = get_agents()
+    body = [
+        "一般用医薬品（OTC）の候補選定はルールベースのアルゴリズムのみで行います。"
+        "AI（LLM）が自由に薬名を創作して決めることはありません。",
+    ]
+    body.extend(
+        f"{a.get('name_ja', '')}: {a.get('role_one_liner', '')}"
+        for a in agents
+        if a.get("name_ja")
+    )
+    body.append(
+        "症状の相談は PhysicalOrchestrator が、"
+        "挨拶やアプリの説明・各種公式ドキュメントの案内は ConciergeAgent が担当します。"
+    )
+    return {
+        "variant": "notice",
+        "title": "このチャットの仕組み（β版）",
+        "subtitle": "トリアージ後に専門のエージェントが応答します",
+        "body_paragraphs": body,
+        "hints": ["お体の不調やお薬のことでしたら、症状を教えてください。"],
+    }
 
 
 def format_concierge_architecture_card(
@@ -121,6 +162,24 @@ def format_concierge_architecture_card(
     )
 
 
+def build_concierge_app_about_line_flex() -> Dict[str, Any]:
+    app = get_app_info()
+    return {
+        "variant": "notice",
+        "title": "このツールについて",
+        "body_paragraphs": [
+            p
+            for p in (
+                app.get("name", ""),
+                app.get("purpose", ""),
+                app.get("audience", ""),
+            )
+            if p
+        ],
+        "hints": ["詳細は画面右上の ℹ️ からもご確認いただけます。"],
+    }
+
+
 def format_concierge_app_about_card(
     *,
     feedback_data: Optional[Dict[str, Any]] = None,
@@ -148,6 +207,28 @@ def format_concierge_app_about_card(
 
 def build_greeting_text(user_message: str) -> str:
     return build_greeting_response(user_message)
+
+
+def build_concierge_operator_line_flex(*, intro_text: str = "") -> Dict[str, Any]:
+    email = _OPERATOR_EMAIL
+    body = [p.strip() for p in (intro_text or "").split("\n") if p.strip()]
+    body.extend(
+        [
+            "このサービスは研究・検証目的の β 版（試験運用）です。医療行為・診断・処方の代替ではありません。",
+            f"お問い合わせ E-mail: {email}",
+            f"不具合・お問い合わせフォーム: {_OPERATOR_BUG_FORM_URL}",
+        ]
+    )
+    return {
+        "variant": "notice",
+        "title": "お問い合わせ・試験運用について",
+        "subtitle": "研究・検証目的の β 版（試験運用）",
+        "body_paragraphs": body,
+        "hints": [
+            "症状やお薬のことは、具体的にお書きください。",
+            "プライバシーポリシー等は画面右上 ℹ️ からご確認いただけます。",
+        ],
+    }
 
 
 def format_concierge_operator_card(

@@ -14,6 +14,10 @@ from src.services.concierge_intent import ConciergeIntent, classify_concierge_in
 from src.services.concierge_orchestrator import resolve_intent_from_triage
 from src.services.concierge_llm import concierge_chat
 from src.services.concierge_templates import (
+    build_concierge_app_about_line_flex,
+    build_concierge_architecture_line_flex,
+    build_concierge_capabilities_line_flex,
+    build_concierge_operator_line_flex,
     build_greeting_text,
     build_redirect_text,
     build_thanks_text,
@@ -304,6 +308,7 @@ def build_doc_operator_payload(
             feedback_data=feedback_data,
         ),
         "content_format": "status_card",
+        "line_flex": build_concierge_operator_line_flex(intro_text=intro),
         "concierge_intent": "doc_operator",
         "llm_used": True,
     }
@@ -397,6 +402,7 @@ def build_concierge_payload(
         return {
             "content": format_concierge_capabilities_card(feedback_data=fb),
             "content_format": "status_card",
+            "line_flex": build_concierge_capabilities_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
         }
@@ -404,6 +410,7 @@ def build_concierge_payload(
         return {
             "content": format_concierge_architecture_card(feedback_data=fb),
             "content_format": "status_card",
+            "line_flex": build_concierge_architecture_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
         }
@@ -411,6 +418,7 @@ def build_concierge_payload(
         return {
             "content": format_concierge_app_about_card(feedback_data=fb),
             "content_format": "status_card",
+            "line_flex": build_concierge_app_about_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
         }
