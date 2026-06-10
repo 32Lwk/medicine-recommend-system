@@ -226,13 +226,17 @@ def generate_personalized_advice(
     try:
         from src.core.i18n_prompts import normalize_lang
         from src.core.llm_client import chat_completion_create
-        from src.core.i18n_prompts import append_language_instruction
+        from src.core.i18n_prompts import append_dialect_counseling_hints, append_language_instruction
         from src.core.translation_service import translate_medicine_recommendation
         from src.services.sse_emit import is_streaming_active
 
         lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
+        system_content = append_dialect_counseling_hints(
+            "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。",
+            lang,
+        )
         messages = [
-            {"role": "system", "content": "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。"},
+            {"role": "system", "content": system_content},
             {"role": "user", "content": prompt},
         ]
         sid = session_id

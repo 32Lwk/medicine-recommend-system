@@ -49,7 +49,6 @@ FLOW_WEIGHTS: Dict[str, int] = {
     "triage": 10,
     "diagnosis": 6,
     "emergency": 12,
-    "dialect": 5,
     "store": 8,
     "counseling": 12,
     "concierge": 10,

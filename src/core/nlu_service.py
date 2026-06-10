@@ -684,7 +684,8 @@ _SYMPTOM_GPT_SYSTEM_JA = """あなたは医療NLUシステムです。症状文�
 - 高熱（38.5度以上）と複数の風邪症状がある場合は、red_flagsに「インフルエンザ疑い」を追加してください
 - 体温情報を正確に抽出し、38.5度以上の場合は「高熱」として扱ってください
 - 症状名は必ず提供リストの日本語 canonical 名から選択してください
-- 重症疑い症状がある場合は必ずneeds_escalationをtrueにしてください"""
+- 重症疑い症状がある場合は必ずneeds_escalationをtrueにしてください
+- 方言・口語（例: しんどい、でら痛い、あかん、めっちゃ）も標準語と同様に解釈し、重症度判断に活かしてください"""
 
 _SYMPTOM_GPT_SYSTEM_I18N = """You are a medical NLU system for Japanese OTC medicine recommendation.
 Return valid JSON only. The user may write in a non-Japanese language.

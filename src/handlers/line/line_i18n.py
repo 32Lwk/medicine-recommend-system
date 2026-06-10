@@ -45,7 +45,6 @@ _STRINGS: dict[str, dict[str, str]] = {
         "feedback_already_submitted": "すでに送信済みです。",
         "feedback_expired": "評価の有効期限が切れました。",
         "feedback_submit_failed": "送信に失敗しました。しばらくして再度お試しください。",
-        "processing_busy": "現在処理中です。完了後に再度お送りください。",
     },
     "en": {
         "advice_header": "Personalized advice",
@@ -86,7 +85,6 @@ _STRINGS: dict[str, dict[str, str]] = {
         "feedback_already_submitted": "Already submitted.",
         "feedback_expired": "This feedback link has expired.",
         "feedback_submit_failed": "Could not submit feedback. Please try again later.",
-        "processing_busy": "A request is already in progress. Please try again after it completes.",
     },
 }
 

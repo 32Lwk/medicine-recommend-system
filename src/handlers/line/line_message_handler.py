@@ -242,19 +242,17 @@ async def _process_text_message(
         return
 
     from src.core.language_utils import detect_language
-    from src.handlers.line.line_processing_reply import line_processing_busy_text
-    from src.services.chat_inflight import is_chat_job_in_flight
+    from src.handlers.line.line_job_lock import LineJobLock
     from src.services.processing_status import mark_processing_step, set_processing_language
 
     lang = detect_language(text)
     session["detected_language"] = lang
 
-    if is_chat_job_in_flight(sid):
-        busy_text = line_processing_busy_text(lang)
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(reply_token, [{"type": "text", "text": busy_text}])
-        elif LINE_CHANNEL_ACCESS_TOKEN:
-            await push_messages(user_id, [{"type": "text", "text": busy_text}])
+    job_lock = LineJobLock()
+    if not job_lock.acquire(sid):
+        logger.info("LINE duplicate job skipped sid=%s", sid)
+        if LINE_CHANNEL_ACCESS_TOKEN:
+            await start_loading_animation(user_id)
         return
 
     if LINE_CHANNEL_ACCESS_TOKEN:
@@ -295,10 +293,10 @@ async def _process_text_message(
         if not LINE_CHANNEL_ACCESS_TOKEN:
             return
 
+        # LLM パイプライン後は replyToken 期限切れのため常に Push
         await _deliver_line_messages(
             user_id,
             line_messages,
-            reply_token=reply_token,
             sid=sid,
             user_message=text,
             bot_message=bot_msg,
@@ -310,4 +308,5 @@ async def _process_text_message(
             await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
         _notify_line_error_email(user_id, sid, str(exc))
     finally:
+        job_lock.release(sid)
         persist_line_session(sid, session)

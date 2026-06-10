@@ -19,7 +19,6 @@ PROCESSING_STEPS: List[Dict[str, Any]] = [
     {"id": "triage", "label": "症状の種類を分析しています", "weight": 8},
     {"id": "diagnosis", "label": "診断名を確認しています", "weight": 6},
     {"id": "emergency", "label": "緊急度を確認しています", "weight": 7},
-    {"id": "dialect", "label": "言葉遣いを整えています", "weight": 5},
     {"id": "store", "label": "店舗案内か確認しています", "weight": 5},
     {"id": "counseling", "label": "お話を整理しています", "weight": 10},
     {"id": "attributes", "label": "お客様情報を確認しています", "weight": 7},
