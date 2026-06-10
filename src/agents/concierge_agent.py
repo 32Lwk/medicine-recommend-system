@@ -86,7 +86,7 @@ def resolve_concierge_intent(
         return base
 
     category = (triage_result or {}).get("category", "")
-    if category == "Other" and client is not None:
+    if category == "Other" and client is not None and not (triage_result or {}).get("concierge_intent"):
         enriched = enrich_other_concierge_intent(
             dict(triage_result or {}),
             text,

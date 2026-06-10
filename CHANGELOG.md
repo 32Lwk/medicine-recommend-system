@@ -1,6 +1,39 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月11日**（Concierge 先行ルート・LINE セッション整理・フィードバック安定化）
+**最終更新日: 2026年6月11日**（トリアージ第二段階省略・LINE loading keepalive・緊急判定改善）
+
+---
+
+## 2026年6月11日 — トリアージ第二段階省略・LINE loading keepalive・緊急判定改善
+
+### 概要
+
+- **第二段階トリアージ省略**: `llm_triage` で Other かつ confidence ≥ 0.85 のとき、挨拶・メタ質問をキーワードプローブで判定し第二段階 LLM をスキップ。`concierge_intent` / `concierge_intent_source` をトリアージ結果に付与。パイプライン先頭の `try_concierge_pre_triage` は廃止し、トリアージ内で統合。
+- **緊急判定の誤検知防止**: `emergency_classifier` が Concierge 意図（挨拶・メタ質問等）と `greeting` / `thanks` を緊急候補から除外。
+- **Concierge 重複 enrich 防止**: トリアージ結果に `concierge_intent` が既にある場合、`enrich_other_concierge_intent` をスキップ。履歴は `get_recent_messages` で取得。
+- **LINE loading keepalive**: `line_loading.py` で 50 秒ごとに `loading/start` を再発火（API 上限 60 秒対策）。パイプライン完了後にキャンセル。
+- **LINE 配信**: 処理完了後も `reply_token` を `_deliver_line_messages` に渡し Reply 優先配信を復活。
+- **LINE パイプライン高速化**: `line:` sid では `session_data_for_ai` の DB 読み込みをスキップ。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_loading.py` | loading animation の keepalive（50 秒間隔） |
+| `tests/test_line_loading.py` | keepalive テスト |
+| `tests/test_llm_triage_stage2_skip.py` | 第二段階省略・曖昧 Other は stage2 実行のテスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/services/llm_triage.py` | `_concierge_fast_path_hint`・stage2 スキップ条件 |
+| `src/agents/emergency_classifier.py` | Concierge 意図・挨拶の緊急候補除外 |
+| `src/agents/concierge_agent.py` | 既存 `concierge_intent` 時の enrich スキップ |
+| `src/handlers/chat/chat_concierge_route.py` | `try_concierge_pre_triage` 削除・`get_recent_messages` |
+| `src/handlers/chat/chat_post_pipeline.py` | 先行 Concierge ルート削除・LINE DB 読み込みスキップ |
+| `src/handlers/line/line_message_handler.py` | loading keepalive・reply_token 復活 |
+| `tests/test_concierge_route.py` | 廃止した pre_triage テスト削除 |
 
 ---
 

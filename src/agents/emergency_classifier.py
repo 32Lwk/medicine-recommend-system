@@ -47,6 +47,22 @@ class EmergencyClassification:
     detected_keywords: Optional[List[str]] = None
 
 
+_NON_EMERGENCY_CONCIERGE_INTENTS = frozenset({
+    "greeting",
+    "thanks",
+    "capabilities",
+    "architecture",
+    "app_about",
+    "doc_privacy",
+    "doc_terms",
+    "doc_operator",
+    "doc_consultation",
+    "doc_app_overview",
+    "chitchat",
+    "redirect",
+})
+
+
 def is_emergency_candidate(
     user_text: str,
     *,
@@ -58,6 +74,17 @@ def is_emergency_candidate(
     if not text:
         return False
     triage = triage_result or {}
+    pre_intent = triage.get("concierge_intent")
+    if pre_intent in _NON_EMERGENCY_CONCIERGE_INTENTS:
+        return False
+    try:
+        from src.services.concierge_intent import classify_concierge_intent
+
+        fast = classify_concierge_intent(text)
+        if fast in ("greeting", "thanks"):
+            return False
+    except ImportError:
+        pass
     mod = (moderation_label or triage.get("_moderation_label") or "").lower()
     if mod == "crisis":
         return True

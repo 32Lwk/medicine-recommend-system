@@ -33,6 +33,21 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_STAGE2_SKIP_MIN_CONFIDENCE = 0.85
+
+
+def _concierge_fast_path_hint(user_text: str) -> tuple[str, str] | None:
+    """挨拶・メタ質問など、第二段階 Other 詳細分類 LLM を省略できるヒント。"""
+    from src.services.concierge_intent import classify_concierge_intent, probe_meta_concierge_intent
+
+    fast = classify_concierge_intent(user_text)
+    if fast:
+        return fast, "exact_match_gate"
+    probed = probe_meta_concierge_intent(user_text)
+    if probed:
+        return probed, "keyword_probe"
+    return None
+
 # 違法薬物のキーワードリスト（単語一致による高速検出）
 ILLEGAL_DRUG_KEYWORDS = [
     "覚醒剤", "アンフェタミン", "メタンフェタミン", "大麻", "マリファナ", "THC", 
@@ -443,58 +458,76 @@ def llm_triage(
             category = "Other"
             confidence = 0.5
         
+        concierge_intent: str | None = None
+        concierge_intent_source: str | None = None
+
         # 第二段階：Otherカテゴリの場合は詳細分類を実行
         if category == "Other":
-            try:
-                second_response = chat_completion_create(
-                    client,
-                    model_role="triage",
-                    path="llm_triage.stage2",
-                    messages=[
-                        {"role": "system", "content": "あなたは薬剤師です。Otherカテゴリに分類された入力を詳細に分類してください。"},
-                        {"role": "user", "content": f"{SECOND_STAGE_OTHER_PROMPT}\n\n【ユーザーの入力】\n{user_text}"},
-                    ],
-                    temperature=0.1,
-                    max_tokens=200,
-                    response_format={"type": "json_object"},
-                )
-
-                second_content = second_response.choices[0].message.content
-                
-                # JSONをパース
-                try:
-                    second_stage_result = json.loads(second_content)
-                    detailed_subcategory = second_stage_result.get("subcategory", "general_other")
-                    detailed_confidence = float(second_stage_result.get("confidence", confidence))
-                    detailed_reasoning = second_stage_result.get("reasoning", reasoning)
-                    
-                    # confidenceの範囲チェック
-                    if detailed_confidence < 0.0:
-                        detailed_confidence = 0.0
-                    elif detailed_confidence > 1.0:
-                        detailed_confidence = 1.0
-                    
-                    # 詳細分類の結果を使用
-                    subcategory = detailed_subcategory
-                    confidence = detailed_confidence
-                    reasoning = f"第一段階: {reasoning} | 第二段階: {detailed_reasoning}"
-                    
-                except json.JSONDecodeError as e:
-                    logger.error(f"第二段階JSON解析エラー: {e}, レスポンス: {second_content}")
-                    # エラー時は第一段階の結果を使用
-                    subcategory = "general_other"
-            except Exception as e:
-                logger.error(f"第二段階トリアージエラー: {e}")
-                # エラー時は第一段階の結果を使用
+            fast_hint = _concierge_fast_path_hint(user_text)
+            if fast_hint and confidence >= _STAGE2_SKIP_MIN_CONFIDENCE:
+                concierge_intent, concierge_intent_source = fast_hint
                 subcategory = "general_other"
-        
+                reasoning = f"{reasoning} | stage2 skipped ({concierge_intent_source})"
+                logger.info(
+                    "⏭️ 第二段階トリアージ省略: concierge_intent=%s source=%s",
+                    concierge_intent,
+                    concierge_intent_source,
+                )
+            else:
+                try:
+                    second_response = chat_completion_create(
+                        client,
+                        model_role="triage",
+                        path="llm_triage.stage2",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "あなたは薬剤師です。Otherカテゴリに分類された入力を詳細に分類してください。",
+                            },
+                            {
+                                "role": "user",
+                                "content": f"{SECOND_STAGE_OTHER_PROMPT}\n\n【ユーザーの入力】\n{user_text}",
+                            },
+                        ],
+                        temperature=0.1,
+                        max_tokens=200,
+                        response_format={"type": "json_object"},
+                    )
+
+                    second_content = second_response.choices[0].message.content
+
+                    try:
+                        second_stage_result = json.loads(second_content)
+                        detailed_subcategory = second_stage_result.get("subcategory", "general_other")
+                        detailed_confidence = float(second_stage_result.get("confidence", confidence))
+                        detailed_reasoning = second_stage_result.get("reasoning", reasoning)
+
+                        if detailed_confidence < 0.0:
+                            detailed_confidence = 0.0
+                        elif detailed_confidence > 1.0:
+                            detailed_confidence = 1.0
+
+                        subcategory = detailed_subcategory
+                        confidence = detailed_confidence
+                        reasoning = f"第一段階: {reasoning} | 第二段階: {detailed_reasoning}"
+
+                    except json.JSONDecodeError as e:
+                        logger.error(f"第二段階JSON解析エラー: {e}, レスポンス: {second_content}")
+                        subcategory = "general_other"
+                except Exception as e:
+                    logger.error(f"第二段階トリアージエラー: {e}")
+                    subcategory = "general_other"
+
         result = {
             "category": category,
             "confidence": confidence,
             "subcategory": subcategory,
             "requires_immediate_action": requires_immediate_action,
-            "reasoning": reasoning
+            "reasoning": reasoning,
         }
+        if concierge_intent:
+            result["concierge_intent"] = concierge_intent
+            result["concierge_intent_source"] = concierge_intent_source
         
         # 不適切な要求が検出された場合、キャッシュを無効化（誤分類を防ぐため）
         if use_cache:
