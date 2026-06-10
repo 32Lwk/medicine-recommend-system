@@ -1,1 +1,1 @@
-"""LINE Messaging API ハンドラ（Webhook 環境構築）"""
+"""LINE Messaging API ハンドラ（Webhook・Reply/Push・Flex Message）"""

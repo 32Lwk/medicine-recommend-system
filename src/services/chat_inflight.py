@@ -34,3 +34,13 @@ def end_chat_job(sid: Optional[str]) -> None:
         return
     with _lock:
         _in_flight.pop(sid, None)
+
+
+def is_chat_job_in_flight(sid: Optional[str]) -> bool:
+    """同一 sid のチャット処理が進行中か（ロックは取らない）。"""
+    if not sid:
+        return False
+    now = time.monotonic()
+    with _lock:
+        _prune_stale(now)
+        return sid in _in_flight

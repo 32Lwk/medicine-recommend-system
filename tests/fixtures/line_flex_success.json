@@ -1,0 +1,8 @@
+{
+  "description": "Reference structure for successful LINE flex output (2 messages)",
+  "expected_message_count": 2,
+  "expected_types": ["flex", "flex"],
+  "colors": {
+    "primary": "#0D9488"
+  }
+}

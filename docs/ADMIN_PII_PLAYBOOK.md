@@ -2,6 +2,7 @@
 
 ## 方針
 
+- LINE 公式アカウント経由のセッション ID は `line:Uxxxxxxxx` 形式。表示・エスカレーション手順は Web セッションと同じ
 - ユーザー原文は **自動マスクしない**（トリアージ・緊急判断のため）
 - 一覧は **120 文字**、詳細パネルは **800 文字** まで表示（`ADMIN_LIST_SNIPPET_MAX_CHARS` / `ADMIN_DETAIL_USER_MESSAGE_MAX_CHARS`）
 - 画面共有・ログ転記時は担当者がマスク判断する

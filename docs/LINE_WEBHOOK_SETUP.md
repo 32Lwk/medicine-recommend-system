@@ -1,7 +1,7 @@
 # LINE Webhook 環境構築（ローカル Mac / Windows・GCP）
 
-メッセージ本文・Flex Message・自動応答ロジックは**未実装**です。  
-本ドキュメントは「LINE Platform から Webhook が届き、署名検証後に 200 が返る」状態までを対象とします。
+Webhook 受信・署名検証・Reply/Push・Flex Message・推奨パイプライン連携を実装済みです。  
+本番 `medicine-recommend` は `LINE_WEBHOOK_ENABLED=false` のまま、検証は **dev Cloud Run** で行います。
 
 関連: [ROUTE_SPEC.md](ROUTE_SPEC.md) · [CLOUD_RUN_LLM_ENV.md](CLOUD_RUN_LLM_ENV.md)
 
@@ -246,8 +246,53 @@ Cloud Run は **未認証の POST** を受け付ける必要があります（LI
 
 ---
 
-## 9. 次のフェーズ（本ドキュメントのスコープ外）
+## 9. Flex Message・Reply/Push（実装済み）
 
-- Reply API による返信
-- Flex Message（`docs/未踏/docs/line.json`）
-- 既存 `run_chat_post_pipeline` とのセッション連携
+### 9.1 動作概要
+
+1. ユーザーが 1:1 でテキスト送信
+2. Webhook が即 **200** を返す（処理はバックグラウンド）
+3. **Reply** で「症状を確認しています。少々お待ちください。」
+4. 既存 `handle_chat_post` で推奨（sid は `line:{userId}`）
+5. **Push** で Flex 2通（アドバイス bubble + 医薬品 carousel 最大3件）
+
+危機検出・緊急時は Flex ではなくテキスト Push。管理画面の手動キューは既存通り。
+
+### 9.2 必須環境変数（返信する場合）
+
+| 変数 | 用途 |
+|------|------|
+| `LINE_CHANNEL_SECRET` | Webhook 署名 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | Reply / Push |
+| `LINE_WEBHOOK_ENABLED=true` | Webhook 有効化 |
+| `DATABASE_URL` | セッション永続化 |
+
+`LINE_CHANNEL_ACCESS_TOKEN` 未設定時は Webhook は **200** のまま、Reply/Push はスキップされます。
+
+### 9.3 ローカル確認
+
+```bash
+# Flex JSON（Simulator 用）
+python scripts/line_push_preview.py --dry-run
+
+# pytest
+pytest tests/test_line_flex_messages.py tests/test_line_webhook.py -q
+
+# 実機 Push（Webhook 不要）
+# .env: LINE_CHANNEL_ACCESS_TOKEN, LINE_PUSH_TO_USER_ID
+python scripts/line_push_preview.py --user-id Uxxxxxxxx
+```
+
+Flex Simulator: https://developers.line.biz/flex-simulator/
+
+### 9.4 管理画面
+
+LINE セッションの sid は `line:Uxxxxxxxx` 形式です。既存の管理チャットでそのまま参照できます。
+
+### 9.5 Cloud Run 運用注意
+
+バックグラウンド処理中にインスタンスがスケールダウンすると Push が届かない場合があります。長時間化する場合は将来 Cloud Tasks 等を検討してください。
+
+### 9.6 将来: hero 画像
+
+v1 は hero なし（Noimage）。商品画像 URL が整備されたら `flex_messages.build_medicine_bubble(..., hero_url=...)` で拡張予定。

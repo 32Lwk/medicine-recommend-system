@@ -4,6 +4,7 @@ import logging
 import math
 import os
 import re
+from contextlib import asynccontextmanager
 from pathlib import Path
 import random
 import time
@@ -12,6 +13,7 @@ from datetime import datetime
 from urllib.parse import unquote
 from xml.sax.saxutils import escape
 
+import httpx
 import pytz
 from fastapi import Depends, FastAPI, Form, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -160,7 +162,17 @@ def _particle_profile_json() -> str:
         return json.dumps(get_particle_profile(None, datetime.now(jst)), ensure_ascii=False)
 
 
-app = FastAPI(redirect_slashes=False)
+@asynccontextmanager
+async def _app_lifespan(app: FastAPI):
+    async with httpx.AsyncClient(timeout=30.0) as line_http_client:
+        from src.handlers.line import line_reply
+
+        line_reply.set_http_client(line_http_client)
+        yield
+        line_reply.set_http_client(None)
+
+
+app = FastAPI(redirect_slashes=False, lifespan=_app_lifespan)
 security_basic = HTTPBasic(auto_error=False)
 
 # CORS

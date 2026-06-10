@@ -60,7 +60,35 @@
 | POST | `/api/admin/send_message` | JSON | 200/400/404 | application/json | | |
 | POST | `/api/request_admin` | — | 200/400 | application/json | sid | |
 | GET | `/line/webhook/status` | — | 200 | application/json | — | LINE 設定状態（秘密値なし） |
-| POST | `/line/webhook` | raw JSON body | 200/400/401/503 | application/json | `X-Line-Signature` | `LINE_WEBHOOK_ENABLED=true` 時のみ。署名検証・200 のみ（Reply 未実装） |
+| POST | `/line/webhook` | raw JSON body | 200/400/401/503 | application/json | `X-Line-Signature` | `LINE_WEBHOOK_ENABLED=true` 時のみ。署名検証後即 200、イベントは非同期処理 |
+
+### LINE Webhook（`POST /line/webhook`）
+
+**シーケンス**
+
+1. LINE Platform → `POST /line/webhook`（`X-Line-Signature` 必須）
+2. 署名 OK → **200** `{"status":"ok","events_received":N}`（即時）
+3. バックグラウンド: 1:1 テキスト → Reply（確認中）→ `handle_chat_post`（sid=`line:{userId}`）→ Push（Flex またはテキスト）
+
+**HTTP ステータス**
+
+| コード | 条件 |
+|--------|------|
+| 200 | 署名 OK（token 未設定でも 200。Reply/Push はスキップ） |
+| 400 | body が不正 JSON |
+| 401 | 署名不一致 |
+| 503 | `LINE_WEBHOOK_ENABLED=false` または `LINE_CHANNEL_SECRET` 未設定 |
+
+**環境変数**
+
+| 変数 | 必須 | 用途 |
+|------|------|------|
+| `LINE_WEBHOOK_ENABLED` | Webhook 利用時 | `true` で有効 |
+| `LINE_CHANNEL_SECRET` | Webhook 利用時 | 署名検証 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | 返信時 | Reply / Push API |
+| `DATABASE_URL` | 推奨 | セッション永続化 |
+
+詳細: [LINE_WEBHOOK_SETUP.md](LINE_WEBHOOK_SETUP.md)
 
 **CORS**: `config/app_config.get_cors_config()` → `CORSMiddleware`（`allow_credentials` 含む）。
 
