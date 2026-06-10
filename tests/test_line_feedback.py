@@ -6,10 +6,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.handlers.line.flex_messages import resolve_medicine_hero_url
 from src.handlers.line.line_feedback import (
+    _load_pending_context,
     attach_feedback_quick_reply,
     handle_line_feedback_postback,
     parse_feedback_postback,
     prepare_line_messages_with_feedback,
+    register_line_feedback_pending,
 )
 from src.services.feedback_submit import submit_feedback_record
 
@@ -34,6 +36,20 @@ def test_attach_feedback_quick_reply_on_last_message():
     out = attach_feedback_quick_reply(msgs, "deadbeef", ui)
     assert "quickReply" not in out[0]
     assert out[1]["quickReply"]["items"][0]["action"]["data"] == "mrcfb|pos|deadbeef"
+
+
+@patch("src.handlers.line.line_feedback.save_session_to_db")
+@patch("src.handlers.line.line_feedback.get_session_from_db", return_value={})
+def test_pending_survives_stale_db_session(mock_get, mock_save):
+    key = register_line_feedback_pending(
+        "line:U1",
+        user_message="頭痛",
+        ai_response="おすすめ",
+    )
+    mock_get.return_value = {"session_id": "line:U1", "line_feedback_pending": {}}
+    ctx = _load_pending_context("line:U1", key)
+    assert ctx is not None
+    assert ctx["user_message"] == "頭痛"
 
 
 @patch("src.handlers.line.line_feedback.save_session_to_db")

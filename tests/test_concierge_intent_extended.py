@@ -4,7 +4,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.agents.concierge_agent import resolve_concierge_intent, should_concierge_handle
-from src.services.concierge_intent import classify_concierge_intent, should_reset_off_topic
+from src.services.concierge_intent import (
+    classify_concierge_intent,
+    probe_meta_concierge_intent,
+    resolve_pre_triage_concierge_intent,
+    should_reset_off_topic,
+)
 from src.services.concierge_orchestrator import enrich_other_concierge_intent
 
 
@@ -64,6 +69,31 @@ def test_reset_on_medicine_keyword():
 def test_none_for_empty():
     assert classify_concierge_intent("") is None
     assert classify_concierge_intent("   ") is None
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("あなたについて教えてください", "app_about"),
+        ("あんたについて教えて", "app_about"),
+        ("自己紹介してください", "app_about"),
+        ("何ができる？", "capabilities"),
+        ("マルチエージェントなの？", "architecture"),
+        ("プライバシーポリシーは？", "doc_privacy"),
+    ],
+)
+def test_probe_meta_concierge_intent(text, expected):
+    assert probe_meta_concierge_intent(text) == expected
+
+
+def test_probe_skips_medicine_consultation():
+    assert probe_meta_concierge_intent("風邪薬を教えて") is None
+    assert probe_meta_concierge_intent("頭が痛い") is None
+
+
+def test_resolve_pre_triage_includes_greeting_and_meta():
+    assert resolve_pre_triage_concierge_intent("こんにちは") == "greeting"
+    assert resolve_pre_triage_concierge_intent("あなたについて") == "app_about"
 
 
 @patch("src.core.llm_client.chat_completion_create")

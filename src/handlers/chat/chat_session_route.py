@@ -33,22 +33,40 @@ def handle_chat_end_if_requested(
     logger.info("🔚 CHAT ENDED by user: %s", session.get("username", "unknown"))
     if hasattr(session, "modified"):
         session.modified = True
-    session.setdefault("messages", []).append({
-        "type": "bot",
-        "content": (
-            "チャットを終了しました。不明点がございましたら、"
-            "お気軽にお近くの登録販売者にご相談ください。"
-        ),
-        "diagnosis": None,
-        "chat_ended": True,
-    })
+    farewell = (
+        "チャットを終了しました。不明点がございましたら、"
+        "お気軽にお近くの登録販売者にご相談ください。"
+    )
+    if sid and str(sid).startswith("line:"):
+        from src.handlers.line.line_session import clear_line_session_state
+
+        clear_line_session_state(session)
+        session.setdefault("messages", []).append({
+            "type": "bot",
+            "content": farewell,
+            "diagnosis": None,
+            "chat_ended": True,
+        })
+    else:
+        session.setdefault("messages", []).append({
+            "type": "bot",
+            "content": farewell,
+            "diagnosis": None,
+            "chat_ended": True,
+        })
     if sid:
-        session_data = get_session_from_db(sid)
-        if session_data:
+        session_data = get_session_from_db(sid) or {"session_id": sid}
+        if str(sid).startswith("line:"):
+            from src.handlers.line.line_session import clear_line_session_state
+
+            clear_line_session_state(session_data)
             session_data["messages"] = session["messages"].copy()
-            session_data["last_activity"] = datetime.now()
-            session_data["session_active"] = False
-            save_session_to_db(sid, session_data)
+            session_data.pop("line_feedback_pending", None)
+        else:
+            session_data["messages"] = session["messages"].copy()
+        session_data["last_activity"] = datetime.now()
+        session_data["session_active"] = False
+        save_session_to_db(sid, session_data)
     message_count = len(session["messages"])
     logger.info("✅ POST処理完了（チャット終了） - JSON返却: %s messages", message_count)
     return ({"status": "ok", "message_count": message_count}, 200)

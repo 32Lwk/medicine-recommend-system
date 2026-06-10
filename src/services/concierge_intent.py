@@ -168,6 +168,61 @@ def classify_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     return None
 
 
+# トリアージ LLM を省略できるメタ意図（キーワードで十分に確度高いもの）
+_PRE_TRIAGE_META_INTENTS = frozenset({
+    "greeting",
+    "thanks",
+    "capabilities",
+    "architecture",
+    "app_about",
+    "doc_privacy",
+    "doc_terms",
+    "doc_operator",
+    "doc_consultation",
+    "doc_app_overview",
+})
+
+_META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
+    (re.compile(r"(あなた|あんた)(について|は誰|って何|は何|のこと)"), "app_about"),
+    (re.compile(r"自己紹介"), "app_about"),
+    (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
+    (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
+    (re.compile(r"(何ができる|できること|対応言語)"), "capabilities"),
+    (re.compile(r"プライバシー|個人情報"), "doc_privacy"),
+    (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
+    (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
+    (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
+    (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
+]
+
+
+def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
+    """
+    メタ質問のキーワードプローブ。LLM トリアージ・meta_triage を省略する高速パス用。
+    医薬品相談・症状入力は None。
+    """
+    text = (user_text or "").strip()
+    if not text or _is_medicine_consultation(text):
+        return None
+    if len(text) > 120:
+        return None
+    for pattern, intent in _META_PROBE_RULES:
+        if pattern.search(text):
+            return intent
+    return None
+
+
+def resolve_pre_triage_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
+    """挨拶・感謝・キーワード確定メタ意図。トリアージ前ルート対象なら intent を返す。"""
+    fast = classify_concierge_intent(user_text)
+    if fast in _PRE_TRIAGE_META_INTENTS:
+        return fast
+    probed = probe_meta_concierge_intent(user_text)
+    if probed in _PRE_TRIAGE_META_INTENTS:
+        return probed
+    return None
+
+
 def should_reset_off_topic(text: str) -> bool:
 
     if is_symptom_input(text):

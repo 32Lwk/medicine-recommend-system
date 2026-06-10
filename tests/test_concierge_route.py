@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from src.handlers.chat.chat_concierge_route import (
     try_concierge_duplicate_skip,
+    try_concierge_pre_triage,
     try_concierge_response,
 )
 
@@ -111,6 +112,27 @@ def test_architecture_no_internal_denial(mock_llm):
 
 
 
+
+
+def test_app_about_pre_triage_without_llm():
+    """キーワードプローブでトリアージ前に app_about カードを返す。"""
+    session = {"messages": [], "user_attributes": {}}
+    client = MagicMock()
+    client.client_ip = "127.0.0.1"
+    client.user_agent = "test"
+
+    resp = try_concierge_pre_triage(
+        session,
+        client,
+        None,
+        "あなたについて教えてください",
+        "あなたについて教えてください",
+        MagicMock(),
+    )
+    assert resp is not None
+    bot = session["messages"][-1]
+    assert bot["concierge_intent"] == "app_about"
+    assert "chat-status-card" in bot["content"]
 
 
 @patch("src.core.llm_client.chat_completion_create")

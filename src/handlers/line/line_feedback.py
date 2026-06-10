@@ -17,8 +17,11 @@ from src.services.session_manager import get_session_from_db, save_session_to_db
 logger = logging.getLogger(__name__)
 
 POSTBACK_PREFIX = "mrcfb"
-_PENDING_TTL_SEC = 3600
+_PENDING_TTL_SEC = 86400  # 24h（DB 未接続時もメモリで保持）
 _MAX_PENDING = 20
+
+# DB とメモリの不整合時でも postback を受け付けるプロセス内ストア
+_pending_memory: dict[str, dict[str, dict[str, Any]]] = {}
 
 
 def _public_feedback_key() -> str:
@@ -56,23 +59,32 @@ def _prune_pending(pending: dict[str, Any]) -> dict[str, Any]:
     return kept
 
 
+def _store_pending_entry(sid: str, key: str, entry: dict[str, Any]) -> None:
+    by_sid = _pending_memory.setdefault(sid, {})
+    by_sid[key] = entry
+    _pending_memory[sid] = _prune_pending(by_sid)
+
+
 def register_line_feedback_pending(
     sid: str,
     *,
     user_message: str,
     ai_response: str,
 ) -> str:
-    """評価用コンテキストをセッション DB に保存し、postback 用キーを返す。"""
+    """評価用コンテキストを保存し、postback 用キーを返す（メモリ優先・DB は補助）。"""
     key = _public_feedback_key()
-    session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
-    pending = session_data.get("line_feedback_pending") or {}
-    if not isinstance(pending, dict):
-        pending = {}
-    pending[key] = {
+    entry = {
         "user_message": (user_message or "")[:500],
         "ai_response": (ai_response or "")[:2000],
         "ts": time.time(),
     }
+    _store_pending_entry(sid, key, entry)
+
+    session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+    pending = session_data.get("line_feedback_pending") or {}
+    if not isinstance(pending, dict):
+        pending = {}
+    pending[key] = dict(entry)
     session_data["line_feedback_pending"] = _prune_pending(pending)
     save_session_to_db(sid, session_data)
     return key
@@ -154,6 +166,14 @@ def parse_feedback_postback(data: str) -> tuple[str, str] | None:
 
 
 def _load_pending_context(sid: str, feedback_key: str) -> dict[str, str] | None:
+    mem_entry = (_pending_memory.get(sid) or {}).get(feedback_key)
+    if isinstance(mem_entry, dict):
+        if time.time() - float(mem_entry.get("ts", 0)) <= _PENDING_TTL_SEC:
+            return {
+                "user_message": str(mem_entry.get("user_message") or ""),
+                "ai_response": str(mem_entry.get("ai_response") or ""),
+            }
+
     session_data = get_session_from_db(sid) or {}
     pending = session_data.get("line_feedback_pending") or {}
     if not isinstance(pending, dict):
@@ -185,7 +205,7 @@ async def handle_line_feedback_postback(
         if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
             await reply_messages(
                 reply_token,
-                [{"type": "text", "text": ui.get("feedback_expired", "評価を受け付けられませんでした。")}],
+                [{"type": "text", "text": ui.get("feedback_submit_failed", "送信に失敗しました。")}],
             )
         return
 
