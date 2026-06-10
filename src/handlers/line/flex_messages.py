@@ -13,6 +13,7 @@ from html.parser import HTMLParser
 from typing import Any
 
 from config.line_config import LINE_HERO_PLACEHOLDER_URL
+from src.handlers.line.flex_status_spec import resolve_status_flex_spec
 from src.handlers.line.line_i18n import (
     carousel_alt_text,
     format_intro,
@@ -480,6 +481,93 @@ def _text_with_hints(
     return _text_messages_from_plain("\n".join(parts), footer=footer)
 
 
+_PLAIN_TEXT_CONCIERGE_INTENTS = frozenset(
+    {"greeting", "thanks", "chitchat", "redirect", "medical_handoff"}
+)
+
+
+def _plain_text_line_messages(bot_message: dict) -> list[dict[str, Any]] | None:
+    """
+    挨拶・雑談・カウンセリング・医薬品Q&Aなど、Flex 化しない会話はテキストで返す。
+    """
+    plain = html_to_plain_text(bot_message.get("content"))
+    if bot_message.get("greeting") or bot_message.get("counseling") or bot_message.get("ask"):
+        if not plain:
+            return None
+        return _text_messages_from_plain(plain, footer="")
+
+    if bot_message.get("concierge"):
+        intent = (bot_message.get("concierge_intent") or "").strip()
+        fmt = (bot_message.get("content_format") or "text").strip()
+        if fmt == "text" or intent in _PLAIN_TEXT_CONCIERGE_INTENTS:
+            if not plain:
+                return None
+            return _text_messages_from_plain(plain, footer="")
+        return None
+
+    if "diagnosis" in bot_message and bot_message.get("diagnosis") is None:
+        if not plain:
+            return None
+        return _text_messages_from_plain(plain, footer="")
+
+    return None
+
+
+def _status_flex_message(
+    variant: str,
+    *,
+    title: str,
+    alt_text: str,
+    subtitle: str = "",
+    body_paragraphs: list[str] | None = None,
+    hints: list[str] | None = None,
+    footer_note: str,
+    ui: dict[str, str],
+) -> list[dict[str, Any]]:
+    return [
+        build_status_bubble(
+            variant,
+            title=title,
+            alt_text=alt_text,
+            subtitle=subtitle,
+            body_paragraphs=body_paragraphs,
+            hints=hints,
+            footer_note=footer_note,
+            ui=ui,
+        )
+    ]
+
+
+def _status_flex_from_spec(
+    spec: dict[str, Any],
+    *,
+    default_footer: str,
+    ui: dict[str, str],
+) -> list[dict[str, Any]]:
+    return _status_flex_message(
+        str(spec.get("variant") or "info"),
+        title=str(spec.get("title") or ""),
+        alt_text=str(spec.get("alt_text") or spec.get("title") or ""),
+        subtitle=str(spec.get("subtitle") or ""),
+        body_paragraphs=list(spec.get("body_paragraphs") or []),
+        hints=list(spec.get("hints") or []),
+        footer_note=str(spec.get("footer_note") or default_footer),
+        ui=ui,
+    )
+
+
+def _try_resolved_status_flex(
+    bot_message: dict[str, Any],
+    *,
+    footer: str,
+    ui: dict[str, str],
+) -> list[dict[str, Any]] | None:
+    spec = resolve_status_flex_spec(bot_message)
+    if not spec:
+        return None
+    return _status_flex_from_spec(spec, default_footer=footer, ui=ui)
+
+
 def build_line_messages_from_bot_message(
     bot_message: dict,
     *,
@@ -488,21 +576,30 @@ def build_line_messages_from_bot_message(
 ) -> list[dict[str, Any]]:
     """
     bot メッセージから LINE Messaging API 用 messages 配列を生成する。
-    推奨成功時は flex 2件（advice + carousel）。それ以外の本文はテキストメッセージ。
+    挨拶・雑談等はテキスト。推奨成功時は flex 2件（advice + carousel）。
+    エスカレーション・追加質問等は status Flex bubble 1件。
     """
     ui = get_line_ui_strings(lang)
     code = normalize_line_lang(lang)
     footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
 
+    plain_messages = _plain_text_line_messages(bot_message)
+    if plain_messages is not None:
+        return plain_messages
+
     if bot_message.get("crisis_support") or bot_message.get("emergency_detected"):
         plain = html_to_plain_text(bot_message.get("content"))
-        return _text_with_hints(
-            plain,
-            [
+        title = ui.get("status_critical_title", "")
+        return _status_flex_message(
+            "critical",
+            title=title,
+            alt_text=title,
+            body_paragraphs=[plain] if plain else None,
+            hints=[
                 ui.get("status_critical_hint_1", ""),
                 ui.get("status_critical_hint_2", ""),
             ],
-            footer=footer,
+            footer_note=footer,
             ui=ui,
         )
 
@@ -513,20 +610,32 @@ def build_line_messages_from_bot_message(
     if isinstance(diagnosis, dict):
         status = (diagnosis.get("status") or "").strip()
         if status in _ESCALATION_STATUSES:
-            consult = diagnosis.get("doctor_consultation") or ""
-            usage = diagnosis.get("usage_notes") or ""
-            body = "\n".join(p for p in (consult, usage) if p).strip()
-            if not body:
-                body = ui.get("pharmacist_fallback", "")
+            consult = str(diagnosis.get("doctor_consultation") or "").strip()
+            usage = str(diagnosis.get("usage_notes") or "").strip()
+            body_paragraphs = [p for p in (consult, usage) if p]
+            if not body_paragraphs:
+                body_paragraphs = [ui.get("pharmacist_fallback", "")]
             variant = "critical" if status == "escalation_required" else "caution"
+            title = ui.get(
+                "status_critical_title" if variant == "critical" else "status_caution_title",
+                "",
+            )
             hints = (
                 [ui.get("status_escalation_hint_1", ""), ui.get("status_escalation_hint_2", "")]
                 if variant == "critical"
                 else [ui.get("status_caution_hint_1", ""), ui.get("status_caution_hint_2", "")]
             )
             subtitle = ui.get("status_escalation_subtitle", "") if variant == "critical" else ""
-            parts = [p for p in (subtitle, body) if p]
-            return _text_with_hints("\n".join(parts), hints, footer=footer, ui=ui)
+            return _status_flex_message(
+                variant,
+                title=title,
+                alt_text=title,
+                subtitle=subtitle,
+                body_paragraphs=body_paragraphs,
+                hints=hints,
+                footer_note=footer,
+                ui=ui,
+            )
 
     medicines: list[dict] = []
     if isinstance(diagnosis, dict):
@@ -540,19 +649,38 @@ def build_line_messages_from_bot_message(
             questions = diagnosis.get("additional_questions") or diagnosis.get("critical_questions") or []
         if questions:
             q_lines = [str(q) for q in questions if q]
-            return _text_with_hints(
-                ui.get("status_questions_intro", ""),
-                q_lines,
-                footer=footer,
+            title = ui.get("status_notice_title", "")
+            return _status_flex_message(
+                "notice",
+                title=title,
+                alt_text=title,
+                body_paragraphs=[ui.get("status_questions_intro", "")],
+                hints=q_lines,
+                footer_note=footer,
                 ui=ui,
             )
+        resolved = _try_resolved_status_flex(bot_message, footer=footer, ui=ui)
+        if resolved:
+            return resolved
         plain = html_to_plain_text(bot_message.get("content"))
         if plain:
-            return _text_messages_from_plain(plain, footer=footer)
-        return _text_with_hints(
-            ui.get("pharmacist_fallback", ""),
-            [ui.get("status_caution_hint_2", "")],
-            footer=footer,
+            title = ui.get("status_info_title", "")
+            return _status_flex_message(
+                "info",
+                title=title,
+                alt_text=title,
+                body_paragraphs=[plain],
+                footer_note=footer,
+                ui=ui,
+            )
+        title = ui.get("status_caution_title", "")
+        return _status_flex_message(
+            "caution",
+            title=title,
+            alt_text=title,
+            body_paragraphs=[ui.get("pharmacist_fallback", "")],
+            hints=[ui.get("status_caution_hint_2", "")],
+            footer_note=footer,
             ui=ui,
         )
 

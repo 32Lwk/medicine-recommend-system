@@ -1,4 +1,67 @@
 {
-  "type": "text",
-  "text": "【開発プレビュー】大変おつらい状況かと思います。一人で抱え込まず、専門の相談窓口にご連絡ください。\n次にできること\n・お一人で抱え込まず、専門の相談窓口にご連絡ください。\n・緊急の場合は救急・医療機関へ相談してください。\n\n用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。"
+  "type": "bubble",
+  "size": "kilo",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "backgroundColor": "#E8A0A8",
+    "paddingAll": "16px",
+    "contents": [
+      {
+        "type": "text",
+        "text": "重要なお知らせ",
+        "weight": "bold",
+        "size": "lg",
+        "color": "#ffffff",
+        "align": "center",
+        "wrap": true
+      }
+    ]
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "paddingAll": "16px",
+    "contents": [
+      {
+        "type": "text",
+        "text": "【開発プレビュー】大変おつらい状況かと思います。一人で抱え込まず、専門の相談窓口にご連絡ください。",
+        "wrap": true,
+        "size": "sm",
+        "margin": "none",
+        "weight": "bold"
+      },
+      {
+        "type": "text",
+        "text": "次にできること",
+        "wrap": true,
+        "size": "xs",
+        "margin": "md",
+        "color": "#7A8F94",
+        "weight": "bold"
+      },
+      {
+        "type": "text",
+        "text": "・お一人で抱え込まず、専門の相談窓口にご連絡ください。",
+        "wrap": true,
+        "size": "xs",
+        "margin": "sm"
+      },
+      {
+        "type": "text",
+        "text": "・緊急の場合は救急・医療機関へ相談してください。",
+        "wrap": true,
+        "size": "xs",
+        "margin": "xs"
+      },
+      {
+        "type": "text",
+        "text": "用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
+        "wrap": true,
+        "size": "xs",
+        "margin": "md",
+        "color": "#5F7278"
+      }
+    ]
+  }
 }

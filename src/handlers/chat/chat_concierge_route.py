@@ -50,6 +50,8 @@ def _append_bot_message(session: Any, payload: Dict[str, Any]) -> dict:
         bot["greeting"] = True
     if payload.get("concierge_handoff_to"):
         bot["concierge_handoff_to"] = payload["concierge_handoff_to"]
+    if payload.get("line_flex"):
+        bot["line_flex"] = payload["line_flex"]
     session.setdefault("messages", []).append(bot)
     return bot
 
