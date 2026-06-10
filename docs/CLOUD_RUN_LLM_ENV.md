@@ -30,3 +30,23 @@ OPENAI_SESSION_COST_ALERT_JPY=15
 ## timeout
 
 Cloud Run リクエスト timeout: **120s**（長い推奨フロー向け）
+
+## LINE Webhook（環境構築）
+
+手順の正本: [LINE_WEBHOOK_SETUP.md](LINE_WEBHOOK_SETUP.md)
+
+| 変数 | 必須 | 既定 | 備考 |
+|------|------|------|------|
+| `LINE_CHANNEL_SECRET` | Webhook 有効時 | — | 署名検証用。ログに出さない |
+| `LINE_CHANNEL_ACCESS_TOKEN` | 将来の Reply 用 | — | 環境構築フェーズでは未使用可 |
+| `LINE_WEBHOOK_ENABLED` | — | `false` | dev のみ `true` 推奨。本番は慎重に |
+
+**dev 例**（`medicine-recommend-dev`）:
+
+```bash
+gcloud run services update medicine-recommend-dev \
+  --region=asia-northeast1 \
+  --update-env-vars="LINE_WEBHOOK_ENABLED=true,LINE_CHANNEL_SECRET=YOUR_SECRET"
+```
+
+Webhook URL: `https://<dev-service-url>/line/webhook`

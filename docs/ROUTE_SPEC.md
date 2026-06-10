@@ -59,6 +59,8 @@
 | PUT | `/api/admin/sessions/{session_id}` | JSON | 200/404 | application/json | | |
 | POST | `/api/admin/send_message` | JSON | 200/400/404 | application/json | | |
 | POST | `/api/request_admin` | — | 200/400 | application/json | sid | |
+| GET | `/line/webhook/status` | — | 200 | application/json | — | LINE 設定状態（秘密値なし） |
+| POST | `/line/webhook` | raw JSON body | 200/400/401/503 | application/json | `X-Line-Signature` | `LINE_WEBHOOK_ENABLED=true` 時のみ。署名検証・200 のみ（Reply 未実装） |
 
 **CORS**: `config/app_config.get_cors_config()` → `CORSMiddleware`（`allow_credentials` 含む）。
 
