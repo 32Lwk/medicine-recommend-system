@@ -977,6 +977,22 @@ async def api_sessions_post(
     )
     return {"status": "ok", "message": "ユーザー情報を保存しました"}
 
+@app.get("/line/webhook/status")
+async def line_webhook_status():
+    """LINE Webhook 設定状態（秘密値は含まない）。ローカル・GCP の環境確認用。"""
+    from src.handlers.line.line_webhook import line_webhook_status as _status
+
+    return _status()
+
+
+@app.post("/line/webhook")
+async def line_webhook(request: Request):
+    """LINE Messaging API Webhook（署名検証のみ・Reply 未実装）。"""
+    from src.handlers.line.line_webhook import handle_line_webhook
+
+    return await handle_line_webhook(request)
+
+
 @app.post("/api/submit_feedback")
 async def submit_feedback(
     request: Request,
