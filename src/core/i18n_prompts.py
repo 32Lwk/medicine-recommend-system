@@ -33,3 +33,28 @@ def counseling_length_instruction(lang: str) -> str:
 
 def append_language_instruction(prompt: str, lang: str) -> str:
     return f"{prompt}\n\n【言語】\n{counseling_length_instruction(lang)}"
+
+
+_DIALECT_MARKER = "【方言・口語】"
+
+DIALECT_UNDERSTANDING_HINT = """【方言・口語】
+ユーザーは方言や口語（例: しんどい、でら痛い、あかん、〜ばい、めっちゃ）で書くことがあります。
+意味は標準語と同様に解釈し、症状名・重症度・強調表現の判断に活かしてください。"""
+
+DIALECT_RESPONSE_HINT = """【方言での応答】
+ユーザーが方言や口語で話している場合は、返答もやさしく同系統の言い回しに寄せてください（例: 「しんどいですね」「つらいですね」）。
+医療上の正確性を損なわない範囲で、過度なキャラ付けは避けてください。"""
+
+
+def append_dialect_understanding(prompt: str) -> str:
+    if _DIALECT_MARKER in prompt:
+        return prompt
+    return f"{prompt}\n\n{DIALECT_UNDERSTANDING_HINT}"
+
+
+def append_dialect_counseling_hints(system_message: str, lang: str | None = "ja") -> str:
+    if normalize_lang(lang) != "ja":
+        return system_message
+    if _DIALECT_MARKER in system_message:
+        return system_message
+    return f"{system_message}\n\n{DIALECT_UNDERSTANDING_HINT}\n{DIALECT_RESPONSE_HINT}"

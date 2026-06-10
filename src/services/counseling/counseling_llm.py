@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from openai import OpenAI
 
-from src.core.i18n_prompts import append_language_instruction, normalize_lang
+from src.core.i18n_prompts import append_dialect_counseling_hints, append_language_instruction, normalize_lang
 from src.core.llm_client import (
     chat_completion_create,
     chat_completion_create_async,
@@ -15,7 +15,25 @@ from src.core.llm_client import (
 )
 
 
+def _with_dialect_hints(messages: List[Dict[str, str]], lang: str) -> List[Dict[str, str]]:
+    if not messages or normalize_lang(lang) != "ja":
+        return messages
+    out: List[Dict[str, str]] = []
+    for msg in messages:
+        if msg.get("role") == "system":
+            out.append(
+                {
+                    **msg,
+                    "content": append_dialect_counseling_hints(msg.get("content", ""), lang),
+                }
+            )
+        else:
+            out.append(msg)
+    return out
+
+
 def _with_lang(messages: List[Dict[str, str]], lang: str) -> List[Dict[str, str]]:
+    messages = _with_dialect_hints(messages, lang)
     if not messages or lang == "ja":
         return messages
     out = list(messages)
