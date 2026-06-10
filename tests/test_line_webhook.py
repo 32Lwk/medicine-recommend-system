@@ -131,3 +131,27 @@ def test_line_webhook_text_event_schedules_background(monkeypatch):
         assert r.status_code == 200
     assert len(scheduled) == 1
     assert scheduled[0]["type"] == "message"
+
+
+def test_schedule_line_events_starts_background_thread(monkeypatch):
+    import src.handlers.line.line_dedup as line_dedup
+    import src.handlers.line.line_webhook as line_webhook
+
+    line_dedup.reset_dedup_cache_for_tests()
+    started: list = []
+
+    class FakeThread:
+        def __init__(self, target, args=(), name=None, daemon=None):
+            started.append({"target": target, "args": args, "name": name, "daemon": daemon})
+
+        def start(self):
+            started[0]["started"] = True
+
+    monkeypatch.setattr(line_webhook.threading, "Thread", FakeThread)
+    event = {"type": "message", "webhookEventId": "evt-thread-1"}
+    line_webhook._schedule_line_events([event])
+    assert len(started) == 1
+    assert started[0]["name"] == "line-webhook-events"
+    assert started[0]["daemon"] is False
+    assert started[0]["target"] is line_webhook._run_line_events_in_background
+    assert started[0]["args"][0][0]["webhookEventId"] == "evt-thread-1"

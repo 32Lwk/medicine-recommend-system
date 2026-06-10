@@ -241,8 +241,17 @@ gcloud logging read \
 | 503 secret not configured | `LINE_CHANNEL_SECRET` 未設定 |
 | ローカルに届かない | ngrok が起動中か、LINE の Webhook URL が最新か |
 | GCP に届かない | 最新リビジョンに env が入っているか、IAM で未認証呼び出し可か |
+| 検証がタイムアウト | コールドスタート。先に `GET /line/webhook/status` でウォームアップしてから「検証」 |
+| 「少々お待ちください」だけ届く | ログに `WORKER TIMEOUT` がないか。`GUNICORN_TIMEOUT=300`（`start.sh` 既定）を確認 |
+| Push が届かない | ログの `LINE push failed`。Flex 拒否時は altText のテキストフォールバックあり |
 
 Cloud Run は **未認証の POST** を受け付ける必要があります（LINE Platform からの呼び出しのため）。ingress 設定でブロックしていないか確認してください。
+
+**Cloud Run 推奨（dev）**
+
+- リクエスト timeout: **300s** 以上
+- 環境変数: `GUNICORN_TIMEOUT=300`（未設定時も `start.sh` 既定 300）
+- バックグラウンドの推奨処理が遅い場合: 「CPU を常に割り当てる」を検討
 
 ---
 
@@ -251,7 +260,7 @@ Cloud Run は **未認証の POST** を受け付ける必要があります（LI
 ### 9.1 動作概要
 
 1. ユーザーが 1:1 でテキスト送信
-2. Webhook が即 **200** を返す（処理はバックグラウンド）
+2. Webhook が即 **200** を返す（処理は **専用スレッド** のバックグラウンド）
 3. **Reply** で「症状を確認しています。少々お待ちください。」
 4. 既存 `handle_chat_post` で推奨（sid は `line:{userId}`）
 5. **Push** で Flex 2通（アドバイス bubble + 医薬品 carousel 最大3件）
@@ -269,11 +278,23 @@ Cloud Run は **未認証の POST** を受け付ける必要があります（LI
 
 `LINE_CHANNEL_ACCESS_TOKEN` 未設定時は Webhook は **200** のまま、Reply/Push はスキップされます。
 
-### 9.3 ローカル確認
+### 9.3 開発用 Flex プレビュー（エラー UI プレビューと同様）
+
+dev 環境（`APP_ENV=development`）で、LINE に **トリガー文字列だけ** を送ると LLM なしでサンプル Push されます。  
+詳細: [DEV_LINE_FLEX_PREVIEW.md](DEV_LINE_FLEX_PREVIEW.md)
+
+| トリガー | 内容 |
+|----------|------|
+| `mrcdevline00000001` | Flex 成功（アドバイス + カルーセル3件） |
+| `mrcdevline00000002`〜`05` | エスカレーション / 危機 / 質問 / フォールバック（status Flex） |
+
+Flex Simulator 用 JSON: `python scripts/export_line_flex_simulator_samples.py --all` → [Flex Message Simulator](https://developers.line.biz/flex-simulator/)
+
+### 9.4 ローカル確認
 
 ```bash
 # Flex JSON（Simulator 用）
-python scripts/line_push_preview.py --dry-run
+python scripts/line_push_preview.py --trigger flex_success --dry-run
 
 # pytest
 pytest tests/test_line_flex_messages.py tests/test_line_webhook.py -q

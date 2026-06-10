@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import json
 import logging
+import threading
 from typing import Any
 
 from fastapi import Request
@@ -45,13 +46,17 @@ def line_webhook_status() -> dict[str, Any]:
     }
 
 
-def _log_task_exception(task: asyncio.Task) -> None:
+def _run_line_events_in_background(events: list[dict[str, Any]]) -> None:
+    """
+    Gunicorn ワーカーのイベントループ外で LINE イベントを処理する。
+
+    asyncio.create_task + 長時間の handle_chat_post は WORKER TIMEOUT の原因になるため、
+    専用スレッドで asyncio.run する。
+    """
     try:
-        exc = task.exception()
-        if exc:
-            logger.error("LINE background task failed: %s", exc, exc_info=exc)
-    except asyncio.CancelledError:
-        pass
+        asyncio.run(process_line_events(events))
+    except Exception:
+        logger.exception("LINE background thread failed")
 
 
 def _schedule_line_events(events: list[dict[str, Any]]) -> None:
@@ -66,8 +71,14 @@ def _schedule_line_events(events: list[dict[str, Any]]) -> None:
         filtered.append(event)
     if not filtered:
         return
-    task = asyncio.create_task(process_line_events(filtered))
-    task.add_done_callback(_log_task_exception)
+    thread = threading.Thread(
+        target=_run_line_events_in_background,
+        args=(filtered,),
+        name="line-webhook-events",
+        daemon=False,
+    )
+    thread.start()
+    logger.info("LINE scheduled %s event(s) in background thread", len(filtered))
 
 
 async def handle_line_webhook(request: Request) -> Response:

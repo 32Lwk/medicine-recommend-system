@@ -38,7 +38,7 @@ def test_process_text_message_pushes_flex(monkeypatch):
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_message_handler.handle_chat_post", return_value=({"status": "ok"}, 200)),
-        patch("src.handlers.line.line_message_handler.get_latest_bot_message", return_value=bot_msg),
+        patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
         patch("src.handlers.line.line_message_handler.build_line_messages_from_bot_message", return_value=flex_msgs),
         patch("src.services.chat_inflight.is_chat_job_in_flight", return_value=False),
         patch("src.handlers.line.line_message_handler.persist_line_session"),
@@ -52,3 +52,55 @@ def test_process_text_message_pushes_flex(monkeypatch):
 
     mock_reply.assert_awaited_once()
     assert mock_push.await_count == 2
+
+
+def test_process_text_message_dev_preview_skips_pipeline(monkeypatch):
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    preview_bot = {
+        "type": "bot",
+        "diagnosis": {"status": "success", "medicine_type": "解熱鎮痛剤", "recommended_medicines": []},
+    }
+    flex_msgs = [{"type": "flex", "altText": "a", "contents": {}}]
+
+    with (
+        patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
+        patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
+        patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
+        patch("src.handlers.line.line_dev_triggers.try_line_dev_flex_preview", return_value=preview_bot),
+        patch("src.handlers.line.line_message_handler.handle_chat_post") as mock_post,
+        patch(
+            "src.handlers.line.line_message_handler.build_line_messages_from_bot_message",
+            return_value=flex_msgs,
+        ),
+        patch("src.handlers.line.line_message_handler.persist_line_session"),
+    ):
+        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        asyncio.run(_process_text_message("Utest", "mrcdevline00000001", "reply-tok"))
+
+    mock_post.assert_not_called()
+    mock_reply.assert_awaited_once()
+    mock_push.assert_awaited_once()
+
+
+def test_push_line_messages_falls_back_to_alt_text(monkeypatch):
+    from src.handlers.line.line_message_handler import _push_line_messages
+
+    calls: list[dict] = []
+
+    async def fake_push(user_id, messages):
+        calls.append(messages[0])
+        return messages[0].get("type") == "text"
+
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.push_messages",
+        fake_push,
+    )
+    flex = {"type": "flex", "altText": "おすすめのお薬", "contents": {}}
+    asyncio.run(_push_line_messages("Utest", [flex]))
+    assert len(calls) == 2
+    assert calls[0]["type"] == "flex"
+    assert calls[1]["type"] == "text"
+    assert calls[1]["text"] == "おすすめのお薬"

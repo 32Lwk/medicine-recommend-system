@@ -4,6 +4,7 @@ LINE Push API で Flex プレビューを送信（Webhook 不要）。
 
 使い方:
   python scripts/line_push_preview.py --dry-run
+  python scripts/line_push_preview.py --trigger flex_success --dry-run
   python scripts/line_push_preview.py --user-id Uxxxxxxxx
   python scripts/line_push_preview.py --symptom "頭が痛い" --user-id Uxxxxxxxx
 """
@@ -22,32 +23,13 @@ if PROJECT_ROOT not in sys.path:
 os.environ.setdefault("SECRET_KEY", "preview-script")
 
 
-def _sample_bot_message() -> dict:
-    return {
-        "type": "bot",
-        "diagnosis": {
-            "status": "success",
-            "medicine_type": "解熱鎮痛剤",
-            "recommended_medicines": [
-                {
-                    "product_name": "イブA錠",
-                    "manufacturer": "エスエス製薬",
-                    "efficacy": "頭痛、歯痛",
-                    "explanation": "胃にやさしい成分。おすすめです。",
-                    "usage_notes": "用法用量を守ってください。",
-                    "display_score": 85,
-                },
-                {
-                    "product_name": "カロナールA",
-                    "manufacturer": "第一三共",
-                    "efficacy": "発熱時の解熱",
-                    "explanation": "痛みが強い方に。",
-                    "usage_notes": "過量服用に注意。",
-                    "display_score": 72,
-                },
-            ],
-        },
-    }
+_PREVIEW_KINDS = (
+    "flex_success",
+    "flex_escalation",
+    "flex_crisis",
+    "flex_questions",
+    "flex_safe_error",
+)
 
 
 async def _push(user_id: str, messages: list[dict]) -> None:
@@ -71,10 +53,17 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Print JSON only, no Push")
     parser.add_argument("--user-id", default="", help="LINE userId (overrides LINE_PUSH_TO_USER_ID)")
     parser.add_argument("--symptom", default="", help="Run chat pipeline with this message")
+    parser.add_argument(
+        "--trigger",
+        choices=_PREVIEW_KINDS,
+        default="flex_success",
+        help="Dev preview sample kind (default: flex_success)",
+    )
     args = parser.parse_args()
 
     from config.line_config import LINE_PUSH_TO_USER_ID
     from src.handlers.line.flex_messages import build_line_messages_from_bot_message
+    from src.handlers.line.line_dev_triggers import sample_bot_message_for_kind
 
     user_id = (args.user_id or LINE_PUSH_TO_USER_ID).strip()
 
@@ -95,7 +84,7 @@ def main() -> None:
             raise SystemExit("No bot message from pipeline")
         messages = build_line_messages_from_bot_message(bot, lang=session.get("detected_language"), session_id=sid)
     else:
-        messages = build_line_messages_from_bot_message(_sample_bot_message())
+        messages = build_line_messages_from_bot_message(sample_bot_message_for_kind(args.trigger))
 
     if args.dry_run:
         print(json.dumps(messages, ensure_ascii=False, indent=2))

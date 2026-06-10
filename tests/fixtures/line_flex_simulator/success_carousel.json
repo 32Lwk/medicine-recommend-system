@@ -4,22 +4,16 @@
     {
       "type": "bubble",
       "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987107634115_01_7ec33082a85ac55750d6c9dfe6f62b15.jpg",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "320:213"
-      },
       "body": {
         "type": "box",
         "layout": "vertical",
+        "paddingAll": "16px",
         "contents": [
           {
             "type": "text",
             "text": "第1位",
             "size": "xs",
-            "color": "#0D9488",
+            "color": "#5AB8A8",
             "weight": "bold",
             "margin": "none"
           },
@@ -35,7 +29,7 @@
             "type": "text",
             "text": "第一三共ヘルスケア",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "wrap": true,
             "margin": "xs"
           },
@@ -47,7 +41,7 @@
             "type": "text",
             "text": "効能・効果",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "sm"
           },
@@ -62,7 +56,7 @@
             "type": "text",
             "text": "推奨理由",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "md"
           },
@@ -76,56 +70,56 @@
           {
             "type": "box",
             "layout": "baseline",
+            "margin": "md",
             "contents": [
               {
                 "type": "text",
                 "text": "おすすめ度",
                 "size": "xs",
-                "color": "#8c8c8c",
+                "color": "#7A8F94",
                 "flex": 0
               },
               {
                 "type": "text",
                 "text": " 高 (85%)",
                 "size": "sm",
-                "color": "#0D9488",
+                "color": "#5AB8A8",
                 "weight": "bold",
                 "flex": 0
               }
-            ],
-            "margin": "md"
+            ]
           },
           {
             "type": "text",
             "text": "使用上の注意: 用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
             "size": "xs",
-            "color": "#666666",
+            "color": "#5F7278",
             "wrap": true,
             "margin": "sm"
           }
-        ],
-        "paddingAll": "16px"
+        ]
+      },
+      "hero": {
+        "type": "image",
+        "url": "https://medicine.yutok.dev/static/line/medicine-noimage-hero.png",
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover"
       }
     },
     {
       "type": "bubble",
       "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987300059807_01_157a39efa376afd73107cad071b53eb1.jpg",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "320:213"
-      },
       "body": {
         "type": "box",
         "layout": "vertical",
+        "paddingAll": "16px",
         "contents": [
           {
             "type": "text",
             "text": "第2位",
             "size": "xs",
-            "color": "#0D9488",
+            "color": "#5AB8A8",
             "weight": "bold",
             "margin": "none"
           },
@@ -141,7 +135,7 @@
             "type": "text",
             "text": "エスエス製薬",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "wrap": true,
             "margin": "xs"
           },
@@ -153,13 +147,13 @@
             "type": "text",
             "text": "効能・効果",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "sm"
           },
           {
             "type": "text",
-            "text": "頭痛,歯痛,筋肉痛,発熱時の解熱,打撲痛",
+            "text": "頭痛,歯痛,生理痛,筋肉痛,発熱時の解熱",
             "size": "sm",
             "wrap": true,
             "margin": "xs"
@@ -168,13 +162,13 @@
             "type": "text",
             "text": "推奨理由",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "md"
           },
           {
             "type": "text",
-            "text": "イブプロフェンとアセトアミノフェンのダブル配合。つらい痛みに強く、胃粘膜保護成分配合です。",
+            "text": "イブプロフェン配合。痛みが強い方に。速く効く製剤です。",
             "size": "sm",
             "wrap": true,
             "margin": "xs"
@@ -182,56 +176,56 @@
           {
             "type": "box",
             "layout": "baseline",
+            "margin": "md",
             "contents": [
               {
                 "type": "text",
                 "text": "おすすめ度",
                 "size": "xs",
-                "color": "#8c8c8c",
+                "color": "#7A8F94",
                 "flex": 0
               },
               {
                 "type": "text",
-                "text": " 高 (78%)",
+                "text": " 中 (78%)",
                 "size": "sm",
-                "color": "#0D9488",
+                "color": "#C9A84C",
                 "weight": "bold",
                 "flex": 0
               }
-            ],
-            "margin": "md"
+            ]
           },
           {
             "type": "text",
-            "text": "使用上の注意: 車の運転・機械操作前は服用を避けてください。用法用量を守ってご使用ください。",
+            "text": "使用上の注意: 用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。",
             "size": "xs",
-            "color": "#666666",
+            "color": "#5F7278",
             "wrap": true,
             "margin": "sm"
           }
-        ],
-        "paddingAll": "16px"
+        ]
+      },
+      "hero": {
+        "type": "image",
+        "url": "https://medicine.yutok.dev/static/line/medicine-noimage-hero.png",
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover"
       }
     },
     {
       "type": "bubble",
       "size": "kilo",
-      "hero": {
-        "type": "image",
-        "url": "https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987316032825_01_e2f38adb6174b457a32c91269fa9cfc4.jpg",
-        "size": "full",
-        "aspectMode": "cover",
-        "aspectRatio": "320:213"
-      },
       "body": {
         "type": "box",
         "layout": "vertical",
+        "paddingAll": "16px",
         "contents": [
           {
             "type": "text",
             "text": "第3位",
             "size": "xs",
-            "color": "#0D9488",
+            "color": "#5AB8A8",
             "weight": "bold",
             "margin": "none"
           },
@@ -247,7 +241,7 @@
             "type": "text",
             "text": "佐藤製薬",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "wrap": true,
             "margin": "xs"
           },
@@ -259,13 +253,13 @@
             "type": "text",
             "text": "効能・効果",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "sm"
           },
           {
             "type": "text",
-            "text": "頭痛,歯痛,筋肉痛,発熱時の解熱,打撲痛",
+            "text": "頭痛,歯痛,筋肉痛,発熱時の解熱",
             "size": "sm",
             "wrap": true,
             "margin": "xs"
@@ -274,13 +268,13 @@
             "type": "text",
             "text": "推奨理由",
             "size": "xs",
-            "color": "#8c8c8c",
+            "color": "#7A8F94",
             "weight": "bold",
             "margin": "md"
           },
           {
             "type": "text",
-            "text": "イブプロフェンが速く溶けるジェルカプセル。眠くなる成分なしで、速く効く解熱鎮痛剤です。",
+            "text": "速く効かせたい方におすすめの解熱鎮痛剤です。",
             "size": "sm",
             "wrap": true,
             "margin": "xs"
@@ -288,35 +282,41 @@
           {
             "type": "box",
             "layout": "baseline",
+            "margin": "md",
             "contents": [
               {
                 "type": "text",
                 "text": "おすすめ度",
                 "size": "xs",
-                "color": "#8c8c8c",
+                "color": "#7A8F94",
                 "flex": 0
               },
               {
                 "type": "text",
                 "text": " 中 (72%)",
                 "size": "sm",
-                "color": "#CA8A04",
+                "color": "#C9A84C",
                 "weight": "bold",
                 "flex": 0
               }
-            ],
-            "margin": "md"
+            ]
           },
           {
             "type": "text",
-            "text": "使用上の注意: 用法用量を守り、長期連用は避けてください。",
+            "text": "使用上の注意: 15歳未満は服用しないでください。",
             "size": "xs",
-            "color": "#666666",
+            "color": "#5F7278",
             "wrap": true,
             "margin": "sm"
           }
-        ],
-        "paddingAll": "16px"
+        ]
+      },
+      "hero": {
+        "type": "image",
+        "url": "https://medicine.yutok.dev/static/line/medicine-noimage-hero.png",
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover"
       }
     }
   ]
