@@ -40,12 +40,18 @@ _STATUS_HEADER: dict[str, str] = {
 }
 
 _LINE_HERO_PLACEHOLDER_PATH = "/static/line/medicine-noimage-hero.png"
+_DEFAULT_PUBLIC_SITE_URL = "https://medicine.yutok.dev"
+
+
+def _public_site_base() -> str:
+    return (os.getenv("PUBLIC_SITE_URL") or _DEFAULT_PUBLIC_SITE_URL).strip().rstrip("/")
 
 TRUNCATE_BULLET = 20
 TRUNCATE_EFFICACY = 120
 TRUNCATE_REASON = 100
 
 MAX_CAROUSEL_ITEMS = 3
+LINE_TEXT_MAX = 5000
 FOOTER_CAUTION_JA = "用法用量を守り、症状が続く場合は医師・薬剤師にご相談ください。"
 
 _ESCALATION_STATUSES = frozenset(
@@ -321,7 +327,7 @@ def build_advice_bubble(
     }
 
 
-def resolve_medicine_hero_url(medicine: dict) -> str | None:
+def resolve_medicine_hero_url(medicine: dict) -> str:
     """商品画像 URL があればそれを、なければ No Image プレースホルダーを返す。"""
     for key in ("image_url", "hero_url", "product_image_url"):
         val = (medicine.get(key) or "").strip()
@@ -329,10 +335,7 @@ def resolve_medicine_hero_url(medicine: dict) -> str | None:
             return val
     if LINE_HERO_PLACEHOLDER_URL.startswith("https://"):
         return LINE_HERO_PLACEHOLDER_URL
-    base = (os.getenv("PUBLIC_SITE_URL") or "").strip().rstrip("/")
-    if base:
-        return f"{base}{_LINE_HERO_PLACEHOLDER_PATH}"
-    return None
+    return f"{_public_site_base()}{_LINE_HERO_PLACEHOLDER_PATH}"
 
 
 def build_medicine_bubble(
@@ -341,7 +344,7 @@ def build_medicine_bubble(
     rank: int,
     ui: dict[str, str],
     hero_url: str | None = None,
-) -> dict[str, Any]:
+) -> dict[str, Any]:  # hero_url はテスト・上書き用
     product_name = medicine.get("product_name") or ""
     manufacturer = medicine.get("manufacturer") or ""
     efficacy = truncate_text(medicine.get("efficacy"), TRUNCATE_EFFICACY)
@@ -415,15 +418,13 @@ def build_medicine_bubble(
             "contents": body_contents,
         },
     }
-    resolved_hero = hero_url or resolve_medicine_hero_url(medicine)
-    if resolved_hero:
-        bubble["hero"] = {
-            "type": "image",
-            "url": resolved_hero,
-            "size": "full",
-            "aspectRatio": "20:13",
-            "aspectMode": "cover",
-        }
+    bubble["hero"] = {
+        "type": "image",
+        "url": hero_url or resolve_medicine_hero_url(medicine),
+        "size": "full",
+        "aspectRatio": "20:13",
+        "aspectMode": "cover",
+    }
     return bubble
 
 
@@ -446,27 +447,37 @@ def _text_message(text: str) -> dict[str, Any]:
     return {"type": "text", "text": text}
 
 
-def _status_from_plain(
-    variant: str,
+def _text_messages_from_plain(text: str, *, footer: str = "") -> list[dict[str, Any]]:
+    """Web の本文相当を LINE テキストメッセージにする（5000 文字で分割）。"""
+    body = (text or "").strip()
+    if footer:
+        body = f"{body}\n\n{footer}".strip() if body else footer.strip()
+    if not body:
+        body = "—"
+    out: list[dict[str, Any]] = []
+    pos = 0
+    while pos < len(body):
+        out.append(_text_message(body[pos : pos + LINE_TEXT_MAX]))
+        pos += LINE_TEXT_MAX
+    return out
+
+
+def _text_with_hints(
+    plain: str,
+    hints: list[str],
     *,
-    title: str,
-    alt_text: str,
-    body: str,
+    footer: str,
     ui: dict[str, str],
-    hints: list[str] | None = None,
-    subtitle: str = "",
-) -> dict[str, Any]:
-    paragraphs = [p.strip() for p in body.split("\n") if p.strip()] if body else []
-    return build_status_bubble(
-        variant,
-        title=title,
-        alt_text=alt_text,
-        subtitle=subtitle,
-        body_paragraphs=paragraphs,
-        hints=hints,
-        footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
-        ui=ui,
-    )
+) -> list[dict[str, Any]]:
+    parts: list[str] = []
+    if plain:
+        parts.append(plain.strip())
+    hint_items = [h for h in hints if h]
+    if hint_items:
+        label = ui.get("status_hints_label", "次にできること")
+        parts.append(label)
+        parts.extend(f"・{h}" for h in hint_items)
+    return _text_messages_from_plain("\n".join(parts), footer=footer)
 
 
 def build_line_messages_from_bot_message(
@@ -477,27 +488,23 @@ def build_line_messages_from_bot_message(
 ) -> list[dict[str, Any]]:
     """
     bot メッセージから LINE Messaging API 用 messages 配列を生成する。
-    成功時は flex 2件（advice + carousel）。安全系・質問・案内は status Flex。
+    推奨成功時は flex 2件（advice + carousel）。それ以外の本文はテキストメッセージ。
     """
     ui = get_line_ui_strings(lang)
     code = normalize_line_lang(lang)
+    footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
 
     if bot_message.get("crisis_support") or bot_message.get("emergency_detected"):
         plain = html_to_plain_text(bot_message.get("content"))
-        return [
-            build_status_bubble(
-                "critical",
-                title=ui.get("status_critical_title", "重要なお知らせ"),
-                alt_text=ui.get("status_critical_title", "重要なお知らせ"),
-                body_paragraphs=[plain] if plain else [],
-                hints=[
-                    ui.get("status_critical_hint_1", ""),
-                    ui.get("status_critical_hint_2", ""),
-                ],
-                footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
-                ui=ui,
-            )
-        ]
+        return _text_with_hints(
+            plain,
+            [
+                ui.get("status_critical_hint_1", ""),
+                ui.get("status_critical_hint_2", ""),
+            ],
+            footer=footer,
+            ui=ui,
+        )
 
     diagnosis = bot_message.get("diagnosis")
     if isinstance(diagnosis, dict):
@@ -512,28 +519,14 @@ def build_line_messages_from_bot_message(
             if not body:
                 body = ui.get("pharmacist_fallback", "")
             variant = "critical" if status == "escalation_required" else "caution"
-            title = (
-                ui.get("status_critical_title", "重要なお知らせ")
-                if variant == "critical"
-                else ui.get("status_caution_title", "ご確認ください")
-            )
             hints = (
                 [ui.get("status_escalation_hint_1", ""), ui.get("status_escalation_hint_2", "")]
                 if variant == "critical"
                 else [ui.get("status_caution_hint_1", ""), ui.get("status_caution_hint_2", "")]
             )
-            return [
-                build_status_bubble(
-                    variant,
-                    title=title,
-                    alt_text=title,
-                    subtitle=ui.get("status_escalation_subtitle", "") if variant == "critical" else "",
-                    body_paragraphs=[body],
-                    hints=hints,
-                    footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
-                    ui=ui,
-                )
-            ]
+            subtitle = ui.get("status_escalation_subtitle", "") if variant == "critical" else ""
+            parts = [p for p in (subtitle, body) if p]
+            return _text_with_hints("\n".join(parts), hints, footer=footer, ui=ui)
 
     medicines: list[dict] = []
     if isinstance(diagnosis, dict):
@@ -547,50 +540,31 @@ def build_line_messages_from_bot_message(
             questions = diagnosis.get("additional_questions") or diagnosis.get("critical_questions") or []
         if questions:
             q_lines = [str(q) for q in questions if q]
-            return [
-                build_status_bubble(
-                    "notice",
-                    title=ui.get("status_notice_title", "追加でお聞きしたいこと"),
-                    alt_text=ui.get("status_notice_title", "追加でお聞きしたいこと"),
-                    subtitle=ui.get("status_questions_intro", ""),
-                    body_paragraphs=[],
-                    hints=q_lines,
-                    footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
-                    ui=ui,
-                )
-            ]
-        plain = html_to_plain_text(bot_message.get("content"))
-        if plain:
-            return [
-                _status_from_plain(
-                    "info",
-                    title=ui.get("status_info_title", "ご案内"),
-                    alt_text=ui.get("status_info_title", "ご案内"),
-                    body=plain,
-                    ui=ui,
-                )
-            ]
-        return [
-            build_status_bubble(
-                "caution",
-                title=ui.get("status_caution_title", "ご確認ください"),
-                alt_text=ui.get("pharmacist_fallback", ""),
-                body_paragraphs=[ui.get("pharmacist_fallback", "")],
-                hints=[ui.get("status_caution_hint_2", "")],
-                footer_note=ui.get("footer_caution", FOOTER_CAUTION_JA),
+            return _text_with_hints(
+                ui.get("status_questions_intro", ""),
+                q_lines,
+                footer=footer,
                 ui=ui,
             )
-        ]
+        plain = html_to_plain_text(bot_message.get("content"))
+        if plain:
+            return _text_messages_from_plain(plain, footer=footer)
+        return _text_with_hints(
+            ui.get("pharmacist_fallback", ""),
+            [ui.get("status_caution_hint_2", "")],
+            footer=footer,
+            ui=ui,
+        )
 
     medicine_type = ""
     if isinstance(diagnosis, dict):
         medicine_type = str(diagnosis.get("medicine_type") or "OTC医薬品")
     intro = format_intro(ui, medicine_type=medicine_type, count=len(medicines[:MAX_CAROUSEL_ITEMS]))
     bullets = build_advice_bullets(medicines, ui)
-    footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
+    advice_footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
     if isinstance(diagnosis, dict) and diagnosis.get("doctor_consultation"):
-        footer = f"{footer}\n{truncate_text(diagnosis.get('doctor_consultation'), 200)}"
+        advice_footer = f"{advice_footer}\n{truncate_text(diagnosis.get('doctor_consultation'), 200)}"
 
-    advice = build_advice_bubble(intro=intro, bullets=bullets, footer_note=footer, ui=ui)
+    advice = build_advice_bubble(intro=intro, bullets=bullets, footer_note=advice_footer, ui=ui)
     carousel = build_recommendation_carousel(medicines, ui)
     return [advice, carousel]

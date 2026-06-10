@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import httpx
@@ -12,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 LINE_REPLY_URL = "https://api.line.me/v2/bot/message/reply"
 LINE_PUSH_URL = "https://api.line.me/v2/bot/message/push"
+LINE_LOADING_START_URL = "https://api.line.me/v2/bot/chat/loading/start"
+LINE_LOADING_SECONDS_MIN = 5
+LINE_LOADING_SECONDS_MAX = 60
 
 _http_client: httpx.AsyncClient | None = None
 
@@ -79,4 +83,30 @@ async def push_messages(user_id: str, messages: list[dict[str, Any]]) -> bool:
         LINE_PUSH_URL,
         {"to": user_id, "messages": messages},
         log_label="push",
+    )
+
+
+def _normalize_loading_seconds(raw: int | None) -> int:
+    """LINE loading API: 5〜60 秒、5 秒刻み。"""
+    if raw is None:
+        try:
+            raw = int(os.getenv("LINE_LOADING_SECONDS", "60"))
+        except (TypeError, ValueError):
+            raw = 60
+    clamped = max(LINE_LOADING_SECONDS_MIN, min(LINE_LOADING_SECONDS_MAX, raw))
+    return 5 * round(clamped / 5)
+
+
+async def start_loading_animation(user_id: str, *, loading_seconds: int | None = None) -> bool:
+    """
+    1:1 チャットで LINE 標準のローディング表示（…）を出す。
+    公式アカウントから次のメッセージが届くと自動で消える。
+    """
+    if not user_id:
+        return False
+    seconds = _normalize_loading_seconds(loading_seconds)
+    return await _post_json(
+        LINE_LOADING_START_URL,
+        {"chatId": user_id, "loadingSeconds": seconds},
+        log_label="loading",
     )
