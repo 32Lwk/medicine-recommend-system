@@ -1,6 +1,67 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月2日**（ユーザー嗜好 LLM 統合・花粉症推奨強化・LLM 既定プロファイル gpt5）
+**最終更新日: 2026年6月10日**（LINE Flex Message E2E・Reply/Push 連携）
+
+---
+
+## 2026年6月10日 — LINE Flex Message E2E
+
+### 概要
+
+- **Webhook → 推奨パイプライン → Flex Push**: 1:1 テキストを既存 `handle_chat_post` に渡し、結果を Flex Message（アドバイス bubble + 医薬品 carousel 最大3件）で Push。即時 Reply は「症状を確認しています。少々お待ちください。」のみ。
+- **セッション**: sid は `line:{userId}` 形式。DB からメッセージ履歴を復元し、パイプライン完了後に最新 bot メッセージを DB から取得して Flex 化（Cookie 肥大化対策後も正しく動作）。
+- **安全性**: 危機・緊急・エスカレーション（`escalation_required` / `no_candidates` / `error` / `blocked`）は Flex ではなくテキスト Push。既存 `manual_reply_queue`・管理画面エスカレーションは維持。
+- **重複防止**: `webhookEventId` をメモリ内 TTL（120秒）で去重。同一 sid の並行処理は `chat_inflight.is_chat_job_in_flight` で検知し待機テキストを返す。
+- **イベント種別**: `follow` はウェルカム Reply、`unfollow` はログのみ、グループチャット・非テキスト（スタンプ・画像）は案内テキストで応答。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/flex_messages.py` | Flex JSON ビルダー（純関数）。HTML bot メッセージをパースしアドバイス bubble + 医薬品 carousel を生成。hero 画像は v1 省略。ja/en/ko/zh UI 文言対応 |
+| `src/handlers/line/line_i18n.py` | Flex UI 文言 i18n（ランク・スコア・カルーセル alt 等） |
+| `src/handlers/line/line_reply.py` | LINE Reply / Push API クライアント（httpx）。lifespan 注入クライアント優先、未注入時は一時クライアント |
+| `src/handlers/line/line_session.py` | `line:{userId}` sid 生成、DB 復元・永続化、`get_latest_bot_message` |
+| `src/handlers/line/line_dedup.py` | `webhookEventId` メモリ内去重（TTL 120秒） |
+| `src/handlers/line/line_message_handler.py` | イベント処理本体。Reply → `handle_chat_post`（`asyncio.to_thread`）→ Push。エラー時は安全テキスト + alert_email 通知 |
+| `scripts/line_push_preview.py` | Webhook 不要の Push プレビュー（`--dry-run` / `--user-id` / `--symptom`） |
+| `tests/fixtures/line_flex_success.json` | Flex 成功応答のゴールデンフィクスチャ |
+| `tests/test_line_flex_messages.py` | Flex ビルダー単体テスト |
+| `tests/test_line_message_handler.py` | メッセージハンドラ統合テスト |
+| `tests/test_line_reply.py` | Reply/Push API クライアントテスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `main.py` | FastAPI `lifespan` で `httpx.AsyncClient` を生成し `line_reply.set_http_client` に注入 |
+| `config/line_config.py` | `LINE_PUSH_TO_USER_ID` 追加（プレビュースクリプト用） |
+| `.env.example` | `LINE_CHANNEL_ACCESS_TOKEN`・`LINE_PUSH_TO_USER_ID` のコメント整備 |
+| `src/handlers/line/__init__.py` | モジュール説明を Webhook + Reply/Push + Flex に更新 |
+| `src/handlers/line/line_webhook.py` | 署名検証後即 200、イベントは `asyncio.create_task` でバックグラウンド処理。去重・token 未設定警告 |
+| `src/services/chat_inflight.py` | `is_chat_job_in_flight(sid)` 追加（LINE 並行メッセージ制御） |
+| `tests/test_line_webhook.py` | バックグラウンドスケジュールのテスト追加 |
+
+### ドキュメント
+
+| パス | 内容 |
+|------|------|
+| `docs/LINE_WEBHOOK_SETUP.md` | 「未実装」記述を削除。Flex・Reply/Push・ローカル確認手順・Cloud Run 運用注意を追記 |
+| `docs/ROUTE_SPEC.md` | `POST /line/webhook` のシーケンス・HTTP ステータス・環境変数表を追記 |
+| `docs/ADMIN_PII_PLAYBOOK.md` | LINE セッション ID（`line:Uxxxxxxxx`）の扱いを追記 |
+| `docs/ARCHITECTURE_MULTI_AGENT.md` | LINE 経由相談の sid 形式と管理画面参照を追記 |
+
+### 環境変数
+
+| 変数 | 用途 |
+|------|------|
+| `LINE_CHANNEL_SECRET` | Webhook 署名検証（必須） |
+| `LINE_CHANNEL_ACCESS_TOKEN` | Reply / Push API（返信時必須） |
+| `LINE_WEBHOOK_ENABLED` | `true` で `POST /line/webhook` 有効化 |
+| `LINE_PUSH_TO_USER_ID` | `scripts/line_push_preview.py` 用（Webhook では未使用） |
+| `DATABASE_URL` | セッション永続化（推奨） |
+
+---
 
 本ドキュメントは、チャット型医薬品相談ツールの開発・更新の記録です。プロジェクトの概要・セットアップ・使い方は [README.md](README.md) を参照してください。アーキテクチャ正本は [docs/ARCHITECTURE_MULTI_AGENT.md](docs/ARCHITECTURE_MULTI_AGENT.md)。
 

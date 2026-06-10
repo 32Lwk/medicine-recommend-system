@@ -82,6 +82,8 @@ sequenceDiagram
 
 手動キュー: `priority_tag`（critical_crisis > critical_medical > store_*）、一覧 120 文字 / 詳細 800 文字抜粋。PII は自動マスクせず運用 playbook 参照（`docs/ADMIN_PII_PLAYBOOK.md`）。
 
+LINE Messaging API 経由の相談はセッション ID が `line:{userId}` 形式（例: `line:Uxxxxxxxx`）。管理画面のセッション一覧で Web ユーザーと同様に参照できる。
+
 ## 緊急メール通知
 
 `emergency_dispatch` がキュー登録時に `emergency_notify.notify_emergency_detected` を呼ぶ。宛先は管理設定の `alert_email`（`budget_guard.get_alert_email`）。`EMERGENCY_EMAIL_ENABLED=false` で無効化。SMTP 未設定時は `smtp_not_configured` をキュー `notification_status.email` に記録。

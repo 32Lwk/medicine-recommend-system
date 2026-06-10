@@ -95,3 +95,39 @@ def test_line_webhook_valid_signature_returns_200(monkeypatch):
         )
         assert r.status_code == 200
         assert r.json() == {"status": "ok", "events_received": 1}
+
+
+def test_line_webhook_text_event_schedules_background(monkeypatch):
+    secret = "test-channel-secret"
+    monkeypatch.setenv("LINE_CHANNEL_ACCESS_TOKEN", "test-access-token")
+    _reload_line_modules(monkeypatch, enabled=True, secret=secret)
+    import main
+    import src.handlers.line.line_dedup as line_dedup
+    import src.handlers.line.line_webhook as line_webhook
+
+    line_dedup.reset_dedup_cache_for_tests()
+    scheduled = []
+
+    def fake_schedule(events):
+        scheduled.extend(events)
+
+    monkeypatch.setattr(line_webhook, "_schedule_line_events", fake_schedule)
+
+    event = {
+        "type": "message",
+        "webhookEventId": "evt-test-1",
+        "message": {"type": "text", "text": "頭が痛い"},
+        "source": {"type": "user", "userId": "Utest"},
+        "replyToken": "token",
+    }
+    body = json.dumps({"events": [event]}).encode("utf-8")
+    sig = _sign(body, secret)
+    with TestClient(main.app) as c:
+        r = c.post(
+            "/line/webhook",
+            content=body,
+            headers={"X-Line-Signature": sig, "Content-Type": "application/json"},
+        )
+        assert r.status_code == 200
+    assert len(scheduled) == 1
+    assert scheduled[0]["type"] == "message"
