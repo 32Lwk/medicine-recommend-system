@@ -19,7 +19,7 @@ Act as a **senior pharmacist (OTC / self-medication, Japan)** and **recommendati
 
 - **Selection authority**: `rule_based_recommendation` + scoring modules choose medicines. LLM is for NLU, follow-up questions, explanations—not primary ranking.
 - **Not a substitute** for pharmacist/doctor judgment. Escalate red flags and doctor referral paths per constants.
-- **Claims**: Align with `docs/アプリ概要.md`. Do not invent efficacy or regulatory claims.
+- **Claims**: Align with `docs/public/アプリ概要.md`. Do not invent efficacy or regulatory claims.
 - **Runtime truth**: Scoring and ranking use **only** bundled files under `data/` (see below)—not live web APIs and not Neon PostgreSQL.
 
 ## Data sources: what scoring actually reads
@@ -121,7 +121,7 @@ When evaluating a recommendation, **always ground claims in CSV rows**: look up 
 | PMDA 副作用情報 | https://www.info.pmda.go.jp/fsearchnew/jsp/menu_fukusayou_base.jsp | vs `medicine_side_effects.csv` |
 | PMDA（機関） | https://www.pmda.go.jp/ | Authority citation |
 | JAPIC | https://www.japic.or.jp | 添付文書・補助確認 |
-| 日本製薬団体連合会 | http://www.fpmaj.gr.jp | `docs/アプリ概要.md` 出典 |
+| 日本製薬団体連合会 | http://www.fpmaj.gr.jp | `docs/public/アプリ概要.md` 出典 |
 
 **Tier 1.5 — Product cross-check (after Tier 1, before Tier 2/3)**
 
@@ -201,7 +201,7 @@ If external fetch fails (site down, name mismatch), state that explicitly and fa
 | Diversity | `src/core/recommendation/ingredient_diversity.py` | Top-N with ingredient spread |
 | Constants | `src/core/recommendation_constants.py` | Red flags, weights hooks, symptom dictionaries |
 | GPT fallback (legacy/aux) | `src/core/medicine/medicine_recommendation_gpt.py` | Not the primary path for Physical |
-| Multi-agent | `docs/ARCHITECTURE_MULTI_AGENT.md` | Triage → PhysicalOrchestrator → same rule core |
+| Multi-agent | `docs/dev/ARCHITECTURE_MULTI_AGENT.md` | Triage → PhysicalOrchestrator → same rule core |
 
 ## Multilingual inputs
 
@@ -236,7 +236,7 @@ When asked whether a recommendation is **appropriate**, work through this checkl
 2. **Safety gates (before ranking matters)**
    - Red flags / urgent keywords → doctor referral, not OTC push (`RED_FLAG_SYMPTOMS`, `config/keywords.py`).
    - Burn severity, influenza risk, pregnancy blocks, pediatric filters.
-   - Emergency / OTC lock from agent routes (`docs/ARCHITECTURE_MULTI_AGENT.md`).
+   - Emergency / OTC lock from agent routes (`docs/dev/ARCHITECTURE_MULTI_AGENT.md`).
 
 3. **Candidate pool**
    - `medicine_type` and efficacy filters shrink the pool correctly.
@@ -289,7 +289,7 @@ When asked whether a recommendation is **appropriate**, work through this checkl
 python analyze_recommendations.py --log log/app.log --report all
 ```
 
-4. For isolated scoring units, see `tests/test_recommendation_output.py` and symptom-specific scripts under repo root (`test_menstrual_recommendations.py`, etc.).
+4. For isolated scoring units, see `tests/core/test_recommendation_output.py` is replaced by `scripts/recommendation_output_report.py`; symptom suites live under `tests/integration/` (e.g. `test_menstrual_recommendations.py`).
 5. After code changes, prefer **targeted pytest** over full manual chat passes.
 
 ## Development consultation
@@ -335,12 +335,12 @@ When verification finds **data inconsistency**:
 
 ## References (project docs)
 
-- Product & algorithm intent: `docs/アプリ概要.md`
-- Data provenance (PMDA): `docs/会社向け概要書類.md` §10.2.1
-- Dev prompts & review template: `docs/開発用プロンプト.md`
-- Log analysis: `docs/ANALYZE_SCRIPTS_OVERVIEW.md`
-- Multi-agent & emergency: `docs/ARCHITECTURE_MULTI_AGENT.md`
-- Improvement backlog: `docs/改善計画.md`
+- Product & algorithm intent: `docs/public/アプリ概要.md`
+- Data provenance (PMDA): `docs/public/会社向け概要書類.md` §10.2.1
+- Dev prompts & review template: `docs/planning/開発用プロンプト.md`
+- Log analysis: `docs/analysis/ANALYZE_SCRIPTS_OVERVIEW.md`
+- Multi-agent & emergency: `docs/dev/ARCHITECTURE_MULTI_AGENT.md`
+- Improvement backlog: `docs/planning/改善計画.md`
 - External GL / Tier 3 URLs: [references/guideline-sources.md](references/guideline-sources.md)
 - Golden cases: [references/golden-cases-index.md](references/golden-cases-index.md)
 - Evaluation template: [references/evaluation-report-template.md](references/evaluation-report-template.md)

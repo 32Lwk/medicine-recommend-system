@@ -4,7 +4,7 @@
 
 ## β版について
 
-研究開発中の試験運用版です。公開対象は企業・行政・薬剤師・登録販売者など専門関係者に限定し、一般公開はしていません。詳細は [アプリ概要](docs/アプリ概要.md) を参照してください。
+研究開発中の試験運用版です。公開対象は企業・行政・薬剤師・登録販売者など専門関係者に限定し、一般公開はしていません。詳細は [アプリ概要](docs/public/アプリ概要.md) を参照してください。
 
 ## クイックスタート
 
@@ -25,17 +25,18 @@ python app.py
 # 既定で FastAPI（main:app）。http://localhost:5000（PORT 未設定時）
 ```
 
-詳細は [docs/FASTAPI_ARCHITECTURE.md](docs/FASTAPI_ARCHITECTURE.md) を参照してください。
+詳細は [docs/dev/FASTAPI_ARCHITECTURE.md](docs/dev/FASTAPI_ARCHITECTURE.md) を参照してください。
 
-管理者画面は `http://localhost:5000/admin`、詳細なセットアップ・環境変数・API一覧は [docs/会社向け概要書類.md](docs/会社向け概要書類.md) や [docs/アプリ概要.md](docs/アプリ概要.md) を参照してください。
+管理者画面は `http://localhost:5000/admin`、詳細なセットアップ・環境変数・API一覧は [docs/public/会社向け概要書類.md](docs/public/会社向け概要書類.md) や [docs/public/アプリ概要.md](docs/public/アプリ概要.md) を参照してください。
 
 ## ドキュメント・リンク
 
-- [アプリ概要](docs/アプリ概要.md)
-- [開発・更新履歴](CHANGELOG.md) — 機能変更時は `docs/ARCHITECTURE_MULTI_AGENT.md` 等の正本ドキュメントと相互リンクを PR で確認すること
-- [開発用エラー UI プレビュー（7パターン）](docs/DEV_ERROR_UI_PREVIEW.md) — `APP_ENV=development` 時のみ
-- [プライバシーポリシー](docs/プライバシーポリシー.md) / [免責事項・利用規約](docs/免責事項・利用規約.md)
-- [運営者情報・連絡先](docs/運営者情報.md)  
+- [ドキュメント索引](docs/README.md)
+- [アプリ概要](docs/public/アプリ概要.md)
+- [開発・更新履歴](CHANGELOG.md) — 機能変更時は `docs/dev/ARCHITECTURE_MULTI_AGENT.md` 等の正本ドキュメントと相互リンクを PR で確認すること
+- [開発用エラー UI プレビュー（7パターン）](docs/ops/DEV_ERROR_UI_PREVIEW.md) — `APP_ENV=development` 時のみ
+- [プライバシーポリシー](docs/public/プライバシーポリシー.md) / [免責事項・利用規約](docs/public/免責事項・利用規約.md)
+- [運営者情報・連絡先](docs/public/運営者情報.md)  
   不具合報告: https://forms.gle/UB8kZHd4VHenmRUN6  
   リポジトリ: https://github.com/32Lwk
 

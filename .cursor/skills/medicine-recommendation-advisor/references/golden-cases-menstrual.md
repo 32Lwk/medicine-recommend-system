@@ -1,6 +1,6 @@
 # Golden cases: 月経・女性特有
 
-出典: `test_menstrual_recommendations.py`
+出典: `tests/integration/test_menstrual_recommendations.py`
 
 ---
 

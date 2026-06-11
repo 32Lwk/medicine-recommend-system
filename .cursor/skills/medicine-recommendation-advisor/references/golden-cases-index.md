@@ -16,7 +16,7 @@
 | [golden-cases-diagnosis-mental.md](golden-cases-diagnosis-mental.md) | mental_health 代表12件 | `GC-DX-MH` |
 | [feedback-integration.md](feedback-integration.md) | Feedback UI / admin 連携設計 | — |
 
-出典: `tests/test_comprehensive_integration.py`, `tests/test_recommendation_output.py`, `test_menstrual_recommendations.py`
+出典: `tests/test_comprehensive_integration.py`, `scripts/recommendation_output_report.py`, `tests/integration/test_menstrual_recommendations.py`
 
 ## 件数（目安）
 
