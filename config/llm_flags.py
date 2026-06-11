@@ -17,7 +17,7 @@ def is_agent_enabled() -> bool:
     """
     エージェント経路のキルスイッチ。
     ON: 全セッションで ChatOrchestrator 経路。OFF: 従来経路のみ。
-    本番既定は ON（docs/ARCHITECTURE_MULTI_AGENT.md 参照）。
+    本番既定は ON（docs/dev/ARCHITECTURE_MULTI_AGENT.md 参照）。
     """
     return _flag("LLM_AGENT_ENABLED", True)
 

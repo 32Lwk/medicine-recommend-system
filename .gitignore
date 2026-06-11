@@ -37,6 +37,7 @@ log/**
 !log/reviews/
 !log/reviews/README.md
 *.jsonl
+!tests/fixtures/**/*.jsonl
 
 # PowerShell scripts (local use only)
 git-sync.ps1
@@ -53,3 +54,10 @@ test_snapshots/
 # Python 仮想環境
 .venv/
 .venv*/
+
+# docs 生成物・一時ファイル
+docs/**/.DS_Store
+docs/**/*.bkp
+docs/**/*.dtmp
+docs/**/*.aux
+docs/**/*.out

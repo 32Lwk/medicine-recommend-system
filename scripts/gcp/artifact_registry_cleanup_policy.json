@@ -1,0 +1,18 @@
+[
+  {
+    "name": "keep-recent-images",
+    "action": { "type": "Keep" },
+    "mostRecentVersions": {
+      "packageNamePrefixes": [""],
+      "keepCount": 5
+    }
+  },
+  {
+    "name": "delete-older-images",
+    "action": { "type": "Delete" },
+    "condition": {
+      "tagState": "any",
+      "olderThan": "86400s"
+    }
+  }
+]

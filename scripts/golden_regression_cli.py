@@ -7,6 +7,6 @@ import sys
 
 if __name__ == "__main__":
     rc = subprocess.call(
-        [sys.executable, "-m", "pytest", "tests/test_golden_regression.py", "-q"],
+        [sys.executable, "-m", "pytest", "tests/integration/test_golden_regression.py", "-q"],
     )
     raise SystemExit(rc)

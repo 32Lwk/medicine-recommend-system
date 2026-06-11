@@ -6,18 +6,28 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # 依存関係を先にインストールしてレイヤキャッシュを効かせる
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir -r requirements-prod.txt
 
-# アプリコードをコピー
-COPY . .
+# 本番に必要なファイルのみコピー（docs の発表資料等は除外してイメージを軽量化）
+COPY start.sh main.py ./
+COPY config/ config/
+COPY src/ src/
+COPY templates/ templates/
+COPY static/ static/
+COPY data/ data/
+COPY docs/プライバシーポリシー.md \
+     docs/免責事項・利用規約.md \
+     docs/医薬品相談先.md \
+     docs/アプリ概要.md \
+     docs/
+COPY docs/concierge/ docs/concierge/
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）
 # FastAPI は ASGI のため sync ワーカー不可（未設定時のフォールバック）
 ENV PORT=8080 \
     GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker
 
-# Gunicorn 起動スクリプトを実行可能に
 RUN chmod +x start.sh
 
 # FastAPI（main:app）を Gunicorn + UvicornWorker で起動

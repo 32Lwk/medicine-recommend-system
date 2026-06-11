@@ -31,13 +31,13 @@ Act as a **senior healthcare UX designer**, **medical copy editor** (OTC / self-
 | Domain | Authority |
 |--------|-----------|
 | Layout, typography, spacing, emoji, illustrations | Full decision within constraints below |
-| Medical / legal copy tone | Must match `docs/アプリ概要.md`; no invented claims |
-| Technical stack description | Only facts from `docs/アプリ概要.md`, `README.md`, `docs/FASTAPI_ARCHITECTURE.md` |
+| Medical / legal copy tone | Must match `docs/public/アプリ概要.md`; no invented claims |
+| Technical stack description | Only facts from `docs/public/アプリ概要.md`, `README.md`, `docs/dev/FASTAPI_ARCHITECTURE.md` |
 | β scope and audience | Specialists (pharmacists, regulators, researchers)—not general consumer launch |
 
 **Source of truth (read before implementing):**
 
-- `docs/アプリ概要.md`
+- `docs/public/アプリ概要.md`
 - `templates/about/` (`base_about.html`, `index.html`, `subpage.html`)
 - `static/css/about.css` (extends chat header; **no purple**)
 - `src/content/about_i18n.py` (ja / en / ko / zh)
@@ -129,7 +129,7 @@ Soft gentle Japanese healthcare pamphlet illustration, match sage-green and crea
 | `static/img/about/flowchart.png` | Architecture (tech section) |
 | `static/img/about/language.png` | Multilingual feature |
 | `static/img/about/recommend.png` | Recommendation flow |
-| `docs/未踏/docs/image/` | Trust / demo references if appropriate |
+| `docs/archive/mitou/docs/image/` | Trust / demo references if appropriate |
 
 Save **new** AI illustrations under `static/img/about/generated/` (text-free only).
 
@@ -247,7 +247,7 @@ Reference saved files via `url_for('static', filename='img/about/generated/...')
 - [ ] ja / en / ko / zh render
 - [ ] Mobile 375px and desktop 1280px
 - [ ] Scroll areas use `app-scrollbar`
-- [ ] Copy matches `docs/アプリ概要.md` (no invented stack)
+- [ ] Copy matches `docs/public/アプリ概要.md` (no invented stack)
 - [ ] Every `<img>` has non-empty `alt` (localized via i18n where applicable)
 - [ ] No new images contain visible text; at most one `Demo.png` in “How it works”
 - [ ] Hero does not use pamphlet PNG with embedded Japanese (unless user explicitly requested)
@@ -290,7 +290,7 @@ If `frontend-design` skill is loaded: use its typography and layout craft **only
 - `static/favicon.ico.png` — official app icon (pill in speech bubble)
 - `static/pamphlet_C_16x9/pamphlet_C_16x9_v01_sage_mic.png` — pamphlet mood (wordless gen targets this palette)
 - `static/pamphlet_gentle/pamphlet_gentle_pattern_A_cream_mint.png` — background pattern
-- `docs/アプリ概要.md`
-- `docs/プライバシーポリシー.md`, `docs/免責事項・利用規約.md`
-- `docs/SCROLLBAR_STYLE.md`
+- `docs/public/アプリ概要.md`
+- `docs/public/プライバシーポリシー.md`, `docs/public/免責事項・利用規約.md`
+- `docs/ui/SCROLLBAR_STYLE.md`
 - `main.py` — `_render_about_page`, `/about` routes

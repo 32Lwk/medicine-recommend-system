@@ -1,0 +1,51 @@
+# Git / IDE / ローカル専用
+.git
+.github
+.cursor
+.vscode
+.idea
+
+# Python 仮想環境・キャッシュ
+.venv
+.venv*/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+*.egg-info
+dist
+build
+
+# 機密・ローカル設定
+.env
+*.env
+.tmp_*
+
+# ログ（本番は実行時に log/ を自動作成）
+log
+
+# テスト・開発用
+tests
+test_snapshots
+test_report.html
+scripts
+
+# ドキュメント（本番で必要な Markdown のみ Dockerfile で個別 COPY）
+docs/**
+!docs/プライバシーポリシー.md
+!docs/免責事項・利用規約.md
+!docs/医薬品相談先.md
+!docs/アプリ概要.md
+!docs/concierge/
+!docs/concierge/**
+
+# デプロイ設定（コンテナ内不要）
+render.yaml
+README.md
+CHANGELOG.md
+Makefile
+git-sync.ps1
+
+# iOS 等（.gitignore と同様）
+ios

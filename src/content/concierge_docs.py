@@ -8,11 +8,11 @@ from typing import Dict, FrozenSet, Tuple
 _DOCS_ROOT = Path(__file__).resolve().parents[2] / "docs"
 
 DOC_INTENT_TO_FILENAME: Dict[str, str] = {
-    "doc_privacy": "プライバシーポリシー.md",
-    "doc_terms": "免責事項・利用規約.md",
+    "doc_privacy": "public/プライバシーポリシー.md",
+    "doc_terms": "public/免責事項・利用規約.md",
     "doc_operator": "concierge/お問い合わせ・試験運用.md",
-    "doc_consultation": "医薬品相談先.md",
-    "doc_app_overview": "アプリ概要.md",
+    "doc_consultation": "public/医薬品相談先.md",
+    "doc_app_overview": "public/アプリ概要.md",
 }
 
 DOC_INTENT_TITLES: Dict[str, str] = {
