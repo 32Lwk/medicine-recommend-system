@@ -31,12 +31,10 @@ test_snapshots
 test_report.html
 scripts
 
-# ドキュメント（本番で必要な Markdown のみ Dockerfile で個別 COPY）
+# ドキュメント（Concierge 用の public/ と concierge/ のみ Dockerfile で COPY）
 docs/**
-!docs/プライバシーポリシー.md
-!docs/免責事項・利用規約.md
-!docs/医薬品相談先.md
-!docs/アプリ概要.md
+!docs/public/
+!docs/public/**
 !docs/concierge/
 !docs/concierge/**
 

@@ -16,11 +16,7 @@ COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
 COPY data/ data/
-COPY docs/プライバシーポリシー.md \
-     docs/免責事項・利用規約.md \
-     docs/医薬品相談先.md \
-     docs/アプリ概要.md \
-     docs/
+COPY docs/public/ docs/public/
 COPY docs/concierge/ docs/concierge/
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）
