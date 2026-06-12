@@ -5,7 +5,8 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-medicine-recommend}"
 REGION="${REGION:-asia-northeast1}"
-REPOSITORY="${REPOSITORY:-medicine-recommend}"
+# Cloud Run 継続的デプロイが push するリポジトリ（console / ビルドログで確認）
+REPOSITORY="${REPOSITORY:-cloud-run-source-deploy}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 POLICY_FILE="${SCRIPT_DIR}/artifact_registry_cleanup_policy.json"
 
