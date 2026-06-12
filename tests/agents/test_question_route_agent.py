@@ -6,8 +6,13 @@ from src.services.routing_context import RoutingContext
 
 
 @patch.dict("os.environ", {"LLM_AGENT_ENABLED": "1"}, clear=False)
+@patch("src.services.medicine_discovery_routing.session_is_medical_cold_start", return_value=False)
+@patch(
+    "src.handlers.chat.chat_question_route._should_route_medicine_discovery_to_recommendation",
+    return_value=False,
+)
 @patch("src.handlers.chat.chat_question_route._execute_medicine_qa_flow")
-def test_ask_triage_short_circuits_to_qa(mock_qa):
+def test_ask_triage_short_circuits_to_qa(mock_qa, _discovery, _cold):
     from src.handlers.chat.chat_question_route import QuestionFlowResult
 
     mock_qa.return_value = QuestionFlowResult(

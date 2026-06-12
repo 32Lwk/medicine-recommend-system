@@ -403,6 +403,26 @@ def run_chat_post_pipeline(
     return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
 
+async def run_chat_post_pipeline_async(
+    session: Any,
+    client_info: ChatClientInfo,
+    message: str,
+    sid: Optional[str],
+    monitor: Any,
+) -> ResponseTuple:
+    """async エントリ（本体は sync pipeline をワーカースレッドで実行）。"""
+    import asyncio
+
+    return await asyncio.to_thread(
+        run_chat_post_pipeline,
+        session,
+        client_info,
+        message,
+        sid,
+        monitor,
+    )
+
+
 def _run_moderation_if_needed(ctx: ChatPostContext) -> None:
     from src.agents.moderation_agent import run_moderation_agent, should_run_moderation
     from src.agents.safety_gate import _borderline_crisis_hint

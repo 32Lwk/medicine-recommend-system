@@ -154,6 +154,23 @@ def maybe_persist_session_activity(session_id, data, min_interval_sec=None):
     _last_db_persist_at[session_id] = now
 
 
+def persist_session_attributes_only(sid, session_data: dict) -> None:
+    """
+    属性-only 更新の永続化。
+    LINE セッションは throttle、Web は即時 save。
+    """
+    if not sid:
+        return
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _: False  # type: ignore[misc, assignment]
+    if is_line_session_id(sid):
+        maybe_persist_session_activity(sid, session_data)
+    else:
+        save_session_to_db(sid, session_data)
+
+
 def get_all_sessions_from_db():
     """全セッションをDBから取得、失敗時はフォールバック"""
     db = get_database()

@@ -263,9 +263,22 @@ Cloud Run は **未認証の POST** を受け付ける必要があります（LI
 2. Webhook が即 **200** を返す（処理は **専用スレッド** のバックグラウンド）
 3. **Reply** で「症状を確認しています。少々お待ちください。」
 4. 既存 `handle_chat_post` で推奨（sid は `line:{userId}`）
-5. **Push** で Flex 2通（アドバイス bubble + 医薬品 carousel 最大3件）
+5. **Physical 推奨時（段階配信）**: rule_based 成功直後に **Push** で carousel（医薬品最大3件）→ 処理完了後 **Reply** で advice bubble + フィードバック（失敗時は従来どおり Flex 2通を一括 Reply/Push）
+6. **Physical 以外** または carousel Push 失敗時: 従来どおり Flex 2通（アドバイス bubble + carousel）
 
 危機検出・緊急時は Flex ではなくテキスト Push。管理画面の手動キューは既存通り。
+
+**速度改善（精度不変）**: NLU∥症状分類の並列化、usage_notes 並列生成、LINE では `generate_personalized_advice` をスキップ、属性-only DB 更新は throttle。計測ログは `PIPELINE_PERF` で Cloud Logging 確認。
+
+**Push クォータ**: Physical 段階配信時は相談1回あたり Push が **+1**（carousel）。Reply は Webhook の replyToken 消費のみ。
+
+**PIPELINE_PERF ログ例**（Cloud Logging で `PIPELINE_PERF` 検索）:
+
+```json
+{"channel":"line","sid":"line:Uxxx","total_ms":45000,"breakdown":{"nlu_batch_start":0,"nlu_batch_done":8200,"emit_cards":12000,"line_carousel_push":12500,"usage_notes_done":38000},"llm":{}}
+```
+
+GCP の CPU スロットル対策（「CPU を常に割り当てる」等）は別タスクで dev→本番の順に適用してください。
 
 ### 9.2 必須環境変数（返信する場合）
 

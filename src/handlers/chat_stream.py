@@ -16,7 +16,7 @@ from typing import Any, AsyncIterator, Dict, Optional
 
 from starlette.requests import Request
 
-from src.handlers.chat_handler import handle_chat_post
+from src.handlers.chat_handler import handle_chat_post_async
 from src.services.session_manager import (
     get_next_user_number,
     get_session_from_db,
@@ -88,7 +88,9 @@ def _run_chat_post(
     monitor: Any,
 ) -> tuple:
     bind_worker_stream_sink(sid)
-    return handle_chat_post(safe_session, client_info, message, sid, monitor)
+    return asyncio.run(
+        handle_chat_post_async(safe_session, client_info, message, sid, monitor)
+    )
 
 
 def _yield_sink_events(sink: StreamSink) -> list[str]:

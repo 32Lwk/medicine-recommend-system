@@ -74,3 +74,51 @@ def test_golden_triage_mock_category(mock_triage):
 
         result = run_triage_agent(case["input_text"], MagicMock(), use_cache=False)
         assert result["category"] == case["expected_category"]
+
+
+def test_golden_recommendation_physical_schema():
+    cases = _load_jsonl("recommendation_physical.jsonl")
+    assert len(cases) >= 3
+    for case in cases:
+        assert case.get("input_text")
+        assert isinstance(case.get("user_info"), dict)
+        assert "expected_top3_product_names" in case
+
+
+@patch("src.handlers.chat.recommendation_llm_batch.run_nlu_and_symptom_analysis_parallel")
+@patch("src.core.rule_based_recommendation.rule_based_medicine_recommendation")
+def test_golden_recommendation_physical_rule_based_top3(mock_rbr, mock_batch):
+    """Physical ゴールデン: rule_based が success なら top3 product_name を返す（回帰の骨格）。"""
+    cases = _load_jsonl("recommendation_physical.jsonl")
+    if not cases:
+        pytest.skip("recommendation_physical.jsonl missing")
+    case = cases[0]
+    mock_batch.return_value = MagicMock(
+        nlu_result={"symptoms": ["頭痛"], "gender_detected": {"detected": False}, "pregnancy_possible": {"detected": False}},
+        analysis_result={"medicine_type": "解熱鎮痛剤", "symptoms": ["頭痛"], "is_diagnosis": False},
+    )
+    mock_rbr.return_value = {
+        "status": "success",
+        "recommended_medicines": [
+            {"product_name": "A", "name": "A"},
+            {"product_name": "B", "name": "B"},
+            {"product_name": "C", "name": "C"},
+        ],
+        "nlu_result": mock_batch.return_value.nlu_result,
+    }
+    from src.handlers.chat.chat_recommendation_flow import _invoke_rule_based_recommendation
+
+    out = _invoke_rule_based_recommendation(
+        case["input_text"],
+        case["user_info"],
+        MagicMock(),
+        "web:test",
+        mock_batch.return_value.nlu_result,
+    )
+    assert out["status"] == "success"
+    names = [m.get("product_name") or m.get("name") for m in out["recommended_medicines"][:3]]
+    expected = case.get("expected_top3_product_names") or []
+    if expected:
+        assert names == expected
+    else:
+        assert len(names) == 3

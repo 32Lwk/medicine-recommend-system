@@ -30,10 +30,10 @@ from src.services.chat_response_service import generate_personalized_advice
 from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
+    persist_session_attributes_only,
     get_admin_sessions,
     get_manual_reply_queue,
 )
-from src.core.medicine_logic import analyze_symptoms_and_medicine_type
 from src.core.translation_service import translate_medicine_recommendation
 from src.handlers.chat.chat_response_builder import build_success_response
 
@@ -125,6 +125,9 @@ def run_recommendation_flow(
     from src.services.processing_status import mark_processing_step
 
     mark_processing_step(sid, "attributes", detail_code="profile_register")
+    from src.handlers.line.line_progressive_delivery import register_triage_for_line
+
+    register_triage_for_line(sid, triage_result)
     ADMIN_SESSIONS = get_admin_sessions()
     if True:  # main recommendation flow (body is 8-space indented)
         # ステップ0: ユーザー情報登録処理（NLU解析の前に実行）
@@ -520,7 +523,7 @@ def run_recommendation_flow(
                     if session_data:
                         session_data['user_attributes'] = user_attributes
                         session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
+                        persist_session_attributes_only(sid, session_data)
             except Exception as e:
                 logger.info(f"⚠️ ユーザー属性の保存でエラー: {str(e)}")
                         
@@ -644,26 +647,27 @@ def run_recommendation_flow(
         }
         logger.info(f"📋 ユーザー情報（NLU解析前）: age={user_info.get('age')}, gender={user_info.get('gender')}, pregnant={user_info.get('pregnant')}, allergies={user_info.get('allergies')}")
                     
-        # ステップ1: NLU解析（エージェント ON 時は NLUAgent 経由）
-        from src.handlers.chat.nlu_resolve import resolve_nlu_for_recommendation
+        # ステップ1+3: NLU と症状分類を並列実行（精度不変・同一関数）
+        from src.handlers.chat.recommendation_llm_batch import run_nlu_and_symptom_analysis_parallel
+        from src.services.pipeline_perf import mark_pipeline_step
 
-        nlu_result = {}
-        try:
-            logger.info(f"🔍 NLU解析を実行中: processed_message={processed_message[:50]}...")
-            nlu_result = resolve_nlu_for_recommendation(
-                processed_message,
-                user_info,
-                recommendation_client,
-                session_id=sid,
-            )
-            logger.info(f"✅ NLU解析完了: nlu_result keys={list(nlu_result.keys())}")
-            logger.info(f"✅ NLU解析完了: gender_detected={nlu_result.get('gender_detected')}, pregnancy_possible={nlu_result.get('pregnancy_possible')}")
-        except Exception as nlu_error:
-            logger.info(f"⚠️ NLU解析エラー: {str(nlu_error)}")
-            nlu_result = {
-                'gender_detected': {'detected': False},
-                'pregnancy_possible': {'detected': False}
-            }
+        mark_pipeline_step("nlu_batch_start")
+        logger.info(f"🔍 NLU+症状分類（並列）: processed_message={processed_message[:50]}...")
+        batch = run_nlu_and_symptom_analysis_parallel(
+            processed_message,
+            user_info,
+            recommendation_client,
+            session_id=sid,
+        )
+        nlu_result = batch.nlu_result
+        analysis_result = batch.analysis_result
+        mark_pipeline_step("nlu_batch_done")
+        logger.info(f"✅ NLU解析完了: nlu_result keys={list(nlu_result.keys())}")
+        # batch 後の処理順（精度不変）: NLU gender/pregnancy → analysis diagnosis 早期 return → rule_based
+        logger.info(
+            f"✅ NLU解析完了: gender_detected={nlu_result.get('gender_detected')}, "
+            f"pregnancy_possible={nlu_result.get('pregnancy_possible')}"
+        )
                     
         # ステップ2: 性別自動判定と妊娠可能性検出の処理（常に実行）
         gender_detected = nlu_result.get('gender_detected')
@@ -716,7 +720,8 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    save_session_to_db(sid, session_data)
+                                    from src.services.session_manager import persist_session_attributes_only
+                                    persist_session_attributes_only(sid, session_data)
                         except Exception as e:
                             logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
                                     
@@ -765,7 +770,8 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    save_session_to_db(sid, session_data)
+                                    from src.services.session_manager import persist_session_attributes_only
+                                    persist_session_attributes_only(sid, session_data)
                         except Exception as e:
                             logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
                                     
@@ -836,12 +842,11 @@ def run_recommendation_flow(
         except Exception as e:
             logger.info(f"⚠️ 妊娠可能性検出の再計算でエラー: {str(e)}")
                     
-        # ステップ3: ChatGPTで医薬品の種類を判定
+        # ステップ3: 並列 batch 済み analysis_result を処理
         start_time = time.time()
         try:
-            logger.info(f"🔍 Step 3: Analyzing medicine type with ChatGPT...")
+            logger.info(f"🔍 Step 3: Using parallel symptom analysis result...")
             mark_processing_step(sid, "symptom_analysis", detail_code="llm_classify")
-            analysis_result = analyze_symptoms_and_medicine_type(processed_message, recommendation_client)  # 方言変換後のテキストを使用
             mark_processing_step(sid, "symptom_analysis", detail_code="symptom_extract")
                         
             # 診断名が検出された場合（Physical 可否は diagnosis_guard で判定）
@@ -1203,7 +1208,8 @@ def run_recommendation_flow(
                 )
                 if physical_blocked is not None:
                     return physical_blocked
-                            
+
+                mark_pipeline_step("rule_based_start")
                 recommendation_result = _invoke_rule_based_recommendation(
                     processed_message,
                     user_info,
@@ -1211,6 +1217,7 @@ def run_recommendation_flow(
                     sid,
                     nlu_result,
                 )
+                mark_pipeline_step("rule_based_done")
                             
                 # ルールベース結果のデバッグログ
                 logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
@@ -1251,7 +1258,8 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    save_session_to_db(sid, session_data)
+                                    from src.services.session_manager import persist_session_attributes_only
+                                    persist_session_attributes_only(sid, session_data)
                         elif current_gender == '男性':
                             # 既存の性別が「男性」の場合は警告のみ
                             warning = gender_detected.get('warning', '')
@@ -1324,54 +1332,55 @@ def run_recommendation_flow(
                     monitor.increment_api_calls()
                                 
                     recommended_medicines = recommendation_result.get('recommended_medicines', [])
+
+                    if recommended_medicines and sid:
+                        try:
+                            from src.services.sse_emit import emit_cards
+
+                            emit_cards(recommended_medicines, session_id=sid)
+                            mark_pipeline_step("emit_cards")
+                        except Exception:
+                            pass
+                        try:
+                            from src.handlers.line.line_progressive_delivery import (
+                                schedule_carousel_push_for_line,
+                            )
+
+                            _line_lang = (
+                                session.get("detected_language")
+                                or session.get("language")
+                                or "ja"
+                            )
+                            schedule_carousel_push_for_line(
+                                sid=sid,
+                                triage_result=triage_result,
+                                recommendation_result=recommendation_result,
+                                lang=_line_lang,
+                            )
+                            mark_pipeline_step("line_carousel_push")
+                        except Exception:
+                            logger.exception("LINE progressive carousel failed sid=%s", sid)
                                 
-                    # 使用上の注意をChatGPTで自動生成（最適化版）
+                    # 使用上の注意をChatGPTで自動生成（並列・最大3件）
                     mark_processing_step(sid, "usage_notes")
                     usage_notes = recommendation_result.get('usage_notes', '')
                     if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
-                        # 推奨された医薬品の使用上の注意を一括生成
                         try:
-                            from src.core.medicine_logic import generate_usage_notes
-                                        
-                            # 上位3つの医薬品の使用上の注意を並列処理で生成
-                            generated_notes = []
-                            for medicine in recommended_medicines[:3]:  # 上位3つのみ
-                                try:
-                                    # CSVデータから追加情報を取得
-                                    medicine_with_details = medicine.copy()
-                                    # 年齢制限とドーピング情報を追加
-                                    if 'age_restriction' not in medicine_with_details:
-                                        medicine_with_details['age_restriction'] = medicine.get('age_restriction', '情報なし')
-                                    if 'doping_prohibited' not in medicine_with_details:
-                                        medicine_with_details['doping_prohibited'] = medicine.get('doping_prohibited', 'なし')
-                                    if 'competition_category' not in medicine_with_details:
-                                        medicine_with_details['competition_category'] = medicine.get('competition_category', '情報なし')
-                                    if 'conditions' not in medicine_with_details:
-                                        medicine_with_details['conditions'] = medicine.get('conditions', '情報なし')
-                                                
-                                    # 症状情報を取得（nlu_resultから）
-                                    symptoms_list = []
-                                    if nlu_result and 'symptoms' in nlu_result:
-                                        symptoms_list = nlu_result.get('symptoms', [])
-                                                
-                                    # 使用上の注意を生成（キャッシュ機能付き）
-                                    medicine_notes = generate_usage_notes(
-                                        medicine.get('name', ''),
-                                        medicine_with_details,
-                                        user_info,
-                                        symptoms=symptoms_list
-                                    )
-                                    if medicine_notes and medicine_notes != "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。":
-                                        generated_notes.append(f"<strong>{medicine.get('name', '')}:</strong><br>{medicine_notes}")
-                                except Exception as e:
-                                    logger.warning(f"使用上の注意生成エラー: {e}")
-                                    continue
-                                        
+                            from src.handlers.chat.recommendation_llm_batch import (
+                                generate_usage_notes_parallel,
+                            )
+
+                            mark_pipeline_step("usage_notes_start")
+                            generated_notes = generate_usage_notes_parallel(
+                                recommended_medicines,
+                                user_info=user_info,
+                                nlu_result=nlu_result,
+                            )
+                            mark_pipeline_step("usage_notes_done")
                             if generated_notes:
                                 usage_notes = '<br><br>'.join(generated_notes)
                             else:
                                 usage_notes = '添付文書をよく読んでご使用ください。'
-                                            
                         except Exception as e:
                             logger.warning(f"使用上の注意一括生成エラー: {e}")
                             usage_notes = '添付文書をよく読んでご使用ください。'
@@ -1646,62 +1655,54 @@ def run_recommendation_flow(
                     'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                 }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                             
-                # 全ての推奨結果に対してアドバイスを生成（再分析時だけでなく常時）
+                # Web のみ個別アドバイスを生成（LINE Flex では未使用のためスキップ）
                 personalized_section = ""
-                try:
-                    # ユーザー属性を取得
-                    user_attrs = session.get('user_attributes', {})
-                                
-                    # 再分析時はreanalysis_attributesを使用
-                    if session.get('is_reanalysis'):
-                        user_attrs = session.get('reanalysis_attributes', user_attrs)
-                        session.pop('is_reanalysis', None)
-                        session.pop('reanalysis_attributes', None)
-                                
-                    # インフルエンザリスク情報を追加
-                    influenza_risk = recommendation_result.get('influenza_risk', False)
-                    influenza_reason = recommendation_result.get('influenza_reason', '')
-                                
-                    personalized_advice = generate_personalized_advice(
-                        user_attrs,
-                        recommended_medicines,
-                        symptoms,
-                        recommendation_client,
-                        user_text=user_message,
-                        influenza_risk=influenza_risk,
-                        influenza_reason=influenza_reason,
-                        session_id=sid,
-                    )
+                from src.handlers.line.line_session import is_line_session_id
 
-                    # SSE: 推奨理由・アドバイス生成後にカードを一括通知（部分表示しない）
-                    if recommended_medicines and sid:
-                        try:
-                            _emit_explanation_followup_sse(
-                                session,
-                                sid,
-                                recommended_medicines,
-                                recommendation_result,
-                                recommendation_client,
-                            )
-                            from src.services.sse_emit import emit_cards
-
-                            emit_cards(recommended_medicines, session_id=sid)
-                        except Exception:
-                            pass
-                                
-                    personalized_section = f"""
+                if is_line_session_id(sid):
+                    mark_pipeline_step("personalized_advice_skipped_line")
+                else:
+                    try:
+                        user_attrs = session.get('user_attributes', {})
+                        if session.get('is_reanalysis'):
+                            user_attrs = session.get('reanalysis_attributes', user_attrs)
+                            session.pop('is_reanalysis', None)
+                            session.pop('reanalysis_attributes', None)
+                        influenza_risk = recommendation_result.get('influenza_risk', False)
+                        influenza_reason = recommendation_result.get('influenza_reason', '')
+                        personalized_advice = generate_personalized_advice(
+                            user_attrs,
+                            recommended_medicines,
+                            symptoms,
+                            recommendation_client,
+                            user_text=user_message,
+                            influenza_risk=influenza_risk,
+                            influenza_reason=influenza_reason,
+                            session_id=sid,
+                        )
+                        if recommended_medicines and sid:
+                            try:
+                                _emit_explanation_followup_sse(
+                                    session,
+                                    sid,
+                                    recommended_medicines,
+                                    recommendation_result,
+                                    recommendation_client,
+                                )
+                            except Exception:
+                                pass
+                        personalized_section = f"""
     <div class="warning-info" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
         <h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>
         <p style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;">{personalized_advice}</p>
     </div>
     """
-                except Exception as e:
-                    logger.error(f"❌ 個別説明生成エラー: {e}")
-                    # エラー時はインフルエンザリスク情報のみ表示
-                    influenza_risk = recommendation_result.get('influenza_risk', False)
-                    influenza_reason = recommendation_result.get('influenza_reason', '')
-                    if influenza_risk:
-                        personalized_section = f"""
+                    except Exception as e:
+                        logger.error(f"❌ 個別説明生成エラー: {e}")
+                        influenza_risk = recommendation_result.get('influenza_risk', False)
+                        influenza_reason = recommendation_result.get('influenza_reason', '')
+                        if influenza_risk:
+                            personalized_section = f"""
     <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
         <h4 style="color: #f57c00; margin-top: 0;">⚠️ インフルエンザの可能性について</h4>
         <p style="margin: 5px 0; line-height: 1.6;">{influenza_reason}。インフルエンザの可能性がある場合は、アスピリンを含む医薬品の使用を避け、早めに医療機関を受診することをお勧めします。</p>
