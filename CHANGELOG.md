@@ -1,6 +1,21 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月11日**（トリアージ第二段階省略・LINE loading keepalive・緊急判定改善）
+**最終更新日: 2026年6月13日**（Artifact Registry クリーンアップポリシー対象リポジトリ修正）
+
+---
+
+## 2026年6月13日 — Artifact Registry クリーンアップポリシー対象リポジトリ修正
+
+### 概要
+
+- **デフォルトリポジトリ名の修正**: `set_artifact_registry_cleanup_policy.sh` の `REPOSITORY` 既定値を `medicine-recommend` から `cloud-run-source-deploy` に変更。Cloud Run 継続的デプロイが実際に push する Artifact Registry リポジトリに合わせ、クリーンアップポリシー（最新 5 イメージ保持・24 時間超の古いバージョン削除）が正しい対象へ適用されるようにした。
+- **運用コメント追加**: リポジトリ名は GCP コンソールまたはビルドログで確認する旨をスクリプト内に記載。
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `scripts/gcp/set_artifact_registry_cleanup_policy.sh` | `REPOSITORY` 既定値を `cloud-run-source-deploy` に変更・コメント追加 |
 
 ---
 
