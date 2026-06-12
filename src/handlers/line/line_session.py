@@ -71,7 +71,7 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
 
     # LINE 応答経路では DB 読込を避け、同一インスタンスのメモリのみ復元する。
     # （DB 接続不良時の getconn/再接続待ちで loading 後に数十秒ブロックするのを防ぐ）
-    from src.services.session_manager import get_session_from_memory
+    from src.services.session_manager import get_ai_auto_reply_in_memory, get_session_from_memory
 
     session_data = get_session_from_memory(sid)
     if session_data:
@@ -94,6 +94,9 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
         ):
             if flag in session_data:
                 session[flag] = session_data[flag]
+        if session_data.get("ai_auto_reply") is not None:
+            session["ai_auto_reply"] = session_data["ai_auto_reply"]
+    session.setdefault("ai_auto_reply", get_ai_auto_reply_in_memory())
     trim_line_session_messages(session)
     return session
 

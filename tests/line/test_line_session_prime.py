@@ -24,3 +24,4 @@ def test_prime_line_session_restores_concierge_and_triage():
     assert session["concierge_state"]["last_intent"] == "symptom"
     assert session["counseling_mode"] is True
     assert session["last_triage_result"]["category"] == "Physical"
+    assert session["ai_auto_reply"] is True

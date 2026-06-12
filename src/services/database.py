@@ -107,7 +107,7 @@ class DatabaseManager:
         # 環境変数から接続プール設定を取得（デフォルト値は小規模環境向け）
         self.min_connections = int(os.getenv('DB_MIN_CONNECTIONS', 2))
         self.max_connections = int(os.getenv('DB_MAX_CONNECTIONS', 10))
-        self.reconnect_retries = 3
+        self.reconnect_retries = int(os.getenv('DB_RECONNECT_RETRIES', '1'))
         self.reconnect_backoff = 1  # 秒
         self._reconnecting = False  # 再帰防止フラグ
 

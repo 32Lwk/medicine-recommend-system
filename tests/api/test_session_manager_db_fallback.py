@@ -22,8 +22,7 @@ def reset_session_manager_state():
 
 def test_save_session_to_db_logs_memory_fallback_once(caplog):
     mock_db = MagicMock()
-    mock_db.connection = None
-    mock_db.connection_pool = None
+    mock_db.is_available.return_value = False
     mock_db.startup_skip_reason = 'no_url'
 
     with patch.object(sm, 'get_database', return_value=mock_db):
@@ -39,10 +38,11 @@ def test_save_session_to_db_logs_memory_fallback_once(caplog):
 
 def test_maybe_persist_skips_db_when_unavailable():
     mock_db = MagicMock()
-    mock_db.connection_pool = None
+    mock_db.is_available.return_value = False
     data = {'session_id': 'sid-a', 'messages': []}
 
     with patch.object(sm, 'get_database', return_value=mock_db):
+        sm._db_persist_enabled = False
         sm.maybe_persist_session_activity('sid-a', data)
         sm.maybe_persist_session_activity('sid-a', data)
 
@@ -52,7 +52,7 @@ def test_maybe_persist_skips_db_when_unavailable():
 
 def test_maybe_persist_throttles_db_writes():
     mock_db = MagicMock()
-    mock_db.connection_pool = object()
+    mock_db.is_available.return_value = True
     mock_db.save_session.return_value = True
     data = {'session_id': 'sid-b', 'messages': []}
 
@@ -62,6 +62,24 @@ def test_maybe_persist_throttles_db_writes():
         sm.maybe_persist_session_activity('sid-b', data, min_interval_sec=60)
 
     assert mock_db.save_session.call_count == 1
+
+
+def test_get_ai_auto_reply_skips_db_when_unavailable():
+    import time
+
+    mock_db = MagicMock()
+    mock_db.is_available.return_value = False
+    mock_db.startup_skip_reason = 'connect_failed'
+    mock_db.get_global_state = MagicMock(side_effect=AssertionError("should not call DB"))
+
+    sm._ai_auto_reply = True
+    with patch.object(sm, 'get_database', return_value=mock_db):
+        sm._db_persist_enabled = True
+        start = time.monotonic()
+        assert sm.get_ai_auto_reply() is True
+        assert time.monotonic() - start < 0.1
+
+    mock_db.get_global_state.assert_not_called()
 
 
 def test_resolve_database_url_from_components(monkeypatch):

@@ -51,6 +51,15 @@ def get_database():
     return _get_db()
 
 
+def _db_usable(db) -> bool:
+    """接続プールの存在だけでなく、利用可能かを判定する（壊れたプールでの再接続待ちを防ぐ）。"""
+    if not db:
+        return False
+    if getattr(db, "startup_skip_reason", None) in ("connect_failed", "no_url", "no_driver"):
+        return False
+    return bool(db.is_available())
+
+
 # --- セッションDB操作 ---
 
 def get_session_from_db(session_id):
@@ -70,7 +79,7 @@ def get_session_from_db(session_id):
         return mem
 
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         session_data = db.get_session(session_id)
         if session_data:
             touch_session_in_memory(session_id, session_data)
@@ -189,7 +198,7 @@ def persist_session_attributes_only(sid, session_data: dict) -> None:
 def get_all_sessions_from_db():
     """全セッションをDBから取得、失敗時はフォールバック"""
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         sessions = db.get_all_sessions()
         if sessions is not None:
             return {s['session_id']: s for s in sessions}
@@ -198,19 +207,33 @@ def get_all_sessions_from_db():
 
 # --- グローバル状態 ---
 
-def get_ai_auto_reply():
-    """AI自動応答設定をDBから取得"""
-    db = get_database()
-    if db and (db.connection or db.connection_pool):
-        return db.get_global_state('AI_AUTO_REPLY', default_value=True)
+def get_ai_auto_reply_in_memory() -> bool:
+    """DB を参照せずモジュール内キャッシュの AI 自動応答設定を返す（LINE ホットパス用）。"""
     return _ai_auto_reply
+
+
+def get_ai_auto_reply():
+    """AI自動応答設定をDBから取得（不可時はメモリキャッシュ）。"""
+    global _ai_auto_reply
+    if not is_db_persist_enabled():
+        return _ai_auto_reply
+    db = get_database()
+    if not _db_usable(db):
+        return _ai_auto_reply
+    try:
+        value = db.get_global_state('AI_AUTO_REPLY', default_value=True)
+        _ai_auto_reply = value
+        return value
+    except Exception as exc:
+        logger.warning("get_ai_auto_reply: DB read failed (%s); using in-memory value", exc)
+        return _ai_auto_reply
 
 
 def set_ai_auto_reply(value):
     """AI自動応答設定をDBに保存"""
     global _ai_auto_reply
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         db.set_global_state('AI_AUTO_REPLY', value)
     _ai_auto_reply = value
 
@@ -218,7 +241,7 @@ def set_ai_auto_reply(value):
 def get_admin_mode():
     """管理者モード設定をDBから取得"""
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         return db.get_global_state('ADMIN_MODE', default_value=False)
     return _admin_mode
 
@@ -227,7 +250,7 @@ def set_admin_mode(value):
     """管理者モード設定をDBに保存"""
     global _admin_mode
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         db.set_global_state('ADMIN_MODE', value)
     _admin_mode = value
 
@@ -235,7 +258,7 @@ def set_admin_mode(value):
 def get_manual_reply_queue():
     """手動返信キューをDBから取得"""
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         return db.get_global_state('MANUAL_REPLY_QUEUE', default_value=[])
     return _manual_reply_queue
 
@@ -244,7 +267,7 @@ def set_manual_reply_queue(value):
     """手動返信キューをDBに保存"""
     global _manual_reply_queue
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         db.set_global_state('MANUAL_REPLY_QUEUE', value)
     _manual_reply_queue = value
 
@@ -255,7 +278,7 @@ def get_manual_reply_message():
     if _manual_reply_message_cache is not None:
         return _manual_reply_message_cache
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         db_value = db.get_global_state('MANUAL_REPLY_MESSAGE', default_value=None)
         if db_value is not None:
             _manual_reply_message_cache = db_value
@@ -267,7 +290,7 @@ def set_manual_reply_message(value):
     """手動返信時の自動メッセージを保存"""
     global _manual_reply_message_cache
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if _db_usable(db):
         db.set_global_state('MANUAL_REPLY_MESSAGE', value)
     _manual_reply_message_cache = value
 
@@ -344,7 +367,7 @@ def get_cleanup_exclude_session_ids(extra_ids=None):
 def purge_empty_sessions_on_startup():
     """起動時: 空セッションを一括削除（キュー・危機フラグは除外）。"""
     db = get_database()
-    if not db or not (db.connection or db.connection_pool):
+    if not _db_usable(db):
         return 0
     exclude = get_cleanup_exclude_session_ids()
     if hasattr(db, 'purge_all_empty_sessions'):
@@ -611,7 +634,7 @@ def cleanup_old_sessions(
     extra = [current_sid] if exclude_current_session and current_sid else []
     exclude_session_ids = get_cleanup_exclude_session_ids(extra)
 
-    if db and (db.connection or db.connection_pool) and hasattr(db, 'cleanup_expired_sessions'):
+    if _db_usable(db) and hasattr(db, 'cleanup_expired_sessions'):
         try:
             deleted_count = db.cleanup_expired_sessions(
                 SESSION_TIMEOUT,
@@ -660,7 +683,7 @@ def cleanup_old_sessions(
 
     for sid in sessions_to_remove:
         if sid not in exclude_session_ids:
-            if db and (db.connection or db.connection_pool):
+            if _db_usable(db):
                 db.delete_session(sid)
             elif sid in _all_sessions:
                 del _all_sessions[sid]
