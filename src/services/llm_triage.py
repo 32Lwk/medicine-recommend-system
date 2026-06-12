@@ -361,6 +361,25 @@ def llm_triage(
             "reasoning": f"キーワードマッチングにより{drug_type}薬物を検出"
         }
     
+    # ステップ0b: 挨拶・メタ質問は第一段階 LLM も省略（exact_match / keyword_probe のみ）
+    fast_hint = _concierge_fast_path_hint(user_text)
+    if fast_hint:
+        concierge_intent, concierge_intent_source = fast_hint
+        logger.info(
+            "⏭️ 第一段階トリアージ省略: concierge_intent=%s source=%s",
+            concierge_intent,
+            concierge_intent_source,
+        )
+        return {
+            "category": "Other",
+            "confidence": 1.0,
+            "subcategory": "general_other",
+            "requires_immediate_action": False,
+            "reasoning": f"stage1 skipped ({concierge_intent_source})",
+            "concierge_intent": concierge_intent,
+            "concierge_intent_source": concierge_intent_source,
+        }
+
     from src.services.budget_guard import check_llm_allowed
 
     allowed, _ = check_llm_allowed()

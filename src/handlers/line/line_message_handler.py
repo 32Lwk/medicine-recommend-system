@@ -5,8 +5,6 @@ import asyncio
 import logging
 from typing import Any
 
-import httpx
-
 from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
 from src.handlers.chat_handler import handle_chat_post_async
 from src.handlers.line.flex_messages import build_line_messages_from_bot_message
@@ -121,23 +119,23 @@ async def _deliver_line_messages(
 async def process_line_events(events: list[dict[str, Any]]) -> None:
     from src.handlers.line import line_reply
 
-    # lifespan の httpx クライアントはメインループ専用。バックグラウンドスレッドでは専用クライアントを使う。
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        line_reply.set_http_client(client)
-        try:
-            for event in events:
-                if not isinstance(event, dict):
-                    continue
-                try:
-                    await _dispatch_event(event)
-                except Exception:
-                    logger.exception("LINE event handler error type=%s", event.get("type"))
-                    user_id = _extract_user_id(event)
-                    if user_id and LINE_CHANNEL_ACCESS_TOKEN:
-                        await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
-                        _notify_line_error_email(user_id, line_sid(user_id), "unhandled event exception")
-        finally:
-            line_reply.set_http_client(None)
+    # lifespan の httpx クライアントはメインループ専用。バックグラウンドスレッドでは再利用クライアントを使う。
+    client = line_reply.acquire_thread_http_client()
+    line_reply.set_http_client(client)
+    try:
+        for event in events:
+            if not isinstance(event, dict):
+                continue
+            try:
+                await _dispatch_event(event)
+            except Exception:
+                logger.exception("LINE event handler error type=%s", event.get("type"))
+                user_id = _extract_user_id(event)
+                if user_id and LINE_CHANNEL_ACCESS_TOKEN:
+                    await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
+                    _notify_line_error_email(user_id, line_sid(user_id), "unhandled event exception")
+    finally:
+        line_reply.set_http_client(None)
 
 
 async def _dispatch_event(event: dict[str, Any]) -> None:
@@ -217,11 +215,8 @@ async def _process_text_message(
     sid = line_sid(user_id)
     logger.info("LINE text message userId=%s sid=%s text=%s", user_id, sid, text)
 
-    loading_stop, loading_keepalive = await begin_line_loading(user_id)
+    from src.services.pipeline_perf import log_pipeline_perf, mark_pipeline_step
 
-    from src.services.pipeline_perf import log_pipeline_perf, start_pipeline_perf
-
-    start_pipeline_perf(channel="line")
     delivery_ctx = LineDeliveryContext(
         user_id=user_id,
         reply_token=reply_token,
@@ -229,6 +224,11 @@ async def _process_text_message(
         sid=sid,
     )
     set_line_delivery_context(delivery_ctx)
+
+    loading_stop = asyncio.Event()
+    loading_keepalive = None
+    job_lock = None
+
     try:
         session = prime_line_session(user_id)
         client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
@@ -243,6 +243,7 @@ async def _process_text_message(
             user_agent=client_info.user_agent,
         )
         if preview_bot is not None:
+            loading_stop, loading_keepalive = await begin_line_loading(user_id)
             if LINE_CHANNEL_ACCESS_TOKEN:
                 line_messages = build_line_messages_from_bot_message(
                     preview_bot,
@@ -273,6 +274,9 @@ async def _process_text_message(
         if not job_lock.acquire(sid):
             logger.info("LINE duplicate job skipped sid=%s", sid)
             return
+
+        loading_stop, loading_keepalive = await begin_line_loading(user_id)
+        mark_pipeline_step("line_loading_start")
 
         if not LINE_CHANNEL_ACCESS_TOKEN:
             logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
@@ -324,13 +328,15 @@ async def _process_text_message(
                 reply_fn=reply_messages,
                 deliver_all_fn=_deliver_line_messages,
             )
+            mark_pipeline_step("line_reply_done")
         except Exception as exc:
             logger.exception("LINE pipeline error sid=%s", sid)
             if LINE_CHANNEL_ACCESS_TOKEN:
                 await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
             _notify_line_error_email(user_id, sid, str(exc))
         finally:
-            job_lock.release(sid)
+            if job_lock is not None:
+                job_lock.release(sid)
             persist_line_session(sid, session)
     finally:
         await end_line_loading(loading_stop, loading_keepalive)

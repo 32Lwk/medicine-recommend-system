@@ -26,6 +26,57 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
+def _uses_pooler(url: str) -> bool:
+    """Neon pooler 経由の接続か（ホスト名のみ判定、秘密情報はログに出さない）。"""
+    from urllib.parse import urlparse
+
+    host = (urlparse(url).hostname or "").lower()
+    return "-pooler" in host or host.startswith("pooler.")
+
+
+def _parse_sslmode_from_url(url: str) -> str:
+    from urllib.parse import parse_qs, urlparse
+
+    if not url:
+        return os.getenv("DATABASE_SSLMODE", "require")
+    modes = parse_qs(urlparse(url).query).get("sslmode")
+    if modes:
+        return modes[0]
+    return os.getenv("DATABASE_SSLMODE", "require")
+
+
+def validate_database_url_config() -> list[str]:
+    """DATABASE_URL の形式に関する警告（接続文字列そのものは返さない）。"""
+    warnings: list[str] = []
+    url = resolve_database_url() or ""
+    if not url:
+        return warnings
+    if not _uses_pooler(url):
+        warnings.append(
+            "DATABASE_URL に Neon pooler ホストがありません。"
+            " Cloud Run では -pooler 接続を推奨します。"
+        )
+    if _parse_sslmode_from_url(url) == "disable":
+        warnings.append("sslmode=disable は本番環境では非推奨です。")
+    return warnings
+
+
+def get_database_status() -> dict:
+    """管理画面用の DB 接続状態（URL・パスワードは含めない）。"""
+    from src.services.session_manager import is_db_persist_enabled
+
+    url = resolve_database_url() or ""
+    return {
+        "available": db_manager.is_available(),
+        "persist_enabled": is_db_persist_enabled(),
+        "startup_skip_reason": db_manager.startup_skip_reason,
+        "configured": bool(url),
+        "uses_pooler": _uses_pooler(url) if url else False,
+        "sslmode": _parse_sslmode_from_url(url),
+        "config_warnings": validate_database_url_config(),
+    }
+
+
 def resolve_database_url() -> Optional[str]:
     """DATABASE_URL または POSTGRES_* / PG* から接続文字列を解決する。"""
     url = (os.getenv('DATABASE_URL') or '').strip()
@@ -1179,6 +1230,8 @@ def _log_database_startup_outcome(success: bool) -> None:
 def init_database():
     """データベースを初期化（アプリ起動時に呼び出し）"""
     try:
+        for warning in validate_database_url_config():
+            logger.warning("DATABASE_URL 設定: %s", warning)
         if db_manager.connect():
             if db_manager.initialize_tables():
                 _log_database_startup_outcome(True)

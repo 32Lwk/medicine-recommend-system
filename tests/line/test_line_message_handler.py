@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from src.handlers.line.line_message_handler import _deliver_line_messages, _process_text_message
 
 
-def test_process_text_message_loading_starts_before_session_prime(monkeypatch):
-    """loading/start は DB セッション読込より先に dispatch される。"""
+def test_process_text_message_job_lock_before_loading(monkeypatch):
+    """job lock 取得成功後にのみ loading/start を dispatch する。"""
     monkeypatch.setattr(
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
@@ -19,26 +19,34 @@ def test_process_text_message_loading_starts_before_session_prime(monkeypatch):
     )
     call_order: list[str] = []
 
+    def _track_lock(*_args, **_kwargs):
+        call_order.append("lock")
+        return True
+
     async def _track_loading(*_args, **_kwargs):
         call_order.append("loading")
         return True
-
-    def _track_prime(*_args, **_kwargs):
-        call_order.append("prime")
-        return MagicMock(get=MagicMock(return_value="ja"))
 
     with (
         patch(
             "src.handlers.line.line_loading.start_loading_animation",
             side_effect=_track_loading,
         ),
-        patch("src.handlers.line.line_message_handler.prime_line_session", side_effect=_track_prime),
-        patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=False),
+        patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
+        patch("src.handlers.line.line_job_lock.LineJobLock.acquire", side_effect=_track_lock),
         patch("src.handlers.line.line_job_lock.LineJobLock.release"),
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock),
+        patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=None),
+        patch("src.handlers.line.line_message_handler.persist_line_session"),
+        patch("src.services.processing_status.set_processing_language"),
+        patch("src.services.processing_status.mark_processing_step"),
+        patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
+        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_monitor.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
 
-    assert call_order[:2] == ["loading", "prime"]
+    assert call_order == ["lock", "loading"]
 
 
 def test_process_text_message_replies_after_pipeline(monkeypatch):
@@ -192,7 +200,8 @@ def test_process_text_message_non_physical_calls_deliver_final(monkeypatch):
     mock_deliver_final.assert_awaited_once()
 
 
-def test_process_text_message_skips_duplicate_without_text(monkeypatch):
+def test_process_text_message_skips_duplicate_without_loading(monkeypatch):
+    """重複 Webhook は job lock で弾き、loading/start もパイプラインも走らない。"""
     monkeypatch.setattr(
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
@@ -211,7 +220,7 @@ def test_process_text_message_skips_duplicate_without_text(monkeypatch):
         mock_prime.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "こんにちは", "reply-tok"))
 
-    mock_loading.assert_awaited_once()
+    mock_loading.assert_not_awaited()
     mock_post.assert_not_called()
 
 

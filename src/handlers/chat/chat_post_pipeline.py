@@ -118,12 +118,7 @@ def run_chat_post_pipeline(
 
     session.setdefault("messages", [])
 
-    from src.handlers.line.line_session import is_line_session_id
-
-    if sid and is_line_session_id(sid):
-        session_data_for_ai = {}
-    else:
-        session_data_for_ai = get_session_from_db(sid) if sid else {}
+    session_data_for_ai = get_session_from_db(sid) if sid else {}
     manual_resp = handle_manual_reply_when_off(
         session, client_info, sid, ctx.sanitized_message, session_data_for_ai
     )
@@ -418,16 +413,21 @@ async def run_chat_post_pipeline_async(
     sid: Optional[str],
     monitor: Any,
 ) -> ResponseTuple:
-    """async エントリ（本体は sync pipeline をワーカースレッドで実行）。"""
+    """async エントリ（本体は sync pipeline を専用ワーカースレッドで実行）。"""
     import asyncio
 
-    return await asyncio.to_thread(
-        run_chat_post_pipeline,
-        session,
-        client_info,
-        message,
-        sid,
-        monitor,
+    from src.services.chat_worker import get_chat_executor
+
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        get_chat_executor(),
+        lambda: run_chat_post_pipeline(
+            session,
+            client_info,
+            message,
+            sid,
+            monitor,
+        ),
     )
 
 

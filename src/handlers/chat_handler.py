@@ -21,6 +21,7 @@ async def handle_chat_post_async(session, client_info: ChatClientInfo, message: 
         tuple[dict, int]: JSON 本文と HTTP ステータス
     """
     from src.handlers.line.line_session import is_line_session_id
+    from src.services.budget_guard import reset_budget_check_cache
     from src.services.chat_inflight import end_chat_job, try_begin_chat_job
     from src.services.pipeline_perf import ensure_pipeline_perf_started, log_pipeline_perf
 
@@ -28,6 +29,7 @@ async def handle_chat_post_async(session, client_info: ChatClientInfo, message: 
     ensure_pipeline_perf_started(channel=channel)
     is_line_channel = channel == "line"
 
+    reset_budget_check_cache()
     if not try_begin_chat_job(sid):
         logger.warning("Skipping duplicate chat POST sid=%s", sid)
         count = len(session.get("messages") or []) if session else 0
@@ -54,6 +56,7 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
         tuple[dict, int]: JSON 本文と HTTP ステータス
     """
     from src.handlers.line.line_session import is_line_session_id
+    from src.services.budget_guard import reset_budget_check_cache
     from src.services.chat_inflight import end_chat_job, try_begin_chat_job
     from src.services.pipeline_perf import ensure_pipeline_perf_started, log_pipeline_perf
 
@@ -61,6 +64,7 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     ensure_pipeline_perf_started(channel=channel)
     is_line_channel = channel == "line"
 
+    reset_budget_check_cache()
     if not try_begin_chat_job(sid):
         logger.warning("Skipping duplicate chat POST sid=%s", sid)
         count = len(session.get("messages") or []) if session else 0

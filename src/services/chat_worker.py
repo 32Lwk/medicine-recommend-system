@@ -9,7 +9,7 @@ from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
 
-_CHAT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="chat_job")
+_CHAT_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="chat_job")
 
 
 def get_chat_executor() -> ThreadPoolExecutor:

@@ -1,6 +1,62 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月13日**（LINE/Web 返信速度改善・loading 即時表示）
+**最終更新日: 2026年6月13日**（LINE/Web 返信速度改善・DB 監視・運用ドキュメント）
+
+---
+
+## 2026年6月13日 — LINE/Web 返信速度改善（第2弾）・DB 監視・運用ドキュメント
+
+### 概要
+
+- **挨拶・メタ質問の第一段階トリアージ LLM 省略**: `llm_triage.py` で `_concierge_fast_path_hint`（exact_match / keyword_probe）に該当する入力は第一段階 LLM を呼ばず Other + `concierge_intent` を即返却。「こんにちは」で LLM 0 回・`check_llm_allowed` も未呼び出し。
+- **`check_llm_allowed` リクエスト内キャッシュ**: `budget_guard.py` に ContextVar キャッシュを追加。`chat_handler.py` の POST 開始時に `reset_budget_check_cache()` を呼び、同一リクエスト内の重複 DB 参照を防止。
+- **LINE Concierge 保存のメモリ優先**: `chat_concierge_route.py` の `_sync_session_db` は LINE sid 時 `touch_session_in_memory` + `maybe_persist_session_activity`（throttle）のみ。DB 読込待ちを排除。
+- **`save_session_to_db` の可用性判定**: `session_manager.py` で `db.connection or db.connection_pool` ではなく `db.is_available()` を使用。接続プール存在のみで保存を試みず、不良時の再接続ループを回避。
+- **LINE persist の force / throttle 分離**: `persist_session_from_chat_state(..., force_persist=)` を追加。ターン終了（`persist_line_session`）は `force_persist=True` で即時永続化、途中更新は throttle。`concierge_state` / `counseling_mode` / `last_triage_result` 等も payload に含める。
+- **`prime_line_session` 状態復元拡張**: メモリ上の `concierge_state`・`counseling_mode`・`last_triage_result` / `_last_triage_result` をセッションへ復元。
+- **重複 LINE Webhook の job lock 先行**: `line_message_handler.py` で job lock 取得成功後にのみ `begin_line_loading`。重複イベントは loading / パイプラインを走らせない。
+- **carousel Push 3 秒タイムアウト**: `line_progressive_delivery.py` の `CAROUSEL_FLUSH_TIMEOUT_SEC=3.0`。タイムアウト・失敗時は `carousel_failed=True` とし最終 reply に carousel を含める。
+- **httpx クライアント再利用**: `line_reply.py` の `acquire_thread_http_client()`（thread-local keepalive）。`line_message_handler.py` はイベント処理ごとの `AsyncClient` 生成を廃止。
+- **async パイプライン executor**: `chat_post_pipeline_async` を `asyncio.to_thread` から `get_chat_executor()`（max_workers=2）へ変更。
+- **PIPELINE_PERF マーク追加**: LINE handler に `line_loading_start` / `line_reply_done` を記録。
+- **管理画面 DB 状態表示**: `database.py` の `get_database_status()` / `validate_database_url_config()`（Neon pooler 警告・sslmode）。`GET /admin/system_status` の `database` フィールドと `admin_chat.js` 監視モーダルに表示。起動時 `init_database()` 後に `is_db_persist_enabled()` を呼び persist 可否を確定。
+- **運用ドキュメント**: `CLOUD_RUN_LLM_ENV.md` / `LINE_WEBHOOK_SETUP.md` に Cloud Run `min-instances=1` 等のコールドスタート対策を追記。手動ベンチ手順を `LINE_SPEED_BENCH.md` に新設。`SMOKE_MANUAL.md` の system_status 項目に `database` フィールドを明記。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `docs/ops/LINE_SPEED_BENCH.md` | LINE 応答速度ベンチ（挨拶 <1秒・症状 4〜6秒）手順 |
+| `tests/services/test_budget_guard_cache.py` | `check_llm_allowed` ContextVar キャッシュ |
+| `tests/services/test_database_status.py` | `get_database_status` / pooler 警告 |
+| `tests/line/test_line_session_prime.py` | `prime_line_session` の Concierge/triage 復元 |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/services/llm_triage.py` | 第一段階 LLM 省略（fast path hint） |
+| `src/services/budget_guard.py` | ContextVar キャッシュ・`reset_budget_check_cache` |
+| `src/handlers/chat_handler.py` | POST 開始時キャッシュリセット |
+| `src/handlers/chat/chat_concierge_route.py` | LINE `_sync_session_db` メモリ + throttle |
+| `src/handlers/chat/chat_post_pipeline.py` | `get_chat_executor` 経由 async 実行 |
+| `src/services/chat_worker.py` | executor max_workers=2 |
+| `src/services/session_manager.py` | `is_available()`・`force_persist` |
+| `src/handlers/line/line_message_handler.py` | job lock 先行・loading 順序・PIPELINE_PERF |
+| `src/handlers/line/line_progressive_delivery.py` | carousel 3 秒タイムアウト |
+| `src/handlers/line/line_reply.py` | thread-local httpx 再利用 |
+| `src/handlers/line/line_session.py` | prime 復元拡張・`force_persist=True` |
+| `src/services/database.py` | `get_database_status` / URL 検証 |
+| `main.py` | 起動時 persist 判定・system_status に database |
+| `static/js/admin_chat.js` | DB 状態パネル |
+| `docs/ops/CLOUD_RUN_LLM_ENV.md` | min-instances・pooler 推奨 |
+| `docs/ops/LINE_WEBHOOK_SETUP.md` | コールドスタート対策 |
+| `docs/ops/SMOKE_MANUAL.md` | system_status database フィールド |
+| `tests/llm/test_llm_triage_stage2_skip.py` | 挨拶 LLM 0 回アサート |
+| `tests/line/test_line_message_handler.py` | job lock / loading 順序 |
+| `tests/line/test_line_progressive_delivery.py` | carousel タイムアウト |
+| `tests/line/test_line_session_persist.py` | force_persist・DB 不可時非ブロック |
+| `tests/api/test_fastapi_contract.py` | system_status database 契約 |
 
 ---
 

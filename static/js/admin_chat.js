@@ -2355,6 +2355,8 @@ function loadSystemStatus() {
         const content = document.getElementById('systemStatusContent');
         const csvStatus = data.csv_load_status || {};
         const perfStats = data.performance_stats || {};
+        const dbStatus = data.database || {};
+        const dbWarnings = dbStatus.config_warnings || [];
         
         content.innerHTML = `
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #dee2e6;">
@@ -2363,6 +2365,17 @@ function loadSystemStatus() {
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総セッション数:</strong> ${data.total_sessions}件</p>
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">アクティブセッション:</strong> ${data.active_sessions}件</p>
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">手動返信待ち:</strong> ${data.manual_reply_queue}件</p>
+            </div>
+            
+            <div style="background: #e8eaf6; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c5cae9;">
+                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">🗄️ データベース</h3>
+                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">接続:</strong> ${dbStatus.available ? '✅ 利用可能' : '❌ 不可'}</p>
+                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">永続化:</strong> ${dbStatus.persist_enabled ? '✅ 有効' : '⚠️ 無効（メモリのみ）'}</p>
+                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">設定:</strong> ${dbStatus.configured ? '✅ DATABASE_URL あり' : '⚪ 未設定'}</p>
+                ${dbStatus.startup_skip_reason ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> ${dbStatus.startup_skip_reason}</p>` : ''}
+                ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">Pooler:</strong> ${dbStatus.uses_pooler ? '✅ 使用' : '⚠️ 未使用'}</p>` : ''}
+                ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">SSL mode:</strong> ${dbStatus.sslmode || 'require'}</p>` : ''}
+                ${dbWarnings.length ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">警告:</strong> ${dbWarnings.join(' ')}</p>` : ''}
             </div>
             
             <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9;">

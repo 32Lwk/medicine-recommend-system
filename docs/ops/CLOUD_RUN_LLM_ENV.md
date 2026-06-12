@@ -33,6 +33,28 @@ Cloud Run リクエスト timeout: **300s** 推奨（LINE Webhook バックグ�
 
 Gunicorn（`start.sh` 既定）: `GUNICORN_TIMEOUT=300`, `GUNICORN_GRACEFUL_TIMEOUT=60`
 
+## コールドスタート対策（LINE 応答速度）
+
+LINE Webhook は単独リクエストでインスタンスがスケールゼロから起動すると、初回応答が数十秒遅くなることがあります。**ウォーム時 SLA**（挨拶 <1秒、症状相談 4〜6秒）を満たすには、検証・本番いずれも次を推奨します。
+
+```bash
+# dev（手動ベンチ対象）
+gcloud run services update medicine-recommend-dev \
+  --region=asia-northeast1 \
+  --min-instances=1
+
+# 本番（コストと相談）
+gcloud run services update medicine-recommend \
+  --region=asia-northeast1 \
+  --min-instances=1
+```
+
+- CPU 常時割り当て: Cloud Run コンソール「CPU は常に割り当てる」を有効化（詳細は [CAPACITY_PLANNING.md](CAPACITY_PLANNING.md)）
+- `DATABASE_URL` は Neon **pooler** ホスト（`-pooler`）を使用
+- デプロイ後 `/admin/system_status` で `database.available=true` を確認
+
+手動ベンチ手順: [LINE_SPEED_BENCH.md](LINE_SPEED_BENCH.md)
+
 ## LINE Webhook（環境構築）
 
 手順の正本: [LINE_WEBHOOK_SETUP.md](LINE_WEBHOOK_SETUP.md)

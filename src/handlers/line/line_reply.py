@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from typing import Any
 
 import httpx
@@ -18,11 +19,24 @@ LINE_LOADING_SECONDS_MIN = 5
 LINE_LOADING_SECONDS_MAX = 60
 
 _http_client: httpx.AsyncClient | None = None
+_thread_local = threading.local()
 
 
 def set_http_client(client: httpx.AsyncClient | None) -> None:
     global _http_client
     _http_client = client
+
+
+def acquire_thread_http_client() -> httpx.AsyncClient:
+    """バックグラウンドスレッド用の再利用可能な httpx クライアント。"""
+    client = getattr(_thread_local, "client", None)
+    if client is None or client.is_closed:
+        client = httpx.AsyncClient(
+            timeout=60.0,
+            limits=httpx.Limits(max_keepalive_connections=5),
+        )
+        _thread_local.client = client
+    return client
 
 
 def _headers() -> dict[str, str] | None:
@@ -42,10 +56,8 @@ async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bo
         return False
 
     client = _http_client
-    own_client = False
     if client is None:
-        client = httpx.AsyncClient(timeout=30.0)
-        own_client = True
+        client = acquire_thread_http_client()
     try:
         response = await client.post(url, headers=hdrs, json=payload)
         if response.status_code >= 400:
@@ -61,9 +73,6 @@ async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bo
     except Exception:
         logger.exception("LINE %s request error", log_label)
         return False
-    finally:
-        if own_client:
-            await client.aclose()
 
 
 async def reply_messages(reply_token: str, messages: list[dict[str, Any]]) -> bool:

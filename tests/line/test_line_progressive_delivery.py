@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.handlers.line.line_progressive_delivery import (
     LineDeliveryContext,
+    bind_carousel_flush_to_event_loop,
     build_advice_only_line_messages,
     deliver_final_line_messages,
     push_carousel_if_eligible,
@@ -182,3 +183,37 @@ def test_non_physical_uses_full_bundle_not_progressive():
         {"category": "Emotional"},
         [{"product_name": "A"}],
     ) is False
+
+
+def test_carousel_flush_timeout_marks_failed():
+    ctx = LineDeliveryContext(user_id="U1", reply_token="tok", lang="ja", sid="line:U1")
+    set_line_delivery_context(ctx)
+    loop = asyncio.new_event_loop()
+
+    async def _slow_push(**_kwargs):
+        await asyncio.sleep(10)
+
+    bind_carousel_flush_to_event_loop(ctx, loop)
+    try:
+        with (
+            patch(
+                "src.handlers.line.line_progressive_delivery.push_carousel_if_eligible",
+                side_effect=_slow_push,
+            ),
+            patch(
+                "src.handlers.line.line_progressive_delivery.CAROUSEL_FLUSH_TIMEOUT_SEC",
+                0.1,
+            ),
+        ):
+            ctx.carousel_flush(
+                {
+                    "sid": "line:U1",
+                    "triage_result": {"category": "Physical"},
+                    "recommendation_result": {"recommended_medicines": [{"product_name": "A"}]},
+                    "lang": "ja",
+                }
+            )
+        assert ctx.carousel_failed is True
+    finally:
+        set_line_delivery_context(None)
+        loop.close()

@@ -283,6 +283,11 @@ def test_admin_system_status_json(client):
     assert r.status_code == 200
     j = r.json()
     assert j.get("status") == "ok"
+    assert "database" in j
+    db = j["database"]
+    assert "available" in db
+    assert "persist_enabled" in db
+    assert "configured" in db
 
 
 def test_admin_access_stats_json(client):

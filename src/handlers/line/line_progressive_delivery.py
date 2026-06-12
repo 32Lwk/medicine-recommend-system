@@ -9,6 +9,8 @@ from typing import Any, Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
+CAROUSEL_FLUSH_TIMEOUT_SEC = 3.0
+
 _line_ctx: ContextVar["LineDeliveryContext | None"] = ContextVar("line_delivery_ctx", default=None)
 
 DeliverAllFn = Callable[..., Awaitable[None]]
@@ -88,7 +90,21 @@ def bind_carousel_flush_to_event_loop(ctx: LineDeliveryContext, loop: asyncio.Ab
             ),
             loop,
         )
-        fut.result(timeout=120)
+        try:
+            fut.result(timeout=CAROUSEL_FLUSH_TIMEOUT_SEC)
+        except TimeoutError:
+            logger.warning(
+                "LINE carousel push timed out after %.0fs; will include in final reply",
+                CAROUSEL_FLUSH_TIMEOUT_SEC,
+            )
+            ctx = get_line_delivery_context()
+            if ctx is not None:
+                ctx.carousel_failed = True
+        except Exception:
+            logger.exception("LINE progressive carousel flush failed")
+            ctx = get_line_delivery_context()
+            if ctx is not None:
+                ctx.carousel_failed = True
 
     ctx.carousel_flush = _flush
 

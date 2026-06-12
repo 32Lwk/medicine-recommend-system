@@ -10,6 +10,8 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from typing import Any, Dict, Optional, Tuple
 
+from contextvars import ContextVar
+
 from config.llm_config import OPENAI_MONTHLY_BUDGET_JPY, OPENAI_SESSION_COST_ALERT_JPY
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,11 @@ logger = logging.getLogger(__name__)
 _STATE_KEY = "OPENAI_MONTHLY_USAGE"
 _SETTINGS_KEY = "LLM_ADMIN_SETTINGS"
 DEFAULT_ALERT_EMAIL = "yuto.k051028@gmail.com"
+
+_budget_checked: ContextVar[bool] = ContextVar("_budget_checked", default=False)
+_budget_allowed: ContextVar[Tuple[bool, Optional[str]]] = ContextVar(
+    "_budget_allowed", default=(True, None)
+)
 
 
 def _db():
@@ -69,11 +76,23 @@ def is_llm_blocked() -> bool:
     return bool(get_monthly_usage().get("hard_stopped"))
 
 
+def reset_budget_check_cache() -> None:
+    """リクエスト開始時に呼び、同一 POST 内の check_llm_allowed 重複 DB 参照を防ぐ。"""
+    _budget_checked.set(False)
+    _budget_allowed.set((True, None))
+
+
 def check_llm_allowed() -> Tuple[bool, Optional[str]]:
+    if _budget_checked.get():
+        return _budget_allowed.get()
     if is_llm_blocked():
         msg = get_admin_message("budget_hard_stop")
-        return False, msg or "monthly_budget_exceeded"
-    return True, None
+        result = (False, msg or "monthly_budget_exceeded")
+    else:
+        result = (True, None)
+    _budget_checked.set(True)
+    _budget_allowed.set(result)
+    return result
 
 
 def get_admin_settings() -> Dict[str, Any]:

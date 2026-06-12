@@ -16,7 +16,7 @@
 |10 | GET `/sitemap.xml` | `curl -i` | 200, `application/xml; charset=utf-8` |
 |11 | GET `/admin` | 認証なし `curl -i` | **401**, `WWW-Authenticate: Basic realm="Admin Area"` |
 |12 | GET `/admin` | Basic 正しい認証情報 | 200 `admin_chat.html` |
-|13 | GET `/admin/system_status` ほか | 管理 UI または curl | 200 JSON（監視モーダル用） |
+|13 | GET `/admin/system_status` ほか | 管理 UI または curl | 200 JSON（`database` フィールド含む監視モーダル用） |
 |14 | POST `/api/submit_feedback` | 正しい JSON 本体 | DB あり: `success` + `feedback_id`；DB なし: 500 `Database not available` |
 |15 | POST `/api/submit_feedback` | 60秒以内に同一 `sid` で再送 | **429** |
 |16 | POST `/api/submit_feedback` | 不正 JSON | **400** `Invalid JSON` |
