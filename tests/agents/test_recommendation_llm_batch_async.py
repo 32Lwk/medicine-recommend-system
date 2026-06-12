@@ -50,3 +50,25 @@ def test_async_batch_symptom_failure_fallback():
     batch = asyncio.run(_run())
     assert batch.nlu_result["gender_detected"]["detected"] is False
     assert batch.analysis_result == {}
+
+
+def test_async_batch_uses_asyncio_gather():
+    async def _run():
+        with patch(
+            "src.handlers.chat.recommendation_llm_batch_async.asyncio.gather",
+            wraps=asyncio.gather,
+        ) as mock_gather:
+            with (
+                patch(
+                    "src.handlers.chat.recommendation_llm_batch_async.resolve_nlu_for_recommendation",
+                    return_value={"gender_detected": {"detected": False}, "pregnancy_possible": {"detected": False}},
+                ),
+                patch(
+                    "src.handlers.chat.recommendation_llm_batch_async.analyze_symptoms_and_medicine_type",
+                    return_value={"medicine_type": "解熱鎮痛剤", "symptoms": []},
+                ),
+            ):
+                await run_nlu_and_symptom_analysis_parallel_async("x", {}, MagicMock())
+            return mock_gather.call_count
+
+    assert asyncio.run(_run()) == 1

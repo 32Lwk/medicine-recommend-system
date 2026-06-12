@@ -154,6 +154,33 @@ def test_generate_usage_notes_parallel_faster_than_serial(monkeypatch):
     assert parallel_elapsed < 0.14
 
 
+def test_generate_usage_notes_parallel_faster_than_serial_with_200ms(monkeypatch):
+    """p1-un-03: sleep(0.2)x3 の並列が直列より短いこと。"""
+    import time
+
+    meds = [{"name": "A"}, {"name": "B"}, {"name": "C"}]
+
+    def _slow_notes(name, *_a, **_k):
+        time.sleep(0.2)
+        return f"note-{name}"
+
+    monkeypatch.setattr(
+        "src.core.medicine_logic.generate_usage_notes",
+        _slow_notes,
+    )
+    t0 = time.perf_counter()
+    notes = generate_usage_notes_parallel(meds, user_info={}, nlu_result={})
+    parallel_elapsed = time.perf_counter() - t0
+
+    t1 = time.perf_counter()
+    for m in meds:
+        _slow_notes(m.get("name"), m, {}, {})
+    serial_elapsed = time.perf_counter() - t1
+
+    assert len(notes) == 3
+    assert parallel_elapsed < serial_elapsed * 0.8
+
+
 def test_generate_usage_notes_parallel_matches_serial_html(monkeypatch):
     meds = [
         {"name": "A", "product_name": "A"},
