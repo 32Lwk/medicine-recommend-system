@@ -133,7 +133,7 @@ def save_session_to_db(session_id, data):
     """セッションをDBに保存、失敗時はメモリに保存"""
     global _db_persist_enabled
     db = get_database()
-    if db and (db.connection or db.connection_pool):
+    if db and db.is_available():
         success = db.save_session(session_id, data)
         if success:
             _db_persist_enabled = True
@@ -532,7 +532,7 @@ def merge_session_messages(server_messages, client_messages):
     return merged
 
 
-def persist_session_from_chat_state(sid, session, request=None):
+def persist_session_from_chat_state(sid, session, request=None, *, force_persist: bool = True):
     """チャット POST 終了時にセッション状態（メッセージ含む）を永続化する。"""
     if not sid:
         return
@@ -559,9 +559,25 @@ def persist_session_from_chat_state(sid, session, request=None):
         'emergency_detected',
         'store_incident_emergency',
         'crisis_detected',
+        'concierge_state',
+        'counseling_mode',
+        'last_triage_result',
+        '_last_triage_result',
     ):
         if flag_key in session:
             payload[flag_key] = session[flag_key]
+
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _: False  # type: ignore[misc, assignment]
+
+    if is_line_session_id(sid) and not force_persist:
+        merged = dict(session_data)
+        merged.update(payload)
+        maybe_persist_session_activity(sid, merged)
+        return
+
     ensure_session_persisted(sid, payload, request)
 
 

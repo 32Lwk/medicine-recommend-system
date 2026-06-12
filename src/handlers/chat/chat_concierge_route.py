@@ -63,6 +63,24 @@ def _sync_session_db(
 ) -> None:
     if not sid:
         return
+    from src.handlers.line.line_session import is_line_session_id
+
+    if is_line_session_id(sid):
+        from src.services.session_manager import maybe_persist_session_activity, touch_session_in_memory
+
+        session_data = {
+            "session_id": sid,
+            "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+            "messages": list(session.get("messages", [])),
+            "last_activity": datetime.now(),
+            "client_ip": client_info.client_ip,
+            "user_agent": client_info.user_agent,
+            "user_attributes": session.get("user_attributes", {}),
+            "session_active": True,
+        }
+        touch_session_in_memory(sid, session_data)
+        maybe_persist_session_activity(sid, session_data)
+        return
     session_data = get_session_from_db(sid)
     if not session_data:
         session_data = {

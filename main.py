@@ -306,6 +306,9 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
 def _startup():
     try:
         init_database()
+        from src.services.session_manager import is_db_persist_enabled
+
+        is_db_persist_enabled()
         try:
             purged = purge_empty_sessions_on_startup()
             if purged:
@@ -1760,6 +1763,7 @@ def admin_system_status():
         if current_time - last_ts < SESSION_TIMEOUT:
             active_sessions += 1
     from src.core.medicine_logic import csv_load_status
+    from src.services.database import get_database_status
 
     return {
         "status": "ok",
@@ -1770,6 +1774,7 @@ def admin_system_status():
         "ai_auto_reply": get_ai_auto_reply(),
         "admin_mode": get_admin_mode(),
         "performance_stats": performance_stats,
+        "database": get_database_status(),
     }
 
 

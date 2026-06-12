@@ -327,6 +327,21 @@ LINE セッションの sid は `line:Uxxxxxxxx` 形式です。既存の管理�
 
 バックグラウンド処理中にインスタンスがスケールダウンすると Push が届かない場合があります。長時間化する場合は将来 Cloud Tasks 等を検討してください。
 
+#### コールドスタート対策（min-instances）
+
+LINE Webhook は単独リクエストでコールドスタートが発生しやすく、初回応答が数十秒遅くなることがあります。**dev 検証・本番いずれも**、ウォーム時 SLA（挨拶 <1秒、症状相談 4〜6秒）を満たすには次を推奨します。
+
+1. **Cloud Run の min-instances を 1 以上に設定**（GCP コンソールまたは `gcloud`）
+   ```bash
+   gcloud run services update medicine-recommend-dev \
+     --region=asia-northeast1 \
+     --min-instances=1
+   ```
+2. デプロイ後、`/admin/system_status` で `database.available=true` を確認
+3. `DATABASE_URL` は Neon **pooler** ホスト（`-pooler`）を使用
+
+コストと相談し、本番のみ min-instances=1、dev は検証時のみ有効化でも構いません。
+
 ### 9.6 将来: hero 画像
 
 v1 は hero なし（Noimage）。商品画像 URL が整備されたら `flex_messages.build_medicine_bubble(..., hero_url=...)` で拡張予定。

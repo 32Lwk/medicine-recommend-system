@@ -87,6 +87,10 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
             "medical_emergency_otc_locked",
             "crisis_detected",
             "emergency_detected",
+            "concierge_state",
+            "counseling_mode",
+            "last_triage_result",
+            "_last_triage_result",
         ):
             if flag in session_data:
                 session[flag] = session_data[flag]
@@ -131,4 +135,4 @@ def resolve_latest_bot_message(session: Any, sid: str) -> dict | None:
 
 def persist_line_session(sid: str, session: RequestSafeSession) -> None:
     trim_line_session_messages(session)
-    persist_session_from_chat_state(sid, session, request=None)
+    persist_session_from_chat_state(sid, session, request=None, force_persist=True)
