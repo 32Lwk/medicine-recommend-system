@@ -94,7 +94,11 @@ def run_chat_post_pipeline(
     )
 
     logger.info("📨 POST処理開始 trace_id=%s", ctx.trace_id)
+    from src.services.pipeline_perf import mark_pipeline_step
+
+    mark_pipeline_step("post_start")
     ctx.user_message = parse_incoming_message(session, message)
+    mark_pipeline_step("parsed_message")
 
     dev_trigger_resp = try_dev_error_trigger(
         session,
@@ -126,11 +130,13 @@ def run_chat_post_pipeline(
     if manual_resp is not None:
         return manual_resp
 
+    mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
     budget_resp = check_llm_budget_block(session, sid)
     if budget_resp is not None:
         return budget_resp
 
+    mark_pipeline_step("before_security")
     from src.agents.safety_gate import run_safety_gate_pre
 
     pre_gate, ctx.sanitized_message = run_safety_gate_pre(
@@ -144,6 +150,7 @@ def run_chat_post_pipeline(
     if pre_gate.blocked and pre_gate.response:
         return pre_gate.response
 
+    mark_pipeline_step("after_security")
     from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
 
     dup_concierge = try_concierge_duplicate_skip(
@@ -157,6 +164,7 @@ def run_chat_post_pipeline(
         session["last_trace_id"] = ctx.trace_id
         return dup_concierge
 
+    mark_pipeline_step("before_triage")
     from src.handlers.chat.chat_triage import run_triage
 
     early_response, ctx.triage_result = run_triage(

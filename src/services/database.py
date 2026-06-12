@@ -60,8 +60,32 @@ class DatabaseManager:
         self.reconnect_backoff = 1  # 秒
         self._reconnecting = False  # 再帰防止フラグ
 
+    def _mark_db_unavailable(self, reason: str = "connect_failed") -> None:
+        """以降の get_connection を即失敗させ、再接続ループで数十秒ブロックしない。"""
+        self.startup_skip_reason = reason
+        if self.connection_pool:
+            try:
+                self.connection_pool.closeall()
+            except Exception:
+                pass
+            self.connection_pool = None
+        if self.connection:
+            try:
+                self.connection.close()
+            except Exception:
+                pass
+            self.connection = None
+        try:
+            from src.services import session_manager as sm
+
+            sm._db_persist_enabled = False
+        except Exception:
+            pass
+
     def is_available(self) -> bool:
         """接続プールまたは単一接続が有効か。"""
+        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver"):
+            return False
         return bool(self.connection_pool or self.connection)
 
     def is_intentionally_disabled(self) -> bool:
@@ -124,7 +148,7 @@ class DatabaseManager:
                             self.connection_pool.putconn(test_conn)
                     except:
                         pass
-                self.startup_skip_reason = "connect_failed"
+                self._mark_db_unavailable("connect_failed")
                 return False
             except Exception as pool_error:
                 logger.warning(f"⚠️ Connection pool creation failed, using single connection: {str(pool_error)}")
@@ -203,12 +227,15 @@ class DatabaseManager:
                     logger.warning(f"⚠️ Reconnection attempt {attempt + 1} failed: {str(e)}")
             
             logger.error(f"❌ All reconnection attempts failed")
+            self._mark_db_unavailable("connect_failed")
             return False
         finally:
             self._reconnecting = False
     
     def get_connection(self):
         """接続プールから接続を取得、または単一接続を返す"""
+        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver"):
+            return None
         if not self.is_available():
             if not self.is_intentionally_disabled():
                 logger.error("❌ No database connection available")
