@@ -16,6 +16,29 @@ def test_validate_database_url_config_warns_without_pooler():
     assert any("pooler" in w for w in warnings)
 
 
+def test_validate_database_url_config_warns_channel_binding_require():
+    url = (
+        "postgresql://user:pass@ep-abc-pooler.us-east-2.aws.neon.tech/neondb"
+        "?sslmode=require&channel_binding=require"
+    )
+    with patch.dict("os.environ", {"DATABASE_URL": url}, clear=False):
+        with patch("src.services.database._normalize_database_url", side_effect=lambda u: u):
+            warnings = validate_database_url_config()
+    assert any("channel_binding" in w for w in warnings)
+
+
+def test_normalize_database_url_strips_channel_binding_require():
+    from src.services.database import _normalize_database_url
+
+    url = (
+        "postgresql://user:pass@ep-abc-pooler.neon.tech/neondb"
+        "?sslmode=require&channel_binding=require"
+    )
+    normalized = _normalize_database_url(url)
+    assert "channel_binding" not in normalized
+    assert "sslmode=require" in normalized
+
+
 def test_validate_database_url_config_ok_with_pooler():
     url = (
         "postgresql://user:pass@ep-abc-123-pooler.us-east-2.aws.neon.tech/"
