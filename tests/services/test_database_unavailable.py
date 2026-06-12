@@ -36,3 +36,19 @@ def test_budget_guard_skips_db_when_unavailable(caplog):
         assert not any("No database connection" in r.message for r in caplog.records)
     finally:
         budget_guard._db = original_db
+
+
+def test_is_available_false_when_connect_failed_despite_pool_object():
+    db = DatabaseManager()
+    db.connection_pool = object()  # プールオブジェクトだけ残る壊れた状態
+    db.startup_skip_reason = "connect_failed"
+    assert db.is_available() is False
+    assert db.get_connection() is None
+
+
+def test_mark_db_unavailable_clears_pool():
+    db = DatabaseManager()
+    db.connection_pool = object()
+    db._mark_db_unavailable("connect_failed")
+    assert db.connection_pool is None
+    assert db.startup_skip_reason == "connect_failed"

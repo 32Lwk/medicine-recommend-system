@@ -20,6 +20,7 @@
 - **loading 即時表示**: `begin_line_loading()` をハンドラ先頭で await し、セッション DB 読込・言語判定・ job lock 取得より前に `loading/start` を送信。keepalive は初回送信後 50 秒間隔で再発火。
 - **LINE prime/setup の DB 読込スキップ**（追記 `884074d` 以降）: `prime_line_session` / `setup_llm_request` は LINE sid でメモリのみ参照。DB 接続不良時の再接続待ちでパイプラインが数十秒停止するのを防止。
 - **LINE `get_session_from_db` メモリ専用**（`80e60bb` 以降）: Concierge 保存等パイプライン全体の LINE 読込で DB に触れない。`_db_persist_enabled is False` 時は Web も読込スキップ。
+- **DB 再接続 fail-fast**（`0764fa5` 以降）: 接続テスト失敗・再接続失敗後はプールを破棄し `get_connection` を即 `None`。`check_llm_allowed` / `get_global_state` による数十秒ブロックを防止。パイプライン早期ステップに `PIPELINE_PERF` マーク追加。
 
 ### 新規ファイル
 

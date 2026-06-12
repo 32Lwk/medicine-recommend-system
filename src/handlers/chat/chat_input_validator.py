@@ -157,12 +157,15 @@ def validate_and_block_input(session, client, user_message, sid):
         log_user_interaction(sanitized_message, "POST", session.get('_id', 'unknown'), session.get('username', 'unknown'))
 
     try:
+        from src.handlers.line.line_session import is_line_session_id
+
         register_user_attributes_from_message(
             session,
             session.get('_id'),
             sanitized_message,
             save_to_db_fn=save_session_to_db,
-            get_session_from_db_fn=get_session_from_db
+            get_session_from_db_fn=get_session_from_db,
+            schedule_async_extraction=not (sid and is_line_session_id(sid)),
         )
     except Exception as e:
         logger.warning(f"⚠️ ユーザー属性登録でエラー: {e}")
