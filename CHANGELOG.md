@@ -18,6 +18,7 @@
 - **PIPELINE_PERF 計測**: `pipeline_perf.py` で主要ステップの壁時計をログ出力（Web handler / LINE handler 終了時）。
 - **Golden 回帰**: `tests/fixtures/golden/recommendation_physical.jsonl` と `test_golden_regression.py` を拡張。
 - **loading 即時表示**: `begin_line_loading()` をハンドラ先頭で await し、セッション DB 読込・言語判定・ job lock 取得より前に `loading/start` を送信。keepalive は初回送信後 50 秒間隔で再発火。
+- **LINE prime/setup の DB 読込スキップ**（追記 `884074d` 以降）: `prime_line_session` / `setup_llm_request` は LINE sid でメモリのみ参照。DB 接続不良時の再接続待ちでパイプラインが数十秒停止するのを防止。
 
 ### 新規ファイル
 
