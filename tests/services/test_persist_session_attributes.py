@@ -31,3 +31,12 @@ def test_persist_session_attributes_only_saves_web_immediately():
 
     mock_save.assert_called_once()
     mock_maybe.assert_not_called()
+
+
+def test_get_session_from_db_line_skips_db_read():
+    sm._all_sessions["line:U1"] = {"session_id": "line:U1", "messages": [{"type": "user"}]}
+    mock_db = patch.object(sm, "get_database")
+    with mock_db as get_db:
+        result = sm.get_session_from_db("line:U1")
+    get_db.assert_not_called()
+    assert result["messages"][0]["type"] == "user"
