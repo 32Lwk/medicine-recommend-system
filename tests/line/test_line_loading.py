@@ -4,11 +4,11 @@ from __future__ import annotations
 import asyncio
 from unittest.mock import AsyncMock, patch
 
-from src.handlers.line.line_loading import run_loading_keepalive
+from src.handlers.line.line_loading import begin_line_loading, end_line_loading, run_loading_keepalive
 
 
 @patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock)
-def test_loading_keepalive_refreshes_before_stop(mock_start):
+def test_loading_keepalive_no_refresh_before_interval(mock_start):
     async def _run():
         stop = asyncio.Event()
         task = asyncio.create_task(run_loading_keepalive("U1", stop))
@@ -17,7 +17,7 @@ def test_loading_keepalive_refreshes_before_stop(mock_start):
         await task
 
     asyncio.run(_run())
-    mock_start.assert_awaited()
+    mock_start.assert_not_awaited()
 
 
 @patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock)
@@ -32,3 +32,25 @@ def test_loading_keepalive_rerequests_on_interval(mock_start):
 
     asyncio.run(_run())
     assert mock_start.await_count >= 2
+
+
+@patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock)
+def test_begin_line_loading_starts_before_keepalive(mock_start):
+    async def _run():
+        with patch("src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN", "token"):
+            stop, keepalive = await begin_line_loading("U1")
+            await end_line_loading(stop, keepalive)
+
+    asyncio.run(_run())
+    mock_start.assert_awaited_once()
+
+
+@patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock)
+def test_begin_line_loading_skipped_without_token(mock_start):
+    async def _run():
+        with patch("src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN", ""):
+            stop, keepalive = await begin_line_loading("U1")
+            await end_line_loading(stop, keepalive)
+
+    asyncio.run(_run())
+    mock_start.assert_not_awaited()
