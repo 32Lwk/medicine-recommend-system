@@ -7,8 +7,11 @@ from src.handlers.chat.nlu_resolve import resolve_nlu_for_recommendation
 
 
 @patch("config.llm_flags.is_agent_enabled", return_value=False)
-@patch("src.core.rule_based_recommendation.hybrid_nlu_extraction")
-def test_legacy_hybrid_when_agent_off(mock_hybrid, _enabled):
+@patch("src.handlers.chat.nlu_resolve.set_cached_nlu_result")
+@patch("src.handlers.chat.nlu_resolve.get_cached_nlu_result", return_value=None)
+@patch("src.handlers.chat.nlu_resolve.extract_preferences_with_gpt", return_value={})
+@patch("src.handlers.chat.nlu_resolve.hybrid_nlu_extraction")
+def test_legacy_hybrid_when_agent_off(mock_hybrid, _prefs, _cache, _set_cache, _enabled):
     mock_hybrid.return_value = {"symptoms": ["headache"]}
     out = resolve_nlu_for_recommendation("頭痛", {"age": 30}, MagicMock(), session_id="s1")
     assert out["symptoms"] == ["headache"]

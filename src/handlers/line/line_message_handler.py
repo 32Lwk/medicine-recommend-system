@@ -8,8 +8,14 @@ from typing import Any
 import httpx
 
 from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
-from src.handlers.chat_handler import handle_chat_post
+from src.handlers.chat_handler import handle_chat_post_async
 from src.handlers.line.flex_messages import build_line_messages_from_bot_message
+from src.handlers.line.line_progressive_delivery import (
+    LineDeliveryContext,
+    bind_carousel_flush_to_event_loop,
+    deliver_final_line_messages,
+    set_line_delivery_context,
+)
 from src.handlers.line.line_reply import push_messages, reply_messages, start_loading_animation
 from src.handlers.line.line_session import (
     line_sid,
@@ -210,115 +216,135 @@ async def _process_text_message(
     sid = line_sid(user_id)
     logger.info("LINE text message userId=%s sid=%s text=%s", user_id, sid, text)
 
-    session = prime_line_session(user_id)
-    client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
+    from src.services.pipeline_perf import log_pipeline_perf, start_pipeline_perf
 
-    from src.handlers.line.line_dev_triggers import try_line_dev_flex_preview
-
-    preview_bot = try_line_dev_flex_preview(
-        text,
-        session,
-        sid,
-        client_ip=client_info.client_ip,
-        user_agent=client_info.user_agent,
+    start_pipeline_perf(channel="line")
+    delivery_ctx = LineDeliveryContext(
+        user_id=user_id,
+        reply_token=reply_token,
+        lang="ja",
+        sid=sid,
     )
-    if preview_bot is not None:
+    set_line_delivery_context(delivery_ctx)
+    try:
+        session = prime_line_session(user_id)
+        client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
+
+        from src.handlers.line.line_dev_triggers import try_line_dev_flex_preview
+
+        preview_bot = try_line_dev_flex_preview(
+            text,
+            session,
+            sid,
+            client_ip=client_info.client_ip,
+            user_agent=client_info.user_agent,
+        )
+        if preview_bot is not None:
+            if LINE_CHANNEL_ACCESS_TOKEN:
+                line_messages = build_line_messages_from_bot_message(
+                    preview_bot,
+                    lang=session.get("detected_language") or "ja",
+                    session_id=sid,
+                )
+                await _deliver_line_messages(
+                    user_id,
+                    line_messages,
+                    reply_token=reply_token,
+                    sid=sid,
+                    user_message=text,
+                    bot_message=preview_bot,
+                    lang=session.get("detected_language") or "ja",
+                )
+            persist_line_session(sid, session)
+            return
+
+        from src.core.language_utils import detect_language
+        from src.handlers.line.line_job_lock import LineJobLock
+        from src.services.processing_status import mark_processing_step, set_processing_language
+
+        lang = detect_language(text)
+        session["detected_language"] = lang
+        delivery_ctx.lang = lang
+
+        job_lock = LineJobLock()
+        if not job_lock.acquire(sid):
+            logger.info("LINE duplicate job skipped sid=%s", sid)
+            if LINE_CHANNEL_ACCESS_TOKEN:
+                await start_loading_animation(user_id)
+            return
+
+        loading_stop = asyncio.Event()
+        loading_task = None
         if LINE_CHANNEL_ACCESS_TOKEN:
+            await start_loading_animation(user_id)
+            from src.handlers.line.line_loading import run_loading_keepalive
+
+            loading_task = asyncio.create_task(run_loading_keepalive(user_id, loading_stop))
+        else:
+            logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
+
+        monitor = get_global_monitor()
+        monitor.start_monitoring()
+        monitor.increment_request()
+
+        set_processing_language(sid, lang)
+        mark_processing_step(sid, "validate")
+
+        loop = asyncio.get_running_loop()
+        bind_carousel_flush_to_event_loop(delivery_ctx, loop)
+
+        try:
+            await handle_chat_post_async(
+                session,
+                client_info,
+                text,
+                sid,
+                monitor,
+            )
+            mark_processing_step(sid, "finalize")
+
+            bot_msg = resolve_latest_bot_message(session, sid)
+            if not bot_msg:
+                logger.warning("LINE no bot message after pipeline sid=%s", sid)
+                if LINE_CHANNEL_ACCESS_TOKEN:
+                    await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
+                return
+
             line_messages = build_line_messages_from_bot_message(
-                preview_bot,
-                lang=session.get("detected_language") or "ja",
+                bot_msg,
+                lang=lang,
                 session_id=sid,
             )
-            await _deliver_line_messages(
+            if not LINE_CHANNEL_ACCESS_TOKEN:
+                return
+
+            await deliver_final_line_messages(
                 user_id,
                 line_messages,
                 reply_token=reply_token,
                 sid=sid,
                 user_message=text,
-                bot_message=preview_bot,
-                lang=session.get("detected_language") or "ja",
+                bot_message=bot_msg,
+                lang=lang,
+                push_chunk_fn=_push_message_chunk,
+                reply_fn=reply_messages,
+                deliver_all_fn=_deliver_line_messages,
             )
-        persist_line_session(sid, session)
-        return
-
-    from src.core.language_utils import detect_language
-    from src.handlers.line.line_job_lock import LineJobLock
-    from src.services.processing_status import mark_processing_step, set_processing_language
-
-    lang = detect_language(text)
-    session["detected_language"] = lang
-
-    job_lock = LineJobLock()
-    if not job_lock.acquire(sid):
-        logger.info("LINE duplicate job skipped sid=%s", sid)
-        if LINE_CHANNEL_ACCESS_TOKEN:
-            await start_loading_animation(user_id)
-        return
-
-    loading_stop = asyncio.Event()
-    loading_task = None
-    if LINE_CHANNEL_ACCESS_TOKEN:
-        await start_loading_animation(user_id)
-        from src.handlers.line.line_loading import run_loading_keepalive
-
-        loading_task = asyncio.create_task(run_loading_keepalive(user_id, loading_stop))
-    else:
-        logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
-
-    monitor = get_global_monitor()
-    monitor.start_monitoring()
-    monitor.increment_request()
-
-    set_processing_language(sid, lang)
-    mark_processing_step(sid, "validate")
-
-    try:
-        await asyncio.to_thread(
-            handle_chat_post,
-            session,
-            client_info,
-            text,
-            sid,
-            monitor,
-        )
-        mark_processing_step(sid, "finalize")
-
-        bot_msg = resolve_latest_bot_message(session, sid)
-        if not bot_msg:
-            logger.warning("LINE no bot message after pipeline sid=%s", sid)
+        except Exception as exc:
+            logger.exception("LINE pipeline error sid=%s", sid)
             if LINE_CHANNEL_ACCESS_TOKEN:
                 await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
-            return
-
-        line_messages = build_line_messages_from_bot_message(
-            bot_msg,
-            lang=lang,
-            session_id=sid,
-        )
-        if not LINE_CHANNEL_ACCESS_TOKEN:
-            return
-
-        await _deliver_line_messages(
-            user_id,
-            line_messages,
-            reply_token=reply_token,
-            sid=sid,
-            user_message=text,
-            bot_message=bot_msg,
-            lang=lang,
-        )
-    except Exception as exc:
-        logger.exception("LINE pipeline error sid=%s", sid)
-        if LINE_CHANNEL_ACCESS_TOKEN:
-            await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
-        _notify_line_error_email(user_id, sid, str(exc))
+            _notify_line_error_email(user_id, sid, str(exc))
+        finally:
+            loading_stop.set()
+            if loading_task is not None:
+                loading_task.cancel()
+                try:
+                    await loading_task
+                except asyncio.CancelledError:
+                    pass
+            job_lock.release(sid)
+            persist_line_session(sid, session)
     finally:
-        loading_stop.set()
-        if loading_task is not None:
-            loading_task.cancel()
-            try:
-                await loading_task
-            except asyncio.CancelledError:
-                pass
-        job_lock.release(sid)
-        persist_line_session(sid, session)
+        log_pipeline_perf(sid=sid)
+        set_line_delivery_context(None)

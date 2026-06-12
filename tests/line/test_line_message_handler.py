@@ -39,7 +39,7 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
-        patch("src.handlers.line.line_message_handler.handle_chat_post", return_value=({"status": "ok"}, 200)),
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
         patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
         patch("src.handlers.line.line_message_handler.build_line_messages_from_bot_message", return_value=flex_msgs),
         patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=True),
@@ -52,6 +52,7 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
         mock_reply.return_value = True
+        mock_post.return_value = ({"status": "ok"}, 200)
         mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
         mock_monitor.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
@@ -59,6 +60,53 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
     mock_loading.assert_awaited_once()
     mock_reply.assert_awaited_once()
     mock_push.assert_not_awaited()
+    mock_post.assert_awaited_once()
+
+
+def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
+    """Physical + carousel 送信済み時は deliver_final_line_messages 経由で Reply。"""
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    bot_msg = {
+        "type": "bot",
+        "diagnosis": {
+            "status": "success",
+            "medicine_type": "解熱鎮痛剤",
+            "recommended_medicines": [
+                {"product_name": "テスト薬", "explanation": "おすすめです。"},
+            ],
+        },
+    }
+
+    with (
+        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock),
+        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
+        patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
+        patch(
+            "src.handlers.line.line_message_handler.build_line_messages_from_bot_message",
+            return_value=[{"type": "flex", "altText": "full"}],
+        ),
+        patch(
+            "src.handlers.line.line_message_handler.deliver_final_line_messages",
+            new_callable=AsyncMock,
+        ) as mock_deliver_final,
+        patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
+        patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=True),
+        patch("src.handlers.line.line_job_lock.LineJobLock.release"),
+        patch("src.handlers.line.line_message_handler.persist_line_session"),
+        patch("src.services.processing_status.set_processing_language"),
+        patch("src.services.processing_status.mark_processing_step"),
+        patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
+    ):
+        mock_post.return_value = ({"status": "ok"}, 200)
+        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_monitor.return_value = MagicMock()
+        asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
+
+    mock_deliver_final.assert_awaited_once()
 
 
 def test_process_text_message_skips_duplicate_without_text(monkeypatch):
@@ -68,7 +116,7 @@ def test_process_text_message_skips_duplicate_without_text(monkeypatch):
     )
     with (
         patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock) as mock_loading,
-        patch("src.handlers.line.line_message_handler.handle_chat_post") as mock_post,
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async") as mock_post,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=False),
         patch("src.handlers.line.line_job_lock.LineJobLock.release"),
@@ -97,7 +145,7 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_dev_triggers.try_line_dev_flex_preview", return_value=preview_bot),
-        patch("src.handlers.line.line_message_handler.handle_chat_post") as mock_post,
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async") as mock_post,
         patch(
             "src.handlers.line.line_message_handler.build_line_messages_from_bot_message",
             return_value=flex_msgs,
