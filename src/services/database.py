@@ -45,10 +45,44 @@ def _parse_sslmode_from_url(url: str) -> str:
     return os.getenv("DATABASE_SSLMODE", "require")
 
 
+def _parse_channel_binding_from_url(url: str) -> Optional[str]:
+    from urllib.parse import parse_qs, urlparse
+
+    if not url:
+        return None
+    modes = parse_qs(urlparse(url).query).get("channel_binding")
+    return modes[0] if modes else None
+
+
+def _normalize_database_url(url: str) -> str:
+    """
+    psycopg2 が channel_binding=require で失敗することがあるため除去する。
+    sslmode=require があれば TLS は維持される。
+    """
+    from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+    parsed = urlparse(url)
+    if not parsed.query:
+        return url
+    qs = parse_qs(parsed.query, keep_blank_values=True)
+    binding = (qs.get("channel_binding") or [None])[0]
+    if binding != "require":
+        return url
+    del qs["channel_binding"]
+    flat = {k: v[0] for k, v in qs.items() if v}
+    new_query = urlencode(flat)
+    normalized = urlunparse(parsed._replace(query=new_query))
+    logger.info(
+        "DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    )
+    return normalized
+
+
 def validate_database_url_config() -> list[str]:
     """DATABASE_URL の形式に関する警告（接続文字列そのものは返さない）。"""
     warnings: list[str] = []
     url = resolve_database_url() or ""
+    raw_url = (os.getenv("DATABASE_URL") or "").strip()
     if not url:
         return warnings
     if not _uses_pooler(url):
@@ -58,6 +92,11 @@ def validate_database_url_config() -> list[str]:
         )
     if _parse_sslmode_from_url(url) == "disable":
         warnings.append("sslmode=disable は本番環境では非推奨です。")
+    if _parse_channel_binding_from_url(raw_url or url) == "require":
+        warnings.append(
+            "channel_binding=require は psycopg2 で接続失敗することがあります。"
+            " 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+        )
     return warnings
 
 
@@ -70,9 +109,11 @@ def get_database_status() -> dict:
         "available": db_manager.is_available(),
         "persist_enabled": is_db_persist_enabled(),
         "startup_skip_reason": db_manager.startup_skip_reason,
+        "last_connect_error": getattr(db_manager, "last_connect_error", None),
         "configured": bool(url),
         "uses_pooler": _uses_pooler(url) if url else False,
         "sslmode": _parse_sslmode_from_url(url),
+        "channel_binding": _parse_channel_binding_from_url(url),
         "config_warnings": validate_database_url_config(),
     }
 
@@ -81,7 +122,7 @@ def resolve_database_url() -> Optional[str]:
     """DATABASE_URL または POSTGRES_* / PG* から接続文字列を解決する。"""
     url = (os.getenv('DATABASE_URL') or '').strip()
     if url:
-        return url
+        return _normalize_database_url(url)
     user = (os.getenv('POSTGRES_USER') or os.getenv('PGUSER') or '').strip()
     password = os.getenv('POSTGRES_PASSWORD') or os.getenv('PGPASSWORD') or ''
     host = (os.getenv('POSTGRES_HOST') or os.getenv('PGHOST') or '').strip()
@@ -104,6 +145,7 @@ class DatabaseManager:
         self.database_url = resolve_database_url()
         # init_database / connect が False のときの理由（起動ログ用）
         self.startup_skip_reason: Optional[str] = None
+        self.last_connect_error: Optional[str] = None
         # 環境変数から接続プール設定を取得（デフォルト値は小規模環境向け）
         self.min_connections = int(os.getenv('DB_MIN_CONNECTIONS', 2))
         self.max_connections = int(os.getenv('DB_MAX_CONNECTIONS', 10))
@@ -111,9 +153,11 @@ class DatabaseManager:
         self.reconnect_backoff = 1  # 秒
         self._reconnecting = False  # 再帰防止フラグ
 
-    def _mark_db_unavailable(self, reason: str = "connect_failed") -> None:
+    def _mark_db_unavailable(self, reason: str = "connect_failed", error: Optional[str] = None) -> None:
         """以降の get_connection を即失敗させ、再接続ループで数十秒ブロックしない。"""
         self.startup_skip_reason = reason
+        if error:
+            self.last_connect_error = error[:300]
         if self.connection_pool:
             try:
                 self.connection_pool.closeall()
@@ -135,7 +179,7 @@ class DatabaseManager:
 
     def is_available(self) -> bool:
         """接続プールまたは単一接続が有効か。"""
-        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver"):
+        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver", "init_failed"):
             return False
         return bool(self.connection_pool or self.connection)
 
@@ -193,16 +237,20 @@ class DatabaseManager:
                         self.connection_pool.putconn(test_conn)
                         return True
                 except Exception as test_error:
-                    logger.warning(f"⚠️ Initial connection test failed: {str(test_error)}")
+                    err_msg = str(test_error)
+                    logger.warning(f"⚠️ Initial connection test failed: {err_msg}")
                     try:
                         if test_conn:
                             self.connection_pool.putconn(test_conn)
                     except:
                         pass
-                self._mark_db_unavailable("connect_failed")
+                    self._mark_db_unavailable("connect_failed", err_msg)
+                    return False
+                self._mark_db_unavailable("connect_failed", "initial connection test returned no connection")
                 return False
             except Exception as pool_error:
-                logger.warning(f"⚠️ Connection pool creation failed, using single connection: {str(pool_error)}")
+                err_msg = str(pool_error)
+                logger.warning(f"⚠️ Connection pool creation failed, using single connection: {err_msg}")
                 # フォールバック: 単一接続
                 sslmode = os.getenv('DATABASE_SSLMODE', 'require')
                 connect_kwargs = {
@@ -223,8 +271,9 @@ class DatabaseManager:
                 return True
             
         except Exception as e:
-            self.startup_skip_reason = "connect_failed"
-            logger.error(f"❌ Database connection failed: {str(e)}")
+            err_msg = str(e)
+            self._mark_db_unavailable("connect_failed", err_msg)
+            logger.error(f"❌ Database connection failed: {err_msg}")
             return False
     
     def _is_ssl_error(self, error_msg: str) -> bool:
@@ -285,7 +334,7 @@ class DatabaseManager:
     
     def get_connection(self):
         """接続プールから接続を取得、または単一接続を返す"""
-        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver"):
+        if self.startup_skip_reason in ("connect_failed", "no_url", "no_driver", "init_failed"):
             return None
         if not self.is_available():
             if not self.is_intentionally_disabled():
@@ -1243,8 +1292,27 @@ def init_database():
         return False
     except Exception as e:
         db_manager.startup_skip_reason = "error"
+        db_manager.last_connect_error = str(e)[:300]
         logger.warning(f"⚠️ Database initialization error: {str(e)} - continuing without database")
         return False
+
+
+def log_database_startup_summary() -> None:
+    """Cloud Run ログで DB 状態を 1 行で確認できるようにする。"""
+    status = get_database_status()
+    err_suffix = ""
+    if status.get("last_connect_error"):
+        err_suffix = f" last_error={status['last_connect_error'][:120]}"
+    logger.info(
+        "DB startup summary: available=%s persist=%s reason=%s pooler=%s sslmode=%s%s",
+        status["available"],
+        status["persist_enabled"],
+        status.get("startup_skip_reason"),
+        status.get("uses_pooler"),
+        status.get("sslmode"),
+        err_suffix,
+    )
+
 
 def get_database():
     """データベースマネージャーを取得"""

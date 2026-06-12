@@ -2372,9 +2372,11 @@ function loadSystemStatus() {
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">接続:</strong> ${dbStatus.available ? '✅ 利用可能' : '❌ 不可'}</p>
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">永続化:</strong> ${dbStatus.persist_enabled ? '✅ 有効' : '⚠️ 無効（メモリのみ）'}</p>
                 <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">設定:</strong> ${dbStatus.configured ? '✅ DATABASE_URL あり' : '⚪ 未設定'}</p>
-                ${dbStatus.startup_skip_reason ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> ${dbStatus.startup_skip_reason}</p>` : ''}
                 ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">Pooler:</strong> ${dbStatus.uses_pooler ? '✅ 使用' : '⚠️ 未使用'}</p>` : ''}
                 ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">SSL mode:</strong> ${dbStatus.sslmode || 'require'}</p>` : ''}
+                ${dbStatus.channel_binding ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">channel_binding:</strong> ${dbStatus.channel_binding}</p>` : ''}
+                ${dbStatus.last_connect_error ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">直近の接続エラー:</strong> ${dbStatus.last_connect_error}</p>` : ''}
+                ${dbStatus.startup_skip_reason ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> ${dbStatus.startup_skip_reason}</p>` : (!dbStatus.available && dbStatus.configured ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> 不明（起動ログを確認）</p>` : '')}
                 ${dbWarnings.length ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">警告:</strong> ${dbWarnings.join(' ')}</p>` : ''}
             </div>
             

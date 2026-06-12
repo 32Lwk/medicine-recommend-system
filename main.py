@@ -36,8 +36,7 @@ from config.settings import SESSION_COOKIE_MAX_AGE
 from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
-from src.services.database import init_database
-from src.services.database import get_database
+from src.services.database import get_database, init_database, log_database_startup_summary
 from src.services.session_manager import (
     clear_sessions_fallback,
     cleanup_old_sessions,
@@ -164,6 +163,24 @@ def _particle_profile_json() -> str:
 
 @asynccontextmanager
 async def _app_lifespan(app: FastAPI):
+    try:
+        init_database()
+        from src.services.session_manager import is_db_persist_enabled
+
+        is_db_persist_enabled()
+        log_database_startup_summary()
+        try:
+            purged = purge_empty_sessions_on_startup()
+            if purged:
+                logger.info("Startup empty-session purge: removed %s rows", purged)
+        except Exception as purge_err:
+            logger.warning("Startup empty-session purge skipped: %s", purge_err)
+    except Exception as e:
+        logger.warning(
+            "⚠️ Database startup unexpected error: %s. Feedback features will be disabled.",
+            e,
+        )
+
     async with httpx.AsyncClient(timeout=30.0) as line_http_client:
         from src.handlers.line import line_reply
 
@@ -300,23 +317,6 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
             status_code=500,
         )
     return HTMLResponse(f"<h1>エラー</h1><p>{error_msg}</p>", status_code=500)
-
-
-@app.on_event("startup")
-def _startup():
-    try:
-        init_database()
-        from src.services.session_manager import is_db_persist_enabled
-
-        is_db_persist_enabled()
-        try:
-            purged = purge_empty_sessions_on_startup()
-            if purged:
-                logger.info("Startup empty-session purge: removed %s rows", purged)
-        except Exception as purge_err:
-            logger.warning("Startup empty-session purge skipped: %s", purge_err)
-    except Exception as e:
-        logger.warning(f"⚠️ Database startup unexpected error: {e}. Feedback features will be disabled.")
 
 
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
