@@ -22,8 +22,13 @@ def setup_llm_request(session: Any, sid: Optional[str]) -> None:
     try:
         from config.llm_canary import effective_model_profile
         from config.llm_runtime import set_request_profile
+        from src.handlers.line.line_session import is_line_session_id
+        from src.services.session_manager import get_session_from_memory
 
-        session_data = get_session_from_db(sid) if sid else {}
+        if sid and is_line_session_id(sid):
+            session_data = get_session_from_memory(sid) or {}
+        else:
+            session_data = get_session_from_db(sid) if sid else {}
         last_act = session_data.get("last_activity") if session_data else None
         set_request_profile(effective_model_profile(sid, last_activity=last_act))
     except Exception as prof_err:

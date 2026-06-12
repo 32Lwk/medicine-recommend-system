@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.services.session_manager import get_session_from_db, persist_session_from_chat_state
+from src.services.session_manager import persist_session_from_chat_state, get_session_from_memory
 from src.utils.request_safe_session import RequestSafeSession
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,11 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
     if "username" not in session:
         session["username"] = f"LINEユーザー{user_id[-6:]}"
 
-    session_data = get_session_from_db(sid)
+    # LINE 応答経路では DB 読込を避け、同一インスタンスのメモリのみ復元する。
+    # （DB 接続不良時の getconn/再接続待ちで loading 後に数十秒ブロックするのを防ぐ）
+    from src.services.session_manager import get_session_from_memory
+
+    session_data = get_session_from_memory(sid)
     if session_data:
         session["messages"] = (session_data.get("messages") or []).copy()
         db_attrs = session_data.get("user_attributes") or {}
@@ -102,8 +106,12 @@ def get_latest_bot_message_from_session(session: Any) -> dict | None:
 
 
 def get_latest_bot_message(sid: str) -> dict | None:
-    """DB から最新の bot メッセージを取得（末尾から最初の type=bot）。"""
-    session_data = get_session_from_db(sid)
+    """メモリまたは DB から最新の bot メッセージを取得。"""
+    session_data = get_session_from_memory(sid)
+    if not session_data:
+        from src.services.session_manager import get_session_from_db
+
+        session_data = get_session_from_db(sid)
     if not session_data:
         return None
     messages = session_data.get("messages") or []
