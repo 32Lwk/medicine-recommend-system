@@ -109,6 +109,46 @@ def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
     mock_deliver_final.assert_awaited_once()
 
 
+def test_process_text_message_non_physical_calls_deliver_final(monkeypatch):
+    """非 Physical 相談でも deliver_final_line_messages 経由（内部で一括 Flex フォールバック）。"""
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    bot_msg = {
+        "type": "bot",
+        "diagnosis": {"status": "success", "medicine_type": "解熱鎮痛剤", "recommended_medicines": []},
+    }
+
+    with (
+        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock),
+        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
+        patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
+        patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
+        patch(
+            "src.handlers.line.line_message_handler.build_line_messages_from_bot_message",
+            return_value=[{"type": "flex", "altText": "full"}],
+        ),
+        patch(
+            "src.handlers.line.line_message_handler.deliver_final_line_messages",
+            new_callable=AsyncMock,
+        ) as mock_deliver_final,
+        patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
+        patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=True),
+        patch("src.handlers.line.line_job_lock.LineJobLock.release"),
+        patch("src.handlers.line.line_message_handler.persist_line_session"),
+        patch("src.services.processing_status.set_processing_language"),
+        patch("src.services.processing_status.mark_processing_step"),
+        patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
+    ):
+        mock_post.return_value = ({"status": "ok"}, 200)
+        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_monitor.return_value = MagicMock()
+        asyncio.run(_process_text_message("Utest", "最近眠れない", "reply-tok"))
+
+    mock_deliver_final.assert_awaited_once()
+
+
 def test_process_text_message_skips_duplicate_without_text(monkeypatch):
     monkeypatch.setattr(
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
