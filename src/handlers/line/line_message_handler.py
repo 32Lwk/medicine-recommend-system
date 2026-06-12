@@ -16,7 +16,8 @@ from src.handlers.line.line_progressive_delivery import (
     deliver_final_line_messages,
     set_line_delivery_context,
 )
-from src.handlers.line.line_reply import push_messages, reply_messages, start_loading_animation
+from src.handlers.line.line_loading import begin_line_loading, end_line_loading
+from src.handlers.line.line_reply import push_messages, reply_messages
 from src.handlers.line.line_session import (
     line_sid,
     persist_line_session,
@@ -216,6 +217,8 @@ async def _process_text_message(
     sid = line_sid(user_id)
     logger.info("LINE text message userId=%s sid=%s text=%s", user_id, sid, text)
 
+    loading_stop, loading_keepalive = await begin_line_loading(user_id)
+
     from src.services.pipeline_perf import log_pipeline_perf, start_pipeline_perf
 
     start_pipeline_perf(channel="line")
@@ -269,18 +272,9 @@ async def _process_text_message(
         job_lock = LineJobLock()
         if not job_lock.acquire(sid):
             logger.info("LINE duplicate job skipped sid=%s", sid)
-            if LINE_CHANNEL_ACCESS_TOKEN:
-                await start_loading_animation(user_id)
             return
 
-        loading_stop = asyncio.Event()
-        loading_task = None
-        if LINE_CHANNEL_ACCESS_TOKEN:
-            await start_loading_animation(user_id)
-            from src.handlers.line.line_loading import run_loading_keepalive
-
-            loading_task = asyncio.create_task(run_loading_keepalive(user_id, loading_stop))
-        else:
+        if not LINE_CHANNEL_ACCESS_TOKEN:
             logger.warning("LINE_CHANNEL_ACCESS_TOKEN not set; skipping loading/push")
 
         monitor = get_global_monitor()
@@ -336,15 +330,9 @@ async def _process_text_message(
                 await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
             _notify_line_error_email(user_id, sid, str(exc))
         finally:
-            loading_stop.set()
-            if loading_task is not None:
-                loading_task.cancel()
-                try:
-                    await loading_task
-                except asyncio.CancelledError:
-                    pass
             job_lock.release(sid)
             persist_line_session(sid, session)
     finally:
+        await end_line_loading(loading_stop, loading_keepalive)
         log_pipeline_perf(sid=sid)
         set_line_delivery_context(None)

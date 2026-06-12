@@ -7,9 +7,47 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from src.handlers.line.line_message_handler import _deliver_line_messages, _process_text_message
 
 
+def test_process_text_message_loading_starts_before_session_prime(monkeypatch):
+    """loading/start は DB セッション読込より先に dispatch される。"""
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    call_order: list[str] = []
+
+    async def _track_loading(*_args, **_kwargs):
+        call_order.append("loading")
+        return True
+
+    def _track_prime(*_args, **_kwargs):
+        call_order.append("prime")
+        return MagicMock(get=MagicMock(return_value="ja"))
+
+    with (
+        patch(
+            "src.handlers.line.line_loading.start_loading_animation",
+            side_effect=_track_loading,
+        ),
+        patch("src.handlers.line.line_message_handler.prime_line_session", side_effect=_track_prime),
+        patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=False),
+        patch("src.handlers.line.line_job_lock.LineJobLock.release"),
+    ):
+        asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
+
+    assert call_order[:2] == ["loading", "prime"]
+
+
 def test_process_text_message_replies_after_pipeline(monkeypatch):
     monkeypatch.setattr(
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
     )
     bot_msg = {
@@ -34,8 +72,7 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
     ]
 
     with (
-        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock) as mock_loading,
-        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
+        patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
@@ -69,6 +106,10 @@ def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
     )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
     bot_msg = {
         "type": "bot",
         "diagnosis": {
@@ -81,8 +122,7 @@ def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
     }
 
     with (
-        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock),
-        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
+        patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock),
         patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
         patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
         patch(
@@ -115,14 +155,17 @@ def test_process_text_message_non_physical_calls_deliver_final(monkeypatch):
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
     )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
     bot_msg = {
         "type": "bot",
         "diagnosis": {"status": "success", "medicine_type": "解熱鎮痛剤", "recommended_medicines": []},
     }
 
     with (
-        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock),
-        patch("src.handlers.line.line_loading.run_loading_keepalive", new_callable=AsyncMock),
+        patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock),
         patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
         patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
         patch(
@@ -154,8 +197,12 @@ def test_process_text_message_skips_duplicate_without_text(monkeypatch):
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
     )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
     with (
-        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock) as mock_loading,
+        patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.handle_chat_post_async") as mock_post,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=False),
@@ -173,6 +220,10 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
         "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
         "token",
     )
+    monkeypatch.setattr(
+        "src.handlers.line.line_loading.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
     preview_bot = {
         "type": "bot",
         "diagnosis": {"status": "success", "medicine_type": "解熱鎮痛剤", "recommended_medicines": []},
@@ -180,7 +231,7 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
     flex_msgs = [{"type": "flex", "altText": "a", "contents": {}}]
 
     with (
-        patch("src.handlers.line.line_message_handler.start_loading_animation", new_callable=AsyncMock) as mock_loading,
+        patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
@@ -198,7 +249,7 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
         asyncio.run(_process_text_message("Utest", "mrcdevline00000001", "reply-tok"))
 
     mock_post.assert_not_called()
-    mock_loading.assert_not_awaited()
+    mock_loading.assert_awaited_once()
     mock_reply.assert_awaited_once()
     mock_push.assert_not_awaited()
     pushed = mock_reply.await_args.args[1]

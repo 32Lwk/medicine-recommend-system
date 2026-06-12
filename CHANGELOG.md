@@ -1,6 +1,53 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月13日**（Artifact Registry クリーンアップポリシー対象リポジトリ修正）
+**最終更新日: 2026年6月13日**（LINE/Web 返信速度改善・loading 即時表示）
+
+---
+
+## 2026年6月13日 — LINE/Web 返信速度改善・loading 即時表示
+
+### 概要
+
+- **NLU ∥ 症状分類の並列化**: `recommendation_llm_batch.py` で `resolve_nlu_for_recommendation` と `analyze_symptoms_and_medicine_type` を ThreadPoolExecutor（max_workers=2）で同時実行。`chat_recommendation_flow.py` の旧 Step1/Step3 単体 LLM を batch 呼び出しに統合。
+- **usage_notes 並列生成**: 添付文書フォールバックの LLM 呼び出しを max_workers=3 で並列化。HTML 結合順序は従来どおり。
+- **Web SSE カード先行**: rule_based 成功・medicines ありの直後に `emit_cards`。説明文・パーソナライズアドバイスより先にカードを表示。
+- **LINE 段階配信（Physical のみ）**: `line_progressive_delivery.py` で Push carousel → Reply（advice + feedback）。carousel 失敗時は従来どおり一括 Flex 2 通。Physical 以外・Emotional/Ask/Other は従来フロー。
+- **LINE パーソナライズアドバイス省略**: `is_line_session_id` 時は `generate_personalized_advice` をスキップ（carousel に説明含むため）。
+- **LINE 属性-only DB throttle**: `persist_session_attributes_only()` で LINE 属性更新は `maybe_persist_session_activity`、Web は即時 save。推奨完了時のフル persist は従来どおり。
+- **async パイプライン**: `handle_chat_post_async` / `run_chat_post_pipeline_async` / `recommendation_llm_batch_async.py` を追加。LINE handler は async 直呼び、Web SSE は `asyncio.to_thread` で後方互換。
+- **PIPELINE_PERF 計測**: `pipeline_perf.py` で主要ステップの壁時計をログ出力（Web handler / LINE handler 終了時）。
+- **Golden 回帰**: `tests/fixtures/golden/recommendation_physical.jsonl` と `test_golden_regression.py` を拡張。
+- **loading 即時表示**: `begin_line_loading()` をハンドラ先頭で await し、セッション DB 読込・言語判定・ job lock 取得より前に `loading/start` を送信。keepalive は初回送信後 50 秒間隔で再発火。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/chat/recommendation_llm_batch.py` | NLU ∥ 症状分類・usage_notes 並列 |
+| `src/handlers/chat/recommendation_llm_batch_async.py` | async 版 batch |
+| `src/handlers/line/line_progressive_delivery.py` | LINE Push1 + Reply1 段階配信 |
+| `src/services/pipeline_perf.py` | PIPELINE_PERF タイマー |
+| `tests/agents/test_recommendation_llm_batch.py` | batch 並列・フォールバックテスト |
+| `tests/agents/test_recommendation_llm_batch_async.py` | async batch テスト |
+| `tests/line/test_line_progressive_delivery.py` | 段階配信ユニットテスト |
+| `tests/handlers/chat/test_recommendation_sse_order.py` | SSE カード先行順序テスト |
+| `tests/fixtures/golden/recommendation_physical.jsonl` | Physical 推奨 golden |
+| `tests/services/test_persist_session_attributes.py` | 属性-only persist テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/chat/chat_recommendation_flow.py` | batch 接続・SSE 順序・LINE hook・属性 persist helper |
+| `src/handlers/chat/chat_post_pipeline.py` | async エントリ |
+| `src/handlers/chat_handler.py` | `handle_chat_post_async` |
+| `src/handlers/chat_stream.py` | async パイプライン呼び出し |
+| `src/handlers/line/line_message_handler.py` | async パイプライン・段階配信・loading 即時 dispatch |
+| `src/handlers/line/line_loading.py` | `begin_line_loading` / `end_line_loading` |
+| `src/services/session_manager.py` | `persist_session_attributes_only` |
+| `docs/ops/LINE_WEBHOOK_SETUP.md` | 段階配信・PIPELINE_PERF・Push クォータ追記 |
+| `tests/integration/test_golden_regression.py` | golden 拡張 |
+| `tests/line/test_line_message_handler.py` | progressive / loading テスト更新 |
 
 ---
 
