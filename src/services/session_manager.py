@@ -55,12 +55,27 @@ def get_database():
 
 def get_session_from_db(session_id):
     """セッションをDBから取得、失敗時はフォールバック"""
+    mem = _all_sessions.get(session_id)
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+
+    # LINE 応答経路: 読込はメモリのみ（DB 不良時の getconn/再接続で数十秒ブロックしない）
+    if session_id and is_line_session_id(session_id):
+        return mem
+
+    global _db_persist_enabled
+    if _db_persist_enabled is False:
+        return mem
+
     db = get_database()
     if db and (db.connection or db.connection_pool):
         session_data = db.get_session(session_id)
         if session_data:
+            touch_session_in_memory(session_id, session_data)
             return session_data
-    return _all_sessions.get(session_id)
+    return mem
 
 
 def get_session_from_memory(session_id):
