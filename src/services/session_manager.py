@@ -64,27 +64,55 @@ def _db_usable(db) -> bool:
 
 def get_session_from_db(session_id):
     """セッションをDBから取得、失敗時はフォールバック"""
-    mem = _all_sessions.get(session_id)
     try:
-        from src.handlers.line.line_session import is_line_session_id
+        from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
     except ImportError:
         is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+        normalize_line_session_id = lambda s: s  # type: ignore[misc, assignment]
 
-    # LINE 応答経路: 読込はメモリのみ（DB 不良時の getconn/再接続で数十秒ブロックしない）
     if session_id and is_line_session_id(session_id):
-        return mem
+        session_id = normalize_line_session_id(session_id) or session_id
+
+    mem = _all_sessions.get(session_id)
 
     global _db_persist_enabled
+    db = get_database()
+    db_data = None
+    if _db_usable(db):
+        db_data = db.get_session(session_id)
+
+    # LINE: メモリ優先だが DB の session_metadata（アーカイブ等）をマージ
+    if session_id and is_line_session_id(session_id):
+        return _merge_line_session_sources(db_data, mem)
+
     if _db_persist_enabled is False:
         return mem
-
-    db = get_database()
-    if _db_usable(db):
-        session_data = db.get_session(session_id)
-        if session_data:
-            touch_session_in_memory(session_id, session_data)
-            return session_data
+    if db_data:
+        touch_session_in_memory(session_id, db_data)
+        return db_data
     return mem
+
+
+def _merge_line_session_sources(db_data: dict | None, mem: dict | None) -> dict | None:
+    """LINE セッションの DB とメモリを統合（管理画面用アーカイブを欠落させない）。"""
+    from src.services.session_lifecycle import ensure_line_session_archive, merge_messages_into_archive
+
+    if not db_data and not mem:
+        return None
+    merged: dict = {}
+    if db_data:
+        merged.update(db_data)
+    if mem:
+        for key, val in mem.items():
+            if val is not None:
+                merged[key] = val
+    if db_data and mem:
+        if mem.get("messages"):
+            merge_messages_into_archive(merged, mem.get("messages") or [])
+        if db_data.get("messages"):
+            merge_messages_into_archive(merged, db_data.get("messages") or [])
+    ensure_line_session_archive(merged)
+    return merged
 
 
 def get_session_from_memory(session_id):
@@ -140,6 +168,17 @@ def _log_memory_fallback_once(*, db_save_failed: bool = False):
 
 def save_session_to_db(session_id, data):
     """セッションをDBに保存、失敗時はメモリに保存"""
+    try:
+        from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+        normalize_line_session_id = lambda s: s  # type: ignore[misc, assignment]
+
+    if session_id and is_line_session_id(session_id):
+        session_id = normalize_line_session_id(session_id) or session_id
+        if isinstance(data, dict):
+            data["session_id"] = session_id
+
     global _db_persist_enabled
     db = get_database()
     if db and db.is_available():
@@ -197,11 +236,25 @@ def persist_session_attributes_only(sid, session_data: dict) -> None:
 
 def get_all_sessions_from_db():
     """全セッションをDBから取得、失敗時はフォールバック"""
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+
     db = get_database()
     if _db_usable(db):
         sessions = db.get_all_sessions()
         if sessions is not None:
-            return {s['session_id']: s for s in sessions}
+            result = {s['session_id']: s for s in sessions}
+            for sid, mem in _all_sessions.items():
+                if sid in result:
+                    if is_line_session_id(sid):
+                        merged = _merge_line_session_sources(result[sid], mem)
+                        if merged:
+                            result[sid] = merged
+                else:
+                    result[sid] = mem
+            return result
     return _all_sessions
 
 
@@ -360,6 +413,12 @@ def get_cleanup_exclude_session_ids(extra_ids=None):
         if not isinstance(info, dict):
             continue
         if info.get('crisis_detected'):
+            exclude.add(str(sid))
+        try:
+            from src.handlers.line.line_session import is_line_session_id
+        except ImportError:
+            is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+        if is_line_session_id(str(sid)):
             exclude.add(str(sid))
     return list(exclude)
 
@@ -555,11 +614,12 @@ def merge_session_messages(server_messages, client_messages):
     return merged
 
 
-def persist_session_from_chat_state(sid, session, request=None, *, force_persist: bool = True):
+def persist_session_from_chat_state(sid, session, request=None, *, force_persist: bool = True, session_data: dict | None = None):
     """チャット POST 終了時にセッション状態（メッセージ含む）を永続化する。"""
     if not sid:
         return
-    session_data = get_session_from_db(sid) or {}
+    if session_data is None:
+        session_data = get_session_from_db(sid) or {}
     messages = session.get('messages')
     if messages is None:
         messages = session_data.get('messages') or []
@@ -573,6 +633,14 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
     username = session.get('username')
     if username:
         payload['username'] = username
+    if session.get('line_profile'):
+        payload['line_profile'] = session.get('line_profile')
+    if session_data.get('message_archive'):
+        payload['message_archive'] = session_data.get('message_archive')
+    if session_data.get('lifecycle_log'):
+        payload['lifecycle_log'] = session_data.get('lifecycle_log')
+    elif session.get('lifecycle_log'):
+        payload['lifecycle_log'] = session.get('lifecycle_log')
     for flag_key in (
         'medical_emergency_otc_locked',
         'otc_lock_released',
@@ -662,7 +730,13 @@ def cleanup_old_sessions(
             continue
         messages = session_info.get('messages') or []
         last_ts = _session_last_activity_ts(session_info)
+        try:
+            from src.handlers.line.line_session import is_line_session_id
+        except ImportError:
+            is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
         if not messages:
+            if is_line_session_id(str(sid)):
+                continue
             if not skip_empty_sessions and current_time - last_ts > EMPTY_SESSION_TIMEOUT:
                 sessions_to_remove.append(sid)
             continue
@@ -683,6 +757,17 @@ def cleanup_old_sessions(
 
     for sid in sessions_to_remove:
         if sid not in exclude_session_ids:
+            session_info = all_sessions.get(sid) if isinstance(all_sessions, dict) else None
+            if isinstance(session_info, dict):
+                from src.services.session_lifecycle import append_lifecycle_event
+
+                append_lifecycle_event(
+                    session_info,
+                    "memory_deleted",
+                    source="session_manager.cleanup_old_sessions",
+                    detail="メモリクリーンアップによりセッション全体を削除",
+                    messages_before=len(session_info.get("messages") or []),
+                )
             if _db_usable(db):
                 db.delete_session(sid)
             elif sid in _all_sessions:

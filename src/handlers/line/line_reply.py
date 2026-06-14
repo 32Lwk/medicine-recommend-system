@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 
-from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
+from config.line_config import get_line_channel_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def acquire_thread_http_client() -> httpx.AsyncClient:
 
 
 def _headers() -> dict[str, str] | None:
-    token = LINE_CHANNEL_ACCESS_TOKEN
+    token = get_line_channel_access_token()
     if not token:
         return None
     return {
@@ -49,15 +49,21 @@ def _headers() -> dict[str, str] | None:
     }
 
 
+def resolve_http_client() -> httpx.AsyncClient:
+    """lifespan クライアントがあればそれを、なければスレッドローカルを返す。"""
+    client = _http_client
+    if client is None or client.is_closed:
+        client = acquire_thread_http_client()
+    return client
+
+
 async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bool:
     hdrs = _headers()
     if not hdrs:
         logger.warning("LINE %s skipped: LINE_CHANNEL_ACCESS_TOKEN not configured", log_label)
         return False
 
-    client = _http_client
-    if client is None:
-        client = acquire_thread_http_client()
+    client = resolve_http_client()
     try:
         response = await client.post(url, headers=hdrs, json=payload)
         if response.status_code >= 400:
@@ -73,6 +79,30 @@ async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bo
     except Exception:
         logger.exception("LINE %s request error", log_label)
         return False
+
+
+async def get_json(url: str, *, log_label: str = "get") -> dict[str, Any] | None:
+    """LINE API GET（プロフィール取得など）。"""
+    hdrs = _headers()
+    if not hdrs:
+        logger.warning("LINE %s skipped: LINE_CHANNEL_ACCESS_TOKEN not configured", log_label)
+        return None
+    client = resolve_http_client()
+    try:
+        response = await client.get(url, headers=hdrs)
+        if response.status_code >= 400:
+            logger.warning(
+                "LINE %s failed status=%s body=%s",
+                log_label,
+                response.status_code,
+                (response.text or "")[:500],
+            )
+            return None
+        data = response.json()
+        return data if isinstance(data, dict) else None
+    except Exception:
+        logger.exception("LINE %s request error", log_label)
+        return None
 
 
 async def reply_messages(reply_token: str, messages: list[dict[str, Any]]) -> bool:

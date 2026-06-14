@@ -185,6 +185,7 @@ def test_main_sessions_meaningful_only_filter(client):
     sessions = {
         "empty-sid": {"messages": [], "username": "EmptyUser"},
         "full-sid": {"messages": [{"type": "user", "content": "hi"}], "username": "FullUser"},
+        "line:Uabc123": {"messages": [], "username": "LINEユーザー"},
     }
     with patch("main.get_all_sessions_from_db", return_value=sessions), patch(
         "main.get_manual_reply_session_ids", return_value=set()
@@ -192,7 +193,7 @@ def test_main_sessions_meaningful_only_filter(client):
         r_filtered = client.get("/api/main_sessions?meaningful_only=1")
         assert r_filtered.status_code == 200
         ids_filtered = {s["session_id"] for s in r_filtered.json()["sessions"]}
-        assert ids_filtered == {"full-sid"}
+        assert ids_filtered == {"full-sid", "line:Uabc123"}
         cleanup_mock.assert_called_with(
             force=False,
             exclude_current_session=False,
@@ -204,7 +205,7 @@ def test_main_sessions_meaningful_only_filter(client):
         r_all = client.get("/api/main_sessions?meaningful_only=0")
         assert r_all.status_code == 200
         ids_all = {s["session_id"] for s in r_all.json()["sessions"]}
-        assert ids_all == {"empty-sid", "full-sid"}
+        assert ids_all == {"empty-sid", "full-sid", "line:Uabc123"}
         cleanup_mock.assert_called_with(
             force=False,
             exclude_current_session=False,
