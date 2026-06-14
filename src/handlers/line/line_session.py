@@ -33,6 +33,14 @@ def is_line_session_id(sid: str | None) -> bool:
     return bool(sid and str(sid).startswith(LINE_SID_PREFIX))
 
 
+def user_id_from_line_sid(sid: str | None) -> str | None:
+    """`line:{userId}` 形式のセッション ID から LINE userId を取り出す。"""
+    if not is_line_session_id(sid):
+        return None
+    user_id = str(sid)[len(LINE_SID_PREFIX) :].strip()
+    return user_id or None
+
+
 def trim_line_session_messages(session: Any, *, max_messages: int = LINE_SESSION_MAX_MESSAGES) -> None:
     """LINE セッションの会話履歴を上限件数に抑え、プロンプト肥大化を防ぐ。"""
     messages = session.get("messages") if hasattr(session, "get") else None

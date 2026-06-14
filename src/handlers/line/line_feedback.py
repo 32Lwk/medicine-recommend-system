@@ -12,12 +12,12 @@ from src.handlers.line.flex_messages import html_to_plain_text
 from src.handlers.line.line_i18n import get_line_ui_strings
 from src.handlers.line.line_session import line_sid
 from src.services.feedback_submit import FeedbackSubmitError, submit_feedback_record
-from src.services.session_manager import get_session_from_db, save_session_to_db
+from src.services.session_manager import get_session_from_memory, touch_session_in_memory
 
 logger = logging.getLogger(__name__)
 
 POSTBACK_PREFIX = "mrcfb"
-_PENDING_TTL_SEC = 86400  # 24h（DB 未接続時もメモリで保持）
+_PENDING_TTL_SEC = 86400  # 24h
 _MAX_PENDING = 20
 
 # DB とメモリの不整合時でも postback を受け付けるプロセス内ストア
@@ -59,10 +59,86 @@ def _prune_pending(pending: dict[str, Any]) -> dict[str, Any]:
     return kept
 
 
-def _store_pending_entry(sid: str, key: str, entry: dict[str, Any]) -> None:
+def _get_database():
+    from src.services.database import get_database
+
+    return get_database()
+
+
+def _db_usable(db) -> bool:
+    if not db:
+        return False
+    if getattr(db, "startup_skip_reason", None) in ("connect_failed", "no_url", "no_driver"):
+        return False
+    return bool(db.is_available())
+
+
+def _load_pending_map_from_db(sid: str) -> dict[str, Any]:
+    db = _get_database()
+    if not _db_usable(db):
+        return {}
+    raw = db.get_line_feedback_pending(sid)
+    if not isinstance(raw, dict):
+        return {}
+    return _prune_pending(raw)
+
+
+def _persist_pending_map(sid: str, pending: dict[str, Any]) -> None:
+    pruned = _prune_pending(pending)
     by_sid = _pending_memory.setdefault(sid, {})
-    by_sid[key] = entry
-    _pending_memory[sid] = _prune_pending(by_sid)
+    by_sid.clear()
+    by_sid.update(pruned)
+    _pending_memory[sid] = by_sid
+
+    session_data = get_session_from_memory(sid) or {"session_id": sid, "messages": []}
+    session_data["line_feedback_pending"] = dict(pruned)
+    touch_session_in_memory(sid, session_data)
+
+    db = _get_database()
+    if _db_usable(db):
+        if pruned:
+            db.set_line_feedback_pending(sid, pruned)
+        else:
+            db.set_line_feedback_pending(sid, None)
+
+
+def _store_pending_entry(sid: str, key: str, entry: dict[str, Any]) -> None:
+    pending = _load_pending_map(sid)
+    pending[key] = entry
+    _persist_pending_map(sid, pending)
+
+
+def _load_pending_map(sid: str) -> dict[str, Any]:
+    mem = _pending_memory.get(sid)
+    if isinstance(mem, dict) and mem:
+        return _prune_pending(mem)
+
+    session_data = get_session_from_memory(sid) or {}
+    session_pending = session_data.get("line_feedback_pending")
+    if isinstance(session_pending, dict) and session_pending:
+        pruned = _prune_pending(session_pending)
+        _pending_memory[sid] = pruned
+        return pruned
+
+    db_pending = _load_pending_map_from_db(sid)
+    if db_pending:
+        _pending_memory[sid] = db_pending
+        if session_data:
+            session_data["line_feedback_pending"] = dict(db_pending)
+            touch_session_in_memory(sid, session_data)
+    return db_pending
+
+
+def clear_line_feedback_pending(sid: str) -> None:
+    """チャット終了などで評価 pending をすべて削除する。"""
+    _pending_memory.pop(sid, None)
+    session_data = get_session_from_memory(sid)
+    if isinstance(session_data, dict):
+        session_data.pop("line_feedback_pending", None)
+        touch_session_in_memory(sid, session_data)
+    db = _get_database()
+    if _db_usable(db):
+        db.set_line_feedback_pending(sid, None)
 
 
 def register_line_feedback_pending(
@@ -71,7 +147,7 @@ def register_line_feedback_pending(
     user_message: str,
     ai_response: str,
 ) -> str:
-    """評価用コンテキストを保存し、postback 用キーを返す（メモリ優先・DB は補助）。"""
+    """評価用コンテキストを保存し、postback 用キーを返す（メモリ + DB 永続化）。"""
     key = _public_feedback_key()
     entry = {
         "user_message": (user_message or "")[:500],
@@ -79,14 +155,6 @@ def register_line_feedback_pending(
         "ts": time.time(),
     }
     _store_pending_entry(sid, key, entry)
-
-    session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
-    pending = session_data.get("line_feedback_pending") or {}
-    if not isinstance(pending, dict):
-        pending = {}
-    pending[key] = dict(entry)
-    session_data["line_feedback_pending"] = _prune_pending(pending)
-    save_session_to_db(sid, session_data)
     return key
 
 
@@ -165,19 +233,25 @@ def parse_feedback_postback(data: str) -> tuple[str, str] | None:
     return None
 
 
-def _load_pending_context(sid: str, feedback_key: str) -> dict[str, str] | None:
-    mem_entry = (_pending_memory.get(sid) or {}).get(feedback_key)
-    if isinstance(mem_entry, dict):
-        if time.time() - float(mem_entry.get("ts", 0)) <= _PENDING_TTL_SEC:
-            return {
-                "user_message": str(mem_entry.get("user_message") or ""),
-                "ai_response": str(mem_entry.get("ai_response") or ""),
-            }
+def feedback_display_texts() -> frozenset[str]:
+    """Quick Reply postback の displayText 一覧（全言語）。"""
+    texts: set[str] = set()
+    for lang in ("ja", "en", "ko", "zh"):
+        ui = get_line_ui_strings(lang)
+        for key in ("feedback_positive_display", "feedback_negative_display"):
+            value = (ui.get(key) or "").strip()
+            if value:
+                texts.add(value)
+    return frozenset(texts)
 
-    session_data = get_session_from_db(sid) or {}
-    pending = session_data.get("line_feedback_pending") or {}
-    if not isinstance(pending, dict):
-        return None
+
+def is_line_feedback_display_text(text: str) -> bool:
+    """postback の displayText が message イベントとして重複送信された場合 True。"""
+    return (text or "").strip() in feedback_display_texts()
+
+
+def _load_pending_context(sid: str, feedback_key: str) -> dict[str, str] | None:
+    pending = _load_pending_map(sid)
     entry = pending.get(feedback_key)
     if not isinstance(entry, dict):
         return None
@@ -187,6 +261,13 @@ def _load_pending_context(sid: str, feedback_key: str) -> dict[str, str] | None:
         "user_message": str(entry.get("user_message") or ""),
         "ai_response": str(entry.get("ai_response") or ""),
     }
+
+
+def _remove_pending_entry(sid: str, feedback_key: str) -> None:
+    pending = _load_pending_map(sid)
+    if feedback_key in pending:
+        pending.pop(feedback_key, None)
+        _persist_pending_map(sid, pending)
 
 
 async def handle_line_feedback_postback(
@@ -217,11 +298,12 @@ async def handle_line_feedback_postback(
 
     context = _load_pending_context(sid, feedback_key)
     if not context:
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(
-                reply_token,
-                [{"type": "text", "text": ui.get("feedback_expired", "評価の有効期限が切れました。")}],
-            )
+        # 期限切れ・別インスタンス再起動後の古いボタン等。ユーザーへの返信は出さない。
+        logger.info(
+            "LINE feedback postback ignored (no pending context): sid=%s key=%s",
+            sid,
+            feedback_key,
+        )
         return
 
     username = session.get("username") or "LINEユーザー"
@@ -234,6 +316,7 @@ async def handle_line_feedback_postback(
             ai_response=context["ai_response"],
             dedupe=True,
         )
+        _remove_pending_entry(sid, feedback_key)
         thank = ui.get("feedback_thank_you", "フィードバックありがとうございます！")
     except FeedbackSubmitError as exc:
         if exc.status_code == 429:

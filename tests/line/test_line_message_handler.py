@@ -4,7 +4,11 @@ from __future__ import annotations
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.handlers.line.line_message_handler import _deliver_line_messages, _process_text_message
+from src.handlers.line.line_message_handler import (
+    _deliver_line_messages,
+    _dispatch_event,
+    _process_text_message,
+)
 
 
 def test_process_text_message_job_lock_before_loading(monkeypatch):
@@ -90,10 +94,10 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         patch("src.handlers.line.line_job_lock.LineJobLock.acquire", return_value=True),
         patch("src.handlers.line.line_job_lock.LineJobLock.release"),
         patch("src.handlers.line.line_message_handler.persist_line_session"),
-        patch("src.handlers.line.line_feedback.get_session_from_db", return_value={}),
-        patch("src.handlers.line.line_feedback.save_session_to_db"),
+        patch("src.handlers.line.line_feedback._persist_pending_map"),
         patch("src.services.processing_status.set_processing_language"),
         patch("src.services.processing_status.mark_processing_step"),
+        patch("src.services.processing_status.clear_processing_status") as mock_clear_status,
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
         mock_reply.return_value = True
@@ -106,6 +110,7 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
     mock_reply.assert_awaited_once()
     mock_push.assert_not_awaited()
     mock_post.assert_awaited_once()
+    mock_clear_status.assert_called_once_with("line:Utest")
 
 
 def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
@@ -251,8 +256,7 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
             return_value=flex_msgs,
         ),
         patch("src.handlers.line.line_message_handler.persist_line_session"),
-        patch("src.handlers.line.line_feedback.get_session_from_db", return_value={}),
-        patch("src.handlers.line.line_feedback.save_session_to_db"),
+        patch("src.handlers.line.line_feedback._persist_pending_map"),
     ):
         mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
         asyncio.run(_process_text_message("Utest", "mrcdevline00000001", "reply-tok"))
@@ -280,6 +284,74 @@ def test_deliver_falls_back_to_push_when_reply_fails(monkeypatch):
 
     mock_push.assert_awaited_once()
     assert len(mock_push.await_args.args[1]) == 1
+
+
+def test_message_event_ignores_feedback_display_text(monkeypatch):
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    with patch(
+        "src.handlers.line.line_message_handler._process_text_message",
+        new_callable=AsyncMock,
+    ) as mock_proc:
+        asyncio.run(
+            _dispatch_event(
+                {
+                    "type": "message",
+                    "replyToken": "tok",
+                    "source": {"type": "user", "userId": "U1"},
+                    "message": {"type": "text", "text": "役に立った"},
+                }
+            )
+        )
+    mock_proc.assert_not_awaited()
+
+
+def test_process_line_events_handles_postback_before_message(monkeypatch):
+    monkeypatch.setattr(
+        "src.handlers.line.line_message_handler.LINE_CHANNEL_ACCESS_TOKEN",
+        "token",
+    )
+    order: list[str] = []
+
+    async def track_postback(*_args, **_kwargs):
+        order.append("postback")
+
+    async def track_message(*_args, **_kwargs):
+        order.append("message")
+
+    with (
+        patch(
+            "src.handlers.line.line_feedback.handle_line_feedback_postback",
+            side_effect=track_postback,
+        ),
+        patch(
+            "src.handlers.line.line_message_handler._process_text_message",
+            side_effect=track_message,
+        ),
+        patch("src.handlers.line.line_reply.acquire_thread_http_client", return_value=MagicMock()),
+        patch("src.handlers.line.line_reply.set_http_client"),
+    ):
+        from src.handlers.line.line_message_handler import process_line_events
+
+        asyncio.run(
+            process_line_events(
+                [
+                    {
+                        "type": "message",
+                        "source": {"type": "user", "userId": "U1"},
+                        "message": {"type": "text", "text": "頭痛"},
+                    },
+                    {
+                        "type": "postback",
+                        "source": {"type": "user", "userId": "U1"},
+                        "postback": {"data": "mrcfb|pos|abc"},
+                    },
+                ]
+            )
+        )
+    assert order == ["postback", "message"]
 
 
 def test_deliver_push_chunk_falls_back_to_alt_text(monkeypatch):

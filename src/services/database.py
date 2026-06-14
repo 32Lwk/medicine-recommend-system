@@ -535,6 +535,22 @@ class DatabaseManager:
                 cursor.execute(alter_processing_sql)
             except Exception as e:
                 logger.debug(f"processing_status column may already exist: {e}")
+
+            try:
+                alter_line_feedback_sql = """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='sessions' AND column_name='line_feedback_pending'
+                    ) THEN
+                        ALTER TABLE sessions ADD COLUMN line_feedback_pending JSONB;
+                    END IF;
+                END $$;
+                """
+                cursor.execute(alter_line_feedback_sql)
+            except Exception as e:
+                logger.debug(f"line_feedback_pending column may already exist: {e}")
             
             # global_stateテーブルを作成（グローバル変数の共有）
             create_global_state_table_sql = """
@@ -874,6 +890,67 @@ class DatabaseManager:
             if conn:
                 self.put_connection(conn)
             return None
+
+    def get_line_feedback_pending(self, session_id):
+        """LINE 評価 postback 用の pending コンテキスト（JSONB）を取得。"""
+        conn = self.get_connection()
+        if not conn:
+            return None
+        try:
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute(
+                "SELECT line_feedback_pending FROM sessions WHERE session_id = %s;",
+                (session_id,),
+            )
+            result = cursor.fetchone()
+            cursor.close()
+            self.put_connection(conn)
+            if not result:
+                return None
+            raw = result.get("line_feedback_pending")
+            if raw is None:
+                return None
+            if isinstance(raw, str):
+                return json.loads(raw)
+            return dict(raw)
+        except Exception as e:
+            logger.error(f"❌ Failed to get line_feedback_pending: {str(e)}")
+            if conn:
+                self.put_connection(conn)
+            return None
+
+    def set_line_feedback_pending(self, session_id, pending):
+        """LINE 評価 pending を JSONB カラムに保存（messages は触らない）。"""
+        conn = self.get_connection()
+        if not conn:
+            return False
+        try:
+            cursor = conn.cursor()
+            pending_json = (
+                json.dumps(pending, ensure_ascii=False) if pending is not None else None
+            )
+            upsert_sql = """
+            INSERT INTO sessions (session_id, messages, user_attributes, last_activity, line_feedback_pending)
+            VALUES (%s, '[]'::jsonb, '{}'::jsonb, %s, %s::jsonb)
+            ON CONFLICT (session_id)
+            DO UPDATE SET
+                line_feedback_pending = EXCLUDED.line_feedback_pending,
+                last_activity = EXCLUDED.last_activity;
+            """
+            cursor.execute(
+                upsert_sql,
+                (session_id, datetime.now(), pending_json),
+            )
+            conn.commit()
+            cursor.close()
+            self.put_connection(conn)
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to set line_feedback_pending: {str(e)}")
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
+            return False
     
     def get_session(self, session_id):
         """セッションをデータベースから取得"""

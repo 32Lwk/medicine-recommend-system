@@ -1337,21 +1337,25 @@ async def api_main_manual_reply_queue_post(
     if action == "reply":
         message = data.get("reply_message") or data.get("message")
         if session_id and message:
-            session_data = get_session_from_db(session_id)
-            if session_data:
-                manual_reply = {
-                    "type": "bot",
-                    "content": message,
-                    "timestamp": datetime.now().isoformat(),
-                    "manual_reply": True,
-                }
-                session_data.setdefault("messages", [])
-                session_data["messages"].append(manual_reply)
-                session_data["last_activity"] = datetime.now()
-                save_session_to_db(session_id, session_data)
-                queue = [q for q in queue if q.get("session_id") != session_id]
-                set_manual_reply_queue(queue)
-                return {"status": "success", "message": "メッセージを送信しました"}
+            from src.handlers.line.line_admin_manual_reply import apply_admin_manual_reply
+
+            result = await apply_admin_manual_reply(session_id, message)
+            if not result.get("ok"):
+                err = result.get("error") or "無効なアクションです"
+                status_code = 404 if err == "session not found" else 400
+                return JSONResponse({"status": "error", "message": err}, status_code=status_code)
+            queue = [q for q in queue if q.get("session_id") != session_id]
+            set_manual_reply_queue(queue)
+            payload = {
+                "status": "success",
+                "message": "メッセージを送信しました",
+                "target_session_id": result.get("target_session_id"),
+            }
+            if result.get("line_pushed") is not None:
+                payload["line_pushed"] = result["line_pushed"]
+            if result.get("line_error"):
+                payload["line_error"] = result["line_error"]
+            return payload
         return JSONResponse({"status": "error", "message": "無効なアクションです"}, status_code=400)
 
     return JSONResponse({"status": "error", "message": "無効なアクションです"}, status_code=400)
