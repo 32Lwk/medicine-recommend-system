@@ -89,3 +89,34 @@ def test_ensure_line_user_profile_updates_username():
     asyncio.run(_run())
     assert session["username"] == "花子"
     assert session["line_profile"]["displayName"] == "花子"
+
+
+def test_apply_line_profile_clears_stale_error_and_skips_duplicate_lifecycle():
+    from src.handlers.line.line_profile import apply_line_profile_to_session
+
+    sid = "line:Udup1"
+    session_data = {
+        "session_id": sid,
+        "messages": [],
+        "username": "LINEユーザーdup1",
+        "line_profile_error": "token_not_configured",
+        "line_profile": {"displayName": "宥翔", "userId": "Udup1"},
+        "lifecycle_log": [],
+    }
+    with patch("src.handlers.line.line_profile.save_session_to_db"), patch(
+        "src.handlers.line.line_profile.touch_session_in_memory"
+    ), patch(
+        "src.handlers.line.line_profile.get_session_from_db",
+        return_value=dict(session_data),
+    ):
+        apply_line_profile_to_session(
+            session_data,
+            {
+                "userId": "Udup1",
+                "displayName": "宥翔",
+                "fetched_at": "2026-06-15T00:00:00",
+            },
+            sid=sid,
+        )
+    assert "line_profile_error" not in session_data
+    assert session_data.get("lifecycle_log") == []

@@ -256,6 +256,15 @@ async def _process_text_message(
         session = prime_line_session(user_id)
         client_info = ChatClientInfo(client_ip="line-webhook", user_agent="LINE-MessagingAPI")
 
+        from src.handlers.line.line_profile import ensure_line_user_profile
+        from src.core.language_utils import (
+            resolve_session_language,
+            update_session_language_from_message,
+        )
+
+        await ensure_line_user_profile(user_id, session, sid=sid)
+        delivery_ctx.lang = resolve_session_language(session)
+
         from src.handlers.line.line_dev_triggers import try_line_dev_flex_preview
 
         preview_bot = try_line_dev_flex_preview(
@@ -267,10 +276,11 @@ async def _process_text_message(
         )
         if preview_bot is not None:
             loading_stop, loading_keepalive = await begin_line_loading(user_id)
+            preview_lang = update_session_language_from_message(session, text)
             if LINE_CHANNEL_ACCESS_TOKEN:
                 line_messages = build_line_messages_from_bot_message(
                     preview_bot,
-                    lang=session.get("detected_language") or "ja",
+                    lang=preview_lang,
                     session_id=sid,
                 )
                 await _deliver_line_messages(
@@ -280,17 +290,15 @@ async def _process_text_message(
                     sid=sid,
                     user_message=text,
                     bot_message=preview_bot,
-                    lang=session.get("detected_language") or "ja",
+                    lang=preview_lang,
                 )
             persist_line_session(sid, session)
             return
 
-        from src.core.language_utils import detect_language
         from src.handlers.line.line_job_lock import LineJobLock
         from src.services.processing_status import mark_processing_step, set_processing_language
 
-        lang = detect_language(text)
-        session["detected_language"] = lang
+        lang = update_session_language_from_message(session, text)
         delivery_ctx.lang = lang
 
         job_lock = LineJobLock()

@@ -292,8 +292,10 @@ async def handle_line_feedback_postback(
 
     report_type, feedback_key = parsed
     sid = line_sid(user_id)
+    from src.core.language_utils import resolve_session_language
+
     session = prime_line_session(user_id)
-    lang = session.get("detected_language") or "ja"
+    lang = resolve_session_language(session)
     ui = get_line_ui_strings(lang)
 
     context = _load_pending_context(sid, feedback_key)

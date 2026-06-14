@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from config.line_config import get_line_channel_access_token
+from src.core.language_utils import sync_language_from_line_profile
 from src.handlers.line.line_reply import get_json
 from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id, user_id_from_line_sid
 from src.services.session_lifecycle import append_lifecycle_event
@@ -42,10 +43,19 @@ def apply_line_profile_to_session(
     """session と DB の line_profile / username を更新。"""
     if not profile:
         return
+    old_display = ""
+    if hasattr(session, "get"):
+        old_prof = session.get("line_profile")
+        if isinstance(old_prof, dict):
+            old_display = (old_prof.get("displayName") or "").strip()
+
     session["line_profile"] = profile
     display = (profile.get("displayName") or "").strip()
     if display:
         session["username"] = display
+    if hasattr(session, "pop"):
+        session.pop("line_profile_error", None)
+    sync_language_from_line_profile(session)
 
     if not sid:
         return
@@ -53,12 +63,15 @@ def apply_line_profile_to_session(
     session_data["line_profile"] = profile
     if display:
         session_data["username"] = display
-    append_lifecycle_event(
-        session_data,
-        "profile_fetched",
-        source="line_profile.apply_line_profile_to_session",
-        detail=display or profile.get("userId"),
-    )
+    session_data.pop("line_profile_error", None)
+    sync_language_from_line_profile(session, session_data)
+    if display and display != old_display:
+        append_lifecycle_event(
+            session_data,
+            "profile_fetched",
+            source="line_profile.apply_line_profile_to_session",
+            detail=display or profile.get("userId"),
+        )
     save_session_to_db(sid, session_data)
     touch_session_in_memory(sid, session_data)
 
@@ -82,6 +95,7 @@ async def ensure_line_user_profile(
         display = (existing.get("displayName") or "").strip()
         if display and str(session.get("username", "")).startswith("LINEユーザー"):
             session["username"] = display
+        sync_language_from_line_profile(session)
         return existing
 
     if sid and not force_refresh:
@@ -90,6 +104,7 @@ async def ensure_line_user_profile(
         if isinstance(stored_profile, dict) and stored_profile.get("displayName"):
             session["line_profile"] = stored_profile
             session["username"] = stored_profile.get("displayName") or session.get("username")
+            sync_language_from_line_profile(session, stored)
             return stored_profile
 
     profile = await fetch_line_user_profile(user_id)

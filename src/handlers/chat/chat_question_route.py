@@ -12,7 +12,7 @@ from typing import Any, Optional, Tuple
 
 from openai import OpenAI
 
-from src.core.language_utils import detect_language
+from src.core.language_utils import update_session_language_from_message
 from src.core.medicine_logic import (
     client as openai_client,
     extract_user_attributes_multilingual,
@@ -496,8 +496,7 @@ def handle_question_flow(
             logger.info(f"❓ POSSIBLE ATTRIBUTE RESPONSE DETECTED: {user_message}")
                 
             # 言語を検出（すべての入力に対して実行）
-            detected_language = detect_language(user_message)
-            session['detected_language'] = detected_language
+            detected_language = update_session_language_from_message(session, user_message)
             logger.info(f"🌍 検出された言語: {detected_language}")
                 
             # 初回チャットで症状入力（または症状キーワードを含む）場合は

@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 from openai import OpenAI
 
-from src.core.language_utils import detect_language
+from src.core.language_utils import resolve_message_language
 from src.core.nlu_service import get_cached_nlu_result, hybrid_nlu_extraction, set_cached_nlu_result
 from src.core.preference_merge import merge_user_preferences
 from src.core.preference_nlu import extract_preferences_with_gpt
@@ -51,13 +51,14 @@ def resolve_nlu_for_recommendation(
     client: OpenAI,
     *,
     session_id: Optional[str] = None,
+    session: Any = None,
 ) -> Dict[str, Any]:
     cached = get_cached_nlu_result(user_text, session_id)
     if cached and cached.get("user_preferences") is not None:
         return cached
 
     context_text = preference_context_text(user_text, user_info)
-    detected_language = detect_language(user_text or context_text)
+    detected_language = resolve_message_language(user_text or context_text, session)
 
     nlu: Dict[str, Any] = {}
     llm_prefs: Dict[str, Any] = {}

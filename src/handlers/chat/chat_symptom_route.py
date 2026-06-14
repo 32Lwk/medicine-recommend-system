@@ -11,7 +11,10 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
-from src.core.language_utils import detect_language
+from src.core.language_utils import (
+    resolve_session_language,
+    update_session_language_from_message,
+)
 from src.core.medicine_logic import select_symptoms_via_gpt
 from src.handlers.chat.chat_recommendation_flow import run_recommendation_flow
 from src.services.analytics import log_access_analytics
@@ -112,7 +115,7 @@ def run_symptom_recommendation(
     if is_otc_flow_blocked(session):
         from src.services.medical_emergency_templates import build_medical_emergency_html
 
-        lang = session.get("detected_language") or session.get("language", "ja")
+        lang = resolve_session_language(session)
         html = build_medical_emergency_html(
             subtype="medical_self",
             language=lang if lang in ("ja", "en", "ko", "zh") else "ja",
@@ -141,8 +144,7 @@ def run_symptom_recommendation(
         if resp:
             return resp
 
-    detected_language = detect_language(user_message)
-    session["detected_language"] = detected_language
+    detected_language = update_session_language_from_message(session, user_message)
     logger.info("🌍 検出された言語: %s", detected_language)
 
     session["is_medicine_consultation"] = True

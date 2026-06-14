@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
+from src.core.language_utils import resolve_session_language
 from src.agents.emergency_classifier import classify_emergency
 from src.services.medical_emergency_templates import build_medical_emergency_html
 from src.services.session_manager import (
@@ -112,7 +113,7 @@ def _dispatch_store_incident(
 ) -> Optional[ResponseTuple]:
     from src.services.store_emergency_handler import handle_store_emergency
 
-    user_language = session.get("language", "ja")
+    user_language = resolve_session_language(session)
     emergency_result = handle_store_emergency(
         sanitized_message,
         recommendation_client,
@@ -159,7 +160,7 @@ def _dispatch_medical_family(
     triage_result: Optional[dict] = None,
     moderation_label: Optional[str] = None,
 ) -> ResponseTuple:
-    lang = session.get("detected_language") or session.get("language", "ja")
+    lang = resolve_session_language(session)
     html = build_medical_emergency_html(
         subtype=classification.subtype,
         language=lang if lang in ("ja", "en", "ko", "zh") else "ja",

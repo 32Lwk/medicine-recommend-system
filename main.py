@@ -615,7 +615,7 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
 
 
 def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONResponse:
-    from src.core.language_utils import detect_language
+    from src.core.language_utils import update_session_language_from_message
     from src.services.processing_status import (
         clear_processing_status,
         mark_processing_step,
@@ -631,7 +631,7 @@ def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONRe
     _prime_safe_session_for_chat(safe_session, sid, request)
 
     if sid and (message or "").strip():
-        set_processing_language(sid, detect_language((message or "").strip()))
+        set_processing_language(sid, update_session_language_from_message(safe_session, (message or "").strip()))
         mark_processing_step(sid, "validate")
 
     try:

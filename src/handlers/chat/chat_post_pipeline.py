@@ -14,6 +14,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
+from src.core.language_utils import resolve_session_language
 from src.core.medicine_logic import client as openai_client
 from src.handlers.chat.chat_llm_gate import check_llm_budget_block, setup_llm_request
 from src.handlers.chat.chat_manual_reply import handle_manual_reply_when_off
@@ -374,7 +375,7 @@ def run_chat_post_pipeline(
         if is_otc_flow_blocked(session):
             from src.services.medical_emergency_templates import build_medical_emergency_html
 
-            lang = session.get("detected_language") or session.get("language", "ja")
+            lang = resolve_session_language(session)
             html = build_medical_emergency_html(subtype="medical_self", language=lang if lang in ("ja", "en", "ko", "zh") else "ja")
             session.setdefault("messages", []).append({
                 "type": "bot",

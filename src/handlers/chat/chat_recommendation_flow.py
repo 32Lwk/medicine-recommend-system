@@ -21,6 +21,7 @@ import html
 import uuid
 from datetime import datetime
 
+from src.core.language_utils import resolve_session_language
 from src.utils.request_logger import log_medicine_logic_call, log_network_request
 from src.utils.performance_monitor import log_performance_metrics
 from src.utils.debug_logger import add_network_log
@@ -658,6 +659,7 @@ def run_recommendation_flow(
             user_info,
             recommendation_client,
             session_id=sid,
+            session=session,
         )
         nlu_result = batch.nlu_result
         analysis_result = batch.analysis_result
@@ -1346,11 +1348,7 @@ def run_recommendation_flow(
                                 schedule_carousel_push_for_line,
                             )
 
-                            _line_lang = (
-                                session.get("detected_language")
-                                or session.get("language")
-                                or "ja"
-                            )
+                            _line_lang = resolve_session_language(session)
                             schedule_carousel_push_for_line(
                                 sid=sid,
                                 triage_result=triage_result,
@@ -2269,7 +2267,7 @@ def run_recommendation_flow(
                 # 表示順序: アドバイス → 推奨 → 使用上の注意 → 医師の受診 → 質問
                             
                 # 多言語対応: 入力言語に応じて翻訳（すべてのセクション追加後、フィードバックボタン追加前）
-                detected_language = session.get('detected_language', 'ja')
+                detected_language = resolve_session_language(session)
                 if detected_language != 'ja' and bot_content:
                     try:
                         logger.info(f"🌍 翻訳開始: {detected_language}")

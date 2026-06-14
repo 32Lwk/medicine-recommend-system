@@ -23,6 +23,7 @@ async def run_nlu_and_symptom_analysis_parallel_async(
     client: OpenAI | AsyncOpenAI,
     *,
     session_id: str | None = None,
+    session: Any = None,
 ) -> RecommendationLlmBatchResult:
     """NLU と症状分類を asyncio.gather で並列実行（sync 版と同一フォールバック）。"""
 
@@ -33,6 +34,7 @@ async def run_nlu_and_symptom_analysis_parallel_async(
             user_info,
             client if isinstance(client, OpenAI) else OpenAI(api_key=getattr(client, "api_key", None)),
             session_id=session_id,
+            session=session,
         )
 
     async def _symptom_task() -> dict[str, Any]:
