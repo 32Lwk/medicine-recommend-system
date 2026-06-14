@@ -31,6 +31,7 @@ def run_nlu_and_symptom_analysis_parallel(
     client: OpenAI,
     *,
     session_id: str | None = None,
+    session: Any = None,
 ) -> RecommendationLlmBatchResult:
     """
     NLU 解析と症状/医薬品種類分類を並列実行する。
@@ -45,6 +46,7 @@ def run_nlu_and_symptom_analysis_parallel(
             user_info,
             client,
             session_id=session_id,
+            session=session,
         )
 
     def _symptom_task() -> dict[str, Any]:

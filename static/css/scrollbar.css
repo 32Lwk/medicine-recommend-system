@@ -38,7 +38,10 @@
 body.about-page > .about-scroll,
 #messageInput,
 .button-group,
-.logs-container {
+.logs-container,
+.lifecycle-log-accordion,
+.lifecycle-timeline,
+#userAttributesModal .user-attributes-body {
     scrollbar-width: thin;
     scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
     -webkit-overflow-scrolling: touch;
@@ -65,7 +68,10 @@ body.about-page > .about-scroll,
 body.about-page > .about-scroll::-webkit-scrollbar,
 #messageInput::-webkit-scrollbar,
 .button-group::-webkit-scrollbar,
-.logs-container::-webkit-scrollbar {
+.logs-container::-webkit-scrollbar,
+.lifecycle-log-accordion::-webkit-scrollbar,
+.lifecycle-timeline::-webkit-scrollbar,
+#userAttributesModal .user-attributes-body::-webkit-scrollbar {
     width: 7px;
     height: 7px;
     background: transparent;
@@ -93,7 +99,10 @@ body.about-page > .about-scroll::-webkit-scrollbar,
 body.about-page > .about-scroll::-webkit-scrollbar-track,
 #messageInput::-webkit-scrollbar-track,
 .button-group::-webkit-scrollbar-track,
-.logs-container::-webkit-scrollbar-track {
+.logs-container::-webkit-scrollbar-track,
+.lifecycle-log-accordion::-webkit-scrollbar-track,
+.lifecycle-timeline::-webkit-scrollbar-track,
+#userAttributesModal .user-attributes-body::-webkit-scrollbar-track {
     background: var(--app-scrollbar-track);
     border-radius: 999px;
     margin-block: 8px;
@@ -121,7 +130,10 @@ body.about-page > .about-scroll::-webkit-scrollbar-track,
 body.about-page > .about-scroll::-webkit-scrollbar-track-piece,
 #messageInput::-webkit-scrollbar-track-piece,
 .button-group::-webkit-scrollbar-track-piece,
-.logs-container::-webkit-scrollbar-track-piece {
+.logs-container::-webkit-scrollbar-track-piece,
+.lifecycle-log-accordion::-webkit-scrollbar-track-piece,
+.lifecycle-timeline::-webkit-scrollbar-track-piece,
+#userAttributesModal .user-attributes-body::-webkit-scrollbar-track-piece {
     border-radius: 999px;
 }
 
@@ -146,7 +158,10 @@ body.about-page > .about-scroll::-webkit-scrollbar-track-piece,
 body.about-page > .about-scroll::-webkit-scrollbar-thumb,
 #messageInput::-webkit-scrollbar-thumb,
 .button-group::-webkit-scrollbar-thumb,
-.logs-container::-webkit-scrollbar-thumb {
+.logs-container::-webkit-scrollbar-thumb,
+.lifecycle-log-accordion::-webkit-scrollbar-thumb,
+.lifecycle-timeline::-webkit-scrollbar-thumb,
+#userAttributesModal .user-attributes-body::-webkit-scrollbar-thumb {
     background: var(--app-scrollbar-thumb);
     background-clip: padding-box;
     border-radius: 999px;
@@ -174,7 +189,10 @@ body.about-page > .about-scroll::-webkit-scrollbar-thumb,
 body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover,
 #messageInput::-webkit-scrollbar-thumb:hover,
 .button-group::-webkit-scrollbar-thumb:hover,
-.logs-container::-webkit-scrollbar-thumb:hover {
+.logs-container::-webkit-scrollbar-thumb:hover,
+.lifecycle-log-accordion::-webkit-scrollbar-thumb:hover,
+.lifecycle-timeline::-webkit-scrollbar-thumb:hover,
+#userAttributesModal .user-attributes-body::-webkit-scrollbar-thumb:hover {
     background: var(--app-scrollbar-thumb-hover);
     background-clip: padding-box;
 }

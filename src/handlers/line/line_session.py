@@ -152,6 +152,7 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
             session["line_profile"] = session_data["line_profile"]
         for flag in (
             "detected_language",
+            "language",
             "medical_emergency_otc_locked",
             "crisis_detected",
             "emergency_detected",

@@ -642,7 +642,9 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
     elif session.get('lifecycle_log'):
         payload['lifecycle_log'] = session.get('lifecycle_log')
     for flag_key in (
-        'medical_emergency_otc_locked',
+        "detected_language",
+        "language",
+        "medical_emergency_otc_locked",
         'otc_lock_released',
         'store_incident_soft_banner',
         'store_incident_otc_opt_in',

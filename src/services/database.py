@@ -1058,8 +1058,8 @@ class DatabaseManager:
 
     def _line_session_sql_guard(self) -> str:
         """LINE セッション（line: プレフィックス）は空でも自動削除しない。"""
-        # psycopg2 は % をプレースホルダと解釈するため %% でエスケープ
-        return "LOWER(session_id) NOT LIKE 'line:%%'"
+        # psycopg2 は % をプレースホルダと解釈するため LIKE 'line:%' は使わない
+        return "LEFT(LOWER(session_id), 5) IS DISTINCT FROM 'line:'"
 
     def purge_all_empty_sessions(self, exclude_session_ids=None):
         """メッセージ0件のセッションを一括削除（起動時・管理用）。"""

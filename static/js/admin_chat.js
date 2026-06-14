@@ -1289,7 +1289,8 @@ function loadChatHistory(sessionId) {
 function showUserAttributesModal() {
     console.log('🔵 showUserAttributesModal called');
     console.log('🔵 currentSessionId:', currentSessionId);
-    
+    ensureUserAttributesPanelActions();
+
     if (!currentSessionId) {
         showNotification('セッションが選択されていません', 'error');
         return;
@@ -1667,6 +1668,27 @@ function isLineSessionId(sessionId) {
     return Boolean(sessionId && String(sessionId).toLowerCase().startsWith('line:'));
 }
 
+function isLineSession(session) {
+    if (!session) {
+        return false;
+    }
+    if (session.is_line_session === true) {
+        return true;
+    }
+    return isLineSessionId(session.session_id);
+}
+
+function renderSessionLineBadge(session) {
+    if (!isLineSession(session)) {
+        return '';
+    }
+    return (
+        '<span class="session-channel-badge session-channel-badge--line" title="LINE セッション">' +
+        '<i class="fa-brands fa-line" aria-hidden="true"></i>' +
+        '<span>LINE</span></span>'
+    );
+}
+
 function formatUserAttributeValue(value) {
     if (value === null || value === undefined) {
         return '未設定';
@@ -1698,6 +1720,304 @@ function getUserAttributeLabel(key) {
     return labels[key] || `📋 ${key}`;
 }
 
+function formatAdminDateTime(iso) {
+    if (iso === null || iso === undefined || iso === '') {
+        return '—';
+    }
+    if (typeof iso === 'number') {
+        return formatAdminDateTime(new Date(iso * 1000).toISOString());
+    }
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) {
+        return String(iso);
+    }
+    return d.toLocaleString('ja-JP', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+}
+
+function formatSessionIdForAdmin(sessionId) {
+    const sid = String(sessionId || '');
+    if (sid.length <= 20) {
+        return sid;
+    }
+    return sid.slice(0, 8) + '…' + sid.slice(-6);
+}
+
+function formatSessionLastActivity(session) {
+    if (!session || session.last_activity === undefined || session.last_activity === null) {
+        return '';
+    }
+    return formatAdminDateTime(session.last_activity);
+}
+
+function renderAdminCopyButton(value, label) {
+    const encoded = encodeURIComponent(String(value == null ? '' : value));
+    const title = label || 'コピー';
+    return (
+        '<button type="button" class="admin-copy-btn" data-copy-encoded="' + encoded + '" ' +
+        'title="' + escapeHtml(title) + '" aria-label="' + escapeHtml(title) + '">' +
+        '<i class="fa-regular fa-copy" aria-hidden="true"></i></button>'
+    );
+}
+
+function copyAdminText(text, btn) {
+    if (!text) {
+        return;
+    }
+    function onCopied() {
+        if (btn) {
+            btn.classList.add('admin-copy-btn--copied');
+            setTimeout(function () {
+                btn.classList.remove('admin-copy-btn--copied');
+            }, 1500);
+        }
+        showNotification('コピーしました', 'success');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onCopied).catch(function () {
+            showNotification('コピーに失敗しました', 'error');
+        });
+        return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        onCopied();
+    } catch (err) {
+        showNotification('コピーに失敗しました', 'error');
+    }
+    document.body.removeChild(ta);
+}
+
+function ensureUserAttributesPanelActions() {
+    const modal = document.getElementById('userAttributesModal');
+    if (!modal || modal.dataset.copyBound === '1') {
+        return;
+    }
+    modal.dataset.copyBound = '1';
+    modal.addEventListener('click', function (e) {
+        const helpBtn = e.target.closest('.lifecycle-help-toggle');
+        if (helpBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const panel = document.getElementById('lifecycle-archive-explainer');
+            if (!panel) {
+                return;
+            }
+            const expanded = helpBtn.getAttribute('aria-expanded') === 'true';
+            const nextExpanded = !expanded;
+            helpBtn.setAttribute('aria-expanded', nextExpanded ? 'true' : 'false');
+            panel.hidden = !nextExpanded;
+            panel.classList.toggle('lifecycle-archive-explainer--visible', nextExpanded);
+            helpBtn.classList.toggle('lifecycle-help-toggle--active', nextExpanded);
+            return;
+        }
+        const btn = e.target.closest('.admin-copy-btn');
+        if (!btn) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        const text = decodeURIComponent(btn.getAttribute('data-copy-encoded') || '');
+        copyAdminText(text, btn);
+    });
+}
+
+function renderAttributeCardWithCopy(label, value, copyValue) {
+    const display = (value === null || value === undefined || value === '') ? '—' : String(value);
+    const copyBtn = (copyValue !== false && display !== '—')
+        ? renderAdminCopyButton(copyValue || display, label + 'をコピー')
+        : '';
+    return (
+        '<div class="attribute-card">' +
+        '<div class="attribute-label">' + escapeHtml(label) + '</div>' +
+        '<div class="attribute-value attribute-value--with-copy">' +
+        '<span class="attribute-value__text">' + escapeHtml(display) + '</span>' +
+        copyBtn +
+        '</div></div>'
+    );
+}
+
+function truncateMessagePreview(msg, maxLen) {
+    let text = (msg && msg.content != null) ? String(msg.content) : '';
+    text = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) {
+        return '(内容なし)';
+    }
+    if (text.length > maxLen) {
+        return text.slice(0, maxLen) + '…';
+    }
+    return text;
+}
+
+function renderTimelineRoleIcon(msg) {
+    if (msg.type === 'user') {
+        return {
+            html: '👤',
+            label: 'ユーザー',
+            className: ' lifecycle-timeline-item__role--user',
+        };
+    }
+    if (msg.manual_reply) {
+        return {
+            html: '<i class="fa-solid fa-user-doctor" aria-hidden="true"></i>',
+            label: '薬剤師（手動返信）',
+            className: ' lifecycle-timeline-item__role--admin',
+        };
+    }
+    return {
+        html: '🤖',
+        label: 'AI',
+        className: ' lifecycle-timeline-item__role--bot',
+    };
+}
+
+function buildLifecycleArchiveExplainerHtml(archive, live, archivedOnly) {
+    const archiveArchiveRow = archivedOnly > 0
+        ? '<div class="lifecycle-archive-dl__row">' +
+          '<dt>📦 アーカイブ</dt>' +
+          '<dd>古い <strong>' + archivedOnly + ' 件</strong> は DB の <code>message_archive</code> に保持。AI には渡しませんが、管理画面チャットでは閲覧できます。</dd>' +
+          '</div>'
+        : '';
+    return (
+        '<div id="lifecycle-archive-explainer" class="lifecycle-archive-explainer" hidden>' +
+        '<div class="lifecycle-stats-row">' +
+        '<span class="lifecycle-stat-pill">💬 表示 <strong>' + archive + '</strong> 件</span>' +
+        '<span class="lifecycle-stat-pill">🤖 AI用 <strong>' + live + '</strong> / 24件</span>' +
+        '</div>' +
+        '<dl class="lifecycle-archive-dl">' +
+        '<div class="lifecycle-archive-dl__row">' +
+        '<dt>💬 表示件数</dt>' +
+        '<dd>管理画面に表示する全会話。<code>message_archive</code> と現行 <code>messages</code> を統合した件数です。</dd>' +
+        '</div>' +
+        '<div class="lifecycle-archive-dl__row">' +
+        '<dt>🤖 AI用件数</dt>' +
+        '<dd>医薬品推奨・応答生成に渡す最新メッセージのみ（上限 24 件）。それより古い会話は AI コンテキストから除外されます。</dd>' +
+        '</div>' +
+        archiveArchiveRow +
+        '</dl>' +
+        '<p class="lifecycle-archive-note">※ LINE Messaging API から過去の会話を再取得することはできません。本システム DB に保存された分のみ表示されます。</p>' +
+        '</div>'
+    );
+}
+
+function renderLifecycleEventAccordionItem(ev) {
+    const at = formatAdminDateTime(ev.at);
+    const label = ev.label || ev.action || 'イベント';
+    const counts = (ev.messages_before != null && ev.messages_after != null)
+        ? ' (' + ev.messages_before + '→' + ev.messages_after + '件)'
+        : '';
+    const bodyParts = [];
+    if (ev.detail) {
+        let detail = String(ev.detail);
+        if (ev.action === 'profile_fetch_failed') {
+            detail = detail.replace(/^userId=[^;]+;\s*reason=/, '');
+        }
+        bodyParts.push('<p class="lifecycle-log-entry__detail">' + escapeHtml(detail) + '</p>');
+    }
+    if (ev.source) {
+        bodyParts.push(
+            '<p class="lifecycle-log-entry__source">' +
+            '<span class="lifecycle-log-entry__source-label">場所</span> ' +
+            escapeHtml(ev.source) +
+            '</p>'
+        );
+    }
+    if (ev.messages_before != null && ev.messages_after != null) {
+        bodyParts.push(
+            '<p class="lifecycle-log-entry__meta">メッセージ件数: ' +
+            ev.messages_before + ' → ' + ev.messages_after +
+            '</p>'
+        );
+    }
+    const body = bodyParts.length
+        ? bodyParts.join('')
+        : '<p class="lifecycle-log-entry__detail lifecycle-log-entry__detail--empty">詳細なし</p>';
+    const actionClass = ev.action ? ' lifecycle-log-entry--' + ev.action : '';
+    return (
+        '<details class="lifecycle-log-entry' + actionClass + '">' +
+        '<summary class="lifecycle-log-entry__summary">' +
+        '<span class="lifecycle-log-entry__label">' + escapeHtml(label) + escapeHtml(counts) + '</span>' +
+        '<span class="lifecycle-log-entry__time">' + escapeHtml(at) + '</span>' +
+        '<i class="fa-solid fa-chevron-down lifecycle-log-entry__chevron" aria-hidden="true"></i>' +
+        '</summary>' +
+        '<div class="lifecycle-log-entry__body">' + body + '</div>' +
+        '</details>'
+    );
+}
+
+function renderConversationTimelineSection(session) {
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const count = messages.length;
+    let inner = '';
+    if (!count) {
+        inner = '<p class="lifecycle-empty">メッセージがありません</p>';
+    } else {
+        const rows = messages.map(function (msg) {
+            const role = renderTimelineRoleIcon(msg);
+            const time = formatAdminDateTime(msg.timestamp);
+            const preview = truncateMessagePreview(msg, 72);
+            const flags = [];
+            if (msg.crisis_support || msg.emergency_detected) {
+                flags.push('危機');
+            }
+            return (
+                '<li class="lifecycle-timeline-item">' +
+                '<span class="lifecycle-timeline-item__time">' + escapeHtml(time) + '</span>' +
+                '<span class="lifecycle-timeline-item__role' + role.className + '" title="' + escapeHtml(role.label) + '">' + role.html + '</span>' +
+                '<span class="lifecycle-timeline-item__preview">' + escapeHtml(preview) + '</span>' +
+                (flags.length
+                    ? '<span class="lifecycle-timeline-item__flags">' + escapeHtml(flags.join('·')) + '</span>'
+                    : '') +
+                '</li>'
+            );
+        }).join('');
+        inner = '<ul class="lifecycle-timeline app-scrollbar">' + rows + '</ul>';
+    }
+    return (
+        '<details class="lifecycle-accordion-panel" open>' +
+        '<summary class="lifecycle-accordion-panel__summary">' +
+        '<span class="lifecycle-accordion-panel__title"><i class="fa-solid fa-comments"></i> 会話タイムライン概要</span>' +
+        '<span class="lifecycle-accordion-panel__badge">' + count + '件</span>' +
+        '</summary>' +
+        '<div class="lifecycle-accordion-panel__body">' + inner + '</div>' +
+        '</details>'
+    );
+}
+
+function renderOperationLogAccordion(log) {
+    const displayLog = Array.isArray(log) ? log.slice().reverse() : [];
+    const count = displayLog.length;
+    let inner = '';
+    if (!count) {
+        inner = '<p class="lifecycle-empty">トリム・クリア・プロフィール取得などの記録はありません</p>';
+    } else {
+        inner = '<div class="lifecycle-log-accordion app-scrollbar">' +
+            displayLog.map(renderLifecycleEventAccordionItem).join('') +
+            '</div>';
+    }
+    return (
+        '<details class="lifecycle-accordion-panel">' +
+        '<summary class="lifecycle-accordion-panel__summary">' +
+        '<span class="lifecycle-accordion-panel__title"><i class="fa-solid fa-list-check"></i> 操作ログ</span>' +
+        '<span class="lifecycle-accordion-panel__badge">' + count + '件</span>' +
+        '</summary>' +
+        '<div class="lifecycle-accordion-panel__body">' + inner + '</div>' +
+        '</details>'
+    );
+}
+
 function renderLineProfileSection(lineProfile, profileError) {
     const errorMessages = {
         token_not_configured: 'LINE_CHANNEL_ACCESS_TOKEN が未設定です。.env に Messaging API のチャネルアクセストークンを設定し、サーバーを再起動してください。',
@@ -1710,7 +2030,7 @@ function renderLineProfileSection(lineProfile, profileError) {
             <div class="attributes-section">
                 <h4 class="attributes-section-title">
                     <i class="fa-brands fa-line"></i>
-                    <span>LINE プロフィール（Messaging API）</span>
+                    <span>LINE プロフィール</span>
                 </h4>
                 <div class="empty-state-section">
                     <p>${escapeHtml(errText)}</p>
@@ -1718,77 +2038,64 @@ function renderLineProfileSection(lineProfile, profileError) {
             </div>
         `;
     }
-    const avatar = lineProfile.pictureUrl
-        ? `<img src="${escapeHtml(lineProfile.pictureUrl)}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #06c755;">`
-        : '<i class="fa-brands fa-line" style="font-size:2.5em;color:#06c755;"></i>';
     const fields = [
-        ['表示名 (displayName)', lineProfile.displayName],
-        ['ユーザーID (userId)', lineProfile.userId],
-        ['ステータスメッセージ (statusMessage)', lineProfile.statusMessage],
-        ['言語 (language)', lineProfile.language],
-        ['取得日時 (fetched_at)', lineProfile.fetched_at],
+        ['表示名', lineProfile.displayName, false],
+        ['ユーザーID', lineProfile.userId, lineProfile.userId],
+        ['ステータス', lineProfile.statusMessage, false],
+        ['言語', lineProfile.language, false],
+        ['取得日時', formatAdminDateTime(lineProfile.fetched_at), false],
     ];
     let cards = fields.map(function (pair) {
-        const val = pair[1];
-        if (val === null || val === undefined || val === '') {
-            return `<div class="attribute-card"><div class="attribute-label">${escapeHtml(pair[0])}</div><div class="attribute-value">—</div></div>`;
+        if (pair[2]) {
+            return renderAttributeCardWithCopy(pair[0], pair[1], pair[2]);
         }
-        return `<div class="attribute-card"><div class="attribute-label">${escapeHtml(pair[0])}</div><div class="attribute-value">${escapeHtml(String(val))}</div></div>`;
+        return renderAttributeCardWithCopy(pair[0], pair[1], false);
     }).join('');
     return `
         <div class="attributes-section">
             <h4 class="attributes-section-title">
                 <i class="fa-brands fa-line"></i>
-                <span>LINE プロフィール（Messaging API で取得可能な全項目）</span>
+                <span>LINE プロフィール</span>
             </h4>
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">${avatar}</div>
-            <div class="attributes-grid">${cards}</div>
+            <div class="attributes-grid line-profile-grid--compact">${cards}</div>
         </div>
     `;
 }
 
 function renderLifecycleSection(session) {
-    const log = Array.isArray(session.lifecycle_log) ? session.lifecycle_log.slice().reverse() : [];
+    const log = Array.isArray(session.lifecycle_log) ? session.lifecycle_log : [];
     const live = session.messages_live_count != null ? session.messages_live_count : (session.messages_live || []).length;
     const archive = session.message_archive_count != null ? session.message_archive_count : live;
+    const archivedOnly = Math.max(0, archive - live);
     let html = `
-        <div class="attributes-section">
-            <h4 class="attributes-section-title">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>履歴・セッションのライフサイクル</span>
-            </h4>
-            <div class="attributes-grid">
-                <div class="attribute-card">
-                    <div class="attribute-label">📚 管理画面表示件数（アーカイブ）</div>
-                    <div class="attribute-value">${archive} 件</div>
-                </div>
-                <div class="attribute-card">
-                    <div class="attribute-label">💬 LLM用現行 messages 件数</div>
-                    <div class="attribute-value">${live} 件（上限24件で自動トリム。古い分はアーカイブに保持）</div>
+        <div class="attributes-section lifecycle-section">
+            <div class="lifecycle-section-header">
+                <h4 class="attributes-section-title attributes-section-title--inline">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>会話履歴</span>
+                </h4>
+                <div class="lifecycle-section-header__actions">
+                    <span class="lifecycle-stat-pill lifecycle-stat-pill--compact" title="表示件数 / AI用件数">
+                        💬 <strong>${archive}</strong>
+                        <span class="lifecycle-stat-pill__sep">·</span>
+                        🤖 <strong>${live}</strong>/24
+                    </span>
+                    <button type="button"
+                        class="lifecycle-help-toggle"
+                        aria-expanded="false"
+                        aria-controls="lifecycle-archive-explainer"
+                        title="件数の説明を表示">
+                        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                        <span class="lifecycle-help-toggle__label">説明</span>
+                    </button>
                 </div>
             </div>
+            ${buildLifecycleArchiveExplainerHtml(archive, live, archivedOnly)}
+            <div class="lifecycle-accordion">
+                ${renderConversationTimelineSection(session)}
+                ${renderOperationLogAccordion(log)}
+            </div>
     `;
-    if (!log.length) {
-        html += `<div class="empty-state-section" style="margin-top:12px;"><p>記録されたクリア・トリムイベントはまだありません</p></div>`;
-    } else {
-        html += `<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">`;
-        log.forEach(function (ev) {
-            const at = ev.at ? new Date(ev.at).toLocaleString('ja-JP') : '—';
-            const counts = (ev.messages_before != null && ev.messages_after != null)
-                ? `（${ev.messages_before} → ${ev.messages_after} 件）` : '';
-            html += `
-                <div class="attribute-card" style="text-align:left;">
-                    <div class="attribute-label">${escapeHtml(ev.label || ev.action || 'イベント')} ${escapeHtml(counts)}</div>
-                    <div class="attribute-value" style="font-size:0.85em;color:#555;">
-                        <div>${escapeHtml(at)}</div>
-                        ${ev.source ? `<div>場所: ${escapeHtml(ev.source)}</div>` : ''}
-                        ${ev.detail ? `<div>${escapeHtml(ev.detail)}</div>` : ''}
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    }
     html += `</div>`;
     return html;
 }
@@ -1806,7 +2113,8 @@ function renderUserAttributesPanel(session, sessionId) {
         'session_id', 'username', 'messages', 'messages_live', 'last_activity', 'message_count',
         'messages_count', 'messages_live_count', 'message_archive_count',
         'user_info', 'attributes', 'user_attributes', 'detailed_diagnosis',
-        'line_profile', 'lifecycle_log', 'is_line_session', 'crisis_detected'
+        'line_profile', 'line_profile_error', 'lifecycle_log', 'is_line_session', 'crisis_detected',
+        'message_archive'
     ];
     const additionalFields = {};
     for (const key in session) {
@@ -1819,14 +2127,26 @@ function renderUserAttributesPanel(session, sessionId) {
     const avatarHtml = (lineProfile && lineProfile.pictureUrl)
         ? `<img src="${escapeHtml(lineProfile.pictureUrl)}" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`
         : '<i class="fa-solid fa-user"></i>';
+    const lastActivity = formatSessionLastActivity(session);
+    const shortSid = formatSessionIdForAdmin(sessionId);
     let html = `
         <div class="user-info-section">
             <div class="user-info-header">
                 <div class="user-avatar">${avatarHtml}</div>
                 <div class="user-info-text">
                     <h4>${escapeHtml(displayName)}</h4>
-                    <p>セッションID: ${escapeHtml(sessionId)}</p>
-                    ${isLineSessionId(sessionId) ? '<p style="font-size:0.85em;color:#06c755;">LINE セッション</p>' : ''}
+                    <div class="user-info-meta">
+                        <span class="user-info-meta__sid" title="${escapeHtml(sessionId)}">
+                            <span class="user-info-meta__sid-label">ID:</span>
+                            <span class="user-info-meta__sid-text">${escapeHtml(shortSid)}</span>
+                            ${renderAdminCopyButton(sessionId, 'セッションIDをコピー')}
+                        </span>
+                        ${lastActivity ? `<span>最終: ${escapeHtml(lastActivity)}</span>` : ''}
+                    </div>
+                    <div style="margin-top:6px;">
+                        ${isLineSessionId(sessionId) ? '<span class="user-info-badge user-info-badge--line">LINE</span>' : ''}
+                        ${session.crisis_detected ? '<span class="user-info-badge user-info-badge--crisis">危機対応</span>' : ''}
+                    </div>
                 </div>
             </div>
         </div>
@@ -1890,6 +2210,7 @@ function renderUserAttributesPanel(session, sessionId) {
         `;
     }
     content.innerHTML = html;
+    ensureUserAttributesPanelActions();
 }
 
 // ユーザー属性情報を読み込み
@@ -2142,13 +2463,9 @@ function renderChatMessages(messages) {
             const archiveN = sess.message_archive_count != null ? sess.message_archive_count : messages.length;
             const liveN = sess.messages_live_count != null ? sess.messages_live_count : (sess.messages_live || []).length;
             if (archiveN > liveN && liveN > 0) {
-                html += `<div class="line-archive-notice" style="margin:8px 12px;padding:10px 12px;background:#e8f5e9;border-left:4px solid #4caf50;border-radius:6px;font-size:0.82em;color:#2e7d32;">
-                    LINE 全履歴を表示中（${archiveN} 件）。AI処理用の現行履歴は最新 ${liveN} 件。切り捨て・クリアの記録はユーザー属性モーダルをご確認ください。
-                </div>`;
+                html += `<div class="line-archive-notice line-archive-notice--info">全${archiveN}件表示（AIは最新${liveN}件）</div>`;
             } else if (archiveN > 0 && liveN === 0) {
-                html += `<div class="line-archive-notice" style="margin:8px 12px;padding:10px 12px;background:#fff3e0;border-left:4px solid #ff9800;border-radius:6px;font-size:0.82em;color:#e65100;">
-                    現行の会話（messages）は空です。アーカイブから過去 ${archiveN} 件を表示しています（チャット終了後など）。
-                </div>`;
+                html += `<div class="line-archive-notice line-archive-notice--warn">アーカイブ${archiveN}件を表示</div>`;
             }
         }
     }
@@ -3198,7 +3515,16 @@ function renderSessionList(sessions) {
         const shortSessionId = session.session_id ? session.session_id.substring(0, 8) + '...' : 'unknown';
         
         // 危機対応セッションの場合は特別なスタイルを適用
-        const sessionClass = isCrisisSession ? 'session-item crisis' : (isSelected ? 'session-item active' : 'session-item');
+        const isLine = isLineSession(session);
+        let sessionClass = 'session-item';
+        if (isCrisisSession) {
+            sessionClass += ' crisis';
+        } else if (isSelected) {
+            sessionClass += ' active';
+        }
+        if (isLine) {
+            sessionClass += ' session-item--line';
+        }
         const sid = String(session.session_id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const safeUsername = String(username).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const isChecked = selectedSidebarSessionIds.has(session.session_id);
@@ -3212,12 +3538,15 @@ function renderSessionList(sessions) {
                 ${selectCheckbox}
                 <div class="session-item-body">
                 <div class="session-meta">
-                    <span class="session-time">${lastUpdate}</span>
-                    <span style="background: ${isCrisisSession ? 'var(--danger)' : messageCountColor}; color: white; padding: 0.125rem 0.5rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600;">${messageCount}件</span>
+                    <div class="session-meta__left">
+                        <span class="session-time">${lastUpdate}</span>
+                        ${renderSessionLineBadge(session)}
+                    </div>
+                    <span class="session-count-pill" style="background: ${isCrisisSession ? 'var(--danger)' : messageCountColor};">${messageCount}件</span>
                 </div>
                 <div class="session-user">
-                    ${isCrisisSession ? '<i class="fa-solid fa-triangle-exclamation" style="color: var(--danger); margin-right: 0.25rem;"></i>' : ''}
-                    ${escapeHtml(username)}
+                    ${isCrisisSession ? '<i class="fa-solid fa-triangle-exclamation session-user__crisis-icon" aria-hidden="true"></i>' : ''}
+                    <span class="session-user__name">${escapeHtml(username)}</span>
                 </div>
                 <div class="session-preview">${escapeHtml(lastMessage)}</div>
                 </div>
@@ -5111,10 +5440,15 @@ function renderMobileChatListInCenterPanel(sessions) {
                  role="button" tabindex="0" 
                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMobileChatModal('${session.session_id}', '${username.replace(/'/g, "\\'")}')}">
                 <div class="chat-card-meta">
-                    <span>${escapeHtml(timeStr)}</span>
-                    <span>${messageCount}件</span>
+                    <div class="session-meta__left">
+                        <span>${escapeHtml(timeStr)}</span>
+                        ${renderSessionLineBadge(session)}
+                    </div>
+                    <span class="chat-card-meta__count">${messageCount}件</span>
                 </div>
-                <div class="session-user">${escapeHtml(username)}</div>
+                <div class="session-user">
+                    <span class="session-user__name">${escapeHtml(username)}</span>
+                </div>
                 <div class="chat-card-preview">${escapeHtml(shortMessage)}</div>
             </div>
         `;

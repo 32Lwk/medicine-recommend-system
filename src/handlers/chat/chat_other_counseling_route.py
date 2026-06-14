@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
-from src.core.language_utils import detect_language
+from src.core.language_utils import update_session_language_from_message
 from src.services.session_manager import (
     append_user_message,
     get_next_user_number,
@@ -185,8 +185,7 @@ def run_other_unknown_counseling(
             conversation_history=conversation_history,
             session_id=sid,
         )
-        detected_language = detect_language(sanitized_message)
-        session["detected_language"] = detected_language
+        detected_language = update_session_language_from_message(session, sanitized_message)
         if detected_language != "ja" and initial_response:
             try:
                 from src.core.translation_service import translate_medicine_recommendation

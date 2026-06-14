@@ -56,8 +56,9 @@ def test_cleanup_old_sessions_skip_empty_sessions():
     assert mock_db.cleanup_expired_sessions.call_args.kwargs["skip_empty_sessions"] is True
 
 
-def test_line_session_sql_guard_escapes_percent_for_psycopg2():
+def test_line_session_sql_guard_avoids_percent_wildcard():
     from src.services.database import DatabaseManager
 
     guard = DatabaseManager._line_session_sql_guard(object())
-    assert guard == "LOWER(session_id) NOT LIKE 'line:%%'"
+    assert "%" not in guard
+    assert "line:" in guard
