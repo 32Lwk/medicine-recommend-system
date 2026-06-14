@@ -58,10 +58,11 @@ def handle_chat_end_if_requested(
         session_data = get_session_from_db(sid) or {"session_id": sid}
         if str(sid).startswith("line:"):
             from src.handlers.line.line_session import clear_line_session_state
+            from src.handlers.line.line_feedback import clear_line_feedback_pending
 
             clear_line_session_state(session_data)
             session_data["messages"] = session["messages"].copy()
-            session_data.pop("line_feedback_pending", None)
+            clear_line_feedback_pending(sid)
         else:
             session_data["messages"] = session["messages"].copy()
         session_data["last_activity"] = datetime.now()

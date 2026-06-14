@@ -123,9 +123,11 @@ async def process_line_events(events: list[dict[str, Any]]) -> None:
     client = line_reply.acquire_thread_http_client()
     line_reply.set_http_client(client)
     try:
-        for event in events:
-            if not isinstance(event, dict):
-                continue
+        ordered = sorted(
+            (e for e in events if isinstance(e, dict)),
+            key=lambda ev: 0 if ev.get("type") == "postback" else 1,
+        )
+        for event in ordered:
             try:
                 await _dispatch_event(event)
             except Exception:
@@ -190,6 +192,16 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
 
     text = (message.get("text") or "").strip()
     if not text:
+        return
+
+    from src.handlers.line.line_feedback import is_line_feedback_display_text
+
+    if is_line_feedback_display_text(text):
+        logger.info(
+            "LINE feedback displayText echo ignored userId=%s text=%s",
+            user_id,
+            text,
+        )
         return
 
     await _process_text_message(user_id, text, reply_token)
@@ -338,6 +350,9 @@ async def _process_text_message(
             if job_lock is not None:
                 job_lock.release(sid)
             persist_line_session(sid, session)
+            from src.services.processing_status import clear_processing_status
+
+            clear_processing_status(sid)
     finally:
         await end_line_loading(loading_stop, loading_keepalive)
         log_pipeline_perf(sid=sid)

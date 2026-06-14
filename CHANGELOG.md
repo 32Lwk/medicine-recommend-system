@@ -1,6 +1,44 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月13日**（LINE/Web 返信速度改善・DB 監視・運用ドキュメント）
+**最終更新日: 2026年6月15日**（LINE フィードバック永続化・管理画面手動返信 Push・評価 postback 重複抑制）
+
+---
+
+## 2026年6月15日 — LINE フィードバック永続化・管理画面手動返信 Push・評価 postback 重複抑制
+
+### 概要
+
+- **LINE 評価 pending の DB 永続化**: `sessions.line_feedback_pending`（JSONB）カラムを追加。`database.py` に `get_line_feedback_pending` / `set_line_feedback_pending` を実装。`line_feedback.py` はメモリ + 専用カラムへの保存に変更し、評価コンテキスト登録時のフルセッション `save_session_to_db` を廃止。
+- **pending 読込の多段フォールバック**: プロセス内メモリ → セッションメモリ → DB の順で pending を復元。チャット終了時は `clear_line_feedback_pending` でメモリ・DB 双方をクリア。
+- **Quick Reply displayText 重複抑制**: postback の `displayText`（「役に立った」等）が message イベントとして再送されるケースを `is_line_feedback_display_text` で検出し、通常メッセージ処理をスキップ。
+- **同一 Webhook 内の postback 優先**: `process_line_events` で postback を message より先に処理。評価 postback と直後の displayText echo の競合を防止。
+- **期限切れ評価 postback のサイレント処理**: pending コンテキストが無い postback は reply せずログのみ（ユーザーへの不要なエラー返信を排除）。
+- **管理画面手動返信の LINE Push**: `line_admin_manual_reply.py` を新設。`POST /api/main/manual_reply_queue`（action=reply）で LINE セッションへ `push_messages` によるテキスト Push。Web セッションは従来どおり DB 保存のみ。`line_pushed` / `line_error` を API レスポンスに含める。
+- **`user_id_from_line_sid`**: `line:{userId}` 形式から LINE userId を抽出するヘルパーを `line_session.py` に追加。
+- **LINE テキスト処理後の status クリア**: `_process_text_message` 終了時に `clear_processing_status(sid)` を呼び、処理中表示の残留を防止。
+- **管理画面 UI**: `admin_chat.js` の手動返信通知を拡張。LINE Push 成功・失敗・トークン未設定を warning / success で区別表示。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_admin_manual_reply.py` | 管理画面手動返信の DB 保存 + LINE Push |
+| `tests/line/test_line_admin_manual_reply.py` | LINE Push / Web スキップ / トークン未設定 |
+| `tests/line/test_line_session_ids.py` | `user_id_from_line_sid` |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/services/database.py` | `line_feedback_pending` カラム・get/set |
+| `src/handlers/line/line_feedback.py` | DB 永続化・displayText 判定・サイレント postback |
+| `src/handlers/line/line_message_handler.py` | postback 優先・displayText 無視・status クリア |
+| `src/handlers/line/line_session.py` | `user_id_from_line_sid` |
+| `src/handlers/chat/chat_session_route.py` | 終了時 `clear_line_feedback_pending` |
+| `main.py` | 手動返信 API → `apply_admin_manual_reply` |
+| `static/js/admin_chat.js` | 手動返信の LINE Push 結果通知 |
+| `tests/line/test_line_feedback.py` | DB 永続化・displayText・期限切れ postback |
+| `tests/line/test_line_message_handler.py` | displayText 無視・postback 優先順 |
 
 ---
 

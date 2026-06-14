@@ -2767,14 +2767,26 @@ window.sendReplyFromChat = function() {
     .then(data => {
         typingIndicator.classList.remove('show');
         
-        if (data.error) {
-            showNotification(`エラー: ${data.error}`, 'error');
+        if (data.error || data.status === 'error') {
+            showNotification(`エラー: ${data.error || data.message || '送信に失敗しました'}`, 'error');
             sendBtn.disabled = false;
         } else {
-            showNotification(`返信を送信しました (セッション: ${data.target_session_id})`, 'success');
             chatInput.value = '';
             chatInput.style.height = 'auto';
-            
+
+            if (data.line_pushed === false) {
+                const lineHint = data.line_error === 'LINE_CHANNEL_ACCESS_TOKEN not configured'
+                    ? '（LINE_CHANNEL_ACCESS_TOKEN 未設定）'
+                    : '（LINE Push に失敗しました。履歴には保存済みです）';
+                showNotification(`返信を保存しましたが LINE へは届きませんでした ${lineHint}`, 'warning');
+            } else {
+                const lineNote = data.line_pushed === true ? '（LINE にも送信しました）' : '';
+                showNotification(
+                    `返信を送信しました ${lineNote} (セッション: ${data.target_session_id || currentSessionId})`,
+                    'success'
+                );
+            }
+
             console.log('Manual reply sent successfully:', data);
             
             // 即座にチャット履歴を更新（1回のみ）
