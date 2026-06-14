@@ -20,8 +20,8 @@ def test_apply_admin_manual_reply_pushes_to_line():
                 return_value=True,
             ) as mock_push,
             patch(
-                "src.handlers.line.line_admin_manual_reply.LINE_CHANNEL_ACCESS_TOKEN",
-                "test-token",
+                "src.handlers.line.line_admin_manual_reply.get_line_channel_access_token",
+                return_value="test-token",
             ),
         ):
             return await apply_admin_manual_reply(sid, "薬剤師からの返信です"), mock_push
@@ -66,7 +66,10 @@ def test_apply_admin_manual_reply_line_without_token():
                 "src.handlers.line.line_admin_manual_reply.push_messages",
                 new_callable=AsyncMock,
             ) as mock_push,
-            patch("src.handlers.line.line_admin_manual_reply.LINE_CHANNEL_ACCESS_TOKEN", ""),
+            patch(
+                "src.handlers.line.line_admin_manual_reply.get_line_channel_access_token",
+                return_value="",
+            ),
         ):
             result = await apply_admin_manual_reply(sid, "返信")
             return result, mock_push

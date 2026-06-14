@@ -145,6 +145,17 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
     reply_token = event.get("replyToken")
 
     if event_type == "follow":
+        user_id = _extract_user_id(event)
+        if user_id:
+            from src.handlers.line.line_profile import ensure_line_user_profile
+            from src.handlers.line.line_session import line_sid, prime_line_session
+
+            sid = line_sid(user_id)
+            session = prime_line_session(user_id)
+            await ensure_line_user_profile(user_id, session, sid=sid)
+            from src.handlers.line.line_session import persist_line_session
+
+            persist_line_session(sid, session)
         if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
             await reply_messages(reply_token, [{"type": "text", "text": FOLLOW_WELCOME_TEXT}])
         return
@@ -312,6 +323,10 @@ async def _process_text_message(
                 monitor,
             )
             mark_processing_step(sid, "finalize")
+
+            from src.handlers.line.line_profile import ensure_line_user_profile
+
+            await ensure_line_user_profile(user_id, session, sid=sid)
 
             bot_msg = resolve_latest_bot_message(session, sid)
             if not bot_msg:

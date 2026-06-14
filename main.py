@@ -1189,6 +1189,9 @@ def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(se
 
 
 def _session_row_for_admin(sess_id, info):
+    from src.services.session_lifecycle import admin_messages_for_session
+    from src.handlers.line.line_session import is_line_session_id
+
     detailed_diag = None
     if isinstance(info, dict):
         detailed_diag = info.get("detailed_diagnosis")
@@ -1202,31 +1205,50 @@ def _session_row_for_admin(sess_id, info):
             pass
     if not isinstance(info, dict):
         info = {}
-    msg_count = len(info.get("messages", []) or [])
-    return {
+    admin_msgs = admin_messages_for_session(info)
+    live_count = len(info.get("messages", []) or [])
+    archive_count = len(admin_msgs)
+    msg_count = archive_count
+    row = {
         "session_id": sess_id,
         "username": info.get("username", "Unknown"),
-        "messages": info.get("messages", []),
+        "messages": admin_msgs,
+        "messages_live": info.get("messages", []),
         "last_activity": info.get("last_activity", 0),
         "message_count": msg_count,
         "messages_count": msg_count,
+        "messages_live_count": live_count,
+        "message_archive_count": archive_count,
         "user_info": info.get("user_attributes", {}),
         "attributes": info.get("user_attributes", {}),
+        "user_attributes": info.get("user_attributes", {}),
         "detailed_diagnosis": detailed_diag,
         "crisis_detected": bool(info.get("crisis_detected")),
+        "line_profile": info.get("line_profile"),
+        "line_profile_error": info.get("line_profile_error"),
+        "lifecycle_log": info.get("lifecycle_log") or [],
+        "is_line_session": is_line_session_id(str(sess_id)),
     }
+    return row
 
 
 def _list_admin_sessions(meaningful_only: bool = True):
+    from src.handlers.line.line_session import is_line_session_id
+    from src.services.session_lifecycle import ensure_line_session_archive
+
     queue_ids = get_manual_reply_session_ids()
     all_sessions = get_all_sessions_from_db()
     sessions_list = []
     for sess_id, info in all_sessions.items():
+        if isinstance(info, dict) and is_line_session_id(str(sess_id)):
+            if ensure_line_session_archive(info):
+                save_session_to_db(sess_id, info)
         row = _session_row_for_admin(sess_id, info)
         if meaningful_only:
             has_messages = row["message_count"] > 0
             in_queue = str(sess_id) in queue_ids
-            if not has_messages and not in_queue:
+            is_line = is_line_session_id(str(sess_id))
+            if not has_messages and not in_queue and not is_line:
                 continue
         sessions_list.append(row)
     return sessions_list
@@ -1249,6 +1271,72 @@ def api_main_sessions(
         skip_empty_sessions=not meaningful_only,
     )
     return {"sessions": _list_admin_sessions(meaningful_only=meaningful_only)}
+
+
+@app.get("/api/main_session")
+async def api_main_session(
+    request: Request,
+    session_id: str,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    if not session_id:
+        return JSONResponse({"status": "error", "message": "session_id required"}, status_code=400)
+    from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
+    from src.handlers.line.line_profile import refresh_line_profile_by_session_id
+
+    session_id = normalize_line_session_id(session_id) or session_id
+    info = get_session_from_db(session_id)
+    if not info and is_line_session_id(session_id):
+        from src.handlers.line.line_session import user_id_from_line_sid
+
+        uid = user_id_from_line_sid(session_id)
+        info = {
+            "session_id": session_id,
+            "messages": [],
+            "username": f"LINEユーザー{(uid or '????')[-6:]}",
+        }
+    elif not info:
+        return JSONResponse({"status": "error", "message": "session not found"}, status_code=404)
+    if is_line_session_id(session_id):
+        from src.services.session_lifecycle import ensure_line_session_archive, merge_messages_into_archive
+
+        if info.get("messages"):
+            merge_messages_into_archive(info, info.get("messages") or [])
+        ensure_line_session_archive(info)
+        save_session_to_db(session_id, info)
+        profile_result = await refresh_line_profile_by_session_id(session_id, force=True)
+        if not profile_result.get("ok"):
+            info["line_profile_error"] = profile_result.get("error")
+        info = get_session_from_db(session_id) or info
+        if not profile_result.get("ok"):
+            info["line_profile_error"] = profile_result.get("error")
+    return {"session": _session_row_for_admin(session_id, info)}
+
+
+@app.post("/api/main_line_profile_refresh")
+async def api_main_line_profile_refresh(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    session_id = data.get("session_id")
+    if not session_id:
+        return JSONResponse({"status": "error", "message": "session_id required"}, status_code=400)
+    from src.handlers.line.line_profile import refresh_line_profile_by_session_id
+
+    result = await refresh_line_profile_by_session_id(session_id, force=True)
+    if not result.get("ok"):
+        return JSONResponse({"status": "error", **result}, status_code=400)
+    info = get_session_from_db(session_id) or {}
+    return {"status": "success", "session": _session_row_for_admin(session_id, info)}
 
 
 @app.get("/api/main_manual_reply_queue")

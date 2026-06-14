@@ -40,7 +40,8 @@ def handle_chat_end_if_requested(
     if sid and str(sid).startswith("line:"):
         from src.handlers.line.line_session import clear_line_session_state
 
-        clear_line_session_state(session)
+        session_data_for_clear = get_session_from_db(sid) or {"session_id": sid}
+        clear_line_session_state(session, sid=sid, session_data=session_data_for_clear)
         session.setdefault("messages", []).append({
             "type": "bot",
             "content": farewell,
@@ -60,13 +61,21 @@ def handle_chat_end_if_requested(
             from src.handlers.line.line_session import clear_line_session_state
             from src.handlers.line.line_feedback import clear_line_feedback_pending
 
-            clear_line_session_state(session_data)
+            clear_line_session_state(session_data, sid=sid, session_data=session_data)
             session_data["messages"] = session["messages"].copy()
             clear_line_feedback_pending(sid)
         else:
             session_data["messages"] = session["messages"].copy()
         session_data["last_activity"] = datetime.now()
         session_data["session_active"] = False
+        from src.services.session_lifecycle import append_lifecycle_event
+
+        append_lifecycle_event(
+            session_data,
+            "session_marked_inactive",
+            source="chat_session_route.handle_chat_end_if_requested",
+            detail="ユーザー操作によるチャット終了",
+        )
         save_session_to_db(sid, session_data)
     message_count = len(session["messages"])
     logger.info("✅ POST処理完了（チャット終了） - JSON返却: %s messages", message_count)

@@ -813,29 +813,50 @@ main {
 .chat-input-area {
     background-color: var(--surface);
     border-top: 1px solid var(--border);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .input-wrapper {
     display: flex;
-    gap: var(--spacing-md);
-    align-items: flex-end;
+    gap: var(--spacing-sm);
+    align-items: center;
     background-color: #f8fafc;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.input-wrapper .action-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+}
+
+.input-wrapper .action-btn.send-btn:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
 }
 
 .chat-input {
     flex: 1;
     border: none;
     background: transparent;
-    padding: var(--spacing-sm);
-    font-size: 0.95rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+    line-height: 1.4;
     resize: none;
     max-height: 120px;
     outline: none;
     font-family: inherit;
+}
+
+.chat-input::placeholder {
+    color: var(--text-sub);
+    font-size: 0.8125rem;
+    opacity: 1;
 }
 
 /* Right Panel: Controls & Info */
@@ -1531,6 +1552,11 @@ main {
     margin: var(--spacing-sm) 0;
 }
 
+.message-text .chat-status-card__title {
+    color: inherit !important;
+    margin: 0;
+}
+
 .message-text p {
     color: var(--color-dark) !important;
     margin: 4px 0;
@@ -1544,6 +1570,29 @@ main {
 .message-text div,
 .message-text span {
     color: var(--color-dark) !important;
+}
+
+.message-text .chat-status-card,
+.message-text .chat-status-card div,
+.message-text .chat-status-card span,
+.message-text .chat-status-card p,
+.message-text .chat-status-card li,
+.message-text .chat-status-card strong {
+    color: inherit !important;
+}
+
+.message-timestamp {
+    font-size: 0.7em;
+    color: #666;
+    margin-top: 4px;
+}
+
+.message.user .message-timestamp {
+    text-align: left;
+}
+
+.message.bot .message-timestamp {
+    text-align: right;
 }
 
 /* AI Message Content Styling */
@@ -1632,23 +1681,246 @@ main {
     margin-left: var(--spacing-sm);
 }
 
+/* 統一ステータスカード（管理画面プレビュー・コンパクト） */
+.chat-status-card {
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    box-shadow: none;
+    line-height: 1.45;
+    box-sizing: border-box;
+    width: 100%;
+    font-size: 0.82rem;
+}
+
+.chat-status-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.chat-status-card__icon {
+    font-size: 1rem;
+    line-height: 1.35;
+    flex-shrink: 0;
+}
+
+.chat-status-card__title {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.chat-status-card__subtitle {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+}
+
+.chat-status-card__body {
+    font-size: 0.8rem;
+}
+
+.chat-status-card__message {
+    margin: 0 0 6px 0;
+}
+
+.chat-status-card__reason {
+    margin: 0 0 6px 0;
+    font-size: 0.78rem;
+}
+
+.chat-status-card__hints,
+.chat-status-card__list {
+    margin: 4px 0 0 0;
+    padding-left: 1.1rem;
+}
+
+.chat-status-card__hints li,
+.chat-status-card__list li {
+    margin-bottom: 3px;
+}
+
+.chat-status-card__section {
+    margin-top: 16px;
+}
+
+.chat-status-card__section-title {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.chat-status-card__section-desc {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+}
+
+.chat-status-card__details {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.85rem;
+}
+
+.chat-status-card__details summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.chat-status-card__tech {
+    margin: 8px 0 0 0;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-status-card__footer {
+    display: none;
+}
+
+.chat-status-card__footer-prompt {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.chat-status-card .feedback-buttons.chat-status-card__feedback {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.chat-status-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chat-status-card__btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-status-card__btn--positive {
+    background: #16a34a;
+    color: #fff;
+}
+
+.chat-status-card__btn--positive:hover {
+    background: #15803d;
+}
+
+.chat-status-card__btn--negative {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.chat-status-card__btn--negative:hover {
+    background: #cbd5e1;
+}
+
+.chat-status-card__btn--report {
+    background: #64748b;
+    color: #fff;
+}
+
+.chat-status-card__btn--report:hover {
+    background: #475569;
+}
+
+.chat-status-card__meta {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+}
+
+.chat-status-card--error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.chat-status-card--error .chat-status-card__title {
+    color: #991b1b;
+}
+
+.chat-status-card--caution {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.chat-status-card--caution .chat-status-card__title {
+    color: #92400e;
+}
+
+.chat-status-card--notice {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.chat-status-card--notice .chat-status-card__title {
+    color: #1e40af;
+}
+
+.chat-status-card--security {
+    background: #fef2f2;
+    border-color: #f87171;
+    border-width: 2px;
+    color: #7f1d1d;
+}
+
+.chat-status-card--security .chat-status-card__title {
+    color: #7f1d1d;
+}
+
+.chat-status-card--critical {
+    background: #fff1f2;
+    border-color: #fda4af;
+    color: #9f1239;
+}
+
+.chat-status-card--critical .chat-status-card__title {
+    color: #9f1239;
+}
+
 /* Notification */
 .notification {
     position: fixed;
     top: var(--spacing-xl);
     right: var(--spacing-xl);
+    max-width: min(420px, calc(100vw - 2 * var(--spacing-xl)));
     background: var(--color-success);
     color: var(--color-white);
     padding: var(--spacing-lg) var(--spacing-xl);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     z-index: var(--z-modal);
-    transform: translateX(400px);
-    transition: var(--transition-slow);
+    transform: translateX(calc(100% + var(--spacing-xl)));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .notification.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .notification.error {
@@ -1662,7 +1934,7 @@ main {
 /* Chat Input Area */
 .chat-input-area {
     background: var(--color-white);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
     border-top: 1px solid var(--color-gray-border);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
@@ -1680,10 +1952,11 @@ main {
     border: 2px solid var(--color-gray-border);
     border-radius: var(--radius-full);
     resize: none;
-    min-height: 50px;
+    min-height: 36px;
     max-height: 120px;
     font-family: inherit;
-    font-size: var(--font-size-base);
+    font-size: 0.875rem;
+    line-height: 1.4;
     transition: var(--transition-base);
 }
 
@@ -3257,11 +3530,16 @@ td .ai-response {
         top: var(--spacing-sm);
         right: var(--spacing-sm);
         left: var(--spacing-sm);
-        transform: translateY(-100px);
+        max-width: none;
+        transform: translateY(calc(-100% - var(--spacing-sm)));
+        opacity: 0;
+        visibility: hidden;
     }
     
     .notification.show {
         transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
     }
     
     /* タッチターゲットの確保 */

@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
+from config.line_config import get_line_channel_access_token
 from src.handlers.line.line_reply import push_messages
 from src.handlers.line.line_session import is_line_session_id, user_id_from_line_sid
 from src.services.session_manager import get_session_from_db, save_session_to_db
@@ -42,6 +42,9 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
     manual_reply = _build_manual_reply_message(text)
     session_data.setdefault("messages", [])
     session_data["messages"].append(manual_reply)
+    from src.services.session_lifecycle import merge_messages_into_archive
+
+    merge_messages_into_archive(session_data, [manual_reply])
     session_data["last_activity"] = datetime.now()
     save_session_to_db(session_id, session_data)
 
@@ -52,7 +55,7 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
         if not user_id:
             line_pushed = False
             line_error = "invalid_line_session_id"
-        elif not LINE_CHANNEL_ACCESS_TOKEN:
+        elif not get_line_channel_access_token():
             line_pushed = False
             line_error = "LINE_CHANNEL_ACCESS_TOKEN not configured"
             logger.warning(

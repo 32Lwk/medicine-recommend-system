@@ -551,6 +551,22 @@ class DatabaseManager:
                 cursor.execute(alter_line_feedback_sql)
             except Exception as e:
                 logger.debug(f"line_feedback_pending column may already exist: {e}")
+
+            try:
+                alter_session_metadata_sql = """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='sessions' AND column_name='session_metadata'
+                    ) THEN
+                        ALTER TABLE sessions ADD COLUMN session_metadata JSONB;
+                    END IF;
+                END $$;
+                """
+                cursor.execute(alter_session_metadata_sql)
+            except Exception as e:
+                logger.debug(f"session_metadata column may already exist: {e}")
             
             # global_stateテーブルを作成（グローバル変数の共有）
             create_global_state_table_sql = """
@@ -778,6 +794,37 @@ class DatabaseManager:
             return None
         else:
             return obj
+
+    def _pack_session_metadata(self, data: dict) -> dict | None:
+        """message_archive / line_profile / lifecycle_log を session_metadata に格納。"""
+        if not isinstance(data, dict):
+            return None
+        meta: dict = {}
+        for key in ("message_archive", "line_profile", "lifecycle_log"):
+            val = data.get(key)
+            if val is not None:
+                meta[key] = self._convert_nan_to_null(val)
+        return meta or None
+
+    @staticmethod
+    def _hydrate_session_metadata(session_data: dict) -> dict:
+        """session_metadata をセッション dict のトップレベルへ展開。"""
+        if not isinstance(session_data, dict):
+            return session_data
+        raw = session_data.get("session_metadata")
+        if raw is None:
+            return session_data
+        if isinstance(raw, str):
+            try:
+                raw = json.loads(raw)
+            except json.JSONDecodeError:
+                return session_data
+        if not isinstance(raw, dict):
+            return session_data
+        for key in ("message_archive", "line_profile", "lifecycle_log"):
+            if raw.get(key) is not None and not session_data.get(key):
+                session_data[key] = raw[key]
+        return session_data
     
     def save_session(self, session_id, data):
         """セッションをデータベースに保存"""
@@ -791,14 +838,18 @@ class DatabaseManager:
             # NaN値をnullに変換してからJSONBに変換
             messages_data = self._convert_nan_to_null(data.get('messages', []))
             user_attributes_data = self._convert_nan_to_null(data.get('user_attributes', {}))
+            metadata_data = self._pack_session_metadata(data)
             
             messages_json = json.dumps(messages_data, ensure_ascii=False)
             user_attributes_json = json.dumps(user_attributes_data, ensure_ascii=False)
+            metadata_json = (
+                json.dumps(metadata_data, ensure_ascii=False) if metadata_data else None
+            )
             
             insert_sql = """
             INSERT INTO sessions 
-            (session_id, username, messages, user_attributes, last_activity, client_ip, user_agent, created_at, session_active)
-            VALUES (%s, %s, %s::jsonb, %s::jsonb, %s, %s, %s, %s, %s)
+            (session_id, username, messages, user_attributes, last_activity, client_ip, user_agent, created_at, session_active, session_metadata)
+            VALUES (%s, %s, %s::jsonb, %s::jsonb, %s, %s, %s, %s, %s, %s::jsonb)
             ON CONFLICT (session_id) 
             DO UPDATE SET
                 username = EXCLUDED.username,
@@ -807,7 +858,8 @@ class DatabaseManager:
                 last_activity = EXCLUDED.last_activity,
                 client_ip = EXCLUDED.client_ip,
                 user_agent = EXCLUDED.user_agent,
-                session_active = COALESCE(EXCLUDED.session_active, sessions.session_active);
+                session_active = COALESCE(EXCLUDED.session_active, sessions.session_active),
+                session_metadata = COALESCE(EXCLUDED.session_metadata, sessions.session_metadata);
             """
             
             cursor.execute(insert_sql, (
@@ -819,7 +871,8 @@ class DatabaseManager:
                 data.get('client_ip'),
                 data.get('user_agent'),
                 data.get('created_at', datetime.now()),
-                data.get('session_active', True)  # デフォルトはTrue（アクティブ）
+                data.get('session_active', True),
+                metadata_json,
             ))
             
             conn.commit()
@@ -985,6 +1038,7 @@ class DatabaseManager:
                 else:
                     session_data['user_attributes'] = {}
                 
+                self._hydrate_session_metadata(session_data)
                 return session_data
             
             return None
@@ -1002,6 +1056,11 @@ class DatabaseManager:
             "OR (jsonb_typeof(messages) = 'array' AND jsonb_array_length(messages) = 0))"
         )
 
+    def _line_session_sql_guard(self) -> str:
+        """LINE セッション（line: プレフィックス）は空でも自動削除しない。"""
+        # psycopg2 は % をプレースホルダと解釈するため %% でエスケープ
+        return "LOWER(session_id) NOT LIKE 'line:%%'"
+
     def purge_all_empty_sessions(self, exclude_session_ids=None):
         """メッセージ0件のセッションを一括削除（起動時・管理用）。"""
         conn = self.get_connection()
@@ -1011,16 +1070,18 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
             empty_cond = self._empty_messages_sql()
+            line_guard = self._line_session_sql_guard()
             if exclude_list:
                 placeholders = ','.join(['%s'] * len(exclude_list))
                 delete_sql = f"""
                 DELETE FROM sessions
                 WHERE {empty_cond}
+                AND {line_guard}
                 AND session_id NOT IN ({placeholders});
                 """
                 cursor.execute(delete_sql, tuple(exclude_list))
             else:
-                delete_sql = f"DELETE FROM sessions WHERE {empty_cond};"
+                delete_sql = f"DELETE FROM sessions WHERE {empty_cond} AND {line_guard};"
                 cursor.execute(delete_sql)
             deleted_count = cursor.rowcount
             conn.commit()
@@ -1064,6 +1125,7 @@ class DatabaseManager:
             chat_end_timeout = int(chat_end_timeout_seconds or timeout_seconds)
             empty_timeout = int(empty_session_timeout_seconds or timeout_seconds)
             empty_cond = self._empty_messages_sql()
+            line_guard = self._line_session_sql_guard()
 
             expire_clause = f"""
                 (
@@ -1075,7 +1137,7 @@ class DatabaseManager:
             if not skip_empty_sessions:
                 expire_clause += f"""
                 OR
-                ({empty_cond} AND last_activity < NOW() - INTERVAL '{empty_timeout} seconds')
+                ({empty_cond} AND {line_guard} AND last_activity < NOW() - INTERVAL '{empty_timeout} seconds')
                 """
 
             if exclude_list:
@@ -1194,6 +1256,7 @@ class DatabaseManager:
                 else:
                     session_data['user_attributes'] = {}
                 
+                self._hydrate_session_metadata(session_data)
                 sessions.append(session_data)
             
             return sessions

@@ -735,16 +735,33 @@ function initializeSocket() {
     console.log('Admin chat initialized');
 }
 
+let _notificationHideTimer = null;
+
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
+    if (!notification) return;
+
+    if (_notificationHideTimer) {
+        clearTimeout(_notificationHideTimer);
+        _notificationHideTimer = null;
+    }
+
     notification.textContent = message;
     notification.className = `notification ${type}`;
     notification.classList.add('show');
-    
-    setTimeout(() => {
+
+    _notificationHideTimer = setTimeout(() => {
         notification.classList.remove('show');
-    }, 3000);
+        _notificationHideTimer = null;
+    }, 5000);
 }
+
+const LINE_PUSH_ERROR_HINTS = {
+    'LINE_CHANNEL_ACCESS_TOKEN not configured':
+        'LINE_CHANNEL_ACCESS_TOKEN が未設定です。.env に Messaging API のチャネルアクセストークンを設定し、サーバーを再起動してください。',
+    line_push_failed: 'LINE Push に失敗しました。履歴には保存済みです。',
+    invalid_line_session_id: 'LINE セッション ID が不正です。履歴には保存済みです。',
+};
 
 function setAIMode(mode) {
     console.log('🔵 setAIMode called with mode:', mode);
@@ -1201,6 +1218,7 @@ function renderCurrentSession(sessionData) {
 
 function loadChatHistory(sessionId) {
     stopAdminProcessingPoll();
+    sessionId = normalizeLineSessionId(sessionId);
     // ローディング表示
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = `
@@ -1211,9 +1229,9 @@ function loadChatHistory(sessionId) {
     `;
     
     // セッションタイトルを更新
-    const session = allSessions.find(s => s.session_id === sessionId);
+    const session = allSessions.find(s => normalizeLineSessionId(s.session_id) === sessionId);
     if (session) {
-        document.getElementById('chat-title').textContent = `${session.username} (${sessionId})`;
+        updateChatTitleFromSession(session, sessionId);
         // ユーザー属性ボタンを表示
         const userAttributesBtn = document.getElementById('userAttributesBtn');
         if (userAttributesBtn) {
@@ -1227,21 +1245,31 @@ function loadChatHistory(sessionId) {
         }
     }
     
-    adminFetchJson(buildMainSessionsUrl())
+    adminFetchJson(
+        isLineSessionId(sessionId)
+            ? ('/api/main_session?session_id=' + encodeURIComponent(sessionId))
+            : buildMainSessionsUrl()
+    )
         .then(data => {
-            console.log('All sessions data:', data);
-            
-            // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
-            const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-            
-            // 指定されたセッションIDのデータを探す
-            const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
+            console.log('Chat history data:', data);
+            let targetSession = null;
+            if (data.session) {
+                targetSession = data.session;
+                const idx = allSessions.findIndex(function (s) { return s.session_id === sessionId; });
+                if (idx >= 0) {
+                    allSessions[idx] = targetSession;
+                } else {
+                    allSessions.push(targetSession);
+                }
+            } else {
+                const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+                targetSession = sessionsArray.find(function (session) { return session.session_id === sessionId; }) || null;
+            }
             
             if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
-                // 管理者専用の詳細診断を保持（推奨薬ごとのscore/score_breakdownを含む）
                 currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
-                // メッセージも保持（診断情報のフォールバック用）
                 currentMessages = targetSession.messages || [];
+                updateChatTitleFromSession(targetSession, sessionId);
                 renderChatMessages(targetSession.messages);
             } else {
                 currentMessages = [];
@@ -1609,233 +1637,308 @@ window.saveManualReplyMessage = saveManualReplyMessage;
 window.resetManualReplyMessage = resetManualReplyMessage;
 window.loadManualReplyMessage = loadManualReplyMessage;
 
+function normalizeLineSessionId(sessionId) {
+    if (!sessionId) return sessionId;
+    const s = String(sessionId);
+    if (s.toLowerCase().startsWith('line:')) {
+        return 'line:' + s.slice(5);
+    }
+    return s;
+}
+
+function resolveChatDisplayName(session) {
+    if (!session) return 'ユーザー';
+    const lineName = session.line_profile && session.line_profile.displayName;
+    if (lineName && String(lineName).trim()) {
+        return String(lineName).trim();
+    }
+    return session.username || 'ユーザー';
+}
+
+function updateChatTitleFromSession(session, sessionId) {
+    const chatTitle = document.getElementById('chat-title');
+    if (!chatTitle) return;
+    const sid = session && session.session_id ? session.session_id : sessionId;
+    const name = resolveChatDisplayName(session);
+    chatTitle.textContent = `${name} (${sid})`;
+}
+
+function isLineSessionId(sessionId) {
+    return Boolean(sessionId && String(sessionId).toLowerCase().startsWith('line:'));
+}
+
+function formatUserAttributeValue(value) {
+    if (value === null || value === undefined) {
+        return '未設定';
+    }
+    if (Array.isArray(value)) {
+        return value.length > 0 ? value.join(', ') : 'なし';
+    }
+    if (typeof value === 'boolean') {
+        return value ? 'はい' : 'いいえ';
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value, null, 2);
+    }
+    return String(value);
+}
+
+function getUserAttributeLabel(key) {
+    const labels = {
+        'age': '🎂 年齢',
+        'gender': '⚥ 性別',
+        'pregnant': '🤱 妊娠状態',
+        'breastfeeding': '🍼 授乳状態',
+        'allergies': '⚠️ アレルギー',
+        'current_medications': '💊 現在服用中の薬',
+        'symptom_duration_days': '⏰ 症状の持続期間',
+        'medical_history': '🏥 既往症',
+        'other_info': '📝 その他伝えたいこと'
+    };
+    return labels[key] || `📋 ${key}`;
+}
+
+function renderLineProfileSection(lineProfile, profileError) {
+    const errorMessages = {
+        token_not_configured: 'LINE_CHANNEL_ACCESS_TOKEN が未設定です。.env に Messaging API のチャネルアクセストークンを設定し、サーバーを再起動してください。',
+        profile_fetch_failed: 'LINE API からプロフィールを取得できませんでした（友だち未追加・ブロック・APIエラーの可能性があります）。',
+        not_a_line_session: 'LINE セッションではありません。',
+    };
+    if (!lineProfile || typeof lineProfile !== 'object' || !lineProfile.displayName) {
+        const errText = profileError ? (errorMessages[profileError] || profileError) : '未取得';
+        return `
+            <div class="attributes-section">
+                <h4 class="attributes-section-title">
+                    <i class="fa-brands fa-line"></i>
+                    <span>LINE プロフィール（Messaging API）</span>
+                </h4>
+                <div class="empty-state-section">
+                    <p>${escapeHtml(errText)}</p>
+                </div>
+            </div>
+        `;
+    }
+    const avatar = lineProfile.pictureUrl
+        ? `<img src="${escapeHtml(lineProfile.pictureUrl)}" alt="" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #06c755;">`
+        : '<i class="fa-brands fa-line" style="font-size:2.5em;color:#06c755;"></i>';
+    const fields = [
+        ['表示名 (displayName)', lineProfile.displayName],
+        ['ユーザーID (userId)', lineProfile.userId],
+        ['ステータスメッセージ (statusMessage)', lineProfile.statusMessage],
+        ['言語 (language)', lineProfile.language],
+        ['取得日時 (fetched_at)', lineProfile.fetched_at],
+    ];
+    let cards = fields.map(function (pair) {
+        const val = pair[1];
+        if (val === null || val === undefined || val === '') {
+            return `<div class="attribute-card"><div class="attribute-label">${escapeHtml(pair[0])}</div><div class="attribute-value">—</div></div>`;
+        }
+        return `<div class="attribute-card"><div class="attribute-label">${escapeHtml(pair[0])}</div><div class="attribute-value">${escapeHtml(String(val))}</div></div>`;
+    }).join('');
+    return `
+        <div class="attributes-section">
+            <h4 class="attributes-section-title">
+                <i class="fa-brands fa-line"></i>
+                <span>LINE プロフィール（Messaging API で取得可能な全項目）</span>
+            </h4>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">${avatar}</div>
+            <div class="attributes-grid">${cards}</div>
+        </div>
+    `;
+}
+
+function renderLifecycleSection(session) {
+    const log = Array.isArray(session.lifecycle_log) ? session.lifecycle_log.slice().reverse() : [];
+    const live = session.messages_live_count != null ? session.messages_live_count : (session.messages_live || []).length;
+    const archive = session.message_archive_count != null ? session.message_archive_count : live;
+    let html = `
+        <div class="attributes-section">
+            <h4 class="attributes-section-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>履歴・セッションのライフサイクル</span>
+            </h4>
+            <div class="attributes-grid">
+                <div class="attribute-card">
+                    <div class="attribute-label">📚 管理画面表示件数（アーカイブ）</div>
+                    <div class="attribute-value">${archive} 件</div>
+                </div>
+                <div class="attribute-card">
+                    <div class="attribute-label">💬 LLM用現行 messages 件数</div>
+                    <div class="attribute-value">${live} 件（上限24件で自動トリム。古い分はアーカイブに保持）</div>
+                </div>
+            </div>
+    `;
+    if (!log.length) {
+        html += `<div class="empty-state-section" style="margin-top:12px;"><p>記録されたクリア・トリムイベントはまだありません</p></div>`;
+    } else {
+        html += `<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">`;
+        log.forEach(function (ev) {
+            const at = ev.at ? new Date(ev.at).toLocaleString('ja-JP') : '—';
+            const counts = (ev.messages_before != null && ev.messages_after != null)
+                ? `（${ev.messages_before} → ${ev.messages_after} 件）` : '';
+            html += `
+                <div class="attribute-card" style="text-align:left;">
+                    <div class="attribute-label">${escapeHtml(ev.label || ev.action || 'イベント')} ${escapeHtml(counts)}</div>
+                    <div class="attribute-value" style="font-size:0.85em;color:#555;">
+                        <div>${escapeHtml(at)}</div>
+                        ${ev.source ? `<div>場所: ${escapeHtml(ev.source)}</div>` : ''}
+                        ${ev.detail ? `<div>${escapeHtml(ev.detail)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    html += `</div>`;
+    return html;
+}
+
+function renderUserAttributesPanel(session, sessionId) {
+    const content = document.getElementById('userAttributesContent');
+    if (!content || !session) {
+        return;
+    }
+    const userInfo = session.user_info || {};
+    const attributes = session.attributes || {};
+    const userAttributes = session.user_attributes || {};
+    const allAttributes = { ...userInfo, ...attributes, ...userAttributes };
+    const knownFields = [
+        'session_id', 'username', 'messages', 'messages_live', 'last_activity', 'message_count',
+        'messages_count', 'messages_live_count', 'message_archive_count',
+        'user_info', 'attributes', 'user_attributes', 'detailed_diagnosis',
+        'line_profile', 'lifecycle_log', 'is_line_session', 'crisis_detected'
+    ];
+    const additionalFields = {};
+    for (const key in session) {
+        if (!knownFields.includes(key) && typeof session[key] !== 'object' && typeof session[key] !== 'function') {
+            additionalFields[key] = session[key];
+        }
+    }
+    const lineProfile = session.line_profile;
+    const displayName = (lineProfile && lineProfile.displayName) || session.username || '不明';
+    const avatarHtml = (lineProfile && lineProfile.pictureUrl)
+        ? `<img src="${escapeHtml(lineProfile.pictureUrl)}" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">`
+        : '<i class="fa-solid fa-user"></i>';
+    let html = `
+        <div class="user-info-section">
+            <div class="user-info-header">
+                <div class="user-avatar">${avatarHtml}</div>
+                <div class="user-info-text">
+                    <h4>${escapeHtml(displayName)}</h4>
+                    <p>セッションID: ${escapeHtml(sessionId)}</p>
+                    ${isLineSessionId(sessionId) ? '<p style="font-size:0.85em;color:#06c755;">LINE セッション</p>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    if (isLineSessionId(sessionId)) {
+        html += renderLineProfileSection(lineProfile, session.line_profile_error);
+        html += renderLifecycleSection(session);
+    }
+    const attributeKeys = Object.keys(allAttributes).filter(function (key) {
+        if (key === 'current_medications') return true;
+        const value = allAttributes[key];
+        return value !== null && value !== undefined && value !== '' &&
+            !(Array.isArray(value) && value.length === 0);
+    });
+    const priorityFields = ['age', 'gender', 'pregnant', 'breastfeeding', 'allergies',
+        'current_medications', 'symptom_duration_days', 'medical_history', 'other_info'];
+    if (attributeKeys.length > 0 || Object.keys(additionalFields).length > 0) {
+        html += `
+            <div class="attributes-section">
+                <h4 class="attributes-section-title">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span>ユーザー属性情報（相談内容から取得）</span>
+                </h4>
+                <div class="attributes-grid">
+        `;
+        priorityFields.forEach(function (key) {
+            if (key === 'current_medications') {
+                let displayValue = 'なし';
+                if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
+                    const medications = allAttributes[key];
+                    if (Array.isArray(medications) && medications.length > 0) {
+                        displayValue = medications.join('、');
+                    } else if (typeof medications === 'string' && medications.trim()) {
+                        displayValue = medications;
+                    }
+                }
+                html += `<div class="attribute-card"><div class="attribute-label">${escapeHtml(getUserAttributeLabel(key))}</div><div class="attribute-value">${escapeHtml(displayValue)}</div></div>`;
+                return;
+            }
+            if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
+                let displayValue = formatUserAttributeValue(allAttributes[key]);
+                if (key === 'age') displayValue = `${allAttributes[key]}歳`;
+                else if (key === 'pregnant') displayValue = allAttributes[key] ? '妊娠中' : '妊娠していない';
+                else if (key === 'breastfeeding') displayValue = allAttributes[key] ? '授乳中' : '授乳していない';
+                html += `<div class="attribute-card"><div class="attribute-label">${escapeHtml(getUserAttributeLabel(key))}</div><div class="attribute-value">${escapeHtml(displayValue)}</div></div>`;
+            }
+        });
+        attributeKeys.filter(function (key) { return !priorityFields.includes(key); }).forEach(function (key) {
+            html += `<div class="attribute-card"><div class="attribute-label">${escapeHtml(getUserAttributeLabel(key))}</div><div class="attribute-value">${escapeHtml(formatUserAttributeValue(allAttributes[key]))}</div></div>`;
+        });
+        Object.keys(additionalFields).forEach(function (key) {
+            html += `<div class="attribute-card"><div class="attribute-label">📋 ${escapeHtml(key)}</div><div class="attribute-value">${escapeHtml(formatUserAttributeValue(additionalFields[key]))}</div></div>`;
+        });
+        html += `</div></div>`;
+    } else if (!isLineSessionId(sessionId)) {
+        html += `
+            <div class="attributes-section">
+                <h4 class="attributes-section-title"><i class="fa-solid fa-user-circle"></i><span>ユーザー属性</span></h4>
+                <div class="empty-state-section"><p>ユーザー属性情報はまだ入力されていません</p></div>
+            </div>
+        `;
+    }
+    content.innerHTML = html;
+}
+
 // ユーザー属性情報を読み込み
 function loadUserAttributes(sessionId) {
     const content = document.getElementById('userAttributesContent');
+    if (!content) return;
     content.innerHTML = `
         <div class="loading-state">
             <i class="fa-solid fa-spinner fa-spin"></i>
             <p>読み込み中...</p>
         </div>
     `;
-    
-    // デバッグ情報を出力
-    console.log('loadUserAttributes called with sessionId:', sessionId);
-    console.log('allSessions:', allSessions);
-    
-    // セッション情報からユーザー属性を取得
-    const session = allSessions.find(s => s.session_id === sessionId);
-    console.log('Found session:', session);
-    
-    if (session) {
-        // すべての属性情報を取得（user_info、attributes、user_attributesなど）
-        const userInfo = session.user_info || {};
-        const attributes = session.attributes || {};
-        const userAttributes = session.user_attributes || {};
-        
-        // すべての属性情報をマージ（後から来たものが優先）
-        const allAttributes = { ...userInfo, ...attributes, ...userAttributes };
-        
-        // セッションオブジェクト全体から属性情報を抽出（既知のフィールド以外）
-        const knownFields = ['session_id', 'username', 'messages', 'last_activity', 'message_count', 
-                            'user_info', 'attributes', 'user_attributes', 'detailed_diagnosis'];
-        const additionalFields = {};
-        for (const key in session) {
-            if (!knownFields.includes(key) && typeof session[key] !== 'object' && typeof session[key] !== 'function') {
-                additionalFields[key] = session[key];
-            }
-        }
-        
-        console.log('userInfo:', userInfo);
-        console.log('attributes:', attributes);
-        console.log('userAttributes:', userAttributes);
-        console.log('allAttributes:', allAttributes);
-        console.log('additionalFields:', additionalFields);
-        
-        let html = `
-            <div class="user-info-section">
-                <div class="user-info-header">
-                    <div class="user-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="user-info-text">
-                        <h4>${escapeHtml(session.username || '不明')}</h4>
-                        <p>セッションID: ${sessionId.substring(0, 20)}...</p>
-                    </div>
+
+    function applySession(session) {
+        if (!session) {
+            content.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 3em; margin-bottom: 15px;"></i>
+                    <p style="font-size: 1.1em;">セッション情報が見つかりません</p>
                 </div>
-            </div>
-        `;
-        
-        // 属性情報の表示用関数
-        function formatAttributeValue(value) {
-            if (value === null || value === undefined) {
-                return '未設定';
-            }
-            if (Array.isArray(value)) {
-                return value.length > 0 ? value.join(', ') : 'なし';
-            }
-            if (typeof value === 'boolean') {
-                return value ? 'はい' : 'いいえ';
-            }
-            if (typeof value === 'object') {
-                return JSON.stringify(value, null, 2);
-            }
-            return String(value);
-        }
-        
-        function getAttributeLabel(key) {
-            const labels = {
-                'age': '🎂 年齢',
-                'gender': '⚥ 性別',
-                'pregnant': '🤱 妊娠状態',
-                'breastfeeding': '🍼 授乳状態',
-                'allergies': '⚠️ アレルギー',
-                'current_medications': '💊 現在服用中の薬',
-                'symptom_duration_days': '⏰ 症状の持続期間',
-                'medical_history': '🏥 既往症',
-                'other_info': '📝 その他伝えたいこと'
-            };
-            return labels[key] || `📋 ${key}`;
-        }
-        
-        // 属性情報を表示
-        // current_medicationsは空の場合でも表示するため、フィルタリングから除外
-        const attributeKeys = Object.keys(allAttributes).filter(key => {
-            // current_medicationsは常に表示する
-            if (key === 'current_medications') {
-                return true;
-            }
-            const value = allAttributes[key];
-            return value !== null && value !== undefined && value !== '' && 
-                   !(Array.isArray(value) && value.length === 0);
-        });
-        
-        if (attributeKeys.length > 0 || Object.keys(additionalFields).length > 0) {
-            html += `
-                <div class="attributes-section">
-                    <h4 class="attributes-section-title">
-                        <i class="fa-solid fa-user-circle"></i>
-                        <span>ユーザー属性情報</span>
-                    </h4>
-                    <div class="attributes-grid">
             `;
-            
-            // 既知の属性を優先的に表示（特別なフォーマット）
-            const priorityFields = ['age', 'gender', 'pregnant', 'breastfeeding', 'allergies', 
-                                   'current_medications', 'symptom_duration_days', 'medical_history', 'other_info'];
-            
-            priorityFields.forEach(key => {
-                // current_medicationsは空の場合でも「なし」と表示する
-                if (key === 'current_medications') {
-                    let displayValue = 'なし';
-                    if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
-                        const medications = allAttributes[key];
-                        if (Array.isArray(medications) && medications.length > 0) {
-                            displayValue = medications.join('、');
-                        } else if (typeof medications === 'string' && medications.trim()) {
-                            displayValue = medications;
-                        }
-                    }
-                    html += `
-                        <div class="attribute-card">
-                            <div class="attribute-label">${escapeHtml(getAttributeLabel(key))}</div>
-                            <div class="attribute-value">${escapeHtml(displayValue)}</div>
-                        </div>
-                    `;
-                    return; // 次のフィールドへ
-                }
-                
-                if (allAttributes[key] !== null && allAttributes[key] !== undefined) {
-                    let displayValue = formatAttributeValue(allAttributes[key]);
-                    
-                    // 特別なフォーマット処理
-                    if (key === 'age') {
-                        displayValue = `${allAttributes[key]}歳`;
-                    } else if (key === 'pregnant') {
-                        displayValue = allAttributes[key] ? '妊娠中' : '妊娠していない';
-                    } else if (key === 'breastfeeding') {
-                        displayValue = allAttributes[key] ? '授乳中' : '授乳していない';
-                    } else if (key === 'symptom_duration_days') {
-                        const days = allAttributes[key];
-                        const today = new Date();
-                        const startDate = new Date(today.getTime() - (days * 24 * 60 * 60 * 1000));
-                        const dateStr = startDate.getFullYear() + '/' + 
-                                      String(startDate.getMonth() + 1).padStart(2, '0') + '/' + 
-                                      String(startDate.getDate()).padStart(2, '0');
-                        
-                        let durationText = '';
-                        if (days === 0) {
-                            durationText = '今日から';
-                        } else if (days === 1) {
-                            durationText = '昨日から';
-                        } else if (days < 7) {
-                            durationText = `${days}日前から`;
-                        } else if (days < 30) {
-                            const weeks = Math.floor(days / 7);
-                            durationText = `${weeks}週間前から`;
-                        } else {
-                            const months = Math.floor(days / 30);
-                            durationText = `${months}ヶ月前から`;
-                        }
-                        displayValue = `${durationText} (${dateStr})`;
-                    }
-                    
-                    html += `
-                        <div class="attribute-card">
-                            <div class="attribute-label">${escapeHtml(getAttributeLabel(key))}</div>
-                            <div class="attribute-value">${escapeHtml(displayValue)}</div>
-                        </div>
-                    `;
-                }
-            });
-            
-            // その他の属性情報を表示
-            attributeKeys.filter(key => !priorityFields.includes(key)).forEach(key => {
-                const displayValue = formatAttributeValue(allAttributes[key]);
-                html += `
-                    <div class="attribute-card">
-                        <div class="attribute-label">${escapeHtml(getAttributeLabel(key))}</div>
-                        <div class="attribute-value">${escapeHtml(displayValue)}</div>
-                    </div>
-                `;
-            });
-            
-            // 追加フィールドを表示
-            Object.keys(additionalFields).forEach(key => {
-                const displayValue = formatAttributeValue(additionalFields[key]);
-                html += `
-                    <div class="attribute-card">
-                        <div class="attribute-label">📋 ${escapeHtml(key)}</div>
-                        <div class="attribute-value">${escapeHtml(displayValue)}</div>
-                    </div>
-                `;
-            });
-            
-            html += `</div></div>`;
+            return;
+        }
+        const idx = allSessions.findIndex(function (s) { return s.session_id === sessionId; });
+        if (idx >= 0) {
+            allSessions[idx] = session;
         } else {
-            html += `
-                <div class="attributes-section">
-                    <h4 class="attributes-section-title">
-                        <i class="fa-solid fa-user-circle"></i>
-                        <span>ユーザー属性</span>
-                    </h4>
-                    <div class="empty-state-section">
-                        <i class="fa-solid fa-file-lines"></i>
-                        <p>ユーザー属性情報はまだ入力されていません</p>
-                    </div>
-                </div>
-            `;
+            allSessions.push(session);
         }
-        
-        content.innerHTML = html;
-    } else {
-        content.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #e74c3c; background: white;">
-                <i class="fa-solid fa-triangle-exclamation" style="font-size: 3em; margin-bottom: 15px; color: #e74c3c; background: white;"></i>
-                <p style="font-size: 1.1em; background: white;">セッション情報が見つかりません</p>
-            </div>
-        `;
+        if (currentSessionId === sessionId) {
+            updateChatTitleFromSession(session, sessionId);
+        }
+        renderUserAttributesPanel(session, sessionId);
     }
+
+    const normalizedId = normalizeLineSessionId(sessionId);
+    if (isLineSessionId(normalizedId)) {
+        adminFetchJson('/api/main_session?session_id=' + encodeURIComponent(normalizedId))
+            .then(function (data) {
+                applySession(data.session);
+            })
+            .catch(function (err) {
+                console.error('loadUserAttributes LINE fetch error:', err);
+                applySession(allSessions.find(function (s) { return s.session_id === sessionId; }));
+            });
+        return;
+    }
+
+    applySession(allSessions.find(function (s) { return s.session_id === sessionId; }));
 }
 
 // 正規化後のスコアを計算する関数（グローバル）
@@ -1922,6 +2025,101 @@ function addScoringToHtmlContent(htmlContent, medicines) {
 
 // ★★★ addScoringToMedicines 関数は削除（動的HTML生成に変更） ★★★
 
+function isStatusCardHtml(content) {
+    if (!content || typeof content !== 'string') {
+        return false;
+    }
+    if (
+        content.includes('chat-status-card') ||
+        content.includes('class="chat-status-card') ||
+        content.includes("class='chat-status-card")
+    ) {
+        return true;
+    }
+    return /<div[^>]*\bchat-status-card\b/i.test(content);
+}
+
+function looksLikeHtmlContent(content) {
+    if (!content || typeof content !== 'string') {
+        return false;
+    }
+    return /<(?:div|p|section|ul|ol|h[1-6]|span|button|details|form)\b/i.test(content);
+}
+
+function extractStatusCardHtml(html) {
+    const trimmed = (html || '').trim();
+    if (!trimmed) {
+        return '';
+    }
+    const temp = document.createElement('div');
+    temp.innerHTML = trimmed;
+    const card = temp.querySelector('.chat-status-card');
+    return card ? card.outerHTML : trimmed;
+}
+
+function formatAdminPlainText(text) {
+    return escapeHtml(text || '').replace(/\n/g, '<br>');
+}
+
+function shouldRenderBotContentAsHtml(msg, contentText) {
+    if (!contentText || typeof contentText !== 'string') {
+        return false;
+    }
+    if (msg && msg.store_inquiry) {
+        return true;
+    }
+    if (isStatusCardHtml(contentText)) {
+        return true;
+    }
+    const htmlMarkers = [
+        'emergency-response-modern',
+        'chat-response',
+        'recommendation-result',
+        'store-inquiry',
+        'chat-status-card',
+    ];
+    if (htmlMarkers.some(function (marker) { return contentText.includes(marker); })) {
+        return true;
+    }
+    return looksLikeHtmlContent(contentText);
+}
+
+function resolveAdminBotContentHtml(msg, contentText) {
+    const text = contentText || '';
+    if (isStatusCardHtml(text)) {
+        return extractStatusCardHtml(text);
+    }
+    if (shouldRenderBotContentAsHtml(msg, text)) {
+        const temp = document.createElement('div');
+        temp.innerHTML = text;
+        return temp.innerHTML;
+    }
+    return formatAdminPlainText(text);
+}
+
+function buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp) {
+    return `
+            <div class="message ${messageClass}">
+                <div class="message-content">
+                    ${indicator}
+                    <div class="message-text">${messageContentHtml}</div>
+                    ${timestamp}
+                </div>
+            </div>
+        `;
+}
+
+function isMedicineRecommendation(msg) {
+    return msg.type === 'bot' && (
+        (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
+        (msg.content && (
+            msg.content.includes('推奨医薬品') ||
+            msg.content.includes('<div class="recommendation-result">') ||
+            msg.content.includes('🏆')
+        ))
+    );
+}
+
 function renderChatMessages(messages) {
     const chatMessages = document.getElementById('chat-messages');
     
@@ -1938,11 +2136,26 @@ function renderChatMessages(messages) {
     console.log('📨 Rendering chat messages:', messages.length, 'messages');
     
     let html = '';
+    if (currentSessionId && isLineSessionId(currentSessionId)) {
+        const sess = allSessions.find(function (s) { return s.session_id === currentSessionId; });
+        if (sess) {
+            const archiveN = sess.message_archive_count != null ? sess.message_archive_count : messages.length;
+            const liveN = sess.messages_live_count != null ? sess.messages_live_count : (sess.messages_live || []).length;
+            if (archiveN > liveN && liveN > 0) {
+                html += `<div class="line-archive-notice" style="margin:8px 12px;padding:10px 12px;background:#e8f5e9;border-left:4px solid #4caf50;border-radius:6px;font-size:0.82em;color:#2e7d32;">
+                    LINE 全履歴を表示中（${archiveN} 件）。AI処理用の現行履歴は最新 ${liveN} 件。切り捨て・クリアの記録はユーザー属性モーダルをご確認ください。
+                </div>`;
+            } else if (archiveN > 0 && liveN === 0) {
+                html += `<div class="line-archive-notice" style="margin:8px 12px;padding:10px 12px;background:#fff3e0;border-left:4px solid #ff9800;border-radius:6px;font-size:0.82em;color:#e65100;">
+                    現行の会話（messages）は空です。アーカイブから過去 ${archiveN} 件を表示しています（チャット終了後など）。
+                </div>`;
+            }
+        }
+    }
     messages.forEach((msg, index) => {
         const messageClass = msg.type === 'user' ? 'user' : 'bot';
         let indicator = '';
         let timestamp = '';
-        
         console.log(`Message ${index}:`, msg);
         
         // 送信時刻を追加
@@ -1953,7 +2166,7 @@ function renderChatMessages(messages) {
                 minute: '2-digit',
                 second: '2-digit'
             });
-            timestamp = `<div class="message-timestamp" style="font-size: 0.7em; color: #666; margin-top: 4px; text-align: ${messageClass === 'user' ? 'left' : 'right'};">${timeStr}</div>`;
+            timestamp = `<div class="message-timestamp">${timeStr}</div>`;
         } else {
             // タイムスタンプがない場合は現在時刻を使用
             const now = new Date();
@@ -1962,7 +2175,7 @@ function renderChatMessages(messages) {
                 minute: '2-digit',
                 second: '2-digit'
             });
-            timestamp = `<div class="message-timestamp" style="font-size: 0.7em; color: #666; margin-top: 4px; text-align: ${messageClass === 'user' ? 'left' : 'right'};">${timeStr}</div>`;
+            timestamp = `<div class="message-timestamp">${timeStr}</div>`;
         }
         
         // 管理画面用のインジケーター：薬剤師視点で表示
@@ -1982,32 +2195,15 @@ function renderChatMessages(messages) {
         
         let messageContentHtml = '';
 
-        // 危機対応メッセージの特別表示（簡潔に）
-        if (msg.crisis_support) {
-            messageContentHtml = msg.content || '今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。';
-        }
-        // ★★★ 推奨医薬品メッセージの判定（簡素化） ★★★
-        const isMedicineRecommendation = (msg) => {
-            // デバッグログ
-            console.log('🔍 Message analysis:', {
-                type: msg.type,
-                hasDiagnosis: !!(msg.diagnosis && msg.diagnosis.recommended_medicines),
-                hasContent: !!(msg.content && msg.content.includes('推奨医薬品')),
-                hasContentHtml: !!(msg.content && msg.content.includes('<div class="recommendation-result">')),
-                hasTrophy: !!(msg.content && msg.content.includes('🏆'))
-            });
-            
-            return msg.type === 'bot' && (
-                (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
-                (msg.content && (
-                    msg.content.includes('推奨医薬品') ||
-                    msg.content.includes('<div class="recommendation-result">') ||
-                    msg.content.includes('🏆')
-                ))
+        if (msg.type === 'user') {
+            messageContentHtml = formatAdminPlainText(msg.content || '');
+        } else if (msg.type === 'bot' && isStatusCardHtml(msg.content)) {
+            messageContentHtml = extractStatusCardHtml(msg.content);
+        } else if (msg.crisis_support) {
+            messageContentHtml = formatAdminPlainText(
+                msg.content || '今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。'
             );
-        };
-
-        if (isMedicineRecommendation(msg)) {
+        } else if (isMedicineRecommendation(msg)) {
             // 詳細診断（管理者向け）を優先
             const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
                 ? currentDetailedDiagnosis
@@ -2151,61 +2347,15 @@ function renderChatMessages(messages) {
                 }
             } else if (!hasAdminDiagMeds) {
                 // 管理者用の再描画ができない場合のみ、msg.contentをそのまま使用
-                messageContentHtml = msg.content || '';
+                messageContentHtml = resolveAdminBotContentHtml(msg, msg.content || '');
             }
+        } else if (msg.type === 'bot' && msg.emergency_detected && msg.content) {
+            messageContentHtml = resolveAdminBotContentHtml(msg, msg.content);
+        } else if (msg.type === 'bot') {
+            messageContentHtml = resolveAdminBotContentHtml(msg, msg.content);
         }
-        // ★★★ 緊急事案メッセージの特別表示（簡潔に） ★★★
-        else if (msg.emergency_detected && msg.content) {
-            // HTMLを正しくパースするためにtempDivを使用
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = msg.content;
-            
-            // emergency-response-modernが含まれている場合は、ヘッダーテキストを抽出して簡潔に表示
-            const firstElement = tempDiv.firstElementChild;
-            if (firstElement && firstElement.classList.contains('emergency-response-modern')) {
-                const headerElement = firstElement.querySelector('.emergency-header');
-                const headerText = headerElement ? headerElement.textContent.trim() : '安全を最優先にしてください。';
-                // 危機対応メッセージと同じスタイルで簡潔に表示
-                messageContentHtml = headerText;
-            } else {
-                messageContentHtml = tempDiv.innerHTML;
-            }
-        }
-        // ★★★ 通常のテキストメッセージ ★★★
-        else {
-            let contentText = msg.content || '';
-            if (msg.type === 'user') {
-                messageContentHtml = escapeHtml(contentText);
-            } else if (msg.type === 'bot') {
-                // emergency-response-modernまたはchat-responseが含まれている場合はHTMLをそのまま表示
-                if (contentText.includes('<div class="emergency-response-modern">') || 
-                    contentText.includes('<div class="chat-response">')) {
-                    // HTMLを正しくパースするためにtempDivを使用
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = contentText;
-                    messageContentHtml = tempDiv.innerHTML;
-                } else {
-                    messageContentHtml = escapeHtml(contentText);
-                }
-            } else {
-                messageContentHtml = escapeHtml(contentText);
-            }
-        }
-        
-        // メッセージ全体のHTML生成
-        html += `
-            <div class="message ${messageClass}" style="margin-bottom: 20px; display: flex; ${messageClass === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}">
-                <div class="message-content" style="max-width: 80%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; line-height: 1.4; ${
-                    messageClass === 'user'
-                        ? 'background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);'
-                        : 'background: white; color: #333; border: 1px solid #ddd; text-align: left;'
-                }">
-                    ${indicator}
-                    <div class="message-text">${messageContentHtml}</div>
-                    ${timestamp}
-                </div>
-            </div>
-        `;
+
+        html += buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp);
     });
     
     chatMessages.innerHTML = html;
@@ -2775,10 +2925,9 @@ window.sendReplyFromChat = function() {
             chatInput.style.height = 'auto';
 
             if (data.line_pushed === false) {
-                const lineHint = data.line_error === 'LINE_CHANNEL_ACCESS_TOKEN not configured'
-                    ? '（LINE_CHANNEL_ACCESS_TOKEN 未設定）'
-                    : '（LINE Push に失敗しました。履歴には保存済みです）';
-                showNotification(`返信を保存しましたが LINE へは届きませんでした ${lineHint}`, 'warning');
+                const lineHint = LINE_PUSH_ERROR_HINTS[data.line_error]
+                    || 'LINE Push に失敗しました。履歴には保存済みです。';
+                showNotification(`返信を保存しましたが LINE へは届きませんでした。${lineHint}`, 'warning');
             } else {
                 const lineNote = data.line_pushed === true ? '（LINE にも送信しました）' : '';
                 showNotification(
@@ -2969,6 +3118,10 @@ function getSessionLastUpdateLabel(session) {
 }
 
 function resolveSessionDisplayUsername(session, idx) {
+    const lineName = session?.line_profile?.displayName;
+    if (lineName && String(lineName).trim()) {
+        return String(lineName).trim();
+    }
     const raw = (session?.username || '').trim();
     if (raw && raw !== 'Unknown' && raw !== '不明なユーザー') {
         return raw;
@@ -3084,7 +3237,7 @@ function selectSession(event, sessionId, username) {
         return;
     }
     
-    currentSessionId = sessionId;
+    currentSessionId = normalizeLineSessionId(sessionId);
     
     // 選択状態を更新（新しいDOM構造に対応）
     document.querySelectorAll('.session-item').forEach(item => {
@@ -3094,11 +3247,10 @@ function selectSession(event, sessionId, username) {
         event.currentTarget.classList.add('active');
     }
     
-    // チャットタイトルを更新
-    const chatTitle = document.getElementById('chat-title');
-    if (chatTitle) {
-        chatTitle.textContent = `${username} (${sessionId.substring(0, 8)}...)`;
-    }
+    const sess = allSessions.find(function (s) {
+        return normalizeLineSessionId(s.session_id) === currentSessionId;
+    });
+    updateChatTitleFromSession(sess || { username: username }, currentSessionId);
     
     // チャット入力エリアを有効化
     const chatInput = document.getElementById('chat-input');
@@ -3106,7 +3258,7 @@ function selectSession(event, sessionId, username) {
     const micBtn = document.getElementById('mic-btn');
     if (chatInput) {
         chatInput.disabled = false;
-        chatInput.placeholder = `${username} に返信メッセージを入力してください...`;
+        chatInput.placeholder = '返信を入力...';
     }
     if (micBtn) micBtn.disabled = false;
     
@@ -5455,7 +5607,7 @@ function openTabletChat(sessionId) {
             <div class="chat-messages" id="tablet-chat-messages"></div>
             <div class="chat-input-area">
                 <div class="input-wrapper">
-                    <textarea class="chat-input" id="tablet-chat-input" placeholder="${username} に返信メッセージを入力してください..." rows="1" onkeydown="handleTabletKeyDown(event)"></textarea>
+                    <textarea class="chat-input" id="tablet-chat-input" placeholder="返信を入力..." rows="1" onkeydown="handleTabletKeyDown(event)"></textarea>
                     <button class="action-btn send-btn" onclick="sendTabletReply()" style="min-width: 44px; min-height: 44px;" id="tablet-send-btn">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
