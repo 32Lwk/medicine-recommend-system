@@ -14,6 +14,8 @@ from src.handlers.line.line_progressive_delivery import (
     deliver_final_line_messages,
     set_line_delivery_context,
 )
+from src.handlers.line.line_dedup import extract_webhook_dedup_key
+from src.handlers.line.line_delivery import deliver_line_messages
 from src.handlers.line.line_loading import begin_line_loading, end_line_loading
 from src.handlers.line.line_reply import push_messages, reply_messages
 from src.handlers.line.line_session import (
@@ -55,14 +57,42 @@ def _notify_line_error_email(user_id: str, sid: str, detail: str) -> None:
 LINE_MAX_MESSAGES_PER_REQUEST = 5
 
 
-async def _push_message_chunk(user_id: str, messages: list[dict[str, Any]]) -> None:
+def _event_timestamp_ms(event: dict[str, Any]) -> int | None:
+    raw = event.get("timestamp")
+    if isinstance(raw, (int, float)):
+        return int(raw)
+    return None
+
+
+async def _dispatch_quick_text_reply(
+    user_id: str | None,
+    reply_token: str | None,
+    text: str,
+    event: dict[str, Any],
+) -> None:
+    """follow / 非テキスト等の即時応答。Reply 優先・失敗時 Push。"""
+    if not user_id or not LINE_CHANNEL_ACCESS_TOKEN:
+        return
+    await deliver_line_messages(
+        user_id,
+        [{"type": "text", "text": text}],
+        reply_token=reply_token,
+        reply_fn=reply_messages,
+        push_chunk_fn=_push_message_chunk,
+        event_timestamp_ms=_event_timestamp_ms(event),
+    )
+
+
+async def _push_message_chunk(user_id: str, messages: list[dict[str, Any]]) -> bool:
     """最大5件を1回の Push で送る。失敗時は1件ずつテキストフォールバック。"""
     if not messages:
-        return
+        return False
     if await push_messages(user_id, messages):
-        return
+        return True
+    delivered = False
     for msg in messages:
         if await push_messages(user_id, [msg]):
+            delivered = True
             continue
         fallback_text = ""
         if msg.get("type") == "flex":
@@ -72,7 +102,9 @@ async def _push_message_chunk(user_id: str, messages: list[dict[str, Any]]) -> N
         if not fallback_text:
             fallback_text = GENERIC_SAFE_TEXT
         logger.warning("LINE push failed; sending text fallback userId=%s", user_id)
-        await push_messages(user_id, [{"type": "text", "text": fallback_text[:5000]}])
+        if await push_messages(user_id, [{"type": "text", "text": fallback_text[:5000]}]):
+            delivered = True
+    return delivered
 
 
 async def _deliver_line_messages(
@@ -84,6 +116,7 @@ async def _deliver_line_messages(
     user_message: str = "",
     bot_message: dict[str, Any] | None = None,
     lang: str | None = None,
+    force_delivery: bool = False,
 ) -> None:
     """Reply（可能なら）または Push で応答。1リクエストあたり最大5件まとめて送る。"""
     messages = line_messages
@@ -100,20 +133,14 @@ async def _deliver_line_messages(
     if not messages:
         return
 
-    chunks = [
-        messages[i : i + LINE_MAX_MESSAGES_PER_REQUEST]
-        for i in range(0, len(messages), LINE_MAX_MESSAGES_PER_REQUEST)
-    ]
-
-    if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-        if await reply_messages(reply_token, chunks[0]):
-            for chunk in chunks[1:]:
-                await _push_message_chunk(user_id, chunk)
-            return
-        logger.warning("LINE reply failed; falling back to push userId=%s", user_id)
-
-    for chunk in chunks:
-        await _push_message_chunk(user_id, chunk)
+    await deliver_line_messages(
+        user_id,
+        messages,
+        reply_token=reply_token,
+        reply_fn=reply_messages,
+        push_chunk_fn=_push_message_chunk,
+        force=force_delivery,
+    )
 
 
 async def process_line_events(events: list[dict[str, Any]]) -> None:
@@ -156,8 +183,7 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
             from src.handlers.line.line_session import persist_line_session
 
             persist_line_session(sid, session)
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(reply_token, [{"type": "text", "text": FOLLOW_WELCOME_TEXT}])
+            await _dispatch_quick_text_reply(user_id, reply_token, FOLLOW_WELCOME_TEXT, event)
         return
 
     if event_type == "postback":
@@ -184,8 +210,8 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         return
 
     if not _is_one_to_one(event):
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(reply_token, [{"type": "text", "text": GROUP_UNSUPPORTED_TEXT}])
+        user_id = _extract_user_id(event)
+        await _dispatch_quick_text_reply(user_id, reply_token, GROUP_UNSUPPORTED_TEXT, event)
         return
 
     message = event.get("message")
@@ -197,8 +223,7 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         return
 
     if message.get("type") != "text":
-        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
-            await reply_messages(reply_token, [{"type": "text", "text": NON_TEXT_HINT}])
+        await _dispatch_quick_text_reply(user_id, reply_token, NON_TEXT_HINT, event)
         return
 
     text = (message.get("text") or "").strip()
@@ -215,7 +240,7 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         )
         return
 
-    await _process_text_message(user_id, text, reply_token)
+    await _process_text_message(user_id, text, reply_token, event=event)
 
 
 def _is_one_to_one(event: dict[str, Any]) -> bool:
@@ -234,17 +259,24 @@ async def _process_text_message(
     user_id: str,
     text: str,
     reply_token: str | None,
+    *,
+    event: dict[str, Any] | None = None,
 ) -> None:
     sid = line_sid(user_id)
     logger.info("LINE text message userId=%s sid=%s text=%s", user_id, sid, text)
 
     from src.services.pipeline_perf import log_pipeline_perf, mark_pipeline_step
 
+    dedup_key = extract_webhook_dedup_key(event) if event else None
+    event_timestamp_ms = _event_timestamp_ms(event) if event else None
+
     delivery_ctx = LineDeliveryContext(
         user_id=user_id,
         reply_token=reply_token,
         lang="ja",
         sid=sid,
+        dedup_key=dedup_key,
+        event_timestamp_ms=event_timestamp_ms,
     )
     set_line_delivery_context(delivery_ctx)
 

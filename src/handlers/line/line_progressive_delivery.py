@@ -29,6 +29,9 @@ class LineDeliveryContext:
     carousel_sent: bool = False
     carousel_failed: bool = False
     use_progressive: bool = False
+    dedup_key: str | None = None
+    event_timestamp_ms: int | None = None
+    delivered: bool = False
     carousel_flush: CarouselFlushFn | None = field(default=None, repr=False)
 
 
@@ -290,24 +293,31 @@ async def deliver_final_line_messages(
         )
         return
 
+    from src.handlers.line.line_delivery import deliver_line_messages
+
     token = reply_token or ctx.reply_token
-    if token and await reply_fn(token, messages):
-        logger.info("LINE progressive advice+feedback via reply userId=%s", user_id)
+    delivered = await deliver_line_messages(
+        user_id,
+        messages,
+        reply_token=token,
+        reply_fn=reply_fn,
+        push_chunk_fn=push_chunk_fn,
+        event_timestamp_ms=ctx.event_timestamp_ms,
+    )
+    if delivered:
+        logger.info("LINE progressive advice+feedback delivered userId=%s", user_id)
         return
 
-    logger.warning("LINE progressive reply failed; push fallback userId=%s", user_id)
-    if await push_chunk_fn(user_id, messages):
-        return
-
-    logger.warning("LINE progressive push fallback failed; full bundle userId=%s", user_id)
+    logger.warning("LINE progressive delivery failed; full bundle fallback userId=%s", user_id)
     await deliver_all_fn(
         user_id,
         line_messages,
-        reply_token=reply_token,
+        reply_token=None,
         sid=sid,
         user_message=user_message,
         bot_message=bot_message,
         lang=lang,
+        force_delivery=True,
     )
 
 
