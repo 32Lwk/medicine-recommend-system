@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>23 Paper Receipt — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* レシート印刷 — 感熱紙・モノクロ細字 */
+    :root {
+      --ui-primary: #333;
+      --ui-primary-dark: #111;
+      --ui-primary-soft: #f9f9f9;
+      --ui-accent: #333;
+      --ui-bg-outer: #b0b0b0;
+      --ui-bg-chat: #faf9f6;
+      --ui-bg-surface: #faf9f6;
+      --ui-bg-header: #faf9f6;
+      --ui-text-on-primary: #faf9f6;
+      --ui-text: #1a1a1a;
+      --ui-text-muted: #666;
+      --ui-border: #ccc;
+      --ui-radius-sm: 0;
+      --ui-radius-md: 0;
+      --ui-radius-lg: 0;
+      --ui-shadow: none;
+      --ui-font: "Courier New", "MS Gothic", monospace;
+      --ui-font-size: 0.8rem;
+      --ui-line-height: 1.4;
+      --ui-max-width: 380px;
+    }
+    body { background: #a0a0a0; }
+    .ui-app {
+      background: #faf9f6;
+      box-shadow: 0 4px 20px rgba(0,0,0,.2);
+      position: relative;
+    }
+    .ui-app::before,
+    .ui-app::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 8px;
+      background: repeating-linear-gradient(90deg, #faf9f6 0, #faf9f6 4px, transparent 4px, transparent 8px);
+      z-index: 20;
+    }
+    .ui-app::before { top: 0; transform: translateY(-100%); }
+    .ui-app::after { bottom: 0; transform: translateY(100%); }
+    .ui-header {
+      color: var(--ui-text);
+      border-bottom: 1px dashed #999;
+      text-align: center;
+    }
+    .ui-header .ui-lang, .ui-header .ui-info { display: none; }
+    .ui-header { grid-template-areas: "brand brand brand" "actions actions actions"; }
+    .ui-brand h1 {
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+    }
+    .ui-brand h1::before, .ui-brand h1::after { content: "═══ "; font-size: 0.6rem; }
+    .ui-brand p { font-size: 0.65rem; }
+    .ui-action-btn {
+      background: transparent;
+      color: var(--ui-text);
+      border: 1px dashed #999;
+      font-size: 0.65rem;
+    }
+    .ui-messages { padding: 12px 20px; }
+    .ui-msg--bot .ui-bubble,
+    .ui-msg--user .ui-bubble {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      max-width: 100%;
+      padding: 4px 0;
+      font-size: 0.8rem;
+    }
+    .ui-msg--user .ui-bubble::before { content: "> "; color: #999; }
+    .ui-msg--bot .ui-bubble::before { content: "* "; color: #999; }
+    .ui-stack .ui-card {
+      border: none;
+      border-top: 1px dashed #999;
+      border-bottom: 1px dashed #999;
+      box-shadow: none;
+      background: transparent;
+      margin: 8px 0;
+      padding: 8px 0;
+    }
+    .ui-card-body { padding: 4px 0; }
+    .ui-card-rank::before { content: "["; }
+    .ui-card-rank::after { content: "]"; }
+    .ui-card-name {
+      font-size: 0.9rem;
+      text-align: center;
+      border-bottom: 1px solid #333;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+    }
+    .ui-card-maker, .ui-card-text { font-size: 0.72rem; }
+    .ui-card-label { font-size: 0.6rem; text-transform: none; }
+    .ui-card-score {
+      background: transparent;
+      color: var(--ui-text);
+      border: 1px solid #333;
+      border-radius: 0;
+      display: block;
+      text-align: center;
+      margin-top: 6px;
+    }
+    .ui-card-score::before { content: "MATCH: "; }
+    .ui-alert {
+      border: none !important;
+      border-top: 1px dashed #999 !important;
+      background: transparent !important;
+      padding: 6px 0;
+      font-size: 0.72rem;
+    }
+    .ui-score-grid { border-top: 1px dashed #999; padding-top: 6px; }
+    .ui-score-chip { background: transparent; border: 1px solid #ccc; font-size: 0.6rem; }
+    .ui-feedback {
+      border: 1px dashed #999;
+      background: transparent;
+      font-size: 0.72rem;
+    }
+    .ui-chips { display: none; }
+    .ui-input-bar {
+      border-top: 1px dashed #999;
+      background: #faf9f6;
+    }
+    .ui-textarea {
+      border: 1px dashed #999;
+      border-radius: 0;
+      background: #fff;
+      font-family: inherit;
+    }
+    .ui-send, .ui-mic { border-radius: 0; background: #333; color: #faf9f6; }
+    .ui-mic { background: transparent; color: #333; border: 1px dashed #999; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #333; border-radius: 0; font-family: inherit; }
+    .ui-reco-intro { text-align: center; font-weight: 400; }
+    .ui-reco-intro::after {
+      content: "\A━━━━━━━━━━━━━━━━";
+      white-space: pre;
+      display: block;
+      font-size: 0.6rem;
+      color: #999;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'paper-receipt', recoLayout: 'stack' });</script>
+</body>
+</html>

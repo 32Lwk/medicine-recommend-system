@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="⭐ ✨">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>17 Duolingo Playful — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Duolingo — ゲーミフィケーション・フレンドリー */
+    :root {
+      --ui-primary: #58cc02;
+      --ui-primary-dark: #46a302;
+      --ui-primary-soft: #d7ffb8;
+      --ui-accent: #1cb0f6;
+      --ui-warn: #ffc800;
+      --ui-bg-outer: #235390;
+      --ui-bg-chat: #fff;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #58cc02;
+      --ui-text-on-primary: #fff;
+      --ui-text: #3c3c3c;
+      --ui-border: #e5e5e5;
+      --ui-radius-sm: 12px;
+      --ui-radius-md: 16px;
+      --ui-radius-lg: 20px;
+      --ui-carousel-card-width: min(280px, 78vw);
+    }
+    body { background: linear-gradient(180deg, #235390 0%, #1a4070 100%); }
+    .ui-header {
+      border-bottom: 4px solid #46a302;
+      position: relative;
+    }
+    .ui-header::after {
+      content: "🦉";
+      position: absolute;
+      right: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.8rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+    }
+    .ui-brand h1 { font-weight: 800; }
+    .ui-action-btn {
+      border-bottom: 4px solid rgba(0,0,0,.15);
+      font-weight: 700;
+    }
+    .ui-action-btn--primary { background: var(--ui-accent); border-bottom-color: #1899d6; }
+    .ui-msg--user .ui-bubble {
+      background: var(--ui-primary-soft);
+      color: var(--ui-text);
+      border: 2px solid var(--ui-primary);
+      border-bottom: 4px solid var(--ui-primary-dark);
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 2px solid #e5e5e5;
+      border-bottom: 4px solid #d0d0d0;
+    }
+    .ui-reco-intro {
+      background: var(--ui-primary-soft);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 2px solid var(--ui-primary);
+      border-bottom: 4px solid var(--ui-primary-dark);
+    }
+    .ui-reco-intro::before { content: "🎯 "; }
+    .ui-card {
+      border: 2px solid #e5e5e5;
+      border-bottom: 4px solid #d0d0d0;
+      border-radius: 16px;
+    }
+    .ui-card-hero,
+    .ui-med-image--playful {
+      background: linear-gradient(135deg, #d7ffb8, #fff);
+      height: 90px;
+    }
+    .ui-card-rank {
+      background: var(--ui-warn);
+      color: #fff;
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+    .ui-card-score {
+      background: var(--ui-primary);
+      color: #fff;
+      font-weight: 800;
+    }
+    .ui-progress-bar {
+      height: 12px;
+      background: #e5e5e5;
+      border-radius: 999px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .ui-progress-bar::after {
+      content: "";
+      display: block;
+      height: 100%;
+      width: 72%;
+      background: var(--ui-primary);
+      border-radius: 999px;
+    }
+    .ui-reco-block::before {
+      content: "";
+      display: block;
+      height: 12px;
+      background: #e5e5e5;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .ui-send {
+      background: var(--ui-primary);
+      border-bottom: 4px solid var(--ui-primary-dark);
+      font-weight: 800;
+    }
+    .ui-mic { background: var(--ui-primary-soft); border: 2px solid var(--ui-primary); }
+    .ui-dev-badge { background: var(--ui-warn); color: #3c3c3c; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'duolingo', recoLayout: 'carousel', carouselStyle: 'playful' });</script>
+</body>
+</html>

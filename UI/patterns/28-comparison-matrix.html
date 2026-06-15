@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>28 Comparison Matrix — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 3薬横比較スペック表 — データ重視 */
+    :root {
+      --ui-primary: #0f766e;
+      --ui-primary-dark: #115e59;
+      --ui-primary-soft: #ccfbf1;
+      --ui-accent: #0891b2;
+      --ui-bg-outer: #f0fdfa;
+      --ui-bg-chat: #f8fafc;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #0f766e;
+      --ui-text-on-primary: #fff;
+      --ui-text: #134e4a;
+      --ui-border: #99f6e4;
+      --ui-bubble-user-bg: #0f766e;
+      --focus-color: #0f766e;
+    }
+    .ui-matrix th, .ui-matrix td { border-color: #5eead4; }
+    .ui-matrix-corner, .ui-matrix tbody th { background: #ccfbf1; }
+    .ui-matrix thead th { background: #f0fdfa; color: #134e4a; }
+    .ui-matrix-rank { color: #0f766e; }
+    .ui-reco-intro {
+      background: #ccfbf1;
+      border: 1px solid #5eead4;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .ui-send { background: #0f766e; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #0f766e; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'comparison-matrix',
+      recoLayout: 'matrix',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

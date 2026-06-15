@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>36 Pharmacist Trust — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 薬剤師顔写真・資格・監修表示 — 信頼最大化 */
+    :root {
+      --ui-primary: #15803d;
+      --ui-primary-dark: #14532d;
+      --ui-primary-soft: #dcfce7;
+      --ui-accent: #0369a1;
+      --ui-bg-outer: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+      --ui-bg-chat: #fafdfa;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #15803d;
+      --ui-text-on-primary: #fff;
+      --ui-text: #14532d;
+      --ui-text-muted: #4d7c5f;
+      --ui-border: #bbf7d0;
+      --ui-bubble-user-bg: #15803d;
+      --focus-color: #15803d;
+    }
+    .ui-app { border: 2px solid #86efac; }
+    .ui-pharmacist-strip {
+      background: linear-gradient(90deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+      border-bottom: 3px solid #22c55e;
+    }
+    .ui-pharmacist-info strong { font-size: 0.9rem; }
+    .ui-card--pro {
+      border-color: #86efac;
+      box-shadow: 0 2px 12px rgba(21, 128, 61, 0.1);
+    }
+    .ui-med-badge--otc { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .ui-trust-strip { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+    .ui-reco-intro {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .ui-msg--bot .ui-bubble--manual {
+      border-left-color: #15803d !important;
+      background: #f0fdf4 !important;
+    }
+    .ui-send { background: #15803d; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #15803d; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'pharmacist-trust',
+      layout: 'pharmacist',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>12 Story Swipe — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Instagram Stories — 縦スワイプ候補比較 */
+    :root {
+      --ui-primary: #e1306c;
+      --ui-primary-dark: #c13584;
+      --ui-primary-soft: #fce4ec;
+      --ui-accent: #fd1d1d;
+      --ui-bg-outer: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+      --ui-bg-chat: #111;
+      --ui-bg-surface: #1a1a1a;
+      --ui-bg-header: rgba(0,0,0,.6);
+      --ui-text: #fff;
+      --ui-text-muted: #aaa;
+      --ui-text-on-primary: #fff;
+      --ui-border: #333;
+      --ui-bubble-bot-bg: #262626;
+      --ui-bubble-user-bg: linear-gradient(135deg, #833ab4, #fd1d1d);
+      --ui-max-width: 430px;
+    }
+    body { background: var(--ui-bg-outer); }
+    .ui-app { background: #000; border-radius: 0; }
+    .ui-header { backdrop-filter: blur(12px); }
+    .ui-lang-btn, .ui-icon-btn { background: rgba(255,255,255,.15); }
+    .ui-action-btn { background: rgba(255,255,255,.1); color: #fff; border: 1px solid #444; }
+    .ui-msg--user .ui-bubble {
+      background: linear-gradient(135deg, #833ab4, #e1306c);
+      color: #fff;
+      border: none;
+    }
+    .ui-msg--bot .ui-bubble { border: none; background: #262626; color: #fff; }
+    .ui-story-wrap {
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      border: 2px solid transparent;
+      border-image: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) 1;
+    }
+    .ui-story .ui-card {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      color: #fff;
+    }
+    .ui-story .ui-card-hero,
+    .ui-story .ui-med-image--playful {
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      height: 120px;
+    }
+    .ui-story .ui-card-maker, .ui-story .ui-card-label { color: #aaa; }
+    .ui-story .ui-card-rank { color: #fd1d1d; }
+    .ui-story-hint { color: #888; }
+    .ui-input-bar { background: #111; border-color: #333; }
+    .ui-textarea { background: #262626; color: #fff; border-color: #444; }
+    .ui-send { background: linear-gradient(135deg, #833ab4, #e1306c); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #e1306c; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'story-swipe', layout: 'compact', recoLayout: 'story' });</script>
+</body>
+</html>

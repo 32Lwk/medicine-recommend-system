@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>25 Babylon Telehealth — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Babylon Health / テレヘルス — ビデオ診療準備・医療ブルー */
+    :root {
+      --ui-primary: #2563eb;
+      --ui-primary-dark: #1e40af;
+      --ui-primary-soft: #eff6ff;
+      --ui-accent: #0ea5e9;
+      --ui-bg-outer: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+      --ui-bg-chat: #f8fafc;
+      --ui-bg-surface: #ffffff;
+      --ui-bg-header: #1e3a5f;
+      --ui-text-on-primary: #fff;
+      --ui-text: #1e293b;
+      --ui-text-muted: #64748b;
+      --ui-border: #bfdbfe;
+      --ui-bubble-user-bg: #2563eb;
+      --focus-color: #2563eb;
+    }
+    .ui-app { border: 1px solid #93c5fd; box-shadow: 0 8px 32px rgba(37, 99, 235, 0.12); }
+    .ui-header { border-bottom: none; }
+    .ui-brand h1 { font-size: 1rem; letter-spacing: 0.02em; }
+    .ui-brand p { font-size: 0.68rem; opacity: 0.85; }
+    .ui-lang-btn, .ui-icon-btn { background: rgba(255,255,255,.15); }
+    .ui-action-btn { font-size: 0.7rem; }
+    .ui-action-btn--primary { background: #0ea5e9; }
+    .ui-msg--bot .ui-bubble { border-color: #dbeafe; }
+    .ui-card--pro { border-color: #93c5fd; }
+    .ui-med-badge--otc { background: #eff6ff; color: #1d4ed8; }
+    .ui-send { background: #2563eb; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #2563eb; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'babylon-telehealth',
+      layout: 'telehealth',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

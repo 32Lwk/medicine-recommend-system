@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>20 Floating Orb — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* ChatGPT Voice Mode — AIオーブ＋最小クローム */
+    :root {
+      --ui-primary: #10a37f;
+      --ui-primary-dark: #0d8a6a;
+      --ui-primary-soft: rgba(16,163,127,.12);
+      --ui-accent: #5436da;
+      --ui-bg-outer: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0d0d14 60%, #000 100%);
+      --ui-bg-chat: transparent;
+      --ui-bg-surface: rgba(255,255,255,.06);
+      --ui-bg-header: transparent;
+      --ui-text: #ececf1;
+      --ui-text-muted: #8e8ea0;
+      --ui-text-on-primary: #fff;
+      --ui-border: rgba(255,255,255,.1);
+      --ui-bubble-bot-bg: rgba(255,255,255,.08);
+      --ui-bubble-user-bg: rgba(16,163,127,.35);
+      --ui-max-width: 480px;
+      --ui-carousel-card-width: min(260px, 72vw);
+    }
+    body { background: var(--ui-bg-outer); }
+    .ui-app { background: transparent; }
+    .ui-msg--bot .ui-bubble {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+      color: #ececf1;
+    }
+    .ui-msg--user .ui-bubble {
+      background: rgba(16,163,127,.25);
+      border: 1px solid rgba(16,163,127,.3);
+      backdrop-filter: blur(8px);
+    }
+    .ui-card--pro {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #ececf1;
+      backdrop-filter: blur(12px);
+    }
+    .ui-card--pro .ui-card-maker,
+    .ui-card--pro .ui-card-label { color: #8e8ea0; }
+    .ui-score-ring__inner { background: rgba(255,255,255,.06); }
+    .ui-score-ring__value { color: #10a37f; }
+    .ui-trust-strip { background: rgba(0,0,0,.2); border-color: rgba(255,255,255,.08); color: #8e8ea0; }
+    .ui-score-chip { background: rgba(255,255,255,.06); color: #ececf1; }
+    .ui-alert { background: rgba(255,255,255,.05) !important; color: #ececf1; border-color: rgba(255,255,255,.15) !important; }
+    .ui-feedback { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: #ececf1; }
+    .ui-feedback button { background: rgba(255,255,255,.08); color: #ececf1; border-color: rgba(255,255,255,.15); }
+    .ui-textarea {
+      background: rgba(255,255,255,.08);
+      color: #ececf1;
+      border-color: rgba(255,255,255,.15);
+      backdrop-filter: blur(8px);
+    }
+    .ui-textarea::placeholder { color: #8e8ea0; }
+    .ui-send { background: var(--ui-primary); }
+    .ui-mic { background: rgba(16,163,127,.2); color: #10a37f; }
+    .ui-bottom-nav { background: rgba(0,0,0,.4); backdrop-filter: blur(12px); border-color: rgba(255,255,255,.08); }
+    .ui-nav-btn { color: #8e8ea0; }
+    .ui-orb-core {
+      background: radial-gradient(circle at 35% 30%, #fff 0%, #10a37f 40%, #5436da 100%);
+    }
+    .ui-orb-ring { border-color: #10a37f; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+    .ui-modal { background: #1a1a2e; color: #ececf1; }
+    .ui-form-group input, .ui-form-group select, .ui-form-group textarea {
+      background: rgba(255,255,255,.06); color: #ececf1; border-color: rgba(255,255,255,.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'floating-orb', layout: 'orb', recoLayout: 'carousel', carouselStyle: 'pro' });</script>
+</body>
+</html>

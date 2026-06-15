@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>34 Wearable Compact — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Apple Watch / スマートウォッチ円形・極小画面 */
+    :root {
+      --ui-primary: #ff375f;
+      --ui-primary-dark: #d42f4f;
+      --ui-primary-soft: #ffe4ea;
+      --ui-accent: #30d158;
+      --ui-bg-outer: #000;
+      --ui-bg-chat: #000;
+      --ui-bg-surface: #1c1c1e;
+      --ui-bg-header: transparent;
+      --ui-text-on-primary: #fff;
+      --ui-text: #fff;
+      --ui-text-muted: #8e8e93;
+      --ui-border: #38383a;
+      --ui-bubble-user-bg: #0a84ff;
+      --ui-bubble-bot-bg: #2c2c2e;
+      --focus-color: #ff375f;
+    }
+    body { background: #000; }
+    .ui-header { background: transparent !important; color: #fff; }
+    .ui-brand h1 { font-size: 0.72rem; }
+    .ui-lang-btn, .ui-icon-btn {
+      background: #2c2c2e;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      font-size: 0.75rem;
+    }
+    .ui-msg--bot .ui-bubble { border-color: #38383a; color: #fff; }
+    .ui-msg--user .ui-bubble { color: #fff; }
+    .ui-card--pro {
+      background: #2c2c2e;
+      border-color: #38383a;
+      color: #fff;
+      font-size: 0.68rem;
+    }
+    .ui-card-name { color: #fff; font-size: 0.78rem; }
+    .ui-card-maker, .ui-card-text { color: #8e8e93; }
+    .ui-reco-intro { font-size: 0.68rem; color: #fff; }
+    .ui-input-bar { background: #1c1c1e; }
+    .ui-textarea { background: #2c2c2e; color: #fff; border-color: #38383a; }
+    .ui-send { background: #ff375f; }
+    .ui-mic { background: #2c2c2e; color: #fff; }
+    .ui-bottom-nav { background: #1c1c1e; border-color: #38383a; }
+    .ui-nav-btn { color: #8e8e93; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #ff375f; font-size: 0.55rem; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'wearable-compact',
+      layout: 'wearable',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

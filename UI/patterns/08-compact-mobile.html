@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="✨">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>08 Compact Mobile — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* モバイルファースト — 下部ナビ + LINE風 */
+    :root {
+      --ui-primary: #06c755;
+      --ui-primary-dark: #05a847;
+      --ui-primary-soft: #e8f9ee;
+      --ui-accent: #007aff;
+      --ui-bg-outer: #000;
+      --ui-bg-chat: #b2c7d9;
+      --ui-bg-header: #f7f7f7;
+      --ui-text-on-primary: #111;
+      --ui-text: #111;
+      --ui-max-width: 430px;
+      --ui-carousel-card-width: min(260px, 75vw);
+    }
+    body { background: #111; }
+    .ui-header {
+      background: #f7f7f7;
+      color: #111;
+      padding: 8px 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .ui-brand h1 { font-size: 0.95rem; }
+    .ui-lang-btn, .ui-icon-btn { background: #eee; color: #333; }
+    .ui-msg--user .ui-bubble { background: #8de055; color: #111; }
+    .ui-send { background: #06c755; width: 48px; height: 48px; }
+    .ui-mic { width: 40px; height: 40px; }
+    .ui-textarea { border-radius: 22px; background: #fff; }
+    .ui-card--pro { border-radius: 14px; }
+    .ui-nav-btn.active { color: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'compact-mobile', layout: 'compact', recoLayout: 'carousel', carouselStyle: 'pro' });</script>
+</body>
+</html>

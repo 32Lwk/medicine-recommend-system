@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>33 Pictogram Elder — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 高齢者向け — ピクトグラム + 特大文字 */
+    :root {
+      --ui-primary: #1a5f2a;
+      --ui-primary-dark: #0d3d18;
+      --ui-primary-soft: #e8f5e9;
+      --ui-accent: #1565c0;
+      --ui-danger: #b71c1c;
+      --ui-bg-outer: #fff;
+      --ui-bg-chat: #fafafa;
+      --ui-bg-header: #1a5f2a;
+      --ui-font-size: 1.25rem;
+      --ui-line-height: 1.9;
+      --ui-text: #000;
+      --ui-border: #333;
+      --ui-bubble-user-bg: #1a5f2a;
+      --focus-color: #1565c0;
+    }
+    .ui-brand h1 { font-size: 1.5rem; }
+    .ui-brand p { font-size: 1rem; }
+    .ui-action-btn { font-size: 1rem; padding: 12px 16px; min-height: 52px; }
+    .ui-lang-btn, .ui-icon-btn { min-width: 52px; min-height: 52px; font-size: 1.2rem; }
+    .ui-bubble { max-width: 96%; font-size: 1.15rem; padding: 1rem 1.1rem; }
+    .ui-card-name { font-size: 1.25rem; }
+    .ui-card-text, .ui-alert { font-size: 1.05rem; }
+    .ui-chip--pictogram { min-width: 100px; min-height: 100px; }
+    .ui-pictogram { width: 48px; height: 48px; }
+    .ui-chip-label { font-size: 1rem; }
+    .ui-textarea { font-size: 20px !important; min-height: 56px; }
+    .ui-mic, .ui-send { width: 56px; height: 56px; font-size: 1.3rem; }
+    .ui-score-chip { font-size: 0.95rem; padding: 8px 12px; }
+    .ui-med-badge { font-size: 0.85rem; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #1a5f2a; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'pictogram-elder',
+      recoLayout: 'stack',
+      carouselStyle: 'pro',
+      a11yPictogram: true
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>31 WhatsApp Native — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* WhatsApp — 緑ヘッダー・吹き出し・ステータス */
+    :root {
+      --ui-primary: #075e54;
+      --ui-primary-dark: #054c44;
+      --ui-primary-soft: #dcf8c6;
+      --ui-accent: #25d366;
+      --ui-bg-outer: #111b21;
+      --ui-bg-chat: #ece5dd;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #075e54;
+      --ui-text-on-primary: #fff;
+      --ui-text: #111;
+      --ui-text-muted: #667781;
+      --ui-border: #e9edef;
+      --ui-bubble-user-bg: #dcf8c6;
+      --focus-color: #25d366;
+    }
+    .ui-brand h1 { font-size: 1rem; }
+    .ui-brand p { font-size: 0.68rem; opacity: 0.8; }
+    .ui-card--pro { border-color: #e9edef; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .ui-reco-intro { background: #f0f2f5; border-radius: 8px; padding: 8px; }
+    .ui-textarea { border-radius: 24px; background: #fff; }
+    .ui-mic { background: #f0f2f5; color: #54656f; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #25d366; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'whatsapp-native',
+      layout: 'whatsapp',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

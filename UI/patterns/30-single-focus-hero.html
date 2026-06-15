@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>30 Single Focus Hero — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Spotify / Apple Music風 — 1候補を大きく深掘り */
+    :root {
+      --ui-primary: #fa243c;
+      --ui-primary-dark: #c41e32;
+      --ui-primary-soft: #ffe4e8;
+      --ui-accent: #1db954;
+      --ui-bg-outer: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      --ui-bg-chat: #121212;
+      --ui-bg-surface: #181818;
+      --ui-bg-header: #000;
+      --ui-text-on-primary: #fff;
+      --ui-text: #fff;
+      --ui-text-muted: #b3b3b3;
+      --ui-border: #282828;
+      --ui-bubble-user-bg: #535353;
+      --ui-bubble-bot-bg: #282828;
+      --focus-color: #fa243c;
+    }
+    .ui-app { border: 1px solid #282828; }
+    .ui-header { background: rgba(0,0,0,.6); backdrop-filter: blur(8px); }
+    .ui-lang-btn, .ui-icon-btn { background: rgba(255,255,255,.1); }
+    .ui-action-btn { background: #282828; color: #fff; border: 1px solid #404040; }
+    .ui-action-btn--primary { background: #fa243c; border-color: transparent; }
+    .ui-msg--bot .ui-bubble { border-color: #404040; color: #fff; }
+    .ui-msg--user .ui-bubble { color: #fff; }
+    .ui-hero-main .ui-card--pro {
+      background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%);
+      border-color: #fa243c;
+      color: #fff;
+    }
+    .ui-hero-main .ui-card-maker, .ui-hero-main .ui-card-text { color: #b3b3b3; }
+    .ui-hero-main .ui-card-name { color: #fff; }
+    .ui-hero-thumb { background: #282828; border-color: #404040; color: #fff; }
+    .ui-hero-thumb.is-active { border-color: #fa243c; background: #3a1a22; }
+    .ui-hero-thumb-name { color: #fff; }
+    .ui-reco-intro { color: #fff; }
+    .ui-input-bar { background: #181818; border-top-color: #282828; }
+    .ui-textarea { background: #282828; color: #fff; border-color: #404040; }
+    .ui-send { background: #fa243c; }
+    .ui-mic { background: #282828; color: #fff; }
+    .ui-alert { background: #282828 !important; color: #fff; border-color: #404040 !important; }
+    .ui-score-chip { background: #282828; color: #fff; border-color: #404040; }
+    .ui-feedback { background: #282828; border-color: #404040; color: #fff; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #fa243c; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'single-focus-hero',
+      recoLayout: 'hero',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

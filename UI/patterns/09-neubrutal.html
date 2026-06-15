@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="★ ✦">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>09 Neubrutal — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* ニューブルタリズム — 太枠・強いコントラスト */
+    :root {
+      --ui-primary: #ffeb3b;
+      --ui-primary-dark: #f9a825;
+      --ui-primary-soft: #fff9c4;
+      --ui-accent: #ff5252;
+      --ui-bg-outer: #b8e986;
+      --ui-bg-chat: #fffde7;
+      --ui-bg-header: #ffeb3b;
+      --ui-text-on-primary: #111;
+      --ui-text: #111;
+      --ui-border: #111;
+      --ui-radius-sm: 0;
+      --ui-radius-md: 0;
+      --ui-radius-lg: 0;
+      --ui-radius-pill: 0;
+      --ui-shadow: 4px 4px 0 #111;
+      --ui-bubble-user-bg: #111;
+      --ui-text-on-primary: #ffeb3b;
+    }
+    .ui-app { border: 3px solid #111; }
+    .ui-header { border-bottom: 3px solid #111; }
+    .ui-lang-btn, .ui-icon-btn, .ui-action-btn, .ui-bubble, .ui-card, .ui-modal, .ui-textarea, .ui-mic, .ui-send, .ui-chip, .ui-feedback button {
+      border: 2px solid #111 !important;
+      box-shadow: 3px 3px 0 #111;
+      border-radius: 0 !important;
+    }
+    .ui-action-btn--primary { background: #ff5252; color: #fff; }
+    .ui-action-btn--warn { background: #ffeb3b; }
+    .ui-send { background: #111; color: #ffeb3b; }
+    .ui-card-rank { color: #111; background: #ffeb3b; display: inline-block; padding: 2px 8px; border: 2px solid #111; }
+    .ui-alert { border: 2px solid #111 !important; box-shadow: 2px 2px 0 #111; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'neubrutal', recoLayout: 'carousel' });</script>
+</body>
+</html>
