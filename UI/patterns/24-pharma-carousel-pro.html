@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>24 Pharma Carousel Pro — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* プロフェッショナル・OTC推奨カルーセル（フラッグシップ） */
+    :root {
+      --ui-primary: #2e7d6e;
+      --ui-primary-dark: #1f5c52;
+      --ui-primary-soft: #e8f4f1;
+      --ui-accent: #2563eb;
+      --ui-warn: #d97706;
+      --ui-bg-outer: linear-gradient(165deg, #f4f8f7 0%, #e8f0ee 45%, #dfe9e6 100%);
+      --ui-bg-chat: #f7faf9;
+      --ui-bg-surface: #ffffff;
+      --ui-bg-header: #ffffff;
+      --ui-text: #1e293b;
+      --ui-text-muted: #64748b;
+      --ui-text-on-primary: #1e293b;
+      --ui-border: #d8e4e0;
+      --ui-bubble-user-bg: #2e7d6e;
+      --ui-bubble-bot-bg: #ffffff;
+      --ui-carousel-card-width: min(85vw, 360px);
+      --ui-radius-md: 14px;
+      --ui-shadow: 0 2px 16px rgba(30, 77, 62, 0.08);
+      --focus-color: #2e7d6e;
+    }
+    body { background-attachment: fixed; }
+    .ui-app {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 8px 40px rgba(30, 77, 62, 0.1);
+    }
+    .ui-header {
+      background: #fff;
+      color: var(--ui-text);
+      border-bottom: 1px solid var(--ui-border);
+    }
+    .ui-brand h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ui-primary-dark);
+      letter-spacing: 0.02em;
+    }
+    .ui-brand p { color: var(--ui-text-muted); font-size: 0.7rem; }
+    .ui-lang-btn, .ui-icon-btn {
+      background: var(--ui-primary-soft);
+      color: var(--ui-primary-dark);
+      border: 1px solid var(--ui-border);
+    }
+    .ui-action-btn {
+      background: #fff;
+      color: var(--ui-text);
+      border: 1px solid var(--ui-border);
+    }
+    .ui-action-btn--primary {
+      background: var(--ui-primary);
+      color: #fff;
+      border-color: transparent;
+    }
+    .ui-action-btn--warn { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .ui-msg--user .ui-bubble {
+      background: var(--ui-primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .ui-reco-intro {
+      background: var(--ui-primary-soft);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #c5ddd6;
+      font-size: 0.82rem;
+    }
+    .ui-card--pro {
+      border-color: #c5ddd6;
+      box-shadow: 0 2px 12px rgba(46, 125, 110, 0.1);
+    }
+    .ui-med-badge--otc { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .ui-symptom-tag { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .ui-score-ring__fill {
+      background: conic-gradient(
+        var(--ui-primary) calc(var(--ui-score) * 1%),
+        #e2ebe8 0
+      );
+    }
+    .ui-carousel-arrow {
+      border-color: #c5ddd6;
+      color: var(--ui-primary-dark);
+    }
+    .ui-carousel-arrow:hover { background: var(--ui-primary-soft); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-mic { background: var(--ui-primary-soft); color: var(--ui-primary-dark); }
+    .ui-alert { border-radius: 10px; font-size: 0.78rem; }
+    .ui-feedback {
+      background: #f8fafc;
+      border: 1px solid var(--ui-border);
+      border-radius: 10px;
+    }
+    .ui-dev-badge { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'pharma-carousel-pro',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

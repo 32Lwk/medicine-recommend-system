@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>18 Prescription Label — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 処方箋ラベル — 薬袋・調剤ラベル typography */
+    :root {
+      --ui-primary: #000;
+      --ui-primary-dark: #000;
+      --ui-primary-soft: #f5f5f5;
+      --ui-accent: #000;
+      --ui-bg-outer: #e8e8e8;
+      --ui-bg-chat: #fff;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #fff;
+      --ui-text-on-primary: #fff;
+      --ui-text: #000;
+      --ui-text-muted: #333;
+      --ui-border: #000;
+      --ui-radius-sm: 0;
+      --ui-radius-md: 0;
+      --ui-radius-lg: 0;
+      --ui-font: "MS Gothic", "Osaka-Mono", "Courier New", monospace;
+      --ui-font-size: 0.85rem;
+      --ui-line-height: 1.5;
+    }
+    .ui-app { border: 2px solid #000; }
+    .ui-header {
+      color: #000;
+      border-bottom: 2px solid #000;
+      padding: 12px;
+    }
+    .ui-brand h1 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 2px solid #000;
+      padding: 6px 10px;
+      display: inline-block;
+    }
+    .ui-brand p { font-size: 0.7rem; margin-top: 6px; }
+    .ui-lang-btn, .ui-icon-btn { background: #fff; color: #000; border: 1px solid #000; border-radius: 0; }
+    .ui-action-btn {
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
+      border-radius: 0;
+      font-weight: 700;
+    }
+    .ui-action-btn--primary { background: #000; color: #fff; }
+    .ui-msg--user .ui-bubble {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 0;
+      font-weight: 700;
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 2px solid #000;
+      border-radius: 0;
+      background: #fff;
+    }
+    .ui-stack .ui-card {
+      border: 2px solid #000;
+      border-radius: 0;
+      box-shadow: none;
+      position: relative;
+    }
+    .ui-stack .ui-card::before {
+      content: "調剤ラベル";
+      display: block;
+      background: #000;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .ui-card-body { padding: 12px; }
+    .ui-card-name {
+      font-size: 1.1rem;
+      border-bottom: 1px dashed #000;
+      padding-bottom: 6px;
+    }
+    .ui-card-rank, .ui-card-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ui-card-score {
+      background: #000;
+      color: #fff;
+      border-radius: 0;
+      font-family: inherit;
+    }
+    .ui-alert {
+      border: 1px solid #000 !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+    }
+    .ui-alert strong::before { content: "【注意】"; }
+    .ui-feedback { border: 1px dashed #000; border-radius: 0; }
+    .ui-send { background: #000; border-radius: 0; }
+    .ui-textarea { border-radius: 0; border: 2px solid #000; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #000; border-radius: 0; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'prescription-label', recoLayout: 'stack' });</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>06 Dark Clinical — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* ダーク・クリニカル — 夜間・プロ向け */
+    :root {
+      --ui-primary: #4dd0e1;
+      --ui-primary-dark: #26c6da;
+      --ui-primary-soft: #1a3a40;
+      --ui-accent: #80cbc4;
+      --ui-bg-outer: #0d1117;
+      --ui-bg-chat: #161b22;
+      --ui-bg-surface: #1c2128;
+      --ui-bg-header: #161b22;
+      --ui-text: #e6edf3;
+      --ui-text-muted: #8b949e;
+      --ui-text-on-primary: #e6edf3;
+      --ui-border: #30363d;
+      --ui-bubble-bot-bg: #21262d;
+      --ui-bubble-user-bg: #238636;
+      --focus-color: #4dd0e1;
+    }
+    .ui-lang-btn, .ui-icon-btn { background: #21262d; }
+    .ui-action-btn { background: #21262d; color: var(--ui-text); border: 1px solid var(--ui-border); }
+    .ui-action-btn--primary { background: #238636; border-color: transparent; }
+    .ui-card--pro { background: #21262d; }
+    .ui-score-ring__track { background: #30363d; }
+    .ui-score-ring__inner { background: #21262d; }
+    .ui-score-ring__value { color: #4dd0e1; }
+    .ui-trust-strip { background: #161b22; border-color: var(--ui-border); }
+    .ui-med-badge--otc { background: #1a3a40; color: #4dd0e1; border-color: #30363d; }
+    .ui-symptom-tag { background: #1a3a40; color: #80cbc4; border-color: #30363d; }
+    .ui-score-chip { background: #21262d; color: var(--ui-text); }
+    .ui-feedback { background: #21262d; border-color: var(--ui-border); }
+    .ui-feedback button { background: #161b22; color: var(--ui-text); border-color: var(--ui-border); }
+    .ui-textarea, .ui-chip { background: #21262d; color: var(--ui-text); border-color: var(--ui-border); }
+    .ui-input-bar { background: #161b22; }
+    .ui-particles { display: none; }
+    .ui-modal { background: #1c2128; }
+    .ui-list-item { border-color: var(--ui-border); }
+    .ui-form-group input, .ui-form-group select, .ui-form-group textarea { background: #21262d; color: var(--ui-text); border-color: var(--ui-border); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'dark-clinical', recoLayout: 'carousel', carouselStyle: 'pro' });</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>10 Accessibility First — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* アクセシビリティ優先 — 大文字・高コントラスト */
+    :root {
+      --ui-primary: #005a00;
+      --ui-primary-dark: #003d00;
+      --ui-primary-soft: #e6f4e6;
+      --ui-accent: #003d82;
+      --ui-danger: #b00020;
+      --ui-bg-outer: #ffffff;
+      --ui-bg-chat: #f5f5f5;
+      --ui-bg-header: #005a00;
+      --ui-font-size: 1.125rem;
+      --ui-line-height: 1.85;
+      --ui-border: #333;
+      --ui-bubble-user-bg: #005a00;
+      --focus-color: #003d82;
+    }
+    .ui-brand h1 { font-size: 1.35rem; }
+    .ui-brand p { font-size: 0.95rem; }
+    .ui-action-btn { font-size: 0.85rem; padding: 10px 14px; min-height: 44px; }
+    .ui-lang-btn, .ui-icon-btn { min-width: 44px; min-height: 44px; }
+    .ui-bubble { max-width: 95%; font-size: 1.05rem; }
+    .ui-card-name { font-size: 1.1rem; }
+    .ui-card-text, .ui-alert { font-size: 0.95rem; }
+    .ui-chip { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
+    .ui-textarea { font-size: 18px !important; min-height: 52px; }
+    .ui-mic, .ui-send { width: 52px; height: 52px; }
+    .ui-send:focus, .ui-mic:focus, .ui-action-btn:focus, .ui-lang-btn:focus {
+      outline: 3px solid #003d82;
+      outline-offset: 2px;
+    }
+    .ui-alert--danger { border-width: 3px; font-weight: 600; }
+    .ui-score-chip { font-size: 0.85rem; padding: 6px 10px; border: 1px solid #333; }
+    .ui-particles { display: none; }
+    @media (prefers-contrast: more) {
+      .ui-bubble { border-width: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'accessibility', recoLayout: 'stack' });</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>14 Retro Terminal — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* グリーンフォスファ CRT — レトロCLI（a11y維持） */
+    :root {
+      --ui-primary: #33ff33;
+      --ui-primary-dark: #00cc00;
+      --ui-primary-soft: #0a1a0a;
+      --ui-accent: #33ff33;
+      --ui-warn: #ffff33;
+      --ui-danger: #ff3333;
+      --ui-bg-outer: #0a0a0a;
+      --ui-bg-chat: #0d1a0d;
+      --ui-bg-surface: #0a120a;
+      --ui-bg-header: #0a1a0a;
+      --ui-text: #33ff33;
+      --ui-text-muted: #22aa22;
+      --ui-text-on-primary: #0a0a0a;
+      --ui-border: #1a4a1a;
+      --ui-bubble-bot-bg: #0a1a0a;
+      --ui-bubble-user-bg: #1a3a1a;
+      --ui-radius-sm: 0;
+      --ui-radius-md: 0;
+      --ui-radius-lg: 0;
+      --ui-radius-pill: 0;
+      --ui-font: "Courier New", "SF Mono", "Consolas", monospace;
+      --ui-font-size: 0.9rem;
+      --focus-color: #33ff33;
+    }
+    body {
+      background: #0a0a0a;
+      text-shadow: 0 0 4px rgba(51,255,51,.4);
+    }
+    .ui-app {
+      border: 2px solid #33ff33;
+      box-shadow: 0 0 20px rgba(51,255,51,.15), inset 0 0 60px rgba(51,255,51,.03);
+    }
+    .ui-app::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+      pointer-events: none;
+      z-index: 100;
+    }
+    .ui-header { border-bottom: 1px solid var(--ui-border); }
+    .ui-brand h1::before { content: "> "; }
+    .ui-brand p { color: var(--ui-text-muted); }
+    .ui-lang-btn, .ui-icon-btn, .ui-action-btn {
+      background: transparent;
+      border: 1px solid var(--ui-border);
+      color: var(--ui-text);
+    }
+    .ui-action-btn--primary { background: #1a3a1a; }
+    .ui-msg--bot .ui-bubble::before { content: "[BOT] "; color: var(--ui-text-muted); }
+    .ui-msg--user .ui-bubble::before { content: "[USER] "; }
+    .ui-card, .ui-modal, .ui-textarea, .ui-chip, .ui-feedback button {
+      border: 1px solid var(--ui-border) !important;
+      background: #0a1a0a !important;
+      color: var(--ui-text) !important;
+      box-shadow: none !important;
+    }
+    .ui-card-hero,
+    .ui-med-image--playful { background: #0d200d !important; }
+    .ui-card-rank { color: var(--ui-warn); }
+    .ui-alert--danger { border-color: var(--ui-danger) !important; color: #ff6666; }
+    .ui-send, .ui-mic { border-radius: 0; }
+    .ui-send { background: #1a3a1a; color: var(--ui-primary); border: 1px solid var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #1a3a1a; color: var(--ui-primary); border: 1px solid var(--ui-primary); }
+    .ui-form-group input, .ui-form-group select, .ui-form-group textarea {
+      background: #0a1a0a; color: var(--ui-text); border-color: var(--ui-border);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'retro-terminal', recoLayout: 'stack' });</script>
+</body>
+</html>

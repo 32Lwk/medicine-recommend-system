@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>29 E-commerce Grid — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Amazon / 楽天風 商品グリッド + ドロワー */
+    :root {
+      --ui-primary: #ff9900;
+      --ui-primary-dark: #e47911;
+      --ui-primary-soft: #fff8e6;
+      --ui-accent: #232f3e;
+      --ui-bg-outer: #eaeded;
+      --ui-bg-chat: #fff;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #232f3e;
+      --ui-text-on-primary: #fff;
+      --ui-text: #0f1111;
+      --ui-text-muted: #565959;
+      --ui-border: #d5d9d9;
+      --ui-bubble-user-bg: #232f3e;
+      --focus-color: #e47911;
+    }
+    .ui-brand h1 { font-size: 0.95rem; }
+    .ui-brand p { color: #ffd814; font-size: 0.65rem; }
+    .ui-action-btn--primary { background: #ffd814; color: #0f1111; }
+    .ui-product-card {
+      border-color: #d5d9d9;
+      border-radius: 8px;
+    }
+    .ui-product-card:hover { border-color: #e47911; }
+    .ui-product-card .ui-med-image--thumb { background: #f7fafa; }
+    .ui-product-score { color: #b12704; }
+    .ui-product-detail-btn {
+      background: #ffd814;
+      border-color: #fcd200;
+      color: #0f1111;
+      font-weight: 700;
+    }
+    .ui-product-drawer-panel { border-top: 3px solid #ff9900; }
+    .ui-send { background: #ff9900; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #232f3e; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'ecommerce-grid',
+      recoLayout: 'grid',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="❄ ✨ ·">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>01 Classic Green — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 現行実装を洗練 — 緑ヘッダー + 紫グラデ外枠 */
+    :root {
+      --ui-primary: #4caf50;
+      --ui-primary-dark: #388e3c;
+      --ui-primary-soft: #e8f5e9;
+      --ui-accent: #2196f3;
+      --ui-bg-outer: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --ui-bg-chat: #c0c0c0;
+      --ui-bg-header: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'classic-green', recoLayout: 'stack' });</script>
+</body>
+</html>

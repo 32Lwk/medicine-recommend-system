@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>26 Symptom Body Map — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 症状ボディマップ — 視覚的症状入力 */
+    :root {
+      --ui-primary: #2563eb;
+      --ui-primary-dark: #1d4ed8;
+      --ui-primary-soft: #dbeafe;
+      --ui-accent: #7c3aed;
+      --ui-bg-outer: #e8f0fe;
+      --ui-bg-chat: #f8fafc;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #2563eb;
+      --ui-text-on-primary: #fff;
+      --ui-text: #1e293b;
+      --ui-border: #cbd5e1;
+      --ui-max-width: 1000px;
+      --ui-bubble-user-bg: #2563eb;
+      --focus-color: #2563eb;
+    }
+    .ui-bodymap-zone { fill: rgba(37, 99, 235, 0.1); stroke: #2563eb; }
+    .ui-bodymap-zone.is-active { fill: rgba(124, 58, 237, 0.35); stroke: #7c3aed; }
+    .ui-msg--user .ui-bubble { background: #2563eb; }
+    .ui-send { background: #2563eb; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #2563eb; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'symptom-bodymap',
+      layout: 'bodymap',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

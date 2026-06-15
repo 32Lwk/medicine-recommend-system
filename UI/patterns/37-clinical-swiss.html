@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>37 Clinical Swiss — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* スイスデザイン / バウハウス — グリッド・データ重視 */
+    :root {
+      --ui-primary: #e30613;
+      --ui-primary-dark: #b0040f;
+      --ui-primary-soft: #f5f5f5;
+      --ui-accent: #000;
+      --ui-bg-outer: #fff;
+      --ui-bg-chat: #fff;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #fff;
+      --ui-text-on-primary: #000;
+      --ui-text: #000;
+      --ui-text-muted: #666;
+      --ui-border: #000;
+      --ui-radius-sm: 0;
+      --ui-radius-md: 0;
+      --ui-radius-lg: 0;
+      --ui-font: "Helvetica Neue", "Arial", "Hiragino Sans", sans-serif;
+      --ui-bubble-user-bg: #000;
+      --focus-color: #e30613;
+    }
+    .ui-app {
+      border: 2px solid #000;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .ui-header {
+      color: #000;
+      border-bottom: 2px solid #000;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-template-areas: "lang brand info" "actions actions actions";
+    }
+    .ui-brand h1 {
+      font-size: 1.1rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .ui-brand p { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .ui-lang-btn, .ui-icon-btn, .ui-action-btn {
+      border: 2px solid #000;
+      border-radius: 0;
+      background: #fff;
+      color: #000;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+    }
+    .ui-action-btn--primary { background: #e30613; color: #fff; border-color: #e30613; }
+    .ui-msg--user .ui-bubble { background: #000; color: #fff; border-radius: 0; }
+    .ui-msg--bot .ui-bubble { border: 2px solid #000; border-radius: 0; }
+    .ui-matrix { border: 2px solid #000; }
+    .ui-matrix th, .ui-matrix td { border-color: #000; }
+    .ui-matrix-corner { background: #e30613; color: #fff; }
+    .ui-matrix tbody th { background: #f5f5f5; }
+    .ui-matrix-rank { color: #e30613; }
+    .ui-reco-intro {
+      border: 2px solid #000;
+      padding: 8px 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .ui-chip { border: 2px solid #000; border-radius: 0; font-weight: 700; }
+    .ui-send { background: #e30613; border-radius: 0; }
+    .ui-textarea { border: 2px solid #000; border-radius: 0; }
+    .ui-alert { border: 2px solid #000 !important; border-radius: 0 !important; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #e30613; border-radius: 0; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'clinical-swiss',
+      recoLayout: 'matrix',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

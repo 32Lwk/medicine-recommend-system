@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="💛 ✨ 🌸">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>04 Warm Care — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 温かみ・ケア — コーラル＋クリーム */
+    :root {
+      --ui-primary: #e07a5f;
+      --ui-primary-dark: #c45c42;
+      --ui-primary-soft: #fde8e0;
+      --ui-accent: #81b29a;
+      --ui-warn: #f2cc8f;
+      --ui-bg-outer: linear-gradient(160deg, #fef9f3 0%, #fde8e0 50%, #f4e4d4 100%);
+      --ui-bg-chat: #fff9f5;
+      --ui-bg-header: linear-gradient(135deg, #e07a5f, #f4a261);
+      --ui-bg-header: #e07a5f;
+      --ui-bubble-user-bg: linear-gradient(135deg, #e07a5f, #f4a261);
+      --ui-bubble-user-bg: #e07a5f;
+      --ui-radius-lg: 28px;
+      --ui-font: "Rounded Mplus 1c", "Hiragino Maru Gothic ProN", "BIZ UDPGothic", sans-serif;
+    }
+    .ui-bubble, .ui-modal { border-radius: 20px; }
+    .ui-card--pro { border-radius: 20px; }
+    .ui-action-btn { border-radius: 999px; }
+    .ui-chip { background: #fff; border-color: #f4c4b0; }
+    .ui-med-badge--rank { background: #fde8e0; color: #c45c42; }
+    .ui-symptom-tag { background: #fff5f0; color: #c45c42; border-color: #f4c4b0; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'warm-care', recoLayout: 'carousel', carouselStyle: 'pro' });</script>
+</body>
+</html>

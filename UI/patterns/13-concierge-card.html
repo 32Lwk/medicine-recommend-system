@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>13 Concierge Card — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 高級ホテルコンシェルジュ — 白×金の上質感 */
+    :root {
+      --ui-primary: #b8860b;
+      --ui-primary-dark: #8b6914;
+      --ui-primary-soft: #faf6ed;
+      --ui-accent: #1a1a2e;
+      --ui-bg-outer: #f5f0e8;
+      --ui-bg-chat: #faf8f5;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #1a1a2e;
+      --ui-text-on-primary: #f5f0e8;
+      --ui-text: #2c2c2c;
+      --ui-text-muted: #6b6b6b;
+      --ui-border: #e8e0d4;
+      --ui-radius-md: 4px;
+      --ui-radius-lg: 4px;
+      --ui-font: "Georgia", "Times New Roman", "Hiragino Mincho ProN", serif;
+    }
+    .ui-brand h1 {
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+    .ui-brand p { font-family: system-ui, sans-serif; font-size: 0.68rem; opacity: 0.8; }
+    .ui-lang-btn, .ui-icon-btn { background: rgba(255,255,255,.12); }
+    .ui-action-btn {
+      background: transparent;
+      color: #f5f0e8;
+      border: 1px solid rgba(255,255,255,.3);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+    .ui-action-btn--primary { background: var(--ui-primary); border-color: var(--ui-primary); color: #fff; }
+    .ui-msg--user .ui-bubble {
+      background: #1a1a2e;
+      color: #f5f0e8;
+      border-radius: 4px;
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    .ui-card {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+    .ui-card-rank {
+      color: var(--ui-primary);
+      font-family: system-ui, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .ui-card-hero,
+    .ui-med-image--playful {
+      background: linear-gradient(135deg, #faf6ed, #fff);
+      border-bottom: 1px solid var(--ui-border);
+    }
+    .ui-card-score {
+      background: #1a1a2e;
+      color: #f5f0e8;
+    }
+    .ui-send { background: #1a1a2e; }
+    .ui-mic { background: var(--ui-primary-soft); color: var(--ui-primary-dark); }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'concierge', recoLayout: 'stack' });</script>
+</body>
+</html>

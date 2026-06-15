@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>16 Notion Blocks — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Notion AI — ブロック編集感・ドキュメント風 */
+    :root {
+      --ui-primary: #2383e2;
+      --ui-primary-dark: #1a6fc4;
+      --ui-primary-soft: #e8f4fd;
+      --ui-accent: #9b9a97;
+      --ui-bg-outer: #fff;
+      --ui-bg-chat: #fff;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #fff;
+      --ui-text-on-primary: #fff;
+      --ui-text: #37352f;
+      --ui-text-muted: #9b9a97;
+      --ui-border: #e9e9e7;
+      --ui-radius-sm: 3px;
+      --ui-radius-md: 3px;
+      --ui-radius-lg: 3px;
+      --ui-font: ui-sans-serif, -apple-system, "Segoe UI", "Hiragino Sans", sans-serif;
+    }
+    .ui-header {
+      color: var(--ui-text);
+      border-bottom: 1px solid var(--ui-border);
+      box-shadow: none;
+    }
+    .ui-brand h1 { font-size: 0.95rem; font-weight: 600; }
+    .ui-lang-btn, .ui-icon-btn { background: transparent; color: var(--ui-text-muted); border: 1px solid var(--ui-border); border-radius: 3px; }
+    .ui-action-btn {
+      background: transparent;
+      color: var(--ui-text);
+      border: 1px solid var(--ui-border);
+      border-radius: 3px;
+    }
+    .ui-action-btn--primary { background: var(--ui-text); color: #fff; border-color: var(--ui-text); }
+    .ui-messages { padding: 24px 32px; max-width: 720px; margin: 0 auto; width: 100%; }
+    .ui-msg--bot .ui-bubble {
+      border: none;
+      background: transparent;
+      padding: 0;
+      max-width: 100%;
+    }
+    .ui-msg--user .ui-bubble {
+      background: var(--ui-primary-soft);
+      color: var(--ui-text);
+      border: 1px solid #cce4f7;
+      border-radius: 3px;
+    }
+    .ui-reco-block > * {
+      margin-bottom: 4px;
+    }
+    .ui-reco-intro {
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 3px 0;
+      border-left: 3px solid var(--ui-text);
+      padding-left: 12px;
+      margin-bottom: 16px;
+    }
+    .ui-stack .ui-card {
+      border: 1px solid var(--ui-border);
+      border-radius: 3px;
+      box-shadow: none;
+      margin-bottom: 1px;
+      position: relative;
+      padding-left: 28px;
+    }
+    .ui-stack .ui-card::before {
+      content: "⋮⋮";
+      position: absolute;
+      left: 8px;
+      top: 14px;
+      color: var(--ui-text-muted);
+      font-size: 0.7rem;
+      cursor: grab;
+    }
+    .ui-card-body { padding: 14px 14px 14px 0; }
+    .ui-card-rank {
+      display: inline-block;
+      background: #f1f1ef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      color: var(--ui-text-muted);
+    }
+    .ui-alert {
+      border-left: 3px solid;
+      border-radius: 0;
+      background: #f7f6f3;
+      padding-left: 14px;
+    }
+    .ui-alert--danger { border-left-color: #eb5757; }
+    .ui-alert--warn { border-left-color: #f2994a; }
+    .ui-alert--info { border-left-color: var(--ui-primary); }
+    .ui-alert--caution { border-left-color: #f2c94c; }
+    .ui-feedback { background: #f7f6f3; border: 1px dashed var(--ui-border); border-radius: 3px; }
+    .ui-send { background: var(--ui-text); border-radius: 3px; }
+    .ui-textarea { border-radius: 3px; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-text); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'notion-blocks', recoLayout: 'stack' });</script>
+</body>
+</html>

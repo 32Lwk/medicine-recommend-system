@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>22 Night Pharmacy — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 24h薬局ネオン — 夜間店舗看板 aesthetic */
+    :root {
+      --ui-primary: #00ff88;
+      --ui-primary-dark: #00cc6a;
+      --ui-primary-soft: rgba(0,255,136,.12);
+      --ui-accent: #ff00aa;
+      --ui-bg-outer: #0a0a12;
+      --ui-bg-chat: #12121a;
+      --ui-bg-surface: #1a1a24;
+      --ui-bg-header: #0d0d14;
+      --ui-text: #e0e0e8;
+      --ui-text-muted: #8888a0;
+      --ui-text-on-primary: #0a0a12;
+      --ui-border: #2a2a3a;
+      --ui-bubble-bot-bg: #1a1a24;
+      --ui-bubble-user-bg: rgba(0,255,136,.2);
+      --ui-carousel-card-width: min(290px, 80vw);
+    }
+    body {
+      background: #0a0a12;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(0,255,136,.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(255,0,170,.06) 0%, transparent 40%);
+    }
+    .ui-header {
+      border-bottom: 1px solid var(--ui-border);
+      position: relative;
+    }
+    .ui-header::before {
+      content: "24H OPEN";
+      position: absolute;
+      left: 50%;
+      bottom: -1px;
+      transform: translateX(-50%) translateY(50%);
+      background: var(--ui-primary);
+      color: #0a0a12;
+      font-size: 0.55rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      padding: 2px 10px;
+      border-radius: 2px;
+      box-shadow: 0 0 12px var(--ui-primary), 0 0 24px rgba(0,255,136,.4);
+      animation: neon-flicker 4s infinite;
+    }
+    @keyframes neon-flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96% { opacity: 0.8; }
+      97% { opacity: 1; }
+      98% { opacity: 0.6; }
+    }
+    .ui-brand h1 {
+      color: var(--ui-primary);
+      text-shadow: 0 0 8px rgba(0,255,136,.6), 0 0 20px rgba(0,255,136,.3);
+      font-weight: 700;
+    }
+    .ui-brand p { color: var(--ui-accent); text-shadow: 0 0 6px rgba(255,0,170,.4); }
+    .ui-lang-btn, .ui-icon-btn { background: #1a1a24; border: 1px solid var(--ui-border); }
+    .ui-action-btn { background: #1a1a24; border: 1px solid var(--ui-border); color: var(--ui-text); }
+    .ui-action-btn--primary {
+      background: transparent;
+      color: var(--ui-primary);
+      border: 1px solid var(--ui-primary);
+      box-shadow: 0 0 8px rgba(0,255,136,.3);
+    }
+    .ui-msg--user .ui-bubble {
+      background: rgba(0,255,136,.15);
+      border: 1px solid rgba(0,255,136,.4);
+      color: var(--ui-primary);
+      box-shadow: 0 0 12px rgba(0,255,136,.15);
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 0 8px rgba(255,0,170,.08);
+    }
+    .ui-card--pro {
+      border: 1px solid var(--ui-border);
+      background: #1a1a24;
+      box-shadow: 0 0 16px rgba(0,255,136,.08), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .ui-med-badge--rank {
+      color: var(--ui-primary);
+      text-shadow: 0 0 6px rgba(0,255,136,.5);
+      background: rgba(0,255,136,.12);
+    }
+    .ui-score-ring__value { color: var(--ui-primary); }
+    .ui-score-ring__fill {
+      background: conic-gradient(
+        var(--ui-primary) calc(var(--ui-score) * 1%),
+        #2a2a3a 0
+      );
+    }
+    .ui-symptom-tag { background: rgba(0,255,136,.1); color: var(--ui-primary); border-color: rgba(0,255,136,.25); }
+    .ui-send {
+      background: var(--ui-primary);
+      color: #0a0a12;
+      box-shadow: 0 0 16px rgba(0,255,136,.4);
+    }
+    .ui-mic { background: rgba(255,0,170,.15); color: var(--ui-accent); border: 1px solid rgba(255,0,170,.3); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-accent); box-shadow: 0 0 8px rgba(255,0,170,.5); }
+    .ui-textarea, .ui-chip { background: #1a1a24; color: var(--ui-text); border-color: var(--ui-border); }
+    .ui-input-bar { background: #0d0d14; border-color: var(--ui-border); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'night-pharmacy', recoLayout: 'carousel', carouselStyle: 'pro' });</script>
+</body>
+</html>

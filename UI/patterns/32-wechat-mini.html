@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>32 WeChat Mini — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 微信ミニプログラム風 */
+    :root {
+      --ui-primary: #07c160;
+      --ui-primary-dark: #06ae56;
+      --ui-primary-soft: #e8f8ef;
+      --ui-accent: #576b95;
+      --ui-bg-outer: #ededed;
+      --ui-bg-chat: #f7f7f7;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #ededed;
+      --ui-text-on-primary: #000;
+      --ui-text: #000;
+      --ui-text-muted: #888;
+      --ui-border: #e5e5e5;
+      --ui-bubble-user-bg: #95ec69;
+      --ui-radius-sm: 4px;
+      --ui-radius-md: 8px;
+      --ui-radius-lg: 8px;
+      --focus-color: #07c160;
+    }
+    .ui-app { border: none; box-shadow: 0 0 0 1px #d9d9d9; }
+    .ui-brand h1::before { content: "● "; color: #07c160; font-size: 0.6rem; }
+    .ui-card--pro {
+      border-radius: 8px;
+      border-color: #e5e5e5;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .ui-reco-intro {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .ui-textarea { border-radius: 4px; border-color: #e5e5e5; }
+    .ui-chip { border-radius: 4px; background: #fff; border: 1px solid #e5e5e5; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #07c160; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'wechat-mini',
+      layout: 'wechat',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

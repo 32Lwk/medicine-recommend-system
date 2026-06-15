@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="💊 ·">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>11 Pharmacy Shelf — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* マツキヨ風 — 店頭棚に並ぶOTC */
+    :root {
+      --ui-primary: #e60012;
+      --ui-primary-dark: #c40010;
+      --ui-primary-soft: #fff0f0;
+      --ui-accent: #ffd700;
+      --ui-bg-outer: linear-gradient(180deg, #f5ebe0 0%, #e8dcc8 100%);
+      --ui-bg-chat: #faf6f0;
+      --ui-bg-header: #fff;
+      --ui-text-on-primary: #111;
+      --ui-text: #2c1810;
+      --ui-border: #d4c4b0;
+      --ui-radius-md: 10px;
+    }
+    body { background: var(--ui-bg-outer); }
+    .ui-header {
+      background: #fff;
+      color: #111;
+      border-bottom: 3px solid var(--ui-primary);
+      box-shadow: 0 2px 8px rgba(230,0,18,.08);
+    }
+    .ui-brand h1 { color: var(--ui-primary); font-size: 1rem; }
+    .ui-brand p { color: #888; }
+    .ui-lang-btn, .ui-icon-btn { background: #f5f5f5; color: #333; }
+    .ui-action-btn { background: #f0f0f0; color: #333; }
+    .ui-action-btn--primary { background: var(--ui-primary); color: #fff; }
+    .ui-msg--user .ui-bubble { background: var(--ui-primary); color: #fff; }
+    .ui-msg--bot .ui-bubble { border-color: #e8dcc8; }
+    .ui-shelf-row {
+      background: linear-gradient(180deg, #e8dcc8 0%, #c4a882 6%, #8b6914 6%, #a08060 100%);
+    }
+    .ui-card { border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+    .ui-card-rank { color: var(--ui-primary); }
+    .ui-card-hero,
+    .ui-med-image--playful { background: linear-gradient(135deg, #fff5f5, #fff); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'pharmacy-shelf', recoLayout: 'shelf' });</script>
+</body>
+</html>

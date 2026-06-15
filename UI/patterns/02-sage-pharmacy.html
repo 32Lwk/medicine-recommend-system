@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="🌿 ✨ ·">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>02 Sage Pharmacy — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* /about サイトと統一 — セージ・パンフレット調 */
+    :root {
+      --ui-primary: #2e7d32;
+      --ui-primary-dark: #1b5e20;
+      --ui-primary-soft: #e8f2ec;
+      --ui-accent: #5a8f7b;
+      --ui-bg-outer: linear-gradient(180deg, #e8f2ec 0%, #eef4f0 48%, #dce8e0 100%);
+      --ui-bg-chat: #f4f8f5;
+      --ui-bg-header: #2e7d32;
+      --ui-border: #c5d9cc;
+      --ui-radius-lg: 20px;
+      --ui-font: "Hiragino Mincho ProN", "Yu Mincho", "BIZ UDPGothic", serif;
+    }
+    .ui-brand h1 { font-weight: 600; letter-spacing: 0.02em; }
+    .ui-card { border-color: #c5d9cc; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'sage-pharmacy', recoLayout: 'stack' });</script>
+</body>
+</html>

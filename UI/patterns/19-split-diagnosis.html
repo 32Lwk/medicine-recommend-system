@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>19 Split Diagnosis — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Ada Health / K Health — 症状タイムライン×推奨の分割UI */
+    :root {
+      --ui-primary: #0066cc;
+      --ui-primary-dark: #004d99;
+      --ui-primary-soft: #e6f0fa;
+      --ui-accent: #00a86b;
+      --ui-bg-outer: #f0f4f8;
+      --ui-bg-chat: #fafbfc;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #0066cc;
+      --ui-text-on-primary: #fff;
+      --ui-text: #1a2b3c;
+      --ui-text-muted: #5a6b7c;
+      --ui-border: #d8e2ec;
+      --ui-max-width: 1100px;
+    }
+    .ui-split-pane--left {
+      background: linear-gradient(180deg, #f8fafc 0%, #eef4f8 100%);
+    }
+    .ui-timeline-title { color: var(--ui-primary); }
+    .ui-timeline-tag { background: var(--ui-primary-soft); color: var(--ui-primary); }
+    .ui-msg--user .ui-bubble { background: var(--ui-primary); }
+    .ui-card {
+      border-left: 4px solid var(--ui-accent);
+      box-shadow: 0 2px 8px rgba(0,102,204,.08);
+    }
+    .ui-card-rank { color: var(--ui-primary); }
+    .ui-card-score { background: var(--ui-primary-soft); color: var(--ui-primary-dark); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>UIShell.mount('app', { theme: 'split-diagnosis', layout: 'split', recoLayout: 'stack' });</script>
+</body>
+</html>

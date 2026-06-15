@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>医薬品チャット UI パターン一覧</title>
+  <link rel="icon" href="../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="shared/shell.css">
+  <style>
+    body.ui-gallery {
+      background: linear-gradient(180deg, #e8f2ec 0%, #eef4f0 100%);
+    }
+    .gallery {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    .gallery h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      color: #1b5e20;
+    }
+    .gallery-lead {
+      color: #546e7a;
+      margin: 0 0 24px;
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .feature-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .feature-tags span {
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      background: #fff;
+      border: 1px solid #c5d9cc;
+      border-radius: 999px;
+      color: #37474f;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card-link {
+      display: block;
+      background: #fff;
+      border: 1px solid #c5d9cc;
+      border-radius: 16px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 125, 50, 0.12);
+    }
+    .card-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #2e7d32;
+      letter-spacing: 0.06em;
+    }
+    .card-link h2 {
+      margin: 6px 0 8px;
+      font-size: 1.05rem;
+    }
+    .card-link p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: #607d8b;
+      line-height: 1.55;
+    }
+    .card-meta {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .card-meta em {
+      font-style: normal;
+      font-size: 0.68rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .card-meta em.carousel { background: #e8f9ee; color: #05a847; }
+    .card-meta em.mobile { background: #e3f2fd; color: #1565c0; }
+    .card-meta em.bold { background: #fce4ec; color: #c2185b; }
+    .card-meta em.layout { background: #f3e5f5; color: #7b1fa2; }
+    .card-meta em.platform { background: #e8f5e9; color: #2e7d32; }
+    .card-meta em.health { background: #e3f2fd; color: #0d47a1; }
+    .card-meta em.trust { background: #e8f5e9; color: #1b5e20; }
+    .section-title {
+      margin: 36px 0 16px;
+      font-size: 1.1rem;
+      color: #37474f;
+      font-weight: 700;
+    }
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #c5d9cc;
+      font-size: 0.8rem;
+      color: #78909c;
+    }
+  </style>
+</head>
+<body class="ui-gallery app-scrollbar">
+  <main class="gallery">
+    <h1>医薬品チャット UI パターン</h1>
+    <p class="gallery-lead">
+      ユーザー向け画面の刷新案です。全<strong>38パターン</strong>は静的HTMLモックアップ（バックエンド非接続）で、
+      現行機能をすべて配置したデモ状態で確認できます。推奨医薬品は <strong>縦スタック</strong>・
+      <strong>LINE風カルーセル</strong>・<strong>棚</strong>・<strong>ストーリー</strong>・<strong>比較表</strong>・
+      <strong>商品グリッド</strong> など複数レイアウトに対応しています。
+    </p>
+    <div class="feature-tags">
+      <span>4言語切替</span>
+      <span>ℹ️ 情報モーダル</span>
+      <span>👤 ユーザー情報</span>
+      <span>📋 属性入力</span>
+      <span>🎤 音声入力</span>
+      <span>👍👎 フィードバック</span>
+      <span>👨‍⚕️ 薬剤師要請</span>
+      <span>🔄 新セッション / 履歴クリア</span>
+      <span>オンボーディング</span>
+      <span>スコア内訳・警告</span>
+      <span>季節パーティクル</span>
+    </div>
+    <div class="grid">
+      <a class="card-link" href="patterns/01-classic-green.html">
+        <div class="card-num">01</div>
+        <h2>Classic Green</h2>
+        <p>現行UIの洗練版。緑ヘッダー＋紫グラデ外枠。移行コスト最小。</p>
+        <div class="card-meta"><em>現行準拠</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/02-sage-pharmacy.html">
+        <div class="card-num">02</div>
+        <h2>Sage Pharmacy</h2>
+        <p>/about と統一したセージ系。信頼感・薬局パンフレット調。</p>
+        <div class="card-meta"><em>ブランド統一</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/03-minimal-zen.html">
+        <div class="card-num">03</div>
+        <h2>Minimal Zen</h2>
+        <p>余白と細線のみ。情報過多を抑え、高齢者にも読みやすい。</p>
+        <div class="card-meta"><em>ミニマル</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/04-warm-care.html">
+        <div class="card-num">04</div>
+        <h2>Warm Care</h2>
+        <p>コーラル＋クリーム。不安を和らげる温かみのあるトーン。</p>
+        <div class="card-meta"><em>エモーショナル</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/05-line-carousel.html">
+        <div class="card-num">05</div>
+        <h2>LINE Carousel</h2>
+        <p>LINE Flex 準拠の横スワイプ。プロカード（スコアリング・症状チップ）で候補比較。</p>
+        <div class="card-meta"><em class="carousel">カルーセル</em><em>LINE連携</em></div>
+      </a>
+      <a class="card-link" href="patterns/06-dark-clinical.html">
+        <div class="card-num">06</div>
+        <h2>Dark Clinical</h2>
+        <p>ダークモード・夜間利用。医療プロ向けの落ち着いた配色。</p>
+        <div class="card-meta"><em>ダーク</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/07-glass-morphism.html">
+        <div class="card-num">07</div>
+        <h2>Glass Morphism</h2>
+        <p>半透明＋ぼかし。モダンで軽やかな印象。</p>
+        <div class="card-meta"><em>モダン</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/08-compact-mobile.html">
+        <div class="card-num">08</div>
+        <h2>Compact Mobile</h2>
+        <p>下部ナビ＋狭幅。スマホ/LINEミニアプリ想定の1カラムUI。</p>
+        <div class="card-meta"><em class="mobile">モバイル</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/09-neubrutal.html">
+        <div class="card-num">09</div>
+        <h2>Neubrutal</h2>
+        <p>太枠・強コントラスト。若年層向け・差別化重視。</p>
+        <div class="card-meta"><em>個性的</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/10-accessibility-first.html">
+        <div class="card-num">10</div>
+        <h2>Accessibility First</h2>
+        <p>大文字・高コントラスト・44pxタップ領域。WCAG意識。</p>
+        <div class="card-meta"><em>a11y</em><em>スタック</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">プロフェッショナルカルーセル（24）</h2>
+    <div class="grid" style="margin-bottom: 8px;">
+      <a class="card-link" href="patterns/24-pharma-carousel-pro.html" style="border-color: #2e7d6e; background: linear-gradient(135deg, #fff 0%, #f0f7f5 100%);">
+        <div class="card-num">24 ★</div>
+        <h2>Pharma Carousel Pro</h2>
+        <p>OTC推奨向けフラッグシップ。横スクロール・スコアリング・症状チップ・詳細折りたたみ。薬局品質の信頼感。</p>
+        <div class="card-meta"><em class="carousel">カルーセル pro</em><em>推奨</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">クリエイティブ刷新案（11〜23）</h2>
+    <p class="gallery-lead" style="margin-top:0;margin-bottom:20px;font-size:0.88rem;">
+      フレームワーク級の大胆なUIコンセプト。LINE・Apple Health・ChatGPT・Duolingo・マツキヨ等から視覚的インスピレーションを得た実験パターンです。
+    </p>
+    <div class="grid">
+      <a class="card-link" href="patterns/11-pharmacy-shelf.html">
+        <div class="card-num">11</div>
+        <h2>Pharmacy Shelf</h2>
+        <p>OTCを店頭棚に並べた表示。ドラッグストアアプリ（マツキヨ風）の商品棚体験。</p>
+        <div class="card-meta"><em class="layout">棚レイアウト</em><em class="bold">実験的</em></div>
+      </a>
+      <a class="card-link" href="patterns/12-story-swipe.html">
+        <div class="card-num">12</div>
+        <h2>Story Swipe</h2>
+        <p>Instagram Stories風の縦スワイプで候補を1枚ずつ比較。</p>
+        <div class="card-meta"><em class="layout">ストーリー</em><em class="mobile">モバイル</em></div>
+      </a>
+      <a class="card-link" href="patterns/13-concierge-card.html">
+        <div class="card-num">13</div>
+        <h2>Concierge Card</h2>
+        <p>高級ホテルコンシェルジュの白×金。上質なホワイトグローブ体験。</p>
+        <div class="card-meta"><em class="bold">ラグジュアリー</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/14-retro-terminal.html">
+        <div class="card-num">14</div>
+        <h2>Retro Terminal</h2>
+        <p>グリーンフォスファCRT・CLI美学。レトロだがコントラストは維持。</p>
+        <div class="card-meta"><em class="bold">レトロ</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/15-apple-health.html">
+        <div class="card-num">15</div>
+        <h2>Apple Health</h2>
+        <p>iOSヘルスアプリ風のクリーンカード。SF Pro調の余白と角丸。</p>
+        <div class="card-meta"><em class="carousel">カルーセル</em><em>iOS風</em></div>
+      </a>
+      <a class="card-link" href="patterns/16-notion-blocks.html">
+        <div class="card-num">16</div>
+        <h2>Notion Blocks</h2>
+        <p>Notion AI風ブロック編集感。ドラッグ可能なドキュメント体験。</p>
+        <div class="card-meta"><em>ブロック</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/17-duolingo-playful.html">
+        <div class="card-num">17</div>
+        <h2>Duolingo Playful</h2>
+        <p>ゲーミフィケーション・マスコット・太枠ボタン。学習アプリの親しみやすさ。</p>
+        <div class="card-meta"><em class="bold">プレイフル</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/18-prescription-label.html">
+        <div class="card-num">18</div>
+        <h2>Prescription Label</h2>
+        <p>調剤ラベル・薬袋のモノクロ typography。公的書類の信頼感。</p>
+        <div class="card-meta"><em>ラベル</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/19-split-diagnosis.html">
+        <div class="card-num">19</div>
+        <h2>Split Diagnosis</h2>
+        <p>左に症状タイムライン、右にチャット。Ada/K Health風の分割診断UI。</p>
+        <div class="card-meta"><em class="layout">分割</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/20-floating-orb.html">
+        <div class="card-num">20</div>
+        <h2>Floating Orb</h2>
+        <p>AIオーブ＋最小クローム。ChatGPTボイスモードの没入感。</p>
+        <div class="card-meta"><em class="layout">オーブ</em><em class="mobile">モバイル</em></div>
+      </a>
+      <a class="card-link" href="patterns/21-manga-panel.html">
+        <div class="card-num">21</div>
+        <h2>Manga Panel</h2>
+        <p>漫画コマ・吹き出し・太枠。日本のポップカルチャー表現。</p>
+        <div class="card-meta"><em class="bold">漫画</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/22-night-pharmacy.html">
+        <div class="card-num">22</div>
+        <h2>Night Pharmacy</h2>
+        <p>24時間薬局のネオン看板 aesthetic。夜間利用の雰囲気。</p>
+        <div class="card-meta"><em class="bold">ネオン</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/23-paper-receipt.html">
+        <div class="card-num">23</div>
+        <h2>Paper Receipt</h2>
+        <p>感熱紙レシート風。細字モノクロ・破線区切りの印刷体験。</p>
+        <div class="card-meta"><em>レシート</em><em>スタック</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">ヘルスケア・テレメディスン（25〜28）</h2>
+    <div class="grid">
+      <a class="card-link" href="patterns/25-babylon-telehealth.html">
+        <div class="card-num">25</div>
+        <h2>Babylon Telehealth</h2>
+        <p>ビデオ診療準備UI・医療ブルー・信頼バッジ。オンライン診療連携想定。</p>
+        <div class="card-meta"><em class="health">テレヘルス</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/26-symptom-bodymap.html">
+        <div class="card-num">26</div>
+        <h2>Symptom Body Map</h2>
+        <p>人体図タップゾーン＋チャット。視覚的症状入力で直感的。</p>
+        <div class="card-meta"><em class="layout">ボディマップ</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/27-drug-facts-label.html">
+        <div class="card-num">27</div>
+        <h2>Drug Facts Label</h2>
+        <p>FDA/薬情風の法定表示レイアウト。規制準拠感・信頼性重視。</p>
+        <div class="card-meta"><em class="trust">薬情表示</em><em>ラベル</em></div>
+      </a>
+      <a class="card-link" href="patterns/28-comparison-matrix.html">
+        <div class="card-num">28</div>
+        <h2>Comparison Matrix</h2>
+        <p>3薬を表形式で横比較。スペック表UIでデータ重視の意思決定を支援。</p>
+        <div class="card-meta"><em class="layout">比較表</em><em>データ重視</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">コマース・ディスカバリー（29〜30）</h2>
+    <div class="grid">
+      <a class="card-link" href="patterns/29-ecommerce-grid.html">
+        <div class="card-num">29</div>
+        <h2>E-commerce Grid</h2>
+        <p>Amazon/楽天風の商品グリッド＋詳細ドロワー。EC購買体験との親和性。</p>
+        <div class="card-meta"><em class="layout">グリッド</em><em>EC風</em></div>
+      </a>
+      <a class="card-link" href="patterns/30-single-focus-hero.html">
+        <div class="card-num">30</div>
+        <h2>Single Focus Hero</h2>
+        <p>Spotify/Apple Music風。第1候補を大きく深掘り、他はサムネイル比較。</p>
+        <div class="card-meta"><em class="layout">ヒーロー</em><em class="bold">没入型</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">プラットフォーム連携（31〜32）</h2>
+    <div class="grid">
+      <a class="card-link" href="patterns/31-whatsapp-native.html">
+        <div class="card-num">31</div>
+        <h2>WhatsApp Native</h2>
+        <p>WhatsApp緑・吹き出し・オンラインステータス。メッセージングアプリ内展開想定。</p>
+        <div class="card-meta"><em class="platform">WhatsApp</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/32-wechat-mini.html">
+        <div class="card-num">32</div>
+        <h2>WeChat Mini</h2>
+        <p>微信ミニプログラム風。中国市場・スーパーアプリ内ミニアプリ展開想定。</p>
+        <div class="card-meta"><em class="platform">WeChat</em><em class="mobile">ミニプログラム</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">アクセシビリティ・デバイス（33〜34）</h2>
+    <div class="grid">
+      <a class="card-link" href="patterns/33-pictogram-elder.html">
+        <div class="card-num">33</div>
+        <h2>Pictogram Elder</h2>
+        <p>絵文字ではなくピクトグラム＋特大文字。高齢者・視認性最優先。</p>
+        <div class="card-meta"><em>a11y</em><em>ピクトグラム</em></div>
+      </a>
+      <a class="card-link" href="patterns/34-wearable-compact.html">
+        <div class="card-num">34</div>
+        <h2>Wearable Compact</h2>
+        <p>Apple Watch風の円形・極小画面。ウェアラブル端末向けコンパクトUI。</p>
+        <div class="card-meta"><em class="layout">ウェアラブル</em><em class="mobile">円形</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">ウェルネス・信頼・システム（35〜38）</h2>
+    <div class="grid">
+      <a class="card-link" href="patterns/35-headspace-calm.html">
+        <div class="card-num">35</div>
+        <h2>Headspace Calm</h2>
+        <p>呼吸アニメ・安心感。医療的すぎないソフトな入口で不安を軽減。</p>
+        <div class="card-meta"><em>ウェルネス</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/36-pharmacist-trust.html">
+        <div class="card-num">36 ★</div>
+        <h2>Pharmacist Trust</h2>
+        <p>薬剤師顔写真・資格・監修表示が前面。OTC相談の信頼最大化。</p>
+        <div class="card-meta"><em class="trust">薬剤師監修</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/37-clinical-swiss.html">
+        <div class="card-num">37</div>
+        <h2>Clinical Swiss</h2>
+        <p>スイスデザイン/バウハウス。グリッド・比較表・データ重視のクリニカル美学。</p>
+        <div class="card-meta"><em class="layout">比較表</em><em>スイス</em></div>
+      </a>
+      <a class="card-link" href="patterns/38-material-you-3.html">
+        <div class="card-num">38</div>
+        <h2>Material You 3</h2>
+        <p>Google MD3 dynamic color・elevated cards。Android/クロスプラットフォーム向け。</p>
+        <div class="card-meta"><em>Material 3</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+    </div>
+    <footer>
+      開き方: ブラウザで <code>UI/index.html</code> を開くか、<code>python -m http.server 8080</code> で <code>/UI/</code> にアクセス。<br>
+      共有シェル: <code>UI/shared/shell.css</code> · <code>shell.js</code>（本番組み込み前のプロトタイプ）
+    </footer>
+  </main>
+</body>
+</html>

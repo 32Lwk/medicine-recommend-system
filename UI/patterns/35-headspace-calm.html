@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="· ○">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>35 Headspace Calm — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* Headspace — 呼吸・安心感・ソフトアニメ */
+    :root {
+      --ui-primary: #f47c3c;
+      --ui-primary-dark: #e05a1a;
+      --ui-primary-soft: #fff4ed;
+      --ui-accent: #7eb8da;
+      --ui-bg-outer: linear-gradient(180deg, #fef6f0 0%, #e8f4fc 50%, #f0e8f8 100%);
+      --ui-bg-chat: #fefaf7;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: #f47c3c;
+      --ui-text-on-primary: #fff;
+      --ui-text: #3d3d3d;
+      --ui-text-muted: #7a7a7a;
+      --ui-border: #f0ddd0;
+      --ui-bubble-user-bg: #f47c3c;
+      --ui-radius-md: 20px;
+      --ui-radius-lg: 24px;
+      --focus-color: #f47c3c;
+    }
+    .ui-app {
+      border: none;
+      box-shadow: 0 8px 40px rgba(244, 124, 60, 0.12);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    .ui-header { border-radius: 24px 24px 0 0; }
+    .ui-brand h1 { font-weight: 600; letter-spacing: 0.02em; }
+    .ui-bubble { border-radius: 20px; }
+    .ui-msg--bot .ui-bubble {
+      border: none;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(244, 124, 60, 0.08);
+    }
+    .ui-reco-block::before {
+      content: "";
+      display: block;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #fff4ed 0%, #f47c3c 60%, #e05a1a 100%);
+      animation: ui-breathe 4s ease-in-out infinite;
+    }
+    @keyframes ui-breathe {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    .ui-card--pro {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(126, 184, 218, 0.15);
+      background: linear-gradient(180deg, #fff 0%, #fef6f0 100%);
+    }
+    .ui-chip {
+      border-radius: 20px;
+      background: #fff4ed;
+      border: 1px solid #f0ddd0;
+      color: #e05a1a;
+    }
+    .ui-send {
+      background: linear-gradient(135deg, #f47c3c 0%, #e05a1a 100%);
+      border-radius: 50%;
+    }
+    .ui-mic { background: #fff4ed; color: #f47c3c; border-radius: 50%; }
+    .ui-particles { opacity: 0.2; }
+    .ui-dev-badge { background: #f47c3c; }
+    @media (prefers-reduced-motion: reduce) {
+      .ui-reco-block::before { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'headspace-calm',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>
