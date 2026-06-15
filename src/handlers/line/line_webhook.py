@@ -22,7 +22,7 @@ from config.line_config import (
     LINE_CHANNEL_SECRET,
     LINE_WEBHOOK_ENABLED,
 )
-from src.handlers.line.line_dedup import mark_webhook_event_seen
+from src.handlers.line.line_dedup import extract_webhook_dedup_key, mark_webhook_event_seen
 from src.handlers.line.line_message_handler import process_line_events
 
 logger = logging.getLogger(__name__)
@@ -64,9 +64,8 @@ def _schedule_line_events(events: list[dict[str, Any]]) -> None:
     for event in events:
         if not isinstance(event, dict):
             continue
-        event_id = event.get("webhookEventId")
-        if mark_webhook_event_seen(event_id):
-            logger.info("LINE duplicate webhook event skipped id=%s", event_id)
+        dedup_key = extract_webhook_dedup_key(event)
+        if mark_webhook_event_seen(dedup_key):
             continue
         filtered.append(event)
     if not filtered:

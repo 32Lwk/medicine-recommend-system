@@ -1,6 +1,38 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月15日**（LINE フィードバック永続化・管理画面手動返信 Push・評価 postback 重複抑制）
+**最終更新日: 2026年6月15日**（LINE 二重返信防止・Reply API 優先配信）
+
+---
+
+## 2026年6月15日 — LINE 二重返信防止・Reply API 優先配信
+
+### 概要
+
+- **Webhook 去重のワーカー間共有**: `line_dedup.py` をファイルマーカー（`O_EXCL`）方式に拡張。Gunicorn 複数ワーカー・LINE Webhook リトライ時の同一イベント二重処理を防止。去重キーは `webhookEventId` → `message.id` → `replyToken` の優先順。
+- **統一配信ロジック（Reply 優先）**: `line_delivery.py` を新設。イベント `timestamp` から 22 秒以内なら Reply API を先に試行し、失効時のみ Push へフォールバック。同一処理内の二重配信は `LineDeliveryContext.delivered` で抑止。
+- **段階配信の二重 Push 修正**: `deliver_final_line_messages` で Reply 失敗後の Push 成功時に full bundle を再送していたバグを修正。フォールバック時は `reply_token=None` + `force_delivery=True` で 1 回のみ配信。
+- **即時応答の Reply 優先化**: follow / グループ非対応 / 非テキスト応答も `deliver_line_messages` 経由に統一（Reply 失敗時 Push フォールバック）。
+- **イベント timestamp の配信コンテキスト連携**: `_process_text_message` が Webhook イベントの `timestamp` を `LineDeliveryContext` に渡し、reply token 有効判定に利用。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_delivery.py` | Reply 優先・二重送信防止の統一配信 |
+| `tests/line/test_line_dedup.py` | 去重キー抽出・ファイル去重 |
+| `tests/line/test_line_delivery.py` | Reply 優先・Push フォールバック・重複抑止 |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/handlers/line/line_dedup.py` | ワーカー間ファイル去重・`extract_webhook_dedup_key` |
+| `src/handlers/line/line_message_handler.py` | 統一配信・timestamp 連携・即時応答 Reply 優先 |
+| `src/handlers/line/line_progressive_delivery.py` | 二重 Push 修正・`delivered` / `event_timestamp_ms` |
+| `src/handlers/line/line_webhook.py` | 去重キー抽出の利用 |
+| `tests/line/test_line_message_handler.py` | イベント timestamp 付きテスト |
+| `tests/line/test_line_progressive_delivery.py` | Push 後 full bundle 非送信の回帰 |
+| `tests/line/test_line_webhook.py` | `LINE_LOCK_DIR` 分離 |
 
 ---
 

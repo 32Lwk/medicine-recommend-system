@@ -133,10 +133,11 @@ def test_line_webhook_text_event_schedules_background(monkeypatch):
     assert scheduled[0]["type"] == "message"
 
 
-def test_schedule_line_events_starts_background_thread(monkeypatch):
+def test_schedule_line_events_starts_background_thread(monkeypatch, tmp_path):
     import src.handlers.line.line_dedup as line_dedup
     import src.handlers.line.line_webhook as line_webhook
 
+    monkeypatch.setenv("LINE_LOCK_DIR", str(tmp_path))
     line_dedup.reset_dedup_cache_for_tests()
     started: list = []
 

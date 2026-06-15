@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.handlers.line.line_message_handler import (
@@ -87,6 +88,7 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
+        patch("src.handlers.line.line_delivery.get_line_channel_access_token", return_value="token"),
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
         patch("src.handlers.line.line_message_handler.resolve_latest_bot_message", return_value=bot_msg),
@@ -104,7 +106,14 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         mock_post.return_value = ({"status": "ok"}, 200)
         mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
         mock_monitor.return_value = MagicMock()
-        asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
+        asyncio.run(
+            _process_text_message(
+                "Utest",
+                "頭が痛い",
+                "reply-tok",
+                event={"timestamp": int(time.time() * 1000), "webhookEventId": "evt-reply-1"},
+            )
+        )
 
     mock_loading.assert_awaited_once()
     mock_reply.assert_awaited_once()
@@ -248,6 +257,7 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
         patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock) as mock_push,
+        patch("src.handlers.line.line_delivery.get_line_channel_access_token", return_value="token"),
         patch("src.handlers.line.line_message_handler.prime_line_session") as mock_prime,
         patch("src.handlers.line.line_dev_triggers.try_line_dev_flex_preview", return_value=preview_bot),
         patch("src.handlers.line.line_message_handler.handle_chat_post_async") as mock_post,
@@ -259,7 +269,14 @@ def test_process_text_message_dev_preview_replies_once(monkeypatch):
         patch("src.handlers.line.line_feedback._persist_pending_map"),
     ):
         mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
-        asyncio.run(_process_text_message("Utest", "mrcdevline00000001", "reply-tok"))
+        asyncio.run(
+            _process_text_message(
+                "Utest",
+                "mrcdevline00000001",
+                "reply-tok",
+                event={"timestamp": int(time.time() * 1000), "webhookEventId": "evt-preview-1"},
+            )
+        )
 
     mock_post.assert_not_called()
     mock_loading.assert_awaited_once()
@@ -279,8 +296,15 @@ def test_deliver_falls_back_to_push_when_reply_fails(monkeypatch):
     with (
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock, return_value=False),
         patch("src.handlers.line.line_message_handler.push_messages", new_callable=AsyncMock, return_value=True) as mock_push,
+        patch("src.handlers.line.line_delivery.get_line_channel_access_token", return_value="token"),
     ):
-        asyncio.run(_deliver_line_messages("Utest", flex, reply_token="tok"))
+        asyncio.run(
+            _deliver_line_messages(
+                "Utest",
+                flex,
+                reply_token="tok",
+            )
+        )
 
     mock_push.assert_awaited_once()
     assert len(mock_push.await_args.args[1]) == 1
