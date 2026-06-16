@@ -1,6 +1,78 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月15日**（LINE 二重返信防止・Reply API 優先配信）
+**最終更新日: 2026年6月16日**（本番チャット 54 Sage Terrace UI 移行の試行とロールバック）
+
+---
+
+## 2026年6月16日 — 本番チャット 54 Sage Terrace UI 移行の試行とロールバック
+
+### 概要
+
+本番チャット（`templates/index.html` / `static/js/main.js` 等）へ **54 Sage Terrace** プロトタイプの UI（Toolbar ヘッダー・コンパクト安全レール・Carousel Pro 推奨・テーマ設定など）を移行する計画に沿って実装を進めたが、ヘッダー表示崩れ・入力バー非応答・送信ボタン押下時のレイアウト破損などが発生した。**本番反映は見送り、当該セッション内の変更はすべてロールバック**し、`origin/main` 時点の本番 UI に戻した。
+
+> **現在の本番チャット UI は移行前の状態のまま。** 以下は試行時に行った作業の記録である。
+
+### 計画の要点（ユーザー確認済み）
+
+| 項目 | 内容 |
+|------|------|
+| 範囲 | チャット画面全体（ヘッダー・安全レール・メッセージ・推奨・入力・モーダル） |
+| リセット | 「会話をリセット」1 ボタン + 確認ダイアログ |
+| テーマ | CSS 変数ベース。Sage Terrace / Classic Green のプリセット切替（設定画面） |
+| 装飾 | 季節画像・パーティクルは設定 ON/OFF、**初期 OFF** |
+| 推奨カード | `message.diagnosis` JSON からクライアントで Carousel Pro 描画 |
+| 方針 | `UIShell.mount()` 全置換はせず、既存 ID・JS フックを維持 |
+
+### 試行時に追加したファイル（ロールバックで削除済み）
+
+| パス | 内容 |
+|------|------|
+| `static/css/chat-shell.css` | 54 由来の Toolbar・安全レール・吹き出し・Carousel・入力バー等のスタイル |
+| `static/js/display_preferences.js` | テーマプリセット・季節装飾・パーティクルの `localStorage` 管理 |
+| `static/js/safety_rail.js` | コンパクト安全レール（`#sessionSafetyRail`）の描画 |
+| `static/js/recommendation_cards.js` | `diagnosis` JSON から Carousel Pro HTML を生成 |
+
+### 試行時に変更したファイル（ロールバックで復元済み）
+
+| パス | 内容 |
+|------|------|
+| `templates/index.html` | `ui-header--toolbar` ヘッダー、コンパクト入力バー、新 CSS/JS 読み込み、挨拶吹き出し |
+| `static/js/main.js` | リセット統合、Carousel 描画、設定 UI 拡張、ストリーミング昇格、送信ボタン状態管理 |
+| `static/css/main.css` | レガシー `.chat-header` との競合整理 |
+| `static/css/scrollbar.css` | カルーセル・安全レール・モーダル body への `app-scrollbar` 追加 |
+| `static/js/easter-eggs.js` | パーティクル表示を `displayPrefs.particleEffects` と連動 |
+| `src/handlers/chat/chat_recommendation_flow.py` | 推奨 medicine HTML の二重表示防止（プレースホルダ化） |
+| `UI/README.md`, `UI/index.html`, `UI/shared/shell.css`, `UI/shared/shell.js` | プロトタイプ側の調整（本番移行作業に伴う変更） |
+
+### 試行時に追加した UI プロトタイプ（ロールバックで削除済み）
+
+`UI/patterns/39-symptom-wizard.html` ～ `56-noir-apothecary.html`（計 18 ファイル）
+
+### 発生した不具合と対処（試行中）
+
+1. **`chat-shell.css` の構文エラー**  
+   `.ui-header--session` / `.ui-input-bar` / `.ui-textarea:focus` の閉じ括弧 `}` 欠落により、後続スタイルが無効化。ヘッダー 2 行化・入力バー非応答の一因となった。
+
+2. **ヘッダー（`ui-header--toolbar`）のレイアウト崩れ**  
+   `main.css` のレガシーグリッド（`header-lang` 等）と新エリア名（`lang` / `brand` / `toolbar`）の不一致。`grid-area` の `!important` 上書きで暫定対応。
+
+3. **入力バー（`ui-input-bar--compact`）が反応しない**  
+   上記 CSS 破損に加え、装飾レイヤーとの `z-index` / `pointer-events` の調整が必要だった。
+
+4. **送信ボタン（`.ui-send`）押下時のレイアウト破損**  
+   マイクと共通の `width: 38px` 指定と、送信中の `innerHTML = '⏳ 処理中...'` によりテキストがはみ出し。`setSubmitButtonBusy()` と送信ボタン専用 CSS で暫定対応。
+
+### ロールバック
+
+- `git restore` により変更済み追跡ファイルを `HEAD`（`7bd2e44`）に復元。
+- 上記新規ファイル・`UI/patterns/39`～`56` を削除。
+- **コミット・プッシュ対象のコード変更はなし**（本エントリと `CHANGELOG.md` のみをリポジトリに反映）。
+
+### 今後の再着手時の注意
+
+- `chat-shell.css` 抽出時は **括弧の整合**を必ず検証すること（`node` 等で brace balance チェック推奨）。
+- 送信ボタンはマイクと **サイズ指定を分離**し、送信中ラベルは短い文言 + CSS クラスで表現すること。
+- 本番移行は **フェーズごとにブラウザ QA** 後にマージする運用が安全。
 
 ---
 
