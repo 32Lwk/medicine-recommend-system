@@ -1,6 +1,6 @@
 # ユーザー向け UI パターン（プロトタイプ）
 
-医薬品チャットツールのユーザー画面刷新案。**38パターン**の静的HTMLモックアップです。
+医薬品チャットツールのユーザー画面刷新案。**56パターン**の静的HTMLモックアップです。
 
 ## 確認方法
 
@@ -87,6 +87,58 @@ python -m http.server 8080
 | 37 | `patterns/37-clinical-swiss.html` | スイスタイポグラフィ / バウハウス | **比較表（matrix）** |
 | 38 | `patterns/38-material-you-3.html` | Google Material Design 3 | カルーセル |
 
+### UX最適化・新規案（39〜46）— 使いやすさ・わかりやすさ重視
+
+| # | ファイル | 設計思想 | レイアウト |
+|---|----------|----------|------------|
+| 39 | `patterns/39-symptom-wizard.html` | 4ステップ進捗を常時表示（迷子防止） | **ウィザード（wizard）** + カルーセル |
+| 40 | `patterns/40-safety-rail.html` | 禁忌・属性を推奨より上に固定 | **安全レール（safety）** + カルーセル |
+| 41 | `patterns/41-explainable-path.html` | ルールベース判断過程の可視化 | **説明パネル（explain）** + ヒーロー |
+| 42 | `patterns/42-recovery-voice.html` | 体調不良時：大文字・音声優先・装飾最小 | **リカバリー（recovery）** + ヒーロー |
+| 43 | `patterns/43-family-profiles.html` | 家族プロファイル切替・年齢禁忌の文脈化 | **家族（family）** + カルーセル |
+| 44 | `patterns/44-triage-severity.html` | 重症度で受診/OTCを分岐 | **トリアージ（triage）** + スタック |
+| 45 | `patterns/45-checklist-first.html` | 推奨前の必須属性チェックリスト | **チェックリスト（checklist）** + カルーセル |
+| 46 | `patterns/46-trust-hybrid.html` | **本番統合推奨**（40+36+39+24） | 複合ストリップ + カルーセル pro |
+
+### ヘッダー刷新案（47〜53）— 状況に応じたヘッダー設計
+
+従来、ほぼ全パターンで同一の2段ヘッダー（言語・タイトル・5アクションボタン）が使われていました。`headerStyle` オプションで切替可能です。
+
+| # | ファイル | headerStyle | 設計思想 |
+|---|----------|-------------|----------|
+| 47 | `patterns/47-header-toolbar.html` | `toolbar` | **本番Web推奨** — 1行56px・アイコン操作・段階サブタイトル |
+| 48 | `patterns/48-header-session.html` | `session` | 年齢・アレルギー等をヘッダー中央に常時表示 |
+| 49 | `patterns/49-header-overflow.html` | `overflow` | ☰ メニューに操作を集約、チャット領域最大化 |
+| 50 | `patterns/50-header-floating.html` | `floating` | 48pxグラスヘッダー。体調不良時の最小クローム |
+| 51 | `patterns/51-header-pharmacy.html` | `pharmacy` | 薬局相談窓口＋監修バッジ |
+| 52 | `patterns/52-header-contextual.html` | `contextual` | ステップ連動タイトル＋戻るボタン |
+| 53 | `patterns/53-header-smart.html` | `smart` | 1行・セッションピル・薬剤師CTA・⋯メニュー |
+
+### Toolbar 統合・おしゃれ案（54〜56）— 47 を軸にした本番仕上げ
+
+`headerStyle: 'toolbar'` 固定。`hybridStrips` でストリップを重ねる。
+
+| # | ファイル | 組み合わせ | 雰囲気 |
+|---|----------|-----------|--------|
+| 54 | `patterns/54-sage-terrace.html` | 47 + 40 Safety(compact) + 24 Carousel | 本番文言・コンパクト入力・パーソナルアドバイス・スコア内訳折りたたみ |
+| 55 | `patterns/55-glass-luminous.html` | 47 + 07 Glass + 39 Wizard + 24 Carousel | グラス・紫グラデ・モダン |
+| 56 | `patterns/56-noir-apothecary.html` | 47 + 36 Pharmacist + 39 Wizard + 24 Carousel | ダーク×ゴールド・高級薬局 |
+
+```javascript
+// 54 Sage Terrace（本番候補）
+UIShell.mount('app', {
+  headerStyle: 'toolbar',
+  toolbarIcons: 'line',
+  headerSession: { age: '30歳', gender: '男性', complete: true },
+  headerSymptoms: ['のど痛', '発熱', '鼻水'],
+  compactSafetyRail: true,
+  hybridStrips: ['safety'],
+  demoStreamingProcessing: true,
+  recoLayout: 'carousel',
+  carouselStyle: 'pro'
+});
+```
+
 ## 本番推奨トップ3（医薬品チャット）
 
 | 順位 | パターン | 理由 |
@@ -94,6 +146,18 @@ python -m http.server 8080
 | **1** | **24 Pharma Carousel Pro** | OTC推奨のフラッグシップ。プロカード・症状チップ・横比較・PMDA風ディスクレーマーが最もバランス良い |
 | **2** | **36 Pharmacist Trust** | 薬剤師監修・資格表示で信頼最大化。OTC相談の心理的ハードルを下げる |
 | **3** | **05 LINE Carousel** | LINE Flex との情報構造共通化。Web/LINE 両方で一貫した推奨体験 |
+
+### UX最適化後の本番統合推奨（46 Trust Hybrid）
+
+| 要素 | 由来パターン | 役割 |
+|------|-------------|------|
+| 安全レール | 40 Safety Rail | 年齢・アレルギー・禁忌を常時表示 |
+| 薬剤師ストリップ | 36 Pharmacist Trust | 監修・相談導線で信頼を確保 |
+| ウィザード進捗 | 39 Symptom Wizard | 相談の現在地を明示 |
+| プロカルーセル | 24 Pharma Carousel Pro | 3候補の横比較 |
+| 説明パネル（任意） | 41 Explainable Path | デスクトップ幅での判断過程表示 |
+| トリアージ（入口） | 44 Triage Severity | 初回のみ重症度選択 |
+| リカバリーモード（任意） | 42 Recovery Voice | 設定または症状入力から自動切替 |
 
 ## カルーセル設計方針
 
@@ -115,7 +179,7 @@ python -m http.server 8080
 | 順位バッジ + OTC バッジ | 信頼・規制区分の即時認識 |
 | 製品名・メーカー（小） | 最小限のテキスト階層 |
 | スコアリング（円形ゲージ） | ％テキストだけでなく視覚的比較 |
-| 剤形アイコン + 医薬品種別 | 錠剤/微粒などを絵文字に頼らず表示 |
+| 医薬品種別バッジ | 総合感冒薬など種別の即時認識 |
 | 症状マッチチップ | 文章ではなくタグで適合症状を表示 |
 | 効能・理由（2行省略 + 詳細） | プログレッシブディスクロージャ |
 | 年齢適合アイコン | 服用対象のクイック確認 |
@@ -149,7 +213,19 @@ python -m http.server 8080
 | オプション | 値 | 説明 |
 |-----------|-----|------|
 | `recoLayout` | `'carousel'` \| `'stack'` \| `'shelf'` \| `'story'` \| `'matrix'` \| `'grid'` \| `'hero'` \| `'label'` | 推奨医薬品の表示形式 |
-| `layout` | `'default'` \| `'compact'` \| `'split'` \| `'orb'` \| `'bodymap'` \| `'telehealth'` \| `'pharmacist'` \| `'whatsapp'` \| `'wechat'` \| `'wearable'` | アプリ全体のレイアウト |
+| `layout` | `'default'` \| `'compact'` \| `'split'` \| `'orb'` \| `'bodymap'` \| `'telehealth'` \| `'pharmacist'` \| `'whatsapp'` \| `'wechat'` \| `'wearable'` \| `'wizard'` \| `'safety'` \| `'family'` \| `'triage'` \| `'checklist'` \| `'explain'` \| `'recovery'` | アプリ全体のレイアウト |
+| `wizardStep` | `1`〜`4` | ウィザードの現在ステップ（`layout: 'wizard'` 時） |
+| `headerStyle` | `'default'` \| `'toolbar'` \| `'session'` \| `'overflow'` \| `'floating'` \| `'pharmacy'` \| `'contextual'` \| `'smart'` \| `'minimal'` \| `'compact'` | ヘッダーレイアウト（未指定時は `layout` から自動推論） |
+| `contextStep` | `1`〜`4` | ツールバー／コンテキストの段階サブタイトル |
+| `headerSession` | `{ complete: true }` 等 | 👤 ボタンの登録状態バッジ（`toolbar` / `smart`） |
+| `headerSymptoms` | `['のど痛','発熱',…]` | ツールバー段階サブタイトル（候補表示時） |
+| `headerBrand` | `{ title: 'チャット型医薬品相談ツール', phase: '症状に合う市販薬をご案内します。' }` | ツールバー見出しの上書き（未指定時は本番 `main.js` と同じ文言） |
+| `hybridStrips` | `['safety','pharmacist','wizard',…]` | ヘッダー直下に複数ストリップを積む（54〜56） |
+| `toolbarIcons` | `'line'` | ツールバー絵文字を細線SVGアイコンに置換 |
+| `compactSafetyRail` | `true` | 安全レールを1行コンパクト表示 |
+| `demoStreamingProcessing` | `true` | 処理中バブルを本番同様の進捗ストリームでデモ再生し、完了後に推奨を表示 |
+| `hideToolbarUserBtn` | `true` | ツールバーの👤ボタンを非表示（`hybridStrips: ['safety']` 時は自動） |
+| `safetyProfile` | `{ allergies, medications, pregnant, recoFlags, … }` | 安全レールのチップ内容（未指定時は `headerSession` から推論） |
 | `carouselStyle` | `'pro'` \| `'playful'` | カルーセル／スタック時のカード様式（既定: カルーセルは `pro`） |
 | `a11yPictogram` | `true` | 症状チップをピクトグラム＋大文字ラベルに切替（**33** 向け） |
 
@@ -234,13 +310,13 @@ UIShell.mount('app', { theme: 'pictogram-elder', recoLayout: 'stack', a11yPictog
 
 ```
 UI/
-  index.html          # ギャラリー（01〜38）
+  index.html          # ギャラリー（01〜53）
   README.md
   shared/
     shell.css         # レイアウト・コンポーネント（CSS変数でテーマ切替）
     shell.js          # デモ用 HTML 生成・モーダル操作
   patterns/
-    01-classic-green.html … 38-material-you-3.html
+    01-classic-green.html … 53-header-smart.html
 ```
 
 ## 本番への組み込み

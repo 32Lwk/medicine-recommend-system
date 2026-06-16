@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="·">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>54 Sage Terrace — Toolbar 統合 UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 47 Toolbar + コンパクト安全レール + 24 Carousel — 霧藍×珊瑚のモダンサンセリフ */
+    :root {
+      --ui-primary: #5b7c99;
+      --ui-primary-dark: #3d5a73;
+      --ui-primary-soft: #e8eef4;
+      --ui-accent: #c9846a;
+      --ui-warn: #c9846a;
+      --ui-bg-outer: linear-gradient(165deg, #f5f3f0 0%, #ebe8e4 45%, #e2e6ec 100%);
+      --ui-bg-chat: #faf9f7;
+      --ui-bg-surface: #fff;
+      --ui-bg-header: linear-gradient(180deg, #5b7c99 0%, #4d6d88 100%);
+      --ui-text-on-primary: #fff;
+      --ui-text: #2c3440;
+      --ui-text-muted: #6b7280;
+      --ui-border: #d4dce6;
+      --ui-bubble-user-bg: #5b7c99;
+      --ui-radius-md: 14px;
+      --ui-radius-lg: 18px;
+      --ui-font: "Segoe UI", "Helvetica Neue", "Hiragino Sans", "Yu Gothic UI", "BIZ UDPGothic", system-ui, sans-serif;
+      --focus-color: #5b7c99;
+    }
+    body { background-attachment: fixed; }
+    .ui-app {
+      border: 1px solid var(--ui-border);
+      box-shadow: 0 10px 40px rgba(59, 90, 115, 0.1);
+    }
+    .ui-header--toolbar {
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+    }
+    .ui-brand--toolbar h1 {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+    .ui-brand--toolbar .ui-header-phase {
+      color: rgba(255, 255, 255, 0.82);
+      letter-spacing: 0.02em;
+    }
+    .ui-safety-rail--compact {
+      background: linear-gradient(90deg, #faf9f7 0%, #f0f4f8 100%);
+      border-bottom-color: #d4dce6;
+    }
+    .ui-safety-rail--compact .ui-safety-rail__icon-svg--person {
+      color: #3d5a73;
+    }
+    .ui-safety-rail--compact .ui-safety-rail__body strong { color: #3d5a73; }
+    .ui-safety-rail--compact .ui-safety-chip { border-color: #d4dce6; }
+    .ui-safety-rail--compact .ui-safety-chip--ok {
+      background: #eef4f8;
+      color: #3d5a73;
+      border-color: #b8cce0;
+    }
+    .ui-safety-rail--compact .ui-safety-chip--warn {
+      background: #fdf4f0;
+      color: #9a5c45;
+      border-color: #e8cfc4;
+    }
+    .ui-safety-rail--compact .ui-safety-chip--pending {
+      background: #fdf8f3;
+      color: #9a5c45;
+      border-color: #e8cfc4;
+    }
+    .ui-safety-rail--compact .ui-safety-rail__status--pending {
+      background: #fdf4f0;
+      color: #9a5c45;
+    }
+    .ui-safety-rail--compact .ui-safety-rail__status--ok {
+      background: #eef4f8;
+      color: #3d5a73;
+    }
+    .ui-safety-rail--compact .ui-safety-rail__cta {
+      border-color: #d4dce6;
+      color: #3d5a73;
+      background: #fff;
+    }
+    .ui-card--pro {
+      border-color: var(--ui-border);
+      box-shadow: 0 4px 18px rgba(91, 124, 153, 0.08);
+      border-radius: 14px;
+    }
+    .ui-med-badge--rank { color: var(--ui-primary); }
+    .ui-score-ring__fill {
+      background: conic-gradient(var(--ui-primary) calc(var(--ui-score) * 1%), #e8eef4 0);
+    }
+    .ui-symptom-tag {
+      background: var(--ui-primary-soft);
+      color: var(--ui-primary-dark);
+      border-color: #c5d4e2;
+    }
+    .ui-msg--bot .ui-bubble--chat {
+      border-radius: 18px 18px 8px 18px;
+      border: 1px solid var(--ui-border);
+    }
+    .ui-msg--user .ui-bubble--chat {
+      border-radius: 18px 18px 8px 18px;
+    }
+    .ui-msg--bot .ui-bubble--reco {
+      border-radius: 18px 18px 12px 18px;
+    }
+    .ui-toolbar-btn--pharmacist {
+      background: var(--ui-primary-dark);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .ui-toolbar-btn--pharmacist .ui-toolbar-icon--filled { color: #fff; }
+    .ui-send { background: var(--ui-primary); }
+    .ui-mic { background: var(--ui-primary-soft); color: var(--ui-primary-dark); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../../static/js/processing_status.js"></script>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'sage-terrace',
+      headerStyle: 'toolbar',
+      toolbarIcons: 'line',
+      headerSession: { age: '30歳', gender: '男性', complete: true },
+      headerSymptoms: ['のど痛', '発熱', '鼻水'],
+      compactSafetyRail: true,
+      hybridStrips: ['safety'],
+      demoStreamingProcessing: true,
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

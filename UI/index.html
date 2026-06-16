@@ -115,7 +115,7 @@
   <main class="gallery">
     <h1>医薬品チャット UI パターン</h1>
     <p class="gallery-lead">
-      ユーザー向け画面の刷新案です。全<strong>38パターン</strong>は静的HTMLモックアップ（バックエンド非接続）で、
+      ユーザー向け画面の刷新案です。全<strong>56パターン</strong>は静的HTMLモックアップ（バックエンド非接続）で、
       現行機能をすべて配置したデモ状態で確認できます。推奨医薬品は <strong>縦スタック</strong>・
       <strong>LINE風カルーセル</strong>・<strong>棚</strong>・<strong>ストーリー</strong>・<strong>比較表</strong>・
       <strong>商品グリッド</strong> など複数レイアウトに対応しています。
@@ -392,6 +392,138 @@
         <h2>Material You 3</h2>
         <p>Google MD3 dynamic color・elevated cards。Android/クロスプラットフォーム向け。</p>
         <div class="card-meta"><em>Material 3</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">UX最適化・新規案（39〜46）— 使いやすさ・わかりやすさ重視</h2>
+    <p class="gallery-lead" style="margin-top:0;margin-bottom:20px;font-size:0.88rem;">
+      既存UIにとらわれず、体調不良時の認知負荷・安全性・説明責任を軸に設計したパターンです。
+      <strong>46 Trust Hybrid</strong> は本番統合の推奨構成（安全レール＋薬剤師＋ウィザード＋プロカルーセル）のデモです。
+    </p>
+    <div class="grid">
+      <a class="card-link" href="patterns/39-symptom-wizard.html">
+        <div class="card-num">39</div>
+        <h2>Symptom Wizard</h2>
+        <p>症状→属性→推奨→確認の4ステップを常時表示。今どこにいるか迷わない。</p>
+        <div class="card-meta"><em>進捗明示</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/40-safety-rail.html">
+        <div class="card-num">40</div>
+        <h2>Safety Rail</h2>
+        <p>年齢・アレルギー・禁忌を推奨より上に固定。安全情報を最初に見せる。</p>
+        <div class="card-meta"><em class="trust">安全優先</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/41-explainable-path.html">
+        <div class="card-num">41</div>
+        <h2>Explainable Path</h2>
+        <p>ルールベースの判断過程を左パネルで可視化。「なぜこの薬？」に答える。</p>
+        <div class="card-meta"><em class="layout">説明パネル</em><em>ヒーロー</em></div>
+      </a>
+      <a class="card-link" href="patterns/42-recovery-voice.html">
+        <div class="card-num">42</div>
+        <h2>Recovery Voice</h2>
+        <p>体調不良時向け。大文字・装飾最小・音声入力を前面に。文字入力の負担を減らす。</p>
+        <div class="card-meta"><em>a11y</em><em>音声優先</em></div>
+      </a>
+      <a class="card-link" href="patterns/43-family-profiles.html">
+        <div class="card-num">43</div>
+        <h2>Family Profiles</h2>
+        <p>家族メンバー切替。年齢禁忌を相談対象ごとに文脈化。</p>
+        <div class="card-meta"><em>家族</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/44-triage-severity.html">
+        <div class="card-num">44</div>
+        <h2>Triage Severity</h2>
+        <p>つらさの程度で受診ルートとOTC提案を分岐。「今すぐ受診」を明示。</p>
+        <div class="card-meta"><em class="health">トリアージ</em><em>スタック</em></div>
+      </a>
+      <a class="card-link" href="patterns/45-checklist-first.html">
+        <div class="card-num">45</div>
+        <h2>Checklist First</h2>
+        <p>推奨前に必須属性チェックリスト。未入力項目を先に完了させる。</p>
+        <div class="card-meta"><em class="trust">事前確認</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+      <a class="card-link" href="patterns/46-trust-hybrid.html" style="border-color: #2e7d6e; background: linear-gradient(135deg, #fff 0%, #f0f7f5 100%);">
+        <div class="card-num">46 ★</div>
+        <h2>Trust Hybrid</h2>
+        <p>本番推奨の統合案。安全レール＋薬剤師監修＋ウィザード＋プロカルーセルを1画面に。</p>
+        <div class="card-meta"><em class="trust">統合推奨</em><em class="carousel">カルーセル pro</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">ヘッダー刷新案（47〜53）— 状況に応じたヘッダー設計</h2>
+    <p class="gallery-lead" style="margin-top:0;margin-bottom:20px;font-size:0.88rem;">
+      従来は全パターンで同一の2段ヘッダー（5ボタン常時表示）でした。<code>headerStyle</code> で
+      モバイル向けツールバー・セッション文脈・オーバーフローメニューなど7種に切替可能です。
+      本番推奨は <strong>47 Toolbar</strong>（1行・アイコン操作）です。ウィザード進捗と組み合わせたデモになっています。
+    </p>
+    <div class="grid">
+      <a class="card-link" href="patterns/47-header-toolbar.html" style="border-color: #2e7d6e; background: linear-gradient(135deg, #fff 0%, #f0f7f5 100%);">
+        <div class="card-num">47 ★</div>
+        <h2>Header Toolbar</h2>
+        <p>1行・アイコンのみ（56px）。OTC相談＋段階表示。👤に登録状態バッジ。本番Web推奨。</p>
+        <div class="card-meta"><em class="mobile">1行</em><em>推奨</em></div>
+      </a>
+      <a class="card-link" href="patterns/48-header-session.html">
+        <div class="card-num">48</div>
+        <h2>Header Session</h2>
+        <p>年齢・性別・アレルギーをヘッダー中央に常時表示。タップで編集。</p>
+        <div class="card-meta"><em class="trust">文脈表示</em><em>安全レール併用</em></div>
+      </a>
+      <a class="card-link" href="patterns/49-header-overflow.html">
+        <div class="card-num">49</div>
+        <h2>Header Overflow</h2>
+        <p>☰ メニューに操作を集約。チャット領域を最大化。</p>
+        <div class="card-meta"><em class="mobile">コンパクト</em><em>ハンバーガー</em></div>
+      </a>
+      <a class="card-link" href="patterns/50-header-floating.html">
+        <div class="card-num">50</div>
+        <h2>Header Floating</h2>
+        <p>48pxの薄いグラスヘッダー＋リカバリーモード。体調不良時向け。</p>
+        <div class="card-meta"><em>a11y</em><em>最小クローム</em></div>
+      </a>
+      <a class="card-link" href="patterns/51-header-pharmacy.html">
+        <div class="card-num">51</div>
+        <h2>Header Pharmacy</h2>
+        <p>薬局相談窓口風。監修バッジをヘッダーに統合。薬剤師ストリップと連携。</p>
+        <div class="card-meta"><em class="trust">薬局</em><em>監修表示</em></div>
+      </a>
+      <a class="card-link" href="patterns/52-header-contextual.html">
+        <div class="card-num">52 ★</div>
+        <h2>Header Contextual</h2>
+        <p>タイトルがステップ連動（症状入力→候補比較）。戻るボタン付き。</p>
+        <div class="card-meta"><em>コンテキスト</em><em>ウィザード連動</em></div>
+      </a>
+      <a class="card-link" href="patterns/53-header-smart.html" style="border-color: #2e7d6e; background: linear-gradient(135deg, #fff 0%, #f0f7f5 100%);">
+        <div class="card-num">53 ★</div>
+        <h2>Header Smart</h2>
+        <p>1行レイアウト。セッション状態ピル・薬剤師CTA・⋯メニュー。段階サブタイトル連動。</p>
+        <div class="card-meta"><em>推奨</em><em>スマート分割</em></div>
+      </a>
+    </div>
+
+    <h2 class="section-title">Toolbar 統合・おしゃれ案（54〜56）</h2>
+    <p class="gallery-lead" style="margin-top:0;margin-bottom:20px;font-size:0.88rem;">
+      <strong>47 Toolbar</strong> をヘッダーに固定し、テーマ・ストリップ・カルーセルを組み合わせた本番候補の仕上げ案です。
+    </p>
+    <div class="grid">
+      <a class="card-link" href="patterns/54-sage-terrace.html" style="border-color: #3d6b54; background: linear-gradient(135deg, #fff 0%, #e8f0ea 100%);">
+        <div class="card-num">54</div>
+        <h2>Sage Terrace</h2>
+        <p>Toolbar＋コンパクト安全レール。霧藍×珊瑚・サンセリフ・ラインアイコン。</p>
+        <div class="card-meta"><em>モダン</em><em class="trust">安全レール</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/55-glass-luminous.html" style="border-color: #8b5cf6; background: linear-gradient(135deg, #fff 0%, #f5f3ff 100%);">
+        <div class="card-num">55</div>
+        <h2>Glass Luminous</h2>
+        <p>Toolbar＋グラスモーフィズム＋ウィザード。紫グラデ・ぼかし・光の粒子。</p>
+        <div class="card-meta"><em class="bold">モダン</em><em>グラス</em><em class="carousel">カルーセル</em></div>
+      </a>
+      <a class="card-link" href="patterns/56-noir-apothecary.html" style="border-color: #c9a96e; background: linear-gradient(135deg, #2a312e 0%, #1a1f1e 100%); color: #e8e4dc;">
+        <div class="card-num">56</div>
+        <h2 style="color:#f5f0e8">Noir Apothecary</h2>
+        <p style="color:#9ca89f">Toolbar＋薬剤師ストリップ＋ウィザード。ダーク×ゴールドの高級薬局 aesthetic。</p>
+        <div class="card-meta"><em class="bold">ラグジュアリー</em><em class="trust">薬剤師</em><em class="carousel">カルーセル</em></div>
       </a>
     </div>
     <footer>

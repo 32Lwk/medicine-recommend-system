@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="✨ · ○">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>55 Glass Luminous — Toolbar 統合 UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 47 Toolbar × 07 Glass × 39 Wizard × 24 Carousel — 透明感のあるモダンUI */
+    :root {
+      --ui-primary: #6366f1;
+      --ui-primary-dark: #4338ca;
+      --ui-primary-soft: rgba(99, 102, 241, 0.18);
+      --ui-accent: #a78bfa;
+      --ui-bg-outer: linear-gradient(145deg, #667eea 0%, #764ba2 38%, #f093fb 72%, #fbc2eb 100%);
+      --ui-bg-chat: rgba(255, 255, 255, 0.22);
+      --ui-bg-surface: rgba(255, 255, 255, 0.78);
+      --ui-bg-header: rgba(255, 255, 255, 0.42);
+      --ui-text-on-primary: #1e1b4b;
+      --ui-text: #1e293b;
+      --ui-border: rgba(255, 255, 255, 0.5);
+      --ui-bubble-user-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+      --ui-bubble-bot-bg: rgba(255, 255, 255, 0.88);
+      --focus-color: #6366f1;
+    }
+    body { background-attachment: fixed; }
+    .ui-app {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 8px 40px rgba(102, 126, 234, 0.2);
+    }
+    .ui-header--toolbar {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+    }
+    .ui-toolbar-btn {
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+    }
+    .ui-toolbar-btn--pharmacist {
+      background: rgba(167, 139, 250, 0.45);
+    }
+    .ui-lang-btn {
+      background: rgba(255, 255, 255, 0.4);
+      color: var(--ui-text);
+    }
+    .ui-wizard-strip {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(10px);
+    }
+    .ui-card--pro {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 24px rgba(99, 102, 241, 0.12);
+    }
+    .ui-input-bar {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255, 255, 255, 0.45);
+    }
+    .ui-send {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+    .ui-msg--user .ui-bubble {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+    }
+    .ui-score-ring__fill {
+      background: conic-gradient(#8b5cf6 calc(var(--ui-score) * 1%), rgba(255,255,255,0.4) 0);
+    }
+    .ui-dev-badge { background: #6366f1; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'glass-luminous',
+      headerStyle: 'toolbar',
+      layout: 'wizard',
+      wizardStep: 3,
+      contextStep: 3,
+      hybridStrips: ['wizard'],
+      headerSession: { complete: true },
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

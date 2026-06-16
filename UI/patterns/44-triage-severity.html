@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>44 Triage Severity — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 重症度トリアージ — 受診ルートとOTC提案を最初に分岐 */
+    :root {
+      --ui-primary: #0284c7;
+      --ui-primary-dark: #0369a1;
+      --ui-primary-soft: #e0f2fe;
+      --ui-bg-outer: #f0f9ff;
+      --ui-bg-chat: #f8fcff;
+      --ui-bg-header: #0284c7;
+      --ui-text-on-primary: #fff;
+      --ui-text: #0c4a6e;
+      --ui-border: #bae6fd;
+      --ui-bubble-user-bg: #0284c7;
+      --focus-color: #0284c7;
+    }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+    .ui-reco-block--pro .ui-alert--danger { order: -1; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'triage-severity',
+      layout: 'triage',
+      recoLayout: 'stack',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>45 Checklist First — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* チェックリスト優先 — 推奨前に必須属性を完了させる */
+    :root {
+      --ui-primary: #16a34a;
+      --ui-primary-dark: #15803d;
+      --ui-primary-soft: #dcfce7;
+      --ui-bg-outer: #f0fdf4;
+      --ui-bg-chat: #f7fef9;
+      --ui-bg-header: #fff;
+      --ui-text: #14532d;
+      --ui-border: #bbf7d0;
+      --ui-bubble-user-bg: #16a34a;
+      --focus-color: #16a34a;
+    }
+    .ui-header { border-bottom: 1px solid var(--ui-border); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'checklist-first',
+      layout: 'checklist',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

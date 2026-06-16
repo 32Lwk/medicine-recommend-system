@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>43 Family Profiles — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 家族プロファイル — 相談対象を切替、年齢禁忌を常に文脈化 */
+    :root {
+      --ui-primary: #7c3aed;
+      --ui-primary-dark: #5b21b6;
+      --ui-primary-soft: #ede9fe;
+      --ui-bg-outer: linear-gradient(160deg, #f5f3ff 0%, #faf5ff 100%);
+      --ui-bg-chat: #faf8ff;
+      --ui-bg-header: #fff;
+      --ui-text: #3b0764;
+      --ui-border: #ddd6fe;
+      --ui-bubble-user-bg: #7c3aed;
+      --focus-color: #7c3aed;
+    }
+    .ui-header { border-bottom: 1px solid var(--ui-border); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'family-profiles',
+      layout: 'family',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>
