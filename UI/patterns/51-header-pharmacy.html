@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>51 Header Pharmacy — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    :root {
+      --ui-primary: #15803d;
+      --ui-primary-dark: #14532d;
+      --ui-primary-soft: #dcfce7;
+      --ui-bg-outer: #f0fdf4;
+      --ui-bg-chat: #fafdfa;
+      --ui-bg-header: #15803d;
+      --ui-text-on-primary: #fff;
+      --ui-bubble-user-bg: #15803d;
+      --focus-color: #15803d;
+    }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'header-pharmacy',
+      headerStyle: 'pharmacy',
+      layout: 'pharmacist',
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

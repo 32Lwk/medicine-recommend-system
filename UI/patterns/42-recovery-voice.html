@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>42 Recovery Voice — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 体調不良モード — 大文字・音声優先・装飾最小 */
+    :root {
+      --ui-primary: #059669;
+      --ui-primary-dark: #047857;
+      --ui-primary-soft: #d1fae5;
+      --ui-bg-outer: #ecfdf5;
+      --ui-bg-chat: #f0fdf4;
+      --ui-bg-header: #fff;
+      --ui-text: #064e3b;
+      --ui-text-muted: #6b7280;
+      --ui-border: #a7f3d0;
+      --ui-bubble-user-bg: #059669;
+      --focus-color: #059669;
+      --ui-font-size: 1.125rem;
+    }
+    .ui-header { border-bottom: 2px solid var(--ui-border); }
+    .ui-send { background: var(--ui-primary); min-width: 52px; min-height: 52px; }
+    .ui-textarea { font-size: 1.05rem; min-height: 52px; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'recovery-voice',
+      layout: 'recovery',
+      recoLayout: 'hero',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

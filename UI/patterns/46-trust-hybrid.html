@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>46 Trust Hybrid — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 本番推奨ハイブリッド — 安全レール + 薬剤師 + ウィザード + プロカルーセル */
+    :root {
+      --ui-primary: #2e7d6e;
+      --ui-primary-dark: #1f5c52;
+      --ui-primary-soft: #e8f4f1;
+      --ui-bg-outer: linear-gradient(165deg, #f4f8f7 0%, #e8f0ee 100%);
+      --ui-bg-chat: #f7faf9;
+      --ui-bg-header: #fff;
+      --ui-text: #1e293b;
+      --ui-border: #d8e4e0;
+      --ui-bubble-user-bg: #2e7d6e;
+      --ui-carousel-card-width: min(85vw, 360px);
+      --focus-color: #2e7d6e;
+    }
+    .ui-header { border-bottom: 1px solid var(--ui-border); }
+    .ui-brand h1 { color: var(--ui-primary-dark); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+    /* 複合ストリップ（本番候補の統合デモ） */
+    .ui-hybrid-strips { flex-shrink: 0; }
+    .ui-hybrid-strips .ui-safety-rail { border-bottom-width: 1px; }
+    .ui-hybrid-strips .ui-pharmacist-strip { border-bottom: 1px solid var(--ui-border); }
+    .ui-hybrid-strips .ui-wizard-strip { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    (function () {
+      var origMount = UIShell.mount;
+      UIShell.mount = function (targetId, options) {
+        var root = document.getElementById(targetId);
+        if (!root) return;
+        origMount(targetId, Object.assign({}, options, {
+          layout: 'wizard',
+          wizardStep: 3
+        }));
+        var app = root.querySelector('.ui-app');
+        if (!app) return;
+        var wizard = app.querySelector('.ui-wizard-strip');
+        if (!wizard) return;
+        var hybrid = document.createElement('div');
+        hybrid.className = 'ui-hybrid-strips';
+        hybrid.innerHTML =
+          '<div class="ui-safety-rail" role="region" aria-label="安全情報">' +
+            '<div class="ui-safety-rail__icon" aria-hidden="true">🛡️</div>' +
+            '<div class="ui-safety-rail__body"><strong>安全チェック</strong>' +
+            '<span class="ui-safety-rail__items">' +
+            '<em class="ui-safety-chip ui-safety-chip--ok">年齢 30歳 ✓</em>' +
+            '<em class="ui-safety-chip ui-safety-chip--warn">アスピリン系注意</em></span></div>' +
+            '<button type="button" class="ui-safety-rail__cta" data-modal="userinfo">更新</button></div>' +
+          '<div class="ui-pharmacist-strip">' +
+            '<div class="ui-pharmacist-avatar" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="17" r="9" fill="#e2e8f0"/><path fill="#e2e8f0" d="M8 44c0-8 7-14 16-14s16 6 16 14"/></svg><span class="ui-pharmacist-badge">薬</span></div>' +
+            '<div class="ui-pharmacist-info"><strong>監修: 田中 健一 薬剤師</strong><span>登録販売者 · 相談歴12年</span></div>' +
+            '<button type="button" class="ui-pharmacist-call" data-toast="薬剤師に電話（デモ）">📞</button></div>';
+        wizard.parentNode.insertBefore(hybrid, wizard);
+        hybrid.appendChild(wizard);
+      };
+      UIShell.mount('app', {
+        theme: 'trust-hybrid',
+        recoLayout: 'carousel',
+        carouselStyle: 'pro'
+      });
+    })();
+  </script>
+</body>
+</html>

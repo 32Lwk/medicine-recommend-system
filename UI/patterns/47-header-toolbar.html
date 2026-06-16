@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>47 Header Toolbar — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    :root {
+      --ui-primary: #2e7d6e;
+      --ui-primary-dark: #1f5c52;
+      --ui-primary-soft: #e8f4f1;
+      --ui-bg-outer: linear-gradient(165deg, #f4f8f7 0%, #e8f0ee 100%);
+      --ui-bg-chat: #f7faf9;
+      --ui-bg-header: #2e7d6e;
+      --ui-text-on-primary: #fff;
+      --ui-bubble-user-bg: #2e7d6e;
+      --ui-border: #d8e4e0;
+      --focus-color: #2e7d6e;
+    }
+    .ui-app { border: 1px solid var(--ui-border); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'header-toolbar',
+      headerStyle: 'toolbar',
+      contextStep: 3,
+      wizardStep: 3,
+      layout: 'wizard',
+      headerSession: { age: '30歳', gender: '男性', allergy: 'なし', complete: true },
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

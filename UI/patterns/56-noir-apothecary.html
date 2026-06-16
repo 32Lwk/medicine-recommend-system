@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>56 Noir Apothecary — Toolbar 統合 UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 47 Toolbar × 36 Pharmacist × 39 Wizard × 24 Carousel — 高級薬局・ダークラグジュアリー */
+    :root {
+      --ui-primary: #c9a96e;
+      --ui-primary-dark: #a68b4b;
+      --ui-primary-soft: rgba(201, 169, 110, 0.12);
+      --ui-accent: #c9a96e;
+      --ui-warn: #d4a574;
+      --ui-bg-outer: linear-gradient(160deg, #1a1f1e 0%, #252b29 50%, #1e2422 100%);
+      --ui-bg-chat: #1e2422;
+      --ui-bg-surface: #2a312e;
+      --ui-bg-header: linear-gradient(180deg, #2a312e 0%, #232926 100%);
+      --ui-text-on-primary: #f5f0e8;
+      --ui-text: #e8e4dc;
+      --ui-text-muted: #9ca89f;
+      --ui-border: #3d4844;
+      --ui-bubble-user-bg: #3d5248;
+      --ui-bubble-bot-bg: #2a312e;
+      --ui-med-image-bg: #232926;
+      --focus-color: #c9a96e;
+    }
+    body { background-attachment: fixed; }
+    .ui-app {
+      border: 1px solid #3d4844;
+      box-shadow: 0 16px 56px rgba(0, 0, 0, 0.45);
+    }
+    .ui-header--toolbar {
+      border-bottom: 1px solid #3d4844;
+      box-shadow: 0 1px 0 rgba(201, 169, 110, 0.08) inset;
+    }
+    .ui-brand--toolbar h1 {
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.82rem !important;
+    }
+    .ui-brand--toolbar .ui-header-phase {
+      color: var(--ui-primary);
+      opacity: 1;
+      letter-spacing: 0.04em;
+    }
+    .ui-toolbar-btn {
+      background: rgba(201, 169, 110, 0.12);
+      border: 1px solid rgba(201, 169, 110, 0.2);
+    }
+    .ui-toolbar-btn--pharmacist {
+      background: rgba(201, 169, 110, 0.28);
+      border-color: rgba(201, 169, 110, 0.45);
+    }
+    .ui-toolbar-btn__badge { border-color: #2a312e; }
+    .ui-pharmacist-strip {
+      background: linear-gradient(90deg, #232926 0%, #2a312e 50%, #232926 100%);
+      border-bottom-color: #c9a96e;
+    }
+    .ui-pharmacist-badge { background: #c9a96e; color: #1a1f1e; }
+    .ui-pharmacist-call {
+      background: rgba(201, 169, 110, 0.2);
+      border: 1px solid rgba(201, 169, 110, 0.4);
+      color: #c9a96e;
+    }
+    .ui-wizard-strip {
+      background: #232926;
+      border-bottom-color: #3d4844;
+    }
+    .ui-wizard-step__num { background: #2a312e; border-color: #3d4844; color: var(--ui-text-muted); }
+    .ui-wizard-step--active .ui-wizard-step__num {
+      background: #c9a96e;
+      border-color: #c9a96e;
+      color: #1a1f1e;
+    }
+    .ui-wizard-step--done .ui-wizard-step__num {
+      background: rgba(201, 169, 110, 0.2);
+      border-color: #c9a96e;
+      color: #c9a96e;
+    }
+    .ui-msg--bot .ui-bubble {
+      border: 1px solid var(--ui-border);
+      color: var(--ui-text);
+    }
+    .ui-msg--user .ui-bubble { color: #f5f0e8; }
+    .ui-card--pro {
+      background: #2a312e;
+      border-color: #3d4844;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+    .ui-card--pro .ui-card-name { color: #f5f0e8; }
+    .ui-med-badge--rank { color: #c9a96e; }
+    .ui-symptom-tag {
+      background: rgba(201, 169, 110, 0.1);
+      color: #d4c4a0;
+      border-color: rgba(201, 169, 110, 0.25);
+    }
+    .ui-trust-strip {
+      background: rgba(201, 169, 110, 0.08);
+      border-color: rgba(201, 169, 110, 0.2);
+      color: #9ca89f;
+    }
+    .ui-input-bar {
+      background: #232926;
+      border-top-color: #3d4844;
+    }
+    .ui-textarea { background: #2a312e; color: var(--ui-text); border-color: #3d4844; }
+    .ui-mic { background: rgba(201, 169, 110, 0.15); color: #c9a96e; }
+    .ui-send { background: #c9a96e; color: #1a1f1e; }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: #c9a96e; color: #1a1f1e; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'noir-apothecary',
+      headerStyle: 'toolbar',
+      layout: 'wizard',
+      wizardStep: 3,
+      contextStep: 3,
+      hybridStrips: ['pharmacist', 'wizard'],
+      headerSession: { complete: true },
+      headerBrand: { title: 'OTC相談' },
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

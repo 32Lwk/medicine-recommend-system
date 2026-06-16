@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>39 Symptom Wizard — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    /* 段階的ウィザード — 今どこにいるかを常に明示 */
+    :root {
+      --ui-primary: #0d9488;
+      --ui-primary-dark: #0f766e;
+      --ui-primary-soft: #ccfbf1;
+      --ui-bg-outer: linear-gradient(180deg, #f0fdfa 0%, #ecfeff 100%);
+      --ui-bg-chat: #f8fffe;
+      --ui-bg-header: #fff;
+      --ui-text: #134e4a;
+      --ui-text-muted: #5eead4;
+      --ui-text-on-primary: #134e4a;
+      --ui-border: #99f6e4;
+      --ui-bubble-user-bg: #0d9488;
+      --focus-color: #0d9488;
+    }
+    .ui-header { color: var(--ui-text); border-bottom: 1px solid var(--ui-border); }
+    .ui-brand h1 { color: var(--ui-primary-dark); }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'symptom-wizard',
+      layout: 'wizard',
+      wizardStep: 3,
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

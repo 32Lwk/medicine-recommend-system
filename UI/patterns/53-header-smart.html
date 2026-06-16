@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>53 Header Smart — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    :root {
+      --ui-primary: #2e7d6e;
+      --ui-primary-dark: #1f5c52;
+      --ui-primary-soft: #e8f4f1;
+      --ui-accent: #2563eb;
+      --ui-warn: #d97706;
+      --ui-bg-outer: #eef4f2;
+      --ui-bg-chat: #f7faf9;
+      --ui-bg-header: #2e7d6e;
+      --ui-text-on-primary: #fff;
+      --ui-bubble-user-bg: #2e7d6e;
+      --focus-color: #2e7d6e;
+    }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'header-smart',
+      headerStyle: 'smart',
+      contextStep: 3,
+      wizardStep: 3,
+      headerSession: { age: '30歳', gender: '男性', allergy: 'なし', complete: true },
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

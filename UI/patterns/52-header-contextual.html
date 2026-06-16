@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" data-particles="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>52 Header Contextual — 医薬品チャット UI</title>
+  <link rel="icon" href="../../static/favicon.ico.png" type="image/png">
+  <link rel="stylesheet" href="../shared/shell.css">
+  <style>
+    :root {
+      --ui-primary: #0d9488;
+      --ui-primary-dark: #0f766e;
+      --ui-primary-soft: #ccfbf1;
+      --ui-bg-outer: #f0fdfa;
+      --ui-bg-chat: #f8fffe;
+      --ui-bg-header: #0d9488;
+      --ui-text-on-primary: #fff;
+      --ui-bubble-user-bg: #0d9488;
+      --focus-color: #0d9488;
+    }
+    .ui-send { background: var(--ui-primary); }
+    .ui-particles { display: none; }
+    .ui-dev-badge { background: var(--ui-primary); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../shared/shell.js"></script>
+  <script>
+    UIShell.mount('app', {
+      theme: 'header-contextual',
+      headerStyle: 'contextual',
+      contextStep: 3,
+      layout: 'wizard',
+      wizardStep: 3,
+      recoLayout: 'carousel',
+      carouselStyle: 'pro'
+    });
+  </script>
+</body>
+</html>

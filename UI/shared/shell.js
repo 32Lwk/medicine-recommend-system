@@ -72,7 +72,11 @@
 
   function medFormIcon(form) {
     if (form === 'granules') {
-      return (
+      var iconHtml = variant === 'playful'
+      ? ''
+      : '<span class="ui-med-image__icon" aria-hidden="true">' + medFormIcon(m.form) + '</span>';
+
+    return (
         '<svg class="ui-med-type-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
           '<path fill="currentColor" d="M6 4h12v2H6V4zm0 4h12l-1 12H7L6 8zm4 2v8h2v-8h-2z"/>' +
         '</svg>'
@@ -89,13 +93,29 @@
   function scoreRingHtml(score) {
     var pct = Math.max(0, Math.min(100, score));
     return (
-      '<div class="ui-score-ring" style="--ui-score:' + pct + '" role="img" aria-label="おすすめ度 ' + pct + 'パーセント">' +
-        '<div class="ui-score-ring__track" aria-hidden="true"></div>' +
-        '<div class="ui-score-ring__fill" aria-hidden="true"></div>' +
-        '<div class="ui-score-ring__inner">' +
+      '<button type="button" class="ui-score-ring" data-score-ring style="--ui-score:' + pct + '" aria-expanded="false" aria-label="おすすめ度 ' + pct + 'パーセント。タップで内訳を表示">' +
+        '<span class="ui-score-ring__track" aria-hidden="true"></span>' +
+        '<span class="ui-score-ring__fill" aria-hidden="true"></span>' +
+        '<span class="ui-score-ring__inner">' +
           '<span class="ui-score-ring__value">' + pct + '</span>' +
           '<span class="ui-score-ring__unit">%</span>' +
-        '</div>' +
+        '</span>' +
+      '</button>'
+    );
+  }
+
+  function scoreBreakdownPanelHtml(m) {
+    var s = m.scores;
+    return (
+      '<div class="ui-score-breakdown-panel" data-score-panel hidden>' +
+        '<p class="ui-score-breakdown-panel__title">スコア内訳（参考）</p>' +
+        '<ul class="ui-score-breakdown__list" aria-label="スコア内訳">' +
+          '<li><span class="ui-score-breakdown__label">症状適合度</span><strong>' + s.symptom + '%</strong></li>' +
+          '<li><span class="ui-score-breakdown__label">効能特異性</span><strong>' + s.efficacy + '%</strong></li>' +
+          '<li><span class="ui-score-breakdown__label">年齢適合性</span><strong>' + s.age + '%</strong></li>' +
+          '<li><span class="ui-score-breakdown__label">用法簡便性</span><strong>' + s.usage + '%</strong></li>' +
+        '</ul>' +
+        '<p class="ui-score-breakdown__note">ルールベースの評価です。最終判断は薬剤師・登録販売者にご相談ください。</p>' +
       '</div>'
     );
   }
@@ -130,13 +150,8 @@
       );
     }
 
-    var iconHtml = variant === 'playful'
-      ? ''
-      : '<span class="ui-med-image__icon" aria-hidden="true">' + medFormIcon(m.form) + '</span>';
-
     return (
       '<div class="ui-med-image ui-med-image--placeholder ' + variantClass + extraClass + '" data-no-image="true" aria-label="画像なし">' +
-        iconHtml +
         '<span class="ui-med-image__label">Noimage</span>' +
       '</div>'
     );
@@ -174,7 +189,6 @@
         '</header>' +
         '<div class="ui-card-pro-main">' +
           '<div class="ui-card-pro-info">' +
-            medFormIcon(m.form) +
             '<h3 class="ui-card-name">' + esc(m.name) + '</h3>' +
             '<p class="ui-card-maker">' + esc(m.maker) + '</p>' +
             symptomTagsHtml(m.symptoms) +
@@ -188,6 +202,7 @@
             '<span>' + esc(m.ageLabel) + '</span>' +
           '</span>' +
         '</div>' +
+        scoreBreakdownPanelHtml(m) +
         '<div class="ui-card-pro-detail is-collapsed">' +
           '<div class="ui-card-section">' +
             '<div class="ui-card-label">効能・効果</div>' +
@@ -359,13 +374,29 @@
   }
 
   function scoreGrid(m) {
-    var s = m.scores;
+    return scoreBreakdownPanelHtml(m);
+  }
+
+  function personalizedAdviceHtml(opts) {
+    opts = opts || {};
+    var session = opts.headerSession || { age: '30歳', gender: '男性' };
+    var symptoms = opts.headerSymptoms || ['のど痛', '発熱', '鼻水'];
+    var age = session.age || '30歳';
+    var gender = session.gender ? '（' + session.gender + '）' : '';
+    var symptomText = symptoms.slice(0, 3).join('・');
     return (
-      '<div class="ui-score-grid">' +
-        '<span class="ui-score-chip">症状適合 ' + s.symptom + '%</span>' +
-        '<span class="ui-score-chip">効能特異 ' + s.efficacy + '%</span>' +
-        '<span class="ui-score-chip">年齢適合 ' + s.age + '%</span>' +
-        '<span class="ui-score-chip">用法簡便 ' + s.usage + '%</span>' +
+      '<div class="ui-personal-advice" role="note" aria-label="あなたへのひとこと">' +
+        '<div class="ui-personal-advice__head">' +
+          '<svg class="ui-personal-advice__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">' +
+            '<path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/>' +
+          '</svg>' +
+          '<h4 class="ui-personal-advice__title">あなたへのひとこと</h4>' +
+        '</div>' +
+        '<p class="ui-personal-advice__text">' +
+          esc(age) + esc(gender) + 'の方で、主な症状は「' + esc(symptomText) + '」です。' +
+          '総合感冒薬のなかから症状のバランスと年齢適合を考慮して候補を選びました。' +
+          '服用中のお薬やアレルギーがある場合は、購入前に薬剤師にご相談ください。' +
+        '</p>' +
       '</div>'
     );
   }
@@ -410,8 +441,8 @@
     return (
       '<div class="ui-reco-block' + (cardStyle === 'pro' ? ' ui-reco-block--pro' : '') + '">' +
         '<div class="ui-reco-intro">' + introIcon + '推定症状: <span class="ui-symptom-tags ui-symptom-tags--inline"><span class="ui-symptom-tag">のど痛</span><span class="ui-symptom-tag">発熱</span><span class="ui-symptom-tag">鼻水</span></span></div>' +
+        personalizedAdviceHtml(opts) +
         inner +
-        scoreGrid(MEDICINES[0]) +
         '<div class="ui-alert ui-alert--danger"><strong>⚠️ アレルギー注意</strong><br>アスピリン系成分に注意が必要な場合があります。</div>' +
         '<div class="ui-alert ui-alert--warn"><strong>⚠️ 相互作用</strong><br>ワーファリン服用中の方は医師・薬剤師にご相談ください。</div>' +
         '<div class="ui-alert ui-alert--caution"><strong>⚠️ 使用上の注意</strong><br>運転・機械操作前の服用は避けてください。用法用量を守ってご使用ください。</div>' +
@@ -431,7 +462,7 @@
     );
   }
 
-  function symptomChipsHtml(opts) {
+  function greetingExamplesHtml(opts) {
     opts = opts || {};
     if (opts.a11yPictogram) {
       return (
@@ -448,46 +479,42 @@
         '</div>'
       );
     }
-    return (
-      '<div class="ui-chips">' +
-        '<button type="button" class="ui-chip" data-prompt="のどが痛くて熱があります">のど痛・発熱</button>' +
-        '<button type="button" class="ui-chip" data-prompt="鼻水とくしゃみが止まりません">鼻水・くしゃみ</button>' +
-        '<button type="button" class="ui-chip" data-prompt="頭痛と吐き気があります">頭痛・吐き気</button>' +
-      '</div>'
-    );
+    return '<p class="ui-greeting-examples">例：「頭痛がする」「喉が痛い」「熱がある」など</p>';
+  }
+
+  function symptomChipsHtml(opts) {
+    return greetingExamplesHtml(opts);
   }
 
   function messagesHtml(recoLayout, recoOpts) {
+    recoOpts = recoOpts || {};
     return (
       '<div class="ui-msg ui-msg--bot">' +
-        '<div class="ui-bubble">' +
-          'こんにちは。症状を教えてください。<br><br>' +
-          symptomChipsHtml(recoOpts) +
+        '<div class="ui-bubble ui-bubble--chat ui-bubble--greeting">' +
+          'こんにちは！どのような症状でお困りでしょうか？' +
+          greetingExamplesHtml(recoOpts) +
         '</div>' +
       '</div>' +
       '<div class="ui-msg ui-msg--user">' +
-        '<div class="ui-bubble">のどが痛くて熱があります。鼻水も少しあります。</div>' +
+        '<div class="ui-bubble ui-bubble--chat">のどが痛くて熱があります。鼻水も少しあります。</div>' +
       '</div>' +
-      '<div class="ui-msg ui-msg--bot">' +
-        '<div class="ui-bubble ui-bubble--processing">' +
-          '<span class="ui-dots" aria-hidden="true"><span></span><span></span><span></span></span>' +
-          '<span>症状を分析しています…</span>' +
+      processingBubbleHtml(recoOpts) +
+      '<div class="ui-msg ui-msg--bot"' + (recoOpts.demoStreamingProcessing ? ' data-demo-reveal-after-processing hidden' : '') + '>' +
+        '<div class="ui-bubble ui-bubble--reco">' + recoBlock(recoLayout, recoOpts) + '</div>' +
+      '</div>' +
+      '<div class="ui-msg ui-msg--bot"' + (recoOpts.demoStreamingProcessing ? ' data-demo-reveal-after-processing hidden' : '') + '>' +
+        '<div class="ui-bubble ui-bubble--chat ui-bubble--manual">' +
+          '<strong>👤 薬剤師からの返信</strong><br><br>' +
+          '現在服用中のお薬があれば教えてください。より安全なご提案のため確認させていただきます。' +
         '</div>' +
       '</div>' +
-      '<div class="ui-msg ui-msg--bot">' +
-        '<div class="ui-bubble">' + recoBlock(recoLayout, recoOpts) + '</div>' +
-      '</div>' +
-      '<div class="ui-msg ui-msg--bot">' +
-        '<div class="ui-bubble ui-bubble--manual">' +
-          '<strong>👤 薬剤師 返信</strong><br><br>' +
-          '追加で、現在服用中のお薬があれば教えてください。より安全な提案のため確認させていただきます。' +
-        '</div>' +
-      '</div>' +
-      '<div class="ui-msg ui-msg--bot">' +
-        '<div class="ui-bubble">' +
-          '<strong>❓ 追加でお伺いしたいこと</strong>（優先度: 重要）<br>' +
-          'より安全な使用のため、以下を教えてください：<ul style="margin:8px 0;padding-left:1.2em">' +
+      '<div class="ui-msg ui-msg--bot"' + (recoOpts.demoStreamingProcessing ? ' data-demo-reveal-after-processing hidden' : '') + '>' +
+        '<div class="ui-bubble ui-bubble--chat">' +
+          '<strong>❓ 追加でお伺いしたいこと</strong>' +
+          '<span class="ui-priority-badge">（優先度: 重要）</span><br>' +
+          '安全のため、以下の情報を教えてください：<ul class="ui-followup-list">' +
           '<li>アレルギーはありますか？</li><li>現在の体温は何度ですか？</li></ul>' +
+          '<p class="ui-followup-hint">💡 上記の質問への回答や、その他伝えたいことがあれば、下の入力欄からお送りください。</p>' +
           '<button type="button" class="ui-btn ui-btn--primary ui-btn--block" data-modal="attribute">📋 追加情報を入力</button>' +
         '</div>' +
       '</div>'
@@ -520,7 +547,7 @@
             '<div class="ui-form-group"><label>アレルギー</label><input type="text" placeholder="例: 花粉、卵"></div>' +
             '<div class="ui-form-group"><label>服用中の薬</label><input type="text" placeholder="例: 血圧の薬"></div>' +
             '<div class="ui-form-group"><label>既往症</label><input type="text" placeholder="例: 糖尿病"></div>' +
-            '<div class="ui-form-group"><label>その他</label><textarea rows="3" placeholder="眠気が心配 等"></textarea></div>' +
+            '<div class="ui-form-group"><label>その他</label><textarea rows="2" placeholder="眠気が心配 等"></textarea></div>' +
             '<button type="button" class="ui-btn ui-btn--primary ui-btn--block" data-toast="保存しました（デモ）">💾 保存</button>' +
           '</div>' +
         '</div>' +
@@ -624,6 +651,353 @@
     );
   }
 
+  function toolbarGlyphHtml(iconId, useLineIcons) {
+    if (!useLineIcons) {
+      var emoji = { user: '👤', trash: '🗑️', refresh: '🔄', pharmacist: '👨‍⚕️', info: 'ℹ️' };
+      return '<span class="ui-toolbar-btn__glyph" aria-hidden="true">' + (emoji[iconId] || '') + '</span>';
+    }
+    var svgs = {
+      user: '<svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20v-1a7 7 0 0 1 14 0v1"/></svg>',
+      trash: '<svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 12a1 1 0 0 0 1 .9h6a1 1 0 0 0 1-.9L17 7"/></svg>',
+      refresh: '<svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.2 5.5"/><path d="M20 4v7h-7"/></svg>',
+      pharmacist: '<svg class="ui-toolbar-icon ui-toolbar-icon--filled" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="7" r="3.75" fill="currentColor"/><path fill="currentColor" d="M5 20v-1.75c0-3.6 3.1-5.75 7-5.75s7 2.15 7 5.75V20H5z"/></svg>',
+      info: '<svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg>'
+    };
+    return '<span class="ui-toolbar-btn__glyph ui-toolbar-btn__glyph--svg" aria-hidden="true">' + (svgs[iconId] || '') + '</span>';
+  }
+
+  function hasSafetyRailStrip(opts) {
+    opts = opts || {};
+    if (opts.hideToolbarUserBtn) return true;
+    if (opts.layout === 'safety') return true;
+    return !!(opts.hybridStrips && opts.hybridStrips.indexOf('safety') >= 0);
+  }
+
+  function safetyPersonIconSvg() {
+    return (
+      '<svg class="ui-safety-rail__icon-svg ui-safety-rail__icon-svg--person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<circle cx="12" cy="8" r="3.5"/>' +
+        '<path d="M5 20v-1a7 7 0 0 1 14 0v1"/>' +
+      '</svg>'
+    );
+  }
+
+  var PROCESSING_DEMO_STEPS = [
+    { label: '入力を確認しています', step: 1, total: 8, percent: 10 },
+    { label: '症状の種類を分析しています', step: 2, total: 8, percent: 22 },
+    { label: 'お客様情報を確認しています', step: 3, total: 8, percent: 35 },
+    { label: '症状の内容を読み取り、該当する市販薬の種類を判定しています', step: 4, total: 8, percent: 52 },
+    { label: 'お薬を選定しています', step: 5, total: 8, percent: 68 },
+    { label: '安全性を確認しています', step: 6, total: 8, percent: 82 },
+    { label: '使用上の注意を作成しています', step: 7, total: 8, percent: 92 },
+    { label: '回答を仕上げています', step: 8, total: 8, percent: 98 }
+  ];
+
+  function renderProcessingStatusFallback(host, state) {
+    var wrapper = host.querySelector('.processing-status-wrapper');
+    if (!wrapper) return;
+    var card = wrapper.querySelector('.processing-status-card');
+    if (!card) {
+      wrapper.innerHTML =
+        '<div class="processing-status-card">' +
+          '<div class="processing-status-header">' +
+            '<span class="processing-status-badge">AI分析中</span>' +
+            '<span class="processing-status-step-pill"></span>' +
+          '</div>' +
+          '<p class="processing-status-label"></p>' +
+          '<div class="processing-status-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="処理の進捗">' +
+            '<div class="processing-status-bar-fill"></div>' +
+          '</div>' +
+        '</div>';
+      card = wrapper.querySelector('.processing-status-card');
+    }
+    var pill = card.querySelector('.processing-status-step-pill');
+    var label = card.querySelector('.processing-status-label');
+    var track = card.querySelector('.processing-status-track');
+    var fill = card.querySelector('.processing-status-bar-fill');
+    if (pill) pill.textContent = state.step + ' / ' + state.total;
+    if (label) label.textContent = state.label;
+    if (track) {
+      track.setAttribute('aria-valuenow', String(state.percent));
+    }
+    if (fill) fill.style.width = state.percent + '%';
+  }
+
+  function updateProcessingHost(host, state) {
+    if (!host || !state) return;
+    if (window.ProcessingStatus && ProcessingStatus.renderProcessingStatus) {
+      ProcessingStatus.renderProcessingStatus(host, {
+        active: true,
+        label: state.label,
+        step: state.step,
+        total: state.total,
+        percent: state.percent,
+        badge: 'AI分析中',
+        progressAria: '処理の進捗'
+      });
+      return;
+    }
+    renderProcessingStatusFallback(host, state);
+  }
+
+  function processingBubbleHtml() {
+    return (
+      '<div class="ui-msg ui-msg--bot" data-processing-msg>' +
+        '<div class="ui-bubble ui-bubble--chat ui-bubble--processing-host">' +
+          '<div class="processing-status-bubble" data-processing-host>' +
+            '<div class="processing-status-wrapper"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function initProcessingStreamDemo(root, opts) {
+    var host = root.querySelector('[data-processing-host]');
+    if (!host) return;
+
+    var steps = PROCESSING_DEMO_STEPS;
+    var streamDemo = !!(opts && opts.demoStreamingProcessing);
+    var afterNodes = root.querySelectorAll('[data-demo-reveal-after-processing]');
+
+    if (streamDemo) {
+      afterNodes.forEach(function (node) { node.hidden = true; });
+    }
+
+    var idx = streamDemo ? 0 : 3;
+    updateProcessingHost(host, steps[idx]);
+
+    if (!streamDemo) return;
+
+    function tick() {
+      idx += 1;
+      if (idx >= steps.length) {
+        setTimeout(function () {
+          var procMsg = root.querySelector('[data-processing-msg]');
+          if (procMsg) procMsg.remove();
+          afterNodes.forEach(function (node) {
+            node.hidden = false;
+            node.classList.add('ui-msg--reveal');
+          });
+        }, 500);
+        return;
+      }
+      updateProcessingHost(host, steps[idx]);
+      setTimeout(tick, 850);
+    }
+
+    setTimeout(tick, 850);
+  }
+
+  function safetyChipHtml(chip) {
+    var cls = 'ui-safety-chip';
+    if (chip.type === 'ok') cls += ' ui-safety-chip--ok';
+    else if (chip.type === 'warn') cls += ' ui-safety-chip--warn';
+    else if (chip.type === 'pending') cls += ' ui-safety-chip--pending';
+    else if (chip.type === 'info') cls += ' ui-safety-chip--info';
+    return '<em class="' + cls + '">' + esc(chip.label) + '</em>';
+  }
+
+  function buildSafetyRailContext(opts) {
+    opts = opts || {};
+    var session = opts.headerSession || {};
+    var profile = opts.safetyProfile || {};
+    var age = profile.age || session.age;
+    var gender = profile.gender || session.gender;
+    var chips = [];
+    var pendingCount = 0;
+
+    if (age) {
+      var identity = age + (gender ? '·' + gender : '');
+      chips.push({ type: 'ok', label: identity });
+    } else {
+      chips.push({ type: 'pending', label: '年齢未登録' });
+      pendingCount += 1;
+    }
+
+    var allergies = profile.allergies;
+    if (allergies === 'none' || allergies === 'なし') {
+      chips.push({ type: 'ok', label: 'アレルギーなし' });
+    } else if (allergies) {
+      chips.push({ type: 'warn', label: 'アレルギー: ' + allergies });
+    } else {
+      chips.push({ type: 'pending', label: 'アレルギー未登録' });
+      pendingCount += 1;
+    }
+
+    var medications = profile.medications;
+    if (medications === 'none' || medications === 'なし') {
+      chips.push({ type: 'ok', label: '服用薬なし' });
+    } else if (medications) {
+      chips.push({ type: 'info', label: '服用中: ' + medications });
+    } else {
+      chips.push({ type: 'pending', label: '服用薬未登録' });
+      pendingCount += 1;
+    }
+
+    var showPregnancy = profile.showPregnancy || gender === '女性';
+    if (showPregnancy) {
+      if (profile.pregnant === true) {
+        chips.push({ type: 'warn', label: '妊娠中' });
+      } else if (profile.pregnant === false && profile.breastfeeding !== true) {
+        chips.push({ type: 'ok', label: '妊娠·授乳なし' });
+      } else if (profile.breastfeeding === true) {
+        chips.push({ type: 'warn', label: '授乳中' });
+      } else {
+        chips.push({ type: 'pending', label: '妊娠·授乳 未確認' });
+        pendingCount += 1;
+      }
+    }
+
+    var recoFlags = profile.recoFlags || [];
+    recoFlags.forEach(function (flag) {
+      chips.push({ type: 'warn', label: flag });
+    });
+
+    var ctaLabel = pendingCount > 0 ? '情報を追加' : '編集';
+    var statusHtml = '';
+    if (pendingCount > 0) {
+      statusHtml =
+        '<span class="ui-safety-rail__status ui-safety-rail__status--pending">' +
+          pendingCount + '件未登録' +
+        '</span>';
+    } else if (recoFlags.length > 0) {
+      statusHtml = '<span class="ui-safety-rail__status ui-safety-rail__status--warn">要確認</span>';
+    } else {
+      statusHtml = '<span class="ui-safety-rail__status ui-safety-rail__status--ok">登録済み</span>';
+    }
+
+    return {
+      chips: chips,
+      pendingCount: pendingCount,
+      ctaLabel: ctaLabel,
+      statusHtml: statusHtml,
+      hint: pendingCount > 0
+        ? '未登録の項目があると、より安全な提案がしづらくなります。'
+        : '登録情報は推奨の安全性チェックに利用されます。'
+    };
+  }
+
+  function safetyRailHtml(compact, opts) {
+    opts = opts || {};
+    var ctx = buildSafetyRailContext(opts);
+    var compactClass = compact ? ' ui-safety-rail--compact' : '';
+    var chipsHtml = ctx.chips.map(safetyChipHtml).join('');
+    var title = compact ? 'あなたの情報' : 'あなたの情報（安全チェック）';
+    var ctaLabel = ctx.ctaLabel;
+    return (
+      '<div class="ui-safety-rail' + compactClass + '" role="region" aria-label="ユーザー登録情報と安全チェック">' +
+        '<div class="ui-safety-rail__icon" aria-hidden="true">' +
+          (compact ? safetyPersonIconSvg() : '🛡️') +
+        '</div>' +
+        '<div class="ui-safety-rail__body">' +
+          '<div class="ui-safety-rail__head">' +
+            '<strong>' + esc(title) + '</strong>' +
+            ctx.statusHtml +
+          '</div>' +
+          (compact
+            ? ''
+            : '<p class="ui-safety-rail__hint">' + esc(ctx.hint) + '</p>') +
+          '<span class="ui-safety-rail__items app-scrollbar">' + chipsHtml + '</span>' +
+        '</div>' +
+        '<button type="button" class="ui-safety-rail__cta" data-modal="userinfo">' + esc(ctaLabel) + '</button>' +
+      '</div>'
+    );
+  }
+
+  function wizardStripHtml(activeStep) {
+    var steps = [
+      { n: 1, label: '症状' },
+      { n: 2, label: '属性' },
+      { n: 3, label: '推奨' },
+      { n: 4, label: '確認' }
+    ];
+    var step = activeStep || 3;
+    return (
+      '<nav class="ui-wizard-strip" aria-label="相談の進捗">' +
+        '<ol class="ui-wizard-steps">' +
+          steps.map(function (s) {
+            var cls = 'ui-wizard-step';
+            if (s.n < step) cls += ' ui-wizard-step--done';
+            if (s.n === step) cls += ' ui-wizard-step--active';
+            return (
+              '<li class="' + cls + '" data-wizard-step="' + s.n + '">' +
+                '<span class="ui-wizard-step__num" aria-hidden="true">' + (s.n < step ? '✓' : s.n) + '</span>' +
+                '<span class="ui-wizard-step__label">' + esc(s.label) + '</span>' +
+              '</li>'
+            );
+          }).join('') +
+        '</ol>' +
+        '<p class="ui-wizard-hint">ステップ ' + step + '/4 — 推奨結果を確認してください</p>' +
+      '</nav>'
+    );
+  }
+
+  function familyStripHtml() {
+    return (
+      '<div class="ui-family-strip" role="tablist" aria-label="相談対象の切替">' +
+        '<span class="ui-family-strip__label">相談対象</span>' +
+        ['本人', '父', '母', '子ども'].map(function (name, i) {
+          return (
+            '<button type="button" class="ui-family-tab' + (i === 0 ? ' is-active' : '') + '" role="tab" data-family-tab="' + i + '" aria-selected="' + (i === 0 ? 'true' : 'false') + '">' +
+              '<span class="ui-family-tab__avatar" aria-hidden="true">' + ['👤', '👴', '👵', '👧'][i] + '</span>' +
+              '<span>' + esc(name) + '</span>' +
+              (i === 0 ? '<span class="ui-family-tab__meta">30歳</span>' : '') +
+            '</button>'
+          );
+        }).join('') +
+        '<button type="button" class="ui-family-add" data-modal="userinfo" title="家族を追加">＋</button>' +
+      '</div>'
+    );
+  }
+
+  function triageStripHtml() {
+    return (
+      '<div class="ui-triage-strip" role="group" aria-label="つらさの程度">' +
+        '<p class="ui-triage-strip__lead">今のつらさはどのくらいですか？</p>' +
+        '<div class="ui-triage-options">' +
+          '<button type="button" class="ui-triage-btn" data-triage="mild">軽い</button>' +
+          '<button type="button" class="ui-triage-btn is-active" data-triage="moderate">普通</button>' +
+          '<button type="button" class="ui-triage-btn" data-triage="severe">つらい</button>' +
+          '<button type="button" class="ui-triage-btn ui-triage-btn--urgent" data-triage="urgent">今すぐ受診</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function checklistStripHtml() {
+    return (
+      '<div class="ui-checklist-strip" role="region" aria-label="推奨前の確認事項">' +
+        '<h2 class="ui-checklist-strip__title">推奨の前に確認させてください</h2>' +
+        '<ul class="ui-checklist">' +
+          '<li class="ui-checklist-item ui-checklist-item--done"><span>年齢・性別</span><button type="button" class="ui-checklist-edit" data-modal="userinfo">編集</button></li>' +
+          '<li class="ui-checklist-item ui-checklist-item--done"><span>アレルギー</span><span class="ui-checklist-val">なし</span></li>' +
+          '<li class="ui-checklist-item ui-checklist-item--pending"><span>服用中のお薬</span><button type="button" class="ui-checklist-edit" data-modal="attribute">入力する</button></li>' +
+          '<li class="ui-checklist-item ui-checklist-item--pending"><span>妊娠・授乳</span><button type="button" class="ui-checklist-edit" data-modal="attribute">入力する</button></li>' +
+        '</ul>' +
+        '<p class="ui-checklist-note">未入力の項目があると、より安全な提案のため追加質問が表示されます。</p>' +
+      '</div>'
+    );
+  }
+
+  function explainPanelHtml() {
+    return (
+      '<aside class="ui-split-pane ui-split-pane--left ui-explain-pane app-scrollbar" aria-label="推奨の根拠">' +
+        '<div class="ui-explain-panel">' +
+          '<h2 class="ui-explain-title">なぜこの薬？</h2>' +
+          '<p class="ui-explain-sub">ルールベースの判断過程（デモ）</p>' +
+          '<ol class="ui-explain-chain">' +
+            '<li class="ui-explain-step ui-explain-step--done"><span class="ui-explain-step__n">1</span><div><strong>症状抽出</strong><p>のど痛・発熱・鼻水を検出</p></div></li>' +
+            '<li class="ui-explain-step ui-explain-step--done"><span class="ui-explain-step__n">2</span><div><strong>候補絞込</strong><p>総合感冒薬 847件 → 312件</p></div></li>' +
+            '<li class="ui-explain-step ui-explain-step--done"><span class="ui-explain-step__n">3</span><div><strong>スコアリング</strong><p>症状適合 94% · 年齢適合 100%</p></div></li>' +
+            '<li class="ui-explain-step ui-explain-step--active"><span class="ui-explain-step__n">4</span><div><strong>第1候補</strong><p>ルルアタックTR — 成分バランスが最適</p></div></li>' +
+          '</ol>' +
+          '<div class="ui-explain-disclaimer">AIは順位を決めません。最終判断は登録販売者・薬剤師にご相談ください。</div>' +
+        '</div>' +
+      '</aside>'
+    );
+  }
+
   function timelineHtml() {
     return (
       '<aside class="ui-split-pane ui-split-pane--left app-scrollbar" aria-label="症状タイムライン">' +
@@ -646,8 +1020,19 @@
   }
 
   function chatPaneHtml(recoLayout, layout, recoOpts) {
+    recoOpts = recoOpts || {};
     var orbHtml = layout === 'orb'
       ? '<div class="ui-orb" aria-hidden="true"><span class="ui-orb-core"></span><span class="ui-orb-ring"></span></div>'
+      : '';
+    var recoveryVoice = layout === 'recovery'
+      ? '<div class="ui-recovery-voice" role="region" aria-label="音声入力">' +
+          '<button type="button" class="ui-recovery-voice__btn" data-toast="音声で症状を話す（デモ）" aria-label="音声で症状を入力">' +
+            '<span class="ui-recovery-voice__pulse" aria-hidden="true"></span>' +
+            '<span class="ui-recovery-voice__icon" aria-hidden="true">🎤</span>' +
+            '<span class="ui-recovery-voice__label">声で伝える</span>' +
+          '</button>' +
+          '<p class="ui-recovery-voice__hint">文字を打つのがつらいときは、タップして話してください</p>' +
+        '</div>'
       : '';
     return (
       '<div class="ui-split-pane ui-split-pane--right">' +
@@ -655,18 +1040,18 @@
           '<div class="ui-particles" aria-hidden="true" id="particles"></div>' +
           messagesHtml(recoLayout, recoOpts) +
         '</div>' +
-        '<div class="ui-input-bar">' +
+        recoveryVoice +
+        '<div class="ui-input-bar ui-input-bar--compact">' +
           '<form class="ui-input-row" id="chat-form" onsubmit="return false">' +
             '<button type="button" class="ui-mic" title="音声入力" data-toast="音声入力（デモ）">🎤</button>' +
-            '<div class="ui-textarea-wrap"><textarea class="ui-textarea app-scrollbar" rows="1" placeholder="症状を入力してください…" id="msg-input"></textarea></div>' +
+            '<div class="ui-textarea-wrap"><textarea class="ui-textarea app-scrollbar" rows="1" placeholder="症状を入力してください..." id="msg-input"></textarea></div>' +
             '<button type="submit" class="ui-send" title="送信">➤</button>' +
           '</form>' +
         '</div>' +
         (layout === 'compact' || layout === 'orb' || layout === 'wearable' || layout === 'wechat' || layout === 'whatsapp'
           ? '<nav class="ui-bottom-nav' + (layout === 'wechat' ? ' ui-bottom-nav--wechat' : '') + '" aria-label="クイック操作">' +
               '<button type="button" class="ui-nav-btn" data-modal="userinfo"><span>👤</span><span>情報</span></button>' +
-              '<button type="button" class="ui-nav-btn" data-toast="履歴クリア"><span>🗑️</span><span>クリア</span></button>' +
-              '<button type="button" class="ui-nav-btn" data-toast="新セッション"><span>🔄</span><span>新規</span></button>' +
+              '<button type="button" class="ui-nav-btn" data-toast="会話をリセットしました（デモ）"><span>🔄</span><span>リセット</span></button>' +
               '<button type="button" class="ui-nav-btn" data-modal="info"><span>ℹ️</span><span>ヘルプ</span></button>' +
               '<button type="button" class="ui-nav-btn" data-toast="薬剤師要請"><span>👨‍⚕️</span><span>要請</span></button>' +
             '</nav>'
@@ -676,18 +1061,259 @@
     );
   }
 
+  function langBlockHtml() {
+    return (
+      '<div class="ui-lang">' +
+        '<button type="button" class="ui-lang-btn" id="lang-toggle" aria-expanded="false">🇯🇵 ▼</button>' +
+        '<div class="ui-lang-dropdown" id="lang-menu">' +
+          ['🇯🇵 日本語', '🇺🇸 English', '🇰🇷 한국어', '🇨🇳 中文'].map(function (l, i) {
+            return '<button type="button" class="ui-lang-option' + (i === 0 ? ' active' : '') + '">' + l + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function headerOverflowMenuHtml(menuIcon) {
+    var icon = menuIcon || '☰';
+    return (
+      '<div class="ui-header-overflow">' +
+        '<button type="button" class="ui-icon-btn ui-header-menu-btn" id="header-menu-toggle" aria-expanded="false" aria-label="その他の操作"><span aria-hidden="true">' + icon + '</span></button>' +
+        '<div class="ui-header-menu" id="header-menu" aria-hidden="true">' +
+          '<button type="button" class="ui-header-menu-item" data-modal="info">ℹ️ アプリ情報</button>' +
+          '<button type="button" class="ui-header-menu-item" data-modal="userinfo">👤 ユーザー情報</button>' +
+          '<button type="button" class="ui-header-menu-item" data-toast="会話をリセットしました（デモ）">🔄 会話をリセット</button>' +
+          '<button type="button" class="ui-header-menu-item" data-toast="薬剤師要請（デモ）">👨‍⚕️ 薬剤師要請</button>' +
+          '<button type="button" class="ui-header-menu-item" id="show-onboarding-menu">📖 ガイド</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function resolveHeaderStyle(opts) {
+    var layout = opts.layout || 'default';
+    if (opts.headerStyle) return opts.headerStyle;
+    if (layout === 'whatsapp' || layout === 'wechat') return 'platform';
+    if (layout === 'orb' || layout === 'wearable') return 'minimal';
+    if (layout === 'compact') return 'compact';
+    if (layout === 'recovery') return 'floating';
+    return 'default';
+  }
+
+  function contextualTitle(opts) {
+    var step = opts.wizardStep || opts.contextStep || 1;
+    var titles = {
+      1: { h: '症状を教えてください', p: 'のどの痛み・発熱・鼻水など' },
+      2: { h: 'あなたの情報', p: '年齢やアレルギーを登録' },
+      3: { h: 'おすすめの市販薬', p: '症状に合う候補を比較' },
+      4: { h: '確認と次のステップ', p: '用法・受診の目安をチェック' }
+    };
+    return titles[step] || titles[1];
+  }
+
+  function toolbarPhaseText(opts) {
+    var brand = opts.headerBrand || {};
+    if (brand.phase) return brand.phase;
+    var step = opts.wizardStep || opts.contextStep || 1;
+    var symptoms = opts.headerSymptoms || ['のど痛', '発熱'];
+    if (step === 1) return 'チャットまたは音声で入力';
+    if (step === 2) return 'より安全な提案のために';
+    if (step === 3) {
+      return symptoms.slice(0, 2).join('・') + '向け · 候補3件';
+    }
+    if (step === 4) return '服用前にご確認ください';
+    return contextualTitle(opts).p;
+  }
+
+  function headerHtml(opts) {
+    var style = resolveHeaderStyle(opts);
+    var brand = opts.headerBrand || {};
+    var title = brand.title || 'チャット型医薬品相談';
+    var subtitle = brand.subtitle || '症状を入力してOTC医薬品の候補を確認';
+
+    if (style === 'toolbar') {
+      var toolbarTitle = brand.title || 'チャット型医薬品相談ツール';
+      var toolbarPhase = brand.phase || brand.subtitle || '症状に合う市販薬をご案内します。';
+      var sessionTb = opts.headerSession || { complete: true };
+      var userBadgeClass = sessionTb.complete ? ' ui-toolbar-btn__badge--ok' : ' ui-toolbar-btn__badge--warn';
+      var lineIcons = opts.toolbarIcons === 'line';
+      var toolbarClass = lineIcons ? ' ui-header-toolbar--line-icons' : '';
+      var hideUserBtn = hasSafetyRailStrip(opts);
+      var userBtnHtml = hideUserBtn
+        ? ''
+        : (
+          '<button type="button" class="ui-toolbar-btn ui-toolbar-btn--badge" data-modal="userinfo" title="ユーザー情報" aria-label="ユーザー情報">' +
+            toolbarGlyphHtml('user', lineIcons) +
+            '<span class="ui-toolbar-btn__badge' + userBadgeClass + '" aria-hidden="true"></span>' +
+          '</button>'
+        );
+      return (
+        '<header class="ui-header ui-header--toolbar">' +
+          langBlockHtml() +
+          '<div class="ui-brand ui-brand--toolbar">' +
+            '<h1>' + esc(toolbarTitle) + '</h1>' +
+            '<p class="ui-header-phase">' + esc(toolbarPhase) + '</p>' +
+          '</div>' +
+          '<nav class="ui-header-toolbar' + toolbarClass + '" aria-label="クイック操作">' +
+            userBtnHtml +
+            '<button type="button" class="ui-toolbar-btn" data-toast="会話をリセットしました（デモ）" title="会話をリセット" aria-label="会話をリセット">' + toolbarGlyphHtml('refresh', lineIcons) + '</button>' +
+            '<button type="button" class="ui-toolbar-btn ui-toolbar-btn--pharmacist" data-toast="薬剤師に相談（デモ）" title="薬剤師に相談" aria-label="薬剤師に相談">' + toolbarGlyphHtml('pharmacist', lineIcons) + '</button>' +
+            '<button type="button" class="ui-toolbar-btn" data-modal="info" title="アプリ情報" aria-label="アプリ情報">' + toolbarGlyphHtml('info', lineIcons) + '</button>' +
+          '</nav>' +
+        '</header>'
+      );
+    }
+
+    if (style === 'session') {
+      return (
+        '<header class="ui-header ui-header--session">' +
+          langBlockHtml() +
+          '<button type="button" class="ui-session-chip" data-modal="userinfo" aria-label="ユーザー情報を編集">' +
+            '<span class="ui-session-chip__avatar" aria-hidden="true">👤</span>' +
+            '<span class="ui-session-chip__body">' +
+              '<strong>30歳 · 男性</strong>' +
+              '<span>アレルギーなし · 服用中の薬なし</span>' +
+            '</span>' +
+            '<span class="ui-session-chip__edit" aria-hidden="true">✎</span>' +
+          '</button>' +
+          '<div class="ui-header-session-actions">' +
+            '<button type="button" class="ui-icon-btn" data-toast="薬剤師要請（デモ）" aria-label="薬剤師要請">👨‍⚕️</button>' +
+            '<button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button>' +
+          '</div>' +
+        '</header>'
+      );
+    }
+
+    if (style === 'overflow' || style === 'floating') {
+      var floatingClass = style === 'floating' ? ' ui-header--floating' : '';
+      return (
+        '<header class="ui-header ui-header--overflow' + floatingClass + '">' +
+          (style === 'floating'
+            ? '<div class="ui-header-logo" aria-hidden="true">💊</div>'
+            : langBlockHtml()) +
+          '<div class="ui-brand ui-brand--compact">' +
+            '<h1>' + esc(style === 'floating' ? 'OTC医薬品相談' : title) + '</h1>' +
+            (style === 'floating' ? '' : '<p>' + esc(subtitle) + '</p>') +
+          '</div>' +
+          (style === 'floating' ? langBlockHtml() : '') +
+          headerOverflowMenuHtml() +
+        '</header>'
+      );
+    }
+
+    if (style === 'pharmacy') {
+      return (
+        '<header class="ui-header ui-header--pharmacy">' +
+          '<div class="ui-pharmacy-mark" aria-hidden="true"><span>薬</span></div>' +
+          '<div class="ui-brand ui-brand--pharmacy">' +
+            '<h1>薬局相談窓口</h1>' +
+            '<p>登録販売者監修 · OTC自助療養支援</p>' +
+          '</div>' +
+          '<span class="ui-header-trust-pill">✓ 監修済</span>' +
+          langBlockHtml() +
+          '<div class="ui-info"><button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button></div>' +
+        '</header>'
+      );
+    }
+
+    if (style === 'contextual') {
+      var ctx = contextualTitle(opts);
+      return (
+        '<header class="ui-header ui-header--contextual">' +
+          '<button type="button" class="ui-header-back" data-toast="前のステップ（デモ）" aria-label="戻る">←</button>' +
+          '<div class="ui-brand ui-brand--contextual">' +
+            '<h1>' + esc(ctx.h) + '</h1>' +
+            '<p>' + esc(ctx.p) + '</p>' +
+          '</div>' +
+          langBlockHtml() +
+          '<div class="ui-info"><button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button></div>' +
+        '</header>'
+      );
+    }
+
+    if (style === 'smart') {
+      var ctx = contextualTitle(opts);
+      var session = opts.headerSession || { age: '30歳', gender: '男性', allergy: 'なし', complete: true };
+      var sessionLabel = session.age + (session.gender ? ' · ' + session.gender : '');
+      var sessionTitle = 'ユーザー情報: ' + sessionLabel + '、アレルギー' + (session.allergy || '未登録');
+      return (
+        '<header class="ui-header ui-header--smart">' +
+          langBlockHtml() +
+          '<div class="ui-brand ui-brand--smart">' +
+            '<div class="ui-brand-smart-main">' +
+              '<span class="ui-brand-smart-mark" aria-hidden="true">' +
+                '<svg viewBox="0 0 24 24" width="20" height="20" focusable="false"><path fill="currentColor" d="M12 2a3 3 0 0 1 3 3v1h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2V5a3 3 0 0 1 3-3zm-1 4h2V5a1 1 0 1 0-2 0v1z"/></svg>' +
+              '</span>' +
+              '<div class="ui-brand-smart-text">' +
+                '<h1>OTC相談</h1>' +
+                '<p class="ui-header-phase" id="header-phase">' + esc(ctx.p) + '</p>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="ui-header-smart-end">' +
+            '<button type="button" class="ui-smart-session' + (session.complete ? ' ui-smart-session--ok' : ' ui-smart-session--warn') + '" data-modal="userinfo" title="' + esc(sessionTitle) + '" aria-label="' + esc(sessionTitle) + '">' +
+              '<span class="ui-smart-session__dot" aria-hidden="true"></span>' +
+              '<span class="ui-smart-session__text">' + esc(sessionLabel) + '</span>' +
+            '</button>' +
+            '<button type="button" class="ui-smart-pharmacist" data-toast="薬剤師に相談（デモ）" aria-label="薬剤師に相談">' +
+              '<svg class="ui-smart-pharmacist__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+                '<path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-6 8v-1.2c0-2.2 2.7-3.8 6-3.8s6 1.6 6 3.8V20H6z"/>' +
+                '<path fill="currentColor" d="M18 8h2v2h-2v3h-2v-3h-2V8h2V6h2v2z"/>' +
+              '</svg>' +
+              '<span class="ui-smart-pharmacist__label">薬剤師</span>' +
+            '</button>' +
+            headerOverflowMenuHtml('⋯') +
+          '</div>' +
+        '</header>'
+      );
+    }
+
+    if (style === 'minimal' || style === 'compact' || style === 'platform') {
+      var platformClass = style === 'platform' ? ' ui-header--platform' : '';
+      var minimalClass = style === 'minimal' ? ' ui-header--minimal' : '';
+      var compactClass = style === 'compact' ? ' ui-header--compact-nav' : '';
+      return (
+        '<header class="ui-header' + platformClass + minimalClass + compactClass + '">' +
+          langBlockHtml() +
+          '<div class="ui-brand">' +
+            '<h1>' + esc(title) + '</h1>' +
+            (style === 'minimal' ? '' : '<p>' + esc(subtitle) + '</p>') +
+          '</div>' +
+          '<div class="ui-info"><button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button></div>' +
+        '</header>'
+      );
+    }
+
+    return (
+      '<header class="ui-header">' +
+        langBlockHtml() +
+        '<div class="ui-brand">' +
+          '<h1>' + esc(title) + '</h1>' +
+          '<p>' + esc(subtitle) + '</p>' +
+        '</div>' +
+        '<div class="ui-info"><button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button></div>' +
+        '<div class="ui-actions">' +
+          '<button type="button" class="ui-action-btn ui-action-btn--primary" data-modal="userinfo">👤 ユーザー情報</button>' +
+          '<button type="button" class="ui-action-btn ui-action-btn--ghost" data-toast="会話をリセットしました（デモ）">🔄 会話をリセット</button>' +
+          '<button type="button" class="ui-action-btn ui-action-btn--warn" data-toast="薬剤師要請（デモ）">👨‍⚕️ 薬剤師要請</button>' +
+          '<button type="button" class="ui-action-btn ui-action-btn--ghost" id="show-onboarding">📖 ガイド</button>' +
+        '</div>' +
+      '</header>'
+    );
+  }
+
   function shellHtml(opts) {
     var layout = opts.layout || 'default';
     var recoLayout = opts.recoLayout || 'carousel';
     var recoOpts = {
       carouselStyle: opts.carouselStyle || (recoLayout === 'carousel' ? 'pro' : 'playful'),
-      a11yPictogram: !!opts.a11yPictogram
+      a11yPictogram: !!opts.a11yPictogram,
+      headerSession: opts.headerSession,
+      headerSymptoms: opts.headerSymptoms,
+      demoStreamingProcessing: !!opts.demoStreamingProcessing
     };
     var showDev = opts.showDev !== false;
-    var headerClass = 'ui-header';
-    if (layout === 'compact' || layout === 'orb' || layout === 'wearable' || layout === 'whatsapp' || layout === 'wechat') headerClass += ' ui-header--compact-nav';
-    if (layout === 'orb' || layout === 'wearable') headerClass += ' ui-header--minimal';
-    if (layout === 'whatsapp' || layout === 'wechat') headerClass += ' ui-header--platform';
+    var headerStyle = resolveHeaderStyle(opts);
 
     var viewportHtml;
     if (layout === 'split') {
@@ -700,6 +1326,12 @@
       viewportHtml =
         '<div class="ui-viewport ui-viewport--split">' +
           bodymapHtml() +
+          chatPaneHtml(recoLayout, layout, recoOpts) +
+        '</div>';
+    } else if (layout === 'explain') {
+      viewportHtml =
+        '<div class="ui-viewport ui-viewport--split">' +
+          explainPanelHtml() +
           chatPaneHtml(recoLayout, layout, recoOpts) +
         '</div>';
     } else if (layout === 'wearable') {
@@ -717,32 +1349,16 @@
     var stripHtml = '';
     if (layout === 'telehealth') stripHtml = telehealthStripHtml();
     if (layout === 'pharmacist') stripHtml = pharmacistStripHtml();
+    if (layout === 'safety') stripHtml = safetyRailHtml(!!opts.compactSafetyRail, opts);
+    if (layout === 'wizard') stripHtml = wizardStripHtml(opts.wizardStep || 3);
+    if (layout === 'family') stripHtml = familyStripHtml();
+    if (layout === 'triage') stripHtml = triageStripHtml();
+    if (layout === 'checklist') stripHtml = checklistStripHtml();
 
     return (
-      '<div class="ui-app" data-theme="' + esc(opts.theme || 'default') + '" data-layout="' + esc(layout) + '" data-reco="' + esc(recoLayout) + '" data-carousel-style="' + esc(recoOpts.carouselStyle) + '">' +
+      '<div class="ui-app" data-theme="' + esc(opts.theme || 'default') + '" data-layout="' + esc(layout) + '" data-reco="' + esc(recoLayout) + '" data-carousel-style="' + esc(recoOpts.carouselStyle) + '" data-header-style="' + esc(headerStyle) + '">' +
         (showDev ? '<span class="ui-dev-badge" role="status">UI MOCK</span>' : '') +
-        '<header class="' + headerClass + '">' +
-          '<div class="ui-lang">' +
-            '<button type="button" class="ui-lang-btn" id="lang-toggle" aria-expanded="false">🇯🇵 ▼</button>' +
-            '<div class="ui-lang-dropdown" id="lang-menu">' +
-              ['🇯🇵 日本語', '🇺🇸 English', '🇰🇷 한국어', '🇨🇳 中文'].map(function (l, i) {
-                return '<button type="button" class="ui-lang-option' + (i === 0 ? ' active' : '') + '">' + l + '</button>';
-              }).join('') +
-            '</div>' +
-          '</div>' +
-          '<div class="ui-brand">' +
-            '<h1>チャット型医薬品相談</h1>' +
-            '<p>症状を入力してOTC医薬品の候補を確認</p>' +
-          '</div>' +
-          '<div class="ui-info"><button type="button" class="ui-icon-btn" data-modal="info" aria-label="情報">ℹ️</button></div>' +
-          '<div class="ui-actions">' +
-            '<button type="button" class="ui-action-btn ui-action-btn--primary" data-modal="userinfo">👤 ユーザー情報</button>' +
-            '<button type="button" class="ui-action-btn ui-action-btn--dark" data-toast="履歴をクリア（デモ）">🗑️ 履歴クリア</button>' +
-            '<button type="button" class="ui-action-btn ui-action-btn--ghost" data-toast="新セッション（デモ）">🔄 新セッション</button>' +
-            '<button type="button" class="ui-action-btn ui-action-btn--warn" data-toast="薬剤師要請（デモ）">👨‍⚕️ 薬剤師要請</button>' +
-            '<button type="button" class="ui-action-btn ui-action-btn--ghost" id="show-onboarding">📖 ガイド</button>' +
-          '</div>' +
-        '</header>' +
+        headerHtml(opts) +
         stripHtml +
         viewportHtml +
       '</div>' +
@@ -894,6 +1510,42 @@
     });
   }
 
+  function bindTriage(root) {
+    root.querySelectorAll('[data-triage]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        root.querySelectorAll('[data-triage]').forEach(function (b) { b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        if (btn.getAttribute('data-triage') === 'urgent') {
+          toast('受診をおすすめします。緊急の場合は119番へ');
+        } else {
+          toast('重症度を記録しました（デモ）');
+        }
+      });
+    });
+  }
+
+  function bindFamilyTabs(root) {
+    root.querySelectorAll('[data-family-tab]').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        root.querySelectorAll('[data-family-tab]').forEach(function (t) {
+          t.classList.remove('is-active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected', 'true');
+        toast('相談対象を切り替えました（デモ）');
+      });
+    });
+  }
+
+  function bindWizardSteps(root) {
+    root.querySelectorAll('[data-wizard-step]').forEach(function (step) {
+      step.addEventListener('click', function () {
+        toast('ステップ ' + step.getAttribute('data-wizard-step') + '（デモ）');
+      });
+    });
+  }
+
   function bindCarousels(root) {
     root.querySelectorAll('[data-carousel-region]').forEach(function (region) {
       var wrap = region.querySelector('[data-carousel-wrap]');
@@ -969,8 +1621,59 @@
     });
   }
 
+  function bindHeaderMenu(root) {
+    var toggle = document.getElementById('header-menu-toggle');
+    var menu = document.getElementById('header-menu');
+    if (!toggle || !menu) return;
+    toggle.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      var open = menu.classList.toggle('show');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+    });
+    document.addEventListener('click', function () {
+      menu.classList.remove('show');
+      toggle.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-hidden', 'true');
+    });
+    var obMenu = document.getElementById('show-onboarding-menu');
+    if (obMenu) {
+      obMenu.addEventListener('click', function () {
+        menu.classList.remove('show');
+        obIndex = 0;
+        renderOnboarding();
+        document.getElementById('onboarding').classList.add('show');
+      });
+    }
+  }
+
   function bindEvents(root) {
     root.addEventListener('click', function (e) {
+      var scoreRing = e.target.closest('[data-score-ring]');
+      if (scoreRing) {
+        var card = scoreRing.closest('.ui-card--pro');
+        var panel = card && card.querySelector('[data-score-panel]');
+        if (panel) {
+          var willOpen = panel.hasAttribute('hidden');
+          root.querySelectorAll('[data-score-panel]').forEach(function (p) {
+            p.hidden = true;
+            var ring = p.closest('.ui-card--pro');
+            if (ring) {
+              var btn = ring.querySelector('[data-score-ring]');
+              if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.classList.remove('is-active');
+              }
+            }
+          });
+          if (willOpen) {
+            panel.hidden = false;
+            scoreRing.setAttribute('aria-expanded', 'true');
+            scoreRing.classList.add('is-active');
+          }
+        }
+        return;
+      }
       var expandBtn = e.target.closest('[data-expand]');
       if (expandBtn) {
         var detail = expandBtn.closest('.ui-card-pro-detail');
@@ -1025,9 +1728,12 @@
     }
 
     var ob = document.getElementById('onboarding');
-    document.getElementById('show-onboarding').addEventListener('click', function () {
-      obIndex = 0; renderOnboarding(); ob.classList.add('show');
-    });
+    var showOb = document.getElementById('show-onboarding');
+    if (showOb && ob) {
+      showOb.addEventListener('click', function () {
+        obIndex = 0; renderOnboarding(); ob.classList.add('show');
+      });
+    }
     document.getElementById('ob-skip').addEventListener('click', function () { ob.classList.remove('show'); });
     document.getElementById('ob-next').addEventListener('click', function () {
       if (obIndex >= ONBOARDING.length - 1) ob.classList.remove('show');
@@ -1038,6 +1744,10 @@
     bindBodymap(root);
     bindProductGrid(root);
     bindHeroRegion(root);
+    bindTriage(root);
+    bindFamilyTabs(root);
+    bindWizardSteps(root);
+    bindHeaderMenu(root);
 
     /* demo particles */
     var pc = document.getElementById('particles');
@@ -1055,6 +1765,30 @@
     }
   }
 
+  function injectHybridStrips(root, stripIds, mountOpts) {
+    mountOpts = mountOpts || {};
+    var app = root.querySelector('.ui-app');
+    if (!app || !stripIds || !stripIds.length) return;
+    var html = stripIds.filter(function (id) {
+      return id !== 'wizard';
+    }).map(function (id) {
+      if (id === 'safety') return safetyRailHtml(!!mountOpts.compactSafetyRail, mountOpts);
+      if (id === 'pharmacist') return pharmacistStripHtml();
+      if (id === 'triage') return triageStripHtml();
+      if (id === 'checklist') return checklistStripHtml();
+      return '';
+    }).join('');
+    if (!html && stripIds.indexOf('wizard') < 0) return;
+    var hybrid = document.createElement('div');
+    hybrid.className = 'ui-hybrid-strips';
+    hybrid.innerHTML = html;
+    var wizard = app.querySelector('.ui-wizard-strip');
+    var header = app.querySelector('.ui-header');
+    if (!header) return;
+    if (wizard) hybrid.appendChild(wizard);
+    header.insertAdjacentElement('afterend', hybrid);
+  }
+
   window.UIShell = {
     mount: function (targetId, options) {
       var root = document.getElementById(targetId);
@@ -1062,6 +1796,10 @@
       var opts = options || {};
       root.innerHTML = shellHtml(opts);
       bindEvents(root);
+      if (opts.hybridStrips && opts.hybridStrips.length) {
+        injectHybridStrips(root, opts.hybridStrips, opts);
+      }
+      initProcessingStreamDemo(root, opts);
       if (opts.autoOnboarding) {
         obIndex = 0;
         renderOnboarding();
