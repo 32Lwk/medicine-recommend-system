@@ -227,13 +227,49 @@
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260521-info-modal" onerror="console.error('Failed to load CSS file')">
+    {% if ui_variant == 'sage' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v=20260618-sage5" onerror="console.error('Failed to load Sage Terrace CSS')">
+    {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
-<body data-env="{{ 'dev' if is_dev_env else 'prod' }}">
+<body data-env="{{ 'dev' if is_dev_env else 'prod' }}" data-ui-variant="{{ ui_variant or 'legacy' }}">
 <script type="application/json" id="app-runtime-config">{{ runtime_client_config_json | safe }}</script>
 <script type="application/json" id="particle-profile">{{ particle_profile_json | safe }}</script>
-<div class="chat-container">
-    <div class="chat-header">
+<div class="chat-container{% if ui_variant == 'sage' %} ui-app{% endif %}"{% if ui_variant == 'sage' %} data-theme="sage-terrace" data-reco="carousel" data-carousel-style="pro"{% endif %}>
+    {% if ui_variant == 'sage' %}
+    <span class="env-badge env-badge--dev ui-dev-badge" id="envBadge" role="status" aria-label="開発環境(dev)" hidden>DEV</span>
+    <header class="ui-header ui-header--toolbar sage-header" id="sageToolbarHeader">
+        <div class="language-selector ui-lang">
+            <button type="button" class="lang-toggle ui-lang-btn" id="lang-toggle" onclick="toggleLanguageMenu()" aria-expanded="false" aria-haspopup="listbox">
+                <span id="currentFlag">🇯🇵</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="lang-dropdown ui-lang-menu" id="langDropdown" role="listbox">
+                <button type="button" class="lang-option ui-lang-option active" data-lang="ja" data-flag="🇯🇵">🇯🇵 日本語</button>
+                <button type="button" class="lang-option ui-lang-option" data-lang="en" data-flag="🇺🇸">🇺🇸 English</button>
+                <button type="button" class="lang-option ui-lang-option" data-lang="ko" data-flag="🇰🇷">🇰🇷 한국어</button>
+                <button type="button" class="lang-option ui-lang-option" data-lang="zh" data-flag="🇨🇳">🇨🇳 中文</button>
+            </div>
+        </div>
+        <div class="ui-brand ui-brand--toolbar">
+            <h1 id="appTitle"></h1>
+            <p class="ui-header-phase" id="headerPhase">症状に合う市販薬をご案内します。</p>
+        </div>
+        <nav class="ui-header-toolbar ui-header-toolbar--line-icons" aria-label="クイック操作">
+            <button type="button" class="ui-toolbar-btn" id="sage-clear-btn" title="履歴クリア" aria-label="履歴クリア">
+                <span class="ui-toolbar-btn__glyph ui-toolbar-btn__glyph--svg" aria-hidden="true"><svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 12a1 1 0 0 0 1 .9h6a1 1 0 0 0 1-.9L17 7"/></svg></span>
+            </button>
+            <button type="button" class="ui-toolbar-btn ui-toolbar-btn--pharmacist" id="sage-admin-request-btn" title="薬剤師要請" aria-label="薬剤師要請">
+                <span class="ui-toolbar-btn__glyph ui-toolbar-btn__glyph--svg" aria-hidden="true"><svg class="ui-toolbar-icon ui-toolbar-icon--filled" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.75" fill="currentColor"/><path fill="currentColor" d="M5 20v-1.75c0-3.6 3.1-5.75 7-5.75s7 2.15 7 5.75V20H5z"/></svg></span>
+            </button>
+            <button type="button" class="ui-toolbar-btn" id="sage-info-btn" onclick="openInfoModal()" title="アプリ情報" aria-label="アプリ情報">
+                <span class="ui-toolbar-btn__glyph ui-toolbar-btn__glyph--svg" aria-hidden="true"><svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="8" r="0.5" fill="currentColor"/></svg></span>
+            </button>
+        </nav>
+    </header>
+    <div id="safetyRailMount" aria-live="polite"></div>
+    {% endif %}
+    <div class="chat-header legacy-header">
         <!-- Language Selector -->
         <div class="language-selector">
             <button class="lang-toggle" onclick="toggleLanguageMenu()">
@@ -249,7 +285,7 @@
         </div>
         
         <!-- 環境バッジ（開発環境のみ表示） -->
-        <span class="env-badge env-badge--dev" id="envBadge" role="status" aria-label="開発環境(dev)" hidden>DEV</span>
+        <span class="env-badge env-badge--dev"{% if ui_variant != 'sage' %} id="envBadge"{% endif %} role="status" aria-label="開発環境(dev)" hidden>DEV</span>
 
         <!-- 情報ボタン -->
         <div class="info-selector">
@@ -444,47 +480,48 @@
     </div>
     
     <!-- モーダル -->
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" id="infoModalHeader">
+    <div id="infoModal" class="modal{% if ui_variant == 'sage' %} sage-info-modal{% endif %}">
+        <div class="modal-content{% if ui_variant == 'sage' %} ui-modal{% endif %}">
+            <div class="modal-header{% if ui_variant == 'sage' %} ui-modal-header{% endif %}" id="infoModalHeader">
                 <div class="modal-header-left">
                     <button type="button" class="back-button info-modal-back-btn" onclick="showListPage()" id="back-button" style="display: none;" aria-hidden="true">
                         ← 戻る
                     </button>
                 </div>
-                <h2 class="modal-title" id="modalTitle">アプリ情報</h2>
-                <button type="button" class="modal-close" onclick="closeInfoModal()">&times;</button>
+                <h2 class="modal-title" id="modalTitle">{% if ui_variant == 'sage' %}アプリ情報{% else %}アプリ情報{% endif %}</h2>
+                <button type="button" class="modal-close ui-modal-close" onclick="closeInfoModal()">&times;</button>
             </div>
             
-            <div class="modal-body app-scrollbar">
+            <div class="modal-body app-scrollbar{% if ui_variant == 'sage' %} ui-modal-body{% endif %}">
                 <!-- 一覧ページ -->
                 <div id="listPage" class="list-page">
-                    <a class="list-item" href="{{ (app_base_path or '') }}/about" id="about-site-link">
-                        <div class="list-item-icon">📄</div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" id="list-site-about-title">詳しい説明</div>
-                            <div class="list-item-description" id="list-site-about-desc">ウェブ上の説明サイトへ</div>
+                    <a class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" href="{{ (app_base_path or '') }}/about" id="about-site-link">
+                        <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">📄</div>
+                        <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
+                            <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-site-about-title">詳しい説明</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-site-about-desc">{% if ui_variant == 'sage' %}ウェブ上の説明サイトへ{% else %}ウェブ上の説明サイト（概要・規約・プライバシー等）へ移動します{% endif %}</div>
                         </div>
-                        <div class="list-item-arrow">→</div>
+                        <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </a>
-                    <div class="list-item" onclick="showDetailPage('app-overview')">
-                        <div class="list-item-icon">📱</div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" id="list-app-overview-title">アプリ概要・運営者情報</div>
-                            <div class="list-item-description" id="list-app-overview-desc">アプリの機能と特徴について</div>
+                    <div class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" onclick="showDetailPage('app-overview')">
+                        <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">📱</div>
+                        <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
+                            <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-app-overview-title">{% if ui_variant == 'sage' %}アプリ概要{% else %}アプリ概要・運営者情報{% endif %}</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-app-overview-desc">{% if ui_variant == 'sage' %}β版・研究目的の説明{% else %}アプリの機能と特徴について{% endif %}</div>
                         </div>
-                        <div class="list-item-arrow">→</div>
+                        <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </div>
                     
-                    <div class="list-item" onclick="showDetailPage('usage')">
-                        <div class="list-item-icon">📖</div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" id="list-usage-title">使い方</div>
-                            <div class="list-item-description" id="list-usage-desc">アプリの使い方と安全に利用するための注意</div>
+                    <div class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" onclick="showDetailPage('usage')">
+                        <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">📖</div>
+                        <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
+                            <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-usage-title">{% if ui_variant == 'sage' %}使い方{% else %}使い方・FAQ{% endif %}</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-usage-desc">{% if ui_variant == 'sage' %}チャット・音声入力・薬剤師要請{% else %}アプリの使い方と安全に利用するための注意{% endif %}</div>
                         </div>
-                        <div class="list-item-arrow">→</div>
+                        <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </div>
                     
+                    {% if ui_variant != 'sage' %}
                     <div class="list-item" onclick="showDetailPage('disclaimer')">
                         <div class="list-item-icon">📋</div>
                         <div class="list-item-content">
@@ -493,16 +530,18 @@
                         </div>
                         <div class="list-item-arrow">→</div>
                     </div>
+                    {% endif %}
                     
-                    <div class="list-item" onclick="showDetailPage('privacy')">
-                        <div class="list-item-icon">🔒</div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" id="list-privacy-title">プライバシーポリシー</div>
-                            <div class="list-item-description" id="list-privacy-desc">個人情報の取り扱いについて</div>
+                    <div class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" onclick="showDetailPage('privacy')">
+                        <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">🔒</div>
+                        <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
+                            <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-privacy-title">{% if ui_variant == 'sage' %}プライバシー{% else %}プライバシーポリシー{% endif %}</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-privacy-desc">{% if ui_variant == 'sage' %}個人情報の取り扱い{% else %}個人情報の取り扱いについて{% endif %}</div>
                         </div>
-                        <div class="list-item-arrow">→</div>
+                        <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </div>
                     
+                    {% if ui_variant != 'sage' %}
                     <div class="list-item" onclick="showDetailPage('consultation')">
                         <div class="list-item-icon">🏥</div>
                         <div class="list-item-content">
@@ -511,14 +550,15 @@
                         </div>
                         <div class="list-item-arrow">→</div>
                     </div>
+                    {% endif %}
                     
-                    <div class="list-item" onclick="showDetailPage('settings')">
-                        <div class="list-item-icon">⚙️</div>
-                        <div class="list-item-content">
-                            <div class="list-item-title" id="list-settings-title">設定</div>
-                            <div class="list-item-description" id="list-settings-desc">文字サイズなどの表示設定</div>
+                    <div class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" onclick="showDetailPage('settings')">
+                        <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">⚙️</div>
+                        <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
+                            <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-settings-title">{% if ui_variant == 'sage' %}表示設定{% else %}設定{% endif %}</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-settings-desc">{% if ui_variant == 'sage' %}文字サイズ{% else %}文字サイズなどの表示設定{% endif %}</div>
                         </div>
-                        <div class="list-item-arrow">→</div>
+                        <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </div>
                 </div>
                 
@@ -532,6 +572,17 @@
         </div>
     </div>
     
+    {% if ui_variant == 'sage' %}
+    <div class="chat-input ui-input-bar ui-input-bar--compact">
+        <form method="post" id="chatForm" class="ui-input-row">
+            <button type="button" class="mic-btn ui-mic" id="micBtn" onclick="toggleVoiceInput()" title="音声入力" aria-label="音声入力">🎤</button>
+            <div class="ui-textarea-wrap message-input-field">
+                <textarea name="message" id="messageInput" class="ui-textarea app-scrollbar" placeholder="症状を入力してください..." required rows="1"></textarea>
+            </div>
+            <button type="submit" class="ui-send" title="送信" aria-label="送信">➤</button>
+        </form>
+    </div>
+    {% else %}
     <div class="chat-input">
         <form method="post" id="chatForm">
             <div class="input-group">
@@ -543,6 +594,7 @@
             </div>
         </form>
     </div>
+    {% endif %}
 </div>
 
     <script>
@@ -554,7 +606,16 @@
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v=20251221" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
     <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260517-agent-slow" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260520-onboarding-layout" defer onerror="console.error('Failed to load JS file')"></script>
+    {% if ui_variant == 'sage' %}
+    <script src="{{ url_for('static', filename='js/ui/ui_strings.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/medicine_mapper.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/medicine_card.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/carousel.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/recommendation_renderer.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/safety_rail.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/sage_shell.js') }}?v=20260618-sage5" defer></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260618-sage5" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
@@ -632,21 +693,21 @@
 </div>
 
 <!-- ユーザー情報登録モーダル -->
-<div id="userInfoModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
+<div id="userInfoModal" class="modal{% if ui_variant == 'sage' %} sage-userinfo-modal{% endif %}">
+    <div class="modal-content{% if ui_variant == 'sage' %} ui-modal{% endif %}">
+        <div class="modal-header{% if ui_variant == 'sage' %} ui-modal-header{% endif %}">
             <h3>👤 ユーザー情報登録</h3>
-            <span class="close-modal" onclick="closeUserInfoModal()">&times;</span>
+            <span class="close-modal{% if ui_variant == 'sage' %} ui-modal-close{% endif %}" onclick="closeUserInfoModal()">&times;</span>
         </div>
-        <form id="userInfoForm" onsubmit="event.preventDefault(); saveUserInfo();">
-            <div class="form-group">
+        <form id="userInfoForm" class="{% if ui_variant == 'sage' %}app-scrollbar{% endif %}" onsubmit="event.preventDefault(); saveUserInfo();">
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                 <label for="user_age">年齢 <span style="color: red;">*</span></label>
                 <input type="number" id="user_age" min="0" max="120" placeholder="例: 30" required>
             </div>
             
-            <div class="form-group">
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                 <label for="user_gender">性別 <span style="color: red;">*</span></label>
-                <select id="user_gender" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;">
+                <select id="user_gender" required onchange="toggleUserPregnancyFields()"{% if ui_variant != 'sage' %} style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;"{% endif %}>
                     <option value="">選択してください</option>
                     <option value="男性">男性</option>
                     <option value="女性">女性</option>
@@ -655,18 +716,18 @@
             
             <!-- 妊娠・授乳フィールド（女性の場合のみ表示） -->
             <div id="user_pregnancy_fields" style="display: none;">
-                <div class="form-group">
+                <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                     <label for="user_pregnant">妊娠中ですか？</label>
-                    <select id="user_pregnant" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;">
+                    <select id="user_pregnant"{% if ui_variant != 'sage' %} style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;"{% endif %}>
                         <option value="">選択してください</option>
                         <option value="false">いいえ</option>
                         <option value="true">はい</option>
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                     <label for="user_breastfeeding">授乳中ですか？</label>
-                    <select id="user_breastfeeding" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;">
+                    <select id="user_breastfeeding"{% if ui_variant != 'sage' %} style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; background: white;"{% endif %}>
                         <option value="">選択してください</option>
                         <option value="false">いいえ</option>
                         <option value="true">はい</option>
@@ -674,27 +735,27 @@
                 </div>
             </div>
             
-            <div class="form-group">
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                 <label for="user_allergies">アレルギー</label>
                 <input type="text" id="user_allergies" placeholder="例: 花粉、卵（複数ある場合はカンマ区切り）">
             </div>
             
-            <div class="form-group">
-                <label for="user_medications">現在服用中の薬（副用薬）</label>
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
+                <label for="user_medications">{% if ui_variant == 'sage' %}服用中の薬{% else %}現在服用中の薬（副用薬）{% endif %}</label>
                 <input type="text" id="user_medications" placeholder="例: ビタミンD、血圧の薬（複数ある場合はカンマ区切り）">
             </div>
             
-            <div class="form-group">
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
                 <label for="user_medical_history">既往症</label>
                 <input type="text" id="user_medical_history" placeholder="例: 糖尿病、高血圧（複数ある場合はカンマ区切り）">
             </div>
             
-            <div class="form-group">
-                <label for="user_other_info">その他、伝えたいこと</label>
-                <textarea id="user_other_info" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; resize: vertical;" placeholder="例: 眠気が心配／1日1回がいい／点鼻がいい／口が渇くのは避けたい"></textarea>
+            <div class="form-group{% if ui_variant == 'sage' %} ui-form-group{% endif %}">
+                <label for="user_other_info">{% if ui_variant == 'sage' %}その他{% else %}その他、伝えたいこと{% endif %}</label>
+                <textarea id="user_other_info" rows="3"{% if ui_variant != 'sage' %} style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; resize: vertical;"{% endif %} placeholder="例: 眠気が心配／1日1回がいい／点鼻がいい／口が渇くのは避けたい"></textarea>
             </div>
             
-            <button type="submit" class="submit-attributes-btn">💾 保存</button>
+            <button type="submit" class="submit-attributes-btn{% if ui_variant == 'sage' %} ui-btn ui-btn--primary ui-btn--block{% endif %}">💾 保存</button>
         </form>
     </div>
 </div>

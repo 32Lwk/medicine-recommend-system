@@ -9,6 +9,24 @@ def test_get_root_html(client):
     assert "text/html" in r.headers.get("content-type", "")
 
 
+def test_get_root_sage_variant_query(client):
+    r = client.get("/?ui=sage", follow_redirects=False)
+    assert r.status_code == 200
+    body = r.text
+    assert 'data-ui-variant="sage"' in body
+    assert "sage_terrace.css" in body
+    assert "sage_shell.js" in body
+    set_cookie = r.headers.get("set-cookie", "")
+    assert "ui_variant=sage" in set_cookie.lower()
+
+
+def test_get_root_legacy_explicit(client):
+    r = client.get("/?ui=legacy")
+    assert r.status_code == 200
+    assert 'data-ui-variant="legacy"' in r.text
+    assert "sage_terrace.css" not in r.text
+
+
 def test_get_test_prefix_html(client):
     r = client.get("/test/")
     assert r.status_code == 200

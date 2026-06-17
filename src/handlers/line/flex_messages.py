@@ -444,6 +444,38 @@ def build_recommendation_carousel(medicines: list[dict], ui: dict[str, str]) -> 
     }
 
 
+def build_web_continue_flex(resume_url: str, ui: dict[str, str]) -> dict[str, Any]:
+    """LINE から Web へ引き継ぐ URI ボタン付き Flex。"""
+    label = ui.get("web_continue_label", "ブラウザで続ける")
+    title = ui.get("web_continue_title", "Webで会話を続ける")
+    body = ui.get("web_continue_body", "")
+    return {
+        "type": "flex",
+        "altText": label,
+        "contents": {
+            "type": "bubble",
+            "size": "kilo",
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "sm",
+                "paddingAll": "12px",
+                "contents": [
+                    {"type": "text", "text": title, "weight": "bold", "size": "sm", "wrap": True},
+                    {"type": "text", "text": body, "size": "xs", "color": "#666666", "wrap": True},
+                    {
+                        "type": "button",
+                        "style": "primary",
+                        "height": "sm",
+                        "color": PRIMARY,
+                        "action": {"type": "uri", "label": label, "uri": resume_url},
+                    },
+                ],
+            },
+        },
+    }
+
+
 def _text_message(text: str) -> dict[str, Any]:
     return {"type": "text", "text": text}
 
@@ -695,4 +727,15 @@ def build_line_messages_from_bot_message(
 
     advice = build_advice_bubble(intro=intro, bullets=bullets, footer_note=advice_footer, ui=ui)
     carousel = build_recommendation_carousel(medicines, ui)
-    return [advice, carousel]
+    messages: list[dict[str, Any]] = [advice, carousel]
+    if session_id:
+        from src.handlers.line.line_session import is_line_session_id
+
+        if is_line_session_id(session_id):
+            from src.handlers.line.line_web_handoff import issue_handoff_token
+
+            token = issue_handoff_token(session_id)
+            if token:
+                resume_url = f"{_public_site_base()}/resume/{token}"
+                messages.append(build_web_continue_flex(resume_url, ui))
+    return messages

@@ -272,6 +272,12 @@ def emit_cards(
                 "risk_warning": med.get("risk_warning") or "",
                 "low_score_warning": bool(med.get("low_score_warning")),
                 "medicine_type": med.get("medicine_type") or "",
+                "image_url": med.get("image_url")
+                or med.get("imageUrl")
+                or med.get("hero_url")
+                or med.get("product_image_url"),
+                "symptoms": med.get("symptoms") or med.get("matched_symptoms") or [],
+                "score_breakdown": med.get("score_breakdown") or med.get("scores"),
             }
         )
     emit_sse_event(

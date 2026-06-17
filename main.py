@@ -33,6 +33,12 @@ from config.app_config import (
     load_env,
 )
 from config.settings import SESSION_COOKIE_MAX_AGE
+from config.ui_config import (
+    UI_VARIANT_COOKIE,
+    UI_VARIANT_QUERY,
+    resolve_ui_variant,
+    ui_variant_cookie_max_age,
+)
 from src.core.season_manager import get_current_season, get_particle_profile, get_season_images
 from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
@@ -328,9 +334,14 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     particle_profile_json = _particle_profile_json()
     # 開発環境かどうか（config.app_config.is_development_runtime をテンプレート data-env に反映）
     is_dev_env = is_development_runtime()
-    runtime_client_config_json = json.dumps({"isDevelopment": bool(is_dev_env)})
+    query_ui = request.query_params.get(UI_VARIANT_QUERY)
+    cookie_ui = request.cookies.get(UI_VARIANT_COOKIE)
+    ui_variant = resolve_ui_variant(query_ui=query_ui, cookie_ui=cookie_ui)
+    runtime_client_config_json = json.dumps(
+        {"isDevelopment": bool(is_dev_env), "uiVariant": ui_variant}
+    )
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request,
         "index.html",
         {
@@ -343,9 +354,19 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "particle_profile_json": particle_profile_json,
             "is_dev_env": is_dev_env,
             "runtime_client_config_json": runtime_client_config_json,
+            "ui_variant": ui_variant,
         },
         status_code=status_code,
     )
+    if query_ui is not None and str(query_ui).strip():
+        response.set_cookie(
+            UI_VARIANT_COOKIE,
+            ui_variant,
+            max_age=ui_variant_cookie_max_age(),
+            httponly=False,
+            samesite="lax",
+        )
+    return response
 
 
 def _public_chat_root_url(request: Request) -> str:
@@ -600,6 +621,10 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
     if sid:
         safe_session["_id"] = sid
 
+    query_ui = request.query_params.get(UI_VARIANT_QUERY)
+    cookie_ui = request.cookies.get(UI_VARIANT_COOKIE)
+    safe_session["ui_variant"] = resolve_ui_variant(query_ui=query_ui, cookie_ui=cookie_ui)
+
     if "username" not in safe_session:
         safe_session["username"] = f"ユーザー{get_next_user_number()}"
 
@@ -761,6 +786,23 @@ async def new_session(request: Request, response: Response):
 @app.post("/test/new_session")
 def new_session_test(request: Request, response: Response):
     return new_session(request, response)
+
+
+@app.get("/resume/{token}")
+async def resume_from_line(request: Request, token: str):
+    """LINE ワンタイムトークンから Web セッションへフル引き継ぎ。"""
+    from src.handlers.line.line_web_handoff import create_web_session_from_handoff, redeem_handoff_token
+
+    snapshot = redeem_handoff_token(token)
+    if not snapshot:
+        return HTMLResponse(
+            "<h1>リンクを利用できません</h1><p>有効期限切れ、または既に使用済みです。</p>",
+            status_code=410,
+        )
+    sid = create_web_session_from_handoff(snapshot, request=request)
+    response = RedirectResponse(url="/", status_code=302)
+    response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
+    return response
 
 
 @app.post("/api/slow-request-notify")
@@ -980,12 +1022,10 @@ async def api_sessions_post(
     if err:
         return err
     user_attributes = data.get("user_attributes", {}) if isinstance(data, dict) else {}
-    existing = get_session_from_db(sid) or {}
     ensure_session_persisted(
         sid,
         {
             "user_attributes": user_attributes,
-            "messages": existing.get("messages") or [],
             "session_active": True,
         },
         request,

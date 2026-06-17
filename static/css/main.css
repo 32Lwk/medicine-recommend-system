@@ -145,7 +145,11 @@
             display: inline;
         }
 
-        /* 狭い画面: 絵文字 → (dev) → 文字縮小の順で調整（末尾省略はしない） */
+        #appTitle .app-title-core--short {
+            display: none;
+        }
+
+        /* 狭い画面: 絵文字 → (dev) → 短縮タイトル → 文字縮小の順で調整（末尾省略はしない） */
         @media (max-width: 560px) {
             #appTitle .app-title-emoji {
                 display: none;
@@ -155,6 +159,16 @@
         @media (max-width: 480px) {
             #appTitle .app-title-env {
                 display: none;
+            }
+        }
+
+        @media (max-width: 420px) {
+            #appTitle .app-title-core {
+                display: none;
+            }
+
+            #appTitle .app-title-core--short {
+                display: inline;
             }
         }
 

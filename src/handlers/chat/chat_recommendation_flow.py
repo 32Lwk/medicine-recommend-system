@@ -1934,8 +1934,27 @@ def run_recommendation_flow(
                     except Exception as e:
                         # 成分重複チェックでエラーが発生した場合は警告を表示せず、処理を続行
                         logger.warning(f"成分重複チェックエラー: {e}")
-                            
+
+                from src.services.recommendation_client_payload import (
+                    enrich_recommended_medicines,
+                    is_sage_web_ui,
+                )
+
+                sage_web_cards = is_sage_web_ui(session) and not is_line_session_id(sid)
                 if recommended_medicines:
+                    recommended_medicines = enrich_recommended_medicines(
+                        recommended_medicines,
+                        medicine_type=medicine_type,
+                        symptoms=symptoms,
+                    )
+                    recommendation_result["recommended_medicines"] = recommended_medicines
+
+                if sage_web_cards and recommended_medicines:
+                    bot_content += (
+                        '        <div class="ui-reco-medicines-section streaming-medicines-section" '
+                        'data-sage-client-render="1"></div>\n'
+                    )
+                elif recommended_medicines:
                     for medicine in recommended_medicines:
                         # ルールベース結果の場合
                         if 'rank' in medicine:
