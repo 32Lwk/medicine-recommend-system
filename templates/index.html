@@ -226,9 +226,9 @@
         }
     </style>
     <!-- Non-critical CSS loaded asynchronously -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260521-info-modal" onerror="console.error('Failed to load CSS file')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260617-info-modal-gap" onerror="console.error('Failed to load CSS file')">
     {% if ui_variant == 'sage' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v=20260618-sage5" onerror="console.error('Failed to load Sage Terrace CSS')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v=20260617-info-modal-gap" onerror="console.error('Failed to load Sage Terrace CSS')">
     {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
@@ -256,7 +256,7 @@
             <p class="ui-header-phase" id="headerPhase">症状に合う市販薬をご案内します。</p>
         </div>
         <nav class="ui-header-toolbar ui-header-toolbar--line-icons" aria-label="クイック操作">
-            <button type="button" class="ui-toolbar-btn" id="sage-clear-btn" title="履歴クリア" aria-label="履歴クリア">
+            <button type="button" class="ui-toolbar-btn" id="sage-clear-btn" title="新セッション" aria-label="新セッション">
                 <span class="ui-toolbar-btn__glyph ui-toolbar-btn__glyph--svg" aria-hidden="true"><svg class="ui-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 12a1 1 0 0 0 1 .9h6a1 1 0 0 0 1-.9L17 7"/></svg></span>
             </button>
             <button type="button" class="ui-toolbar-btn ui-toolbar-btn--pharmacist" id="sage-admin-request-btn" title="薬剤師要請" aria-label="薬剤師要請">
@@ -613,9 +613,9 @@
     <script src="{{ url_for('static', filename='js/ui/carousel.js') }}?v=20260618-sage5" defer></script>
     <script src="{{ url_for('static', filename='js/ui/recommendation_renderer.js') }}?v=20260618-sage5" defer></script>
     <script src="{{ url_for('static', filename='js/ui/safety_rail.js') }}?v=20260618-sage5" defer></script>
-    <script src="{{ url_for('static', filename='js/sage_shell.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/sage_shell.js') }}?v=20260618-new-session" defer></script>
     {% endif %}
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260618-sage5" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260618-new-session" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">

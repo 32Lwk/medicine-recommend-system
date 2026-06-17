@@ -90,17 +90,18 @@ def test_prepare_line_messages_registers_pending(mock_persist):
     assert out[0]["quickReply"]["items"][1]["action"]["data"] == "mrcfb|neg|cafebabe"
 
 
-@patch("src.handlers.line.line_feedback.submit_feedback_record", return_value={"status": "success", "feedback_id": 1})
+@patch("src.handlers.line.line_feedback.submit_feedback_async")
 @patch("src.handlers.line.line_feedback._load_pending_context")
 @patch("src.handlers.line.line_session.prime_line_session")
 @patch("config.line_config.LINE_CHANNEL_ACCESS_TOKEN", "token")
-def test_handle_postback_submits_positive(mock_prime, mock_pending, mock_submit):
+def test_handle_postback_submits_positive(mock_prime, mock_pending, mock_submit_async):
     mock_prime.return_value = {"username": "LINEユーザー", "detected_language": "ja"}
     mock_pending.return_value = {"user_message": "頭痛", "ai_response": "おすすめ"}
     with patch("src.handlers.line.line_reply.reply_messages", new_callable=AsyncMock) as mock_reply:
         asyncio.run(handle_line_feedback_postback("U1", "mrcfb|pos|abc12345", reply_token="tok"))
-    mock_submit.assert_called_once()
-    assert mock_submit.call_args.kwargs["report_type"] == "positive_feedback"
+    mock_submit_async.assert_called_once()
+    assert mock_submit_async.call_args.kwargs["report_type"] == "positive_feedback"
+    assert mock_submit_async.call_args.kwargs["metadata"]["source"] == "line"
     mock_reply.assert_awaited_once()
 
 

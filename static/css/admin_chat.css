@@ -1577,6 +1577,26 @@ main {
     box-shadow: var(--shadow-md);
 }
 
+.message.user .user-indicator {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: var(--font-weight-semibold);
+}
+
+.message.user .message-text {
+    color: #fff;
+}
+
+.message.user .message-text,
+.message.user .message-text * {
+    color: #fff !important;
+}
+
+.message.user .admin-message-empty {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.85em;
+    font-style: italic;
+}
+
 .message.bot .message-content {
     background: var(--color-white);
     color: var(--color-dark);

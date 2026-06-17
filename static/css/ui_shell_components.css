@@ -1187,6 +1187,196 @@ body:has(#app > .ui-app) #app {
   color: var(--ui-text);
 }
 
+.ui-reco-cautions {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-overlap-card {
+  border-radius: 12px;
+  border: 1px solid var(--ui-border);
+  background: #fff;
+  overflow: hidden;
+}
+
+.ui-overlap-card--danger {
+  border-color: #f5c2c7;
+  background: linear-gradient(180deg, #fff5f5 0%, #fff 100%);
+}
+
+.ui-overlap-card--warn {
+  border-color: #fcd9b8;
+  background: linear-gradient(180deg, #fffaf3 0%, #fff 100%);
+}
+
+.ui-overlap-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.ui-overlap-card__badge {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ui-overlap-card--danger .ui-overlap-card__badge {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.ui-overlap-card--warn .ui-overlap-card__badge {
+  background: #fef0c7;
+  color: #b54708;
+}
+
+.ui-overlap-card__title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ui-text);
+  line-height: 1.4;
+}
+
+.ui-overlap-card__body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ui-overlap-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.ui-overlap-row__ingredient {
+  grid-column: 1;
+  font-weight: 700;
+  color: #b42318;
+  white-space: nowrap;
+}
+
+.ui-overlap-row__meds {
+  grid-column: 2;
+  color: var(--ui-text);
+}
+
+.ui-overlap-row__note {
+  grid-column: 1 / -1;
+  font-size: 0.66rem;
+  color: var(--ui-text-muted);
+}
+
+.ui-reason-list {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ui-reason-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.ui-reason-item__icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.ui-reason-item--ok .ui-reason-item__icon {
+  background: #dcfae6;
+  color: #067647;
+}
+
+.ui-reason-item--warn .ui-reason-item__icon {
+  background: #fef0c7;
+  color: #b54708;
+}
+
+.ui-reason-item--info .ui-reason-item__icon {
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary-dark);
+}
+
+.ui-reason-item__text {
+  color: var(--ui-text);
+}
+
+.ui-card-section--reason .ui-card-label {
+  margin-bottom: 2px;
+}
+
+.ui-card-usage-db {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ui-border);
+}
+
+.ui-card-pro-detail.is-collapsed .ui-card-usage-db,
+.ui-card-pro-detail.is-collapsed .ui-card-usage-extra,
+.ui-card-pro-detail.is-collapsed .ui-reason-list {
+  display: none;
+}
+
+.ui-card-text--db {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ui-card-section--db + .ui-card-section--db {
+  margin-top: 8px;
+}
+
+.ui-card-usage-extra {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ui-border);
+}
+
+.ui-card-pro-detail.is-collapsed .ui-card-usage-extra {
+  display: none;
+}
+
+.ui-card-usage-block + .ui-card-usage-block {
+  margin-top: 8px;
+}
+
+.ui-card-usage-content {
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--ui-text);
+}
+
+.ui-card-usage-content p {
+  margin: 3px 0;
+}
+
 .ui-score-breakdown {
   margin-top: 10px;
   border: 1px solid var(--ui-border);
@@ -1237,7 +1427,8 @@ body:has(#app > .ui-app) #app {
   gap: 4px;
 }
 
-.ui-score-breakdown__list li {
+.ui-score-breakdown__list li,
+.ui-score-breakdown__item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1246,13 +1437,32 @@ body:has(#app > .ui-app) #app {
   border-bottom: 1px dashed var(--ui-border);
 }
 
-.ui-score-breakdown__list li:last-child { border-bottom: none; }
+.ui-score-breakdown__list li:last-child,
+.ui-score-breakdown__item:last-child { border-bottom: none; }
 
 .ui-score-breakdown__label { color: var(--ui-text-muted); }
 
-.ui-score-breakdown__list strong {
+.ui-score-breakdown__list strong,
+.ui-score-breakdown__item strong {
   font-size: 0.76rem;
   color: var(--ui-primary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-score-breakdown__item--risk strong {
+  color: #b45309;
+}
+
+.ui-score-breakdown__item--provisional .ui-score-breakdown__label {
+  color: #9a5c45;
+}
+
+.ui-score-breakdown__hint {
+  margin: 4px 0 0;
+  padding: 0;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  color: #9a5c45;
 }
 
 .ui-score-breakdown__note {
@@ -1456,10 +1666,12 @@ body:has(#app > .ui-app) #app {
 
 .ui-carousel-wrap {
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
   overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
   padding-bottom: 4px;
   outline: none;
 }
@@ -1472,6 +1684,7 @@ body:has(#app > .ui-app) #app {
 
 .ui-carousel {
   display: flex;
+  align-items: flex-start;
   gap: 12px;
   padding: 4px 4px 8px;
 }
@@ -1762,6 +1975,34 @@ body:has(#app > .ui-app) #app {
   padding: 10px 12px;
 }
 
+.ui-score-cluster {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+}
+
+.ui-card--pro .ui-score-penalty-chip,
+.medicine-item .ui-score-penalty-chip {
+  margin: 0;
+  padding: 0;
+  display: block;
+  max-width: 84px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: nowrap;
+  color: #d32f2f;
+  background: none;
+  border: none;
+  cursor: help;
+  font-variant-numeric: tabular-nums;
+}
+
 .ui-card-pro-info {
   flex: 1;
   min-width: 0;
@@ -1780,9 +2021,10 @@ body:has(#app > .ui-app) #app {
   color: var(--ui-text-muted);
 }
 
-/* Score ring */
+/* Score ring — tier colors align with LINE Flex (_score_tier) */
 .ui-score-ring {
   --ui-score: 0;
+  --ui-score-color: var(--ui-primary);
   position: relative;
   flex-shrink: 0;
   width: 64px;
@@ -1816,9 +2058,21 @@ body:has(#app > .ui-app) #app {
   background: #eef2f6;
 }
 
+.ui-score-ring--high {
+  --ui-score-color: #5ab8a8;
+}
+
+.ui-score-ring--medium {
+  --ui-score-color: #c9a84c;
+}
+
+.ui-score-ring--low {
+  --ui-score-color: #8fa3ad;
+}
+
 .ui-score-ring__fill {
   background: conic-gradient(
-    var(--ui-primary) calc(var(--ui-score) * 1%),
+    var(--ui-score-color) calc(var(--ui-score) * 1%),
     #eef2f6 0
   );
   mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
@@ -1840,7 +2094,7 @@ body:has(#app > .ui-app) #app {
 .ui-score-ring__value {
   font-size: 1.05rem;
   font-weight: 800;
-  color: var(--ui-primary-dark);
+  color: var(--ui-score-color);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1913,6 +2167,10 @@ body:has(#app > .ui-app) #app {
   border-top: 1px solid var(--ui-border);
   margin-top: 2px;
   padding-bottom: 10px;
+  max-height: min(40vh, 280px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ui-card--pro .ui-card-section { margin-top: 8px; }
@@ -2265,7 +2523,8 @@ body:has(#app > .ui-app) #app {
 }
 
 #modal-userinfo .ui-modal-header h3 {
-  font-size: 0.88rem;
+  font-size: 1rem;
+  line-height: 1.35;
 }
 
 #modal-userinfo .ui-modal-close {
@@ -2281,16 +2540,17 @@ body:has(#app > .ui-app) #app {
 }
 
 #modal-userinfo .ui-form-group label {
-  font-size: 0.76rem;
-  margin-bottom: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  line-height: 1.4;
 }
 
 #modal-userinfo .ui-form-group input,
 #modal-userinfo .ui-form-group select,
 #modal-userinfo .ui-form-group textarea {
-  padding: 6px 10px;
-  font-size: 0.82rem;
-  line-height: 1.4;
+  padding: 8px 10px;
+  font-size: 0.75rem !important;
+  line-height: 1.45;
 }
 
 #modal-userinfo .ui-form-group textarea {
@@ -2298,8 +2558,8 @@ body:has(#app > .ui-app) #app {
 }
 
 #modal-userinfo .ui-btn {
-  padding: 8px 14px;
-  font-size: 0.82rem;
+  padding: 10px 14px;
+  font-size: 0.9rem;
 }
 
 #modal-userinfo .ui-btn--block {

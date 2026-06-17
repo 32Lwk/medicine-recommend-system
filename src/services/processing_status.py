@@ -315,6 +315,35 @@ def set_processing_language(session_id: Optional[str], language: Optional[str]) 
             cached["language"] = language
 
 
+_STATUS_SSE_KEYS = (
+    "step_id",
+    "label",
+    "detail_code",
+    "detail_label",
+    "step",
+    "total",
+    "percent",
+    "language",
+    "flow_id",
+    "flow_description",
+    "flow_hint",
+    "agent_name",
+    "agent_role",
+    "agent_description",
+    "agent_display",
+    "slow_hint",
+)
+
+
+def status_sse_payload_from_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """SSE status イベント用のクライアント向けペイロード"""
+    return {key: payload[key] for key in _STATUS_SSE_KEYS if payload.get(key) is not None}
+
+
+def status_sse_payload_for_session(session_id: str) -> Dict[str, Any]:
+    return status_sse_payload_from_dict(get_processing_status(session_id))
+
+
 def _active_response(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     lang = payload.get("language") or _session_lang.get(session_id)
     out = {
@@ -426,31 +455,11 @@ def mark_processing_step(
         from src.services.sse_emit import emit_sse_event, is_session_stream_active
 
         if is_session_stream_active(session_id):
-            sse_payload: Dict[str, Any] = {
-                "step_id": payload.get("step_id"),
-                "label": payload.get("label"),
-                "step": payload.get("step"),
-                "total": payload.get("total"),
-                "percent": payload.get("percent"),
-                "language": payload.get("language"),
-            }
-            if payload.get("detail_code"):
-                sse_payload["detail_code"] = payload["detail_code"]
-            if payload.get("detail_label"):
-                sse_payload["detail_label"] = payload["detail_label"]
-            for extra in (
-                "flow_id",
-                "flow_description",
-                "flow_hint",
-                "agent_name",
-                "agent_role",
-                "agent_description",
-                "agent_display",
-                "slow_hint",
-            ):
-                if payload.get(extra):
-                    sse_payload[extra] = payload[extra]
-            emit_sse_event("status", sse_payload, session_id=session_id)
+            emit_sse_event(
+                "status",
+                status_sse_payload_from_dict(payload),
+                session_id=session_id,
+            )
     except Exception as exc:
         logger.debug("processing_status sse emit skipped: %s", exc)
 

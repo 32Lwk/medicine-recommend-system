@@ -35,6 +35,7 @@ def save_feedback_dev(
     feedback_text: Optional[str] = None,
     is_google_form: bool = False,
     negative_reason: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> int:
     """DB なし開発環境へフィードバックを保存し、擬似 ID を返す。"""
     global _counter
@@ -48,6 +49,7 @@ def save_feedback_dev(
         "feedback_text": feedback_text or "",
         "is_google_form": bool(is_google_form),
         "negative_reason": negative_reason,
+        "metadata": metadata or {},
         "resolved": False,
         "created_at": datetime.now().isoformat(),
         "storage": "dev_fallback",

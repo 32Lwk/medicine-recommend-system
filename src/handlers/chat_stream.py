@@ -135,17 +135,17 @@ async def stream_chat_events(
     monitor: Any,
 ) -> AsyncIterator[str]:
     client_info = ChatClientInfo.from_starlette_request(request)
-    from src.services.processing_status import clear_processing_status, mark_processing_step
+    from src.services.processing_status import (
+        clear_processing_status,
+        mark_processing_step,
+        status_sse_payload_for_session,
+    )
 
     last_event_id = _last_event_id_from_request(request)
 
     if sid and last_event_id:
         for event, data, eid in replay_session_events(sid, last_event_id):
             yield _sse_line(event, data, event_id=eid)
-
-    if sid:
-        mark_processing_step(sid, "validate")
-    yield _sse_line("status", {"step_id": "validate", "percent": 5}, event_id="1")
 
     safe_session = RequestSafeSession()
     _prime_safe_session_for_chat(safe_session, sid, request)
@@ -156,6 +156,10 @@ async def stream_chat_events(
         sink, reattach = activate_stream_sink(sid, allow_reattach=bool(last_event_id))
     elif not sid:
         pass
+
+    if sid and not last_event_id:
+        mark_processing_step(sid, "validate")
+        yield _sse_line("status", status_sse_payload_for_session(sid), event_id="1")
 
     worker: Optional[asyncio.Future] = None
     owns_worker = False

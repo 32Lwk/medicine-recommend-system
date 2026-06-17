@@ -521,6 +521,22 @@ class DatabaseManager:
                 logger.debug(f"negative_reason column may already exist: {e}")
 
             try:
+                alter_metadata_sql = """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='feedback_reports' AND column_name='metadata'
+                    ) THEN
+                        ALTER TABLE feedback_reports ADD COLUMN metadata JSONB;
+                    END IF;
+                END $$;
+                """
+                cursor.execute(alter_metadata_sql)
+            except Exception as e:
+                logger.debug(f"metadata column may already exist: {e}")
+
+            try:
                 alter_processing_sql = """
                 DO $$
                 BEGIN
@@ -628,7 +644,7 @@ class DatabaseManager:
     
     def insert_feedback(self, report_type, session_id, username, user_message, 
                        ai_response, security_score=None, feedback_text=None, 
-                       is_google_form=False, negative_reason=None):
+                       is_google_form=False, negative_reason=None, metadata=None):
         """フィードバックをデータベースに保存"""
         conn = self.get_connection()
         if not conn:
@@ -636,18 +652,19 @@ class DatabaseManager:
             
         try:
             cursor = conn.cursor()
+            metadata_json = json.dumps(metadata) if metadata else None
             
             insert_sql = """
             INSERT INTO feedback_reports 
             (report_type, session_id, username, user_message, ai_response, 
-             security_score, feedback_text, is_google_form, negative_reason)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+             security_score, feedback_text, is_google_form, negative_reason, metadata)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
             RETURNING id;
             """
             
             cursor.execute(insert_sql, (
                 report_type, session_id, username, user_message, ai_response,
-                security_score, feedback_text, is_google_form, negative_reason
+                security_score, feedback_text, is_google_form, negative_reason, metadata_json
             ))
             
             feedback_id = cursor.fetchone()[0]

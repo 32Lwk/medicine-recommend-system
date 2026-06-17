@@ -57,6 +57,102 @@ def append_lifecycle_event(
     return entry
 
 
+def _message_text_value(msg: dict) -> str:
+    if not isinstance(msg, dict):
+        return ""
+    for key in ("content", "message", "text", "user_message"):
+        val = msg.get(key)
+        if val is not None and str(val).strip():
+            return str(val).strip()
+    return ""
+
+
+def _prefer_richer_message(existing: dict, incoming: dict) -> dict:
+    """同一キーの重複時、本文が長い（または空でない）方を優先する。"""
+    if not isinstance(existing, dict):
+        return dict(incoming)
+    if not isinstance(incoming, dict):
+        return existing
+    existing_text = _message_text_value(existing)
+    incoming_text = _message_text_value(incoming)
+    if len(incoming_text) > len(existing_text):
+        merged = dict(existing)
+        merged.update(incoming)
+        merged["content"] = incoming_text
+        return merged
+    if not existing_text and incoming_text:
+        merged = dict(existing)
+        merged.update(incoming)
+        merged["content"] = incoming_text
+        return merged
+    return existing
+
+
+def _parse_message_timestamp(msg: dict) -> float | None:
+    if not isinstance(msg, dict):
+        return None
+    raw = msg.get("timestamp")
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    text = str(raw).strip()
+    if not text:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        pass
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+        try:
+            return datetime.strptime(text, fmt).timestamp()
+        except ValueError:
+            continue
+    return None
+
+
+def sort_messages_chronologically(messages: list) -> list:
+    """管理画面表示用に時系列（古い→新しい）へ並べ替え。"""
+    if not isinstance(messages, list) or len(messages) <= 1:
+        return list(messages or [])
+
+    items = [(i, m) for i, m in enumerate(messages) if isinstance(m, dict)]
+    if len(items) <= 1:
+        return [m for _, m in items]
+
+    n = len(items)
+    sort_times: list[float | None] = [_parse_message_timestamp(msg) for _, msg in items]
+    filled = list(sort_times)
+
+    for i in range(n):
+        if filled[i] is not None:
+            continue
+        prev_i = next((j for j in range(i - 1, -1, -1) if filled[j] is not None), None)
+        next_i = next((j for j in range(i + 1, n) if filled[j] is not None), None)
+        if prev_i is not None and next_i is not None:
+            prev_ts = filled[prev_i]
+            next_ts = filled[next_i]
+            if prev_ts is not None and next_ts is not None:
+                if next_ts > prev_ts:
+                    frac = (i - prev_i) / (next_i - prev_i)
+                    filled[i] = prev_ts + (next_ts - prev_ts) * frac
+                else:
+                    filled[i] = prev_ts + 0.001 * (i - prev_i)
+                continue
+        if prev_i is not None and filled[prev_i] is not None:
+            filled[i] = filled[prev_i] + 0.001 * (i - prev_i)
+        elif next_i is not None and filled[next_i] is not None:
+            filled[i] = filled[next_i] - 0.001 * (next_i - i)
+        else:
+            filled[i] = float(items[i][0])
+
+    indexed_sorted = sorted(
+        zip(filled, [orig for orig, _ in items], [msg for _, msg in items]),
+        key=lambda row: (row[0], row[1]),
+    )
+    return [msg for _, _, msg in indexed_sorted]
+
+
 def merge_messages_into_archive(session_data: dict, messages: list) -> int:
     """message_archive にメッセージを重複排除でマージ。新規追加分の件数を返す。"""
     if not session_data or not messages:
@@ -64,19 +160,26 @@ def merge_messages_into_archive(session_data: dict, messages: list) -> int:
     from src.services.session_manager import _message_merge_key
 
     archive = list(session_data.get("message_archive") or [])
-    seen = {_message_merge_key(m, i) for i, m in enumerate(archive)}
+    key_to_index: dict[str, int] = {}
+    for i, existing in enumerate(archive):
+        if isinstance(existing, dict):
+            key_to_index[_message_merge_key(existing, i)] = i
     added = 0
     base = len(archive)
     for j, msg in enumerate(messages):
         if not isinstance(msg, dict):
             continue
         key = _message_merge_key(msg, base + j)
-        if key in seen:
+        if key in key_to_index:
+            idx = key_to_index[key]
+            upgraded = _prefer_richer_message(archive[idx], msg)
+            if upgraded is not archive[idx]:
+                archive[idx] = upgraded
             continue
-        seen.add(key)
+        key_to_index[key] = len(archive)
         archive.append(msg)
         added += 1
-    if added:
+    if added or archive != list(session_data.get("message_archive") or []):
         session_data["message_archive"] = archive
     return added
 
@@ -91,8 +194,8 @@ def admin_messages_for_session(info: dict) -> list:
         merge_messages_into_archive(combined, live)
     archive = combined.get("message_archive")
     if isinstance(archive, list) and archive:
-        return archive
-    return list(live)
+        return sort_messages_chronologically(archive)
+    return sort_messages_chronologically(list(live))
 
 
 def ensure_line_session_archive(info: dict) -> bool:
