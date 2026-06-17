@@ -1,6 +1,7 @@
 """
 FastAPI 契約の最小回帰テスト（DB/OpenAI なしでも実行可能なもの中心）。
 """
+from unittest.mock import patch
 
 
 def test_get_root_html(client):
@@ -81,6 +82,35 @@ def test_404_returns_html_not_redirect(client):
 def test_post_clear_204(client):
     r = client.post("/clear")
     assert r.status_code == 204
+
+
+def test_clear_resets_admin_request_and_manual_queue(client):
+    import main
+    from src.services.session_manager import get_manual_reply_queue, set_manual_reply_queue
+
+    sid = "test-clear-admin-sid"
+    session = {
+        "messages": [{"type": "bot", "content": "薬剤師対応を要請しました。", "admin_request": True}],
+        "admin_request": True,
+        "ai_auto_reply": False,
+    }
+    set_manual_reply_queue(
+        [{"session_id": sid, "admin_request": True, "status": "admin_requested"}]
+    )
+
+    with patch("main.get_session_from_db", return_value=session.copy()):
+        with patch("main.save_session_to_db") as mock_save:
+            client.cookies.set(main.COOKIE_NAME_SID, sid)
+            r = client.post("/clear")
+
+    assert r.status_code == 204
+    mock_save.assert_called_once()
+    saved_sid, saved_data = mock_save.call_args[0]
+    assert saved_sid == sid
+    assert saved_data.get("admin_request") is None
+    assert saved_data.get("messages") == []
+    assert saved_data.get("ai_auto_reply") is True
+    assert not any(item.get("session_id") == sid for item in get_manual_reply_queue())
 
 
 def test_get_root_injects_app_version_and_empty_base_path(client):

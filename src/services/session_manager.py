@@ -107,10 +107,11 @@ def _merge_line_session_sources(db_data: dict | None, mem: dict | None) -> dict 
             if val is not None:
                 merged[key] = val
     if db_data and mem:
-        if mem.get("messages"):
-            merge_messages_into_archive(merged, mem.get("messages") or [])
+        # DB（古い履歴）を先にアーカイブへ入れ、メモリ側の新着を後からマージする
         if db_data.get("messages"):
             merge_messages_into_archive(merged, db_data.get("messages") or [])
+        if mem.get("messages"):
+            merge_messages_into_archive(merged, mem.get("messages") or [])
     ensure_line_session_archive(merged)
     return merged
 
@@ -323,6 +324,20 @@ def set_manual_reply_queue(value):
     if _db_usable(db):
         db.set_global_state('MANUAL_REPLY_QUEUE', value)
     _manual_reply_queue = value
+
+
+def clear_admin_request_state(session_id: str, session_data: dict | None = None) -> None:
+    """薬剤師要請フラグと手動返信キュー登録を解除する。"""
+    if session_data is not None:
+        session_data.pop("admin_request", None)
+        if session_data.get("ai_auto_reply") is False:
+            session_data["ai_auto_reply"] = True
+    if not session_id:
+        return
+    queue = get_manual_reply_queue()
+    filtered = [item for item in queue if str(item.get("session_id")) != str(session_id)]
+    if len(filtered) != len(queue):
+        set_manual_reply_queue(filtered)
 
 
 def get_manual_reply_message():

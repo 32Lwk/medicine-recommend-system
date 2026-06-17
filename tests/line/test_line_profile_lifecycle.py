@@ -10,6 +10,7 @@ from src.services.session_lifecycle import (
     append_lifecycle_event,
     ensure_line_session_archive,
     merge_messages_into_archive,
+    sort_messages_chronologically,
 )
 
 
@@ -21,6 +22,44 @@ def test_merge_messages_into_archive_dedupes():
     ])
     assert added == 1
     assert len(data["message_archive"]) == 2
+
+
+def test_merge_messages_into_archive_prefers_richer_duplicate():
+    data = {
+        "message_archive": [
+            {"type": "user", "content": "", "uuid": "u1", "timestamp": "2026-06-17T10:00:00"},
+        ]
+    }
+    added = merge_messages_into_archive(
+        data,
+        [{"type": "user", "content": "頭が痛い", "uuid": "u1", "timestamp": "2026-06-17T10:00:00"}],
+    )
+    assert added == 0
+    assert data["message_archive"][0]["content"] == "頭が痛い"
+
+
+def test_admin_messages_sorted_chronologically():
+    info = {
+        "messages": [
+            {"type": "bot", "content": "new", "uuid": "b2", "timestamp": "2026-06-17T12:00:00"},
+        ],
+        "message_archive": [
+            {"type": "user", "content": "old", "uuid": "u1", "timestamp": "2026-06-17T10:00:00"},
+            {"type": "bot", "content": "mid", "uuid": "b1", "timestamp": "2026-06-17T11:00:00"},
+        ],
+    }
+    msgs = admin_messages_for_session(info)
+    assert [m["uuid"] for m in msgs] == ["u1", "b1", "b2"]
+
+
+def test_sort_messages_interpolates_missing_timestamp():
+    messages = [
+        {"type": "user", "content": "a", "uuid": "u1", "timestamp": "2026-06-17T10:00:00"},
+        {"type": "bot", "content": "reco", "uuid": "b1"},
+        {"type": "bot", "content": "reply", "uuid": "b2", "manual_reply": True, "timestamp": "2026-06-17T10:05:00"},
+    ]
+    sorted_msgs = sort_messages_chronologically(messages)
+    assert [m["uuid"] for m in sorted_msgs] == ["u1", "b1", "b2"]
 
 
 def test_admin_messages_merges_archive_and_live():

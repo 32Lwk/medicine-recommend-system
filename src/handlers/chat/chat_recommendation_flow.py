@@ -2437,7 +2437,8 @@ def run_recommendation_flow(
         bot_response = {
             'type': 'bot',
             'content': bot_content,
-            'diagnosis': sanitized_diagnosis
+            'diagnosis': sanitized_diagnosis,
+            'timestamp': datetime.now().isoformat(),
         }
                 
     # bot_responseが定義されている場合の処理
@@ -2508,7 +2509,8 @@ def run_recommendation_flow(
         bot_response = {
         'type': 'bot',
         'content': '処理中にエラーが発生しました。',
-        'diagnosis': None
+        'diagnosis': None,
+        'timestamp': datetime.now().isoformat(),
         }
         if 'messages' not in session:
             session['messages'] = []

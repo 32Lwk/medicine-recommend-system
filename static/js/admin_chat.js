@@ -1850,7 +1850,7 @@ function renderAttributeCardWithCopy(label, value, copyValue) {
 }
 
 function truncateMessagePreview(msg, maxLen) {
-    let text = (msg && msg.content != null) ? String(msg.content) : '';
+    let text = getAdminMessageText(msg);
     text = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     if (!text) {
         return '(内容なし)';
@@ -2382,6 +2382,112 @@ function formatAdminPlainText(text) {
     return escapeHtml(text || '').replace(/\n/g, '<br>');
 }
 
+function getAdminMessageText(msg) {
+    if (!msg || typeof msg !== 'object') {
+        return '';
+    }
+    const fields = ['content', 'message', 'text', 'user_message'];
+    for (let i = 0; i < fields.length; i++) {
+        const value = msg[fields[i]];
+        if (value != null && String(value).trim()) {
+            return String(value).trim();
+        }
+    }
+    return '';
+}
+
+function parseAdminMessageTimestamp(msg) {
+    if (!msg || !msg.timestamp) {
+        return null;
+    }
+    const parsed = Date.parse(msg.timestamp);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function fillAdminMessageSortTimes(messages) {
+    const n = messages.length;
+    const filled = messages.map(function (msg) {
+        return parseAdminMessageTimestamp(msg);
+    });
+    for (let i = 0; i < n; i++) {
+        if (filled[i] != null) {
+            continue;
+        }
+        let prevI = -1;
+        for (let j = i - 1; j >= 0; j--) {
+            if (filled[j] != null) {
+                prevI = j;
+                break;
+            }
+        }
+        let nextI = -1;
+        for (let k = i + 1; k < n; k++) {
+            if (filled[k] != null) {
+                nextI = k;
+                break;
+            }
+        }
+        if (prevI >= 0 && nextI >= 0 && filled[nextI] > filled[prevI]) {
+            const frac = (i - prevI) / (nextI - prevI);
+            filled[i] = filled[prevI] + (filled[nextI] - filled[prevI]) * frac;
+        } else if (prevI >= 0) {
+            filled[i] = filled[prevI] + 0.001 * (i - prevI);
+        } else if (nextI >= 0) {
+            filled[i] = filled[nextI] - 0.001 * (nextI - i);
+        } else {
+            filled[i] = i;
+        }
+    }
+    return filled;
+}
+
+function normalizeAdminMessagesForDisplay(messages) {
+    const list = Array.isArray(messages) ? messages.slice() : [];
+    if (!list.length) {
+        return [];
+    }
+    const sortTimes = fillAdminMessageSortTimes(list);
+    return list
+        .map(function (msg, index) {
+            return { msg: msg, index: index, sortTime: sortTimes[index] };
+        })
+        .sort(function (a, b) {
+            if (a.sortTime !== b.sortTime) {
+                return a.sortTime - b.sortTime;
+            }
+            return a.index - b.index;
+        })
+        .map(function (entry) {
+            const msg = entry.msg;
+            if (!msg || msg.type !== 'user') {
+                return msg;
+            }
+            const text = getAdminMessageText(msg);
+            if (!text) {
+                return msg;
+            }
+            if (msg.content === text) {
+                return msg;
+            }
+            return Object.assign({}, msg, { content: text });
+        });
+}
+
+function fetchAdminSessionMessages(sessionId) {
+    const url = isLineSessionId(sessionId)
+        ? ('/api/main_session?session_id=' + encodeURIComponent(sessionId))
+        : buildMainSessionsUrl();
+    return adminFetchJson(url).then(function (data) {
+        if (data && data.session) {
+            return data.session;
+        }
+        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
+        return sessionsArray.find(function (session) {
+            return session.session_id === sessionId;
+        }) || null;
+    });
+}
+
 function shouldRenderBotContentAsHtml(msg, contentText) {
     if (!contentText || typeof contentText !== 'string') {
         return false;
@@ -2443,6 +2549,7 @@ function isMedicineRecommendation(msg) {
 
 function renderChatMessages(messages) {
     const chatMessages = document.getElementById('chat-messages');
+    messages = normalizeAdminMessagesForDisplay(messages);
     
     if (!messages || messages.length === 0) {
         chatMessages.innerHTML = `
@@ -2507,13 +2614,16 @@ function renderChatMessages(messages) {
                 indicator = '<span class="ai-indicator">🤖 AI返信</span><br>';
             }
         } else if (msg.type === 'user') {
-            indicator = '<span class="user-indicator" style="color: #007bff; font-weight: bold;">👤 ユーザー</span><br>';
+            indicator = '<span class="user-indicator">👤 ユーザー</span><br>';
         }
         
         let messageContentHtml = '';
 
         if (msg.type === 'user') {
-            messageContentHtml = formatAdminPlainText(msg.content || '');
+            const userText = getAdminMessageText(msg);
+            messageContentHtml = userText
+                ? formatAdminPlainText(userText)
+                : '<span class="admin-message-empty">(メッセージ本文なし)</span>';
         } else if (msg.type === 'bot' && isStatusCardHtml(msg.content)) {
             messageContentHtml = extractStatusCardHtml(msg.content);
         } else if (msg.crisis_support) {
@@ -3984,6 +4094,58 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 // 不具合報告関連の関数
+const FEEDBACK_REPORT_TYPES_DISPLAYED = new Set([
+    'negative_feedback',
+    'ai_negative',
+    'bug_report',
+    'slow_request',
+    'processing_timeout',
+    'positive_feedback',
+    'ai_positive',
+]);
+
+function isFeedbackReportDisplayed(report) {
+    return FEEDBACK_REPORT_TYPES_DISPLAYED.has(report.report_type);
+}
+
+function getFeedbackReportTypeLabel(reportType) {
+    return {
+        'ai_positive': 'AI評価（適切）',
+        'positive_feedback': 'AI評価（適切・LINE）',
+        'ai_negative': 'AI評価（不適切）',
+        'negative_feedback': 'AI評価（不適切）',
+        'bug_report': '不具合報告',
+        'slow_request': '処理遅延通知',
+        'processing_timeout': '処理タイムアウト',
+        'security_warning': 'セキュリティ警告'
+    }[reportType] || reportType;
+}
+
+function formatFeedbackTraceText(report) {
+    const meta = report.metadata;
+    if (!meta || typeof meta !== 'object' || Object.keys(meta).length === 0) {
+        return '';
+    }
+    try {
+        return JSON.stringify(meta, null, 2);
+    } catch (e) {
+        return String(meta);
+    }
+}
+
+function openFeedbackTraceModal(buttonEl) {
+    const fullText = buttonEl.getAttribute('data-full-text') || '';
+    const modal = document.getElementById('aiFullTextModal');
+    const body = document.getElementById('aiFullTextBody');
+    if (modal && body) {
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        body.textContent = fullText;
+        modal.classList.add('show');
+    }
+}
+
 function loadFeedbackReports() {
     const unresolvedOnly = document.getElementById('unresolvedOnly') ? document.getElementById('unresolvedOnly').checked : false;
     const contentElement = document.getElementById('feedbackReportsContent');
@@ -4098,12 +4260,7 @@ function loadFeedbackReports() {
         }
         
         const reports = data.reports || [];
-        // negative_feedbackとbug_reportのみを表示
-        const filteredReports = reports.filter(report => 
-            report.report_type === 'negative_feedback' || 
-            report.report_type === 'bug_report' ||
-            report.report_type === 'ai_negative'  // 後方互換性のため
-        );
+        const filteredReports = reports.filter(isFeedbackReportDisplayed);
         try {
             renderFeedbackReports(filteredReports);
         } catch (e) {
@@ -4158,13 +4315,9 @@ function renderFeedbackReports(reports) {
     `;
     
     reports.forEach(report => {
-        const reportTypeText = {
-            'ai_positive': 'AI評価（適切）',
-            'ai_negative': 'AI評価（不適切）',
-            'negative_feedback': 'AI評価（不適切）',
-            'bug_report': '不具合報告',
-            'security_warning': 'セキュリティ警告'
-        }[report.report_type] || report.report_type;
+        const reportTypeText = getFeedbackReportTypeLabel(report.report_type);
+        const traceText = formatFeedbackTraceText(report);
+        const hasTrace = Boolean(traceText);
         
         const statusText = report.resolved ? '解決済み' : '未解決';
         const statusColor = report.resolved ? '#28a745' : '#dc3545';
@@ -4223,7 +4376,14 @@ function renderFeedbackReports(reports) {
                         ? report.security_score.toFixed(1) 
                         : '-'}
                 </td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.feedback_text || '-'}</td>
+                <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">
+                    <div>${escapeHtml(report.feedback_text || '-')}</div>
+                    ${hasTrace ?
+                        `<div style="margin-top:6px;">
+                            <button onclick="openFeedbackTraceModal(this)" data-full-text="${traceText.replace(/"/g, '&quot;')}" class="admin-btn" style="padding: 4px 8px; font-size: 0.75em; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">トレース詳細</button>
+                         </div>`
+                    : ''}
+                </td>
                 <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
                 <td style="padding: 10px; border: 1px solid #dee2e6;">
                     <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
@@ -4240,23 +4400,15 @@ function renderFeedbackReports(reports) {
 }
 
 function updateFeedbackStats(reports) {
-    // negative_feedbackとbug_reportのみを対象（テーブル表示と一致させるため）
-    const bugReports = (reports || []).filter(r => 
-        r.report_type === 'negative_feedback' || 
-        r.report_type === 'bug_report' ||
-        r.report_type === 'ai_negative'  // 後方互換性のため
-    );
-    
-    // 全報告数（テーブル表示と一致させるため）
-    const totalReports = bugReports.length;
-    
-    // 解決済み・未解決の数
-    const resolvedCount = bugReports.filter(r => r.resolved === true).length;
+    const displayedReports = (reports || []).filter(isFeedbackReportDisplayed);
+    const totalReports = displayedReports.length;
+    const resolvedCount = displayedReports.filter(r => r.resolved === true).length;
     const unresolvedCount = totalReports - resolvedCount;
-    
-    // 適切・不適切の数（全データからai_positiveとai_negative/negative_feedbackをカウント）
-    const positiveCount = reports.filter(r => r.report_type === 'ai_positive').length;
-    const negativeCount = reports.filter(r => 
+
+    const positiveCount = (reports || []).filter(r =>
+        r.report_type === 'ai_positive' || r.report_type === 'positive_feedback'
+    ).length;
+    const negativeCount = (reports || []).filter(r =>
         r.report_type === 'ai_negative' || r.report_type === 'negative_feedback'
     ).length;
     const totalFeedback = positiveCount + negativeCount;
@@ -4386,7 +4538,7 @@ function exportFeedbackReports() {
             return;
         }
         
-        const reports = data.reports || [];
+        const reports = (data.reports || []).filter(isFeedbackReportDisplayed);
         const csvContent = generateCSV(reports);
         downloadCSV(csvContent, 'feedback_reports.csv');
     })
@@ -4397,17 +4549,12 @@ function exportFeedbackReports() {
 }
 
 function generateCSV(reports) {
-    const headers = ['報告日時', 'タイプ', 'ユーザー', 'ユーザーメッセージ', 'AI応答/警告', 'スコア', 'フィードバック', '状態'];
+    const headers = ['報告日時', 'タイプ', 'ユーザー', 'ユーザーメッセージ', 'AI応答/警告', 'スコア', 'フィードバック', 'トレース', '状態'];
     let csv = headers.join(',') + '\n';
     
     reports.forEach(report => {
-        const reportTypeText = {
-            'ai_positive': 'AI評価（適切）',
-            'ai_negative': 'AI評価（不適切）',
-            'negative_feedback': 'AI評価（不適切）',
-            'bug_report': '不具合報告',
-            'security_warning': 'セキュリティ警告'
-        }[report.report_type] || report.report_type;
+        const reportTypeText = getFeedbackReportTypeLabel(report.report_type);
+        const traceText = formatFeedbackTraceText(report);
         
         const statusText = report.resolved ? '解決済み' : '未解決';
         
@@ -4419,6 +4566,7 @@ function generateCSV(reports) {
             `"${(report.ai_response || '').replace(/"/g, '""')}"`,
             report.security_score ? report.security_score.toFixed(1) : '',
             `"${(report.feedback_text || '').replace(/"/g, '""')}"`,
+            `"${traceText.replace(/"/g, '""')}"`,
             statusText
         ];
         csv += row.join(',') + '\n';
@@ -5555,11 +5703,8 @@ function loadMobileChatHistory(sessionId) {
         </div>
     `;
     
-    adminFetchJson(buildMainSessionsUrl())
-    .then(data => {
-        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-        const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
-        
+    fetchAdminSessionMessages(sessionId)
+    .then(targetSession => {
         if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
             currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
             currentMessages = targetSession.messages || [];
@@ -5984,11 +6129,8 @@ function loadTabletChatHistory(sessionId) {
     `;
     
     // デスクトップと同じAPIを使用
-    adminFetchJson(buildMainSessionsUrl())
-    .then(data => {
-        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-        const targetSession = sessionsArray.find(session => session.session_id === sessionId) || null;
-        
+    fetchAdminSessionMessages(sessionId)
+    .then(targetSession => {
         if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
             // 管理者専用の詳細診断を保持
             currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;

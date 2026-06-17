@@ -11,7 +11,7 @@ from typing import Any
 from src.handlers.line.flex_messages import html_to_plain_text
 from src.handlers.line.line_i18n import get_line_ui_strings
 from src.handlers.line.line_session import line_sid
-from src.services.feedback_submit import FeedbackSubmitError, submit_feedback_record
+from src.services.feedback_trace import build_feedback_trace, submit_feedback_async
 from src.services.session_manager import get_session_from_memory, touch_session_in_memory
 
 logger = logging.getLogger(__name__)
@@ -309,23 +309,28 @@ async def handle_line_feedback_postback(
         return
 
     username = session.get("username") or "LINEユーザー"
-    try:
-        submit_feedback_record(
-            report_type=report_type,
-            session_id=sid,
-            username=username,
-            user_message=context["user_message"],
-            ai_response=context["ai_response"],
-            dedupe=True,
-        )
-        _remove_pending_entry(sid, feedback_key)
-        thank = ui.get("feedback_thank_you", "フィードバックありがとうございます！")
-    except FeedbackSubmitError as exc:
-        if exc.status_code == 429:
-            thank = ui.get("feedback_already_submitted", "すでに送信済みです。")
-        else:
-            logger.warning("LINE feedback submit failed: %s", exc)
-            thank = ui.get("feedback_submit_failed", "送信に失敗しました。しばらくして再度お試しください。")
+    trace = build_feedback_trace(
+        source="line",
+        event="feedback_postback",
+        session_id=sid,
+        line_user_id=user_id,
+        report_type=report_type,
+        feedback_key=feedback_key,
+        language=lang,
+        user_message_preview=(context["user_message"] or "")[:200],
+    )
+    submit_feedback_async(
+        report_type=report_type,
+        session_id=sid,
+        username=username,
+        user_message=context["user_message"],
+        ai_response=context["ai_response"],
+        feedback_text="LINE Quick Reply フィードバック",
+        metadata=trace,
+        dedupe=True,
+    )
+    _remove_pending_entry(sid, feedback_key)
+    thank = ui.get("feedback_thank_you", "フィードバックありがとうございます！")
 
     if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
         await reply_messages(reply_token, [{"type": "text", "text": thank}])

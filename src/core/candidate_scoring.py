@@ -243,6 +243,22 @@ def _extract_min_age_value(age_restriction) -> Optional[int]:
     return None
 
 
+def _extract_usage_precautions(usage_full: str) -> str:
+    """用法用量列（F列）から注意書き部分を抽出する。行数で切らない。"""
+    text = (usage_full or "").strip()
+    if not text:
+        return ""
+    bracket = text.find("＜")
+    if bracket >= 0:
+        return text[bracket:].strip()
+    note_lines = [
+        ln.strip()
+        for ln in text.splitlines()
+        if ln.strip() and ("注意" in ln or "禁止" in ln or "しないで" in ln)
+    ]
+    return "\n".join(note_lines).strip()
+
+
 def _has_antidiarrheal_signal(candidate: Dict) -> bool:
     """
     止瀉薬系の成分やテキストシグナルが含まれているかを判定
@@ -828,11 +844,7 @@ def get_candidate_medicines(
                 age_restriction = f"{age_match.group(1)}歳以上"
 
         usage_full = row.get('用法用量', '') or ''
-        usage_notes = ''
-        if '注意' in usage_full or '＜' in usage_full:
-            parts = usage_full.split('\n')
-            note_parts = [p for p in parts if '注意' in p or '＜' in p or '用法' in p]
-            usage_notes = '\n'.join(note_parts[:3])
+        usage_notes = _extract_usage_precautions(usage_full)
 
         medicine_type = _sanitize_text(row.get('医薬品の種類', ''))
         if medicine_type == '外用薬（皮膚）':

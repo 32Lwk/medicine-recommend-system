@@ -53,13 +53,88 @@
     return [];
   }
 
+  function toBreakdownPercent(v) {
+    if (v === undefined || v === null || v === '') return 0;
+    var n = Number(v);
+    if (isNaN(n)) return 0;
+    if (n >= 0 && n <= 1) return Math.round(n * 100);
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  function pickBreakdownPercent(sb, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (sb[k] !== undefined && sb[k] !== null && sb[k] !== '') {
+        return toBreakdownPercent(sb[k]);
+      }
+    }
+    return 0;
+  }
+
+  function riskLevelPercent(v) {
+    if (v === undefined || v === null || v === '') return null;
+    var n = Number(v);
+    if (isNaN(n)) return null;
+    // バックエンドは 0=リスクなし、負値=ペナルティ量
+    if (n <= 0) return Math.max(0, Math.min(100, Math.round(Math.abs(n) * 100)));
+    if (n <= 1) return Math.round(n * 100);
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  function pickBreakdownRaw(sb, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (sb[k] !== undefined && sb[k] !== null && sb[k] !== '') {
+        return sb[k];
+      }
+    }
+    return null;
+  }
+
+  function completenessPenaltyFromMed(med) {
+    var p = med.completeness_penalty;
+    if (p != null && p !== '' && !isNaN(Number(p)) && Number(p) > 0) {
+      return Number(p);
+    }
+    var sb = med.score_breakdown || med.scores || {};
+    var fromSb = sb.completeness_penalty;
+    if (fromSb != null && fromSb !== '' && !isNaN(Number(fromSb))) {
+      return Math.abs(Number(fromSb));
+    }
+    return 0;
+  }
+
+  function hasScoreBreakdown(sb) {
+    if (!sb || typeof sb !== 'object') return false;
+    var keys = [
+      'symptom', 'symptom_match', 'symptom_match_score',
+      'efficacy', 'efficacy_specificity', 'efficacy_specificity_score',
+      'age', 'age_fit', 'age_suitability',
+      'usage', 'usage_convenience',
+      'side_effect_risk', 'side_effect_risk_score',
+      'interaction_risk', 'interaction_risk_score'
+    ];
+    for (var i = 0; i < keys.length; i++) {
+      var v = sb[keys[i]];
+      if (v !== undefined && v !== null && v !== '') return true;
+    }
+    return false;
+  }
+
   function scoresFromMed(med) {
     var sb = med.score_breakdown || med.scores || {};
+    var sideRaw = pickBreakdownRaw(sb, ['side_effect_risk', 'side_effect_risk_score']);
+    var interRaw = pickBreakdownRaw(sb, ['interaction_risk', 'interaction_risk_score']);
+    var sideEffect = sideRaw != null ? riskLevelPercent(sideRaw) : null;
+    var interaction = interRaw != null ? riskLevelPercent(interRaw) : null;
     return {
-      symptom: sb.symptom != null ? sb.symptom : (sb.symptom_match != null ? sb.symptom_match : 0),
-      efficacy: sb.efficacy != null ? sb.efficacy : (sb.efficacy_specificity != null ? sb.efficacy_specificity : 0),
-      age: sb.age != null ? sb.age : (sb.age_suitability != null ? sb.age_suitability : 0),
-      usage: sb.usage != null ? sb.usage : (sb.usage_convenience != null ? sb.usage_convenience : 0)
+      symptom: pickBreakdownPercent(sb, ['symptom', 'symptom_match', 'symptom_match_score']),
+      efficacy: pickBreakdownPercent(sb, ['efficacy', 'efficacy_specificity', 'efficacy_specificity_score']),
+      age: pickBreakdownPercent(sb, ['age', 'age_fit', 'age_suitability']),
+      usage: pickBreakdownPercent(sb, ['usage', 'usage_convenience']),
+      sideEffect: sideEffect,
+      interaction: interaction,
+      hasBreakdown: hasScoreBreakdown(sb)
     };
   }
 
@@ -73,15 +148,49 @@
     return null;
   }
 
+  function splitUsageField(usageText) {
+    var usage = String(usageText || '').trim();
+    if (!usage) return { dosage: '', precautions: '' };
+    var idx = usage.indexOf('＜');
+    if (idx >= 0) {
+      return {
+        dosage: usage.slice(0, idx).trim(),
+        precautions: usage.slice(idx).trim()
+      };
+    }
+    return { dosage: usage, precautions: '' };
+  }
+
+  function resolveUsageNotes(usageText, apiNotes) {
+    var split = splitUsageField(usageText);
+    if (split.precautions) return split.precautions;
+    var api = String(apiNotes || '').trim();
+    return api;
+  }
+
   function mapMedicine(med, index) {
     med = med || {};
     var rank = med.rank || med.number || index + 1;
     var score = parseScorePercent(med);
     var scores = scoresFromMed(med);
-    var hasScores = scores.symptom || scores.efficacy || scores.age || scores.usage;
+    var hasScores = scores.hasBreakdown;
     if (!hasScores && score) {
-      scores = { symptom: score, efficacy: Math.max(0, score - 5), age: 100, usage: Math.max(0, score - 8) };
+      scores = {
+        symptom: score,
+        efficacy: Math.max(0, score - 5),
+        age: 100,
+        usage: Math.max(0, score - 8),
+        sideEffect: null,
+        interaction: null,
+        hasBreakdown: true
+      };
     }
+    var completenessPenalty = completenessPenaltyFromMed(med);
+    if (completenessPenalty > 0) {
+      scores.ageProvisional = true;
+    }
+    var usageFull = med.usage || '';
+    var usageSplit = splitUsageField(usageFull);
     return {
       rank: rank,
       name: med.product_name || med.name || '',
@@ -93,11 +202,15 @@
       symptoms: symptomsFromMed(med),
       ageLabel: ageLabelFromRestriction(med),
       scores: scores,
+      completenessPenalty: completenessPenalty,
       imageUrl: imageUrlFromMed(med),
       placeholderUrl: PLACEHOLDER,
       riskWarning: med.risk_warning || '',
       lowScoreWarning: !!med.low_score_warning,
       ageRestriction: med.age_restriction || '',
+      ingredients: med.ingredients || '',
+      usage: usageSplit.dosage || usageFull,
+      usageNotes: resolveUsageNotes(usageFull, med.usage_notes || med.usageNotes),
       raw: med
     };
   }

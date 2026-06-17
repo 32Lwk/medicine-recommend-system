@@ -27,10 +27,17 @@
     );
   }
 
+  function scoreTier(pct) {
+    if (pct >= 80) return 'high';
+    if (pct >= 60) return 'medium';
+    return 'low';
+  }
+
   function scoreRingHtml(score) {
     var pct = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
+    var tier = scoreTier(pct);
     return (
-      '<button type="button" class="ui-score-ring" data-score-ring style="--ui-score:' + pct + '" aria-expanded="false" aria-label="' +
+      '<button type="button" class="ui-score-ring ui-score-ring--' + tier + '" data-score-ring style="--ui-score:' + pct + '" aria-expanded="false" aria-label="' +
         esc(t('scoreLabel')) + ' ' + pct + '%">' +
         '<span class="ui-score-ring__track" aria-hidden="true"></span>' +
         '<span class="ui-score-ring__fill" aria-hidden="true"></span>' +
@@ -42,18 +49,57 @@
     );
   }
 
+  function scorePenaltyChipHtml(m) {
+    var penalty = Number(m.completenessPenalty) || 0;
+    if (penalty <= 0) return '';
+    var pct = Math.round(penalty * 1000) / 10;
+    var pctLabel = pct % 1 === 0 ? String(Math.round(pct)) : String(pct);
+    var title = t('scorePenaltyTitle', { n: pctLabel });
+    return (
+      '<p class="ui-score-penalty-chip" title="' + esc(title) + '" aria-label="' + esc(title) + '">' +
+        esc(t('scorePenaltyChip', { n: pctLabel })) +
+      '</p>'
+    );
+  }
+
+  function scoreClusterHtml(m) {
+    return (
+      '<div class="ui-score-cluster">' +
+        scoreRingHtml(m.score) +
+        scorePenaltyChipHtml(m) +
+      '</div>'
+    );
+  }
+
+  function breakdownRowHtml(label, value, modifier) {
+    if (value == null || value === '') return '';
+    return (
+      '<li class="ui-score-breakdown__item' + (modifier ? ' ui-score-breakdown__item--' + modifier : '') + '">' +
+        '<span class="ui-score-breakdown__label">' + esc(label) + '</span>' +
+        '<strong>' + Math.round(value) + '%</strong>' +
+      '</li>'
+    );
+  }
+
   function scoreBreakdownPanelHtml(m) {
     var s = m.scores || {};
-    if (!s.symptom && !s.efficacy && !s.age && !s.usage) return '';
+    if (!s.hasBreakdown) return '';
+    var ageLabel = s.ageProvisional ? t('scoreAgeProvisional') : t('scoreAge');
+    var hintHtml = (Number(m.completenessPenalty) || 0) > 0
+      ? '<p class="ui-score-breakdown__hint">' + esc(t('scoreBreakdownHint')) + '</p>'
+      : '';
     return (
       '<div class="ui-score-breakdown-panel score-breakdown" data-score-panel hidden>' +
         '<p class="ui-score-breakdown-panel__title">' + esc(t('scoreBreakdownTitle')) + '</p>' +
         '<ul class="ui-score-breakdown__list" aria-label="' + esc(t('scoreBreakdownTitle')) + '">' +
-          '<li><span class="ui-score-breakdown__label">' + esc(t('scoreSymptom')) + '</span><strong>' + Math.round(s.symptom || 0) + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">' + esc(t('scoreEfficacy')) + '</span><strong>' + Math.round(s.efficacy || 0) + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">' + esc(t('scoreAge')) + '</span><strong>' + Math.round(s.age || 0) + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">' + esc(t('scoreUsage')) + '</span><strong>' + Math.round(s.usage || 0) + '%</strong></li>' +
+          breakdownRowHtml(t('scoreSymptom'), s.symptom) +
+          breakdownRowHtml(t('scoreEfficacy'), s.efficacy) +
+          breakdownRowHtml(ageLabel, s.age, s.ageProvisional ? 'provisional' : '') +
+          breakdownRowHtml(t('scoreUsage'), s.usage) +
+          breakdownRowHtml(t('scoreSideEffect'), s.sideEffect, 'risk') +
+          breakdownRowHtml(t('scoreInteraction'), s.interaction, 'risk') +
         '</ul>' +
+        hintHtml +
         '<p class="ui-score-breakdown__note">' + esc(t('scoreNote')) + '</p>' +
       '</div>'
     );
@@ -70,7 +116,78 @@
     );
   }
 
-  function cardHtmlPro(m) {
+  function cleanReasonText(part) {
+    return String(part || '')
+      .replace(/^(?:\s|[\u2705\u26A0\u274C]|\uFE0F)+/u, '')
+      .replace(/\uFE0F/g, '')
+      .trim();
+  }
+
+  function reasonTone(part) {
+    if (/^✅/.test(part)) return 'ok';
+    if (/^⚠️/.test(part)) return 'warn';
+    return 'info';
+  }
+
+  function reasonIcon(tone) {
+    if (tone === 'ok') return '✓';
+    if (tone === 'warn') return '!';
+    return '·';
+  }
+
+  function shouldSkipReasonPart(part, m) {
+    if (m.ingredients && /^主成分:/.test(part)) return true;
+    if (m.ageLabel && m.ageLabel !== '—' && /^年齢制限:/.test(part)) return true;
+    return false;
+  }
+
+  function reasonPartsHtml(m) {
+    var reason = (m.reason || '').trim();
+    if (!reason) return '';
+    var parts = reason.split(/\s*\|\s*/).map(function (p) { return p.trim(); }).filter(Boolean);
+    var items = [];
+    parts.forEach(function (part) {
+      if (shouldSkipReasonPart(part, m)) return;
+      var tone = reasonTone(part);
+      var text = cleanReasonText(part);
+      items.push(
+        '<li class="ui-reason-item ui-reason-item--' + tone + '">' +
+          '<span class="ui-reason-item__icon" aria-hidden="true">' + reasonIcon(tone) + '</span>' +
+          '<span class="ui-reason-item__text">' + esc(text) + '</span>' +
+        '</li>'
+      );
+    });
+    if (!items.length) return '';
+    return '<ul class="ui-reason-list" aria-label="' + esc(t('reason')) + '">' + items.join('') + '</ul>';
+  }
+
+  function isHtmlContent(text) {
+    return /<[a-z][\s\S]*>/i.test(text);
+  }
+
+  function dbFieldSectionHtml(label, content, modifier) {
+    if (!content || !String(content).trim()) return '';
+    var body = isHtmlContent(content) ? content : esc(content);
+    return (
+      '<div class="ui-card-section ui-card-section--db' + (modifier ? ' ui-card-section--' + modifier : '') + '">' +
+        '<div class="ui-card-label">' + esc(label) + '</div>' +
+        '<div class="ui-card-text ui-card-text--db">' + body + '</div>' +
+      '</div>'
+    );
+  }
+
+  function dbDetailSectionsHtml(m) {
+    return (
+      dbFieldSectionHtml(t('ingredients'), m.ingredients, 'ingredients') +
+      dbFieldSectionHtml(t('dosage'), m.usage, 'dosage') +
+      dbFieldSectionHtml(t('usageNotes'), m.usageNotes, 'notes')
+    );
+  }
+
+  function cardHtmlPro(m, options) {
+    options = options || {};
+    var usageDetailHtml = options.usageDetailHtml || '';
+    var hasDbDetail = !!(m.ingredients || m.usage || m.usageNotes);
     return (
       '<article class="ui-card ui-card--pro medicine-item" role="listitem" aria-label="' + esc(m.name) + '" data-rank="' + esc(m.rank) + '">' +
         medicineImageHtml(m, 'pro') +
@@ -84,7 +201,7 @@
             '<p class="ui-card-maker">' + esc(m.maker) + '</p>' +
             symptomTagsHtml(m.symptoms) +
           '</div>' +
-          scoreRingHtml(m.score) +
+          scoreClusterHtml(m) +
         '</div>' +
         '<div class="ui-card-pro-meta">' +
           '<span class="ui-med-badge ui-med-badge--type">' + esc(m.medType) + '</span>' +
@@ -96,15 +213,21 @@
         scoreBreakdownPanelHtml(m) +
         (m.riskWarning ? '<p class="ui-card-warn">' + esc(m.riskWarning) + '</p>' : '') +
         (m.lowScoreWarning ? '<p class="ui-card-warn ui-card-warn--low">' + esc(t('lowScoreWarning')) + '</p>' : '') +
-        '<div class="ui-card-pro-detail is-collapsed">' +
+        '<div class="ui-card-pro-detail is-collapsed app-scrollbar">' +
           '<div class="ui-card-section">' +
             '<div class="ui-card-label">' + esc(t('efficacy')) + '</div>' +
             '<div class="ui-card-text ui-clamp-2">' + esc(m.efficacy) + '</div>' +
           '</div>' +
-          '<div class="ui-card-section">' +
+          '<div class="ui-card-section ui-card-section--reason">' +
             '<div class="ui-card-label">' + esc(t('reason')) + '</div>' +
-            '<div class="ui-card-text ui-clamp-2">' + esc(m.reason) + '</div>' +
+            reasonPartsHtml(m) +
           '</div>' +
+          (hasDbDetail
+            ? '<div class="ui-card-usage-db">' + dbDetailSectionsHtml(m) + '</div>'
+            : '') +
+          (usageDetailHtml
+            ? '<div class="ui-card-usage-extra">' + usageDetailHtml + '</div>'
+            : '') +
           '<button type="button" class="ui-card-expand collapse-toggle" data-expand aria-expanded="false">' + esc(t('expand')) + '</button>' +
         '</div>' +
         '<p class="ui-trust-strip">' + esc(t('trustStrip')) + '</p>' +
@@ -141,6 +264,8 @@
 
   global.MedicineCard = {
     cardHtmlPro: cardHtmlPro,
-    bindCardInteractions: bindCardInteractions
+    bindCardInteractions: bindCardInteractions,
+    reasonPartsHtml: reasonPartsHtml,
+    dbDetailSectionsHtml: dbDetailSectionsHtml
   };
 })(typeof window !== 'undefined' ? window : globalThis);

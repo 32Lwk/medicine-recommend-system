@@ -7,6 +7,7 @@
             userInfoBtn: "👤 ユーザー情報登録",
             clearBtn: "🗑️ 履歴クリア",
             newSessionBtn: "🔄 新セッション",
+            sageNewSessionBtn: "新セッション",
             adminRequestBtn: "👨‍⚕️ 薬剤師要請",
             placeholder: "症状を入力してください...",
             send: "送信",
@@ -312,6 +313,7 @@
             userInfoBtn: "👤 User Info",
             clearBtn: "🗑️ Clear History",
             newSessionBtn: "🔄 New Session",
+            sageNewSessionBtn: "New session",
             adminRequestBtn: "👨‍⚕️ Request Pharmacist",
             placeholder: "Please enter your symptoms...",
             send: "Send",
@@ -605,6 +607,7 @@
             userInfoBtn: "👤 사용자 정보",
             clearBtn: "🗑️ 기록 삭제",
             newSessionBtn: "🔄 새 세션",
+            sageNewSessionBtn: "새 세션",
             adminRequestBtn: "👨‍⚕️ 약사 요청",
             placeholder: "증상을 입력해주세요...",
             send: "전송",
@@ -910,6 +913,7 @@
             userInfoBtn: "👤 用户信息",
             clearBtn: "🗑️ 清除历史",
             newSessionBtn: "🔄 新会话",
+            sageNewSessionBtn: "新会话",
             adminRequestBtn: "👨‍⚕️ 请求药师",
             placeholder: "请输入您的症状...",
             send: "发送",
@@ -4186,7 +4190,7 @@
     
     // モーダルを開く
     function openInfoModal() {
-        document.getElementById('infoModal').style.display = 'block';
+        document.getElementById('infoModal').style.display = 'flex';
         showListPage();
     }
 
@@ -4471,9 +4475,9 @@
         document.getElementById('admin-request-btn').textContent = t.adminRequestBtn;
         const sageClearBtn = document.getElementById('sage-clear-btn');
         if (sageClearBtn) {
-            const clearLabel = t.clearBtn || '履歴クリア';
-            sageClearBtn.title = clearLabel;
-            sageClearBtn.setAttribute('aria-label', clearLabel);
+            const newSessionLabel = t.sageNewSessionBtn || '新セッション';
+            sageClearBtn.title = newSessionLabel;
+            sageClearBtn.setAttribute('aria-label', newSessionLabel);
         }
         
         // 情報ボタンのタイトル更新
@@ -4912,7 +4916,42 @@
     }
 
     function shouldSuppressPostFetchError() {
-        return postResponseResolved || isResponseVisibleInDom(null);
+        if (postResponseResolved) {
+            return true;
+        }
+        if (awaitingPostResponse) {
+            return false;
+        }
+        return isResponseVisibleInDom(null);
+    }
+
+    function buildMergedMessagesFromDonePayload(donePayload) {
+        if (!donePayload || !donePayload.bot_message) {
+            return null;
+        }
+        const sid = getSidFromCookie();
+        const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+        const cached = loadChatCache(sid);
+        const merged = normalizeTurnTail(
+            cached,
+            donePayload.bot_message,
+            donePayload.user_message,
+            lastUser
+        );
+        return isChatResponseComplete(merged) ? merged : null;
+    }
+
+    function renderDonePayloadImmediately(donePayload) {
+        const merged = buildMergedMessagesFromDonePayload(donePayload);
+        if (!merged) {
+            return false;
+        }
+        const sid = getSidFromCookie();
+        saveChatCache(sid, merged);
+        return applyBotResponseSession(
+            { session_id: sid, messages: merged },
+            { preserveStatusCards: false, forceRender: true }
+        );
     }
 
     function resetPostResponseTracking() {
@@ -5381,12 +5420,98 @@
         const ts = (message && message.timestamp) ? String(message.timestamp) : '';
         const type = (message && message.type) ? String(message.type) : '';
         const content = (message && message.content) ? String(message.content).slice(0, 200) : '';
+        if (message && message.admin_request) {
+            return 'admin:' + ts + ':' + content;
+        }
         return 'c:' + type + ':' + ts + ':' + content;
     }
 
     /** 送信直後の楽観 user バブル用 DOM キー（サーバー uuid 確定前） */
     function pendingUserDomKey(text) {
         return 'pending-user:' + String(text || '').trim().slice(0, 200);
+    }
+
+    function userMessageText(message) {
+        return String((message && message.content) || '').trim();
+    }
+
+    /** キャッシュ由来の空 user やサーバー確定済み user の文言欠落を補正 */
+    function sanitizeSessionMessages(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+        const out = [];
+        list.forEach(function (m) {
+            if (!m || !m.type) {
+                return;
+            }
+            if (m.type === 'user') {
+                let text = userMessageText(m);
+                if (!text && lastUser && (m.uuid || m.message_id)) {
+                    m = Object.assign({}, m, { content: lastUser });
+                    text = lastUser;
+                }
+                if (!text && !m.uuid && !m.message_id) {
+                    return;
+                }
+            }
+            out.push(m);
+        });
+        return dedupeMessageList(out);
+    }
+
+    function isRedundantLocalUserMessage(serverMsgs, localMsg) {
+        if (!localMsg || localMsg.type !== 'user') {
+            return false;
+        }
+        const localText = userMessageText(localMsg);
+        if (!localText) {
+            return true;
+        }
+        if (localMsg.uuid || localMsg.message_id) {
+            return false;
+        }
+        return (serverMsgs || []).some(function (m) {
+            return m && m.type === 'user' && userMessageText(m) === localText;
+        });
+    }
+
+    function messageNodeTextContent(node) {
+        return (node && node.querySelector('.message-content')?.textContent || '').trim();
+    }
+
+    function messageNodeHasRicherContent(candidate, incumbent) {
+        return messageNodeTextContent(candidate).length > messageNodeTextContent(incumbent).length;
+    }
+
+    function refreshUserMessageNodeContent(node, message) {
+        if (!node || !message || message.type !== 'user') {
+            return;
+        }
+        const text = userMessageText(message);
+        if (!text) {
+            return;
+        }
+        const contentEl = node.querySelector('.message-content');
+        if (!contentEl) {
+            return;
+        }
+        const current = (contentEl.textContent || '').trim();
+        if (!current || current !== text) {
+            contentEl.textContent = text;
+        }
+    }
+
+    function findUserMessageNodeInDom(chatMessages, message, messageKey) {
+        const key = messageKey || getMessageDomKey(message);
+        const confirmed = getMessageNodeByKey(chatMessages, key, 'user');
+        if (confirmed) {
+            return confirmed;
+        }
+        const text = userMessageText(message);
+        if (!text) {
+            return null;
+        }
+        return getMessageNodeByKey(chatMessages, pendingUserDomKey(text), 'user');
     }
 
     /** data-message-id と message.type（user/bot）が一致するノードのみ返す */
@@ -5404,6 +5529,9 @@
     function isMessageNodeInDom(chatMessages, message, messageKey) {
         if (!chatMessages || !message || !message.type) {
             return false;
+        }
+        if (message.type === 'user') {
+            return !!findUserMessageNodeInDom(chatMessages, message, messageKey);
         }
         const key = messageKey || getMessageDomKey(message);
         return !!getMessageNodeByKey(chatMessages, key, message.type);
@@ -5436,6 +5564,71 @@
             }
         }
         return null;
+    }
+
+    /** 直近ターンの user ノード（楽観表示・確定 uuid 両対応） */
+    function findLastUserMessageDomNode(chatMessages, messages) {
+        if (!chatMessages) {
+            return null;
+        }
+        const lastUserMsg = findLastUserMessageInList(messages);
+        const lastUserText = lastUserMsg
+            ? String(lastUserMsg.content || '').trim()
+            : (sessionStorage.getItem('lastUserMessage') || '').trim();
+        if (lastUserMsg) {
+            const confirmed = findUserMessageNodeInDom(
+                chatMessages,
+                lastUserMsg,
+                getMessageDomKey(lastUserMsg)
+            );
+            if (confirmed) {
+                return confirmed;
+            }
+        }
+        if (!lastUserText) {
+            return null;
+        }
+        const userNodes = chatMessages.querySelectorAll('.message.user');
+        for (let i = userNodes.length - 1; i >= 0; i--) {
+            const nodeText = (userNodes[i].querySelector('.message-content')?.textContent || '').trim();
+            if (nodeText === lastUserText || nodeText === BLOCKED_USER_PLACEHOLDER) {
+                return userNodes[i];
+            }
+        }
+        return null;
+    }
+
+    /** 直近 user より後にある bot ノード（処理バブル・初期メッセージ除く） */
+    function getBotNodesAfterLastUserDom(chatMessages, messages) {
+        const lastUserNode = findLastUserMessageDomNode(chatMessages, messages);
+        if (!lastUserNode) {
+            return [];
+        }
+        const bots = [];
+        chatMessages.querySelectorAll(
+            '.message.bot:not([data-initial-message="true"]):not(#currentTypingIndicator)'
+        ).forEach(function (node) {
+            if (lastUserNode.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) {
+                bots.push(node);
+            }
+        });
+        return bots;
+    }
+
+    function botNodeTextMatchesMessage(botNode, botMsg) {
+        if (!botNode || !botMsg) {
+            return false;
+        }
+        const normalized = String(botMsg.content || '').replace(/\s+/g, ' ').trim();
+        if (!normalized) {
+            return false;
+        }
+        const text = (botNode.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!text) {
+            return false;
+        }
+        const snippet = normalized.slice(0, 80);
+        return text.includes(snippet) || normalized.includes(text.slice(0, 80));
     }
 
     /** 直近ターンの user が DOM にあるか（楽観バブル・確定 uuid・直前 bot より後） */
@@ -5473,15 +5666,15 @@
             return true;
         }
         const botKey = stableMessageKey(lastBotMsg);
-        let lastBotNode = getMessageNodeByKey(chatMessages, botKey, 'bot');
-        if (!lastBotNode) {
-            const botNodes = chatMessages.querySelectorAll('.message.bot:not([data-initial-message="true"])');
-            if (botNodes.length === 0) {
-                return false;
-            }
-            lastBotNode = botNodes[botNodes.length - 1];
+        const keyedBotNode = getMessageNodeByKey(chatMessages, botKey, 'bot');
+        if (keyedBotNode) {
+            return !!(keyedBotNode.compareDocumentPosition(lastUserNode) & Node.DOCUMENT_POSITION_FOLLOWING);
         }
-        return !!(lastBotNode.compareDocumentPosition(lastUserNode) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const turnBots = getBotNodesAfterLastUserDom(chatMessages, messages);
+        if (turnBots.length === 0) {
+            return false;
+        }
+        return botNodeTextMatchesMessage(turnBots[turnBots.length - 1], lastBotMsg);
     }
 
     /** 直近ターン（user + bot）が DOM に揃っているか */
@@ -5540,41 +5733,38 @@
             return true;
         }
         if (lastBotMsg.uuid || lastBotMsg.message_id) {
+            const node = getMessageNodeByKey(chatMessages, key, 'bot');
+            return !!node;
+        }
+        const content = String(lastBotMsg.content || '');
+        if (
+            content.includes('recommendation-result')
+            || content.includes('ui-reco-block')
+            || content.includes('ui-carousel')
+            || content.includes('ui-reco-carousel')
+            || content.includes('chat-response')
+            || lastBotMsg.store_inquiry
+            || isStatusCardHtml(content)
+            || looksLikeHtmlContent(content)
+        ) {
             return false;
         }
-        if (lastBotMsg.store_inquiry) {
-            const storeBots = chatMessages.querySelectorAll(
-                '.message.bot:not(#currentTypingIndicator) .message-content'
-            );
-            for (let i = storeBots.length - 1; i >= 0; i--) {
-                const html = storeBots[i].innerHTML || '';
-                if (html.indexOf('store-inquiry') !== -1 || html.indexOf('トイレ') !== -1 || html.length > 80) {
-                    return true;
-                }
-            }
-        }
-        const normalized = String(lastBotMsg.content || '').replace(/\s+/g, ' ').trim().slice(0, 120);
-        if (!normalized) {
+        const turnBots = getBotNodesAfterLastUserDom(chatMessages, messages);
+        if (turnBots.length === 0) {
             return false;
         }
-        const botNodes = chatMessages.querySelectorAll(
-            '.message.bot:not([data-initial-message="true"]):not(#currentTypingIndicator)'
-        );
-        if (botNodes.length === 0) {
-            return false;
-        }
-        const lastBotNode = botNodes[botNodes.length - 1];
-        const text = (lastBotNode.textContent || '').replace(/\s+/g, ' ').trim();
-        if (!text) {
-            return false;
-        }
-        const snippet = normalized.slice(0, 80);
-        return text.includes(snippet) || normalized.includes(text.slice(0, 80));
+        return botNodeTextMatchesMessage(turnBots[turnBots.length - 1], lastBotMsg);
     }
 
     /** ストリーミングまたは確定 bot が画面上に見えているか */
     function isResponseVisibleInDom(messages) {
-        if (hasActiveStreamingContent()) {
+        if (awaitingPostResponse) {
+            if (messages && messages.length > 0 && isChatResponseComplete(messages)) {
+                return isLatestTurnRenderedInDom(messages);
+            }
+            return false;
+        }
+        if (chatStreamInProgress && hasActiveStreamingContent()) {
             return true;
         }
         if (messages && messages.length > 0 && isChatResponseComplete(messages)) {
@@ -5594,25 +5784,13 @@
             removeTypingIndicator();
             return;
         }
-        if (isResponseVisibleInDom(messages)) {
-            removeTypingIndicator();
-            return;
-        }
-        if (messages && messages.length > 0) {
-            removeTypingIndicatorWhenBotReady(messages);
-            return;
-        }
-        if (hasActiveStreamingContent()) {
-            removeTypingIndicator();
-        }
+        scheduleTypingIndicatorRemoval(messages);
     }
 
     /** ストリーミングチャンクを描画してからバブルを外す（先消しの空白を防ぐ） */
     function revealStreamingChunk(appendFn) {
         appendFn();
-        requestAnimationFrame(function () {
-            dismissTypingIndicator(null);
-        });
+        scheduleTypingIndicatorRemoval(null);
     }
 
     let deferredRecoveryToken = 0;
@@ -5747,6 +5925,9 @@
             merged.push(m);
         });
         local.forEach(function(m) {
+            if (isRedundantLocalUserMessage(server, m)) {
+                return;
+            }
             const k = stableMessageKey(m);
             if (!m || seen.has(k)) {
                 return;
@@ -5754,7 +5935,7 @@
             seen.add(k);
             merged.push(m);
         });
-        return dedupeMessageList(merged);
+        return sanitizeSessionMessages(merged);
     }
 
     function maybeRestoreSessionToServer(messages, sid) {
@@ -5800,12 +5981,14 @@
     function resolveSessionMessages(sessionData, options) {
         const opts = options || {};
         const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
-        const server = dedupeMessageList((sessionData && sessionData.messages) ? sessionData.messages : []);
+        const server = sanitizeSessionMessages(
+            (sessionData && sessionData.messages) ? sessionData.messages : []
+        );
         if (isSessionResetPending()) {
             return server;
         }
-        const cached = dedupeMessageList(loadChatCache(sid));
-        const merged = mergeMessageLists(server, cached);
+        const cached = sanitizeSessionMessages(loadChatCache(sid));
+        const merged = sanitizeSessionMessages(mergeMessageLists(server, cached));
 
         if (server.length === 0 && merged.length > 0 && opts.allowRestore !== false) {
             saveChatCache(sid, merged);
@@ -5834,12 +6017,12 @@
         const fp = messagesFingerprint(merged);
         const turnRendered = isLatestTurnRenderedInDom(merged);
         if (!opts.forceRender && fp === lastRenderedMessagesFingerprint) {
-            if (opts.suppressTypingIndicator && isBotResponseRendered(merged)) {
-                dismissTypingIndicator(merged);
-            }
             if (turnRendered) {
                 updateSessionSafetyBanners(sessionData);
                 refreshSageSafetyRail((sessionData && sessionData.user_attributes) || {});
+                if (opts.suppressTypingIndicator) {
+                    scheduleTypingIndicatorRemoval(merged);
+                }
                 return;
             }
             opts = Object.assign({ forceRender: true }, opts);
@@ -5872,7 +6055,6 @@
             endAwaitingPostResponse();
             isSubmitting = false;
             clearPersistentStatusMessages();
-            dismissTypingIndicator(merged, { force: true });
             restoreSubmitButton();
             applySessionMessages(sessionData, {
                 allowRestore: false,
@@ -5880,6 +6062,7 @@
                 suppressTypingIndicator: true,
                 periodicSync: true,
             });
+            scheduleTypingIndicatorRemoval(merged);
             return;
         }
         if (!shouldDeferSessionSync()) {
@@ -5900,20 +6083,43 @@
         }
     }
 
-    /** bot / ストリーミングが DOM に載るまでバブルを維持 */
-    function removeTypingIndicatorWhenBotReady(messages, attempt) {
-        if (isResponseVisibleInDom(messages)) {
-            removeTypingIndicator();
-            return;
-        }
-        const next = (attempt || 0) + 1;
-        if (next >= 48) {
-            scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
-            return;
-        }
-        requestAnimationFrame(function () {
-            removeTypingIndicatorWhenBotReady(messages, next);
-        });
+    /** bot / ストリーミングが DOM に載り描画されるまでバブルを維持し、表示後に除去 */
+    function scheduleTypingIndicatorRemoval(messages) {
+        const tryRemove = function (attempt) {
+            const typing = document.getElementById('currentTypingIndicator');
+            if (!typing) {
+                return;
+            }
+            const visible = messages && messages.length > 0
+                ? isLatestTurnRenderedInDom(messages)
+                : isResponseVisibleInDom(messages);
+            if (!visible) {
+                const next = (attempt || 0) + 1;
+                if (next < 60) {
+                    requestAnimationFrame(function () {
+                        tryRemove(next);
+                    });
+                } else {
+                    scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+                }
+                return;
+            }
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    const chatEl = document.getElementById('chatMessages');
+                    if (chatEl) {
+                        chatEl.scrollTop = chatEl.scrollHeight;
+                    }
+                    removeTypingIndicator();
+                    updateSnowContainerHeight();
+                });
+            });
+        };
+        tryRemove(0);
     }
 
     function isInternalClientErrorMessage(message) {
@@ -5930,6 +6136,12 @@
     /** SSE done 後に応答反映・バブル除去・送信ボタン復帰を試みる */
     function unlockPostResponseUI(donePayload) {
         try {
+            if (donePayload && donePayload.bot_message) {
+                if (renderDonePayloadImmediately(donePayload)) {
+                    return true;
+                }
+            }
+
             const sid = getSidFromCookie();
             let payload = donePayload;
             if (payload && !payload.bot_message) {
@@ -5959,13 +6171,6 @@
                         { preserveStatusCards: false, forceRender: true }
                     );
                 }
-            }
-
-            if (!resolved && isResponseVisibleInDom(null)) {
-                dismissTypingIndicator(null, { force: true });
-                restoreSubmitButton();
-                markPostResponseResolved();
-                return true;
             }
 
             if (!resolved && !postResponseResolved) {
@@ -6030,20 +6235,13 @@
             ProcessingStatus.stopProcessingPoll();
         }
         restoreSubmitButton();
-        const chatMessages = document.getElementById('chatMessages');
-        const wasAtBottom = chatMessages
-            ? chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 10
-            : false;
         applySessionMessages(sessionData, {
             preserveStatusCards: opts.preserveStatusCards !== false,
             forceRender: opts.forceRender === true || !isLatestTurnRenderedInDom(merged),
             suppressTypingIndicator: true,
             allowRestore: opts.allowRestore,
         });
-        dismissTypingIndicator(merged, { force: true });
-        if (chatMessages && wasAtBottom) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        scheduleTypingIndicatorRemoval(merged);
         if (!shouldDeferSessionSync()) {
             removeOrphanedStreamingBubbles();
         }
@@ -6486,7 +6684,10 @@
     window.openGoogleForm = openGoogleForm;
 
     function applySseProcessingStatus(data) {
-        if (!data || !window.ProcessingStatus || !isSubmitting || postResponseResolved) {
+        if (!data || !window.ProcessingStatus || postResponseResolved) {
+            return;
+        }
+        if (!isSubmitting && !chatStreamInProgress) {
             return;
         }
         const el = document.getElementById('currentTypingIndicator');
@@ -6622,7 +6823,7 @@
         attachSlowRequestButtonToTypingIndicator();
         scrollToBottom();
 
-        if (!usesChatSse() && window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
+        if (window.ProcessingStatus && ProcessingStatus.startProcessingPoll) {
             ProcessingStatus.startProcessingPoll(buildProcessingPollOptions(function (data) {
                 const el = document.getElementById('currentTypingIndicator');
                 if (!el || !data || !data.active) return;
@@ -7020,11 +7221,34 @@
 
     function notifySlowRequest() {
         const lastMessage = sessionStorage.getItem('lastUserMessage') || '';
+        const clientContext = {
+            page_url: window.location.href,
+            language: typeof currentLanguage !== 'undefined' ? currentLanguage : null,
+            reported_at: new Date().toISOString(),
+        };
+        const typing = document.getElementById('currentTypingIndicator');
+        if (typing) {
+            const label = typing.querySelector('.processing-status-label');
+            const pill = typing.querySelector('.processing-status-step-pill');
+            const fill = typing.querySelector('.processing-status-bar-fill');
+            if (label && label.textContent) {
+                clientContext.processing_label = label.textContent.trim();
+            }
+            if (pill && pill.textContent) {
+                clientContext.processing_step = pill.textContent.trim();
+            }
+            if (fill && fill.style && fill.style.width) {
+                clientContext.processing_percent = fill.style.width;
+            }
+        }
         fetch(withVersion('/api/slow-request-notify'), {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ last_user_message: lastMessage }),
+            body: JSON.stringify({
+                last_user_message: lastMessage,
+                client_context: clientContext,
+            }),
         }).catch(function (e) { console.warn('slow-request-notify failed', e); });
         const slowBtn = document.getElementById('slowRequestBtn');
         if (slowBtn) {
@@ -7088,7 +7312,7 @@
                 '</div>' +
                 '</div>';
         }
-        chatMessages.appendChild(messageDiv);
+        appendMessageNodeToChat(chatMessages, messageDiv);
         streamingRecommendationEl = messageDiv;
         scrollToBottom();
         return streamingRecommendationEl;
@@ -7398,7 +7622,10 @@ function appendQaDelta(text, section) {
             if (advice && advice.textContent && advice.textContent.trim()) {
                 return true;
             }
-            if (rec.querySelector('.medicine-item')) {
+            if (
+                rec.querySelector('.medicine-item, .ui-reco-block, .ui-carousel, .ui-reco-carousel')
+                || rec.classList.contains('has-medicines')
+            ) {
                 return true;
             }
         }
@@ -7406,10 +7633,21 @@ function appendQaDelta(text, section) {
         if (qaAnswer && qaAnswer.textContent && qaAnswer.textContent.trim()) {
             return true;
         }
-        if (document.querySelector('[data-streaming-qa="true"]')) {
+        const qaSections = document.querySelector('.streaming-qa-sections');
+        if (qaSections && qaSections.children.length > 0) {
             return true;
         }
         return false;
+    }
+
+    /** 応答が画面に出ていないときは処理バブルを維持（force 時も同様） */
+    function dismissTypingIndicatorWhenReady(messages, options) {
+        const opts = options || {};
+        if (opts.force && !postResponseResolved && !isResponseVisibleInDom(messages)) {
+            return false;
+        }
+        scheduleTypingIndicatorRemoval(messages);
+        return true;
     }
 
     function streamingTextsMatch(streamed, finalText) {
@@ -7503,6 +7741,43 @@ function appendQaDelta(text, section) {
         return true;
     }
 
+    function tryPromoteStreamingRecommendation(message, index) {
+        const content = (message && message.content) || '';
+        if (
+            !content.includes('recommendation-result')
+            && !content.includes('ui-reco-block')
+            && !content.includes('ui-carousel')
+        ) {
+            return false;
+        }
+        const wrapper =
+            streamingRecommendationEl && streamingRecommendationEl.isConnected
+                ? streamingRecommendationEl
+                : document.querySelector('[data-streaming-recommendation="true"]');
+        if (!wrapper) {
+            return false;
+        }
+        const messageKey = getMessageDomKey(message);
+        wrapper.classList.remove('streaming-recommendation');
+        wrapper.removeAttribute('data-streaming-recommendation');
+        wrapper.className = 'message bot';
+        wrapper.setAttribute('data-message-id', messageKey);
+        wrapper.setAttribute('data-message-index', String(index));
+        if (content.includes('<div') || content.includes('<section')) {
+            wrapper.innerHTML = content.indexOf('message-content') >= 0
+                ? content
+                : '<div class="message-content">' + content + '</div>';
+        } else {
+            wrapper.innerHTML = '<div class="message-content">' + content + '</div>';
+        }
+        if (isSageUi() && window.RecommendationRenderer && window.RecommendationRenderer.bindRendered) {
+            window.RecommendationRenderer.bindRendered(wrapper);
+        }
+        streamingRecommendationEl = null;
+        resetRecommendationSseBulkState();
+        return true;
+    }
+
     function tryPromoteStreamingQaResponse(message, index) {
         const diag = message && message.diagnosis;
         if (!diag || !diag.is_question) {
@@ -7534,6 +7809,9 @@ function appendQaDelta(text, section) {
     }
 
     function removeOrphanedStreamingBubbles() {
+        if (awaitingPostResponse && hasActiveStreamingContent()) {
+            return;
+        }
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) {
             return;
@@ -7561,8 +7839,12 @@ function appendQaDelta(text, section) {
     }
 
     function finalizeStreamingUiAfterPost() {
+        if (!postResponseResolved && !isResponseVisibleInDom(null)) {
+            scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+            return;
+        }
         endAwaitingPostResponse();
-        dismissTypingIndicator(null);
+        dismissTypingIndicatorWhenReady(null);
         removeProcessingMessage();
         restoreSubmitButton();
         clearSlowRequestTimer();
@@ -7677,7 +7959,7 @@ function appendQaDelta(text, section) {
         const hasDoneBot = !!(postMeta.donePayload && postMeta.donePayload.bot_message);
         const maxRetries = postMeta.instantRendered
             ? 0
-            : (postMeta.from_sse_done ? (hasDoneBot ? 1 : 3) : 5);
+            : (postMeta.from_sse_done ? (hasDoneBot ? 8 : 10) : 5);
         const fetchTimeoutMs = postMeta.from_sse_done ? 5000 : 2000;
 
         function retryDelayMs() {
@@ -7699,7 +7981,7 @@ function appendQaDelta(text, section) {
             const timeoutId = setTimeout(function () {
                 if (settled || seq !== fetchSeq || shouldSuppressPostFetchError()) {
                     if (shouldSuppressPostFetchError()) {
-                        dismissTypingIndicator(null, { force: true });
+                        dismissTypingIndicatorWhenReady(null, { force: true });
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
@@ -7711,14 +7993,14 @@ function appendQaDelta(text, section) {
                     setTimeout(fetchMessages, retryDelayMs());
                 } else {
                     if (unlockPostResponseUI(postMeta.donePayload || null) || shouldSuppressPostFetchError()) {
-                        dismissTypingIndicator(null, { force: true });
+                        dismissTypingIndicatorWhenReady(null, { force: true });
                         removeProcessingMessage();
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
                         return;
                     }
-                    dismissTypingIndicator(null, { force: true });
+                    dismissTypingIndicatorWhenReady(null, { force: true });
                     removeProcessingMessage();
                     removeStreamingAdviceBubble();
                     removeStreamingMedicineCards();
@@ -7750,7 +8032,7 @@ function appendQaDelta(text, section) {
                     settled = true;
                     clearTimeout(timeoutId);
                     if (shouldSuppressPostFetchError()) {
-                        dismissTypingIndicator(null, { force: true });
+                        dismissTypingIndicatorWhenReady(null, { force: true });
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
@@ -7760,6 +8042,7 @@ function appendQaDelta(text, section) {
                     if (mergedAfterPost.length > 0 && isChatResponseComplete(mergedAfterPost)) {
                         rememberLatestBotForFeedback(mergedAfterPost);
                         if (completePostResponseIfReady(sessionData, postMeta.donePayload || null)) {
+                            resetRecommendationSseBulkState();
                             removeProcessingMessage();
                             clearSlowRequestTimer();
                             if (onComplete) onComplete();
@@ -7793,7 +8076,11 @@ function appendQaDelta(text, section) {
                     }
 
                     if (postMeta.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
-                        dismissTypingIndicator(mergedAfterPost, { force: true });
+                        if (postResponseResolved || isResponseVisibleInDom(mergedAfterPost)) {
+                            dismissTypingIndicatorWhenReady(mergedAfterPost, { force: true });
+                        } else {
+                            scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+                        }
                         removeProcessingMessage();
                         restoreSubmitButton();
                         clearSlowRequestTimer();
@@ -7817,24 +8104,28 @@ function appendQaDelta(text, section) {
                         if (!postResponseResolved) {
                             unlockPostResponseUI(postMeta.donePayload || null);
                         }
-                        dismissTypingIndicator(null, { force: true });
-                        if (!postResponseResolved) {
-                            scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+                        if (postResponseResolved || isResponseVisibleInDom(null)) {
+                            dismissTypingIndicatorWhenReady(null, { force: true });
+                            endAwaitingPostResponse();
+                            restoreSubmitButton();
+                            clearSlowRequestTimer();
+                            if (onComplete) onComplete();
+                            return;
                         }
-                        restoreSubmitButton();
+                        scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
                         return;
                     }
 
                     if (unlockPostResponseUI(postMeta.donePayload || null) || shouldSuppressPostFetchError()) {
-                        dismissTypingIndicator(null, { force: true });
+                        dismissTypingIndicatorWhenReady(null, { force: true });
                         restoreSubmitButton();
                         clearSlowRequestTimer();
                         if (onComplete) onComplete();
                         return;
                     }
-                    dismissTypingIndicator(mergedAfterPost, { force: true });
+                    dismissTypingIndicator(null, { force: true });
                     removeProcessingMessage();
                     removeStreamingAdviceBubble();
                     removeStreamingMedicineCards();
@@ -7898,23 +8189,30 @@ function appendQaDelta(text, section) {
             }
             sseDoneHandled = true;
             chatStreamInProgress = false;
-            resetRecommendationSseBulkState();
             sessionStorage.removeItem('chatSseLastEventId');
             awaitingPostResponse = true;
             postResponseResolved = false;
-            handoffFinalizeTypingIndicator();
             const messageCount = donePayload && typeof donePayload.message_count === 'number'
                 ? donePayload.message_count
                 : 0;
             let instantRendered = false;
             try {
                 instantRendered = applyInstantBotFromSseDone(donePayload);
-                if (!instantRendered && donePayload && donePayload.bot_message) {
-                    requestAnimationFrame(function () {
-                        if (!postResponseResolved) {
-                            unlockPostResponseUI(donePayload);
+                if (instantRendered) {
+                    resetRecommendationSseBulkState();
+                } else {
+                    handoffFinalizeTypingIndicator();
+                    if (donePayload && donePayload.bot_message) {
+                        if (!unlockPostResponseUI(donePayload)) {
+                            requestAnimationFrame(function () {
+                                if (!postResponseResolved && unlockPostResponseUI(donePayload)) {
+                                    resetRecommendationSseBulkState();
+                                }
+                            });
+                        } else {
+                            resetRecommendationSseBulkState();
                         }
-                    });
+                    }
                 }
             } catch (err) {
                 console.error('finalizeSsePost unlock failed:', err);
@@ -7929,11 +8227,32 @@ function appendQaDelta(text, section) {
                 if (!document.getElementById('currentTypingIndicator')) {
                     return;
                 }
-                unlockPostResponseUI(donePayload);
+                if (postResponseResolved) {
+                    dismissTypingIndicatorWhenReady(null, { force: true });
+                    endAwaitingPostResponse();
+                    restoreSubmitButton();
+                    return;
+                }
+                if (unlockPostResponseUI(donePayload)) {
+                    resetRecommendationSseBulkState();
+                    dismissTypingIndicatorWhenReady(null, { force: true });
+                    endAwaitingPostResponse();
+                    restoreSubmitButton();
+                    return;
+                }
+                scheduleDeferredSessionRecovery(gen, 0);
+            }, 3000);
+            const postUnlockFallbackTimer = setTimeout(function () {
+                if (gen !== chatSubmitGeneration || postResponseResolved) {
+                    return;
+                }
+                if (!unlockPostResponseUI(donePayload) && !isResponseVisibleInDom(null)) {
+                    showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                }
                 dismissTypingIndicator(null, { force: true });
                 endAwaitingPostResponse();
                 restoreSubmitButton();
-            }, 3000);
+            }, 20000);
             fetchMessagesAfterPost(
                 {
                     message_count: messageCount,
@@ -7944,6 +8263,7 @@ function appendQaDelta(text, section) {
                 },
                 function () {
                     clearTimeout(postUnlockSafetyTimer);
+                    clearTimeout(postUnlockFallbackTimer);
                     clearSubmitWatchdog();
                 }
             );
@@ -8218,7 +8538,7 @@ function appendQaDelta(text, section) {
                         removeProcessingMessage();
                     } else if (data.message_count === 0 && (!sessionData.session_active || sessionData.messages_count === 0)) {
                         console.log('✓ New session or inactive session, no retry needed');
-                        dismissTypingIndicator(mergedAfterPost, { force: true });
+                        dismissTypingIndicatorWhenReady(mergedAfterPost, { force: true });
                         removeProcessingMessage();
                         restoreSubmitButton();
                     } else if (retryCount < maxRetries) {
@@ -8227,7 +8547,7 @@ function appendQaDelta(text, section) {
                         setTimeout(fetchMessages, retryInterval);
                     } else {
                         console.error('Max retries reached, showing error');
-                        dismissTypingIndicator(mergedAfterPost, { force: true });
+                        dismissTypingIndicatorWhenReady(mergedAfterPost, { force: true });
                         removeProcessingMessage();
                         showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                         restoreSubmitButton();
@@ -8286,7 +8606,7 @@ function appendQaDelta(text, section) {
         };
         typingIndicator.classList.add('is-hiding');
         typingIndicator.addEventListener('transitionend', removeNode, { once: true });
-        setTimeout(removeNode, 180);
+        setTimeout(removeNode, 100);
     }
 
     // チャットを最下部にスクロール
@@ -8517,7 +8837,7 @@ function appendQaDelta(text, section) {
     }
 
     // 新しいセッションを開始する関数
-    document.getElementById('new-session-btn').onclick = function() {
+    function startNewSession() {
         const t = translations[currentLanguage];
         if (confirm(t.confirmNewSession)) {
             markSessionReset();
@@ -8574,7 +8894,11 @@ function appendQaDelta(text, section) {
                 }
             });
         }
-    };
+    }
+
+    window.startNewSession = startNewSession;
+    window.clearChat = clearChat;
+    document.getElementById('new-session-btn').onclick = startNewSession;
 
     // 薬剤師対応を要請ボタン
     document.getElementById('admin-request-btn').onclick = function() {
@@ -8598,10 +8922,29 @@ function appendQaDelta(text, section) {
             .then(data => {
                 console.log('薬剤師要請データ:', data);
                 if (data.status === 'ok') {
-                    // サーバーからメッセージを再取得して表示（永続化されたメッセージを表示）
-                    setTimeout(() => {
+                    fetch(withVersion('/api/sessions'), {
+                        credentials: 'include',
+                        headers: { 'Cache-Control': 'no-cache' }
+                    })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(function (sessionData) {
+                        if (sessionData && sessionData.session_id) {
+                            rememberSid(sessionData.session_id);
+                        }
+                        applySessionMessages(sessionData, {
+                            forceRender: true,
+                            suppressTypingIndicator: true,
+                        });
+                    })
+                    .catch(function (error) {
+                        console.error('薬剤師要請後のセッション同期エラー:', error);
                         loadMessages();
-                    }, 100);
+                    });
                 } else {
                     console.error('薬剤師要請エラー:', data);
                     alert('薬剤師対応の要請に失敗しました: ' + (data.message || '不明なエラー'));
@@ -8771,7 +9114,10 @@ function appendQaDelta(text, section) {
             }
             const key = node.getAttribute('data-message-id');
             if (key) {
-                existingNodes.set(key, node);
+                const prev = existingNodes.get(key);
+                if (!prev || messageNodeHasRicherContent(node, prev)) {
+                    existingNodes.set(key, node);
+                }
             }
         });
 
@@ -8786,9 +9132,13 @@ function appendQaDelta(text, section) {
             const key = getMessageDomKey(message);
             const node = takeExistingNodeForMessage(existingNodes, message);
             if (node) {
+                if (message.type === 'user') {
+                    refreshUserMessageNodeContent(node, message);
+                }
                 ordered.push(node);
             } else if (message && message.type === 'user') {
-                const text = String(message.content || '').trim();
+                const text = userMessageText(message);
+                if (text) {
                 const pendingKey = pendingUserDomKey(text);
                 const pendingNode = existingNodes.get(pendingKey);
                 if (pendingNode) {
@@ -8802,6 +9152,7 @@ function appendQaDelta(text, section) {
                     if (pendingIdx >= 0) {
                         pendingNodes.splice(pendingIdx, 1);
                     }
+                    refreshUserMessageNodeContent(pendingNode, message);
                     ordered.push(pendingNode);
                 } else {
                 const fallback = chatMessages.querySelectorAll('.message.user[data-message-id]');
@@ -8811,16 +9162,18 @@ function appendQaDelta(text, section) {
                     if (!candidateKey || existingNodes.has(candidateKey)) {
                         continue;
                     }
-                    const candidateText = (candidate.querySelector('.message-content')?.textContent || '').trim();
+                    const candidateText = messageNodeTextContent(candidate);
                     if (candidateText === text) {
                         existingNodes.delete(candidateKey);
                         if (candidate.parentNode) {
                             candidate.remove();
                         }
                         candidate.setAttribute('data-message-id', key);
+                        refreshUserMessageNodeContent(candidate, message);
                         ordered.push(candidate);
                         break;
                     }
+                }
                 }
                 }
             }
@@ -8914,6 +9267,12 @@ function appendQaDelta(text, section) {
             }
             const messageKey = getMessageDomKey(message);
             if (isMessageNodeInDom(chatMessages, message, messageKey)) {
+                if (message.type === 'user') {
+                    const node = findUserMessageNodeInDom(chatMessages, message, messageKey);
+                    if (node) {
+                        refreshUserMessageNodeContent(node, message);
+                    }
+                }
                 return;
             }
             const messageDiv = document.createElement('div');
@@ -9002,6 +9361,12 @@ function appendQaDelta(text, section) {
             // 既存メッセージの場合はスキップ（重複防止）
             const messageKey = getMessageDomKey(message);
             if (isMessageNodeInDom(chatMessages, message, messageKey)) {
+                if (message.type === 'user') {
+                    const node = findUserMessageNodeInDom(chatMessages, message, messageKey);
+                    if (node) {
+                        refreshUserMessageNodeContent(node, message);
+                    }
+                }
                 return;
             }
 
@@ -9013,6 +9378,11 @@ function appendQaDelta(text, section) {
             }
 
             if (tryPromoteStreamingQaResponse(message, index)) {
+                existingIds.add(messageKey);
+                return;
+            }
+
+            if (tryPromoteStreamingRecommendation(message, index)) {
                 existingIds.add(messageKey);
                 return;
             }

@@ -60,6 +60,7 @@ from src.services.session_manager import (
     persist_session_from_chat_state,
     ensure_session_persisted,
     purge_empty_sessions_on_startup,
+    clear_admin_request_state,
     delete_session_by_id,
     is_session_recently_deleted,
     mark_session_deleted,
@@ -728,6 +729,7 @@ def clear_chat(request: Request, response: Response, sid: str = Depends(get_sid)
             pass
         session_data = get_session_from_db(sid)
         if session_data:
+            clear_admin_request_state(sid, session_data)
             session_data["messages"] = []
             save_session_to_db(sid, session_data)
     return Response(status_code=204)
@@ -810,24 +812,40 @@ async def api_slow_request_notify(
     request: Request,
     sid: str = Depends(get_sid),
 ):
+    from src.services.processing_status import get_processing_status
+    from src.services.session_manager import get_session_from_db
     from src.services.slow_request_notify import notify_slow_request
 
     client_info = ChatClientInfo.from_starlette_request(request)
+    body: dict = {}
     last_msg = ""
+    client_context: dict = {}
     try:
         if request.headers.get("content-type", "").startswith("application/json"):
-            body = await request.json()
-            if isinstance(body, dict):
+            raw = await request.json()
+            if isinstance(raw, dict):
+                body = raw
                 last_msg = (body.get("last_user_message") or body.get("message") or "").strip()
+                raw_ctx = body.get("client_context")
+                if isinstance(raw_ctx, dict):
+                    client_context = raw_ctx
     except Exception:
         pass
     if not last_msg:
         last_msg = request.query_params.get("message", "")
+
+    session_data = get_session_from_db(sid) or {}
+    username = session_data.get("username") or "Unknown"
+    processing_status = get_processing_status(sid)
+
     notify_slow_request(
         sid,
         client_ip=client_info.client_ip,
         user_agent=client_info.user_agent,
         last_user_message=last_msg,
+        username=username,
+        processing_status=processing_status,
+        client_context=client_context,
     )
     return {"status": "ok"}
 
@@ -1654,6 +1672,7 @@ async def api_manual_reply_queue_post(request: Request):
         "content": reply_message,
         "diagnosis": None,
         "manual_reply": True,
+        "timestamp": datetime.now().isoformat(),
     }
     target_session.setdefault("messages", [])
     target_session["messages"].append(manual_reply_message_obj)
@@ -2378,6 +2397,8 @@ async def api_admin_send_message(request: Request):
 
 @app.post("/api/request_admin")
 def api_request_admin(request: Request, response: Response, sid: str = Depends(get_sid)):
+    import uuid
+
     if not sid:
         return JSONResponse({"status": "error", "message": "No session"}, status_code=400)
 
@@ -2400,6 +2421,8 @@ def api_request_admin(request: Request, response: Response, sid: str = Depends(g
         "content": "薬剤師対応を要請しました。しばらくお待ちください。",
         "admin_request": True,
         "style_class": "admin-request",
+        "timestamp": datetime.now().isoformat(),
+        "uuid": str(uuid.uuid4()),
     }
     session_data.setdefault("messages", [])
     session_data["messages"].append(system_message)

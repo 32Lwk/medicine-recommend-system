@@ -56,6 +56,7 @@ def submit_feedback_record(
     feedback_text: str = "",
     is_google_form: bool = False,
     negative_reason: str | None = None,
+    metadata: dict[str, Any] | None = None,
     dedupe: bool = True,
 ) -> dict[str, Any]:
     """DB または開発フォールバックへフィードバックを保存する。"""
@@ -72,6 +73,7 @@ def submit_feedback_record(
         feedback_text=feedback_text or "",
         is_google_form=bool(is_google_form),
         negative_reason=negative_reason,
+        metadata=metadata,
     )
 
     if dedupe:

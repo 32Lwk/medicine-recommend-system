@@ -1,6 +1,102 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月17日**（Sage Terrace UI 段階移行・LINE→Web 引き継ぎ）
+**最終更新日: 2026年6月18日**（Sage 推奨カード強化・チャット描画安定化・フィードバックトレース）
+
+---
+
+## 2026年6月18日 — Sage 推奨カード強化・チャット描画安定化・フィードバックトレース
+
+### 概要
+
+Sage Terrace UI の **推奨カルーセル（Carousel Pro）** をレガシー HTML と同等の情報量まで拡張した。スコア内訳（副作用・相互作用リスク・未入力ペナルティ）、成分重複注意、DB 由来の成分・用法・注意書き、推奨理由リストをカード内に統合する。
+
+あわせて **Web チャットのメッセージ描画・タイピング表示の競合**を修正し、管理画面の会話時系列表示と **フィードバック非同期保存＋トレースメタデータ**（処理遅延通知・LINE 評価）を追加した。
+
+### Sage Terrace UI（推奨カード・カルーセル）
+
+- **スコア表示強化**（`medicine_mapper.js` / `medicine_card.js` / `ui_strings.js`）:
+  - 内訳に副作用リスク・相互作用リスクを追加（低いほど安全）
+  - `completeness_penalty` による未入力ペナルティチップ（年齢未入力時など）
+  - スコアリング tier（high / medium / low）でリング色分け
+  - 年齢暫定評価ラベル・内訳ヒント文言（ja / en / ko / zh）
+- **カード詳細**:
+  - DB フィールド（成分・用法用量・使用上の注意）を Pro カードに表示
+  - `reason` 文字列をアイコン付きリスト（✓ / ! / ·）へ整形
+  - 折りたたみ時は内訳・DB 欄・理由リストを非表示
+- **成分重複・服用注意**（`recommendation_renderer.js`）:
+  - レガシー HTML から重複成分警告をパースし `ui-overlap-card`（danger / warn）で表示
+  - レガシー折りたたみセクション（用法・禁忌等）をカード別・共通ブロックへマージ
+- **スタイル**: `UI/shared/shell.css` / `static/css/ui_shell_components.css` / `sage_terrace.css` に overlap・reason・score-penalty 用クラスを追加
+- **Sage ツールバー**: ゴミ箱ボタンを「履歴クリア」→「新セッション」に変更（`sage_shell.js` → `startNewSession` 委譲）
+- **情報モーダル**: `display: flex` で中央配置を修正（`main.js`）
+
+### Web チャット描画の安定化（`main.js`）
+
+- **メッセージマージ**: 空 user バブル除去、`sessionStorage.lastUserMessage` による本文補完、サーバー確定済み user との重複排除（`sanitizeSessionMessages`）
+- **DOM 照合**: 直近ターンの user / bot ノード判定を uuid なしケースでもテキスト一致で追跡（`getBotNodesAfterLastUserDom` 等）
+- **タイピングインジケータ**: `scheduleTypingIndicatorRemoval` で bot 描画完了＋スクロール後に除去（先消しによる空白を防止）
+- **SSE done 即時描画**: `renderDonePayloadImmediately` で `bot_message` を先行レンダリング
+- **POST エラー抑制**: `awaitingPostResponse` 中は `shouldSuppressPostFetchError` が誤判定しないよう修正
+- **処理遅延通知**: `client_context`（処理ステップ・経過秒数等）を `/api/slow_request_notify` へ送信
+
+### バックエンド（SSE・推奨・スコアリング）
+
+- **`processing_status.py`**: `status_sse_payload_for_session` — SSE status イベントの共通ペイロード整形（detail_code / flow_hint / slow_hint 等）
+- **`chat_stream.py`**: リプレイ時は validate ステップを再送しない。初回接続時のみ enriched status を event_id=1 で送出
+- **`sse_emit.py`**: アクティブ sink が無い場合 `get_active_session_sink` へフォールバック
+- **`candidate_scoring.py`**: `_extract_usage_precautions` — 用法用量列から `＜` 以降または注意行を行数制限なく抽出
+- **`chat_recommendation_flow.py`**: bot 応答に `timestamp` を付与
+
+### フィードバックトレース・処理遅延の永続化
+
+- **`feedback_trace.py`**（新規）: `build_feedback_trace` / `submit_feedback_async` — ThreadPoolExecutor で非同期保存。成功・失敗を `log/feedback_trace.jsonl` に記録（ユーザー操作はブロックしない）
+- **`slow_request_notify.py`**: 遅延通知時に `report_type=slow_request` で DB へ非同期保存。処理状況・`client_context`・ユーザー名をメタデータに含める
+- **`line_feedback.py`**: 同期 `submit_feedback_record` → 非同期 `submit_feedback_async` + トレースメタデータ。即時サンクス返信（重複時の 429 待ちを廃止）
+- **`database.py`**: `feedback_reports.metadata` JSONB 列をマイグレーション追加
+- **`feedback_submit.py` / `feedback_store.py`**: `metadata` 引数を通過
+
+### 管理画面（`admin_chat.js` / `admin_chat.css`）
+
+- **会話表示**: `normalizeAdminMessagesForDisplay` — timestamp 補間による時系列ソート（サーバー側 `sort_messages_chronologically` と同等ロジック）
+- **user メッセージ**: `content` / `message` / `text` / `user_message` から本文抽出。空の場合は「(メッセージ本文なし)」
+- **不具合報告一覧**: `slow_request`・`processing_timeout`・ポジティブ評価を表示対象に追加。`metadata` トレースをモーダルで閲覧可能
+- **LINE セッション**: `fetchAdminSessionMessages` で `/api/main_session` を個別取得
+
+### セッション・薬剤師要請
+
+- **`session_lifecycle.py`**: `sort_messages_chronologically`、アーカイブマージ時の richer メッセージ優先（`_prefer_richer_message`）
+- **`session_manager.py`**: LINE セッション統合で DB（古い）→ メモリ（新しい）の順でアーカイブへマージ
+- **`clear_admin_request_state`**: 履歴クリア時に `admin_request` フラグ・手動返信キューを解除（`main.py` `/clear`）
+- **`api_request_admin` / 手動返信**: メッセージに `timestamp`・`uuid` を付与
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `src/services/feedback_trace.py` | フィードバック非同期保存・JSONL トレース |
+| `tests/services/test_feedback_trace.py` | トレース構築・非同期保存テスト |
+
+### 変更ファイル（主要）
+
+| パス | 内容 |
+|------|------|
+| `static/js/main.js` | メッセージマージ・タイピング・done 即時描画・遅延通知 context |
+| `static/js/ui/*.js` | カード・マッパー・レンダラ・文言の Sage 推奨 UI 拡張 |
+| `static/js/admin_chat.js` | 時系列ソート・フィードバック一覧拡張 |
+| `static/js/sage_shell.js` | 新セッションボタン委譲 |
+| `UI/shared/shell.css` / `shell.js` | プロトタイプ用スコア・overlap スタイル |
+| `src/services/session_lifecycle.py` | 時系列ソート・リッチマージ |
+| `src/services/slow_request_notify.py` | DB 永続化・処理状況付き通知 |
+| `src/handlers/line/line_feedback.py` | 非同期フィードバック |
+| `templates/index.html` | キャッシュバスター・Sage ボタンラベル |
+
+### テスト
+
+- `tests/api/test_fastapi_contract.py` — `/clear` で admin_request・手動返信キュー解除
+- `tests/line/test_line_feedback.py` — 非同期 submit へ更新
+- `tests/line/test_line_profile_lifecycle.py` — メッセージ時系列ソート
+- `tests/services/test_slow_request_notify.py` — メタデータ付き非同期保存
+- `tests/services/test_feedback_trace.py` — トレース・非同期保存
 
 ---
 

@@ -69,6 +69,14 @@ body[data-ui-variant="sage"] {
   background: #fff;
 }
 
+[data-ui-variant="sage"] .message.bot .message-content.admin-request {
+  background: #fff3cd;
+  border: 2px solid #d97706;
+  color: #4a3800;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.18);
+}
+
 [data-ui-variant="sage"] .message.bot > .ui-bubble--reco {
   max-width: 96%;
   padding: 0.55rem 0.65rem;
@@ -153,6 +161,23 @@ body[data-ui-variant="sage"] {
 [data-ui-variant="sage"] .ui-reco-block .ui-alert,
 [data-ui-variant="sage"] .ui-reco-block .ui-reco-overlap {
   margin: 8px 0;
+}
+
+[data-ui-variant="sage"] .ui-reco-cautions {
+  margin: 0 0 12px;
+}
+
+[data-ui-variant="sage"] .ui-overlap-card {
+  border-radius: var(--ui-radius-md);
+}
+
+[data-ui-variant="sage"] .ui-overlap-card--danger {
+  border-color: #f0d4cc;
+}
+
+[data-ui-variant="sage"] .ui-card-usage-db,
+[data-ui-variant="sage"] .ui-card-usage-extra {
+  border-top-color: var(--ui-border);
 }
 
 [data-ui-variant="sage"] .ui-carousel-dot {
@@ -241,49 +266,70 @@ body[data-ui-variant="sage"] {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
 }
 
+[data-ui-variant="sage"] .ui-brand--toolbar {
+  container-type: inline-size;
+  container-name: toolbar-brand;
+}
+
 [data-ui-variant="sage"] .ui-brand--toolbar h1 {
   font-weight: 600;
   letter-spacing: 0.06em;
   overflow: visible;
   text-overflow: clip;
-  font-size: clamp(0.62rem, 2.6vw + 0.35rem, 0.92rem);
 }
 
-[data-ui-variant="sage"] #appTitle .app-title-core--short {
+/* main.css #appTitle（最大28px）より優先し、ブランド列幅に追従 */
+[data-ui-variant="sage"] #sageToolbarHeader #appTitle {
+  font-size: clamp(0.58rem, calc((100vw - 11rem) / 14), 0.95rem);
+}
+
+@supports (container-type: inline-size) {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle {
+    font-size: clamp(0.58rem, 7cqi, 0.95rem);
+  }
+}
+
+[data-ui-variant="sage"] #sageToolbarHeader #appTitle .app-title-core--short {
   display: none;
 }
 
 /* 狭い画面: 絵文字 → (dev) → 短縮タイトル → 文字縮小の順（末尾省略はしない） */
 @media (max-width: 560px) {
-  [data-ui-variant="sage"] #appTitle .app-title-emoji {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle .app-title-emoji {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  [data-ui-variant="sage"] #appTitle .app-title-env {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle .app-title-env {
     display: none;
   }
 
-  [data-ui-variant="sage"] .ui-brand--toolbar h1 {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle {
     letter-spacing: 0.03em;
   }
 }
 
 @media (max-width: 420px) {
-  [data-ui-variant="sage"] #appTitle .app-title-core {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle .app-title-core {
     display: none;
   }
 
-  [data-ui-variant="sage"] #appTitle .app-title-core--short {
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle .app-title-core--short {
     display: inline;
   }
 }
 
 @media (max-width: 360px) {
-  [data-ui-variant="sage"] .ui-brand--toolbar h1 {
-    font-size: clamp(0.58rem, 2.2vw + 0.28rem, 0.72rem);
+  [data-ui-variant="sage"] #sageToolbarHeader #appTitle {
+    font-size: clamp(0.55rem, calc((100vw - 10rem) / 15), 0.82rem);
     letter-spacing: 0.01em;
+  }
+
+  @supports (container-type: inline-size) {
+    [data-ui-variant="sage"] #sageToolbarHeader #appTitle {
+      font-size: clamp(0.55rem, 6.5cqi, 0.82rem);
+    }
   }
 }
 
@@ -699,7 +745,15 @@ body[data-ui-variant="sage"] {
               0 0 20px 8px rgba(91, 124, 153, 0.25) !important;
 }
 
-/* Info modal */
+/* Info modal — match userInfoModal sizing */
+[data-ui-variant="sage"] #infoModal {
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
 [data-ui-variant="sage"] #infoModal .modal-content {
   border-radius: var(--ui-radius-lg);
   border: 1px solid var(--ui-border);
@@ -708,24 +762,42 @@ body[data-ui-variant="sage"] {
   display: flex;
   flex-direction: column;
   max-height: min(90vh, 640px);
+  height: fit-content;
+  padding: 0;
+  margin: 0;
+  width: 90%;
+  max-width: 600px;
+  flex-shrink: 0;
+  align-self: center;
+  background: var(--ui-bg-surface);
 }
 
 [data-ui-variant="sage"] #infoModal .modal-header {
   background: var(--ui-bg-header);
   color: var(--ui-text-on-primary);
   border-bottom: none;
-  padding: 14px 16px;
+  padding: 12px 14px;
+  margin: 0;
 }
 
 [data-ui-variant="sage"] #infoModal .modal-header .modal-title {
   color: var(--ui-text-on-primary);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 
 [data-ui-variant="sage"] #infoModal .modal-close {
   color: var(--ui-text-on-primary);
   opacity: 0.9;
+  font-size: 1.25rem;
+  line-height: 1;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
 }
 
 [data-ui-variant="sage"] #infoModal .modal-close:hover {
@@ -740,8 +812,18 @@ body[data-ui-variant="sage"] {
 }
 
 [data-ui-variant="sage"] #infoModal .modal-body {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(min(90vh, 640px) - 52px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--ui-bg-chat);
-  padding: 12px;
+  padding: 10px 12px;
+}
+
+[data-ui-variant="sage"] #infoModal .detail-page {
+  padding: 0;
 }
 
 /* Info modal — ui-list-item style (54 pattern) */
@@ -757,7 +839,7 @@ body[data-ui-variant="sage"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 4px;
+  padding: 12px 4px;
   margin-bottom: 0;
   border: none;
   border-bottom: 1px solid var(--ui-border);
@@ -903,14 +985,16 @@ body[data-ui-variant="sage"] {
   background: var(--ui-bg-header);
   color: var(--ui-text-on-primary);
   border-bottom: none;
-  padding: 10px 12px;
+  padding: 12px 14px;
 }
 
 [data-ui-variant="sage"] #userInfoModal .modal-header h3 {
   margin: 0;
   color: var(--ui-text-on-primary);
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 
 [data-ui-variant="sage"] #userInfoModal .close-modal {
@@ -930,31 +1014,41 @@ body[data-ui-variant="sage"] {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--ui-bg-chat);
 }
 
 [data-ui-variant="sage"] #userInfoModal .form-group {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-[data-ui-variant="sage"] #userInfoModal .form-group label {
+[data-ui-variant="sage"] #userInfoModal .form-group label,
+[data-ui-variant="sage"] #userInfoModal .ui-form-group label {
   display: block;
-  font-size: 0.76rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  line-height: 1.4;
   color: var(--ui-text);
 }
 
+/* main.css の input{font-size:16px!important}（モバイル）と .ui-form-group の max(16px) を上書き */
 [data-ui-variant="sage"] #userInfoModal .form-group input,
 [data-ui-variant="sage"] #userInfoModal .form-group select,
-[data-ui-variant="sage"] #userInfoModal .form-group textarea {
+[data-ui-variant="sage"] #userInfoModal .form-group textarea,
+[data-ui-variant="sage"] #userInfoModal .ui-form-group input,
+[data-ui-variant="sage"] #userInfoModal .ui-form-group select,
+[data-ui-variant="sage"] #userInfoModal .ui-form-group textarea,
+[data-ui-variant="sage"] #userInfoModal #userInfoForm input,
+[data-ui-variant="sage"] #userInfoModal #userInfoForm select,
+[data-ui-variant="sage"] #userInfoModal #userInfoForm textarea {
   width: 100%;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-sm);
-  font-size: 0.82rem;
-  line-height: 1.4;
+  font-family: inherit;
+  font-size: 0.75rem !important;
+  line-height: 1.45;
   box-sizing: border-box;
   background: var(--ui-bg-surface);
   color: var(--ui-text);
@@ -967,9 +1061,9 @@ body[data-ui-variant="sage"] {
 
 [data-ui-variant="sage"] #userInfoModal .submit-attributes-btn {
   width: 100%;
-  margin-top: 4px;
-  padding: 8px 14px;
-  font-size: 0.82rem;
+  margin-top: 6px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   border: none;
   border-radius: var(--ui-radius-sm);
@@ -981,4 +1075,15 @@ body[data-ui-variant="sage"] {
 
 [data-ui-variant="sage"] #userInfoModal .submit-attributes-btn:hover {
   filter: brightness(1.05);
+}
+
+@media (max-width: 480px) {
+  [data-ui-variant="sage"] #infoModal {
+    padding: 12px;
+  }
+
+  [data-ui-variant="sage"] #infoModal .modal-content {
+    width: 95%;
+    max-height: min(85vh, calc(100vh - 24px));
+  }
 }

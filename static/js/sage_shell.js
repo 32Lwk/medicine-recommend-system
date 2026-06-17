@@ -34,13 +34,27 @@
 
       clearBtn.addEventListener('click', function () {
 
-        if (typeof window.clearChat === 'function') {
+        if (typeof window.startNewSession === 'function') {
 
-          window.clearChat();
+          window.startNewSession();
 
-        } else if (legacyClear) {
+        } else {
 
-          legacyClear.click();
+          var legacyNew = document.getElementById('new-session-btn');
+
+          if (legacyNew) {
+
+            legacyNew.click();
+
+          } else if (typeof window.clearChat === 'function') {
+
+            window.clearChat();
+
+          } else if (legacyClear) {
+
+            legacyClear.click();
+
+          }
 
         }
 

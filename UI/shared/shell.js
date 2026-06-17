@@ -18,7 +18,8 @@
       form: 'tablets',
       symptoms: ['のど痛', '発熱', '鼻水', 'くしゃみ'],
       ageLabel: '15歳以上',
-      scores: { symptom: 94, efficacy: 88, age: 100, usage: 85 },
+      scores: { symptom: 94, efficacy: 88, age: 100, usage: 85, sideEffect: 92, interaction: 96 },
+      completenessPenalty: 0.15,
       imageUrl: null
     },
     {
@@ -33,7 +34,7 @@
       form: 'granules',
       symptoms: ['発熱', '鼻水', '頭痛', 'せき'],
       ageLabel: '15歳以上',
-      scores: { symptom: 88, efficacy: 82, age: 100, usage: 80 },
+      scores: { symptom: 88, efficacy: 82, age: 100, usage: 80, sideEffect: 88, interaction: 95 },
       imageUrl: null
     },
     {
@@ -48,7 +49,7 @@
       form: 'tablet',
       symptoms: ['のど痛', '発熱', '鼻づまり'],
       ageLabel: '15歳以上',
-      scores: { symptom: 85, efficacy: 78, age: 100, usage: 90 },
+      scores: { symptom: 85, efficacy: 78, age: 100, usage: 90, sideEffect: 85, interaction: 90 },
       imageUrl: null
     }
   ];
@@ -90,10 +91,17 @@
     );
   }
 
+  function scoreTier(pct) {
+    if (pct >= 80) return 'high';
+    if (pct >= 60) return 'medium';
+    return 'low';
+  }
+
   function scoreRingHtml(score) {
     var pct = Math.max(0, Math.min(100, score));
+    var tier = scoreTier(pct);
     return (
-      '<button type="button" class="ui-score-ring" data-score-ring style="--ui-score:' + pct + '" aria-expanded="false" aria-label="おすすめ度 ' + pct + 'パーセント。タップで内訳を表示">' +
+      '<button type="button" class="ui-score-ring ui-score-ring--' + tier + '" data-score-ring style="--ui-score:' + pct + '" aria-expanded="false" aria-label="おすすめ度 ' + pct + 'パーセント。タップで内訳を表示">' +
         '<span class="ui-score-ring__track" aria-hidden="true"></span>' +
         '<span class="ui-score-ring__fill" aria-hidden="true"></span>' +
         '<span class="ui-score-ring__inner">' +
@@ -104,17 +112,37 @@
     );
   }
 
+  function scorePenaltyChipHtml(m) {
+    var penalty = Number(m.completenessPenalty) || 0;
+    if (penalty <= 0) return '';
+    var pct = Math.round(penalty * 1000) / 10;
+    var pctLabel = pct % 1 === 0 ? String(Math.round(pct)) : String(pct);
+    var title = '年齢などの情報が未入力のため、おすすめ度が最大' + pctLabel + '%低下しています。入力するとより正確な判定が可能です。';
+    return '<p class="ui-score-penalty-chip" title="' + esc(title) + '" aria-label="' + esc(title) + '">未入力 −' + pctLabel + '%</p>';
+  }
+
+  function scoreClusterHtml(m) {
+    return '<div class="ui-score-cluster">' + scoreRingHtml(m.score) + scorePenaltyChipHtml(m) + '</div>';
+  }
+
   function scoreBreakdownPanelHtml(m) {
     var s = m.scores;
+    var rows = [
+      ['症状適合度', s.symptom],
+      ['効能特異性', s.efficacy],
+      ['年齢適合性', s.age],
+      ['用法簡便性', s.usage],
+      ['副作用リスク', s.sideEffect],
+      ['相互作用リスク', s.interaction]
+    ];
+    var items = rows.filter(function (row) { return row[1] != null && row[1] !== ''; }).map(function (row) {
+      var mod = row[0].indexOf('リスク') >= 0 ? ' ui-score-breakdown__item--risk' : '';
+      return '<li class="ui-score-breakdown__item' + mod + '"><span class="ui-score-breakdown__label">' + row[0] + '</span><strong>' + row[1] + '%</strong></li>';
+    }).join('');
     return (
       '<div class="ui-score-breakdown-panel" data-score-panel hidden>' +
         '<p class="ui-score-breakdown-panel__title">スコア内訳（参考）</p>' +
-        '<ul class="ui-score-breakdown__list" aria-label="スコア内訳">' +
-          '<li><span class="ui-score-breakdown__label">症状適合度</span><strong>' + s.symptom + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">効能特異性</span><strong>' + s.efficacy + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">年齢適合性</span><strong>' + s.age + '%</strong></li>' +
-          '<li><span class="ui-score-breakdown__label">用法簡便性</span><strong>' + s.usage + '%</strong></li>' +
-        '</ul>' +
+        '<ul class="ui-score-breakdown__list" aria-label="スコア内訳">' + items + '</ul>' +
         '<p class="ui-score-breakdown__note">ルールベースの評価です。最終判断は薬剤師・登録販売者にご相談ください。</p>' +
       '</div>'
     );
@@ -193,7 +221,7 @@
             '<p class="ui-card-maker">' + esc(m.maker) + '</p>' +
             symptomTagsHtml(m.symptoms) +
           '</div>' +
-          scoreRingHtml(m.score) +
+          scoreClusterHtml(m) +
         '</div>' +
         '<div class="ui-card-pro-meta">' +
           '<span class="ui-med-badge ui-med-badge--type">' + esc(m.medType) + '</span>' +

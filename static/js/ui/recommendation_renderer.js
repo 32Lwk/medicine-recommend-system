@@ -130,7 +130,135 @@
 
 
 
-  function renderMedicinesCarousel(medicines) {
+  function isPersonalizedAdviceWarning(el) {
+
+    return el.classList.contains('warning-info') &&
+
+      el.getAttribute('aria-label') === 'あなたに合わせたアドバイス';
+
+  }
+
+
+
+  function getCollapsibleContentHtml(sec) {
+
+    if (!sec) return '';
+
+    var content = sec.querySelector('.collapse-content');
+
+    if (content) return content.innerHTML;
+
+    var toggle = sec.querySelector('.collapse-toggle');
+
+    var child = toggle ? toggle.nextElementSibling : null;
+
+    if (child && child.tagName !== 'BUTTON') return child.innerHTML;
+
+    return '';
+
+  }
+
+
+
+  function parseLegacyUsageSections(legacyHost) {
+
+    var perMedicine = {};
+
+    var shared = [];
+
+    if (!legacyHost) return { perMedicine: perMedicine, shared: shared };
+
+    legacyHost.querySelectorAll('.collapsible-section').forEach(function (sec) {
+
+      var label = sec.getAttribute('aria-label') || '';
+
+      if (label === '症状分析結果' || label === '使用上の注意') return;
+
+      var contentHtml = getCollapsibleContentHtml(sec);
+
+      if (!contentHtml.trim()) return;
+
+      var rankMatch = label.match(/^(\d+)つ目/);
+
+      if (rankMatch) {
+
+        perMedicine[parseInt(rankMatch[1], 10)] = contentHtml;
+
+        return;
+
+      }
+
+      if (label.indexOf('使ってはいけない') >= 0 ||
+
+          label.indexOf('服用時の注意') >= 0 ||
+
+          label.indexOf('OTC') >= 0 ||
+
+          label.indexOf('ドーピング') >= 0) {
+
+        shared.push({ label: label, contentHtml: contentHtml });
+
+      }
+
+    });
+
+    return { perMedicine: perMedicine, shared: shared };
+
+  }
+
+
+
+  function buildCardUsageDetailHtml(rank, usageSections, med) {
+
+    usageSections = usageSections || { perMedicine: {}, shared: [] };
+
+    med = med || {};
+
+    var hasDb = !!(med.ingredients || med.usage || med.usageNotes);
+
+    var parts = [];
+
+    if (!hasDb) {
+
+      var legacyMed = usageSections.perMedicine[rank];
+
+      if (legacyMed) {
+
+        parts.push('<div class="ui-card-usage-block ui-card-usage-block--legacy">' + legacyMed + '</div>');
+
+      }
+
+    }
+
+    if (usageSections.shared && usageSections.shared.length) {
+
+      usageSections.shared.forEach(function (section) {
+
+        parts.push(
+
+          '<div class="ui-card-usage-block ui-card-usage-block--shared">' +
+
+            '<div class="ui-card-label">' + esc(section.label) + '</div>' +
+
+            '<div class="ui-card-usage-content">' + section.contentHtml + '</div>' +
+
+          '</div>'
+
+        );
+
+      });
+
+    }
+
+    return parts.join('');
+
+  }
+
+
+
+  function renderMedicinesCarousel(medicines, options) {
+
+    options = options || {};
 
     if (!global.MedicineMapper || !global.MedicineCard || !global.MedicineCarousel) {
 
@@ -142,9 +270,15 @@
 
     if (!mapped.length) return '';
 
+    var usageSections = options.usageSections || { perMedicine: {}, shared: [] };
+
     var cards = mapped.map(function (m) {
 
-      return global.MedicineCard.cardHtmlPro(m);
+      return global.MedicineCard.cardHtmlPro(m, {
+
+        usageDetailHtml: buildCardUsageDetailHtml(m.rank, usageSections, m)
+
+      });
 
     }).join('');
 
@@ -482,52 +616,179 @@
 
 
 
+  function parseOverlapLine(text) {
+
+    var ingredient = '';
+
+    var meds = '';
+
+    var note = '';
+
+    var colonIdx = text.indexOf('：');
+
+    if (colonIdx < 0) colonIdx = text.indexOf(':');
+
+    if (colonIdx >= 0) {
+
+      ingredient = text.slice(0, colonIdx).trim();
+
+      var rest = text.slice(colonIdx + 1).trim();
+
+      var paren = rest.match(/^(.+?)（(.+)）$/);
+
+      if (paren) {
+
+        meds = paren[1].trim();
+
+        note = paren[2].trim();
+
+      } else {
+
+        meds = rest;
+
+      }
+
+    } else {
+
+      meds = text;
+
+    }
+
+    return { ingredient: ingredient, meds: meds, note: note };
+
+  }
+
+
+
   function overlapWarningsHtml(legacyHost) {
 
     if (!legacyHost) return '';
 
-    var html = '';
+    var cards = [];
 
     legacyHost.querySelectorAll('.warning-critical, .warning-caution, .warning-info').forEach(function (el) {
 
       if (el.getAttribute('aria-label') === '医師の受診が必要な場合') return;
 
-      var cls = 'ui-alert--info';
+      if (isPersonalizedAdviceWarning(el)) return;
 
-      if (el.classList.contains('warning-critical')) cls = 'ui-alert--danger';
+      var severity = el.classList.contains('warning-critical') ? 'danger'
 
-      else if (el.classList.contains('warning-caution')) cls = 'ui-alert--warn';
+        : el.classList.contains('warning-caution') ? 'warn' : 'info';
 
-      var clone = el.cloneNode(true);
+      var title = el.getAttribute('aria-label') || '';
 
-      clone.removeAttribute('style');
+      var h4 = el.querySelector('h4');
 
-      clone.className = 'ui-alert ' + cls + ' ui-reco-overlap';
+      if (h4) title = h4.textContent.replace(/^[\S]+\s*/, '').trim();
 
-      clone.querySelectorAll('[style]').forEach(function (node) { node.removeAttribute('style'); });
+      var lines = [];
 
-      html += clone.outerHTML;
+      el.querySelectorAll('li').forEach(function (li) {
+
+        var line = li.textContent.trim();
+
+        if (line) lines.push(line);
+
+      });
+
+      if (!lines.length) {
+
+        var p = el.querySelector('p');
+
+        if (p && p.textContent.trim()) lines.push(p.textContent.trim());
+
+      }
+
+      if (!lines.length) return;
+
+      var badge = severity === 'danger' ? '重複禁止' : severity === 'warn' ? '注意' : '情報';
+
+      var rows = lines.map(function (line) {
+
+        var parsed = parseOverlapLine(line);
+
+        return (
+
+          '<div class="ui-overlap-row">' +
+
+            (parsed.ingredient
+
+              ? '<span class="ui-overlap-row__ingredient">' + esc(parsed.ingredient) + '</span>'
+
+              : '') +
+
+            '<span class="ui-overlap-row__meds">' + esc(parsed.meds) + '</span>' +
+
+            (parsed.note
+
+              ? '<span class="ui-overlap-row__note">' + esc(parsed.note) + '</span>'
+
+              : '') +
+
+          '</div>'
+
+        );
+
+      }).join('');
+
+      cards.push(
+
+        '<div class="ui-overlap-card ui-overlap-card--' + severity + '">' +
+
+          '<div class="ui-overlap-card__head">' +
+
+            '<span class="ui-overlap-card__badge">' + esc(badge) + '</span>' +
+
+            '<span class="ui-overlap-card__title">' + esc(title) + '</span>' +
+
+          '</div>' +
+
+          '<div class="ui-overlap-card__body">' + rows + '</div>' +
+
+        '</div>'
+
+      );
 
     });
 
-    return html;
+    if (!cards.length) return '';
+
+    return (
+
+      '<div class="ui-reco-cautions" role="region" aria-label="' + esc(t('overlapCautions')) + '">' +
+
+        cards.join('') +
+
+      '</div>'
+
+    );
 
   }
 
 
 
-  function usageSectionSortKey(label) {
-    if (!label) return 900;
-    var rankMatch = label.match(/(\d+)つ目/);
-    if (rankMatch) return parseInt(rankMatch[1], 10);
-    if (label.indexOf('OTC') >= 0) return 20;
-    if (label.indexOf('使ってはいけない') >= 0) return 30;
-    if (label.indexOf('服用時の注意') >= 0) return 40;
-    if (label.indexOf('ドーピング') >= 0) return 50;
-    return 60;
+  function isAncillaryUsageSection(label) {
+
+    if (!label || label === '症状分析結果' || label === '使用上の注意') return false;
+
+    if (/^\d+つ目/.test(label)) return false;
+
+    if (label.indexOf('使ってはいけない') >= 0) return false;
+
+    if (label.indexOf('服用時の注意') >= 0) return false;
+
+    if (label.indexOf('OTC') >= 0) return false;
+
+    if (label.indexOf('ドーピング') >= 0) return false;
+
+    return true;
+
   }
 
-  function usageCollapsiblesHtml(legacyHost) {
+
+
+  function ancillaryCollapsiblesHtml(legacyHost) {
 
     if (!legacyHost) return '';
 
@@ -535,19 +796,13 @@
 
     if (!sections.length) return '';
 
-    sections.sort(function (a, b) {
-      var la = a.getAttribute('aria-label') || '';
-      var lb = b.getAttribute('aria-label') || '';
-      return usageSectionSortKey(la) - usageSectionSortKey(lb);
-    });
-
     var html = '';
 
     sections.forEach(function (sec) {
 
       var label = sec.getAttribute('aria-label') || '';
 
-      if (label === '症状分析結果') return;
+      if (!isAncillaryUsageSection(label)) return;
 
       var toggle = sec.querySelector('.collapse-toggle');
 
@@ -559,11 +814,11 @@
 
       }
 
-      var content = sec.querySelector('.collapse-content');
+      var contentHtml = getCollapsibleContentHtml(sec);
+
+      if (!contentHtml.trim()) return;
 
       var expanded = sec.getAttribute('data-default-expanded') === 'true';
-
-      var contentHtml = content ? content.innerHTML : '';
 
       html +=
 
@@ -597,9 +852,7 @@
 
       followupQuestionsHtml(diag, legacyHost) +
 
-      overlapWarningsHtml(legacyHost) +
-
-      usageCollapsiblesHtml(legacyHost)
+      ancillaryCollapsiblesHtml(legacyHost)
 
     );
 
@@ -673,6 +926,8 @@
 
     var hasLegacyDoctor = !!(legacyHost && legacyHost.querySelector('.warning-critical[aria-label="医師の受診が必要な場合"]'));
 
+    var usageSections = parseLegacyUsageSections(legacyHost);
+
     return (
 
       '<div class="ui-reco-block ui-reco-block--pro">' +
@@ -681,7 +936,9 @@
 
         personalizedAdviceHtml(diag, options.adviceText) +
 
-        renderMedicinesCarousel(meds) +
+        overlapWarningsHtml(legacyHost) +
+
+        renderMedicinesCarousel(meds, { usageSections: usageSections }) +
 
         alertsHtml(diag, { skipDoctor: hasLegacyDoctor }) +
 

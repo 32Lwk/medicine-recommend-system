@@ -219,6 +219,8 @@ def emit_sse_event(
     event_id: Optional[str] = None,
 ) -> None:
     sink = get_stream_sink()
+    if not sink and session_id:
+        sink = get_active_session_sink(session_id)
     if not sink:
         return
     if session_id and sink.session_id != session_id:
