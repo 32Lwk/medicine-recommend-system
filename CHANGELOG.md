@@ -1,6 +1,108 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月16日**（本番チャット 54 Sage Terrace UI 移行の試行とロールバック）
+**最終更新日: 2026年6月17日**（Sage Terrace UI 段階移行・LINE→Web 引き継ぎ）
+
+---
+
+## 2026年6月17日 — Sage Terrace UI 段階移行と LINE→Web 引き継ぎ
+
+### 概要
+
+6月16日のロールバック後、**本番チャットへ 54 Sage Terrace UI を段階的に導入**する方針で再実装した。レガシー UI はデフォルトのまま維持し、`?ui=sage`・Cookie・環境変数 `UI_SAGE_TERRACE_ENABLED` で Sage バリアントを切り替える。**既存 DOM ID・`main.js` フックは温存**し、Sage 時のみ追加ヘッダー・安全レール・Carousel Pro 推奨描画を有効化する。
+
+あわせて **LINE 推奨完了後に Web へ会話を引き継ぐ**ワンタイムトークン（30分・1回限り）と `/resume/{token}` ルートを追加した。
+
+### UI バリアント（段階公開）
+
+| 段階 | 内容 |
+|------|------|
+| 1 | 開発環境で `UI_SAGE_TERRACE_ENABLED=true` |
+| 2 | 本番で `?ui=sage` ベータ（Cookie 7日保持） |
+| 3 | 本番で `UI_SAGE_TERRACE_ENABLED=true` |
+| 4 | legacy コードパス削除（将来） |
+
+**解決優先順位**: クエリ `?ui=sage\|legacy`（別名 `54` / `sage-terrace` / `classic` 可）→ Cookie `ui_variant` → 環境変数 → `legacy`。本番で Flag OFF でもクエリ・Cookie による QA 上書きを許可。
+
+### Sage Terrace UI（Web）
+
+- **デュアルシェル**: `templates/index.html` に `data-ui-variant` を付与。Sage 時は Toolbar ヘッダー（`ui-header--toolbar`）、コンパクト入力バー（`ui-input-bar`）、`#safetyRailMount` を追加し、レガシー `.chat-header` は CSS で非表示（DOM・JS フックは維持）。
+- **スタイル**: `static/css/ui_shell_components.css`（`UI/shared/shell.css` 由来）＋ `static/css/sage_terrace.css`（Sage テーマ変数・オーバーライド）。`scrollbar.css` 経由でスクロールバー統一。
+- **クライアント描画モジュール**（`static/js/ui/`）:
+  - `ui_strings.js` — Sage 向け UI 文言
+  - `medicine_mapper.js` — 推奨 JSON の正規化
+  - `medicine_card.js` — 医薬品カード HTML
+  - `carousel.js` — Carousel Pro
+  - `recommendation_renderer.js` — `diagnosis` / SSE から推奨ブロック描画
+  - `safety_rail.js` — コンパクト安全レール
+- **`sage_shell.js`**: Toolbar ボタンをレガシー操作へ委譲、安全レール初期化、Sage 専用 body クラス付与。
+- **`main.js`**: `isSageUi()` 分岐で推奨メッセージの Carousel 昇格、SSE `cards` イベント連携、設定モーダルに季節装飾・パーティクル ON/OFF、オンボーディングの Sage 向けハイライト対象変更。
+
+### バックエンド（推奨・SSE）
+
+- **`recommendation_client_payload.py`**: `is_sage_web_ui()` / `enrich_recommended_medicines()` — 症状・スコア内訳・画像 URL を SSE / `diagnosis` 用に補完。
+- **`chat_recommendation_flow.py`**: Sage Web 時はサーバー側 HTML カード生成をスキップし、`data-sage-client-render="1"` プレースホルダのみ出力（二重表示防止）。
+- **`sse_emit.py`**: `emit_cards` に `image_url`・`symptoms`・`score_breakdown` を追加。
+
+### LINE → Web 引き継ぎ
+
+- **`line_web_handoff.py`**: メモリ内ワンタイムトークン（TTL 30分・1回限り）。LINE セッションの messages / user_attributes / 言語を Web 新規セッションへコピー（`handoff_from_line` 記録）。
+- **`GET /resume/{token}`**: トークン検証 → 新 `sid` Cookie 設定 → `/` へリダイレクト。失効時は 410 HTML。
+- **`flex_messages.py`**: LINE 推奨成功時、3通目に「ブラウザで続ける」Flex（URI ボタン）を付与。
+- **`line_i18n.py`**: `web_continue_*` 文言を ja / en / ko / zh に追加。
+
+### その他
+
+- **`main.py`**: インデックス描画で `ui_variant` 解決・Cookie 設定、`runtime_client_config_json` に `uiVariant` を含める。SSE 用 `_prime_safe_session_for_chat` にも `ui_variant` を反映。
+- **`api_sessions_post`**: セッション POST 時に既存 `messages` を上書きしないよう修正（空配列での消去を防止）。
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `config/ui_config.py` | UI バリアント解決・Cookie 名・段階公開コメント |
+| `src/services/recommendation_client_payload.py` | Sage 判定・推奨 dict 補完 |
+| `src/handlers/line/line_web_handoff.py` | LINE→Web ワンタイムトークン |
+| `static/css/ui_shell_components.css` | 共有シェルコンポーネント CSS |
+| `static/css/sage_terrace.css` | Sage Terrace テーマ・本番オーバーライド |
+| `static/js/sage_shell.js` | Sage Toolbar・安全レール起動 |
+| `static/js/ui/*.js` | Carousel・カード・安全レール等（6 ファイル） |
+| `tests/config/test_ui_config.py` | バリアント解決テスト |
+| `tests/services/test_recommendation_client_payload.py` | ペイロード補完テスト |
+| `tests/line/test_line_web_handoff.py` | 引き継ぎ・Flex・`/resume` テスト |
+
+### 変更ファイル
+
+| パス | 内容 |
+|------|------|
+| `main.py` | UI バリアント・`/resume/{token}`・セッション POST 修正 |
+| `templates/index.html` | Sage / legacy デュアルマークアップ・条件付き CSS/JS |
+| `static/js/main.js` | Sage 分岐・推奨描画・設定 UI |
+| `static/css/main.css` | Sage 時レガシーヘッダー非表示等 |
+| `src/handlers/chat/chat_recommendation_flow.py` | Sage クライアント描画プレースホルダ |
+| `src/handlers/chat_stream.py` | ストリーム開始時 `ui_variant` 注入 |
+| `src/services/sse_emit.py` | cards ペイロード拡張 |
+| `src/handlers/line/flex_messages.py` | Web 続行 Flex・3通目追加 |
+| `src/handlers/line/line_i18n.py` | 引き継ぎ文言 i18n |
+| `tests/api/test_fastapi_contract.py` | `?ui=sage` / `?ui=legacy` 契約テスト |
+
+### 利用方法（開発・QA）
+
+```text
+# Sage UI を試す（本番 Flag OFF でも可）
+https://<host>/?ui=sage
+
+# レガシーに戻す
+https://<host>/?ui=legacy
+
+# 環境変数で全体 ON
+UI_SAGE_TERRACE_ENABLED=true
+```
+
+### 6月16日試行との違い
+
+- **全置換ではなくデュアルパス**: レガシーがデフォルト。Sage はフラグ／クエリで明示的に有効化。
+- **サーバー HTML カードとクライアント Carousel の分離**: Sage 時はプレースホルダ＋クライアント描画で二重表示を回避。
+- **Toolbar はレガシー操作への薄いラッパー**: `clearChat` 等の既存関数を再利用。
 
 ---
 

@@ -40,7 +40,9 @@ logger = logging.getLogger(__name__)
 
 _STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "180"))
 _KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
-def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str) -> None:
+def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, request: Any = None) -> None:
+    from config.ui_config import UI_VARIANT_COOKIE, UI_VARIANT_QUERY, resolve_ui_variant
+
     safe_session.setdefault("messages", [])
     safe_session.setdefault(
         "user_attributes",
@@ -58,6 +60,10 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str) -> 
     )
     if sid:
         safe_session["_id"] = sid
+    if request is not None:
+        query_ui = getattr(request, "query_params", {}).get(UI_VARIANT_QUERY) if hasattr(request, "query_params") else None
+        cookie_ui = request.cookies.get(UI_VARIANT_COOKIE) if hasattr(request, "cookies") else None
+        safe_session["ui_variant"] = resolve_ui_variant(query_ui=query_ui, cookie_ui=cookie_ui)
     if "username" not in safe_session:
         safe_session["username"] = f"ユーザー{get_next_user_number()}"
     if sid:
@@ -142,7 +148,7 @@ async def stream_chat_events(
     yield _sse_line("status", {"step_id": "validate", "percent": 5}, event_id="1")
 
     safe_session = RequestSafeSession()
-    _prime_safe_session_for_chat(safe_session, sid)
+    _prime_safe_session_for_chat(safe_session, sid, request)
 
     sink: Optional[StreamSink] = None
     reattach = False

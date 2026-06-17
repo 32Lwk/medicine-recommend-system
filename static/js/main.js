@@ -2,6 +2,7 @@
     const translations = {
         ja: {
             title: "💊 チャット型医薬品相談ツール(β版)",
+            titleShort: "医薬品相談ツール",
             description: "症状に合う市販薬をご案内します。",
             userInfoBtn: "👤 ユーザー情報登録",
             clearBtn: "🗑️ 履歴クリア",
@@ -306,6 +307,7 @@
         },
         en: {
             title: "💊 Chat Pharmaceutical Consultation Tool",
+            titleShort: "OTC Consultation",
             description: "OTC medicine guidance for your symptoms.",
             userInfoBtn: "👤 User Info",
             clearBtn: "🗑️ Clear History",
@@ -598,6 +600,7 @@
         },
         ko: {
             title: "💊 채팅형 의약품 상담 도구",
+            titleShort: "의약품 상담",
             description: "증상에 맞는 일반의약품을 안내합니다.",
             userInfoBtn: "👤 사용자 정보",
             clearBtn: "🗑️ 기록 삭제",
@@ -902,6 +905,7 @@
         },
         zh: {
             title: "💊 聊天式药品咨询工具",
+            titleShort: "药品咨询",
             description: "根据症状推荐合适的非处方药。",
             userInfoBtn: "👤 用户信息",
             clearBtn: "🗑️ 清除历史",
@@ -1203,6 +1207,100 @@
         totalSlides: 0,
         touchStartX: 0
     };
+
+    function isSageUi() {
+        return document.body && document.body.getAttribute('data-ui-variant') === 'sage';
+    }
+
+    function isSeasonDecorationEnabled() {
+        const v = localStorage.getItem('seasonDecorationEnabled');
+        return v === null || v === 'true';
+    }
+
+    function isParticleEffectsEnabled() {
+        return localStorage.getItem('particleEffectsEnabled') === 'true';
+    }
+
+    function setSeasonDecorationEnabled(enabled) {
+        localStorage.setItem('seasonDecorationEnabled', enabled ? 'true' : 'false');
+        applySeasonDecorationVisibility();
+    }
+
+    function setParticleEffectsEnabled(enabled) {
+        localStorage.setItem('particleEffectsEnabled', enabled ? 'true' : 'false');
+        if (!enabled) {
+            const snowContainer = document.getElementById('snowContainer');
+            if (snowContainer) snowContainer.innerHTML = '';
+        } else {
+            createSeasonalParticles();
+        }
+    }
+
+    function applySeasonDecorationVisibility() {
+        const layer = document.querySelector('.season-decoration-layer');
+        if (layer) {
+            layer.style.display = isSeasonDecorationEnabled() ? '' : 'none';
+        }
+    }
+
+    function injectSageDisplaySettings() {
+        if (!isSageUi()) return;
+        const detail = document.getElementById('detailContent');
+        if (!detail || detail.querySelector('[data-sage-display-settings]')) return;
+        const tUi = window.UiStrings ? window.UiStrings.t : function (k) { return k; };
+        const seasonOn = isSeasonDecorationEnabled();
+        const particleOn = isParticleEffectsEnabled();
+        const block = document.createElement('div');
+        block.setAttribute('data-sage-display-settings', 'true');
+        block.className = 'info-section sage-display-settings';
+        block.innerHTML =
+            '<h3>🎨 ' + (tUi('settingsSeasonLabel') || '表示演出') + '</h3>' +
+            '<div class="sage-setting-row" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+            '<div><strong>' + tUi('settingsSeasonLabel') + '</strong><p style="margin:4px 0 0;color:#666;font-size:0.9em;">' + tUi('settingsSeasonDesc') + '</p></div>' +
+            '<label class="sage-toggle"><input type="checkbox" id="toggle-season-decoration"' + (seasonOn ? ' checked' : '') + '><span></span></label>' +
+            '</div>' +
+            '<div class="sage-setting-row" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
+            '<div><strong>' + tUi('settingsParticleLabel') + '</strong><p style="margin:4px 0 0;color:#666;font-size:0.9em;">' + tUi('settingsParticleDesc') + '</p></div>' +
+            '<label class="sage-toggle"><input type="checkbox" id="toggle-particle-effects"' + (particleOn ? ' checked' : '') + '><span></span></label>' +
+            '</div>';
+        detail.appendChild(block);
+        const seasonCb = block.querySelector('#toggle-season-decoration');
+        const particleCb = block.querySelector('#toggle-particle-effects');
+        if (seasonCb) {
+            seasonCb.addEventListener('change', function () {
+                setSeasonDecorationEnabled(seasonCb.checked);
+            });
+        }
+        if (particleCb) {
+            particleCb.addEventListener('change', function () {
+                setParticleEffectsEnabled(particleCb.checked);
+            });
+        }
+    }
+
+    function refreshSageSafetyRail(attrs) {
+        if (!isSageUi() || !window.SageShell) return;
+        if (attrs && window.SafetyRail && window.SafetyRail.normalizeAttrs) {
+            attrs = window.SafetyRail.normalizeAttrs(attrs);
+        }
+        if (attrs) window.__lastUserAttributes = attrs;
+        window.SageShell.refreshSafetyRail(attrs || window.__lastUserAttributes || {});
+    }
+
+    function getLatestRecommendationRoot() {
+        return document.querySelector('.message--sage-reco .ui-bubble--reco') ||
+            document.querySelector('.recommendation-result');
+    }
+
+    function enhanceSageRecommendationMessage(messageDiv, message) {
+        if (!isSageUi() || !window.RecommendationRenderer || !message) return;
+        window.RecommendationRenderer.mountSageRecommendation(messageDiv, message, {
+            legacyHost: messageDiv.querySelector('.recommendation-result')
+        });
+    }
+
+    window.setSeasonDecorationEnabled = setSeasonDecorationEnabled;
+    window.setParticleEffectsEnabled = setParticleEffectsEnabled;
 
     let onboardingModalResizeObserver = null;
 
@@ -1679,7 +1777,9 @@
                 const micBtn = document.getElementById('micBtn');
                 
                 if (messageInput) {
-                    const inputGroup = messageInput.closest('.input-group');
+                    const inputGroup = messageInput.closest('.input-group')
+                        || messageInput.closest('.ui-input-row')
+                        || messageInput.closest('.message-input-field');
                     if (inputGroup) {
                         inputGroup.classList.add('onboarding-highlight');
                     } else {
@@ -1691,26 +1791,43 @@
                 }
                 break;
             
-            case 2: // ステップ2: ユーザー情報登録ボタン
-                const userInfoBtn = document.getElementById('userInfoBtn');
-                if (userInfoBtn) {
-                    userInfoBtn.classList.add('onboarding-highlight');
+            case 2: // ステップ2: ユーザー情報（Sage は安全レール CTA）
+                if (isSageUi()) {
+                    const safetyCta = document.getElementById('safetyRailCta');
+                    if (safetyCta) {
+                        safetyCta.classList.add('onboarding-highlight');
+                    }
+                } else {
+                    const userInfoBtn = document.getElementById('userInfoBtn');
+                    if (userInfoBtn) {
+                        userInfoBtn.classList.add('onboarding-highlight');
+                    }
                 }
                 break;
             
-            case 3: // ステップ3: 薬剤師要請ボタン、ℹ️ボタン
-                const adminRequestBtn = document.getElementById('admin-request-btn');
-                const infoBtn = document.getElementById('infoBtn');
-                const infoSelector = document.querySelector('.info-selector');
-                
-                if (adminRequestBtn) {
-                    adminRequestBtn.classList.add('onboarding-highlight');
-                }
-                if (infoBtn) {
-                    infoBtn.classList.add('onboarding-highlight');
-                    // 親要素も強調対象にする（z-indexを確実に適用するため）
-                    if (infoSelector) {
-                        infoSelector.classList.add('onboarding-highlight-parent');
+            case 3: // ステップ3: 薬剤師要請・情報
+                if (isSageUi()) {
+                    const sageAdminBtn = document.getElementById('sage-admin-request-btn');
+                    const sageInfoBtn = document.getElementById('sage-info-btn');
+                    if (sageAdminBtn) {
+                        sageAdminBtn.classList.add('onboarding-highlight');
+                    }
+                    if (sageInfoBtn) {
+                        sageInfoBtn.classList.add('onboarding-highlight');
+                    }
+                } else {
+                    const adminRequestBtn = document.getElementById('admin-request-btn');
+                    const infoBtn = document.getElementById('infoBtn');
+                    const infoSelector = document.querySelector('.info-selector');
+                    
+                    if (adminRequestBtn) {
+                        adminRequestBtn.classList.add('onboarding-highlight');
+                    }
+                    if (infoBtn) {
+                        infoBtn.classList.add('onboarding-highlight');
+                        if (infoSelector) {
+                            infoSelector.classList.add('onboarding-highlight-parent');
+                        }
                     }
                 }
                 break;
@@ -4083,7 +4200,7 @@
     function showListPage() {
         currentModalPage = 'list';
         const t = translations[currentLanguage];
-        document.getElementById('modalTitle').textContent = t.appInfo;
+        document.getElementById('modalTitle').textContent = isSageUi() ? t.infoButton : t.appInfo;
         document.getElementById('listPage').style.display = 'block';
         document.getElementById('detailPage').style.display = 'none';
         const backButton = document.getElementById('back-button');
@@ -4132,6 +4249,7 @@
         // 設定ページの場合、現在の設定を反映
         if (pageId === 'settings') {
             updateSettingsPage();
+            injectSageDisplaySettings();
         }
         
         // スクロール位置を一番上にリセット
@@ -4217,12 +4335,16 @@
         
         // UI更新
         updateUI();
+
+        if (isSageUi() && window.SafetyRail) {
+            refreshSageSafetyRail(window.__lastUserAttributes || {});
+        }
         
         // ドロップダウンを閉じる
         const dropdown = document.getElementById('langDropdown');
         const toggle = document.querySelector('.lang-toggle');
-        dropdown.classList.remove('show');
-        toggle.classList.remove('open');
+        if (dropdown) dropdown.classList.remove('show');
+        if (toggle) toggle.classList.remove('open');
         
         // アクティブな言語オプションを更新
         document.querySelectorAll('.lang-option').forEach(option => {
@@ -4295,7 +4417,7 @@
         return { emoji, core: rest.trim(), env };
     }
 
-    function renderAppTitle(rawTitle) {
+    function renderAppTitle(rawTitle, shortCore) {
         const el = document.getElementById('appTitle');
         if (!el) return;
 
@@ -4317,6 +4439,15 @@
         coreSpan.textContent = parts.core;
         el.appendChild(coreSpan);
 
+        const compactCore = (shortCore || '').trim();
+        if (compactCore && compactCore !== parts.core) {
+            const shortSpan = document.createElement('span');
+            shortSpan.className = 'app-title-core--short';
+            shortSpan.setAttribute('aria-hidden', 'true');
+            shortSpan.textContent = compactCore;
+            el.appendChild(shortSpan);
+        }
+
         if (parts.env) {
             const envSpan = document.createElement('span');
             envSpan.className = 'app-title-env';
@@ -4325,17 +4456,25 @@
         }
     }
 
-    // UI要素の更新
     function updateUI() {
         const t = translations[currentLanguage];
         
         // ヘッダー要素の更新
-        renderAppTitle(t.title);
-        document.getElementById('appDescription').textContent = t.description;
+        renderAppTitle(t.title, t.titleShort);
+        const appDesc = document.getElementById('appDescription');
+        if (appDesc) {
+            appDesc.textContent = t.description;
+        }
         document.getElementById('userInfoBtn').textContent = t.userInfoBtn;
         document.getElementById('clearBtn').textContent = t.clearBtn;
         document.getElementById('new-session-btn').textContent = t.newSessionBtn;
         document.getElementById('admin-request-btn').textContent = t.adminRequestBtn;
+        const sageClearBtn = document.getElementById('sage-clear-btn');
+        if (sageClearBtn) {
+            const clearLabel = t.clearBtn || '履歴クリア';
+            sageClearBtn.title = clearLabel;
+            sageClearBtn.setAttribute('aria-label', clearLabel);
+        }
         
         // 情報ボタンのタイトル更新
         document.getElementById('infoBtn').title = t.infoButton;
@@ -4351,7 +4490,7 @@
         
         // 入力フィールドの更新
         document.getElementById('messageInput').placeholder = t.placeholder;
-        document.querySelector('button[type="submit"]').textContent = t.send;
+        setChatSendButtonState(getChatSubmitButton(), 'idle');
         
         // 初期メッセージの更新（新規追加）
         updateInitialMessage();
@@ -4424,6 +4563,9 @@
     let chatInputResizeObserver = null;
 
     function initSeasonDecorationLayout() {
+        if (!isSeasonDecorationEnabled()) {
+            return;
+        }
         document.querySelectorAll('.season-decoration').forEach((img) => {
             const onReady = () => syncChatInputHeight();
             if (img.complete) {
@@ -4542,6 +4684,10 @@
 
         snowContainer.innerHTML = '';
 
+        if (!isParticleEffectsEnabled()) {
+            return;
+        }
+
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
@@ -4655,6 +4801,7 @@
         applyEnvBadge();
 
         initChatInputLayout();
+        applySeasonDecorationVisibility();
         createSeasonalParticles();
         window.addEventListener('resize', handleResize);
         
@@ -4811,6 +4958,32 @@
     function getChatSubmitButton() {
         return document.querySelector('#chatForm button[type="submit"]');
     }
+
+    function isSageSendButton(btn) {
+        return !!(btn && btn.classList && btn.classList.contains('ui-send'));
+    }
+
+    function setChatSendButtonState(btn, mode) {
+        if (!btn) return;
+        const t = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
+        if (isSageSendButton(btn)) {
+            if (mode === 'busy') {
+                btn.textContent = '…';
+                btn.setAttribute('aria-busy', 'true');
+            } else {
+                btn.textContent = '➤';
+                btn.removeAttribute('aria-busy');
+                btn.title = t.send || '送信';
+                btn.setAttribute('aria-label', t.send || '送信');
+            }
+            return;
+        }
+        if (mode === 'busy') {
+            btn.innerHTML = t.sendButton || '⏳ 処理中...';
+        } else {
+            btn.textContent = t.send || '送信';
+        }
+    }
     
     const chatFormEl = document.getElementById('chatForm');
     if (!chatFormEl) {
@@ -4854,8 +5027,8 @@
             const submitBtn = getChatSubmitButton();
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '⏳ 処理中...';
-                submitBtn.style.background = '#6c757d';
+                setChatSendButtonState(submitBtn, 'busy');
+                submitBtn.style.background = isSageSendButton(submitBtn) ? '' : '#6c757d';
                 submitBtn.style.cursor = 'not-allowed';
             }
             
@@ -5666,6 +5839,7 @@
             }
             if (turnRendered) {
                 updateSessionSafetyBanners(sessionData);
+                refreshSageSafetyRail((sessionData && sessionData.user_attributes) || {});
                 return;
             }
             opts = Object.assign({ forceRender: true }, opts);
@@ -5675,6 +5849,11 @@
             lastRenderedMessagesFingerprint = fp;
         }
         updateSessionSafetyBanners(sessionData);
+        const attrs = (sessionData && sessionData.user_attributes) || {};
+        if (attrs && Object.keys(attrs).length) {
+            window.__lastUserAttributes = attrs;
+        }
+        refreshSageSafetyRail(attrs);
     }
 
     /** 10秒ポーリング・デバウンス復旧用: サーバーに応答があるのに DOM 未反映なら強制同期 */
@@ -5879,6 +6058,25 @@
         }).catch(function() {});
     }
 
+    function restoreChatToInitialView() {
+        const chatEl = document.getElementById('chatMessages');
+        if (!chatEl) {
+            return;
+        }
+        chatEl.querySelectorAll('.message:not([data-initial-message="true"])').forEach(function (node) {
+            node.remove();
+        });
+        const typing = document.getElementById('currentTypingIndicator');
+        if (typing) {
+            typing.remove();
+        }
+        if (!chatEl.querySelector('[data-initial-message="true"]')) {
+            renderChatMessages([], {});
+        } else {
+            updateInitialMessage();
+        }
+    }
+
     // メッセージを再読み込み（初回ロード用）
     function loadMessages() {
         const hadReset = consumeSessionReset();
@@ -5900,12 +6098,10 @@
                     rememberSid(data.session_id);
                 }
                 if (hadReset && data && Array.isArray(data.messages) && data.messages.length === 0) {
-                    const chatEl = document.getElementById('chatMessages');
-                    if (chatEl) {
-                        chatEl.innerHTML = '';
-                    }
                     lastRenderedMessagesFingerprint = '';
                     updateSessionSafetyBanners(data);
+                    refreshSageSafetyRail((data.user_attributes) || {});
+                    restoreChatToInitialView();
                     return;
                 }
                 applySessionMessages(data);
@@ -5937,8 +6133,7 @@
         } catch (e) { /* ignore */ }
         if (submitBtn) {
             submitBtn.disabled = false;
-            const t = translations[currentLanguage] || translations[DEFAULT_LANGUAGE] || {};
-            submitBtn.innerHTML = t.sendButton || '送信';
+            setChatSendButtonState(submitBtn, 'idle');
             submitBtn.style.background = '';
             submitBtn.style.cursor = '';
         }
@@ -6059,7 +6254,8 @@
         }
 
         if (!payload.ai_response) {
-            const lastBotMessage = document.querySelector('#chatMessages .message.bot:last-of-type .message-content');
+            const sageReco = typeof getLatestRecommendationRoot === 'function' ? getLatestRecommendationRoot() : null;
+            const lastBotMessage = sageReco || document.querySelector('#chatMessages .message.bot:last-of-type .message-content');
             if (lastBotMessage) {
                 payload.ai_response = lastBotMessage.innerText.trim();
             }
@@ -6877,17 +7073,21 @@
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message bot streaming-recommendation';
         messageDiv.setAttribute('data-streaming-recommendation', 'true');
-        messageDiv.innerHTML =
-            '<div class="recommendation-result" data-streaming-skeleton="true">' +
-            '<div class="warning-info streaming-advice-section" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">' +
-            '<h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>' +
-            '<p class="streaming-personalized-advice" style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;"></p>' +
-            '</div>' +
-            '<div class="streaming-medicines-section" style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">' +
-            '<h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>' +
-            '<div class="streaming-medicines-container"></div>' +
-            '</div>' +
-            '</div>';
+        if (isSageUi() && window.RecommendationRenderer && window.RecommendationRenderer.buildStreamingSageSkeletonHtml) {
+            messageDiv.innerHTML = window.RecommendationRenderer.buildStreamingSageSkeletonHtml();
+        } else {
+            messageDiv.innerHTML =
+                '<div class="recommendation-result" data-streaming-skeleton="true">' +
+                '<div class="warning-info streaming-advice-section" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">' +
+                '<h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>' +
+                '<p class="streaming-personalized-advice" style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;"></p>' +
+                '</div>' +
+                '<div class="streaming-medicines-section" style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">' +
+                '<h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>' +
+                '<div class="streaming-medicines-container"></div>' +
+                '</div>' +
+                '</div>';
+        }
         chatMessages.appendChild(messageDiv);
         streamingRecommendationEl = messageDiv;
         scrollToBottom();
@@ -7110,8 +7310,24 @@ function appendQaDelta(text, section) {
         if (!medicines || !medicines.length) return;
         const wrapper = ensureStreamingRecommendationResult();
         if (!wrapper) return;
+        if (isSageUi() && window.RecommendationRenderer && window.RecommendationRenderer.updateStreamingSageReco) {
+            if (window.RecommendationRenderer.updateStreamingSageReco(wrapper, medicines)) {
+                scrollToBottom();
+                return;
+            }
+        }
         const container = wrapper.querySelector('.streaming-medicines-container');
         if (!container) return;
+        if (isSageUi() && window.RecommendationRenderer) {
+            const html = window.RecommendationRenderer.buildRecommendationMedicinesHtml(medicines);
+            if (html) {
+                container.innerHTML = html;
+                window.RecommendationRenderer.bindRendered(container);
+                wrapper.classList.add('has-medicines');
+                scrollToBottom();
+                return;
+            }
+        }
         container.innerHTML = medicines.map(buildStreamingMedicineItemHtml).join('');
         wrapper.classList.add('has-medicines');
         scrollToBottom();
@@ -7121,6 +7337,27 @@ function appendQaDelta(text, section) {
         if (!items || !items.length) return;
         const wrapper = document.querySelector('[data-streaming-recommendation="true"]') || streamingRecommendationEl;
         if (!wrapper) return;
+        if (isSageUi()) {
+            items.forEach(function (item) {
+                const exp = (item.explanation || '').trim();
+                if (!exp) return;
+                const rank = item.rank || 0;
+                const name = (item.product_name || '').trim();
+                const cards = wrapper.querySelectorAll('.ui-card--pro');
+                cards.forEach(function (card, idx) {
+                    const matchRank = rank && idx + 1 === rank;
+                    const matchName = name && card.textContent.indexOf(name) >= 0;
+                    if (!matchRank && !matchName) return;
+                    const sections = card.querySelectorAll('.ui-card-section');
+                    const reasonEl = sections.length > 1
+                        ? sections[1].querySelector('.ui-card-text')
+                        : card.querySelector('.ui-card-section .ui-card-text');
+                    if (reasonEl) reasonEl.textContent = exp;
+                });
+            });
+            scrollToBottom();
+            return;
+        }
         const medBlocks = wrapper.querySelectorAll('.streaming-medicines-container .medicine-item');
         items.forEach(function (item) {
             const exp = (item.explanation || '').trim();
@@ -7744,6 +7981,10 @@ function appendQaDelta(text, section) {
                 }
                 if (ev.event === 'cards' && ev.data && ev.data.medicines) {
                     startRecommendationSseBulkMode();
+                    window.__pendingSseMedicines = ev.data.medicines;
+                    if (isSageUi()) {
+                        renderStreamingMedicineCards(ev.data.medicines);
+                    }
                 }
                 if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
                     if (recommendationSseBulkMode) {
@@ -8856,6 +9097,7 @@ function appendQaDelta(text, section) {
                         // message-contentクラスでラップしてHTMLを正しくレンダリング
                         messageDiv.innerHTML = `<div class="message-content">${cleanedContent}</div>`;
                     }
+                    enhanceSageRecommendationMessage(messageDiv, message);
                     }
                 }
                 // 緊急事案メッセージの特別表示
@@ -9314,6 +9556,7 @@ function appendQaDelta(text, section) {
     
     // グローバルスコープに公開
     window.editUserInfo = editUserInfo;
+    window.openUserInfoModal = openUserInfoModal;
     
     // 既存のユーザー情報を読み込む
     function loadExistingUserInfo() {
@@ -9323,10 +9566,13 @@ function appendQaDelta(text, section) {
         })
             .then(response => response.json())
             .then(data => {
-                const attrs = data.user_attributes || {};
+                const raw = data.user_attributes || {};
+                const attrs = (window.SafetyRail && window.SafetyRail.normalizeAttrs)
+                    ? window.SafetyRail.normalizeAttrs(raw)
+                    : raw;
                 
                 // 年齢を設定
-                if (attrs.age) {
+                if (attrs.age != null && attrs.age !== '') {
                     document.getElementById('user_age').value = attrs.age;
                 }
                 
@@ -9451,10 +9697,10 @@ function appendQaDelta(text, section) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'ok') {
+                window.__lastUserAttributes = userAttributes;
+                refreshSageSafetyRail(userAttributes);
                 alert('ユーザー情報を保存しました。');
                 closeUserInfoModal();
-                // ページをリロードして情報を反映
-                location.reload();
             } else {
                 alert('保存に失敗しました: ' + (data.message || '不明なエラー'));
             }
@@ -9506,7 +9752,7 @@ function appendQaDelta(text, section) {
     
     // 全文読み上げ
     function speakFullRecommendation() {
-        const recommendationResult = document.querySelector('.recommendation-result');
+        const recommendationResult = getLatestRecommendationRoot();
         if (!recommendationResult) {
             alert('読み上げる内容が見つかりませんでした。');
             return;
@@ -9672,7 +9918,7 @@ function appendQaDelta(text, section) {
     
     // 推奨結果が表示されたら音声読み上げボタンを表示（recommendation-result内のボタンを使用）
     function checkAndShowVoiceReadButton() {
-        const recommendationResult = document.querySelector('.recommendation-result');
+        const recommendationResult = getLatestRecommendationRoot();
         const voiceReadContainer = document.getElementById('voice-read-container-inline');
         
         if (recommendationResult && voiceReadContainer) {

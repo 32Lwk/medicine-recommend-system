@@ -45,6 +45,9 @@ _STRINGS: dict[str, dict[str, str]] = {
         "feedback_already_submitted": "すでに送信済みです。",
         "feedback_expired": "評価の有効期限が切れました。",
         "feedback_submit_failed": "送信に失敗しました。しばらくして再度お試しください。",
+        "web_continue_label": "ブラウザで続ける",
+        "web_continue_title": "Webで会話を続ける",
+        "web_continue_body": "これまでの相談内容と推奨結果をブラウザに引き継ぎます（30分・1回限り）。",
     },
     "en": {
         "advice_header": "Personalized advice",
@@ -85,6 +88,19 @@ _STRINGS: dict[str, dict[str, str]] = {
         "feedback_already_submitted": "Already submitted.",
         "feedback_expired": "This feedback link has expired.",
         "feedback_submit_failed": "Could not submit feedback. Please try again later.",
+        "web_continue_label": "Continue in browser",
+        "web_continue_title": "Continue on the web",
+        "web_continue_body": "Transfer this chat and recommendations to your browser (30 min, one-time).",
+    },
+    "ko": {
+        "web_continue_label": "브라우저에서 계속",
+        "web_continue_title": "웹에서 대화 이어가기",
+        "web_continue_body": "지금까지의 상담과 추천 결과를 브라우저로 이어갑니다(30분·1회 한정).",
+    },
+    "zh": {
+        "web_continue_label": "在浏览器中继续",
+        "web_continue_title": "在网页上继续对话",
+        "web_continue_body": "将迄今的咨询内容与推荐结果转移到浏览器（30分钟·仅限一次）。",
     },
 }
 
