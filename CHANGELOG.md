@@ -98,6 +98,10 @@ Sage Terrace UI の **推奨カルーセル（Carousel Pro）** をレガシー 
 - `tests/services/test_slow_request_notify.py` — メタデータ付き非同期保存
 - `tests/services/test_feedback_trace.py` — トレース・非同期保存
 
+### オンボーディング（追記）
+
+- **開発中チェックリスト**: 「現在開発中の主な内容」で実装済み 5 項目に完了チェックを追加（UI・導線の最適化、カルーセル型 UI、LINE 連携、画像、セキュリティ）。日・英・韓・中の production / development スライドと最終更新日（2026-06-18）を同期。
+
 ---
 
 ## 2026年6月17日 — Sage Terrace UI 段階移行と LINE→Web 引き継ぎ
