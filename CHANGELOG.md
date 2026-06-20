@@ -1,6 +1,78 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月18日**（Sage 推奨カード強化・チャット描画安定化・フィードバックトレース）
+**最終更新日: 2026年6月20日**（Sage 表示設定・カラーテーマ・セーフティレール応答レイアウト・オンボーディング改善）
+
+---
+
+## 2026年6月20日 — Sage 表示設定・カラーテーマ・セーフティレール応答レイアウト・オンボーディング改善
+
+### 概要
+
+Sage Terrace UI の **表示設定モーダル**をカード型 UI に再設計し、**10種のカラーテーマ**（薬局グリーン・オーシャン・ダーク等）を選べるようにした。あわせて **セーフティレール**を幅に応じたチップ省略表示（`+N`）へ変更し、**オンボーディング**に専用言語セレクターとデプロイ版コミットハッシュ表示を追加した。夏・秋の季節装飾画像を登録し、暦年全日の装飾ギャップ検出ユーティリティを追加した。
+
+### Sage 表示設定・カラーテーマ
+
+- **`color_presets.js`**（新規）: 10テーマの CSS 変数バンドル、`localStorage` 永続化、設定画面 HTML 生成
+  - Sage（標準）・薬局グリーン（本番）・オーシャントラスト・ミントフレッシュ・温かみケア・ラベンダーケア・サンドナチュラル・クラシックグリーン・ミニマル・ダーク
+- **`main.js`**: `buildSettingsPageHtml` / `bindSettingsPageEvents` — 文字サイズ・音声速度・カラー・季節装飾・パーティクルを統合。レガシー HTML 埋め込みを廃止
+- **文字サイズ**: `data-font-size` 属性・`--ui-font-size`・`html` の `fontSize` を連動。プレビュー付きセグメントボタン（`is-active` / `aria-pressed`）
+- **音声速度**: セグメントボタンで `aria-pressed` を同期
+- **`ui_strings.js`**: 設定画面・カラーテーマ・セーフティレール短縮ラベル・ヘッダーフェーズ文言を ja / en / ko / zh に追加
+- **`sage_terrace.css` / `main.css`**: 設定カード・カラーグリッド・Info モーダル一覧の固定配色、テーマ別アクセント色、ダーク／ミニマル向け調整
+
+### セーフティレール応答レイアウト
+
+- **`safety_rail.js`**: `ResizeObserver` + チップ幅計測で表示可能数を算出。はみ出しは `+N` チップ（`aria-label` 付き）
+- 640px 未満で短縮ラベル（年齢未・服用薬未 等）、横スクロールを廃止
+- フォントサイズ変更（`data-font-size`）時も再フロー
+- **`shell.css` / `ui_shell_components.css` / `sage_terrace.css`**: compact レールの flex 配置・チップ最小フォント（`max(9px, …)`）・オーバーフローチップ用スタイル
+
+### オンボーディング・言語切替
+
+- **オンボーディング専用言語セレクター**（`#onboarding-language-selector`）をモーダル内に配置。チャット側セレクターとのハイライト競合を解消
+- **`toggleOnboardingLanguageMenu`**: 複数 `.language-selector` 対応の開閉ロジック
+- **コミットハッシュ表示**: `main.py` の `gitCommitShort` を `#app-runtime-config` 経由でオンボーディング最終更新日の横に表示
+- **レイアウト圧縮**: モーダル最大幅 380px、タイトル・余白縮小、オーバーレイ `inset: 0`、ハイライト時の `scale` 変形を廃止
+- **teardown 改善**: オンボーディング終了時に対象セレクタのみインラインスタイル解除、`clip-path` 等のオーバーレイスタイルをリセット
+
+### ヘッダーフェーズ・シェル
+
+- **`sage_shell.js`**: `refreshHeaderPhase` — 症状キャッシュ（`__lastHeaderSymptoms`）からフェーズ文言を復元。言語切替時にも再描画
+- **`safety_rail.js`**: `updateHeaderPhase` を `ui_strings` の `headerPhaseSymptoms` に国際化
+
+### 季節装飾（夏・秋）
+
+- **`season_manager.py`**: `summer` / `autumn` に左右装飾 PNG を登録、`IMAGE_ALT_MAPPING` を拡充
+- **`iter_configured_decoration_static_paths`**: 設定済み装飾パスの列挙
+- **`find_calendar_decoration_gaps`**: 暦年で装飾が空の日を検出
+
+### バックエンド・テンプレート
+
+- **`main.py`**: `_resolve_git_commit_short` — 環境変数（`GIT_COMMIT` 等）→ `git rev-parse` の順で 7 桁コミットを解決し `runtime_client_config` に注入
+- **`templates/index.html`**: `color_presets.js` 読み込み、キャッシュバスター更新、設定一覧の説明文を「文字サイズ・カラー・演出」に変更
+
+### 新規ファイル
+
+| パス | 内容 |
+|------|------|
+| `static/js/ui/color_presets.js` | Sage カラーテーマプリセット・設定 UI |
+
+### 変更ファイル（主要）
+
+| 領域 | ファイル |
+|------|----------|
+| 表示設定 | `static/js/main.js`, `static/js/ui/ui_strings.js`, `static/css/main.css`, `static/css/sage_terrace.css` |
+| セーフティレール | `static/js/ui/safety_rail.js`, `UI/shared/shell.css`, `static/css/ui_shell_components.css` |
+| オンボーディング | `templates/index.html`, `static/css/main.css` |
+| シェル | `static/js/sage_shell.js` |
+| 季節 | `src/core/season_manager.py` |
+| API | `main.py` |
+| テスト | `tests/api/test_fastapi_contract.py`, `tests/services/test_season_manager_particles.py` |
+
+### テスト
+
+- `test_get_root_injects_app_version_and_empty_base_path`: `gitCommitShort` の HTML 注入を検証
+- `test_summer_and_autumn_decoration_images` / `test_all_configured_decoration_pngs_exist_on_disk` / `test_every_calendar_day_has_decoration_images`: 季節装飾の網羅性
 
 ---
 

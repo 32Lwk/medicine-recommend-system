@@ -228,7 +228,7 @@
     <!-- Non-critical CSS loaded asynchronously -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20260617-info-modal-gap" onerror="console.error('Failed to load CSS file')">
     {% if ui_variant == 'sage' %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v=20260617-info-modal-gap" onerror="console.error('Failed to load Sage Terrace CSS')">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v=20260619-safety-rail-responsive" onerror="console.error('Failed to load Sage Terrace CSS')">
     {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/easter-eggs.css') }}?v=20251221" onerror="console.error('Failed to load Easter Eggs CSS file')">
 </head>
@@ -556,7 +556,7 @@
                         <div class="list-item-icon{% if ui_variant == 'sage' %} ui-list-icon{% endif %}">⚙️</div>
                         <div class="{% if ui_variant == 'sage' %}ui-list-text{% else %}list-item-content{% endif %}">
                             <div class="list-item-title{% if ui_variant == 'sage' %} ui-list-title{% endif %}" id="list-settings-title">{% if ui_variant == 'sage' %}表示設定{% else %}設定{% endif %}</div>
-                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-settings-desc">{% if ui_variant == 'sage' %}文字サイズ{% else %}文字サイズなどの表示設定{% endif %}</div>
+                            <div class="list-item-description{% if ui_variant == 'sage' %} ui-list-desc{% endif %}" id="list-settings-desc">{% if ui_variant == 'sage' %}文字サイズ・カラー・演出{% else %}文字サイズなどの表示設定{% endif %}</div>
                         </div>
                         <div class="list-item-arrow{% if ui_variant == 'sage' %} ui-list-arrow{% endif %}">→</div>
                     </div>
@@ -607,15 +607,16 @@
     <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260517-agent-slow" defer></script>
     <script src="{{ url_for('static', filename='js/chat_sse.js') }}?v=20260516-sse-done" defer></script>
     {% if ui_variant == 'sage' %}
-    <script src="{{ url_for('static', filename='js/ui/ui_strings.js') }}?v=20260618-sage5" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/ui_strings.js') }}?v=20260619-safety-rail-responsive" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/color_presets.js') }}?v=20260619-pharmacy-green" defer></script>
     <script src="{{ url_for('static', filename='js/ui/medicine_mapper.js') }}?v=20260618-sage5" defer></script>
     <script src="{{ url_for('static', filename='js/ui/medicine_card.js') }}?v=20260618-sage5" defer></script>
     <script src="{{ url_for('static', filename='js/ui/carousel.js') }}?v=20260618-sage5" defer></script>
     <script src="{{ url_for('static', filename='js/ui/recommendation_renderer.js') }}?v=20260618-sage5" defer></script>
-    <script src="{{ url_for('static', filename='js/ui/safety_rail.js') }}?v=20260618-sage5" defer></script>
-    <script src="{{ url_for('static', filename='js/sage_shell.js') }}?v=20260618-new-session" defer></script>
+    <script src="{{ url_for('static', filename='js/ui/safety_rail.js') }}?v=20260619-safety-rail-responsive" defer></script>
+    <script src="{{ url_for('static', filename='js/sage_shell.js') }}?v=20260619-header-phase-i18n2" defer></script>
     {% endif %}
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260618-onboarding-checklist" defer onerror="console.error('Failed to load JS file')"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260619-header-phase-i18n" defer onerror="console.error('Failed to load JS file')"></script>
 
 <!-- 属性入力モーダル -->
 <div id="attributeModal" class="modal">
@@ -799,14 +800,26 @@
 <!-- オンボーディングモーダル -->
 <div id="onboarding-overlay" class="onboarding-overlay hidden" aria-hidden="true"></div>
 <div class="onboarding-container hidden" id="onboarding-container" role="dialog" aria-modal="true" tabindex="-1">
-    <div class="onboarding-body">
-        <div class="onboarding-top-row">
+    <div class="onboarding-top-row">
+        <div class="onboarding-top-leading">
+            <div class="language-selector onboarding-language-selector" id="onboarding-language-selector">
+                <button type="button" class="lang-toggle onboarding-lang-toggle" id="onboarding-lang-toggle" onclick="toggleOnboardingLanguageMenu()" aria-expanded="false" aria-haspopup="listbox" aria-label="言語を選択">
+                    <span id="onboarding-currentFlag">🇯🇵</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="lang-dropdown onboarding-lang-dropdown app-scrollbar" id="onboarding-langDropdown" role="listbox">
+                    <button type="button" class="lang-option onboarding-lang-option" data-lang="ja" data-flag="🇯🇵">🇯🇵 日本語</button>
+                    <button type="button" class="lang-option onboarding-lang-option" data-lang="en" data-flag="🇺🇸">🇺🇸 English</button>
+                    <button type="button" class="lang-option onboarding-lang-option" data-lang="ko" data-flag="🇰🇷">🇰🇷 한국어</button>
+                    <button type="button" class="lang-option onboarding-lang-option" data-lang="zh" data-flag="🇨🇳">🇨🇳 中文</button>
+                </div>
+            </div>
             <div id="onboarding-active-visual" class="onboarding-active-visual" aria-hidden="true"></div>
-            <button type="button" class="onboarding-skip" id="onboarding-skip-btn" onclick="skipOnboarding()" aria-label="スキップして始める">スキップ</button>
         </div>
-        <div id="onboarding-slides"></div>
-        <div id="slide-indicator" class="slide-indicator" aria-label="オンボーディングの進行状況"></div>
+        <button type="button" class="onboarding-skip" id="onboarding-skip-btn" onclick="skipOnboarding()" aria-label="スキップして始める">スキップ</button>
     </div>
+    <div id="onboarding-slides"></div>
+    <div id="slide-indicator" class="slide-indicator" aria-label="オンボーディングの進行状況"></div>
 </div>
 
 

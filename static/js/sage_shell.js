@@ -86,17 +86,23 @@
 
 
 
-  function syncHeaderPhaseDefault() {
+  function refreshHeaderPhase() {
 
     var el = document.getElementById('headerPhase');
 
-    if (!el || el.textContent) return;
+    if (!el || !window.UiStrings) return;
 
-    if (window.UiStrings) {
+    var symptoms = window.__lastHeaderSymptoms;
 
-      el.textContent = window.UiStrings.t('headerPhaseDefault');
+    if (symptoms && symptoms.length && window.SafetyRail) {
+
+      window.SafetyRail.updateHeaderPhase(symptoms);
+
+      return;
 
     }
+
+    el.textContent = window.UiStrings.t('headerPhaseDefault');
 
   }
 
@@ -110,7 +116,7 @@
 
     initSafetyRailFromSession();
 
-    syncHeaderPhaseDefault();
+    refreshHeaderPhase();
 
     document.documentElement.style.setProperty('--focus-color', '#5b7c99');
 
@@ -118,15 +124,7 @@
 
 
 
-  if (document.readyState === 'loading') {
-
-    document.addEventListener('DOMContentLoaded', onDomReady);
-
-  } else {
-
-    onDomReady();
-
-  }
+  document.addEventListener('DOMContentLoaded', onDomReady);
 
 
 
@@ -146,7 +144,11 @@
 
     },
 
+    refreshHeaderPhase: refreshHeaderPhase,
+
     updateHeaderSymptoms: function (symptoms) {
+
+      window.__lastHeaderSymptoms = symptoms;
 
       if (window.SafetyRail) window.SafetyRail.updateHeaderPhase(symptoms);
 
