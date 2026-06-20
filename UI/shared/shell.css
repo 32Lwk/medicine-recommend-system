@@ -595,9 +595,14 @@ body:has(#app > .ui-app) #app {
   flex: 1;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   min-width: 0;
   font-size: 0.68rem;
+}
+
+.ui-safety-rail--compact .ui-safety-rail__head {
+  flex: 0 0 auto;
 }
 
 .ui-safety-rail__head {
@@ -643,27 +648,54 @@ body:has(#app > .ui-app) #app {
   white-space: nowrap;
 }
 
-.ui-safety-rail--compact .ui-safety-rail__items {
-  gap: 4px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  max-width: 100%;
-  scrollbar-width: none;
+.ui-safety-rail--compact .ui-safety-rail__status {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.ui-safety-rail--compact .ui-safety-rail__items::-webkit-scrollbar {
-  display: none;
+.ui-safety-rail--compact .ui-safety-rail__items {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-left: auto;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.ui-safety-rail--compact .ui-safety-chip--overflow {
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.ui-safety-rail__chip-measure {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  font-size: max(9px, 0.52rem);
+  padding: 1px 5px;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
 .ui-safety-rail--compact .ui-safety-chip {
-  font-size: 0.58rem;
-  padding: 1px 6px;
+  font-size: max(9px, 0.52rem);
+  padding: 1px 5px;
+  line-height: 1.25;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ui-safety-rail--compact .ui-safety-rail__cta {
-  font-size: 0.6rem;
-  padding: 3px 8px;
-  min-height: 28px;
+  font-size: max(9px, 0.54rem);
+  padding: 2px 6px;
+  min-height: 24px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .ui-toolbar-btn--pharmacist {
@@ -3729,5 +3761,13 @@ body:has(#app > .ui-app) #app {
     border-bottom: 1px solid var(--ui-border);
   }
   .ui-triage-options { grid-template-columns: repeat(2, 1fr); }
-  .ui-safety-rail { flex-wrap: wrap; }
+  .ui-safety-rail:not(.ui-safety-rail--compact) { flex-wrap: wrap; }
+  .ui-safety-rail--compact {
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 4px 8px;
+  }
+  .ui-safety-rail--compact .ui-safety-rail__head {
+    flex-wrap: nowrap;
+  }
 }

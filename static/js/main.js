@@ -98,9 +98,11 @@
             back: "← 戻る",
             close: "×",
             skipOnboarding: "スキップして始める",
+            onboardingLangToggleAria: "表示言語を選択",
             onboardingLastUpdatedLabel: "最終更新日",
             onboardingLastUpdatedIso: "2026-06-18",
             onboardingLastUpdated: "2026年6月18日",
+            onboardingCommitLabel: "Commit",
             onboarding: [
                 {
                     production: {
@@ -197,8 +199,8 @@
                     visualAlt: "症状入力のUIを表すアイコン",
                     body: [
                         "「頭が痛い」「咳が止まらない」など、感じている症状を自由に入力してください。",
-                        "テキストと音声入力に対応し、左上のボタンから英語・中国語・韓国語へ切り替えられます。",
-                        "※AIの返信は、送信した文章の言語を自動検出し、日本語以外（英語・中国語・韓国語など）と判定された場合に自動翻訳されます。左上の切替は主に画面の文言表示です。"
+                        "テキストと音声入力に対応し、このガイド左上の言語ボタンから英語・中国語・韓国語へ切り替えられます。",
+                        "※AIの返信は、送信した文章の言語を自動検出し、日本語以外（英語・中国語・韓国語など）と判定された場合に自動翻訳されます。言語ボタンの切替は主に画面の文言表示です。"
                     ],
                     buttonText: "次へ",
                     buttonAria: "ステップ2へ進む"
@@ -392,9 +394,11 @@
             back: "← Back",
             close: "×",
             skipOnboarding: "Skip onboarding",
+            onboardingLangToggleAria: "Select display language",
             onboardingLastUpdatedLabel: "Last updated",
             onboardingLastUpdatedIso: "2026-06-18",
             onboardingLastUpdated: "June 18, 2026",
+            onboardingCommitLabel: "Commit",
             onboarding: [
                 {
                     production: {
@@ -491,8 +495,8 @@
                     visualAlt: "Icons representing symptom input",
                     body: [
                         "Tell us anything such as “I have a headache” or “I can't stop coughing.”",
-                        "Both text and voice input are supported. Use the button in the upper left to switch between Japanese, English, Chinese, and Korean.",
-                        "* AI replies are translated when your message is detected as non-Japanese (e.g. English, Chinese, or Korean). The upper-left control mainly changes on-screen UI language."
+                        "Both text and voice input are supported. Use the language button at the top left of this guide to switch between Japanese, English, Chinese, and Korean.",
+                        "* AI replies are translated when your message is detected as non-Japanese (e.g. English, Chinese, or Korean). The language button mainly changes on-screen UI language."
                     ],
                     buttonText: "Next",
                     buttonAria: "Go to step 2"
@@ -686,9 +690,11 @@
             back: "← 뒤로",
             close: "×",
             skipOnboarding: "넘기고 시작하기",
+            onboardingLangToggleAria: "표시 언어 선택",
             onboardingLastUpdatedLabel: "최종 업데이트",
             onboardingLastUpdatedIso: "2026-06-18",
             onboardingLastUpdated: "2026년 6월 18일",
+            onboardingCommitLabel: "Commit",
             
             // イースターエッグ
             easterEggThanks: "🎉 감사합니다!",
@@ -797,8 +803,8 @@
                     visualAlt: "증상 입력을 상징하는 아이콘",
                     body: [
                         "“머리가 아파요”, “기침이 멈추지 않아요”와 같이 자유롭게 입력하세요.",
-                        "텍스트와 음성 입력을 모두 지원하며, 왼쪽 상단 버튼으로 일본어·영어·중국어·한국어를 전환할 수 있습니다.",
-                        "* AI 답변은 보낸 문장의 언어를 자동 감지하여 일본어가 아닐 때(영어·중국어·한국어 등) 자동 번역됩니다. 왼쪽 상단 전환은 주로 화면 문구 표시용입니다."
+                        "텍스트와 음성 입력을 모두 지원하며, 이 가이드 왼쪽 상단의 언어 버튼으로 일본어·영어·중국어·한국어를 전환할 수 있습니다.",
+                        "* AI 답변은 보낸 문장의 언어를 자동 감지하여 일본어가 아닐 때(영어·중국어·한국어 등) 자동 번역됩니다. 언어 버튼 전환은 주로 화면 문구 표시용입니다."
                     ],
                     buttonText: "다음",
                     buttonAria: "스텝 2로 이동"
@@ -992,9 +998,11 @@
             back: "返回",
             close: "×",
             skipOnboarding: "跳过并开始",
+            onboardingLangToggleAria: "选择显示语言",
             onboardingLastUpdatedLabel: "最后更新",
             onboardingLastUpdatedIso: "2026-06-18",
             onboardingLastUpdated: "2026年6月18日",
+            onboardingCommitLabel: "Commit",
             onboarding: [
                 {
                     production: {
@@ -1091,8 +1099,8 @@
                     visualAlt: "症状输入界面的图示",
                     body: [
                         "例如“头很痛”“咳嗽停不下来”等，可自由描述。",
-                        "支持文字和语音输入，可通过左上角按钮切换日语、英语、韩语、中文。",
-                        "* AI 的回复会根据您发送内容的语言自动检测；若判定为日语以外（如英语、中文、韩语），会进行自动翻译。左上角切换主要影响界面用语。"
+                        "支持文字和语音输入，可通过本指南左上角的语言按钮切换日语、英语、韩语、中文。",
+                        "* AI 的回复会根据您发送内容的语言自动检测；若判定为日语以外（如英语、中文、韩语），会进行自动翻译。语言按钮主要影响界面用语。"
                     ],
                     buttonText: "下一步",
                     buttonAria: "前往步骤2"
@@ -1247,38 +1255,89 @@
         }
     }
 
-    function injectSageDisplaySettings() {
-        if (!isSageUi()) return;
-        const detail = document.getElementById('detailContent');
-        if (!detail || detail.querySelector('[data-sage-display-settings]')) return;
-        const tUi = window.UiStrings ? window.UiStrings.t : function (k) { return k; };
+    function settingsString(key, lang) {
+        const table = (window.UiStrings && window.UiStrings.all && window.UiStrings.all[lang]) ||
+            (window.UiStrings && window.UiStrings.all && window.UiStrings.all.ja) ||
+            {};
+        return table[key] != null ? table[key] : key;
+    }
+
+    function buildSettingsPageHtml(lang) {
+        const s = function (key) { return settingsString(key, lang); };
         const seasonOn = isSeasonDecorationEnabled();
         const particleOn = isParticleEffectsEnabled();
-        const block = document.createElement('div');
-        block.setAttribute('data-sage-display-settings', 'true');
-        block.className = 'info-section sage-display-settings';
-        block.innerHTML =
-            '<h3>🎨 ' + (tUi('settingsSeasonLabel') || '表示演出') + '</h3>' +
-            '<div class="sage-setting-row" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
-            '<div><strong>' + tUi('settingsSeasonLabel') + '</strong><p style="margin:4px 0 0;color:#666;font-size:0.9em;">' + tUi('settingsSeasonDesc') + '</p></div>' +
+        const effectsSection = isSageUi() ? (
+            '<section class="settings-card settings-card--effects">' +
+            '<div class="settings-card__header">' +
+            '<span class="settings-card__icon" aria-hidden="true">✨</span>' +
+            '<div><h3 class="settings-card__title">' + s('settingsEffectsTitle') + '</h3>' +
+            '<p class="settings-card__desc">' + s('settingsEffectsDesc') + '</p></div></div>' +
+            '<div class="settings-toggle-list">' +
+            '<div class="settings-toggle-row">' +
+            '<div><div class="settings-toggle-row__label">' + s('settingsSeasonLabel') + '</div>' +
+            '<p class="settings-toggle-row__hint">' + s('settingsSeasonDesc') + '</p></div>' +
             '<label class="sage-toggle"><input type="checkbox" id="toggle-season-decoration"' + (seasonOn ? ' checked' : '') + '><span></span></label>' +
             '</div>' +
-            '<div class="sage-setting-row" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;">' +
-            '<div><strong>' + tUi('settingsParticleLabel') + '</strong><p style="margin:4px 0 0;color:#666;font-size:0.9em;">' + tUi('settingsParticleDesc') + '</p></div>' +
+            '<div class="settings-toggle-row">' +
+            '<div><div class="settings-toggle-row__label">' + s('settingsParticleLabel') + '</div>' +
+            '<p class="settings-toggle-row__hint">' + s('settingsParticleDesc') + '</p></div>' +
             '<label class="sage-toggle"><input type="checkbox" id="toggle-particle-effects"' + (particleOn ? ' checked' : '') + '><span></span></label>' +
-            '</div>';
-        detail.appendChild(block);
-        const seasonCb = block.querySelector('#toggle-season-decoration');
-        const particleCb = block.querySelector('#toggle-particle-effects');
-        if (seasonCb) {
+            '</div></div></section>'
+        ) : '';
+
+        const colorSection = (isSageUi() && window.SageColorThemes)
+            ? window.SageColorThemes.buildSettingsHtml(lang, window.SageColorThemes.getCurrentThemeId())
+            : '';
+
+        return (
+            '<div class="settings-page">' +
+            '<p class="settings-page__intro">' + s('settingsPageIntro') + '</p>' +
+            colorSection +
+            '<section class="settings-card">' +
+            '<div class="settings-card__header">' +
+            '<span class="settings-card__icon" aria-hidden="true">📝</span>' +
+            '<div><h3 class="settings-card__title">' + s('settingsReadabilityTitle') + '</h3>' +
+            '<p class="settings-card__desc">' + s('settingsReadabilityDesc') + '</p></div></div>' +
+            '<div class="settings-segment" role="group" aria-label="' + s('settingsReadabilityTitle') + '">' +
+            '<button type="button" class="settings-segment-btn font-size-btn" data-size="small" onclick="setFontSize(\'small\')" aria-pressed="false">' + s('settingsFontSmall') + '</button>' +
+            '<button type="button" class="settings-segment-btn font-size-btn" data-size="normal" onclick="setFontSize(\'normal\')" aria-pressed="false">' + s('settingsFontNormal') + '</button>' +
+            '<button type="button" class="settings-segment-btn font-size-btn" data-size="large" onclick="setFontSize(\'large\')" aria-pressed="false">' + s('settingsFontLarge') + '</button>' +
+            '<button type="button" class="settings-segment-btn font-size-btn" data-size="extra-large" onclick="setFontSize(\'extra-large\')" aria-pressed="false">' + s('settingsFontXLarge') + '</button>' +
+            '</div>' +
+            '<p class="settings-preview" id="settings-font-preview" data-preview-size="normal" aria-live="polite">' + s('settingsFontPreview') + '</p>' +
+            '</section>' +
+            '<section class="settings-card">' +
+            '<div class="settings-card__header">' +
+            '<span class="settings-card__icon" aria-hidden="true">🔊</span>' +
+            '<div><h3 class="settings-card__title">' + s('settingsVoiceTitle') + '</h3>' +
+            '<p class="settings-card__desc">' + s('settingsVoiceDesc') + '</p></div></div>' +
+            '<div class="settings-segment" role="group" aria-label="' + s('settingsVoiceTitle') + '">' +
+            '<button type="button" class="settings-segment-btn voice-speed-btn" data-speed="0.75" onclick="setVoiceReadSpeed(0.75)" aria-pressed="false">' + s('settingsVoiceSlow') + '</button>' +
+            '<button type="button" class="settings-segment-btn voice-speed-btn" data-speed="1" onclick="setVoiceReadSpeed(1.0)" aria-pressed="false">' + s('settingsVoiceNormal') + '</button>' +
+            '<button type="button" class="settings-segment-btn voice-speed-btn" data-speed="1.25" onclick="setVoiceReadSpeed(1.25)" aria-pressed="false">' + s('settingsVoiceFast') + '</button>' +
+            '</div></section>' +
+            effectsSection +
+            '</div>'
+        );
+    }
+
+    function bindSettingsPageEvents() {
+        const seasonCb = document.getElementById('toggle-season-decoration');
+        const particleCb = document.getElementById('toggle-particle-effects');
+        if (seasonCb && !seasonCb.dataset.bound) {
+            seasonCb.dataset.bound = 'true';
             seasonCb.addEventListener('change', function () {
                 setSeasonDecorationEnabled(seasonCb.checked);
             });
         }
-        if (particleCb) {
+        if (particleCb && !particleCb.dataset.bound) {
+            particleCb.dataset.bound = 'true';
             particleCb.addEventListener('change', function () {
                 setParticleEffectsEnabled(particleCb.checked);
             });
+        }
+        if (window.SageColorThemes) {
+            window.SageColorThemes.bindSettingsEvents(document.getElementById('detailContent'));
         }
     }
 
@@ -1319,12 +1378,24 @@
         }
     }
 
+    function resetOnboardingOverlayStyles() {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (!overlay) {
+            return;
+        }
+        overlay.style.removeProperty('clip-path');
+        overlay.style.removeProperty('transform');
+        overlay.style.removeProperty('will-change');
+        overlay.classList.remove('onboarding-overlay--lang-cutout');
+    }
+
     function teardownOnboardingModalHeightTracking() {
         if (onboardingModalResizeObserver) {
             onboardingModalResizeObserver.disconnect();
             onboardingModalResizeObserver = null;
         }
         window.removeEventListener('resize', syncOnboardingModalHeightVar);
+        resetOnboardingOverlayStyles();
         const container = document.getElementById('onboarding-container');
         if (container) {
             container.style.removeProperty('--onb-modal-height');
@@ -1344,9 +1415,7 @@
             onboardingModalResizeObserver.observe(container);
         }
         requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                syncOnboardingModalHeightVar();
-            });
+            requestAnimationFrame(syncOnboardingModalHeightVar);
         });
     }
 
@@ -1403,6 +1472,40 @@
 
     function getActiveTranslations() {
         return translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
+    }
+
+    function getRuntimeGitCommitShort() {
+        try {
+            const cfgEl = typeof document !== 'undefined' ? document.getElementById('app-runtime-config') : null;
+            if (cfgEl && cfgEl.textContent) {
+                const cfg = JSON.parse(cfgEl.textContent.trim());
+                const commit = cfg && cfg.gitCommitShort;
+                if (typeof commit === 'string' && /^[0-9a-f]{7,40}$/i.test(commit.trim())) {
+                    return commit.trim().slice(0, 7);
+                }
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        return null;
+    }
+
+    function buildOnboardingLastUpdatedHtml(locale) {
+        if (!locale || !locale.onboardingLastUpdated) {
+            return '';
+        }
+        const lastUpdatedIso = locale.onboardingLastUpdatedIso || '2026-05-20';
+        const labelHtml = locale.onboardingLastUpdatedLabel
+            ? `<span class="onboarding-last-updated-label">${locale.onboardingLastUpdatedLabel}</span> `
+            : '';
+        const commit = getRuntimeGitCommitShort();
+        const commitLabel = locale.onboardingCommitLabel || 'Commit';
+        const commitHtml = commit
+            ? ` <span class="onboarding-last-updated-sep" aria-hidden="true">·</span> `
+                + `<span class="onboarding-last-updated-commit">${commitLabel} `
+                + `<code class="onboarding-commit-hash">${commit}</code></span>`
+            : '';
+        return `<p class="onboarding-last-updated">${labelHtml}<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time>${commitHtml}</p>`;
     }
 
     // 開発環境かどうかを判定する
@@ -1546,6 +1649,24 @@
             skipBtn.textContent = t.skipOnboarding;
             skipBtn.setAttribute('aria-label', t.skipOnboarding);
         }
+        syncOnboardingLanguageSelectorUi();
+    }
+
+    function syncOnboardingLanguageSelectorUi() {
+        const t = getActiveTranslations();
+        const toggle = document.getElementById('onboarding-lang-toggle');
+        if (toggle && t && t.onboardingLangToggleAria) {
+            toggle.setAttribute('aria-label', t.onboardingLangToggleAria);
+        }
+        const activeOption = document.querySelector('#onboarding-language-selector .lang-option[data-lang="' + currentLanguage + '"]');
+        const flag = activeOption ? activeOption.getAttribute('data-flag') : null;
+        const onboardingFlag = document.getElementById('onboarding-currentFlag');
+        if (onboardingFlag && flag) {
+            onboardingFlag.textContent = flag;
+        }
+        document.querySelectorAll('#onboarding-language-selector .lang-option').forEach(function(option) {
+            option.classList.toggle('active', option.getAttribute('data-lang') === currentLanguage);
+        });
     }
 
     function getOnboardingDetailContent(detail) {
@@ -1663,9 +1784,8 @@
                     ? slide.body.map(text => `<p>${text}</p>`).join('')
                     : (slide.body || '');
                 const locale = getActiveTranslations();
-                const lastUpdatedIso = locale.onboardingLastUpdatedIso || '2026-05-20';
-                const lastUpdatedHtml = (filteredIndex === 0 && locale.onboardingLastUpdated)
-                    ? `<p class="onboarding-last-updated">${locale.onboardingLastUpdatedLabel ? `<span class="onboarding-last-updated-label">${locale.onboardingLastUpdatedLabel}</span> ` : ''}<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time></p>`
+                const lastUpdatedHtml = (filteredIndex === 0)
+                    ? buildOnboardingLastUpdatedHtml(locale)
                     : '';
                 const listHtml = Array.isArray(slide.list)
                     ? `<ul>${slide.list.map(item => `<li>${item}</li>`).join('')}</ul>`
@@ -1841,13 +1961,13 @@
         }
 
         if (slideIndex === 0 || slideIndex === 1) {
-            const langToggleAlways = document.querySelector('.lang-toggle');
-            const languageSelectorAlways = document.querySelector('.language-selector');
-            if (langToggleAlways) {
-                langToggleAlways.classList.add('onboarding-highlight');
+            const onboardingLangSelector = document.getElementById('onboarding-language-selector');
+            const onboardingLangToggle = document.getElementById('onboarding-lang-toggle');
+            if (onboardingLangToggle) {
+                onboardingLangToggle.classList.add('onboarding-highlight');
             }
-            if (languageSelectorAlways) {
-                languageSelectorAlways.classList.add('onboarding-highlight-parent');
+            if (onboardingLangSelector) {
+                onboardingLangSelector.classList.add('onboarding-highlight-parent');
             }
         }
     }
@@ -2170,6 +2290,7 @@
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');
             overlay.removeAttribute('data-step');
+            resetOnboardingOverlayStyles();
         }
         if (container) {
             container.classList.add('hidden');
@@ -2193,15 +2314,30 @@
         document.querySelectorAll('.onboarding-highlight-parent').forEach(el => {
             el.classList.remove('onboarding-highlight-parent');
         });
-        // すべての要素の制限を解除
-        const allElements = document.querySelectorAll('*');
-        allElements.forEach(el => {
-            if (el.style.pointerEvents === 'none' || el.style.opacity === '0.6') {
-                el.style.pointerEvents = '';
-                el.style.opacity = '';
-                el.style.cursor = '';
-            }
+        // オンボーディング中に付与したインライン制御を解除
+        [
+            '#infoBtn',
+            '#micBtn',
+            '#chatForm button[type="submit"]',
+            '#userInfoBtn',
+            '#clearBtn',
+            '#new-session-btn',
+            '#admin-request-btn',
+            '#chatForm',
+            '#messageInput',
+            '.input-group',
+            '.language-selector',
+            '.lang-toggle',
+            '#safetyRailCta'
+        ].forEach(function(selector) {
+            document.querySelectorAll(selector).forEach(function(el) {
+                el.style.removeProperty('opacity');
+                el.style.removeProperty('pointer-events');
+                el.style.removeProperty('cursor');
+                el.style.removeProperty('transform');
+            });
         });
+        resetOnboardingOverlayStyles();
         onboardingState.initialized = false;
         const messageInput = document.getElementById('messageInput');
         if (messageInput) {
@@ -2250,6 +2386,7 @@
         setOnboardingStepControls(0);
         syncOnboardingChatTabstops(getOnboardingInteractionMode(0));
         renderOnboardingSlides(0);
+        syncOnboardingLanguageSelectorUi();
         setupOnboardingModalHeightTracking(container);
         ensureOnboardingDetailsToggleListener();
         container.addEventListener('keydown', handleOnboardingKeydown);
@@ -4087,104 +4224,7 @@
         },
         'settings': {
             title: '設定',
-            content: {
-                ja: `
-                    <div class="info-section">
-                        <h3>⚙️ 表示設定</h3>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">文字サイズ</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">小</button>
-                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">標準</button>
-                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">大</button>
-                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">特大</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">文字サイズを変更すると、ページ全体の文字が大きくなります。設定は保存され、次回アクセス時も適用されます。</p>
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">音声読み上げ速度</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">遅い</button>
-                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">標準</button>
-                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">速い</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">音声読み上げの速度を調整できます。設定は保存され、次回アクセス時も適用されます。</p>
-                        </div>
-                    </div>
-                `,
-                en: `
-                    <div class="info-section">
-                        <h3>⚙️ Display Settings</h3>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">Font Size</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Small</button>
-                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">Normal</button>
-                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">Large</button>
-                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">Extra Large</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">Changing the font size will make all text on the page larger. Settings are saved and will be applied on your next visit.</p>
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">Voice Reading Speed</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Slow</button>
-                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Normal</button>
-                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">Fast</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">You can adjust the voice reading speed. Settings are saved and will be applied on your next visit.</p>
-                        </div>
-                    </div>
-                `,
-                ko: `
-                    <div class="info-section">
-                        <h3>⚙️ 표시 설정</h3>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">글자 크기</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">작게</button>
-                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">보통</button>
-                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">크게</button>
-                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">아주 크게</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">글자 크기를 변경하면 페이지의 모든 텍스트가 커집니다. 설정은 저장되며 다음 방문 시에도 적용됩니다.</p>
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">음성 읽기 속도</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">느리게</button>
-                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">보통</button>
-                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">빠르게</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">음성 읽기 속도를 조정할 수 있습니다. 설정은 저장되며 다음 방문 시에도 적용됩니다.</p>
-                        </div>
-                    </div>
-                `,
-                zh: `
-                    <div class="info-section">
-                        <h3>⚙️ 显示设置</h3>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">字体大小</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="font-size-btn" data-size="small" onclick="setFontSize('small')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">小</button>
-                                <button class="font-size-btn" data-size="normal" onclick="setFontSize('normal')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 16px;">标准</button>
-                                <button class="font-size-btn" data-size="large" onclick="setFontSize('large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 20px;">大</button>
-                                <button class="font-size-btn" data-size="extra-large" onclick="setFontSize('extra-large')" style="padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 24px;">特大</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">更改字体大小将使页面上的所有文本变大。设置将被保存，并在下次访问时应用。</p>
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <h4 style="margin-bottom: 15px;">语音朗读速度</h4>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                <button onclick="setVoiceReadSpeed(0.75)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">慢</button>
-                                <button onclick="setVoiceReadSpeed(1.0)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">标准</button>
-                                <button onclick="setVoiceReadSpeed(1.25)" style="padding: 8px 16px; border: 2px solid #4CAF50; border-radius: 8px; background: white; color: #4CAF50; cursor: pointer; font-size: 14px;">快</button>
-                            </div>
-                            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">您可以调整语音朗读速度。设置将被保存，并在下次访问时应用。</p>
-                        </div>
-                    </div>
-                `
-            }
+            content: null
         }
     };
     
@@ -4230,7 +4270,11 @@
         else if (pageId === 'privacy') translatedTitle = t.privacy;
         else if (pageId === 'consultation') translatedTitle = t.consultation;
         else if (pageId === 'faq') translatedTitle = t.faq || 'よくある質問（FAQ）';
-        else if (pageId === 'settings') translatedTitle = '設定';
+        else if (pageId === 'settings') {
+            translatedTitle = isSageUi()
+                ? (window.UiStrings ? window.UiStrings.t('settingsDisplayTitle') : '表示設定')
+                : (t.settingsTitle || '設定');
+        }
         
         document.getElementById('modalTitle').textContent = translatedTitle;
         
@@ -4244,16 +4288,16 @@
         }
         
         // 詳細コンテンツ更新（言語対応）
-        let content = page.content;
-        if (typeof content === 'object' && content[currentLanguage]) {
-            content = content[currentLanguage];
-        }
-        document.getElementById('detailContent').innerHTML = content;
-        
-        // 設定ページの場合、現在の設定を反映
         if (pageId === 'settings') {
+            document.getElementById('detailContent').innerHTML = buildSettingsPageHtml(currentLanguage);
             updateSettingsPage();
-            injectSageDisplaySettings();
+            bindSettingsPageEvents();
+        } else {
+            let content = page.content;
+            if (typeof content === 'object' && content[currentLanguage]) {
+                content = content[currentLanguage];
+            }
+            document.getElementById('detailContent').innerHTML = content;
         }
         
         // スクロール位置を一番上にリセット
@@ -4296,18 +4340,50 @@
     });
 
     // 言語切り替え機能
-    function toggleLanguageMenu() {
-        const dropdown = document.getElementById('langDropdown');
-        const toggle = document.querySelector('.lang-toggle');
-        
-        if (dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-            toggle.classList.remove('open');
-        } else {
+    function toggleLanguageMenuForSelector(selectorEl) {
+        if (!selectorEl) {
+            return;
+        }
+        const dropdown = selectorEl.querySelector('.lang-dropdown');
+        const toggle = selectorEl.querySelector('.lang-toggle');
+        if (!dropdown || !toggle) {
+            return;
+        }
+
+        const willOpen = !dropdown.classList.contains('show');
+        document.querySelectorAll('.language-selector .lang-dropdown.show').forEach(function(openDropdown) {
+            if (openDropdown !== dropdown) {
+                openDropdown.classList.remove('show');
+            }
+        });
+        document.querySelectorAll('.language-selector .lang-toggle.open').forEach(function(openToggle) {
+            if (openToggle !== toggle) {
+                openToggle.classList.remove('open');
+            }
+        });
+
+        if (willOpen) {
             dropdown.classList.add('show');
             toggle.classList.add('open');
+            toggle.setAttribute('aria-expanded', 'true');
+        } else {
+            dropdown.classList.remove('show');
+            toggle.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
         }
     }
+
+    function toggleLanguageMenu() {
+        const chatSelector = document.querySelector('#sageToolbarHeader .language-selector')
+            || document.querySelector('.chat-container .language-selector');
+        toggleLanguageMenuForSelector(chatSelector);
+    }
+
+    function toggleOnboardingLanguageMenu() {
+        toggleLanguageMenuForSelector(document.getElementById('onboarding-language-selector'));
+    }
+
+    window.toggleOnboardingLanguageMenu = toggleOnboardingLanguageMenu;
     
     // 言語選択
     function selectLanguage(lang) {
@@ -4340,25 +4416,44 @@
         // UI更新
         updateUI();
 
+        if (currentModalPage === 'settings') {
+            showDetailPage('settings');
+        }
+
         if (isSageUi() && window.SafetyRail) {
             refreshSageSafetyRail(window.__lastUserAttributes || {});
         }
         
         // ドロップダウンを閉じる
-        const dropdown = document.getElementById('langDropdown');
-        const toggle = document.querySelector('.lang-toggle');
-        if (dropdown) dropdown.classList.remove('show');
-        if (toggle) toggle.classList.remove('open');
+        document.querySelectorAll('.language-selector .lang-dropdown').forEach(function(dropdown) {
+            dropdown.classList.remove('show');
+        });
+        document.querySelectorAll('.language-selector .lang-toggle').forEach(function(toggle) {
+            toggle.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+        });
         
         // アクティブな言語オプションを更新
         document.querySelectorAll('.lang-option').forEach(option => {
             option.classList.remove('active');
         });
-        document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+        document.querySelectorAll('.lang-option[data-lang="' + lang + '"]').forEach(function(option) {
+            option.classList.add('active');
+        });
         
         // フラグを更新
-        const flag = document.querySelector(`[data-lang="${lang}"]`).dataset.flag;
-        document.getElementById('currentFlag').textContent = flag;
+        const activeOption = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+        const flag = activeOption ? activeOption.getAttribute('data-flag') : null;
+        if (flag) {
+            document.querySelectorAll('.language-selector .lang-toggle').forEach(function(toggle) {
+                const flagSpan = toggle.querySelector('[id="currentFlag"], [id="onboarding-currentFlag"]') || toggle.querySelector('span:first-child');
+                if (flagSpan) {
+                    flagSpan.textContent = flag;
+                }
+            });
+        }
+
+        syncOnboardingLanguageSelectorUi();
     }
     
     // 初期メッセージを更新する関数
@@ -4478,6 +4573,9 @@
             const newSessionLabel = t.sageNewSessionBtn || '新セッション';
             sageClearBtn.title = newSessionLabel;
             sageClearBtn.setAttribute('aria-label', newSessionLabel);
+        }
+        if (isSageUi() && window.SageShell && typeof window.SageShell.refreshHeaderPhase === 'function') {
+            window.SageShell.refreshHeaderPhase();
         }
         
         // 情報ボタンのタイトル更新
@@ -4851,20 +4949,19 @@
         
         // ドロップダウン外をクリックしたら閉じる
         document.addEventListener('click', function(e) {
-            const selector = document.querySelector('.language-selector');
-            if (!selector) {
-                return;
-            }
-            if (!selector.contains(e.target)) {
-                const dropdown = document.getElementById('langDropdown');
-                const toggle = document.querySelector('.lang-toggle');
-                if (dropdown) {
-                    dropdown.classList.remove('show');
+            document.querySelectorAll('.language-selector').forEach(function(selector) {
+                if (!selector.contains(e.target)) {
+                    const dropdown = selector.querySelector('.lang-dropdown');
+                    const toggle = selector.querySelector('.lang-toggle');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                    if (toggle) {
+                        toggle.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
                 }
-                if (toggle) {
-                    toggle.classList.remove('open');
-                }
-            }
+            });
         });
         
         // ユーザー情報モーダルの性別変更イベントを設定
@@ -8640,6 +8737,9 @@ function appendQaDelta(text, section) {
         }
         // 文字サイズ設定を読み込み
         loadFontSize();
+        if (isSageUi() && window.SageColorThemes) {
+            window.SageColorThemes.load();
+        }
         // 音声読み上げ速度を読み込み
         const savedSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
         voiceReadSpeed = savedSpeed;
@@ -8678,25 +8778,34 @@ function appendQaDelta(text, section) {
     function setFontSize(level) {
         const root = document.documentElement;
         const sizeMap = {
-            'small': { base: '0.75rem', lineHeight: '1.7' },
-            'normal': { base: '1rem', lineHeight: '1.8' },
-            'large': { base: '1.25rem', lineHeight: '1.75' },
-            'extra-large': { base: '1.5rem', lineHeight: '1.7' }
+            'small': { base: '0.875rem', ui: '0.875rem', htmlPx: '14px', lineHeight: '1.7' },
+            'normal': { base: '1rem', ui: '1rem', htmlPx: '16px', lineHeight: '1.8' },
+            'large': { base: '1.125rem', ui: '1.125rem', htmlPx: '18px', lineHeight: '1.75' },
+            'extra-large': { base: '1.25rem', ui: '1.25rem', htmlPx: '20px', lineHeight: '1.7' }
         };
-        
+
         const size = sizeMap[level] || sizeMap['normal'];
+        root.setAttribute('data-font-size', level);
         root.style.setProperty('--font-size-base', size.base);
+        root.style.setProperty('--ui-font-size', size.ui);
         root.style.setProperty('--line-height-base', size.lineHeight);
-        
-        // ボタンのアクティブ状態を更新
+        root.style.fontSize = size.htmlPx;
+
         document.querySelectorAll('.font-size-btn').forEach(btn => {
-            btn.style.background = btn.dataset.size === level ? '#4CAF50' : 'white';
-            btn.style.color = btn.dataset.size === level ? 'white' : '#4CAF50';
+            const active = btn.dataset.size === level;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        
-        // localStorageに保存
+
+        const preview = document.getElementById('settings-font-preview');
+        if (preview) {
+            preview.setAttribute('data-preview-size', level);
+        }
+
         saveFontSize(level);
     }
+
+    window.setFontSize = setFontSize;
     
     function setLineHeight(size) {
         const root = document.documentElement;
@@ -10276,6 +10385,12 @@ function appendQaDelta(text, section) {
     function setVoiceReadSpeed(speed) {
         voiceReadSpeed = speed;
         localStorage.setItem('voiceReadSpeed', speed.toString());
+
+        document.querySelectorAll('.voice-speed-btn').forEach(btn => {
+            const active = parseFloat(btn.dataset.speed) === speed;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         
         // 読み上げ中の場合は再開
         if (isReading) {
@@ -10285,6 +10400,8 @@ function appendQaDelta(text, section) {
             }, 100);
         }
     }
+
+    window.setVoiceReadSpeed = setVoiceReadSpeed;
     
     // 推奨結果が表示されたら音声読み上げボタンを表示（recommendation-result内のボタンを使用）
     function checkAndShowVoiceReadButton() {
@@ -10298,21 +10415,24 @@ function appendQaDelta(text, section) {
     
     // 設定ページの状態を更新
     function updateSettingsPage() {
-        // 現在の文字サイズを反映
         const currentSize = localStorage.getItem('fontSize') || 'normal';
         document.querySelectorAll('.font-size-btn').forEach(btn => {
-            if (btn.dataset.size === currentSize) {
-                btn.style.background = '#4CAF50';
-                btn.style.color = 'white';
-            } else {
-                btn.style.background = 'white';
-                btn.style.color = '#4CAF50';
-            }
+            const active = btn.dataset.size === currentSize;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
+
+        const preview = document.getElementById('settings-font-preview');
+        if (preview) {
+            preview.setAttribute('data-preview-size', currentSize);
+        }
         
-        // 現在の速度設定を反映（速度ボタンがあれば）
         const currentSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
-        // 速度ボタンの状態更新は必要に応じて実装
+        document.querySelectorAll('.voice-speed-btn').forEach(btn => {
+            const active = parseFloat(btn.dataset.speed) === currentSpeed;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
     }
     
     // 音声入力機能

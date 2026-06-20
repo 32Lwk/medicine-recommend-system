@@ -119,6 +119,7 @@ def test_get_root_injects_app_version_and_empty_base_path(client):
     text = r.text
     assert "window.APP_VERSION" in text
     assert 'window.APP_BASE_PATH' in text
+    assert "gitCommitShort" in text
     # 既定はルート（空文字）
     assert '""' in text or "''" in text or "APP_BASE_PATH" in text
 

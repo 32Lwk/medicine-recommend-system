@@ -4,6 +4,13 @@
 (function (global) {
   'use strict';
 
+  var FULL_LABEL_MIN_WIDTH = 640;
+  var mountedCtx = null;
+  var activeRailEl = null;
+  var resizeObserver = null;
+  var fontSizeObserver = null;
+  var chipMeasureEl = null;
+
   var esc = function (s) {
     return global.MedicineMapper ? global.MedicineMapper.esc(s) : String(s);
   };
@@ -19,13 +26,151 @@
     );
   }
 
+  function chipEntry(type, labelFull, labelShort) {
+    return {
+      type: type,
+      labelFull: labelFull,
+      labelShort: labelShort != null ? labelShort : labelFull
+    };
+  }
+
+  function chipLabel(chip, compact) {
+    return compact ? chip.labelShort : chip.labelFull;
+  }
+
   function safetyChipHtml(chip) {
     var cls = 'ui-safety-chip';
     if (chip.type === 'ok') cls += ' ui-safety-chip--ok';
     else if (chip.type === 'warn') cls += ' ui-safety-chip--warn';
     else if (chip.type === 'pending') cls += ' ui-safety-chip--pending';
     else if (chip.type === 'info') cls += ' ui-safety-chip--info';
-    return '<em class="' + cls + '">' + esc(chip.label) + '</em>';
+    else if (chip.type === 'overflow') cls += ' ui-safety-chip--info ui-safety-chip--overflow';
+    return '<em class="' + cls + '"' + (chip.ariaLabel ? ' aria-label="' + esc(chip.ariaLabel) + '"' : '') + '>' + esc(chip.label) + '</em>';
+  }
+
+  function getChipMeasureEl() {
+    if (chipMeasureEl && chipMeasureEl.isConnected) return chipMeasureEl;
+    chipMeasureEl = document.createElement('em');
+    chipMeasureEl.className = 'ui-safety-chip ui-safety-rail__chip-measure';
+    chipMeasureEl.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(chipMeasureEl);
+    return chipMeasureEl;
+  }
+
+  function measureChipWidth(label, type) {
+    var el = getChipMeasureEl();
+    el.className = 'ui-safety-chip ui-safety-rail__chip-measure ui-safety-chip--' + type;
+    el.textContent = label;
+    return el.offsetWidth;
+  }
+
+  function measureOverflowChipWidth(count) {
+    return measureChipWidth('+' + count, 'info') + 4;
+  }
+
+  function reservedRailWidth(rail) {
+    var style = getComputedStyle(rail);
+    var gap = parseFloat(style.columnGap || style.gap) || 8;
+    var iconEl = rail.querySelector('.ui-safety-rail__icon');
+    var headEl = rail.querySelector('.ui-safety-rail__head');
+    var ctaEl = rail.querySelector('.ui-safety-rail__cta');
+    var bodyEl = rail.querySelector('.ui-safety-rail__body');
+    var bodyGap = bodyEl ? (parseFloat(getComputedStyle(bodyEl).columnGap || getComputedStyle(bodyEl).gap) || 6) : 6;
+    var paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    var reserved = paddingX + gap;
+    if (iconEl) reserved += iconEl.offsetWidth + gap;
+    if (ctaEl) reserved += ctaEl.offsetWidth + gap;
+    if (headEl) reserved += headEl.offsetWidth + bodyGap;
+    return reserved + 4;
+  }
+
+  function updateResponsiveRail(rail) {
+    if (!rail || !mountedCtx) return;
+
+    var width = rail.clientWidth;
+    var compactLabels = width < FULL_LABEL_MIN_WIDTH;
+    rail.setAttribute('data-safety-label-mode', compactLabels ? 'compact' : 'full');
+
+    var statusEl = rail.querySelector('.ui-safety-rail__status');
+    if (statusEl) {
+      if (mountedCtx.pendingCount > 0) {
+        statusEl.textContent = compactLabels
+          ? t('safetyPendingShort', { n: mountedCtx.pendingCount })
+          : t('safetyPending', { n: mountedCtx.pendingCount });
+      } else {
+        statusEl.textContent = t('safetyOk');
+      }
+    }
+
+    var itemsEl = rail.querySelector('.ui-safety-rail__items');
+    if (!itemsEl) return;
+
+    var chips = mountedCtx.chips;
+    var budget = Math.max(0, width - reservedRailWidth(rail));
+    var chipGap = 4;
+    var maxVisible = 0;
+    var used = 0;
+
+    for (var i = 0; i < chips.length; i += 1) {
+      var label = chipLabel(chips[i], compactLabels);
+      var chipWidth = measureChipWidth(label, chips[i].type);
+      var hiddenAfter = chips.length - (i + 1);
+      var overflowWidth = hiddenAfter > 0 ? measureOverflowChipWidth(hiddenAfter) : 0;
+      var nextUsed = used + (maxVisible > 0 ? chipGap : 0) + chipWidth + overflowWidth;
+
+      if (nextUsed <= budget || maxVisible === 0) {
+        if (maxVisible > 0) used += chipGap;
+        used += chipWidth;
+        maxVisible = i + 1;
+      } else {
+        break;
+      }
+    }
+
+    maxVisible = Math.max(1, Math.min(maxVisible, chips.length));
+    var hiddenCount = chips.length - maxVisible;
+    var html = chips.slice(0, maxVisible).map(function (chip) {
+      return safetyChipHtml({ type: chip.type, label: chipLabel(chip, compactLabels) });
+    }).join('');
+
+    if (hiddenCount > 0) {
+      html += safetyChipHtml({
+        type: 'overflow',
+        label: '+' + hiddenCount,
+        ariaLabel: t('safetyMoreChips', { n: hiddenCount })
+      });
+    }
+
+    itemsEl.innerHTML = html;
+  }
+
+  function bindResponsiveRail(rail) {
+    activeRailEl = rail;
+    updateResponsiveRail(rail);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      if (resizeObserver) resizeObserver.disconnect();
+      resizeObserver = new ResizeObserver(function () {
+        if (activeRailEl) updateResponsiveRail(activeRailEl);
+      });
+      resizeObserver.observe(rail);
+    } else {
+      global.addEventListener('resize', onWindowResize, { passive: true });
+    }
+
+    if (!fontSizeObserver && typeof MutationObserver !== 'undefined') {
+      fontSizeObserver = new MutationObserver(function () {
+        if (activeRailEl) updateResponsiveRail(activeRailEl);
+      });
+      fontSizeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-font-size']
+      });
+    }
+  }
+
+  function onWindowResize() {
+    if (activeRailEl) updateResponsiveRail(activeRailEl);
   }
 
   function unwrapAttr(attrs, key) {
@@ -64,50 +209,46 @@
     var gender = attrs.gender;
 
     if (age != null && age !== '') {
-      chips.push({ type: 'ok', label: age + '歳' + (gender ? '·' + gender : '') });
+      chips.push(chipEntry('ok', age + '歳' + (gender ? '·' + gender : '')));
     } else {
-      chips.push({ type: 'pending', label: t('safetyAgePending') });
+      chips.push(chipEntry('pending', t('safetyAgePending'), t('safetyAgePendingShort')));
       pendingCount += 1;
     }
 
     var allergies = attrs.allergies;
     if (Array.isArray(allergies)) {
       if (!allergies.length || allergies.indexOf('なし') >= 0) {
-        chips.push({ type: 'ok', label: t('safetyAllergyNone') });
+        chips.push(chipEntry('ok', t('safetyAllergyNone')));
       } else {
-        chips.push({ type: 'warn', label: t('safetyAllergyPrefix') + allergies.join('、') });
+        chips.push(chipEntry('warn', t('safetyAllergyPrefix') + allergies.join('、')));
       }
     } else if (!allergies) {
-      chips.push({ type: 'pending', label: t('safetyAllergyPending') });
+      chips.push(chipEntry('pending', t('safetyAllergyPending'), t('safetyAllergyPendingShort')));
       pendingCount += 1;
     }
 
     var meds = attrs.current_medications;
     if (Array.isArray(meds)) {
-      if (!meds.length) chips.push({ type: 'ok', label: t('safetyMedsNone') });
-      else chips.push({ type: 'info', label: t('safetyMedsPrefix') + meds.join('、') });
+      if (!meds.length) chips.push(chipEntry('ok', t('safetyMedsNone')));
+      else chips.push(chipEntry('info', t('safetyMedsPrefix') + meds.join('、')));
     } else {
-      chips.push({ type: 'pending', label: t('safetyMedsPending') });
+      chips.push(chipEntry('pending', t('safetyMedsPending'), t('safetyMedsPendingShort')));
       pendingCount += 1;
     }
 
     if (gender === '女性') {
-      if (attrs.pregnant === true) chips.push({ type: 'warn', label: t('safetyPregnant') });
-      else if (attrs.breastfeeding === true) chips.push({ type: 'warn', label: t('safetyBreastfeeding') });
+      if (attrs.pregnant === true) chips.push(chipEntry('warn', t('safetyPregnant')));
+      else if (attrs.breastfeeding === true) chips.push(chipEntry('warn', t('safetyBreastfeeding')));
       else if (attrs.pregnant === false && attrs.breastfeeding === false) {
-        chips.push({ type: 'ok', label: t('safetyPregnancyNone') });
+        chips.push(chipEntry('ok', t('safetyPregnancyNone')));
       } else if (attrs.pregnant == null && attrs.breastfeeding == null) {
-        chips.push({ type: 'pending', label: t('safetyPregnancyPending') });
+        chips.push(chipEntry('pending', t('safetyPregnancyPending'), t('safetyPregnancyPendingShort')));
         pendingCount += 1;
       }
     }
 
-    var statusHtml = '';
-    if (pendingCount > 0) {
-      statusHtml = '<span class="ui-safety-rail__status ui-safety-rail__status--pending">' + esc(t('safetyPending', { n: pendingCount })) + '</span>';
-    } else {
-      statusHtml = '<span class="ui-safety-rail__status ui-safety-rail__status--ok">' + esc(t('safetyOk')) + '</span>';
-    }
+    var statusClass = pendingCount > 0 ? 'ui-safety-rail__status--pending' : 'ui-safety-rail__status--ok';
+    var statusHtml = '<span class="ui-safety-rail__status ' + statusClass + '"></span>';
 
     return {
       chips: chips,
@@ -127,9 +268,7 @@
             '<strong>' + esc(t('safetyTitle')) + '</strong>' +
             ctx.statusHtml +
           '</div>' +
-          '<span class="ui-safety-rail__items app-scrollbar">' +
-            ctx.chips.map(safetyChipHtml).join('') +
-          '</span>' +
+          '<span class="ui-safety-rail__items"></span>' +
         '</div>' +
         '<button type="button" class="ui-safety-rail__cta" id="safetyRailCta" aria-label="' + esc(ctx.ctaLabel) + '">' + esc(ctx.ctaLabel) + '</button>' +
       '</div>'
@@ -139,8 +278,10 @@
   function mount(attrs) {
     var mountEl = document.getElementById('safetyRailMount');
     if (!mountEl) return;
-    var ctx = buildContext(attrs);
-    mountEl.innerHTML = htmlFromContext(ctx);
+    mountedCtx = buildContext(attrs);
+    mountEl.innerHTML = htmlFromContext(mountedCtx);
+    var rail = mountEl.querySelector('.ui-safety-rail--compact');
+    if (rail) bindResponsiveRail(rail);
     var cta = document.getElementById('safetyRailCta');
     if (cta) {
       cta.addEventListener('click', function () {
@@ -153,13 +294,19 @@
   function updateHeaderPhase(symptoms) {
     var el = document.getElementById('headerPhase');
     if (!el || !symptoms || !symptoms.length) return;
-    el.textContent = symptoms.slice(0, 2).join('・') + '向け · 候補' + Math.min(3, symptoms.length) + '件';
+    var joiner = global.currentLanguage === 'en' ? ' · ' : '・';
+    var symptomText = symptoms.slice(0, 2).join(joiner);
+    var count = Math.min(3, symptoms.length);
+    el.textContent = t('headerPhaseSymptoms', { symptoms: symptomText, count: count });
   }
 
   global.SafetyRail = {
     mount: mount,
     buildContext: buildContext,
     normalizeAttrs: normalizeAttrs,
-    updateHeaderPhase: updateHeaderPhase
+    updateHeaderPhase: updateHeaderPhase,
+    reflow: function () {
+      if (activeRailEl) updateResponsiveRail(activeRailEl);
+    }
   };
 })(typeof window !== 'undefined' ? window : globalThis);

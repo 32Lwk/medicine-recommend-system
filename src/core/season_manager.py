@@ -7,7 +7,7 @@
 
 import copy
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 # シーズン設定辞書
@@ -137,12 +137,18 @@ SEASON_CONFIG = {
     },
     'summer': {
         'period': [(6, 1, 8, 31)],
-        'images': {},
+        'images': {
+            'right': ['ひまわり.png', '夏.png', 'かき氷.png', 'アサガオ.png'],
+            'left': ['てるてる坊主.png', 'くまかき氷.png', '雨.png', 'すすき.png'],
+        },
         'base_path': 'summer'
     },
     'autumn': {
         'period': [(9, 1, 11, 30)],
-        'images': {},
+        'images': {
+            'right': ['halloween_right.png', 'shichigosan_right.png'],
+            'left': ['halloween_left.png', 'shichigosan_left.png'],
+        },
         'base_path': 'autumn'
     },
     'keiro': {
@@ -273,6 +279,20 @@ IMAGE_ALT_MAPPING = {
     'カーネーション.png': 'カーネーション',
     '母の日.png': '母の日',
     'プレゼント.png': 'プレゼント',
+    # 夏：一般
+    'ひまわり.png': 'ひまわり',
+    '夏.png': '夏',
+    'かき氷.png': 'かき氷',
+    'アサガオ.png': 'アサガオ',
+    'てるてる坊主.png': 'てるてる坊主',
+    'くまかき氷.png': 'かき氷',
+    '雨.png': '雨',
+    'すすき.png': 'すすき',
+    # 秋：一般（行事期間外のフォールバック）
+    'halloween_left.png': '秋の装飾',
+    'halloween_right.png': '秋の装飾',
+    'shichigosan_left.png': '秋の装飾',
+    'shichigosan_right.png': '秋の装飾',
 }
 
 
@@ -710,4 +730,48 @@ def get_season_images(season_type, year, session):
         })
     
     return images
+
+
+def iter_configured_decoration_static_paths(season_type, year=2026):
+    """
+    SEASON_CONFIG に登録された装飾 PNG の static 相対パスを列挙（存在確認用）。
+
+    zodiac は year に応じて1件に解決する。
+    """
+    config = SEASON_CONFIG.get(season_type)
+    if not config:
+        return
+    images_cfg = config.get('images') or {}
+    if not images_cfg:
+        return
+    base_path = config['base_path']
+    for side in ('right', 'left'):
+        for filename in images_cfg.get(side) or []:
+            resolved = filename
+            if resolved == 'zodiac':
+                resolved = 'Sneak.png' if year <= 2025 else get_zodiac_image(year)
+            if side == 'left' and resolved == 'snowman.png' and base_path == 'winter/general':
+                yield f'img/winter/{resolved}'
+            else:
+                yield f'img/{base_path}/{resolved}'
+
+
+def find_calendar_decoration_gaps(year=2026, tz=None):
+    """
+    暦年で season 判定される日のうち、装飾画像が空の日を (YYYY-MM-DD, season) のリストで返す。
+    season が None の日も含む。
+    """
+    tz = tz or pytz.timezone('Asia/Tokyo')
+    start = tz.localize(datetime(year, 1, 1))
+    end = tz.localize(datetime(year + 1, 1, 1))
+    gaps = []
+    day = start
+    while day < end:
+        season = get_current_season(day)
+        if season is None:
+            gaps.append((day.strftime('%Y-%m-%d'), None))
+        elif not get_season_images(season, day.year, {}):
+            gaps.append((day.strftime('%Y-%m-%d'), season))
+        day += timedelta(days=1)
+    return gaps
 

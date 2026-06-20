@@ -10,13 +10,16 @@ import pytz
 from src.core.season_manager import (
     PARTICLE_PROFILES,
     SEASON_CONFIG,
+    find_calendar_decoration_gaps,
     get_current_season,
     get_particle_profile,
+    get_season_images,
     is_in_period,
+    iter_configured_decoration_static_paths,
 )
 
 JST = pytz.timezone("Asia/Tokyo")
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _dt(year, month, day, hour=12):
@@ -317,3 +320,30 @@ def test_event_decoration_pngs_exist():
     ]
     for rel in rels:
         assert (REPO_ROOT / "static" / rel).is_file(), rel
+
+
+def test_summer_and_autumn_decoration_images():
+    summer = get_season_images("summer", 2026, {})
+    autumn = get_season_images("autumn", 2026, {})
+    assert len(summer) == 2
+    assert len(autumn) == 2
+    assert all(img["path"].startswith("img/summer/") for img in summer)
+    assert all(img["path"].startswith("img/autumn/") for img in autumn)
+
+
+def test_all_configured_decoration_pngs_exist_on_disk():
+    """SEASON_CONFIG に登録された左右装飾 PNG が static 上に存在すること。"""
+    seen = set()
+    for season_type in SEASON_CONFIG:
+        for rel in iter_configured_decoration_static_paths(season_type, year=2026):
+            if rel in seen:
+                continue
+            seen.add(rel)
+            assert (REPO_ROOT / "static" / rel).is_file(), rel
+
+
+@pytest.mark.parametrize("year", [2026, 2027])
+def test_every_calendar_day_has_decoration_images(year):
+    """暦年の全日で season 判定され、かつ装飾画像が1件以上返ること。"""
+    gaps = find_calendar_decoration_gaps(year)
+    assert gaps == [], f"decoration gaps in {year}: {gaps[:5]}{'...' if len(gaps) > 5 else ''}"

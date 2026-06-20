@@ -6,7 +6,7 @@ import os
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
-import random
+import subprocess
 import time
 import traceback
 from datetime import datetime
@@ -247,6 +247,46 @@ def _normalized_app_version_env() -> str | None:
     return s
 
 
+_HEX_COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
+
+
+def _looks_like_git_commit(value: str | None) -> bool:
+    if not value:
+        return False
+    return bool(_HEX_COMMIT_RE.match(value.strip()))
+
+
+def _resolve_git_commit_short() -> str | None:
+    """デプロイ版の短い Git コミット（7桁）を返す。取得不可なら None。"""
+    for env_key in ("GIT_COMMIT", "GIT_COMMIT_SHORT", "COMMIT_SHA", "SHORT_SHA"):
+        raw = os.getenv(env_key)
+        if raw and _looks_like_git_commit(raw):
+            return raw.strip()[:7]
+
+    nv = _normalized_app_version_env()
+    if nv and _looks_like_git_commit(nv):
+        return nv[:7]
+
+    try:
+        repo_root = Path(__file__).resolve().parent
+        if (repo_root / ".git").exists():
+            result = subprocess.run(
+                ["git", "rev-parse", "--short=7", "HEAD"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                timeout=2,
+                check=False,
+            )
+            if result.returncode == 0:
+                commit = (result.stdout or "").strip()
+                if _looks_like_git_commit(commit):
+                    return commit[:7]
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
 def _compat_url_for(endpoint: str, **values) -> str:
     # templates/*.html は Flask 互換の url_for('static', filename=...) を使用している。
     if endpoint == "static":
@@ -339,7 +379,11 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     cookie_ui = request.cookies.get(UI_VARIANT_COOKIE)
     ui_variant = resolve_ui_variant(query_ui=query_ui, cookie_ui=cookie_ui)
     runtime_client_config_json = json.dumps(
-        {"isDevelopment": bool(is_dev_env), "uiVariant": ui_variant}
+        {
+            "isDevelopment": bool(is_dev_env),
+            "uiVariant": ui_variant,
+            "gitCommitShort": _resolve_git_commit_short(),
+        }
     )
 
     response = templates.TemplateResponse(
