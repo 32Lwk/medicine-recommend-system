@@ -29,7 +29,9 @@ log
 tests
 test_snapshots
 test_report.html
-scripts
+# scripts は開発用が大半のため除外。Docker ビルドメタ生成のみ許可
+scripts/*
+!scripts/write_build_meta.py
 
 # ドキュメント（Concierge 用の public/ と concierge/ のみ Dockerfile で COPY）
 docs/**
