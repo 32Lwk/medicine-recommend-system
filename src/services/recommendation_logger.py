@@ -53,6 +53,23 @@ def log_recommendation_session(
         "llm_metrics": llm_meta,
     }
 
+    diagnosis_snapshot = None
+    display_summary = app_output
+    try:
+        from src.services.recommendation_diagnosis_builder import (
+            build_diagnosis_v1,
+            build_display_summary,
+        )
+
+        diag = build_diagnosis_v1(result, session_id=session_id)
+        diagnosis_snapshot = diag.to_client_dict()
+        if not display_summary or display_summary == "sage_reco":
+            display_summary = build_display_summary(diag)
+        log_entry["diagnosis_snapshot"] = diagnosis_snapshot
+        log_entry["display_summary"] = display_summary
+    except Exception:
+        pass
+
     log_dir = os.path.join(BASE_DIR, 'log')
     log_path = os.path.join(log_dir, "log", log_file)
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
@@ -95,11 +112,13 @@ def log_recommendation_session(
         log_recommendation_detail(
             session_id=session_id,
             user_input=user_text,
-            app_output=app_output,
+            app_output=app_output or display_summary or "",
             nlu_result=nlu_result,
             candidate_counts=candidate_counts,
             recommended_medicines=medicines_with_scores,
-            translated_output=translated_output
+            translated_output=translated_output,
+            diagnosis_snapshot=diagnosis_snapshot,
+            display_summary=display_summary,
         )
 
     if _DEBUG_MODE or logger.level <= logging.DEBUG:

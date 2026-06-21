@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from src.handlers.chat.chat_ask_route import route_ask_category
 from src.handlers.chat.chat_physical_route import (
     apply_menstrual_physical_override,
+    apply_sleepiness_physical_override,
     prepare_physical_category,
 )
 
@@ -13,6 +14,12 @@ from src.handlers.chat.chat_physical_route import (
 def test_menstrual_override():
     assert apply_menstrual_physical_override("Emotional", "生理不順で悩んでいます") == "Physical"
     assert apply_menstrual_physical_override("Physical", "頭痛") == "Physical"
+
+
+def test_sleepiness_override():
+    assert apply_sleepiness_physical_override("Emotional", "日中の眠気が強い") == "Physical"
+    assert apply_sleepiness_physical_override("Emotional", "眠れない") == "Emotional"
+    assert apply_sleepiness_physical_override("Physical", "頭痛") == "Physical"
 
 
 @patch("src.handlers.chat.chat_physical_route.prepare_physical_recommendation")

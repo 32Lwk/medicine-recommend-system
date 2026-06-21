@@ -289,6 +289,17 @@ def emit_cards(
     )
 
 
+def emit_reco_detail(
+    detail: Dict[str, Any],
+    *,
+    session_id: Optional[str] = None,
+) -> None:
+    """Usage sections / enriched detail after core recommendation done."""
+    if not detail:
+        return
+    emit_sse_event("reco_detail", detail, session_id=session_id)
+
+
 def emit_bot_followup(
     *,
     session_id: Optional[str] = None,

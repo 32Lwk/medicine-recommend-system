@@ -55,43 +55,6 @@ def detect_insomnia_keyword(message: str) -> bool:
     return any(kw in (message or "") for kw in INSOMNIA_KEYWORDS)
 
 
-def apply_emotional_keyword_triage_overrides(
-    triage_result: Optional[Dict[str, Any]],
-    sanitized_message: str,
-    *,
-    has_sleepiness_keyword: bool,
-    has_insomnia_keyword: bool,
-    skip_insomnia_check: bool = False,
-    session: Any = None,
-) -> Optional[str]:
-    """
-    眠気/不眠キーワードで triage を Emotional に上書き。戻り値は上書き後の category。
-  """
-    category = (triage_result or {}).get("category", "Other")
-    if (
-        has_sleepiness_keyword
-        and session is not None
-        and not session.get("sleepiness_medicine_recommendation")
-    ):
-        if triage_result is not None:
-            triage_result["category"] = "Emotional"
-            triage_result["subcategory"] = "drowsiness"
-            triage_result["reasoning"] = "眠気関連キーワードを検出したため、カウンセリングフローにリダイレクト"
-        return "Emotional"
-    if (
-        has_insomnia_keyword
-        and session is not None
-        and not session.get("insomnia_medicine_recommendation")
-        and not skip_insomnia_check
-    ):
-        if triage_result is not None:
-            triage_result["category"] = "Emotional"
-            triage_result["subcategory"] = "insomnia"
-            triage_result["reasoning"] = "不眠関連キーワードを検出したため、カウンセリングフローにリダイレクト"
-        return "Emotional"
-    return category if category == "Emotional" else None
-
-
 def _append_counseling_medicine_info(
     session: Any,
     sid: Optional[str],
@@ -102,6 +65,8 @@ def _append_counseling_medicine_info(
     *,
     log_counseling_response,
 ) -> None:
+    from src.services.sage_bot_response import build_counseling_bot
+
     for msg in session.get("messages", []):
         if (
             msg.get("type") == "bot"
@@ -111,13 +76,17 @@ def _append_counseling_medicine_info(
             logger.info("⏭️ 既に医薬品情報メッセージが存在するため、追加をスキップします")
             return
 
-    session.setdefault("messages", []).append({
-        "type": "bot",
-        "content": message_text,
-        "counseling": True,
-        "counseling_medicine_info": True,
-        "timestamp": datetime.now().isoformat(),
-    })
+    session.setdefault("messages", []).append(
+        build_counseling_bot(
+            session,
+            sid,
+            message_text,
+            title="カウンセリング",
+            kind="counseling_medicine_info",
+            counseling=True,
+            counseling_medicine_info=True,
+        )
+    )
     _mark_session_modified(session)
     log_counseling_response(
         session_id=sid,
@@ -191,12 +160,29 @@ def handle_emotional_category(
         initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
         start_counseling_mode(session, symptom_type, initial_questions)
 
-        session.setdefault("messages", []).append({
-            "type": "bot",
-            "content": initial_response,
-            "counseling": True,
-            "timestamp": datetime.now().isoformat(),
-        })
+        first_question = initial_questions[0] if initial_questions else None
+        if first_question:
+            counseling_mode = session.setdefault("counseling_mode", {})
+            counseling_mode.setdefault("question_history", []).append({
+                "question": first_question,
+                "asked_at": datetime.now().isoformat(),
+                "question_type": "initial",
+            })
+
+        from src.services.counseling.counseling_format import combine_counseling_message
+        from src.services.sage_bot_response import build_counseling_bot
+
+        session.setdefault("messages", []).append(
+            build_counseling_bot(
+                session,
+                sid,
+                combine_counseling_message(initial_response, first_question),
+                title="カウンセリング",
+                kind="counseling_initial",
+                counseling=True,
+                counseling_question=bool(first_question),
+            )
+        )
 
         log_counseling_response(
             session_id=sid,
@@ -265,19 +251,6 @@ def handle_emotional_category(
 
         if initial_questions:
             first_question = initial_questions[0]
-            counseling_mode = session.setdefault("counseling_mode", {})
-            counseling_mode.setdefault("question_history", []).append({
-                "question": first_question,
-                "asked_at": datetime.now().isoformat(),
-                "question_type": "initial",
-            })
-            session["messages"].append({
-                "type": "bot",
-                "content": first_question,
-                "counseling": True,
-                "counseling_question": True,
-                "timestamp": datetime.now().isoformat(),
-            })
             log_counseling_response(
                 session_id=sid,
                 response_content=first_question,

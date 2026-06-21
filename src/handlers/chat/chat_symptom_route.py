@@ -42,7 +42,7 @@ def _pregnancy_breastfeeding_escalation(
     *,
     pregnant: bool,
 ) -> Optional[ResponseTuple]:
-    from src.services.html_formatter import format_escalation_display
+    from legacy.html_formatter import format_escalation_display
 
     if pregnant:
         escalation_msg = "妊娠中は医師の診断を受けてください。市販薬の使用は医師にご相談ください。"
@@ -56,19 +56,32 @@ def _pregnancy_breastfeeding_escalation(
         log_msg = "授乳中検出"
 
     logger.warning("⚠️ %s: 症状解析をスキップしてエスカレーションメッセージを返却", log_msg)
-    escalation_content = format_escalation_display(
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_escalation_status
+
+    feedback_ctx = {
+        "user_message": user_message,
+        "ai_response": escalation_msg,
+    }
+    sage_diag = build_escalation_status(
+        escalation_msg,
+        medicine_type=medicine_type,
+        feedback_context=feedback_ctx,
+    ).to_client_dict()
+    legacy_content = format_escalation_display(
         doctor_consultation=escalation_msg,
         medicine_type=medicine_type,
         algorithm=algorithm,
         user_message=user_message,
         include_feedback_buttons=True,
     )
-    bot_response = {
-        "type": "bot",
-        "content": escalation_content,
-        "diagnosis": {"doctor_consultation": escalation_msg, "escalation": True},
-        "timestamp": datetime.now().isoformat(),
-    }
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        legacy_diagnosis={"doctor_consultation": escalation_msg, "escalation": True},
+    )
     session.setdefault("messages", []).append(bot_response)
     _mark_session_modified(session)
     ua = session.get("user_attributes", {}) or {}
@@ -114,19 +127,22 @@ def run_symptom_recommendation(
 
     if is_otc_flow_blocked(session):
         from src.services.medical_emergency_templates import build_medical_emergency_html
+        from src.services.sage_bot_response import build_bot_response
+        from src.services.status_diagnosis_builder import build_emergency_status
 
         lang = resolve_session_language(session)
-        html = build_medical_emergency_html(
-            subtype="medical_self",
-            language=lang if lang in ("ja", "en", "ko", "zh") else "ja",
+        lang = lang if lang in ("ja", "en", "ko", "zh") else "ja"
+        html = build_medical_emergency_html(subtype="medical_self", language=lang)
+        sage_diag = build_emergency_status(subtype="medical_self", language=lang).to_client_dict()
+        bot_response = build_bot_response(
+            session,
+            sid,
+            sage_diagnosis=sage_diag,
+            legacy_content=html,
+            emergency_detected=True,
+            otc_blocked=True,
         )
-        session.setdefault("messages", []).append({
-            "type": "bot",
-            "content": html,
-            "emergency_detected": True,
-            "otc_blocked": True,
-            "timestamp": datetime.now().isoformat(),
-        })
+        session.setdefault("messages", []).append(bot_response)
         _mark_session_modified(session)
         return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
 
@@ -172,15 +188,26 @@ def run_symptom_recommendation(
                 and matched_symptoms.get("message") == "No symptoms detected"
             ):
                 logger.warning("⚠️ 症状が検出できませんでした: %s", user_message)
-                bot_response = {
-                    "type": "bot",
-                    "content": (
-                        "申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。"
-                        "もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、"
-                        "具体的な症状を入力してください。"
-                    ),
-                    "diagnosis": None,
-                }
+                from src.services.sage_bot_response import build_bot_response
+                from src.services.status_diagnosis_builder import build_notice_status
+
+                notice_msg = (
+                    "申し訳ございませんが、入力いただいた内容から症状を分析することができませんでした。"
+                    "もう少し詳しく症状を教えていただけますか？例えば「頭痛がします」「熱があります」など、"
+                    "具体的な症状を入力してください。"
+                )
+                sage_diag = build_notice_status(
+                    notice_msg,
+                    title="症状を特定できませんでした",
+                    hints=["具体的な症状名を含めて入力してください"],
+                    kind="symptom_not_detected",
+                ).to_client_dict()
+                bot_response = build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=notice_msg,
+                )
                 session.setdefault("messages", []).append(bot_response)
                 _mark_session_modified(session)
                 if sid:
@@ -256,3 +283,80 @@ def run_symptom_recommendation(
         logger.warning("ログ出力エラー（無視）: %s", e)
 
     return resp
+
+
+def try_unrecognized_symptom_response(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    sanitized_message: str,
+    user_message: str,
+) -> Optional[ResponseTuple]:
+    """
+    意味不明な短い入力（g / ｇ 等）に対し、医薬品種類判定不可の caution カードを返す。
+    Concierge redirect より先に呼び出す。
+    """
+    from src.utils.input_helpers import is_unrecognizable_symptom_input
+
+    text = (sanitized_message or user_message or "").strip()
+    if not is_unrecognizable_symptom_input(text):
+        return None
+
+    import html
+
+    from legacy.html_formatter import format_medicine_type_notice
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_medicine_type_unrecognized_status
+
+    logger.warning("⚠️ 意味不明な短い入力のため医薬品種類判定不可カードを返却: %s", text)
+
+    consultation_message = (
+        "医薬品種類が判定できませんでした。"
+        "症状をより具体的に記述していただくか、医師にご相談ください。"
+    )
+    escaped_user_message = html.escape(user_message or text)
+    escaped_consultation = html.escape(consultation_message)
+    feedback_data = {
+        "user_message": escaped_user_message,
+        "ai_response": escaped_consultation,
+        "security_score": None,
+        "error_type": "medicine_type_detection_failed",
+    }
+    bug_report_data_attrs = (
+        f'data-user-message="{escaped_user_message}" '
+        f'data-ai-response="{escaped_consultation}" data-security-score=""'
+    )
+    legacy_content = format_medicine_type_notice(
+        escaped_consultation,
+        feedback_data,
+        bug_report_attrs=bug_report_data_attrs,
+    )
+    sage_diag = build_medicine_type_unrecognized_status(
+        feedback_context=feedback_data,
+    ).to_client_dict()
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+    )
+    session.setdefault("messages", []).append(bot_response)
+    _mark_session_modified(session)
+    if sid:
+        session_data = get_session_from_db(sid)
+        if not session_data:
+            session_data = {
+                "session_id": sid,
+                "username": session.get("username", "Unknown"),
+                "messages": session["messages"].copy(),
+                "last_activity": datetime.now(),
+                "client_ip": client_info.client_ip,
+                "user_agent": client_info.user_agent,
+                "user_attributes": session.get("user_attributes", {}),
+                "session_active": True,
+            }
+        else:
+            session_data["messages"] = session["messages"].copy()
+            session_data["last_activity"] = datetime.now()
+        save_session_to_db(sid, session_data)
+    return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)

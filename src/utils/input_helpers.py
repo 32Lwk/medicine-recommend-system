@@ -5,7 +5,7 @@
 不足属性のチェックを行う。
 """
 import re
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def is_ambiguous_input(user_text: str, symptoms: List[str], nlu_result: Dict) -> bool:
@@ -232,3 +232,247 @@ def is_symptom_input(message: str) -> bool:
         return False
 
     return True
+
+
+def has_explicit_symptom_signal(message: str) -> bool:
+    """
+    general_other 高確信時の Physical 上書き用。
+    is_symptom_input の最終 True フォールバック（曖昧入力）だけでは True にしない。
+    """
+    text = (message or "").strip()
+    if not text:
+        return False
+
+    from src.services.concierge_intent import classify_concierge_intent
+
+    if classify_concierge_intent(text) in ("greeting", "thanks"):
+        return False
+
+    normalized = normalize_latin_width(text)
+    if is_known_short_symptom(text) or is_known_short_symptom(normalized):
+        return True
+
+    if not is_symptom_input(text):
+        return False
+
+    symptom_keywords = [
+        '痛い', '痛み', '熱', '発熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '嘔吐', '下痢', '便秘',
+        '痒い', 'かゆい', '腫れ', '炎症', '発疹', '湿疹', 'めまい', 'だるい', '倦怠感', '疲れ', '不調', '症状',
+        '喉', 'のど', '胃', '腸', '目', '耳', '鼻', '皮膚', '関節', '筋肉', '肩こり', '腰痛', '風邪', 'インフルエンザ',
+        '寒気', '寒気がする', '寒気がします', '寒気があります', '寒気があり', '寒気が',
+        '痺れ', 'しびれ', 'むくみ', '倦怠', '倦怠感', 'だるさ',
+    ]
+    recommendation_intent_keywords = [
+        'おすすめ', 'お勧め', 'オススメ',
+        'どの薬', 'どれ', '何がいい', 'なにがいい', '何を飲めば', 'なにを飲めば',
+        '何飲めば', 'なに飲めば', 'どれ飲めば', 'どれを飲めば',
+        '薬ありますか', '薬ある', '市販薬', '薬ください', '薬ちょうだい',
+    ]
+
+    has_symptom_keyword = any(keyword in text for keyword in symptom_keywords)
+    if has_symptom_keyword:
+        return True
+    if any(k in text for k in recommendation_intent_keywords):
+        return True
+    return False
+
+
+_FULLWIDTH_LATIN = (
+    "０１２３４５６７８９"
+    "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+    "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
+)
+_HALFWIDTH_LATIN = (
+    "0123456789"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+)
+_LATIN_WIDTH_MAP = str.maketrans(_FULLWIDTH_LATIN, _HALFWIDTH_LATIN)
+
+
+def normalize_latin_width(text: str) -> str:
+    """全角英数字を半角に統一する。"""
+    return (text or "").translate(_LATIN_WIDTH_MAP)
+
+
+def is_known_short_symptom(text: str) -> bool:
+    """症状辞書の canonical / synonyms と完全一致する短い入力か。"""
+    stripped = (text or "").strip()
+    if not stripped:
+        return False
+    from src.core.dictionary_loader import load_symptom_dictionary
+
+    symptom_dict = load_symptom_dictionary()
+    for canonical_name, entry in symptom_dict.items():
+        if stripped == canonical_name:
+            return True
+        for syn in entry.get("synonyms", []):
+            if stripped == syn:
+                return True
+    return False
+
+
+def is_unrecognizable_symptom_input(message: str) -> bool:
+    """
+    症状相談として解釈できない短い・意味不明な入力か。
+
+    単一文字（g / ｇ 等）や症状辞書に無い 3 文字未満の入力を検出する。
+    挨拶・感謝など Concierge 向け社交入力は対象外。
+    """
+    stripped = (message or "").strip()
+    if not stripped:
+        return False
+
+    from src.services.concierge_intent import classify_concierge_intent
+
+    if classify_concierge_intent(stripped) in ("greeting", "thanks"):
+        return False
+
+    normalized = normalize_latin_width(stripped)
+    if is_known_short_symptom(stripped) or is_known_short_symptom(normalized):
+        return False
+
+    if len(normalized) < 3:
+        return True
+
+    if len(normalized) <= 2 and re.match(r"^[a-zA-Z0-9]+$", normalized):
+        return True
+
+    return False
+
+
+def should_apply_unrecognized_symptom_gate(
+    triage_result: Optional[Dict[str, Any]],
+    message: str = "",
+) -> bool:
+    """
+    「症状から医薬品を選べませんでした」カードを出すべきか。
+
+    トリアージ LLM が Other/general_other と高確信で返した入力は、
+    短い文字列ヒューリスティクスより優先して Concierge 等へ流す。
+    """
+    triage = triage_result or {}
+    category = triage.get("category", "")
+    subcategory = str(triage.get("subcategory") or "")
+    confidence = float(triage.get("confidence") or 0.0)
+
+    if category == "Other" and "general_other" in subcategory and confidence >= 0.7:
+        if has_explicit_symptom_signal(message):
+            return True
+        return False
+
+    if category == "Other" and (
+        subcategory.startswith("store_inquiry")
+        or subcategory == "lost_and_found"
+        or subcategory.startswith("inappropriate_request")
+    ):
+        return False
+
+    if category in ("Emotional", "Emergency"):
+        return False
+
+    if category in ("Physical", "Ask"):
+        return is_unrecognizable_symptom_input(message)
+
+    if category == "Other":
+        return is_unrecognizable_symptom_input(message)
+
+    return False
+
+
+def should_prioritize_medical_route_over_store(
+    triage_result: Optional[Dict[str, Any]],
+    message: str = "",
+) -> bool:
+    """
+    Physical/Ask トリアージが十分な確信度のとき、
+    キーワード型の店舗ゲートより医療経路を優先する。
+
+    トイレ・遺失物など明確な店舗意図は store 側を維持する。
+    """
+    triage = triage_result or {}
+    category = triage.get("category", "")
+    if category not in ("Physical", "Ask"):
+        return False
+
+    subcategory = str(triage.get("subcategory") or "").lower()
+    if subcategory.startswith("store_inquiry") or subcategory == "lost_and_found":
+        return False
+
+    from config.routing_config import triage_confidence_threshold
+
+    confidence = float(triage.get("confidence") or 0.0)
+    if confidence < triage_confidence_threshold():
+        return False
+
+    from src.services.store_inquiry_handler import has_unambiguous_store_intent
+
+    if has_unambiguous_store_intent(message):
+        return False
+
+    text = (message or "").lower()
+    explicit_store_stock = (
+        "在庫",
+        "取り寄せ",
+        "売り場",
+        "売ってい",
+        "扱ってい",
+        "置いてあり",
+        "店内",
+        "店舗",
+    )
+    if any(k in text for k in explicit_store_stock):
+        return False
+
+    return True
+
+
+def reroute_symptom_general_other_to_physical(
+    triage_result: Optional[Dict[str, Any]],
+    message: str,
+) -> tuple[str, Dict[str, Any]]:
+    """
+    general_other 高確信でも症状入力なら Physical へ上書き（Concierge のみ回避）。
+    """
+    triage = dict(triage_result or {})
+    category = triage.get("category", "Other")
+    subcategory = str(triage.get("subcategory") or "")
+    confidence = float(triage.get("confidence") or 0.0)
+    if (
+        category == "Other"
+        and "general_other" in subcategory
+        and confidence >= 0.7
+        and has_explicit_symptom_signal(message)
+    ):
+        triage["category"] = "Physical"
+        triage["_symptom_general_other_override"] = True
+        return "Physical", triage
+    return category, triage
+
+
+def should_fallback_to_symptom_recommendation(
+    triage_result: Optional[Dict[str, Any]],
+    message: str = "",
+) -> bool:
+    """オーケストレーター未解決時に Physical 推奨フローへ落とすか。"""
+    triage = triage_result or {}
+    category = triage.get("category", "")
+    subcategory = str(triage.get("subcategory") or "")
+
+    if category in ("Physical", "Ask"):
+        return True
+    if category == "Emotional":
+        return False
+    if category == "Other" and "general_other" in subcategory:
+        if message and has_explicit_symptom_signal(message):
+            return True
+        return False
+    if category == "Other" and (
+        subcategory.startswith("store_inquiry")
+        or subcategory == "lost_and_found"
+        or subcategory.startswith("inappropriate_request")
+    ):
+        return False
+    if category == "Emergency":
+        return False
+    return category not in ("Other",)

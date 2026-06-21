@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import os
+import random
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -922,6 +923,11 @@ async def api_sessions_get(
         session_data["last_activity"] = datetime.now()
         maybe_persist_session_activity(sid, session_data)
         messages = normalize_session_messages(session_data.get("messages", []) or [])
+        from src.schemas.recommendation_diagnosis_v1 import strip_for_user_api
+
+        for msg in messages:
+            if msg.get("type") == "bot" and isinstance(msg.get("diagnosis"), dict):
+                msg["diagnosis"] = strip_for_user_api(msg["diagnosis"])
     else:
         messages = []
 
@@ -1287,7 +1293,9 @@ def admin_logout():
 def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(security_basic)):
     if not _require_admin(request, creds):
         return RedirectResponse(url="/admin/login", status_code=302)
-    return templates.TemplateResponse(request, "admin_chat.html", {})
+    nv = _normalized_app_version_env()
+    version = nv if nv is not None else str(int(time.time()))
+    return templates.TemplateResponse(request, "admin_chat.html", {"version": version})
 
 
 def _session_row_for_admin(sess_id, info):
@@ -2441,53 +2449,45 @@ async def api_admin_send_message(request: Request):
 
 @app.post("/api/request_admin")
 def api_request_admin(request: Request, response: Response, sid: str = Depends(get_sid)):
-    import uuid
+    from src.handlers.line.line_admin_request import request_pharmacist_for_session
 
     if not sid:
         return JSONResponse({"status": "error", "message": "No session"}, status_code=400)
 
-    session_data = get_session_from_db(sid) or {
-        "session_id": sid,
-        "username": f"ユーザー{get_next_user_number()}",
-        "messages": [],
-        "last_activity": datetime.now(),
-        "client_ip": request.client.host if request.client else "",
-        "user_agent": request.headers.get("User-Agent", ""),
-        "user_attributes": {},
-        "session_active": True,
-    }
-
-    username = session_data.get("username", "unknown")
-    session_data["admin_request"] = True
-    session_data["ai_auto_reply"] = False
-    system_message = {
-        "type": "bot",
-        "content": "薬剤師対応を要請しました。しばらくお待ちください。",
-        "admin_request": True,
-        "style_class": "admin-request",
-        "timestamp": datetime.now().isoformat(),
-        "uuid": str(uuid.uuid4()),
-    }
-    session_data.setdefault("messages", [])
-    session_data["messages"].append(system_message)
-    session_data["last_activity"] = datetime.now()
-    save_session_to_db(sid, session_data)
-
-    queue = get_manual_reply_queue()
-    already_exists = any(item.get("session_id") == sid and item.get("admin_request") for item in queue)
-    if not already_exists:
-        queue.append(
-            {
-                "session_id": sid,
-                "username": username,
-                "user_message": "【薬剤師要請】" + username,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "status": "admin_requested",
-                "admin_request": True,
-            }
-        )
-        set_manual_reply_queue(queue)
-
+    session_data = get_session_from_db(sid)
+    result = request_pharmacist_for_session(sid, session_data=session_data)
+    if not result.get("ok"):
+        return JSONResponse({"status": "error", "message": "No session"}, status_code=400)
     return {"status": "ok", "message": "薬剤師対応を要請しました"}
+
+
+@app.post("/api/cancel_admin")
+def api_cancel_admin(request: Request, response: Response, sid: str = Depends(get_sid)):
+    from src.handlers.line.line_admin_request import cancel_pharmacist_request
+
+    if not sid:
+        return JSONResponse({"status": "error", "message": "No session"}, status_code=400)
+    result = cancel_pharmacist_request(sid)
+    if not result.get("ok"):
+        return JSONResponse(
+            {"status": "error", "message": result.get("error", "not_pending")},
+            status_code=400,
+        )
+    return {"status": "ok", "message": "薬剤師要請を取り消しました"}
+
+
+@app.post("/api/return_to_ai")
+def api_return_to_ai(request: Request, response: Response, sid: str = Depends(get_sid)):
+    from src.handlers.line.line_admin_request import return_session_to_ai
+
+    if not sid:
+        return JSONResponse({"status": "error", "message": "No session"}, status_code=400)
+    result = return_session_to_ai(sid)
+    if not result.get("ok"):
+        return JSONResponse(
+            {"status": "error", "message": result.get("error", "failed")},
+            status_code=400,
+        )
+    return {"status": "ok", "message": "AI自動応答に戻しました"}
 
 

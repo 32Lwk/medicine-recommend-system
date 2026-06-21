@@ -30,6 +30,7 @@ _VALID_INTENTS = frozenset({
     "doc_consultation",
     "doc_app_overview",
     "chitchat",
+    "greeting",
     "redirect",
     "none",
 })
@@ -46,11 +47,14 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 - doc_operator: お問い合わせ・試験運用・連絡先・不具合報告（例: 「運営者は誰？」「連絡先は？」「メールは？」「不具合の報告方法は？」）。氏名・所属・大学の回答は求められていても doc_operator（ドキュメントに無い事項は開示しない）
 - doc_consultation: 公的機関の相談窓口・PMDA・厚労省・#7119 など（例: 「相談先を教えて」「PMDAのリンクは？」）
 - doc_app_overview: アプリ概要.md の内容（開発背景・β版の目的・技術構成・対象者の詳細）（例: 「アプリの概要」「開発背景は？」「β版の対象者は？」）
-- chitchat: 雑談・天気・暇つぶし（医療相談ではない）
+- chitchat: 雑談・天気・暇つぶし・話題の続き（挨拶ではない会話）
+- greeting: 挨拶・一声。標準語（こんにちは、やあ）に加え、カジュアル・口語・方言・造語・省略・カタカナ・舶来語の変形（例: はおー、あろはー、はっぴー、やっほ、うっす、ども、hello）も greeting。短い一声で症状・店舗・医薬品・違法薬物の相談ではないものは greeting を優先（chitchat ではない）
 - redirect: 話題がずれている・医薬品相談へ誘導すべき
-- none: 上記以外（店舗案内・症状・医薬品相談などは none）
+- none: 上記以外（症状・店舗案内・医薬品相談・在庫確認などは none — stage2/triage の結果を尊重）
 
+症状・店舗案内・医薬品相談・在庫確認は none としてください（Concierge の管轄外。stage2/triage 結果を上書きしない）。
 医薬品・症状・店舗・違法薬物の相談は none としてください。
+カジュアルな一声・変形挨拶は chitchat ではなく greeting としてください。
 アシスタント自身について聞いている場合は app_about を選んでください（none にしない）。
 公式ドキュメントの内容を聞いている場合は、該当する doc_* を選んでください。
 
@@ -58,7 +62,7 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 市販薬（OTC）の候補選定はルールベースアルゴリズムのみで行い、LLM が自由に薬名を創作して決めることはありません。
 
 JSON形式:
-{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|chitchat|redirect|none", "confidence": 0.0-1.0}
+{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|chitchat|greeting|redirect|none", "confidence": 0.0-1.0}
 """
 
 

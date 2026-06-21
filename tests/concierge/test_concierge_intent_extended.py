@@ -18,6 +18,8 @@ from src.services.concierge_orchestrator import enrich_other_concierge_intent
     [
         ("ありがとう", "thanks"),
         ("こんにちは", "greeting"),
+        ("やあ", "greeting"),
+        ("やっほ", "greeting"),
     ],
 )
 def test_classify_exact_match_intent_param(text, expected):
@@ -45,6 +47,10 @@ def test_meta_and_medical_not_fast_keyword(text):
 
 def test_physical_triage_skips_symptom_concierge():
     assert not should_concierge_handle("頭が痛い", {"category": "Physical", "confidence": 0.95})
+
+
+def test_greeting_handles_even_when_physical_triage():
+    assert should_concierge_handle("やあ", {"category": "Physical", "confidence": 0.5})
 
 
 def test_other_triage_handles_concierge():

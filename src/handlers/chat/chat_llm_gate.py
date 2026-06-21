@@ -47,13 +47,20 @@ def check_llm_budget_block(session: Any, sid: Optional[str]) -> Optional[Respons
         "申し訳ございません。現在、AI自動応答を一時停止しています。"
         "担当者が確認次第、回答いたします。"
     )
-    session.setdefault("messages", []).append({
-        "type": "bot",
-        "content": block_msg,
-        "timestamp": datetime.now().isoformat(),
-        "uuid": str(uuid.uuid4()),
-        "budget_blocked": True,
-    })
+    from src.services.sage_bot_response import build_notice_bot
+
+    session.setdefault("messages", []).append(
+        build_notice_bot(
+            session,
+            sid,
+            block_msg,
+            title="一時停止のお知らせ",
+            variant="caution",
+            kind="budget_blocked",
+            uuid=str(uuid.uuid4()),
+            budget_blocked=True,
+        )
+    )
     if hasattr(session, "modified"):
         session.modified = True
     if sid:

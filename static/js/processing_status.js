@@ -10,6 +10,7 @@
         useAdminSession: false,
         onUpdate: null,
         onInactive: null,
+        keepAliveWhileLocked: false,
         hasSeenActive: false,
         inactiveStreak: 0,
         generation: 0,
@@ -31,6 +32,11 @@
             badge: 'AI分析中',
             progressAria: '処理の進捗',
             defaultLabel: '処理中...',
+            agentPrefix: '担当: ',
+            flowPrefix: 'フロー: ',
+            agentNames: {},
+            slowHints: {},
+            flowSteps: {},
             steps: {
                 validate: '入力を確認しています',
                 triage: '症状の種類を分析しています',
@@ -43,6 +49,7 @@
                 symptom_analysis: '症状の内容を読み取り、該当する市販薬の種類を判定しています',
                 medicine_select: 'お薬を選定しています',
                 medicine_qa: '医薬品の質問に回答しています',
+                concierge: 'ご案内を準備しています',
                 safety: '安全性を確認しています',
                 usage_notes: '使用上の注意を作成しています',
                 translate: '回答を整えています',
@@ -84,6 +91,8 @@
                 attributes: 'Reviewing your profile',
                 symptom_analysis: 'Reading symptoms and determining OTC medicine type',
                 medicine_select: 'Selecting medicines',
+                medicine_qa: 'Answering your medicine question',
+                concierge: 'Preparing guidance',
                 safety: 'Checking safety',
                 usage_notes: 'Preparing usage instructions',
                 translate: 'Preparing your answer',
@@ -104,6 +113,71 @@
                     llm_classify: 'Classifying symptoms and OTC medicine type with AI',
                     symptom_extract: 'Extracting symptom keywords from your message',
                     contraindication_prep: 'Checking age, pregnancy, and drug interaction prerequisites'
+                },
+                medicine_qa: {
+                    context_load: 'Reviewing previously recommended medicines',
+                    history_read: 'Reading the conversation context',
+                    question_parse: 'Summarizing your question',
+                    interaction_check: 'Checking drug interaction cautions',
+                    doping_check: 'Checking sports and testing cautions',
+                    side_effect_check: 'Reviewing side effect information',
+                    answer_draft: 'Drafting the answer',
+                    answer_compose: 'Composing an easy-to-read answer',
+                    safety_review: 'Final safety review',
+                    format_response: 'Formatting the response for display'
+                },
+                attributes: {
+                    nlu: 'Analyzing symptoms and profile'
+                }
+            },
+            agentPrefix: 'Agent: ',
+            flowPrefix: 'Flow: ',
+            agentNames: {
+                TriageAgent: 'Triage Agent',
+                SafetyGate: 'Safety Gate',
+                NLUAgent: 'NLU',
+                PhysicalOrchestrator: 'Recommendation',
+                ExplanationAgent: 'Explanation',
+                CounselingManager: 'Counseling',
+                ConciergeAgent: 'Concierge',
+                StoreInquiryAgent: 'Store Info',
+                EmergencyRouter: 'Emergency',
+                MedicineQAAgent: 'Medicine Q&A',
+                ModerationAgent: 'Moderation',
+                ChatOrchestrator: 'Orchestrator'
+            },
+            slowHints: {
+                symptom_analysis: {
+                    llm_classify: 'AI analysis may take a moment. Please wait.'
+                },
+                medicine_qa: {
+                    answer_compose: 'Preparing your answer. Please wait.',
+                    answer_draft: 'Preparing your answer. Please wait.'
+                },
+                medicine_select: {
+                    scoring: 'Evaluating many candidates may take a moment.',
+                    candidate_search: 'Searching the database. Please wait.',
+                    explanation: 'Generating recommendation reasons. Please wait.'
+                },
+                attributes: {
+                    nlu: 'Organizing symptoms may take a moment.'
+                }
+            },
+            flowSteps: {
+                ask_qa: {
+                    triage: 'Checking the type of inquiry',
+                    medicine_qa: 'Preparing your medicine Q&A answer'
+                },
+                physical: {
+                    triage: 'Routing as a symptom consultation',
+                    symptom_analysis: 'Reading symptoms and finding OTC medicine types',
+                    medicine_select: 'Comparing medicine candidates'
+                },
+                greeting: {
+                    triage: 'Checking if this is a greeting'
+                },
+                store: {
+                    store: 'Checking your store-related question'
                 }
             }
         },
@@ -111,6 +185,56 @@
             badge: 'AI 분석 중',
             progressAria: '처리 진행 상황',
             defaultLabel: '처리 중...',
+            agentPrefix: '담당: ',
+            flowPrefix: '플로우: ',
+            agentNames: {
+                TriageAgent: '트리아지',
+                SafetyGate: '안전 게이트',
+                NLUAgent: 'NLU',
+                PhysicalOrchestrator: '증상 추천',
+                ExplanationAgent: '추천 이유',
+                CounselingManager: '상담',
+                ConciergeAgent: '안내',
+                StoreInquiryAgent: '매장 안내',
+                EmergencyRouter: '긴급 대응',
+                MedicineQAAgent: '의약품 Q&A',
+                ModerationAgent: '모더레이션',
+                ChatOrchestrator: '오케스트레이터'
+            },
+            slowHints: {
+                symptom_analysis: {
+                    llm_classify: 'AI 분석 중입니다. 잠시만 기다려 주세요.'
+                },
+                medicine_qa: {
+                    answer_compose: '답변을 작성하고 있습니다. 잠시만 기다려 주세요.',
+                    answer_draft: '답변을 작성하고 있습니다. 잠시만 기다려 주세요.'
+                },
+                medicine_select: {
+                    scoring: '후보가 많으면 평가에 시간이 걸릴 수 있습니다.',
+                    candidate_search: '데이터베이스를 검색하고 있습니다. 잠시만 기다려 주세요.',
+                    explanation: '추천 이유를 생성하고 있습니다. 잠시만 기다려 주세요.'
+                },
+                attributes: {
+                    nlu: '증상 정리 중입니다. 잠시만 기다려 주세요.'
+                }
+            },
+            flowSteps: {
+                ask_qa: {
+                    triage: '상담 유형을 확인하고 있습니다',
+                    medicine_qa: '의약품 Q&A 답변을 준비하고 있습니다'
+                },
+                physical: {
+                    triage: '증상 상담으로 접수하고 있습니다',
+                    symptom_analysis: '증상을 읽고 해당 일반의약품 종류를 찾고 있습니다',
+                    medicine_select: '후보 의약품을 비교하고 있습니다'
+                },
+                greeting: {
+                    triage: '인사인지 확인하고 있습니다'
+                },
+                store: {
+                    store: '매장 관련 질문을 확인하고 있습니다'
+                }
+            },
             steps: {
                 validate: '입력 내용을 확인하고 있습니다',
                 triage: '증상 유형을 분석하고 있습니다',
@@ -122,6 +246,8 @@
                 attributes: '고객 정보를 확인하고 있습니다',
                 symptom_analysis: '증상 내용을 읽고 해당 일반의약품 종류를 판정하고 있습니다',
                 medicine_select: '의약품을 선정하고 있습니다',
+                medicine_qa: '의약품 질문에 답변하고 있습니다',
+                concierge: '안내 문구를 준비하고 있습니다',
                 safety: '안전성을 확인하고 있습니다',
                 usage_notes: '사용상의 주의를 작성하고 있습니다',
                 translate: '답변을 정리하고 있습니다',
@@ -142,6 +268,21 @@
                     llm_classify: 'AI로 증상과 의약품 종류를 분류하고 있습니다',
                     symptom_extract: '대화에서 증상 키워드를 추출하고 있습니다',
                     contraindication_prep: '연령·임신·병용 약 등 금기 전제를 확인하고 있습니다'
+                },
+                medicine_qa: {
+                    context_load: '이전에 추천한 의약품을 확인하고 있습니다',
+                    history_read: '대화 흐름을 읽고 있습니다',
+                    question_parse: '질문 요점을 정리하고 있습니다',
+                    interaction_check: '병용 주의를 확인하고 있습니다',
+                    doping_check: '경기·검사 관련 주의를 확인하고 있습니다',
+                    side_effect_check: '부작용 정보를 확인하고 있습니다',
+                    answer_draft: '답변 초안을 작성하고 있습니다',
+                    answer_compose: '이해하기 쉬운 답변으로 정리하고 있습니다',
+                    safety_review: '안전 주의를 최종 확인하고 있습니다',
+                    format_response: '답변을 보기 쉽게 정리하고 있습니다'
+                },
+                attributes: {
+                    nlu: '증상과 정보를 정리하고 있습니다'
                 }
             }
         },
@@ -149,6 +290,56 @@
             badge: 'AI分析中',
             progressAria: '处理进度',
             defaultLabel: '处理中...',
+            agentPrefix: '负责: ',
+            flowPrefix: '流程: ',
+            agentNames: {
+                TriageAgent: '分诊',
+                SafetyGate: '安全门',
+                NLUAgent: 'NLU',
+                PhysicalOrchestrator: '症状推荐',
+                ExplanationAgent: '推荐理由',
+                CounselingManager: '咨询',
+                ConciergeAgent: '前台指引',
+                StoreInquiryAgent: '门店咨询',
+                EmergencyRouter: '紧急应对',
+                MedicineQAAgent: '药品问答',
+                ModerationAgent: '内容审核',
+                ChatOrchestrator: '编排器'
+            },
+            slowHints: {
+                symptom_analysis: {
+                    llm_classify: 'AI 分析中，请稍候。'
+                },
+                medicine_qa: {
+                    answer_compose: '正在撰写回答，请稍候。',
+                    answer_draft: '正在撰写回答，请稍候。'
+                },
+                medicine_select: {
+                    scoring: '候选较多时评估可能需要一些时间。',
+                    candidate_search: '正在搜索数据库，请稍候。',
+                    explanation: '正在生成推荐理由，请稍候。'
+                },
+                attributes: {
+                    nlu: '正在整理症状，请稍候。'
+                }
+            },
+            flowSteps: {
+                ask_qa: {
+                    triage: '正在确认咨询类型',
+                    medicine_qa: '正在准备药品问答回复'
+                },
+                physical: {
+                    triage: '正在作为症状咨询受理',
+                    symptom_analysis: '正在读取症状并查找适用的非处方药类型',
+                    medicine_select: '正在比较药品候选'
+                },
+                greeting: {
+                    triage: '正在确认是否为问候'
+                },
+                store: {
+                    store: '正在确认门店相关问题'
+                }
+            },
             steps: {
                 validate: '正在确认输入内容',
                 triage: '正在分析症状类型',
@@ -160,6 +351,8 @@
                 attributes: '正在确认您的信息',
                 symptom_analysis: '正在读取症状并判定适用的非处方药类型',
                 medicine_select: '正在筛选药品',
+                medicine_qa: '正在回答药品问题',
+                concierge: '正在准备指引内容',
                 safety: '正在确认安全性',
                 usage_notes: '正在生成使用注意事项',
                 translate: '正在整理回复',
@@ -180,6 +373,21 @@
                     llm_classify: '正在用 AI 分类症状与药品类型',
                     symptom_extract: '正在从对话中提取症状关键词',
                     contraindication_prep: '正在确认年龄、妊娠与合并用药等禁忌前提'
+                },
+                medicine_qa: {
+                    context_load: '正在确认此前推荐的药品',
+                    history_read: '正在读取对话内容',
+                    question_parse: '正在整理您的问题要点',
+                    interaction_check: '正在确认药物相互作用注意事项',
+                    doping_check: '正在确认竞技与检测相关注意事项',
+                    side_effect_check: '正在确认副作用信息',
+                    answer_draft: '正在起草回答',
+                    answer_compose: '正在整理为易懂的回答',
+                    safety_review: '正在进行安全注意事项的最终确认',
+                    format_response: '正在将回答整理为易读格式'
+                },
+                attributes: {
+                    nlu: '正在整理症状与属性'
                 }
             }
         }
@@ -280,8 +488,81 @@
         return getUiLanguage();
     }
 
+    /** 処理バブルの表示言語（UI が非 ja のときは UI 言語を優先） */
+    function getProcessingDisplayLang(data) {
+        var uiLang = normalizeLang(getUiLanguage());
+        if (uiLang && uiLang !== 'ja') {
+            return uiLang;
+        }
+        return getCurrentLang(data);
+    }
+
     function getLocale(lang) {
         return I18N[lang] || I18N.ja;
+    }
+
+    function pickClientStepLabel(data, locale) {
+        var stepId = data.step_id;
+        var detailCode = data.detail_code || '';
+        var flowId = data.flow_id || '';
+        if (detailCode && locale.stepDetails && locale.stepDetails[stepId]) {
+            var detail = locale.stepDetails[stepId][detailCode];
+            if (detail) {
+                return detail;
+            }
+        }
+        if (flowId && locale.flowSteps && locale.flowSteps[flowId] && locale.flowSteps[flowId][stepId]) {
+            return locale.flowSteps[flowId][stepId];
+        }
+        if (stepId && locale.steps[stepId]) {
+            return locale.steps[stepId];
+        }
+        return '';
+    }
+
+    function resolveLocalizedStepLabel(data, lang, locale) {
+        if (lang !== 'ja') {
+            var clientLabel = pickClientStepLabel(data, locale);
+            if (clientLabel) {
+                return clientLabel;
+            }
+            return locale.defaultLabel;
+        }
+        var serverDetail = (data.detail_label && String(data.detail_label).trim()) ? data.detail_label : '';
+        if (serverDetail) {
+            return serverDetail;
+        }
+        var serverLabel = (data.label && String(data.label).trim()) ? data.label : '';
+        if (serverLabel) {
+            return serverLabel;
+        }
+        var fallback = pickClientStepLabel(data, locale);
+        return fallback || locale.defaultLabel;
+    }
+
+    function localizeAgentDisplay(data, lang, locale) {
+        var agentName = data.agent_name || '';
+        if (!agentName) {
+            return lang === 'ja' ? (data.agent_display || '') : '';
+        }
+        if (lang === 'ja') {
+            return data.agent_display || ((locale.agentPrefix || '担当: ') + agentName);
+        }
+        var prefix = locale.agentPrefix || 'Agent: ';
+        var displayName = (locale.agentNames && locale.agentNames[agentName]) || agentName;
+        return prefix + displayName;
+    }
+
+    function localizeSlowHint(data, lang, locale) {
+        if (lang === 'ja') {
+            return data.slow_hint || '';
+        }
+        var stepId = data.step_id;
+        var detailCode = data.detail_code || '';
+        if (stepId && detailCode && locale.slowHints && locale.slowHints[stepId]) {
+            return locale.slowHints[stepId][detailCode] || '';
+        }
+        return '';
     }
 
     function localizeStatusData(data) {
@@ -292,23 +573,10 @@
             lastApiLanguage = data.language;
             setProcessingLanguage(data.language);
         }
-        var lang = getCurrentLang(data);
+        var lang = getProcessingDisplayLang(data);
         var locale = getLocale(lang);
         var stepId = data.step_id;
-        // サーバー pick_label（フロー別の詳細文言）を優先。無いときだけ I18N フォールバック
-        var label = (data.label && String(data.label).trim()) ? data.label : '';
-        if (!label && stepId && locale.steps[stepId]) {
-            label = locale.steps[stepId];
-        }
-        if (!label) {
-            label = locale.defaultLabel;
-        }
-        var detailLabel = (data.detail_label && String(data.detail_label).trim()) ? data.detail_label : '';
-        if (!detailLabel && data.detail_code && stepId && locale.stepDetails && locale.stepDetails[stepId]) {
-            detailLabel = locale.stepDetails[stepId][data.detail_code] || '';
-        }
-        // ユーザー向けは1行のみ（detail は主ラベルに統合）
-        var displayLabel = detailLabel || label;
+        var displayLabel = resolveLocalizedStepLabel(data, lang, locale);
         return {
             active: true,
             step_id: stepId,
@@ -328,15 +596,16 @@
             agent_name: data.agent_name || '',
             agent_role: data.agent_role || '',
             agent_description: data.agent_description || '',
-            agent_display: data.agent_display || '',
-            slow_hint: data.slow_hint || ''
+            agent_display: localizeAgentDisplay(data, lang, locale),
+            slow_hint: localizeSlowHint(data, lang, locale),
+            locale: locale
         };
     }
 
     function statusKey(data) {
         if (!data || !data.active) return 'inactive';
         return [
-            getCurrentLang(data), data.flow_id, data.step_id, data.detail_code,
+            getProcessingDisplayLang(data), data.flow_id, data.step_id, data.detail_code,
             data.step, data.percent, data.label, data.agent_display || '',
             data.slow_hint || '', data.advice_preview || ''
         ].join(':');
@@ -351,6 +620,7 @@
 
     function buildProcessingCardElement(label, step, total, percent, badge, progressAria, detailLabel, meta) {
         meta = meta || {};
+        var locale = meta.locale || getLocale(getCurrentLang(null));
         var showTechnical = Boolean(meta.showTechnical);
         var safePercent = Math.min(100, Math.max(0, percent || 0));
 
@@ -362,7 +632,7 @@
 
         var badgeEl = document.createElement('span');
         badgeEl.className = 'processing-status-badge';
-        badgeEl.textContent = badge || 'AI分析中';
+        badgeEl.textContent = badge || locale.badge;
 
         var pillEl = document.createElement('span');
         pillEl.className = 'processing-status-step-pill';
@@ -373,7 +643,7 @@
 
         var labelEl = document.createElement('p');
         labelEl.className = 'processing-status-label';
-        labelEl.textContent = label || '処理中...';
+        labelEl.textContent = label || locale.defaultLabel;
 
         var track = document.createElement('div');
         track.className = 'processing-status-track';
@@ -381,7 +651,7 @@
         track.setAttribute('aria-valuenow', String(safePercent));
         track.setAttribute('aria-valuemin', '0');
         track.setAttribute('aria-valuemax', '100');
-        track.setAttribute('aria-label', progressAria || '処理の進捗');
+        track.setAttribute('aria-label', progressAria || locale.progressAria);
 
         var fill = document.createElement('div');
         fill.className = 'processing-status-bar-fill';
@@ -433,7 +703,7 @@
             var flowEl = document.createElement('p');
             flowEl.className = 'processing-status-flow';
             flowEl.style.cssText = 'margin: 4px 0 0; font-size: 0.75em; color: #1565c0;';
-            flowEl.textContent = 'フロー: ' + meta.flow_description;
+            flowEl.textContent = (locale.flowPrefix || 'フロー: ') + meta.flow_description;
             card.appendChild(flowEl);
         }
         if (showTechnical && meta.flow_hint) {
@@ -456,7 +726,8 @@
     }
 
     function getTypingIndicatorHtml() {
-        var locale = getLocale(getCurrentLang(null));
+        var lang = getProcessingDisplayLang(null);
+        var locale = getLocale(lang);
         var bubble = document.createElement('div');
         bubble.className = 'message-content processing-status-bubble';
 
@@ -468,13 +739,59 @@
             14,
             0,
             locale.badge,
-            locale.progressAria
+            locale.progressAria,
+            '',
+            { locale: locale }
         ));
         var slowSlot = document.createElement('div');
         slowSlot.className = 'processing-slow-request-slot';
         bubble.appendChild(wrapper);
         bubble.appendChild(slowSlot);
         return bubble.outerHTML;
+    }
+
+    function patchProcessingStatusDom(targetEl, data) {
+        if (!targetEl || !data) {
+            return false;
+        }
+        var localized = localizeStatusData(Object.assign({}, data, { active: true }));
+        if (!localized || !localized.active) {
+            return false;
+        }
+        var root = targetEl.querySelector('.processing-status-wrapper') ||
+            targetEl.querySelector('.processing-status-bubble') ||
+            targetEl.querySelector('.message-content') ||
+            targetEl;
+        var labelEl = root.querySelector('.processing-status-label');
+        var pillEl = root.querySelector('.processing-status-step-pill');
+        var fillEl = root.querySelector('.processing-status-bar-fill');
+        var trackEl = root.querySelector('.processing-status-track');
+        var badgeEl = root.querySelector('.processing-status-badge');
+        if (!labelEl && !pillEl) {
+            return false;
+        }
+        var step = localized.step || 0;
+        var total = localized.total || 14;
+        var percent = Math.min(100, Math.max(0, localized.percent || 0));
+        if (badgeEl && localized.badge) {
+            badgeEl.textContent = localized.badge;
+        }
+        if (labelEl && localized.label) {
+            labelEl.textContent = localized.label;
+        }
+        if (pillEl) {
+            pillEl.textContent = step + ' / ' + total;
+        }
+        if (fillEl) {
+            fillEl.style.width = percent + '%';
+        }
+        if (trackEl) {
+            trackEl.setAttribute('aria-valuenow', String(percent));
+            if (localized.progressAria) {
+                trackEl.setAttribute('aria-label', localized.progressAria);
+            }
+        }
+        return true;
     }
 
     function renderProcessingStatus(targetEl, data) {
@@ -489,6 +806,7 @@
         var badge = localized.badge;
         var progressAria = localized.progressAria;
         var key = statusKey(localized);
+        var displayLocale = localized.locale || getLocale(getProcessingDisplayLang(localized));
 
         var bubble = targetEl.querySelector('.processing-status-bubble') ||
             targetEl.querySelector('.message-content');
@@ -520,6 +838,7 @@
         var showTechnical = shouldShowTechnicalMeta(targetEl);
         var meta = {
             showTechnical: showTechnical,
+            locale: displayLocale,
             agent_display: localized.agent_display || '',
             slow_hint: localized.slow_hint || '',
             agent_name: showTechnical ? localized.agent_name : '',
@@ -598,7 +917,8 @@
                 agentEl.textContent = '【' + meta.agent_name + '】' + (meta.agent_role ? ' ' + meta.agent_role : '');
             }
             if (flowEl && meta.flow_description) {
-                flowEl.textContent = 'フロー: ' + meta.flow_description;
+                var flowLocale = meta.locale || getLocale(getCurrentLang(null));
+                flowEl.textContent = (flowLocale.flowPrefix || 'フロー: ') + meta.flow_description;
             }
         }
         if (pillEl) pillEl.textContent = step + ' / ' + total;
@@ -608,9 +928,13 @@
             trackEl.setAttribute('aria-label', progressAria);
         }
         lastRenderedKey = key;
+        patchProcessingStatusDom(targetEl, localized);
     }
 
     function shouldStopPollingForInactive() {
+        if (pollRoot.keepAliveWhileLocked) {
+            return false;
+        }
         if (pollRoot.hasSeenActive && pollRoot.inactiveStreak >= 2) {
             return true;
         }
@@ -636,9 +960,9 @@
             return;
         }
         var gen = pollRoot.generation;
-        var url = '/api/processing-status';
+        var url = pollRoot.statusUrl || '/api/processing-status';
         if (pollRoot.useAdminSession && pollRoot.sessionId) {
-            url += '?session_id=' + encodeURIComponent(pollRoot.sessionId);
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'session_id=' + encodeURIComponent(pollRoot.sessionId);
         }
         fetch(url, { credentials: 'include', headers: { 'Cache-Control': 'no-cache' } })
             .then(function (r) { return r.ok ? r.json() : null; })
@@ -646,17 +970,17 @@
                 if (!pollRoot.timer || gen !== pollRoot.generation) {
                     return;
                 }
-                var payload = localizeStatusData(data || { active: false }) || { active: false };
-                if (payload.active) {
+                var raw = data || { active: false };
+                if (raw.active) {
                     pollRoot.hasSeenActive = true;
                     pollRoot.inactiveStreak = 0;
                 } else {
                     pollRoot.inactiveStreak += 1;
                 }
                 if (typeof pollRoot.onUpdate === 'function') {
-                    pollRoot.onUpdate(payload);
+                    pollRoot.onUpdate(raw);
                 }
-                if (!payload.active && shouldStopPollingForInactive()) {
+                if (!raw.active && shouldStopPollingForInactive()) {
                     finishPollingInactive();
                 }
             })
@@ -671,6 +995,8 @@
         pollRoot.useAdminSession = Boolean(options.adminSession);
         pollRoot.onUpdate = options.onUpdate || null;
         pollRoot.onInactive = options.onInactive || null;
+        pollRoot.statusUrl = options.statusUrl || '/api/processing-status';
+        pollRoot.keepAliveWhileLocked = Boolean(options.keepAliveWhileLocked);
         pollRoot.hasSeenActive = false;
         pollRoot.inactiveStreak = 0;
         var interval = options.interval || 1000;
@@ -690,6 +1016,10 @@
         }, interval);
     }
 
+    function isProcessingPollActive() {
+        return !!pollRoot.timer;
+    }
+
     function stopProcessingPoll() {
         pollRoot.generation += 1;
         if (pollRoot.timer) {
@@ -700,6 +1030,8 @@
         pollRoot.useAdminSession = false;
         pollRoot.onUpdate = null;
         pollRoot.onInactive = null;
+        pollRoot.statusUrl = '/api/processing-status';
+        pollRoot.keepAliveWhileLocked = false;
         pollRoot.hasSeenActive = false;
         pollRoot.inactiveStreak = 0;
         lastRenderedKey = '';
@@ -718,10 +1050,13 @@
     global.ProcessingStatus = {
         startProcessingPoll: startProcessingPoll,
         stopProcessingPoll: stopProcessingPoll,
+        isProcessingPollActive: isProcessingPollActive,
         renderProcessingStatus: renderProcessingStatus,
+        patchProcessingStatusDom: patchProcessingStatusDom,
         getTypingIndicatorHtml: getTypingIndicatorHtml,
         localizeStatusData: localizeStatusData,
         getCurrentLang: getCurrentLang,
+        getProcessingDisplayLang: getProcessingDisplayLang,
         getUiLanguage: getUiLanguage,
         getProcessingLanguage: getProcessingLanguage,
         setProcessingLanguage: setProcessingLanguage,

@@ -48,6 +48,24 @@ ILLEGAL_DRUG_REJECTION_TEMPLATES = {
 当システムは市販薬（OTC医薬品）の相談を承っております。""",
 }
 
+CONTROLLED_DRUG_FIRST_COUNSELING = """規制薬物（向精神薬・麻薬・指定薬物など）についてのご相談ですね。
+
+【大切なお知らせ】
+向精神薬や麻薬などの規制薬物は、医師の処方箋なしでの使用・譲渡は法律で禁止されています。当システムでは規制薬物の入手方法や使用法にはお答えできません。
+
+【健康上の注意】
+不正使用は依存症や重篤な健康被害のリスクがあります。お薬のことでお困りの場合は、かかりつけ医や薬剤師にご相談ください。
+
+【依存でお悩みの場合】
+- 厚生労働省 薬物依存症相談窓口
+- 各都道府県の精神保健福祉センター
+
+当システムは市販薬（OTC医薬品）の相談を承っております。不眠や不安など、市販薬で相談できる症状があればお知らせください。"""
+
+
+def generate_controlled_drug_first_counseling_message() -> str:
+    return CONTROLLED_DRUG_FIRST_COUNSELING
+
 
 def generate_illegal_drug_rejection_message(request_type: str) -> str:
     """

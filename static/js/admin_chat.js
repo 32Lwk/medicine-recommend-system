@@ -419,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // パネルリサイザーの初期化
     initPanelResizers();
+    initRightPanelCollapse();
     
     // 初期化時にmanual-reply-queueの高さを調整
     setTimeout(() => {
@@ -623,6 +624,134 @@ function stopResize() {
     const centerResizer = document.getElementById('center-resizer');
     if (leftResizer) leftResizer.classList.remove('active');
     if (centerResizer) centerResizer.classList.remove('active');
+}
+
+// --- Right panel collapse ---
+const RIGHT_PANEL_COLLAPSED_STORAGE_KEY = 'admin_right_panel_collapsed';
+let rightPanelCollapsed = false;
+let savedMainGridColumns = null;
+
+function isRightPanelCollapsible() {
+    return window.innerWidth > 480;
+}
+
+function getCollapsedMainGridColumns() {
+    const main = document.querySelector('main');
+    if (!main) {
+        return isTablet() ? '1fr 0 0' : 'minmax(0, 320px) 4px minmax(0, 1fr) 0 0';
+    }
+    const current = main.style.gridTemplateColumns || window.getComputedStyle(main).gridTemplateColumns;
+    const parts = current.split(/\s+/).filter(Boolean);
+    if (isTablet()) {
+        return '1fr 0 0';
+    }
+    if (parts.length >= 5) {
+        return parts[0] + ' ' + parts[1] + ' 1fr 0 0';
+    }
+    return 'minmax(0, 320px) 4px minmax(0, 1fr) 0 0';
+}
+
+function syncRightPanelCollapseUi() {
+    const main = document.querySelector('main');
+    const expandTab = document.getElementById('right-panel-expand-tab');
+    const collapseBtn = document.getElementById('right-panel-collapse-btn');
+    const collapsible = isRightPanelCollapsible();
+    const collapsed = collapsible && rightPanelCollapsed;
+
+    if (main) {
+        main.classList.toggle('right-panel-collapsed', collapsed);
+    }
+    if (expandTab) {
+        expandTab.hidden = !collapsed;
+        expandTab.setAttribute('aria-hidden', collapsed ? 'false' : 'true');
+    }
+    if (collapseBtn) {
+        collapseBtn.hidden = !collapsible;
+        collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        collapseBtn.title = collapsed ? 'パネルを開く' : 'パネルを閉じる';
+    }
+}
+
+function applyMainGridColumns(main, columns) {
+    if (!main) {
+        return;
+    }
+    if (columns) {
+        main.style.setProperty('grid-template-columns', columns, 'important');
+    } else {
+        main.style.removeProperty('grid-template-columns');
+    }
+}
+
+function setRightPanelCollapsed(collapsed, persist) {
+    if (persist === undefined) {
+        persist = true;
+    }
+    const main = document.querySelector('main');
+    if (!main) {
+        return;
+    }
+
+    if (!isRightPanelCollapsible()) {
+        collapsed = false;
+    }
+
+    if (collapsed && !rightPanelCollapsed) {
+        savedMainGridColumns = main.style.getPropertyValue('grid-template-columns') || '';
+        applyMainGridColumns(main, getCollapsedMainGridColumns());
+    } else if (!collapsed && rightPanelCollapsed) {
+        if (savedMainGridColumns) {
+            applyMainGridColumns(main, savedMainGridColumns);
+        } else {
+            main.style.removeProperty('grid-template-columns');
+        }
+        savedMainGridColumns = null;
+    }
+
+    rightPanelCollapsed = collapsed;
+    syncRightPanelCollapseUi();
+
+    if (persist && isRightPanelCollapsible()) {
+        try {
+            localStorage.setItem(RIGHT_PANEL_COLLAPSED_STORAGE_KEY, collapsed ? '1' : '0');
+        } catch (e) { /* ignore */ }
+    }
+
+    if (!collapsed && typeof adjustManualReplyQueueHeight === 'function') {
+        setTimeout(adjustManualReplyQueueHeight, 100);
+    }
+}
+
+function toggleRightPanel() {
+    setRightPanelCollapsed(!rightPanelCollapsed);
+}
+
+window.toggleRightPanel = toggleRightPanel;
+
+function initRightPanelCollapse() {
+    let stored = false;
+    try {
+        stored = localStorage.getItem(RIGHT_PANEL_COLLAPSED_STORAGE_KEY) === '1';
+    } catch (e) { /* ignore */ }
+    if (stored) {
+        setRightPanelCollapsed(true, false);
+    } else {
+        syncRightPanelCollapseUi();
+    }
+}
+
+function updateRightPanelExpandBadge(queueCount) {
+    const badge = document.getElementById('right-panel-expand-badge');
+    if (!badge) {
+        return;
+    }
+    if (queueCount > 0) {
+        badge.hidden = false;
+        badge.textContent = queueCount > 9 ? '9+' : String(queueCount);
+    } else {
+        badge.hidden = true;
+        badge.textContent = '';
+    }
 }
 
 // モーダル表示関数（グローバル）
@@ -1194,6 +1323,7 @@ function updateCriticalQueueBadge(queue) {
 function updateStats(queue) {
     const queueCount = Array.isArray(queue) ? queue.length : 0;
     updateCriticalQueueBadge(queue);
+    updateRightPanelExpandBadge(queueCount);
     const queueCountEl = document.getElementById('queue-count');
     if (queueCountEl) queueCountEl.textContent = queueCount;
     
@@ -2536,6 +2666,40 @@ function buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, 
         `;
 }
 
+function buildAdminMedicineScoresPanelHtml(adminDiag) {
+    if (!adminDiag || !Array.isArray(adminDiag.recommended_medicines) || !adminDiag.recommended_medicines.length) {
+        return '';
+    }
+    let html = '<div class="admin-sage-score-panel" style="margin-top:12px;padding:12px;background:#f5f5f5;border-radius:8px;">';
+    html += '<h4 style="margin:0 0 8px 0;font-size:0.95em;">📊 管理者スコア詳細</h4>';
+    adminDiag.recommended_medicines.forEach((medicine, medIndex) => {
+        html += `<div class="medicine-item" style="padding:8px 0;border-bottom:1px solid #ddd;">`;
+        html += `<h5 style="margin:0 0 6px 0;font-size:0.9em;">🏆 ${medIndex + 1}位: ${escapeHtml(medicine.product_name || medicine.name || 'N/A')}`;
+        if (medicine.score !== undefined) {
+            const medicineId = `medicine_${medIndex + 1}`;
+            html += `<button class="score-detail-btn" onclick="showScoreModal('${medicineId}', ${medIndex})" style="margin-left:8px;padding:3px 6px;font-size:0.7em;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">📊 詳細スコア</button>`;
+        }
+        html += `</h5>`;
+        const displayScore = medicine.display_score;
+        const completenessPenalty = medicine.completeness_penalty || (medicine.score_breakdown?.completeness_penalty || 0);
+        if (displayScore !== undefined && displayScore !== null) {
+            const scorePercent = parseFloat(displayScore).toFixed(1);
+            const scoreClass = displayScore >= 80 ? 'admin-score-high' : displayScore >= 60 ? 'admin-score-medium' : 'admin-score-low';
+            const scoreText = displayScore >= 80 ? '高' : displayScore >= 60 ? '中' : '低';
+            html += `<span class="admin-score-display ${scoreClass}" style="font-size:0.75em;">📊 最適度: ${scorePercent}% (${scoreText})</span>`;
+            if (completenessPenalty > 0) {
+                html += `<span style="font-size:0.7em;color:#f57c00;margin-left:5px;">⚠️ 不足情報により${(completenessPenalty * 100).toFixed(1)}%低下中</span>`;
+            }
+        } else if (medicine.score !== undefined && medicine.score !== null) {
+            const normalizedScore = calculateNormalizedScore(medicine);
+            html += `<span class="admin-score-display" style="font-size:0.75em;">📊 最適度: ${(normalizedScore * 100).toFixed(0)}% [旧方式]</span>`;
+        }
+        html += `</div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
 function isMedicineRecommendation(msg) {
     return msg.type === 'bot' && (
         (msg.diagnosis && msg.diagnosis.recommended_medicines) ||
@@ -2624,12 +2788,24 @@ function renderChatMessages(messages) {
             messageContentHtml = userText
                 ? formatAdminPlainText(userText)
                 : '<span class="admin-message-empty">(メッセージ本文なし)</span>';
+        } else if (msg.type === 'bot' && msg.diagnosis && (msg.diagnosis.render === 'sage_status' || msg.diagnosis.render === 'sage_qa') && window.StatusRenderer) {
+            messageContentHtml = window.StatusRenderer.buildSageStatusBubbleHtml(msg.diagnosis) || formatAdminPlainText(msg.diagnosis.message || '');
         } else if (msg.type === 'bot' && isStatusCardHtml(msg.content)) {
             messageContentHtml = extractStatusCardHtml(msg.content);
         } else if (msg.crisis_support) {
             messageContentHtml = formatAdminPlainText(
                 msg.content || '今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。'
             );
+        } else if (msg.type === 'bot' && msg.diagnosis && msg.diagnosis.render === 'sage_reco' && window.RecommendationRenderer) {
+            const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
+                ? currentDetailedDiagnosis
+                : (msg.diagnosis || {});
+            const sageBubble = window.RecommendationRenderer.buildSageRecoBubbleHtml(adminDiag, { force: true });
+            if (sageBubble) {
+                messageContentHtml = sageBubble + buildAdminMedicineScoresPanelHtml(adminDiag);
+            } else {
+                messageContentHtml = formatAdminPlainText(msg.diagnosis.error?.message || msg.diagnosis.personalized_advice || '推奨結果');
+            }
         } else if (isMedicineRecommendation(msg)) {
             // 詳細診断（管理者向け）を優先
             const adminDiag = (currentDetailedDiagnosis && currentDetailedDiagnosis.session_id === currentSessionId && Array.isArray(currentDetailedDiagnosis.recommended_medicines))
@@ -5408,6 +5584,15 @@ function toggleMobileElements() {
 // ウィンドウリサイズ時の処理
 window.addEventListener('resize', function() {
     toggleMobileElements();
+    if (isRightPanelCollapsible()) {
+        if (rightPanelCollapsed) {
+            const main = document.querySelector('main');
+            applyMainGridColumns(main, getCollapsedMainGridColumns());
+        }
+        syncRightPanelCollapseUi();
+    } else {
+        syncRightPanelCollapseUi();
+    }
     // タブレット/デスクトップに切り替わった場合、チャット一覧を復元
     if (!isMobile() && currentSessionId) {
         const centerPanel = document.getElementById('center-panel');

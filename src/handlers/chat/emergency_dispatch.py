@@ -216,21 +216,33 @@ def _finalize_emergency_response(
 
     emergency_type = emergency_result.get("emergency_type")
     emergency_response = emergency_result.get("response", {})
-    bot_response = {
-        "type": "bot",
-        "content": emergency_response.get(
-            "structured_html", emergency_response.get("simple_message", "")
-        ),
-        "emergency_detected": True,
-        "emergency_subtype": classification.subtype,
-        "emergency_type": emergency_type,
-        "emergency_types": emergency_result.get("emergency_types", []),
-        "emergency_keywords": emergency_result.get("detected_keywords", []),
-        "icon": emergency_result.get("icon", "🔴"),
-        "color": emergency_result.get("color", "#d32f2f"),
-        "priority_score": emergency_result.get("priority_score", 999),
-        "timestamp": datetime.now().isoformat(),
-    }
+    legacy_content = emergency_response.get(
+        "structured_html", emergency_response.get("simple_message", "")
+    )
+    lang = resolve_session_language(session)
+
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_emergency_status
+
+    sage_diag = build_emergency_status(
+        subtype=classification.subtype,
+        language=lang if lang in ("ja", "en", "ko", "zh") else "ja",
+        simple_message=emergency_response.get("simple_message", ""),
+    ).to_client_dict()
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        emergency_detected=True,
+        emergency_subtype=classification.subtype,
+        emergency_type=emergency_type,
+        emergency_types=emergency_result.get("emergency_types", []),
+        emergency_keywords=emergency_result.get("detected_keywords", []),
+        icon=emergency_result.get("icon", "🔴"),
+        color=emergency_result.get("color", "#d32f2f"),
+        priority_score=emergency_result.get("priority_score", 999),
+    )
     session.setdefault("messages", []).append(bot_response)
     if hasattr(session, "modified"):
         session.modified = True

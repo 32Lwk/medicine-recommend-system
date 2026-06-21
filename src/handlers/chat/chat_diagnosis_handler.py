@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, Any
 
-from src.services.html_formatter import format_diagnosis_notification
+from legacy.html_formatter import format_diagnosis_notification
 from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
@@ -126,18 +126,28 @@ def handle_diagnosis_if_detected(
             f'data-user-message="{escaped_user_message}" '
             f'data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
         )
-        bot_content = format_diagnosis_notification(
+        from src.services.sage_bot_response import build_bot_response
+        from src.services.status_diagnosis_builder import build_diagnosis_notice
+
+        sid_for_sage = sid or session.get("_id")
+        status_diag = build_diagnosis_notice(
+            diagnosis_message,
+            feedback_context=feedback_data,
+            show_bug_report=True,
+            kind="diagnosis_detected",
+        )
+        legacy_content = format_diagnosis_notification(
             diagnosis_message_html,
             feedback_data,
             bug_report_attrs=bug_report_data_attrs,
         )
-        bot_response = {
-            "type": "bot",
-            "content": bot_content,
-            "diagnosis": None,
-            "diagnosis_type": diagnosis_type,
-            "timestamp": datetime.now().isoformat(),
-        }
+        bot_response = build_bot_response(
+            session,
+            sid_for_sage,
+            sage_diagnosis=status_diag.to_client_dict(),
+            legacy_content=legacy_content,
+            diagnosis_type=diagnosis_type,
+        )
         session["messages"].append(bot_response)
         session.modified = True
         if sid:
@@ -221,18 +231,27 @@ def return_physical_block_if_needed(
     bug_attrs = (
         f'data-user-message="{escaped_user}" data-ai-response="{escaped_bot}" data-security-score=""'
     )
-    bot_content = format_diagnosis_notification(
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_diagnosis_notice
+
+    status_diag = build_diagnosis_notice(
+        block_text,
+        title="ご利用いただけません",
+        feedback_context=feedback_data,
+        kind="diagnosis_physical_blocked",
+    )
+    legacy_content = format_diagnosis_notification(
         bot_html,
         feedback_data,
         bug_report_attrs=bug_attrs,
     )
-    bot_response = {
-        "type": "bot",
-        "content": bot_content,
-        "diagnosis": None,
-        "diagnosis_physical_blocked": True,
-        "timestamp": datetime.now().isoformat(),
-    }
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=status_diag.to_client_dict(),
+        legacy_content=legacy_content,
+        diagnosis_physical_blocked=True,
+    )
     session.setdefault("messages", []).append(bot_response)
     session.modified = True
     if sid:

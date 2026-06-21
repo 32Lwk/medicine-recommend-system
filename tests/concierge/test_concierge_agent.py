@@ -4,12 +4,20 @@ from unittest.mock import MagicMock, patch
 from src.agents.concierge_agent import build_concierge_payload, resolve_concierge_intent
 
 
-def test_greeting_payload_no_llm():
-    p = build_concierge_payload("greeting", "こんにちは", MagicMock())
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_greeting_payload_uses_llm(mock_chat):
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(message=MagicMock(content="やあ！市販薬の相談ならお気軽にどうぞ。"))
+    ]
+    mock_chat.return_value = mock_resp
+    client = MagicMock()
+    p = build_concierge_payload("greeting", "やあ", client)
     assert p["content_format"] == "text"
-    assert p["llm_used"] is False
-    assert len(p["content"]) > 5
+    assert p["llm_used"] is True
+    assert "やあ" in p["content"] or "市販薬" in p["content"]
     assert p.get("greeting") is True
+    mock_chat.assert_called_once()
 
 
 def test_architecture_payload_card():

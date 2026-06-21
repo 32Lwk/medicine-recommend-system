@@ -152,14 +152,18 @@ def run_triage_follow_ups(
                 initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
                 start_counseling_mode(session, symptom_type, initial_questions)
 
-                bot_response = {
-                    "type": "bot",
-                    "content": initial_response,
-                    "counseling": True,
-                    "inappropriate_request": False,
-                    "request_type": "prevention",
-                    "timestamp": datetime.now().isoformat(),
-                }
+                from src.services.sage_bot_response import build_counseling_bot
+
+                bot_response = build_counseling_bot(
+                    session,
+                    sid,
+                    initial_response,
+                    title="カウンセリング",
+                    kind="counseling_prevention",
+                    counseling=True,
+                    inappropriate_request=False,
+                    request_type="prevention",
+                )
                 session["messages"].append(bot_response)
                 if sid:
                     session_data = get_session_from_db(sid)
@@ -233,7 +237,36 @@ def run_triage_follow_ups(
                         }
                         save_session_to_db(sid, session_data)
 
-                symptom_type = f"inappropriate_request/{request_type}"
+                if request_type in ("illegal", "controlled"):
+                    from src.handlers.chat.inappropriate_drug_block_route import (
+                        try_inappropriate_drug_block_response,
+                    )
+
+                    block = try_inappropriate_drug_block_response(
+                        session,
+                        client,
+                        sid,
+                        user_message,
+                        sanitized_message,
+                        triage_result,
+                        append_user=False,
+                    )
+                    if block:
+                        session.modified = True
+                        message_count = len(session.get("messages", []))
+                        logger.info(
+                            "✅ 違法/規制薬物ブロック完了: %s messages", message_count
+                        )
+                        return (block, True)
+
+                from src.handlers.chat.controlled_drug_routing import (
+                    resolve_inappropriate_counseling_flags,
+                )
+
+                start_counseling, counseling_response, symptom_type = resolve_inappropriate_counseling_flags(
+                    session,
+                    request_type,
+                )
                 conversation_history = (
                     session.get("messages", [])[-10:]
                     if len(session.get("messages", [])) > 10
@@ -244,8 +277,12 @@ def run_triage_follow_ups(
                     conversation_history=conversation_history,
                     session_id=sid,
                 )
-                initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
-                if request_type not in ["illegal", "controlled"]:
+                initial_questions = (
+                    generate_follow_up_questions(symptom_type, {}, recommendation_client)
+                    if start_counseling
+                    else []
+                )
+                if start_counseling:
                     start_counseling_mode(session, symptom_type, initial_questions)
 
                 if "inappropriate_requests" not in session:
@@ -256,14 +293,17 @@ def run_triage_follow_ups(
                     "user_message": sanitized_message,
                 })
 
-                bot_response = {
-                    "type": "bot",
-                    "content": initial_response,
-                    "counseling": request_type not in ["illegal", "controlled"],
-                    "inappropriate_request": True,
-                    "request_type": request_type,
-                    "timestamp": datetime.now().isoformat(),
-                }
+                from src.services.sage_bot_response import build_counseling_bot
+
+                bot_response = build_counseling_bot(
+                    session,
+                    sid,
+                    initial_response,
+                    title="カウンセリング",
+                    kind=f"counseling_inappropriate_{request_type}",
+                    inappropriate_request=True,
+                    request_type=request_type,
+                )
                 session["messages"].append(bot_response)
                 if sid:
                     session_data = get_session_from_db(sid)

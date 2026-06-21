@@ -14,10 +14,12 @@ _DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 _INGREDIENT_PATH = os.path.join(_DATA_DIR, "ingredient_dictionary.json")
 _SYMPTOM_PATH = os.path.join(_DATA_DIR, "symptom_dictionary.json")
 _PREFERENCE_CATALOG_PATH = os.path.join(_DATA_DIR, "user_preference_keyword_catalog.json")
+_STORE_INQUIRY_CATALOG_PATH = os.path.join(_DATA_DIR, "store_inquiry_keyword_catalog.json")
 
 _cached_ingredient: Optional[Dict[str, Any]] = None
 _cached_symptom: Optional[Dict[str, Any]] = None
 _cached_preference_catalog: Optional[Dict[str, Any]] = None
+_cached_store_inquiry_catalog: Optional[Dict[str, Any]] = None
 
 
 def load_ingredient_dictionary() -> Dict[str, Any]:
@@ -50,9 +52,21 @@ def load_preference_keyword_catalog() -> Dict[str, Any]:
     return _cached_preference_catalog
 
 
+def load_store_inquiry_keyword_catalog() -> Dict[str, Any]:
+    """StoreInquiryAgent 向けルーティング・検出キーワードカタログ"""
+    global _cached_store_inquiry_catalog
+    if _cached_store_inquiry_catalog is not None:
+        return _cached_store_inquiry_catalog
+    with open(_STORE_INQUIRY_CATALOG_PATH, "r", encoding="utf-8") as f:
+        _cached_store_inquiry_catalog = json.load(f)
+    return _cached_store_inquiry_catalog
+
+
 def clear_cache() -> None:
     """キャッシュをクリア（テスト用）"""
     global _cached_ingredient, _cached_symptom, _cached_preference_catalog
+    global _cached_store_inquiry_catalog
     _cached_ingredient = None
     _cached_symptom = None
     _cached_preference_catalog = None
+    _cached_store_inquiry_catalog = None

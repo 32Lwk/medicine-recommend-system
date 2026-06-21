@@ -337,7 +337,10 @@ _STATUS_SSE_KEYS = (
 
 def status_sse_payload_from_dict(payload: Dict[str, Any]) -> Dict[str, Any]:
     """SSE status イベント用のクライアント向けペイロード"""
-    return {key: payload[key] for key in _STATUS_SSE_KEYS if payload.get(key) is not None}
+    out = {key: payload[key] for key in _STATUS_SSE_KEYS if payload.get(key) is not None}
+    if payload.get("active"):
+        out["active"] = True
+    return out
 
 
 def status_sse_payload_for_session(session_id: str) -> Dict[str, Any]:

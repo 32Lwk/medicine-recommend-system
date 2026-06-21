@@ -36,16 +36,21 @@ def _mark_session_modified(session: Any) -> None:
         session.modified = True
 
 
-def _append_bot_message(session: Any, payload: Dict[str, Any]) -> dict:
-    bot = {
-        "type": "bot",
-        "content": payload["content"],
-        "concierge": True,
-        "concierge_intent": payload.get("concierge_intent"),
-        "content_format": payload.get("content_format", "text"),
-        "timestamp": datetime.now().isoformat(),
-        "uuid": str(uuid.uuid4()),
-    }
+def _append_bot_message(session: Any, payload: Dict[str, Any], sid: Optional[str] = None) -> dict:
+    from src.services.sage_bot_response import build_bot_response
+
+    legacy_content = payload["content"]
+    sage_diag = payload.get("sage_diagnosis")
+    bot = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        concierge=True,
+        concierge_intent=payload.get("concierge_intent"),
+        content_format=payload.get("content_format", "text"),
+        uuid=str(uuid.uuid4()),
+    )
     if payload.get("greeting"):
         bot["greeting"] = True
     if payload.get("concierge_handoff_to"):
@@ -137,6 +142,8 @@ def try_concierge_duplicate_skip(
     if not should_concierge_handle(text, None):
         return None
     logger.info("⏭️ トリアージ前: 同一 Concierge 返信済みのためスキップ")
+    if text and not was_last_user_message(session, text):
+        append_user_message(session, text)
     if sid:
         try:
             from src.services.processing_mark import mark_phase
@@ -148,7 +155,7 @@ def try_concierge_duplicate_skip(
             pass
     _sync_session_db(session, client_info, sid)
     _mark_session_modified(session)
-    return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+    return ({"status": "ok", "message_count": len(session.get("messages", [])), "duplicate_skip": True}, 200)
 
 
 def try_concierge_response(
@@ -164,7 +171,18 @@ def try_concierge_response(
     processed_message: str = "",
 ) -> Optional[ResponseTuple]:
     text = (sanitized_message or user_message or "").strip()
-    if not text or not should_concierge_handle(text, triage_result):
+    alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    if text and is_probable_store_inquiry_any(
+        text, *alt_texts, triage_result=triage_result
+    ):
+        return None
+    if not text or not should_concierge_handle(
+        text,
+        triage_result,
+        alt_texts=alt_texts,
+    ):
         return None
 
     if (
@@ -182,6 +200,7 @@ def try_concierge_response(
             recommendation_client,
             conversation_history=history_pre,
             session_id=sid,
+            alt_texts=[user_message, processed_message],
         )
 
     if has_recent_concierge_reply_for_user(session, text):
@@ -232,7 +251,7 @@ def try_concierge_response(
         session_id=sid,
         history=history,
     )
-    _append_bot_message(session, payload)
+    _append_bot_message(session, payload, sid)
     update_concierge_state(
         session,
         intent,

@@ -47,6 +47,18 @@ class SseFixedBlocksEvent:
 
 
 @dataclass
+class SseRecoDetailEvent:
+    usage_sections: List[Dict[str, Any]] = field(default_factory=list)
+    recommended_medicines: List[Dict[str, Any]] = field(default_factory=list)
+
+    def to_payload(self) -> Dict[str, Any]:
+        return {
+            "usage_sections": self.usage_sections,
+            "recommended_medicines": self.recommended_medicines,
+        }
+
+
+@dataclass
 class SseDoneEvent:
     http_status: int = 200
     status: str = "ok"
@@ -54,6 +66,14 @@ class SseDoneEvent:
     trace_id: Optional[str] = None
     bot_message: Optional[Dict[str, Any]] = None
     user_message: Optional[Dict[str, Any]] = None
+    diagnosis: Optional[Dict[str, Any]] = None
+    error: bool = False
+    warning: bool = False
+    response: Optional[str] = None
+    risk_score: Optional[float] = None
+    dev_preview_kind: Optional[str] = None
+
+    duplicate_skip: bool = False
 
     def to_payload(self) -> Dict[str, Any]:
         p = {
@@ -67,6 +87,20 @@ class SseDoneEvent:
             p["bot_message"] = self.bot_message
         if self.user_message:
             p["user_message"] = self.user_message
+        if self.diagnosis:
+            p["diagnosis"] = self.diagnosis
+        if self.error:
+            p["error"] = True
+        if self.warning:
+            p["warning"] = True
+        if self.response:
+            p["response"] = self.response
+        if self.risk_score is not None:
+            p["risk_score"] = self.risk_score
+        if self.dev_preview_kind:
+            p["dev_preview_kind"] = self.dev_preview_kind
+        if self.duplicate_skip:
+            p["duplicate_skip"] = True
         return p
 
 

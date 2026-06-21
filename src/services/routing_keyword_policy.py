@@ -6,7 +6,7 @@
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Optional
 
 # キーワード単独でルートを確定してよいドメイン
 DECISIVE_KEYWORD_DOMAINS = frozenset({
@@ -31,30 +31,6 @@ def is_decisive_keyword_domain(domain: str) -> bool:
 
 def is_exact_match_gate_domain(domain: str) -> bool:
     return domain in EXACT_MATCH_GATE_DOMAINS
-
-
-def attach_routing_keyword_candidates(
-    triage_result: Optional[Dict[str, Any]],
-    candidates: Iterable[str],
-    *,
-    source: str = "keyword_probe",
-) -> Dict[str, Any]:
-    """トリアージ結果にキーワード候補を付与（確定ではない）。"""
-    out = dict(triage_result or {})
-    existing = list(out.get("routing_keyword_candidates") or [])
-    for c in candidates:
-        tag = str(c).strip()
-        if tag and tag not in existing:
-            existing.append(tag)
-    out["routing_keyword_candidates"] = existing
-    if existing:
-        out["routing_keyword_candidate_source"] = source
-    return out
-
-
-def get_routing_keyword_candidates(triage_result: Optional[Dict[str, Any]]) -> List[str]:
-    raw = (triage_result or {}).get("routing_keyword_candidates") or []
-    return [str(x) for x in raw if x]
 
 
 def keyword_finalize_allowed(

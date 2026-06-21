@@ -47,9 +47,12 @@ _DEFAULT_PUBLIC_SITE_URL = "https://medicine.yutok.dev"
 def _public_site_base() -> str:
     return (os.getenv("PUBLIC_SITE_URL") or _DEFAULT_PUBLIC_SITE_URL).strip().rstrip("/")
 
-TRUNCATE_BULLET = 20
-TRUNCATE_EFFICACY = 120
-TRUNCATE_REASON = 100
+TRUNCATE_BULLET = 36
+TRUNCATE_EFFICACY = 140
+TRUNCATE_REASON = 140
+TRUNCATE_INGREDIENTS = 90
+TRUNCATE_PERSONAL_ADVICE = 380
+TRUNCATE_OVERLAP = 100
 
 MAX_CAROUSEL_ITEMS = 3
 LINE_TEXT_MAX = 5000
@@ -129,11 +132,217 @@ def _extract_bullet_angle(explanation: str | None, ui: dict[str, str]) -> str:
 def build_advice_bullets(medicines: list[dict], ui: dict[str, str]) -> list[str]:
     bullets: list[str] = []
     for med in medicines[:MAX_CAROUSEL_ITEMS]:
-        reason = med.get("explanation") or med.get("reason") or ""
-        angle = _extract_bullet_angle(reason, ui)
+        rank = med.get("rank")
+        if rank is None:
+            rank = len(bullets) + 1
         name = med.get("product_name") or ""
-        bullets.append(f"・{angle}:{name}")
+        reason = truncate_text(
+            med.get("explanation") or med.get("reason"),
+            TRUNCATE_BULLET,
+        )
+        rank_text = format_rank(ui, int(rank))
+        if reason:
+            bullets.append(f"・{rank_text} {name} — {reason}")
+        else:
+            angle = _extract_bullet_angle(med.get("explanation") or med.get("reason"), ui)
+            bullets.append(f"・{rank_text} {name}（{angle}）")
     return bullets
+
+
+def _symptom_labels(diagnosis: dict | None) -> list[str]:
+    if not isinstance(diagnosis, dict):
+        return []
+    labels: list[str] = []
+    for item in diagnosis.get("symptoms") or []:
+        if isinstance(item, str) and item.strip():
+            labels.append(item.strip())
+        elif isinstance(item, dict):
+            name = str(item.get("name") or item.get("symptom") or "").strip()
+            if name:
+                labels.append(name)
+    if labels:
+        return labels[:6]
+    for med in diagnosis.get("recommended_medicines") or []:
+        if not isinstance(med, dict):
+            continue
+        for key in ("symptoms", "matched_symptoms"):
+            raw = med.get(key)
+            if isinstance(raw, list) and raw:
+                return [str(s).strip() for s in raw if str(s).strip()][:6]
+    return []
+
+
+def _personalized_advice_text(diagnosis: dict | None, bot_message: dict | None = None) -> str:
+    if isinstance(diagnosis, dict):
+        text = str(diagnosis.get("personalized_advice") or "").strip()
+        if text:
+            return text
+    if bot_message:
+        content = bot_message.get("content") or ""
+        match = re.search(
+            r'aria-label="あなたに合わせたアドバイス"[^>]*>.*?<p[^>]*>(.*?)</p>',
+            content,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if match:
+            return html_to_plain_text(match.group(1))
+    return ""
+
+
+def _overlap_display_lines(diagnosis: dict | None) -> list[dict[str, str]]:
+    if not isinstance(diagnosis, dict):
+        return []
+    overlap = diagnosis.get("ingredient_overlap")
+    if isinstance(overlap, dict):
+        severity = str(overlap.get("severity") or "blue")
+        badge = {"red": "重複禁止", "yellow": "注意", "blue": "情報"}.get(severity, "注意")
+        title = str(overlap.get("title") or "成分の重複について")
+        lines: list[dict[str, str]] = []
+        for summary in overlap.get("summaries") or []:
+            text = truncate_text(str(summary), TRUNCATE_OVERLAP)
+            if text:
+                lines.append({"badge": badge, "title": title, "text": text})
+        if lines:
+            return lines[:3]
+    return []
+
+
+def _advice_footer_note(diagnosis: dict | None, ui: dict[str, str]) -> str:
+    footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
+    if isinstance(diagnosis, dict) and diagnosis.get("doctor_consultation"):
+        footer = f"{footer}\n{truncate_text(diagnosis.get('doctor_consultation'), 220)}"
+    return footer
+
+
+def build_recommendation_advice_bubble(
+    *,
+    diagnosis: dict | None,
+    medicines: list[dict],
+    ui: dict[str, str],
+    bot_message: dict | None = None,
+) -> dict[str, Any]:
+    """推奨成功時のアドバイス Flex（症状・個別アドバイス・重複警告・候補概要）。"""
+    medicine_type = ""
+    if isinstance(diagnosis, dict):
+        medicine_type = str(diagnosis.get("medicine_type") or "OTC医薬品")
+    intro = format_intro(ui, medicine_type=medicine_type, count=len(medicines[:MAX_CAROUSEL_ITEMS]))
+    bullets = build_advice_bullets(medicines, ui)
+    body_contents: list[dict[str, Any]] = [
+        _flex_text(intro, size="sm", margin="none"),
+    ]
+
+    symptoms = _symptom_labels(diagnosis)
+    if symptoms:
+        symptom_label = ui.get("symptoms_label", "推定症状")
+        body_contents.append(
+            _flex_text(
+                f"{symptom_label}: {'・'.join(symptoms[:4])}",
+                size="xs",
+                color=LABEL,
+                weight="bold",
+                margin="md",
+            )
+        )
+
+    advice_text = truncate_text(_personalized_advice_text(diagnosis, bot_message), TRUNCATE_PERSONAL_ADVICE)
+    if advice_text:
+        body_contents.append(
+            _flex_text(
+                ui.get("personal_advice_label", "あなたへのひとこと"),
+                size="xs",
+                color=LABEL,
+                weight="bold",
+                margin="md",
+            )
+        )
+        body_contents.append(_flex_text(advice_text, size="sm", margin="xs"))
+
+    for overlap in _overlap_display_lines(diagnosis):
+        body_contents.append(
+            _flex_text(
+                f"{overlap['badge']} {overlap['title']}",
+                size="xs",
+                color="#C62828" if overlap["badge"] == "重複禁止" else "#E65100" if overlap["badge"] == "注意" else LABEL,
+                weight="bold",
+                margin="md",
+            )
+        )
+        body_contents.append(_flex_text(overlap["text"], size="xs", margin="xs"))
+
+    if bullets:
+        body_contents.append(
+            _flex_text(
+                ui.get("candidate_summary_label", "候補の概要"),
+                size="xs",
+                color=LABEL,
+                weight="bold",
+                margin="md",
+            )
+        )
+        for i, bullet in enumerate(bullets):
+            body_contents.append(_flex_text(bullet, size="xs", margin="xs" if i else "sm"))
+
+    web_hint = ui.get("web_detail_hint", "")
+    if web_hint:
+        body_contents.append(_flex_text(web_hint, size="xxs", color=NOTE, margin="md"))
+
+    body_contents.append(
+        _flex_text(_advice_footer_note(diagnosis, ui), size="xs", color=NOTE, margin="md")
+    )
+
+    return {
+        "type": "flex",
+        "altText": ui.get("advice_alt", "あなたに合わせたアドバイス"),
+        "contents": {
+            "type": "bubble",
+            "size": "kilo",
+            "header": {
+                "type": "box",
+                "layout": "vertical",
+                "backgroundColor": PRIMARY,
+                "paddingAll": "16px",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": ui.get("advice_header", "あなたに合わせたアドバイス"),
+                        "weight": "bold",
+                        "size": "lg",
+                        "color": "#ffffff",
+                        "align": "center",
+                        "wrap": True,
+                    }
+                ],
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "paddingAll": "16px",
+                "contents": body_contents,
+            },
+        },
+    }
+
+
+def append_web_handoff_messages(
+    messages: list[dict[str, Any]],
+    *,
+    session_id: str | None,
+    ui: dict[str, str],
+) -> list[dict[str, Any]]:
+    """LINE セッション向けに Web 詳細確認リンク Flex を末尾追加。"""
+    if not session_id:
+        return messages
+    from src.handlers.line.line_session import is_line_session_id
+
+    if not is_line_session_id(session_id):
+        return messages
+    from src.handlers.line.line_web_handoff import issue_handoff_token
+
+    token = issue_handoff_token(session_id)
+    if not token:
+        return messages
+    resume_url = f"{_public_site_base()}/resume/{token}"
+    return [*messages, build_web_continue_flex(resume_url, ui)]
 
 
 def translate_flex_fields(
@@ -354,6 +563,7 @@ def build_medicine_bubble(
         TRUNCATE_REASON,
     )
     usage = truncate_text(medicine.get("usage_notes"), TRUNCATE_REASON)
+    ingredients = truncate_text(medicine.get("ingredients"), TRUNCATE_INGREDIENTS)
     level, score_color, percent = _score_tier(
         medicine.get("display_score") if medicine.get("display_score") is not None else medicine.get("score")
     )
@@ -383,6 +593,20 @@ def build_medicine_bubble(
             "margin": "md",
         },
         {"type": "text", "text": reason or "—", "size": "sm", "wrap": True, "margin": "xs"},
+    ]
+    if ingredients:
+        body_contents.extend([
+            {
+                "type": "text",
+                "text": ui.get("ingredients_label", "主な成分"),
+                "size": "xs",
+                "color": LABEL,
+                "weight": "bold",
+                "margin": "md",
+            },
+            {"type": "text", "text": ingredients, "size": "xs", "wrap": True, "margin": "xs", "color": NOTE},
+        ])
+    body_contents.extend([
         {
             "type": "box",
             "layout": "baseline",
@@ -407,7 +631,7 @@ def build_medicine_bubble(
             "wrap": True,
             "margin": "sm",
         },
-    ]
+    ])
 
     bubble: dict[str, Any] = {
         "type": "bubble",
@@ -446,9 +670,27 @@ def build_recommendation_carousel(medicines: list[dict], ui: dict[str, str]) -> 
 
 def build_web_continue_flex(resume_url: str, ui: dict[str, str]) -> dict[str, Any]:
     """LINE から Web へ引き継ぐ URI ボタン付き Flex。"""
-    label = ui.get("web_continue_label", "ブラウザで続ける")
-    title = ui.get("web_continue_title", "Webで会話を続ける")
+    label = ui.get("web_continue_label", "詳細をブラウザで見る")
+    title = ui.get("web_continue_title", "詳細をブラウザで確認")
     body = ui.get("web_continue_body", "")
+    detail_items = ui.get("web_continue_details", "")
+    body_contents: list[dict[str, Any]] = [
+        {"type": "text", "text": title, "weight": "bold", "size": "sm", "wrap": True},
+        {"type": "text", "text": body, "size": "xs", "color": "#666666", "wrap": True, "margin": "sm"},
+    ]
+    if detail_items:
+        body_contents.append(
+            {"type": "text", "text": detail_items, "size": "xxs", "color": NOTE, "wrap": True, "margin": "sm"}
+        )
+    body_contents.append(
+        {
+            "type": "button",
+            "style": "primary",
+            "height": "sm",
+            "color": PRIMARY,
+            "action": {"type": "uri", "label": label, "uri": resume_url},
+        }
+    )
     return {
         "type": "flex",
         "altText": label,
@@ -460,17 +702,7 @@ def build_web_continue_flex(resume_url: str, ui: dict[str, str]) -> dict[str, An
                 "layout": "vertical",
                 "spacing": "sm",
                 "paddingAll": "12px",
-                "contents": [
-                    {"type": "text", "text": title, "weight": "bold", "size": "sm", "wrap": True},
-                    {"type": "text", "text": body, "size": "xs", "color": "#666666", "wrap": True},
-                    {
-                        "type": "button",
-                        "style": "primary",
-                        "height": "sm",
-                        "color": PRIMARY,
-                        "action": {"type": "uri", "label": label, "uri": resume_url},
-                    },
-                ],
+                "contents": body_contents,
             },
         },
     }
@@ -716,26 +948,12 @@ def build_line_messages_from_bot_message(
             ui=ui,
         )
 
-    medicine_type = ""
-    if isinstance(diagnosis, dict):
-        medicine_type = str(diagnosis.get("medicine_type") or "OTC医薬品")
-    intro = format_intro(ui, medicine_type=medicine_type, count=len(medicines[:MAX_CAROUSEL_ITEMS]))
-    bullets = build_advice_bullets(medicines, ui)
-    advice_footer = ui.get("footer_caution", FOOTER_CAUTION_JA)
-    if isinstance(diagnosis, dict) and diagnosis.get("doctor_consultation"):
-        advice_footer = f"{advice_footer}\n{truncate_text(diagnosis.get('doctor_consultation'), 200)}"
-
-    advice = build_advice_bubble(intro=intro, bullets=bullets, footer_note=advice_footer, ui=ui)
+    advice = build_recommendation_advice_bubble(
+        diagnosis=diagnosis if isinstance(diagnosis, dict) else None,
+        medicines=medicines,
+        ui=ui,
+        bot_message=bot_message,
+    )
     carousel = build_recommendation_carousel(medicines, ui)
     messages: list[dict[str, Any]] = [advice, carousel]
-    if session_id:
-        from src.handlers.line.line_session import is_line_session_id
-
-        if is_line_session_id(session_id):
-            from src.handlers.line.line_web_handoff import issue_handoff_token
-
-            token = issue_handoff_token(session_id)
-            if token:
-                resume_url = f"{_public_site_base()}/resume/{token}"
-                messages.append(build_web_continue_flex(resume_url, ui))
-    return messages
+    return append_web_handoff_messages(messages, session_id=session_id, ui=ui)

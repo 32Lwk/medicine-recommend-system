@@ -206,6 +206,7 @@ def format_concierge_app_about_card(
 
 
 def build_greeting_text(user_message: str) -> str:
+    """LLM 失敗時のフォールバック（通常は generate_greeting_text を使用）。"""
     return build_greeting_response(user_message)
 
 

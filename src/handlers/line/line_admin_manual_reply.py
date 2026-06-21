@@ -45,6 +45,10 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
     from src.services.session_lifecycle import merge_messages_into_archive
 
     merge_messages_into_archive(session_data, [manual_reply])
+    from src.handlers.line.line_admin_request import clear_admin_request_after_manual_reply
+
+    clear_admin_request_after_manual_reply(session_id)
+    session_data = get_session_from_db(session_id) or session_data
     session_data["last_activity"] = datetime.now()
     save_session_to_db(session_id, session_data)
 
@@ -63,10 +67,17 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
                 session_id,
             )
         else:
-            pushed = await push_messages(
-                user_id,
-                [{"type": "text", "text": text[:LINE_TEXT_MAX_LEN]}],
+            from src.core.language_utils import resolve_session_language
+            from src.handlers.line.line_quick_actions import attach_session_quick_actions
+
+            lang = resolve_session_language(session_data)
+            push_payload = [{"type": "text", "text": text[:LINE_TEXT_MAX_LEN]}]
+            push_payload = attach_session_quick_actions(
+                push_payload,
+                get_session_from_db(session_id),
+                lang=lang,
             )
+            pushed = await push_messages(user_id, push_payload)
             line_pushed = pushed
             if not pushed:
                 line_error = "line_push_failed"

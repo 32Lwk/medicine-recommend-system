@@ -25,3 +25,12 @@ def format_conversation_history(messages: List[Dict]) -> str:
         elif role == "bot":
             history_text += f"ボット: {content}\n"
     return history_text
+
+
+def combine_counseling_message(response: str, question: str | None = None) -> str:
+    """応援メッセージとフォローアップ質問を1つの返信にまとめる。"""
+    response = (response or "").strip()
+    question = (question or "").strip()
+    if question:
+        return f"{response}\n\n{question}"
+    return response

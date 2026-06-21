@@ -72,6 +72,14 @@ def resolve_concierge_intent(
     if not text or _is_medicine_consultation(text):
         return None
 
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    if is_probable_store_inquiry_any(
+        text,
+        triage_result=triage_result,
+    ):
+        return None
+
     orchestrated = resolve_intent_from_triage(triage_result, session, text)
     if orchestrated:
         return orchestrated
@@ -302,6 +310,8 @@ def build_doc_operator_payload(
         session_id=session_id,
         history=history,
     )
+    from src.services.status_diagnosis_builder import build_concierge_operator_status
+
     return {
         "content": format_concierge_operator_card(
             intro_text=intro,
@@ -311,7 +321,69 @@ def build_doc_operator_payload(
         "line_flex": build_concierge_operator_line_flex(intro_text=intro),
         "concierge_intent": "doc_operator",
         "llm_used": True,
+        "sage_diagnosis": build_concierge_operator_status(intro).to_client_dict(),
     }
+
+
+def generate_greeting_text(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> str:
+    """ユーザーの挨拶トーンに合わせた返答を LLM で生成（固定テンプレはフォールバックのみ）。"""
+    hist = ""
+    if history:
+        lines = []
+        for m in history[-6:]:
+            role = m.get("type") or m.get("role") or "user"
+            content = (m.get("content") or "")[:200]
+            lines.append(f"{role}: {content}")
+        hist = "\n".join(lines)
+    prompt = f"""{get_policy_snippet()}
+
+【会話履歴（参考）】
+{hist or "（なし）"}
+
+【ユーザーの挨拶】
+{user_text}
+
+【要件】
+- ユーザーの挨拶のトーン・カジュアルさ・言い回しに合わせて返す
+  （例: 「はおー」→「はおー！」「やあ」→「やあ、こんにちは」「あろはー」→アロハ調）
+- 造語・省略・口語・方言・若者言葉・カタカナ・舶来語の変形も、その雰囲気を汲んで自然に返す
+- 1〜2文、100文字以内
+- こちらは一般用医薬品（OTC）の相談窓口であることを軽く伝える
+- 最後に、症状やお薬の相談があれば具体的に書いてほしいと1文で促す
+- 毎回同じ定型文にせず、ユーザーの言葉に呼応したバリエーションにする
+- 「こんにちは。こちらでは市販薬に関する…」のような汎用テンプレのコピペは避ける
+- 診断・処方はしない
+"""
+    try:
+        resp = concierge_chat(
+            client,
+            "concierge_agent.greeting",
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "あなたは医薬品相談ツールの案内役です。"
+                        "ユーザーの挨拶に、その言い方に合わせて短く返答します。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=180,
+            temperature=0.75,
+            session_id=session_id,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        if text:
+            return text
+    except Exception as exc:
+        logger.warning("Concierge greeting LLM failed: %s", exc)
+    return build_greeting_text(user_text)
 
 
 def generate_chitchat_text(
@@ -377,50 +449,79 @@ def build_concierge_payload(
     fb = _feedback_data(user_text, intent)
 
     if intent == "greeting":
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = generate_greeting_text(
+            client, user_text, session_id=session_id, history=history
+        )
         return {
-            "content": build_greeting_text(user_text),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "greeting": True,
-            "llm_used": False,
+            "llm_used": True,
+            "sage_diagnosis": build_concierge_text_status(
+                text, title="ご挨拶", kind="concierge_greeting"
+            ).to_client_dict(),
         }
     if intent == "thanks":
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = build_thanks_text()
         return {
-            "content": build_thanks_text(),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "llm_used": False,
+            "sage_diagnosis": build_concierge_text_status(
+                text, title="お礼", kind="concierge_thanks"
+            ).to_client_dict(),
         }
     if intent == "redirect":
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = build_redirect_text()
         return {
-            "content": build_redirect_text(),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "llm_used": False,
+            "sage_diagnosis": build_concierge_text_status(
+                text, title="ご案内", kind="concierge_redirect"
+            ).to_client_dict(),
         }
     if intent == "capabilities":
+        from src.services.status_diagnosis_builder import build_concierge_capabilities_status
+
         return {
             "content": format_concierge_capabilities_card(feedback_data=fb),
             "content_format": "status_card",
             "line_flex": build_concierge_capabilities_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
+            "sage_diagnosis": build_concierge_capabilities_status().to_client_dict(),
         }
     if intent == "architecture":
+        from src.services.status_diagnosis_builder import build_concierge_architecture_status
+
         return {
             "content": format_concierge_architecture_card(feedback_data=fb),
             "content_format": "status_card",
             "line_flex": build_concierge_architecture_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
+            "sage_diagnosis": build_concierge_architecture_status().to_client_dict(),
         }
     if intent == "app_about":
+        from src.services.status_diagnosis_builder import build_concierge_app_about_status
+
         return {
             "content": format_concierge_app_about_card(feedback_data=fb),
             "content_format": "status_card",
             "line_flex": build_concierge_app_about_line_flex(),
             "concierge_intent": intent,
             "llm_used": False,
+            "sage_diagnosis": build_concierge_app_about_status().to_client_dict(),
         }
     if intent == "doc_operator":
         return build_doc_operator_payload(
@@ -431,53 +532,98 @@ def build_concierge_payload(
             feedback_data=fb,
         )
     if intent in DOC_CONCIERGE_INTENTS:
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = generate_doc_answer_text(
+            client,
+            user_text,
+            intent,
+            session_id=session_id,
+            history=history,
+        )
         return {
-            "content": generate_doc_answer_text(
-                client,
-                user_text,
-                intent,
-                session_id=session_id,
-                history=history,
-            ),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "llm_used": True,
+            "sage_diagnosis": build_concierge_text_status(
+                text,
+                title="ドキュメント案内",
+                kind=f"concierge_{intent}",
+            ).to_client_dict(),
         }
     if intent == "chitchat":
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = generate_chitchat_text(
+            client, user_text, session_id=session_id, history=history
+        )
         return {
-            "content": generate_chitchat_text(
-                client, user_text, session_id=session_id, history=history
-            ),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "llm_used": True,
+            "sage_diagnosis": build_concierge_text_status(
+                text, title="お話", kind="concierge_chitchat"
+            ).to_client_dict(),
         }
     if intent == "medical_handoff":
+        from src.services.status_diagnosis_builder import build_concierge_text_status
+
+        text = get_handoff_intro_physical()
         return {
-            "content": get_handoff_intro_physical(),
+            "content": text,
             "content_format": "text",
             "concierge_intent": intent,
             "concierge_handoff_to": "physical",
             "llm_used": False,
+            "sage_diagnosis": build_concierge_text_status(
+                text,
+                title="症状のご相談へ",
+                kind="concierge_medical_handoff",
+            ).to_client_dict(),
         }
+    from src.services.status_diagnosis_builder import build_concierge_text_status
+
+    text = build_redirect_text()
     return {
-        "content": build_redirect_text(),
+        "content": text,
         "content_format": "text",
         "concierge_intent": "redirect",
         "llm_used": False,
+        "sage_diagnosis": build_concierge_text_status(
+            text, title="ご案内", kind="concierge_redirect"
+        ).to_client_dict(),
     }
 
 
-def should_concierge_handle(user_text: str, triage_result: Optional[Dict[str, Any]]) -> bool:
+def should_concierge_handle(
+    user_text: str,
+    triage_result: Optional[Dict[str, Any]] = None,
+    *,
+    alt_texts: Optional[list] = None,
+) -> bool:
     """Other または挨拶・感謝・雑談のみ Concierge。医薬品・Emergency・Physical は除外。"""
     from src.services.concierge_intent import _is_medicine_consultation
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
 
     if not user_text or _is_medicine_consultation(user_text):
         return False
+    routing_source = (triage_result or {}).get("_routing_source_text")
+    extra = [t for t in (alt_texts or []) if t]
+    if routing_source:
+        extra.append(routing_source)
+
+    if is_probable_store_inquiry_any(
+        user_text, *extra, triage_result=triage_result
+    ):
+        return False
     cat = (triage_result or {}).get("category", "")
+    fast = classify_concierge_intent(user_text)
+    if fast in ("greeting", "thanks"):
+        return cat != "Emergency"
     if cat in ("Emergency", "Physical", "Ask"):
         return False
-    fast = classify_concierge_intent(user_text)
-    if fast in ("greeting", "thanks", "chitchat"):
+    if fast == "chitchat":
         return True
     return cat == "Other"

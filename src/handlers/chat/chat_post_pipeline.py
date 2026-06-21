@@ -220,9 +220,12 @@ def run_chat_post_pipeline(
     if early_resp is not None:
         return early_resp
 
-    resp = _run_store_and_other_followups(ctx)
-    if resp is not None:
-        return resp
+    from config.llm_flags import is_agent_enabled
+
+    if not is_agent_enabled():
+        resp = _run_legacy_other_pre_orchestrator(ctx)
+        if resp is not None:
+            return resp
 
     apply_emotional_keyword_routing(
         session, ctx.triage_result, ctx.sanitized_message, phase="sleepiness"
@@ -269,8 +272,6 @@ def run_chat_post_pipeline(
 
     _run_moderation_if_needed(ctx)
 
-    from config.llm_flags import is_agent_enabled
-
     if is_agent_enabled():
         try:
             from src.handlers.chat_orchestrator import try_orchestrator_route
@@ -280,6 +281,10 @@ def run_chat_post_pipeline(
                 return orch_resp
         except Exception as orch_err:
             logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
+
+        resp = _run_other_post_orchestrator_followups(ctx)
+        if resp is not None:
+            return resp
 
     if session.get("_confidence_gate_concierge") and ctx.triage_result:
         from src.handlers.chat.chat_concierge_route import try_concierge_response
@@ -371,23 +376,57 @@ def run_chat_post_pipeline(
     force_question_mode = session.get("should_handle_other_category", False)
     if not is_question and not force_question_mode:
         from src.handlers.chat.emergency_dispatch import is_otc_flow_blocked
+        from src.utils.input_helpers import (
+            should_apply_unrecognized_symptom_gate,
+            should_fallback_to_symptom_recommendation,
+        )
 
         if is_otc_flow_blocked(session):
             from src.services.medical_emergency_templates import build_medical_emergency_html
+            from src.services.sage_bot_response import build_bot_response
+            from src.services.status_diagnosis_builder import build_emergency_status
 
             lang = resolve_session_language(session)
-            html = build_medical_emergency_html(subtype="medical_self", language=lang if lang in ("ja", "en", "ko", "zh") else "ja")
-            session.setdefault("messages", []).append({
-                "type": "bot",
-                "content": html,
-                "emergency_detected": True,
-                "otc_blocked": True,
-                "timestamp": datetime.now().isoformat(),
-            })
+            lang = lang if lang in ("ja", "en", "ko", "zh") else "ja"
+            html = build_medical_emergency_html(subtype="medical_self", language=lang)
+            sage_diag = build_emergency_status(subtype="medical_self", language=lang).to_client_dict()
+            session.setdefault("messages", []).append(
+                build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=html,
+                    emergency_detected=True,
+                    otc_blocked=True,
+                )
+            )
             return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
 
-        from src.handlers.chat.chat_symptom_route import run_symptom_recommendation
+        if not should_fallback_to_symptom_recommendation(
+            ctx.triage_result,
+            ctx.sanitized_message or ctx.user_message,
+        ):
+            return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+
+        from src.handlers.chat.chat_symptom_route import (
+            run_symptom_recommendation,
+            try_unrecognized_symptom_response,
+        )
         from src.services.llm_metrics import merge_into_user_info
+
+        if should_apply_unrecognized_symptom_gate(
+            ctx.triage_result,
+            ctx.sanitized_message or ctx.user_message,
+        ):
+            unrecognized_resp = try_unrecognized_symptom_response(
+                session,
+                client_info,
+                sid,
+                ctx.sanitized_message,
+                ctx.user_message,
+            )
+            if unrecognized_resp is not None:
+                return unrecognized_resp
 
         return run_symptom_recommendation(
             session,
@@ -459,9 +498,18 @@ def _run_moderation_if_needed(ctx: ChatPostContext) -> None:
 
 
 def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]:
-    """Other では ChatOrchestrator と同様、店舗案内より Concierge を先に試す。"""
+    """Other では Concierge を試すが、店舗案内確定時はスキップ。"""
     triage = ctx.triage_result or {}
     if triage.get("category") != "Other" or ctx.inappropriate_request_detected:
+        return None
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    if is_probable_store_inquiry_any(
+        ctx.original_user_message,
+        ctx.sanitized_message,
+        ctx.user_message,
+        triage_result=triage,
+    ):
         return None
     try:
         from src.services.concierge_orchestrator import enrich_other_concierge_intent
@@ -474,6 +522,14 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
             ctx.recommendation_client,
             conversation_history=history,
             session_id=ctx.sid,
+            alt_texts=[
+                t
+                for t in (
+                    getattr(ctx, "original_user_message", None),
+                    ctx.user_message,
+                )
+                if t
+            ],
         )
         return try_concierge_response(
             ctx.session,
@@ -490,76 +546,115 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
         return None
 
 
-def _run_store_and_other_followups(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+def _try_store_inquiry_response(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    try:
+        from src.handlers.chat.chat_store_inquiry import handle_store_inquiry_response
+
+        return handle_store_inquiry_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.sanitized_message,
+            ctx.recommendation_client,
+            ctx.triage_result,
+            display_user_message=ctx.original_user_message,
+        )
+    except ImportError as e:
+        logger.warning("⚠️ 店舗案内・遺失物関連機能のインポートに失敗: %s", e)
+    except Exception as e:
+        logger.error("❌ 店舗案内・遺失物関連機能でエラー: %s", e)
+        traceback.print_exc()
+    return None
+
+
+def _run_other_post_orchestrator_followups(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    """ChatOrchestrator 未解決時の Other フォールバック（店舗案内・推奨フォロー・不明要求カウンセリング）。"""
+    if not ctx.triage_result or ctx.triage_result.get("category") != "Other":
+        return None
+
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    if (
+        not ctx.inappropriate_request_detected
+        and is_probable_store_inquiry_any(
+            ctx.original_user_message,
+            ctx.sanitized_message,
+            ctx.user_message,
+            triage_result=ctx.triage_result,
+        )
+    ):
+        store_resp = _try_store_inquiry_response(ctx)
+        if store_resp is not None:
+            return store_resp
+
+    from src.handlers.chat.chat_recommendation_followup import run_recommendation_followups
+
+    followup = run_recommendation_followups(
+        ctx.session,
+        ctx.client_info,
+        ctx.sid,
+        ctx.monitor,
+        triage_result=ctx.triage_result,
+        sanitized_message=ctx.sanitized_message,
+        user_message=ctx.user_message,
+        processed_message=ctx.processed_message,
+        original_user_message=ctx.original_user_message,
+        recommendation_client=ctx.recommendation_client,
+    )
+    if followup.response is not None:
+        return followup.response
+    if followup.sanitized_message is not None:
+        ctx.sanitized_message = followup.sanitized_message
+    if followup.user_message is not None:
+        ctx.user_message = followup.user_message
+    if followup.processed_message is not None:
+        ctx.processed_message = followup.processed_message
+
+    from src.handlers.chat.chat_other_counseling_route import run_other_unknown_counseling
+
+    return run_other_unknown_counseling(
+        ctx.session,
+        ctx.client_info,
+        ctx.sid,
+        ctx.user_message,
+        ctx.sanitized_message,
+        ctx.processed_message,
+        ctx.original_user_message,
+        ctx.triage_result,
+        ctx.recommendation_client,
+    )
+
+
+def _run_legacy_other_pre_orchestrator(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    """LLM_AGENT_ENABLED=OFF 時: 店舗→Concierge→Other フォールバック（レガシー経路）。"""
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    store_first = is_probable_store_inquiry_any(
+        ctx.original_user_message,
+        ctx.sanitized_message,
+        ctx.user_message,
+        triage_result=ctx.triage_result,
+    )
+
+    if store_first and not ctx.inappropriate_request_detected:
+        store_resp = _try_store_inquiry_response(ctx)
+        if store_resp is not None:
+            return store_resp
+
     conc = _try_concierge_before_store(ctx)
     if conc is not None:
         return conc
 
-    store_inquiry_result = None
-    if not ctx.inappropriate_request_detected:
-        try:
-            from src.handlers.chat.chat_store_inquiry import handle_store_inquiry_response
-
-            store_resp = handle_store_inquiry_response(
-                ctx.session,
-                ctx.client_info,
-                ctx.sid,
-                ctx.sanitized_message,
-                ctx.recommendation_client,
-                ctx.triage_result,
-                display_user_message=ctx.original_user_message,
-            )
-            if store_resp is not None:
-                return store_resp
-        except ImportError as e:
-            logger.warning("⚠️ 店舗案内・遺失物関連機能のインポートに失敗: %s", e)
-        except Exception as e:
-            logger.error("❌ 店舗案内・遺失物関連機能でエラー: %s", e)
-            traceback.print_exc()
-    else:
+    if not ctx.inappropriate_request_detected and not store_first:
+        store_resp = _try_store_inquiry_response(ctx)
+        if store_resp is not None:
+            return store_resp
+    elif ctx.inappropriate_request_detected:
         logger.info("⏭️ 不適切な要求が検出されたため、店舗案内処理をスキップ")
 
-    if (
-        store_inquiry_result is None
-        and ctx.triage_result
-        and ctx.triage_result.get("category") == "Other"
-    ):
-        from src.handlers.chat.chat_recommendation_followup import run_recommendation_followups
+    return _run_other_post_orchestrator_followups(ctx)
 
-        followup = run_recommendation_followups(
-            ctx.session,
-            ctx.client_info,
-            ctx.sid,
-            ctx.monitor,
-            triage_result=ctx.triage_result,
-            sanitized_message=ctx.sanitized_message,
-            user_message=ctx.user_message,
-            processed_message=ctx.processed_message,
-            original_user_message=ctx.original_user_message,
-            recommendation_client=ctx.recommendation_client,
-        )
-        if followup.response is not None:
-            return followup.response
-        if followup.sanitized_message is not None:
-            ctx.sanitized_message = followup.sanitized_message
-        if followup.user_message is not None:
-            ctx.user_message = followup.user_message
-        if followup.processed_message is not None:
-            ctx.processed_message = followup.processed_message
 
-        from src.handlers.chat.chat_other_counseling_route import run_other_unknown_counseling
-
-        other_resp = run_other_unknown_counseling(
-            ctx.session,
-            ctx.client_info,
-            ctx.sid,
-            ctx.user_message,
-            ctx.sanitized_message,
-            ctx.processed_message,
-            ctx.original_user_message,
-            ctx.triage_result,
-            ctx.recommendation_client,
-        )
-        if other_resp is not None:
-            return other_resp
-    return None
+def _run_store_and_other_followups(ctx: ChatPostContext) -> Optional[ResponseTuple]:
+    """後方互換エイリアス（レガシー経路）。"""
+    return _run_legacy_other_pre_orchestrator(ctx)

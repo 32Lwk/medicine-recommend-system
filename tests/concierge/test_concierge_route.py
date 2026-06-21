@@ -287,7 +287,10 @@ def test_concierge_duplicate_skip_before_triage():
     assert resp is not None
     body, status = resp
     assert status == 200
-    assert body["message_count"] == 2
-    assert len(session["messages"]) == 2
+    assert body["message_count"] == 3
+    assert len(session["messages"]) == 3
+    assert session["messages"][-1]["type"] == "user"
+    assert session["messages"][-1]["content"] == "こんにちは"
+    assert body.get("duplicate_skip") is True
     mock_save.assert_called_once()
 

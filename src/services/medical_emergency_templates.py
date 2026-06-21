@@ -19,6 +19,69 @@ def build_medical_emergency_html(
     return _build_medical_self_html(lang)
 
 
+def get_medical_emergency_copy(*, subtype: str, language: str = "ja") -> dict[str, Any]:
+    """Plain-text copy for Sage status diagnosis (no HTML)."""
+    lang = language if language in ("ja", "en", "ko", "zh") else "ja"
+    if subtype == "crisis_language":
+        try:
+            from src.core.crisis_detection import get_crisis_support_resources
+
+            data = get_crisis_support_resources(lang)
+            hints = [str(data.get("emergency_message", "")).strip()]
+            resources = data.get("resources") or []
+            return {
+                "title": str(data.get("title") or "相談窓口のご案内"),
+                "message": str(data.get("message") or ""),
+                "hints": [h for h in hints if h],
+                "resources": resources,
+                "variant": "security",
+            }
+        except ImportError:
+            subtype = "medical_self"
+    copy = {
+        "ja": {
+            "title": "緊急の可能性があります",
+            "body": "お伝えいただいた内容から、早急な医療機関の受診または救急のご利用が必要な可能性があります。",
+            "hints": [
+                "日本国内では 119番（救急）にご連絡ください。",
+                "市販薬の自己判断での使用はお控えください。",
+            ],
+        },
+        "en": {
+            "title": "Possible medical emergency",
+            "body": "Based on your message, you may need urgent in-person medical care.",
+            "hints": [
+                "In Japan, call 119 (ambulance) for emergencies.",
+                "Please do not rely on over-the-counter medicine selection alone.",
+            ],
+        },
+        "ko": {
+            "title": "응급 가능성이 있습니다",
+            "body": "입력 내용상 즉시 의료기관 방문 또는 응급 연락이 필요할 수 있습니다.",
+            "hints": [
+                "일본에서는 119(구급)에 연락해 주세요.",
+                "일반의약품만으로 스스로 판단하지 마세요.",
+            ],
+        },
+        "zh": {
+            "title": "可能存在紧急情况",
+            "body": "根据您的描述，可能需要尽快就医或拨打急救电话。",
+            "hints": [
+                "在日本请拨打 119（急救）。",
+                "请勿仅凭自行选择非处方药处理。",
+            ],
+        },
+    }
+    c = copy.get(lang, copy["ja"])
+    return {
+        "title": c["title"],
+        "message": c["body"],
+        "hints": c["hints"],
+        "resources": [],
+        "variant": "critical",
+    }
+
+
 def _build_medical_self_html(lang: str) -> str:
     copy = {
         "ja": {

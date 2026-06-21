@@ -68,7 +68,29 @@ class ChatOrchestrator:
 
         self._mark_step(sid, triage.get("category", "Other"))
 
-        if handoff.stop or triage.get("category") == "Emergency":
+        from src.services.concierge_intent import classify_concierge_intent
+        from src.handlers.chat.chat_physical_route import apply_physical_category_overrides
+        from src.services.confidence_policy import should_defer_category_routing
+        from src.utils.input_helpers import reroute_symptom_general_other_to_physical
+
+        social_text = (ctx.sanitized_message or ctx.user_message or "").strip()
+        counseling_mode = session.get("counseling_mode") or {}
+        social_intent = None
+        if not counseling_mode.get("active"):
+            social_intent = classify_concierge_intent(social_text)
+        if social_intent in ("greeting", "thanks") and triage.get("category") != "Emergency":
+            concierge_resp = self._route_concierge(ctx, monitor)
+            if concierge_resp is not None:
+                return OrchestratorRouteResult(
+                    resolved=True,
+                    response=concierge_resp,
+                    reason=RouteReason.RESOLVED,
+                    category=triage.get("category", "Other"),
+                    subtype=f"concierge_{social_intent}",
+                )
+
+        user_text = ctx.sanitized_message or ctx.user_message or ""
+        if self._needs_emergency_route(triage, handoff, user_text):
             resp = self._route_emergency(ctx)
             if resp:
                 return OrchestratorRouteResult(
@@ -84,19 +106,106 @@ class ChatOrchestrator:
                 category="Emergency",
             )
 
+        drug_block = self._route_inappropriate_drug_block(ctx)
+        if drug_block is not None:
+            return OrchestratorRouteResult(
+                resolved=True,
+                response=drug_block,
+                reason=RouteReason.RESOLVED,
+                category=triage.get("category", "Other"),
+                subtype="inappropriate_drug_block",
+            )
+
+        unrecognized = self._route_unrecognized_symptom(ctx)
+        if unrecognized is not None:
+            return OrchestratorRouteResult(
+                resolved=True,
+                response=unrecognized,
+                reason=RouteReason.RESOLVED,
+                category=triage.get("category", "Other"),
+                subtype="unrecognized_symptom_input",
+            )
+
+        ambiguous_heart = self._route_ambiguous_heart(ctx)
+        if ambiguous_heart is not None:
+            return OrchestratorRouteResult(
+                resolved=True,
+                response=ambiguous_heart,
+                reason=RouteReason.RESOLVED,
+                category=triage.get("category", "Other"),
+                subtype="ambiguous_heart_clarification",
+            )
+
+        from src.utils.input_helpers import should_prioritize_medical_route_over_store
+        from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+        store_texts = (
+            ctx.original_user_message,
+            ctx.sanitized_message,
+            ctx.user_message,
+        )
+        store_message = ctx.sanitized_message or ctx.user_message or ""
+        skip_store_gate = should_prioritize_medical_route_over_store(
+            ctx.triage_result,
+            store_message,
+        )
+        if not skip_store_gate and is_probable_store_inquiry_any(
+            *store_texts,
+            triage_result=ctx.triage_result,
+        ):
+            resp = self._route_store(ctx)
+            if resp is not None:
+                return OrchestratorRouteResult(
+                    resolved=True,
+                    response=resp,
+                    reason=RouteReason.RESOLVED,
+                    category=triage.get("category", "Other"),
+                )
+
         category = triage.get("category", "Other")
         confidence = float(triage.get("confidence") or 1.0)
+        sanitized = ctx.sanitized_message or ctx.user_message or ""
+
+        category, triage = reroute_symptom_general_other_to_physical(triage, sanitized)
+        if category != ctx.triage_result.get("category"):
+            ctx.triage_result = triage
+            session["last_triage_result"] = triage
+            if hasattr(session, "modified"):
+                session.modified = True
+
+        category = apply_physical_category_overrides(category, sanitized)
+        if category != triage.get("category"):
+            triage = {**triage, "category": category}
+            ctx.triage_result = triage
+            session["last_triage_result"] = triage
+            if hasattr(session, "modified"):
+                session.modified = True
 
         try:
-            if category == "Emotional" and confidence >= 0.5:
+            if should_defer_category_routing(category, confidence, session):
+                return OrchestratorRouteResult(
+                    resolved=False,
+                    reason=RouteReason.UNHANDLED_CATEGORY,
+                    category=category,
+                )
+            if category == "Emotional":
                 resp = self._route_emotional(ctx)
             elif category == "Physical":
                 resp = self._route_physical(ctx, monitor)
             elif category == "Ask":
                 resp = self._route_ask(ctx)
             elif category == "Other":
-                self._enrich_concierge_intent(ctx)
-                resp = self._route_concierge(ctx, monitor)
+                store_probable = (
+                    not skip_store_gate
+                    and is_probable_store_inquiry_any(
+                        *store_texts,
+                        triage_result=ctx.triage_result,
+                    )
+                )
+                resp = None
+                if not store_probable:
+                    self._enrich_concierge_intent(ctx)
+                    resp = self._route_concierge(ctx, monitor)
                 if resp is None:
                     resp = self._route_store(ctx)
             else:
@@ -133,6 +242,25 @@ class ChatOrchestrator:
             category=category,
         )
 
+    def _needs_emergency_route(
+        self,
+        triage: Dict[str, Any],
+        handoff: HandoffResult,
+        user_text: str = "",
+    ) -> bool:
+        sub = (triage.get("subcategory") or "").lower()
+        if "ambiguous_heart" in sub:
+            return False
+        if (
+            handoff.stop
+            or triage.get("category") == "Emergency"
+            or triage.get("requires_immediate_action")
+        ):
+            return True
+        from src.agents.emergency_classifier import is_emergency_candidate
+
+        return is_emergency_candidate(user_text, triage_result=triage)
+
     def _mark_step(self, sid: Optional[str], category: str) -> None:
         try:
             from src.services.processing_flows import flow_for_triage_category
@@ -143,6 +271,69 @@ class ChatOrchestrator:
             mark_processing_step(sid, step)
         except Exception as e:
             logger.debug("mark_processing_step skipped: %s", e)
+
+    def _route_unrecognized_symptom(self, ctx: Any) -> Optional[ResponseTuple]:
+        """Physical/Ask または低確信 Other の短い不明入力へ caution カードを返す。"""
+        handoff = resolve_handoff(
+            ctx.triage_result,
+            ctx.sanitized_message,
+            ctx.session.get("user_attributes"),
+        )
+        user_text = ctx.sanitized_message or ctx.user_message or ""
+        if self._needs_emergency_route(ctx.triage_result, handoff, user_text):
+            return None
+
+        from src.utils.input_helpers import should_apply_unrecognized_symptom_gate
+
+        if not should_apply_unrecognized_symptom_gate(
+            ctx.triage_result,
+            ctx.sanitized_message or ctx.user_message,
+        ):
+            return None
+
+        from src.handlers.chat.chat_symptom_route import try_unrecognized_symptom_response
+
+        t0 = time.time()
+        resp = try_unrecognized_symptom_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.sanitized_message,
+            ctx.user_message,
+        )
+        if resp is None:
+            return None
+        log_agent_step(
+            self._trace_id,
+            "ChatOrchestrator",
+            "unrecognized_symptom",
+            sid=ctx.sid,
+            ms=(time.time() - t0) * 1000,
+        )
+        return resp
+
+    def _route_ambiguous_heart(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.chat_ambiguous_heart_route import try_ambiguous_heart_clarification
+
+        t0 = time.time()
+        resp = try_ambiguous_heart_clarification(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.sanitized_message,
+            ctx.user_message,
+            ctx.triage_result or {},
+        )
+        if resp is None:
+            return None
+        log_agent_step(
+            self._trace_id,
+            "ChatOrchestrator",
+            "ambiguous_heart",
+            sid=ctx.sid,
+            ms=(time.time() - t0) * 1000,
+        )
+        return resp
 
     def _route_emotional(self, ctx: Any) -> Optional[ResponseTuple]:
         from src.agents.counseling_manager import start_counseling
@@ -254,6 +445,14 @@ class ChatOrchestrator:
             self._client,
             conversation_history=history,
             session_id=ctx.sid,
+            alt_texts=[
+                t
+                for t in (
+                    getattr(ctx, "original_user_message", None),
+                    ctx.user_message,
+                )
+                if t
+            ],
         )
         ctx.triage_result = enriched
         if hasattr(ctx.session, "modified"):
@@ -311,6 +510,21 @@ class ChatOrchestrator:
             payload={"handled": resp is not None},
         )
         return resp
+
+    def _route_inappropriate_drug_block(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.inappropriate_drug_block_route import (
+            try_inappropriate_drug_block_response,
+        )
+
+        return try_inappropriate_drug_block_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.user_message or "",
+            ctx.sanitized_message or ctx.user_message or "",
+            ctx.triage_result,
+            append_user=True,
+        )
 
     def _route_emergency(self, ctx: Any) -> Optional[ResponseTuple]:
         from src.handlers.chat.emergency_dispatch import dispatch_emergency

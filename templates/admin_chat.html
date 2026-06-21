@@ -10,8 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_chat.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v={{ version }}">
 </head>
-<body>
+<body data-ui-variant="sage">
     <div class="container">
         <!-- Header -->
         <header>
@@ -218,9 +219,14 @@
             <div class="panel" id="right-panel">
                 <div class="panel-header">
                     <span class="panel-title">コントロール & 情報</span>
-                    <button class="panel-resize-btn" title="パネル幅を調整">
-                        <i class="fa-solid fa-grip-vertical"></i>
-                    </button>
+                    <div class="panel-header-actions">
+                        <button type="button" class="panel-resize-btn" title="パネル幅を調整">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </button>
+                        <button type="button" class="panel-collapse-btn" id="right-panel-collapse-btn" onclick="toggleRightPanel()" title="パネルを閉じる" aria-expanded="true" aria-controls="right-panel">
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
         </div>
                 
                 <!-- AI Management Section (Accordion) -->
@@ -302,6 +308,12 @@
                     </div>
                 </div>
             </div>
+
+            <button type="button" id="right-panel-expand-tab" class="right-panel-expand-tab" onclick="toggleRightPanel()" title="コントロール & 情報を表示" aria-label="コントロール & 情報を表示" hidden>
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                <span class="right-panel-expand-tab__label">コントロール</span>
+                <span id="right-panel-expand-badge" class="right-panel-expand-tab__badge" hidden></span>
+            </button>
         </main>
     </div>
 
@@ -644,7 +656,13 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v=20260516-poll-fix2"></script>
-    <script src="{{ url_for('static', filename='js/admin_chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/processing_status.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/ui_strings.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/medicine_mapper.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/medicine_card.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/carousel.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/recommendation_renderer.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/status_renderer.js') }}?v={{ version }}"></script>
+    <script src="{{ url_for('static', filename='js/admin_chat.js') }}?v={{ version }}"></script>
 </body>
 </html>

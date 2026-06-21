@@ -77,15 +77,21 @@ def _execute_medicine_qa_flow(
         )
     except Exception as exc:
         logger.error("❌ 医薬品相談機能実行時エラー: %s", exc, exc_info=True)
-        bot_response = {
-            "type": "bot",
-            "content": (
-                "申し訳ございません。一時的にエラーが発生しました。"
-                "しばらく時間をおいてもう一度お試しいただくか、"
-                "症状を詳しく入力して再度ご相談ください。"
-            ),
-            "diagnosis": None,
-        }
+        from src.services.sage_bot_response import build_bot_response
+        from src.services.status_diagnosis_builder import build_system_error_status
+
+        legacy_content = (
+            "申し訳ございません。一時的にエラーが発生しました。"
+            "しばらく時間をおいてもう一度お試しいただくか、"
+            "症状を詳しく入力して再度ご相談ください。"
+        )
+        sage_diag = build_system_error_status(message=legacy_content).to_client_dict()
+        bot_response = build_bot_response(
+            session,
+            sid,
+            sage_diagnosis=sage_diag,
+            legacy_content=legacy_content,
+        )
         if sid:
             session_data = get_session_from_db(sid)
             if session_data:
@@ -377,15 +383,29 @@ def handle_question_flow(
                 except Exception:
                     pass
                 
-            from src.services.chat_response_service import build_greeting_response
+            from src.agents.concierge_agent import generate_greeting_text
+            from src.services.sage_bot_response import build_bot_response
+            from src.services.status_diagnosis_builder import build_concierge_text_status
 
-            greeting_response = build_greeting_response(user_message)
-                
-            bot_response = {
-                'type': 'bot',
-                'content': greeting_response,
-                'diagnosis': None
-            }
+            history = session.get("messages", [])[-10:]
+            greeting_response = generate_greeting_text(
+                recommendation_client,
+                user_message,
+                session_id=sid,
+                history=history,
+            )
+            sage_diag = build_concierge_text_status(
+                greeting_response,
+                title="ご挨拶",
+                kind="concierge_greeting",
+            ).to_client_dict()
+            bot_response = build_bot_response(
+                session,
+                sid,
+                sage_diagnosis=sage_diag,
+                legacy_content=greeting_response,
+                greeting=True,
+            )
             session['messages'].append(bot_response)
             session.modified = True
                 
@@ -860,11 +880,29 @@ def handle_question_flow(
                     logger.info(f"💾 ユーザーメッセージをDBに保存: {len(session['messages'])} messages")
                     
                 # 医療機関受診案内を追加
-                medical_advice = {
-                    'type': 'bot',
-                    'content': '⚠️ 症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。医療機関（病院・クリニック）での受診をお勧めします。',
-                    'medical_advice': True
-                }
+                from src.services.sage_bot_response import build_bot_response
+                from src.services.status_diagnosis_builder import build_notice_status
+
+                advice_text = (
+                    "症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。"
+                    "医療機関（病院・クリニック）での受診をお勧めします。"
+                )
+                sage_diag = build_notice_status(
+                    advice_text,
+                    title="医療機関への受診をお勧めします",
+                    variant="caution",
+                    kind="medical_advice_duration",
+                ).to_client_dict()
+                medical_advice = build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=(
+                        "⚠️ 症状が7日を超えている場合は、市販薬での対応が困難な可能性があります。"
+                        "医療機関（病院・クリニック）での受診をお勧めします。"
+                    ),
+                    medical_advice=True,
+                )
                 if 'messages' not in session:
                     session['messages'] = []
                 session['messages'].append(medical_advice)
@@ -958,12 +996,25 @@ def handle_question_flow(
             else:
                 # 前回の症状が見つからない場合、属性更新の確認メッセージのみ返す
                 logger.warning(f"⚠️ 前回の症状メッセージが見つかりません。属性更新の確認のみ返します。")
-                bot_response = {
-                    'type': 'bot',
-                    'content': f"✅ 属性情報を更新しました。\n\n年齢: {user_attributes.get('age', '未入力')}\n性別: {user_attributes.get('gender', '未入力')}\nアレルギー: {', '.join(user_attributes.get('allergies', [])) if user_attributes.get('allergies') else 'なし'}\n服用中の薬: {', '.join(user_attributes.get('current_medications', [])) if user_attributes.get('current_medications') else 'なし'}\n\n症状について教えていただければ、更新された情報をもとに適切な医薬品をご提案いたします。",
-                    'diagnosis': None,
-                    'attribute_update_confirmation': True
-                }
+                from src.services.sage_bot_response import build_bot_response
+                from src.services.status_diagnosis_builder import build_attribute_update_status
+
+                legacy_content = (
+                    f"✅ 属性情報を更新しました。\n\n"
+                    f"年齢: {user_attributes.get('age', '未入力')}\n"
+                    f"性別: {user_attributes.get('gender', '未入力')}\n"
+                    f"アレルギー: {', '.join(user_attributes.get('allergies', [])) if user_attributes.get('allergies') else 'なし'}\n"
+                    f"服用中の薬: {', '.join(user_attributes.get('current_medications', [])) if user_attributes.get('current_medications') else 'なし'}\n\n"
+                    f"症状について教えていただければ、更新された情報をもとに適切な医薬品をご提案いたします。"
+                )
+                sage_diag = build_attribute_update_status(user_attributes).to_client_dict()
+                bot_response = build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=legacy_content,
+                    attribute_update_confirmation=True,
+                )
                     
                 # ユーザーメッセージをDBに保存
                 if sid:

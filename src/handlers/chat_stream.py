@@ -128,6 +128,40 @@ def _extract_done_messages(messages: list) -> tuple[Optional[Dict[str, Any]], Op
     return bot_message, user_message
 
 
+def _build_sse_done_event(
+    body: Any,
+    status_code: int,
+    messages: list,
+    *,
+    trace_id: Optional[str] = None,
+) -> "SseDoneEvent":
+    from src.handlers.sse_events import SseDoneEvent
+
+    duplicate_skip = bool(isinstance(body, dict) and body.get("duplicate_skip"))
+    bot_message, user_message = _extract_done_messages(messages)
+    if duplicate_skip:
+        bot_message = None
+        if messages and isinstance(messages[-1], dict) and messages[-1].get("type") == "user":
+            user_message = messages[-1]
+
+    body_dict = body if isinstance(body, dict) else {}
+    return SseDoneEvent(
+        http_status=status_code,
+        status=body_dict.get("status", "ok"),
+        message_count=body_dict.get("message_count", 0),
+        trace_id=trace_id,
+        bot_message=bot_message,
+        user_message=user_message,
+        diagnosis=(bot_message or {}).get("diagnosis") if bot_message else None,
+        duplicate_skip=duplicate_skip,
+        error=bool(body_dict.get("error")),
+        warning=bool(body_dict.get("warning")),
+        response=body_dict.get("response"),
+        risk_score=body_dict.get("risk_score"),
+        dev_preview_kind=body_dict.get("dev_preview_kind"),
+    )
+
+
 async def stream_chat_events(
     request: Request,
     message: str,
@@ -213,21 +247,21 @@ async def stream_chat_events(
                 cached = pop_stream_result(sid)
                 if cached:
                     body, status_code = cached
-                    from src.handlers.sse_events import SseDoneEvent
-
-                    bot_message = None
-                    user_message = None
                     session_data = get_session_from_db(sid) or {}
                     messages = list(session_data.get("messages") or [])
-                    bot_message, user_message = _extract_done_messages(messages)
-                    done = SseDoneEvent(
-                        http_status=status_code,
-                        status=body.get("status", "ok") if isinstance(body, dict) else "ok",
-                        message_count=body.get("message_count", 0) if isinstance(body, dict) else 0,
-                        bot_message=bot_message,
-                        user_message=user_message,
-                    )
+                    done = _build_sse_done_event(body, status_code, messages)
                     payload = done.to_payload()
+                    if done.error or done.warning:
+                        preview_payload = {
+                            "error": done.error,
+                            "warning": done.warning,
+                            "response": done.response,
+                            "message_count": done.message_count,
+                            "dev_preview_kind": done.dev_preview_kind,
+                        }
+                        if done.risk_score is not None:
+                            preview_payload["risk_score"] = done.risk_score
+                        yield _sse_line("client_preview", preview_payload, event_id="client_preview")
                     payload["reattach"] = True
                     yield _sse_line("done", payload, event_id="done")
                 return
@@ -245,20 +279,27 @@ async def stream_chat_events(
                     persist_session_from_chat_state(sid, safe_session, request)
                 except Exception:
                     logger.exception("SSE persist before done failed sid=%s", sid)
-            from src.handlers.sse_events import SseDoneEvent
-
             trace_id = safe_session.get("last_trace_id")
             messages = list(safe_session.get("messages") or [])
-            bot_message, user_message = _extract_done_messages(messages)
-            done = SseDoneEvent(
-                http_status=status_code,
-                status=body.get("status", "ok") if isinstance(body, dict) else "ok",
-                message_count=body.get("message_count", 0) if isinstance(body, dict) else 0,
+            done = _build_sse_done_event(
+                body,
+                status_code,
+                messages,
                 trace_id=trace_id,
-                bot_message=bot_message,
-                user_message=user_message,
             )
-            yield _sse_line("done", done.to_payload(), event_id="done")
+            done_payload = done.to_payload()
+            if done.error or done.warning:
+                preview_payload = {
+                    "error": done.error,
+                    "warning": done.warning,
+                    "response": done.response,
+                    "message_count": done.message_count,
+                    "dev_preview_kind": done.dev_preview_kind,
+                }
+                if done.risk_score is not None:
+                    preview_payload["risk_score"] = done.risk_score
+                yield _sse_line("client_preview", preview_payload, event_id="client_preview")
+            yield _sse_line("done", done_payload, event_id="done")
         elif owns_worker and worker and not worker.done():
             logger.warning("SSE stream ended before worker completed sid=%s", sid)
 

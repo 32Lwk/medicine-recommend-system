@@ -130,6 +130,12 @@ async def _deliver_line_messages(
             bot_message=bot_message,
             lang=lang,
         )
+    if sid:
+        from src.handlers.line.line_quick_actions import attach_session_quick_actions
+        from src.services.session_manager import get_session_from_db
+
+        session_data = get_session_from_db(sid)
+        messages = attach_session_quick_actions(messages, session_data, lang=lang)
     if not messages:
         return
 
@@ -192,11 +198,18 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
             return
         postback = event.get("postback")
         data = postback.get("data") if isinstance(postback, dict) else ""
+        data_str = str(data or "")
+
+        from src.handlers.line.line_menu_actions import handle_line_menu_postback
+
+        if await handle_line_menu_postback(user_id, data_str, reply_token=reply_token):
+            return
+
         from src.handlers.line.line_feedback import handle_line_feedback_postback
 
         await handle_line_feedback_postback(
             user_id,
-            str(data or ""),
+            data_str,
             reply_token=reply_token,
         )
         return
@@ -231,8 +244,9 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         return
 
     from src.handlers.line.line_feedback import is_line_feedback_display_text
+    from src.handlers.line.line_menu_actions import is_line_menu_display_text
 
-    if is_line_feedback_display_text(text):
+    if is_line_feedback_display_text(text) or is_line_menu_display_text(text):
         logger.info(
             "LINE feedback displayText echo ignored userId=%s text=%s",
             user_id,

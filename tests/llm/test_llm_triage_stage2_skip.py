@@ -9,6 +9,19 @@ from src.services import llm_triage as lt
 @patch("src.core.llm_client.chat_completion_create")
 @patch("src.services.llm_triage.detect_illegal_or_controlled_drug", return_value=None)
 @patch("src.services.budget_guard.check_llm_allowed", return_value=(True, None))
+def test_stage0b_fast_path_sets_concierge_intent(mock_budget, _drug, mock_chat):
+    """第一段階省略（stage0b）でも concierge_intent を返す。"""
+    result = lt.llm_triage("ありがとう", MagicMock(), use_cache=False)
+    assert result["category"] == "Other"
+    assert result["concierge_intent"] == "thanks"
+    assert result["concierge_intent_source"] == "exact_match_gate"
+    assert mock_chat.call_count == 0
+    mock_budget.assert_not_called()
+
+
+@patch("src.core.llm_client.chat_completion_create")
+@patch("src.services.llm_triage.detect_illegal_or_controlled_drug", return_value=None)
+@patch("src.services.budget_guard.check_llm_allowed", return_value=(True, None))
 def test_stage2_skipped_for_greeting(mock_budget, _drug, mock_chat):
     result = lt.llm_triage("こんにちは", MagicMock(), use_cache=False)
     assert result["category"] == "Other"

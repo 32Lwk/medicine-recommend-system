@@ -77,6 +77,7 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
     
     単語境界を考慮した検出を行い、誤検知を防止します。
     例: "DOC"は"document"の略として使われる場合があるため、単語境界をチェック
+    OTC 不眠・睡眠薬相談文脈では規制薬物キーワード（睡眠薬等）を除外します。
     
     Args:
         user_text: ユーザーの入力テキスト
@@ -85,6 +86,8 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
         "illegal" (違法薬物) または "controlled" (規制薬物) または None
     """
     import re
+
+    from src.handlers.chat.controlled_drug_routing import should_skip_controlled_keyword
     
     user_text_lower = user_text.lower()
     
@@ -107,6 +110,8 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
     
     # 規制薬物のキーワードチェック（単語境界を考慮）
     for keyword in CONTROLLED_DRUG_KEYWORDS:
+        if should_skip_controlled_keyword(keyword, user_text):
+            continue
         keyword_lower = keyword.lower()
         # 短いキーワード（3文字以下）は単語境界を厳密にチェック
         if len(keyword) <= 3:
@@ -157,7 +162,7 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状
 2. Emotional（精神的・感情的症状）: 緊張、不安、ストレス、恋愛の悩みなど、心理的な症状
 3. Emergency（緊急性が高い症状）: 心臓が痛い、呼吸困難、激しい頭痛など、即座に医療機関受診が必要な症状
-4. Ask（医薬品質問）: 特定の医薬品についての質問
+4. Ask（医薬品質問）: 既存の推奨・相談履歴がある状態での、特定医薬品・用法・副作用などの追質問
 5. Other（その他）: 上記4つに該当しないすべての入力（挨拶、不明な入力、店舗案内、遺失物関連、在庫確認、周辺施設の案内、不適切な要求など）
 
 【重要な判定ルール（優先順位順）】
@@ -171,6 +176,8 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 - **「睡眠薬を教えて」「睡眠薬について」「睡眠薬を知りたい」「睡眠改善薬を教えて」など、睡眠薬に関する質問 → Emotional（不眠の症状に対するカウンセリングが必要なため）**
 - **注意: 眠気と不眠は明確に区別してください。眠気は日中の眠さ、不眠は夜間に眠れない症状です。**
 - **「場所を教えてください」「どこにありますか」「トイレはどこですか」など、店舗案内に関する質問 → Other**
+- **「風邪薬を教えて」「風邪薬ありますか」「市販薬を教えて」など、症状・薬探索の相談 → Physical（店舗在庫確認ではない。初回は推奨フローへ。Ask は既存推奨への追質問のみ）**
+- **「在庫ありますか」「取り寄せできますか」「売り場はどこですか」など、店舗の在庫・売場位置の確認 → Other（第二段階で store_inquiry/inventory）**
 - **「忘れ物を拾いました」「落とし物を拾いました」など、遺失物に関する質問 → Other**
 - **「処方して」「処方してください」「処方薬を教えて」「処方薬をください」など、処方要求がある場合 → Other**
 - **　処方箋医薬品名 → Other（処方箋医薬品のため、当システムでは対応不可）**
@@ -200,11 +207,13 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 会話履歴が提供されている場合、以下の点を考慮してください：
 - 直前のメッセージに恋愛関連のキーワード（「失恋」「好きな人」など）がある場合、現在のメッセージも恋愛文脈として扱う
 - 会話の流れから、比喩的表現であることが推測できる場合は、それを反映する
+- 直前の会話に在庫・店舗案内の文脈があり「ありますか」等の短い追い質問のみ → Other（第二段階で store_inquiry/inventory）
 - セッション全体の文脈を考慮して判定する
 
 【曖昧性の処理】
 「心が痛い」のような表現は、身体的症状（心臓疾患）と心理的症状の両方の可能性があります。
 この場合は、subcategoryに"Ambiguous_Heart"を設定し、詳細質問を生成する必要があることを示してください。
+Ambiguous_Heart の場合は requires_immediate_action を false にしてください（緊急ルートには回さない）。
 
 【confidence（確信度）の重要性】
 - confidenceは0.0-1.0の範囲で、判定の確信度を示します
@@ -213,7 +222,9 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 【分類例（参考）】
 - 「こんにちは」「おはよう」→ Other（挨拶。症状なし）
 - 「頭が痛い」「風邪をひいた」→ Physical
-- 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨）
+- **短い症状入力**（「頭痛」「発熱」「咳」など症状キーワードのみ、2〜4文字含む）→ Physical
+- 「風邪薬を教えて」「風邪薬ありますか」「市販薬を教えてください」→ Physical（初回の薬探索・推奨依頼。店舗在庫ではない）
+- 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨。Ask ではない）
 - 「推奨された薬は競技で使えますか」→ Ask（既存推奨への追質問）
 - 「このチャットでできることを教えて」→ Other（アプリ説明。capabilities は Concierge）
 - 「眠れない」→ Emotional / 「眠気が強い」→ Physical
@@ -255,9 +266,12 @@ SECOND_STAGE_OTHER_PROMPT = """
 17. **store_inquiry/parking**: 駐車場に関する質問（「駐車場」「パーキング」「駐車」など）
 18. **store_inquiry/services**: サービスに関する質問（「サービス」「取り扱い」「配達」など）
 19. **lost_and_found**: 遺失物に関する質問（「忘れ物を拾いました」「落とし物を拾いました」など）
-20. **general_other**: その他の挨拶や不明な入力
+20. **general_other**: その他の挨拶や不明な入力（メタ質問・雑談・一声の挨拶もここ — 後段 Concierge が処理）
 
 【重要な判定ルール（優先順位順）】
+- **メタ質問・雑談・挨拶**
+  - アプリの機能説明・自己紹介・天気・「こんにちは」など → general_other（Concierge が後段で処理）
+  - 症状・店舗案内・医薬品・在庫確認は上記 store_inquiry 等のサブカテゴリを優先
 - **【最優先】違法薬物・規制薬物の検出**
   - 「覚醒剤」「アンフェタミン」「メタンフェタミン」「大麻」「マリファナ」「THC」「ヘロイン」「モルヒネ」「オキシコドン」「LSD」「MDMA」「エクスタシー」「コカイン」「危険ドラッグ」「違法薬物」「フェンタニル」「メタドン」「合成カンナビノイド」「スパイス」「MDPV」「α-PVP」「4-MMC」「メフェドロン」「バルビツール酸系（違法使用）」などのキーワード、または「大麻をください」などの要求 → inappropriate_request/illegal
   - 「向精神薬」「麻薬」「指定薬物」「処方薬の乱用」「医療用麻薬」「精神安定剤（違法使用）」「睡眠薬（違法使用）」「鎮痛薬（違法使用）」「オピオイド（違法使用）」「ベンゾジアゼピン系（違法使用）」などのキーワード → inappropriate_request/controlled
@@ -275,7 +289,9 @@ SECOND_STAGE_OTHER_PROMPT = """
   - 「毛が生える」「ハゲが治る」「育毛剤」「発毛」など → inappropriate_request/hair_growth
 - **店舗案内関連の検出**
   - 「場所を教えてください」「どこにありますか」「トイレはどこですか」など → store_inquiry
-  - 「ありますか」「在庫」「取り寄せ」など → store_inquiry/inventory
+  - 「在庫ありますか」「取り寄せ」「売り場はどこ」「店に置いてありますか」など、**店舗の在庫・売場位置**の明示 → store_inquiry/inventory
+  - **「風邪薬を教えて」「風邪薬ありますか」「市販薬を教えて」など、症状・薬探索の相談 → general_other（Physical 第一段階で分類。inventory ではない）**
+  - **曖昧施設の位置質問（店舗・周辺文脈なし）**: 「大学はどこ？」「病院はどこ？」など、近くに/周辺に/店内などの文脈がなく単独の施設名＋位置質問 → general_other（Concierge へ。store_inquiry/facilities ではない）**
   - 「近くに」「周辺に」「コンビニ」「銀行」など → store_inquiry/facilities
   - 「免税」「免税対応」など → store_inquiry/tax_free
   - 「観光地」「観光」「名所」など → store_inquiry/tourism
@@ -285,6 +301,9 @@ SECOND_STAGE_OTHER_PROMPT = """
   - 「サービス」「取り扱い」「配達」など → store_inquiry/services
 - **遺失物関連の検出**
   - 「忘れ物を拾いました」「落とし物を拾いました」など → lost_and_found
+- **会話履歴・フォローアップ**
+  - 直前の会話に在庫確認・店舗案内の文脈があり、現在の入力が「ありますか」「在庫は？」など短い追い質問のみ → store_inquiry/inventory
+  - 直前の会話に症状・薬探索の文脈があり、短い追い質問 → general_other（Physical 経路）
 - **その他**
   - 上記に該当しない場合 → general_other
 
@@ -292,14 +311,15 @@ SECOND_STAGE_OTHER_PROMPT = """
 - confidenceは0.0-1.0の範囲で、判定の確信度を示します
 - 0.75未満の場合は、判定に不確実性があることを示します（ConfidenceGate で再判定）
 
-【分類例（参考）】
-- 「こんにちは」「おはよう」→ Other（挨拶。症状なし）
-- 「頭が痛い」「風邪をひいた」→ Physical
-- 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨）
-- 「推奨された薬は競技で使えますか」→ Ask（既存推奨への追質問）
-- 「このチャットでできることを教えて」→ Other（アプリ説明。capabilities は Concierge）
-- 「眠れない」→ Emotional / 「眠気が強い」→ Physical
-- 低い確信度の場合は、general_otherに分類することを検討してください
+【分類例（参考・Other サブカテゴリのみ）】
+- 「こんにちは」「おはよう」→ general_other
+- 「このチャットでできることを教えて」→ general_other（アプリ説明）
+- 「トイレはどこですか」→ store_inquiry
+- 「風邪薬の在庫ありますか」「取り寄せできますか」→ store_inquiry/inventory
+- 「風邪薬を教えて」「市販薬ありますか」→ general_other（薬探索。Physical 第一段階で分類）
+- 「大学はどこ？」「病院はどこ？」（周辺・店内文脈なし）→ general_other
+- 「マンジャロを処方して」→ inappropriate_request/prescription
+- 低い確信度の場合は、general_other に分類することを検討してください
 
 【回答形式】
 JSON形式で回答してください。以下の形式を厳密に守ってください：
@@ -463,6 +483,9 @@ def llm_triage(
         subcategory = first_stage_result.get("subcategory", "general_other")
         requires_immediate_action = bool(first_stage_result.get("requires_immediate_action", False))
         reasoning = first_stage_result.get("reasoning", "判定理由が提供されませんでした")
+
+        if "ambiguous_heart" in (subcategory or "").lower():
+            requires_immediate_action = False
         
         # confidenceの範囲チェック
         if confidence < 0.0:
@@ -505,7 +528,10 @@ def llm_triage(
                             },
                             {
                                 "role": "user",
-                                "content": f"{SECOND_STAGE_OTHER_PROMPT}\n\n【ユーザーの入力】\n{user_text}",
+                                "content": (
+                                    f"{SECOND_STAGE_OTHER_PROMPT}{history_section}\n\n"
+                                    f"【ユーザーの入力】\n{user_text}"
+                                ),
                             },
                         ],
                         temperature=0.1,
