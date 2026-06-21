@@ -297,12 +297,64 @@ def _looks_like_git_commit(value: str | None) -> bool:
     return bool(_HEX_COMMIT_RE.match(value.strip()))
 
 
+def _git_repo_root() -> Path:
+    return Path(__file__).resolve().parent
+
+
+def _git_repo_available() -> bool:
+    return (_git_repo_root() / ".git").exists()
+
+
+def _resolve_git_commit_short_from_repo() -> str | None:
+    try:
+        if not _git_repo_available():
+            return None
+        result = subprocess.run(
+            ["git", "rev-parse", "--short=7", "HEAD"],
+            cwd=_git_repo_root(),
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+        if result.returncode == 0:
+            commit = (result.stdout or "").strip()
+            if _looks_like_git_commit(commit):
+                return commit[:7]
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
+def _resolve_git_commit_date_iso_from_repo() -> str | None:
+    try:
+        if not _git_repo_available():
+            return None
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ci", "HEAD"],
+            cwd=_git_repo_root(),
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+        if result.returncode == 0:
+            return _normalize_date_iso(result.stdout)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
 def _resolve_git_commit_short() -> str | None:
     """デプロイ版の短い Git コミット（7桁）を返す。取得不可なら None。"""
     for env_key in ("GIT_COMMIT", "GIT_COMMIT_SHORT", "COMMIT_SHA", "SHORT_SHA"):
         raw = os.getenv(env_key)
         if raw and _looks_like_git_commit(raw):
             return raw.strip()[:7]
+
+    commit = _resolve_git_commit_short_from_repo()
+    if commit:
+        return commit
 
     baked_commit = _load_baked_build_meta().get("gitCommitShort")
     if baked_commit and _looks_like_git_commit(str(baked_commit)):
@@ -311,24 +363,6 @@ def _resolve_git_commit_short() -> str | None:
     nv = _normalized_app_version_env()
     if nv and _looks_like_git_commit(nv):
         return nv[:7]
-
-    try:
-        repo_root = Path(__file__).resolve().parent
-        if (repo_root / ".git").exists():
-            result = subprocess.run(
-                ["git", "rev-parse", "--short=7", "HEAD"],
-                cwd=repo_root,
-                capture_output=True,
-                text=True,
-                timeout=2,
-                check=False,
-            )
-            if result.returncode == 0:
-                commit = (result.stdout or "").strip()
-                if _looks_like_git_commit(commit):
-                    return commit[:7]
-    except (OSError, subprocess.SubprocessError):
-        pass
     return None
 
 
@@ -339,26 +373,14 @@ def _resolve_git_commit_date_iso() -> str | None:
         if iso:
             return iso
 
+    iso = _resolve_git_commit_date_iso_from_repo()
+    if iso:
+        return iso
+
     baked_date = _load_baked_build_meta().get("gitCommitDateIso")
     iso = _normalize_date_iso(str(baked_date) if baked_date is not None else None)
     if iso:
         return iso
-
-    try:
-        repo_root = Path(__file__).resolve().parent
-        if (repo_root / ".git").exists():
-            result = subprocess.run(
-                ["git", "log", "-1", "--format=%ci", "HEAD"],
-                cwd=repo_root,
-                capture_output=True,
-                text=True,
-                timeout=2,
-                check=False,
-            )
-            if result.returncode == 0:
-                return _normalize_date_iso(result.stdout)
-    except (OSError, subprocess.SubprocessError):
-        pass
     return None
 
 

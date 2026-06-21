@@ -32,3 +32,15 @@ def test_resolve_git_commit_date_from_env(monkeypatch):
     monkeypatch.setattr(main, "_BAKED_BUILD_META", {})
     monkeypatch.setenv("GIT_COMMIT_DATE", "2026-06-18T12:00:00+09:00")
     assert main._resolve_git_commit_date_iso() == "2026-06-18"
+
+
+def test_baked_meta_used_when_git_unavailable(monkeypatch):
+    monkeypatch.setattr(main, "_BAKED_BUILD_META", {
+        "gitCommitShort": "deadbee",
+        "gitCommitDateIso": "2026-06-18",
+    })
+    monkeypatch.setattr(main, "_git_repo_available", lambda: False)
+    monkeypatch.delenv("GIT_COMMIT", raising=False)
+    monkeypatch.delenv("GIT_COMMIT_DATE", raising=False)
+    assert main._resolve_git_commit_short() == "deadbee"
+    assert main._resolve_git_commit_date_iso() == "2026-06-18"

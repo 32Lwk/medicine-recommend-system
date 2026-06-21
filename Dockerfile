@@ -22,9 +22,11 @@ COPY docs/public/ docs/public/
 COPY docs/concierge/ docs/concierge/
 
 # Cloud Run 等 .git なし環境向け: ビルド引数から Git メタを ENV と static/build-meta.json に焼き込む
+# リポジトリ同梱の static/build-meta.json がある場合は COPY 済み。未設定時のみビルド引数で上書き。
 ARG GIT_COMMIT=
 ARG GIT_COMMIT_DATE=
-ENV GIT_COMMIT=${GIT_COMMIT} \
+ARG COMMIT_SHA=
+ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
     GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
 RUN python3 scripts/write_build_meta.py
 

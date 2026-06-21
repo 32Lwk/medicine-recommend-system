@@ -13,7 +13,7 @@ substitutions:
   _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
 
 steps:
-  - name: gcr.io/cloud-builders/docker
+  - name: python:3.11-slim
     entrypoint: bash
     args:
       - -ceu
@@ -22,6 +22,18 @@ steps:
         if [ -z "${COMMIT_DATE}" ]; then
           COMMIT_DATE="$(date -u +%Y-%m-%d)"
         fi
+        export GIT_COMMIT="${COMMIT_SHA}"
+        export GIT_COMMIT_DATE="${COMMIT_DATE}"
+        python3 scripts/write_build_meta.py
+        echo "build-meta:" && cat static/build-meta.json
+        echo "${COMMIT_DATE}" > /workspace/_commit_date.txt
+
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
         IMAGE="${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
         docker build \
           --build-arg "GIT_COMMIT=${COMMIT_SHA}" \
@@ -35,11 +47,13 @@ steps:
     args:
       - -ceu
       - |
+        COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
         IMAGE="$(cat /workspace/_image_ref.txt)"
         gcloud run deploy "${_SERVICE_NAME}" \
           --image="${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
+          --set-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=${COMMIT_DATE}" \
           --quiet
 
 options:
