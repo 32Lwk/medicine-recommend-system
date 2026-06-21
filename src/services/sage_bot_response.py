@@ -1,10 +1,10 @@
 """Helpers to build bot responses for Sage Web vs legacy HTML."""
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from src.services.recommendation_client_payload import use_sage_diagnosis_storage
+from src.utils.jst_datetime import now_jst_iso
 from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER
 from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MARKER
 
@@ -38,7 +38,7 @@ def build_bot_response(
     **extra: Any,
 ) -> dict[str, Any]:
     """Return bot message dict — Sage marker + diagnosis when use_sage_diagnosis_storage."""
-    ts = timestamp or datetime.now().isoformat()
+    ts = timestamp or now_jst_iso()
     sid_effective = effective_sid(session, sid)
     if sage_diagnosis and use_sage_diagnosis_storage(session, sid_effective):
         return {

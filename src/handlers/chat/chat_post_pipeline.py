@@ -27,7 +27,7 @@ from src.handlers.chat.chat_session_route import (
     handle_chat_end_if_requested,
     sync_messages_to_db_for_admin,
 )
-from src.services.session_manager import get_session_from_db
+from src.services.session_manager import resolve_session_snapshot
 from src.utils.chat_http_context import ChatClientInfo
 
 logger = logging.getLogger(__name__)
@@ -57,6 +57,18 @@ class ChatPostContext:
     trace_id: str = ""
     recommendation_client: OpenAI = field(default_factory=lambda: openai_client)
     routing: Any = None  # RoutingContext | None
+
+
+def _load_session_snapshot_for_pipeline(sid: Optional[str]) -> dict:
+    """LINE primed セッションはメモリのみ参照。"""
+    from src.services.pipeline_perf import record_pipeline_perf
+
+    snap = resolve_session_snapshot(sid) if sid else None
+    if sid and str(sid).lower().startswith("line:"):
+        record_pipeline_perf(session_db_source="memory" if snap else "memory_miss")
+    elif sid:
+        record_pipeline_perf(session_db_source="db")
+    return snap or {}
 
 
 def sync_routing_context(ctx: ChatPostContext) -> None:
@@ -120,8 +132,8 @@ def run_chat_post_pipeline(
 
     session.setdefault("messages", [])
 
-    mark_pipeline_step("before_get_session_db")
-    session_data_for_ai = get_session_from_db(sid) if sid else {}
+    mark_pipeline_step("session_db_read")
+    session_data_for_ai = _load_session_snapshot_for_pipeline(sid)
     mark_pipeline_step("after_get_session_db")
     manual_resp = handle_manual_reply_when_off(
         session, client_info, sid, ctx.sanitized_message, session_data_for_ai

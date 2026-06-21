@@ -16,6 +16,7 @@ _active_sid: ContextVar[str | None] = ContextVar("pipeline_perf_active_sid", def
 _channel: ContextVar[str] = ContextVar("pipeline_perf_channel", default="web")
 _steps: ContextVar[dict[str, float] | None] = ContextVar("pipeline_perf_steps", default=None)
 _started: ContextVar[float | None] = ContextVar("pipeline_perf_started", default=None)
+_extra: ContextVar[dict[str, Any] | None] = ContextVar("pipeline_perf_extra", default=None)
 
 
 @dataclass
@@ -25,6 +26,7 @@ class _PerfBucket:
     steps: dict[str, float] = field(default_factory=dict)
     llm_calls: list[dict[str, Any]] = field(default_factory=list)
     llm_session_cost_jpy: float = 0.0
+    extra: dict[str, Any] = field(default_factory=dict)
 
 
 _lock = threading.Lock()
@@ -68,6 +70,7 @@ def start_pipeline_perf(*, channel: str = "web", sid: str | None = None) -> None
     _channel.set(channel)
     _steps.set({})
     _started.set(time.perf_counter())
+    _extra.set({})
 
 
 def ensure_pipeline_perf_started(*, channel: str = "web", sid: str | None = None) -> None:
@@ -92,6 +95,21 @@ def mark_pipeline_step(step: str) -> None:
     if steps is None:
         return
     steps[step] = _elapsed_ms(_started.get() or time.perf_counter())
+
+
+def record_pipeline_perf(**fields: Any) -> None:
+    """PIPELINE_PERF ログに載せる追加フィールド（delivery_mode 等）。"""
+    if not fields:
+        return
+    bucket = _bucket_for()
+    if bucket is not None:
+        bucket.extra.update(fields)
+        return
+    extra = _extra.get()
+    if extra is None:
+        extra = {}
+        _extra.set(extra)
+    extra.update(fields)
 
 
 def append_llm_call_to_bucket(entry: dict[str, Any], *, cost_jpy: float = 0.0) -> bool:
@@ -171,6 +189,8 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
             "breakdown": dict(bucket.steps),
             "llm": _llm_summary_from_bucket(bucket),
         }
+        if bucket.extra:
+            payload.update(bucket.extra)
         if extra:
             payload.update(extra)
         logger.info("PIPELINE_PERF %s", payload)
@@ -184,8 +204,11 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
         "channel": channel,
         "sid": sid or "",
         "total_ms": total_ms,
-        "breakdown": steps,
+        "breakdown": dict(steps),
     }
+    fallback_extra = _extra.get()
+    if fallback_extra:
+        payload.update(fallback_extra)
     if extra:
         payload.update(extra)
     try:

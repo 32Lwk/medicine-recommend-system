@@ -89,6 +89,12 @@ def evaluate_store_gate(
     同一リクエスト内の重複 is_probable 呼び出し（従来 ~3s）を防ぐ。
     """
     if routing_ctx is not None and routing_ctx.store_gate_evaluated:
+        try:
+            from src.services.pipeline_perf import record_pipeline_perf
+
+            record_pipeline_perf(store_gate_cache_hit=True)
+        except Exception:
+            pass
         return bool(routing_ctx.store_probable)
 
     from src.services.store_inquiry_handler import is_probable_store_inquiry_any

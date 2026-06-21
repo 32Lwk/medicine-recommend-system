@@ -13,16 +13,39 @@ logger = logging.getLogger(__name__)
 # LINE reply token は秒単位で失効する。イベント timestamp からの経過で判定する。
 REPLY_TOKEN_BUDGET_MS = 22_000
 
+_SLOW_CONCIERGE_INTENTS = frozenset(
+    {
+        "greeting",
+        "thanks",
+        "chitchat",
+        "redirect",
+        "doc_operator",
+        "doc_privacy",
+        "doc_terms",
+        "doc_consultation",
+        "doc_app_overview",
+        "capabilities",
+        "architecture",
+        "app_about",
+    }
+)
+
 PushChunkFn = Callable[[str, list[dict[str, Any]]], Awaitable[bool]]
 ReplyFn = Callable[[str, list[dict[str, Any]]], Awaitable[bool]]
 
 
+def reply_token_elapsed_ms(event_timestamp_ms: int | None) -> float | None:
+    if not event_timestamp_ms:
+        return None
+    return (time.time() * 1000) - float(event_timestamp_ms)
+
+
 def reply_token_likely_valid(event_timestamp_ms: int | None) -> bool:
     """ユーザー送信時刻から reply token がまだ有効と見なせるか。"""
-    if not event_timestamp_ms:
+    elapsed = reply_token_elapsed_ms(event_timestamp_ms)
+    if elapsed is None:
         return True
-    elapsed_ms = (time.time() * 1000) - float(event_timestamp_ms)
-    return elapsed_ms < REPLY_TOKEN_BUDGET_MS
+    return elapsed < REPLY_TOKEN_BUDGET_MS
 
 
 def should_try_reply(
@@ -35,10 +58,38 @@ def should_try_reply(
     if not reply_token_likely_valid(event_timestamp_ms):
         logger.info(
             "LINE reply token likely expired elapsed_ms=%.0f; will use push",
-            (time.time() * 1000) - float(event_timestamp_ms or 0),
+            reply_token_elapsed_ms(event_timestamp_ms) or 0,
         )
         return False
     return True
+
+
+def is_slow_concierge_delivery(bot_message: dict[str, Any] | None) -> bool:
+    """監査ログ用: Concierge 等の遅い経路か（配信方針は Reply 優先のまま）。"""
+    if not bot_message:
+        return False
+    if bot_message.get("greeting"):
+        return True
+    return bot_message.get("concierge_intent") in _SLOW_CONCIERGE_INTENTS
+
+
+def _record_delivery_perf(
+    *,
+    delivery_mode: str,
+    event_timestamp_ms: int | None,
+    slow_path: bool,
+) -> None:
+    try:
+        from src.services.pipeline_perf import mark_pipeline_step, record_pipeline_perf
+
+        mark_pipeline_step("delivery_mode")
+        record_pipeline_perf(
+            delivery_mode=delivery_mode,
+            reply_token_elapsed_ms=reply_token_elapsed_ms(event_timestamp_ms),
+            slow_concierge_path=slow_path,
+        )
+    except Exception:
+        pass
 
 
 async def deliver_line_messages(
@@ -50,6 +101,7 @@ async def deliver_line_messages(
     push_chunk_fn: PushChunkFn,
     event_timestamp_ms: int | None = None,
     force: bool = False,
+    bot_message: dict[str, Any] | None = None,
 ) -> bool:
     """
     Reply API を優先し、失効時のみ Push へフォールバックする。
@@ -70,6 +122,8 @@ async def deliver_line_messages(
     if effective_ts is None and ctx is not None:
         effective_ts = ctx.event_timestamp_ms
 
+    slow_path = is_slow_concierge_delivery(bot_message)
+
     chunks = [messages[i : i + 5] for i in range(0, len(messages), 5)]
     token = reply_token or (ctx.reply_token if ctx else None)
 
@@ -80,6 +134,11 @@ async def deliver_line_messages(
                 await push_chunk_fn(user_id, chunk)
             if ctx is not None:
                 ctx.delivered = True
+            _record_delivery_perf(
+                delivery_mode="reply",
+                event_timestamp_ms=effective_ts,
+                slow_path=slow_path,
+            )
             return True
         logger.warning("LINE reply failed; falling back to push userId=%s", user_id)
 
@@ -89,4 +148,10 @@ async def deliver_line_messages(
             delivered = True
     if delivered and ctx is not None:
         ctx.delivered = True
+    mode = "push" if not token else "reply_fallback_push"
+    _record_delivery_perf(
+        delivery_mode=mode,
+        event_timestamp_ms=effective_ts,
+        slow_path=slow_path,
+    )
     return delivered

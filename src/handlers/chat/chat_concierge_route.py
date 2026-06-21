@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
@@ -61,6 +60,21 @@ def _append_bot_message(session: Any, payload: Dict[str, Any], sid: Optional[str
     return bot
 
 
+def _resolve_sync_username(session: Any, sid: str | None, existing: dict | None = None) -> str:
+    name = session.get("username")
+    if name:
+        return str(name)
+    if existing:
+        existing_name = existing.get("username")
+        if existing_name:
+            return str(existing_name)
+        profile = existing.get("line_profile") or {}
+        display = profile.get("displayName")
+        if display:
+            return str(display)
+    return f"ユーザー{get_next_user_number()}"
+
+
 def _sync_session_db(
     session: Any,
     client_info: Any,
@@ -69,20 +83,27 @@ def _sync_session_db(
     if not sid:
         return
     from src.handlers.line.line_session import is_line_session_id
+    from src.utils.jst_datetime import now_jst_iso
 
     if is_line_session_id(sid):
-        from src.services.session_manager import maybe_persist_session_activity, touch_session_in_memory
+        from src.services.session_manager import (
+            get_line_session_admin_snapshot,
+            maybe_persist_session_activity,
+            touch_session_in_memory,
+        )
 
-        session_data = {
+        existing = get_line_session_admin_snapshot(sid) or {}
+        session_data = dict(existing)
+        session_data.update({
             "session_id": sid,
-            "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+            "username": _resolve_sync_username(session, sid, existing),
             "messages": list(session.get("messages", [])),
-            "last_activity": datetime.now(),
+            "last_activity": now_jst_iso(),
             "client_ip": client_info.client_ip,
             "user_agent": client_info.user_agent,
-            "user_attributes": session.get("user_attributes", {}),
+            "user_attributes": session.get("user_attributes") or existing.get("user_attributes") or {},
             "session_active": True,
-        }
+        })
         touch_session_in_memory(sid, session_data)
         maybe_persist_session_activity(sid, session_data)
         return
@@ -90,9 +111,9 @@ def _sync_session_db(
     if not session_data:
         session_data = {
             "session_id": sid,
-            "username": session.get("username", f"ユーザー{get_next_user_number()}"),
+            "username": _resolve_sync_username(session, sid),
             "messages": list(session.get("messages", [])),
-            "last_activity": datetime.now(),
+            "last_activity": now_jst_iso(),
             "client_ip": client_info.client_ip,
             "user_agent": client_info.user_agent,
             "user_attributes": session.get("user_attributes", {}),
@@ -100,7 +121,9 @@ def _sync_session_db(
         }
     else:
         session_data["messages"] = list(session.get("messages", []))
-        session_data["last_activity"] = datetime.now()
+        session_data["last_activity"] = now_jst_iso()
+        if not session_data.get("username"):
+            session_data["username"] = _resolve_sync_username(session, sid, session_data)
     save_session_to_db(sid, session_data)
 
 
@@ -234,6 +257,7 @@ def try_concierge_response(
         client=recommendation_client,
         session_id=sid,
         conversation_history=history,
+        routing_ctx=routing_ctx,
     )
     mark_pipeline_step("concierge_resolve_intent_end")
     if intent is None:

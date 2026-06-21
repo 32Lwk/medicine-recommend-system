@@ -323,6 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('❌ refreshSessionList error:', error);
     }
+
+    setInterval(function () {
+        if (currentSessionId) {
+            refreshCurrentSessionMessagesQuietly();
+        }
+    }, 15000);
     
     // レスポンシブ要素の初期化
     try {
@@ -1469,7 +1475,9 @@ function loadChatHistory(sessionId) {
                 upsertAdminSessionRow(targetSession);
             } else {
                 const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-                targetSession = sessionsArray.find(function (session) { return session.session_id === sessionId; }) || null;
+                targetSession = sessionsArray.find(function (session) {
+                    return normalizeLineSessionId(session.session_id) === sessionId;
+                }) || null;
             }
             
             if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
@@ -1995,6 +2003,9 @@ function parseAdminTimestamp(value) {
         return num > 1e12 ? num : num * 1000;
     }
     let normalized = text.replace(' ', 'T');
+    if (/^\d{4}-\d{2}-\d{2}T[\d.:]+$/i.test(normalized)) {
+        normalized += 'Z';
+    }
     let parsed = Date.parse(normalized);
     if (Number.isFinite(parsed)) {
         return parsed;
@@ -2026,19 +2037,8 @@ function formatAdminMessageTimestamp(value) {
     if (ms == null) {
         return '—';
     }
-    const d = new Date(ms);
-    const now = new Date();
-    const sameDay = d.getFullYear() === now.getFullYear()
-        && d.getMonth() === now.getMonth()
-        && d.getDate() === now.getDate();
-    if (sameDay) {
-        return d.toLocaleTimeString('ja-JP', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-        });
-    }
-    return d.toLocaleString('ja-JP', {
+    return new Date(ms).toLocaleString('ja-JP', {
+        timeZone: 'Asia/Tokyo',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
@@ -3144,8 +3144,9 @@ function normalizeAdminMessagesForDisplay(messages) {
 }
 
 function fetchAdminSessionMessages(sessionId) {
-    const url = isLineSessionId(sessionId)
-        ? ('/api/main_session?session_id=' + encodeURIComponent(sessionId))
+    const normalizedId = normalizeLineSessionId(sessionId);
+    const url = isLineSessionId(normalizedId)
+        ? ('/api/main_session?session_id=' + encodeURIComponent(normalizedId))
         : buildMainSessionsUrl();
     return adminFetchJson(url).then(function (data) {
         if (data && data.session) {
@@ -3153,9 +3154,62 @@ function fetchAdminSessionMessages(sessionId) {
         }
         const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
         return sessionsArray.find(function (session) {
-            return session.session_id === sessionId;
+            return normalizeLineSessionId(session.session_id) === normalizedId;
         }) || null;
     });
+}
+
+function scrollAdminChatToBottom() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) {
+        return;
+    }
+    const doScroll = function () {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        const last = chatMessages.lastElementChild;
+        if (last && typeof last.scrollIntoView === 'function') {
+            last.scrollIntoView({ block: 'end', behavior: 'auto' });
+        }
+    };
+    doScroll();
+    requestAnimationFrame(function () {
+        doScroll();
+        requestAnimationFrame(doScroll);
+    });
+    [50, 150, 400, 800].forEach(function (ms) {
+        setTimeout(doScroll, ms);
+    });
+}
+
+let _adminChatRefreshToken = 0;
+
+function refreshCurrentSessionMessagesQuietly() {
+    if (!currentSessionId) {
+        return;
+    }
+    const sessionId = currentSessionId;
+    const token = ++_adminChatRefreshToken;
+    fetchAdminSessionMessages(sessionId)
+        .then(function (targetSession) {
+            if (!targetSession || token !== _adminChatRefreshToken || currentSessionId !== sessionId) {
+                return;
+            }
+            upsertAdminSessionRow(targetSession);
+            const msgs = Array.isArray(targetSession.messages) ? targetSession.messages : [];
+            const prevLen = currentMessages.length;
+            const prevLast = prevLen
+                ? parseAdminTimestamp(currentMessages[prevLen - 1].timestamp)
+                : null;
+            const newLast = msgs.length
+                ? parseAdminTimestamp(msgs[msgs.length - 1].timestamp)
+                : null;
+            if (msgs.length !== prevLen || newLast !== prevLast) {
+                currentDetailedDiagnosis = targetSession.detailed_diagnosis || currentDetailedDiagnosis;
+                currentMessages = msgs;
+                renderChatMessages(msgs);
+            }
+        })
+        .catch(function () { /* ignore */ });
 }
 
 function shouldRenderBotContentAsHtml(msg, contentText) {
@@ -3269,7 +3323,9 @@ function renderChatMessages(messages) {
     
     let html = '';
     if (currentSessionId && isLineSessionId(currentSessionId)) {
-        const sess = allSessions.find(function (s) { return s.session_id === currentSessionId; });
+        const sess = allSessions.find(function (s) {
+            return normalizeLineSessionId(s.session_id) === currentSessionId;
+        });
         if (sess) {
             const archiveN = sess.message_archive_count != null ? sess.message_archive_count : messages.length;
             const liveN = sess.messages_live_count != null ? sess.messages_live_count : (sess.messages_live || []).length;
@@ -3491,11 +3547,7 @@ function renderChatMessages(messages) {
     
     chatMessages.innerHTML = html;
     console.log('✅ Chat messages rendered');
-    
-    // スクロールを最下部に
-    setTimeout(() => {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 100);
+    scrollAdminChatToBottom();
 }
 
 // HTMLエスケープ関数（既に上部で定義済み）
@@ -4071,24 +4123,15 @@ window.sendReplyFromChat = function() {
             
             // 即座にチャット履歴を更新（1回のみ）
             setTimeout(() => {
-                adminFetchJson(buildMainSessionsUrl())
-                    .then(sessionsData => {
-                        console.log('Updated sessions data after reply:', sessionsData);
-                        // APIは {sessions: [...]} の形式で返すため、data.sessions にアクセス
-                        const sessionsArray = sessionsData.sessions || (Array.isArray(sessionsData) ? sessionsData : []);
-                        const targetSession = sessionsArray.find(s => s.session_id === currentSessionId);
-                        if (targetSession) {
-                            console.log('Target session after reply:', targetSession);
-                            renderChatMessages(targetSession.messages);
-                            
-                            // セッション一覧も更新
-                            allSessions = sessionsArray;
-                            renderSessionList(allSessions);
-                            const totalSessionsEl = document.getElementById('total-sessions') || document.getElementById('session-count');
-            if (totalSessionsEl) {
-                totalSessionsEl.textContent = allSessions.length;
-            }
+                fetchAdminSessionMessages(currentSessionId)
+                    .then(targetSession => {
+                        if (!targetSession) {
+                            return;
                         }
+                        console.log('Target session after reply:', targetSession);
+                        upsertAdminSessionRow(targetSession);
+                        currentMessages = targetSession.messages || [];
+                        renderChatMessages(currentMessages);
                     })
                     .catch(error => {
                         console.error('Session refresh error:', error);
@@ -4164,6 +4207,7 @@ function refreshSessionList() {
             console.log('Session list refresh completed');
             if (currentSessionId) {
                 refreshAdminProcessingBannerOnce(currentSessionId);
+                refreshCurrentSessionMessagesQuietly();
             }
         })
         .catch(error => {
@@ -7197,6 +7241,7 @@ function startAdminProcessingPoll(sessionId) {
         onInactive: function () {
             if (currentSessionId !== sessionId) return;
             updateAdminProcessingBanner({ active: false });
+            refreshCurrentSessionMessagesQuietly();
         }
     });
 }

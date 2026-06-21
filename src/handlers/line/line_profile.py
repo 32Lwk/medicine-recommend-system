@@ -10,7 +10,12 @@ from src.core.language_utils import sync_language_from_line_profile
 from src.handlers.line.line_reply import get_json
 from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id, user_id_from_line_sid
 from src.services.session_lifecycle import append_lifecycle_event
-from src.services.session_manager import get_session_from_db, save_session_to_db, touch_session_in_memory
+from src.services.session_manager import (
+    get_session_from_db,
+    get_session_from_memory,
+    save_session_to_db,
+    touch_session_in_memory,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +64,10 @@ def apply_line_profile_to_session(
 
     if not sid:
         return
-    session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+    if is_line_session_id(sid):
+        session_data = get_session_from_memory(sid) or {"session_id": sid, "messages": []}
+    else:
+        session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
     session_data["line_profile"] = profile
     if display:
         session_data["username"] = display
@@ -99,7 +107,10 @@ async def ensure_line_user_profile(
         return existing
 
     if sid and not force_refresh:
-        stored = get_session_from_db(sid) or {}
+        if is_line_session_id(sid):
+            stored = get_session_from_memory(sid) or {}
+        else:
+            stored = get_session_from_db(sid) or {}
         stored_profile = stored.get("line_profile")
         if isinstance(stored_profile, dict) and stored_profile.get("displayName"):
             session["line_profile"] = stored_profile
@@ -107,6 +118,9 @@ async def ensure_line_user_profile(
             sync_language_from_line_profile(session, stored)
             return stored_profile
 
+    from src.services.pipeline_perf import mark_pipeline_step
+
+    mark_pipeline_step("line_profile_fetch")
     profile = await fetch_line_user_profile(user_id)
     if profile:
         apply_line_profile_to_session(session, profile, sid=sid)
@@ -114,7 +128,10 @@ async def ensure_line_user_profile(
 
     err = "token_not_configured" if not get_line_channel_access_token() else "profile_fetch_failed"
     if sid:
-        session_data = get_session_from_db(sid) or {"session_id": sid}
+        if is_line_session_id(sid):
+            session_data = get_session_from_memory(sid) or {"session_id": sid}
+        else:
+            session_data = get_session_from_db(sid) or {"session_id": sid}
         append_lifecycle_event(
             session_data,
             "profile_fetch_failed",

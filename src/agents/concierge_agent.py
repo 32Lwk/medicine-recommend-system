@@ -64,6 +64,7 @@ def resolve_concierge_intent(
     client: Optional[OpenAI] = None,
     session_id: Optional[str] = None,
     conversation_history: Optional[list] = None,
+    routing_ctx: Optional[Any] = None,
 ) -> Optional[ConciergeIntent]:
     from src.services.concierge_intent import _is_medicine_consultation
     from src.services.concierge_orchestrator import enrich_other_concierge_intent
@@ -77,12 +78,12 @@ def resolve_concierge_intent(
     if evaluate_store_gate(
         text,
         triage_result=triage_result,
-        routing_ctx=None,
+        routing_ctx=routing_ctx,
     ):
         return None
 
     orchestrated = resolve_intent_from_triage(
-        triage_result, session, text, routing_ctx=None
+        triage_result, session, text, routing_ctx=routing_ctx
     )
     if orchestrated:
         return orchestrated

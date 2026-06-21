@@ -6,6 +6,7 @@ LINE Webhook 受信
 from __future__ import annotations
 
 import asyncio
+import atexit
 import base64
 import hashlib
 import hmac
@@ -27,6 +28,11 @@ from src.handlers.line.line_message_handler import process_line_events
 
 logger = logging.getLogger(__name__)
 
+_line_loop: asyncio.AbstractEventLoop | None = None
+_line_loop_thread: threading.Thread | None = None
+_line_loop_lock = threading.Lock()
+_line_loop_ready = threading.Event()
+
 
 def verify_line_signature(body: bytes, channel_secret: str, signature: str | None) -> bool:
     """X-Line-Signature を Channel Secret で検証する。"""
@@ -46,15 +52,61 @@ def line_webhook_status() -> dict[str, Any]:
     }
 
 
-def _run_line_events_in_background(events: list[dict[str, Any]]) -> None:
-    """
-    Gunicorn ワーカーのイベントループ外で LINE イベントを処理する。
-
-    asyncio.create_task + 長時間の handle_chat_post は WORKER TIMEOUT の原因になるため、
-    専用スレッドで asyncio.run する。
-    """
+def _line_event_loop_runner() -> None:
+    global _line_loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    _line_loop = loop
+    _line_loop_ready.set()
     try:
-        asyncio.run(process_line_events(events))
+        loop.run_forever()
+    finally:
+        try:
+            loop.run_until_complete(loop.shutdown_asyncgens())
+        except Exception:
+            pass
+        loop.close()
+        _line_loop = None
+        _line_loop_ready.clear()
+
+
+def _ensure_line_event_loop() -> asyncio.AbstractEventLoop:
+    global _line_loop_thread
+    with _line_loop_lock:
+        if _line_loop is not None and _line_loop.is_running():
+            return _line_loop
+        _line_loop_ready.clear()
+        _line_loop_thread = threading.Thread(
+            target=_line_event_loop_runner,
+            name="line-async-loop",
+            daemon=False,
+        )
+        _line_loop_thread.start()
+    if not _line_loop_ready.wait(timeout=5.0):
+        raise RuntimeError("LINE event loop failed to start")
+    assert _line_loop is not None
+    return _line_loop
+
+
+def shutdown_line_event_loop(*, timeout: float = 5.0) -> None:
+    """アプリ終了時に専用イベントループを停止する。"""
+    global _line_loop_thread
+    loop = _line_loop
+    if loop is None or not loop.is_running():
+        return
+    loop.call_soon_threadsafe(loop.stop)
+    thread = _line_loop_thread
+    if thread is not None and thread.is_alive():
+        thread.join(timeout=timeout)
+    _line_loop_thread = None
+
+
+def _run_line_events_in_background(events: list[dict[str, Any]]) -> None:
+    """専用イベントループ上で process_line_events を実行（asyncio.run ネスト回避）。"""
+    try:
+        loop = _ensure_line_event_loop()
+        fut = asyncio.run_coroutine_threadsafe(process_line_events(events), loop)
+        fut.result()
     except Exception:
         logger.exception("LINE background thread failed")
 
@@ -78,6 +130,14 @@ def _schedule_line_events(events: list[dict[str, Any]]) -> None:
     )
     thread.start()
     logger.info("LINE scheduled %s event(s) in background thread", len(filtered))
+
+
+@atexit.register
+def _shutdown_line_loop_on_exit() -> None:
+    try:
+        shutdown_line_event_loop(timeout=2.0)
+    except Exception:
+        pass
 
 
 async def handle_line_webhook(request: Request) -> Response:

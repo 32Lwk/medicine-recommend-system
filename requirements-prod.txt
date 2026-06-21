@@ -12,6 +12,5 @@ python-dotenv==1.0.0
 psutil==5.9.8
 psycopg2-binary==2.9.12
 deepl==1.18.0
-gevent==24.2.1
 pytz==2024.1
 pyahocorasick>=2.0.0

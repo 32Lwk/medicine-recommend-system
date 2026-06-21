@@ -8,11 +8,12 @@ from src.handlers.line import line_reply
 
 
 def test_reply_messages_sends_authorization(monkeypatch):
-    monkeypatch.setattr(line_reply, "LINE_CHANNEL_ACCESS_TOKEN", "test-token")
+    monkeypatch.setattr(line_reply, "get_line_channel_access_token", lambda: "test-token")
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.text = ""
     client = AsyncMock()
+    client.is_closed = False
     client.post = AsyncMock(return_value=mock_response)
     line_reply.set_http_client(client)
 
@@ -31,7 +32,7 @@ def test_reply_messages_sends_authorization(monkeypatch):
 
 
 def test_push_skipped_without_token(monkeypatch):
-    monkeypatch.setattr(line_reply, "LINE_CHANNEL_ACCESS_TOKEN", "")
+    monkeypatch.setattr(line_reply, "get_line_channel_access_token", lambda: "")
     line_reply.set_http_client(AsyncMock())
     ok = asyncio.run(line_reply.push_messages("U123", [{"type": "text", "text": "x"}]))
     assert ok is False

@@ -54,6 +54,7 @@ from src.services.session_manager import (
     get_manual_reply_message,
     get_manual_reply_queue,
     get_next_user_number,
+    get_line_session_admin_snapshot,
     get_session_from_db,
     maybe_persist_session_activity,
     merge_session_messages,
@@ -183,6 +184,12 @@ async def _app_lifespan(app: FastAPI):
                 logger.info("Startup empty-session purge: removed %s rows", purged)
         except Exception as purge_err:
             logger.warning("Startup empty-session purge skipped: %s", purge_err)
+        try:
+            from src.services.store_product_index import ensure_product_index
+
+            ensure_product_index()
+        except Exception as idx_err:
+            logger.warning("Startup product index warmup skipped: %s", idx_err)
     except Exception as e:
         logger.warning(
             "⚠️ Database startup unexpected error: %s. Feedback features will be disabled.",
@@ -195,6 +202,12 @@ async def _app_lifespan(app: FastAPI):
         line_reply.set_http_client(line_http_client)
         yield
         line_reply.set_http_client(None)
+        try:
+            from src.handlers.line.line_webhook import shutdown_line_event_loop
+
+            shutdown_line_event_loop()
+        except Exception as shutdown_err:
+            logger.debug("LINE event loop shutdown skipped: %s", shutdown_err)
 
 
 app = FastAPI(redirect_slashes=False, lifespan=_app_lifespan)
@@ -1441,7 +1454,10 @@ async def api_main_session(
     from src.handlers.line.line_profile import refresh_line_profile_by_session_id
 
     session_id = normalize_line_session_id(session_id) or session_id
-    info = get_session_from_db(session_id)
+    if is_line_session_id(session_id):
+        info = get_line_session_admin_snapshot(session_id)
+    else:
+        info = get_session_from_db(session_id)
     if not info and is_line_session_id(session_id):
         from src.handlers.line.line_session import user_id_from_line_sid
 
@@ -1463,7 +1479,7 @@ async def api_main_session(
         profile_result = await refresh_line_profile_by_session_id(session_id, force=True)
         if not profile_result.get("ok"):
             info["line_profile_error"] = profile_result.get("error")
-        info = get_session_from_db(session_id) or info
+        info = get_line_session_admin_snapshot(session_id) or info
         if not profile_result.get("ok"):
             info["line_profile_error"] = profile_result.get("error")
     return {"session": _session_row_for_admin(session_id, info)}

@@ -57,11 +57,7 @@ def _notify_line_error_email(user_id: str, sid: str, detail: str) -> None:
 LINE_MAX_MESSAGES_PER_REQUEST = 5
 
 
-def _event_timestamp_ms(event: dict[str, Any]) -> int | None:
-    raw = event.get("timestamp")
-    if isinstance(raw, (int, float)):
-        return int(raw)
-    return None
+from src.handlers.line.line_timestamp import line_event_timestamp_ms as _event_timestamp_ms
 
 
 async def _dispatch_quick_text_reply(
@@ -132,12 +128,17 @@ async def _deliver_line_messages(
         )
     if sid:
         from src.handlers.line.line_quick_actions import attach_session_quick_actions
-        from src.services.session_manager import get_session_from_db
+        from src.services.session_manager import resolve_session_snapshot
 
-        session_data = get_session_from_db(sid)
+        session_data = resolve_session_snapshot(sid) or {}
         messages = attach_session_quick_actions(messages, session_data, lang=lang)
     if not messages:
         return
+
+    from src.handlers.line.line_progressive_delivery import get_line_delivery_context
+
+    delivery_ctx = get_line_delivery_context()
+    event_ts = delivery_ctx.event_timestamp_ms if delivery_ctx else None
 
     await deliver_line_messages(
         user_id,
@@ -146,6 +147,8 @@ async def _deliver_line_messages(
         reply_fn=reply_messages,
         push_chunk_fn=_push_message_chunk,
         force=force_delivery,
+        event_timestamp_ms=event_ts,
+        bot_message=bot_message,
     )
 
 
@@ -181,7 +184,7 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         user_id = _extract_user_id(event)
         if user_id:
             from src.handlers.line.line_profile import ensure_line_user_profile
-            from src.handlers.line.line_session import line_sid, prime_line_session
+            from src.handlers.line.line_session import prime_line_session
 
             sid = line_sid(user_id)
             session = prime_line_session(user_id)
@@ -200,18 +203,29 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
         data = postback.get("data") if isinstance(postback, dict) else ""
         data_str = str(data or "")
 
-        from src.handlers.line.line_menu_actions import handle_line_menu_postback
-
-        if await handle_line_menu_postback(user_id, data_str, reply_token=reply_token):
-            return
-
-        from src.handlers.line.line_feedback import handle_line_feedback_postback
-
-        await handle_line_feedback_postback(
-            user_id,
-            data_str,
+        delivery_ctx = LineDeliveryContext(
+            user_id=user_id,
             reply_token=reply_token,
+            lang="ja",
+            sid=line_sid(user_id),
+            event_timestamp_ms=_event_timestamp_ms(event),
         )
+        set_line_delivery_context(delivery_ctx)
+        try:
+            from src.handlers.line.line_menu_actions import handle_line_menu_postback
+
+            if await handle_line_menu_postback(user_id, data_str, reply_token=reply_token):
+                return
+
+            from src.handlers.line.line_feedback import handle_line_feedback_postback
+
+            await handle_line_feedback_postback(
+                user_id,
+                data_str,
+                reply_token=reply_token,
+            )
+        finally:
+            set_line_delivery_context(None)
         return
 
     if event_type == "unfollow":

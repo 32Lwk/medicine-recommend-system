@@ -271,10 +271,12 @@ def resolve_latest_bot_message(session: Any, sid: str) -> dict | None:
 
 
 def persist_line_session(sid: str, session: RequestSafeSession) -> None:
+    from src.services.pipeline_perf import mark_pipeline_step
     from src.services.session_lifecycle import merge_messages_into_archive
-    from src.services.session_manager import get_session_from_db
+    from src.services.session_manager import get_session_from_memory, touch_session_in_memory
 
-    session_data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+    mark_pipeline_step("session_db_write")
+    session_data = get_session_from_memory(sid) or {"session_id": sid, "messages": []}
     msgs = session.get("messages") if hasattr(session, "get") else []
     if msgs:
         merge_messages_into_archive(session_data, msgs)
@@ -283,4 +285,5 @@ def persist_line_session(sid: str, session: RequestSafeSession) -> None:
     if session.get("lifecycle_log"):
         session_data["lifecycle_log"] = session.get("lifecycle_log")
     trim_line_session_messages(session, sid=sid, session_data=session_data)
+    touch_session_in_memory(sid, session_data)
     persist_session_from_chat_state(sid, session, request=None, force_persist=True, session_data=session_data)

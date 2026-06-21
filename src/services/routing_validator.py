@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +16,11 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 _LOG_PATH = Path("log/routing_validator.jsonl")
+
+
+def is_verify_routing_enabled() -> bool:
+    """本番既定 OFF。VERIFY_ROUTING_LLM=1 で有効化。"""
+    return os.getenv("VERIFY_ROUTING_LLM", "").strip().lower() in ("1", "true", "yes")
 
 
 def _append_log(entry: Dict[str, Any]) -> None:
@@ -36,6 +42,8 @@ def verify_routing_async(
     extra: Optional[Dict[str, Any]] = None,
 ) -> None:
     """非ブロッキングで軽量モデルにルーティング妥当性を確認しログする。"""
+    if not is_verify_routing_enabled():
+        return
 
     def _run() -> None:
         try:

@@ -7,19 +7,19 @@ from src.utils.admin_timestamp import (
     parse_admin_timestamp,
     sync_last_activity_from_messages,
 )
+from src.utils.jst_datetime import to_jst_iso
 
 
 def test_parse_admin_timestamp_iso_string():
     dt = parse_admin_timestamp("2026-06-21T22:07:41.527824")
     assert dt is not None
-    assert dt.hour == 22
-    assert dt.minute == 7
+    assert dt.astimezone(__import__("datetime").timezone.utc).hour == 22
 
 
 def test_parse_admin_timestamp_space_separated():
     dt = parse_admin_timestamp("2026-06-21 22:07:41")
     assert dt is not None
-    assert dt.hour == 22
+    assert dt.astimezone(__import__("datetime").timezone.utc).hour == 22
 
 
 def test_parse_admin_timestamp_unix_seconds():
@@ -52,9 +52,8 @@ def test_sync_last_activity_from_messages():
     sync_last_activity_from_messages(info)
     synced = parse_admin_timestamp(info["last_activity"])
     assert synced is not None
-    assert synced.hour == 22
-    assert synced.minute == 7
+    assert to_jst_iso(synced) == "2026-06-22T07:07:41+09:00"
 
 
 def test_format_admin_timestamp_iso():
-    assert format_admin_timestamp_iso("2026-06-21 22:07:41") == "2026-06-21T22:07:41"
+    assert format_admin_timestamp_iso("2026-06-21 22:07:41") == "2026-06-22T07:07:41+09:00"

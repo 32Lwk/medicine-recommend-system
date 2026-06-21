@@ -1,8 +1,10 @@
 """管理画面向けタイムスタンプの正規化。"""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
+
+from src.utils.jst_datetime import JST, to_jst_iso
 
 
 def _coerce_numeric_timestamp(raw: int | float) -> float:
@@ -21,7 +23,7 @@ def parse_admin_timestamp(value: Any) -> datetime | None:
         return value
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(_coerce_numeric_timestamp(value))
+            return datetime.fromtimestamp(_coerce_numeric_timestamp(value), tz=timezone.utc)
         except (OverflowError, OSError, ValueError):
             return None
     text = str(value).strip()
@@ -31,27 +33,30 @@ def parse_admin_timestamp(value: Any) -> datetime | None:
         text.replace(".", "", 1).isdigit() and text.count(".") <= 1
     ):
         try:
-            return datetime.fromtimestamp(_coerce_numeric_timestamp(float(text)))
+            return datetime.fromtimestamp(_coerce_numeric_timestamp(float(text)), tz=timezone.utc)
         except (OverflowError, OSError, ValueError):
             return None
     try:
-        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
     except ValueError:
         pass
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
         try:
-            return datetime.strptime(text, fmt)
+            return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc)
         except ValueError:
             continue
     return None
 
 
 def format_admin_timestamp_iso(value: Any) -> str | None:
-    """JSON API 向け ISO 文字列（naive はそのまま、tz 付きは isoformat）。"""
+    """JSON API 向け JST ISO 文字列。"""
     parsed = parse_admin_timestamp(value)
     if parsed is None:
         return None
-    return parsed.isoformat()
+    return to_jst_iso(parsed)
 
 
 def latest_message_timestamp(messages: list | None) -> datetime | None:
@@ -68,6 +73,12 @@ def latest_message_timestamp(messages: list | None) -> datetime | None:
     return latest
 
 
+def _as_utc_aware(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 def sync_last_activity_from_messages(session_data: dict) -> None:
     """last_activity を messages / message_archive の最新時刻に合わせる。"""
     if not isinstance(session_data, dict):
@@ -76,13 +87,13 @@ def sync_last_activity_from_messages(session_data: dict) -> None:
     for key in ("messages", "message_archive"):
         latest = latest_message_timestamp(session_data.get(key))
         if latest is not None:
-            candidates.append(latest)
+            candidates.append(_as_utc_aware(latest))
     existing = parse_admin_timestamp(session_data.get("last_activity"))
     if existing is not None:
-        candidates.append(existing)
+        candidates.append(_as_utc_aware(existing))
     if not candidates:
         return
-    session_data["last_activity"] = max(candidates)
+    session_data["last_activity"] = to_jst_iso(max(candidates))
 
 
 def normalize_message_timestamps(messages: list | None) -> list:

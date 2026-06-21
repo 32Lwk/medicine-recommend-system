@@ -40,3 +40,36 @@ def test_get_session_from_db_line_skips_db_read():
         result = sm.get_session_from_db("line:U1")
     get_db.assert_not_called()
     assert result["messages"][0]["type"] == "user"
+
+
+def test_get_line_session_admin_snapshot_merges_db_archive_with_mem_live():
+    sm._all_sessions["line:U1"] = {
+        "session_id": "line:U1",
+        "messages": [{"type": "user", "content": "new", "timestamp": "2026-06-22T07:00:00"}],
+    }
+    db_archive = {
+        "session_id": "line:U1",
+        "message_archive": [
+            {"type": "user", "content": "old", "timestamp": "2026-06-21T09:00:00"},
+        ],
+        "messages": [],
+    }
+    mock_db = patch.object(sm, "get_database")
+    with (
+        mock_db as get_db,
+        patch.object(sm, "_db_usable", return_value=True),
+        patch("src.handlers.line.line_session.is_line_session_id", return_value=True),
+        patch("src.handlers.line.line_session.normalize_line_session_id", side_effect=lambda s: s),
+    ):
+        get_db.return_value.get_session.return_value = db_archive
+        result = sm.get_line_session_admin_snapshot("line:U1")
+    get_db.return_value.get_session.assert_called_once_with("line:U1")
+    assert result is not None
+    contents = [m.get("content") for m in result.get("message_archive") or []]
+    assert "old" in contents
+    assert "new" in contents
+
+
+def test_get_next_user_number_skips_none_username():
+    with patch.object(sm, "get_all_sessions_from_db", return_value={"s1": {"username": None}}):
+        assert sm.get_next_user_number() == 1

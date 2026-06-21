@@ -14,6 +14,7 @@ from src.agents.protocols import HandoffResult
 from src.agents.triage_agent import resolve_handoff
 from src.handlers.orchestrator_route_result import OrchestratorRouteResult, RouteReason
 from src.utils.agent_trace import log_agent_step
+from src.utils.jst_datetime import now_jst_iso
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,18 @@ class ChatOrchestrator:
         self._trace_id = trace_id
 
     def route(
+        self,
+        ctx: Any,
+        monitor: Any,
+    ) -> OrchestratorRouteResult:
+        from src.services.pipeline_perf import mark_pipeline_step
+
+        try:
+            return self._route_inner(ctx, monitor)
+        finally:
+            mark_pipeline_step("orch_route_end")
+
+    def _route_inner(
         self,
         ctx: Any,
         monitor: Any,
@@ -238,7 +251,7 @@ class ChatOrchestrator:
                 "type": "bot",
                 "content": _ORCH_FALLBACK_MSG,
                 "orchestrator_fallback": True,
-                "timestamp": time.time(),
+                "timestamp": now_jst_iso(),
             })
             if hasattr(session, "modified"):
                 session.modified = True

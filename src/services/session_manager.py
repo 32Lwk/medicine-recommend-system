@@ -75,15 +75,28 @@ def get_session_from_db(session_id):
 
     mem = _all_sessions.get(session_id)
 
+    # LINE: prime 済みなら DB 読込をスキップ（永続化は persist 時のみ）
+    if session_id and is_line_session_id(session_id):
+        if mem is not None:
+            merged = dict(mem)
+            from src.services.session_lifecycle import ensure_line_session_archive
+
+            ensure_line_session_archive(merged)
+            return merged
+        global _db_persist_enabled
+        db = get_database()
+        db_data = None
+        if _db_usable(db):
+            db_data = db.get_session(session_id)
+        if db_data:
+            touch_session_in_memory(session_id, db_data)
+        return _merge_line_session_sources(db_data, mem)
+
     global _db_persist_enabled
     db = get_database()
     db_data = None
     if _db_usable(db):
         db_data = db.get_session(session_id)
-
-    # LINE: メモリ優先だが DB の session_metadata（アーカイブ等）をマージ
-    if session_id and is_line_session_id(session_id):
-        return _merge_line_session_sources(db_data, mem)
 
     if _db_persist_enabled is False:
         return mem
@@ -116,9 +129,39 @@ def _merge_line_session_sources(db_data: dict | None, mem: dict | None) -> dict 
     return merged
 
 
+def get_line_session_admin_snapshot(session_id: str) -> dict | None:
+    """管理画面用: LINE セッションの DB アーカイブとメモリ live を必ず統合する。"""
+    try:
+        from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
+    except ImportError:
+        return None
+    if not session_id or not is_line_session_id(session_id):
+        return None
+    session_id = normalize_line_session_id(session_id) or session_id
+    mem = _all_sessions.get(session_id)
+    db_data = None
+    db = get_database()
+    if _db_usable(db):
+        db_data = db.get_session(session_id)
+    return _merge_line_session_sources(db_data, mem)
+
+
 def get_session_from_memory(session_id):
     """メモリフォールバックからセッションを取得（DB失敗時の最新データ）"""
     return _all_sessions.get(session_id)
+
+
+def resolve_session_snapshot(session_id: str | None) -> dict | None:
+    """LINE は prime 済みメモリのみ、Web は get_session_from_db。"""
+    if not session_id:
+        return None
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+    if is_line_session_id(session_id):
+        return get_session_from_memory(session_id)
+    return get_session_from_db(session_id)
 
 
 def is_db_persist_enabled() -> bool:
@@ -376,7 +419,9 @@ def get_next_user_number():
     used_numbers = set()
     all_sessions = get_all_sessions_from_db()
     for info in all_sessions.values():
-        username = info.get('username', '')
+        username = info.get('username') or ''
+        if not isinstance(username, str):
+            username = str(username)
         if username.startswith('ユーザー'):
             try:
                 number = int(username.replace('ユーザー', ''))
@@ -554,16 +599,34 @@ def has_recent_concierge_reply_for_user(session, user_content: str) -> bool:
     return prev.get("type") == "user" and prev.get("content") == user_content
 
 
-def append_user_message(session, content: str) -> dict:
+def append_user_message(session, content: str, *, timestamp: str | None = None) -> dict:
     """セッションにユーザーメッセージを追加する（同一文言の再送も別メッセージとして保持）。"""
     import uuid
+
+    if timestamp is None:
+        try:
+            from src.handlers.line.line_session import is_line_session_id
+
+            sid = session.get("_id") if hasattr(session, "get") else None
+            if sid and is_line_session_id(str(sid)):
+                from src.handlers.line.line_timestamp import resolve_inbound_message_timestamp
+
+                timestamp = resolve_inbound_message_timestamp()
+            else:
+                from src.utils.jst_datetime import now_jst_iso
+
+                timestamp = now_jst_iso()
+        except ImportError:
+            from src.utils.jst_datetime import now_jst_iso
+
+            timestamp = now_jst_iso()
 
     if 'messages' not in session:
         session['messages'] = []
     user_msg = {
         'type': 'user',
         'content': content,
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': timestamp,
         'uuid': str(uuid.uuid4()),
     }
     session['messages'].append(user_msg)
