@@ -54,6 +54,9 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         response = handle_user_input_in_counseling_mode(
             processed_message, session, recommendation_client, session_id=sid
         )
+        if not response or not isinstance(response, dict):
+            logger.warning("⚠️ カウンセリング応答が空のため通常フローへフォールバック")
+            return (None, triage_result)
         if response.get("type") == "topic_shift":
             log_topic_shift_detection(
                 session_id=sid,
@@ -65,15 +68,28 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
             )
         new_category = response.get("new_category")
         if new_category == "Emergency":
+            from src.services.sage_bot_response import build_bot_response
+            from src.services.status_diagnosis_builder import build_notice_status
+
             emergency_message = """⚠️ 緊急対応が必要な症状の可能性があります。
 速やかに医療機関を受診するか、緊急の場合は119番（救急）に連絡してください。
 """
-            session["messages"].append({
-                "type": "bot",
-                "content": emergency_message,
-                "emergency": True,
-                "timestamp": datetime.now().isoformat(),
-            })
+            sage_diag = build_notice_status(
+                emergency_message.strip(),
+                title="緊急のお知らせ",
+                variant="critical",
+                hints=["119番（救急）への連絡もご検討ください"],
+                kind="counseling_emergency",
+            ).to_client_dict()
+            session["messages"].append(
+                build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=emergency_message,
+                    emergency=True,
+                )
+            )
             session.modified = True
             log_counseling_response(
                 session_id=sid,
@@ -144,106 +160,71 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
 
 def _append_counseling_response(session, sid, response, counseling_mode, user_message, log_counseling_response):
     """カウンセリング応答を session['messages'] に追加し、必要ならログする。"""
-    resp_type = response.get("type")
-    if resp_type == "counseling_response_with_question":
-        counseling_response = response.get("counseling_response", "")
-        if counseling_response:
-            session["messages"].append({
-                "type": "bot",
-                "content": counseling_response,
-                "counseling": True,
-                "timestamp": datetime.now().isoformat(),
-            })
-            session.modified = True
-            log_counseling_response(
-                session_id=sid,
-                response_content=counseling_response,
-                response_type="counseling_response",
-                category=None,
-                confidence=None,
-                counseling_mode=counseling_mode,
-                user_input=user_message,
-                conversation_history=None,
+    from src.services.sage_bot_response import build_counseling_bot, build_crisis_bot
+
+    def _append(message: str, *, kind: str, response_type: str, **extra) -> None:
+        if not message:
+            return
+        session["messages"].append(
+            build_counseling_bot(
+                session,
+                sid,
+                message,
+                title="カウンセリング",
+                kind=kind,
+                **extra,
             )
-        question = response.get("question", "")
-        if question:
-            session["messages"].append({
-                "type": "bot",
-                "content": question,
-                "counseling": True,
-                "counseling_question": True,
-                "timestamp": datetime.now().isoformat(),
-            })
-            session.modified = True
-            log_counseling_response(
-                session_id=sid,
-                response_content=question,
-                response_type="counseling_question",
-                category=None,
-                confidence=None,
-                counseling_mode=counseling_mode,
-                user_input=user_message,
-                conversation_history=None,
-            )
-    elif resp_type == "counseling_response":
-        session["messages"].append({
-            "type": "bot",
-            "content": response.get("content", ""),
-            "counseling": True,
-            "timestamp": datetime.now().isoformat(),
-        })
+        )
         session.modified = True
         log_counseling_response(
             session_id=sid,
-            response_content=response.get("content", ""),
-            response_type="counseling_response",
+            response_content=message,
+            response_type=response_type,
             category=None,
             confidence=None,
             counseling_mode=counseling_mode,
             user_input=user_message,
             conversation_history=None,
         )
+
+    resp_type = response.get("type")
+    if resp_type == "counseling_response_with_question":
+        counseling_response = response.get("counseling_response", "")
+        question = response.get("question", "")
+        from src.services.counseling.counseling_format import combine_counseling_message
+
+        _append(
+            combine_counseling_message(counseling_response, question),
+            kind="counseling",
+            response_type="counseling_response_with_question",
+            counseling=True,
+            counseling_question=bool(question),
+        )
+    elif resp_type == "counseling_response":
+        _append(
+            response.get("content", ""),
+            kind="counseling",
+            response_type="counseling_response",
+            counseling=True,
+        )
     elif resp_type == "counseling_question":
-        session["messages"].append({
-            "type": "bot",
-            "content": response.get("content", ""),
-            "counseling": True,
-            "timestamp": datetime.now().isoformat(),
-        })
-        session.modified = True
-        log_counseling_response(
-            session_id=sid,
-            response_content=response.get("content", ""),
+        _append(
+            response.get("content", ""),
+            kind="counseling_question",
             response_type="counseling_question",
-            category=None,
-            confidence=None,
-            counseling_mode=counseling_mode,
-            user_input=user_message,
-            conversation_history=None,
+            counseling=True,
         )
     elif resp_type == "counseling_summary":
         counseling_response = response.get("counseling_response")
         summary_content = response.get("content", "")
         content_to_append = counseling_response if counseling_response else summary_content
-        if content_to_append:
-            session["messages"].append({
-                "type": "bot",
-                "content": content_to_append,
-                "counseling": True,
-                "counseling_completed": True,
-                "timestamp": datetime.now().isoformat(),
-            })
-            session.modified = True
-            log_counseling_response(
-                session_id=sid,
-                response_content=content_to_append,
-                response_type="counseling_summary",
-                category=None,
-                confidence=None,
-                counseling_mode=counseling_mode,
-                user_input=user_message,
-                conversation_history=None,
-            )
+        _append(
+            content_to_append,
+            kind="counseling_summary",
+            response_type="counseling_summary",
+            counseling=True,
+            counseling_completed=True,
+        )
         if response.get("completion_reason"):
             from src.services.triage_analytics import log_counseling_completion
             log_counseling_completion(
@@ -254,18 +235,22 @@ def _append_counseling_response(session, sid, response, counseling_mode, user_me
                 collected_info_count=len(counseling_mode.get("collected_info", {})),
             )
     elif resp_type == "crisis_support":
-        session["messages"].append({
-            "type": "bot",
-            "content": response.get("content", ""),
-            "crisis_support": True,
-            "resources": response.get("resources", []),
-            "emergency_message": response.get("emergency_message", ""),
-            "timestamp": datetime.now().isoformat(),
-        })
+        crisis_message = response.get("content", "")
+        session["messages"].append(
+            build_crisis_bot(
+                session,
+                sid,
+                message=crisis_message,
+                resources=response.get("resources", []),
+                title="相談窓口のご案内",
+                emergency_message=response.get("emergency_message", ""),
+                crisis_title=response.get("title"),
+            )
+        )
         session.modified = True
         log_counseling_response(
             session_id=sid,
-            response_content=response.get("content", ""),
+            response_content=crisis_message,
             response_type="crisis_support",
             category="Emergency",
             confidence=None,

@@ -98,8 +98,27 @@ def test_advice_contains_caution_and_bullets():
     texts = [c.get("text", "") for c in body if c.get("type") == "text"]
     joined = "\n".join(texts)
     assert "医師・薬剤師" in joined
-    assert joined.count("・") >= 3
+    assert "イブA錠" in joined
     assert messages[0]["contents"]["header"]["backgroundColor"] == PRIMARY
+
+
+def test_advice_includes_symptoms_and_overlap_when_present():
+    bot = _success_bot_message()
+    bot["diagnosis"]["symptoms"] = ["頭痛"]
+    bot["diagnosis"]["personalized_advice"] = "頭痛いのはつらいですね。安静にして水分をとってください。"
+    bot["diagnosis"]["ingredient_overlap"] = {
+        "severity": "red",
+        "title": "成分の重複について（重複禁止）",
+        "summaries": ["アセトアミノフェン：カロナールA、タイレノールA"],
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    body_text = "\n".join(
+        c.get("text", "") for c in messages[0]["contents"]["body"]["contents"] if c.get("type") == "text"
+    )
+    assert "推定症状" in body_text
+    assert "頭痛" in body_text
+    assert "重複禁止" in body_text
+    assert "安静" in body_text
 
 
 def test_fixture_meta():

@@ -1,5 +1,5 @@
 """
-開発環境（APP_ENV=development 等）専用: エラーUIプレビュー用トリガーワード。
+開発環境（APP_ENV=development 等）専用: エラーUI / Sage UI プレビュー用トリガーワード。
 
 本番では一切評価されない。メッセージ全文がトリガーと完全一致した場合のみ発火する。
 """
@@ -8,15 +8,9 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 from config.app_config import is_development_runtime
-from src.services.html_formatter import (
-    format_diagnosis_notification,
-    format_error_display,
-    format_escalation_display,
-    format_system_error,
-)
 from src.services.session_manager import get_session_from_db, save_session_to_db
 
 logger = logging.getLogger(__name__)
@@ -32,6 +26,15 @@ _DEFAULT_TRIGGERS: Dict[str, str] = {
     "html_caution": "mrcdev00000000000005",
     "html_notice": "mrcdev00000000000006",
     "html_critical": "mrcdev00000000000007",
+    "sage_greeting": "mrcdev00000000000008",
+    "sage_store": "mrcdev00000000000009",
+    "sage_qa": "mrcdev00000000000010",
+    "sage_reco": "mrcdev00000000000011",
+    "sage_reco_empty": "mrcdev00000000000012",
+    "sage_emergency": "mrcdev00000000000013",
+    "sage_security": "mrcdev00000000000014",
+    "sage_counseling": "mrcdev00000000000015",
+    "sage_medicine_type": "mrcdev00000000000016",
 }
 
 _ENV_KEYS = {
@@ -42,6 +45,15 @@ _ENV_KEYS = {
     "html_caution": "DEV_ERROR_TRIGGER_HTML_CAUTION",
     "html_notice": "DEV_ERROR_TRIGGER_HTML_NOTICE",
     "html_critical": "DEV_ERROR_TRIGGER_HTML_CRITICAL",
+    "sage_greeting": "DEV_SAGE_TRIGGER_GREETING",
+    "sage_store": "DEV_SAGE_TRIGGER_STORE",
+    "sage_qa": "DEV_SAGE_TRIGGER_QA",
+    "sage_reco": "DEV_SAGE_TRIGGER_RECO",
+    "sage_reco_empty": "DEV_SAGE_TRIGGER_RECO_EMPTY",
+    "sage_emergency": "DEV_SAGE_TRIGGER_EMERGENCY",
+    "sage_security": "DEV_SAGE_TRIGGER_SECURITY",
+    "sage_counseling": "DEV_SAGE_TRIGGER_COUNSELING",
+    "sage_medicine_type": "DEV_SAGE_TRIGGER_MEDICINE_TYPE",
 }
 
 _logged_triggers = False
@@ -71,7 +83,7 @@ def log_dev_error_triggers_once() -> None:
         return
     lines = [f"  {k}: {v}" for k, v in triggers.items()]
     logger.info(
-        "🔧 開発用エラーUIトリガー（メッセージをこの文字列だけ送るとプレビュー）:\n%s",
+        "🔧 開発用 UI プレビュートリガー（メッセージをこの文字列だけ送るとプレビュー）:\n%s",
         "\n".join(lines),
     )
 
@@ -115,16 +127,20 @@ def _save_bot_exchange(
     *,
     client_ip: str = "",
     user_agent: str = "",
+    bot_response: dict[str, Any] | None = None,
 ) -> int:
     """ユーザー/ボットメッセージをセッションと DB に保存する。"""
     now = datetime.now().isoformat()
     session.setdefault("messages", [])
     session["messages"].append({"type": "user", "content": user_message, "timestamp": now})
-    session["messages"].append({
-        "type": "bot",
-        "content": bot_content,
-        "timestamp": now,
-    })
+    if bot_response is not None:
+        session["messages"].append({**bot_response, "timestamp": now})
+    else:
+        session["messages"].append({
+            "type": "bot",
+            "content": bot_content,
+            "timestamp": now,
+        })
     if hasattr(session, "modified"):
         session.modified = True
 
@@ -144,6 +160,138 @@ def _save_bot_exchange(
         save_session_to_db(sid, session_data)
 
     return len(session["messages"])
+
+
+def _dev_sage_bot_response(session: Any, sid: Optional[str], sage_diag: Any) -> dict[str, Any]:
+    from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER
+    from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MARKER
+
+    if hasattr(sage_diag, "to_user_dict"):
+        diag_dict = sage_diag.to_user_dict()
+    elif hasattr(sage_diag, "to_client_dict"):
+        diag_dict = sage_diag.to_client_dict()
+    else:
+        diag_dict = dict(sage_diag)
+    render = diag_dict.get("render") or "sage_status"
+    if render == "sage_reco":
+        marker = SAGE_RECO_MARKER
+    elif render == "sage_qa":
+        marker = SAGE_QA_MARKER
+    else:
+        marker = SAGE_STATUS_MARKER
+    return {
+        "type": "bot",
+        "content": marker,
+        "diagnosis": diag_dict,
+        "dev_preview": True,
+    }
+
+
+def _dev_sage_preview_builders() -> Dict[str, Callable[[], Any]]:
+    from src.services.recommendation_diagnosis_builder import build_diagnosis_v1
+    from src.services.status_diagnosis_builder import (
+        build_concierge_text_status,
+        build_counseling_status,
+        build_crisis_status,
+        build_diagnosis_notice,
+        build_emergency_status,
+        build_escalation_status,
+        build_error_status,
+        build_medicine_type_unrecognized_status,
+        build_qa_from_chat_response,
+        build_store_status_from_inquiry_result,
+        build_system_error_status,
+    )
+
+    return {
+        "html_system": lambda: build_system_error_status(),
+        "html_caution": lambda: build_error_status(
+            "no_candidates",
+            {"reason": "【開発プレビュー】候補なし（caution）"},
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+        ),
+        "html_notice": lambda: build_diagnosis_notice(
+            "【開発プレビュー】診断名が記載されているため、こちらから市販薬の自動推奨は行えません。",
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+            show_bug_report=True,
+            kind="diagnosis_detected",
+        ),
+        "html_critical": lambda: build_escalation_status(
+            "【開発プレビュー】重要な注意事項（critical）です。市販薬の使用は控え、医師にご相談ください。",
+            medicine_type="（プレビュー）",
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+        ),
+        "sage_greeting": lambda: build_concierge_text_status(
+            "【開発プレビュー】こんにちは。症状・お薬名・服用状況などを教えていただければ、できる限りご案内します。",
+            title="ご挨拶",
+            kind="greeting",
+        ),
+        "sage_store": lambda: build_store_status_from_inquiry_result(
+            {
+                "inquiry_type": "store_inquiry",
+                "facility_name": None,
+                "product_category": None,
+            },
+            simple_message=(
+                "【開発プレビュー】トイレの場所についてお尋ねいただき、ありがとうございます。"
+                "店内のスタッフにお尋ねいただければ、詳しくご案内いたします。"
+            ),
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+        ),
+        "sage_qa": lambda: build_qa_from_chat_response(
+            {
+                "answer": "【開発プレビュー】用法用量を守ってお使いください。",
+                "medicine_details": "1回2錠、1日3回、食後",
+                "interactions": "他の解熱鎮痛薬との併用は避けてください。",
+            },
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+        ),
+        "sage_reco": lambda: build_diagnosis_v1(
+            {
+                "symptoms": ["頭痛"],
+                "medicine_type": "解熱鎮痛薬",
+                "recommended_medicines": [
+                    {
+                        "product_name": "カロナールA",
+                        "manufacturer": "第一三共",
+                        "efficacy": "解熱・鎮痛",
+                        "explanation": "【開発プレビュー】症状に適した候補です。",
+                        "display_score": 82.5,
+                        "score_level": "高",
+                    },
+                ],
+                "personalized_advice": "【開発プレビュー】用法を守り、症状が続く場合は受診してください。",
+                "doctor_consultation": "1週間以上続く場合は医師にご相談ください。",
+            },
+            session_id="dev-preview",
+        ),
+        "sage_reco_empty": lambda: build_diagnosis_v1(
+            {
+                "symptoms": ["不明"],
+                "recommended_medicines": [],
+                "error": True,
+                "error_type": "no_candidates",
+            },
+            session_id="dev-preview",
+        ),
+        "sage_emergency": lambda: build_emergency_status(
+            "【開発プレビュー】緊急のお知らせです。119番または最寄りの救急医療機関へ。",
+            title="緊急のお知らせ",
+            hints=["迷ったら119番", "意識がない・呼吸困難はただちに救急要請"],
+        ),
+        "sage_security": lambda: build_crisis_status(
+            "【開発プレビュー】つらい気持ちを一人で抱え込まないでください。",
+            resources=[{"name": "いのちの電話", "contact": "0120-783-556"}],
+        ),
+        "sage_counseling": lambda: build_counseling_status(
+            "【開発プレビュー】お気持ち、よくわかります。もう少し詳しく教えていただけますか。",
+            title="カウンセリング",
+            kind="counseling",
+        ),
+        "sage_medicine_type": lambda: build_medicine_type_unrecognized_status(
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
+        ),
+    }
 
 
 def try_dev_error_trigger(
@@ -172,7 +320,22 @@ def try_dev_error_trigger(
     if kind is None:
         return None
 
-    logger.info("🔧 開発用エラーUIトリガー発火: kind=%s", kind)
+    logger.info("🔧 開発用 UI プレビュートリガー発火: kind=%s", kind)
+
+    sage_builders = _dev_sage_preview_builders()
+    if kind in sage_builders:
+        sage_obj = sage_builders[kind]()
+        bot_response = _dev_sage_bot_response(session, sid, sage_obj)
+        count = _save_bot_exchange(
+            session,
+            sid,
+            text,
+            bot_response.get("content", ""),
+            client_ip=client_ip,
+            user_agent=user_agent,
+            bot_response=bot_response,
+        )
+        return ({"status": "ok", "message_count": count, "dev_preview_kind": kind}, 200)
 
     if kind == "client_error":
         count = _save_user_message_only(
@@ -212,45 +375,5 @@ def try_dev_error_trigger(
             "message_count": count,
             "dev_preview_kind": "http_500",
         }, 500)
-
-    html_map = {
-        "html_system": lambda: format_system_error(
-            title="【開発プレビュー】システムエラー",
-            message="サーバー生成のエラーカード（赤）です。",
-        ),
-        "html_caution": lambda: format_error_display(
-            error_type="no_candidates",
-            error_details={
-                "reason": "開発プレビュー用のサンプル理由",
-                "technical_details": "dev_trigger=html_caution",
-            },
-            user_message=text,
-            include_feedback_buttons=True,
-        ),
-        "html_notice": lambda: format_diagnosis_notification(
-            "<p>診断名が記載されているため、こちらから市販薬の自動推奨は行えません。</p>",
-            {
-                "user_message": text,
-                "ai_response": "dev preview",
-                "security_score": None,
-            },
-            bug_report_attrs='data-user-message="" data-ai-response="dev" data-security-score=""',
-        ),
-        "html_critical": lambda: format_escalation_display(
-            doctor_consultation="【開発プレビュー】重要な注意事項（赤・critical）です。",
-            medicine_type="（プレビュー）",
-            algorithm="dev_trigger",
-            user_message=text,
-            include_feedback_buttons=True,
-        ),
-    }
-
-    if kind in html_map:
-        bot_content = html_map[kind]()
-        count = _save_bot_exchange(
-            session, sid, text, bot_content,
-            client_ip=client_ip, user_agent=user_agent,
-        )
-        return ({"status": "ok", "message_count": count}, 200)
 
     return None

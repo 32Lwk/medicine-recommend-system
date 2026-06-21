@@ -40,6 +40,62 @@ def test_sse_done_payload_includes_bot_message():
     assert payload["user_message"] == user
 
 
+def test_sse_done_payload_includes_dev_error_fields():
+    payload = SseDoneEvent(
+        http_status=200,
+        message_count=1,
+        error=True,
+        response="【開発プレビュー】クライアント側のエラーカード表示です。",
+        dev_preview_kind="client_error",
+    ).to_payload()
+    assert payload["error"] is True
+    assert "開発プレビュー" in payload["response"]
+    assert payload["dev_preview_kind"] == "client_error"
+
+
+def test_build_sse_done_event_from_dev_client_error():
+    from src.handlers.chat_stream import _build_sse_done_event
+
+    body = {
+        "error": True,
+        "response": "【開発プレビュー】クライアント側のエラーカード表示です。",
+        "message_count": 1,
+        "dev_preview_kind": "client_error",
+    }
+    messages = [{"type": "user", "content": "mrcdev00000000000001"}]
+    done = _build_sse_done_event(body, 200, messages)
+    payload = done.to_payload()
+    assert payload["error"] is True
+    assert payload["message_count"] == 1
+    assert "bot_message" not in payload
+    assert payload["dev_preview_kind"] == "client_error"
+
+
+def test_sse_stream_emits_client_preview_before_done():
+    import re
+    from unittest.mock import patch
+    from starlette.testclient import TestClient
+    import main
+
+    with patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True):
+        with patch("src.handlers.chat.chat_dev_triggers.save_session_to_db"):
+            with patch("src.handlers.chat.chat_dev_triggers.get_session_from_db", return_value=None):
+                with TestClient(main.app) as client:
+                    response = client.post(
+                        "/api/chat/stream",
+                        data={"message": "mrcdev00000000000001"},
+                        headers={"Accept": "text/event-stream"},
+                    )
+                    assert response.status_code == 200
+                    text = response.text
+                    preview_match = re.search(r"event: client_preview\s*\ndata: (.+)", text)
+                    done_match = re.search(r"event: done\s*\ndata: (.+)", text)
+                    assert preview_match is not None
+                    assert done_match is not None
+                    assert text.index("event: client_preview") < text.index("event: done")
+                    assert '"error": true' in preview_match.group(1) or '"error":true' in preview_match.group(1)
+
+
 def test_extract_done_messages_when_last_is_bot():
     messages = [
         {"type": "user", "content": "こんにちは"},

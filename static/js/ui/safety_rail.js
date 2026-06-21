@@ -9,6 +9,7 @@
   var activeRailEl = null;
   var resizeObserver = null;
   var fontSizeObserver = null;
+  var windowResizeBound = false;
   var chipMeasureEl = null;
 
   var esc = function (s) {
@@ -154,8 +155,11 @@
         if (activeRailEl) updateResponsiveRail(activeRailEl);
       });
       resizeObserver.observe(rail);
-    } else {
+    }
+
+    if (!windowResizeBound) {
       global.addEventListener('resize', onWindowResize, { passive: true });
+      windowResizeBound = true;
     }
 
     if (!fontSizeObserver && typeof MutationObserver !== 'undefined') {
@@ -291,13 +295,8 @@
     }
   }
 
-  function updateHeaderPhase(symptoms) {
-    var el = document.getElementById('headerPhase');
-    if (!el || !symptoms || !symptoms.length) return;
-    var joiner = global.currentLanguage === 'en' ? ' · ' : '・';
-    var symptomText = symptoms.slice(0, 2).join(joiner);
-    var count = Math.min(3, symptoms.length);
-    el.textContent = t('headerPhaseSymptoms', { symptoms: symptomText, count: count });
+  function updateHeaderPhase() {
+    /* header phase rotates fixed messages via SageShell.refreshHeaderPhase */
   }
 
   global.SafetyRail = {

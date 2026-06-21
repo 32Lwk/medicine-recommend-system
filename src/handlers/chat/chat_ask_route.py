@@ -43,26 +43,74 @@ def handle_ask_category(
     recommendation_client: OpenAI,
     recommended_medicines: List[Dict[str, Any]],
     medicine_list: List[Dict[str, Any]],
+    *,
+    client_info: Any = None,
+    user_message: str = "",
 ) -> Optional[ResponseTuple]:
     """推奨医薬品コンテキストでの Q&A（既存 API）"""
     from src.agents.ask_agent import answer_medicine_question
 
     try:
-        answer = answer_medicine_question(
+        chat_response = answer_medicine_question(
             sanitized_message,
             recommended_medicines,
             recommendation_client,
             medicine_list=medicine_list,
         )
-        content = answer.get("answer") if isinstance(answer, dict) else str(answer)
-        from datetime import datetime
+        if isinstance(chat_response, dict) and chat_response.get("answer") is not None:
+            from src.handlers.chat.chat_medicine_qa_html import (
+                append_feedback_buttons,
+                build_medicine_qa_html,
+            )
+            from src.services.sage_bot_response import build_bot_response
+            from src.services.status_diagnosis_builder import build_qa_from_chat_response
 
-        session.setdefault("messages", []).append({
-            "type": "bot",
-            "content": content,
-            "ask": True,
-            "timestamp": datetime.now().isoformat(),
-        })
+            msg = user_message or sanitized_message
+            legacy_content, message_id = append_feedback_buttons(
+                build_medicine_qa_html(chat_response)
+            )
+            sage_diag = build_qa_from_chat_response(
+                chat_response,
+                feedback_context={
+                    "user_message": msg,
+                    "ai_response": str(chat_response.get("answer") or ""),
+                },
+            ).to_client_dict()
+            session.setdefault("messages", []).append(
+                build_bot_response(
+                    session,
+                    sid,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=legacy_content,
+                    legacy_diagnosis={"chat_response": chat_response, "is_question": True},
+                    message_id=message_id,
+                    ask=True,
+                )
+            )
+            _mark_session_modified(session)
+            if sid:
+                from datetime import datetime
+                from src.services.session_manager import get_session_from_db, save_session_to_db
+
+                sd = get_session_from_db(sid) or {}
+                sd["messages"] = session.get("messages", []).copy()
+                sd["last_activity"] = datetime.now()
+                save_session_to_db(sid, sd)
+            return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+
+        content = chat_response.get("answer") if isinstance(chat_response, dict) else str(chat_response)
+        from src.services.sage_bot_response import build_notice_bot
+
+        session.setdefault("messages", []).append(
+            build_notice_bot(
+                session,
+                sid,
+                content or "",
+                title="医薬品相談回答",
+                kind="ask_qa",
+                ask=True,
+            )
+        )
         _mark_session_modified(session)
         if sid:
             from src.services.session_manager import get_session_from_db, save_session_to_db

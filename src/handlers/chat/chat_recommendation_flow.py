@@ -9,7 +9,7 @@ import os
 import re
 import time
 import logging
-from src.services.html_formatter import (
+from legacy.html_formatter import (
     format_diagnosis_notification,
     format_error_display,
     format_escalation_display,
@@ -581,16 +581,33 @@ def run_recommendation_flow(
                 if 'messages' not in session:
                     session['messages'] = []
                             
-                # 通常のメッセージと同じスタイルを使用
                 import html
+                from src.services.sage_bot_response import build_bot_response
+                from src.services.status_diagnosis_builder import build_user_info_registration_status
+
                 escaped_info_message = html.escape(info_message)
                 info_message_html = escaped_info_message.replace('\n', '<br>')
-                info_bot_response = {
-                    'type': 'bot',
-                    'content': f'<div class="chat-response user-info-notification"><p>{info_message_html}</p><button class="edit-info-btn" onclick="editUserInfo()">情報を修正</button></div>',
-                    'diagnosis': None,
-                    'timestamp': datetime.now().isoformat()
-                }
+                legacy_content = (
+                    f'<div class="chat-response user-info-notification">'
+                    f'<p>{info_message_html}</p>'
+                    f'<button class="edit-info-btn" onclick="editUserInfo()">情報を修正</button></div>'
+                )
+                plain_items = [
+                    item.lstrip("・") if item.startswith("・") else item
+                    for item in registered_items
+                ]
+                sage_diag = build_user_info_registration_status(
+                    plain_items,
+                    had_error=not info_registration_success,
+                ).to_client_dict()
+                sid_notify = session.get('_id')
+                info_bot_response = build_bot_response(
+                    session,
+                    sid_notify,
+                    sage_diagnosis=sage_diag,
+                    legacy_content=legacy_content,
+                    user_info_notification=True,
+                )
                 # ユーザーメッセージの直後に追加（最後のユーザーメッセージの後）
                 user_msg_index = -1
                 for i in range(len(session['messages']) - 1, -1, -1):
@@ -732,14 +749,23 @@ def run_recommendation_flow(
                             if 'messages' not in session:
                                 session['messages'] = []
                             # 通常のメッセージと同じスタイルを使用
+                            from src.services.sage_bot_response import build_notice_bot
                             import html
+
                             escaped_gender_message = html.escape(gender_notification_message_from_nlu)
-                            gender_bot_response = {
-                                'type': 'bot',
-                                'content': f'<div class="chat-response gender-notification"><p>{escaped_gender_message}</p></div>',
-                                'diagnosis': None,
-                                'timestamp': datetime.now().isoformat()
-                            }
+                            legacy_content = (
+                                f'<div class="chat-response gender-notification">'
+                                f'<p>{escaped_gender_message}</p></div>'
+                            )
+                            sid_gender = session.get('_id')
+                            gender_bot_response = build_notice_bot(
+                                session,
+                                sid_gender,
+                                gender_notification_message_from_nlu.lstrip("💡 ").lstrip("⚠️ "),
+                                title="性別について",
+                                kind="gender_auto_registration",
+                                legacy_content=legacy_content,
+                            )
                             session['messages'].append(gender_bot_response)
                             session.modified = True
                                         
@@ -782,14 +808,23 @@ def run_recommendation_flow(
                             if 'messages' not in session:
                                 session['messages'] = []
                             # 通常のメッセージと同じスタイルを使用
+                            from src.services.sage_bot_response import build_notice_bot
                             import html
+
                             escaped_gender_message = html.escape(gender_notification_message_from_nlu)
-                            gender_bot_response = {
-                                'type': 'bot',
-                                'content': f'<div class="chat-response gender-notification"><p>{escaped_gender_message}</p></div>',
-                                'diagnosis': None,
-                                'timestamp': datetime.now().isoformat()
-                            }
+                            legacy_content = (
+                                f'<div class="chat-response gender-notification">'
+                                f'<p>{escaped_gender_message}</p></div>'
+                            )
+                            sid_gender = session.get('_id')
+                            gender_bot_response = build_notice_bot(
+                                session,
+                                sid_gender,
+                                gender_notification_message_from_nlu.lstrip("💡 ").lstrip("⚠️ "),
+                                title="性別について",
+                                kind="gender_auto_registration",
+                                legacy_content=legacy_content,
+                            )
                             session['messages'].append(gender_bot_response)
                             session.modified = True
                                         
@@ -899,18 +934,27 @@ def run_recommendation_flow(
                         f'data-user-message="{escaped_user_message}" '
                         f'data-ai-response="{escaped_diagnosis_message}" data-security-score=""'
                     )
-                    bot_content = format_diagnosis_notification(
+                    from src.services.sage_bot_response import build_bot_response
+                    from src.services.status_diagnosis_builder import build_diagnosis_notice
+
+                    sid_local = sid or session.get('_id')
+                    status_diag = build_diagnosis_notice(
+                        diagnosis_message,
+                        feedback_context=feedback_data,
+                        kind="diagnosis_detected",
+                    )
+                    legacy_content = format_diagnosis_notification(
                         diagnosis_message_html,
                         feedback_data,
                         bug_report_attrs=bug_report_data_attrs,
                     )
-                    bot_response = {
-                        'type': 'bot',
-                        'content': bot_content,
-                        'diagnosis': None,
-                        'diagnosis_type': diagnosis_type,
-                        'timestamp': datetime.now().isoformat()
-                    }
+                    bot_response = build_bot_response(
+                        session,
+                        sid_local,
+                        sage_diagnosis=status_diag.to_client_dict(),
+                        legacy_content=legacy_content,
+                        diagnosis_type=diagnosis_type,
+                    )
                     if 'messages' not in session:
                         session['messages'] = []
                     session['messages'].append(bot_response)
@@ -1027,17 +1071,26 @@ def run_recommendation_flow(
                     bug_report_data_attrs = f'data-user-message="{escaped_user_message}" data-ai-response="{escaped_error_message}" data-security-score=""'
                                 
                     doctor_consultation_html = escaped_doctor_consultation.replace('\n', '<br>')
-                    bot_content = format_medicine_type_notice(
+                    from src.services.sage_bot_response import build_bot_response
+                    from src.services.status_diagnosis_builder import (
+                        build_medicine_type_unrecognized_status,
+                    )
+
+                    status_diag = build_medicine_type_unrecognized_status(
+                        feedback_context=feedback_data,
+                    )
+                    legacy_content = format_medicine_type_notice(
                         doctor_consultation_html,
                         feedback_data,
                         bug_report_attrs=bug_report_data_attrs,
                     )
-                    bot_response = {
-                        'type': 'bot',
-                        'content': bot_content,
-                        'diagnosis': None,
-                        'timestamp': datetime.now().isoformat()
-                    }
+                    sid_flow = session.get('_id')
+                    bot_response = build_bot_response(
+                        session,
+                        sid_flow,
+                        sage_diagnosis=status_diag.to_client_dict(),
+                        legacy_content=legacy_content,
+                    )
                     if 'messages' not in session:
                         session['messages'] = []
                     session['messages'].append(bot_response)
@@ -1626,25 +1679,51 @@ def run_recommendation_flow(
             usage_notes = recommendation_result.get('usage_notes', '')
             doctor_consultation = recommendation_result.get('doctor_consultation', '')
                         
+            from src.handlers.line.line_session import is_line_session_id
+            from src.services.recommendation_client_payload import is_sage_web_ui
+            from src.services.recommendation_diagnosis_builder import (
+                SAGE_RECO_MARKER,
+                build_diagnosis_v1,
+                build_display_summary,
+            )
+
+            sage_diagnosis_v1 = None
+            admin_detailed_diag = None
+            sage_web = bool(
+                sid and is_sage_web_ui(session) and not is_line_session_id(sid)
+            )
+
             # ルールベース推奨失敗時のエラー表示処理
             if recommendation_result.get('error'):
-                error_type = recommendation_result.get('error_type', 'unknown')
-                error_details = recommendation_result.get('error_details', {})
-                bot_content = format_error_display(
-                    error_type=error_type,
-                    error_details=error_details,
-                    user_message=user_message,
-                    include_feedback_buttons=True,
-                )
+                if sage_web:
+                    sage_diagnosis_v1 = build_diagnosis_v1(
+                        recommendation_result, session_id=sid
+                    )
+                    bot_content = SAGE_RECO_MARKER
+                else:
+                    error_type = recommendation_result.get('error_type', 'unknown')
+                    error_details = recommendation_result.get('error_details', {})
+                    bot_content = format_error_display(
+                        error_type=error_type,
+                        error_details=error_details,
+                        user_message=user_message,
+                        include_feedback_buttons=True,
+                    )
             # エスカレーションが必要な場合の特別処理
             elif recommendation_result.get('escalation'):
-                bot_content = format_escalation_display(
-                    doctor_consultation=doctor_consultation,
-                    medicine_type=medicine_type,
-                    algorithm=recommendation_result.get('algorithm', 'unknown'),
-                    user_message=user_message,
-                    include_feedback_buttons=True,
-                )
+                if sage_web:
+                    sage_diagnosis_v1 = build_diagnosis_v1(
+                        recommendation_result, session_id=sid
+                    )
+                    bot_content = SAGE_RECO_MARKER
+                else:
+                    bot_content = format_escalation_display(
+                        doctor_consultation=doctor_consultation,
+                        medicine_type=medicine_type,
+                        algorithm=recommendation_result.get('algorithm', 'unknown'),
+                        user_message=user_message,
+                        include_feedback_buttons=True,
+                    )
             else:
                 # 通常の推奨結果の表示
                 algorithm_label = {
@@ -1655,6 +1734,7 @@ def run_recommendation_flow(
                             
                 # Web のみ個別アドバイスを生成（LINE Flex では未使用のためスキップ）
                 personalized_section = ""
+                personalized_advice = ""
                 from src.handlers.line.line_session import is_line_session_id
 
                 if is_line_session_id(sid):
@@ -1707,681 +1787,747 @@ def run_recommendation_flow(
     </div>
     """
                             
-                # critical_questionsとadditional_questionsを統合して推奨前に表示
-                critical_questions = recommendation_result.get('critical_questions', [])
-                additional_questions = recommendation_result.get('additional_questions', [])
-                missing_priority = recommendation_result.get('missing_priority')
-                            
-                # すべての質問を統合（critical_questionsを先に）
-                all_questions_before = []
-                if critical_questions:
-                    all_questions_before.extend(critical_questions)
-                if additional_questions:
-                    for q in additional_questions:
-                        if q not in all_questions_before:
-                            all_questions_before.append(q)
-                            
-                # 推奨前の質問セクション（すべての質問を統合して表示）
-                questions_section_before = ""
-                if all_questions_before:
-                    priority_label = {
-                        'critical': '必須',
-                        'important': '重要',
-                        'optional': '任意'
-                    }.get(missing_priority, '重要' if critical_questions else '任意')
-                                
-                    priority_message = {
-                        'critical': 'より適切な医薬品をご提案するため、以下の情報を教えてください：',
-                        'important': '安全のため、以下の情報を教えてください：',
-                        'optional': 'より安全な使用のため、可能であれば以下の情報を教えてください：'
-                    }.get(missing_priority, 'より適切な医薬品をご提案するため、以下の情報を教えてください：')
-                                
-                    # critical_questionsがある場合はcriticalスタイル、そうでない場合はimportantスタイル
-                    if critical_questions:
-                        question_bg = '#ffebee'
-                        question_border = '#f44336'
-                        question_title = '#c62828'
-                        if missing_priority != 'critical':
-                            missing_priority = 'critical'
-                            priority_label = '必須'
-                            priority_message = 'より適切な医薬品をご提案するため、以下の情報を教えてください：'
-                    elif missing_priority == 'critical':
-                        question_bg = '#ffebee'
-                        question_border = '#f44336'
-                        question_title = '#c62828'
-                    elif missing_priority == 'important':
-                        question_bg = '#fff3e0'
-                        question_border = '#ff9800'
-                        question_title = '#f57c00'
-                    else:
-                        question_bg = '#e8f5e9'
-                        question_border = '#4caf50'
-                        question_title = '#388e3c'
-                                
-                    questions_section_before = f"""
-    <div style="background: {question_bg}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {question_border};">
-        <h4 style="color: {question_title}; margin-top: 0;">❓ 追加でお伺いしたいこと <span style="font-size: 0.9em;">（優先度: {priority_label}）</span></h4>
-        <p style="margin: 10px 0;">{priority_message}</p>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-    """
-                    for question in all_questions_before:
-                        questions_section_before += f"            <li style='margin: 5px 0;'>{question}</li>\n"
-                    questions_section_before += """
-        </ul>
-        <button onclick="openAttributeModal()" class="answer-questions-btn">📝 回答する</button>
-    </div>
-    """
-                            
-                # 属性更新による再推奨の場合、確認メッセージを追加
-                attribute_update_message = ""
-                if session.get('is_reanalysis_with_updated_attributes'):
-                    user_attrs = session.get('user_attributes', {})
-                    attribute_info = []
-                    if user_attrs.get('age'):
-                        attribute_info.append(f"年齢: {user_attrs['age']}歳")
-                    if user_attrs.get('gender'):
-                        attribute_info.append(f"性別: {user_attrs['gender']}")
-                    if user_attrs.get('allergies'):
-                        allergies_str = ', '.join(user_attrs['allergies']) if user_attrs['allergies'] else 'なし'
-                        attribute_info.append(f"アレルギー: {allergies_str}")
-                    if user_attrs.get('current_medications'):
-                        meds_str = ', '.join(user_attrs['current_medications']) if user_attrs['current_medications'] else 'なし'
-                        attribute_info.append(f"服用中の薬: {meds_str}")
-                                
-                    attribute_update_message = f"""
-    <div style="background: #e1f5fe; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #0277bd;">
-        <h4 style="color: #01579b; margin-top: 0;">✅ 属性情報を更新しました</h4>
-        <p style="margin: 5px 0; line-height: 1.6;">{' | '.join(attribute_info) if attribute_info else '属性情報が更新されました'}</p>
-        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">更新された情報をもとに、より適切な医薬品を再推奨いたします。</p>
-    </div>
-    """
-                    # アレルギー警告を追加
-                    if user_attrs.get('allergies') and user_attrs['allergies'] != ['なし']:
-                        allergies_list = [a for a in user_attrs['allergies'] if a != 'なし']
-                        if allergies_list:
-                            attribute_update_message += f"""
-    <div style="background: #fff3e0; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
-        <h4 style="color: #e65100; margin-top: 0;">⚠️ アレルギー情報について</h4>
-        <p style="margin: 5px 0; line-height: 1.6;">アレルギー: <strong>{', '.join(allergies_list)}</strong></p>
-        <p style="margin: 5px 0; font-size: 0.9em; color: #666;">アレルギーについて不明な点がある場合はお近くの薬剤師にご相談ください。</p>
-    </div>
-    """
-                    session.pop('is_reanalysis_with_updated_attributes', None)
-                            
-                # 治療中警告メッセージの生成
-                treatment_warning_section = ""
-                treatment_mention = user_info.get('treatment_mention', False)
-                if treatment_mention:
-                    treatment_warning_section = """
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="治療中の方へ" style="background: #fff3e0; border-left: 4px solid #f57c00;">
-        <button class="collapse-toggle" aria-expanded="true" aria-controls="treatment-warning-content" aria-label="閉じる">
-    <span class="collapse-icon">▼</span>
-    <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ <strong>治療中の方へ</strong></h4>
-        </button>
-        <div id="treatment-warning-content" style="padding: 15px;">
-        <p style="margin: 5px 0; line-height: 1.6;">現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。</p>
-        <p style="margin: 5px 0; line-height: 1.6;">治療中の方が市販薬を服用する場合、主疾患への重大な影響を与える可能性があります。</p>
-        </div>
-    </div>
-    """
-                            
-                # 曖昧な入力への注意書き（治療中警告の前に配置）
-                ambiguous_warning_section = ""
-                try:
-                    # nlu_resultをrecommendation_resultから取得を試みる
-                    nlu_result_for_ambiguous = recommendation_result.get('nlu_result', {})
-                    # symptomsは文字列のリストとして扱う
-                    symptoms_list = [s if isinstance(s, str) else s.get('name', '') if isinstance(s, dict) else str(s) for s in symptoms] if symptoms else []
-                    if is_ambiguous_input(user_message, symptoms_list, nlu_result_for_ambiguous):
-                        ambiguous_warning_section = """
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="ご入力について" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
-        <button class="collapse-toggle" aria-expanded="false" aria-controls="ambiguous-warning-content" aria-label="詳細を見る">
-    <span class="collapse-icon">▼</span>
-    <h4 style="color: #1976d2; margin-top: 0; display: inline;">ℹ️ ご入力について</h4>
-        </button>
-        <div class="collapse-content" id="ambiguous-warning-content" style="padding: 20px; margin: 15px 0;">
-        <p style="margin: 5px 0; line-height: 1.6;">ご入力いただいた内容から、複数の症状が推定されました。より正確な推奨のため、具体的な症状（発熱、咳、鼻水など）を詳しく教えていただくと、より適切な医薬品をご提案できます。</p>
-        </div>
-    </div>
-    """
-                except Exception as e:
-                    logger.warning(f"曖昧さ判定エラー: {e}")
-                            
-                # 症状分析結果を折りたたみ可能にする
-                symptom_analysis_section = f"""
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="症状分析結果">
-        <button class="collapse-toggle" aria-expanded="false" aria-controls="symptom-analysis-content" aria-label="詳細を見る">
-    <span class="collapse-icon">▼</span>
-    <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px; display: inline;">🔍 症状分析結果</h4>
-        </button>
-        <div class="collapse-content" id="symptom-analysis-content">
-    <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
-    <p><strong>医薬品の種類:</strong> {medicine_type}</p>
-        </div>
-    </div>
-    """
-                            
-                bot_content = f"""
-    <div class="recommendation-result">
-    {attribute_update_message}
-    {ambiguous_warning_section}
-    {treatment_warning_section}
-    {personalized_section}
-    {symptom_analysis_section}
-        
-    <div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
-        <h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>
-    """
-                            
-                # 成分重複チェック
-                overlap_warning_section = ""
-                if recommended_medicines:
+
+                if sage_web:
+                    if personalized_advice:
+                        recommendation_result['personalized_advice'] = personalized_advice
+                    sage_diagnosis_v1 = build_diagnosis_v1(
+                        recommendation_result, session_id=sid
+                    )
+                    if sage_diagnosis_v1.ingredient_overlap:
+                        recommendation_result['ingredient_overlap'] = (
+                            sage_diagnosis_v1.ingredient_overlap
+                        )
+                    bot_content = SAGE_RECO_MARKER
                     try:
-                        from src.core.rule_based_recommendation import check_ingredient_overlap
-                        overlap_result = check_ingredient_overlap(recommended_medicines)
-                        if overlap_result.get("has_overlap"):
-                            # コンパクトな形式で警告メッセージを生成（1-2行で簡潔に）
-                            overlap_summaries = []
-                            for overlap in overlap_result.get("overlapping_ingredients", []):
-                                medicines_list = "、".join(overlap.get("medicines", []))
-                                summary = f"{overlap.get('warning_message', '')}：{medicines_list}{overlap.get('side_effect_message', '')}"
-                                overlap_summaries.append(summary)
-                                        
-                            # 複数の重複がある場合は最初の1-2件のみ表示（コンパクトに）
-                            display_summaries = overlap_summaries[:2]  # 最大2件まで表示
-                            if len(overlap_summaries) > 2:
-                                display_summaries.append(f"他{len(overlap_summaries) - 2}件の重複あり")
-                                        
-                            # 深刻度に応じたスタイルを決定
-                            highest_severity = overlap_result.get("highest_severity", "blue")
-                            severity_styles = {
-                                "red": {
-                                    "icon": "🚨",
-                                    "title": "成分の重複について（重複禁止）",
-                                    "border_color": "#d32f2f",
-                                    "title_color": "#c62828",
-                                    "background": "white"
-                                },
-                                "yellow": {
-                                    "icon": "⚠️",
-                                    "title": "成分の重複について（注意）",
-                                    "border_color": "#f57c00",
-                                    "title_color": "#e65100",
-                                    "background": "white"
-                                },
-                                "blue": {
-                                    "icon": "ℹ️",
-                                    "title": "成分の重複について（情報）",
-                                    "border_color": "#1976d2",
-                                    "title_color": "#1976d2",
-                                    "background": "white"
-                                }
-                            }
-                            style = severity_styles.get(highest_severity, severity_styles["blue"])
-                                        
-                            # 警告のクラスを決定（深刻度に応じて）
-                            warning_class = 'warning-critical' if highest_severity == 'red' else 'warning-caution' if highest_severity == 'yellow' else 'warning-info'
-                                        
-                            overlap_warning_section = f"""
-    <div class="{warning_class}" role="region" aria-label="{style['title']}" style="background: {style['background']}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {style['border_color']};">
-        <h4 style="color: {style['title_color']}; margin-top: 0;">{style['icon']} {style['title']}</h4>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-    {''.join(f'<li style="margin: 3px 0;">{summary}</li>' for summary in display_summaries)}
-        </ul>
-    </div>
-    """
-                            bot_content += overlap_warning_section
+                        from src.services.sse_emit import emit_reco_detail
+
+                        emit_reco_detail(
+                            {
+                                "usage_sections": [
+                                    s.model_dump(mode="json")
+                                    for s in sage_diagnosis_v1.usage_sections
+                                ],
+                                "recommended_medicines": sage_diagnosis_v1.recommended_medicines,
+                            },
+                            session_id=sid,
+                        )
+                    except Exception:
+                        pass
+                    try:
+                        from src.core.rule_based_recommendation import log_recommendation_session
+                        log_recommendation_session(
+                            user_text=user_message,
+                            user_info=user_info,
+                            result=recommendation_result,
+                            session_id=sid,
+                            app_output=build_display_summary(sage_diagnosis_v1),
+                        )
                     except Exception as e:
-                        # 成分重複チェックでエラーが発生した場合は警告を表示せず、処理を続行
-                        logger.warning(f"成分重複チェックエラー: {e}")
-
-                from src.services.recommendation_client_payload import (
-                    enrich_recommended_medicines,
-                    is_sage_web_ui,
-                )
-
-                sage_web_cards = is_sage_web_ui(session) and not is_line_session_id(sid)
-                if recommended_medicines:
-                    recommended_medicines = enrich_recommended_medicines(
-                        recommended_medicines,
-                        medicine_type=medicine_type,
-                        symptoms=symptoms,
-                    )
-                    recommendation_result["recommended_medicines"] = recommended_medicines
-
-                if sage_web_cards and recommended_medicines:
-                    bot_content += (
-                        '        <div class="ui-reco-medicines-section streaming-medicines-section" '
-                        'data-sage-client-render="1"></div>\n'
-                    )
-                elif recommended_medicines:
-                    for medicine in recommended_medicines:
-                        # ルールベース結果の場合
-                        if 'rank' in medicine:
-                            explanation = medicine.get('explanation', '')
-                            score = medicine.get('score', 0)
-                                        
-                            # 年齢制限の取得と表示
-                            age_restriction = medicine.get('age_restriction', '')
-                            age_restriction_display = ''
-                                        
-                            import math
-                            if isinstance(age_restriction, float) and math.isnan(age_restriction):
-                                age_restriction = ''
-                                        
-                            # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
-                            if age_restriction and isinstance(age_restriction, str):
-                                # 数値のみを抽出（例：「15歳以上」→「15」）
-                                age_match = re.search(r'(\d+)歳', age_restriction)
-                                if age_match:
-                                    age_num = age_match.group(1)
-                                    age_restriction = f"{age_num}歳以上"
-                                        
-                            if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-                                if '15歳未満' in age_restriction:
-                                    age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳以上の方が対象です。</span></p>'
-                                elif '7歳未満' in age_restriction:
-                                    age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">7歳以上の方が対象です。</span></p>'
-                                elif '12歳未満' in age_restriction:
-                                    age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳以上の方が対象です。</span></p>'
-                                else:
-                                    # その他の年齢制限がある場合
-                                    match = re.search(r'(\d+)歳', age_restriction)
-                                    if match:
-                                        age_restriction_display = f'<p><strong>年齢制限:</strong> {age_restriction}</p>'
-                            elif isinstance(age_restriction, (int, float)):
-                                try:
-                                    age_val = int(age_restriction)
-                                    age_restriction_display = f'<p><strong>年齢制限:</strong> {age_val}歳以上の方が対象です。</p>'
-                                except (ValueError, OverflowError):
-                                    pass
-                                        
-                            rank = medicine.get('rank', 1)
-                            medicine_type = medicine.get('medicine_type', '')
-                                        
-                            # 外用薬（のど）の補助療法説明
-                            # 実際に外用薬（スプレー、トローチなど）の場合のみ表示
-                            auxiliary_note = ""
-                            if '外用薬（のど）' in medicine_type:
-                                product_name_lower = medicine.get('product_name', '').lower()
-                                # 実際に外用薬（スプレー、トローチ、うがい薬など）であることを確認
-                                is_external_medicine = any(kw in product_name_lower for kw in ['スプレー', 'トローチ', 'うがい', '含嗽', '噴射', '塗布'])
-                                # 漢方薬（湯、散、丸など）の場合は除外
-                                is_kampo = any(kw in product_name_lower for kw in ['湯', '散', '丸', 'エキス'])
-                                if is_external_medicine and not is_kampo:
-                                    auxiliary_note = """
-        <p style="margin: 5px 0; padding: 8px; background: #f0f7ff; border-left: 3px solid #2196f3; font-size: 0.9em; color: #1976d2;">
-    💡 <strong>補助的な使用について</strong><br>
-    この外用薬は、内服薬と併用して喉を直接ケアする補助的な製品です。飲み薬にプラスして使うことで、喉の痛みをより和らげることができます。
-        </p>
-    """
-                                        
-                            # スコア表示の生成（display_scoreを優先、整数表示）
-                            score_display = ""
-                            display_score = medicine.get('display_score')
-                            score_level = medicine.get('score_level', '中')
-                            completeness_penalty = medicine.get('completeness_penalty', 0.0)
-                                        
-                            if display_score is not None:
-                                # display_scoreを小数点以下1桁表示（例：85.5%）
-                                score_percent = round(display_score, 1)
-                                score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
-                                            
-                                # 不足情報による減点がある場合、メッセージを表示
-                                if completeness_penalty > 0:
-                                    penalty_percent = round(completeness_penalty * 100, 1)
-                                    score_display += f'<p style="margin: 5px 0; color: #f57c00; font-size: 0.9em;"><strong>ℹ️ 情報:</strong> 年齢などの情報が入力されると、より正確な判定が可能です（不足情報により{penalty_percent}%低下中）</p>'
-                            elif medicine.get('relative_score') is not None:
-                                # display_scoreがない場合はrelative_scoreを使用（フォールバック）
-                                relative_score = medicine.get('relative_score')
-                                score_percent = int(round(relative_score * 100))
-                                score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
-                            elif medicine.get('score') is not None:
-                                # 相対スコアがない場合は絶対スコアを表示（フォールバック）
-                                score_percent = int(round(medicine.get('score', 0) * 100))
-                                score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}%</p>'
-                                        
-                            # リスク警告の表示
-                            risk_warning_display = ""
-                            if medicine.get('risk_warning'):
-                                risk_warning_display = f'<p style="margin: 5px 0; color: #d32f2f;"><strong>⚠️ 注意:</strong> {medicine.get("risk_warning")}</p>'
-                                        
-                            # 低スコア警告の表示
-                            low_score_warning_display = ""
-                            if medicine.get('low_score_warning'):
-                                low_score_warning_display = '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に薬剤師または登録販売者にご相談ください。</p>'
-                                        
-                            bot_content += f"""
-        <div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">
-    <h5 style="margin: 0 0 10px 0;">🏆 {rank}つ目: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
-    {score_display}
-    <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
-    {auxiliary_note}
-    {age_restriction_display}
-    {risk_warning_display}
-    {low_score_warning_display}
-    <p style="margin: 5px 0;"><strong>効能効果:</strong> {medicine.get('efficacy', '')}</p>
-        </div>
-    """
-                        else:
-                            # ChatGPTベース結果の場合
-                            efficacy = medicine.get('efficacy', '')
-                            ingredients = medicine.get('ingredients', '')
-                                        
-                            if len(efficacy) > 200:
-                                efficacy = efficacy[:200] + "..."
-                            if len(ingredients) > 200:
-                                ingredients = ingredients[:200] + "..."
-                                        
-                            bot_content += f"""
-    <div class="medicine-item">
-        <h5>🏆 {medicine.get('number', '')}つ目: {medicine.get('product_name', '')}</h5>
-        <p><strong>メーカー:</strong> {medicine.get('manufacturer', '')}</p>
-        <p><strong>推奨理由:</strong> {medicine.get('reason', '')}</p>
-        <p><strong>効能効果:</strong> {efficacy}</p>
-        <p><strong>成分:</strong> {ingredients}</p>
-    </div>
-    """
+                        logger.warning(f"⚠️ ログ追加エラー（無視して続行）: {e}")
                 else:
-                    bot_content += "        <p>適切な医薬品が見つかりませんでした。</p>"
-                            
-                # 推奨医薬品セクションを閉じる
-                bot_content += """
-    </div>
-    """
-                            
-                if usage_notes or doctor_consultation:
-                    # 使用上の注意を整形（セクションごとに色分け）
-                    formatted_usage_notes = ""
-                    if usage_notes:
-                        # ChatGPTベースの使用上の注意（HTML形式）をチェック
-                        if '<strong>' in usage_notes and '<br>' in usage_notes:
-                            # ChatGPTベースの形式（HTML）の場合はそのまま表示
-                            formatted_usage_notes = usage_notes
+                    # critical_questionsとadditional_questionsを統合して推奨前に表示
+                    critical_questions = recommendation_result.get('critical_questions', [])
+                    additional_questions = recommendation_result.get('additional_questions', [])
+                    missing_priority = recommendation_result.get('missing_priority')
+                                
+                    # すべての質問を統合（critical_questionsを先に）
+                    all_questions_before = []
+                    if critical_questions:
+                        all_questions_before.extend(critical_questions)
+                    if additional_questions:
+                        for q in additional_questions:
+                            if q not in all_questions_before:
+                                all_questions_before.append(q)
+                                
+                    # 推奨前の質問セクション（すべての質問を統合して表示）
+                    questions_section_before = ""
+                    if all_questions_before:
+                        priority_label = {
+                            'critical': '必須',
+                            'important': '重要',
+                            'optional': '任意'
+                        }.get(missing_priority, '重要' if critical_questions else '任意')
+                                    
+                        priority_message = {
+                            'critical': 'より適切な医薬品をご提案するため、以下の情報を教えてください：',
+                            'important': '安全のため、以下の情報を教えてください：',
+                            'optional': 'より安全な使用のため、可能であれば以下の情報を教えてください：'
+                        }.get(missing_priority, 'より適切な医薬品をご提案するため、以下の情報を教えてください：')
+                                    
+                        # critical_questionsがある場合はcriticalスタイル、そうでない場合はimportantスタイル
+                        if critical_questions:
+                            question_bg = '#ffebee'
+                            question_border = '#f44336'
+                            question_title = '#c62828'
+                            if missing_priority != 'critical':
+                                missing_priority = 'critical'
+                                priority_label = '必須'
+                                priority_message = 'より適切な医薬品をご提案するため、以下の情報を教えてください：'
+                        elif missing_priority == 'critical':
+                            question_bg = '#ffebee'
+                            question_border = '#f44336'
+                            question_title = '#c62828'
+                        elif missing_priority == 'important':
+                            question_bg = '#fff3e0'
+                            question_border = '#ff9800'
+                            question_title = '#f57c00'
                         else:
-                            # ルールベースの形式（テキスト）の場合は従来の処理
-                            lines = usage_notes.split('\n')
-                            current_section = None
-                            current_html = ""
-                                        
-                            # 年齢制限の重複チェック用
-                            age_restriction_added = False
-                                        
-                            # セクションID用のカウンター
-                            section_counter = 0
-                                        
-                            for line in lines:
-                                line = line.strip()
-                                if not line:
-                                    continue
+                            question_bg = '#e8f5e9'
+                            question_border = '#4caf50'
+                            question_title = '#388e3c'
+                                    
+                        questions_section_before = f"""
+        <div style="background: {question_bg}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {question_border};">
+            <h4 style="color: {question_title}; margin-top: 0;">❓ 追加でお伺いしたいこと <span style="font-size: 0.9em;">（優先度: {priority_label}）</span></h4>
+            <p style="margin: 10px 0;">{priority_message}</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+        """
+                        for question in all_questions_before:
+                            questions_section_before += f"            <li style='margin: 5px 0;'>{question}</li>\n"
+                        questions_section_before += """
+            </ul>
+            <button onclick="openAttributeModal()" class="answer-questions-btn">📝 回答する</button>
+        </div>
+        """
+                                
+                    # 属性更新による再推奨の場合、確認メッセージを追加
+                    attribute_update_message = ""
+                    if session.get('is_reanalysis_with_updated_attributes'):
+                        user_attrs = session.get('user_attributes', {})
+                        attribute_info = []
+                        if user_attrs.get('age'):
+                            attribute_info.append(f"年齢: {user_attrs['age']}歳")
+                        if user_attrs.get('gender'):
+                            attribute_info.append(f"性別: {user_attrs['gender']}")
+                        if user_attrs.get('allergies'):
+                            allergies_str = ', '.join(user_attrs['allergies']) if user_attrs['allergies'] else 'なし'
+                            attribute_info.append(f"アレルギー: {allergies_str}")
+                        if user_attrs.get('current_medications'):
+                            meds_str = ', '.join(user_attrs['current_medications']) if user_attrs['current_medications'] else 'なし'
+                            attribute_info.append(f"服用中の薬: {meds_str}")
+                                    
+                        attribute_update_message = f"""
+        <div style="background: #e1f5fe; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #0277bd;">
+            <h4 style="color: #01579b; margin-top: 0;">✅ 属性情報を更新しました</h4>
+            <p style="margin: 5px 0; line-height: 1.6;">{' | '.join(attribute_info) if attribute_info else '属性情報が更新されました'}</p>
+            <p style="margin: 5px 0; font-size: 0.9em; color: #666;">更新された情報をもとに、より適切な医薬品を再推奨いたします。</p>
+        </div>
+        """
+                        # アレルギー警告を追加
+                        if user_attrs.get('allergies') and user_attrs['allergies'] != ['なし']:
+                            allergies_list = [a for a in user_attrs['allergies'] if a != 'なし']
+                            if allergies_list:
+                                attribute_update_message += f"""
+        <div style="background: #fff3e0; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <h4 style="color: #e65100; margin-top: 0;">⚠️ アレルギー情報について</h4>
+            <p style="margin: 5px 0; line-height: 1.6;">アレルギー: <strong>{', '.join(allergies_list)}</strong></p>
+            <p style="margin: 5px 0; font-size: 0.9em; color: #666;">アレルギーについて不明な点がある場合はお近くの薬剤師にご相談ください。</p>
+        </div>
+        """
+                        session.pop('is_reanalysis_with_updated_attributes', None)
+                                
+                    # 治療中警告メッセージの生成
+                    treatment_warning_section = ""
+                    treatment_mention = user_info.get('treatment_mention', False)
+                    if treatment_mention:
+                        treatment_warning_section = """
+        <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="治療中の方へ" style="background: #fff3e0; border-left: 4px solid #f57c00;">
+            <button class="collapse-toggle" aria-expanded="true" aria-controls="treatment-warning-content" aria-label="閉じる">
+        <span class="collapse-icon">▼</span>
+        <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ <strong>治療中の方へ</strong></h4>
+            </button>
+            <div id="treatment-warning-content" style="padding: 15px;">
+            <p style="margin: 5px 0; line-height: 1.6;">現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。</p>
+            <p style="margin: 5px 0; line-height: 1.6;">治療中の方が市販薬を服用する場合、主疾患への重大な影響を与える可能性があります。</p>
+            </div>
+        </div>
+        """
+                                
+                    # 曖昧な入力への注意書き（治療中警告の前に配置）
+                    ambiguous_warning_section = ""
+                    try:
+                        # nlu_resultをrecommendation_resultから取得を試みる
+                        nlu_result_for_ambiguous = recommendation_result.get('nlu_result', {})
+                        # symptomsは文字列のリストとして扱う
+                        symptoms_list = [s if isinstance(s, str) else s.get('name', '') if isinstance(s, dict) else str(s) for s in symptoms] if symptoms else []
+                        if is_ambiguous_input(user_message, symptoms_list, nlu_result_for_ambiguous):
+                            ambiguous_warning_section = """
+        <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="ご入力について" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
+            <button class="collapse-toggle" aria-expanded="false" aria-controls="ambiguous-warning-content" aria-label="詳細を見る">
+        <span class="collapse-icon">▼</span>
+        <h4 style="color: #1976d2; margin-top: 0; display: inline;">ℹ️ ご入力について</h4>
+            </button>
+            <div class="collapse-content" id="ambiguous-warning-content" style="padding: 20px; margin: 15px 0;">
+            <p style="margin: 5px 0; line-height: 1.6;">ご入力いただいた内容から、複数の症状が推定されました。より正確な推奨のため、具体的な症状（発熱、咳、鼻水など）を詳しく教えていただくと、より適切な医薬品をご提案できます。</p>
+            </div>
+        </div>
+        """
+                    except Exception as e:
+                        logger.warning(f"曖昧さ判定エラー: {e}")
+                                
+                    # 症状分析結果を折りたたみ可能にする
+                    symptom_analysis_section = f"""
+        <div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="症状分析結果">
+            <button class="collapse-toggle" aria-expanded="false" aria-controls="symptom-analysis-content" aria-label="詳細を見る">
+        <span class="collapse-icon">▼</span>
+        <h4 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px; display: inline;">🔍 症状分析結果</h4>
+            </button>
+            <div class="collapse-content" id="symptom-analysis-content">
+        <p><strong>推測される症状:</strong> {', '.join(symptoms) if symptoms else '特定できませんでした'}</p>
+        <p><strong>医薬品の種類:</strong> {medicine_type}</p>
+            </div>
+        </div>
+        """
+                                
+                    bot_content = f"""
+        <div class="recommendation-result">
+        {attribute_update_message}
+        {ambiguous_warning_section}
+        {treatment_warning_section}
+        {personalized_section}
+        {symptom_analysis_section}
+            
+        <div style="background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
+            <h4 style="color: #2e7d32; margin-top: 0;">💊 推奨医薬品</h4>
+        """
+                                
+                    # 成分重複チェック
+                    overlap_warning_section = ""
+                    if recommended_medicines:
+                        try:
+                            from src.core.rule_based_recommendation import check_ingredient_overlap
+                            overlap_result = check_ingredient_overlap(recommended_medicines)
+                            if overlap_result.get("has_overlap"):
+                                # コンパクトな形式で警告メッセージを生成（1-2行で簡潔に）
+                                overlap_summaries = []
+                                for overlap in overlap_result.get("overlapping_ingredients", []):
+                                    medicines_list = "、".join(overlap.get("medicines", []))
+                                    summary = f"{overlap.get('warning_message', '')}：{medicines_list}{overlap.get('side_effect_message', '')}"
+                                    overlap_summaries.append(summary)
+                                            
+                                # 複数の重複がある場合は最初の1-2件のみ表示（コンパクトに）
+                                display_summaries = overlap_summaries[:2]  # 最大2件まで表示
+                                if len(overlap_summaries) > 2:
+                                    display_summaries.append(f"他{len(overlap_summaries) - 2}件の重複あり")
+                                            
+                                # 深刻度に応じたスタイルを決定
+                                highest_severity = overlap_result.get("highest_severity", "blue")
+                                severity_styles = {
+                                    "red": {
+                                        "icon": "🚨",
+                                        "title": "成分の重複について（重複禁止）",
+                                        "border_color": "#d32f2f",
+                                        "title_color": "#c62828",
+                                        "background": "white"
+                                    },
+                                    "yellow": {
+                                        "icon": "⚠️",
+                                        "title": "成分の重複について（注意）",
+                                        "border_color": "#f57c00",
+                                        "title_color": "#e65100",
+                                        "background": "white"
+                                    },
+                                    "blue": {
+                                        "icon": "ℹ️",
+                                        "title": "成分の重複について（情報）",
+                                        "border_color": "#1976d2",
+                                        "title_color": "#1976d2",
+                                        "background": "white"
+                                    }
+                                }
+                                style = severity_styles.get(highest_severity, severity_styles["blue"])
+                                            
+                                # 警告のクラスを決定（深刻度に応じて）
+                                warning_class = 'warning-critical' if highest_severity == 'red' else 'warning-caution' if highest_severity == 'yellow' else 'warning-info'
+                                            
+                                overlap_warning_section = f"""
+        <div class="{warning_class}" role="region" aria-label="{style['title']}" style="background: {style['background']}; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid {style['border_color']};">
+            <h4 style="color: {style['title_color']}; margin-top: 0;">{style['icon']} {style['title']}</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+        {''.join(f'<li style="margin: 3px 0;">{summary}</li>' for summary in display_summaries)}
+            </ul>
+        </div>
+        """
+                                bot_content += overlap_warning_section
+                        except Exception as e:
+                            # 成分重複チェックでエラーが発生した場合は警告を表示せず、処理を続行
+                            logger.warning(f"成分重複チェックエラー: {e}")
+    
+                    from src.services.recommendation_client_payload import (
+                        enrich_recommended_medicines,
+                        is_sage_web_ui,
+                    )
+    
+                    sage_web_cards = is_sage_web_ui(session) and not is_line_session_id(sid)
+                    if recommended_medicines:
+                        recommended_medicines = enrich_recommended_medicines(
+                            recommended_medicines,
+                            medicine_type=medicine_type,
+                            symptoms=symptoms,
+                        )
+                        recommendation_result["recommended_medicines"] = recommended_medicines
+    
+                    if sage_web_cards and recommended_medicines:
+                        bot_content += (
+                            '        <div class="ui-reco-medicines-section streaming-medicines-section" '
+                            'data-sage-client-render="1"></div>\n'
+                        )
+                    elif recommended_medicines:
+                        for medicine in recommended_medicines:
+                            # ルールベース結果の場合
+                            if 'rank' in medicine:
+                                explanation = medicine.get('explanation', '')
+                                score = medicine.get('score', 0)
+                                            
+                                # 年齢制限の取得と表示
+                                age_restriction = medicine.get('age_restriction', '')
+                                age_restriction_display = ''
+                                            
+                                import math
+                                if isinstance(age_restriction, float) and math.isnan(age_restriction):
+                                    age_restriction = ''
+                                            
+                                # 年齢制限から数値のみを抽出（「15歳以上」→「15」）
+                                if age_restriction and isinstance(age_restriction, str):
+                                    # 数値のみを抽出（例：「15歳以上」→「15」）
+                                    age_match = re.search(r'(\d+)歳', age_restriction)
+                                    if age_match:
+                                        age_num = age_match.group(1)
+                                        age_restriction = f"{age_num}歳以上"
+                                            
+                                if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+                                    if '15歳未満' in age_restriction:
+                                        age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">15歳以上の方が対象です。</span></p>'
+                                    elif '7歳未満' in age_restriction:
+                                        age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">7歳以上の方が対象です。</span></p>'
+                                    elif '12歳未満' in age_restriction:
+                                        age_restriction_display = '<p><strong>年齢制限:</strong> <span style="color: #d32f2f;">12歳以上の方が対象です。</span></p>'
+                                    else:
+                                        # その他の年齢制限がある場合
+                                        match = re.search(r'(\d+)歳', age_restriction)
+                                        if match:
+                                            age_restriction_display = f'<p><strong>年齢制限:</strong> {age_restriction}</p>'
+                                elif isinstance(age_restriction, (int, float)):
+                                    try:
+                                        age_val = int(age_restriction)
+                                        age_restriction_display = f'<p><strong>年齢制限:</strong> {age_val}歳以上の方が対象です。</p>'
+                                    except (ValueError, OverflowError):
+                                        pass
+                                            
+                                rank = medicine.get('rank', 1)
+                                medicine_type = medicine.get('medicine_type', '')
+                                            
+                                # 外用薬（のど）の補助療法説明
+                                # 実際に外用薬（スプレー、トローチなど）の場合のみ表示
+                                auxiliary_note = ""
+                                if '外用薬（のど）' in medicine_type:
+                                    product_name_lower = medicine.get('product_name', '').lower()
+                                    # 実際に外用薬（スプレー、トローチ、うがい薬など）であることを確認
+                                    is_external_medicine = any(kw in product_name_lower for kw in ['スプレー', 'トローチ', 'うがい', '含嗽', '噴射', '塗布'])
+                                    # 漢方薬（湯、散、丸など）の場合は除外
+                                    is_kampo = any(kw in product_name_lower for kw in ['湯', '散', '丸', 'エキス'])
+                                    if is_external_medicine and not is_kampo:
+                                        auxiliary_note = """
+            <p style="margin: 5px 0; padding: 8px; background: #f0f7ff; border-left: 3px solid #2196f3; font-size: 0.9em; color: #1976d2;">
+        💡 <strong>補助的な使用について</strong><br>
+        この外用薬は、内服薬と併用して喉を直接ケアする補助的な製品です。飲み薬にプラスして使うことで、喉の痛みをより和らげることができます。
+            </p>
+        """
+                                            
+                                # スコア表示の生成（display_scoreを優先、整数表示）
+                                score_display = ""
+                                display_score = medicine.get('display_score')
+                                score_level = medicine.get('score_level', '中')
+                                completeness_penalty = medicine.get('completeness_penalty', 0.0)
+                                            
+                                if display_score is not None:
+                                    # display_scoreを小数点以下1桁表示（例：85.5%）
+                                    score_percent = round(display_score, 1)
+                                    score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
                                                 
-                                if line.startswith('1つ目：') or line.startswith('2つ目：') or line.startswith('3つ目：'):
-                                    # 前のセクションを閉じる
-                                    if current_section == 'individual' and current_html:
-                                        # 前の医薬品セクションのコンテンツとセクション自体を閉じる
-                                        formatted_usage_notes += current_html + '</div></div>'
+                                    # 不足情報による減点がある場合、メッセージを表示
+                                    if completeness_penalty > 0:
+                                        penalty_percent = round(completeness_penalty * 100, 1)
+                                        score_display += f'<p style="margin: 5px 0; color: #f57c00; font-size: 0.9em;"><strong>ℹ️ 情報:</strong> 年齢などの情報が入力されると、より正確な判定が可能です（不足情報により{penalty_percent}%低下中）</p>'
+                                elif medicine.get('relative_score') is not None:
+                                    # display_scoreがない場合はrelative_scoreを使用（フォールバック）
+                                    relative_score = medicine.get('relative_score')
+                                    score_percent = int(round(relative_score * 100))
+                                    score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}% <span style="color: #666;">({score_level})</span></p>'
+                                elif medicine.get('score') is not None:
+                                    # 相対スコアがない場合は絶対スコアを表示（フォールバック）
+                                    score_percent = int(round(medicine.get('score', 0) * 100))
+                                    score_display = f'<p style="margin: 5px 0;"><strong>📊 最適度:</strong> {score_percent}%</p>'
+                                            
+                                # リスク警告の表示
+                                risk_warning_display = ""
+                                if medicine.get('risk_warning'):
+                                    risk_warning_display = f'<p style="margin: 5px 0; color: #d32f2f;"><strong>⚠️ 注意:</strong> {medicine.get("risk_warning")}</p>'
+                                            
+                                # 低スコア警告の表示
+                                low_score_warning_display = ""
+                                if medicine.get('low_score_warning'):
+                                    low_score_warning_display = '<p style="margin: 5px 0; color: #f57c00;"><strong>⚠️ 推奨スコアが低めです。</strong> 使用前に薬剤師または登録販売者にご相談ください。</p>'
+                                            
+                                bot_content += f"""
+            <div class="medicine-item" style="padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;">
+        <h5 style="margin: 0 0 10px 0;">🏆 {rank}つ目: {medicine.get('product_name', '')} <span style="color: #666; font-size: 0.9em;">({medicine.get('manufacturer', '')})</span></h5>
+        {score_display}
+        <p style="margin: 5px 0;"><strong>推奨理由:</strong> {explanation}</p>
+        {auxiliary_note}
+        {age_restriction_display}
+        {risk_warning_display}
+        {low_score_warning_display}
+        <p style="margin: 5px 0;"><strong>効能効果:</strong> {medicine.get('efficacy', '')}</p>
+            </div>
+        """
+                            else:
+                                # ChatGPTベース結果の場合
+                                efficacy = medicine.get('efficacy', '')
+                                ingredients = medicine.get('ingredients', '')
+                                            
+                                if len(efficacy) > 200:
+                                    efficacy = efficacy[:200] + "..."
+                                if len(ingredients) > 200:
+                                    ingredients = ingredients[:200] + "..."
+                                            
+                                bot_content += f"""
+        <div class="medicine-item">
+            <h5>🏆 {medicine.get('number', '')}つ目: {medicine.get('product_name', '')}</h5>
+            <p><strong>メーカー:</strong> {medicine.get('manufacturer', '')}</p>
+            <p><strong>推奨理由:</strong> {medicine.get('reason', '')}</p>
+            <p><strong>効能効果:</strong> {efficacy}</p>
+            <p><strong>成分:</strong> {ingredients}</p>
+        </div>
+        """
+                    else:
+                        bot_content += "        <p>適切な医薬品が見つかりませんでした。</p>"
+                                
+                    # 推奨医薬品セクションを閉じる
+                    bot_content += """
+        </div>
+        """
+                                
+                    if usage_notes or doctor_consultation:
+                        # 使用上の注意を整形（セクションごとに色分け）
+                        formatted_usage_notes = ""
+                        if usage_notes:
+                            # ChatGPTベースの使用上の注意（HTML形式）をチェック
+                            if '<strong>' in usage_notes and '<br>' in usage_notes:
+                                # ChatGPTベースの形式（HTML）の場合はそのまま表示
+                                formatted_usage_notes = usage_notes
+                            else:
+                                # ルールベースの形式（テキスト）の場合は従来の処理
+                                lines = usage_notes.split('\n')
+                                current_section = None
+                                current_html = ""
+                                            
+                                # 年齢制限の重複チェック用
+                                age_restriction_added = False
+                                            
+                                # セクションID用のカウンター
+                                section_counter = 0
+                                            
+                                for line in lines:
+                                    line = line.strip()
+                                    if not line:
+                                        continue
+                                                    
+                                    if line.startswith('1つ目：') or line.startswith('2つ目：') or line.startswith('3つ目：'):
+                                        # 前のセクションを閉じる
+                                        if current_section == 'individual' and current_html:
+                                            # 前の医薬品セクションのコンテンツとセクション自体を閉じる
+                                            formatted_usage_notes += current_html + '</div></div>'
+                                            current_html = ""
+                                        elif current_section and current_html:
+                                            # その他のセクション（caution, usage等）を閉じる
+                                            formatted_usage_notes += current_html + '</div></div>'
+                                            current_html = ""
+                                                    
+                                        # 新しい医薬品セクション開始（折りたたみ可能）
+                                        medicine_num = line.replace('：', '').replace('つ目', '')
+                                        section_id = f"medicine-{medicine_num}"
+                                        formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #f5f5f5; border-left: 4px solid #4CAF50;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">💊 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
                                         current_html = ""
-                                    elif current_section and current_html:
-                                        # その他のセクション（caution, usage等）を閉じる
-                                        formatted_usage_notes += current_html + '</div></div>'
+                                        current_section = 'individual'
+                                        age_restriction_added = False  # 新しい医薬品セクションでリセット
+                                    elif line.startswith('【使ってはいけない人】'):
+                                        # 前のセクションを閉じる
+                                        if current_section == 'individual':
+                                            # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                            if current_html:
+                                                formatted_usage_notes += current_html
+                                            formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
+                                            current_html = ""
+                                        elif current_section and current_html:
+                                            # その他のセクション（caution, usage等）を閉じる
+                                            formatted_usage_notes += current_html + '</div></div>'
+                                            current_html = ""
+                                        # 禁忌セクション（折りたたみ可能）
+                                        section_counter += 1
+                                        section_id = f"contraindication-section-{section_counter}"
+                                        formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #ffebee; border-left: 4px solid #c62828;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #d32f2f; margin: 0; display: inline;">⚠️ {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
                                         current_html = ""
-                                                
-                                    # 新しい医薬品セクション開始（折りたたみ可能）
-                                    medicine_num = line.replace('：', '').replace('つ目', '')
-                                    section_id = f"medicine-{medicine_num}"
-                                    formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #f5f5f5; border-left: 4px solid #4CAF50;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">💊 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
-                                    current_html = ""
-                                    current_section = 'individual'
-                                    age_restriction_added = False  # 新しい医薬品セクションでリセット
-                                elif line.startswith('【使ってはいけない人】'):
-                                    # 前のセクションを閉じる
+                                        current_section = 'caution'
+                                    elif line.startswith('【OTC医薬品について】'):
+                                        # 前のセクションを閉じる（医薬品セクションも含む）
+                                        if current_section == 'individual':
+                                            # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                            if current_html:
+                                                formatted_usage_notes += current_html
+                                            formatted_usage_notes += '</div></div>'
+                                            current_html = ""
+                                        elif current_section and current_html:
+                                            if current_section in ['caution', 'usage']:
+                                                formatted_usage_notes += current_html + '</div></div>'
+                                            else:
+                                                formatted_usage_notes += current_html + '</div>'
+                                            current_html = ""
+                                        # OTC医薬品セクション（折りたたみ可能なセクションとして独立）
+                                        section_counter += 1
+                                        section_id = f"otc-section-{section_counter}"
+                                        formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #e3f2fd; border-left: 4px solid #1976d2;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">{line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                        current_html = ""
+                                        current_section = 'otc'
+                                    elif line.startswith('【服用時の注意】'):
+                                        # 前のセクションを閉じる
+                                        if current_section == 'individual':
+                                            # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                            if current_html:
+                                                formatted_usage_notes += current_html
+                                            formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
+                                            current_html = ""
+                                        elif current_section and current_html:
+                                            # その他のセクション（caution, usage等）を閉じる
+                                            formatted_usage_notes += current_html + '</div></div>'
+                                            current_html = ""
+                                        # 服用注意セクション（折りたたみ可能）
+                                        section_counter += 1
+                                        section_id = f"usage-note-section-{section_counter}"
+                                        formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #fff3e0; border-left: 4px solid #f57c00;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #f57c00; margin: 0; display: inline;">📌 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
+                                        current_html = ""
+                                        current_section = 'usage'
+                                    elif line.startswith('年齢制限:'):
+                                        # 年齢制限の処理（重複を避けるため）
+                                        if not age_restriction_added:
+                                            age_restriction = line.replace('年齢制限:', '').strip()
+                                            if age_restriction and age_restriction != 'なし':
+                                                # 年齢制限がある場合のみ表示（重複を避けるため）
+                                                if '未満の方は使用しないでください' in age_restriction or '未満は服用しないこと' in age_restriction:
+                                                    # 既に適切な形式になっている場合はそのまま表示
+                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
+                                                elif '歳以上の方が対象です' in age_restriction:
+                                                    # 「歳以上の方が対象です」の場合はそのまま表示
+                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
+                                                else:
+                                                    # 「〇歳以上」パターンの場合は重複を避けて「〇歳以上の方が対象です。」と表示
+                                                    match = re.search(r'(\d+)歳以上', age_restriction)
+                                                    if match:
+                                                        age_val = match.group(1)
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_val}歳以上の方が対象です。</p>'
+                                                    else:
+                                                        # その他の場合は「以上の方が対象です」を追加
+                                                        current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}以上の方が対象です。</p>'
+                                                age_restriction_added = True
+                                    elif line.startswith('ドーピング:'):
+                                        # ドーピングの処理
+                                        doping_info = line.replace('ドーピング:', '').strip()
+                                        if doping_info and doping_info != 'なし':
+                                            # ドーピング情報がある場合のみ表示
+                                            current_html += f'<p style="margin: 3px 0;"><strong>ドーピング:</strong> {doping_info}</p>'
+                                    elif line.startswith('・'):
+                                        # リストアイテム
+                                        current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
+                                    else:
+                                        # 通常のテキスト（年齢制限とドーピング以外）
+                                        # 「⚠️ 治療中の方へ」の内容は、医薬品セクション内では表示（各医薬品の下に表示）、それ以外ではスキップ（上部に表示されているため）
+                                        if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
+                                            # 医薬品セクション内の場合は「治療中の方へ」も表示
+                                            if current_section == 'individual':
+                                                current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                            else:
+                                                # 医薬品セクション外（ルートレベル）の場合は「治療中の方へ」をスキップ
+                                                if not (line.startswith('⚠️ 治療中の方へ') or 
+                                                        '現在治療中の疾患がある場合' in line or 
+                                                        '治療中の方が市販薬を服用する場合' in line or
+                                                        '主疾患への重大な影響' in line or
+                                                        '重篤な疾患で治療中の方が市販薬を服用する場合' in line):
+                                                    current_html += f'<p style="margin: 3px 0;">{line}</p>'
+                                            
+                                # 最後のセクションを閉じる
+                                if current_section:
                                     if current_section == 'individual':
-                                        # 医薬品セクションのコンテンツとセクション自体を閉じる
-                                        if current_html:
-                                            formatted_usage_notes += current_html
-                                        formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
-                                        current_html = ""
-                                    elif current_section and current_html:
-                                        # その他のセクション（caution, usage等）を閉じる
-                                        formatted_usage_notes += current_html + '</div></div>'
-                                        current_html = ""
-                                    # 禁忌セクション（折りたたみ可能）
-                                    section_counter += 1
-                                    section_id = f"contraindication-section-{section_counter}"
-                                    formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #ffebee; border-left: 4px solid #c62828;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #d32f2f; margin: 0; display: inline;">⚠️ {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
-                                    current_html = ""
-                                    current_section = 'caution'
-                                elif line.startswith('【OTC医薬品について】'):
-                                    # 前のセクションを閉じる（医薬品セクションも含む）
-                                    if current_section == 'individual':
-                                        # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                        # 医薬品セクションの場合、コンテンツとセクションを閉じる
                                         if current_html:
                                             formatted_usage_notes += current_html
                                         formatted_usage_notes += '</div></div>'
-                                        current_html = ""
-                                    elif current_section and current_html:
-                                        if current_section in ['caution', 'usage']:
-                                            formatted_usage_notes += current_html + '</div></div>'
-                                        else:
-                                            formatted_usage_notes += current_html + '</div>'
-                                        current_html = ""
-                                    # OTC医薬品セクション（折りたたみ可能なセクションとして独立）
-                                    section_counter += 1
-                                    section_id = f"otc-section-{section_counter}"
-                                    formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #e3f2fd; border-left: 4px solid #1976d2;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="margin: 0; display: inline;">{line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
-                                    current_html = ""
-                                    current_section = 'otc'
-                                elif line.startswith('【服用時の注意】'):
-                                    # 前のセクションを閉じる
-                                    if current_section == 'individual':
-                                        # 医薬品セクションのコンテンツとセクション自体を閉じる
+                                    elif current_section in ['caution', 'usage', 'otc']:
+                                        # 折りたたみ可能なセクションの場合
                                         if current_html:
                                             formatted_usage_notes += current_html
-                                        formatted_usage_notes += '</div></div>'  # collapse-contentとcollapsible-sectionを閉じる
-                                        current_html = ""
-                                    elif current_section and current_html:
-                                        # その他のセクション（caution, usage等）を閉じる
-                                        formatted_usage_notes += current_html + '</div></div>'
-                                        current_html = ""
-                                    # 服用注意セクション（折りたたみ可能）
-                                    section_counter += 1
-                                    section_id = f"usage-note-section-{section_counter}"
-                                    formatted_usage_notes += f'<div class="collapsible-section" data-collapsible="true" data-default-expanded="false" role="region" aria-label="{line}" style="background: #fff3e0; border-left: 4px solid #f57c00;"><button class="collapse-toggle" aria-expanded="false" aria-controls="{section_id}" aria-label="詳細を見る"><span class="collapse-icon">▼</span><h5 style="color: #f57c00; margin: 0; display: inline;">📌 {line}</h5></button><div class="collapse-content" id="{section_id}" style="padding: 15px; margin: 10px 0;">'
-                                    current_html = ""
-                                    current_section = 'usage'
-                                elif line.startswith('年齢制限:'):
-                                    # 年齢制限の処理（重複を避けるため）
-                                    if not age_restriction_added:
-                                        age_restriction = line.replace('年齢制限:', '').strip()
-                                        if age_restriction and age_restriction != 'なし':
-                                            # 年齢制限がある場合のみ表示（重複を避けるため）
-                                            if '未満の方は使用しないでください' in age_restriction or '未満は服用しないこと' in age_restriction:
-                                                # 既に適切な形式になっている場合はそのまま表示
-                                                current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
-                                            elif '歳以上の方が対象です' in age_restriction:
-                                                # 「歳以上の方が対象です」の場合はそのまま表示
-                                                current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}</p>'
-                                            else:
-                                                # 「〇歳以上」パターンの場合は重複を避けて「〇歳以上の方が対象です。」と表示
-                                                match = re.search(r'(\d+)歳以上', age_restriction)
-                                                if match:
-                                                    age_val = match.group(1)
-                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_val}歳以上の方が対象です。</p>'
-                                                else:
-                                                    # その他の場合は「以上の方が対象です」を追加
-                                                    current_html += f'<p style="margin: 3px 0;"><strong>年齢制限:</strong> {age_restriction}以上の方が対象です。</p>'
-                                            age_restriction_added = True
-                                elif line.startswith('ドーピング:'):
-                                    # ドーピングの処理
-                                    doping_info = line.replace('ドーピング:', '').strip()
-                                    if doping_info and doping_info != 'なし':
-                                        # ドーピング情報がある場合のみ表示
-                                        current_html += f'<p style="margin: 3px 0;"><strong>ドーピング:</strong> {doping_info}</p>'
-                                elif line.startswith('・'):
-                                    # リストアイテム
-                                    current_html += f'<p style="margin: 3px 0; padding-left: 10px;">{line}</p>'
-                                else:
-                                    # 通常のテキスト（年齢制限とドーピング以外）
-                                    # 「⚠️ 治療中の方へ」の内容は、医薬品セクション内では表示（各医薬品の下に表示）、それ以外ではスキップ（上部に表示されているため）
-                                    if not line.startswith('年齢制限:') and not line.startswith('ドーピング:'):
-                                        # 医薬品セクション内の場合は「治療中の方へ」も表示
-                                        if current_section == 'individual':
-                                            current_html += f'<p style="margin: 3px 0;">{line}</p>'
-                                        else:
-                                            # 医薬品セクション外（ルートレベル）の場合は「治療中の方へ」をスキップ
-                                            if not (line.startswith('⚠️ 治療中の方へ') or 
-                                                    '現在治療中の疾患がある場合' in line or 
-                                                    '治療中の方が市販薬を服用する場合' in line or
-                                                    '主疾患への重大な影響' in line or
-                                                    '重篤な疾患で治療中の方が市販薬を服用する場合' in line):
-                                                current_html += f'<p style="margin: 3px 0;">{line}</p>'
-                                        
-                            # 最後のセクションを閉じる
-                            if current_section:
-                                if current_section == 'individual':
-                                    # 医薬品セクションの場合、コンテンツとセクションを閉じる
-                                    if current_html:
-                                        formatted_usage_notes += current_html
-                                    formatted_usage_notes += '</div></div>'
-                                elif current_section in ['caution', 'usage', 'otc']:
-                                    # 折りたたみ可能なセクションの場合
-                                    if current_html:
-                                        formatted_usage_notes += current_html
-                                    formatted_usage_notes += '</div></div>'
-                                else:
-                                    # 折りたたみ不可のセクションの場合
-                                    if current_html:
-                                        formatted_usage_notes += current_html + '</div>'
+                                        formatted_usage_notes += '</div></div>'
+                                    else:
+                                        # 折りたたみ不可のセクションの場合
+                                        if current_html:
+                                            formatted_usage_notes += current_html + '</div>'
+                                    
+                        # 使用上の注意を折りたたみ可能にする
+                        usage_notes_content = formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'
+                        bot_content += f"""
+        <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="使用上の注意" style="background: #fff3e0; border-left: 4px solid #ff9800;">
+            <button class="collapse-toggle" aria-expanded="true" aria-controls="usage-notes-content" aria-label="閉じる">
+        <span class="collapse-icon">▼</span>
+        <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ 使用上の注意</h4>
+            </button>
+            <div id="usage-notes-content" style="padding: 15px;">
+        {usage_notes_content}
+            </div>
+        </div>
+        """
                                 
-                    # 使用上の注意を折りたたみ可能にする
-                    usage_notes_content = formatted_usage_notes if formatted_usage_notes else '<p>特になし</p>'
+                    # 「医師の受診が必要な場合」セクションを準備（翻訳処理の前に追加）
+                    doctor_consultation_section = ""
+                    if doctor_consultation or True:  # 常に表示
+                        doctor_consultation_text = doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'
+                        doctor_consultation_section = f"""
+        <div class="warning-critical" role="region" aria-label="医師の受診が必要な場合" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
+            <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
+            <p style="margin: 5px 0;">{doctor_consultation_text}</p>
+        </div>
+        """
+                        bot_content += doctor_consultation_section
+                                
+                    # 質問セクションを追加（翻訳処理の前に追加）
+                    if questions_section_before:
+                        bot_content += questions_section_before
+                                
+                    # 表示順序: アドバイス → 推奨 → 使用上の注意 → 医師の受診 → 質問
+                                
+                    # 多言語対応: 入力言語に応じて翻訳（すべてのセクション追加後、フィードバックボタン追加前）
+                    detected_language = resolve_session_language(session)
+                    if detected_language != 'ja' and bot_content:
+                        try:
+                            logger.info(f"🌍 翻訳開始: {detected_language}")
+                            mark_processing_step(sid, "translate")
+                            translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client, session_id=sid)
+                            if translated_content and translated_content != bot_content:
+                                bot_content = translated_content
+                                logger.info(f"✅ 翻訳完了: {detected_language}")
+                            else:
+                                logger.info(f"⚠️ 翻訳スキップ: 翻訳結果が空または同じ")
+                        except Exception as e:
+                            logger.error(f"❌ 翻訳エラー: {e}")
+                            # 翻訳に失敗した場合は元のコンテンツを使用
+                                
+                    # 評価ボタン用のデータを準備（HTMLエスケープ処理）
+                    import json
+                    import html
+                                
+                    # HTMLエスケープ処理
+                    escaped_user_message = html.escape(user_message)
+                    escaped_ai_response = html.escape(bot_content)
+                                
+                    feedback_data = {
+                        'user_message': escaped_user_message,
+                        'ai_response': escaped_ai_response,
+                        'security_score': None
+                    }
+                                
+                    # JSONエンコードしてHTMLエスケープ
+                    feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
+                                
+                    # フィードバックボタンのテキストも翻訳
+                    feedback_text = "この推奨結果はいかがでしたか？"
+                    feedback_positive = "適切"
+                    feedback_negative = "不適切"
+                    if detected_language != 'ja':
+                        try:
+                            feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client, session_id=sid)
+                            feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client, session_id=sid)
+                            feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client, session_id=sid)
+                            if feedback_text_translated and feedback_text_translated != feedback_text:
+                                feedback_text = feedback_text_translated
+                            if feedback_positive_translated and feedback_positive_translated != feedback_positive:
+                                feedback_positive = feedback_positive_translated
+                            if feedback_negative_translated and feedback_negative_translated != feedback_negative:
+                                feedback_negative = feedback_negative_translated
+                        except Exception as e:
+                            logger.warning(f"⚠️ フィードバックボタンの翻訳エラー: {e}")
+                                
                     bot_content += f"""
-    <div class="collapsible-section" data-collapsible="true" data-default-expanded="true" role="region" aria-label="使用上の注意" style="background: #fff3e0; border-left: 4px solid #ff9800;">
-        <button class="collapse-toggle" aria-expanded="true" aria-controls="usage-notes-content" aria-label="閉じる">
-    <span class="collapse-icon">▼</span>
-    <h4 style="color: #e65100; margin-top: 0; display: inline;">⚠️ 使用上の注意</h4>
-        </button>
-        <div id="usage-notes-content" style="padding: 15px;">
-    {usage_notes_content}
+        <div id="voice-read-container-inline" style="margin-top: 20px; margin-bottom: 10px;">
+            <button type="button" class="voice-read-main-btn" id="voiceReadMainBtn" onclick="toggleVoiceRead()" aria-label="推奨結果を音声で読み上げる" style="width: 100%; padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; min-height: 44px;">
+        🔊 音声で聞く
+            </button>
+            <div id="voice-read-progress-inline" style="margin-top: 10px; display: none;">
+        <div style="background: #e0e0e0; border-radius: 4px; height: 8px; overflow: hidden;">
+            <div id="voice-read-progress-bar-inline" style="background: #4CAF50; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
         </div>
-    </div>
-    """
-                            
-                # 「医師の受診が必要な場合」セクションを準備（翻訳処理の前に追加）
-                doctor_consultation_section = ""
-                if doctor_consultation or True:  # 常に表示
-                    doctor_consultation_text = doctor_consultation if doctor_consultation else '症状が改善しない場合は医師にご相談ください。'
-                    doctor_consultation_section = f"""
-    <div class="warning-critical" role="region" aria-label="医師の受診が必要な場合" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #f44336;">
-        <h4 style="color: #c62828; margin-top: 0;">🏥 医師の受診が必要な場合</h4>
-        <p style="margin: 5px 0;">{doctor_consultation_text}</p>
-    </div>
-    """
-                    bot_content += doctor_consultation_section
-                            
-                # 質問セクションを追加（翻訳処理の前に追加）
-                if questions_section_before:
-                    bot_content += questions_section_before
-                            
-                # 表示順序: アドバイス → 推奨 → 使用上の注意 → 医師の受診 → 質問
-                            
-                # 多言語対応: 入力言語に応じて翻訳（すべてのセクション追加後、フィードバックボタン追加前）
-                detected_language = resolve_session_language(session)
-                if detected_language != 'ja' and bot_content:
-                    try:
-                        logger.info(f"🌍 翻訳開始: {detected_language}")
-                        mark_processing_step(sid, "translate")
-                        translated_content = translate_medicine_recommendation(bot_content, detected_language, recommendation_client, session_id=sid)
-                        if translated_content and translated_content != bot_content:
-                            bot_content = translated_content
-                            logger.info(f"✅ 翻訳完了: {detected_language}")
-                        else:
-                            logger.info(f"⚠️ 翻訳スキップ: 翻訳結果が空または同じ")
-                    except Exception as e:
-                        logger.error(f"❌ 翻訳エラー: {e}")
-                        # 翻訳に失敗した場合は元のコンテンツを使用
-                            
-                # 評価ボタン用のデータを準備（HTMLエスケープ処理）
-                import json
-                import html
-                            
-                # HTMLエスケープ処理
-                escaped_user_message = html.escape(user_message)
-                escaped_ai_response = html.escape(bot_content)
-                            
-                feedback_data = {
-                    'user_message': escaped_user_message,
-                    'ai_response': escaped_ai_response,
-                    'security_score': None
-                }
-                            
-                # JSONエンコードしてHTMLエスケープ
-                feedback_json = html.escape(json.dumps(feedback_data, ensure_ascii=False))
-                            
-                # フィードバックボタンのテキストも翻訳
-                feedback_text = "この推奨結果はいかがでしたか？"
-                feedback_positive = "適切"
-                feedback_negative = "不適切"
-                if detected_language != 'ja':
-                    try:
-                        feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client, session_id=sid)
-                        feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client, session_id=sid)
-                        feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client, session_id=sid)
-                        if feedback_text_translated and feedback_text_translated != feedback_text:
-                            feedback_text = feedback_text_translated
-                        if feedback_positive_translated and feedback_positive_translated != feedback_positive:
-                            feedback_positive = feedback_positive_translated
-                        if feedback_negative_translated and feedback_negative_translated != feedback_negative:
-                            feedback_negative = feedback_negative_translated
-                    except Exception as e:
-                        logger.warning(f"⚠️ フィードバックボタンの翻訳エラー: {e}")
-                            
-                bot_content += f"""
-    <div id="voice-read-container-inline" style="margin-top: 20px; margin-bottom: 10px;">
-        <button type="button" class="voice-read-main-btn" id="voiceReadMainBtn" onclick="toggleVoiceRead()" aria-label="推奨結果を音声で読み上げる" style="width: 100%; padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; min-height: 44px;">
-    🔊 音声で聞く
-        </button>
-        <div id="voice-read-progress-inline" style="margin-top: 10px; display: none;">
-    <div style="background: #e0e0e0; border-radius: 4px; height: 8px; overflow: hidden;">
-        <div id="voice-read-progress-bar-inline" style="background: #4CAF50; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-    </div>
-    <p id="voice-read-percentage-inline" style="margin: 5px 0 0 0; text-align: center; font-size: 14px; color: #666;">0%</p>
+        <p id="voice-read-percentage-inline" style="margin: 5px 0 0 0; text-align: center; font-size: 14px; color: #666;">0%</p>
+            </div>
         </div>
-    </div>
-    <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-        <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">{feedback_text}</p>
-        <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-    {feedback_positive}
-        </button>
-        <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-    {feedback_negative}
-        </button>
-    </div>
-    </div>"""
+        <div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">{feedback_text}</p>
+            <button class="feedback-btn-positive" onclick="handlePositiveFeedback({feedback_json})" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        {feedback_positive}
+            </button>
+            <button class="feedback-btn-negative" onclick="handleNegativeFeedback({feedback_json})" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+        {feedback_negative}
+            </button>
+        </div>
+        </div>"""
+                                
+                    # bot_contentが完成したので、完全なapp_outputでログを追加記録
+                    try:
+                        from src.core.rule_based_recommendation import log_recommendation_session
+                        log_recommendation_session(
+                            user_text=user_message,
+                            user_info=user_info,
+                            result=recommendation_result,
+                            session_id=sid,
+                            app_output=bot_content  # 完全なHTML出力を記録
+                        )
+                    except Exception as e:
+                        logger.warning(f"⚠️ ログ追加エラー（無視して続行）: {e}")
                             
-                # bot_contentが完成したので、完全なapp_outputでログを追加記録
+            if sage_diagnosis_v1 is not None:
+                bot_diag = sage_diagnosis_v1.to_user_dict()
+                admin_detailed_diag = sage_diagnosis_v1.to_client_dict()
                 try:
-                    from src.core.rule_based_recommendation import log_recommendation_session
-                    log_recommendation_session(
-                        user_text=user_message,
-                        user_info=user_info,
-                        result=recommendation_result,
-                        session_id=sid,
-                        app_output=bot_content  # 完全なHTML出力を記録
-                    )
-                except Exception as e:
-                    logger.warning(f"⚠️ ログ追加エラー（無視して続行）: {e}")
-                        
+                    from src.services.recommendation_diagnosis_builder import build_display_summary
+
+                    bot_diag["feedback_context"] = {
+                        "user_message": user_message,
+                        "ai_response": build_display_summary(sage_diagnosis_v1),
+                    }
+                except Exception:
+                    pass
+            else:
                 bot_diag = recommendation_result
+                admin_detailed_diag = bot_diag
                         
         except Exception as e:
             logger.error(f"❌ 包括的医薬品推奨システム実行時エラー: {e}", exc_info=True)
-            # 技術的なエラー内容はユーザーに表示せず、分かりやすいメッセージを返す
-            bot_content = format_system_error(
-                title='一時的なエラーが発生しました',
-                message='医薬品の推奨処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。',
-            )
-            bot_diag = None
+            from src.services.recommendation_client_payload import use_sage_web_ui
+
+            if use_sage_web_ui(session, sid):
+                from src.services.status_diagnosis_builder import (
+                    SAGE_STATUS_MARKER,
+                    build_system_error_status,
+                )
+
+                status_diag = build_system_error_status()
+                bot_content = SAGE_STATUS_MARKER
+                bot_diag = status_diag.to_client_dict()
+                admin_detailed_diag = bot_diag
+            else:
+                bot_content = format_system_error(
+                    title='一時的なエラーが発生しました',
+                    message='医薬品の推奨処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。',
+                )
+                bot_diag = None
+                admin_detailed_diag = None
                     
         # 個別アドバイスは既にbot_contentの最初に追加済み（重複削除）
                     
@@ -2416,16 +2562,30 @@ def run_recommendation_flow(
                     
         # 診断結果をサニタイズ
         sanitized_diagnosis = sanitize_for_user_storage(bot_diag)
+        if sanitized_diagnosis and sid:
+            detected_language = resolve_session_language(session)
+            if detected_language != 'ja':
+                try:
+                    from src.services.diagnosis_i18n import translate_diagnosis_fields
+
+                    sanitized_diagnosis = translate_diagnosis_fields(
+                        sanitized_diagnosis,
+                        detected_language,
+                        recommendation_client,
+                        session_id=sid,
+                    )
+                except Exception as e:
+                    logger.warning(f"⚠️ diagnosis i18n エラー: {e}")
                     
         # 管理者専用の詳細情報を別途保存（session_idを付与してフロントの一致判定を通す）
         if bot_diag and sid:
             if sid not in ADMIN_SESSIONS:
                 ADMIN_SESSIONS[sid] = {}
             try:
-                bot_diag_with_sid = dict(bot_diag)
+                bot_diag_with_sid = dict(admin_detailed_diag if admin_detailed_diag else bot_diag)
             except Exception:
                 # 念のためフォールバック
-                bot_diag_with_sid = bot_diag
+                bot_diag_with_sid = admin_detailed_diag if admin_detailed_diag else bot_diag
             # フロント側（admin_chat.html）は currentDetailedDiagnosis.session_id === currentSessionId を要求
             # ここでセッションIDを埋め込むことでスコア付き詳細を確実に表示可能にする
             if isinstance(bot_diag_with_sid, dict):

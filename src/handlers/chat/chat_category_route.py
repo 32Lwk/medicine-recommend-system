@@ -14,9 +14,10 @@ from openai import OpenAI
 from src.handlers.chat.chat_ask_route import route_ask_category
 from src.handlers.chat.chat_emotional_route import handle_emotional_category
 from src.handlers.chat.chat_physical_route import (
-    apply_menstrual_physical_override,
+    apply_physical_category_overrides,
     prepare_physical_category,
 )
+from src.services.confidence_policy import should_defer_category_routing
 from src.services.session_manager import save_session_to_db
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,16 @@ def route_triage_category(
         if early is not None:
             return CategoryRouteResult(response=early)
 
-    category = apply_menstrual_physical_override(category, sanitized_message)
+    if should_defer_category_routing(category, confidence, session):
+        return CategoryRouteResult(
+            category=category,
+            sanitized_message=sanitized_message,
+            user_message=user_message,
+            is_question=is_question,
+            triage_result=triage_result,
+        )
+
+    category = apply_physical_category_overrides(category, sanitized_message)
 
     if category == "Emotional":
         emo_resp = handle_emotional_category(
@@ -166,11 +176,19 @@ def _handle_inappropriate_from_triage(
             start_counseling_mode,
         )
 
+        from src.handlers.chat.controlled_drug_routing import (
+            mark_controlled_drug_counseling_done,
+            resolve_inappropriate_counseling_flags,
+        )
+
         request_type = detect_inappropriate_request(sanitized_message, triage_result)
         if not request_type:
             return None
 
-        symptom_type = f"inappropriate_request/{request_type}"
+        start_counseling, counseling_response, symptom_type = resolve_inappropriate_counseling_flags(
+            session,
+            request_type,
+        )
         conversation_history = (
             session.get("messages", [])[-10:]
             if len(session.get("messages", [])) > 10
@@ -183,10 +201,16 @@ def _handle_inappropriate_from_triage(
             conversation_history=conversation_history,
             session_id=sid,
         )
-        initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
+        initial_questions = (
+            generate_follow_up_questions(symptom_type, {}, recommendation_client)
+            if start_counseling
+            else []
+        )
 
-        if request_type not in ("illegal", "controlled"):
+        if start_counseling:
             start_counseling_mode(session, symptom_type, initial_questions)
+        if request_type == "controlled" and counseling_response:
+            mark_controlled_drug_counseling_done(session)
 
         session.setdefault("inappropriate_requests", []).append({
             "type": request_type,
@@ -194,14 +218,20 @@ def _handle_inappropriate_from_triage(
             "user_message": sanitized_message,
         })
 
-        session.setdefault("messages", []).append({
-            "type": "bot",
-            "content": initial_response,
-            "counseling": request_type not in ("illegal", "controlled"),
-            "inappropriate_request": True,
-            "request_type": request_type,
-            "timestamp": datetime.now().isoformat(),
-        })
+        from src.services.sage_bot_response import build_counseling_bot
+
+        session.setdefault("messages", []).append(
+            build_counseling_bot(
+                session,
+                sid,
+                initial_response,
+                title="カウンセリング",
+                kind=f"counseling_inappropriate_{request_type}",
+                counseling=counseling_response,
+                inappropriate_request=True,
+                request_type=request_type,
+            )
+        )
 
         log_counseling_response(
             session_id=sid,
@@ -220,8 +250,8 @@ def _handle_inappropriate_from_triage(
         save_session_to_db(sid, session)
         return ({
             "response": initial_response,
-            "questions": initial_questions if request_type not in ("illegal", "controlled") else [],
-            "counseling": request_type not in ("illegal", "controlled"),
+            "questions": initial_questions,
+            "counseling": counseling_response,
             "inappropriate_request": True,
         }, 200)
     except Exception as e:

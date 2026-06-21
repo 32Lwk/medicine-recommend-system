@@ -63,7 +63,9 @@ def log_recommendation_detail(
     nlu_result: Dict,
     candidate_counts: Dict,  # {"initial": int, "after_scoring": int, "after_filtering": int}
     recommended_medicines: List[Dict],  # 各医薬品に全スコアを含む
-    translated_output: Optional[str] = None
+    translated_output: Optional[str] = None,
+    diagnosis_snapshot: Optional[Dict] = None,
+    display_summary: Optional[str] = None,
 ) -> None:
     """
     医薬品推奨の詳細ログを記録
@@ -88,8 +90,12 @@ def log_recommendation_detail(
         "nlu_result": nlu_result,
         "candidate_counts": candidate_counts,
         "recommended_medicines": recommended_medicines,
-        "translated_output": translated_output
+        "translated_output": translated_output,
     }
+    if diagnosis_snapshot is not None:
+        log_data["diagnosis_snapshot"] = diagnosis_snapshot
+    if display_summary is not None:
+        log_data["display_summary"] = display_summary
     
     # JSONLファイルに出力
     _write_to_jsonl("recommendation_detail_log.jsonl", log_data)

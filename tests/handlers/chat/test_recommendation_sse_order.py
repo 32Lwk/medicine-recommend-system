@@ -1,4 +1,4 @@
-"""SSE emit 順序（cards → personalized_advice）のテスト。"""
+"""SSE emit 順序（cards → personalized_advice → reco_detail）のテスト。"""
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
@@ -44,3 +44,26 @@ def test_emit_cards_before_personalized_advice_on_web(is_line, monkeypatch):
         assert call_order == ["emit_cards"]
     else:
         assert call_order == ["emit_cards", "personalized_advice"]
+
+
+def test_emit_reco_detail_after_done_pattern():
+    """Sage Web: reco_detail は cards/advice 処理後に emit される想定。"""
+    call_order: list[str] = []
+
+    def _emit_cards(*_a, **_k):
+        call_order.append("emit_cards")
+
+    def _emit_reco_detail(*_a, **_k):
+        call_order.append("emit_reco_detail")
+
+    with (
+        patch("src.services.sse_emit.emit_cards", side_effect=_emit_cards),
+        patch("src.services.sse_emit.emit_reco_detail", side_effect=_emit_reco_detail),
+    ):
+        sid = "web:s1"
+        meds = [{"product_name": "薬A"}]
+        _emit_cards(meds, session_id=sid)
+        call_order.append("done")
+        _emit_reco_detail({"usage_sections": [], "recommended_medicines": meds}, session_id=sid)
+
+    assert call_order == ["emit_cards", "done", "emit_reco_detail"]

@@ -46,13 +46,30 @@ def test_http500_trigger(mock_dev):
 @patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)
 @patch("src.handlers.chat.chat_dev_triggers.save_session_to_db")
 @patch("src.handlers.chat.chat_dev_triggers.get_session_from_db", return_value=None)
-def test_html_caution_adds_bot_message(mock_db, mock_save, mock_dev):
+def test_html_caution_adds_sage_bot_message(mock_db, mock_save, mock_dev):
     del mock_db, mock_save, mock_dev
     session = _FakeSession(messages=[])
     body, status = try_dev_error_trigger(session, None, "mrcdev00000000000005")
     assert status == 200
     assert body["message_count"] == 2
-    assert "chat-status-card--caution" in session["messages"][-1]["content"]
+    bot = session["messages"][-1]
+    assert bot["content"] == "sage_status"
+    assert bot["diagnosis"]["render"] == "sage_status"
+    assert "開発プレビュー" in bot["diagnosis"]["message"]
+
+
+@patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)
+@patch("src.handlers.chat.chat_dev_triggers.save_session_to_db")
+@patch("src.handlers.chat.chat_dev_triggers.get_session_from_db", return_value=None)
+def test_sage_reco_preview(mock_db, mock_save, mock_dev):
+    del mock_db, mock_save, mock_dev
+    session = _FakeSession(messages=[])
+    body, status = try_dev_error_trigger(session, None, "mrcdev00000000000011")
+    assert status == 200
+    bot = session["messages"][-1]
+    assert bot["content"] == "sage_reco"
+    assert bot["diagnosis"]["render"] == "sage_reco"
+    assert bot["diagnosis"]["recommended_medicines"]
 
 
 @patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)

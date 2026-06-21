@@ -57,19 +57,28 @@ def finalize_medicine_qa_response(
 ) -> int:
     """Q&A HTML 生成・セッション/DB 保存まで一括実行。message_count を返す。"""
     from src.services.session_manager import get_session_from_db, save_session_to_db
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_qa_from_chat_response
 
     full_response_html = build_medicine_qa_html(chat_response)
-    bot_content, message_id = append_feedback_buttons(full_response_html)
-    bot_response = {
-        "type": "bot",
-        "content": bot_content,
-        "message_id": message_id,
-        "diagnosis": {
-            "chat_response": chat_response,
-            "is_question": True,
-        },
-        "timestamp": datetime.now().isoformat(),
+    legacy_content, message_id = append_feedback_buttons(full_response_html)
+    feedback_ctx = {
+        "user_message": user_message,
+        "ai_response": str(chat_response.get("answer") or ""),
     }
+    sage_diag = build_qa_from_chat_response(
+        chat_response,
+        feedback_context=feedback_ctx,
+    ).to_client_dict()
+    legacy_diagnosis = {"chat_response": chat_response, "is_question": True}
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        legacy_diagnosis=legacy_diagnosis,
+        message_id=message_id,
+    )
     if sid:
         session_data = get_session_from_db(sid)
         if not session_data:

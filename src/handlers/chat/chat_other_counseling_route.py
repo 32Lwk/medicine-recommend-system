@@ -131,7 +131,11 @@ def run_other_unknown_counseling(
     from src.agents.concierge_agent import should_concierge_handle
 
     check_text = (sanitized_message or original_user_message or "").strip()
-    if should_concierge_handle(check_text, triage_result):
+    if should_concierge_handle(
+        check_text,
+        triage_result,
+        alt_texts=[original_user_message, user_message, processed_message],
+    ):
         logger.info("⏭️ Concierge 対象のため不明要求カウンセリングをスキップ")
         return None
 
@@ -202,15 +206,19 @@ def run_other_unknown_counseling(
         initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
         start_counseling_mode(session, symptom_type, initial_questions)
 
-        bot_response = {
-            "type": "bot",
-            "content": initial_response,
-            "counseling": True,
-            "inappropriate_request": True,
-            "request_type": "unknown",
-            "timestamp": datetime.now().isoformat(),
-            "uuid": str(uuid.uuid4()),
-        }
+        from src.services.sage_bot_response import build_counseling_bot
+
+        bot_response = build_counseling_bot(
+            session,
+            sid,
+            initial_response,
+            title="カウンセリング",
+            kind="counseling_unknown_request",
+            counseling=True,
+            inappropriate_request=True,
+            request_type="unknown",
+            uuid=str(uuid.uuid4()),
+        )
         session.setdefault("messages", []).append(bot_response)
 
         if sid:

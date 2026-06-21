@@ -6,6 +6,7 @@ from src.services.sse_emit import (
     emit_advice_delta,
     emit_chat_delta,
     emit_cards,
+    emit_reco_detail,
     get_stream_sink,
     is_streaming_active,
     pseudo_stream_advice,
@@ -96,6 +97,26 @@ def test_emit_chat_delta():
 def test_pseudo_stream_noop_without_sink():
     pseudo_stream_advice("text", "no-sink")
     pseudo_stream_chat("text", "no-sink")
+
+
+def test_emit_reco_detail_payload():
+    sink, _ = activate_stream_sink("reco-s")
+    try:
+        emit_reco_detail(
+            {
+                "usage_sections": [
+                    {"id": "u1", "kind": "per_medicine", "title": "用法", "items": ["1日3回"]}
+                ],
+                "recommended_medicines": [{"product_name": "薬A"}],
+            },
+            session_id="reco-s",
+        )
+        ev = sink.drain_nowait()[0]
+        assert ev[0] == "reco_detail"
+        assert ev[1]["usage_sections"][0]["title"] == "用法"
+        assert ev[1]["recommended_medicines"][0]["product_name"] == "薬A"
+    finally:
+        deactivate_stream_sink("reco-s")
 
 
 def test_activate_new_message_replaces_active_sink():

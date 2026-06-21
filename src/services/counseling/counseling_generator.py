@@ -5,7 +5,10 @@ import logging
 from typing import Dict, List
 from openai import OpenAI
 
-from src.services.counseling.counseling_templates import generate_illegal_drug_rejection_message
+from src.services.counseling.counseling_templates import (
+    generate_controlled_drug_first_counseling_message,
+    generate_illegal_drug_rejection_message,
+)
 from src.services.counseling.counseling_logger import log_counseling_response
 from src.services.counseling.counseling_prompts import get_counseling_prompt_template
 from src.services.counseling.counseling_format import format_conversation_history
@@ -35,6 +38,8 @@ def generate_counseling_response(
     # 違法薬物・規制薬物の場合は、テンプレートベースのメッセージを返す
     if symptom_type.startswith("inappropriate_request/"):
         request_type = symptom_type.split("/")[1]
+        if request_type == "controlled_guidance":
+            return generate_controlled_drug_first_counseling_message()
         if request_type in ["illegal", "controlled"]:
             return generate_illegal_drug_rejection_message(request_type)
         

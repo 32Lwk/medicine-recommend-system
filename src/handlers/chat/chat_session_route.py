@@ -1,5 +1,5 @@
 """
-セッション同期・チャット終了・眠気/不眠キーワード triage 上書き
+セッション同期・チャット終了・眠気/不眠キーワード検出（LLM トリアージは上書きしない）
 """
 from __future__ import annotations
 
@@ -164,36 +164,24 @@ def apply_emotional_keyword_routing(
     phase: str,
 ) -> Optional[str]:
     """
-    眠気/不眠キーワードを候補として記録（triage カテゴリは LLM 判定を維持）。
+    眠気/不眠キーワードをセッションに記録（triage カテゴリは LLM 判定を維持）。
     phase: "sleepiness" | "insomnia"
     """
     from src.handlers.chat.chat_emotional_route import (
         detect_insomnia_keyword,
         detect_sleepiness_keyword,
     )
-    from src.services.routing_keyword_policy import attach_routing_keyword_candidates
 
     if phase == "sleepiness":
         has_sleepiness = detect_sleepiness_keyword(sanitized_message)
         session["has_sleepiness_keyword"] = has_sleepiness
-        if has_sleepiness and triage_result is not None:
-            merged = attach_routing_keyword_candidates(
-                triage_result, ["emotional_sleepiness"]
-            )
-            triage_result.clear()
-            triage_result.update(merged)
-            logger.info("🔍 眠気キーワード候補を記録（LLM トリアージは上書きしない）")
+        if has_sleepiness:
+            logger.info("🔍 眠気キーワードを検出（LLM トリアージは上書きしない）")
         return None
 
     has_sleepiness = session.get("has_sleepiness_keyword", False)
     has_insomnia = detect_insomnia_keyword(sanitized_message)
     session["has_insomnia_keyword"] = has_insomnia
-    if has_insomnia and triage_result is not None:
-        if not has_sleepiness:
-            merged = attach_routing_keyword_candidates(
-                triage_result, ["emotional_insomnia"]
-            )
-            triage_result.clear()
-            triage_result.update(merged)
-            logger.info("🔍 不眠キーワード候補を記録（LLM トリアージは上書きしない）")
+    if has_insomnia and not has_sleepiness:
+        logger.info("🔍 不眠キーワードを検出（LLM トリアージは上書きしない）")
     return None

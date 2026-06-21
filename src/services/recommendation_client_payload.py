@@ -6,13 +6,20 @@ from typing import Any
 
 def is_sage_web_ui(session: Any) -> bool:
     """Web チャットで Sage UI カード描画を使うか。"""
-    from config.ui_config import UI_SAGE_TERRACE_ENABLED, UI_VARIANT_SAGE
+    from config.ui_config import UI_VARIANT_SAGE
 
     if session is not None:
         variant = session.get("ui_variant")
         if variant:
             return variant == UI_VARIANT_SAGE
-    return bool(UI_SAGE_TERRACE_ENABLED)
+    return True
+
+
+def use_sage_web_ui(session: Any, sid: str | None) -> bool:
+    """Sage Web 向け diagnosis v1 パス（LINE 除外）。"""
+    from src.handlers.line.line_session import is_line_session_id
+
+    return bool(sid and is_sage_web_ui(session) and not is_line_session_id(sid))
 
 
 def _symptom_names(symptoms: list[Any] | None) -> list[str]:

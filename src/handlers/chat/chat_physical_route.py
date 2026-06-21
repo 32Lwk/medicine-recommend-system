@@ -40,6 +40,24 @@ def apply_menstrual_physical_override(category: str, sanitized_message: str) -> 
     return category
 
 
+def apply_sleepiness_physical_override(category: str, sanitized_message: str) -> str:
+    """眠気関連は Emotional 誤判定時に Physical 推奨へ"""
+    if category != "Emotional":
+        return category
+    from src.handlers.chat.chat_emotional_route import detect_sleepiness_keyword
+
+    if detect_sleepiness_keyword(sanitized_message):
+        logger.info("🔄 眠気関連症状検出により、カテゴリをEmotionalからPhysicalに変更")
+        return "Physical"
+    return category
+
+
+def apply_physical_category_overrides(category: str, sanitized_message: str) -> str:
+    """Emotional 誤判定向け Physical オーバーライドを順に適用。"""
+    category = apply_menstrual_physical_override(category, sanitized_message)
+    return apply_sleepiness_physical_override(category, sanitized_message)
+
+
 def prepare_physical_recommendation(
     session: Any,
     sanitized_message: str,

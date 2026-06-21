@@ -504,6 +504,96 @@ main {
     color: var(--primary);
 }
 
+.panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.panel-collapse-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-base);
+}
+
+.panel-collapse-btn:hover {
+    background-color: #e2e8f0;
+    color: var(--primary);
+}
+
+/* Right panel collapse */
+main.right-panel-collapsed #right-panel,
+main.right-panel-collapsed #center-resizer {
+    display: none !important;
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    main.right-panel-collapsed {
+        grid-template-columns: 1fr 0 0 !important;
+    }
+}
+
+.right-panel-expand-tab {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.65rem 0.35rem;
+    border: 1px solid var(--border);
+    border-right: none;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    background: var(--surface);
+    color: var(--text-sub);
+    cursor: pointer;
+    box-shadow: -2px 0 8px rgba(15, 23, 42, 0.08);
+    transition: var(--transition-base);
+}
+
+.right-panel-expand-tab:not([hidden]) {
+    display: flex;
+}
+
+.right-panel-expand-tab:hover {
+    color: var(--primary);
+    background: #f0f9ff;
+    border-color: var(--primary);
+}
+
+.right-panel-expand-tab__label {
+    writing-mode: vertical-rl;
+    font-size: 0.68rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.06em;
+    line-height: 1;
+}
+
+.right-panel-expand-tab__badge {
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.2rem;
+    border-radius: var(--radius-full);
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.1rem;
+    text-align: center;
+}
+
 .panel-header {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border);
@@ -2832,6 +2922,11 @@ td .ai-response {
 
 /* Small devices (phones, 480px and down) */
 @media (max-width: 480px) {
+  .right-panel-expand-tab,
+  .panel-collapse-btn {
+      display: none !important;
+  }
+
     :root {
         --spacing-base: 0.75rem;
         --font-size-base: 14px;

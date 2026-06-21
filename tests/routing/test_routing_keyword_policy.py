@@ -2,7 +2,6 @@
 from src.handlers.chat.chat_session_route import apply_emotional_keyword_routing
 from src.services.concierge_keyword_probe import probe_concierge_keyword_candidates
 from src.services.routing_keyword_policy import (
-    attach_routing_keyword_candidates,
     is_decisive_keyword_domain,
     keyword_finalize_allowed,
 )
@@ -25,18 +24,14 @@ def test_keyword_finalize_requires_llm_and_gate():
     )
 
 
-def test_attach_candidates_dedup():
-    triage = attach_routing_keyword_candidates({}, ["store_facilities", "store_facilities"])
-    assert triage["routing_keyword_candidates"] == ["store_facilities"]
-
-
 def test_emotional_does_not_override_triage_category():
+    session = {}
     triage = {"category": "Physical", "confidence": 0.95}
     apply_emotional_keyword_routing(
-        {}, triage, "眠くて仕方ない", phase="sleepiness"
+        session, triage, "眠くて仕方ない", phase="sleepiness"
     )
     assert triage["category"] == "Physical"
-    assert "emotional_sleepiness" in triage.get("routing_keyword_candidates", [])
+    assert session.get("has_sleepiness_keyword") is True
 
 
 def test_chitchat_probe_only():

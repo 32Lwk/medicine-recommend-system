@@ -14,6 +14,7 @@ from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
     append_user_message,
+    was_last_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ def handle_store_inquiry_response(
         sanitized_message,
         recommendation_client,
         triage_result,
+        extra_texts=[display_user_message] if display_user_message else None,
     )
 
     if not store_inquiry_result or not store_inquiry_result.get("is_store_inquiry"):
@@ -101,20 +103,37 @@ def _append_store_response_and_return(
     store_inquiry_result: dict,
 ) -> Any:
     """店舗案内のメッセージをセッションに追加し、DB更新して (dict, status) を返す。"""
-    append_user_message(session, display_user_message)
+    if not was_last_user_message(session, display_user_message):
+        append_user_message(session, display_user_message)
 
     response_data = store_inquiry_result.get("response", {})
     simple_message = response_data.get("simple_message", "")
     structured_html = response_data.get("structured_html", "")
-    bot_content = structured_html if structured_html else simple_message
-    bot_response = {
-        "type": "bot",
-        "content": bot_content,
-        "store_inquiry": True,
-        "inquiry_type": store_inquiry_result.get("inquiry_type"),
-        "store_location": store_inquiry_result.get("store_location"),
-        "timestamp": datetime.now().isoformat(),
+    legacy_content = structured_html if structured_html else simple_message
+    inquiry_type = store_inquiry_result.get("inquiry_type")
+
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_store_status_from_inquiry_result
+
+    feedback_context = {
+        "user_message": display_user_message,
+        "ai_response": simple_message or legacy_content,
+        "inquiry_type": inquiry_type,
     }
+    sage_diag = build_store_status_from_inquiry_result(
+        store_inquiry_result,
+        simple_message=simple_message or legacy_content,
+        feedback_context=feedback_context,
+    ).to_client_dict()
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        store_inquiry=True,
+        inquiry_type=inquiry_type,
+        store_location=store_inquiry_result.get("store_location"),
+    )
     session["messages"].append(bot_response)
     session.modified = True
 

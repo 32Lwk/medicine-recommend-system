@@ -42,6 +42,48 @@
 
 
 
+  function applyDiagnosisI18n(diag) {
+
+    if (!isDiagnosisPayload(diag) || !global.UiStrings) return diag;
+
+    var lang = global.UiStrings.lang();
+
+    if (!lang || lang === 'ja') return diag;
+
+    var bucket = diag.i18n && diag.i18n[lang];
+
+    if (!bucket) return diag;
+
+    var out = Object.assign({}, diag);
+
+    Object.keys(bucket).forEach(function (key) {
+
+      if (bucket[key] != null && bucket[key] !== '') {
+
+        out[key] = bucket[key];
+
+      }
+
+    });
+
+    if (bucket.error && out.error) {
+
+      out.error = Object.assign({}, out.error, bucket.error);
+
+    }
+
+    if (bucket.hints && bucket.hints.length) {
+
+      out.hints = bucket.hints;
+
+    }
+
+    return out;
+
+  }
+
+
+
   function symptomNameList(diag) {
 
     if (!diag) return [];
@@ -283,6 +325,38 @@
     }).join('');
 
     return global.MedicineCarousel.carouselBlockHtml(cards, mapped.length, 'pro');
+
+  }
+
+
+
+  function renderMedicinesEmptyHtml() {
+
+    return (
+
+      '<div class="ui-reco-medicines-empty ui-alert ui-alert--warn" role="status" aria-label="' + esc(t('recoIntro')) + '">' +
+
+        '<strong>💊 ' + esc(t('recoIntro')) + '</strong><br>' + esc(t('noMedicinesFound')) +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function renderMedicinesBlock(medicines, options) {
+
+    options = options || {};
+
+    if (medicines && medicines.length) {
+
+      return renderMedicinesCarousel(medicines, options);
+
+    }
+
+    return renderMedicinesEmptyHtml();
 
   }
 
@@ -660,6 +734,256 @@
 
 
 
+  function overlapWarningsFromDiagnosis(diag) {
+
+    var overlap = diag && diag.ingredient_overlap;
+
+    if (!overlap || !overlap.summaries || !overlap.summaries.length) return '';
+
+    var severity = overlap.severity === 'red' ? 'danger'
+
+      : overlap.severity === 'yellow' ? 'warn' : 'info';
+
+    var badge = severity === 'danger' ? '重複禁止' : severity === 'warn' ? '注意' : '情報';
+
+    var title = overlap.title || '成分の重複について';
+
+    var rows = overlap.summaries.map(function (line) {
+
+      var parsed = parseOverlapLine(line);
+
+      return (
+
+        '<div class="ui-overlap-row">' +
+
+          (parsed.ingredient
+
+            ? '<span class="ui-overlap-row__ingredient">' + esc(parsed.ingredient) + '</span>'
+
+            : '') +
+
+          '<span class="ui-overlap-row__meds">' + esc(parsed.meds) + '</span>' +
+
+          (parsed.note
+
+            ? '<span class="ui-overlap-row__note">' + esc(parsed.note) + '</span>'
+
+            : '') +
+
+        '</div>'
+
+      );
+
+    }).join('');
+
+    return (
+
+      '<div class="ui-overlap-card ui-overlap-card--' + severity + '">' +
+
+        '<div class="ui-overlap-card__head">' +
+
+          '<span class="ui-overlap-card__badge">' + esc(badge) + '</span>' +
+
+          '<span class="ui-overlap-card__title">' + esc(title) + '</span>' +
+
+        '</div>' +
+
+        '<div class="ui-overlap-card__body">' + rows + '</div>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function usageSectionsFromDiagnosis(diag) {
+
+    var perMedicine = {};
+
+    var shared = [];
+
+    if (!diag || !diag.usage_sections) return { perMedicine: perMedicine, shared: shared };
+
+    diag.usage_sections.forEach(function (sec, idx) {
+
+      var html = sec.html;
+
+      if (!html && sec.items && sec.items.length) {
+
+        html = sec.items.map(function (item) { return '<p>' + esc(item) + '</p>'; }).join('');
+
+      }
+
+      if (!html) return;
+
+      if (sec.kind === 'per_medicine') {
+
+        var rank = idx + 1;
+
+        var match = String(sec.title || '').match(/^(\d+)つ目/);
+
+        if (match) rank = parseInt(match[1], 10);
+
+        perMedicine[rank] = html;
+
+      } else {
+
+        shared.push({ label: sec.title || sec.kind, contentHtml: html });
+
+      }
+
+    });
+
+    return { perMedicine: perMedicine, shared: shared };
+
+  }
+
+
+
+  function errorAlertHtml(diag) {
+
+    if (!diag || !diag.error) return '';
+
+    var err = diag.error;
+
+    var cls = err.severity === 'danger' ? 'ui-alert--danger'
+
+      : err.severity === 'warn' ? 'ui-alert--warn' : 'ui-alert--info';
+
+    var recs = (err.recommendations || []).map(function (r) {
+
+      return '<li>' + esc(r) + '</li>';
+
+    }).join('');
+
+    return (
+
+      '<div class="ui-alert ' + cls + ' ui-reco-error">' +
+
+        '<strong>' + esc(err.title || t('recoIntro')) + '</strong><br>' +
+
+        esc(err.message || '') +
+
+        (recs ? '<ul class="ui-followup-list">' + recs + '</ul>' : '') +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function buildStandardVoiceHtml() {
+
+    return (
+
+      '<div class="ui-reco-voice" id="voice-read-container-inline">' +
+
+        '<button type="button" class="voice-read-main-btn ui-btn ui-btn--block" id="voiceReadMainBtn" onclick="toggleVoiceRead()" aria-label="推奨結果を音声で読み上げる">' +
+
+          '🔊 音声で聞く' +
+
+        '</button>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function buildStandardFeedbackHtml() {
+
+    return buildCompactFeedbackHtml('feedbackQuestionShort');
+
+  }
+
+
+
+  function buildCompactFeedbackHtml(questionKey) {
+
+    var qKey = questionKey || 'feedbackQuestionShort';
+
+    return (
+
+      '<div class="ui-feedback-compact feedback-buttons">' +
+
+        '<span class="ui-feedback-compact__label">' + esc(t(qKey)) + '</span>' +
+
+        '<div class="ui-feedback-compact__actions">' +
+
+          '<button type="button" class="feedback-btn-positive ui-feedback-compact__btn" data-feedback="positive" aria-label="' + esc(t('feedbackPositive')) + '">👍</button>' +
+
+          '<button type="button" class="feedback-btn-negative ui-feedback-compact__btn" data-feedback="negative" aria-label="' + esc(t('feedbackNegative')) + '">👎</button>' +
+
+        '</div>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function buildFeedbackThanksHtml() {
+
+    return (
+
+      '<div class="ui-feedback-compact feedback-buttons ui-feedback-compact--done">' +
+
+        '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + esc(t('feedbackThanksShort')) + '</span>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
+  function resolveFeedbackBlockHtml(diag, options) {
+
+    if (diag && diag.feedback_completed) {
+
+      return buildFeedbackThanksHtml();
+
+    }
+
+    if (diag && diag.show_feedback === false) {
+
+      return '';
+
+    }
+
+    return (options && options.feedbackHtml) || buildStandardFeedbackHtml();
+
+  }
+
+
+
+  function buildUsageSectionsSkeletonHtml() {
+
+    return (
+
+      '<div class="ui-reco-detail-skeleton" aria-hidden="true">' +
+
+        '<div class="ui-skeleton-line"></div>' +
+
+        '<div class="ui-skeleton-line ui-skeleton-line--short"></div>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+
   function overlapWarningsHtml(legacyHost) {
 
     if (!legacyHost) return '';
@@ -922,35 +1246,133 @@
 
     }
 
-    var legacyHost = options.legacyHost || null;
+    var usageSections = options.usageSections || usageSectionsFromDiagnosis(diag);
 
-    var hasLegacyDoctor = !!(legacyHost && legacyHost.querySelector('.warning-critical[aria-label="医師の受診が必要な場合"]'));
+    var overlapHtml = overlapWarningsFromDiagnosis(diag);
 
-    var usageSections = parseLegacyUsageSections(legacyHost);
+    var errorHtml = errorAlertHtml(diag);
 
-    return (
+    var block = (
 
       '<div class="ui-reco-block ui-reco-block--pro">' +
 
         symptomIntroHtml(symptoms) +
 
-        personalizedAdviceHtml(diag, options.adviceText) +
+        personalizedAdviceHtml(diag, options.adviceText || (diag && diag.personalized_advice)) +
 
-        overlapWarningsHtml(legacyHost) +
+        overlapHtml +
 
-        renderMedicinesCarousel(meds, { usageSections: usageSections }) +
+        (errorHtml && !meds.length ? errorHtml : renderMedicinesBlock(meds, { usageSections: usageSections })) +
 
-        alertsHtml(diag, { skipDoctor: hasLegacyDoctor }) +
+        (errorHtml && meds.length ? errorHtml : '') +
 
-        buildAncillarySageHtml(legacyHost, diag) +
+        alertsHtml(diag, { skipDoctor: !!(diag && diag.doctor_consultation) }) +
 
-        (options.feedbackHtml || '') +
+        doctorWarningHtml(null, diag) +
 
-        (options.voiceHtml || '') +
+        followupQuestionsHtml(diag, null) +
+
+        (options.detailPending ? buildUsageSectionsSkeletonHtml() : '') +
+
+        resolveFeedbackBlockHtml(diag, options) +
+
+        (options.voiceHtml || buildStandardVoiceHtml()) +
 
       '</div>'
 
     );
+
+    return block;
+
+  }
+
+
+
+  function buildRecoBlockFromDiagnosis(diag, options) {
+
+    return buildRecoBlockHtml(diag, options);
+
+  }
+
+
+
+  function mergeRecoDetail(root, detail) {
+
+    if (!root || !detail || !detail.usage_sections) return false;
+
+    var bubble = root.querySelector('.ui-bubble--reco') || root;
+
+    var skeleton = bubble.querySelector('.ui-reco-detail-skeleton');
+
+    if (skeleton) skeleton.remove();
+
+    var block = bubble.querySelector('.ui-reco-block');
+
+    if (!block) return false;
+
+    var diag = { usage_sections: detail.usage_sections, recommended_medicines: detail.recommended_medicines || [] };
+
+    var usageHost = block.querySelector('.ui-reco-usage');
+
+    var usageHtml = buildAncillaryUsageFromDiagnosis(diag);
+
+    if (usageHtml) {
+
+      if (usageHost) {
+
+        usageHost.outerHTML = usageHtml;
+
+      } else {
+
+        var feedback = block.querySelector('.ui-reco-feedback');
+
+        if (feedback) {
+
+          feedback.insertAdjacentHTML('beforebegin', usageHtml);
+
+        } else {
+
+          block.insertAdjacentHTML('beforeend', usageHtml);
+
+        }
+
+      }
+
+    }
+
+    bindRendered(root);
+
+    return true;
+
+  }
+
+
+
+  function buildAncillaryUsageFromDiagnosis(diag) {
+
+    var sections = usageSectionsFromDiagnosis(diag);
+
+    if (!sections.shared.length && !Object.keys(sections.perMedicine).length) return '';
+
+    var html = '';
+
+    sections.shared.forEach(function (sec) {
+
+      html += '<div class="ui-sage-collapse collapsible-section"><div class="ui-sage-collapse__body">' + sec.contentHtml + '</div></div>';
+
+    });
+
+    return html ? '<div class="ui-reco-usage">' + html + '</div>' : '';
+
+  }
+
+
+
+  function hasSageRecoRenderableContent(diag, options) {
+
+    if (!isDiagnosisPayload(diag)) return false;
+
+    return true;
 
   }
 
@@ -958,11 +1380,13 @@
 
   function buildSageRecoBubbleHtml(diag, options) {
 
-    if (!isSageUi() || !isDiagnosisPayload(diag)) return null;
+    options = options || {};
 
-    var meds = diag.recommended_medicines;
+    if (!options.force && !isSageUi()) return null;
 
-    if (!meds || !meds.length) return null;
+    if (!hasSageRecoRenderableContent(diag, options)) return null;
+
+    diag = applyDiagnosisI18n(diag);
 
     return '<div class="ui-bubble ui-bubble--reco">' + buildRecoBlockHtml(diag, options) + '</div>';
 
@@ -976,35 +1400,28 @@
 
     options = options || {};
 
-    var diag = message && message.diagnosis;
+    var diag = applyDiagnosisI18n(message && message.diagnosis);
 
     if (!isDiagnosisPayload(diag)) return false;
 
-    var meds = diag.recommended_medicines;
-
-    if (!meds || !meds.length) return false;
-
-
-
-    var legacyHost = options.legacyHost || messageDiv.querySelector('.recommendation-result');
-
-    var adviceText = options.adviceText || extractAdviceFromLegacy(legacyHost);
-
-    var feedbackEl = legacyHost && legacyHost.querySelector('.feedback-buttons');
-
-    var voiceEl = legacyHost && legacyHost.querySelector('#voice-read-container-inline');
-
-
+    var mountFingerprint = options.mountFingerprint || '';
+    if (
+      mountFingerprint
+      && messageDiv.__sageMountFingerprint === mountFingerprint
+      && messageDiv.querySelector('.ui-bubble--reco')
+    ) {
+      return false;
+    }
 
     var bubbleOpts = {
 
-      legacyHost: legacyHost,
+      adviceText: options.adviceText || diag.personalized_advice,
 
-      adviceText: adviceText,
+      feedbackHtml: options.feedbackHtml || buildStandardFeedbackHtml(),
 
-      feedbackHtml: feedbackHtmlFromLegacy(feedbackEl),
+      voiceHtml: options.voiceHtml || buildStandardVoiceHtml(),
 
-      voiceHtml: voiceHtmlFromLegacy(voiceEl)
+      detailPending: options.detailPending
 
     };
 
@@ -1017,6 +1434,10 @@
     messageDiv.innerHTML = html;
 
     messageDiv.classList.add('message--sage-reco');
+    messageDiv.__messageDiagnosis = diag;
+    if (mountFingerprint) {
+      messageDiv.__sageMountFingerprint = mountFingerprint;
+    }
 
     bindRendered(messageDiv);
 
@@ -1024,7 +1445,7 @@
 
     if (!symptomList.length) {
 
-      symptomList = symptomsFromMedicines(meds);
+      symptomList = symptomsFromMedicines(diag.recommended_medicines || []);
 
     }
 
@@ -1200,9 +1621,13 @@
 
     buildRecoBlockHtml: buildRecoBlockHtml,
 
+    buildRecoBlockFromDiagnosis: buildRecoBlockFromDiagnosis,
+
     buildSageRecoBubbleHtml: buildSageRecoBubbleHtml,
 
     mountSageRecommendation: mountSageRecommendation,
+
+    mergeRecoDetail: mergeRecoDetail,
 
     buildStreamingSageSkeletonHtml: buildStreamingSageSkeletonHtml,
 
@@ -1212,7 +1637,11 @@
 
     patchStreamingContainer: patchStreamingContainer,
 
-    buildRecommendationMedicinesHtml: buildRecommendationMedicinesHtml
+    buildStandardFeedbackHtml: buildStandardFeedbackHtml,
+
+    buildFeedbackThanksHtml: buildFeedbackThanksHtml,
+
+    applyDiagnosisI18n: applyDiagnosisI18n
 
   };
 

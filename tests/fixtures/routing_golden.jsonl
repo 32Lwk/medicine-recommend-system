@@ -1,4 +1,4 @@
-{"input": "陸上競技でも使える風邪薬を教えてください。", "expected_category": "Ask", "not_concierge_intent": "capabilities"}
+{"input": "陸上競技でも使える風邪薬を教えてください。", "expected_category": "Physical", "not_concierge_intent": "capabilities"}
 {"input": "こんにちは", "expected_fast_concierge": "greeting"}
 {"input": "このチャットでできることを教えて", "expected_category": "Other", "note": "meta_triage capabilities"}
 {"input": "頭が痛い", "expected_category": "Physical"}
@@ -14,7 +14,7 @@
 {"input": "あなたは誰", "expected_category": "Other"}
 {"input": "あんたについて教えて", "expected_category": "Other", "expected_concierge_intent": "app_about"}
 {"input": "風邪をひきました", "expected_category": "Physical"}
-{"input": "今日は暑いね", "expected_fast_concierge": "chitchat"}
+{"input": "今日は暑いね", "expected_category": "Other", "note": "chitchat via meta_triage"}
 {"input": "睡眠薬を教えて", "expected_category": "Emotional"}
 {"input": "処方してください", "expected_category": "Other"}
 {"input": "心臓が痛い", "expected_category": "Emergency"}

@@ -124,14 +124,18 @@ def handle_inappropriate_message_if_detected(
         initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
         start_counseling_mode(session, symptom_type, initial_questions)
 
-        bot_response = {
-            "type": "bot",
-            "content": initial_response,
-            "counseling": True,
-            "inappropriate_request": True,
-            "request_type": "inappropriate_message",
-            "timestamp": datetime.now().isoformat(),
-        }
+        from src.services.sage_bot_response import build_counseling_bot
+
+        bot_response = build_counseling_bot(
+            session,
+            sid,
+            initial_response,
+            title="カウンセリング",
+            kind="counseling_inappropriate",
+            counseling=True,
+            inappropriate_request=True,
+            request_type="inappropriate_message",
+        )
         session["messages"].append(bot_response)
 
         if sid:

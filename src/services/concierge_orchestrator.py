@@ -9,8 +9,6 @@ from typing import Any, Dict, Optional
 from openai import OpenAI
 
 from src.services.concierge_intent import ConciergeIntent, classify_concierge_intent
-from src.services.concierge_keyword_probe import probe_concierge_keyword_candidates
-from src.services.routing_keyword_policy import attach_routing_keyword_candidates
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +24,7 @@ _VALID_CONCIERGE_INTENTS = frozenset({
     "doc_consultation",
     "doc_app_overview",
     "chitchat",
+    "greeting",
     "redirect",
 })
 
@@ -37,6 +36,7 @@ def enrich_other_concierge_intent(
     *,
     conversation_history: Optional[list] = None,
     session_id: Optional[str] = None,
+    alt_texts: Optional[list] = None,
 ) -> Dict[str, Any]:
     """
     Other トリアージ結果に concierge_intent を付与する（オーケストレーター段階）。
@@ -45,16 +45,25 @@ def enrich_other_concierge_intent(
     out = dict(triage_result or {})
     if out.get("category") != "Other":
         return out
-    if out.get("concierge_intent") in _VALID_CONCIERGE_INTENTS:
-        return out
 
     text = (user_text or "").strip()
     if not text:
         return out
 
-    chitchat_candidates = probe_concierge_keyword_candidates(text)
-    if chitchat_candidates:
-        out = attach_routing_keyword_candidates(out, chitchat_candidates, source="concierge_probe")
+    from src.services.store_inquiry_handler import (
+        is_probable_store_inquiry_any,
+        is_store_route_locked,
+    )
+
+    if is_probable_store_inquiry_any(
+        user_text, *(alt_texts or []), triage_result=out
+    ):
+        out.pop("concierge_intent", None)
+        out.pop("concierge_intent_source", None)
+        return out
+
+    if out.get("concierge_intent") in _VALID_CONCIERGE_INTENTS:
+        return out
 
     fast = classify_concierge_intent(text)
     if fast in ("greeting", "thanks"):
@@ -65,12 +74,19 @@ def enrich_other_concierge_intent(
 
     from src.services.concierge_intent import probe_meta_concierge_intent
 
+    from src.services.concierge_intent import _is_medicine_consultation
+
     probed = probe_meta_concierge_intent(text)
-    if probed:
+    if probed and not _is_medicine_consultation(text):
         out["concierge_intent"] = probed
         out["concierge_intent_source"] = "keyword_probe"
         logger.info("🛎️ ConciergeOrchestrator: keyword_probe intent=%s", probed)
         return out
+    if probed and _is_medicine_consultation(text):
+        logger.info(
+            "🛎️ ConciergeOrchestrator: keyword_probe %s + medicine hint → meta LLM",
+            probed,
+        )
 
     from src.services.meta_triage import classify_meta_concierge_intent
 
@@ -79,6 +95,16 @@ def enrich_other_concierge_intent(
         client,
         conversation_history=conversation_history,
     )
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+    if meta in ("redirect", "chitchat") and is_probable_store_inquiry_any(
+        user_text, *(alt_texts or []), triage_result=out
+    ):
+        logger.info(
+            "🛎️ ConciergeOrchestrator: store inquiry, ignore meta intent=%s",
+            meta,
+        )
+        return out
     if meta:
         out["concierge_intent"] = meta
         out["concierge_intent_source"] = "meta_triage"
@@ -101,7 +127,12 @@ def resolve_intent_from_triage(
     user_text: str,
 ) -> Optional[ConciergeIntent]:
     """triage_result.concierge_intent を優先し、雑談連続時のみ redirect に昇格。"""
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
     triage = triage_result or {}
+    if is_probable_store_inquiry_any(user_text, triage_result=triage):
+        return None
+
     pre = triage.get("concierge_intent")
     if pre not in _VALID_CONCIERGE_INTENTS:
         return None

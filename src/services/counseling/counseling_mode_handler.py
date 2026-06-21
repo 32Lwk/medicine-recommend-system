@@ -332,3 +332,10 @@ def handle_user_input_in_counseling_mode(
         }
     
     # 話題転換がない場合、カウンセリングの続きとして処理
+    return process_counseling_answer(
+        user_text,
+        session,
+        session.get("messages", []),
+        client,
+        session_id=session_id,
+    )

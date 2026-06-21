@@ -42,6 +42,33 @@ def _persist_block_messages_to_db(session, client, sid):
     save_session_to_db(sid, session_data)
 
 
+def _append_blocked_user_message(session) -> None:
+    if 'messages' not in session:
+        session['messages'] = []
+    session['messages'].append({
+        'type': 'user',
+        'content': '（この入力はブロックされました）',
+        'timestamp': datetime.now().isoformat(),
+        'uuid': str(uuid.uuid4())
+    })
+
+
+def _append_security_block_bot(session, sid, message: str, *, kind: str, variant: str = "caution") -> None:
+    from src.services.sage_bot_response import build_notice_bot
+
+    session['messages'].append(
+        build_notice_bot(
+            session,
+            sid,
+            message,
+            title="入力について",
+            variant=variant,
+            kind=kind,
+            uuid=str(uuid.uuid4()),
+        )
+    )
+
+
 def validate_and_block_input(session, client, user_message, sid):
     """
     入力の検証・ブロック・危機検出を行う。
@@ -58,20 +85,10 @@ def validate_and_block_input(session, client, user_message, sid):
                 'ご入力いただいた内容にはお答えできかねます。'
                 'お体の不調やお薬のご相談がありましたら、お気軽にメッセージをお送りください。'
             )
-            if 'messages' not in session:
-                session['messages'] = []
-            session['messages'].append({
-                'type': 'user',
-                'content': '（この入力はブロックされました）',
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4())
-            })
-            session['messages'].append({
-                'type': 'bot',
-                'content': block_message,
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4()),
-            })
+            _append_blocked_user_message(session)
+            _append_security_block_bot(
+                session, sid, block_message, kind="absolute_block", variant="security"
+            )
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
             message_count = len(session['messages'])
@@ -101,20 +118,8 @@ def validate_and_block_input(session, client, user_message, sid):
         if should_block_input(risk_score):
             logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
             block_message = '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
-            if 'messages' not in session:
-                session['messages'] = []
-            session['messages'].append({
-                'type': 'user',
-                'content': '（この入力はブロックされました）',
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4())
-            })
-            session['messages'].append({
-                'type': 'bot',
-                'content': block_message,
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4()),
-            })
+            _append_blocked_user_message(session)
+            _append_security_block_bot(session, sid, block_message, kind="security_block")
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
             return (None, ({
@@ -125,20 +130,8 @@ def validate_and_block_input(session, client, user_message, sid):
         if risk_score >= 80:
             logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
             warn_message = '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
-            if 'messages' not in session:
-                session['messages'] = []
-            session['messages'].append({
-                'type': 'user',
-                'content': '（この入力はブロックされました）',
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4())
-            })
-            session['messages'].append({
-                'type': 'bot',
-                'content': warn_message,
-                'timestamp': datetime.now().isoformat(),
-                'uuid': str(uuid.uuid4()),
-            })
+            _append_blocked_user_message(session)
+            _append_security_block_bot(session, sid, warn_message, kind="security_warn", variant="caution")
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
             return (None, ({
@@ -179,15 +172,24 @@ def validate_and_block_input(session, client, user_message, sid):
             append_user_message(session, sanitized_message)
             user_language = session.get('language', 'ja')
             crisis_resources = get_crisis_support_resources(user_language)
-            bot_response = {
-                'type': 'bot',
-                'content': crisis_resources['message'],
-                'crisis_support': True,
-                'crisis_title': crisis_resources['title'],
-                'resources': crisis_resources['resources'],
-                'emergency_message': crisis_resources['emergency_message'],
-                'timestamp': datetime.now().isoformat()
-            }
+            from src.services.sage_bot_response import build_bot_response
+            from src.services.status_diagnosis_builder import build_crisis_status
+
+            status_diag = build_crisis_status(
+                crisis_resources["message"],
+                resources=crisis_resources.get("resources"),
+                title=crisis_resources.get("title", "相談窓口のご案内"),
+            )
+            bot_response = build_bot_response(
+                session,
+                sid,
+                sage_diagnosis=status_diag.to_client_dict(),
+                legacy_content=crisis_resources["message"],
+                crisis_support=True,
+                crisis_title=crisis_resources["title"],
+                resources=crisis_resources["resources"],
+                emergency_message=crisis_resources["emergency_message"],
+            )
             session['messages'].append(bot_response)
             session.modified = True
             session['crisis_detected'] = True

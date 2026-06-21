@@ -72,21 +72,34 @@ def _escalation_response(
     algorithm: str,
     original_user_message: str,
 ) -> ResponseTuple:
-    from src.services.html_formatter import format_escalation_display
+    from legacy.html_formatter import format_escalation_display
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_escalation_status
 
-    escalation_content = format_escalation_display(
+    feedback_ctx = {
+        "user_message": original_user_message,
+        "ai_response": escalation_msg,
+    }
+    legacy_content = format_escalation_display(
         doctor_consultation=escalation_msg,
         medicine_type=medicine_type,
         algorithm=algorithm,
         user_message=original_user_message,
         include_feedback_buttons=True,
     )
-    bot_response = {
-        "type": "bot",
-        "content": escalation_content,
-        "diagnosis": {"doctor_consultation": escalation_msg, "escalation": True},
-        "timestamp": datetime.now().isoformat(),
-    }
+    sage_diag = build_escalation_status(
+        escalation_msg,
+        medicine_type=medicine_type,
+        feedback_context=feedback_ctx,
+    ).to_client_dict()
+    legacy_diagnosis = {"doctor_consultation": escalation_msg, "escalation": True}
+    bot_response = build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy_content,
+        legacy_diagnosis=legacy_diagnosis,
+    )
     session.setdefault("messages", []).append(bot_response)
     _mark_session_modified(session)
     if sid:
@@ -391,50 +404,15 @@ def run_recommendation_followups(
                 except Exception as log_err:
                     logger.warning("医薬品質疑応答ログ記録エラー: %s", log_err)
 
-                ans = _safe_format_html(chat_response_followup.get("answer", "回答を取得できませんでした"))
-                med_det = _safe_format_html(chat_response_followup.get("medicine_details", ""))
-                inter = _safe_format_html(chat_response_followup.get("interactions", ""))
-                doping = _safe_format_html(chat_response_followup.get("doping_check", ""))
-                side_eff = _safe_format_html(chat_response_followup.get("side_effects", ""))
-                consult = _safe_format_html(chat_response_followup.get("consultation_advice", ""))
-                full_html = f"""
-<div class="chat-response">
-<h4>💬 医薬品相談回答</h4>
-<p><strong>回答:</strong><br>{ans}</p>
-{f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{med_det}</div>' if med_det else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{inter}</div>' if inter else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping}</div>' if doping else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_eff}</div>' if side_eff else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consult}</div>' if consult else ''}
-</div>"""
-                full_html = full_html.replace("</div>", "</div>").replace("<div", "<div").replace("<div", "<div")
-                mid = f"msg_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
-                bot_content_followup = full_html + f"""
-<div class="feedback-buttons" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-<p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">この回答はいかがでしたか？</p>
-<button class="feedback-btn-positive" onclick="handlePositiveFeedback('{mid}')" style="background: #28a745; color: white; border: none; padding: 8px 16px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">適切</button>
-<button class="feedback-btn-negative" onclick="handleNegativeFeedback('{mid}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; min-width: 80px;">不適切</button>
-</div>"""
-                bot_response_followup = {
-                    "type": "bot",
-                    "content": bot_content_followup,
-                    "message_id": mid,
-                    "diagnosis": {"chat_response": chat_response_followup, "is_question": True},
-                    "timestamp": datetime.now().isoformat(),
-                }
-                session["messages"].append(bot_response_followup)
-                _mark_session_modified(session)
-                msg_count = len(session.get("messages", []))
-                if sid:
-                    sd2 = get_session_from_db(sid)
-                    if sd2 and "messages" in sd2:
-                        sd2["messages"].append(bot_response_followup)
-                        sd2["last_activity"] = datetime.now()
-                        save_session_to_db(sid, sd2)
-                        msg_count = len(sd2["messages"])
-                if "messages" in session:
-                    del session["messages"]
-                    _mark_session_modified(session)
+                from src.handlers.chat.chat_medicine_qa_html import finalize_medicine_qa_response
+
+                msg_count = finalize_medicine_qa_response(
+                    session,
+                    client_info,
+                    sid,
+                    sanitized_message,
+                    chat_response_followup,
+                )
                 logger.info("✅ 医薬品質問フォローアップ応答完了（Other）: %s...", sanitized_message[:50])
                 return FollowupResult(response=({"status": "ok", "message_count": msg_count}, 200))
             except Exception as e_followup:

@@ -7,6 +7,7 @@
   var STRINGS = {
     ja: {
       recoIntro: '推奨医薬品',
+      noMedicinesFound: '適切な医薬品が見つかりませんでした。',
       estimatedSymptoms: '推定症状:',
       personalAdviceTitle: 'あなたへのひとこと',
       overlapCautions: '成分・服用に関する注意',
@@ -51,8 +52,14 @@
       safetyMoreChips: '他{n}件',
       safetyOk: '登録済み',
       safetyWarn: '要確認',
-      headerPhaseDefault: '症状に合う市販薬をご案内します。',
-      headerPhaseSymptoms: '{symptoms}向け · 候補{count}件',
+      headerPhaseDefault: '症状に合う医薬品をご案内します。',
+      headerPhaseMessages: [
+        '症状に合う医薬品をご案内します。',
+        'お気軽に症状をお聞かせください。',
+        'あなたに合った市販薬をお探しします。',
+        '服用中のお薬との飲み合わせも確認できます。',
+        '迷ったときは薬剤師にご相談ください。'
+      ],
       settingsDisplayTitle: '表示設定',
       settingsPageIntro: '画面の見やすさと演出を調整できます。変更は自動で保存されます。',
       settingsReadabilityTitle: '読みやすさ',
@@ -105,11 +112,22 @@
       safetyPregnancyPendingShort: '妊娠·授乳未',
       lowScoreWarning: '推奨スコアが低めです。使用前に薬剤師または登録販売者にご相談ください。',
       feedbackQuestionRecommendation: 'この推奨結果はいかがでしたか？',
+      feedbackQuestionStatus: 'この回答はいかがでしたか？',
+      feedbackQuestionShort: '役に立ちましたか？',
+      feedbackThanksShort: 'ありがとうございました',
       feedbackPositive: '👍 適切',
-      feedbackNegative: '👎 不適切'
+      feedbackNegative: '👎 不適切',
+      statusAdviceTitle: 'ご案内',
+      statusHintsTitle: '次に試すこと',
+      statusBadgeConsult: '受診',
+      statusBadgeInfo: '案内',
+      statusBadgeImportant: '重要',
+      statusBadgeCaution: '注意',
+      statusBadgeNote: '補足'
     },
     en: {
       recoIntro: 'Recommended medicines',
+      noMedicinesFound: 'No suitable OTC medicine was found.',
       estimatedSymptoms: 'Estimated symptoms:',
       personalAdviceTitle: 'A note for you',
       overlapCautions: 'Ingredient and usage cautions',
@@ -154,8 +172,14 @@
       safetyMoreChips: '{n} more',
       safetyOk: 'Complete',
       safetyWarn: 'Review',
-      headerPhaseDefault: 'We suggest OTC medicines for your symptoms.',
-      headerPhaseSymptoms: '{symptoms} · {count} options',
+      headerPhaseDefault: 'We suggest medicines that fit your symptoms.',
+      headerPhaseMessages: [
+        'We suggest medicines that fit your symptoms.',
+        'Tell us how you feel—we\'re here to help.',
+        'We\'ll find OTC options tailored to you.',
+        'We can check interactions with medicines you take.',
+        'When in doubt, ask a pharmacist.'
+      ],
       settingsDisplayTitle: 'Display settings',
       settingsPageIntro: 'Adjust readability and visual effects. Changes are saved automatically.',
       settingsReadabilityTitle: 'Readability',
@@ -207,11 +231,22 @@
       safetyPregnancyPendingShort: 'Preg/nursing —',
       lowScoreWarning: 'Match score is low. Consult a pharmacist before use.',
       feedbackQuestionRecommendation: 'How was this recommendation?',
+      feedbackQuestionStatus: 'How was this answer?',
+      feedbackQuestionShort: 'Was this helpful?',
+      feedbackThanksShort: 'Thank you',
       feedbackPositive: '👍 Appropriate',
-      feedbackNegative: '👎 Not helpful'
+      feedbackNegative: '👎 Not helpful',
+      statusAdviceTitle: 'Guidance',
+      statusHintsTitle: 'What to try next',
+      statusBadgeConsult: 'Consult',
+      statusBadgeInfo: 'Info',
+      statusBadgeImportant: 'Important',
+      statusBadgeCaution: 'Caution',
+      statusBadgeNote: 'Note'
     },
     ko: {
       recoIntro: '추천 의약품',
+      noMedicinesFound: '적절한 의약품을 찾지 못했습니다.',
       estimatedSymptoms: '추정 증상:',
       personalAdviceTitle: '당신을 위한 한마디',
       overlapCautions: '성분·복용 관련 주의',
@@ -256,8 +291,14 @@
       safetyMoreChips: '외 {n}건',
       safetyOk: '등록됨',
       safetyWarn: '확인 필요',
-      headerPhaseDefault: '증상에 맞는 일반의약품을 안내합니다.',
-      headerPhaseSymptoms: '{symptoms}용 · 후보 {count}건',
+      headerPhaseDefault: '증상에 맞는 의약품을 안내합니다.',
+      headerPhaseMessages: [
+        '증상에 맞는 의약품을 안내합니다.',
+        '편하게 증상을 알려 주세요.',
+        '당신에게 맞는 일반의약품을 찾아 드립니다.',
+        '복용 중인 약과의 상호작용도 확인할 수 있습니다.',
+        '고민될 때는 약사에게 상담하세요.'
+      ],
       settingsDisplayTitle: '표시 설정',
       settingsPageIntro: '가독성과 화면 연출을 조정할 수 있습니다. 변경 사항은 자동 저장됩니다.',
       settingsReadabilityTitle: '가독성',
@@ -310,11 +351,22 @@
       safetyPregnancyPendingShort: '임신·수유 미',
       lowScoreWarning: '추천 점수가 낮습니다. 복용 전 약사와 상담하세요.',
       feedbackQuestionRecommendation: '이 추천 결과는 어떠셨나요?',
+      feedbackQuestionStatus: '이 답변은 어떠셨나요?',
+      feedbackQuestionShort: '도움이 되었나요?',
+      feedbackThanksShort: '감사합니다',
       feedbackPositive: '👍 적절함',
-      feedbackNegative: '👎 부적절함'
+      feedbackNegative: '👎 부적절함',
+      statusAdviceTitle: '안내',
+      statusHintsTitle: '다음에 시도해 보세요',
+      statusBadgeConsult: '진료',
+      statusBadgeInfo: '안내',
+      statusBadgeImportant: '중요',
+      statusBadgeCaution: '주의',
+      statusBadgeNote: '참고'
     },
     zh: {
       recoIntro: '推荐药品',
+      noMedicinesFound: '未找到合适的药品。',
       estimatedSymptoms: '推测症状:',
       personalAdviceTitle: '给您的一句话',
       overlapCautions: '成分与服用注意事项',
@@ -359,8 +411,14 @@
       safetyMoreChips: '另有{n}项',
       safetyOk: '已登记',
       safetyWarn: '需确认',
-      headerPhaseDefault: '根据症状推荐合适的非处方药。',
-      headerPhaseSymptoms: '{symptoms} · {count}个候选',
+      headerPhaseDefault: '根据症状为您推荐合适的药品。',
+      headerPhaseMessages: [
+        '根据症状为您推荐合适的药品。',
+        '请随时告诉我们您的症状。',
+        '为您寻找合适的非处方药。',
+        '可确认与正在服用药品的相互作用。',
+        '如有疑问，请咨询药师。'
+      ],
       settingsDisplayTitle: '显示设置',
       settingsPageIntro: '可调整易读性与画面效果，更改会自动保存。',
       settingsReadabilityTitle: '易读性',
@@ -413,8 +471,18 @@
       safetyPregnancyPendingShort: '妊娠·哺乳未',
       lowScoreWarning: '推荐分数偏低。使用前请咨询药师。',
       feedbackQuestionRecommendation: '您觉得这次推荐如何？',
+      feedbackQuestionStatus: '您觉得这次回答如何？',
+      feedbackQuestionShort: '对您有帮助吗？',
+      feedbackThanksShort: '感谢您的反馈',
       feedbackPositive: '👍 合适',
-      feedbackNegative: '👎 不合适'
+      feedbackNegative: '👎 不合适',
+      statusAdviceTitle: '说明',
+      statusHintsTitle: '接下来可以尝试',
+      statusBadgeConsult: '就诊',
+      statusBadgeInfo: '说明',
+      statusBadgeImportant: '重要',
+      statusBadgeCaution: '注意',
+      statusBadgeNote: '补充'
     }
   };
 
@@ -437,5 +505,40 @@
     return text;
   }
 
-  global.UiStrings = { t: uiT, lang: uiLang, all: STRINGS };
+  function headerPhaseMessages() {
+    var lang = uiLang();
+    var table = STRINGS[lang] || STRINGS.ja;
+    var list = table.headerPhaseMessages;
+    if (Array.isArray(list) && list.length) return list;
+    return [table.headerPhaseDefault || STRINGS.ja.headerPhaseDefault];
+  }
+
+  function applyDiagnosisI18n(diag) {
+    if (!diag || typeof diag !== 'object' || Array.isArray(diag)) return diag;
+    var lang = uiLang();
+    if (!lang || lang === 'ja') return diag;
+    var bucket = diag.i18n && diag.i18n[lang];
+    if (!bucket) return diag;
+    var out = Object.assign({}, diag);
+    Object.keys(bucket).forEach(function (key) {
+      if (bucket[key] != null && bucket[key] !== '') {
+        out[key] = bucket[key];
+      }
+    });
+    if (bucket.error && out.error) {
+      out.error = Object.assign({}, out.error, bucket.error);
+    }
+    if (bucket.hints && bucket.hints.length) {
+      out.hints = bucket.hints;
+    }
+    return out;
+  }
+
+  global.UiStrings = {
+    t: uiT,
+    lang: uiLang,
+    all: STRINGS,
+    headerPhaseMessages: headerPhaseMessages,
+    applyDiagnosisI18n: applyDiagnosisI18n
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

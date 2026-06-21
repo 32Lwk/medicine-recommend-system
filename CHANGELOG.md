@@ -1,6 +1,129 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月20日**（Sage 表示設定・カラーテーマ・セーフティレール応答レイアウト・オンボーディング改善）
+**最終更新日: 2026年6月21日**（Diagnosis v1 / Sage UI Big Bang 移行・開発プレビュー 16 パターン・店舗案内・LINE リッチメニュー）
+
+---
+
+## 2026年6月21日 — Diagnosis v1 / Sage UI Big Bang 移行・開発プレビュー 16 パターン
+
+### 概要
+
+Web チャットの応答を **HTML 一括描画から Diagnosis v1 構造化ペイロード + マーカー描画**へ全面移行した（Big Bang）。`sage_reco` / `sage_status` / `sage_qa` の 3 系統で推奨・ステータス・Q&A を統一し、SSE 順序（cards → advice → done → reco_detail）と i18n・TTS・管理画面表示を diagnosis 経由に接続した。開発用 UI プレビューは **7 件から 16 件**に拡張（`mrcdev00000000000001`〜`16`）。店舗案内キーワードカタログ、LINE リッチメニュー、曖昧心臓症状・規制薬物ルーティング等のバックエンド強化を含む。
+
+### Diagnosis v1 スキーマ・ビルダー
+
+- **`src/schemas/recommendation_diagnosis_v1.py` / `status_diagnosis_v1.py`（新規）**: Pydantic 正本。`render`・`usage_sections`・`error`・`admin`（ユーザー API から strip）等
+- **`recommendation_diagnosis_builder.py` / `status_diagnosis_builder.py`（新規）**: 推奨・緊急・店舗・Q&A・カウンセリング・診断名通知等の diagnosis 生成。マーカー `sage_reco` / `sage_status` / `sage_qa`
+- **`diagnosis_i18n.py`（新規）**: diagnosis フィールドの多言語バンドル
+- **`sage_bot_response.py`（新規）**: Sage Web と legacy HTML の二重書き。`use_sage_web_ui` でマーカー + diagnosis を選択
+- **`recommendation_client_payload.py`**: Sage Web 向け diagnosis パス（LINE 除外）
+- **`reco_error_messages.py`（新規）**: 推奨エラー種別のユーザー向け文言
+- **`docs/ui/DIAGNOSIS_V1.md`（新規）**: 契約・SSE 順序・legacy 読取専用方針
+
+### チャット経路・オーケストレーション
+
+- **`chat_recommendation_flow.py`**: 推奨フローを diagnosis v1 + SSE 中心に再構成（大幅リファクタ）
+- **`chat_post_pipeline.py` / `chat_orchestrator.py`**: diagnosis 応答・曖昧心臓・ConfidenceGate 連携
+- **`chat_ambiguous_heart_route.py`（新規）**: 「心が痛い」身体 vs 心理の確認カード
+- **`controlled_drug_routing.py` / `inappropriate_drug_block_route.py`（新規）**: 規制薬物・不適切要求の即時ブロックと OTC 不眠文脈除外
+- **`chat_symptom_route.py` / `chat_question_route.py` / `chat_counseling_flow.py` 等**: 各ルートを `build_bot_response` 経由の Sage 応答に統一
+- **`chat_diagnosis_handler.py`**: diagnosis 通知・属性更新の status ビルダー接続
+- **`confidence_policy.py`（新規）** + **`confidence_gate.py`**: ポリシー分離とゲート判定の整理
+
+### 店舗案内
+
+- **`data/store_inquiry_keyword_catalog.json`（新規）** + **`store_inquiry_keyword_catalog.py`（新規）**: 施設・在庫・遺失物等のキーワードカタログ
+- **`store_inquiry_handler.py`**: 分類・再試行・施設文脈・テキストバリアント対応の大規模強化
+- **`chat_store_inquiry.py`**: diagnosis ベース店舗 status 連携
+
+### Concierge・トリアージ・入力
+
+- **`concierge_agent.py` / `concierge_orchestrator.py` / `concierge_intent.py`**: Sage status 応答・意図解決の拡張
+- **`llm_triage.py` / `meta_triage.py` / `triage_agent.py`**: 履歴・第二段階・緊急キーワード調整
+- **`input_helpers.py` / `structured_logger.py`**: 正規化・ログフィールド拡充
+- **`routing_keyword_policy.py`**: キーワード監査の更新
+
+### LINE
+
+- **`line_rich_menu.py` / `line_quick_actions.py` / `line_menu_actions.py`（新規）**: 3 分割リッチメニュー（Web 詳細・薬剤師相談・使い方）と postback 処理
+- **`scripts/register_line_rich_menu.py`（新規）**: Messaging API 登録 CLI
+- **`static/line/rich-menu-pattern-*.png`（新規）**: 4 種ビジュアルパターン
+- **`flex_messages.py` / `line_i18n.py` / `line_message_handler.py`**: Flex・i18n・配信の diagnosis 対応
+
+### フロントエンド（Sage Terrace）
+
+- **`static/js/ui/status_renderer.js` / `tts_builder.js`（新規）**: status / Q&A 描画・音声読み上げを diagnosis から生成
+- **`recommendation_renderer.js` / `main.js` / `processing_status.js`**: カルーセル・SSE 逐次描画・進捗 UI の diagnosis 対応（大規模更新）
+- **`sage_terrace.css` / `ui_shell_components.css` / `shell.css`**: Sage カード・推奨・status レイアウト
+- **`admin_chat.js` / `admin_chat.css`**: 管理画面の Sage バブル・スコアパネル
+- **`ui_strings.js`**: diagnosis 関連 i18n 文言
+- **`config/ui_config.py`**: デフォルト Sage、`LEGACY_UI_FALLBACK` / `?ui=legacy` で legacy 固定
+- **`legacy/` / `static/legacy/`**: 退避 README と legacy HTML 参照
+
+### 開発用 UI プレビュー（16 パターン）
+
+**`APP_ENV=development` のみ。** トリガー語を **完全一致** で送信。詳細: [`docs/ops/DEV_ERROR_UI_PREVIEW.md`](docs/ops/DEV_ERROR_UI_PREVIEW.md)
+
+| # | トリガー | 種類 | Sage 表示 |
+|---|----------|------|-----------|
+| 01 | `mrcdev00000000000001` | クライアント・エラー | 赤カード（`showErrorMessage`） |
+| 02 | `mrcdev00000000000002` | クライアント・警告 | セキュリティ警告 |
+| 03 | `mrcdev00000000000003` | HTTP 500 | 通信エラー系 |
+| 04 | `mrcdev00000000000004` | システムエラー | `sage_status` error |
+| 05 | `mrcdev00000000000005` | 候補なし | `sage_status` caution |
+| 06 | `mrcdev00000000000006` | 診断名通知 | `sage_status` notice |
+| 07 | `mrcdev00000000000007` | エスカレーション | `sage_status` critical |
+| 08 | `mrcdev00000000000008` | 挨拶 | `sage_status` notice（FB なし） |
+| 09 | `mrcdev00000000000009` | 店舗案内 | `sage_status` notice + FB |
+| 10 | `mrcdev00000000000010` | 医薬品 Q&A | `sage_qa` |
+| 11 | `mrcdev00000000000011` | 推奨成功 | `sage_reco` + カルーセル |
+| 12 | `mrcdev00000000000012` | 推奨 0 件 | `sage_reco` + error |
+| 13 | `mrcdev00000000000013` | 緊急 | `sage_status` critical |
+| 14 | `mrcdev00000000000014` | 危機支援 | `sage_status` security |
+| 15 | `mrcdev00000000000015` | カウンセリング | `sage_status` notice |
+| 16 | `mrcdev00000000000016` | 医薬品種類不明 | `sage_status` caution |
+
+04〜16 は diagnosis v1 + マーカーで描画。環境変数 `DEV_ERROR_TRIGGER_*`（01〜07）・`DEV_SAGE_TRIGGER_*`（08〜16）で上書き可能。  
+実装: `chat_dev_triggers.py` / テスト: `tests/chat/test_chat_dev_triggers.py`
+
+### API・セッション・ログ
+
+- **`main.py`**: セッション diagnosis の admin フィールド除去、UI バリアント注入
+- **`sse_events.py` / `sse_emit.py`**: reco_detail 等 SSE イベント拡張
+- **`recommendation_logger.py`**: diagnosis_snapshot + plain summary ログ
+- **`html_formatter.py`**: dual-write / legacy 参照用に残存
+
+### ドキュメント・QA
+
+- **`docs/ops/MANUAL_QA_SAGE_UI.md`（新規）**: Big Bang 後の手動 QA チェックリスト
+- **`docs/ops/DEV_ERROR_UI_PREVIEW.md`**: 16 パターン一覧に更新
+
+### 新規ファイル（主要）
+
+| パス | 内容 |
+|------|------|
+| `src/schemas/` | Diagnosis v1 Pydantic 正本 |
+| `src/services/recommendation_diagnosis_builder.py` | 推奨 diagnosis ビルダー |
+| `src/services/status_diagnosis_builder.py` | ステータス diagnosis ビルダー |
+| `src/services/sage_bot_response.py` | Sage / legacy 応答ヘルパー |
+| `static/js/ui/status_renderer.js` | status / Q&A 描画 |
+| `static/js/ui/tts_builder.js` | TTS テキスト生成 |
+| `src/handlers/line/line_rich_menu.py` | LINE リッチメニュー |
+| `data/store_inquiry_keyword_catalog.json` | 店舗案内キーワード |
+
+### テスト（新規・更新）
+
+| テスト | 内容 |
+|--------|------|
+| `test_recommendation_diagnosis_builder.py` / `test_status_diagnosis_builder.py` | diagnosis ビルダー |
+| `test_diagnosis_i18n.py` / `test_sage_bot_response.py` | i18n・応答ヘルパー |
+| `test_chat_dev_triggers.py` / `test_chat_stream_api.py` | 開発プレビュー 01〜16 |
+| `test_ambiguous_heart_route.py` / `test_unrecognized_symptom_route.py` | 曖昧心臓・症状不明 |
+| `test_controlled_drug_routing.py` / `test_inappropriate_drug_block_route.py` | 規制薬物ブロック |
+| `test_store_inquiry_*.py` / `test_store_routing_matrix.py` | 店舗案内マトリクス |
+| `test_line_rich_menu.py` / `test_sessions_diagnosis_sanitize.py` | LINE・API サニタイズ |
+| `test_chat_orchestrator.py` | オーケストレーター回帰（大幅拡充） |
+| `tests/schemas/` / `tests/services/counseling/` | スキーマ・カウンセリング |
 
 ---
 
@@ -1468,22 +1591,31 @@ UI_SAGE_TERRACE_ENABLED=true
 
 ---
 
-## 開発用エラー UI プレビュー（7パターン・すべて実装済み）
+## 開発用 UI プレビュー（16パターン・すべて実装済み）
 
 **`APP_ENV=development` のときのみ有効。** 本番ではトリガー語を送っても通常メッセージとして処理されます。  
-詳細・環境変数・使い方: **[docs/DEV_ERROR_UI_PREVIEW.md](docs/DEV_ERROR_UI_PREVIEW.md)**
+詳細・環境変数・使い方: **[docs/ops/DEV_ERROR_UI_PREVIEW.md](docs/ops/DEV_ERROR_UI_PREVIEW.md)**
 
 | # | トリガー（完全一致で送信） | 種類 | 表示 |
 |---|---------------------------|------|------|
 | 01 | `mrcdev00000000000001` | クライアント・エラー | 赤カード（`showErrorMessage`） |
 | 02 | `mrcdev00000000000002` | クライアント・警告 | 赤枠・セキュリティ（`showWarningMessage`） |
 | 03 | `mrcdev00000000000003` | HTTP 500 | 通信エラー系カード（fetch 失敗扱い） |
-| 04 | `mrcdev00000000000004` | HTML・システム | 赤 `chat-status-card`（サーバー生成） |
-| 05 | `mrcdev00000000000005` | HTML・注意 | 黄 `chat-status-card` + フィードバック |
-| 06 | `mrcdev00000000000006` | HTML・通知 | 青（診断名検出風） |
-| 07 | `mrcdev00000000000007` | HTML・重要 | 赤・critical（エスカレーション風） |
+| 04 | `mrcdev00000000000004` | システムエラー | `sage_status` error |
+| 05 | `mrcdev00000000000005` | 候補なし | `sage_status` caution |
+| 06 | `mrcdev00000000000006` | 診断名通知 | `sage_status` notice |
+| 07 | `mrcdev00000000000007` | エスカレーション | `sage_status` critical |
+| 08 | `mrcdev00000000000008` | 挨拶 | `sage_status` notice（FB なし） |
+| 09 | `mrcdev00000000000009` | 店舗案内 | `sage_status` notice + FB |
+| 10 | `mrcdev00000000000010` | 医薬品 Q&A | `sage_qa` |
+| 11 | `mrcdev00000000000011` | 推奨成功 | `sage_reco` + カルーセル |
+| 12 | `mrcdev00000000000012` | 推奨 0 件 | `sage_reco` + error |
+| 13 | `mrcdev00000000000013` | 緊急 | `sage_status` critical |
+| 14 | `mrcdev00000000000014` | 危機支援 | `sage_status` security |
+| 15 | `mrcdev00000000000015` | カウンセリング | `sage_status` notice |
+| 16 | `mrcdev00000000000016` | 医薬品種類不明 | `sage_status` caution |
 
-実装: `src/handlers/chat/chat_dev_triggers.py` / テスト: `tests/test_chat_dev_triggers.py`  
+実装: `src/handlers/chat/chat_dev_triggers.py` / テスト: `tests/chat/test_chat_dev_triggers.py`  
 POST 入口: `chat_post_pipeline.run_chat_post_pipeline` で `try_dev_error_trigger` を評価。
 
 ---

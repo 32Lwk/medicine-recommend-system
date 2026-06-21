@@ -185,14 +185,13 @@ def build_advice_only_line_messages(
     bot_message: dict[str, Any],
     *,
     lang: str | None,
+    session_id: str | None = None,
 ) -> list[dict[str, Any]]:
-    """carousel 送信済み時: advice bubble のみ。"""
+    """carousel 送信済み時: advice bubble（+ Web 詳細リンク）。"""
     from src.handlers.line.flex_messages import (
-        build_advice_bubble,
-        build_advice_bullets,
-        format_intro,
+        append_web_handoff_messages,
+        build_recommendation_advice_bubble,
         get_line_ui_strings,
-        truncate_text,
     )
 
     ui = get_line_ui_strings(lang)
@@ -203,14 +202,13 @@ def build_advice_only_line_messages(
     if not medicines:
         return []
 
-    medicine_type = str(diagnosis.get("medicine_type") or "OTC医薬品")
-    intro = format_intro(ui, medicine_type=medicine_type, count=len(medicines[:3]))
-    bullets = build_advice_bullets(medicines, ui)
-    advice_footer = ui.get("footer_caution", "")
-    if diagnosis.get("doctor_consultation"):
-        advice_footer = f"{advice_footer}\n{truncate_text(diagnosis.get('doctor_consultation'), 200)}"
-    advice = build_advice_bubble(intro=intro, bullets=bullets, footer_note=advice_footer, ui=ui)
-    return [advice]
+    advice = build_recommendation_advice_bubble(
+        diagnosis=diagnosis,
+        medicines=medicines,
+        ui=ui,
+        bot_message=bot_message,
+    )
+    return append_web_handoff_messages([advice], session_id=session_id, ui=ui)
 
 
 def build_final_line_messages(
@@ -223,7 +221,7 @@ def build_final_line_messages(
     """advice bubble + line_feedback（progressive Reply 用）。"""
     from src.handlers.line.line_feedback import prepare_line_messages_with_feedback
 
-    advice_msgs = build_advice_only_line_messages(bot_message, lang=lang)
+    advice_msgs = build_advice_only_line_messages(bot_message, lang=lang, session_id=sid)
     if not advice_msgs:
         return []
     return prepare_line_messages_with_feedback(

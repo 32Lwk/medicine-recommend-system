@@ -571,6 +571,11 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-safety-rail--compact {
+  --safety-rail-title-size: clamp(0.875rem, 0.65rem + 0.55vw, 1.0625rem);
+  --safety-rail-status-size: clamp(0.8125rem, 0.6rem + 0.5vw, 1rem);
+  --safety-rail-chip-size: clamp(0.75rem, 0.55rem + 0.48vw, 0.9375rem);
+  --safety-rail-chip-pad-y: clamp(2px, 0.08rem + 0.06vw, 4px);
+  --safety-rail-chip-pad-x: clamp(6px, 0.3rem + 0.4vw, 10px);
   padding: 5px 12px;
   gap: 8px;
   min-height: 0;
@@ -598,7 +603,7 @@ body:has(#app > .ui-app) #app {
   justify-content: flex-start;
   gap: 6px;
   min-width: 0;
-  font-size: 0.68rem;
+  font-size: var(--safety-rail-title-size);
 }
 
 .ui-safety-rail--compact .ui-safety-rail__head {
@@ -643,12 +648,14 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-safety-rail--compact .ui-safety-rail__head strong {
-  font-size: 0.68rem;
+  font-size: var(--safety-rail-title-size);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .ui-safety-rail--compact .ui-safety-rail__status {
+  font-size: var(--safety-rail-status-size);
+  padding: clamp(1px, 0.05rem + 0.05vw, 3px) clamp(5px, 0.3rem + 0.35vw, 8px);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -671,30 +678,34 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-safety-rail__chip-measure {
+  --safety-rail-chip-size: clamp(0.75rem, 0.55rem + 0.48vw, 0.9375rem);
+  --safety-rail-chip-pad-y: clamp(2px, 0.08rem + 0.06vw, 4px);
+  --safety-rail-chip-pad-x: clamp(6px, 0.3rem + 0.4vw, 10px);
   position: absolute;
   left: -9999px;
   top: 0;
   visibility: hidden;
   pointer-events: none;
-  font-size: max(9px, 0.52rem);
-  padding: 1px 5px;
+  font-size: var(--safety-rail-chip-size);
+  padding: var(--safety-rail-chip-pad-y) var(--safety-rail-chip-pad-x);
   line-height: 1.25;
   white-space: nowrap;
 }
 
 .ui-safety-rail--compact .ui-safety-chip {
-  font-size: max(9px, 0.52rem);
-  padding: 1px 5px;
+  font-size: var(--safety-rail-chip-size);
+  padding: var(--safety-rail-chip-pad-y) var(--safety-rail-chip-pad-x);
   line-height: 1.25;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .ui-safety-rail--compact .ui-safety-rail__cta {
-  font-size: max(9px, 0.54rem);
-  padding: 2px 6px;
-  min-height: 24px;
-  line-height: 1.2;
+  font-size: var(--safety-rail-chip-size);
+  padding: var(--safety-rail-chip-pad-y) var(--safety-rail-chip-pad-x);
+  line-height: 1.25;
+  border-radius: 999px;
+  min-height: 0;
   white-space: nowrap;
 }
 
@@ -1158,11 +1169,63 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-bubble--reco {
+  --fs: var(--font-size-base, 1rem);
   max-width: 96%;
   padding: 0.55rem 0.65rem;
   border-radius: 18px;
-  font-size: 0.84rem;
+  font-size: calc(var(--fs) * 0.84);
+  line-height: var(--line-height-base, 1.75);
 }
+
+/* Reco bubble typography — follows user readability setting (--font-size-base) */
+.ui-bubble--reco .ui-followup-list { font-size: calc(var(--fs) * 0.8); }
+.ui-bubble--reco .ui-priority-badge { font-size: calc(var(--fs) * 0.78); }
+.ui-bubble--reco .ui-followup-hint { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-reco-followup__intro { font-size: calc(var(--fs) * 0.78); }
+.ui-bubble--reco .ui-personal-advice__title { font-size: calc(var(--fs) * 0.78); }
+.ui-bubble--reco .ui-personal-advice__text { font-size: calc(var(--fs) * 0.76); }
+.ui-bubble--reco .ui-overlap-card__badge { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-overlap-card__title { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-overlap-row { font-size: calc(var(--fs) * 0.7); }
+.ui-bubble--reco .ui-overlap-row__note { font-size: calc(var(--fs) * 0.66); }
+.ui-bubble--reco .ui-reason-item { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-reason-item__icon { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-card-usage-content { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-score-breakdown-panel__title { font-size: calc(var(--fs) * 0.7); }
+.ui-bubble--reco .ui-score-breakdown__summary { font-size: calc(var(--fs) * 0.74); }
+.ui-bubble--reco .ui-score-breakdown__list li,
+.ui-bubble--reco .ui-score-breakdown__item { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-score-breakdown__list strong,
+.ui-bubble--reco .ui-score-breakdown__item strong { font-size: calc(var(--fs) * 0.76); }
+.ui-bubble--reco .ui-score-breakdown__hint { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-score-breakdown__note { font-size: calc(var(--fs) * 0.64); }
+.ui-bubble--reco .ui-carousel-counter { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-med-badge { font-size: calc(var(--fs) * 0.65); }
+.ui-bubble--reco .ui-card--pro .ui-score-penalty-chip,
+.ui-bubble--reco .medicine-item .ui-score-penalty-chip { font-size: calc(var(--fs) * 0.58); }
+.ui-bubble--reco .ui-card--pro .ui-card-name { font-size: calc(var(--fs) * 0.95); }
+.ui-bubble--reco .ui-card--pro .ui-card-maker { font-size: calc(var(--fs) * 0.68); }
+.ui-bubble--reco .ui-score-ring__value { font-size: calc(var(--fs) * 1.05); }
+.ui-bubble--reco .ui-score-ring__unit { font-size: calc(var(--fs) * 0.55); }
+.ui-bubble--reco .ui-symptom-tag { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-age-suit { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-card--pro .ui-card-label { font-size: calc(var(--fs) * 0.62); }
+.ui-bubble--reco .ui-card--pro .ui-card-text { font-size: calc(var(--fs) * 0.75); }
+.ui-bubble--reco .ui-card-expand { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-trust-strip { font-size: calc(var(--fs) * 0.58); }
+.ui-bubble--reco .ui-med-image__label { font-size: calc(var(--fs) * 0.68); }
+.ui-bubble--reco .ui-med-image--card .ui-med-image__label,
+.ui-bubble--reco .ui-med-image--hero .ui-med-image__label { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-med-image--thumb .ui-med-image__label { font-size: calc(var(--fs) * 0.52); }
+.ui-bubble--reco .collapse-toggle,
+.ui-bubble--reco .ui-sage-collapse__toggle { font-size: calc(var(--fs) * 0.8); }
+.ui-bubble--reco .collapse-icon,
+.ui-bubble--reco .ui-sage-collapse__icon { font-size: calc(var(--fs) * 0.7); }
+.ui-bubble--reco .ui-sage-collapse__body,
+.ui-bubble--reco .collapse-content { font-size: calc(var(--fs) * 0.76); }
+.ui-bubble--reco .ui-alert { font-size: calc(var(--fs) * 0.8); }
+.ui-bubble--reco .ui-feedback { font-size: calc(var(--fs) * 0.78); }
+.ui-bubble--reco .ui-btn { font-size: calc(var(--fs) * 0.8); }
 
 .ui-followup-list {
   margin: 8px 0;

@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, Tuple
 from openai import OpenAI
 
 from config.routing_config import triage_confidence_threshold
-from src.services.triage_history import format_triage_history_block, get_recent_messages
+from src.services.triage_history import get_recent_messages
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +32,17 @@ def is_meaningless_message(text: str) -> bool:
     t = (text or "").strip()
     if not t:
         return True
+    if any(p.match(t) for p in _MEANINGLESS_PATTERNS):
+        return True
+
+    from src.utils.input_helpers import is_unrecognizable_symptom_input
+
+    if is_unrecognizable_symptom_input(t):
+        return True
+
     if len(t) <= 2 and not re.search(r"[ぁ-んァ-ヶ一-龠a-zA-Z]", t):
         return True
-    return any(p.match(t) for p in _MEANINGLESS_PATTERNS)
+    return False
 
 
 def _clarify_already_sent(session: Any) -> bool:
@@ -45,6 +53,38 @@ def _mark_clarify_sent(session: Any) -> None:
     session["triage_clarify_sent"] = True
 
 
+def build_low_confidence_clarify_message(category: str, sanitized_message: str) -> str:
+    """カテゴリ別の低確信確認メッセージ。"""
+    quoted = f"「{sanitized_message}」"
+    if category == "Physical":
+        return (
+            f"{quoted}について、症状相談と判定しましたが、"
+            "確信度が低いため確認させてください。"
+            "具体的な症状（例：頭痛、発熱、のどの痛み）や、"
+            "いつ頃から・どの程度かを教えていただけますか？"
+        )
+    if category == "Ask":
+        return (
+            f"{quoted}について、お薬の質問と判定しましたが、"
+            "確信度が低いため確認させてください。"
+            "どのお薬について・どんな点（用法、副作用、選び方など）を"
+            "知りたいか、もう少し具体的に教えていただけますか？"
+        )
+    if category == "Emotional":
+        return (
+            f"{quoted}について、気持ちの相談と判定しましたが、"
+            "確信度が低いため確認させてください。"
+            "今お困りのことや、どのような気持ちかをもう少し具体的に"
+            "教えていただけますか？"
+        )
+    return (
+        f"{quoted}について、{category}と判定しましたが、"
+        "確信度が低いため確認させてください。"
+        "症状・お薬の目的・困っていることをもう少し具体的に"
+        "教えていただけますか？"
+    )
+
+
 def retry_triage_with_fallback_model(
     user_text: str,
     client: OpenAI,
@@ -53,49 +93,25 @@ def retry_triage_with_fallback_model(
 ) -> Dict[str, Any]:
     from src.services.llm_triage import llm_triage
 
-    hist_block = format_triage_history_block(conversation_history or [])
-    augmented = user_text
-    if hist_block and hist_block != "（なし）":
-        augmented = (
-            f"{user_text}\n\n【直近の会話】\n{hist_block}\n\n"
-            "上記を踏まえ、カテゴリ分類の確信度を高めて再判定してください。"
-        )
     try:
-        from src.core.llm_client import chat_completion_create
-        import json
-
-        from src.services.llm_triage import FIRST_STAGE_TRIAGE_PROMPT
-
-        response = chat_completion_create(
-            client,
-            model_role="explain",
-            path="confidence_gate.retry_triage",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。",
-                },
-                {
-                    "role": "user",
-                    "content": f"{FIRST_STAGE_TRIAGE_PROMPT}\n\n【ユーザーの入力】\n{augmented}",
-                },
-            ],
-            temperature=0.1,
-            max_tokens=300,
-            response_format={"type": "json_object"},
-        )
-        content = response.choices[0].message.content
-        result = json.loads(content)
-        result["retriage"] = True
-        return result
-    except Exception as exc:
-        logger.warning("ConfidenceGate retriage failed: %s", exc)
-        return llm_triage(
+        result = llm_triage(
             user_text,
             client,
             use_cache=False,
             conversation_history=conversation_history,
         )
+        result["retriage"] = True
+        return result
+    except Exception as exc:
+        logger.warning("ConfidenceGate retriage failed: %s", exc)
+        fallback = llm_triage(
+            user_text,
+            client,
+            use_cache=False,
+            conversation_history=conversation_history,
+        )
+        fallback["retriage"] = True
+        return fallback
 
 
 def apply_confidence_gate(
@@ -227,10 +243,9 @@ def apply_confidence_gate(
                     session_id=sid,
                 )
             else:
-                confirmation_message = (
-                    f"「{sanitized_message}」について、{category}と判定しましたが、"
-                    f"確信度が低いため確認させてください。"
-                    "症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？"
+                confirmation_message = build_low_confidence_clarify_message(
+                    category,
+                    sanitized_message,
                 )
             log_counseling_response(
                 session_id=sid,
