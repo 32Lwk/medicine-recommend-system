@@ -1498,6 +1498,199 @@
         });
     }
 
+    let sessionHandoffFromLine = null;
+
+    function syncSessionHandoffContext(sessionData, messages) {
+        let handoff = sessionData && sessionData.handoff_from_line;
+        if (!handoff && Array.isArray(messages)) {
+            for (let i = messages.length - 1; i >= 0; i -= 1) {
+                const msg = messages[i];
+                if (msg && msg.handoff_from_line) {
+                    handoff = msg.handoff_from_line;
+                    break;
+                }
+            }
+        }
+        sessionHandoffFromLine = handoff || null;
+        window.__handoffFromLine = sessionHandoffFromLine;
+    }
+
+    function isLineHandoffSession(sessionData) {
+        if (sessionHandoffFromLine) {
+            return true;
+        }
+        if (sessionData && sessionData.handoff_from_line) {
+            return true;
+        }
+        return !!window.__handoffFromLine;
+    }
+
+    function sageContentMarkerForRender(render) {
+        if (render === 'sage_qa') {
+            return 'sage_qa';
+        }
+        if (render === 'sage_status') {
+            return 'sage_status';
+        }
+        return 'sage_reco';
+    }
+
+    function normalizeHandoffSymptomNames(symptoms) {
+        if (!Array.isArray(symptoms)) {
+            return [];
+        }
+        return symptoms.map(function (item) {
+            if (typeof item === 'string') {
+                return item.trim();
+            }
+            if (item && typeof item === 'object') {
+                return String(item.name || item.symptom || '').trim();
+            }
+            return String(item || '').trim();
+        }).filter(Boolean);
+    }
+
+    function buildHandoffQaDiagnosisFromLegacy(diag) {
+        const chatResponse = diag && diag.chat_response;
+        if (!chatResponse || typeof chatResponse !== 'object') {
+            return null;
+        }
+        const sectionMap = [
+            ['medicine_details', '医薬品の詳細'],
+            ['interactions', '相互作用の注意'],
+            ['doping_check', 'ドーピングチェック'],
+            ['side_effects', '副作用情報'],
+            ['consultation_advice', '相談アドバイス'],
+        ];
+        const sections = [];
+        sectionMap.forEach(function (pair) {
+            const val = chatResponse[pair[0]];
+            if (val && String(val).trim()) {
+                sections.push({ title: pair[1], items: [String(val).trim()] });
+            }
+        });
+        return Object.assign({}, diag, {
+            schema_version: 1,
+            render: 'sage_qa',
+            variant: diag.variant || 'notice',
+            title: diag.title || '医薬品相談回答',
+            message: String(chatResponse.answer || '回答を取得できませんでした'),
+            sections: sections,
+            kind: diag.kind || 'medicine_qa',
+            show_feedback: diag.show_feedback !== false,
+        });
+    }
+
+    function buildHandoffRecoDiagnosisFromLegacy(diag) {
+        const upgraded = Object.assign({}, diag, {
+            schema_version: 1,
+            render: 'sage_reco',
+        });
+        if (!Array.isArray(upgraded.recommended_medicines)) {
+            upgraded.recommended_medicines = [];
+        }
+        upgraded.symptoms = normalizeHandoffSymptomNames(upgraded.symptoms);
+        return upgraded;
+    }
+
+    function inferHandoffSageRender(message) {
+        const diag = message && message.diagnosis;
+        if (!isDiagnosisPayload(diag)) {
+            return null;
+        }
+        if (diag.render === 'sage_reco' || diag.render === 'sage_status' || diag.render === 'sage_qa') {
+            return diag.render;
+        }
+        if (diag.is_question && diag.chat_response) {
+            return 'sage_qa';
+        }
+        if (diag.title && (diag.variant || diag.kind || diag.layout || diag.sections)) {
+            return 'sage_status';
+        }
+        if (Array.isArray(diag.recommended_medicines)) {
+            return 'sage_reco';
+        }
+        if (
+            diag.symptoms
+            || diag.medicine_type
+            || diag.usage_notes
+            || diag.usage_sections
+            || diag.doctor_consultation
+            || diag.error
+            || diag.escalation
+        ) {
+            return 'sage_reco';
+        }
+        return null;
+    }
+
+    function isHandoffLegacyUpgradeCandidate(message) {
+        if (!message || message.type !== 'bot') {
+            return false;
+        }
+        if (isSageContentMarker(message.content) && isSageDiagnosisMessage(message)) {
+            return false;
+        }
+        return !!inferHandoffSageRender(message);
+    }
+
+    /** @returns {boolean} true when message was upgraded for Sage handoff rendering */
+    function upgradeHandoffLegacyMessage(message) {
+        if (!isHandoffLegacyUpgradeCandidate(message)) {
+            return false;
+        }
+        const render = inferHandoffSageRender(message);
+        if (!render) {
+            return false;
+        }
+        let diag = message.diagnosis;
+        if (render === 'sage_qa') {
+            diag = buildHandoffQaDiagnosisFromLegacy(diag);
+        } else if (render === 'sage_reco') {
+            diag = buildHandoffRecoDiagnosisFromLegacy(diag);
+        } else {
+            diag = Object.assign({}, diag, {
+                schema_version: diag.schema_version || 1,
+                render: 'sage_status',
+            });
+        }
+        if (!diag) {
+            return false;
+        }
+        message.diagnosis = diag;
+        message.content = sageContentMarkerForRender(render);
+        return true;
+    }
+
+    function upgradeHandoffLegacyMessages(messages, chatMessages, options) {
+        if (!isSageUi() || !Array.isArray(messages)) {
+            return;
+        }
+        const opts = options || {};
+        const handoffActive = opts.handoffFromLine || isLineHandoffSession(opts.sessionData);
+        if (!handoffActive) {
+            return;
+        }
+        messages.forEach(function (message) {
+            if (!upgradeHandoffLegacyMessage(message)) {
+                return;
+            }
+            if (!chatMessages) {
+                return;
+            }
+            const messageKey = getMessageDomKey(message);
+            const node = getMessageNodeByKey(chatMessages, messageKey, 'bot');
+            if (!node) {
+                return;
+            }
+            if (mountSageBotMessage(node, message)) {
+                if (window.RecommendationRenderer && window.RecommendationRenderer.bindRendered) {
+                    window.RecommendationRenderer.bindRendered(node);
+                }
+            }
+        });
+    }
+
     window.setSeasonDecorationEnabled = setSeasonDecorationEnabled;
     window.setParticleEffectsEnabled = setParticleEffectsEnabled;
 
@@ -6966,9 +7159,14 @@
             updateSessionSafetyBanners(sessionData);
             return;
         }
+        syncSessionHandoffContext(sessionData, null);
         const merged = resolveSessionMessages(sessionData || {}, {
             allowRestore: opts.allowRestore !== false
         });
+        syncSessionHandoffContext(sessionData, merged);
+        if (isLineHandoffSession(sessionData)) {
+            merged.forEach(upgradeHandoffLegacyMessage);
+        }
         if (merged.length === 0) {
             return;
         }
@@ -6988,7 +7186,7 @@
                 return;
             }
         }
-        renderChatMessages(merged, opts);
+        renderChatMessages(merged, Object.assign({}, opts, { sessionData: sessionData }));
         if (isSessionRenderStable(merged)) {
             lastRenderedMessagesFingerprint = fp;
         }
@@ -10119,16 +10317,47 @@ function appendQaDelta(text, section) {
         }
     }
     
-    // 文字サイズ変更機能
+    // 文字サイズ変更機能（スマホは各段階を1つ小さく適用）
+    const FONT_SIZE_DESKTOP = {
+        'small': { base: '0.875rem', ui: '0.875rem', htmlPx: '14px', lineHeight: '1.7' },
+        'normal': { base: '1rem', ui: '1rem', htmlPx: '16px', lineHeight: '1.8' },
+        'large': { base: '1.125rem', ui: '1.125rem', htmlPx: '18px', lineHeight: '1.75' },
+        'extra-large': { base: '1.25rem', ui: '1.25rem', htmlPx: '20px', lineHeight: '1.7' }
+    };
+    const FONT_SIZE_MOBILE = {
+        'small': { base: '0.75rem', ui: '0.75rem', htmlPx: '12px', lineHeight: '1.45' },
+        'normal': { base: '0.875rem', ui: '0.875rem', htmlPx: '14px', lineHeight: '1.6' },
+        'large': { base: '1rem', ui: '1rem', htmlPx: '16px', lineHeight: '1.65' },
+        'extra-large': { base: '1.125rem', ui: '1.125rem', htmlPx: '18px', lineHeight: '1.65' }
+    };
+    let fontSizeViewportBound = false;
+
+    function isMobileFontViewport() {
+        return !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+    }
+
+    function getFontSizeMap() {
+        return isMobileFontViewport() ? FONT_SIZE_MOBILE : FONT_SIZE_DESKTOP;
+    }
+
+    function bindFontSizeViewportChange() {
+        if (fontSizeViewportBound || !window.matchMedia) return;
+        fontSizeViewportBound = true;
+        const mq = window.matchMedia('(max-width: 768px)');
+        const onViewportChange = () => {
+            const savedSize = localStorage.getItem('fontSize') || 'normal';
+            setFontSize(savedSize);
+        };
+        if (typeof mq.addEventListener === 'function') {
+            mq.addEventListener('change', onViewportChange);
+        } else if (typeof mq.addListener === 'function') {
+            mq.addListener(onViewportChange);
+        }
+    }
+
     function setFontSize(level) {
         const root = document.documentElement;
-        const sizeMap = {
-            'small': { base: '0.875rem', ui: '0.875rem', htmlPx: '14px', lineHeight: '1.7' },
-            'normal': { base: '1rem', ui: '1rem', htmlPx: '16px', lineHeight: '1.8' },
-            'large': { base: '1.125rem', ui: '1.125rem', htmlPx: '18px', lineHeight: '1.75' },
-            'extra-large': { base: '1.25rem', ui: '1.25rem', htmlPx: '20px', lineHeight: '1.7' }
-        };
-
+        const sizeMap = getFontSizeMap();
         const size = sizeMap[level] || sizeMap['normal'];
         root.setAttribute('data-font-size', level);
         root.style.setProperty('--font-size-base', size.base);
@@ -10164,6 +10393,7 @@ function appendQaDelta(text, section) {
     }
     
     function loadFontSize() {
+        bindFontSizeViewportChange();
         const savedSize = localStorage.getItem('fontSize') || 'normal';
         setFontSize(savedSize);
     }
@@ -10288,6 +10518,8 @@ function appendQaDelta(text, section) {
             sessionStorage.removeItem('chatSubmitBaselineLength');
         } catch (e) { /* ignore */ }
         lastRenderedMessagesFingerprint = '';
+        sessionHandoffFromLine = null;
+        window.__handoffFromLine = null;
     }
 
     // 新しいセッションを開始する関数
@@ -10939,6 +11171,10 @@ function appendQaDelta(text, section) {
             return;
         }
 
+        if (isLineHandoffSession(options.sessionData)) {
+            messages.forEach(upgradeHandoffLegacyMessage);
+        }
+
         if (options.periodicSync && !options.forceRender && !options.clearExisting) {
             const periodicFp = messagesFingerprint(messages);
             if (
@@ -11283,6 +11519,10 @@ function appendQaDelta(text, section) {
         collapseDuplicateUserDomNodes(chatMessages);
 
         ensureSessionMessagesInDom(messages);
+        upgradeHandoffLegacyMessages(messages, chatMessages, {
+            sessionData: options.sessionData,
+            handoffFromLine: isLineHandoffSession(options.sessionData),
+        });
         upgradeAllSageRecommendationMessages(messages, chatMessages);
         syncOptimisticUserMessage(messages);
 

@@ -83,7 +83,7 @@ def test_triage_follow_up_controlled_immediate_block(
         "src.services.counseling_response.detect_inappropriate_request",
         return_value="controlled",
     ), patch(
-        "src.services.sage_bot_response.use_sage_web_ui",
+        "src.services.sage_bot_response.use_sage_diagnosis_storage",
         return_value=False,
     ), patch(
         "src.handlers.chat.chat_triage_follow_ups.get_session_from_db",

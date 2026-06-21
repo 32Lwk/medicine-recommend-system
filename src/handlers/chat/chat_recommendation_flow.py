@@ -1689,13 +1689,15 @@ def run_recommendation_flow(
 
             sage_diagnosis_v1 = None
             admin_detailed_diag = None
-            sage_web = bool(
-                sid and is_sage_web_ui(session) and not is_line_session_id(sid)
-            )
+            line_session = is_line_session_id(sid)
+            from src.services.recommendation_client_payload import use_sage_diagnosis_storage
+
+            sage_web = bool(sid and is_sage_web_ui(session) and not line_session)
+            sage_diagnosis_store = use_sage_diagnosis_storage(session, sid)
 
             # ルールベース推奨失敗時のエラー表示処理
             if recommendation_result.get('error'):
-                if sage_web:
+                if sage_diagnosis_store:
                     sage_diagnosis_v1 = build_diagnosis_v1(
                         recommendation_result, session_id=sid
                     )
@@ -1711,7 +1713,7 @@ def run_recommendation_flow(
                     )
             # エスカレーションが必要な場合の特別処理
             elif recommendation_result.get('escalation'):
-                if sage_web:
+                if sage_diagnosis_store:
                     sage_diagnosis_v1 = build_diagnosis_v1(
                         recommendation_result, session_id=sid
                     )
@@ -1732,14 +1734,10 @@ def run_recommendation_flow(
                     'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                 }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                             
-                # Web のみ個別アドバイスを生成（LINE Flex では未使用のためスキップ）
+                # 個別アドバイス（Web HTML のみ。LINE は Web 引き継ぎ時に生成）
                 personalized_section = ""
                 personalized_advice = ""
-                from src.handlers.line.line_session import is_line_session_id
-
-                if is_line_session_id(sid):
-                    mark_pipeline_step("personalized_advice_skipped_line")
-                else:
+                if not line_session:
                     try:
                         user_attrs = session.get('user_attributes', {})
                         if session.get('is_reanalysis'):
@@ -1758,6 +1756,7 @@ def run_recommendation_flow(
                             influenza_reason=influenza_reason,
                             session_id=sid,
                         )
+                        mark_pipeline_step("personalized_advice")
                         if recommended_medicines and sid:
                             try:
                                 _emit_explanation_followup_sse(
@@ -1786,10 +1785,11 @@ def run_recommendation_flow(
         <p style="margin: 5px 0; line-height: 1.6;">{influenza_reason}。インフルエンザの可能性がある場合は、アスピリンを含む医薬品の使用を避け、早めに医療機関を受診することをお勧めします。</p>
     </div>
     """
-                            
+                else:
+                    mark_pipeline_step("personalized_advice_skipped_line")
 
-                if sage_web:
-                    if personalized_advice:
+                if sage_diagnosis_store:
+                    if personalized_advice and not line_session:
                         recommendation_result['personalized_advice'] = personalized_advice
                     sage_diagnosis_v1 = build_diagnosis_v1(
                         recommendation_result, session_id=sid
@@ -1799,21 +1799,22 @@ def run_recommendation_flow(
                             sage_diagnosis_v1.ingredient_overlap
                         )
                     bot_content = SAGE_RECO_MARKER
-                    try:
-                        from src.services.sse_emit import emit_reco_detail
+                    if sage_web:
+                        try:
+                            from src.services.sse_emit import emit_reco_detail
 
-                        emit_reco_detail(
-                            {
-                                "usage_sections": [
-                                    s.model_dump(mode="json")
-                                    for s in sage_diagnosis_v1.usage_sections
-                                ],
-                                "recommended_medicines": sage_diagnosis_v1.recommended_medicines,
-                            },
-                            session_id=sid,
-                        )
-                    except Exception:
-                        pass
+                            emit_reco_detail(
+                                {
+                                    "usage_sections": [
+                                        s.model_dump(mode="json")
+                                        for s in sage_diagnosis_v1.usage_sections
+                                    ],
+                                    "recommended_medicines": sage_diagnosis_v1.recommended_medicines,
+                                },
+                                session_id=sid,
+                            )
+                        except Exception:
+                            pass
                     try:
                         from src.core.rule_based_recommendation import log_recommendation_session
                         log_recommendation_session(
@@ -2509,9 +2510,9 @@ def run_recommendation_flow(
                         
         except Exception as e:
             logger.error(f"❌ 包括的医薬品推奨システム実行時エラー: {e}", exc_info=True)
-            from src.services.recommendation_client_payload import use_sage_web_ui
+            from src.services.recommendation_client_payload import use_sage_diagnosis_storage
 
-            if use_sage_web_ui(session, sid):
+            if use_sage_diagnosis_storage(session, sid):
                 from src.services.status_diagnosis_builder import (
                     SAGE_STATUS_MARKER,
                     build_system_error_status,
@@ -2614,12 +2615,28 @@ def run_recommendation_flow(
         is_medicine_info_message = bot_response.get('counseling_medicine_info', False)
                     
         if not is_medicine_info_message:
+            from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER, SAGE_STATUS_MARKER
+            from src.services.status_diagnosis_builder import SAGE_QA_MARKER
+
+            _sage_markers = frozenset({SAGE_RECO_MARKER, SAGE_STATUS_MARKER, SAGE_QA_MARKER})
+            new_content = bot_response.get('content')
             for existing_msg in existing_messages:
-                if (existing_msg.get('type') == 'bot' and 
-                    existing_msg.get('content') == bot_response['content']):
-                    is_duplicate = True
-                    logger.warning(f"⚠️ 重複メッセージを検出、追加をスキップします")
-                    break
+                if existing_msg.get('type') != 'bot':
+                    continue
+                if existing_msg.get('content') != new_content:
+                    continue
+                if new_content in _sage_markers:
+                    if (
+                        bot_response.get('timestamp')
+                        and existing_msg.get('timestamp') == bot_response.get('timestamp')
+                    ):
+                        is_duplicate = True
+                        logger.warning(f"⚠️ 重複メッセージを検出、追加をスキップします")
+                        break
+                    continue
+                is_duplicate = True
+                logger.warning(f"⚠️ 重複メッセージを検出、追加をスキップします")
+                break
                     
         if not is_duplicate:
             # DBに保存

@@ -63,12 +63,16 @@ body[data-ui-variant="sage"] {
   background: var(--ui-bubble-user-bg);
   color: #fff;
   border-radius: 18px 18px 8px 18px;
+  font-size: var(--sage-chat-copy-fs);
+  line-height: var(--sage-chat-copy-lh);
 }
 
 [data-ui-variant="sage"] .message.bot .message-content {
   border-radius: 18px 18px 8px 18px;
   border: 1px solid var(--ui-border);
   background: #fff;
+  font-size: var(--sage-chat-copy-fs);
+  line-height: var(--sage-chat-copy-lh);
 }
 
 [data-ui-variant="sage"] .message.bot .message-content.admin-request {
@@ -96,6 +100,18 @@ body[data-ui-variant="sage"] {
 [data-ui-variant="sage"] #initial-greeting {
   font-size: var(--sage-chat-copy-fs);
   line-height: var(--sage-chat-copy-lh);
+}
+
+[data-ui-variant="sage"] #initial-examples {
+  display: inline-block;
+  margin-top: 0.35em;
+  font-size: calc(var(--sage-chat-copy-fs) * 0.875);
+  line-height: 1.4;
+  color: var(--ui-text-muted, #5a6b7a);
+}
+
+[data-ui-variant="sage"] #initial-greeting + br {
+  display: none;
 }
 
 [data-ui-variant="sage"] .message.bot.message--sage-chat > .ui-bubble--chat,
@@ -1346,6 +1362,24 @@ body[data-ui-variant="sage"] {
 
 [data-ui-variant="sage"] #infoModal .settings-preview[data-preview-size="extra-large"] {
   font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  [data-ui-variant="sage"] #infoModal .settings-preview {
+    font-size: 0.875rem;
+  }
+
+  [data-ui-variant="sage"] #infoModal .settings-preview[data-preview-size="small"] {
+    font-size: 0.75rem;
+  }
+
+  [data-ui-variant="sage"] #infoModal .settings-preview[data-preview-size="large"] {
+    font-size: 1rem;
+  }
+
+  [data-ui-variant="sage"] #infoModal .settings-preview[data-preview-size="extra-large"] {
+    font-size: 1.125rem;
+  }
 }
 
 [data-ui-variant="sage"] #infoModal .settings-toggle-list {

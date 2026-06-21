@@ -2521,8 +2521,9 @@
             
             .message-content {
                 max-width: 85%;
-                font-size: 13px;
-                padding: 8px 12px;
+                font-size: var(--font-size-base);
+                line-height: var(--line-height-base);
+                padding: calc(var(--font-size-base) * 0.5) calc(var(--font-size-base) * 0.75);
             }
             
             .message.bot .message-content {
@@ -2656,7 +2657,8 @@
             
             .message-content {
                 max-width: 90%;
-                font-size: 13px;
+                font-size: var(--font-size-base);
+                line-height: var(--line-height-base);
             }
             
             .chat-messages {
@@ -3164,6 +3166,12 @@
         #infoModal .settings-preview[data-preview-size="small"] { font-size: 0.75rem; }
         #infoModal .settings-preview[data-preview-size="large"] { font-size: 1.15rem; }
         #infoModal .settings-preview[data-preview-size="extra-large"] { font-size: 1.35rem; }
+
+        @media (max-width: 768px) {
+            #infoModal .settings-preview[data-preview-size="small"] { font-size: 0.6875rem; }
+            #infoModal .settings-preview[data-preview-size="large"] { font-size: 1rem; }
+            #infoModal .settings-preview[data-preview-size="extra-large"] { font-size: 1.15rem; }
+        }
 
         #infoModal .settings-toggle-list {
             display: flex;

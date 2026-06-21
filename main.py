@@ -849,6 +849,15 @@ async def resume_from_line(request: Request, token: str):
     sid = create_web_session_from_handoff(snapshot, request=request)
     response = RedirectResponse(url="/", status_code=302)
     response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
+    from config.ui_config import UI_VARIANT_COOKIE, UI_VARIANT_SAGE, ui_variant_cookie_max_age
+
+    response.set_cookie(
+        UI_VARIANT_COOKIE,
+        UI_VARIANT_SAGE,
+        max_age=ui_variant_cookie_max_age(),
+        httponly=False,
+        samesite="lax",
+    )
     return response
 
 
@@ -943,6 +952,8 @@ async def api_sessions_get(
                 latest_usage_notes = msg.get("usage_notes")
             break
 
+    handoff_from_line = (session_data or {}).get("handoff_from_line")
+
     return {
         "session_id": sid,
         "messages_count": len(messages),
@@ -951,6 +962,7 @@ async def api_sessions_get(
         "messages": messages,
         "user_attributes": user_attributes,
         "latest_usage_notes": latest_usage_notes,
+        "handoff_from_line": handoff_from_line,
         "medical_emergency_otc_locked": bool((session_data or {}).get("medical_emergency_otc_locked")),
         "otc_lock_released": bool((session_data or {}).get("otc_lock_released")),
         "store_incident_soft_banner": bool((session_data or {}).get("store_incident_soft_banner")),

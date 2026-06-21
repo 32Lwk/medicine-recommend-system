@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from src.services.recommendation_client_payload import use_sage_web_ui
+from src.services.recommendation_client_payload import use_sage_diagnosis_storage
 from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER
 from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MARKER
 
@@ -37,10 +37,10 @@ def build_bot_response(
     timestamp: str | None = None,
     **extra: Any,
 ) -> dict[str, Any]:
-    """Return bot message dict — Sage marker + diagnosis when use_sage_web_ui."""
+    """Return bot message dict — Sage marker + diagnosis when use_sage_diagnosis_storage."""
     ts = timestamp or datetime.now().isoformat()
     sid_effective = effective_sid(session, sid)
-    if sage_diagnosis and use_sage_web_ui(session, sid_effective):
+    if sage_diagnosis and use_sage_diagnosis_storage(session, sid_effective):
         return {
             "type": "bot",
             "content": sage_content_marker(sage_diagnosis),

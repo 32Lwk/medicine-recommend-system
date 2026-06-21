@@ -29,6 +29,14 @@ def test_build_bot_response_legacy():
     assert "diagnosis" not in out
 
 
+def test_build_bot_response_line_sid_uses_sage_marker():
+    session = {"ui_variant": "legacy"}
+    diag = {"render": "sage_status", "title": "LINE handoff"}
+    out = build_bot_response(session, "line:Uabc", sage_diagnosis=diag, legacy_content="<html>")
+    assert out["content"] == "sage_status"
+    assert out["diagnosis"] == diag
+
+
 def test_build_counseling_bot():
     session = {"ui_variant": "sage"}
     out = build_counseling_bot(session, "sid-1", "カウンセリング本文", kind="counseling")

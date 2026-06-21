@@ -1,6 +1,62 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月21日**（Diagnosis v1 / Sage UI Big Bang 移行・開発プレビュー 16 パターン・店舗案内・LINE リッチメニュー）
+**最終更新日: 2026年6月22日**（LINE→Web 引き継ぎ Sage 統合・diagnosis 永続化分離・モバイル文字サイズ）
+
+---
+
+## 2026年6月22日 — LINE→Web 引き継ぎ Sage 統合・diagnosis 永続化分離
+
+### 概要
+
+LINE 会話を Web（Sage Terrace）へ引き継ぐ経路を **Diagnosis v1 + マーカー描画**と整合させた。LINE セッションでも bot メッセージを Sage diagnosis で永続化し、引き継ぎ時に legacy HTML を `sage_reco` / `sage_status` / `sage_qa` へ正規化。個別アドバイスは LINE 本番では生成せず引き継ぎ時に補完。`/resume` では Sage UI クッキーを自動設定し、フロントは引き継ぎセッションの legacy 履歴を Sage 描画へアップグレードする。あわせてモバイル向け文字サイズ段階を 1 段階縮小。
+
+### LINE→Web 引き継ぎ
+
+- **`line_web_handoff.py`（大幅拡張）**
+  - `normalize_handoff_messages`: legacy HTML / 生 diagnosis を Sage マーカー + diagnosis v1 へ変換（推奨・エスカレーション・店舗案内・Q&A）
+  - `_line_handoff_messages`: `message_archive` + 現行 `messages` を統合して全履歴を引き継ぎ
+  - `redeem_handoff_token`: `detailed_diagnosis` をスナップショットに含める
+  - `create_web_session_from_handoff`: 正規化済みメッセージ・`handoff_from_line`・`ui_variant: sage` を Web セッションへ保存
+  - 引き継ぎ時 `_maybe_enrich_personalized_advice`: LINE でスキップした個別アドバイスを diagnosis に補完
+  - フィードバック状態（`show_feedback` 等）を diagnosis へマージ
+- **`main.py`**
+  - `/resume/{token}`: `ui_variant=sage` クッキーを付与
+  - `GET /api/sessions`: レスポンスに `handoff_from_line` を追加
+
+### Diagnosis 永続化の分離（Web 描画 vs 保存）
+
+- **`recommendation_client_payload.py`**
+  - `use_sage_web_ui`: Web Sage 描画専用（LINE セッション ID は除外、従来どおり）
+  - **`use_sage_diagnosis_storage`（新規）**: bot メッセージを Sage diagnosis + マーカーで DB 永続化するか（Web Sage **および** LINE セッション = 引き継ぎ用）
+- **`sage_bot_response.py`**: `build_bot_response` を `use_sage_diagnosis_storage` 経由に変更（LINE でも Sage マーカー保存）
+- **`chat_recommendation_flow.py`**
+  - diagnosis 生成・保存を `use_sage_diagnosis_storage` に統一
+  - 個別アドバイス: Web のみ即時生成、LINE は `personalized_advice_skipped_line` を記録し引き継ぎ時に生成
+  - `emit_reco_detail`（SSE）は Web Sage のみ（LINE は Flex 配信のため除外）
+  - Sage マーカー重複検出: 同一マーカーは `timestamp` 一致時のみ重複とみなす
+
+### フロントエンド（Sage Terrace / main.js）
+
+- **LINE 引き継ぎ描画**
+  - `syncSessionHandoffContext` / `isLineHandoffSession`: `handoff_from_line` をセッション・メッセージから解決
+  - `upgradeHandoffLegacyMessage` / `upgradeHandoffLegacyMessages`: 引き継ぎセッションで legacy diagnosis を Sage render へアップグレードし DOM を再マウント
+  - セッション復元・`renderChatMessages` 経路でアップグレードを適用
+- **文字サイズ（モバイル）**
+  - 768px 以下は各段階をデスクトップより 1 段階小さく適用（`FONT_SIZE_MOBILE`）
+  - ビューポート変更時に `matchMedia` で再適用
+  - `main.css` / `sage_terrace.css`: メッセージバブル・設定プレビューを `--font-size-base` / `--sage-chat-copy-fs` ベースに統一、モバイル用メディアクエリ追加
+  - Sage 初回挨拶: `#initial-examples` のスタイル調整
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_line_web_handoff.py` | 正規化（推奨・status・Q&A・legacy HTML）、archive 引き継ぎ、personalized_advice 補完、Sage Flex、`/resume` クッキー |
+| `test_recommendation_client_payload.py` | `use_sage_web_ui` / `use_sage_diagnosis_storage` の LINE・Web 分岐 |
+| `test_sage_bot_response.py` | LINE sid で Sage マーカー応答 |
+| `test_fastapi_contract.py` | `/api/sessions` の `handoff_from_line` |
+| `test_recommendation_sse_order.py` | LINE は personalized_advice スキップ |
+| `test_chat_orchestrator.py` 等 | モックを `use_sage_diagnosis_storage` に更新 |
 
 ---
 

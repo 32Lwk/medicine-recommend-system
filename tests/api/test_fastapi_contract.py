@@ -64,6 +64,23 @@ def test_api_sessions_json_shape(client):
     data = r.json()
     assert "messages" in data
     assert "user_attributes" in data
+    assert "handoff_from_line" in data
+
+
+def test_api_sessions_exposes_handoff_from_line(client):
+    import main
+
+    sid = "test-handoff-sessions-sid"
+    session = {
+        "messages": [],
+        "user_attributes": {},
+        "handoff_from_line": "line:Uabc",
+    }
+    with patch("main.get_session_from_db", return_value=session.copy()):
+        client.cookies.set(main.COOKIE_NAME_SID, sid)
+        r = client.get("/api/sessions")
+    assert r.status_code == 200
+    assert r.json()["handoff_from_line"] == "line:Uabc"
 
 
 def test_submit_feedback_invalid_json(client):

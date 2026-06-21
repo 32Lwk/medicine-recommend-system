@@ -650,7 +650,7 @@ def test_orchestrator_blocks_illegal_drug_before_concierge():
         ChatOrchestrator,
         "_route_concierge",
     ) as mock_concierge, patch(
-        "src.services.sage_bot_response.use_sage_web_ui",
+        "src.services.sage_bot_response.use_sage_diagnosis_storage",
         return_value=False,
     ), patch(
         "src.handlers.chat.inappropriate_drug_block_route.save_session_to_db",

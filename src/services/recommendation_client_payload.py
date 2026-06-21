@@ -22,6 +22,17 @@ def use_sage_web_ui(session: Any, sid: str | None) -> bool:
     return bool(sid and is_sage_web_ui(session) and not is_line_session_id(sid))
 
 
+def use_sage_diagnosis_storage(session: Any, sid: str | None) -> bool:
+    """bot メッセージを Sage diagnosis v1 + マーカーで永続化するか（Web + LINE 引き継ぎ用）。"""
+    from src.handlers.line.line_session import is_line_session_id
+
+    if not sid:
+        return False
+    if is_line_session_id(sid):
+        return True
+    return is_sage_web_ui(session)
+
+
 def _symptom_names(symptoms: list[Any] | None) -> list[str]:
     if not symptoms:
         return []

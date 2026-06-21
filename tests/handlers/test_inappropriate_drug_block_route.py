@@ -34,7 +34,7 @@ def test_block_illegal_returns_response(_append, _get_db, _save):
     }
 
     with patch(
-        "src.services.sage_bot_response.use_sage_web_ui",
+        "src.services.sage_bot_response.use_sage_diagnosis_storage",
         return_value=False,
     ):
         resp = try_inappropriate_drug_block_response(
