@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements-prod.txt
 # 本番に必要なファイルのみコピー（docs の発表資料等は除外してイメージを軽量化）
 COPY start.sh main.py ./
 COPY config/ config/
+COPY legacy/ legacy/
 COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
