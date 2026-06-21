@@ -137,6 +137,7 @@ def test_get_root_injects_app_version_and_empty_base_path(client):
     assert "window.APP_VERSION" in text
     assert 'window.APP_BASE_PATH' in text
     assert "gitCommitShort" in text
+    assert "gitRepoUrl" in text
     # 既定はルート（空文字）
     assert '""' in text or "''" in text or "APP_BASE_PATH" in text
 
@@ -252,6 +253,11 @@ def test_main_sessions_meaningful_only_filter(client):
         "empty-sid": {"messages": [], "username": "EmptyUser"},
         "full-sid": {"messages": [{"type": "user", "content": "hi"}], "username": "FullUser"},
         "line:Uabc123": {"messages": [], "username": "LINEユーザー"},
+        "1782062629581934713590": {
+            "messages": [],
+            "username": "ユーザー3",
+            "handoff_from_line": "line:Uhandoff",
+        },
     }
     with patch("main.get_all_sessions_from_db", return_value=sessions), patch(
         "main.get_manual_reply_session_ids", return_value=set()
@@ -259,7 +265,13 @@ def test_main_sessions_meaningful_only_filter(client):
         r_filtered = client.get("/api/main_sessions?meaningful_only=1")
         assert r_filtered.status_code == 200
         ids_filtered = {s["session_id"] for s in r_filtered.json()["sessions"]}
-        assert ids_filtered == {"full-sid", "line:Uabc123"}
+        assert ids_filtered == {"full-sid", "line:Uabc123", "1782062629581934713590"}
+        handoff_row = next(
+            s for s in r_filtered.json()["sessions"] if s["session_id"] == "1782062629581934713590"
+        )
+        assert handoff_row["is_line_handoff"] is True
+        assert handoff_row["is_line_related"] is True
+        assert handoff_row["handoff_from_line"] == "line:Uhandoff"
         cleanup_mock.assert_called_with(
             force=False,
             exclude_current_session=False,
@@ -271,7 +283,7 @@ def test_main_sessions_meaningful_only_filter(client):
         r_all = client.get("/api/main_sessions?meaningful_only=0")
         assert r_all.status_code == 200
         ids_all = {s["session_id"] for s in r_all.json()["sessions"]}
-        assert ids_all == {"empty-sid", "full-sid", "line:Uabc123"}
+        assert ids_all == {"empty-sid", "full-sid", "line:Uabc123", "1782062629581934713590"}
         cleanup_mock.assert_called_with(
             force=False,
             exclude_current_session=False,

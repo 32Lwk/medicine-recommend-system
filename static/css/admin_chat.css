@@ -5003,3 +5003,227 @@ button:focus-visible,
     height: 5px;
     background: #dcfce7;
 }
+
+/* LINE 長期記憶（右パネル） */
+.right-panel-tabs-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.right-panel-tabs {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.right-panel-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    border-radius: 8px;
+    cursor: pointer;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.right-panel-tab:hover {
+    background: rgba(34, 197, 94, 0.06);
+    color: var(--text-main);
+}
+
+.right-panel-tab.active {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.25);
+    color: #15803d;
+}
+
+.right-panel-tab-view {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.right-panel-tab-view[hidden] {
+    display: none !important;
+}
+
+#right-panel-memory-view .line-memory-section {
+    flex: 1 1 auto;
+}
+
+.line-memory-section {
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+}
+
+.line-memory-section__header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.line-memory-section__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+
+.line-memory-delete-all-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.line-memory-delete-all-btn:hover {
+    background: #fee2e2;
+}
+
+.line-memory-delete-all-btn:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
+}
+
+.line-memory-section__subtitle {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-sub);
+}
+
+.line-memory-meta {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+}
+
+.line-memory-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafdfb;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.line-memory-block {
+    margin-bottom: 0.75rem;
+}
+
+.line-memory-block:last-child {
+    margin-bottom: 0;
+}
+
+.line-memory-block__title {
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
+    color: var(--text-main);
+}
+
+.line-memory-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.line-memory-item:last-child {
+    border-bottom: none;
+}
+
+.line-memory-item__body {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.line-memory-item__label {
+    font-weight: 600;
+    color: #475569;
+}
+
+.line-memory-summary {
+    padding: 0.45rem 0.5rem;
+    margin-bottom: 0.35rem;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+}
+
+.line-memory-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.line-memory-actions--backfill {
+    margin-bottom: 0.25rem;
+}
+
+.line-memory-actions--selection {
+    margin-top: 0.15rem;
+}
+
+.line-memory-actions--selection .btn-sm {
+    width: 100%;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-sub);
+}
+
+.btn-outline-secondary:hover {
+    background: #f1f5f9;
+}
+
+.line-memory-actions .btn-sm {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-outline-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background: #fee2e2;
+}
+

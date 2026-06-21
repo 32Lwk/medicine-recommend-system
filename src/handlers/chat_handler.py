@@ -26,7 +26,7 @@ async def handle_chat_post_async(session, client_info: ChatClientInfo, message: 
     from src.services.pipeline_perf import ensure_pipeline_perf_started, log_pipeline_perf
 
     channel = "line" if sid and is_line_session_id(sid) else "web"
-    ensure_pipeline_perf_started(channel=channel)
+    ensure_pipeline_perf_started(channel=channel, sid=sid)
     is_line_channel = channel == "line"
 
     reset_budget_check_cache()
@@ -61,7 +61,7 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     from src.services.pipeline_perf import ensure_pipeline_perf_started, log_pipeline_perf
 
     channel = "line" if sid and is_line_session_id(sid) else "web"
-    ensure_pipeline_perf_started(channel=channel)
+    ensure_pipeline_perf_started(channel=channel, sid=sid)
     is_line_channel = channel == "line"
 
     reset_budget_check_cache()

@@ -136,14 +136,17 @@ def apply_confidence_gate(
     threshold = triage_confidence_threshold()
     history = get_recent_messages(session, sid)
     cache_hist = ""
+    cache_mem = ""
     try:
-        from src.services.triage_history import history_digest as _hist_digest
+        from src.services.triage_history import history_digest as _hist_digest, memory_digest as _mem_digest
+        from src.services.line_memory_context import build_long_term_memory_block
 
         cache_hist = _hist_digest(history)
+        cache_mem = _mem_digest(build_long_term_memory_block(session, sid))
     except Exception:
         pass
 
-    if category == "Emergency":
+    def _invalidate_triage_cache() -> None:
         try:
             from src.services.triage_cache import invalidate_triage_for_turn
 
@@ -151,9 +154,13 @@ def apply_confidence_gate(
                 sanitized_message,
                 session.get("user_attributes") if session else None,
                 history_digest=cache_hist,
+                memory_digest=cache_mem,
             )
         except Exception:
             pass
+
+    if category == "Emergency":
+        _invalidate_triage_cache()
         from src.handlers.chat.emergency_dispatch import dispatch_emergency
 
         emerg = dispatch_emergency(
@@ -168,16 +175,7 @@ def apply_confidence_gate(
             return emerg, triage_result
 
     if confidence < threshold:
-        try:
-            from src.services.triage_cache import invalidate_triage_for_turn
-
-            invalidate_triage_for_turn(
-                sanitized_message,
-                session.get("user_attributes") if session else None,
-                history_digest=cache_hist,
-            )
-        except Exception:
-            pass
+        _invalidate_triage_cache()
         retried = retry_triage_with_fallback_model(
             sanitized_message,
             recommendation_client,
@@ -187,16 +185,7 @@ def apply_confidence_gate(
             triage_result = {**triage_result, **retried}
             confidence = float(triage_result.get("confidence", confidence))
             category = triage_result.get("category", category)
-            try:
-                from src.services.triage_cache import invalidate_triage_for_turn
-
-                invalidate_triage_for_turn(
-                    sanitized_message,
-                    session.get("user_attributes") if session else None,
-                    history_digest=cache_hist,
-                )
-            except Exception:
-                pass
+            _invalidate_triage_cache()
 
     if confidence >= threshold:
         return None, triage_result
@@ -206,16 +195,7 @@ def apply_confidence_gate(
         return None, triage_result
 
     if not _clarify_already_sent(session):
-        try:
-            from src.services.triage_cache import invalidate_triage_for_turn
-
-            invalidate_triage_for_turn(
-                sanitized_message,
-                session.get("user_attributes") if session else None,
-                history_digest=cache_hist,
-            )
-        except Exception:
-            pass
+        _invalidate_triage_cache()
         _mark_clarify_sent(session)
         if sid:
             try:

@@ -13,7 +13,9 @@ from html.parser import HTMLParser
 from typing import Any
 
 from config.line_config import LINE_HERO_PLACEHOLDER_URL
-from src.handlers.line.flex_status_spec import resolve_status_flex_spec
+from src.handlers.line.flex_status_spec import _normalize_variant, resolve_status_flex_spec
+from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER
+from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MARKER
 from src.handlers.line.line_i18n import (
     carousel_alt_text,
     format_intro,
@@ -95,6 +97,38 @@ def html_to_plain_text(html: str | None) -> str:
     except Exception:
         return re.sub(r"<[^>]+>", "", html).strip()
     return parser.get_text()
+
+
+_SAGE_CONTENT_MARKERS = frozenset({SAGE_RECO_MARKER, SAGE_STATUS_MARKER, SAGE_QA_MARKER})
+
+
+def _is_sage_content_marker(text: str | None) -> bool:
+    return (text or "").strip() in _SAGE_CONTENT_MARKERS
+
+
+def _diagnosis_plain_message(diagnosis: dict[str, Any]) -> str:
+    message = str(diagnosis.get("message") or "").strip()
+    if message:
+        return message
+    for section in diagnosis.get("sections") or []:
+        if not isinstance(section, dict):
+            continue
+        items = section.get("items") or []
+        lines = [str(item).strip() for item in items if str(item).strip()]
+        if lines:
+            return "\n".join(lines)
+    return ""
+
+
+def _resolve_bot_plain_text(bot_message: dict[str, Any]) -> str:
+    """Sage マーカー保存時は diagnosis から LINE 用プレーンテキストを復元する。"""
+    plain = html_to_plain_text(bot_message.get("content"))
+    if not _is_sage_content_marker(plain):
+        return plain
+    diagnosis = bot_message.get("diagnosis")
+    if isinstance(diagnosis, dict):
+        return _diagnosis_plain_message(diagnosis)
+    return ""
 
 
 def _score_tier(display_score: float | int | None) -> tuple[str, str, int]:
@@ -750,11 +784,41 @@ _PLAIN_TEXT_CONCIERGE_INTENTS = frozenset(
 )
 
 
+def _try_sage_diagnosis_status_flex(
+    bot_message: dict[str, Any],
+    *,
+    footer: str,
+    ui: dict[str, str],
+) -> list[dict[str, Any]] | None:
+    diagnosis = bot_message.get("diagnosis")
+    if not isinstance(diagnosis, dict):
+        return None
+    if diagnosis.get("render") not in ("sage_status", "sage_qa"):
+        return None
+    if diagnosis.get("layout") == "plain":
+        return None
+    title = str(diagnosis.get("title") or "").strip()
+    if not title:
+        return None
+    message = _diagnosis_plain_message(diagnosis)
+    hints = [str(h).strip() for h in (diagnosis.get("hints") or []) if str(h).strip()]
+    return _status_flex_message(
+        _normalize_variant(str(diagnosis.get("variant") or "info")),
+        title=title,
+        alt_text=title,
+        subtitle=str(diagnosis.get("subtitle") or "").strip(),
+        body_paragraphs=[message] if message else None,
+        hints=hints or None,
+        footer_note=footer,
+        ui=ui,
+    )
+
+
 def _plain_text_line_messages(bot_message: dict) -> list[dict[str, Any]] | None:
     """
     挨拶・雑談・カウンセリング・医薬品Q&Aなど、Flex 化しない会話はテキストで返す。
     """
-    plain = html_to_plain_text(bot_message.get("content"))
+    plain = _resolve_bot_plain_text(bot_message)
     if bot_message.get("greeting") or bot_message.get("counseling") or bot_message.get("ask"):
         if not plain:
             return None
@@ -852,7 +916,7 @@ def build_line_messages_from_bot_message(
         return plain_messages
 
     if bot_message.get("crisis_support") or bot_message.get("emergency_detected"):
-        plain = html_to_plain_text(bot_message.get("content"))
+        plain = _resolve_bot_plain_text(bot_message)
         title = ui.get("status_critical_title", "")
         return _status_flex_message(
             "critical",
@@ -926,8 +990,11 @@ def build_line_messages_from_bot_message(
         resolved = _try_resolved_status_flex(bot_message, footer=footer, ui=ui)
         if resolved:
             return resolved
-        plain = html_to_plain_text(bot_message.get("content"))
-        if plain:
+        sage_status = _try_sage_diagnosis_status_flex(bot_message, footer=footer, ui=ui)
+        if sage_status:
+            return sage_status
+        plain = _resolve_bot_plain_text(bot_message)
+        if plain and not _is_sage_content_marker(plain):
             title = ui.get("status_info_title", "")
             return _status_flex_message(
                 "info",

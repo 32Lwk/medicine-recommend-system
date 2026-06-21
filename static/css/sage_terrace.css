@@ -813,6 +813,24 @@ body[data-ui-variant="sage"] {
   color: var(--ui-primary-dark);
 }
 
+/* Admin chat — keep branded header (override ui-primary-soft above) */
+[data-ui-variant="sage"] .admin-modal .modal-header,
+[data-ui-variant="sage"] .admin-modal-content .modal-header {
+  background: var(--ui-bg-header);
+  color: var(--ui-text-on-primary);
+  border-bottom: none;
+}
+
+[data-ui-variant="sage"] .admin-modal .modal-header .modal-title,
+[data-ui-variant="sage"] .admin-modal .modal-header h2,
+[data-ui-variant="sage"] .admin-modal .modal-header h3 {
+  color: var(--ui-text-on-primary);
+}
+
+[data-ui-variant="sage"] .admin-modal .modal-header .close-btn {
+  color: var(--ui-text-on-primary);
+}
+
 [data-ui-variant="sage"] .submit-attributes-btn,
 [data-ui-variant="sage"] #userInfoForm button[type="submit"] {
   background: var(--ui-primary);
@@ -889,6 +907,16 @@ body[data-ui-variant="sage"] {
 
 [data-ui-variant="sage"] .onboarding-last-updated {
   color: #4a5568;
+}
+
+[data-ui-variant="sage"] .onboarding-last-updated-commit:hover,
+[data-ui-variant="sage"] .onboarding-last-updated-commit:focus-visible {
+  color: var(--ui-primary-dark);
+}
+
+[data-ui-variant="sage"] .onboarding-slide-footer {
+  background: #ffffff;
+  box-shadow: 0 -8px 14px -12px rgba(59, 90, 115, 0.14);
 }
 
 [data-ui-variant="sage"] .onboarding-commit-hash {

@@ -179,6 +179,9 @@
                 <div class="panel-header">
                     <span class="panel-title" id="chat-title">セッションを選択</span>
                     <div class="header-controls">
+                        <button class="action-btn" id="lineMemoryBtn" onclick="focusLineMemoryPanel()" style="display: none;" title="長期記憶">
+                            <i class="fa-solid fa-brain"></i>
+                        </button>
                         <button class="action-btn" id="userAttributesBtn" onclick="showUserAttributesModal()" style="display: none;" title="ユーザー属性">
                             <i class="fa-solid fa-circle-info"></i>
                         </button>
@@ -217,8 +220,17 @@
             
             <!-- Right Panel: Controls & Info -->
             <div class="panel" id="right-panel">
-                <div class="panel-header">
-                    <span class="panel-title">コントロール & 情報</span>
+                <div class="panel-header right-panel-tabs-header">
+                    <div class="right-panel-tabs" role="tablist" aria-label="右パネル">
+                        <button type="button" class="right-panel-tab active" id="right-panel-tab-controls" role="tab" aria-selected="true" aria-controls="right-panel-controls-view" onclick="switchRightPanelTab('controls')">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span>コントロール</span>
+                        </button>
+                        <button type="button" class="right-panel-tab" id="right-panel-tab-memory" role="tab" aria-selected="false" aria-controls="right-panel-memory-view" onclick="switchRightPanelTab('memory')" hidden>
+                            <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                            <span>長期記憶</span>
+                        </button>
+                    </div>
                     <div class="panel-header-actions">
                         <button type="button" class="panel-resize-btn" title="パネル幅を調整">
                             <i class="fa-solid fa-grip-vertical"></i>
@@ -228,6 +240,8 @@
                         </button>
                     </div>
         </div>
+
+                <div id="right-panel-controls-view" class="right-panel-tab-view" role="tabpanel" aria-labelledby="right-panel-tab-controls">
                 
                 <!-- AI Management Section (Accordion) -->
                 <div class="accordion">
@@ -300,12 +314,35 @@
                     </div>
                 </div>
 
-                <!-- User Details Section -->
-                <div class="info-section" id="user-details-section" style="display: none;">
-                    <h4 style="margin-bottom: 1rem; font-size: 0.9rem; font-weight: 600;">ユーザー詳細</h4>
-                    <div id="user-attributes-content">
-                        <p class="info-label">セッションを選択すると詳細が表示されます</p>
+                </div>
+
+                <div id="right-panel-memory-view" class="right-panel-tab-view" role="tabpanel" aria-labelledby="right-panel-tab-memory" hidden>
+                <!-- LINE Long-term Memory (pharmacist view) -->
+                <div class="info-section line-memory-section" id="line-memory-section">
+                    <div class="line-memory-section__header">
+                        <div class="line-memory-section__header-text">
+                            <p class="line-memory-section__subtitle">薬剤師向け全文（プロファイル + 要約）</p>
+                            <span class="line-memory-meta" id="line-memory-meta"></span>
+                        </div>
+                        <button type="button" class="line-memory-delete-all-btn" id="line-memory-delete-all-btn" onclick="adminDeleteAllLineMemory()" title="すべて削除" aria-label="すべて削除" style="display: none;">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                        </button>
                     </div>
+                    <div id="line-memory-content" class="line-memory-content app-scrollbar"></div>
+                    <div class="line-memory-actions line-memory-actions--backfill" id="line-memory-backfill-actions" style="display: none;">
+                        <button type="button" class="btn btn-info btn-sm" id="line-memory-backfill-btn" onclick="adminBackfillLineMemory(false)">
+                            <i class="fa-solid fa-clock-rotate-left"></i> アーカイブから生成
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="adminBackfillLineMemory(true)" title="既存の要約を置き換えて再生成">
+                            <i class="fa-solid fa-arrows-rotate"></i> 再生成
+                        </button>
+                    </div>
+                    <div class="line-memory-actions line-memory-actions--selection" id="line-memory-actions" style="display: none;">
+                        <button type="button" class="btn btn-danger btn-sm" id="line-memory-delete-selected-btn" onclick="adminDeleteSelectedLineMemory()">
+                            <i class="fa-solid fa-trash-can"></i> 選択項目を削除
+                        </button>
+                    </div>
+                </div>
                 </div>
             </div>
 

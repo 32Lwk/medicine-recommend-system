@@ -144,11 +144,9 @@ def handle_emotional_category(
             symptom_type = "insomnia"
             logger.info("🔄 不眠関連キーワード直接検出により、symptom_typeを'insomnia'に変更しました")
 
-        conversation_history = (
-            session.get("messages", [])[-10:]
-            if len(session.get("messages", [])) > 10
-            else session.get("messages", [])
-        )
+        from src.services.line_memory_context import get_counseling_conversation_history
+
+        conversation_history = get_counseling_conversation_history(session, sid)
 
         initial_response = generate_counseling_response(
             symptom_type,

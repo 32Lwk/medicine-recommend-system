@@ -299,6 +299,8 @@ def chat_with_medicine_context(
     recommended_medicines,
     client=None,
     session_id=None,
+    *,
+    long_term_memory_block=None,
 ):
     """
     会話履歴と推奨医薬品の情報をChatGPTに渡して、医薬品に関する質問に回答する
@@ -461,10 +463,13 @@ def chat_with_medicine_context(
 - 競技会区分: {medicine.get('competition_category', '')}
 - ドーピング条件: {medicine.get('doping_conditions', '')}
 """
+    memory_section = ""
+    if long_term_memory_block:
+        memory_section = f"\n{long_term_memory_block.strip()}\n"
     prompt = f"""
 あなたは医薬品推奨システムです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
-
-【会話履歴】
+{memory_section}
+【会話履歴（直近）】
 {history_text}
 
 【推奨医薬品の詳細情報】

@@ -11,6 +11,8 @@ ACTION_LABELS_JA = {
     "history_cleared": "会話履歴をクリア",
     "session_marked_inactive": "チャット終了（セッション非アクティブ化）",
     "memory_deleted": "メモリ上のセッションを削除（期限切れクリーンアップ）",
+    "line_memory_deleted": "長期記憶（プロファイル・要約・アーカイブ）を削除",
+    "line_memory_backfilled": "message_archive から長期記憶をバックフィル",
     "db_expired_deleted": "DBからセッションを削除（期限切れクリーンアップ）",
     "profile_fetched": "LINEプロフィールを取得",
     "profile_fetch_failed": "LINEプロフィール取得に失敗",

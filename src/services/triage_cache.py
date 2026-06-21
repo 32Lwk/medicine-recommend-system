@@ -95,12 +95,14 @@ def build_cache_key(
     user_attributes: Optional[Dict[str, Any]] = None,
     *,
     history_digest: str = "",
+    memory_digest: str = "",
 ) -> str:
-    """sha256(canonical_text + attrs_digest + history_digest) — 生本文はキーに含めない。"""
+    """sha256(canonical_text + attrs_digest + history_digest + memory_digest) — 生本文はキーに含めない。"""
     norm = normalize_triage_text(text)
     digest = attrs_digest(user_attributes)
     hist = (history_digest or "").strip()
-    raw = f"{norm}|{digest}|{hist}"
+    mem = (memory_digest or "").strip()
+    raw = f"{norm}|{digest}|{hist}|{mem}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -202,8 +204,14 @@ def invalidate_triage_for_turn(
     user_attributes: Optional[Dict[str, Any]] = None,
     *,
     history_digest: str = "",
+    memory_digest: str = "",
 ) -> str:
     """現在ターン用キーを無効化し、キー文字列を返す（ログ用）。"""
-    key = build_cache_key(user_text, user_attributes, history_digest=history_digest)
+    key = build_cache_key(
+        user_text,
+        user_attributes,
+        history_digest=history_digest,
+        memory_digest=memory_digest,
+    )
     invalidate_cache_key(key)
     return key

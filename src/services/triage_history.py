@@ -14,6 +14,13 @@ def get_recent_messages(
     *,
     limit: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
+    from src.services.line_user_memory import is_line_memory_session
+
+    if is_line_memory_session(sid, session):
+        from src.services.line_memory_context import get_memory_aware_recent_messages
+
+        return get_memory_aware_recent_messages(session, sid, limit=limit)
+
     n = limit if limit is not None else triage_history_messages()
     if n <= 0:
         return []
@@ -51,3 +58,13 @@ def history_digest(messages: List[Dict[str, Any]]) -> str:
     if block == "（なし）":
         return ""
     return hashlib.sha256(block.encode("utf-8")).hexdigest()[:16]
+
+
+def memory_digest(memory_block: str | None) -> str:
+    """長期記憶ブロック（プロファイル + 要約）のキャッシュキー用ダイジェスト。"""
+    import hashlib
+
+    text = (memory_block or "").strip()
+    if not text:
+        return ""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]

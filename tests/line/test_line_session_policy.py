@@ -18,6 +18,23 @@ def test_trim_line_session_messages_keeps_tail():
     assert session["messages"][0]["content"] == f"m{30 - LINE_SESSION_MAX_MESSAGES}"
 
 
+@patch("src.services.line_memory_jobs.schedule_episode_summary")
+@patch("src.services.line_memory_jobs.schedule_profile_persist")
+@patch(
+    "src.services.line_user_memory.load_line_memory",
+    return_value=({"age": 35, "gender": "女性"}, []),
+)
+def test_clear_line_session_state_line_keeps_profile(_load, _prof, _sum):
+    session = {
+        "messages": [{"type": "user", "content": "a"}],
+        "user_attributes": {"age": 35, "gender": "女性"},
+        "concierge_state": {"off_topic_turns": 3},
+    }
+    clear_line_session_state(session, sid="line:Uabc", session_data={"session_id": "line:Uabc"})
+    assert session["messages"] == []
+    assert session["user_attributes"]["age"] == 35
+
+
 def test_clear_line_session_state_resets_messages():
     session = {
         "messages": [{"type": "user", "content": "a"}],
@@ -28,6 +45,7 @@ def test_clear_line_session_state_resets_messages():
     assert session["messages"] == []
     assert "counseling_mode" not in session
     assert session["concierge_state"]["off_topic_turns"] == 0
+    assert session["user_attributes"]["age"] is None
 
 
 @patch("src.handlers.chat.chat_session_route.save_session_to_db")

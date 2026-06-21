@@ -1,6 +1,137 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月22日**（LINE→Web 引き継ぎ Sage 統合・diagnosis 永続化分離・モバイル文字サイズ）
+**最終更新日: 2026年6月22日**（LINE 長期記憶・管理画面パネル・パイプライン計測・プライバシーポリシー改定）
+
+---
+
+## 2026年6月22日 — LINE 長期記憶・管理画面パネル・パイプライン計測強化・プライバシーポリシー改定
+
+### 概要
+
+LINE 連携ユーザー向けの**長期記憶システム**（永続プロファイル + 相談エピソード要約 + ユーザー/管理者による削除 + アーカイブからのバックフィル）を新設し、トリアージ・カウンセリング・医薬品 Q&A・Web 引き継ぎへ記憶コンテキストを注入した。あわせて **sid キー方式のパイプライン性能計測**（ワーカースレッド対応・LLM 呼び出し集約）、**管理画面の長期記憶タブ**、**LINE Flex の Sage マーカー復元**、**オンボーディング UI 改善**、**プライバシーポリシー改定**を含む。
+
+### LINE ユーザー長期記憶
+
+- **`line_user_memory.py`（新規）**: LINE セッション（`line:{userId}`）および Web 引き継ぎ先への記憶オーナー解決、プロファイルマージ/永続化、エピソード要約 upsert、全件/部分削除、管理画面向け `load_line_memory_bundle`
+- **`line_memory_config.py`（新規）**: `LINE_MEMORY_RECENT_TURNS`（既定 5）、`LINE_MEMORY_SUMMARY_MAX`（既定 5）
+- **`line_memory_context.py`（新規）**: LLM 向け会話圧縮（`sage_reco`/`sage_status`/`sage_qa` マーカー展開）、長期記憶ブロック生成、カウンセリング用履歴（system メッセージとして記憶注入）
+- **`line_memory_jobs.py`（新規）**: デーモンスレッドで非同期実行 — プロファイル永続化、エピソード要約、引き継ぎ writeback、推奨完了時の要約スケジュール
+- **`line_memory_backfill.py`（新規）**: `message_archive` からプロファイル LLM 抽出 + エピソード分割（`sage_reco` 区切り）+ 要約生成
+
+**新規エージェント**
+
+| エージェント | 役割 |
+|-------------|------|
+| `ProfileMemoryAgent` | セッション属性を `line_user_profile` へマージ保存 |
+| `EpisodeSummaryAgent` | 相談ログから JSON 要約（症状・推奨薬・key_facts 等）を `consultation_summaries` に追加 |
+| `MemoryDeleteAgent` | 「記憶を消して」等の削除意図をルール/LLM で分類し、全件/部分/要約のみ削除 |
+
+**統合ポイント**
+
+- `chat_post_pipeline.py`: セキュリティゲート後にプロファイル適用 → 記憶削除ハンドラ（同期）
+- `session_manager.py`: セッション永続化後にプロファイル非同期反映
+- `async_attribute_extractor.py`: 属性抽出完了時に LINE プロファイルへ writeback
+- `line_session.py`: `prime_line_session` でプロファイル適用; `clear_line_session_state` で LINE セッション終了時に要約生成 + プロファイル保存
+- `chat_recommendation_flow.py`: 推奨完了時に `maybe_schedule_line_episode_summary`
+- `line_web_handoff.py`: 引き継ぎ snapshot/Web セッションに `line_user_profile` / `consultation_summaries` を載せ、`user_attributes` をマージ
+
+### パイプライン性能計測（`pipeline_perf.py`）
+
+- contextvars 単一バケット → **sid キー + スレッドセーフ辞書**（`_PerfBucket`）へ刷新
+- `bind_pipeline_perf` / `activate_pipeline_perf` で LINE ワーカースレッド境界を越えた計測を統合
+- LLM 呼び出し・コストをバケット内に集約（`append_llm_call_to_bucket` 等）
+- `llm_metrics.py` がバケット優先で read/write
+- 計測ステップ追加: `post_start`, `before/after_get_session_db`, `before_triage_duplicate`, `after_triage`, `safety_gate_done`, `confidence_gate_done`, `before_orchestrator`, オーケストレーター内 `orch_*`, コンシェルジュ `concierge_*`, `meta_triage_*`
+- `line_message_handler.py`: LINE 処理開始時に `bind_pipeline_perf(sid=..., channel="line")`
+- `chat_handler.py`: `ensure_pipeline_perf_started(..., sid=sid)`
+
+### 管理画面（長期記憶パネル）
+
+**API（`main.py`）**
+
+- セッション行に `client_ip`, `user_agent`, `handoff_from_line`, `is_line_session` / `is_line_handoff` / `is_line_related`, `line_memory_owner_sid`, `line_memory` を追加
+- `meaningful_only` フィルタを `is_line_related` ベースに拡張（LINE 引き継ぎ Web セッションも表示対象）
+- 新規 API:
+  - `POST /api/admin/sessions/{id}/line_memory/backfill` — アーカイブから記憶生成（`force` 対応）
+  - `POST /api/admin/sessions/{id}/line_memory/delete` — scope: `all` / `summaries_only` / `profile_partial`
+- `_resolve_git_repo_url()` 追加（`GIT_REPO_URL` 環境変数、既定 GitHub URL）
+- インデックステンプレートへ `gitRepoUrl` を注入（コミットリンク用）
+
+**フロント（`admin_chat.html` / `admin_chat.js` / `admin_chat.css`）**
+
+- 右パネルを **コントロール / 長期記憶** タブ化
+- 長期記憶パネル: プロファイル・要約の閲覧、チェックボックス選択削除、全削除、アーカイブから生成/再生成
+- ヘッダーに脳アイコン（`focusLineMemoryPanel`）
+- セッション一覧に LINE 関連バッジ（`is_line_related`, `is_line_handoff`, 記憶オーナー参照）
+- `client_ip` 表示
+
+### チャットオーケストレーション / トリアージ
+
+- `chat_triage.py`: `merge_profile_into_user_info` + `build_long_term_memory_block` をトリアージエージェントへ渡す
+- `triage_agent.py` / `llm_triage.py`: `long_term_memory_block` 引数、プロンプトに長期記憶セクション注入
+- `triage_cache.py` / `triage_history.py`: `memory_digest` をキャッシュキーに追加（記憶変更でキャッシュ無効化）
+- `confidence_gate.py`: キャッシュ無効化ロジックを `_invalidate_triage_cache` に集約、memory_digest 対応
+- カウンセリング系ルート（`chat_counseling_flow`, `chat_emotional_route`, `chat_inappropriate_route`, `chat_other_counseling_route`, `chat_category_route`, `counseling_mode_handler`）が `get_counseling_conversation_history` を使用
+- `chat_post_pipeline.py` コンシェルジュ前処理でも記憶 aware 履歴を使用
+- `chat_response_service.py` / `medicine_response_builder.py`: 医薬品 Q&A に長期記憶ブロック注入
+- `counseling_format.py`: `system` ロールの履歴フォーマット対応
+
+### LINE セッション / Flex メッセージ
+
+- `resolve_session_line_context()` — 管理画面用 LINE コンテキスト解決
+- `flex_messages.py`:
+  - Sage コンテンツマーカー（`sage_reco`/`sage_status`/`sage_qa`）保存時、`diagnosis` からプレーンテキスト/Flex を復元
+  - `_try_sage_diagnosis_status_flex` — status/qa 診断を Flex 化
+  - 挨拶・カウンセリング・危機対応等でマーカー文字列が LINE に露出しないよう修正
+
+### 法務ドキュメント
+
+- **`docs/public/プライバシーポリシー.md`（2026-06-22 改定）**
+  - 収集情報にアレルギー・併用薬、LINE 連携情報（ハッシュ化 ID、要約、長期保存、引き継ぎトークン）を追記
+  - 利用目的に LINE 継続相談・Web 引き継ぎを追加
+  - 第5条: 長期記憶の保持期間・削除請求方法を明記
+  - 第7条: チャット内削除依頼、不具合報告フォーム URL 追加
+  - 制定日・改定履歴ブロック追加
+- **`docs/public/免責事項・利用規約.md`**: 制定日・改定履歴（初版）追加
+- **`.cursor/rules/public-legal-docs.mdc`（新規）**: 公開規約の日付表記ルール
+
+### フロントエンド（Sage Terrace / main.js）
+
+- **Git コミットリンク**: `gitRepoUrl` + `gitCommitShort` からオンボーディングにコミットハッシュリンク表示
+- **オンボーディング UI**: `--onb-details-max-height`（モーダル高 30%）、details 開閉時の高さ同期、フッター固定シャドウ、スクロール余白調整（`main.css` / `sage_terrace.css`）
+- `handoffFinalizeTypingIndicator` — 引き継ぎ完了時のタイピング表示
+
+### その他
+
+- `session_lifecycle.py`: ライフサイクルラベル `line_memory_deleted`, `line_memory_backfilled`
+- `src/agents/__init__.py`: 3 エージェント（ProfileMemory / EpisodeSummary / MemoryDelete）を export
+
+### 新規ファイル（主要）
+
+| パス | 用途 |
+|------|------|
+| `config/line_memory_config.py` | 環境変数設定 |
+| `src/services/line_user_memory.py` | 長期記憶永続化コア |
+| `src/services/line_memory_context.py` | LLM プロンプト整形 |
+| `src/services/line_memory_jobs.py` | 非同期ジョブ |
+| `src/services/line_memory_backfill.py` | アーカイブバックフィル |
+| `src/agents/profile_memory_agent.py` | プロファイル永続化 |
+| `src/agents/episode_summary_agent.py` | エピソード要約 |
+| `src/agents/memory_delete_agent.py` | 記憶削除 |
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_line_user_memory.py`（新規） | オーナー解決、マージ、永続化、削除意図、圧縮、memory_digest、upsert |
+| `test_line_memory_backfill.py`（新規） | エピソード分割、バックフィル、プロファイル/要約生成 |
+| `test_pipeline_perf.py`（新規） | ワーカースレッド跨ぎ計測、バケット非リセット |
+| `test_line_flex_messages.py` | Sage マーカー → diagnosis メッセージ復元 |
+| `test_line_session_ids.py` | `resolve_session_line_context` 3 パターン |
+| `test_line_session_policy.py` | LINE クリア時プロファイル保持 + 非同期ジョブ mock |
+| `test_line_session_prime.py` | 起動時プロファイル適用（DB 再読込なし） |
+| `test_fastapi_contract.py` | `gitRepoUrl`、handoff セッションの meaningful_only |
+| `test_triage_cache_matrix.py` | memory_digest によるキー差分 |
 
 ---
 

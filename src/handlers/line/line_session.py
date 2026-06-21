@@ -52,6 +52,37 @@ def user_id_from_line_sid(sid: str | None) -> str | None:
     return user_id or None
 
 
+def resolve_session_line_context(
+    sess_id: str | None,
+    info: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """
+    管理画面用: LINE 本体 / LINE→Web 引き継ぎ / 純 Web を解決する。
+
+    LINE Webhook の会話は常に `line:{userId}` に保存される。
+    数値 session_id は Web チャット（ブラウザ）または引き継ぎ先。
+    """
+    sid = str(sess_id or "")
+    data = info if isinstance(info, dict) else {}
+    native = is_line_session_id(sid)
+    handoff = normalize_line_session_id(str(data.get("handoff_from_line") or ""))
+    handoff_valid = bool(handoff and is_line_session_id(handoff))
+    try:
+        from src.services.line_user_memory import resolve_memory_owner_sid
+
+        memory_owner = resolve_memory_owner_sid(sid, data)
+    except ImportError:
+        memory_owner = handoff if handoff_valid else (sid if native else None)
+    line_related = native or handoff_valid
+    return {
+        "is_line_session": native,
+        "is_line_handoff": handoff_valid and not native,
+        "is_line_related": line_related,
+        "handoff_from_line": handoff if handoff_valid else None,
+        "line_memory_owner_sid": memory_owner if line_related else None,
+    }
+
+
 def trim_line_session_messages(
     session: Any,
     *,
@@ -98,7 +129,26 @@ def clear_line_session_state(session: Any, *, sid: str | None = None, session_da
     session.pop("last_triage_result", None)
     session.pop("_last_triage_result", None)
     session["concierge_state"] = {"off_topic_turns": 0, "last_intent": None}
-    session["user_attributes"] = dict(DEFAULT_USER_ATTRS)
+    line_sid = sid if sid and str(sid).startswith("line:") else None
+    if line_sid:
+        from src.services.line_memory_jobs import schedule_episode_summary, schedule_profile_persist
+        from src.services.line_user_memory import (
+            get_current_episode_id,
+            load_line_memory,
+            profile_to_user_attributes,
+            reset_current_episode_id,
+        )
+
+        attrs = dict(session.get("user_attributes") or {}) if hasattr(session, "get") else {}
+        schedule_profile_persist(line_sid, attrs)
+        episode_id = get_current_episode_id(line_sid)
+        schedule_episode_summary(line_sid, msgs, trigger="chat_end", episode_id=episode_id)
+        reset_current_episode_id(line_sid)
+        profile, _ = load_line_memory(line_sid)
+        if hasattr(session, "__setitem__"):
+            session["user_attributes"] = profile_to_user_attributes(profile)
+    else:
+        session["user_attributes"] = dict(DEFAULT_USER_ATTRS)
     for flag in (
         "medical_emergency_otc_locked",
         "crisis_detected",
@@ -166,6 +216,10 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
         if session_data.get("ai_auto_reply") is not None:
             session["ai_auto_reply"] = session_data["ai_auto_reply"]
     session.setdefault("ai_auto_reply", get_ai_auto_reply_in_memory())
+    owner_sid = line_sid(user_id)
+    from src.services.line_user_memory import apply_profile_to_session
+
+    apply_profile_to_session(session, owner_sid, session_data=session_data)
     if session_data:
         from src.services.session_lifecycle import merge_messages_into_archive
 

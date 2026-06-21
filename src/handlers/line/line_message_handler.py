@@ -352,6 +352,10 @@ async def _process_text_message(
             logger.info("LINE duplicate job skipped sid=%s", sid)
             return
 
+        from src.services.pipeline_perf import bind_pipeline_perf
+
+        bind_pipeline_perf(sid=sid, channel="line")
+
         loading_stop, loading_keepalive = await begin_line_loading(user_id)
         mark_pipeline_step("line_loading_start")
 

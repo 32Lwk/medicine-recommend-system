@@ -209,6 +209,44 @@ def test_greeting_returns_plain_text():
     assert "こんにちは" in messages[0]["text"]
 
 
+def test_greeting_sage_marker_uses_diagnosis_message():
+    bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "greeting": True,
+        "concierge": True,
+        "concierge_intent": "greeting",
+        "content_format": "text",
+        "diagnosis": {
+            "render": "sage_status",
+            "layout": "plain",
+            "title": "ご挨拶",
+            "message": "こんー！こちらはOTC（市販薬）の相談窓口だよ。",
+            "kind": "concierge_greeting",
+        },
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "text"
+    assert messages[0]["text"] == bot["diagnosis"]["message"]
+    assert "sage_status" not in messages[0]["text"]
+
+
+def test_counseling_sage_marker_uses_diagnosis_message():
+    bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "counseling": True,
+        "diagnosis": {
+            "render": "sage_status",
+            "title": "カウンセリング",
+            "message": "お疲れのようですね。十分な休息をお勧めします。",
+        },
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "text"
+    assert "お疲れ" in messages[0]["text"]
+
+
 def test_chitchat_concierge_returns_plain_text():
     bot = {
         "type": "bot",

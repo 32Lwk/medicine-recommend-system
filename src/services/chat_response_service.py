@@ -363,11 +363,19 @@ def build_question_response(
         logger.info(f"📋 Latest recommended medicines: {len(latest_recommended_medicines)} items")
 
         conversation_history = session_data_for_medicines.get('messages', [])[-10:]
+        from src.services.line_user_memory import is_line_memory_session
+
+        memory_block = ""
+        if is_line_memory_session(sid, session):
+            from src.services.line_memory_context import get_llm_conversation_context
+
+            conversation_history, memory_block = get_llm_conversation_context(session, sid, limit=5)
         chat_response = chat_with_medicine_context(
             user_message,
             conversation_history,
             latest_recommended_medicines,
             session_id=sid,
+            long_term_memory_block=memory_block or None,
         )
 
         try:

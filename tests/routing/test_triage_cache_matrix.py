@@ -19,6 +19,12 @@ def test_cache_key_is_sha256_hex():
     assert len(k1) == 64
 
 
+def test_cache_key_differs_when_memory_digest_changes():
+    k1 = build_cache_key("頭痛", history_digest="abc", memory_digest="")
+    k2 = build_cache_key("頭痛", history_digest="abc", memory_digest="mem1")
+    assert k1 != k2
+
+
 def test_skip_emergency():
     assert (
         should_skip_cache_lookup(text="胸がとても痛いです", triage_result={"category": "Emergency"})

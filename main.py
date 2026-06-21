@@ -288,6 +288,16 @@ def _resolve_git_commit_short() -> str | None:
     return None
 
 
+_DEFAULT_GIT_REPO_URL = "https://github.com/32Lwk/medicine-recommend-system"
+
+
+def _resolve_git_repo_url() -> str:
+    raw = os.getenv("GIT_REPO_URL", "").strip()
+    if raw:
+        return raw.rstrip("/")
+    return _DEFAULT_GIT_REPO_URL
+
+
 def _compat_url_for(endpoint: str, **values) -> str:
     # templates/*.html は Flask 互換の url_for('static', filename=...) を使用している。
     if endpoint == "static":
@@ -384,6 +394,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "isDevelopment": bool(is_dev_env),
             "uiVariant": ui_variant,
             "gitCommitShort": _resolve_git_commit_short(),
+            "gitRepoUrl": _resolve_git_repo_url(),
         }
     )
 
@@ -831,8 +842,8 @@ async def new_session(request: Request, response: Response):
 
 
 @app.post("/test/new_session")
-def new_session_test(request: Request, response: Response):
-    return new_session(request, response)
+async def new_session_test(request: Request, response: Response):
+    return await new_session(request, response)
 
 
 @app.get("/resume/{token}")
@@ -1312,7 +1323,8 @@ def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(se
 
 def _session_row_for_admin(sess_id, info):
     from src.services.session_lifecycle import admin_messages_for_session
-    from src.handlers.line.line_session import is_line_session_id
+    from src.handlers.line.line_session import resolve_session_line_context
+    from src.services.line_user_memory import load_line_memory_bundle, resolve_memory_owner_sid
 
     detailed_diag = None
     if isinstance(info, dict):
@@ -1331,6 +1343,7 @@ def _session_row_for_admin(sess_id, info):
     live_count = len(info.get("messages", []) or [])
     archive_count = len(admin_msgs)
     msg_count = archive_count
+    line_ctx = resolve_session_line_context(str(sess_id), info)
     row = {
         "session_id": sess_id,
         "username": info.get("username", "Unknown"),
@@ -1349,8 +1362,17 @@ def _session_row_for_admin(sess_id, info):
         "line_profile": info.get("line_profile"),
         "line_profile_error": info.get("line_profile_error"),
         "lifecycle_log": info.get("lifecycle_log") or [],
-        "is_line_session": is_line_session_id(str(sess_id)),
+        "client_ip": info.get("client_ip", ""),
+        "user_agent": info.get("user_agent", ""),
+        "handoff_from_line": line_ctx.get("handoff_from_line"),
+        "is_line_session": bool(line_ctx.get("is_line_session")),
+        "is_line_handoff": bool(line_ctx.get("is_line_handoff")),
+        "is_line_related": bool(line_ctx.get("is_line_related")),
     }
+    memory_owner = line_ctx.get("line_memory_owner_sid") or resolve_memory_owner_sid(str(sess_id), info)
+    if memory_owner:
+        row["line_memory_owner_sid"] = memory_owner
+        row["line_memory"] = load_line_memory_bundle(memory_owner)
     return row
 
 
@@ -1369,8 +1391,8 @@ def _list_admin_sessions(meaningful_only: bool = True):
         if meaningful_only:
             has_messages = row["message_count"] > 0
             in_queue = str(sess_id) in queue_ids
-            is_line = is_line_session_id(str(sess_id))
-            if not has_messages and not in_queue and not is_line:
+            is_line_related = bool(row.get("is_line_related"))
+            if not has_messages and not in_queue and not is_line_related:
                 continue
         sessions_list.append(row)
     return sessions_list
@@ -2364,6 +2386,9 @@ def api_admin_sessions(
     for sess_id, info in all_sessions.items():
         if not isinstance(info, dict):
             continue
+        from src.handlers.line.line_session import resolve_session_line_context
+
+        line_ctx = resolve_session_line_context(str(sess_id), info)
         sessions_data.append(
             {
                 "session_id": str(sess_id),
@@ -2376,6 +2401,10 @@ def api_admin_sessions(
                 "user_attributes": dict(info.get("user_attributes", {}) or {}),
                 "detailed_diagnosis": info.get("detailed_diagnosis"),
                 "message_count": len(info.get("messages", []) or []),
+                "handoff_from_line": line_ctx.get("handoff_from_line"),
+                "is_line_session": bool(line_ctx.get("is_line_session")),
+                "is_line_handoff": bool(line_ctx.get("is_line_handoff")),
+                "is_line_related": bool(line_ctx.get("is_line_related")),
             }
         )
     return {"sessions": sessions_data, "admin_mode": bool(get_admin_mode()), "ai_auto_reply": bool(get_ai_auto_reply())}
@@ -2436,7 +2465,100 @@ async def api_admin_update_session(session_id: str, request: Request):
         session_data["user_attributes"] = data["user_attributes"]
     session_data["last_activity"] = datetime.now()
     save_session_to_db(session_id, session_data)
-    return {"status": "success", "message": "セッション情報を更新しました"}
+    return {"status": "success", "message": "セッション情報を更新しました"    }
+
+
+@app.post("/api/admin/sessions/{session_id}/line_memory/backfill")
+async def api_admin_backfill_line_memory(
+    session_id: str,
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    """管理画面: message_archive から長期記憶をバックフィル。"""
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    session_data = get_session_from_db(session_id)
+    if not session_data:
+        return JSONResponse({"status": "error", "message": "セッションが見つかりませんでした"}, status_code=404)
+    from src.services.line_user_memory import resolve_memory_owner_sid
+    from src.services.line_memory_backfill import run_line_memory_backfill
+
+    owner = resolve_memory_owner_sid(session_id, session_data)
+    if not owner:
+        return JSONResponse(
+            {"status": "error", "message": "このセッションには LINE 長期記憶がありません"},
+            status_code=400,
+        )
+    force = bool(data.get("force"))
+    try:
+        result = run_line_memory_backfill(owner, force=force)
+    except Exception as exc:
+        logger.exception("line_memory backfill failed session_id=%s", session_id)
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=500)
+    info = get_session_from_db(session_id) or session_data
+    owner_info = get_session_from_db(owner) or {}
+    message = "長期記憶を生成しました"
+    if result.get("skipped"):
+        message = "変更なし（既に記憶があるか、アーカイブが空です）"
+    return {
+        "status": "success",
+        "message": message,
+        "backfill": result,
+        "session": _session_row_for_admin(session_id, info),
+        "line_memory_owner_sid": owner,
+        "line_memory": _session_row_for_admin(owner, owner_info).get("line_memory"),
+    }
+
+
+@app.post("/api/admin/sessions/{session_id}/line_memory/delete")
+async def api_admin_delete_line_memory(
+    session_id: str,
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    """管理画面: LINE 長期記憶の削除（全件 / 部分）。"""
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    session_data = get_session_from_db(session_id)
+    if not session_data:
+        return JSONResponse({"status": "error", "message": "セッションが見つかりませんでした"}, status_code=404)
+    from src.services.line_user_memory import admin_delete_line_memory, resolve_memory_owner_sid
+
+    owner = resolve_memory_owner_sid(session_id, session_data)
+    if not owner:
+        return JSONResponse(
+            {"status": "error", "message": "このセッションには LINE 長期記憶がありません"},
+            status_code=400,
+        )
+    scope = (data.get("scope") or "").strip()
+    if not scope:
+        return JSONResponse({"status": "error", "message": "scope が必要です"}, status_code=400)
+    try:
+        admin_delete_line_memory(
+            owner,
+            scope=scope,
+            profile_keys=list(data.get("profile_keys") or []),
+            summary_ids=list(data.get("summary_ids") or []),
+        )
+    except ValueError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    info = get_session_from_db(session_id) or session_data
+    owner_info = get_session_from_db(owner) or {}
+    return {
+        "status": "success",
+        "message": "長期記憶を削除しました",
+        "session": _session_row_for_admin(session_id, info),
+        "line_memory_owner_sid": owner,
+        "line_memory": _session_row_for_admin(owner, owner_info).get("line_memory"),
+    }
 
 
 @app.post("/api/admin/send_message")

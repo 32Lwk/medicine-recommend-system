@@ -60,6 +60,7 @@ def run_triage_agent(
     user_info: Optional[Dict[str, Any]] = None,
     use_cache: bool = True,
     conversation_history: Optional[list] = None,
+    long_term_memory_block: Optional[str] = None,
 ) -> Dict[str, Any]:
     pre = keyword_pre_triage(user_text)
     if pre:
@@ -78,10 +79,11 @@ def run_triage_agent(
         return pre
 
     from src.services.triage_cache import build_cache_key, get_triage_cache
-    from src.services.triage_history import history_digest
+    from src.services.triage_history import history_digest, memory_digest as memory_digest_fn
 
     hist_d = history_digest(conversation_history or [])
-    cache_key = build_cache_key(user_text, user_info, history_digest=hist_d)
+    mem_d = memory_digest_fn(long_term_memory_block)
+    cache_key = build_cache_key(user_text, user_info, history_digest=hist_d, memory_digest=mem_d)
     if use_cache:
         cached = get_triage_cache().get(cache_key)
         if cached:
@@ -97,6 +99,7 @@ def run_triage_agent(
         client,
         use_cache=use_cache,
         conversation_history=conversation_history,
+        long_term_memory_block=long_term_memory_block,
     )
     result["agent"] = "TriageAgent"
     if use_cache:

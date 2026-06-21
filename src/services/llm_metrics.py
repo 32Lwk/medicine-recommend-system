@@ -16,6 +16,10 @@ _session_cost_var: contextvars.ContextVar[float] = contextvars.ContextVar(
 
 
 def reset_llm_metrics() -> None:
+    from src.services.pipeline_perf import reset_llm_calls_in_bucket
+
+    if reset_llm_calls_in_bucket():
+        return
     _llm_calls_var.set([])
     _session_cost_var.set(0.0)
 
@@ -31,10 +35,6 @@ def record_llm_call(
     profile: str | None = None,
     prompt_version: str | None = None,
 ) -> None:
-    calls = _llm_calls_var.get()
-    if calls is None:
-        calls = []
-        _llm_calls_var.set(calls)
     entry: Dict[str, Any] = {
         "timestamp": datetime.now().isoformat(),
         "model": model,
@@ -48,23 +48,49 @@ def record_llm_call(
         entry["model_profile"] = profile
     if prompt_version:
         entry["prompt_version"] = prompt_version
+
+    from src.services.pipeline_perf import append_llm_call_to_bucket
+
+    if append_llm_call_to_bucket(entry, cost_jpy=cost_jpy):
+        return
+
+    calls = _llm_calls_var.get()
+    if calls is None:
+        calls = []
+        _llm_calls_var.set(calls)
     calls.append(entry)
     if cost_jpy:
         _session_cost_var.set(_session_cost_var.get() + cost_jpy)
 
 
 def get_llm_calls() -> List[Dict[str, Any]]:
+    from src.services.pipeline_perf import get_active_bucket_llm_calls
+
+    bucket_calls = get_active_bucket_llm_calls()
+    if bucket_calls is not None:
+        return bucket_calls
     return list(_llm_calls_var.get() or [])
 
 
 def get_session_cost_jpy() -> float:
+    from src.services.pipeline_perf import get_active_bucket_llm_cost_jpy
+
+    bucket_cost = get_active_bucket_llm_cost_jpy()
+    if bucket_cost is not None:
+        return bucket_cost
     return _session_cost_var.get()
 
 
 def get_llm_summary() -> Dict[str, Any]:
+    from src.services.pipeline_perf import get_active_bucket_llm_summary
+
+    bucket_summary = get_active_bucket_llm_summary()
+    if bucket_summary is not None:
+        return bucket_summary
     calls = get_llm_calls()
     try:
         from config.llm_config import LLM_MODEL_PROFILE
+
         profile = LLM_MODEL_PROFILE
     except ImportError:
         profile = "gpt5"

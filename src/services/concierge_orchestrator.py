@@ -90,11 +90,15 @@ def enrich_other_concierge_intent(
 
     from src.services.meta_triage import classify_meta_concierge_intent
 
+    from src.services.pipeline_perf import mark_pipeline_step
+
+    mark_pipeline_step("meta_triage_start")
     meta = classify_meta_concierge_intent(
         text,
         client,
         conversation_history=conversation_history,
     )
+    mark_pipeline_step("meta_triage_end")
     from src.services.store_inquiry_handler import is_probable_store_inquiry_any
 
     if meta in ("redirect", "chitchat") and is_probable_store_inquiry_any(

@@ -82,6 +82,15 @@ def schedule_async_attribute_extraction(
             if updated:
                 session_data['user_attributes'] = merged
                 save_session_fn(sid, session_data)
+                try:
+                    from src.services.line_user_memory import resolve_memory_owner_sid
+                    from src.services.line_memory_jobs import schedule_profile_persist
+
+                    owner = resolve_memory_owner_sid(sid, session_data)
+                    if owner:
+                        schedule_profile_persist(owner, merged)
+                except Exception:
+                    pass
                 logger.info(f"📝 非同期LLM属性抽出完了: session={sid[:20]}...")
         except Exception as e:
             logger.warning(f"⚠️ 非同期属性抽出でエラー: {e}")

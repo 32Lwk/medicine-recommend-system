@@ -125,6 +125,7 @@
                                     { text: "UI・導線の最適化", defaultChecked: true },
                                     { text: "カルーセル型UIの導入", defaultChecked: true },
                                     { text: "LINE連携（Messaging API）", defaultChecked: true },
+                                    { text: "LINE→Web引き継ぎ", defaultChecked: true },
                                     { text: "画像の導入", defaultChecked: true },
                                     { text: "セキュリティ向上", defaultChecked: true },
                                     "音声入力の向上",
@@ -169,6 +170,7 @@
                                     { text: "UI・導線の最適化", defaultChecked: true },
                                     { text: "カルーセル型UIの導入", defaultChecked: true },
                                     { text: "LINE連携（Messaging API）", defaultChecked: true },
+                                    { text: "LINE→Web引き継ぎ", defaultChecked: true },
                                     { text: "画像の導入", defaultChecked: true },
                                     { text: "セキュリティ向上", defaultChecked: true },
                                     "音声入力の向上",
@@ -421,6 +423,7 @@
                                     { text: "UI and user-flow optimization", defaultChecked: true },
                                     { text: "Carousel-style UI", defaultChecked: true },
                                     { text: "LINE integration (Messaging API)", defaultChecked: true },
+                                    { text: "LINE→Web handoff", defaultChecked: true },
                                     { text: "Image support", defaultChecked: true },
                                     { text: "Security improvements", defaultChecked: true },
                                     "Better voice input",
@@ -465,6 +468,7 @@
                                     { text: "UI and user-flow optimization", defaultChecked: true },
                                     { text: "Carousel-style UI", defaultChecked: true },
                                     { text: "LINE integration (Messaging API)", defaultChecked: true },
+                                    { text: "LINE→Web handoff", defaultChecked: true },
                                     { text: "Image support", defaultChecked: true },
                                     { text: "Security improvements", defaultChecked: true },
                                     "Better voice input",
@@ -729,6 +733,7 @@
                                     { text: "UI·사용자 동선 최적화", defaultChecked: true },
                                     { text: "캐러셀형 UI 도입", defaultChecked: true },
                                     { text: "LINE 연동(Messaging API)", defaultChecked: true },
+                                    { text: "LINE→Web 연속(Handoff)", defaultChecked: true },
                                     { text: "이미지 도입", defaultChecked: true },
                                     { text: "보안 강화", defaultChecked: true },
                                     "음성 입력 개선",
@@ -773,6 +778,7 @@
                                     { text: "UI·사용자 동선 최적화", defaultChecked: true },
                                     { text: "캐러셀형 UI 도입", defaultChecked: true },
                                     { text: "LINE 연동(Messaging API)", defaultChecked: true },
+                                    { text: "LINE→Web 연속(Handoff)", defaultChecked: true },
                                     { text: "이미지 도입", defaultChecked: true },
                                     { text: "보안 강화", defaultChecked: true },
                                     "음성 입력 개선",
@@ -1025,6 +1031,7 @@
                                     { text: "UI 与流程优化", defaultChecked: true },
                                     { text: "引入轮播式 UI", defaultChecked: true },
                                     { text: "LINE 对接（Messaging API）", defaultChecked: true },
+                                    { text: "LINE→Web 接续", defaultChecked: true },
                                     { text: "引入图片能力", defaultChecked: true },
                                     { text: "安全加固", defaultChecked: true },
                                     "语音输入改进",
@@ -1069,6 +1076,7 @@
                                     { text: "UI 与流程优化", defaultChecked: true },
                                     { text: "引入轮播式 UI", defaultChecked: true },
                                     { text: "LINE 对接（Messaging API）", defaultChecked: true },
+                                    { text: "LINE→Web 接续", defaultChecked: true },
                                     { text: "引入图片能力", defaultChecked: true },
                                     { text: "安全加固", defaultChecked: true },
                                     "语音输入改进",
@@ -1704,7 +1712,9 @@
         const h = container.offsetHeight;
         if (h > 0) {
             container.style.setProperty('--onb-modal-height', h + 'px');
+            container.style.setProperty('--onb-details-max-height', Math.floor(h * 0.3) + 'px');
         }
+        syncOnboardingDetailsContentMaxHeight();
     }
 
     function resetOnboardingOverlayStyles() {
@@ -1728,6 +1738,7 @@
         const container = document.getElementById('onboarding-container');
         if (container) {
             container.style.removeProperty('--onb-modal-height');
+            container.style.removeProperty('--onb-details-max-height');
         }
     }
 
@@ -1749,6 +1760,33 @@
     }
 
     let onboardingDetailsToggleBound = false;
+    let onboardingDetailsScrollBound = false;
+
+    function handleOnboardingSlideScrollEvent(event) {
+        const t = event.target;
+        if (!t || typeof t.closest !== 'function' || !t.closest('.onboarding-slide-scroll')) {
+            return;
+        }
+        syncOnboardingDetailsContentMaxHeight();
+    }
+
+    function ensureOnboardingDetailsScrollListener() {
+        const slides = document.getElementById('onboarding-slides');
+        if (!slides || onboardingDetailsScrollBound) {
+            return;
+        }
+        slides.addEventListener('scroll', handleOnboardingSlideScrollEvent, true);
+        onboardingDetailsScrollBound = true;
+    }
+
+    function teardownOnboardingDetailsScrollListener() {
+        const slides = document.getElementById('onboarding-slides');
+        if (!slides || !onboardingDetailsScrollBound) {
+            return;
+        }
+        slides.removeEventListener('scroll', handleOnboardingSlideScrollEvent, true);
+        onboardingDetailsScrollBound = false;
+    }
 
     function syncOnboardingDetailsDenseClass() {
         const scrollEl = document.querySelector('#onboarding-slides .onboarding-slide.active .onboarding-slide-scroll');
@@ -1759,12 +1797,94 @@
         scrollEl.classList.toggle('onboarding-details-dense', openCount >= 2);
     }
 
+    function syncOnboardingDetailsContentMaxHeight() {
+        const container = document.getElementById('onboarding-container');
+        const scrollEl = document.querySelector('#onboarding-slides .onboarding-slide.active .onboarding-slide-scroll');
+        const slideEl = document.querySelector('#onboarding-slides .onboarding-slide.active');
+        if (!scrollEl || !slideEl) {
+            return;
+        }
+        const openDetails = scrollEl.querySelectorAll('details.onboarding-details[open]');
+        slideEl.classList.toggle('onboarding-slide--details-open', openDetails.length > 0);
+
+        const modalHeight = container && container.offsetHeight > 0
+            ? container.offsetHeight
+            : parseFloat(getComputedStyle(container || document.documentElement).getPropertyValue('--onb-modal-height')) || 560;
+        const detailsCap = Math.floor(modalHeight * 0.3);
+        const openCount = openDetails.length;
+
+        if (scrollEl.clientHeight > 0) {
+            scrollEl.style.setProperty('--onb-scroll-height', scrollEl.clientHeight + 'px');
+        }
+
+        scrollEl.querySelectorAll('details.onboarding-details').forEach(function(detailsEl) {
+            const contentEl = detailsEl.querySelector('.onboarding-details-content');
+            if (!detailsEl.open) {
+                detailsEl.style.removeProperty('max-height');
+                if (contentEl) {
+                    contentEl.style.removeProperty('max-height');
+                }
+                return;
+            }
+            detailsEl.style.maxHeight = detailsCap + 'px';
+
+            if (!contentEl) {
+                return;
+            }
+            const summaryEl = detailsEl.querySelector('summary');
+            const summaryHeight = summaryEl ? summaryEl.offsetHeight : 0;
+            const detailsStyle = window.getComputedStyle(detailsEl);
+            const detailsPadding = (parseFloat(detailsStyle.paddingTop) || 0)
+                + (parseFloat(detailsStyle.paddingBottom) || 0);
+            const scrollRect = scrollEl.getBoundingClientRect();
+            const summaryRect = summaryEl
+                ? summaryEl.getBoundingClientRect()
+                : detailsEl.getBoundingClientRect();
+            const scrollStyle = window.getComputedStyle(scrollEl);
+            const padBottom = parseFloat(scrollStyle.paddingBottom) || 0;
+            const contentTop = summaryRect.bottom - scrollRect.top;
+            const reservedBottom = padBottom + 8;
+            let scrollAvailable = scrollEl.clientHeight - contentTop - reservedBottom;
+            if (openCount >= 2) {
+                scrollAvailable = Math.floor(scrollAvailable / openCount);
+            }
+            const capContentMax = Math.max(48, detailsCap - summaryHeight - detailsPadding);
+            const maxHeight = Math.max(48, Math.min(capContentMax, scrollAvailable));
+            contentEl.style.maxHeight = maxHeight + 'px';
+        });
+    }
+
+    function ensureOnboardingDetailsVisible(detailsEl) {
+        const scrollEl = detailsEl && detailsEl.closest
+            ? detailsEl.closest('.onboarding-slide-scroll')
+            : null;
+        if (!scrollEl || !detailsEl.open) {
+            return;
+        }
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                const scrollRect = scrollEl.getBoundingClientRect();
+                const detailsRect = detailsEl.getBoundingClientRect();
+                const offset = detailsRect.top - scrollRect.top;
+                if (Math.abs(offset) > 2) {
+                    scrollEl.scrollTop += offset - 4;
+                }
+                syncOnboardingDetailsContentMaxHeight();
+            });
+        });
+    }
+
     function handleOnboardingDetailsToggleEvent(event) {
         const t = event.target;
         if (!t || typeof t.matches !== 'function' || !t.matches('details.onboarding-details')) {
             return;
         }
         syncOnboardingDetailsDenseClass();
+        if (t.open) {
+            ensureOnboardingDetailsVisible(t);
+        } else {
+            syncOnboardingDetailsContentMaxHeight();
+        }
     }
 
     function ensureOnboardingDetailsToggleListener() {
@@ -1803,20 +1923,38 @@
         return translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
     }
 
-    function getRuntimeGitCommitShort() {
+    function getRuntimeClientConfig() {
         try {
             const cfgEl = typeof document !== 'undefined' ? document.getElementById('app-runtime-config') : null;
             if (cfgEl && cfgEl.textContent) {
-                const cfg = JSON.parse(cfgEl.textContent.trim());
-                const commit = cfg && cfg.gitCommitShort;
-                if (typeof commit === 'string' && /^[0-9a-f]{7,40}$/i.test(commit.trim())) {
-                    return commit.trim().slice(0, 7);
-                }
+                return JSON.parse(cfgEl.textContent.trim());
             }
         } catch (e) {
             // フォールスルー
         }
         return null;
+    }
+
+    function getRuntimeGitCommitShort() {
+        const cfg = getRuntimeClientConfig();
+        const commit = cfg && cfg.gitCommitShort;
+        if (typeof commit === 'string' && /^[0-9a-f]{7,40}$/i.test(commit.trim())) {
+            return commit.trim().slice(0, 7);
+        }
+        return null;
+    }
+
+    function getRuntimeGitCommitUrl() {
+        const commit = getRuntimeGitCommitShort();
+        if (!commit) {
+            return null;
+        }
+        const cfg = getRuntimeClientConfig();
+        const repoUrl = cfg && typeof cfg.gitRepoUrl === 'string' ? cfg.gitRepoUrl.trim().replace(/\/+$/, '') : '';
+        if (!repoUrl) {
+            return null;
+        }
+        return repoUrl + '/commit/' + commit;
     }
 
     function buildOnboardingLastUpdatedHtml(locale) {
@@ -1828,13 +1966,23 @@
             ? `<span class="onboarding-last-updated-label">${locale.onboardingLastUpdatedLabel}</span> `
             : '';
         const commit = getRuntimeGitCommitShort();
+        const commitUrl = getRuntimeGitCommitUrl();
         const commitLabel = locale.onboardingCommitLabel || 'Commit';
-        const commitHtml = commit
-            ? ` <span class="onboarding-last-updated-sep" aria-hidden="true">·</span> `
-                + `<span class="onboarding-last-updated-commit">${commitLabel} `
-                + `<code class="onboarding-commit-hash">${commit}</code></span>`
-            : '';
-        return `<p class="onboarding-last-updated">${labelHtml}<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time>${commitHtml}</p>`;
+        const commitHtml = commit && commitUrl
+            ? `<a href="${commitUrl}" class="onboarding-last-updated-commit" target="_blank" rel="noopener noreferrer" `
+                + `aria-label="${commitLabel} ${commit}">`
+                + `<code class="onboarding-commit-hash">${commit}</code></a>`
+            : (commit
+                ? `<span class="onboarding-last-updated-commit" aria-label="${commitLabel} ${commit}">`
+                    + `<code class="onboarding-commit-hash">${commit}</code></span>`
+                : '');
+        return (
+            `<p class="onboarding-last-updated">`
+            + `<span class="onboarding-last-updated-main">${labelHtml}`
+            + `<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time></span>`
+            + `${commitHtml}`
+            + `</p>`
+        );
     }
 
     // 開発環境かどうかを判定する
@@ -2147,16 +2295,16 @@
                             <h2 class="onboarding-title">${slide.title}</h2>
                             ${subtitleHtml}
                         </div>
-                        <div class="onboarding-slide-scroll">
+                        <div class="onboarding-slide-scroll app-scrollbar">
                             <div class="onboarding-desc">
                                 ${bodyHtml}
                                 ${listHtml}
                                 ${bulletsHtml}
                                 ${customHtml}
-                                ${linksHtml}
                             </div>
                             ${lastUpdatedHtml}
                             ${detailsHtml}
+                            ${linksHtml}
                         </div>
                         <div class="onboarding-slide-footer">
                             ${actionsHtml}
@@ -2178,6 +2326,11 @@
                 if (onboardingState.initialized) {
                     syncOnboardingModalHeightVar();
                     syncOnboardingDetailsDenseClass();
+                    syncOnboardingDetailsContentMaxHeight();
+                    const activeScrollEl = document.querySelector('#onboarding-slides .onboarding-slide.active .onboarding-slide-scroll');
+                    if (activeScrollEl) {
+                        activeScrollEl.querySelectorAll('details.onboarding-details[open]').forEach(ensureOnboardingDetailsVisible);
+                    }
                 }
             });
         });
@@ -2569,6 +2722,8 @@
                 scrollArea.scrollTop = 0;
             }
         }
+        syncOnboardingDetailsDenseClass();
+        syncOnboardingDetailsContentMaxHeight();
     }
 
     function nextOnboardingSlide() {
@@ -2627,6 +2782,7 @@
             container.removeEventListener('keydown', handleOnboardingKeydown);
             teardownOnboardingModalHeightTracking();
             teardownOnboardingDetailsToggleListener();
+            teardownOnboardingDetailsScrollListener();
         }
         restoreAllOnboardingChatTabstops();
         document.body.classList.remove('onboarding-open');
@@ -2718,6 +2874,7 @@
         syncOnboardingLanguageSelectorUi();
         setupOnboardingModalHeightTracking(container);
         ensureOnboardingDetailsToggleListener();
+        ensureOnboardingDetailsScrollListener();
         container.addEventListener('keydown', handleOnboardingKeydown);
         const slidesContainer = document.getElementById('onboarding-slides');
         if (slidesContainer) {

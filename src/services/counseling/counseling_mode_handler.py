@@ -332,10 +332,12 @@ def handle_user_input_in_counseling_mode(
         }
     
     # 話題転換がない場合、カウンセリングの続きとして処理
+    from src.services.line_memory_context import get_counseling_conversation_history
+
     return process_counseling_answer(
         user_text,
         session,
-        session.get("messages", []),
+        get_counseling_conversation_history(session, session_id),
         client,
         session_id=session_id,
     )

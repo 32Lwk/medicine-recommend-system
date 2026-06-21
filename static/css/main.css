@@ -4580,7 +4580,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     padding: 0.7rem 0.85rem 0.35rem;
     max-width: 380px;
     width: min(380px, calc(100% - 24px));
-    max-height: min(78vh, 520px);
+    max-height: min(82vh, 560px);
     overflow-x: hidden;
     overflow-y: hidden;
     animation: fadeInUp 0.4s ease;
@@ -4597,7 +4597,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     min-height: 0;
     container-type: inline-size;
     container-name: onboarding-modal;
-    /* --onb-modal-height: main.js が #onboarding-container の offsetHeight を px で同期（詳細本文の max-height 20%／2つ開いたとき 15% 用） */
+    /* --onb-modal-height / --onb-details-max-height: main.js が #onboarding-container の実高さを同期（details は 30% 上限） */
 }
 
 .onboarding-top-row {
@@ -4790,10 +4790,19 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
 }
 
 .onboarding-last-updated {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
     margin: 0.35rem 0.35rem 0.5rem;
     font-size: 0.75rem;
     color: #757575;
     line-height: 1.45;
+}
+
+.onboarding-last-updated-main {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .onboarding-last-updated-sep {
@@ -4802,8 +4811,21 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
 }
 
 .onboarding-last-updated-commit {
+    flex: 0 0 auto;
     color: #616161;
     white-space: nowrap;
+    text-decoration: none;
+}
+
+.onboarding-last-updated-commit:hover,
+.onboarding-last-updated-commit:focus-visible {
+    color: #2e7d32;
+}
+
+.onboarding-last-updated-commit:hover .onboarding-commit-hash,
+.onboarding-last-updated-commit:focus-visible .onboarding-commit-hash {
+    border-color: rgba(76, 175, 80, 0.55);
+    background: #eef7ee;
 }
 
 .onboarding-commit-hash {
@@ -4862,6 +4884,17 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    padding-bottom: 0.85rem;
+    scroll-padding-bottom: 0.85rem;
+    box-sizing: border-box;
+}
+
+.onboarding-slide--details-open .onboarding-desc p {
+    margin-bottom: 0.35rem;
+}
+
+.onboarding-slide--details-open .onboarding-last-updated {
+    margin-bottom: 0.35rem;
 }
 
 .onboarding-slide-footer {
@@ -4869,7 +4902,12 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    padding-top: 0.3rem;
+    padding-top: 0.35rem;
+    margin-top: 0.1rem;
+    position: relative;
+    z-index: 2;
+    background: #ffffff;
+    box-shadow: 0 -8px 14px -12px rgba(0, 0, 0, 0.12);
 }
 
 .onboarding-slide-footer .onboarding-btn {
@@ -4916,7 +4954,11 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    margin: 0.5rem 0 0;
+    margin: 0.45rem 0.25rem 0;
+}
+
+.onboarding-slide--details-open .onboarding-links {
+    margin-top: 0.35rem;
 }
 
 .onboarding-link-btn {
@@ -5021,7 +5063,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
 }
 
 .onboarding-details {
-    margin: 0.55rem 0.25rem;
+    margin: 0.45rem 0.25rem 0;
     padding: 0.4rem 0.5rem 0.5rem;
     text-align: left;
     min-width: 0;
@@ -5029,6 +5071,14 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     border: 1px solid rgba(76, 175, 80, 0.22);
     border-radius: 10px;
     background: rgba(247, 252, 247, 0.72);
+}
+
+.onboarding-details[open] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: var(--onb-details-max-height, calc(var(--onb-modal-height, 560px) * 0.3));
+    overflow: hidden;
 }
 
 .onboarding-details summary {
@@ -5060,20 +5110,31 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
 
 .onboarding-details-content {
     margin-top: 0;
-    /* モーダル実高さの約20%（2つ同時に開いたときは .onboarding-details-dense で 15%）。--onb-modal-height は JS が同期 */
-    max-height: calc(var(--onb-modal-height, 78vh) * 0.2);
+    /* フォールバック。開いた .onboarding-details はモーダル高さの 30% まで（--onb-details-max-height） */
+    max-height: calc(var(--onb-details-max-height, calc(var(--onb-modal-height, 560px) * 0.3)) - 2.25rem);
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding-right: 0.35rem;
     box-sizing: border-box;
     font-size: 0.78rem;
     line-height: 1.5;
+    min-height: 0;
 }
 
-.onboarding-slide-scroll.onboarding-details-dense .onboarding-details-content {
-    max-height: calc(var(--onb-modal-height, 90vh) * 0.15);
+.onboarding-details[open] .onboarding-details-content {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.onboarding-details[open] summary {
+    flex-shrink: 0;
+}
+
+.onboarding-slide-scroll.onboarding-details-dense .onboarding-details[open] {
+    max-height: var(--onb-details-max-height, calc(var(--onb-modal-height, 560px) * 0.3));
 }
 
 .onboarding-details-content .info-section {
@@ -5182,7 +5243,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
         padding: 0.65rem 0.75rem 0.3rem;
         max-width: min(380px, calc(100% - 20px));
         width: min(380px, calc(100% - 20px));
-        max-height: min(82vh, 480px);
+        max-height: min(82vh, 520px);
         margin: 0;
         left: 50%;
         top: 50%;
@@ -5202,11 +5263,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     }
 
     .onboarding-details-content {
-        max-height: calc(var(--onb-modal-height, 82vh) * 0.2);
-    }
-
-    .onboarding-slide-scroll.onboarding-details-dense .onboarding-details-content {
-        max-height: calc(var(--onb-modal-height, 82vh) * 0.15);
+        max-height: calc(var(--onb-details-max-height, calc(var(--onb-modal-height, 520px) * 0.3)) - 2.25rem);
     }
 }
 
@@ -5232,7 +5289,7 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
         padding: 0.6rem 0.7rem 0.28rem;
         max-width: min(360px, calc(100% - 16px));
         width: min(360px, calc(100% - 16px));
-        max-height: min(85vh, 460px);
+        max-height: min(85vh, 500px);
         margin: 0;
         left: 50%;
         top: 50%;
@@ -5248,10 +5305,6 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     }
 
     .onboarding-details-content {
-        max-height: calc(var(--onb-modal-height, 85vh) * 0.2);
-    }
-
-    .onboarding-slide-scroll.onboarding-details-dense .onboarding-details-content {
-        max-height: calc(var(--onb-modal-height, 85vh) * 0.15);
+        max-height: calc(var(--onb-details-max-height, calc(var(--onb-modal-height, 500px) * 0.3)) - 2.25rem);
     }
 }

@@ -95,8 +95,9 @@ def run_chat_post_pipeline(
     )
 
     logger.info("📨 POST処理開始 trace_id=%s", ctx.trace_id)
-    from src.services.pipeline_perf import mark_pipeline_step
+    from src.services.pipeline_perf import activate_pipeline_perf, mark_pipeline_step
 
+    activate_pipeline_perf(sid)
     mark_pipeline_step("post_start")
     ctx.user_message = parse_incoming_message(session, message)
     mark_pipeline_step("parsed_message")
@@ -119,7 +120,9 @@ def run_chat_post_pipeline(
 
     session.setdefault("messages", [])
 
+    mark_pipeline_step("before_get_session_db")
     session_data_for_ai = get_session_from_db(sid) if sid else {}
+    mark_pipeline_step("after_get_session_db")
     manual_resp = handle_manual_reply_when_off(
         session, client_info, sid, ctx.sanitized_message, session_data_for_ai
     )
@@ -147,6 +150,30 @@ def run_chat_post_pipeline(
         return pre_gate.response
 
     mark_pipeline_step("after_security")
+    from src.services.line_user_memory import apply_profile_to_session, is_line_memory_session
+
+    if is_line_memory_session(sid, session):
+        from src.services.line_user_memory import resolve_memory_owner_sid
+
+        owner = resolve_memory_owner_sid(sid, session)
+        if owner:
+            apply_profile_to_session(session, owner)
+
+    from src.agents.memory_delete_agent import try_handle_memory_delete
+
+    delete_resp = try_handle_memory_delete(
+        session,
+        sid,
+        ctx.sanitized_message or ctx.user_message,
+        ctx.recommendation_client,
+    )
+    if delete_resp is not None:
+        from src.handlers.chat.chat_session_route import sync_messages_to_db_for_admin
+
+        sync_messages_to_db_for_admin(session, sid, client_info)
+        return delete_resp
+
+    mark_pipeline_step("before_triage_duplicate")
     from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
 
     dup_concierge = try_concierge_duplicate_skip(
@@ -174,6 +201,8 @@ def run_chat_post_pipeline(
     if early_response is not None:
         return early_response
 
+    mark_pipeline_step("after_triage")
+
     from src.services.medicine_discovery_routing import apply_cold_start_triage_override
 
     ctx.triage_result = apply_cold_start_triage_override(
@@ -199,6 +228,8 @@ def run_chat_post_pipeline(
     )
     if post_gate.blocked and post_gate.response:
         return post_gate.response
+
+    mark_pipeline_step("safety_gate_done")
 
     ctx.original_user_message = ctx.user_message
     ctx.sanitized_message, ctx.processed_message = preprocess_user_message(
@@ -270,9 +301,12 @@ def run_chat_post_pipeline(
             ctx.triage_result = session["_last_triage_result"]
         sync_routing_context(ctx)
 
+    mark_pipeline_step("confidence_gate_done")
+
     _run_moderation_if_needed(ctx)
 
     if is_agent_enabled():
+        mark_pipeline_step("before_orchestrator")
         try:
             from src.handlers.chat_orchestrator import try_orchestrator_route
 
@@ -516,6 +550,13 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
         from src.handlers.chat.chat_concierge_route import try_concierge_response
 
         history = (ctx.session.get("messages") or [])[-10:]
+        from src.services.line_user_memory import is_line_memory_session
+
+        memory_block = ""
+        if is_line_memory_session(ctx.sid, ctx.session):
+            from src.services.line_memory_context import get_llm_conversation_context
+
+            history, _memory_block = get_llm_conversation_context(ctx.session, ctx.sid, limit=5)
         ctx.triage_result = enrich_other_concierge_intent(
             dict(triage),
             ctx.sanitized_message or ctx.user_message,

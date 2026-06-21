@@ -687,6 +687,23 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
         return
 
     ensure_session_persisted(sid, payload, request)
+    _schedule_line_memory_side_effects(sid, session, payload)
+
+
+def _schedule_line_memory_side_effects(sid, session, payload: dict) -> None:
+    try:
+        from src.services.line_memory_jobs import schedule_profile_persist
+        from src.services.line_user_memory import merge_user_attributes, resolve_memory_owner_sid
+
+        owner = resolve_memory_owner_sid(sid, session) or resolve_memory_owner_sid(sid, payload)
+        if not owner:
+            return
+        attrs = dict(payload.get("user_attributes") or {})
+        if session is not None and hasattr(session, "get"):
+            attrs = merge_user_attributes(attrs, session.get("user_attributes"))
+        schedule_profile_persist(owner, attrs)
+    except Exception:
+        logger.debug("line memory side effects skipped sid=%s", sid, exc_info=True)
 
 
 def cleanup_old_sessions(

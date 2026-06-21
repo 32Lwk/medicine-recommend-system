@@ -66,6 +66,10 @@ class ChatOrchestrator:
             payload={"target": handoff.target, "category": triage.get("category")},
         )
 
+        from src.services.pipeline_perf import mark_pipeline_step
+
+        mark_pipeline_step("orch_handoff")
+
         self._mark_step(sid, triage.get("category", "Other"))
 
         from src.services.concierge_intent import classify_concierge_intent
@@ -76,10 +80,13 @@ class ChatOrchestrator:
         social_text = (ctx.sanitized_message or ctx.user_message or "").strip()
         counseling_mode = session.get("counseling_mode") or {}
         social_intent = None
+        mark_pipeline_step("orch_pre_social_intent")
         if not counseling_mode.get("active"):
             social_intent = classify_concierge_intent(social_text)
         if social_intent in ("greeting", "thanks") and triage.get("category") != "Emergency":
+            mark_pipeline_step("orch_route_concierge_start")
             concierge_resp = self._route_concierge(ctx, monitor)
+            mark_pipeline_step("orch_route_concierge_end")
             if concierge_resp is not None:
                 return OrchestratorRouteResult(
                     resolved=True,
@@ -204,8 +211,12 @@ class ChatOrchestrator:
                 )
                 resp = None
                 if not store_probable:
+                    mark_pipeline_step("orch_enrich_start")
                     self._enrich_concierge_intent(ctx)
+                    mark_pipeline_step("orch_enrich_end")
+                    mark_pipeline_step("orch_route_concierge_start")
                     resp = self._route_concierge(ctx, monitor)
+                    mark_pipeline_step("orch_route_concierge_end")
                 if resp is None:
                     resp = self._route_store(ctx)
             else:

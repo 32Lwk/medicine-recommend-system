@@ -24,6 +24,8 @@ def format_conversation_history(messages: List[Dict]) -> str:
             history_text += f"ユーザー: {content}\n"
         elif role == "bot":
             history_text += f"ボット: {content}\n"
+        elif role == "system":
+            history_text += f"{content}\n"
     return history_text
 
 

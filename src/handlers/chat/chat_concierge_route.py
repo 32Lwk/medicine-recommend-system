@@ -219,6 +219,9 @@ def try_concierge_response(
         return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
     history = session.get("messages", [])[-10:]
+    from src.services.pipeline_perf import mark_pipeline_step
+
+    mark_pipeline_step("concierge_resolve_intent_start")
     intent = resolve_concierge_intent(
         text,
         session,
@@ -227,6 +230,7 @@ def try_concierge_response(
         session_id=sid,
         conversation_history=history,
     )
+    mark_pipeline_step("concierge_resolve_intent_end")
     if intent is None:
         return None
 
@@ -244,6 +248,7 @@ def try_concierge_response(
     if not was_last_user_message(session, user_message or text):
         append_user_message(session, user_message or text)
 
+    mark_pipeline_step("concierge_build_payload_start")
     payload = build_concierge_payload(
         intent,
         text,
@@ -251,6 +256,7 @@ def try_concierge_response(
         session_id=sid,
         history=history,
     )
+    mark_pipeline_step("concierge_build_payload_end")
     _append_bot_message(session, payload, sid)
     update_concierge_state(
         session,

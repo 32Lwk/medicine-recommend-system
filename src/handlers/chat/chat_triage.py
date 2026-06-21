@@ -44,15 +44,21 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         from src.services.triage_analytics import log_triage_result
 
         from src.services.triage_history import get_recent_messages
+        from src.services.line_memory_context import (
+            build_long_term_memory_block,
+            merge_profile_into_user_info,
+        )
 
-        user_info = session.get("user_attributes") if session else None
+        user_info = merge_profile_into_user_info(session, sid)
         conversation_history = get_recent_messages(session, sid)
+        memory_block = build_long_term_memory_block(session, sid)
         start_time = time.time()
         triage_result = run_triage_agent(
             sanitized_message,
             recommendation_client,
             user_info=user_info,
             conversation_history=conversation_history,
+            long_term_memory_block=memory_block or None,
         )
         processing_time = (time.time() - start_time) * 1000
 
@@ -97,14 +103,9 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         )
 
         conversation_history = []
-        if "messages" in session:
-            messages = session.get("messages", [])
-            conversation_history = messages[-20:] if len(messages) > 20 else messages
-        elif sid:
-            session_data = get_session_from_db(sid)
-            if session_data and "messages" in session_data:
-                messages = session_data.get("messages", [])
-                conversation_history = messages[-20:] if len(messages) > 20 else messages
+        from src.services.triage_history import get_recent_messages
+
+        conversation_history = get_recent_messages(session, sid, limit=20)
 
         logger.debug(f"   会話履歴取得: {len(conversation_history)}メッセージ")
 

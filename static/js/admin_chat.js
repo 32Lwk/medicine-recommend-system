@@ -1367,12 +1367,15 @@ function loadChatHistory(sessionId) {
         if (userAttributesBtn) {
             userAttributesBtn.style.display = 'flex';
         }
+        updateLineMemoryBtnVisibility(session);
+        loadLineMemoryPanel(sessionId);
     } else {
         // セッションが見つからない場合はボタンを非表示
         const userAttributesBtn = document.getElementById('userAttributesBtn');
         if (userAttributesBtn) {
             userAttributesBtn.style.display = 'none';
         }
+        updateLineMemoryBtnVisibility(null);
     }
     
     adminFetchJson(
@@ -1401,6 +1404,8 @@ function loadChatHistory(sessionId) {
                 currentMessages = targetSession.messages || [];
                 updateChatTitleFromSession(targetSession, sessionId);
                 renderChatMessages(targetSession.messages);
+                updateLineMemoryBtnVisibility(targetSession);
+                loadLineMemoryPanel(sessionId);
             } else {
                 currentMessages = [];
                 renderChatMessages([]);
@@ -1802,7 +1807,19 @@ function isLineSession(session) {
     if (!session) {
         return false;
     }
+    if (session.is_line_related === true) {
+        return true;
+    }
     if (session.is_line_session === true) {
+        return true;
+    }
+    if (session.is_line_handoff === true) {
+        return true;
+    }
+    if (session.handoff_from_line && isLineSessionId(session.handoff_from_line)) {
+        return true;
+    }
+    if (session.line_memory_owner_sid && isLineSessionId(session.line_memory_owner_sid)) {
         return true;
     }
     return isLineSessionId(session.session_id);
@@ -1812,11 +1829,40 @@ function renderSessionLineBadge(session) {
     if (!isLineSession(session)) {
         return '';
     }
+    const isHandoff = session.is_line_handoff === true
+        || (session.handoff_from_line && !isLineSessionId(session.session_id));
+    const title = isHandoff ? 'LINE 引き継ぎ（Web セッション）' : 'LINE セッション';
+    const label = isHandoff ? 'LINE→Web' : 'LINE';
     return (
-        '<span class="session-channel-badge session-channel-badge--line" title="LINE セッション">' +
+        '<span class="session-channel-badge session-channel-badge--line" title="' + escapeHtml(title) + '">' +
         '<i class="fa-brands fa-line" aria-hidden="true"></i>' +
-        '<span>LINE</span></span>'
+        '<span>' + escapeHtml(label) + '</span></span>'
     );
+}
+
+const SAGE_CONTENT_MARKERS = new Set(['sage_reco', 'sage_status', 'sage_qa']);
+
+function resolveSessionPreviewText(session) {
+    const messages = session && session.messages;
+    if (!Array.isArray(messages) || messages.length === 0) {
+        return 'メッセージなし';
+    }
+    const lastMsg = messages[messages.length - 1];
+    let content = (lastMsg && lastMsg.content) || '';
+    if (SAGE_CONTENT_MARKERS.has(String(content).trim()) && lastMsg && lastMsg.diagnosis) {
+        const diag = lastMsg.diagnosis;
+        const fromDiag = String(diag.message || diag.title || '').trim();
+        if (fromDiag) {
+            content = fromDiag;
+        }
+    }
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    if (!textContent.trim()) {
+        return 'メッセージなし';
+    }
+    return textContent.length > 30 ? textContent.substring(0, 30) + '...' : textContent;
 }
 
 function formatUserAttributeValue(value) {
@@ -2342,6 +2388,370 @@ function renderUserAttributesPanel(session, sessionId) {
     content.innerHTML = html;
     ensureUserAttributesPanelActions();
 }
+
+const LINE_MEMORY_PROFILE_KEYS = [
+    'age', 'gender', 'pregnant', 'breastfeeding',
+    'allergies', 'current_medications', 'medical_history',
+    'symptom_duration_days', 'other_info'
+];
+
+function sessionHasLineMemory(session) {
+    if (!session) return false;
+    if (session.line_memory_owner_sid || session.line_memory) return true;
+    return isLineSessionId(session.session_id);
+}
+
+function updateLineMemoryBtnVisibility(session) {
+    const show = sessionHasLineMemory(session);
+    ['lineMemoryBtn', 'tablet-line-memory-btn', 'mobile-line-memory-btn'].forEach(function (id) {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.style.display = show ? 'flex' : 'none';
+        }
+    });
+    const tabMemory = document.getElementById('right-panel-tab-memory');
+    if (tabMemory) {
+        tabMemory.hidden = !show;
+    }
+    if (!show && rightPanelActiveTab === 'memory') {
+        switchRightPanelTab('controls');
+    }
+}
+
+let rightPanelActiveTab = 'controls';
+
+function switchRightPanelTab(tab) {
+    const controlsView = document.getElementById('right-panel-controls-view');
+    const memoryView = document.getElementById('right-panel-memory-view');
+    const tabControls = document.getElementById('right-panel-tab-controls');
+    const tabMemory = document.getElementById('right-panel-tab-memory');
+    if (!controlsView || !memoryView) {
+        return;
+    }
+    if (tab === 'memory' && tabMemory && tabMemory.hidden) {
+        tab = 'controls';
+    }
+    rightPanelActiveTab = tab;
+    const isMemory = tab === 'memory';
+    controlsView.hidden = isMemory;
+    memoryView.hidden = !isMemory;
+    if (tabControls) {
+        tabControls.classList.toggle('active', !isMemory);
+        tabControls.setAttribute('aria-selected', String(!isMemory));
+    }
+    if (tabMemory) {
+        tabMemory.classList.toggle('active', isMemory);
+        tabMemory.setAttribute('aria-selected', String(isMemory));
+    }
+}
+
+function formatLineMemoryProfileValue(key, profile) {
+    const val = profile[key];
+    if (val === null || val === undefined || val === '' || (Array.isArray(val) && !val.length)) {
+        return null;
+    }
+    if (key === 'age') return `${val}歳`;
+    if (key === 'pregnant') return val ? '妊娠中' : '妊娠していない';
+    if (key === 'breastfeeding') return val ? '授乳中' : '授乳していない';
+    if (Array.isArray(val)) return val.join('、');
+    return String(val);
+}
+
+function profileKeyHasValue(profile, key) {
+    return formatLineMemoryProfileValue(key, profile) !== null;
+}
+
+function updateLineMemorySelectionActions() {
+    const actions = document.getElementById('line-memory-actions');
+    if (!actions) return;
+    const hasSelection = document.querySelector('.line-memory-profile-key:checked, .line-memory-summary-id:checked');
+    actions.style.display = hasSelection ? 'flex' : 'none';
+}
+
+function bindLineMemoryCheckboxHandlers() {
+    const section = document.getElementById('line-memory-section');
+    if (!section || section.dataset.lineMemoryBound === '1') return;
+    section.dataset.lineMemoryBound = '1';
+    section.addEventListener('change', function (e) {
+        if (e.target.matches('.line-memory-profile-key, .line-memory-summary-id')) {
+            updateLineMemorySelectionActions();
+        }
+    });
+}
+
+function renderLineMemoryPanel(session, sessionId) {
+    bindLineMemoryCheckboxHandlers();
+    const section = document.getElementById('line-memory-section');
+    const content = document.getElementById('line-memory-content');
+    const actions = document.getElementById('line-memory-actions');
+    const deleteAllBtn = document.getElementById('line-memory-delete-all-btn');
+    const meta = document.getElementById('line-memory-meta');
+    if (!section || !content) return;
+
+    if (!sessionHasLineMemory(session)) {
+        content.innerHTML = '';
+        if (actions) actions.style.display = 'none';
+        if (deleteAllBtn) deleteAllBtn.style.display = 'none';
+        const backfillActions = document.getElementById('line-memory-backfill-actions');
+        if (backfillActions) backfillActions.style.display = 'none';
+        if (meta) meta.textContent = '';
+        updateLineMemoryBtnVisibility(null);
+        return;
+    }
+
+    updateLineMemoryBtnVisibility(session);
+    const mem = session.line_memory || {};
+    const profile = mem.line_user_profile || {};
+    const summaries = mem.consultation_summaries || [];
+    const ownerSid = session.line_memory_owner_sid || normalizeLineSessionId(sessionId);
+
+    if (meta) {
+        const parts = [];
+        if (mem.memory_updated_at) {
+            parts.push('更新: ' + escapeHtml(String(mem.memory_updated_at).slice(0, 19).replace('T', ' ')));
+        }
+        if (typeof mem.message_archive_count === 'number') {
+            parts.push('アーカイブ: ' + mem.message_archive_count + '件');
+        }
+        meta.innerHTML = parts.join(' · ');
+    }
+
+    let html = '<div class="line-memory-block">';
+    html += '<div class="line-memory-block__title"><i class="fa-solid fa-id-card"></i> 長期プロファイル</div>';
+    let profileRows = 0;
+    LINE_MEMORY_PROFILE_KEYS.forEach(function (key) {
+        const display = formatLineMemoryProfileValue(key, profile);
+        if (!display) return;
+        profileRows += 1;
+        html += `
+            <label class="line-memory-item">
+                <input type="checkbox" class="line-memory-profile-key" value="${escapeHtml(key)}" data-line-memory="profile">
+                <span class="line-memory-item__body">
+                    <span class="line-memory-item__label">${escapeHtml(getUserAttributeLabel(key))}:</span>
+                    ${escapeHtml(display)}
+                </span>
+            </label>`;
+    });
+    if (!profileRows) {
+        html += '<p class="info-label">プロファイル未登録</p>';
+    }
+    html += '</div>';
+
+    html += '<div class="line-memory-block">';
+    html += '<div class="line-memory-block__title"><i class="fa-solid fa-clock-rotate-left"></i> 相談エピソード要約</div>';
+    if (!summaries.length) {
+        html += '<p class="info-label">要約なし</p>';
+    } else {
+        summaries.slice().reverse().forEach(function (item) {
+            const sid = item.id || '';
+            const created = (item.created_at || '').slice(0, 16).replace('T', ' ');
+            let text = (item.summary_text || item.title || '').trim();
+            if (!text) {
+                const bits = [];
+                if (item.symptoms && item.symptoms.length) bits.push('症状: ' + item.symptoms.join('、'));
+                if (item.recommended_medicines && item.recommended_medicines.length) {
+                    bits.push('推奨: ' + item.recommended_medicines.join('、'));
+                }
+                text = bits.join(' / ') || '（要約テキストなし）';
+            }
+            html += `
+                <label class="line-memory-summary">
+                    <input type="checkbox" class="line-memory-summary-id" value="${escapeHtml(sid)}" data-line-memory="summary">
+                    <div class="line-memory-item__body">
+                        <div><strong>${escapeHtml(created || '—')}</strong>${item.trigger ? ' · ' + escapeHtml(item.trigger) : ''}</div>
+                        <div>${escapeHtml(text)}</div>
+                        ${item.key_facts && item.key_facts.length ? '<div style="margin-top:4px;color:#64748b;">重要: ' + escapeHtml(item.key_facts.join(' / ')) + '</div>' : ''}
+                    </div>
+                </label>`;
+        });
+    }
+    html += '</div>';
+
+    if (ownerSid && !isLineSessionId(sessionId)) {
+        html += `<p class="info-label" style="margin-top:6px;">参照元: ${escapeHtml(formatSessionIdForAdmin(ownerSid))}</p>`;
+    }
+
+    content.innerHTML = html;
+    const backfillActions = document.getElementById('line-memory-backfill-actions');
+    const archiveCount = typeof mem.message_archive_count === 'number' ? mem.message_archive_count : 0;
+    if (backfillActions) {
+        backfillActions.style.display = archiveCount > 0 ? 'flex' : 'none';
+    }
+    const hasDeletableContent = profileRows || summaries.length;
+    if (deleteAllBtn) {
+        deleteAllBtn.style.display = hasDeletableContent ? 'inline-flex' : 'none';
+    }
+    updateLineMemorySelectionActions();
+}
+
+function loadLineMemoryPanel(sessionId) {
+    const section = document.getElementById('line-memory-section');
+    const content = document.getElementById('line-memory-content');
+    if (!content) return;
+
+    function applySession(session) {
+        renderLineMemoryPanel(session, sessionId);
+    }
+
+    const cached = allSessions.find(function (s) { return s.session_id === sessionId; });
+    if (cached && cached.line_memory) {
+        applySession(cached);
+        return;
+    }
+
+    content.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><p>長期記憶を読み込み中...</p></div>';
+
+    adminFetchJson('/api/main_session?session_id=' + encodeURIComponent(normalizeLineSessionId(sessionId) || sessionId))
+        .then(function (data) {
+            applySession(data.session);
+            const idx = allSessions.findIndex(function (s) { return s.session_id === sessionId; });
+            if (idx >= 0 && data.session) {
+                allSessions[idx] = data.session;
+            }
+        })
+        .catch(function () {
+            applySession(cached || null);
+        });
+}
+
+function focusLineMemoryPanel() {
+    if (!currentSessionId) {
+        showNotification('セッションを選択してください', 'warning');
+        return;
+    }
+    loadLineMemoryPanel(currentSessionId);
+    const main = document.querySelector('main');
+    if (main && main.classList.contains('right-panel-collapsed') && typeof toggleRightPanel === 'function') {
+        toggleRightPanel();
+    }
+    switchRightPanelTab('memory');
+}
+
+function _postAdminLineMemoryDelete(payload, confirmMessage) {
+    if (!currentSessionId) {
+        showNotification('セッションを選択してください', 'warning');
+        return;
+    }
+    if (!confirm(confirmMessage)) return;
+    adminFetchJson('/api/admin/sessions/' + encodeURIComponent(currentSessionId) + '/line_memory/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+        .then(function (data) {
+            if (data.error || data.status === 'error') {
+                showNotification(data.message || data.error || '削除に失敗しました', 'error');
+                return;
+            }
+            showNotification(data.message || '長期記憶を削除しました', 'success');
+            if (data.session) {
+                const idx = allSessions.findIndex(function (s) { return s.session_id === currentSessionId; });
+                if (idx >= 0) allSessions[idx] = data.session;
+                renderLineMemoryPanel(data.session, currentSessionId);
+            } else {
+                loadLineMemoryPanel(currentSessionId);
+            }
+        })
+        .catch(function (err) {
+            showNotification('削除エラー: ' + err.message, 'error');
+        });
+}
+
+function adminDeleteAllLineMemory() {
+    _postAdminLineMemoryDelete(
+        { scope: 'all' },
+        '長期プロファイル・相談要約・会話アーカイブをすべて削除します。よろしいですか？'
+    );
+}
+
+function adminBackfillLineMemory(force) {
+    if (!currentSessionId) {
+        showNotification('セッションを選択してください', 'warning');
+        return;
+    }
+    const msg = force
+        ? 'アーカイブからプロファイル・要約を再生成します（既存要約は置き換え）。よろしいですか？'
+        : 'アーカイブから不足しているプロファイル・要約を生成します。よろしいですか？';
+    if (!confirm(msg)) {
+        return;
+    }
+    const btn = document.getElementById('line-memory-backfill-btn');
+    if (btn) {
+        btn.disabled = true;
+    }
+    const content = document.getElementById('line-memory-content');
+    if (content) {
+        content.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i><p>アーカイブから生成中…（数十秒かかることがあります）</p></div>';
+    }
+    adminFetchJson('/api/admin/sessions/' + encodeURIComponent(currentSessionId) + '/line_memory/backfill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: !!force }),
+    })
+        .then(function (data) {
+            if (data.error || data.status === 'error') {
+                showNotification(data.message || data.error || '生成に失敗しました', 'error');
+                loadLineMemoryPanel(currentSessionId);
+                return;
+            }
+            showNotification(data.message || '長期記憶を生成しました', 'success');
+            if (data.session) {
+                const idx = allSessions.findIndex(function (s) { return s.session_id === currentSessionId; });
+                if (idx >= 0) {
+                    allSessions[idx] = data.session;
+                }
+                renderLineMemoryPanel(data.session, currentSessionId);
+            } else {
+                loadLineMemoryPanel(currentSessionId);
+            }
+        })
+        .catch(function (err) {
+            showNotification('生成エラー: ' + err.message, 'error');
+            loadLineMemoryPanel(currentSessionId);
+        })
+        .finally(function () {
+            if (btn) {
+                btn.disabled = false;
+            }
+        });
+}
+
+function adminDeleteSelectedLineMemory() {
+    const profileKeys = Array.from(document.querySelectorAll('.line-memory-profile-key:checked')).map(function (el) {
+        return el.value;
+    });
+    const summaryIds = Array.from(document.querySelectorAll('.line-memory-summary-id:checked')).map(function (el) {
+        return el.value;
+    }).filter(Boolean);
+    if (!profileKeys.length && !summaryIds.length) {
+        showNotification('削除する項目を選択してください', 'warning');
+        return;
+    }
+    const parts = [];
+    if (profileKeys.length) parts.push('プロファイル ' + profileKeys.length + ' 項目');
+    if (summaryIds.length) parts.push('要約 ' + summaryIds.length + ' 件');
+    const payload = {
+        profile_keys: profileKeys,
+        summary_ids: summaryIds,
+    };
+    if (profileKeys.length && summaryIds.length) {
+        payload.scope = 'partial';
+    } else if (summaryIds.length) {
+        payload.scope = 'summaries_only';
+        delete payload.profile_keys;
+    } else {
+        payload.scope = 'profile_partial';
+        delete payload.summary_ids;
+    }
+    _postAdminLineMemoryDelete(payload, '選択した長期記憶（' + parts.join('、') + '）を削除します。よろしいですか？');
+}
+
+window.focusLineMemoryPanel = focusLineMemoryPanel;
+window.switchRightPanelTab = switchRightPanelTab;
+window.adminBackfillLineMemory = adminBackfillLineMemory;
+window.adminDeleteAllLineMemory = adminDeleteAllLineMemory;
+window.adminDeleteSelectedLineMemory = adminDeleteSelectedLineMemory;
+window.loadLineMemoryPanel = loadLineMemoryPanel;
 
 // ユーザー属性情報を読み込み
 function loadUserAttributes(sessionId) {
@@ -3772,20 +4182,8 @@ function renderSessionList(sessions) {
         const messageCount = getSessionMessageCount(session);
         const isSelected = currentSessionId === session.session_id;
         
-        // 最後のメッセージを取得（HTMLタグを除去）
-        let lastMessage = 'メッセージなし';
-        if (session.messages && session.messages.length > 0) {
-            const lastMsg = session.messages[session.messages.length - 1];
-            let content = lastMsg.content || '';
-            // HTMLタグを除去
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = content;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            lastMessage = textContent.substring(0, 30);
-            if (textContent.length > 30) {
-                lastMessage += '...';
-            }
-        }
+        // 最後のメッセージを取得（Sage マーカーは diagnosis から復元）
+        let lastMessage = resolveSessionPreviewText(session);
         
         const lastUpdate = getSessionLastUpdateLabel(session);
         
@@ -5854,6 +6252,9 @@ function openMobileChatModal(sessionId, username) {
                         <dd class="mobile-chat-last-message">${escapeHtml(shortLastMessage)}</dd>
                     </dl>
                 </div>
+                <button type="button" class="mobile-chat-attributes-btn" onclick="focusLineMemoryPanel()" id="mobile-line-memory-btn" aria-label="長期記憶" style="display: none;" title="長期記憶">
+                    <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="mobile-chat-attributes-btn" onclick="showUserAttributesModal()" id="mobile-chat-attributes-btn" aria-label="ユーザー属性">
                     <i class="fa-solid fa-user-circle" aria-hidden="true"></i>
                 </button>
@@ -5874,6 +6275,7 @@ function openMobileChatModal(sessionId, username) {
     
     // チャット履歴を読み込む
     loadMobileChatHistory(sessionId);
+    updateLineMemoryBtnVisibility(session);
 }
 
 // モバイルチャット履歴を読み込む
@@ -5894,9 +6296,11 @@ function loadMobileChatHistory(sessionId) {
             currentDetailedDiagnosis = targetSession.detailed_diagnosis || null;
             currentMessages = targetSession.messages || [];
             renderMobileChatMessages(targetSession.messages);
+            updateLineMemoryBtnVisibility(targetSession);
         } else {
             currentMessages = [];
             renderMobileChatMessages([]);
+            updateLineMemoryBtnVisibility(null);
         }
     })
     .catch(error => {
@@ -6263,9 +6667,14 @@ function openTabletChat(sessionId) {
                 <i class="fa-solid fa-arrow-left"></i>
             </button>
             <span class="panel-title" id="tablet-chat-title">${username} (${sessionId.substring(0, 8)}...)</span>
-            <button class="action-btn" id="tablet-user-attributes-btn" onclick="showUserAttributesModal()" title="ユーザー属性情報" style="min-width: 44px; min-height: 44px; margin-left: auto;" aria-label="ユーザー属性情報">
-                <i class="fa-solid fa-user-circle"></i>
-            </button>
+            <div class="panel-header-actions" style="margin-left: auto; display: flex; gap: 0.25rem; align-items: center;">
+                <button class="action-btn" id="tablet-line-memory-btn" onclick="focusLineMemoryPanel()" title="長期記憶" style="display: none; min-width: 44px; min-height: 44px;" aria-label="長期記憶">
+                    <i class="fa-solid fa-brain"></i>
+                </button>
+                <button class="action-btn" id="tablet-user-attributes-btn" onclick="showUserAttributesModal()" title="ユーザー属性情報" style="min-width: 44px; min-height: 44px;" aria-label="ユーザー属性情報">
+                    <i class="fa-solid fa-user-circle"></i>
+                </button>
+            </div>
         </div>
         <div class="chat-area">
             <div class="chat-messages" id="tablet-chat-messages"></div>
@@ -6282,6 +6691,8 @@ function openTabletChat(sessionId) {
     
     // チャットを読み込む
     loadTabletChatHistory(sessionId);
+    updateLineMemoryBtnVisibility(session);
+    loadLineMemoryPanel(sessionId);
 }
 
 // タブレットでチャットを閉じる
@@ -6322,6 +6733,7 @@ function loadTabletChatHistory(sessionId) {
             currentMessages = targetSession.messages || [];
             renderTabletChatMessages(targetSession.messages);
             currentSessionId = sessionId;
+            updateLineMemoryBtnVisibility(targetSession);
             
             // 送信ボタンを有効化
             const sendBtn = document.getElementById('tablet-send-btn');

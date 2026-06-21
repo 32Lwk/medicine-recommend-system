@@ -1,6 +1,8 @@
 """prime_line_session のメモリ復元テスト。"""
 from __future__ import annotations
 
+from unittest.mock import patch
+
 from src.handlers.line.line_session import prime_line_session
 from src.services.session_manager import touch_session_in_memory
 
@@ -25,3 +27,22 @@ def test_prime_line_session_restores_concierge_and_triage():
     assert session["counseling_mode"] is True
     assert session["last_triage_result"]["category"] == "Physical"
     assert session["ai_auto_reply"] is True
+
+
+@patch("src.services.line_user_memory._read_session_data")
+def test_prime_line_session_applies_profile_from_memory_without_db_read(mock_read):
+    sid = "line:Umemprof"
+    touch_session_in_memory(
+        sid,
+        {
+            "messages": [],
+            "user_attributes": {},
+            "line_user_profile": {"age": 42, "allergies": ["花粉"]},
+        },
+    )
+
+    session = prime_line_session("Umemprof")
+
+    mock_read.assert_not_called()
+    assert session["user_attributes"]["age"] == 42
+    assert "花粉" in session["user_attributes"]["allergies"]

@@ -735,6 +735,15 @@ def redeem_handoff_token(token: str) -> dict[str, Any] | None:
 
     }
 
+    from src.services.line_user_memory import load_line_memory
+
+    if line_sid:
+        profile, summaries = load_line_memory(line_sid)
+        if profile:
+            snapshot["line_user_profile"] = profile
+        if summaries:
+            snapshot["consultation_summaries"] = summaries
+
     detailed = session.get("detailed_diagnosis")
 
     if detailed is not None:
@@ -777,6 +786,12 @@ def create_web_session_from_handoff(
 
     line_sid = snapshot.get("line_sid")
 
+    from src.services.line_user_memory import load_line_memory, merge_user_attributes
+
+    profile, _ = load_line_memory(line_sid) if line_sid else ({}, [])
+    attrs = merge_user_attributes(profile, attrs)
+    _, summaries = load_line_memory(line_sid) if line_sid else ({}, [])
+
     payload = {
 
         "messages": normalize_handoff_messages(
@@ -800,6 +815,11 @@ def create_web_session_from_handoff(
         "ui_variant": "sage",
 
     }
+
+    if profile:
+        payload["line_user_profile"] = profile
+    if summaries:
+        payload["consultation_summaries"] = summaries
 
     if snapshot.get("detected_language"):
 

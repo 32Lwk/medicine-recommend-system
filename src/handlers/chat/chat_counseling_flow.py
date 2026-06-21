@@ -46,11 +46,9 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         from src.services.counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
         from src.services.triage_analytics import log_topic_shift_detection
 
-        conversation_history = (
-            session.get("messages", [])[-10:]
-            if len(session.get("messages", [])) > 10
-            else session.get("messages", [])
-        )
+        from src.services.line_memory_context import get_counseling_conversation_history
+
+        conversation_history = get_counseling_conversation_history(session, sid)
         response = handle_user_input_in_counseling_mode(
             processed_message, session, recommendation_client, session_id=sid
         )

@@ -2703,5 +2703,8 @@ def run_recommendation_flow(
         
     # POSTリクエストの場合はJSON形式で成功を返す
     mark_processing_step(sid, "finalize")
+    from src.services.line_memory_jobs import maybe_schedule_line_episode_summary
+
+    maybe_schedule_line_episode_summary(session, sid, locals().get("bot_response"))
     message_count = len(session.get('messages', []))
     return build_success_response(session, message_count)

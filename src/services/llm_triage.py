@@ -337,6 +337,7 @@ def llm_triage(
     use_cache: bool = True,
     *,
     conversation_history: Optional[List] = None,
+    long_term_memory_block: Optional[str] = None,
 ) -> Dict:
     """
     LLMを使用してユーザー入力をカテゴリに分類（2段階トリアージシステム）
@@ -413,15 +414,20 @@ def llm_triage(
         }
 
     hist_d = ""
+    mem_d = ""
     if conversation_history:
         from src.services.triage_history import history_digest as _hd
 
         hist_d = _hd(conversation_history)
+    if long_term_memory_block:
+        from src.services.triage_history import memory_digest as _md
+
+        mem_d = _md(long_term_memory_block)
 
     if use_cache:
         from src.services.triage_cache import build_cache_key
 
-        cache_key = build_cache_key(user_text, None, history_digest=hist_d)
+        cache_key = build_cache_key(user_text, None, history_digest=hist_d, memory_digest=mem_d)
         _purge_triage_cache()
         entry = _triage_cache.get(cache_key)
         if entry and datetime.now() - entry.created_at <= _TRIAGE_CACHE_TTL:
@@ -433,10 +439,13 @@ def llm_triage(
         from src.services.triage_history import format_triage_history_block
 
         history_block = format_triage_history_block(conversation_history)
+    memory_section = ""
+    if long_term_memory_block:
+        memory_section = f"\n\n{long_term_memory_block.strip()}\n"
     history_section = (
-        f"\n\n【直近の会話履歴】\n{history_block}\n"
+        f"{memory_section}\n\n【直近の会話（圧縮）】\n{history_block}\n"
         if history_block and history_block != "（なし）"
-        else ""
+        else (memory_section if memory_section else "")
     )
 
     try:
@@ -578,7 +587,7 @@ def llm_triage(
         if use_cache:
             from src.services.triage_cache import build_cache_key
 
-            cache_key = build_cache_key(user_text, None, history_digest=hist_d)
+            cache_key = build_cache_key(user_text, None, history_digest=hist_d, memory_digest=mem_d)
             subcategory_lower = result.get("subcategory", "").lower()
             if "inappropriate_request" in subcategory_lower:
                 # キャッシュから削除（誤分類を防ぐため）
@@ -592,7 +601,7 @@ def llm_triage(
         if use_cache:
             from src.services.triage_cache import build_cache_key
 
-            cache_key = build_cache_key(user_text, None, history_digest=hist_d)
+            cache_key = build_cache_key(user_text, None, history_digest=hist_d, memory_digest=mem_d)
             _purge_triage_cache()
             _triage_cache[cache_key] = _TriageCacheEntry(
                 result=result.copy(),

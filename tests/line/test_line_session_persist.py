@@ -20,9 +20,11 @@ def test_persist_line_session_writes_messages_and_attributes():
     ) as mock_persist:
         persist_line_session("line:U1", session)
 
-    mock_persist.assert_called_once_with(
-        "line:U1", session, request=None, force_persist=True
-    )
+    mock_persist.assert_called_once()
+    call_args = mock_persist.call_args
+    assert call_args[0][0] == "line:U1"
+    assert call_args[0][1] is session
+    assert call_args[1]["force_persist"] is True
 
 
 def test_persist_session_from_chat_state_line_throttle_when_not_forced():

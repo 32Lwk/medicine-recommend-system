@@ -177,11 +177,9 @@ def run_other_unknown_counseling(
         )
 
         symptom_type = "inappropriate_request/unknown"
-        conversation_history = (
-            session.get("messages", [])[-10:]
-            if len(session.get("messages", [])) > 10
-            else session.get("messages", [])
-        )
+        from src.services.line_memory_context import get_counseling_conversation_history
+
+        conversation_history = get_counseling_conversation_history(session, sid)
         initial_response = generate_counseling_response(
             symptom_type,
             sanitized_message,
