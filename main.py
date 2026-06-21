@@ -64,6 +64,7 @@ from src.services.session_manager import (
     purge_empty_sessions_on_startup,
     clear_admin_request_state,
     delete_session_by_id,
+    delete_messages_from_session,
     is_session_recently_deleted,
     mark_session_deleted,
     get_manual_reply_session_ids,
@@ -262,6 +263,32 @@ def _normalized_app_version_env() -> str | None:
 
 
 _HEX_COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
+_ISO_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})")
+
+_BAKED_BUILD_META: dict | None = None
+
+
+def _load_baked_build_meta() -> dict:
+    global _BAKED_BUILD_META
+    if _BAKED_BUILD_META is not None:
+        return _BAKED_BUILD_META
+    _BAKED_BUILD_META = {}
+    path = Path(__file__).resolve().parent / "static" / "build-meta.json"
+    try:
+        if path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                _BAKED_BUILD_META = data
+    except (OSError, json.JSONDecodeError, TypeError):
+        pass
+    return _BAKED_BUILD_META
+
+
+def _normalize_date_iso(value: str | None) -> str | None:
+    if not value:
+        return None
+    match = _ISO_DATE_PREFIX_RE.match(value.strip())
+    return match.group(1) if match else None
 
 
 def _looks_like_git_commit(value: str | None) -> bool:
@@ -276,6 +303,10 @@ def _resolve_git_commit_short() -> str | None:
         raw = os.getenv(env_key)
         if raw and _looks_like_git_commit(raw):
             return raw.strip()[:7]
+
+    baked_commit = _load_baked_build_meta().get("gitCommitShort")
+    if baked_commit and _looks_like_git_commit(str(baked_commit)):
+        return str(baked_commit).strip()[:7]
 
     nv = _normalized_app_version_env()
     if nv and _looks_like_git_commit(nv):
@@ -296,6 +327,36 @@ def _resolve_git_commit_short() -> str | None:
                 commit = (result.stdout or "").strip()
                 if _looks_like_git_commit(commit):
                     return commit[:7]
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
+def _resolve_git_commit_date_iso() -> str | None:
+    """デプロイ版コミットの日付（YYYY-MM-DD）を返す。取得不可なら None。"""
+    for env_key in ("GIT_COMMIT_DATE", "COMMIT_DATE"):
+        iso = _normalize_date_iso(os.getenv(env_key))
+        if iso:
+            return iso
+
+    baked_date = _load_baked_build_meta().get("gitCommitDateIso")
+    iso = _normalize_date_iso(str(baked_date) if baked_date is not None else None)
+    if iso:
+        return iso
+
+    try:
+        repo_root = Path(__file__).resolve().parent
+        if (repo_root / ".git").exists():
+            result = subprocess.run(
+                ["git", "log", "-1", "--format=%ci", "HEAD"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                timeout=2,
+                check=False,
+            )
+            if result.returncode == 0:
+                return _normalize_date_iso(result.stdout)
     except (OSError, subprocess.SubprocessError):
         pass
     return None
@@ -407,6 +468,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "isDevelopment": bool(is_dev_env),
             "uiVariant": ui_variant,
             "gitCommitShort": _resolve_git_commit_short(),
+            "gitCommitDateIso": _resolve_git_commit_date_iso(),
             "gitRepoUrl": _resolve_git_repo_url(),
         }
     )
@@ -2472,6 +2534,50 @@ def api_admin_delete_all_sessions():
         deleted_count = db.delete_all_sessions()
         return {"status": "success", "message": f"{deleted_count}件のセッションを削除しました", "deleted_count": deleted_count}
     return JSONResponse({"status": "error", "message": "データベース接続エラー"}, status_code=500)
+
+
+@app.post("/api/admin/sessions/{session_id}/messages/delete")
+async def api_admin_delete_session_messages(
+    session_id: str,
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+):
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err:
+        return auth_err
+    data, err = await _read_json_dict(request)
+    if err:
+        return err
+    raw_keys = data.get("message_keys") or data.get("uuids") or []
+    if not isinstance(raw_keys, list) or not raw_keys:
+        return JSONResponse(
+            {"status": "error", "message": "message_keys を指定してください"},
+            status_code=400,
+        )
+    message_keys = [str(k) for k in raw_keys if k]
+    try:
+        from src.handlers.line.line_session import normalize_line_session_id
+
+        session_id = normalize_line_session_id(session_id) or session_id
+    except ImportError:
+        pass
+    deleted_count, session_data = delete_messages_from_session(session_id, message_keys)
+    if session_data is None:
+        return JSONResponse(
+            {"status": "error", "message": "セッションが見つかりませんでした"},
+            status_code=404,
+        )
+    if deleted_count == 0:
+        return JSONResponse(
+            {"status": "error", "message": "削除対象のメッセージが見つかりませんでした"},
+            status_code=404,
+        )
+    return {
+        "status": "success",
+        "message": f"{deleted_count}件のメッセージを削除しました",
+        "deleted_count": deleted_count,
+        "session": _session_row_for_admin(session_id, session_data),
+    }
 
 
 @app.put("/api/admin/sessions/{session_id}")

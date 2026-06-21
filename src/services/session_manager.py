@@ -7,6 +7,8 @@ import time
 import logging
 from datetime import datetime
 
+from src.utils.jst_datetime import now_jst_iso
+
 from config.settings import (
     SESSION_TIMEOUT,
     CHAT_END_TIMEOUT,
@@ -534,7 +536,7 @@ def ensure_session_persisted(sid, data, request=None):
 
     session_data['session_id'] = sid
     session_data.setdefault('messages', session_data.get('messages') or [])
-    session_data['last_activity'] = datetime.now()
+    session_data['last_activity'] = now_jst_iso()
     session_data.setdefault('session_active', True)
     if client_ip:
         session_data['client_ip'] = client_ip
@@ -552,7 +554,7 @@ def update_session_activity(sid):
         return
     session_data = get_session_from_db(sid)
     if session_data:
-        session_data['last_activity'] = datetime.now()
+        session_data['last_activity'] = now_jst_iso()
         maybe_persist_session_activity(sid, session_data)
 
 
@@ -640,13 +642,46 @@ def remove_duplicate_user_messages_after_ai_response(sid):
     return False
 
 
+def _message_content_for_merge_key(msg: dict) -> str:
+    content = (msg.get("content") or "").strip()
+    if content:
+        return content[:200]
+    for field in ("message", "text", "user_message"):
+        alt = (msg.get(field) or "").strip()
+        if alt:
+            return alt[:200]
+    return ""
+
+
 def _message_merge_key(msg: dict, index: int = 0) -> str:
     uid = msg.get('uuid') or msg.get('message_id')
     if uid:
         return f'id:{uid}'
     ts = msg.get('timestamp') or ''
-    content = (msg.get('content') or '')[:200]
+    content = _message_content_for_merge_key(msg)
     return f'c:{msg.get("type")}:{ts}:{content}'
+
+
+def _message_merge_keys(msg: dict, index: int = 0) -> set[str]:
+    """管理画面から送られたキーと DB 上の生メッセージを突合するための候補キー集合。"""
+    keys = {_message_merge_key(msg, index)}
+    uid = msg.get("uuid") or msg.get("message_id")
+    if uid:
+        keys.add(f"id:{uid}")
+    msg_type = msg.get("type") or ""
+    raw_ts = msg.get("timestamp") or ""
+    content = _message_content_for_merge_key(msg)
+    try:
+        from src.utils.admin_timestamp import format_admin_timestamp_iso
+
+        norm_ts = format_admin_timestamp_iso(raw_ts)
+    except Exception:
+        norm_ts = None
+    for ts in {raw_ts, norm_ts or ""}:
+        if ts == "" and raw_ts != "":
+            continue
+        keys.add(f"c:{msg_type}:{ts}:{content}")
+    return keys
 
 
 def normalize_session_messages(messages):
@@ -916,6 +951,63 @@ def _purge_stale_deleted_sids() -> None:
     ]
     for sid in stale:
         _recently_deleted_sids.pop(sid, None)
+
+
+def delete_messages_from_session(session_id: str, message_keys: list[str]) -> tuple[int, dict | None]:
+    """指定キーに一致するメッセージを messages / message_archive から削除する。"""
+    if not session_id or not message_keys:
+        return 0, None
+    keys_set = {str(k) for k in message_keys if k}
+    if not keys_set:
+        return 0, None
+
+    try:
+        from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
+    except ImportError:
+        is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
+        normalize_line_session_id = lambda s: s  # type: ignore[misc, assignment]
+
+    session_id = normalize_line_session_id(session_id) or session_id
+    if is_line_session_id(session_id):
+        session_data = get_line_session_admin_snapshot(session_id)
+    else:
+        session_data = get_session_from_db(session_id)
+    if not session_data:
+        return 0, None
+
+    deleted = 0
+
+    def _filter_messages(msgs: list) -> list:
+        nonlocal deleted
+        if not msgs:
+            return []
+        kept: list = []
+        for i, msg in enumerate(msgs):
+            if not isinstance(msg, dict):
+                kept.append(msg)
+                continue
+            if _message_merge_keys(msg, i) & keys_set:
+                deleted += 1
+            else:
+                kept.append(msg)
+        return kept
+
+    for field in ("messages", "message_archive"):
+        if session_data.get(field):
+            session_data[field] = _filter_messages(session_data.get(field) or [])
+
+    if deleted == 0:
+        return 0, session_data
+
+    from src.utils.admin_timestamp import sync_last_activity_from_messages
+    from src.handlers.line.line_session import is_line_session_id
+
+    sync_last_activity_from_messages(
+        session_data,
+        naive_as_utc=is_line_session_id(str(session_id)),
+    )
+    save_session_to_db(session_id, session_data)
+    return deleted, session_data
 
 
 def delete_session_by_id(session_id: str) -> bool:

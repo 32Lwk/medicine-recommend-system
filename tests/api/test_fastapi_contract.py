@@ -137,6 +137,7 @@ def test_get_root_injects_app_version_and_empty_base_path(client):
     assert "window.APP_VERSION" in text
     assert 'window.APP_BASE_PATH' in text
     assert "gitCommitShort" in text
+    assert "gitCommitDateIso" in text
     assert "gitRepoUrl" in text
     # 既定はルート（空文字）
     assert '""' in text or "''" in text or "APP_BASE_PATH" in text
@@ -309,6 +310,154 @@ def test_admin_delete_session_memory_fallback(client):
 
 def test_admin_delete_session_requires_admin(client):
     r = client.delete("/api/admin/sessions/any-sid")
+    assert r.status_code == 401
+
+
+def test_admin_delete_session_messages(client):
+    from src.services.session_manager import get_all_sessions_store, save_session_to_db
+
+    _set_admin_cookie(client)
+    sid = "msg-del-test"
+    msg_uuid = "test-uuid-123"
+    payload = {
+        "session_id": sid,
+        "username": "Test",
+        "messages": [
+            {
+                "type": "user",
+                "content": "hello",
+                "uuid": msg_uuid,
+                "timestamp": "2025-01-01T00:00:00",
+            },
+            {
+                "type": "bot",
+                "content": "hi",
+                "uuid": "bot-uuid-456",
+                "timestamp": "2025-01-01T00:00:01",
+            },
+        ],
+    }
+    save_session_to_db(sid, payload)
+    store = get_all_sessions_store()
+    store[sid] = payload
+    r = client.post(
+        f"/api/admin/sessions/{sid}/messages/delete",
+        json={"message_keys": [f"id:{msg_uuid}"]},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body.get("status") == "success"
+    assert body.get("deleted_count") == 1
+    assert len(store[sid]["messages"]) == 1
+    assert store[sid]["messages"][0].get("uuid") == "bot-uuid-456"
+
+
+def test_admin_delete_session_messages_timestamp_key(client):
+    from src.services.session_manager import get_all_sessions_store
+    from src.utils.admin_timestamp import format_admin_timestamp_iso
+
+    _set_admin_cookie(client)
+    sid = "msg-del-ts-test"
+    raw_ts = "2025-01-01 00:00:01"
+    store = get_all_sessions_store()
+    store[sid] = {
+        "session_id": sid,
+        "username": "Test",
+        "messages": [
+            {"type": "bot", "content": "reply text", "timestamp": raw_ts},
+        ],
+    }
+    norm_ts = format_admin_timestamp_iso(raw_ts)
+    r = client.post(
+        f"/api/admin/sessions/{sid}/messages/delete",
+        json={"message_keys": [f"c:bot:{norm_ts}:reply text"]},
+    )
+    assert r.status_code == 200
+    assert r.json().get("deleted_count") == 1
+    assert store[sid]["messages"] == []
+
+
+def test_admin_delete_line_session_messages_from_archive(client, monkeypatch):
+    from src.services.session_manager import (
+        _message_merge_key,
+        delete_messages_from_session,
+        get_line_session_admin_snapshot,
+        touch_session_in_memory,
+    )
+
+    _set_admin_cookie(client)
+    sid = "line:Uarchiveonly999"
+    archive_uuid = "archive-msg-uuid"
+    archive_msg = {
+        "type": "user",
+        "content": "archived hello",
+        "uuid": archive_uuid,
+        "timestamp": "2025-01-01 00:00:00",
+    }
+    touch_session_in_memory(
+        sid,
+        {
+            "session_id": sid,
+            "username": "LINE",
+            "messages": [
+                {
+                    "type": "bot",
+                    "content": "live reply",
+                    "uuid": "live-msg-uuid",
+                    "timestamp": "2025-01-02 00:00:00",
+                }
+            ],
+        },
+    )
+
+    class _FakeDb:
+        def is_available(self):
+            return True
+
+        def get_session(self, session_id):
+            if session_id != sid:
+                return None
+            return {
+                "session_id": sid,
+                "message_archive": [dict(archive_msg)],
+                "messages": [],
+            }
+
+        def save_session(self, session_id, data):
+            return True
+
+    monkeypatch.setattr(
+        "src.services.session_manager.get_database",
+        lambda: _FakeDb(),
+    )
+    monkeypatch.setattr(
+        "src.services.session_manager._db_usable",
+        lambda _db: True,
+    )
+
+    snapshot = get_line_session_admin_snapshot(sid)
+    assert snapshot is not None
+    msgs = __import__(
+        "src.services.session_lifecycle", fromlist=["admin_messages_for_session"]
+    ).admin_messages_for_session(snapshot)
+    assert len(msgs) >= 2
+    archive_key = _message_merge_key(archive_msg, 0)
+
+    deleted, session_data = delete_messages_from_session(sid, [archive_key])
+    assert deleted == 1
+    assert session_data is not None
+    after = get_line_session_admin_snapshot(sid)
+    remaining = __import__(
+        "src.services.session_lifecycle", fromlist=["admin_messages_for_session"]
+    ).admin_messages_for_session(after or {})
+    assert all(m.get("uuid") != archive_uuid for m in remaining)
+
+
+def test_admin_delete_session_messages_requires_admin(client):
+    r = client.post(
+        "/api/admin/sessions/any-sid/messages/delete",
+        json={"message_keys": ["id:missing"]},
+    )
     assert r.status_code == 401
 
 

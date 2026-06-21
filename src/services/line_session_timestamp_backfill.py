@@ -27,11 +27,11 @@ def _is_line_session_id(session_id: str | None) -> bool:
         return bool(session_id and str(session_id).lower().startswith("line:"))
 
 
-def normalize_message_timestamp_value(value: Any) -> tuple[str | None, bool]:
+def normalize_message_timestamp_value(value: Any, *, naive_as_utc: bool = True) -> tuple[str | None, bool]:
     """timestamp を ISO 文字列へ。変更があれば changed=True。"""
     if value is None or value == "":
         return None, False
-    normalized = format_admin_timestamp_iso(value)
+    normalized = format_admin_timestamp_iso(value, naive_as_utc=naive_as_utc)
     if not normalized:
         return None, False
     original = str(value).strip()
@@ -53,11 +53,11 @@ def fix_reply_order_timestamps(messages: list[dict]) -> int:
         if not isinstance(msg, dict):
             continue
         if msg.get("type") == "user":
-            prev_user_ts = parse_admin_timestamp(msg.get("timestamp"))
+            prev_user_ts = parse_admin_timestamp(msg.get("timestamp"), naive_as_utc=True)
             continue
         if msg.get("type") != "bot" or prev_user_ts is None:
             continue
-        bot_ts = parse_admin_timestamp(msg.get("timestamp"))
+        bot_ts = parse_admin_timestamp(msg.get("timestamp"), naive_as_utc=True)
         if bot_ts is None or bot_ts <= prev_user_ts:
             new_ts = (prev_user_ts + _PAIR_MIN_GAP).isoformat()
             msg["timestamp"] = new_ts
@@ -129,14 +129,17 @@ def backfill_session_data(session_data: dict) -> dict[str, int]:
         for k in ("messages", "normalized", "filled_missing", "reply_order_fixed", "reordered"):
             totals[k] += stats.get(k, 0)
 
-    before_la = parse_admin_timestamp(session_data.get("last_activity"))
-    sync_last_activity_from_messages(session_data)
+    before_la = parse_admin_timestamp(session_data.get("last_activity"), naive_as_utc=True)
+    sync_last_activity_from_messages(session_data, naive_as_utc=True)
     latest = latest_message_timestamp(
-        (session_data.get("message_archive") or []) + (session_data.get("messages") or [])
+        (session_data.get("message_archive") or []) + (session_data.get("messages") or []),
+        naive_as_utc=True,
     )
     if latest is not None:
-        session_data["last_activity"] = latest
-    after_la = parse_admin_timestamp(session_data.get("last_activity"))
+        from src.utils.jst_datetime import to_jst_iso
+
+        session_data["last_activity"] = to_jst_iso(latest)
+    after_la = parse_admin_timestamp(session_data.get("last_activity"), naive_as_utc=True)
     if before_la != after_la:
         totals["last_activity_updated"] = 1
     return totals

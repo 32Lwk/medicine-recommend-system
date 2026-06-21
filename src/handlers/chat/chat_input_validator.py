@@ -7,6 +7,7 @@ import logging
 import uuid
 from datetime import datetime
 
+from src.utils.jst_datetime import now_jst_iso
 from src.utils.request_logger import log_user_interaction
 from src.utils.user_attribute_registration import register_user_attributes_from_message
 from src.services.session_manager import (
@@ -30,7 +31,7 @@ def _persist_block_messages_to_db(session, client, sid):
             'session_id': sid,
             'username': session.get('username', 'Unknown'),
             'messages': list(session.get('messages', [])),
-            'last_activity': datetime.now(),
+            'last_activity': now_jst_iso(),
             'client_ip': client.client_ip,
             'user_agent': client.user_agent,
             'user_attributes': session.get('user_attributes', {}),
@@ -38,17 +39,19 @@ def _persist_block_messages_to_db(session, client, sid):
         }
     else:
         session_data['messages'] = list(session.get('messages', []))
-        session_data['last_activity'] = datetime.now()
+        session_data['last_activity'] = now_jst_iso()
     save_session_to_db(sid, session_data)
 
 
 def _append_blocked_user_message(session) -> None:
     if 'messages' not in session:
         session['messages'] = []
+    from src.utils.jst_datetime import now_jst_iso
+
     session['messages'].append({
         'type': 'user',
         'content': '（この入力はブロックされました）',
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': now_jst_iso(),
         'uuid': str(uuid.uuid4())
     })
 
@@ -200,7 +203,7 @@ def validate_and_block_input(session, client, user_message, sid):
                         'session_id': sid,
                         'username': session.get('username', 'Unknown'),
                         'messages': session['messages'].copy(),
-                        'last_activity': datetime.now(),
+                        'last_activity': now_jst_iso(),
                         'client_ip': client.client_ip,
                         'user_agent': client.user_agent,
                         'user_attributes': session.get('user_attributes', {}),
@@ -210,7 +213,7 @@ def validate_and_block_input(session, client, user_message, sid):
                 else:
                     session_data['messages'] = session['messages'].copy()
                     session_data['crisis_detected'] = True
-                    session_data['last_activity'] = datetime.now()
+                    session_data['last_activity'] = now_jst_iso()
                 save_session_to_db(sid, session_data)
             log_crisis_keyword_detection(
                 user_id=session.get('username', 'unknown'),

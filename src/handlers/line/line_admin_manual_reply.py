@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
-from config.line_config import get_line_channel_access_token
+from src.utils.jst_datetime import now_jst_iso
 from src.handlers.line.line_reply import push_messages
 from src.handlers.line.line_session import is_line_session_id, user_id_from_line_sid
 from src.services.session_manager import get_session_from_db, save_session_to_db
@@ -19,7 +18,7 @@ def _build_manual_reply_message(content: str) -> dict[str, Any]:
     return {
         "type": "bot",
         "content": content,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": now_jst_iso(),
         "manual_reply": True,
     }
 
@@ -46,7 +45,10 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
     from src.utils.admin_timestamp import sync_last_activity_from_messages
 
     merge_messages_into_archive(session_data, [manual_reply])
-    sync_last_activity_from_messages(session_data)
+    sync_last_activity_from_messages(
+        session_data,
+        naive_as_utc=is_line_session_id(session_id),
+    )
     save_session_to_db(session_id, session_data)
 
     from src.handlers.line.line_admin_request import clear_admin_request_after_manual_reply

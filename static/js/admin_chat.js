@@ -16,6 +16,8 @@ let allSessions = [];
 let sessionListMeaningfulOnly = true;
 let sessionListSelectMode = false;
 const selectedSidebarSessionIds = new Set();
+let chatMessageSelectMode = false;
+const selectedChatMessageKeys = new Set();
 
 function showAdminToast(message, durationMs) {
     const ms = durationMs || 6000;
@@ -256,6 +258,179 @@ function deleteSelectedSidebarSessions() {
         })
         .catch(function() {
             showAdminToast('セッションの削除に失敗しました');
+        });
+}
+
+function getAdminMessageKeyContent(msg) {
+    if (!msg || typeof msg !== 'object') {
+        return '';
+    }
+    if (msg.content != null && String(msg.content).trim()) {
+        return String(msg.content).substring(0, 200);
+    }
+    const fields = ['message', 'text', 'user_message'];
+    for (let i = 0; i < fields.length; i++) {
+        const value = msg[fields[i]];
+        if (value != null && String(value).trim()) {
+            return String(value).substring(0, 200);
+        }
+    }
+    return '';
+}
+
+function getAdminMessageKey(msg, index) {
+    if (!msg || typeof msg !== 'object') {
+        return 'idx:' + String(index == null ? 0 : index);
+    }
+    if (msg.admin_message_key) {
+        return msg.admin_message_key;
+    }
+    if (msg._adminMessageKey) {
+        return msg._adminMessageKey;
+    }
+    const uid = msg.uuid || msg.message_id;
+    if (uid) {
+        return 'id:' + uid;
+    }
+    const ts = msg.timestamp || '';
+    const content = getAdminMessageKeyContent(msg);
+    return 'c:' + (msg.type || '') + ':' + ts + ':' + content;
+}
+
+function updateChatMessageSelectToolbar() {
+    const selectBtn = document.getElementById('chat-message-select-btn');
+    const deleteBtn = document.getElementById('chat-message-delete-selected-btn');
+    const deleteBadge = document.getElementById('chat-message-delete-badge');
+    const hasSession = Boolean(currentSessionId);
+    const hasMessages = Array.isArray(currentMessages) && currentMessages.length > 0;
+    const showControls = hasSession && hasMessages;
+
+    if (selectBtn) {
+        selectBtn.style.display = showControls ? 'inline-flex' : 'none';
+        const icon = selectBtn.querySelector('i');
+        if (icon) {
+            icon.className = chatMessageSelectMode ? 'fa-solid fa-check' : 'fa-solid fa-list-check';
+        }
+        const selectTitle = chatMessageSelectMode ? '選択を完了' : '複数選択して削除';
+        selectBtn.title = selectTitle;
+        selectBtn.setAttribute('aria-label', selectTitle);
+        selectBtn.classList.toggle('session-list-action-btn--active', chatMessageSelectMode);
+    }
+    if (deleteBtn) {
+        const count = selectedChatMessageKeys.size;
+        deleteBtn.style.display = showControls && chatMessageSelectMode && count > 0 ? 'inline-flex' : 'none';
+        const deleteTitle = count > 0 ? count + '件を削除' : '選択したメッセージを削除';
+        deleteBtn.title = deleteTitle;
+        deleteBtn.setAttribute('aria-label', deleteTitle);
+        if (deleteBadge) {
+            if (count > 0) {
+                deleteBadge.textContent = String(count);
+                deleteBadge.hidden = false;
+            } else {
+                deleteBadge.hidden = true;
+            }
+        }
+    }
+
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
+    const disableInput = chatMessageSelectMode && showControls;
+    if (chatInput && hasSession) {
+        chatInput.disabled = disableInput;
+    }
+    if (micBtn && hasSession) {
+        micBtn.disabled = disableInput;
+    }
+    if (sendBtn && hasSession) {
+        if (disableInput) {
+            sendBtn.disabled = true;
+        } else {
+            updateSendButtonState();
+        }
+    }
+}
+
+function resetChatMessageSelectMode() {
+    chatMessageSelectMode = false;
+    selectedChatMessageKeys.clear();
+    updateChatMessageSelectToolbar();
+}
+
+function toggleChatMessageSelectMode() {
+    if (!currentSessionId) {
+        return;
+    }
+    chatMessageSelectMode = !chatMessageSelectMode;
+    if (!chatMessageSelectMode) {
+        selectedChatMessageKeys.clear();
+    }
+    updateChatMessageSelectToolbar();
+    renderChatMessages(currentMessages);
+}
+
+function toggleChatMessageSelection(encodedKey, checked) {
+    const messageKey = encodedKey ? decodeURIComponent(encodedKey) : '';
+    if (!messageKey) {
+        return;
+    }
+    if (checked) {
+        selectedChatMessageKeys.add(messageKey);
+    } else {
+        selectedChatMessageKeys.delete(messageKey);
+    }
+    updateChatMessageSelectToolbar();
+    const row = document.querySelector('.message[data-message-key="' + CSS.escape(encodedKey) + '"]');
+    if (row) {
+        row.classList.toggle('message--selected', checked);
+    }
+}
+
+function handleChatMessageClick(event, encodedKey) {
+    if (!chatMessageSelectMode || !encodedKey) {
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const row = event.currentTarget;
+    const cb = row && row.querySelector('.message-select-cb');
+    if (cb) {
+        cb.checked = !cb.checked;
+        toggleChatMessageSelection(encodedKey, cb.checked);
+    }
+}
+
+function deleteSelectedChatMessages() {
+    const keys = Array.from(selectedChatMessageKeys);
+    if (!currentSessionId || !keys.length) {
+        return;
+    }
+    if (!confirm(keys.length + '件のメッセージを削除します。よろしいですか？')) {
+        return;
+    }
+    adminFetchJson('/api/admin/sessions/' + encodeURIComponent(currentSessionId) + '/messages/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message_keys: keys }),
+    })
+        .then(function(data) {
+            if (!data || data.status !== 'success') {
+                showAdminToast((data && data.message) || 'メッセージの削除に失敗しました');
+                return;
+            }
+            showAdminToast(data.message || (keys.length + '件のメッセージを削除しました'), 4000);
+            if (data.session) {
+                upsertAdminSessionRow(data.session);
+                currentDetailedDiagnosis = data.session.detailed_diagnosis || currentDetailedDiagnosis;
+                currentMessages = Array.isArray(data.session.messages) ? data.session.messages : [];
+                updateChatTitleFromSession(data.session, currentSessionId);
+            }
+            resetChatMessageSelectMode();
+            renderChatMessages(currentMessages);
+            renderSessionList(getFilteredSessions());
+        })
+        .catch(function() {
+            showAdminToast('メッセージの削除に失敗しました');
         });
 }
 
@@ -1433,6 +1608,7 @@ function renderCurrentSession(sessionData) {
 function loadChatHistory(sessionId) {
     stopAdminProcessingPoll();
     sessionId = normalizeLineSessionId(sessionId);
+    resetChatMessageSelectMode();
     // ローディング表示
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = `
@@ -1491,6 +1667,7 @@ function loadChatHistory(sessionId) {
                 currentMessages = [];
                 renderChatMessages([]);
             }
+            updateChatMessageSelectToolbar();
             refreshAdminProcessingPollIfActive(sessionId);
         })
         .catch(error => {
@@ -1977,9 +2154,20 @@ function getUserAttributeLabel(key) {
     return labels[key] || `📋 ${key}`;
 }
 
-function parseAdminTimestamp(value) {
+function parseAdminTimestamp(value, options) {
+    options = options || {};
     if (value === null || value === undefined || value === '' || value === '不明') {
         return null;
+    }
+    var naiveAsUtc = options.naiveAsUtc;
+    if (naiveAsUtc === undefined) {
+        if (options.session) {
+            naiveAsUtc = isLineSession(options.session);
+        } else if (currentSessionId) {
+            naiveAsUtc = isLineSessionId(currentSessionId);
+        } else {
+            naiveAsUtc = false;
+        }
     }
     if (value instanceof Date) {
         const t = value.getTime();
@@ -2003,8 +2191,9 @@ function parseAdminTimestamp(value) {
         return num > 1e12 ? num : num * 1000;
     }
     let normalized = text.replace(' ', 'T');
-    if (/^\d{4}-\d{2}-\d{2}T[\d.:]+$/i.test(normalized)) {
-        normalized += 'Z';
+    const hasExplicitTz = /(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(text);
+    if (!hasExplicitTz && /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(text)) {
+        normalized += naiveAsUtc ? 'Z' : '+09:00';
     }
     let parsed = Date.parse(normalized);
     if (Number.isFinite(parsed)) {
@@ -2014,8 +2203,8 @@ function parseAdminTimestamp(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
-function formatAdminDateTime(iso) {
-    const ms = parseAdminTimestamp(iso);
+function formatAdminDateTime(iso, session) {
+    const ms = parseAdminTimestamp(iso, { session: session });
     if (ms == null) {
         if (iso === null || iso === undefined || iso === '') {
             return '—';
@@ -2024,6 +2213,7 @@ function formatAdminDateTime(iso) {
     }
     const d = new Date(ms);
     return d.toLocaleString('ja-JP', {
+        timeZone: 'Asia/Tokyo',
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
@@ -2032,8 +2222,22 @@ function formatAdminDateTime(iso) {
     });
 }
 
-function formatAdminMessageTimestamp(value) {
+function formatSessionListTime(value) {
     const ms = parseAdminTimestamp(value);
+    if (ms == null) {
+        return null;
+    }
+    return new Date(ms).toLocaleString('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatAdminMessageTimestamp(value, session) {
+    const ms = parseAdminTimestamp(value, { session: session });
     if (ms == null) {
         return '—';
     }
@@ -2059,7 +2263,7 @@ function formatSessionLastActivity(session) {
     if (!session || session.last_activity === undefined || session.last_activity === null) {
         return '';
     }
-    return formatAdminDateTime(session.last_activity);
+    return formatAdminDateTime(session.last_activity, session);
 }
 
 function renderAdminCopyButton(value, label) {
@@ -3067,17 +3271,21 @@ function getAdminMessageText(msg) {
     return '';
 }
 
-function parseAdminMessageTimestamp(msg) {
+function parseAdminMessageTimestamp(msg, session) {
     if (!msg || msg.timestamp === null || msg.timestamp === undefined || msg.timestamp === '') {
         return null;
     }
-    return parseAdminTimestamp(msg.timestamp);
+    return parseAdminTimestamp(msg.timestamp, { session: session });
 }
 
-function fillAdminMessageSortTimes(messages) {
+function parseAdminTimestampForSession(value, session) {
+    return parseAdminTimestamp(value, { session: session });
+}
+
+function fillAdminMessageSortTimes(messages, session) {
     const n = messages.length;
     const filled = messages.map(function (msg) {
-        return parseAdminMessageTimestamp(msg);
+        return parseAdminMessageTimestamp(msg, session);
     });
     for (let i = 0; i < n; i++) {
         if (filled[i] != null) {
@@ -3111,12 +3319,12 @@ function fillAdminMessageSortTimes(messages) {
     return filled;
 }
 
-function normalizeAdminMessagesForDisplay(messages) {
+function normalizeAdminMessagesForDisplay(messages, session) {
     const list = Array.isArray(messages) ? messages.slice() : [];
     if (!list.length) {
         return [];
     }
-    const sortTimes = fillAdminMessageSortTimes(list);
+    const sortTimes = fillAdminMessageSortTimes(list, session);
     return list
         .map(function (msg, index) {
             return { msg: msg, index: index, sortTime: sortTimes[index] };
@@ -3129,17 +3337,18 @@ function normalizeAdminMessagesForDisplay(messages) {
         })
         .map(function (entry) {
             const msg = entry.msg;
+            const adminMessageKey = getAdminMessageKey(msg, entry.index);
             if (!msg || msg.type !== 'user') {
-                return msg;
+                return Object.assign({}, msg, { _adminMessageKey: adminMessageKey });
             }
             const text = getAdminMessageText(msg);
             if (!text) {
-                return msg;
+                return Object.assign({}, msg, { _adminMessageKey: adminMessageKey });
             }
             if (msg.content === text) {
-                return msg;
+                return Object.assign({}, msg, { _adminMessageKey: adminMessageKey });
             }
-            return Object.assign({}, msg, { content: text });
+            return Object.assign({}, msg, { content: text, _adminMessageKey: adminMessageKey });
         });
 }
 
@@ -3248,9 +3457,40 @@ function resolveAdminBotContentHtml(msg, contentText) {
     return formatAdminPlainText(text);
 }
 
-function buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp) {
+function escapeJsString(value) {
+    return String(value == null ? '' : value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n');
+}
+
+function buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp, options) {
+    options = options || {};
+    const messageKey = options.messageKey || '';
+    const selectable = Boolean(options.selectable);
+    const isChecked = Boolean(options.checked);
+    const extraClass = [
+        selectable ? 'message--selectable' : '',
+        isChecked ? 'message--selected' : '',
+    ].filter(Boolean).join(' ');
+    const encodedKey = messageKey ? encodeURIComponent(messageKey) : '';
+    const safeKeyAttr = encodedKey ? escapeHtml(encodedKey) : '';
+    const jsKey = escapeJsString(encodedKey);
+    const clickAttr = selectable && encodedKey
+        ? (' onclick="handleChatMessageClick(event, \'' + jsKey + '\')"')
+        : '';
+    const checkboxHtml = selectable && encodedKey
+        ? ('<input type="checkbox" class="message-select-cb"' +
+            (isChecked ? ' checked' : '') +
+            ' onclick="event.stopPropagation();"' +
+            ' onchange="toggleChatMessageSelection(\'' + jsKey + '\', this.checked)"' +
+            ' aria-label="メッセージを選択">')
+        : '';
+    const dataKeyAttr = encodedKey ? (' data-message-key="' + safeKeyAttr + '"') : '';
     return `
-            <div class="message ${messageClass}">
+            <div class="message ${messageClass}${extraClass ? ' ' + extraClass : ''}"${dataKeyAttr}${clickAttr}>
+                ${checkboxHtml}
                 <div class="message-content">
                     ${indicator}
                     <div class="message-text">${messageContentHtml}</div>
@@ -3305,9 +3545,19 @@ function isMedicineRecommendation(msg) {
     );
 }
 
+function resolveCurrentAdminSessionRow() {
+    if (!currentSessionId) {
+        return null;
+    }
+    return allSessions.find(function (s) {
+        return normalizeLineSessionId(s.session_id) === currentSessionId;
+    }) || null;
+}
+
 function renderChatMessages(messages) {
     const chatMessages = document.getElementById('chat-messages');
-    messages = normalizeAdminMessagesForDisplay(messages);
+    const chatSession = resolveCurrentAdminSessionRow();
+    messages = normalizeAdminMessagesForDisplay(messages, chatSession);
     
     if (!messages || messages.length === 0) {
         chatMessages.innerHTML = `
@@ -3316,6 +3566,7 @@ function renderChatMessages(messages) {
                 <p>メッセージ履歴がありません</p>
             </div>
         `;
+        updateChatMessageSelectToolbar();
         return;
     }
     
@@ -3343,11 +3594,11 @@ function renderChatMessages(messages) {
         console.log(`Message ${index}:`, msg);
         
         // 送信時刻を追加
-        const timeStr = formatAdminMessageTimestamp(msg.timestamp);
+        const timeStr = formatAdminMessageTimestamp(msg.timestamp, chatSession);
         if (timeStr !== '—') {
             timestamp = `<div class="message-timestamp">${timeStr}</div>`;
         } else {
-            timestamp = `<div class="message-timestamp">${formatAdminMessageTimestamp(new Date().toISOString())}</div>`;
+            timestamp = `<div class="message-timestamp">${formatAdminMessageTimestamp(new Date().toISOString(), chatSession)}</div>`;
         }
         
         // 管理画面用のインジケーター：薬剤師視点で表示
@@ -3542,11 +3793,19 @@ function renderChatMessages(messages) {
             messageContentHtml = resolveAdminBotContentHtml(msg, msg.content);
         }
 
-        html += buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp);
+        html += buildAdminChatMessageHtml(messageClass, indicator, messageContentHtml, timestamp, (function () {
+            const messageKey = getAdminMessageKey(msg, index);
+            return {
+                messageKey: messageKey,
+                selectable: chatMessageSelectMode,
+                checked: selectedChatMessageKeys.has(messageKey),
+            };
+        })());
     });
     
     chatMessages.innerHTML = html;
     console.log('✅ Chat messages rendered');
+    updateChatMessageSelectToolbar();
     scrollAdminChatToBottom();
 }
 
@@ -4262,19 +4521,6 @@ function getSessionMessageCount(session) {
     return Array.isArray(session.messages) ? session.messages.length : 0;
 }
 
-function formatSessionListTime(value) {
-    const ms = parseAdminTimestamp(value);
-    if (ms == null) {
-        return null;
-    }
-    return new Date(ms).toLocaleString('ja-JP', {
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
 function getLatestSessionTimestampMs(session) {
     if (!session) {
         return null;
@@ -4283,13 +4529,13 @@ function getLatestSessionTimestampMs(session) {
     const messages = session.messages;
     if (Array.isArray(messages)) {
         messages.forEach(function (msg) {
-            const ms = parseAdminMessageTimestamp(msg);
+            const ms = parseAdminMessageTimestamp(msg, session);
             if (ms != null && (latest == null || ms > latest)) {
                 latest = ms;
             }
         });
     }
-    const activityMs = parseAdminTimestamp(session.last_activity);
+    const activityMs = parseAdminTimestampForSession(session.last_activity, session);
     if (activityMs != null && (latest == null || activityMs > latest)) {
         latest = activityMs;
     }

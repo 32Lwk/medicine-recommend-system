@@ -1,0 +1,46 @@
+# Cloud Run 継続的デプロイ用（GitHub push → ビルド → デプロイ）
+# トリガーで「Cloud Build 構成ファイル」に cloudbuild.yaml を指定してください。
+#
+# 置換変数（トリガー側で上書き可）:
+#   _SERVICE_NAME  … Cloud Run サービス名
+#   _DEPLOY_REGION … リージョン
+#   _AR_REPOSITORY … Artifact Registry リポジトリ名
+
+substitutions:
+  _SERVICE_NAME: medicine-recommend
+  _DEPLOY_REGION: asia-northeast1
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        COMMIT_DATE="$(git log -1 --format=%ci "${COMMIT_SHA}" 2>/dev/null | awk '{print $1}')"
+        if [ -z "${COMMIT_DATE}" ]; then
+          COMMIT_DATE="$(date -u +%Y-%m-%d)"
+        fi
+        IMAGE="${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
+        docker build \
+          --build-arg "GIT_COMMIT=${COMMIT_SHA}" \
+          --build-arg "GIT_COMMIT_DATE=${COMMIT_DATE}" \
+          -t "${IMAGE}" \
+          .
+        echo "${IMAGE}" > /workspace/_image_ref.txt
+
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        IMAGE="$(cat /workspace/_image_ref.txt)"
+        gcloud run deploy "${_SERVICE_NAME}" \
+          --image="${IMAGE}" \
+          --region="${_DEPLOY_REGION}" \
+          --platform=managed \
+          --quiet
+
+options:
+  logging: CLOUD_LOGGING_ONLY

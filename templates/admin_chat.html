@@ -184,6 +184,13 @@
                 <div class="panel-header">
                     <span class="panel-title" id="chat-title">セッションを選択</span>
                     <div class="header-controls">
+                        <button type="button" id="chat-message-select-btn" class="session-list-action-btn" onclick="toggleChatMessageSelectMode()" style="display: none;" title="複数選択して削除" aria-label="複数選択して削除">
+                            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" id="chat-message-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger" onclick="deleteSelectedChatMessages()" style="display: none;" title="選択したメッセージを削除" aria-label="選択したメッセージを削除">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            <span class="session-list-action-btn__badge" id="chat-message-delete-badge" hidden></span>
+                        </button>
                         <button class="action-btn" id="lineMemoryBtn" onclick="focusLineMemoryPanel()" style="display: none;" title="長期記憶">
                             <i class="fa-solid fa-brain"></i>
                         </button>

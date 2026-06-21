@@ -877,6 +877,30 @@ main.right-panel-collapsed #center-resizer {
     cursor: pointer;
 }
 
+.message--selectable {
+    cursor: pointer;
+    gap: 0.5rem;
+}
+
+.message-select-cb {
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.message--selected .message-content {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.message--selectable .message-content {
+    pointer-events: none;
+}
+
+.message--selectable .message-select-cb {
+    pointer-events: auto;
+}
+
 .session-item-body {
     flex: 1;
     min-width: 0;

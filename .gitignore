@@ -13,6 +13,7 @@ __pycache__/
 node_modules/
 dist/
 build/
+static/build-meta.json
 *.egg-info/
 
 # iOS

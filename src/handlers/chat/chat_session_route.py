@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
+
+from src.utils.jst_datetime import now_jst_iso
 
 from src.services.session_manager import (
     append_user_message,
@@ -66,7 +67,7 @@ def handle_chat_end_if_requested(
             clear_line_feedback_pending(sid)
         else:
             session_data["messages"] = session["messages"].copy()
-        session_data["last_activity"] = datetime.now()
+        session_data["last_activity"] = now_jst_iso()
         session_data["session_active"] = False
         from src.services.session_lifecycle import append_lifecycle_event
 
@@ -99,7 +100,7 @@ def append_user_message_if_needed(
         session_data.setdefault("messages", [])
         if not was_last_user_message(session_data, original_user_message):
             session_data["messages"].append(user_msg)
-            session_data["last_activity"] = datetime.now()
+            session_data["last_activity"] = now_jst_iso()
             save_session_to_db(sid, session_data)
     else:
         save_session_to_db(
@@ -109,7 +110,7 @@ def append_user_message_if_needed(
                 "username": session.get("username", "Unknown"),
                 "messages": session.get("messages", []),
                 "session_active": True,
-                "last_activity": datetime.now(),
+                "last_activity": now_jst_iso(),
                 "client_ip": client_info.client_ip,
                 "user_agent": client_info.user_agent,
                 "user_attributes": session.get("user_attributes", {}),

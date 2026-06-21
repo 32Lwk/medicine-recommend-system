@@ -1,0 +1,49 @@
+---
+description: オンボーディング「最終更新日」と Git コミット表示の更新ルール（GitHub プッシュ時）
+globs: static/js/main.js,main.py,Dockerfile,cloudbuild.yaml,scripts/write_build_meta.py
+alwaysApply: false
+---
+
+# オンボーディング最終更新日・コミットハッシュ
+
+対象 UI: `#onboarding-container` 内 `.onboarding-last-updated`（1枚目スライドのみ）
+
+## 表示の仕組み
+
+| 項目 | データ源 | 手動編集 |
+|------|----------|----------|
+| 日付 | サーバー `runtime_client_config.gitCommitDateIso`（デプロイコミット日） | **不要** |
+| コミット | サーバー `runtime_client_config.gitCommitShort` | **不要** |
+| ラベル | `static/js/main.js` の `onboardingLastUpdatedLabel` / `onboardingCommitLabel` | 文言変更時のみ |
+
+日付・コミットは **同一デプロイの Git コミット** から自動解決する。`onboardingLastUpdated` / `onboardingLastUpdatedIso` のような固定日付は **書かない**。
+
+## GitHub に全更新をプッシュする前のチェックリスト
+
+1. **オンボーディング本文**（`translations.*.onboarding`）を変更した場合 → そのまま push でよい（日付は次デプロイのコミット日になる）
+2. **Cloud Run / Docker ビルド** が Git メタを渡しているか確認:
+   - `cloudbuild.yaml` 経由: `--build-arg GIT_COMMIT=${COMMIT_SHA}` と `GIT_COMMIT_DATE` が渡ること
+   - 手動 `docker build` 例:
+     ```bash
+     docker build \
+       --build-arg GIT_COMMIT="$(git rev-parse HEAD)" \
+       --build-arg GIT_COMMIT_DATE="$(git log -1 --format=%ci HEAD | awk '{print $1}')" \
+       -t medicine-recommend .
+     ```
+3. **デプロイ後の確認**（本番 URL）:
+   - `.onboarding-last-updated-main` に日付が表示される
+   - `.onboarding-commit-hash` に 7 桁ハッシュが表示される（`.git` なし Cloud Run でも `static/build-meta.json` 経由）
+4. **古い表示**（例: `2026年5月20日` のみ・ハッシュなし）→ 未デプロイ or ビルド引数未設定。キャッシュではなくサーバー側 `gitCommitShort` が `null` の状態
+
+## 本番でコミットが出ない典型原因
+
+- Docker イメージに `.git` がなく、`GIT_COMMIT` ビルド引数も未設定
+- Cloud Run トリガーがデフォルト `docker build .` のみで `cloudbuild.yaml` を使っていない
+
+→ `cloudbuild.yaml` をトリガーに指定するか、上記 build-arg を渡す。
+
+## 関連ファイル
+
+- `main.py`: `_resolve_git_commit_short`, `_resolve_git_commit_date_iso`
+- `scripts/write_build_meta.py`: イメージ内 `static/build-meta.json` 生成
+- `Dockerfile`: `ARG GIT_COMMIT`, `ARG GIT_COMMIT_DATE`

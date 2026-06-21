@@ -100,8 +100,6 @@
             skipOnboarding: "スキップして始める",
             onboardingLangToggleAria: "表示言語を選択",
             onboardingLastUpdatedLabel: "最終更新日",
-            onboardingLastUpdatedIso: "2026-06-18",
-            onboardingLastUpdated: "2026年6月18日",
             onboardingCommitLabel: "Commit",
             onboarding: [
                 {
@@ -398,8 +396,6 @@
             skipOnboarding: "Skip onboarding",
             onboardingLangToggleAria: "Select display language",
             onboardingLastUpdatedLabel: "Last updated",
-            onboardingLastUpdatedIso: "2026-06-18",
-            onboardingLastUpdated: "June 18, 2026",
             onboardingCommitLabel: "Commit",
             onboarding: [
                 {
@@ -696,8 +692,6 @@
             skipOnboarding: "넘기고 시작하기",
             onboardingLangToggleAria: "표시 언어 선택",
             onboardingLastUpdatedLabel: "최종 업데이트",
-            onboardingLastUpdatedIso: "2026-06-18",
-            onboardingLastUpdated: "2026년 6월 18일",
             onboardingCommitLabel: "Commit",
             
             // イースターエッグ
@@ -1006,8 +1000,6 @@
             skipOnboarding: "跳过并开始",
             onboardingLangToggleAria: "选择显示语言",
             onboardingLastUpdatedLabel: "最后更新",
-            onboardingLastUpdatedIso: "2026-06-18",
-            onboardingLastUpdated: "2026年6月18日",
             onboardingCommitLabel: "Commit",
             onboarding: [
                 {
@@ -1957,15 +1949,44 @@
         return repoUrl + '/commit/' + commit;
     }
 
+    function getRuntimeGitCommitDateIso() {
+        const cfg = getRuntimeClientConfig();
+        const raw = cfg && cfg.gitCommitDateIso;
+        if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.trim())) {
+            return raw.trim();
+        }
+        return null;
+    }
+
+    function formatOnboardingLastUpdatedDate(isoDate, lang) {
+        const localeMap = { ja: 'ja-JP', en: 'en-US', ko: 'ko-KR', zh: 'zh-CN' };
+        const locale = localeMap[lang] || localeMap[DEFAULT_LANGUAGE] || 'ja-JP';
+        const d = new Date(isoDate + 'T12:00:00');
+        if (Number.isNaN(d.getTime())) {
+            return isoDate;
+        }
+        return new Intl.DateTimeFormat(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }).format(d);
+    }
+
     function buildOnboardingLastUpdatedHtml(locale) {
-        if (!locale || !locale.onboardingLastUpdated) {
+        if (!locale || !locale.onboardingLastUpdatedLabel) {
             return '';
         }
-        const lastUpdatedIso = locale.onboardingLastUpdatedIso || '2026-05-20';
+        const lastUpdatedIso = getRuntimeGitCommitDateIso();
+        const commit = getRuntimeGitCommitShort();
+        if (!lastUpdatedIso && !commit) {
+            return '';
+        }
         const labelHtml = locale.onboardingLastUpdatedLabel
             ? `<span class="onboarding-last-updated-label">${locale.onboardingLastUpdatedLabel}</span> `
             : '';
-        const commit = getRuntimeGitCommitShort();
+        const dateHtml = lastUpdatedIso
+            ? `<time datetime="${lastUpdatedIso}">${formatOnboardingLastUpdatedDate(lastUpdatedIso, currentLanguage)}</time>`
+            : '';
         const commitUrl = getRuntimeGitCommitUrl();
         const commitLabel = locale.onboardingCommitLabel || 'Commit';
         const commitHtml = commit && commitUrl
@@ -1978,8 +1999,7 @@
                 : '');
         return (
             `<p class="onboarding-last-updated">`
-            + `<span class="onboarding-last-updated-main">${labelHtml}`
-            + `<time datetime="${lastUpdatedIso}">${locale.onboardingLastUpdated}</time></span>`
+            + `<span class="onboarding-last-updated-main">${labelHtml}${dateHtml}</span>`
             + `${commitHtml}`
             + `</p>`
         );
@@ -3730,6 +3750,12 @@
                         
                         <h4>第8条（準拠法・管轄）</h4>
                         <p>本規約の解釈および運営者とテスター間の紛争については、日本法を準拠法、同法に従って解釈されるものとします。本アプリに関して紛争が生じた場合には、運営者所在地を管轄する地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
+
+                        <p class="legal-doc-enacted">制定日：2025年10月29日</p>
+                        <h4>改定履歴</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025年10月29日：初版制定</li>
+                        </ul>
                     </div>
                 `,
                 en: `
@@ -3781,6 +3807,12 @@
                         
                         <h4>Article 8 (Governing Law and Jurisdiction)</h4>
                         <p>These terms shall be interpreted in accordance with Japanese law. Any disputes arising from this app shall be subject to the exclusive jurisdiction of the district court with jurisdiction over the operator's location as the court of first instance.</p>
+
+                        <p class="legal-doc-enacted">Effective date: October 29, 2025</p>
+                        <h4>Revision history</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>October 29, 2025: Initial publication</li>
+                        </ul>
                     </div>
                 `,
                 ko: `
@@ -3832,6 +3864,12 @@
                         
                         <h4>제8조 (준거법·관할)</h4>
                         <p>본 약관의 해석 및 운영자와 테스터 간의 분쟁에 대해서는 일본법을 준거법으로 하여 동법에 따라 해석되는 것으로 합니다. 본 앱에 관해 분쟁이 발생한 경우에는 운영자 소재지를 관할하는 지방법원을 제1심의 전속적 합의 관할 법원으로 합니다.</p>
+
+                        <p class="legal-doc-enacted">제정일: 2025년 10월 29일</p>
+                        <h4>개정 이력</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025년 10월 29일: 초판 제정</li>
+                        </ul>
                     </div>
                 `,
                 zh: `
@@ -3883,6 +3921,12 @@
                         
                         <h4>第8条（准据法·管辖）</h4>
                         <p>本条款解释及运营者与测试者间争议以日本法为准据法，按该法解释。本应用相关争议发生时，以运营者所在地管辖地方法院为第一审专属合意管辖法院。</p>
+
+                        <p class="legal-doc-enacted">制定日：2025年10月29日</p>
+                        <h4>改定履历</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025年10月29日：初版制定</li>
+                        </ul>
                     </div>
                 `
             }
@@ -3945,7 +3989,14 @@
                         </ul>
                         
                         <h4>第8条（改定）</h4>
-                        <p>本ポリシーは、必要に応じて内容を変更する場合があります。改定後の内容は、本アプリ上に掲示された時点から効力を有します。</p>
+                        <p>本ポリシーは、必要に応じて内容を変更する場合があります。改定後の内容は、本アプリ上に掲示された時点から効力を有します。改定履歴は本文末尾に記載します。</p>
+
+                        <p class="legal-doc-enacted">制定日：2025年10月29日</p>
+                        <h4>改定履歴</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025年10月29日：初版制定</li>
+                            <li>2026年6月22日：LINE 連携・長期記憶・削除請求・Web 引き継ぎに関する条項を追記・整理</li>
+                        </ul>
                     </div>
                 `,
                 en: `
@@ -4002,7 +4053,14 @@
                         </ul>
                         
                         <h4>Article 8 (Revisions)</h4>
-                        <p>This policy may be revised as necessary. Revised content takes effect from the time it is posted on this app.</p>
+                        <p>This policy may be revised as necessary. Revised content takes effect from the time it is posted on this app. Revision history is listed at the end of this document.</p>
+
+                        <p class="legal-doc-enacted">Effective date: October 29, 2025</p>
+                        <h4>Revision history</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>October 29, 2025: Initial publication</li>
+                            <li>June 22, 2026: Added provisions on LINE integration, long-term memory, deletion requests, and web handoff</li>
+                        </ul>
                     </div>
                 `,
                 ko: `
@@ -4059,7 +4117,14 @@
                         </ul>
                         
                         <h4>제8조 (개정)</h4>
-                        <p>본 정책은 필요에 따라 내용을 변경할 수 있습니다. 개정된 내용은 본 앱에 게시된 시점부터 효력을 가집니다.</p>
+                        <p>본 정책은 필요에 따라 내용을 변경할 수 있습니다. 개정된 내용은 본 앱에 게시된 시점부터 효력을 가집니다. 개정 이력은 본문 말미에 기재합니다.</p>
+
+                        <p class="legal-doc-enacted">제정일: 2025년 10월 29일</p>
+                        <h4>개정 이력</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025년 10월 29일: 초판 제정</li>
+                            <li>2026년 6월 22일: LINE 연동·장기 기억·삭제 요청·Web 인계 관련 조항 추가·정리</li>
+                        </ul>
                     </div>
                 `,
                 zh: `
@@ -4116,7 +4181,14 @@
                         </ul>
                         
                         <h4>第8条（修订）</h4>
-                        <p>本政策可能根据需要变更内容。修订后内容自在本应用上公布时起生效。</p>
+                        <p>本政策可能根据需要变更内容。修订后内容自在本应用上公布时起生效。改定履历见本文末尾。</p>
+
+                        <p class="legal-doc-enacted">制定日：2025年10月29日</p>
+                        <h4>改定履历</h4>
+                        <ul class="legal-doc-revisions">
+                            <li>2025年10月29日：初版制定</li>
+                            <li>2026年6月22日：追加并整理 LINE 联动、长期记忆、删除请求、Web 接续相关条款</li>
+                        </ul>
                     </div>
                 `
             }
