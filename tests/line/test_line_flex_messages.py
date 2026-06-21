@@ -10,6 +10,7 @@ from src.handlers.line.flex_messages import (
     PRIMARY,
     SCORE_LOW,
     SCORE_MEDIUM,
+    build_consolidated_medicines_lines,
     build_line_messages_from_bot_message,
     html_to_plain_text,
     truncate_text,
@@ -99,7 +100,43 @@ def test_advice_contains_caution_and_bullets():
     joined = "\n".join(texts)
     assert "医師・薬剤師" in joined
     assert "イブA錠" in joined
+    assert "カロナールA" in joined
+    assert "おすすめの市販薬" in joined
+    assert "第1位" not in joined
     assert messages[0]["contents"]["header"]["backgroundColor"] == PRIMARY
+
+
+def test_consolidated_medicines_groups_by_ingredient():
+    ui = get_line_ui_strings("ja")
+    lines = build_consolidated_medicines_lines(
+        [
+            {"product_name": "カロナールA", "ingredients": "アセトアミノフェン"},
+            {"product_name": "タイレノールA", "ingredients": "アセトアミノフェン"},
+            {"product_name": "イブA錠", "ingredients": "イブプロフェン"},
+        ],
+        ui,
+        medicine_type="解熱鎮痛薬",
+        symptoms=["頭痛"],
+    )
+    joined = "\n".join(lines)
+    assert "頭痛" in joined
+    assert "カロナールA" in joined
+    assert "アセトアミノフェン系" in joined
+    assert "イブプロフェン系" in joined
+
+
+def test_advice_leads_with_personalized_advice():
+    bot = _success_bot_message()
+    bot["diagnosis"]["symptoms"] = ["頭痛"]
+    bot["diagnosis"]["personalized_advice"] = "頭痛いのはつらいですね。安静にして水分をとってください。"
+    messages = build_line_messages_from_bot_message(bot)
+    body_texts = [
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    ]
+    assert body_texts[0].startswith("頭痛いのは")
+    assert "おすすめの市販薬" in "\n".join(body_texts)
 
 
 def test_advice_includes_symptoms_and_overlap_when_present():
@@ -115,7 +152,7 @@ def test_advice_includes_symptoms_and_overlap_when_present():
     body_text = "\n".join(
         c.get("text", "") for c in messages[0]["contents"]["body"]["contents"] if c.get("type") == "text"
     )
-    assert "推定症状" in body_text
+    assert "頭痛に合わせて" in body_text
     assert "頭痛" in body_text
     assert "重複禁止" in body_text
     assert "安静" in body_text

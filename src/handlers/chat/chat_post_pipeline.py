@@ -333,6 +333,7 @@ def run_chat_post_pipeline(
             ctx.recommendation_client,
             monitor=monitor,
             processed_message=ctx.processed_message,
+            routing_ctx=ctx.routing,
         )
         session.pop("_confidence_gate_concierge", None)
         if concierge_resp is not None:
@@ -536,13 +537,14 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
     triage = ctx.triage_result or {}
     if triage.get("category") != "Other" or ctx.inappropriate_request_detected:
         return None
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
-    if is_probable_store_inquiry_any(
+    if evaluate_store_gate(
         ctx.original_user_message,
         ctx.sanitized_message,
         ctx.user_message,
         triage_result=triage,
+        routing_ctx=ctx.routing,
     ):
         return None
     try:
@@ -571,6 +573,7 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
                 )
                 if t
             ],
+            routing_ctx=ctx.routing,
         )
         return try_concierge_response(
             ctx.session,
@@ -581,6 +584,7 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
             ctx.triage_result,
             ctx.recommendation_client,
             processed_message=ctx.processed_message,
+            routing_ctx=ctx.routing,
         )
     except Exception as exc:
         logger.warning("⚠️ Concierge 先行ルートをスキップ: %s", exc)
@@ -613,15 +617,16 @@ def _run_other_post_orchestrator_followups(ctx: ChatPostContext) -> Optional[Res
     if not ctx.triage_result or ctx.triage_result.get("category") != "Other":
         return None
 
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
     if (
         not ctx.inappropriate_request_detected
-        and is_probable_store_inquiry_any(
+        and evaluate_store_gate(
             ctx.original_user_message,
             ctx.sanitized_message,
             ctx.user_message,
             triage_result=ctx.triage_result,
+            routing_ctx=ctx.routing,
         )
     ):
         store_resp = _try_store_inquiry_response(ctx)
@@ -668,13 +673,14 @@ def _run_other_post_orchestrator_followups(ctx: ChatPostContext) -> Optional[Res
 
 def _run_legacy_other_pre_orchestrator(ctx: ChatPostContext) -> Optional[ResponseTuple]:
     """LLM_AGENT_ENABLED=OFF 時: 店舗→Concierge→Other フォールバック（レガシー経路）。"""
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
-    store_first = is_probable_store_inquiry_any(
+    store_first = evaluate_store_gate(
         ctx.original_user_message,
         ctx.sanitized_message,
         ctx.user_message,
         triage_result=ctx.triage_result,
+        routing_ctx=ctx.routing,
     )
 
     if store_first and not ctx.inappropriate_request_detected:

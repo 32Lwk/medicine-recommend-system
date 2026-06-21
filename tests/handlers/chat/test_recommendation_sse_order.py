@@ -8,7 +8,7 @@ import pytest
 
 @pytest.mark.parametrize("is_line", [False, True])
 def test_emit_cards_before_personalized_advice(is_line, monkeypatch):
-    """Web は推奨直後に personalized_advice。LINE はスキップ（引き継ぎ時のみ生成）。"""
+    """Web / LINE ともに推奨直後に personalized_advice を生成する。"""
     call_order: list[str] = []
     sid = "line:U1" if is_line else "web:s1"
     line_session = is_line
@@ -20,8 +20,8 @@ def test_emit_cards_before_personalized_advice(is_line, monkeypatch):
         call_order.append("personalized_advice")
         return "advice text"
 
-    def _skipped_line(*_a, **_k):
-        call_order.append("personalized_advice_skipped_line")
+    def _mark_step(name):
+        call_order.append(name)
 
     monkeypatch.setattr(
         "src.handlers.line.line_session.is_line_session_id",
@@ -36,21 +36,17 @@ def test_emit_cards_before_personalized_advice(is_line, monkeypatch):
         ),
         patch(
             "src.services.pipeline_perf.mark_pipeline_step",
-            side_effect=_skipped_line,
+            side_effect=_mark_step,
         ),
     ):
         recommended = [{"product_name": "A", "name": "A"}]
         if recommended and sid:
             _emit_cards(recommended, session_id=sid)
-        if not line_session:
+        if recommended:
             _personalized({}, recommended, [], MagicMock(), user_text="x", session_id=sid)
-        else:
-            _skipped_line("personalized_advice_skipped_line")
+            _mark_step("personalized_advice")
 
-    if is_line:
-        assert call_order == ["emit_cards", "personalized_advice_skipped_line"]
-    else:
-        assert call_order == ["emit_cards", "personalized_advice"]
+    assert call_order == ["emit_cards", "personalized_advice", "personalized_advice"]
 
 
 def test_emit_reco_detail_after_done_pattern():

@@ -85,30 +85,108 @@ function onSessionListFilterToggle() {
     refreshSessionList();
 }
 
+function extractMessageSearchableText(msg) {
+    if (!msg || typeof msg !== 'object') {
+        return '';
+    }
+    const parts = [];
+    const content = msg.content;
+    if (content) {
+        if (SAGE_CONTENT_MARKERS.has(String(content).trim()) && msg.diagnosis) {
+            const diag = msg.diagnosis;
+            const fromDiag = String(diag.message || diag.title || '').trim();
+            if (fromDiag) {
+                parts.push(fromDiag);
+            }
+        } else {
+            parts.push(stripHtml(String(content)));
+        }
+    }
+    const diag = msg.diagnosis;
+    if (diag && typeof diag === 'object') {
+        ['message', 'title', 'personalized_advice', 'medicine_type', 'usage_notes', 'doctor_consultation', 'combination_advice'].forEach(function(key) {
+            if (diag[key]) {
+                parts.push(stripHtml(String(diag[key])));
+            }
+        });
+        ['symptoms', 'symptom_pairs', 'medicines', 'cautions'].forEach(function(key) {
+            if (Array.isArray(diag[key])) {
+                parts.push(diag[key].map(function(v) { return stripHtml(String(v)); }).join(' '));
+            }
+        });
+        if (Array.isArray(diag.recommended_medicines)) {
+            diag.recommended_medicines.forEach(function(medicine) {
+                if (medicine && medicine.product_name) {
+                    parts.push(String(medicine.product_name));
+                }
+                if (medicine && medicine.name) {
+                    parts.push(String(medicine.name));
+                }
+            });
+        }
+    }
+    return parts.join(' ').toLowerCase();
+}
+
+function sessionMatchesSearchTerm(session, searchTerm) {
+    const username = (session.username || '').toLowerCase();
+    const sessionId = (session.session_id || '').toLowerCase();
+    if (username.includes(searchTerm) || sessionId.includes(searchTerm)) {
+        return true;
+    }
+    const messageLists = [session.messages, session.messages_live].filter(function(list) {
+        return Array.isArray(list);
+    });
+    for (let i = 0; i < messageLists.length; i++) {
+        const messages = messageLists[i];
+        for (let j = 0; j < messages.length; j++) {
+            if (extractMessageSearchableText(messages[j]).includes(searchTerm)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 function getFilteredSessions() {
     const searchEl = document.getElementById('session-search');
-    const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase();
+    const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase().trim();
     if (!searchTerm) {
         return allSessions;
     }
     return allSessions.filter(function(session) {
-        const username = (session.username || '').toLowerCase();
-        const sessionId = (session.session_id || '').toLowerCase();
-        return username.includes(searchTerm) || sessionId.includes(searchTerm);
+        return sessionMatchesSearchTerm(session, searchTerm);
     });
 }
 
 function updateSessionListToolbar() {
     const selectBtn = document.getElementById('session-list-select-btn');
     const deleteBtn = document.getElementById('session-list-delete-selected-btn');
+    const deleteBadge = document.getElementById('session-list-delete-badge');
     if (selectBtn) {
-        selectBtn.textContent = sessionListSelectMode ? '完了' : '選択';
+        const icon = selectBtn.querySelector('i');
+        if (icon) {
+            icon.className = sessionListSelectMode ? 'fa-solid fa-check' : 'fa-solid fa-list-check';
+        }
+        const selectTitle = sessionListSelectMode ? '選択を完了' : '複数選択して削除';
+        selectBtn.title = selectTitle;
+        selectBtn.setAttribute('aria-label', selectTitle);
         selectBtn.classList.toggle('session-list-action-btn--active', sessionListSelectMode);
     }
     if (deleteBtn) {
         const count = selectedSidebarSessionIds.size;
         deleteBtn.style.display = sessionListSelectMode && count > 0 ? 'inline-flex' : 'none';
-        deleteBtn.textContent = count > 0 ? '削除 (' + count + ')' : '削除';
+        const deleteTitle = count > 0 ? count + '件を削除' : '選択したセッションを削除';
+        deleteBtn.title = deleteTitle;
+        deleteBtn.setAttribute('aria-label', deleteTitle);
+        if (deleteBadge) {
+            if (count > 0) {
+                deleteBadge.textContent = String(count);
+                deleteBadge.hidden = false;
+            } else {
+                deleteBadge.hidden = true;
+            }
+        }
     }
 }
 
@@ -1388,12 +1466,7 @@ function loadChatHistory(sessionId) {
             let targetSession = null;
             if (data.session) {
                 targetSession = data.session;
-                const idx = allSessions.findIndex(function (s) { return s.session_id === sessionId; });
-                if (idx >= 0) {
-                    allSessions[idx] = targetSession;
-                } else {
-                    allSessions.push(targetSession);
-                }
+                upsertAdminSessionRow(targetSession);
             } else {
                 const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
                 targetSession = sessionsArray.find(function (session) { return session.session_id === sessionId; }) || null;
@@ -1896,23 +1969,81 @@ function getUserAttributeLabel(key) {
     return labels[key] || `📋 ${key}`;
 }
 
+function parseAdminTimestamp(value) {
+    if (value === null || value === undefined || value === '' || value === '不明') {
+        return null;
+    }
+    if (value instanceof Date) {
+        const t = value.getTime();
+        return Number.isFinite(t) ? t : null;
+    }
+    if (typeof value === 'number') {
+        if (!Number.isFinite(value) || value <= 0) {
+            return null;
+        }
+        return value > 1e12 ? value : value * 1000;
+    }
+    const text = String(value).trim();
+    if (!text) {
+        return null;
+    }
+    if (/^\d+(\.\d+)?$/.test(text)) {
+        const num = Number(text);
+        if (!Number.isFinite(num) || num <= 0) {
+            return null;
+        }
+        return num > 1e12 ? num : num * 1000;
+    }
+    let normalized = text.replace(' ', 'T');
+    let parsed = Date.parse(normalized);
+    if (Number.isFinite(parsed)) {
+        return parsed;
+    }
+    parsed = Date.parse(text);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
 function formatAdminDateTime(iso) {
-    if (iso === null || iso === undefined || iso === '') {
-        return '—';
-    }
-    if (typeof iso === 'number') {
-        return formatAdminDateTime(new Date(iso * 1000).toISOString());
-    }
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) {
+    const ms = parseAdminTimestamp(iso);
+    if (ms == null) {
+        if (iso === null || iso === undefined || iso === '') {
+            return '—';
+        }
         return String(iso);
     }
+    const d = new Date(ms);
     return d.toLocaleString('ja-JP', {
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+    });
+}
+
+function formatAdminMessageTimestamp(value) {
+    const ms = parseAdminTimestamp(value);
+    if (ms == null) {
+        return '—';
+    }
+    const d = new Date(ms);
+    const now = new Date();
+    const sameDay = d.getFullYear() === now.getFullYear()
+        && d.getMonth() === now.getMonth()
+        && d.getDate() === now.getDate();
+    if (sameDay) {
+        return d.toLocaleTimeString('ja-JP', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+    }
+    return d.toLocaleString('ja-JP', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
     });
 }
 
@@ -2937,11 +3068,10 @@ function getAdminMessageText(msg) {
 }
 
 function parseAdminMessageTimestamp(msg) {
-    if (!msg || !msg.timestamp) {
+    if (!msg || msg.timestamp === null || msg.timestamp === undefined || msg.timestamp === '') {
         return null;
     }
-    const parsed = Date.parse(msg.timestamp);
-    return Number.isFinite(parsed) ? parsed : null;
+    return parseAdminTimestamp(msg.timestamp);
 }
 
 function fillAdminMessageSortTimes(messages) {
@@ -3157,23 +3287,11 @@ function renderChatMessages(messages) {
         console.log(`Message ${index}:`, msg);
         
         // 送信時刻を追加
-        if (msg.timestamp) {
-            const date = new Date(msg.timestamp);
-            const timeStr = date.toLocaleTimeString('ja-JP', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-            });
+        const timeStr = formatAdminMessageTimestamp(msg.timestamp);
+        if (timeStr !== '—') {
             timestamp = `<div class="message-timestamp">${timeStr}</div>`;
         } else {
-            // タイムスタンプがない場合は現在時刻を使用
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ja-JP', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            timestamp = `<div class="message-timestamp">${timeStr}</div>`;
+            timestamp = `<div class="message-timestamp">${formatAdminMessageTimestamp(new Date().toISOString())}</div>`;
         }
         
         // 管理画面用のインジケーター：薬剤師視点で表示
@@ -4101,10 +4219,11 @@ function getSessionMessageCount(session) {
 }
 
 function formatSessionListTime(value) {
-    if (value == null || value === '' || value === '不明') return null;
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString('ja-JP', {
+    const ms = parseAdminTimestamp(value);
+    if (ms == null) {
+        return null;
+    }
+    return new Date(ms).toLocaleString('ja-JP', {
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
@@ -4112,22 +4231,49 @@ function formatSessionListTime(value) {
     });
 }
 
+function getLatestSessionTimestampMs(session) {
+    if (!session) {
+        return null;
+    }
+    let latest = null;
+    const messages = session.messages;
+    if (Array.isArray(messages)) {
+        messages.forEach(function (msg) {
+            const ms = parseAdminMessageTimestamp(msg);
+            if (ms != null && (latest == null || ms > latest)) {
+                latest = ms;
+            }
+        });
+    }
+    const activityMs = parseAdminTimestamp(session.last_activity);
+    if (activityMs != null && (latest == null || activityMs > latest)) {
+        latest = activityMs;
+    }
+    return latest;
+}
+
 function getSessionLastUpdateLabel(session) {
     if (!session) return '不明';
-    const messages = session.messages;
-    if (Array.isArray(messages) && messages.length > 0) {
-        const lastMsg = messages[messages.length - 1];
-        const fromMsg = formatSessionListTime(lastMsg?.timestamp);
-        if (fromMsg) return fromMsg;
-    }
-    const activity = session.last_activity;
-    if (activity != null && activity !== '' && activity !== 0) {
-        const fromActivity = formatSessionListTime(
-            typeof activity === 'number' ? activity * 1000 : activity
-        );
-        if (fromActivity) return fromActivity;
+    const latestMs = getLatestSessionTimestampMs(session);
+    if (latestMs != null) {
+        const formatted = formatSessionListTime(latestMs);
+        if (formatted) return formatted;
     }
     return '不明';
+}
+
+function upsertAdminSessionRow(session) {
+    if (!session || !session.session_id) {
+        return;
+    }
+    const sid = session.session_id;
+    const idx = allSessions.findIndex(function (s) { return s.session_id === sid; });
+    if (idx >= 0) {
+        allSessions[idx] = session;
+    } else {
+        allSessions.push(session);
+    }
+    renderSessionList(getFilteredSessions());
 }
 
 function resolveSessionDisplayUsername(session, idx) {
@@ -4163,9 +4309,13 @@ function renderSessionList(sessions) {
     }
     
     if (!Array.isArray(sessions) || sessions.length === 0) {
-        const emptyHint = sessionListMeaningfulOnly
-            ? '会話のあるセッションがありません。「空セッションを含む」で全件表示できます。'
-            : 'セッションがありません';
+        const searchEl = document.getElementById('session-search');
+        const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').trim();
+        const emptyHint = searchTerm
+            ? '検索条件に一致するセッションがありません'
+            : sessionListMeaningfulOnly
+                ? '会話のあるセッションがありません。「空セッションを含む」で全件表示できます。'
+                : 'セッションがありません';
         sidebar.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i><p>' + escapeHtml(emptyHint) + '</p></div>';
         if (isMobile() && !currentSessionId) {
             const centerChatMessages = document.getElementById('chat-messages');
@@ -5315,7 +5465,7 @@ function renderSessionManagementList(sessions) {
     let html = '<div style="display: grid; gap: 10px;">';
     
     sessions.forEach(session => {
-        const lastActivity = session.last_activity ? new Date(session.last_activity * 1000).toLocaleString('ja-JP') : '不明';
+        const lastActivity = formatAdminDateTime(session.last_activity) || '不明';
         const sessionActive = session.session_active !== false ? '✅ アクティブ' : '❌ 終了';
         const messageCount = session.messages ? session.messages.length : 0;
         

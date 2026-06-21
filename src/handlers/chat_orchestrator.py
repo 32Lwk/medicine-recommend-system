@@ -144,7 +144,7 @@ class ChatOrchestrator:
             )
 
         from src.utils.input_helpers import should_prioritize_medical_route_over_store
-        from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+        from src.services.routing_context import evaluate_store_gate
 
         store_texts = (
             ctx.original_user_message,
@@ -156,9 +156,11 @@ class ChatOrchestrator:
             ctx.triage_result,
             store_message,
         )
-        if not skip_store_gate and is_probable_store_inquiry_any(
+        routing_ctx = getattr(ctx, "routing", None)
+        if not skip_store_gate and evaluate_store_gate(
             *store_texts,
             triage_result=ctx.triage_result,
+            routing_ctx=routing_ctx,
         ):
             resp = self._route_store(ctx)
             if resp is not None:
@@ -204,9 +206,10 @@ class ChatOrchestrator:
             elif category == "Other":
                 store_probable = (
                     not skip_store_gate
-                    and is_probable_store_inquiry_any(
+                    and evaluate_store_gate(
                         *store_texts,
                         triage_result=ctx.triage_result,
+                        routing_ctx=routing_ctx,
                     )
                 )
                 resp = None
@@ -464,6 +467,7 @@ class ChatOrchestrator:
                 )
                 if t
             ],
+            routing_ctx=getattr(ctx, "routing", None),
         )
         ctx.triage_result = enriched
         if hasattr(ctx.session, "modified"):
@@ -486,6 +490,7 @@ class ChatOrchestrator:
             self._client,
             monitor=monitor,
             processed_message=ctx.processed_message or ctx.sanitized_message,
+            routing_ctx=getattr(ctx, "routing", None),
         )
         log_agent_step(
             self._trace_id,

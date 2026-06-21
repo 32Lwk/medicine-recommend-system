@@ -388,7 +388,7 @@ def handle_question_flow(
             from src.services.status_diagnosis_builder import build_concierge_text_status
 
             history = session.get("messages", [])[-10:]
-            greeting_response = generate_greeting_text(
+            greeting_response, _ = generate_greeting_text(
                 recommendation_client,
                 user_message,
                 session_id=sid,

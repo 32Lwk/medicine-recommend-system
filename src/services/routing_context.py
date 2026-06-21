@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from src.services.triage_history import (
     get_recent_messages,
@@ -22,6 +22,8 @@ class RoutingContext:
     history_messages: List[Dict[str, Any]] = field(default_factory=list)
     confidence_gate_concierge: bool = False
     pending_route_is_question: Optional[bool] = None
+    store_probable: Optional[bool] = None
+    store_gate_evaluated: bool = False
 
     @property
     def triage_category(self) -> str:
@@ -75,3 +77,56 @@ class RoutingContext:
         sanitized_text: str = "",
     ) -> "RoutingContext":
         return cls.build(session, sid, user_text, sanitized_text)
+
+
+def evaluate_store_gate(
+    *texts: str,
+    triage_result: Optional[Dict[str, Any]] = None,
+    routing_ctx: Optional[RoutingContext] = None,
+) -> bool:
+    """
+    店舗案内ゲートを1リクエスト1回だけ評価する。
+    同一リクエスト内の重複 is_probable 呼び出し（従来 ~3s）を防ぐ。
+    """
+    if routing_ctx is not None and routing_ctx.store_gate_evaluated:
+        return bool(routing_ctx.store_probable)
+
+    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.utils.input_helpers import should_prioritize_medical_route_over_store
+
+    variants: List[str] = []
+    seen: set[str] = set()
+    for text in texts:
+        t = (text or "").strip()
+        if not t or t in seen:
+            continue
+        seen.add(t)
+        variants.append(t)
+
+    primary = variants[0] if variants else ""
+    if should_prioritize_medical_route_over_store(triage_result, primary):
+        result = False
+    else:
+        result = is_probable_store_inquiry_any(*variants, triage_result=triage_result)
+
+    if routing_ctx is not None:
+        routing_ctx.store_probable = result
+        routing_ctx.store_gate_evaluated = True
+    return result
+
+
+def resolve_store_probable(
+    session: Any,
+    sid: Optional[str],
+    texts: Iterable[str],
+    triage: Optional[Dict[str, Any]],
+    routing_ctx: Optional[RoutingContext] = None,
+) -> bool:
+    """RoutingContext キャッシュ付きで店舗案内候補を解決。"""
+    _ = session
+    _ = sid
+    return evaluate_store_gate(
+        *list(texts),
+        triage_result=triage,
+        routing_ctx=routing_ctx,
+    )

@@ -1325,6 +1325,11 @@ def _session_row_for_admin(sess_id, info):
     from src.services.session_lifecycle import admin_messages_for_session
     from src.handlers.line.line_session import resolve_session_line_context
     from src.services.line_user_memory import load_line_memory_bundle, resolve_memory_owner_sid
+    from src.utils.admin_timestamp import (
+        format_admin_timestamp_iso,
+        normalize_message_timestamps,
+        sync_last_activity_from_messages,
+    )
 
     detailed_diag = None
     if isinstance(info, dict):
@@ -1339,17 +1344,19 @@ def _session_row_for_admin(sess_id, info):
             pass
     if not isinstance(info, dict):
         info = {}
-    admin_msgs = admin_messages_for_session(info)
+    sync_last_activity_from_messages(info)
+    admin_msgs = normalize_message_timestamps(admin_messages_for_session(info))
     live_count = len(info.get("messages", []) or [])
     archive_count = len(admin_msgs)
     msg_count = archive_count
     line_ctx = resolve_session_line_context(str(sess_id), info)
+    last_activity = format_admin_timestamp_iso(info.get("last_activity")) or info.get("last_activity", 0)
     row = {
         "session_id": sess_id,
         "username": info.get("username", "Unknown"),
         "messages": admin_msgs,
-        "messages_live": info.get("messages", []),
-        "last_activity": info.get("last_activity", 0),
+        "messages_live": normalize_message_timestamps(info.get("messages", []) or []),
+        "last_activity": last_activity,
         "message_count": msg_count,
         "messages_count": msg_count,
         "messages_live_count": live_count,
@@ -1379,6 +1386,7 @@ def _session_row_for_admin(sess_id, info):
 def _list_admin_sessions(meaningful_only: bool = True):
     from src.handlers.line.line_session import is_line_session_id
     from src.services.session_lifecycle import ensure_line_session_archive
+    from src.utils.admin_timestamp import sync_last_activity_from_messages
 
     queue_ids = get_manual_reply_session_ids()
     all_sessions = get_all_sessions_from_db()
@@ -1386,6 +1394,7 @@ def _list_admin_sessions(meaningful_only: bool = True):
     for sess_id, info in all_sessions.items():
         if isinstance(info, dict) and is_line_session_id(str(sess_id)):
             if ensure_line_session_archive(info):
+                sync_last_activity_from_messages(info)
                 save_session_to_db(sess_id, info)
         row = _session_row_for_admin(sess_id, info)
         if meaningful_only:
@@ -2394,7 +2403,7 @@ def api_admin_sessions(
                 "session_id": str(sess_id),
                 "username": str(info.get("username", "Unknown")),
                 "messages": list(info.get("messages", []) or []),
-                "last_activity": info.get("last_activity", 0),
+                "last_activity": format_admin_timestamp_iso(info.get("last_activity")) or info.get("last_activity", 0),
                 "session_active": bool(info.get("session_active", True)),
                 "client_ip": str(info.get("client_ip", "")),
                 "user_agent": str(info.get("user_agent", "")),

@@ -130,36 +130,41 @@
             </div>
             <!-- Left Panel: Sessions -->
             <div class="panel" id="left-panel">
-                <div class="panel-header">
-                    <span class="panel-title">アクティブセッション</span>
-                    <span class="panel-title" id="session-count">0</span>
+                <div class="panel-header left-panel-header">
+                    <div class="left-panel-header__primary">
+                        <span class="panel-title">アクティブセッション</span>
+                        <span class="panel-title panel-header-stat-value" id="session-count">0</span>
+                    </div>
+                    <div class="left-panel-header__stats">
+                        <div class="panel-header-stat">
+                            <span class="panel-header-stat-label">待機キュー</span>
+                            <span class="panel-header-stat-value" id="tablet-queue-count">0</span>
+                        </div>
+                        <div class="panel-header-stat">
+                            <span class="panel-header-stat-label">総セッション</span>
+                            <span class="panel-header-stat-value" id="tablet-total-sessions">0</span>
+                        </div>
+                    </div>
                     <button class="panel-resize-btn" title="パネル幅を調整">
                         <i class="fa-solid fa-grip-vertical"></i>
                     </button>
                 </div>
 
-                <!-- Statistics (Compact Display) -->
-                <div class="tablet-stats" id="tablet-stats">
-                    <div class="tablet-stat-item">
-                        <span class="tablet-stat-label">待機キュー</span>
-                        <span class="tablet-stat-value" id="tablet-queue-count">0</span>
-                    </div>
-                    <div class="tablet-stat-item">
-                        <span class="tablet-stat-label">総セッション</span>
-                        <span class="tablet-stat-value" id="tablet-total-sessions">0</span>
-                    </div>
-                </div>
-
                 <div class="search-box">
-                    <input type="text" class="search-input" id="session-search" placeholder="ユーザー名で検索..." onkeyup="filterSessions()">
+                    <input type="text" class="search-input" id="session-search" placeholder="ユーザー名・チャット内容で検索..." onkeyup="filterSessions()">
                     <div class="session-list-toolbar">
                         <label class="session-list-filter">
                             <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
                             空セッションを含む
                         </label>
                         <div class="session-list-toolbar-actions">
-                            <button type="button" id="session-list-select-btn" class="session-list-action-btn" onclick="toggleSessionListSelectMode()" title="複数選択して削除">選択</button>
-                            <button type="button" id="session-list-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger" onclick="deleteSelectedSidebarSessions()" style="display:none;" title="選択したセッションを削除">削除</button>
+                            <button type="button" id="session-list-select-btn" class="session-list-action-btn" onclick="toggleSessionListSelectMode()" title="複数選択して削除" aria-label="複数選択して削除">
+                                <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" id="session-list-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger" onclick="deleteSelectedSidebarSessions()" style="display:none;" title="選択したセッションを削除" aria-label="選択したセッションを削除">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                <span class="session-list-action-btn__badge" id="session-list-delete-badge" hidden></span>
+                            </button>
                         </div>
                     </div>
                 </div>

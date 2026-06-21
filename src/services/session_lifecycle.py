@@ -97,7 +97,10 @@ def _parse_message_timestamp(msg: dict) -> float | None:
     if raw is None or raw == "":
         return None
     if isinstance(raw, (int, float)):
-        return float(raw)
+        value = float(raw)
+        if value >= 1e12:
+            return value / 1000.0
+        return value
     text = str(raw).strip()
     if not text:
         return None

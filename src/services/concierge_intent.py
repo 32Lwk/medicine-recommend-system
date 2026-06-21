@@ -150,6 +150,41 @@ def _is_medicine_consultation(text: str) -> bool:
 
 
 
+def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
+    """
+    短い非医療・非店舗入力を構造的に greeting とみなす（辞書登録なし）。
+    meta LLM スキップ時の軽量フォールバック用。
+    """
+    text = (user_text or "").strip()
+    if not text or len(text) > 12:
+        return None
+    if _is_medicine_consultation(text):
+        return None
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
+    if has_explicit_symptom_signal(text):
+        return None
+    store_hints = (
+        "店",
+        "売場",
+        "在庫",
+        "トイレ",
+        "忘れ物",
+        "営業",
+        "駐車",
+        "免税",
+        "レジ",
+        "どこ",
+        "場所",
+        "コンビニ",
+        "薬",
+        "医薬",
+    )
+    if any(h in text for h in store_hints):
+        return None
+    return "greeting"
+
+
 def classify_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
 
     """

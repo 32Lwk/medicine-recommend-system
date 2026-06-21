@@ -169,13 +169,17 @@ def try_concierge_response(
     *,
     monitor: Any = None,
     processed_message: str = "",
+    routing_ctx: Any = None,
 ) -> Optional[ResponseTuple]:
     text = (sanitized_message or user_message or "").strip()
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
-    if text and is_probable_store_inquiry_any(
-        text, *alt_texts, triage_result=triage_result
+    if text and evaluate_store_gate(
+        text,
+        *alt_texts,
+        triage_result=triage_result,
+        routing_ctx=routing_ctx,
     ):
         return None
     if not text or not should_concierge_handle(
@@ -201,6 +205,7 @@ def try_concierge_response(
             conversation_history=history_pre,
             session_id=sid,
             alt_texts=[user_message, processed_message],
+            routing_ctx=routing_ctx,
         )
 
     if has_recent_concierge_reply_for_user(session, text):

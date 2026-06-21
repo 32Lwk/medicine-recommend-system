@@ -396,11 +396,14 @@ def _session_last_activity_ts(info) -> float:
         return last_activity.timestamp()
     if isinstance(last_activity, str):
         try:
-            return datetime.fromisoformat(
-                last_activity.replace('Z', '+00:00')
-            ).timestamp()
+            from src.utils.admin_timestamp import parse_admin_timestamp
+
+            parsed = parse_admin_timestamp(last_activity)
+            if parsed is not None:
+                return parsed.timestamp()
         except Exception:
-            return 0.0
+            pass
+        return 0.0
     if isinstance(last_activity, (int, float)):
         return float(last_activity)
     return 0.0

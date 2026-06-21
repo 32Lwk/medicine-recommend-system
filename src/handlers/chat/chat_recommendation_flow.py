@@ -1734,62 +1734,60 @@ def run_recommendation_flow(
                     'chatgpt_fallback': 'ChatGPTベースアルゴリズム（フォールバック）'
                 }.get(recommendation_result.get('algorithm', 'unknown'), '不明')
                             
-                # 個別アドバイス（Web HTML のみ。LINE は Web 引き継ぎ時に生成）
+                # 個別アドバイス（Web HTML + LINE Flex 用）
                 personalized_section = ""
                 personalized_advice = ""
-                if not line_session:
-                    try:
-                        user_attrs = session.get('user_attributes', {})
-                        if session.get('is_reanalysis'):
-                            user_attrs = session.get('reanalysis_attributes', user_attrs)
-                            session.pop('is_reanalysis', None)
-                            session.pop('reanalysis_attributes', None)
-                        influenza_risk = recommendation_result.get('influenza_risk', False)
-                        influenza_reason = recommendation_result.get('influenza_reason', '')
-                        personalized_advice = generate_personalized_advice(
-                            user_attrs,
-                            recommended_medicines,
-                            symptoms,
-                            recommendation_client,
-                            user_text=user_message,
-                            influenza_risk=influenza_risk,
-                            influenza_reason=influenza_reason,
-                            session_id=sid,
-                        )
-                        mark_pipeline_step("personalized_advice")
-                        if recommended_medicines and sid:
-                            try:
-                                _emit_explanation_followup_sse(
-                                    session,
-                                    sid,
-                                    recommended_medicines,
-                                    recommendation_result,
-                                    recommendation_client,
-                                )
-                            except Exception:
-                                pass
+                try:
+                    user_attrs = session.get('user_attributes', {})
+                    if session.get('is_reanalysis'):
+                        user_attrs = session.get('reanalysis_attributes', user_attrs)
+                        session.pop('is_reanalysis', None)
+                        session.pop('reanalysis_attributes', None)
+                    influenza_risk = recommendation_result.get('influenza_risk', False)
+                    influenza_reason = recommendation_result.get('influenza_reason', '')
+                    personalized_advice = generate_personalized_advice(
+                        user_attrs,
+                        recommended_medicines,
+                        symptoms,
+                        recommendation_client,
+                        user_text=user_message,
+                        influenza_risk=influenza_risk,
+                        influenza_reason=influenza_reason,
+                        session_id=sid,
+                    )
+                    mark_pipeline_step("personalized_advice")
+                    if recommended_medicines and sid and not line_session:
+                        try:
+                            _emit_explanation_followup_sse(
+                                session,
+                                sid,
+                                recommended_medicines,
+                                recommendation_result,
+                                recommendation_client,
+                            )
+                        except Exception:
+                            pass
+                    if not line_session:
                         personalized_section = f"""
     <div class="warning-info" role="region" aria-label="あなたに合わせたアドバイス" style="padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;">
         <h4 style="color: #1976d2; margin-top: 0;">💡 あなたに合わせたアドバイス</h4>
         <p style="margin: 5px 0; line-height: 1.6; white-space: pre-wrap;">{personalized_advice}</p>
     </div>
     """
-                    except Exception as e:
-                        logger.error(f"❌ 個別説明生成エラー: {e}")
-                        influenza_risk = recommendation_result.get('influenza_risk', False)
-                        influenza_reason = recommendation_result.get('influenza_reason', '')
-                        if influenza_risk:
-                            personalized_section = f"""
+                except Exception as e:
+                    logger.error(f"❌ 個別説明生成エラー: {e}")
+                    influenza_risk = recommendation_result.get('influenza_risk', False)
+                    influenza_reason = recommendation_result.get('influenza_reason', '')
+                    if influenza_risk and not line_session:
+                        personalized_section = f"""
     <div style="background: #fff3e0; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ff9800;">
         <h4 style="color: #f57c00; margin-top: 0;">⚠️ インフルエンザの可能性について</h4>
         <p style="margin: 5px 0; line-height: 1.6;">{influenza_reason}。インフルエンザの可能性がある場合は、アスピリンを含む医薬品の使用を避け、早めに医療機関を受診することをお勧めします。</p>
     </div>
     """
-                else:
-                    mark_pipeline_step("personalized_advice_skipped_line")
 
                 if sage_diagnosis_store:
-                    if personalized_advice and not line_session:
+                    if personalized_advice:
                         recommendation_result['personalized_advice'] = personalized_advice
                     sage_diagnosis_v1 = build_diagnosis_v1(
                         recommendation_result, session_id=sid

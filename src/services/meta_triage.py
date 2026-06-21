@@ -82,6 +82,41 @@ def _purge_meta_cache() -> None:
         _META_CACHE.pop(next(iter(_META_CACHE)))
 
 
+def should_skip_meta_triage_llm(
+    triage: Dict[str, Any],
+    text: str,
+    *,
+    store_probable: bool = False,
+) -> bool:
+    """
+    general_other 高確信・非店舗・非医薬品相談で meta LLM を省略する。
+    挨拶ワードリストは使わず、probe が None のときのみスキップ対象。
+    """
+    if store_probable:
+        return False
+    if (triage or {}).get("category") != "Other":
+        return False
+
+    from src.services.concierge_intent import (
+        _is_medicine_consultation,
+        probe_meta_concierge_intent,
+    )
+
+    if probe_meta_concierge_intent(text):
+        return False
+    if _is_medicine_consultation(text):
+        return False
+
+    sub = ((triage or {}).get("subcategory") or "").lower()
+    if sub != "general_other":
+        return False
+    try:
+        conf = float((triage or {}).get("confidence", 0))
+    except (TypeError, ValueError):
+        return False
+    return conf >= 0.85
+
+
 def classify_meta_concierge_intent(
     user_text: str,
     client: OpenAI,

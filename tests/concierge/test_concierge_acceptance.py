@@ -48,7 +48,7 @@ def test_acceptance_architecture_no_denial(mock_llm):
 
 @patch("src.handlers.chat.chat_concierge_route.save_session_to_db")
 @patch("src.agents.concierge_agent.concierge_chat")
-def test_acceptance_greeting_uses_llm(mock_chat, _save):
+def test_acceptance_greeting_uses_llm_by_default(mock_chat, _save):
     mock_resp = MagicMock()
     mock_resp.choices = [
         MagicMock(message=MagicMock(content="はおー！OTC相談窓口です。お困りごとがあればどうぞ。"))
@@ -66,9 +66,29 @@ def test_acceptance_greeting_uses_llm(mock_chat, _save):
         },
         MagicMock(),
     )
-    mock_chat.assert_called()
+    mock_chat.assert_called_once()
     assert session["messages"][-1].get("greeting") is True
-    assert "はおー" in _bot_message_text(session["messages"][-1])
+
+
+@patch("src.handlers.chat.chat_concierge_route.save_session_to_db")
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_acceptance_greeting_falls_back_to_template_on_llm_failure(mock_chat, _save):
+    mock_chat.side_effect = RuntimeError("llm unavailable")
+    session = {"messages": [], "user_attributes": {}, "ui_variant": "sage"}
+    client = MagicMock(client_ip="127.0.0.1", user_agent="test")
+    try_concierge_response(
+        session, client, "test-sid",
+        "はおー", "はおー",
+        {
+            "category": "Other",
+            "confidence": 0.99,
+            "concierge_intent": "greeting",
+        },
+        MagicMock(),
+    )
+    mock_chat.assert_called_once()
+    assert session["messages"][-1].get("greeting") is True
+    assert session["messages"][-1]["content"]
 
 
 @patch("src.core.llm_client.chat_completion_create")

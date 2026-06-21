@@ -33,3 +33,5 @@ def test_triage_category_defaults_empty():
     )
     assert ctx.triage_category == ""
     assert ctx.triage_confidence == 1.0
+    assert ctx.store_gate_evaluated is False
+    assert ctx.store_probable is None

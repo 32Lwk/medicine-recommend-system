@@ -19,6 +19,7 @@ from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MA
 from src.handlers.line.line_i18n import (
     carousel_alt_text,
     format_intro,
+    format_medicines_summary,
     format_rank,
     format_score_label,
     get_line_ui_strings,
@@ -50,6 +51,7 @@ def _public_site_base() -> str:
     return (os.getenv("PUBLIC_SITE_URL") or _DEFAULT_PUBLIC_SITE_URL).strip().rstrip("/")
 
 TRUNCATE_BULLET = 36
+TRUNCATE_MEDICINES_SUMMARY = 220
 TRUNCATE_EFFICACY = 140
 TRUNCATE_REASON = 140
 TRUNCATE_INGREDIENTS = 90
@@ -183,6 +185,113 @@ def build_advice_bullets(medicines: list[dict], ui: dict[str, str]) -> list[str]
     return bullets
 
 
+def _ingredient_blob(med: dict) -> str:
+    return " ".join(
+        str(med.get(key) or "")
+        for key in ("ingredients", "product_name", "efficacy", "explanation")
+    ).lower()
+
+
+def _ingredient_family(med: dict) -> tuple[str, str]:
+    blob = _ingredient_blob(med)
+    if any(token in blob for token in ("アセトアミノフェン", "acetaminophen", "パラセタモール")):
+        return "acetaminophen", "アセトアミノフェン系"
+    if any(token in blob for token in ("イブプロフェン", "ibuprofen")):
+        return "ibuprofen", "イブプロフェン系"
+    if any(token in blob for token in ("ロキソプロフェン", "loxoprofen")):
+        return "loxoprofen", "ロキソプロフェン系"
+    if any(token in blob for token in ("アスピリン", "aspirin", "サリチル")):
+        return "aspirin", "アスピリン系"
+    return "other", ""
+
+
+def _format_medicine_names(medicines: list[dict]) -> str:
+    names = [str(m.get("product_name") or "").strip() for m in medicines[:MAX_CAROUSEL_ITEMS]]
+    names = [n for n in names if n]
+    if not names:
+        return ""
+    return "、".join(f"「{name}」" for name in names)
+
+
+def _build_ingredient_group_line(medicines: list[dict], ui: dict[str, str]) -> str:
+    groups: dict[str, list[str]] = {}
+    labels: dict[str, str] = {}
+    for med in medicines[:MAX_CAROUSEL_ITEMS]:
+        key, label = _ingredient_family(med)
+        name = str(med.get("product_name") or "").strip()
+        if not name or key == "other":
+            continue
+        groups.setdefault(key, []).append(name)
+        labels[key] = label
+
+    if not groups:
+        return ui.get("medicines_difference_fallback", "")
+
+    if len(groups) == 1 and len(medicines) > 1:
+        only_label = next(iter(labels.values()))
+        hint = ui.get("medicines_same_family_hint", "")
+        if hint:
+            return hint.format(family=only_label)
+
+    joiner = ui.get("medicines_group_joiner", "と")
+    suffix = ui.get("medicines_group_suffix", "")
+    parts = [f"{labels[key]}（{'、'.join(names)}）" for key, names in groups.items()]
+    line = joiner.join(parts)
+    return f"{line}{suffix}" if suffix else line
+
+
+def build_fallback_personalized_advice(
+    symptoms: list[str],
+    ui: dict[str, str],
+) -> str:
+    symptom_text = "・".join(symptoms[:3]) if symptoms else "症状"
+    template = ui.get(
+        "personalized_advice_fallback",
+        "お身体の状態を考慮して、安全に使える市販薬を選んでいます。",
+    )
+    try:
+        return template.format(symptoms=symptom_text)
+    except (KeyError, ValueError):
+        return template
+
+
+def build_consolidated_medicines_lines(
+    medicines: list[dict],
+    ui: dict[str, str],
+    *,
+    medicine_type: str,
+    symptoms: list[str],
+) -> list[str]:
+    """順位別ではなく、候補をまとめて紹介する文言。"""
+    items = medicines[:MAX_CAROUSEL_ITEMS]
+    if not items:
+        return []
+
+    lines: list[str] = []
+    summary = format_medicines_summary(
+        ui,
+        medicine_type=medicine_type,
+        count=len(items),
+        symptoms=symptoms,
+    )
+    if summary:
+        lines.append(summary)
+
+    names_line = _format_medicine_names(items)
+    if names_line:
+        lines.append(names_line)
+
+    group_line = truncate_text(_build_ingredient_group_line(items, ui), TRUNCATE_MEDICINES_SUMMARY)
+    if group_line:
+        lines.append(group_line)
+
+    carousel_hint = ui.get("medicines_carousel_hint", "")
+    if carousel_hint:
+        lines.append(carousel_hint)
+
+    return lines
+
+
 def _symptom_labels(diagnosis: dict | None) -> list[str]:
     if not isinstance(diagnosis, dict):
         return []
@@ -255,41 +364,48 @@ def build_recommendation_advice_bubble(
     ui: dict[str, str],
     bot_message: dict | None = None,
 ) -> dict[str, Any]:
-    """推奨成功時のアドバイス Flex（症状・個別アドバイス・重複警告・候補概要）。"""
+    """推奨成功時のアドバイス Flex（個別アドバイス → 候補のまとめ → 重複警告）。"""
     medicine_type = ""
     if isinstance(diagnosis, dict):
         medicine_type = str(diagnosis.get("medicine_type") or "OTC医薬品")
-    intro = format_intro(ui, medicine_type=medicine_type, count=len(medicines[:MAX_CAROUSEL_ITEMS]))
-    bullets = build_advice_bullets(medicines, ui)
-    body_contents: list[dict[str, Any]] = [
-        _flex_text(intro, size="sm", margin="none"),
-    ]
 
     symptoms = _symptom_labels(diagnosis)
-    if symptoms:
-        symptom_label = ui.get("symptoms_label", "推定症状")
-        body_contents.append(
-            _flex_text(
-                f"{symptom_label}: {'・'.join(symptoms[:4])}",
-                size="xs",
-                color=LABEL,
-                weight="bold",
-                margin="md",
-            )
-        )
+    body_contents: list[dict[str, Any]] = []
 
-    advice_text = truncate_text(_personalized_advice_text(diagnosis, bot_message), TRUNCATE_PERSONAL_ADVICE)
-    if advice_text:
+    advice_text = truncate_text(
+        _personalized_advice_text(diagnosis, bot_message),
+        TRUNCATE_PERSONAL_ADVICE,
+    )
+    if not advice_text:
+        advice_text = build_fallback_personalized_advice(symptoms, ui)
+    body_contents.append(_flex_text(advice_text, size="sm", margin="none"))
+
+    consolidated = build_consolidated_medicines_lines(
+        medicines,
+        ui,
+        medicine_type=medicine_type,
+        symptoms=symptoms,
+    )
+    if consolidated:
         body_contents.append(
             _flex_text(
-                ui.get("personal_advice_label", "あなたへのひとこと"),
+                ui.get("medicines_intro_label", "おすすめの市販薬"),
                 size="xs",
                 color=LABEL,
                 weight="bold",
-                margin="md",
+                margin="lg",
             )
         )
-        body_contents.append(_flex_text(advice_text, size="sm", margin="xs"))
+        for i, line in enumerate(consolidated):
+            is_hint = i == len(consolidated) - 1
+            body_contents.append(
+                _flex_text(
+                    line,
+                    size="xs" if is_hint else "sm",
+                    color=NOTE if is_hint else None,
+                    margin="sm" if i == 0 else "xs",
+                )
+            )
 
     for overlap in _overlap_display_lines(diagnosis):
         body_contents.append(
@@ -302,19 +418,6 @@ def build_recommendation_advice_bubble(
             )
         )
         body_contents.append(_flex_text(overlap["text"], size="xs", margin="xs"))
-
-    if bullets:
-        body_contents.append(
-            _flex_text(
-                ui.get("candidate_summary_label", "候補の概要"),
-                size="xs",
-                color=LABEL,
-                weight="bold",
-                margin="md",
-            )
-        )
-        for i, bullet in enumerate(bullets):
-            body_contents.append(_flex_text(bullet, size="xs", margin="xs" if i else "sm"))
 
     web_hint = ui.get("web_detail_hint", "")
     if web_hint:

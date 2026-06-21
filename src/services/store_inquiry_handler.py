@@ -16,17 +16,7 @@ from src.services.store_inquiry_keyword_catalog import get_store_inquiry_keyword
 
 logger = logging.getLogger(__name__)
 
-# 商品リストの読み込み
-PRODUCT_CATEGORIES = {}
-try:
-    from src import PROJECT_ROOT
-    product_list_path = os.path.join(PROJECT_ROOT, 'data', 'store_products.json')
-    with open(product_list_path, 'r', encoding='utf-8') as f:
-        PRODUCT_CATEGORIES = json.load(f)
-    logger.info(f"✅ 商品リストを読み込みました: {len(PRODUCT_CATEGORIES)}カテゴリ")
-except Exception as e:
-    logger.warning(f"⚠️ 商品リストの読み込みに失敗: {e}")
-    PRODUCT_CATEGORIES = {}
+# 商品照合は store_product_index（Aho-Corasick）に委譲
 
 # 店舗案内キーワード（data/store_inquiry_keyword_catalog.json が定義元）
 _STORE_KW = get_store_inquiry_keywords()
@@ -183,7 +173,11 @@ def is_probable_store_inquiry(
     user_text: str,
     triage_result: Optional[Dict] = None,
 ) -> bool:
-    """店舗案内・遺失物の可能性が高く StoreInquiryAgent を優先すべき入力。"""
+    """店舗案内・遺失物の可能性が高く StoreInquiryAgent を優先すべき入力。
+
+    同一リクエストで is_probable が複数回呼ばれると商品全件スキャンが重複する。
+    routing_context.evaluate_store_gate でキャッシュすること（従来 5 回で ~3s 程度）。
+    """
     from src.utils.input_helpers import should_prioritize_medical_route_over_store
 
     if should_prioritize_medical_route_over_store(triage_result, user_text):
@@ -212,7 +206,7 @@ def is_probable_store_inquiry(
         return True
     if detect_services_inquiry(user_text):
         return True
-    inv_ok, inv_info = detect_inventory_inquiry(user_text)
+    inv_ok, _ = detect_inventory_inquiry(user_text, triage_result)
     if inv_ok:
         return True
     fac_ok, _ = detect_facilities_inquiry(user_text)
@@ -1288,58 +1282,10 @@ def handle_store_inquiry_with_two_stage(
 
 
 def classify_product_category(user_text: str) -> Optional[Dict]:
-    """
-    商品名をカテゴリベースで分類
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        検出された場合: {
-            "category": str,  # カテゴリ名（例: "ビューティ・トイレタリー"）
-            "subcategory": str,  # サブカテゴリ名（例: "石鹸"）
-            "product": str,  # 商品名
-            "matched_keyword": str  # マッチしたキーワード
-        }
-        検出されなかった場合: None
-    """
-    if not PRODUCT_CATEGORIES:
-        return None
+    """商品名をカテゴリベースで分類（store_product_index に委譲）。"""
+    from src.services.store_product_index import classify_product_category as _classify
 
-    if not _store_match_text(user_text):
-        return None
-    
-    # 各カテゴリをチェック
-    for category_name, category_data in PRODUCT_CATEGORIES.items():
-        subcategories = category_data.get("subcategories", {})
-        
-        for subcategory_name, subcategory_data in subcategories.items():
-            products = subcategory_data.get("products", [])
-            brands = subcategory_data.get("brands", [])
-            
-            # 商品名をチェック（basic_normalize 済みテキスト同士で照合）
-            for product in products:
-                if _contains_store_keyword(user_text, product):
-                    logger.info(f"🔍 商品カテゴリ検出: {category_name} > {subcategory_name} > {product}")
-                    return {
-                        "category": category_name,
-                        "subcategory": subcategory_name,
-                        "product": product,
-                        "matched_keyword": product,
-                    }
-            
-            # ブランド名をチェック
-            for brand in brands:
-                if _contains_store_keyword(user_text, brand):
-                    logger.info(f"🔍 ブランド名検出: {category_name} > {subcategory_name} > {brand}")
-                    return {
-                        "category": category_name,
-                        "subcategory": subcategory_name,
-                        "product": brand,
-                        "matched_keyword": brand,
-                    }
-    
-    return None
+    return _classify(user_text)
 
 
 def classify_product_category_any(*texts: Optional[str]) -> Optional[Dict]:
@@ -1351,53 +1297,77 @@ def classify_product_category_any(*texts: Optional[str]) -> Optional[Dict]:
     return None
 
 
-def detect_inventory_inquiry(user_text: str) -> Tuple[bool, Optional[Dict]]:
+def _triage_hints_inventory(triage_result: Optional[Dict]) -> bool:
+    triage = triage_result or {}
+    if triage.get("category") != "Other":
+        return False
+    sub = (triage.get("subcategory") or "").lower()
+    return "store_inquiry" in sub or "inventory" in sub
+
+
+def detect_inventory_inquiry(
+    user_text: str,
+    triage_result: Optional[Dict] = None,
+) -> Tuple[bool, Optional[Dict]]:
     """
-    在庫確認の質問を検出
-    
-    Args:
-        user_text: ユーザーの入力テキスト
-    
-    Returns:
-        (is_inventory_inquiry, product_category_info): 
-        - is_inventory_inquiry: 在庫確認の質問かどうか
-        - product_category_info: 商品カテゴリ情報（検出された場合）
+    在庫確認の質問を検出。
+
+    商品カタログ照合は在庫キーワード・位置質問・トリアージヒントがある場合のみ実行。
     """
     user_text_lower = user_text.lower()
-    
-    # まず商品カテゴリを分類（商品名が含まれているかチェック）
-    product_category_info = classify_product_category(user_text)
-    
-    # 在庫確認キーワードをチェック
-    has_inventory_keyword = any(keyword in user_text_lower for keyword in INVENTORY_INQUIRY_KEYWORDS)
-    
-    # 「場所」または「どこ」キーワードの特別処理：商品名が検出された場合のみ在庫確認として扱う
-    if "場所" in user_text_lower or "どこ" in user_text_lower:
-        if product_category_info:
-            # 症状キーワードをチェック（症状の場合は医薬品推奨を優先）
-            has_symptom_keyword = any(keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS)
-            if has_symptom_keyword:
-                logger.info(f"🔍 在庫確認キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先")
-                return False, None
-            logger.info(f"🔍 在庫確認の質問を検出（商品名+場所/どこ）: {product_category_info}")
-            return True, product_category_info
-        # 商品名が検出されない場合は在庫確認として扱わない（店舗案内として扱う）
+
+    has_inventory_keyword = any(
+        keyword in user_text_lower for keyword in INVENTORY_INQUIRY_KEYWORDS
+    )
+    has_location_question = "場所" in user_text_lower or "どこ" in user_text_lower
+    triage_inventory_hint = _triage_hints_inventory(triage_result)
+
+    need_product_scan = (
+        has_inventory_keyword
+        or has_location_question
+        or triage_inventory_hint
+    )
+
+    product_category_info: Optional[Dict] = None
+    if need_product_scan:
+        product_category_info = classify_product_category(user_text)
+
+    if not need_product_scan:
         return False, None
-    
-    # 通常の在庫確認キーワードがある場合
+
+    # 「場所」または「どこ」キーワードの特別処理：商品名が検出された場合のみ在庫確認として扱う
+    if has_location_question:
+        if product_category_info:
+            has_symptom_keyword = any(
+                keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS
+            )
+            if has_symptom_keyword:
+                logger.info(
+                    "🔍 在庫確認キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先"
+                )
+                return False, None
+            logger.info(
+                "🔍 在庫確認の質問を検出（商品名+場所/どこ）: %s",
+                product_category_info,
+            )
+            return True, product_category_info
+        return False, None
+
     if has_inventory_keyword:
         if _has_explicit_store_stock_intent(user_text):
             if product_category_info:
-                logger.info(f"🔍 店舗在庫確認（明示）: {product_category_info}")
+                logger.info("🔍 店舗在庫確認（明示）: %s", product_category_info)
                 return True, product_category_info
             logger.info("🔍 店舗在庫確認（明示・商品カテゴリ未特定）")
             return True, None
 
-        # 症状キーワードをチェック（症状の場合は医薬品推奨を優先）
-        has_symptom_keyword = any(keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS)
-
+        has_symptom_keyword = any(
+            keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS
+        )
         if has_symptom_keyword:
-            logger.info(f"🔍 在庫確認キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先")
+            logger.info(
+                "🔍 在庫確認キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先"
+            )
             return False, None
 
         from src.services.medicine_discovery_routing import has_medicine_discovery_intent
@@ -1409,13 +1379,19 @@ def detect_inventory_inquiry(user_text: str) -> Tuple[bool, Optional[Dict]]:
             return False, None
 
         if product_category_info:
-            logger.info(f"🔍 在庫確認の質問を検出: {product_category_info}")
+            logger.info("🔍 在庫確認の質問を検出: %s", product_category_info)
             return True, product_category_info
-        
-        # 商品カテゴリが検出されなくても、在庫確認キーワードがあれば在庫確認として扱う
-        logger.info(f"🔍 在庫確認の質問を検出（商品カテゴリ未特定）")
+
+        logger.info("🔍 在庫確認の質問を検出（商品カテゴリ未特定）")
         return True, None
-    
+
+    if triage_inventory_hint and product_category_info:
+        logger.info(
+            "🔍 トリアージ在庫ヒント+商品検出: %s",
+            product_category_info,
+        )
+        return True, product_category_info
+
     return False, None
 
 

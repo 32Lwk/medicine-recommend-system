@@ -611,6 +611,53 @@ main.right-panel-collapsed #center-resizer {
     letter-spacing: 0.05em;
 }
 
+#left-panel .left-panel-header {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.left-panel-header__primary {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.left-panel-header__stats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+    margin-right: 0.15rem;
+}
+
+.panel-header-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.panel-header-stat-label {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.panel-header-stat-value {
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--primary);
+}
+
+#left-panel .search-box {
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+#left-panel .session-list-toolbar {
+    margin-top: 0.35rem;
+}
+
 /* Accordion Styles */
 .accordion {
     border-bottom: 1px solid var(--border);
@@ -741,22 +788,36 @@ main.right-panel-collapsed #center-resizer {
 }
 
 .session-list-action-btn {
-    padding: 0.2rem 0.55rem;
-    font-size: 0.75rem;
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    color: var(--text-main);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-sub);
     cursor: pointer;
-    line-height: 1.3;
+    font-size: 0.8125rem;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .session-list-action-btn:hover {
     background: #f1f5f9;
+    color: var(--text-main);
 }
 
 .session-list-action-btn--active {
     border-color: var(--primary);
+    color: var(--primary);
+}
+
+.session-list-action-btn--active:hover {
+    background: #f0f9ff;
     color: var(--primary);
 }
 
@@ -766,7 +827,33 @@ main.right-panel-collapsed #center-resizer {
 }
 
 .session-list-action-btn--danger:hover {
-    background: #fef2f2;
+    background: #fee2e2;
+}
+
+.session-list-action-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.session-list-action-btn--danger:focus-visible {
+    outline-color: var(--danger);
+}
+
+.session-list-action-btn__badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: center;
+    pointer-events: none;
 }
 
 .session-item {
@@ -4010,7 +4097,7 @@ td .ai-response {
     
     #left-panel .search-box {
         margin-bottom: 0;
-        padding-bottom: var(--spacing-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
     }
     
     #left-panel .panel {
@@ -4024,37 +4111,6 @@ td .ai-response {
     #left-panel .accordion-content {
         margin-bottom: 0;
         padding-bottom: 0;
-    }
-    
-    /* タブレット統計情報（簡潔表示） */
-    .tablet-stats {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        margin: 0;
-        min-height: 32px;
-        height: 32px;
-    }
-    
-    .tablet-stat-item {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .tablet-stat-label {
-        font-size: 0.7rem;
-        color: var(--text-sub);
-    }
-    
-    .tablet-stat-value {
-        font-size: 0.85rem;
-        font-weight: var(--font-weight-bold);
-        color: var(--primary);
     }
     
     .panel-header {
@@ -4133,39 +4189,6 @@ td .ai-response {
     .btn:focus-visible {
         outline: 2px solid var(--primary);
         outline-offset: 2px;
-    }
-}
-
-/* Desktop: Show tablet stats (same as tablet) */
-@media (min-width: 769px) {
-    .tablet-stats {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        margin: 0;
-        min-height: 32px;
-        height: 32px;
-    }
-    
-    .tablet-stat-item {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .tablet-stat-label {
-        font-size: 0.7rem;
-        color: var(--text-sub);
-    }
-    
-    .tablet-stat-value {
-        font-size: 0.85rem;
-        font-weight: var(--font-weight-bold);
-        color: var(--primary);
     }
 }
 

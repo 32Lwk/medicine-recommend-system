@@ -43,14 +43,16 @@ async def apply_admin_manual_reply(session_id: str, message: str) -> dict[str, A
     session_data.setdefault("messages", [])
     session_data["messages"].append(manual_reply)
     from src.services.session_lifecycle import merge_messages_into_archive
+    from src.utils.admin_timestamp import sync_last_activity_from_messages
 
     merge_messages_into_archive(session_data, [manual_reply])
+    sync_last_activity_from_messages(session_data)
+    save_session_to_db(session_id, session_data)
+
     from src.handlers.line.line_admin_request import clear_admin_request_after_manual_reply
 
     clear_admin_request_after_manual_reply(session_id)
     session_data = get_session_from_db(session_id) or session_data
-    session_data["last_activity"] = datetime.now()
-    save_session_to_db(session_id, session_data)
 
     line_pushed: bool | None = None
     line_error: str | None = None

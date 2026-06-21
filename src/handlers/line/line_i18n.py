@@ -26,6 +26,15 @@ _STRINGS: dict[str, dict[str, str]] = {
         "symptoms_label": "推定症状",
         "personal_advice_label": "あなたへのひとこと",
         "candidate_summary_label": "候補の概要",
+        "medicines_intro_label": "おすすめの市販薬",
+        "medicines_summary_with_symptoms": "{symptoms}に合わせて、{medicine_type}を{count}つご提案します。",
+        "medicines_summary_no_symptoms": "{medicine_type}を{count}つご提案します。",
+        "medicines_same_family_hint": "いずれも{family}の製品です。用法用量を守ってお選びください。",
+        "medicines_group_suffix": "があります。体質や症状に合うものをお選びください。",
+        "medicines_group_joiner": "と",
+        "medicines_difference_fallback": "成分や作用に違いがあります。下のカードで各製品の特徴をご確認ください。",
+        "medicines_carousel_hint": "各製品の効能・用法・注意点は下のカードでご確認いただけます。",
+        "personalized_advice_fallback": "{symptoms}の症状ですね。お身体の状態を考慮して、安全に使える市販薬を選んでいます。",
         "ingredients_label": "主な成分",
         "web_detail_hint": "※ 成分重複の詳細・使用上の注意・スコア内訳は下の「詳細をブラウザで見る」から確認できます。",
         "status_critical_title": "重要なお知らせ",
@@ -94,6 +103,15 @@ _STRINGS: dict[str, dict[str, str]] = {
         "symptoms_label": "Estimated symptoms",
         "personal_advice_label": "Personal note",
         "candidate_summary_label": "Candidate summary",
+        "medicines_intro_label": "Recommended OTC options",
+        "medicines_summary_with_symptoms": "For {symptoms}, here are {count} {medicine_type} options.",
+        "medicines_summary_no_symptoms": "Here are {count} {medicine_type} options.",
+        "medicines_same_family_hint": "All are {family} products. Follow dosage directions when choosing.",
+        "medicines_group_suffix": " are included. Pick what fits your body and symptoms.",
+        "medicines_group_joiner": " and ",
+        "medicines_difference_fallback": "They differ in ingredients and effects. See the cards below for details.",
+        "medicines_carousel_hint": "See each product's efficacy, usage, and precautions in the cards below.",
+        "personalized_advice_fallback": "We understand {symptoms} can be tough. These OTC options were chosen with your safety in mind.",
         "ingredients_label": "Main ingredients",
         "web_detail_hint": "See overlap warnings, precautions, and score details via “View details in browser” below.",
         "status_critical_title": "Important notice",
@@ -155,6 +173,27 @@ def get_line_ui_strings(lang: str | None) -> dict[str, str]:
 def format_intro(ui: dict[str, str], *, medicine_type: str, count: int) -> str:
     template = ui.get("intro_template", _STRINGS["ja"]["intro_template"])
     mt = medicine_type or "OTC医薬品"
+    return template.format(medicine_type=mt, count=count)
+
+
+def format_medicines_summary(
+    ui: dict[str, str],
+    *,
+    medicine_type: str,
+    count: int,
+    symptoms: list[str],
+) -> str:
+    mt = medicine_type or "OTC医薬品"
+    if symptoms:
+        template = ui.get(
+            "medicines_summary_with_symptoms",
+            _STRINGS["ja"]["medicines_summary_with_symptoms"],
+        )
+        return template.format(symptoms="・".join(symptoms[:4]), medicine_type=mt, count=count)
+    template = ui.get(
+        "medicines_summary_no_symptoms",
+        _STRINGS["ja"]["medicines_summary_no_symptoms"],
+    )
     return template.format(medicine_type=mt, count=count)
 
 

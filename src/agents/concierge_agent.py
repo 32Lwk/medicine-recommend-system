@@ -72,15 +72,18 @@ def resolve_concierge_intent(
     if not text or _is_medicine_consultation(text):
         return None
 
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
-    if is_probable_store_inquiry_any(
+    if evaluate_store_gate(
         text,
         triage_result=triage_result,
+        routing_ctx=None,
     ):
         return None
 
-    orchestrated = resolve_intent_from_triage(triage_result, session, text)
+    orchestrated = resolve_intent_from_triage(
+        triage_result, session, text, routing_ctx=None
+    )
     if orchestrated:
         return orchestrated
 
@@ -331,8 +334,8 @@ def generate_greeting_text(
     *,
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
-) -> str:
-    """ユーザーの挨拶トーンに合わせた返答を LLM で生成（固定テンプレはフォールバックのみ）。"""
+) -> tuple[str, bool]:
+    """挨拶返答。既定は LLM。失敗時のみ build_greeting_text にフォールバック。"""
     hist = ""
     if history:
         lines = []
@@ -380,10 +383,10 @@ def generate_greeting_text(
         )
         text = (resp.choices[0].message.content or "").strip()
         if text:
-            return text
+            return text, True
     except Exception as exc:
         logger.warning("Concierge greeting LLM failed: %s", exc)
-    return build_greeting_text(user_text)
+    return build_greeting_text(user_text), False
 
 
 def generate_chitchat_text(
@@ -451,7 +454,7 @@ def build_concierge_payload(
     if intent == "greeting":
         from src.services.status_diagnosis_builder import build_concierge_text_status
 
-        text = generate_greeting_text(
+        text, greeting_llm_used = generate_greeting_text(
             client, user_text, session_id=session_id, history=history
         )
         return {
@@ -459,7 +462,7 @@ def build_concierge_payload(
             "content_format": "text",
             "concierge_intent": intent,
             "greeting": True,
-            "llm_used": True,
+            "llm_used": greeting_llm_used,
             "sage_diagnosis": build_concierge_text_status(
                 text, title="ご挨拶", kind="concierge_greeting"
             ).to_client_dict(),
@@ -605,17 +608,21 @@ def should_concierge_handle(
 ) -> bool:
     """Other または挨拶・感謝・雑談のみ Concierge。医薬品・Emergency・Physical は除外。"""
     from src.services.concierge_intent import _is_medicine_consultation
-    from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+    from src.services.routing_context import evaluate_store_gate
 
     if not user_text or _is_medicine_consultation(user_text):
         return False
-    routing_source = (triage_result or {}).get("_routing_source_text")
+
     extra = [t for t in (alt_texts or []) if t]
+    routing_source = (triage_result or {}).get("_routing_source_text")
     if routing_source:
         extra.append(routing_source)
 
-    if is_probable_store_inquiry_any(
-        user_text, *extra, triage_result=triage_result
+    if evaluate_store_gate(
+        user_text,
+        *extra,
+        triage_result=triage_result,
+        routing_ctx=None,
     ):
         return False
     cat = (triage_result or {}).get("category", "")
