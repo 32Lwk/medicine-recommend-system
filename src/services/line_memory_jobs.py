@@ -1,4 +1,7 @@
-"""LINE 長期記憶の非同期ジョブ（メインリクエストをブロックしない）。"""
+"""LINE 長期記憶の非同期ジョブ（メインリクエストをブロックしない）。
+
+ライフサイクル: docs/ops/LINE_LONG_TERM_MEMORY.md §4
+"""
 from __future__ import annotations
 
 import logging

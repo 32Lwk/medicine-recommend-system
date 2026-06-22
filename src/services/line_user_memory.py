@@ -1,4 +1,7 @@
-"""LINE ユーザー長期記憶（プロファイル + エピソード要約）の永続化。"""
+"""LINE ユーザー長期記憶（プロファイル + エピソード要約）の永続化。
+
+運用: docs/ops/LINE_LONG_TERM_MEMORY.md
+"""
 from __future__ import annotations
 
 import logging

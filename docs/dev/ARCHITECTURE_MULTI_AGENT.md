@@ -18,6 +18,9 @@
 | ConciergeAgent | 挨拶・できること・構成説明・軽い雑談（Other の窓口） |
 | StoreInquiryAgent | Other / 店舗案内 |
 | ModerationAgent | 境界クライシス検知 |
+| ProfileMemoryAgent | LINE セッション属性を `line_user_profile` へ非同期マージ保存 |
+| EpisodeSummaryAgent | 相談ログからエピソード要約を `consultation_summaries` に upsert |
+| MemoryDeleteAgent | 「記憶を消して」等の削除意図を分類し全件/部分削除（同期） |
 
 ## Emergency フロー
 
@@ -83,6 +86,8 @@ sequenceDiagram
 手動キュー: `priority_tag`（critical_crisis > critical_medical > store_*）、一覧 120 文字 / 詳細 800 文字抜粋。PII は自動マスクせず運用 playbook 参照（[`../security/ADMIN_PII_PLAYBOOK.md`](../security/ADMIN_PII_PLAYBOOK.md)）。
 
 LINE Messaging API 経由の相談はセッション ID が `line:{userId}` 形式（例: `line:Uxxxxxxxx`）。管理画面のセッション一覧で Web ユーザーと同様に参照できる。
+
+Web 引き継ぎセッションは `handoff_from_line` で記憶オーナーを `line:{userId}` に解決する。長期記憶の注入は `line_memory_context.build_long_term_memory_block` がトリアージ・カウンセリング・医薬品 Q&A 各経路で使用される。詳細: [LINE_LONG_TERM_MEMORY.md](../ops/LINE_LONG_TERM_MEMORY.md)
 
 ## 緊急メール通知
 

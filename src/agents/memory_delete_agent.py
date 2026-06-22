@@ -1,4 +1,7 @@
-"""MemoryDeleteAgent — 記憶削除意図の判定と実行。"""
+"""MemoryDeleteAgent — 記憶削除意図の判定と実行。
+
+ユーザー向け削除フロー: docs/ops/LINE_LONG_TERM_MEMORY.md §5
+"""
 from __future__ import annotations
 
 import json

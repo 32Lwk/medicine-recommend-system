@@ -3,7 +3,7 @@
 Webhook 受信・署名検証・Reply/Push・Flex Message・推奨パイプライン連携を実装済みです。  
 本番 `medicine-recommend` は `LINE_WEBHOOK_ENABLED=false` のまま、検証は **dev Cloud Run** で行います。
 
-関連: [ROUTE_SPEC.md](ROUTE_SPEC.md) · [CLOUD_RUN_LLM_ENV.md](CLOUD_RUN_LLM_ENV.md)
+関連: [ROUTE_SPEC.md](../dev/ROUTE_SPEC.md) · [CLOUD_RUN_LLM_ENV.md](CLOUD_RUN_LLM_ENV.md) · [LINE_LONG_TERM_MEMORY.md](LINE_LONG_TERM_MEMORY.md)
 
 ---
 
@@ -342,6 +342,19 @@ LINE Webhook は単独リクエストでコールドスタートが発生しや�
 
 コストと相談し、本番のみ min-instances=1、dev は検証時のみ有効化でも構いません。
 
-### 9.6 将来: hero 画像
+### 9.6 長期記憶（2026-06-22〜）
+
+LINE ユーザー向けに**永続プロファイル**と**相談エピソード要約**を `line:{userId}` セッションへ保存し、トリアージ・Q&A・Web 引き継ぎへ注入します。
+
+| 項目 | 内容 |
+|------|------|
+| 環境変数 | `LINE_MEMORY_RECENT_TURNS`（既定 5）、`LINE_MEMORY_SUMMARY_MAX`（既定 5） |
+| ユーザー削除 | チャット内「記憶を消して」等 → `MemoryDeleteAgent` |
+| 管理画面 | 右パネル「長期記憶」タブ、バックフィル / 削除 API |
+| 詳細 | **[LINE_LONG_TERM_MEMORY.md](LINE_LONG_TERM_MEMORY.md)** |
+
+Rich Menu 登録 CLI: `python scripts/register_line_rich_menu.py --pattern a-sage-minimal`（`--help` 参照）
+
+### 9.7 将来: hero 画像
 
 v1 は hero なし（Noimage）。商品画像 URL が整備されたら `flex_messages.build_medicine_bubble(..., hero_url=...)` で拡張予定。

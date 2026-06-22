@@ -1,4 +1,7 @@
-"""LINE 長期記憶・プロファイル設定。"""
+"""LINE 長期記憶・プロファイル設定。
+
+環境変数・運用手順: docs/ops/LINE_LONG_TERM_MEMORY.md §3
+"""
 from __future__ import annotations
 
 import os

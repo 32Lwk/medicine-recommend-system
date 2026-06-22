@@ -1,4 +1,7 @@
-"""message_archive から LINE 長期記憶（プロファイル + 要約）をバックフィルする。"""
+"""message_archive から LINE 長期記憶（プロファイル + 要約）をバックフィルする。
+
+管理 API・force オプション: docs/ops/LINE_LONG_TERM_MEMORY.md §6.2
+"""
 from __future__ import annotations
 
 import logging
