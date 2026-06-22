@@ -36,7 +36,9 @@ _DELETED_SID_TTL_SEC = 3600
 
 # グローバル状態（モジュール変数で管理、globals()は使用しない）
 _ai_auto_reply = True
+_ai_auto_reply_pending = False
 _admin_mode = False
+_admin_mode_pending = False
 _manual_reply_queue = []
 _manual_reply_message_cache = None
 _admin_sessions = {}  # 管理者用詳細診断キャッシュ {sid: {'detailed_diagnosis': ..., 'last_updated': ...}}
@@ -306,52 +308,113 @@ def get_all_sessions_from_db():
 
 # --- グローバル状態 ---
 
+def _coerce_bool(value, default: bool) -> bool:
+    """global_state の JSONB 値を bool に正規化する。"""
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in ('true', '1', 'yes', 'on', 'auto'):
+            return True
+        if normalized in ('false', '0', 'no', 'off', 'manual'):
+            return False
+    return bool(value)
+
+
+def _try_persist_global_bool(key: str, value: bool, pending_flag: str) -> bool:
+    """DB へ bool グローバル状態を保存し、成功時に pending フラグを解除する。"""
+    db = get_database()
+    if not _db_usable(db):
+        return False
+    if db.set_global_state(key, value):
+        globals()[pending_flag] = False
+        return True
+    return False
+
+
 def get_ai_auto_reply_in_memory() -> bool:
     """DB を参照せずモジュール内キャッシュの AI 自動応答設定を返す（LINE ホットパス用）。"""
-    return _ai_auto_reply
+    return _coerce_bool(_ai_auto_reply, True)
 
 
 def get_ai_auto_reply():
     """AI自動応答設定をDBから取得（不可時はメモリキャッシュ）。"""
-    global _ai_auto_reply
+    global _ai_auto_reply, _ai_auto_reply_pending
+    if _ai_auto_reply_pending:
+        _try_persist_global_bool(
+            'AI_AUTO_REPLY', _coerce_bool(_ai_auto_reply, True), '_ai_auto_reply_pending'
+        )
+        return _coerce_bool(_ai_auto_reply, True)
     if not is_db_persist_enabled():
-        return _ai_auto_reply
+        return _coerce_bool(_ai_auto_reply, True)
     db = get_database()
     if not _db_usable(db):
-        return _ai_auto_reply
+        return _coerce_bool(_ai_auto_reply, True)
     try:
         value = db.get_global_state('AI_AUTO_REPLY', default_value=True)
-        _ai_auto_reply = value
-        return value
+        coerced = _coerce_bool(value, True)
+        _ai_auto_reply = coerced
+        return coerced
     except Exception as exc:
         logger.warning("get_ai_auto_reply: DB read failed (%s); using in-memory value", exc)
-        return _ai_auto_reply
+        return _coerce_bool(_ai_auto_reply, True)
 
 
 def set_ai_auto_reply(value):
     """AI自動応答設定をDBに保存"""
-    global _ai_auto_reply
-    db = get_database()
-    if _db_usable(db):
-        db.set_global_state('AI_AUTO_REPLY', value)
-    _ai_auto_reply = value
+    global _ai_auto_reply, _ai_auto_reply_pending
+    coerced = _coerce_bool(value, True)
+    _ai_auto_reply = coerced
+    if _try_persist_global_bool('AI_AUTO_REPLY', coerced, '_ai_auto_reply_pending'):
+        return
+    _ai_auto_reply_pending = True
+    if _db_usable(get_database()):
+        logger.warning(
+            "set_ai_auto_reply: DB write failed; keeping in-memory value=%s until retry",
+            coerced,
+        )
 
 
 def get_admin_mode():
     """管理者モード設定をDBから取得"""
+    global _admin_mode, _admin_mode_pending
+    if _admin_mode_pending:
+        _try_persist_global_bool(
+            'ADMIN_MODE', _coerce_bool(_admin_mode, False), '_admin_mode_pending'
+        )
+        return _coerce_bool(_admin_mode, False)
+    if not is_db_persist_enabled():
+        return _coerce_bool(_admin_mode, False)
     db = get_database()
-    if _db_usable(db):
-        return db.get_global_state('ADMIN_MODE', default_value=False)
-    return _admin_mode
+    if not _db_usable(db):
+        return _coerce_bool(_admin_mode, False)
+    try:
+        value = db.get_global_state('ADMIN_MODE', default_value=False)
+        coerced = _coerce_bool(value, False)
+        _admin_mode = coerced
+        return coerced
+    except Exception as exc:
+        logger.warning("get_admin_mode: DB read failed (%s); using in-memory value", exc)
+        return _coerce_bool(_admin_mode, False)
 
 
 def set_admin_mode(value):
     """管理者モード設定をDBに保存"""
-    global _admin_mode
-    db = get_database()
-    if _db_usable(db):
-        db.set_global_state('ADMIN_MODE', value)
-    _admin_mode = value
+    global _admin_mode, _admin_mode_pending
+    coerced = _coerce_bool(value, False)
+    _admin_mode = coerced
+    if _try_persist_global_bool('ADMIN_MODE', coerced, '_admin_mode_pending'):
+        return
+    _admin_mode_pending = True
+    if _db_usable(get_database()):
+        logger.warning(
+            "set_admin_mode: DB write failed; keeping in-memory value=%s until retry",
+            coerced,
+        )
 
 
 def get_manual_reply_queue():

@@ -1151,6 +1151,42 @@ const LINE_PUSH_ERROR_HINTS = {
     invalid_line_session_id: 'LINE セッション ID が不正です。履歴には保存済みです。',
 };
 
+function applyAIStatus(data) {
+    if (!data || typeof data !== 'object') {
+        return;
+    }
+    const aiOn = data.ai_auto_reply === true;
+    const statusElement = document.getElementById('ai-status');
+    const statusText = document.getElementById('status-text');
+    const onBtn = document.getElementById('ai-on-btn');
+    const offBtn = document.getElementById('ai-off-btn');
+    const statusBadge = document.getElementById('ai-status-badge');
+
+    if (aiOn) {
+        if (statusElement) statusElement.className = 'ai-status on';
+        if (statusText) statusText.textContent = 'AI自動応答ON';
+        if (statusBadge) {
+            statusBadge.className = 'status-badge on';
+            statusBadge.setAttribute('aria-label', 'AI自動応答ON');
+            statusBadge.title = 'AI自動応答ON';
+            statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答ON</span>';
+        }
+        if (onBtn) onBtn.disabled = true;
+        if (offBtn) offBtn.disabled = false;
+    } else {
+        if (statusElement) statusElement.className = 'ai-status off';
+        if (statusText) statusText.textContent = 'AI自動応答OFF';
+        if (statusBadge) {
+            statusBadge.className = 'status-badge off';
+            statusBadge.setAttribute('aria-label', 'AI自動応答OFF');
+            statusBadge.title = 'AI自動応答OFF';
+            statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答OFF</span>';
+        }
+        if (onBtn) onBtn.disabled = false;
+        if (offBtn) offBtn.disabled = true;
+    }
+}
+
 function setAIMode(mode) {
     console.log('🔵 setAIMode called with mode:', mode);
     
@@ -1161,31 +1197,11 @@ function setAIMode(mode) {
         return;
     }
     
-    if (mode === 'admin') {
-        fetch('/api/admin_mode', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            showNotification(data.message || '薬剤師対応モードに切り替えました');
-            refreshAIStatus && refreshAIStatus();
-            refreshQueue && refreshQueue();
-        })
-        .catch((error) => {
-            console.error('薬剤師対応APIエラー:', error);
-            showNotification('通信エラーが発生しました: ' + (error && error.message ? error.message : error), 'error');
-        });
-        return;
-    }
-    
-    // 'on'/'off'を'auto'/'manual'に変換（後方互換性のため）
+    // 'on'/'off'/'admin'を'auto'/'manual'に変換（後方互換性のため）
     let normalizedMode = mode;
-    if (mode === 'on') {
+    if (mode === 'on' || mode === 'auto') {
         normalizedMode = 'auto';
-    } else if (mode === 'off') {
+    } else if (mode === 'off' || mode === 'manual' || mode === 'admin') {
         normalizedMode = 'manual';
     }
     
@@ -1207,13 +1223,15 @@ function setAIMode(mode) {
         console.log('✅ setAIMode response:', data);
         if (data.error) {
             showNotification(`エラー: ${data.error}`, 'error');
-        } else {
-            // 通知メッセージの表示（normalizedModeまたは元のmodeに基づいて）
-            const displayMode = normalizedMode === 'auto' ? 'ON' : 'OFF';
-            showNotification(data.message || `AI自動応答を${displayMode}にしました`);
-            refreshAIStatus();
-            refreshQueue();
+            return;
         }
+        const displayMode = normalizedMode === 'auto' ? 'ON' : 'OFF';
+        const defaultMessage = mode === 'admin'
+            ? '薬剤師対応モードに切り替えました'
+            : `AI自動応答を${displayMode}にしました`;
+        showNotification(data.message || defaultMessage);
+        applyAIStatus(data);
+        refreshQueue();
     })
     .catch(error => {
         console.error('❌ setAIMode error:', error);
@@ -1224,15 +1242,6 @@ function setAIMode(mode) {
 function refreshAIStatus() {
     adminFetchJson('/api/main_ai_control')
         .then(data => {
-            const statusElement = document.getElementById('ai-status');
-            const statusText = document.getElementById('status-text');
-            const onBtn = document.getElementById('ai-on-btn');
-            const offBtn = document.getElementById('ai-off-btn');
-            const headerStatusText = document.getElementById('ai-status-text');
-            const statusBadge = document.getElementById('ai-status-badge');
-            
-            // メッセージフィールドを更新（モーダルが開いている場合のみ）
-            // ただし、保存直後（5秒以内）は更新しない（保存した値が上書きされないように）
             const messageField = document.getElementById('manualReplyMessage');
             const aiControlModal = document.getElementById('aiControlModal');
             const timeSinceLastSave = Date.now() - (lastMessageSaveTime || 0);
@@ -1247,32 +1256,8 @@ function refreshAIStatus() {
                     console.log('⏭️ Skipping message field update (recently saved,', Math.round(timeSinceLastSave / 1000), 'seconds ago)');
                 }
             }
-            
-            if (data.ai_auto_reply) {
-                if (statusElement) statusElement.className = 'ai-status on';
-                if (statusText) statusText.textContent = 'AI自動応答ON';
-                if (headerStatusText) headerStatusText.textContent = 'AI自動応答ON';
-                if (statusBadge) {
-                    statusBadge.className = 'status-badge on';
-                    statusBadge.setAttribute('aria-label', 'AI自動応答ON');
-                    statusBadge.title = 'AI自動応答ON';
-                    statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答ON</span>';
-                }
-                if (onBtn) onBtn.disabled = true;
-                if (offBtn) offBtn.disabled = false;
-            } else {
-                if (statusElement) statusElement.className = 'ai-status off';
-                if (statusText) statusText.textContent = 'AI自動応答OFF';
-                if (headerStatusText) headerStatusText.textContent = 'AI自動応答OFF';
-                if (statusBadge) {
-                    statusBadge.className = 'status-badge off';
-                    statusBadge.setAttribute('aria-label', 'AI自動応答OFF');
-                    statusBadge.title = 'AI自動応答OFF';
-                    statusBadge.innerHTML = '<i class="fa-solid fa-robot" aria-hidden="true"></i><span id="ai-status-text">AI自動応答OFF</span>';
-                }
-                if (onBtn) onBtn.disabled = false;
-                if (offBtn) offBtn.disabled = true;
-            }
+
+            applyAIStatus(data);
         })
         .catch(error => {
             console.error('AI状態取得エラー:', error);

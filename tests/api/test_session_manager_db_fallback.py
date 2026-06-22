@@ -13,11 +13,19 @@ def reset_session_manager_state():
     sm._db_persist_enabled = None
     sm._memory_fallback_logged = False
     sm._last_db_persist_at.clear()
+    sm._ai_auto_reply = True
+    sm._ai_auto_reply_pending = False
+    sm._admin_mode = False
+    sm._admin_mode_pending = False
     yield
     sm._all_sessions.clear()
     sm._db_persist_enabled = None
     sm._memory_fallback_logged = False
     sm._last_db_persist_at.clear()
+    sm._ai_auto_reply = True
+    sm._ai_auto_reply_pending = False
+    sm._admin_mode = False
+    sm._admin_mode_pending = False
 
 
 def test_save_session_to_db_logs_memory_fallback_once(caplog):
@@ -80,6 +88,43 @@ def test_get_ai_auto_reply_skips_db_when_unavailable():
         assert time.monotonic() - start < 0.1
 
     mock_db.get_global_state.assert_not_called()
+
+
+def test_coerce_bool_normalizes_string_values():
+    assert sm._coerce_bool('false', True) is False
+    assert sm._coerce_bool('true', False) is True
+    assert sm._coerce_bool('off', True) is False
+
+
+def test_set_ai_auto_reply_pending_survives_stale_db_read():
+    mock_db = MagicMock()
+    mock_db.is_available.return_value = True
+    mock_db.startup_skip_reason = None
+    mock_db.set_global_state.return_value = False
+    mock_db.get_global_state.return_value = False
+
+    sm._ai_auto_reply = False
+    sm._ai_auto_reply_pending = False
+    with patch.object(sm, 'get_database', return_value=mock_db):
+        sm._db_persist_enabled = True
+        sm.set_ai_auto_reply(True)
+        assert sm.get_ai_auto_reply() is True
+        mock_db.get_global_state.assert_not_called()
+
+
+def test_set_ai_auto_reply_clears_pending_after_successful_write():
+    mock_db = MagicMock()
+    mock_db.is_available.return_value = True
+    mock_db.startup_skip_reason = None
+    mock_db.set_global_state.return_value = True
+    mock_db.get_global_state.return_value = False
+
+    with patch.object(sm, 'get_database', return_value=mock_db):
+        sm._db_persist_enabled = True
+        sm.set_ai_auto_reply(True)
+        assert sm._ai_auto_reply_pending is False
+        assert sm.get_ai_auto_reply() is False
+        mock_db.get_global_state.assert_called_once()
 
 
 def test_resolve_database_url_from_components(monkeypatch):
