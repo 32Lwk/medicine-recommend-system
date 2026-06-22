@@ -1,5 +1,5 @@
 ---
-description: オンボーディング「最終更新日」と Git コミット表示の更新ルール（GitHub プッシュ時）
+description: オンボーディング「最終更新日」と Git コミット表示の更新ルール（GitLab プッシュ時・GitHub 停止中）
 globs: static/js/main.js,main.py,Dockerfile,cloudbuild.yaml,scripts/write_build_meta.py
 alwaysApply: false
 ---
@@ -20,7 +20,9 @@ alwaysApply: false
 
 **本番フォールバック**: `static/build-meta.json` をリポジトリに同梱（プッシュ前に `scripts/write_build_meta.py` で更新）。デフォルト `docker build` でも `COPY static/` 経由で日付が入る。
 
-## GitHub に全更新をプッシュする前のチェックリスト
+## GitLab（`gitlab`）に全更新をプッシュする前のチェックリスト
+
+> GitHub アカウント停止中はプライマリが GitLab。詳細は `.cursor/rules/git-remote.mdc`。
 
 1. **オンボーディング本文**（`translations.*.onboarding`）を変更した場合 → そのまま push でよい（日付は次デプロイのコミット日になる）
 2. **build-meta.json を更新**（本番のデフォルト Docker ビルド向け）:

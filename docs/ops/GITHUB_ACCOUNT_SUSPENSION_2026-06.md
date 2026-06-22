@@ -5,7 +5,8 @@
 **対象アカウント**: [@32Lwk](https://github.com/32Lwk)  
 **対象リポジトリ**: [medicine-recommend-system](https://github.com/32Lwk/medicine-recommend-system)（個人開発・OTC 医薬品推奨アプリ）  
 **本番 URL**: https://medicine.yutok.dev  
-**Support チケット**: **#4501520**（**2026-06-22 11:05** 受付・審査待ち）
+**Support チケット**: **#4501520**（**2026-06-22 11:05** 受付・審査待ち）  
+**一時ミラー（GitLab）**: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend) — **2026-06-22 〜 GitHub 復旧まで**
 
 ---
 
@@ -14,6 +15,50 @@
 2026-06-22 午前、Cursor IDE 上の AI エージェントが `gh`（GitHub CLI）経由で **自リポジトリの issue を大量更新**していた。**09:49 までは `git push` 成功**（コミット履歴より）。**09:52** に GitHub Education の再認証メール着信（この時点ではアクセス中断の記載なし）。その後 **~10:11 頃** モバイルアプリで suspend 403 を確認。**11:05** に Support Appeal 受付（Ticket 4501520）。停止の公式通知メール・パスワードリセットメールは **未着**。復旧待ち。
 
 **推定原因（確定ではない）**: 短時間の大量 issue API 操作が自動 abuse 検知に引っかかった可能性が高い。悪意のあるスパム行為ではなく、CHANGELOG / ロードマップ同期の正当なプロジェクト管理だった。
+
+**開発継続**: GitHub 停止中は **GitLab を一時的な正本リモート**として利用（下記「GitLab 一時ミラー」）。
+
+---
+
+## GitLab 一時ミラー（2026-06-22 〜 GitHub 復旧まで）
+
+GitHub への `git push` / `gh` が使えない間、ローカル開発とリモート同期は GitLab で継続する。**代替 GitHub アカウントは作成しない**（ToS リスク）。GitLab は同一リポジトリ内容のミラーであり、GitHub 復旧後に再同期する。
+
+### リモート構成
+
+| リモート | URL | 役割 |
+|----------|-----|------|
+| `gitlab` | https://gitlab.com/blank2703726/medicine-recommend | **プライマリ** — fetch / push / upstream |
+| `origin` | https://github.com/32Lwk/medicine-recommend-system.git | 参照用に残置。**停止中は fetch / push 不可**（403） |
+
+- ローカル `main` の upstream: **`gitlab/main`**
+- Cursor エージェント向けルール: [`.cursor/rules/git-remote.mdc`](../../.cursor/rules/git-remote.mdc)（`alwaysApply: true`）
+
+### 日常コマンド
+
+```powershell
+git pull                    # gitlab/main から取得
+git push                    # gitlab へ push（upstream 設定済みなら引数不要）
+git push gitlab main        # 明示する場合
+```
+
+`gh issue` / `gh pr` は停止中は使わない。issue 管理はローカル doc または GitLab Issues に任せる。
+
+### ミラー開始時の状態（2026-06-22）
+
+| 項目 | 内容 |
+|------|------|
+| GitHub 最終 push | `9832680`（09:49 JST 頃） |
+| GitLab `main` 先端 | `db91348`（停止後に doc・ライセンス等 3 コミットを GitLab 側で反映済み） |
+| ローカル | `gitlab/main` と同期済み |
+
+### GitHub 復旧後の手順
+
+1. `git fetch origin` が成功することを確認
+2. `gitlab/main` と `origin/main` の差分を確認し、欠けているコミットを双方に反映
+3. upstream を戻す: `git branch --set-upstream-to=origin/main main`
+4. CI / Cloud Build のトリガー URL が GitHub のままなら、デプロイ連携を再確認
+5. `.cursor/rules/git-remote.mdc` を削除または無効化し、本節に **復旧日** を追記
 
 ---
 
@@ -318,11 +363,12 @@ Received a 403 error. Data returned as a String was: {
 
 | 領域 | 影響 |
 |------|------|
-| **リモート push** | 不可 |
-| **issue 更新（未反映分）** | `scripts/update_issues_changelog_philosophy.sh` がローカルに残存。#57/#52/#74/#55/#88 の CHANGELOG 思想セクションは **GitHub 上未反映の可能性** |
-| **CI / Actions** | アカウント停止によりワークフローが動かない可能性 |
-| **本番デプロイ** | Cloud Run 等は既存デプロイに影響なし。新規 push ベースのデプロイは不可 |
-| **ローカル開発** | ローカルコード・doc は無事。`.env` 等はローカルに保持 |
+| **GitHub への push** | 不可（403） |
+| **GitLab への push** | **可** — 一時ミラー [`blank2703726/medicine-recommend`](https://gitlab.com/blank2703726/medicine-recommend) |
+| **issue 更新（未反映分）** | `scripts/update_issues_changelog_philosophy.sh` がローカルに残存。#57/#52/#74/#55/#88 の CHANGELOG 思想セクションは **GitHub 上未反映の可能性**（`gh` 停止中） |
+| **CI / Actions** | GitHub Actions はアカウント停止により動かない可能性。GitLab CI は未設定の場合は手動デプロイ |
+| **本番デプロイ** | Cloud Run 等は既存デプロイに影響なし。GitHub 連携トリガーは停止中は動かない可能性 — GCP コンソールまたは GitLab 連携を検討 |
+| **ローカル開発** | ローカルコード・doc は無事。`.env` 等はローカルに保持。`git pull` / `git push` は GitLab 経由で継続可能 |
 
 ### 未コミット変更（停止時点で残っていた可能性）
 
@@ -390,8 +436,10 @@ GitHub はスパム bot 対策のため、以下パターンでアカウント�
 | P1 | Support 返信があれば **同スレッドに返信**で追記（学生証提出等） | 待機 |
 | P1 | 復旧後: `gh auth login` 再実行 | ブロック中 |
 | P1 | 復旧後: `scripts/update_issues_changelog_philosophy.sh` を **分割実行** | ブロック中 |
+| P1 | 停止中: コミットは **`git push`（GitLab）** で同期 | ✅ 運用中 |
 | P2 | ローカル未コミット変更の整理（`git status`） | いつでも可 |
 | P2 | 本番 Cloud Run は既存 revision で継続、急ぎの hotfix は GCP コンソール経由を検討 | 必要時 |
+| P2 | GitHub 復旧後: GitLab ↔ GitHub の双方向同期と upstream 復帰 | 復旧後 |
 
 ### Support 返信への追記候補（返信メールにそのまま貼れる）
 
@@ -423,6 +471,8 @@ Kawashima Yuto / @32Lwk
 - 証跡画像: [`docs/ops/assets/github-ios-suspend-403-2026-06-22-1011.png`](./assets/github-ios-suspend-403-2026-06-22-1011.png)
 - ローカル未反映スクリプト: [`scripts/update_issues_changelog_philosophy.sh`](../../scripts/update_issues_changelog_philosophy.sh)
 - issue レポート形式: [`docs/planning/ISSUE_REPORT_FORMAT.md`](../planning/ISSUE_REPORT_FORMAT.md)
+- GitLab 一時ミラー: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend)
+- Cursor ルール: [`.cursor/rules/git-remote.mdc`](../../.cursor/rules/git-remote.mdc)
 
 ---
 
@@ -433,6 +483,7 @@ Kawashima Yuto / @32Lwk
 | 2026-06-22 | 初版 — 停止判明・Appeal 送信・Ticket 4501520 受付 |
 | 2026-06-22 | **時刻詳細追記** — JST タイムライン、09:52 Education メール全文要約、11:05 Ticket 4501520、`git log` 時刻（09:42/09:49 push）、10:11 モバイルスクショ |
 | 2026-06-22 | **証跡画像追加** — `docs/ops/assets/github-ios-suspend-403-2026-06-22-1011.png`（10:11 iOS 403 画面） |
+| 2026-06-22 | **GitLab 一時ミラー** — リモート `gitlab`・upstream `gitlab/main`・`.cursor/rules/git-remote.mdc`・本節追記 |
 
 ---
 

@@ -1,0 +1,39 @@
+---
+description: GitHub 停止中の一時 Git リモート運用（GitLab をプライマリにする）
+alwaysApply: true
+---
+
+# Git リモート（GitHub 停止中の一時運用）
+
+**期間**: GitHub アカウント [@32Lwk](https://github.com/32Lwk) 復旧まで（インシデント: `docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md`）
+
+## プライマリリモート
+
+| 項目 | 値 |
+|------|-----|
+| リモート名 | `gitlab` |
+| URL | https://gitlab.com/blank2703726/medicine-recommend |
+| 追跡ブランチ | `main` → `gitlab/main` |
+
+## エージェント向けルール
+
+1. **`git pull` / `git push` は GitLab 向け**（`gitlab` リモート、または upstream `gitlab/main`）
+2. **`origin`（GitHub）への fetch / push は行わない** — アカウント停止で 403
+3. **`gh` CLI（issue / PR / `gh repo` 等）は使わない** — 停止中
+4. PR 作成依頼時は GitLab の MR 手順を案内するか、push のみ実施してユーザーに MR 作成を任せる
+5. コミット・デプロイ前チェックリストは `.cursor/rules/onboarding-last-updated.mdc` を参照（プッシュ先は GitLab）
+
+## ローカル設定の確認
+
+```powershell
+git remote -v
+git branch -vv   # main が [gitlab/main] を追跡していること
+```
+
+## GitHub 復旧後
+
+1. `git fetch origin` が成功することを確認
+2. `gitlab/main` と `origin/main` の差分を整理・同期
+3. upstream を `origin/main` に戻す: `git branch --set-upstream-to=origin/main main`
+4. 本 rule（`git-remote.mdc`）を削除または `alwaysApply: false` に変更
+5. `docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md` の GitLab 節に復旧日を追記
