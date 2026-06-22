@@ -3708,6 +3708,7 @@
                         
                         <h4>第1条（目的と適用範囲）</h4>
                         <p>本アプリ「チャット型医薬品相談ツール」（以下、「本アプリ」といいます。）は、一般用医薬品を症状に基づいて参考提示するシステムです。現在はテスター限定の試験運用（β版）として公開されており、正式な医療サービスではありません。本アプリを利用することにより、利用者は本規約に同意したものとみなします。</p>
+                        <p>本規約は、本アプリ（サービス）の利用について定めるものです。開発リポジトリに公開するソースコードの利用条件については、リポジトリに同梱の LICENSE（PolyForm Noncommercial License 1.0.0）に従います。</p>
                         
                         <h4>第2条（試験運用について）</h4>
                         <ol>
@@ -3739,7 +3740,12 @@
                         <p>運営者は、事前通知なく本アプリの内容を変更・停止・終了することがあります。</p>
                         
                         <h4>第6条（知的財産権）</h4>
-                        <p>本アプリに関する著作権、プログラム、デザインなどの知的財産権は、運営者または正当な権利者に帰属します。</p>
+                        <ol>
+                            <li>本アプリに関する著作権、プログラム、デザインなどの知的財産権は、運営者または正当な権利者に帰属します。</li>
+                            <li>本アプリのソースコードは、開発リポジトリ（<a href="https://github.com/32Lwk/medicine-recommend-system" target="_blank" rel="noopener noreferrer">GitHub</a>）に掲載の PolyForm Noncommercial License 1.0.0 に従い、非商用目的に限り利用・改変・再配布が認められます。商用利用には運営者の事前の書面による許可が必要です。</li>
+                            <li>本規約は本アプリ（サービス）の利用について定め、ソースコードの利用条件（前項）と異なる場合があります。</li>
+                            <li>本アプリで使用する画像素材および医薬品データ等については、それぞれ別の権利者または利用条件に従います。</li>
+                        </ol>
                         
                         <h4>第7条（連絡先）</h4>
                         <p>本アプリの不具合や問い合わせは、以下のフォームにてご連絡ください。</p>
@@ -3755,6 +3761,7 @@
                         <h4>改定履歴</h4>
                         <ul class="legal-doc-revisions">
                             <li>2025年10月29日：初版制定</li>
+                            <li>2026年6月22日：知的財産権条項の追加（ソースコード非商用ライセンスの明記）</li>
                         </ul>
                     </div>
                 `,
@@ -3764,6 +3771,7 @@
                         
                         <h4>Article 1 (Purpose and Scope of Application)</h4>
                         <p>This app "Chat-based Medicine Consultation Tool" (hereinafter referred to as "this app") is a system that provides reference information for over-the-counter medicines based on symptoms. It is currently released as a limited beta test for testers only and is not an official medical service. By using this app, users are deemed to have agreed to these terms.</p>
+                        <p>These terms govern use of this app (the service). Use of source code published in the development repository is subject to the LICENSE file included in the repository (PolyForm Noncommercial License 1.0.0).</p>
                         
                         <h4>Article 2 (About Beta Testing)</h4>
                         <ol>
@@ -3795,7 +3803,12 @@
                         <p>The operator may change, suspend, or terminate the app content without prior notice.</p>
                         
                         <h4>Article 6 (Intellectual Property Rights)</h4>
-                        <p>Intellectual property rights such as copyrights, programs, and designs related to this app belong to the operator or rightful owners.</p>
+                        <ol>
+                            <li>Intellectual property rights such as copyrights, programs, and designs related to this app belong to the operator or rightful owners.</li>
+                            <li>Source code for this app is licensed under PolyForm Noncommercial License 1.0.0 in the development repository (<a href="https://github.com/32Lwk/medicine-recommend-system" target="_blank" rel="noopener noreferrer">GitHub</a>). Non-commercial use, modification, and redistribution are permitted. Commercial use requires the operator's prior written permission.</li>
+                            <li>These terms govern use of this app (the service) and may differ from the source code license terms in the preceding item.</li>
+                            <li>Image assets and medicine data used in this app are subject to separate rights holders or terms of use.</li>
+                        </ol>
                         
                         <h4>Article 7 (Contact Information)</h4>
                         <p>Please contact us through the following form or email for app issues or inquiries:</p>
@@ -3812,6 +3825,7 @@
                         <h4>Revision history</h4>
                         <ul class="legal-doc-revisions">
                             <li>October 29, 2025: Initial publication</li>
+                            <li>June 22, 2026: Added intellectual property provisions (non-commercial source code license)</li>
                         </ul>
                     </div>
                 `,
@@ -3821,6 +3835,7 @@
                         
                         <h4>제1조 (목적 및 적용범위)</h4>
                         <p>본 앱 "채팅형 의약품 상담 도구"(이하 "본 앱"이라 함)는 증상에 따라 일반의약품을 참고 제시하는 시스템입니다. 현재는 테스터 한정 시험운용(β판)으로 공개되어 있으며, 정식 의료 서비스가 아닙니다. 본 앱을 이용함으로써 이용자는 본 약관에 동의한 것으로 간주됩니다.</p>
+                        <p>본 약관은 본 앱(서비스)의 이용에 관해 정합니다. 개발 리포지토리에 공개하는 소스 코드의 이용 조건은 리포지토리에 포함된 LICENSE(PolyForm Noncommercial License 1.0.0)를 따릅니다.</p>
                         
                         <h4>제2조 (시험운용에 대해)</h4>
                         <ol>
@@ -3852,7 +3867,12 @@
                         <p>운영자는 사전 통지 없이 본 앱의 내용을 변경·중지·종료할 수 있습니다.</p>
                         
                         <h4>제6조 (지적재산권)</h4>
-                        <p>본 앱에 관한 저작권, 프로그램, 디자인 등의 지적재산권은 운영자 또는 정당한 권리자에 귀속됩니다.</p>
+                        <ol>
+                            <li>본 앱에 관한 저작권, 프로그램, 디자인 등의 지적재산권은 운영자 또는 정당한 권리자에 귀속됩니다.</li>
+                            <li>본 앱의 소스 코드는 개발 리포지토리(<a href="https://github.com/32Lwk/medicine-recommend-system" target="_blank" rel="noopener noreferrer">GitHub</a>)에 게재된 PolyForm Noncommercial License 1.0.0에 따라 비영리 목적으로만 이용·개변·재배포가 허용됩니다. 영리 이용에는 운영자의 사전 서면 허가가 필요합니다.</li>
+                            <li>본 약관은 본 앱(서비스)의 이용에 관해 정하며, 소스 코드 이용 조건(전항)과 다를 수 있습니다.</li>
+                            <li>본 앱에서 사용하는 이미지 소재 및 의약품 데이터 등은 각각 별도의 권리자 또는 이용 조건을 따릅니다.</li>
+                        </ol>
                         
                         <h4>제7조 (연락처)</h4>
                         <p>본 앱의 불구나 문의는 다음 폼 또는 메일로 연락해 주세요.</p>
@@ -3869,6 +3889,7 @@
                         <h4>개정 이력</h4>
                         <ul class="legal-doc-revisions">
                             <li>2025년 10월 29일: 초판 제정</li>
+                            <li>2026년 6월 22일: 지적재산권 조항 추가(소스 코드 비영리 라이선스 명시)</li>
                         </ul>
                     </div>
                 `,
@@ -3878,6 +3899,7 @@
                         
                         <h4>第1条（目的和适用范围）</h4>
                         <p>本应用"聊天式药品咨询工具"（以下简称"本应用"）是基于症状提供非处方药参考信息的系统。目前作为测试者限定的测试运营（β版）公开，非正式医疗服务。使用本应用即视为用户同意本条款。</p>
+                        <p>本条款规定本应用（服务）的使用。开发仓库中公开的源代码使用条件，遵循仓库附带的 LICENSE（PolyForm Noncommercial License 1.0.0）。</p>
                         
                         <h4>第2条（关于测试运营）</h4>
                         <ol>
@@ -3909,7 +3931,12 @@
                         <p>运营者可无事先通知变更·停止·终止本应用内容。</p>
                         
                         <h4>第6条（知识产权）</h4>
-                        <p>本应用相关的著作权、程序、设计等知识产权归运营者或正当权利人所有。</p>
+                        <ol>
+                            <li>本应用相关的著作权、程序、设计等知识产权归运营者或正当权利人所有。</li>
+                            <li>本应用的源代码依据开发仓库（<a href="https://github.com/32Lwk/medicine-recommend-system" target="_blank" rel="noopener noreferrer">GitHub</a>）所载 PolyForm Noncommercial License 1.0.0，仅限非商业目的的使用、修改和再分发。商业使用需事先获得运营者书面许可。</li>
+                            <li>本条款规定本应用（服务）的使用，可能与源代码使用条件（前项）不同。</li>
+                            <li>本应用使用的图像素材及药品数据等，分别遵循各自权利人或使用条件。</li>
+                        </ol>
                         
                         <h4>第7条（联系方式）</h4>
                         <p>本应用故障或咨询请通过以下表单或邮件联系：</p>
@@ -3926,6 +3953,7 @@
                         <h4>改定履历</h4>
                         <ul class="legal-doc-revisions">
                             <li>2025年10月29日：初版制定</li>
+                            <li>2026年6月22日：知识产权条款追加（源代码非商业许可证明示）</li>
                         </ul>
                     </div>
                 `

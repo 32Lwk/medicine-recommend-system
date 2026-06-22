@@ -1,21 +1,136 @@
-MIT License
+PolyForm Noncommercial License 1.0.0
 
-Copyright (c) 2025 川嶋宥翔 (Kawashima Yuto)
+Copyright (c) 2025-2026 川嶋宥翔 (Kawashima Yuto)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+<https://polyformproject.org/licenses/noncommercial/1.0.0>
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Acceptance
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+In order to get any license under these terms, you must agree
+to them as both strict obligations and conditions to all
+your licenses.
+
+## Copyright License
+
+The licensor grants you a copyright license for the software
+to do everything you might do with the software that would
+otherwise infringe the licensor's copyright in it for any
+permitted purpose.  However, you may only distribute the
+software according to [Distribution License](#distribution-license)
+and make changes or new works based on the software according
+to [Changes and New Works License](#changes-and-new-works-license).
+
+## Distribution License
+
+The licensor grants you an additional copyright license to
+distribute copies of the software.  Your license to distribute
+covers distributing the software with changes and new works permitted
+by [Changes and New Works License](#changes-and-new-works-license).
+
+## Changes and New Works License
+
+The licensor grants you an additional copyright license to make
+changes and new works based on the software for any permitted
+purpose.
+
+## Patent License
+
+The licensor grants you a patent license for the software that
+covers patent claims the licensor can license, or becomes able
+to license, that you'd infringe by using the software.
+
+## Noncommercial Purposes
+
+Any noncommercial purpose is a permitted purpose.
+
+## Personal Uses
+
+Personal use for research, experiment, and testing for the benefit
+of public knowledge, personal study, or private entertainment is
+a personal use.
+
+## Noncommercial Organizations
+
+Use by any charitable organization, educational institution,
+public research organization, public safety or health organization,
+environmental protection organization, or government institution
+is use for a noncommercial purpose regardless of the source of
+funding or obligations resulting from funding.
+
+## Fair Use
+
+You may have "fair use" rights for the software under the law.
+These terms do not limit them.
+
+## No Other Rights
+
+These terms do not allow you to use the trademark or publicity
+rights of anyone with rights in the software, or allow others
+to do so.
+
+## Software Patents
+
+To the extent your use for a permitted purpose would necessarily
+infringe someone else's patent, the patent license for the
+software does not cover that use.
+
+## Violations
+
+The first time you are notified in writing that you have
+violated any of these terms, or done so with regards to any
+license under these same terms, you can continue using the
+software according to these terms.  Your license to continue
+using the software ends 32 calendar days after notification,
+unless you cure the violation within that time or get written
+permission.
+
+## No Liability
+
+***As far as the law allows, the software comes as is, without
+any warranty or condition, and the licensor will not be liable
+to you for any damages arising out of these terms or use of
+the software.***
+
+## Definitions
+
+The **licensor** is the individual or entity offering these
+terms, and the **software** is the software the licensor makes
+available under these terms.
+
+**You** refers to the individual or entity agreeing to these
+terms.
+
+**Your company** is any legal entity, sole proprietorship,
+or other kind of organization that you work for, plus all
+organizations that have control over, are under the control of,
+or are under common control with that organization. **Control**
+means ownership of substantially all the assets, or the power
+to direct its management and policies by vote, contract, or
+otherwise. Control can be direct or indirect.
+
+**Your licenses** are all the licenses granted to you for the
+software under these terms.
+
+**Use** means anything you do with the software requiring one
+of your licenses.
+
+A **noncommercial purpose** is any use not intended primarily for
+monetary compensation or financial gain for you or your company
+or your company's clients or users.  **Noncommercial purposes**
+include personal, non-profit educational, and non-profit research
+purposes.  Your company is engaged in a noncommercial activity
+if it does not anticipate monetary compensation or financial gain
+from particular activity.
+
+**Distribution** means copies of or access to the software for
+anyone else, or making the software's functionality available
+to anyone else.
+
+A **permitted purpose** is any **noncommercial purpose**, use
+specifically enumerated by the licensor as a permitted purpose,
+or use by **Noncommercial Organizations**, **Personal Uses**, or
+as otherwise described as permitted in writing by the licensor.
+Use by you or your company is for a **permitted purpose** if
+it is only **Personal Uses**, use by **Noncommercial Organizations**,
+or **noncommercial purposes** where compensation or financial gain
+is incidental, not primary.
