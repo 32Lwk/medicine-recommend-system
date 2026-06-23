@@ -34,6 +34,33 @@ def test_resolve_git_commit_date_from_env(monkeypatch):
     assert main._resolve_git_commit_date_iso() == "2026-06-18"
 
 
+def test_default_git_repo_url_is_gitlab_mirror(monkeypatch):
+    monkeypatch.delenv("GIT_REPO_URL", raising=False)
+    assert main._resolve_git_repo_url() == "https://gitlab.com/blank2703726/medicine-recommend"
+
+
+def test_build_git_commit_browse_url_gitlab():
+    repo = "https://gitlab.com/blank2703726/medicine-recommend"
+    assert main._build_git_commit_browse_url(repo, "9be6d20") == (
+        "https://gitlab.com/blank2703726/medicine-recommend/-/commit/9be6d20"
+    )
+
+
+def test_build_git_commit_browse_url_github():
+    repo = "https://github.com/32Lwk/medicine-recommend-system"
+    assert main._build_git_commit_browse_url(repo, "9be6d20") == (
+        "https://github.com/32Lwk/medicine-recommend-system/commit/9be6d20"
+    )
+
+
+def test_resolve_git_commit_browse_url(monkeypatch):
+    monkeypatch.delenv("GIT_REPO_URL", raising=False)
+    monkeypatch.setattr(main, "_resolve_git_commit_short", lambda: "abc1234")
+    assert main._resolve_git_commit_browse_url() == (
+        "https://gitlab.com/blank2703726/medicine-recommend/-/commit/abc1234"
+    )
+
+
 def test_baked_meta_used_when_git_unavailable(monkeypatch):
     monkeypatch.setattr(main, "_BAKED_BUILD_META", {
         "gitCommitShort": "deadbee",

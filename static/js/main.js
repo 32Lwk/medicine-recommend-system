@@ -114,6 +114,7 @@
                         details: [
                             {
                                 summary: "現在開発中の主な内容",
+                                description: "GitHub アカウントが利用停止となったため、2026年6月から開発リポジトリを GitLab に一時移行しています。本サービスの機能や内容に影響はなく、これまで通りご利用いただけます。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
@@ -159,6 +160,7 @@
                         details: [
                             {
                                 summary: "現在開発中の主な内容",
+                                description: "GitHub アカウントが利用停止となったため、2026年6月から開発リポジトリを GitLab に一時移行しています。本サービスの機能や内容に影響はなく、これまで通りご利用いただけます。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
@@ -410,6 +412,7 @@
                         details: [
                             {
                                 summary: "What we are currently working on",
+                                description: "Due to a GitHub account suspension, we have temporarily moved the development repository to GitLab since June 2026. The service features and content are unchanged—you can continue using the app as usual.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
@@ -455,6 +458,7 @@
                         details: [
                             {
                                 summary: "What we are currently working on",
+                                description: "Due to a GitHub account suspension, we have temporarily moved the development repository to GitLab since June 2026. The service features and content are unchanged—you can continue using the app as usual.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
@@ -718,6 +722,7 @@
                         details: [
                             {
                                 summary: "현재 개발 중인 주요 내용",
+                                description: "GitHub 계정 이용 정지로 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능과 내용은 변함없으며, 이전과 같이 이용하실 수 있습니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
@@ -763,6 +768,7 @@
                         details: [
                             {
                                 summary: "현재 개발 중인 주요 내용",
+                                description: "GitHub 계정 이용 정지로 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능과 내용은 변함없으며, 이전과 같이 이용하실 수 있습니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
@@ -1014,6 +1020,7 @@
                         details: [
                             {
                                 summary: "当前开发中的主要内容",
+                                description: "因 GitHub 账号被停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不变，您可照常使用。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
@@ -1059,6 +1066,7 @@
                         details: [
                             {
                                 summary: "当前开发中的主要内容",
+                                description: "因 GitHub 账号被停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不变，您可照常使用。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
@@ -1936,17 +1944,36 @@
         return null;
     }
 
+    // GitHub 停止中の一時ミラー（docs/ops/GITLAB_TEMPORARY_MIGRATION.md）。復旧後はサーバー gitCommitUrl に委譲。
+    const GITLAB_MIRROR_REPO_URL = 'https://gitlab.com/blank2703726/medicine-recommend';
+
+    function buildGitCommitBrowseUrl(repoUrl, commit) {
+        if (!repoUrl || !commit) {
+            return null;
+        }
+        const base = repoUrl.trim().replace(/\/+$/, '');
+        try {
+            const host = new URL(base).hostname.toLowerCase();
+            if (host === 'gitlab.com' || host.endsWith('.gitlab.com')) {
+                return base + '/-/commit/' + commit;
+            }
+        } catch (e) {
+            // fall through
+        }
+        return base + '/commit/' + commit;
+    }
+
     function getRuntimeGitCommitUrl() {
         const commit = getRuntimeGitCommitShort();
         if (!commit) {
             return null;
         }
         const cfg = getRuntimeClientConfig();
-        const repoUrl = cfg && typeof cfg.gitRepoUrl === 'string' ? cfg.gitRepoUrl.trim().replace(/\/+$/, '') : '';
-        if (!repoUrl) {
-            return null;
+        const direct = cfg && typeof cfg.gitCommitUrl === 'string' ? cfg.gitCommitUrl.trim() : '';
+        if (direct && /gitlab\.com/i.test(direct)) {
+            return direct;
         }
-        return repoUrl + '/commit/' + commit;
+        return buildGitCommitBrowseUrl(GITLAB_MIRROR_REPO_URL, commit);
     }
 
     function getRuntimeGitCommitDateIso() {
@@ -2196,6 +2223,9 @@
         return slide.details.map(detail => {
             const summary = detail.summary || '';
             const content = getOnboardingDetailContent(detail);
+            const descriptionHtml = detail.description
+                ? '<p class="onboarding-details-desc">' + escapeHtml(detail.description) + '</p>'
+                : '';
             let itemsHtml = '';
             if (Array.isArray(detail.items) && detail.items.length) {
                 if (detail.itemsChecklist) {
@@ -2218,6 +2248,9 @@
                 }
             }
             const innerParts = [];
+            if (descriptionHtml) {
+                innerParts.push(descriptionHtml);
+            }
             if (itemsHtml) {
                 innerParts.push(itemsHtml);
             }

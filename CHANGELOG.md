@@ -1,6 +1,48 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月22日**（LINE 長期記憶・管理画面パネル・パイプライン計測・プライバシーポリシー改定）
+**最終更新日: 2026年6月23日**（店舗在庫誤検出修正・Cloud Build・GitHub/GitLab 運用ドキュメント）
+
+---
+
+## 2026年6月23日 — 症状文の在庫誤検出修正・Cloud Build・GitHub/GitLab 運用ドキュメント
+
+### 概要
+
+「39度の熱があります」など**症状文が店舗在庫照会に誤ルーティング**される問題を修正した。あわせて **Cloud Build の bash ローカル変数エスケープ**、**条件付き import によるシャドウ解消**、**GitHub アカウント停止インシデント記録**、**GitLab 一時運用ルール**を追加した。
+
+### 店舗在庫ルーティング（誤検出防止）
+
+- **`store_inquiry_handler.py`**
+  - `_matches_inventory_keyword`（新規）: 短い曖昧語（`あります` / `どこ` / `場所は` / `取り扱い`）は全文一致のみ。`あります` は `があります`（症状）への部分一致を除外
+  - `_should_skip_inventory_for_medical_triage`（新規）: Physical/Ask 高確信トリアージで店舗在庫の明示語がなければ在庫ゲートを通さない
+  - `_has_explicit_store_stock_intent`: `has_medicine_discovery_intent` 分岐を削除し、明示的な在庫語（在庫・取り寄せ・売り場等）の有無のみで判定
+  - `detect_inventory_inquiry`: 上記ヘルパー経由のキーワード照合に変更
+- **`data/store_inquiry_keyword_catalog.json`**: カタログから曖昧キーワード `あります` / `どこ` / `場所は` を削除（コード側で厳格照合）
+
+### チャットパイプライン
+
+- **`chat_post_pipeline.py`**: `memory_delete` 分岐内の `sync_messages_to_db_for_admin` 条件付き import を削除（モジュール先頭 import のシャドウを解消）
+
+### Cloud Build / デプロイ
+
+- **`cloudbuild.yaml`**
+  - bash ローカル変数 `COMMIT_DATE` / `IMAGE` を `$$` でエスケープ（Cloud Build 置換変数との衝突防止）
+  - コメントを「GitHub push」から「Git push」に汎用化
+
+### 運用ドキュメント（GitHub 停止 / GitLab 移行）
+
+- **`docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md`（新規・拡充）**: アカウント停止インシデントの時系列・証跡・GitLab 移行手順
+- **`.cursor/rules/git-remote.mdc`（新規）**: 停止期間中のプライマリリモートを GitLab に固定するエージェント向けルール
+- **`.cursor/rules/onboarding-last-updated.mdc`**: プッシュ前チェックリストを GitLab 向けに更新
+- **`scripts/update_issues_changelog_philosophy.sh`（新規）**: issue / CHANGELOG 思想反映用スクリプト
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_store_inventory_scan_gate.py` | 発熱症状文が在庫照会にならないこと、`あります` と `があります` の区別 |
+| `test_medical_store_priority.py` | 発熱症状で医療ルート優先・店舗意図なし |
+| `test_chat_post_pipeline.py` | 条件付き import がパイプライン内に残っていないこと |
 
 ---
 
@@ -132,6 +174,32 @@ LINE 連携ユーザー向けの**長期記憶システム**（永続プロフ�
 | `test_line_session_prime.py` | 起動時プロファイル適用（DB 再読込なし） |
 | `test_fastapi_contract.py` | `gitRepoUrl`、handoff セッションの meaningful_only |
 | `test_triage_cache_matrix.py` | memory_digest によるキー差分 |
+
+---
+
+## 2026年6月22日 — 管理画面 AI 制御修正・ライセンス改定・運用ドキュメント
+
+### 概要
+
+管理画面で **AI 自動応答を ON にしても OFF 表示に戻る**不具合を修正した。ソースコードのライセンスを **MIT から PolyForm Noncommercial License 1.0.0** へ移行し、公開ドキュメントとアプリ内表示を同期した。LINE 長期記憶の**運用ガイド**と issue レポート形式を追加した。
+
+### 管理画面 AI 自動応答
+
+- **`session_manager.py`**: DB 保存失敗後に古い DB 値でメモリが上書きされていた問題を修正。ON 操作直後に OFF 表示になる不具合を解消
+- **`admin_chat.js`**: 制御 API 呼び出しを統一
+- **`test_session_manager_db_fallback.py`（新規）**: DB フォールバック時の AI モード保持を検証
+
+### ライセンス（PolyForm Noncommercial 1.0.0）
+
+- **`LICENSE`**: MIT から PolyForm Noncommercial License 1.0.0 へ移行
+- **`README.md`**, **`docs/public/`** 各種公開文書, **`about_modal_html.json`**, **`main.js`**: ライセンス表記・免責文言を同期
+- **`test_ask_agent.py`**: `AskAgent` の引数順序回帰テストを追加
+
+### 運用ドキュメント
+
+- **`docs/ops/LINE_LONG_TERM_MEMORY.md`（新規）**: LINE 長期記憶の運用ガイド（Webhook・アーキテクチャ・PII playbook から相互リンク）
+- **`docs/planning/ISSUE_REPORT_FORMAT.md`（新規）**: issue レポート形式のテンプレート
+- 記憶関連モジュール（`line_user_memory.py` 等）の docstring に ops doc 参照を追記
 
 ---
 

@@ -5160,6 +5160,13 @@ body.onboarding-open .chat-container .language-selector .lang-dropdown.show {
     margin-top: 0;
 }
 
+.onboarding-details-desc {
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-muted, #5a6a5f);
+}
+
 .onboarding-checklist-readonly {
     user-select: none;
 }

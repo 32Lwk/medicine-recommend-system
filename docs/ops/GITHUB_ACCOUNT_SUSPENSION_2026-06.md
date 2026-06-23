@@ -33,6 +33,7 @@ GitHub への `git push` / `gh` が使えない間、ローカル開発とリモ
 
 - ローカル `main` の upstream: **`gitlab/main`**
 - Cursor エージェント向けルール: [`.cursor/rules/git-remote.mdc`](../../.cursor/rules/git-remote.mdc)（`alwaysApply: true`）
+- **Cloud Build（dev）・`cloudbuild.yaml` 修正・復旧手順の詳細**: [`GITLAB_TEMPORARY_MIGRATION.md`](./GITLAB_TEMPORARY_MIGRATION.md)
 
 ### 日常コマンド
 
@@ -54,11 +55,13 @@ git push gitlab main        # 明示する場合
 
 ### GitHub 復旧後の手順
 
+詳細チェックリストは [`GITLAB_TEMPORARY_MIGRATION.md` §6](./GITLAB_TEMPORARY_MIGRATION.md#6-github-復旧時の手続き) を参照。
+
 1. `git fetch origin` が成功することを確認
 2. `gitlab/main` と `origin/main` の差分を確認し、欠けているコミットを双方に反映
 3. upstream を戻す: `git branch --set-upstream-to=origin/main main`
-4. CI / Cloud Build のトリガー URL が GitHub のままなら、デプロイ連携を再確認
-5. `.cursor/rules/git-remote.mdc` を削除または無効化し、本節に **復旧日** を追記
+4. **Cloud Build**: dev の GitLab トリガー（`medicine-recommend-dev-gitlab-main`）と GitHub 旧トリガーの **どちらか一方** に統一。本番 GitHub トリガーの動作確認
+5. `.cursor/rules/git-remote.mdc` を削除または無効化し、本節と `GITLAB_TEMPORARY_MIGRATION.md` §8 に **復旧日** を追記
 
 ---
 
@@ -366,8 +369,9 @@ Received a 403 error. Data returned as a String was: {
 | **GitHub への push** | 不可（403） |
 | **GitLab への push** | **可** — 一時ミラー [`blank2703726/medicine-recommend`](https://gitlab.com/blank2703726/medicine-recommend) |
 | **issue 更新（未反映分）** | `scripts/update_issues_changelog_philosophy.sh` がローカルに残存。#57/#52/#74/#55/#88 の CHANGELOG 思想セクションは **GitHub 上未反映の可能性**（`gh` 停止中） |
-| **CI / Actions** | GitHub Actions はアカウント停止により動かない可能性。GitLab CI は未設定の場合は手動デプロイ |
-| **本番デプロイ** | Cloud Run 等は既存デプロイに影響なし。GitHub 連携トリガーは停止中は動かない可能性 — GCP コンソールまたは GitLab 連携を検討 |
+| **CI / Actions** | GitHub Actions はアカウント停止により動かない。GitLab CI は未導入 |
+| **dev デプロイ** | **GitLab 連携済み** — トリガー `medicine-recommend-dev-gitlab-main` → `medicine-recommend-dev`（[`GITLAB_TEMPORARY_MIGRATION.md`](./GITLAB_TEMPORARY_MIGRATION.md)） |
+| **本番デプロイ** | Cloud Run 既存リビジョンは継続。GitHub 本番トリガーは停止中は動かない — 急ぎは GCP コンソール / `gcloud builds submit` |
 | **ローカル開発** | ローカルコード・doc は無事。`.env` 等はローカルに保持。`git pull` / `git push` は GitLab 経由で継続可能 |
 
 ### 未コミット変更（停止時点で残っていた可能性）
@@ -439,7 +443,8 @@ GitHub はスパム bot 対策のため、以下パターンでアカウント�
 | P1 | 停止中: コミットは **`git push`（GitLab）** で同期 | ✅ 運用中 |
 | P2 | ローカル未コミット変更の整理（`git status`） | いつでも可 |
 | P2 | 本番 Cloud Run は既存 revision で継続、急ぎの hotfix は GCP コンソール経由を検討 | 必要時 |
-| P2 | GitHub 復旧後: GitLab ↔ GitHub の双方向同期と upstream 復帰 | 復旧後 |
+| P1 | Cloud Build dev を GitLab 連携（`medicine-recommend-dev-gitlab-main`） | ✅ 実施（2026-06-23） |
+| P2 | GitHub 復旧後: GitLab ↔ GitHub 同期・upstream 復帰・トリガー整理 | 復旧後（[手順](./GITLAB_TEMPORARY_MIGRATION.md#6-github-復旧時の手続き)） |
 
 ### Support 返信への追記候補（返信メールにそのまま貼れる）
 
@@ -473,6 +478,7 @@ Kawashima Yuto / @32Lwk
 - issue レポート形式: [`docs/planning/ISSUE_REPORT_FORMAT.md`](../planning/ISSUE_REPORT_FORMAT.md)
 - GitLab 一時ミラー: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend)
 - Cursor ルール: [`.cursor/rules/git-remote.mdc`](../../.cursor/rules/git-remote.mdc)
+- GitLab 一時移行（Cloud Build 含む）: [`GITLAB_TEMPORARY_MIGRATION.md`](./GITLAB_TEMPORARY_MIGRATION.md)
 
 ---
 
@@ -484,6 +490,7 @@ Kawashima Yuto / @32Lwk
 | 2026-06-22 | **時刻詳細追記** — JST タイムライン、09:52 Education メール全文要約、11:05 Ticket 4501520、`git log` 時刻（09:42/09:49 push）、10:11 モバイルスクショ |
 | 2026-06-22 | **証跡画像追加** — `docs/ops/assets/github-ios-suspend-403-2026-06-22-1011.png`（10:11 iOS 403 画面） |
 | 2026-06-22 | **GitLab 一時ミラー** — リモート `gitlab`・upstream `gitlab/main`・`.cursor/rules/git-remote.mdc`・本節追記 |
+| 2026-06-23 | **Cloud Build dev → GitLab** — `GITLAB_TEMPORARY_MIGRATION.md`・`cloudbuild.yaml` の `$$` エスケープ |
 
 ---
 

@@ -384,7 +384,8 @@ def _resolve_git_commit_date_iso() -> str | None:
     return None
 
 
-_DEFAULT_GIT_REPO_URL = "https://github.com/32Lwk/medicine-recommend-system"
+# GitHub 復旧まで一時（docs/ops/GITLAB_TEMPORARY_MIGRATION.md）
+_DEFAULT_GIT_REPO_URL = "https://gitlab.com/blank2703726/medicine-recommend"
 
 
 def _resolve_git_repo_url() -> str:
@@ -392,6 +393,23 @@ def _resolve_git_repo_url() -> str:
     if raw:
         return raw.rstrip("/")
     return _DEFAULT_GIT_REPO_URL
+
+
+def _build_git_commit_browse_url(repo_url: str, commit: str) -> str:
+    """リポジトリホストに応じたコミット閲覧 URL（GitLab は /-/commit/）。"""
+    base = repo_url.rstrip("/")
+    commit = commit.strip()[:7]
+    if "gitlab.com" in base.lower():
+        return f"{base}/-/commit/{commit}"
+    return f"{base}/commit/{commit}"
+
+
+def _resolve_git_commit_browse_url() -> str | None:
+    commit = _resolve_git_commit_short()
+    if not commit:
+        return None
+    # GitHub 停止中は常に GitLab ミラー（GIT_REPO_URL が GitHub のままでもリンク先を誤らない）
+    return _build_git_commit_browse_url(_DEFAULT_GIT_REPO_URL, commit)
 
 
 def _compat_url_for(endpoint: str, **values) -> str:
@@ -491,7 +509,8 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "uiVariant": ui_variant,
             "gitCommitShort": _resolve_git_commit_short(),
             "gitCommitDateIso": _resolve_git_commit_date_iso(),
-            "gitRepoUrl": _resolve_git_repo_url(),
+            "gitRepoUrl": _DEFAULT_GIT_REPO_URL,
+            "gitCommitUrl": _resolve_git_commit_browse_url(),
         }
     )
 
