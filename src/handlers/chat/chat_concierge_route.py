@@ -16,11 +16,11 @@ from src.agents.concierge_agent import (
     update_concierge_state,
 )
 from src.services.concierge_intent import should_reset_off_topic
+from src.utils.input_helpers import resolve_llm_user_text
 from src.services.session_manager import (
     append_user_message,
     get_next_user_number,
     get_session_from_db,
-    has_recent_concierge_reply_for_user,
     save_session_to_db,
     was_last_user_message,
 )
@@ -151,36 +151,6 @@ def _log_concierge_response(
         logger.debug("concierge log skipped: %s", exc)
 
 
-def try_concierge_duplicate_skip(
-    session: Any,
-    client_info: Any,
-    sid: Optional[str],
-    user_message: str,
-    sanitized_message: str,
-) -> Optional[ResponseTuple]:
-    """トリアージ前に同一挨拶の重複 POST を即スキップ（LLM トリアージ回避）。"""
-    text = (sanitized_message or user_message or "").strip()
-    if not text or not has_recent_concierge_reply_for_user(session, text):
-        return None
-    if not should_concierge_handle(text, None):
-        return None
-    logger.info("⏭️ トリアージ前: 同一 Concierge 返信済みのためスキップ")
-    if text and not was_last_user_message(session, text):
-        append_user_message(session, text)
-    if sid:
-        try:
-            from src.services.processing_mark import mark_phase
-            from src.services.processing_status import set_processing_flow
-
-            set_processing_flow(sid, "concierge")
-            mark_phase(sid, "finalize")
-        except Exception:
-            pass
-    _sync_session_db(session, client_info, sid)
-    _mark_session_modified(session)
-    return ({"status": "ok", "message_count": len(session.get("messages", [])), "duplicate_skip": True}, 200)
-
-
 def try_concierge_response(
     session: Any,
     client_info: Any,
@@ -194,19 +164,20 @@ def try_concierge_response(
     processed_message: str = "",
     routing_ctx: Any = None,
 ) -> Optional[ResponseTuple]:
-    text = (sanitized_message or user_message or "").strip()
+    routing_text = (sanitized_message or user_message or "").strip()
+    llm_text = resolve_llm_user_text(user_message=user_message)
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
     from src.services.routing_context import evaluate_store_gate
 
-    if text and evaluate_store_gate(
-        text,
+    if routing_text and evaluate_store_gate(
+        routing_text,
         *alt_texts,
         triage_result=triage_result,
         routing_ctx=routing_ctx,
     ):
         return None
-    if not text or not should_concierge_handle(
-        text,
+    if not routing_text or not should_concierge_handle(
+        routing_text,
         triage_result,
         alt_texts=alt_texts,
     ):
@@ -223,7 +194,7 @@ def try_concierge_response(
         history_pre = get_recent_messages(session, sid)
         triage_result = enrich_other_concierge_intent(
             triage_result,
-            text,
+            llm_text,
             recommendation_client,
             conversation_history=history_pre,
             session_id=sid,
@@ -231,33 +202,22 @@ def try_concierge_response(
             routing_ctx=routing_ctx,
         )
 
-    if has_recent_concierge_reply_for_user(session, text):
-        logger.info("⏭️ 同一ユーザー発言への Concierge 返信済みのためスキップ")
-        if sid:
-            try:
-                from src.services.processing_mark import mark_phase
-                from src.services.processing_status import set_processing_flow
-
-                set_processing_flow(sid, "concierge")
-                mark_phase(sid, "finalize")
-            except Exception:
-                pass
-        _sync_session_db(session, client_info, sid)
-        _mark_session_modified(session)
-        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+    if not was_last_user_message(session, user_message or llm_text):
+        append_user_message(session, user_message or llm_text)
 
     history = session.get("messages", [])[-10:]
     from src.services.pipeline_perf import mark_pipeline_step
 
     mark_pipeline_step("concierge_resolve_intent_start")
     intent = resolve_concierge_intent(
-        text,
+        routing_text,
         session,
         triage_result=triage_result,
         client=recommendation_client,
         session_id=sid,
         conversation_history=history,
         routing_ctx=routing_ctx,
+        llm_user_text=llm_text,
     )
     mark_pipeline_step("concierge_resolve_intent_end")
     if intent is None:
@@ -274,13 +234,10 @@ def try_concierge_response(
         except Exception:
             pass
 
-    if not was_last_user_message(session, user_message or text):
-        append_user_message(session, user_message or text)
-
     mark_pipeline_step("concierge_build_payload_start")
     payload = build_concierge_payload(
         intent,
-        text,
+        llm_text,
         recommendation_client,
         session_id=sid,
         history=history,
@@ -290,14 +247,14 @@ def try_concierge_response(
     update_concierge_state(
         session,
         intent,
-        reset_off_topic=should_reset_off_topic(text),
+        reset_off_topic=should_reset_off_topic(routing_text),
     )
     _log_concierge_response(
         session_id=sid,
         intent=intent,
         content=payload["content"][:500],
         llm_used=bool(payload.get("llm_used")),
-        user_input=text,
+        user_input=llm_text,
     )
     _mark_session_modified(session)
 

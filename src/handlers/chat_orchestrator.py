@@ -14,6 +14,7 @@ from src.agents.protocols import HandoffResult
 from src.agents.triage_agent import resolve_handoff
 from src.handlers.orchestrator_route_result import OrchestratorRouteResult, RouteReason
 from src.utils.agent_trace import log_agent_step
+from src.utils.input_helpers import resolve_llm_user_text
 from src.utils.jst_datetime import now_jst_iso
 
 logger = logging.getLogger(__name__)
@@ -468,7 +469,10 @@ class ChatOrchestrator:
         history = ctx.session.get("messages", [])[-10:]
         enriched = enrich_other_concierge_intent(
             ctx.triage_result,
-            ctx.sanitized_message or ctx.user_message,
+            resolve_llm_user_text(
+                getattr(ctx, "original_user_message", "") or "",
+                ctx.user_message,
+            ),
             self._client,
             conversation_history=history,
             session_id=ctx.sid,

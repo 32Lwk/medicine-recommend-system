@@ -41,10 +41,15 @@ def get_recent_messages(
 def format_triage_history_block(messages: List[Dict[str, Any]]) -> str:
     if not messages:
         return "（なし）"
+    from src.services.line_memory_context import compress_message_for_llm
+
     lines = []
     for msg in messages:
-        role = msg.get("type") or msg.get("role") or "user"
-        content = (msg.get("content") or "")[:300]
+        if not isinstance(msg, dict):
+            continue
+        compressed = compress_message_for_llm(msg)
+        role = compressed.get("type") or "user"
+        content = (compressed.get("content") or "").strip()[:300]
         if not content:
             continue
         lines.append(f"{role}: {content}")

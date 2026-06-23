@@ -192,11 +192,11 @@ def run_symptom_recommendation(
         else:
             logger.info("🔍 Calling select_symptoms_via_gpt...")
             start_time = time.time()
-            matched_symptoms = select_symptoms_via_gpt(processed_message)
+            matched_symptoms = select_symptoms_via_gpt(user_message)
             execution_time = round(time.time() - start_time, 3)
             log_medicine_logic_call(
                 "select_symptoms_via_gpt",
-                {"user_message": processed_message},
+                {"user_message": user_message},
                 {"matched_symptoms": matched_symptoms},
                 execution_time,
             )

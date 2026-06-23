@@ -647,23 +647,6 @@ def has_recent_counseling_reply_for_user(session, user_content: str) -> bool:
     return prev.get("type") == "user" and prev.get("content") == user_content
 
 
-def has_recent_concierge_reply_for_user(session, user_content: str) -> bool:
-    """直前が同一内容 user への Concierge bot 返信なら True（並列 POST 防止）。
-
-    パイプラインで user が先に追記済みの場合、末尾は user のままなので False（応答生成を続行）。
-    """
-    messages = session.get("messages") or []
-    if len(messages) < 2:
-        return False
-    last = messages[-1]
-    prev = messages[-2]
-    if last.get("type") != "bot":
-        return False
-    if not last.get("concierge"):
-        return False
-    return prev.get("type") == "user" and prev.get("content") == user_content
-
-
 def append_user_message(session, content: str, *, timestamp: str | None = None) -> dict:
     """セッションにユーザーメッセージを追加する（同一文言の再送も別メッセージとして保持）。"""
     import uuid

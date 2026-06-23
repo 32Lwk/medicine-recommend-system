@@ -145,7 +145,7 @@ def run_triage_follow_ups(
                     else session.get("messages", [])
                 )
                 initial_response = generate_counseling_response(
-                    symptom_type, sanitized_message, recommendation_client,
+                    symptom_type, user_message, recommendation_client,
                     conversation_history=conversation_history,
                     session_id=sid,
                 )
@@ -273,7 +273,7 @@ def run_triage_follow_ups(
                     else session.get("messages", [])
                 )
                 initial_response = generate_counseling_response(
-                    symptom_type, sanitized_message, recommendation_client,
+                    symptom_type, user_message, recommendation_client,
                     conversation_history=conversation_history,
                     session_id=sid,
                 )

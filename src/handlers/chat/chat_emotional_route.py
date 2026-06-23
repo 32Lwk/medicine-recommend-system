@@ -150,7 +150,7 @@ def handle_emotional_category(
 
         initial_response = generate_counseling_response(
             symptom_type,
-            sanitized_message,
+            user_message,
             recommendation_client,
             conversation_history=conversation_history,
             session_id=sid,

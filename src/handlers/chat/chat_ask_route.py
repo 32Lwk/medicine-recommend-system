@@ -49,10 +49,13 @@ def handle_ask_category(
 ) -> Optional[ResponseTuple]:
     """推奨医薬品コンテキストでの Q&A（既存 API）"""
     from src.agents.ask_agent import answer_medicine_question
+    from src.utils.input_helpers import resolve_llm_user_text
+
+    llm_text = resolve_llm_user_text(user_message=user_message, original_user_message=user_message)
 
     try:
         chat_response = answer_medicine_question(
-            sanitized_message,
+            llm_text,
             recommended_medicines,
             recommendation_client,
             medicine_list=medicine_list,

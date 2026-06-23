@@ -200,6 +200,13 @@ def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeInten
     text = (user_text or "").strip()
     if not text or len(text) > 12:
         return None
+    try:
+        from src.security.aggressive_input import is_aggressive_expression
+
+        if is_aggressive_expression(text)[0]:
+            return None
+    except ImportError:
+        pass
     if looks_like_user_question(text):
         return None
     if _is_medicine_consultation(text):

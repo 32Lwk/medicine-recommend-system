@@ -36,6 +36,144 @@ _DOC_REFERENCE_ONLY_INTENTS = frozenset(
     {"doc_privacy", "doc_terms", "doc_consultation", "doc_app_overview"}
 )
 
+_CONCIERGE_PROMPT_HISTORY_LIMIT = 10
+
+
+def _prior_history_for_prompt(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+) -> List[Dict[str, str]]:
+    """プロンプト用: 末尾の今回 user 発話（未応答分）を履歴から除外。"""
+    msgs = [m for m in (history or []) if isinstance(m, dict)]
+    text = (user_text or "").strip()
+    if msgs and text and msgs[-1].get("type") == "user":
+        if str(msgs[-1].get("content") or "").strip() == text:
+            return msgs[:-1]
+    return msgs
+
+
+def count_same_greeting_exchange_rounds(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+) -> int:
+    """同一挨拶のやり取りが何巡目か（今回の送信を含む）。"""
+    prior = _prior_history_for_prompt(history, user_text)
+    text = (user_text or "").strip()
+    rounds = 1
+    i = len(prior) - 1
+    while i >= 0:
+        if prior[i].get("type") != "bot":
+            break
+        i -= 1
+        if i < 0 or prior[i].get("type") != "user":
+            break
+        if str(prior[i].get("content") or "").strip() != text:
+            break
+        rounds += 1
+        i -= 1
+    return rounds
+
+
+def _extract_substantive_user_topics(
+    msgs: List[Dict[str, str]],
+) -> List[str]:
+    """挨拶・お礼以外の、会話の核になりうる user 発話を抽出。"""
+    topics: List[str] = []
+    for m in msgs:
+        if m.get("type") != "user":
+            continue
+        content = str(m.get("content") or "").strip()
+        if not content:
+            continue
+        intent = classify_concierge_intent(content)
+        if intent in ("greeting", "thanks"):
+            continue
+        topics.append(content[:80])
+    return topics[-3:]
+
+
+def _last_bot_reply_snippet(
+    msgs: List[Dict[str, str]],
+    *,
+    greeting_only: bool = False,
+) -> str:
+    from src.services.line_memory_context import compress_message_for_llm
+
+    for m in reversed(msgs):
+        if m.get("type") != "bot":
+            continue
+        if greeting_only:
+            diag = m.get("diagnosis") or {}
+            kind = str(diag.get("kind") or "")
+            if not (m.get("greeting") or kind == "concierge_greeting"):
+                continue
+        compressed = compress_message_for_llm(m)
+        snippet = str(compressed.get("content") or "").strip()[:120]
+        if snippet:
+            return snippet
+    return ""
+
+
+def format_concierge_context_block(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+    *,
+    mode: str = "greeting",
+) -> str:
+    """挨拶・雑談向け: 履歴から会話の文脈メモを生成。"""
+    prior = _prior_history_for_prompt(history, user_text)
+    lines: List[str] = []
+    text = (user_text or "").strip()
+
+    if mode == "greeting":
+        rounds = count_same_greeting_exchange_rounds(history, user_text)
+        if rounds >= 2:
+            lines.append(
+                f"- 同じ挨拶「{text}」は今回で {rounds} 回目。"
+                "直前の返答と同じ言い回し・同じ促し文は使わない"
+            )
+        if rounds >= 3:
+            lines.append(
+                "- 同じセッション内の連続挨拶なので「また来てくれて」等の再来訪表現は不自然。"
+                "「こちらにいます」「はい、どうぞ」など軽く応じる"
+            )
+
+    topics = _extract_substantive_user_topics(prior)
+    if topics:
+        lines.append(f"- これまでの話題: {' / '.join(topics)}")
+        lines.append(
+            "- 話題に自然につなげられるなら1文だけ触れてよい（長く繰り返さない）"
+        )
+    elif mode == "greeting" and not infer_is_first_greeting_contact(history):
+        lines.append(
+            "- まだ具体的な相談はない。窓口説明を繰り返さず、様子を見る一言で受け止める"
+        )
+
+    last_bot = _last_bot_reply_snippet(
+        prior,
+        greeting_only=(mode == "greeting"),
+    )
+    if not last_bot and mode == "chitchat":
+        last_bot = _last_bot_reply_snippet(prior, greeting_only=False)
+    if last_bot:
+        lines.append(f"- 直前の bot 返答: {last_bot}")
+        lines.append("- 上記と同じフレーズ・構成は繰り返さない")
+
+    if mode == "chitchat" and not lines:
+        lines.append("- 雑談の流れを踏まえ、前の話題に自然につなげる")
+
+    return "\n".join(lines) if lines else "- 特になし"
+
+
+def format_concierge_history_block(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+) -> str:
+    from src.services.triage_history import format_triage_history_block
+
+    prior = _prior_history_for_prompt(history, user_text)
+    return format_triage_history_block(prior[-_CONCIERGE_PROMPT_HISTORY_LIMIT:])
+
 
 def get_concierge_state(session: Any) -> Dict[str, Any]:
     state = session.get("concierge_state")
@@ -65,11 +203,13 @@ def resolve_concierge_intent(
     session_id: Optional[str] = None,
     conversation_history: Optional[list] = None,
     routing_ctx: Optional[Any] = None,
+    llm_user_text: Optional[str] = None,
 ) -> Optional[ConciergeIntent]:
     from src.services.concierge_intent import _is_medicine_consultation
     from src.services.concierge_orchestrator import enrich_other_concierge_intent
 
     text = (user_text or "").strip()
+    llm_text = (llm_user_text or text).strip()
     if not text or _is_medicine_consultation(text):
         return None
 
@@ -101,7 +241,7 @@ def resolve_concierge_intent(
     if category == "Other" and client is not None and not (triage_result or {}).get("concierge_intent"):
         enriched = enrich_other_concierge_intent(
             dict(triage_result or {}),
-            text,
+            llm_text,
             client,
             conversation_history=conversation_history,
             session_id=session_id,
@@ -329,6 +469,104 @@ def build_doc_operator_payload(
     }
 
 
+_GREETING_SYSTEM_PROMPT = (
+    "あなたは市販薬相談ツールの案内役です。"
+    "薬局の相談窓口で、落ち着いて耳を傾けるスタッフのように話します。"
+    "会話履歴と文脈メモを読み、毎回言い回しを変えて自然な続きの返答をします。"
+    "ユーザーの挨拶の温度感（カジュアルさ・元気さ）にはミラーリングで合わせます。"
+    "ただしやや攻撃的・苛立ちのときは、ミラーリングより寄り添い・傾聴を優先し、"
+    "批判・説教・突き放し・皮肉にはなりません。"
+)
+
+_GREETING_PROMPT_REQUIREMENTS = """【優先順位】
+1. 相手を煽らない・責めない・突き放さない
+2. ミラーリング（挨拶語・カジュアルさ・温度感）。失礼語・罵倒は繰り返さない
+3. やや攻撃的・苛立ちのときは 2 より先に寄り添い・傾聴（受け止め・安心）
+4. 初回のみツール説明。継続の呼びかけでは繰り返さない
+5. 自然な促し（お気軽に／お聞かせください）
+
+【口調・ブランド】
+- ユーザーのトーン・カジュアルさ・温度感に合わせて返す（ミラーリング）。挨拶語（やあ・こんにちは等）のミラーリングは可
+- 失礼語・罵倒（おい・ふざけんな等）は繰り返さず、感情（焦り・困惑・呼びかけ）だけを汲み取る
+- 薬局の相談窓口として落ち着きと信頼感を保つ。ふざけた・命令的・攻撃的な印象は出さない
+- 基本は丁寧語（です・ます）。ユーザーがタメ口・強めの口調のときは、柔らかい丁寧語（〜ですね／〜でしょうか）で距離を縮める
+
+【苛立ち・やや強い口調への対応】
+- 少し攻撃的・荒い表現でも、相手を責めたり逆上させたり煽ったりしない
+- 「はい、どうしましたか？」のように事務的・突き放し・煽られているように聞こえる言い方は避ける
+- 入力の促しは「お気軽にお聞かせください」「お気軽にどうぞ」「教えていただければ」など自然な言い回しにする
+- 禁止（不自然・事務的）:「やわらかく書いてください」「短く書いてください」「具体的に書いてください」「〜ですので、〜（説明的）」「気になることがあれば（堅い）」
+- 例（短い呼びかけ・苛立ち）:「お声がけありがとうございます。ちゃんと受け止めていますので、何かお困りのことがあればお聞かせください。」「焦らなくて大丈夫です。どうされたいか、ゆっくり教えていただけますか？」
+- 例（カジュアル挨拶・初回）:「やあ、こんにちは。こちらは市販薬の相談窓口です。頭痛やのどの痛み、お薬の選び方など、お気軽にご相談ください。」「こんにちは。症状や市販薬のことでお困りでしたら、できる範囲でお手伝いします。まずは気になることをお聞かせください。」
+- 例（継続の呼びかけ）:「お声がけありがとうございます。何かお困りのことはありますか？」「はい、こちらにいます。お体のことで気になることがあれば、お聞かせください。」
+- 例文はそのままコピーせず、同等の情報量でユーザー入力に合わせて言い換える
+
+【会話の継続】
+- 会話履歴と【会話の文脈】を必ず読み、これまでのやり取りに沿って返す
+- 会話履歴に直前の挨拶・案内があるとき、市販薬相談ツール・窓口の説明の繰り返しはしない
+- 同じ挨拶を連続で受け取ったときは、毎回言い回しを変える（2回目・3回目で同じ定型文にしない）
+- 「また来てくれてありがとう」は同じセッション内の連続挨拶では不自然。使わない
+- 「おい」「ねえ」「もしもし」など短い呼びかけは会話の続き。まず受け止めてから、困りごとを穏やかに尋ねる
+- 以前に触れた症状・話題があれば、自然な範囲で1文だけ思い出す（長く繰り返さない）
+
+【内容・長さ】
+- 1文だけの極端に短い返答は避ける（目安: 初回 80〜180 文字・2〜3文、継続 50〜120 文字・2文程度）
+- 初回接触が「はい」のときのみ: 挨拶への返答に加え、市販薬相談窓口であることと相談例（頭痛・のどの痛み・飲み合わせ等）を含め、最後に自然な促しを入れる
+- 初回接触が「いいえ」のとき: ツール説明・窓口紹介は書かず、受け止め＋穏やかな質問の2文にとどめる
+- 医薬品を指すときは必ず「市販薬」を使う。「OTC」「OTC薬」は使わない
+- yes/no で本サービスの性質を聞いた場合は挨拶として扱わない。挨拶返答内で医療機関であるかのように「はい」と答えない
+- 「病院ではない」「診療所ではない」等の否定説明は書かない
+- 診断・処方はしない"""
+
+_CHITCHAT_SYSTEM_PROMPT = (
+    "あなたは市販薬相談ツールの案内役です。"
+    "会話履歴と文脈メモを踏まえ、雑談にも自然に乗りつつ毎回言い回しを変えます。"
+    "ユーザーの温度感にミラーリングで合わせつつ、"
+    "苛立ちがあれば寄り添い・傾聴を優先します。説教・突き放し・皮肉にはなりません。"
+)
+
+_CHITCHAT_PROMPT_REQUIREMENTS = """【優先順位】
+1. 相手を煽らない・責めない
+2. 会話履歴・文脈に沿った自然な続き
+3. ミラーリング（温度感）。失礼語は繰り返さない
+4. 苛立ちがあれば寄り添い・傾聴を優先
+
+【口調】
+- ユーザーの温度感にミラーリングで合わせつつ、柔らかい丁寧語で返す
+- 直前の bot 返答と同じフレーズは使わない
+- 苛立ち・強い口調があっても責めず、寄り添い・傾聴で受け止めてから穏やかに話を戻す
+- 禁止:「やわらかく書いてください」「短く書いてください」「具体的に書いてください」「〜ですので、〜」
+
+【会話の継続】
+- 【会話履歴】と【会話の文脈】を読み、前の話題に自然につなげる
+- これまでに触れた症状・相談があれば、無理なく1文だけ参照してよい
+
+【内容・長さ】
+- 2〜3文、目安80〜160文字（1文だけの極端に短い返答は避ける）
+- 医薬品は「市販薬」と表記。「OTC」は使わない
+- 医療診断・処方はしない
+- お薬の相談へ戻すときは「お気軽にお聞かせください」等の自然な言い回しで促す"""
+
+
+def infer_is_first_greeting_contact(
+    history: Optional[List[Dict[str, str]]],
+) -> bool:
+    """挨拶返答用: これまでに Concierge/挨拶 bot 応答がなければ初回接触。"""
+    msgs = list(history or [])
+    if not msgs:
+        return True
+    for msg in reversed(msgs):
+        if not isinstance(msg, dict) or msg.get("type") != "bot":
+            continue
+        if msg.get("greeting") or msg.get("concierge"):
+            return False
+        diag = msg.get("diagnosis") or {}
+        kind = str(diag.get("kind") or "")
+        if kind.startswith("concierge_"):
+            return False
+    return True
+
+
 def generate_greeting_text(
     client: OpenAI,
     user_text: str,
@@ -337,29 +575,45 @@ def generate_greeting_text(
     history: Optional[List[Dict[str, str]]] = None,
 ) -> tuple[str, bool]:
     """挨拶返答。既定は LLM。失敗時のみ build_greeting_text にフォールバック。"""
-    hist = ""
-    if history:
-        lines = []
-        for m in history[-6:]:
-            role = m.get("type") or m.get("role") or "user"
-            content = (m.get("content") or "")[:200]
-            lines.append(f"{role}: {content}")
-        hist = "\n".join(lines)
+    hist = format_concierge_history_block(history, user_text)
+    context = format_concierge_context_block(history, user_text, mode="greeting")
+    is_first = infer_is_first_greeting_contact(history)
+    first_label = "はい" if is_first else "いいえ"
+    if is_first:
+        contact_block = (
+            "【初回接触の追加要件】\n"
+            "- 2〜3文・80〜180文字を目安に、窓口説明と相談例を含めて返す\n"
+            "- 構成の目安: 挨拶への返答 → 市販薬相談窓口であること → "
+            "相談例1つ（頭痛・のどの痛み・飲み合わせ等）→ 自然な促し"
+        )
+        temperature = 0.55
+    else:
+        contact_block = (
+            "【継続接触の追加要件】\n"
+            "- 2文・50〜120文字を目安に返す\n"
+            "- 窓口説明・市販薬相談ツールの紹介は書かない\n"
+            "- 【会話の文脈】と履歴を踏まえ、毎回言い回しを変えて受け止める\n"
+            "- 同じ挨拶の連続なら、直前の返答と異なる表現にする"
+        )
+        temperature = 0.62
     prompt = f"""{get_policy_snippet()}
 
 【会話履歴（参考）】
-{hist or "（なし）"}
+{hist}
+
+【会話の文脈】
+{context}
+
+【初回接触】
+{first_label}
+
+{contact_block}
 
 【ユーザーの挨拶】
 {user_text}
 
 【要件】
-- ユーザーの挨拶のトーン・カジュアルさ・言い回しに合わせて返す
-- 1〜2文、100文字以内
-- こちらは一般用医薬品（OTC）の相談ツールであることを軽く伝える（病院・診療所ではない）
-- ユーザーが yes/no の質問形式（〜ですか？等）の場合は挨拶として扱わない。医療機関であるかのように「はい」と答えない
-- 最後に、症状やお薬の相談があれば具体的に書いてほしいと1文で促す
-- 診断・処方はしない
+{_GREETING_PROMPT_REQUIREMENTS}
 """
     try:
         resp = concierge_chat(
@@ -368,15 +622,12 @@ def generate_greeting_text(
             [
                 {
                     "role": "system",
-                    "content": (
-                        "あなたは医薬品相談ツールの案内役です。"
-                        "ユーザーの挨拶に、その言い方に合わせて短く返答します。"
-                    ),
+                    "content": _GREETING_SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=180,
-            temperature=0.75,
+            max_tokens=300,
+            temperature=temperature,
             session_id=session_id,
         )
         text = (resp.choices[0].message.content or "").strip()
@@ -404,26 +655,21 @@ def generate_chitchat_text(
     if resolve_medical_examination_request_type(user_text):
         return generate_medical_examination_boundary_message()
 
-    hist = ""
-    if history:
-        lines = []
-        for m in history[-6:]:
-            role = m.get("type") or m.get("role") or "user"
-            content = (m.get("content") or "")[:200]
-            lines.append(f"{role}: {content}")
-        hist = "\n".join(lines)
+    hist = format_concierge_history_block(history, user_text)
+    context = format_concierge_context_block(history, user_text, mode="chitchat")
     prompt = f"""{get_policy_snippet()}
 
 【会話履歴（参考）】
-{hist or "（なし）"}
+{hist}
+
+【会話の文脈】
+{context}
 
 【ユーザーの発言】
 {user_text}
 
 【要件】
-- 1〜2文で短く返答
-- 医療診断・処方はしない
-- 最後に症状やお薬の相談を軽く促す
+{_CHITCHAT_PROMPT_REQUIREMENTS}
 """
     try:
         resp = concierge_chat(
@@ -432,20 +678,20 @@ def generate_chitchat_text(
             [
                 {
                     "role": "system",
-                    "content": "あなたは医薬品相談ツールの案内役です。",
+                    "content": _CHITCHAT_SYSTEM_PROMPT,
                 },
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=180,
-            temperature=0.6,
+            max_tokens=280,
+            temperature=0.62,
             session_id=session_id,
         )
         return (resp.choices[0].message.content or "").strip()
     except Exception as exc:
         logger.warning("Concierge chitchat LLM failed: %s", exc)
         return (
-            "お話ありがとうございます。お体の不調やお薬のことでしたら、"
-            "具体的な症状を教えてください。"
+            "お話ありがとうございます。こちらは市販薬の相談窓口です。"
+            "お体の不調やお薬の選び方でお困りのことがあれば、ゆっくりお聞かせください。"
         )
 
 

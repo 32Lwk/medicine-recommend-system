@@ -50,7 +50,7 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
 
         conversation_history = get_counseling_conversation_history(session, sid)
         response = handle_user_input_in_counseling_mode(
-            processed_message, session, recommendation_client, session_id=sid
+            user_message, session, recommendation_client, session_id=sid
         )
         if not response or not isinstance(response, dict):
             logger.warning("⚠️ カウンセリング応答が空のため通常フローへフォールバック")
@@ -58,7 +58,7 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         if response.get("type") == "topic_shift":
             log_topic_shift_detection(
                 session_id=sid,
-                user_input=processed_message,
+                user_input=user_message,
                 topic_shift_result=response.get("topic_shift_result", {}),
                 current_counseling_topic=counseling_mode.get("symptom_type", ""),
                 conversation_history_length=len(session.get("messages", [])),

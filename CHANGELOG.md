@@ -1,6 +1,72 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月23日**（医療行為依頼境界・サービス本人確認質問・店舗案内ルーティング強化）
+**最終更新日: 2026年6月24日**（Concierge 挨拶強化・攻撃的入力境界・LLM 生入力・チャット UI 同期）
+
+---
+
+## 2026年6月24日 — Concierge 挨拶強化・攻撃的入力境界・LLM 生入力・チャット UI 同期
+
+### 概要
+
+Concierge の**挨拶・雑談 LLM** を会話履歴・文脈メモ付きに刷新し、同一挨拶の連続送信でも毎回異なる応答を返すよう変更した（重複スキップを撤廃）。**攻撃的・脅迫的入力**（「殺すぞ」等）を `aggressive_input.py` に集約し、カウンセリング開始ではなく統一境界案内を返す。LLM プロンプトには正規化前の**生ユーザー入力**（`resolve_llm_user_text`）を渡すようパイプライン全体を統一。フロントエンドでは**セキュリティ案内 bot の DOM 描画**と**進行中ターンの session 同期**を改善。Sage Terrace UI の**フォントサイズ変数**と挨拶コピーの「市販薬」表記を整備した。
+
+### 攻撃的入力検出と境界応答
+
+- **`aggressive_input.py`（新規）**: 絶対ブロック・数字隠語・脅迫表現（「殺すぞ」等）・不適切キーワードの単一 SSOT。症状文内スラング（「頭痛が殺す」）は除外
+- **`chat_inappropriate_route.py`**: カウンセリング開始を廃止し `build_notice_bot`（`kind=aggressive_input`, `variant=security`）で統一案内文を返却。`processing_status` をクリア
+- **`chat_input_validator.py`**: 絶対ブロック時も `AGGRESSIVE_INPUT_NOTICE_MESSAGE` と `variant=security` を使用（既存連携）
+- **`concierge_intent.py`**: 短い攻撃的入力を structural greeting から除外
+
+### Concierge 挨拶・雑談 LLM 強化
+
+- **`concierge_agent.py`**
+  - `format_concierge_context_block` / `format_concierge_history_block`（新規）: 同一挨拶回数・話題・直前 bot 返答をプロンプトに注入
+  - `count_same_greeting_exchange_rounds` / `infer_is_first_greeting_contact`（新規）: 初回のみ窓口説明、連続挨拶では再来訪表現を抑制
+  - `_GREETING_SYSTEM_PROMPT` / `_CHITCHAT_SYSTEM_PROMPT`: ミラーリング・傾聴・「市販薬」表記（OTC 禁止）・yes/no 性質確認は挨拶では答えない等の要件
+  - `generate_greeting_text` / `generate_chitchat_text`: 履歴 10 件 + 文脈ブロック付き LLM 呼び出し
+  - `resolve_concierge_intent`: `llm_user_text` 引数で enrich 時に生入力を使用
+- **`chat_concierge_route.py`**
+  - `try_concierge_duplicate_skip` と `has_recent_concierge_reply_for_user` による重複スキップを**撤廃** — 同一挨拶でも LLM が毎回応答
+  - ルーティングは `sanitized_message`、LLM は `resolve_llm_user_text(user_message)` を分離
+- **`session_manager.py`**: `has_recent_concierge_reply_for_user` を削除
+- **`concierge_knowledge.ja.json`**: `policy_snippet` を市販薬表記・挨拶時の医療機関否定禁止に更新
+- **`chat_response_service.py`**: 挨拶プール・時間帯挨拶の文言を「市販薬の相談窓口」に統一。「めE」「めE」プレフィックス対応を追加
+
+### LLM 生ユーザー入力（resolve_llm_user_text）
+
+- **`input_helpers.py`**: `resolve_llm_user_text(original_user_message, user_message, *fallbacks)` — 正規化前を LLM に優先渡し
+- **`chat_post_pipeline.py`**: `ChatPostContext.llm_user_text` プロパティを追加
+- **適用箇所**: `chat_orchestrator.py`, `chat_concierge_route.py`, `chat_ask_route.py`, `chat_recommendation_flow.py`, `rule_based_recommendation.py`（`select_symptoms_via_gpt`）, `confidence_gate.py`（低確信確認メッセージの引用）
+
+### トリアージ履歴・パイプライン
+
+- **`triage_history.py`**: `format_triage_history_block` で `compress_message_for_llm` を使用（Sage マーカー展開）
+- **`chat_pipeline.py`**: `run_triage` の引数名を `user_message` に整理
+
+### フロントエンド（チャット UI 同期・セキュリティ案内）
+
+- **`static/js/main.js`**
+  - `ensureSecurityNoticeTurnInDom` / `isSecurityNoticeBotMessage`（新規）: ブロック・攻撃的入力 bot を DOM に確実に描画
+  - `mergeInFlightPendingUser` / `shouldBlockSessionSync`: 進行中ターンの user を session マージ結果に保持
+  - `isBlockedTurnCompleteInSlice` / `findPriorBotForUserText`: ブロックターン・重複 user の完了判定を改善
+  - 送信完了判定でセキュリティ案内 bot の可視性を考慮
+- **`static/css/sage_terrace.css` / `main.css`**: `--sage-chat-copy-fs` / `--sage-chat-copy-lh` 変数でチャット本文・設定プレビューのフォントサイズを `--font-size-base` に連動。設定モーダルの size 別 CSS を簡素化。開発バッジを黄色に変更
+- **`static/css/ui_shell_components.css`**: シェルコンポーネントのスタイル調整
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_aggressive_input.py`（新規） | 脅迫検出・症状スラング除外・absolute block と inappropriate ルートの分離・境界案内 bot |
+| `test_resolve_llm_user_text.py`（新規） | 生入力優先・フォールバック |
+| `test_concierge_agent.py` | 挨拶文脈ブロック・同一挨拶回数・LLM プロンプト要件・フォールバック禁止語 |
+| `test_concierge_route.py` | 同一挨拶の即時再送でも Concierge が応答（duplicate_skip 廃止） |
+| `test_chat_inappropriate_route.py` | 攻撃的入力境界案内への変更 |
+| `test_user_message_dedup.py` | `has_recent_concierge_reply_for_user` 関連テスト削除 |
+
+### その他
+
+- **`.cursor/skills/medicine-about-redesign/SKILL.md`**: Sage Terrace リデザイン skill の更新
 
 ---
 

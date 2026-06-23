@@ -1149,23 +1149,23 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-bubble--chat {
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: inherit;
+  line-height: inherit;
   padding: 0.48rem 0.72rem;
   border-radius: 20px;
 }
 
 .ui-bubble--greeting {
   padding: 0.38rem 0.62rem;
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: inherit;
+  line-height: inherit;
   max-width: 92%;
 }
 
 .ui-greeting-examples {
   margin: 4px 0 0;
-  font-size: 0.7rem;
-  line-height: 1.45;
+  font-size: inherit;
+  line-height: inherit;
   color: var(--ui-text-muted);
 }
 
@@ -1174,75 +1174,80 @@ body:has(#app > .ui-app) #app {
   max-width: 96%;
   padding: 0.55rem 0.65rem;
   border-radius: 18px;
-  font-size: calc(var(--fs) * 0.84);
+  font-size: var(--font-size-base, 1rem);
   line-height: var(--line-height-base, 1.75);
 }
 
-/* Reco bubble typography — follows user readability setting (--font-size-base) */
-.ui-bubble--reco .ui-followup-list { font-size: calc(var(--fs) * 0.8); }
-.ui-bubble--reco .ui-priority-badge { font-size: calc(var(--fs) * 0.78); }
-.ui-bubble--reco .ui-followup-hint { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-reco-followup__intro { font-size: calc(var(--fs) * 0.78); }
-.ui-bubble--reco .ui-personal-advice__title { font-size: calc(var(--fs) * 0.78); }
-.ui-bubble--reco .ui-personal-advice__text { font-size: calc(var(--fs) * 0.76); }
-.ui-bubble--reco .ui-overlap-card__badge { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-overlap-card__title { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-overlap-row { font-size: calc(var(--fs) * 0.7); }
-.ui-bubble--reco .ui-overlap-row__note { font-size: calc(var(--fs) * 0.66); }
-.ui-bubble--reco .ui-reason-item { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-reason-item__icon { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-card-usage-content { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-score-breakdown-panel__title { font-size: calc(var(--fs) * 0.7); }
-.ui-bubble--reco .ui-score-breakdown__summary { font-size: calc(var(--fs) * 0.74); }
+/* Reco bubble typography — inherits bubble body size (tracks --font-size-base) */
+.ui-bubble--reco .ui-reco-intro,
+.ui-bubble--reco .ui-followup-list,
+.ui-bubble--reco .ui-priority-badge,
+.ui-bubble--reco .ui-reco-followup__intro,
+.ui-bubble--reco .ui-personal-advice__title,
+.ui-bubble--reco .ui-personal-advice__text,
+.ui-bubble--reco .ui-overlap-card__title,
+.ui-bubble--reco .ui-overlap-row,
+.ui-bubble--reco .ui-reason-item,
+.ui-bubble--reco .ui-card-usage-content,
+.ui-bubble--reco .ui-score-breakdown-panel__title,
+.ui-bubble--reco .ui-score-breakdown__summary,
 .ui-bubble--reco .ui-score-breakdown__list li,
-.ui-bubble--reco .ui-score-breakdown__item { font-size: calc(var(--fs) * 0.72); }
+.ui-bubble--reco .ui-score-breakdown__item,
 .ui-bubble--reco .ui-score-breakdown__list strong,
-.ui-bubble--reco .ui-score-breakdown__item strong { font-size: calc(var(--fs) * 0.76); }
-.ui-bubble--reco .ui-score-breakdown__hint { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-score-breakdown__note { font-size: calc(var(--fs) * 0.64); }
-.ui-bubble--reco .ui-carousel-counter { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-med-badge { font-size: calc(var(--fs) * 0.65); }
-.ui-bubble--reco .ui-card--pro .ui-score-penalty-chip,
-.ui-bubble--reco .medicine-item .ui-score-penalty-chip { font-size: calc(var(--fs) * 0.58); }
-.ui-bubble--reco .ui-card--pro .ui-card-name { font-size: calc(var(--fs) * 0.95); }
-.ui-bubble--reco .ui-card--pro .ui-card-maker { font-size: calc(var(--fs) * 0.68); }
-.ui-bubble--reco .ui-score-ring__value { font-size: calc(var(--fs) * 1.05); }
-.ui-bubble--reco .ui-score-ring__unit { font-size: calc(var(--fs) * 0.55); }
-.ui-bubble--reco .ui-symptom-tag { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-age-suit { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-card--pro .ui-card-label { font-size: calc(var(--fs) * 0.62); }
-.ui-bubble--reco .ui-card--pro .ui-card-text { font-size: calc(var(--fs) * 0.75); }
-.ui-bubble--reco .ui-card-expand { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-trust-strip { font-size: calc(var(--fs) * 0.58); }
-.ui-bubble--reco .ui-med-image__label { font-size: calc(var(--fs) * 0.68); }
-.ui-bubble--reco .ui-med-image--card .ui-med-image__label,
-.ui-bubble--reco .ui-med-image--hero .ui-med-image__label { font-size: calc(var(--fs) * 0.72); }
-.ui-bubble--reco .ui-med-image--thumb .ui-med-image__label { font-size: calc(var(--fs) * 0.52); }
+.ui-bubble--reco .ui-score-breakdown__item strong,
+.ui-bubble--reco .ui-carousel-counter,
+.ui-bubble--reco .ui-card--pro .ui-card-name,
+.ui-bubble--reco .ui-card--pro .ui-card-text,
+.ui-bubble--reco .ui-card-expand,
 .ui-bubble--reco .collapse-toggle,
-.ui-bubble--reco .ui-sage-collapse__toggle { font-size: calc(var(--fs) * 0.8); }
-.ui-bubble--reco .collapse-icon,
-.ui-bubble--reco .ui-sage-collapse__icon { font-size: calc(var(--fs) * 0.7); }
+.ui-bubble--reco .ui-sage-collapse__toggle,
 .ui-bubble--reco .ui-sage-collapse__body,
-.ui-bubble--reco .collapse-content { font-size: calc(var(--fs) * 0.76); }
-.ui-bubble--reco .ui-alert { font-size: calc(var(--fs) * 0.8); }
-.ui-bubble--reco .ui-feedback { font-size: calc(var(--fs) * 0.78); }
-.ui-bubble--reco .ui-btn { font-size: calc(var(--fs) * 0.8); }
+.ui-bubble--reco .collapse-content,
+.ui-bubble--reco .ui-alert,
+.ui-bubble--reco .ui-feedback,
+.ui-bubble--reco .ui-btn,
+.ui-bubble--reco .ui-symptom-tag {
+  font-size: inherit;
+}
+
+.ui-bubble--reco .ui-followup-hint,
+.ui-bubble--reco .ui-overlap-card__badge,
+.ui-bubble--reco .ui-overlap-row__note,
+.ui-bubble--reco .ui-reason-item__icon,
+.ui-bubble--reco .ui-score-breakdown__hint,
+.ui-bubble--reco .ui-score-breakdown__note,
+.ui-bubble--reco .ui-med-badge,
+.ui-bubble--reco .ui-card--pro .ui-score-penalty-chip,
+.ui-bubble--reco .medicine-item .ui-score-penalty-chip,
+.ui-bubble--reco .ui-card--pro .ui-card-maker,
+.ui-bubble--reco .ui-card--pro .ui-card-label,
+.ui-bubble--reco .ui-age-suit,
+.ui-bubble--reco .ui-trust-strip,
+.ui-bubble--reco .ui-med-image__label,
+.ui-bubble--reco .ui-med-image--thumb .ui-med-image__label,
+.ui-bubble--reco .collapse-icon,
+.ui-bubble--reco .ui-sage-collapse__icon {
+  font-size: 0.875em;
+}
+
+.ui-bubble--reco .ui-score-ring__value { font-size: 1.05em; }
+.ui-bubble--reco .ui-score-ring__unit { font-size: 0.75em; }
 
 .ui-followup-list {
   margin: 8px 0;
   padding-left: 1.2em;
-  font-size: 0.8rem;
+  font-size: inherit;
 }
 
 .ui-priority-badge {
   color: var(--ui-warn);
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: inherit;
 }
 
 .ui-followup-hint {
   margin: 8px 0 0;
-  font-size: 0.72rem;
+  font-size: 0.875em;
   color: var(--ui-text-muted);
   line-height: 1.5;
 }

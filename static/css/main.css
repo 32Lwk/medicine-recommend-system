@@ -3,6 +3,8 @@
         :root {
             --font-size-base: 1rem; /* 標準サイズ */
             --line-height-base: 1.8; /* ベース行間 */
+            --sage-chat-copy-fs: var(--font-size-base);
+            --sage-chat-copy-lh: var(--line-height-base);
             --section-spacing: 30px;
             --focus-color: #4CAF50; /* フォーカスリングの色（CSS変数） */
             --chat-input-height: 91px; /* JS ResizeObserver で更新 */

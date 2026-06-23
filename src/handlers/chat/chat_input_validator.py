@@ -84,16 +84,22 @@ def validate_and_block_input(session, client, user_message, sid):
         if blocked:
             logger.warning("🚫 絶対ブロックリストにより入力が拒否されました")
             # セキュリティブロック以外の不適切内容はユーザーフレンドリーなプレーンテキストで返す
-            block_message = (
-                'ご入力いただいた内容にはお答えできかねます。'
-                'お体の不調やお薬のご相談がありましたら、お気軽にメッセージをお送りください。'
-            )
+            from src.security.aggressive_input import AGGRESSIVE_INPUT_NOTICE_MESSAGE
+
+            block_message = AGGRESSIVE_INPUT_NOTICE_MESSAGE
             _append_blocked_user_message(session)
             _append_security_block_bot(
                 session, sid, block_message, kind="absolute_block", variant="security"
             )
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
+            if sid:
+                try:
+                    from src.services.processing_status import clear_processing_status
+
+                    clear_processing_status(sid)
+                except ImportError:
+                    pass
             message_count = len(session['messages'])
             return (None, ({
                 'status': 'ok',

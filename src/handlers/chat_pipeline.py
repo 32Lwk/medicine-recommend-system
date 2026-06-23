@@ -36,11 +36,11 @@ class ChatPipeline:
 
     def run_triage(
         self,
-        sanitized_message: str,
+        user_message: str,
         *,
         user_info: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        return run_triage_agent(sanitized_message, self._client, user_info=user_info)
+        return run_triage_agent(user_message, self._client, user_info=user_info)
 
     def after_triage(
         self,

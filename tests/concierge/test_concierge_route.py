@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, patch
 
 
 from src.handlers.chat.chat_concierge_route import (
-    try_concierge_duplicate_skip,
     try_concierge_response,
 )
 
@@ -264,33 +263,39 @@ def test_doc_privacy_via_meta_triage(mock_meta_chat, mock_concierge_chat):
     assert "収集" in bot["content"]
 
 
-def test_concierge_duplicate_skip_before_triage():
+@patch("src.agents.concierge_agent.generate_greeting_text", return_value=("またこんにちは", True))
+def test_concierge_replies_on_immediate_regreeting(mock_greeting):
+    """直前ターンと同一挨拶の二重送信でも Concierge が再応答する。"""
     session = {
         "messages": [
             {"type": "user", "content": "こんにちは"},
             {"type": "bot", "content": "返信", "concierge": True},
-        ]
+        ],
+        "user_attributes": {},
     }
     client = MagicMock()
     client.client_ip = "127.0.0.1"
     client.user_agent = "test"
 
-    with patch("src.handlers.chat.chat_concierge_route.save_session_to_db") as mock_save:
-        resp = try_concierge_duplicate_skip(
+    with patch("src.handlers.chat.chat_concierge_route.save_session_to_db"):
+        resp = try_concierge_response(
             session,
             client,
             "sid-test",
             "こんにちは",
             "こんにちは",
+            {"category": "Other", "confidence": 0.99, "concierge_intent": "greeting"},
+            MagicMock(),
         )
 
     assert resp is not None
     body, status = resp
     assert status == 200
-    assert body["message_count"] == 3
-    assert len(session["messages"]) == 3
-    assert session["messages"][-1]["type"] == "user"
-    assert session["messages"][-1]["content"] == "こんにちは"
-    assert body.get("duplicate_skip") is True
-    mock_save.assert_called_once()
+    assert body.get("duplicate_skip") is not True
+    assert len(session["messages"]) == 4
+    assert session["messages"][-2]["type"] == "user"
+    assert session["messages"][-2]["content"] == "こんにちは"
+    assert session["messages"][-1]["type"] == "bot"
+    assert session["messages"][-1].get("greeting") is True
+    mock_greeting.assert_called_once()
 

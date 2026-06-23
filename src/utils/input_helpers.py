@@ -8,6 +8,23 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 
 
+def resolve_llm_user_text(
+    original_user_message: str = "",
+    user_message: str = "",
+    *fallbacks: str,
+) -> str:
+    """
+    LLM プロンプトに渡すユーザー入力。正規化前の生データを優先する。
+
+    ルーティング・キーワード照合・スコアリングには sanitized / processed を使うこと。
+    """
+    for candidate in (original_user_message, user_message, *fallbacks):
+        text = (candidate or "").strip()
+        if text:
+            return text
+    return ""
+
+
 def is_ambiguous_input(user_text: str, symptoms: List[str], nlu_result: Dict) -> bool:
     """
     曖昧な入力かどうかを判定

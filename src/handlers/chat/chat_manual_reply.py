@@ -26,14 +26,14 @@ from src.utils.debug_logger import add_network_log
 logger = logging.getLogger(__name__)
 
 
-def _save_triage_metadata_only(sid: str, sanitized_message: str, client: Any) -> None:
+def _save_triage_metadata_only(sid: str, user_text: str, client: Any) -> None:
     """AI自動応答OFF時: トリアージメタデータのみDBに保存（応答本文は生成しない）"""
     if not sid or client is None:
         return
     try:
         from src.services.llm_triage import llm_triage
 
-        triage = llm_triage(sanitized_message, client, use_cache=True)
+        triage = llm_triage(user_text, client, use_cache=True)
         metadata = {
             "category": triage.get("category"),
             "subcategory": triage.get("subcategory"),
@@ -61,7 +61,7 @@ def handle_manual_reply_when_off(
     session: Any,
     client: Any,
     sid: Optional[str],
-    sanitized_message: str,
+    user_message: str,
     session_data_for_ai: Optional[dict],
 ) -> Optional[Any]:
     """
@@ -72,7 +72,7 @@ def handle_manual_reply_when_off(
         session: Flaskセッション
         client: クライアント情報（IP / User-Agent）
         sid: セッションID
-        sanitized_message: サニタイズ済みメッセージ
+        sanitized_message: ユーザー生メッセージ（LLM トリアージ用）
         session_data_for_ai: セッションDB取得結果（ai_auto_reply 判定用）
 
     Returns:
@@ -95,8 +95,8 @@ def handle_manual_reply_when_off(
 
     logger.info(f"⚠️ AI自動応答OFF検出 - セッションID: {sid}, 管理者モード: {get_admin_mode()}")
 
-    append_user_message(session, sanitized_message)
-    logger.info(f"✅ ユーザーメッセージ追加（AI自動応答OFF）: {sanitized_message[:50]}...")
+    append_user_message(session, user_message)
+    logger.info(f"✅ ユーザーメッセージ追加（AI自動応答OFF）: {user_message[:50]}...")
 
     if sid:
         session_data = get_session_from_db(sid)
@@ -128,7 +128,7 @@ def handle_manual_reply_when_off(
                 session_data["last_activity"] = datetime.now()
                 save_session_to_db(sid, session_data)
 
-        _save_triage_metadata_only(sid, sanitized_message, client)
+        _save_triage_metadata_only(sid, user_message, client)
 
     if not get_admin_mode():
         queue = get_manual_reply_queue()
@@ -143,7 +143,7 @@ def handle_manual_reply_when_off(
         else:
             pending_message = {
                 "session_id": sid_for_queue,
-                "user_message": sanitized_message,
+                "user_message": user_message,
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "status": "pending",
             }
@@ -167,7 +167,7 @@ def handle_manual_reply_when_off(
         add_network_log(
             "POST",
             "メインサイト - 手動返信待ち",
-            {"symptom": sanitized_message},
+            {"symptom": user_message},
             {"status": "pending_manual_reply"},
             0,
             "pending",

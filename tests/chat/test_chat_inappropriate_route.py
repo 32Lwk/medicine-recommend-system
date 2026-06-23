@@ -7,24 +7,31 @@ from src.handlers.chat.chat_inappropriate_route import (
     detect_inappropriate_message,
     handle_inappropriate_message_if_detected,
 )
+from src.security.aggressive_input import AGGRESSIVE_INPUT_NOTICE_MESSAGE
 
 
-def test_detect_numeric_slang():
-    assert detect_inappropriate_message("69")
+def test_detect_numeric_slang_absolute_block_not_inappropriate_route():
+    from src.security.aggressive_input import is_aggressive_expression, is_non_absolute_aggressive_expression
+
+    assert is_aggressive_expression("69")[0]
+    assert not is_non_absolute_aggressive_expression("69")[0]
+    assert not detect_inappropriate_message("69")
 
 
-@patch("src.services.counseling_response.start_counseling_mode")
-@patch("src.services.counseling_response.generate_follow_up_questions", return_value=[])
-@patch("src.services.counseling_response.generate_counseling_response", return_value="応答")
-@patch("src.services.counseling_response.log_counseling_response")
-def test_handle_returns_response(mock_log, mock_gen, mock_q, mock_start):
+@patch("src.handlers.chat.chat_inappropriate_route.save_session_to_db")
+def test_handle_returns_aggressive_notice(mock_save):
     session = {"messages": []}
+    client = MagicMock()
+    client.client_ip = "127.0.0.1"
+    client.user_agent = "test"
     with patch(
-        "src.handlers.chat.chat_inappropriate_route.detect_inappropriate_message",
-        return_value=True,
+        "src.security.aggressive_input.is_non_absolute_aggressive_expression",
+        return_value=(True, "69"),
     ):
         resp = handle_inappropriate_message_if_detected(
-            session, MagicMock(), "sid", "msg", "69", MagicMock()
+            session, client, "sid", "msg", "69", MagicMock()
         )
     assert resp is not None
     assert resp[0]["status"] == "ok"
+    assert resp[0]["response"] == AGGRESSIVE_INPUT_NOTICE_MESSAGE
+    assert session["messages"][1]["diagnosis"]["kind"] == "aggressive_input"

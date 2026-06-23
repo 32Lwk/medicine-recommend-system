@@ -55,11 +55,13 @@ def handle_store_inquiry_response(
         logger.warning(f"⚠️ 店舗案内・遺失物関連機能のインポートに失敗: {e}")
         return None
 
+    routing_text = sanitized_message
+    llm_primary = (display_user_message or sanitized_message or "").strip()
     store_inquiry_result = handle_store_inquiry(
-        sanitized_message,
+        llm_primary,
         recommendation_client,
         triage_result,
-        extra_texts=[display_user_message] if display_user_message else None,
+        extra_texts=[routing_text] if routing_text and routing_text != llm_primary else None,
     )
 
     if not store_inquiry_result or not store_inquiry_result.get("is_store_inquiry"):
@@ -79,7 +81,7 @@ def handle_store_inquiry_response(
 
             verify_routing_async(
                 route_kind="store_inquiry",
-                user_text=sanitized_message,
+                user_text=llm_primary,
                 decided_category="Other",
                 client=recommendation_client,
                 session_id=sid,

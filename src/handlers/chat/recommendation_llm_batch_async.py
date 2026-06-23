@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 async def run_nlu_and_symptom_analysis_parallel_async(
-    processed_message: str,
+    user_text: str,
     user_info: dict[str, Any],
     client: OpenAI | AsyncOpenAI,
     *,
@@ -30,7 +30,7 @@ async def run_nlu_and_symptom_analysis_parallel_async(
     async def _nlu_task() -> dict[str, Any]:
         return await asyncio.to_thread(
             resolve_nlu_for_recommendation,
-            processed_message,
+            user_text,
             user_info,
             client if isinstance(client, OpenAI) else OpenAI(api_key=getattr(client, "api_key", None)),
             session_id=session_id,
@@ -41,7 +41,7 @@ async def run_nlu_and_symptom_analysis_parallel_async(
         sync_client = client if isinstance(client, OpenAI) else OpenAI(api_key=getattr(client, "api_key", None))
         return await asyncio.to_thread(
             analyze_symptoms_and_medicine_type,
-            processed_message,
+            user_text,
             sync_client,
         )
 

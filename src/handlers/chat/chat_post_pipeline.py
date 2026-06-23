@@ -27,6 +27,7 @@ from src.handlers.chat.chat_session_route import (
     handle_chat_end_if_requested,
     sync_messages_to_db_for_admin,
 )
+from src.utils.input_helpers import resolve_llm_user_text
 from src.services.session_manager import resolve_session_snapshot
 from src.utils.chat_http_context import ChatClientInfo
 
@@ -57,6 +58,10 @@ class ChatPostContext:
     trace_id: str = ""
     recommendation_client: OpenAI = field(default_factory=lambda: openai_client)
     routing: Any = None  # RoutingContext | None
+
+    @property
+    def llm_user_text(self) -> str:
+        return resolve_llm_user_text(self.original_user_message, self.user_message)
 
 
 def _load_session_snapshot_for_pipeline(sid: Optional[str]) -> dict:
@@ -136,7 +141,7 @@ def run_chat_post_pipeline(
     session_data_for_ai = _load_session_snapshot_for_pipeline(sid)
     mark_pipeline_step("after_get_session_db")
     manual_resp = handle_manual_reply_when_off(
-        session, client_info, sid, ctx.sanitized_message, session_data_for_ai
+        session, client_info, sid, ctx.user_message, session_data_for_ai
     )
     if manual_resp is not None:
         return manual_resp
@@ -182,20 +187,6 @@ def run_chat_post_pipeline(
     if delete_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
         return delete_resp
-
-    mark_pipeline_step("before_triage_duplicate")
-    from src.handlers.chat.chat_concierge_route import try_concierge_duplicate_skip
-
-    dup_concierge = try_concierge_duplicate_skip(
-        session,
-        client_info,
-        sid,
-        ctx.user_message,
-        ctx.sanitized_message,
-    )
-    if dup_concierge is not None:
-        session["last_trace_id"] = ctx.trace_id
-        return dup_concierge
 
     mark_pipeline_step("before_triage")
     from src.handlers.chat.chat_triage import run_triage
@@ -527,7 +518,7 @@ def _run_moderation_if_needed(ctx: ChatPostContext) -> None:
     ):
         return
     mod = run_moderation_agent(
-        ctx.sanitized_message,
+        ctx.llm_user_text,
         ctx.recommendation_client,
         trace_id=ctx.trace_id,
         sid=ctx.sid,
@@ -571,7 +562,7 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
             history, _memory_block = get_llm_conversation_context(ctx.session, ctx.sid, limit=5)
         ctx.triage_result = enrich_other_concierge_intent(
             dict(triage),
-            ctx.sanitized_message or ctx.user_message,
+            ctx.llm_user_text,
             ctx.recommendation_client,
             conversation_history=history,
             session_id=ctx.sid,

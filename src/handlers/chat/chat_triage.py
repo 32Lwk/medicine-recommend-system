@@ -54,7 +54,7 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         memory_block = build_long_term_memory_block(session, sid)
         start_time = time.time()
         triage_result = run_triage_agent(
-            sanitized_message,
+            user_message,
             recommendation_client,
             user_info=user_info,
             conversation_history=conversation_history,

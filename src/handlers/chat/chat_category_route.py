@@ -194,7 +194,7 @@ def _handle_inappropriate_from_triage(
         conversation_history = get_counseling_conversation_history(session, sid)
         initial_response = generate_counseling_response(
             symptom_type,
-            sanitized_message,
+            user_message,
             recommendation_client,
             conversation_history=conversation_history,
             session_id=sid,

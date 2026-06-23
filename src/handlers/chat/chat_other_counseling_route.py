@@ -16,7 +16,6 @@ from src.services.session_manager import (
     append_user_message,
     get_next_user_number,
     get_session_from_db,
-    has_recent_counseling_reply_for_user,
     save_session_to_db,
     was_last_user_message,
 )
@@ -139,18 +138,6 @@ def run_other_unknown_counseling(
         logger.info("⏭️ Concierge 対象のため不明要求カウンセリングをスキップ")
         return None
 
-    # 末尾が bot のままの重複送信は user 追記前に抑止（末尾 user 残りで SSE 完了判定が壊れるのを防ぐ）
-    if has_recent_counseling_reply_for_user(session, original_user_message):
-        logger.info("⏭️ 同一ユーザー発言へのカウンセリング返信済みのためスキップ")
-        if sid:
-            try:
-                from src.services.processing_mark import mark_phase
-
-                mark_phase(sid, "finalize")
-            except Exception:
-                pass
-        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
-
     logger.info("🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
     _ensure_user_message_for_counseling(
         session, client_info, sid, original_user_message
@@ -182,12 +169,12 @@ def run_other_unknown_counseling(
         conversation_history = get_counseling_conversation_history(session, sid)
         initial_response = generate_counseling_response(
             symptom_type,
-            sanitized_message,
+            original_user_message,
             recommendation_client,
             conversation_history=conversation_history,
             session_id=sid,
         )
-        detected_language = update_session_language_from_message(session, sanitized_message)
+        detected_language = update_session_language_from_message(session, original_user_message)
         if detected_language != "ja" and initial_response:
             try:
                 from src.core.translation_service import translate_medicine_recommendation

@@ -53,9 +53,9 @@ def _mark_clarify_sent(session: Any) -> None:
     session["triage_clarify_sent"] = True
 
 
-def build_low_confidence_clarify_message(category: str, sanitized_message: str) -> str:
+def build_low_confidence_clarify_message(category: str, user_message: str) -> str:
     """カテゴリ別の低確信確認メッセージ。"""
-    quoted = f"「{sanitized_message}」"
+    quoted = f"「{user_message}」"
     if category == "Physical":
         return (
             f"{quoted}について、症状相談と判定しましたが、"
@@ -177,7 +177,7 @@ def apply_confidence_gate(
     if confidence < threshold:
         _invalidate_triage_cache()
         retried = retry_triage_with_fallback_model(
-            sanitized_message,
+            user_message,
             recommendation_client,
             conversation_history=history,
         )
@@ -217,7 +217,7 @@ def apply_confidence_gate(
                 symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
                 confirmation_message = generate_counseling_response(
                     symptom_type,
-                    sanitized_message,
+                    user_message,
                     recommendation_client,
                     conversation_history=history[-10:],
                     session_id=sid,
@@ -225,7 +225,7 @@ def apply_confidence_gate(
             else:
                 confirmation_message = build_low_confidence_clarify_message(
                     category,
-                    sanitized_message,
+                    user_message,
                 )
             log_counseling_response(
                 session_id=sid,

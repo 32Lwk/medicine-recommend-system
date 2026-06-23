@@ -26,7 +26,7 @@ class RecommendationLlmBatchResult:
 
 
 def run_nlu_and_symptom_analysis_parallel(
-    processed_message: str,
+    user_text: str,
     user_info: dict[str, Any],
     client: OpenAI,
     *,
@@ -35,14 +35,14 @@ def run_nlu_and_symptom_analysis_parallel(
 ) -> RecommendationLlmBatchResult:
     """
     NLU 解析と症状/医薬品種類分類を並列実行する。
-    各タスクは既存関数をそのまま呼び、精度は単体実行と同一。
+    user_text は正規化前のユーザー生入力を渡すこと。
     """
     nlu_result: dict[str, Any] = {}
     analysis_result: dict[str, Any] = {}
 
     def _nlu_task() -> dict[str, Any]:
         return resolve_nlu_for_recommendation(
-            processed_message,
+            user_text,
             user_info,
             client,
             session_id=session_id,
@@ -50,7 +50,7 @@ def run_nlu_and_symptom_analysis_parallel(
         )
 
     def _symptom_task() -> dict[str, Any]:
-        return analyze_symptoms_and_medicine_type(processed_message, client)
+        return analyze_symptoms_and_medicine_type(user_text, client)
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         fut_nlu = pool.submit(_nlu_task)

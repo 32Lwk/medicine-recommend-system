@@ -246,6 +246,7 @@ def rule_based_recommendation(
     session_id: str = None,
     *,
     precomputed_nlu: Optional[Dict] = None,
+    llm_user_text: Optional[str] = None,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのメイン関数（全医薬品種類対応）
@@ -510,11 +511,12 @@ def rule_based_recommendation(
     has_detected_symptoms = len(symptoms_detected) > 0
     
     # 症状が検出されていない場合、select_symptoms_via_gptで抽出を試みる
+    gpt_input = (llm_user_text or user_text).strip()
     if not has_detected_symptoms:
         try:
             from src.core.medicine_logic import select_symptoms_via_gpt
-            logger.info(f"🔍 select_symptoms_via_gptで症状抽出を試みます: {user_text}")
-            symptom_extraction_result = select_symptoms_via_gpt(user_text, client=client)
+            logger.info(f"🔍 select_symptoms_via_gptで症状抽出を試みます: {gpt_input}")
+            symptom_extraction_result = select_symptoms_via_gpt(gpt_input, client=client)
             logger.debug(f"🔍 select_symptoms_via_gptの結果: {symptom_extraction_result}")
             
             # select_symptoms_via_gptは直接 {'status': 'success', 'symptoms': [...], 'message': '...'} を返す
@@ -1656,6 +1658,7 @@ def rule_based_medicine_recommendation(
     session_id: str = None,
     *,
     precomputed_nlu: Optional[Dict] = None,
+    llm_user_text: Optional[str] = None,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのラッパー関数（app.pyから呼び出し用）
@@ -1687,6 +1690,7 @@ def rule_based_medicine_recommendation(
         top_n=top_n,
         session_id=session_id,
         precomputed_nlu=precomputed_nlu,
+        llm_user_text=llm_user_text,
     )
     
     return result

@@ -48,8 +48,9 @@ def test_store_inquiry_preserves_original_user_input_for_display(
     assert session["messages"][0]["content"] == "\u30c8\u30a4\u30ec"
     mock_handle.assert_called_once()
     call_args = mock_handle.call_args[0]
-    assert call_args[0] == "\u3068\u3044\u308c"
+    assert call_args[0] == "\u30c8\u30a4\u30ec"
     assert call_args[2] is None
+    assert mock_handle.call_args[1]["extra_texts"] == ["\u3068\u3044\u308c"]
 
 
 @patch("src.handlers.chat.chat_store_inquiry.save_session_to_db")

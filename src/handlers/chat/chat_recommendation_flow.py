@@ -88,12 +88,17 @@ def _emit_explanation_followup_sse(
         logger.debug("explanation SSE follow-up skipped: %s", exc)
 
 
+from src.utils.input_helpers import resolve_llm_user_text
+
+
 def _invoke_rule_based_recommendation(
     user_text: str,
     user_info: dict,
     client,
     session_id,
     nlu_result: dict | None,
+    *,
+    llm_user_text: str | None = None,
 ):
     """rule_based_medicine_recommendation を毎回正しいモジュールから呼ぶ（古いキャッシュ回避）。"""
     from src.core.rule_based_recommendation import (
@@ -106,6 +111,7 @@ def _invoke_rule_based_recommendation(
         client,
         session_id=session_id,
         precomputed_nlu=nlu_result or None,
+        llm_user_text=llm_user_text,
     )
 
 
@@ -123,6 +129,7 @@ def run_recommendation_flow(
 ):
     if user_message is None:
         user_message = processed_message or sanitized_message or ""
+    llm_text = resolve_llm_user_text(user_message=user_message)
     from src.services.processing_status import mark_processing_step
 
     mark_processing_step(sid, "attributes", detail_code="profile_register")
@@ -670,9 +677,9 @@ def run_recommendation_flow(
         from src.services.pipeline_perf import mark_pipeline_step
 
         mark_pipeline_step("nlu_batch_start")
-        logger.info(f"🔍 NLU+症状分類（並列）: processed_message={processed_message[:50]}...")
+        logger.info(f"🔍 NLU+症状分類（並列）: llm_text={llm_text[:50]}...")
         batch = run_nlu_and_symptom_analysis_parallel(
-            processed_message,
+            llm_text,
             user_info,
             recommendation_client,
             session_id=sid,
@@ -1271,6 +1278,7 @@ def run_recommendation_flow(
                     recommendation_client,
                     sid,
                     nlu_result,
+                    llm_user_text=llm_text,
                 )
                 mark_pipeline_step("rule_based_done")
                             
@@ -1750,7 +1758,7 @@ def run_recommendation_flow(
                         recommended_medicines,
                         symptoms,
                         recommendation_client,
-                        user_text=user_message,
+                        user_text=llm_text,
                         influenza_risk=influenza_risk,
                         influenza_reason=influenza_reason,
                         session_id=sid,
