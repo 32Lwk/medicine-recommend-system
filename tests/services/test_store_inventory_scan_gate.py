@@ -47,6 +47,22 @@ def test_inventory_scan_runs_for_product_location_question():
         mock_classify.assert_called_once()
 
 
+def test_inventory_fever_symptom_not_store_inquiry():
+    triage = {"category": "Physical", "confidence": 0.99, "subcategory": "fever"}
+    with patch(
+        "src.services.store_inquiry_handler.classify_product_category"
+    ) as mock_classify:
+        ok, info = detect_inventory_inquiry("39度の熱があります", triage)
+        assert ok is False
+        assert info is None
+        mock_classify.assert_not_called()
+
+
+def test_inventory_keyword_does_not_match_symptom_arimasu():
+    assert detect_inventory_inquiry("頭痛があります", _TRIAGE_OTHER)[0] is False
+    assert detect_inventory_inquiry("風邪薬の在庫ありますか", _TRIAGE_OTHER)[0] is True
+
+
 def test_product_index_finds_toothbrush():
     stats = index_stats()
     assert stats["unique_tokens"] > 0

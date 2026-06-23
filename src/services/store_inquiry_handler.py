@@ -67,6 +67,32 @@ def _contains_store_keyword(user_text: str, keyword: str) -> bool:
     return keyword in match_text
 
 
+# 部分一致だと症状文（例: 「熱があります」）に誤マッチする短い在庫キーワード
+_INVENTORY_SUBSTRING_AMBIGUOUS = frozenset({"あります", "どこ", "場所は", "取り扱い"})
+
+
+def _matches_inventory_keyword(user_text: str, keyword: str) -> bool:
+    """
+    在庫キーワード照合。フレーズとして含まれる場合のみ True。
+
+    短い曖昧語は全文一致のみ（それ以外はオーケストレーター／トリアージに委譲）。
+    「あります」は「があります」（症状）への部分一致を除外する。
+    """
+    if not keyword:
+        return False
+    match_text = _store_match_text(user_text)
+    norm_kw = _store_match_text(keyword)
+    if not norm_kw:
+        return False
+    if norm_kw in _INVENTORY_SUBSTRING_AMBIGUOUS:
+        return match_text.strip() == norm_kw.strip()
+    if norm_kw not in match_text:
+        return False
+    if norm_kw == "あります" and "があります" in match_text:
+        return False
+    return True
+
+
 def _text_lower(user_text: str) -> str:
     return _store_match_text(user_text)
 
@@ -152,21 +178,17 @@ def _has_explicit_store_stock_intent(user_text: str) -> bool:
     text = (user_text or "").lower()
     if not text:
         return False
-    from src.services.medicine_discovery_routing import has_medicine_discovery_intent
-
-    if has_medicine_discovery_intent(user_text):
-        explicit_stock = (
-            "在庫",
-            "取り寄せ",
-            "売ってい",
-            "扱ってい",
-            "売り場",
-            "店内",
-            "店舗",
-            "置いて",
-        )
-        return any(k in text for k in explicit_stock)
-    return True
+    explicit_stock = (
+        "在庫",
+        "取り寄せ",
+        "売ってい",
+        "扱ってい",
+        "売り場",
+        "店内",
+        "店舗",
+        "置いて",
+    )
+    return any(k in text for k in explicit_stock)
 
 
 def is_probable_store_inquiry(
@@ -1305,6 +1327,25 @@ def _triage_hints_inventory(triage_result: Optional[Dict]) -> bool:
     return "store_inquiry" in sub or "inventory" in sub
 
 
+def _should_skip_inventory_for_medical_triage(
+    user_text: str,
+    triage_result: Optional[Dict],
+) -> bool:
+    """Physical/Ask 高確信トリアージでは、店舗在庫の明示語がなければ在庫ゲートを通さない。"""
+    triage = triage_result or {}
+    category = triage.get("category", "")
+    if category not in ("Physical", "Ask"):
+        return False
+    sub = str(triage.get("subcategory") or "").lower()
+    if sub.startswith("store_inquiry") or sub == "lost_and_found":
+        return False
+    from config.routing_config import triage_confidence_threshold
+
+    if float(triage.get("confidence") or 0.0) < triage_confidence_threshold():
+        return False
+    return not _has_explicit_store_stock_intent(user_text)
+
+
 def detect_inventory_inquiry(
     user_text: str,
     triage_result: Optional[Dict] = None,
@@ -1314,10 +1355,14 @@ def detect_inventory_inquiry(
 
     商品カタログ照合は在庫キーワード・位置質問・トリアージヒントがある場合のみ実行。
     """
+    if _should_skip_inventory_for_medical_triage(user_text, triage_result):
+        return False, None
+
     user_text_lower = user_text.lower()
 
     has_inventory_keyword = any(
-        keyword in user_text_lower for keyword in INVENTORY_INQUIRY_KEYWORDS
+        _matches_inventory_keyword(user_text, keyword)
+        for keyword in INVENTORY_INQUIRY_KEYWORDS
     )
     has_location_question = "場所" in user_text_lower or "どこ" in user_text_lower
     triage_inventory_hint = _triage_hints_inventory(triage_result)
@@ -1354,6 +1399,9 @@ def detect_inventory_inquiry(
         return False, None
 
     if has_inventory_keyword:
+        has_symptom_keyword = any(
+            keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS
+        )
         if _has_explicit_store_stock_intent(user_text):
             if product_category_info:
                 logger.info("🔍 店舗在庫確認（明示）: %s", product_category_info)
@@ -1361,9 +1409,6 @@ def detect_inventory_inquiry(
             logger.info("🔍 店舗在庫確認（明示・商品カテゴリ未特定）")
             return True, None
 
-        has_symptom_keyword = any(
-            keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS
-        )
         if has_symptom_keyword:
             logger.info(
                 "🔍 在庫確認キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先"

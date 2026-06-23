@@ -180,8 +180,6 @@ def run_chat_post_pipeline(
         ctx.recommendation_client,
     )
     if delete_resp is not None:
-        from src.handlers.chat.chat_session_route import sync_messages_to_db_for_admin
-
         sync_messages_to_db_for_admin(session, sid, client_info)
         return delete_resp
 

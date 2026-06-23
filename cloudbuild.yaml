@@ -1,10 +1,12 @@
-# Cloud Run 継続的デプロイ用（GitHub push → ビルド → デプロイ）
+# Cloud Run 継続的デプロイ用（Git push → ビルド → デプロイ）
 # トリガーで「Cloud Build 構成ファイル」に cloudbuild.yaml を指定してください。
 #
 # 置換変数（トリガー側で上書き可）:
 #   _SERVICE_NAME  … Cloud Run サービス名
 #   _DEPLOY_REGION … リージョン
 #   _AR_REPOSITORY … Artifact Registry リポジトリ名
+#
+# bash ローカル変数（COMMIT_DATE, IMAGE）は $$ でエスケープ（Cloud Build 置換と衝突防止）
 
 substitutions:
   _SERVICE_NAME: medicine-recommend
@@ -19,14 +21,14 @@ steps:
       - -ceu
       - |
         COMMIT_DATE="$(git log -1 --format=%ci "${COMMIT_SHA}" 2>/dev/null | awk '{print $1}')"
-        if [ -z "${COMMIT_DATE}" ]; then
+        if [ -z "$${COMMIT_DATE}" ]; then
           COMMIT_DATE="$(date -u +%Y-%m-%d)"
         fi
         export GIT_COMMIT="${COMMIT_SHA}"
-        export GIT_COMMIT_DATE="${COMMIT_DATE}"
+        export GIT_COMMIT_DATE="$${COMMIT_DATE}"
         python3 scripts/write_build_meta.py
         echo "build-meta:" && cat static/build-meta.json
-        echo "${COMMIT_DATE}" > /workspace/_commit_date.txt
+        echo "$${COMMIT_DATE}" > /workspace/_commit_date.txt
 
   - name: gcr.io/cloud-builders/docker
     entrypoint: bash
@@ -37,10 +39,10 @@ steps:
         IMAGE="${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
         docker build \
           --build-arg "GIT_COMMIT=${COMMIT_SHA}" \
-          --build-arg "GIT_COMMIT_DATE=${COMMIT_DATE}" \
-          -t "${IMAGE}" \
+          --build-arg "GIT_COMMIT_DATE=$${COMMIT_DATE}" \
+          -t "$${IMAGE}" \
           .
-        echo "${IMAGE}" > /workspace/_image_ref.txt
+        echo "$${IMAGE}" > /workspace/_image_ref.txt
 
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
@@ -50,10 +52,10 @@ steps:
         COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
         IMAGE="$(cat /workspace/_image_ref.txt)"
         gcloud run deploy "${_SERVICE_NAME}" \
-          --image="${IMAGE}" \
+          --image="$${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
-          --set-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=${COMMIT_DATE}" \
+          --set-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE}" \
           --quiet
 
 options:

@@ -55,3 +55,16 @@ def test_sync_routing_context_sets_ask_category():
     assert ctx.routing is not None
     assert ctx.routing.triage_category == "Ask"
     assert classify_concierge_intent(ctx.user_message) is None
+
+
+def test_sync_messages_not_shadowed_by_conditional_import():
+    """memory_delete 分岐の関数内 import がモジュール import をシャドウしないこと。"""
+    import inspect
+
+    from src.handlers.chat import chat_post_pipeline as mod
+
+    src = inspect.getsource(mod.run_chat_post_pipeline)
+    assert (
+        "from src.handlers.chat.chat_session_route import sync_messages_to_db_for_admin"
+        not in src
+    )

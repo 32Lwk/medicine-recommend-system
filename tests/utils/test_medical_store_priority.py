@@ -32,6 +32,14 @@ def test_explicit_store_inventory_not_medical_priority():
     assert is_probable_store_inquiry(text, triage) is True
 
 
+def test_fever_symptom_prioritizes_medical_over_store():
+    triage = {"category": "Physical", "confidence": 0.99, "subcategory": "fever"}
+    text = "39度の熱があります"
+    assert should_prioritize_medical_route_over_store(triage, text) is True
+    assert is_probable_store_inquiry(text, triage) is False
+    assert has_unambiguous_store_intent(text) is False
+
+
 def test_store_subcategory_not_medical_priority():
     triage = {
         "category": "Ask",
