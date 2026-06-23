@@ -110,7 +110,11 @@ def evaluate_store_gate(
         variants.append(t)
 
     primary = variants[0] if variants else ""
-    if should_prioritize_medical_route_over_store(triage_result, primary):
+    from src.services.concierge_intent import looks_like_service_identity_question
+
+    if any(looks_like_service_identity_question(t) for t in variants):
+        result = False
+    elif should_prioritize_medical_route_over_store(triage_result, primary):
         result = False
     else:
         result = is_probable_store_inquiry_any(*variants, triage_result=triage_result)

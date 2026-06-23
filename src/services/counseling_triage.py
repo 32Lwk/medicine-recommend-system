@@ -195,15 +195,23 @@ def detect_inappropriate_request(user_text: str, triage_result: Dict) -> Optiona
         triage_result: トリアージ結果
 
     Returns:
-        要求の種類（"prescription", "weight_loss", "love_potion", "cure_prevention",
-        "psychiatric_cure_prevention", "anti_aging", "body_shape", "hair_growth",
-        "illegal", "controlled"）またはNone
+        要求の種類（"prescription", "medical_examination", "weight_loss", ...
     """
+    from src.services.medical_examination_request import (
+        resolve_medical_examination_request_type,
+    )
+
+    medical_act = resolve_medical_examination_request_type(user_text, triage_result)
+    if medical_act:
+        return medical_act
+
     subcategory = triage_result.get("subcategory", "").lower()
 
     if "inappropriate_request" not in subcategory:
         return None
 
+    if "/medical_examination" in subcategory:
+        return "medical_examination"
     if "/prescription" in subcategory:
         return "prescription"
     elif "/weight_loss" in subcategory:

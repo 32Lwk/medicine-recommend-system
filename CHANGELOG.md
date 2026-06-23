@@ -1,6 +1,60 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月23日**（店舗在庫誤検出修正・Cloud Build・GitHub/GitLab 運用ドキュメント）
+**最終更新日: 2026年6月23日**（医療行為依頼境界・サービス本人確認質問・店舗案内ルーティング強化）
+
+---
+
+## 2026年6月23日 — 医療行為依頼境界・サービス本人確認質問・店舗案内ルーティング強化
+
+### 概要
+
+ユーザーが**本チャットへの診察・診断依頼**をした場合に OTC 相談ツールの境界を明示するルートを追加した。あわせて **「病院ですか？」「ここはクリニック？」** など本サービスの性質を問う質問が挨拶・店舗案内に誤ルーティングされないよう修正し、**トイレ施設案内とトイレットペーパー等の商品問い合わせの区別**、**店舗 fast-path の詳細分類**、**在庫・周辺施設応答テンプレの改善**を行った。
+
+### 医療行為依頼（診察・診断）の検出と境界応答
+
+- **`medical_examination_request.py`（新規）**: 単独フレーズ完全一致 fast-path（`診察してください` 等）、LLM フラグ `medical_examination_request`、subcategory からの種別解決
+- **`llm_triage.py`**
+  - 第一段階プロンプトに `medical_examination_request` フラグを追加（症状＋依頼の複合文も Other へ）
+  - 第二段階に `inappropriate_request/medical_examination` を追加（21 種類）
+  - fast-path: 単独フレーズ完全一致、サービス本人確認質問、第一段階 LLM フラグ
+- **`counseling_triage.py`**: `resolve_medical_examination_request_type` を不適切要求検出の先頭で呼び出し
+- **`counseling_templates.py`**: `MEDICAL_EXAMINATION_BOUNDARY` 静的境界メッセージ（LLM 不使用）
+- **`counseling_generator.py`**: `medical_examination` 種別で境界メッセージを返却
+- **`chat_symptom_route.py`**: 医療行為依頼時は推奨フローをスキップし境界応答
+- **`chat_triage_follow_ups.py`**: Other カテゴリ全体で不適切要求検出を実行（subcategory 限定を撤廃）
+- **`controlled_drug_routing.py`**: `medical_examination` はカウンセリングのみ（属性収集なし）
+- **`concierge_agent.py`**: chitchat 経路でも医療行為依頼を境界メッセージへ
+
+### サービス本人確認質問（app_about）
+
+- **`concierge_intent.py`**
+  - `looks_like_user_question` / `looks_like_service_identity_question`（新規）: 「病院ですか？」は該当、「病院はどこ？」は非該当
+  - `infer_structural_concierge_intent`: 質問形式・店舗用語（うんこ/用を足 等）を greeting から除外
+- **`meta_triage.py`**: プロンプトに `get_service_identity_block()` を注入、`app_about` の定義を拡張、質問形式は meta LLM スキップ対象外
+- **`routing_context.py` / `store_inquiry_handler.py` / `llm_triage.py`**: サービス本人確認質問を店舗ゲートから除外
+- **`concierge_knowledge.ja.json`**: `service_nature` / `explicitly_not` を追加、`policy_snippet` を医療機関否定を明示する内容に更新
+- **`concierge_knowledge.py`**: `get_service_identity_block()`（SSOT）を追加
+- **`concierge_templates.py` / `status_diagnosis_builder.py`**: app_about カード・ステータスに性質・否定文を表示
+
+### 店舗案内ルーティング・応答テンプレ
+
+- **`store_inquiry_handler.py`**
+  - `_is_toilet_product_query` / `_is_toilet_facility_request`（新規）: トイレットペーパー等の商品と施設案内を区別
+  - `_resolve_detailed_store_response`（新規）: fast-path でも在庫・周辺施設の詳細分類を適用
+  - `generate_inventory_inquiry_response`: 商品名を冒頭に簡潔表示、カテゴリ階層は「売場の目安」に
+  - `generate_facilities_inquiry_response`: 施設名を見出し・本文に反映
+- **`input_helpers.py`**: トイレ施設需要を症状入力から除外
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_medical_examination_request.py` | 完全一致 fast-path、複合文は LLM 委譲、境界メッセージ |
+| `test_service_identity_question.py` | 本人確認質問の検出・店舗ゲート拒否・llm_triage fast-path |
+| `test_hospital_identity_question.py` | app_about ルーティング・カード内容・meta プロンプト |
+| `test_store_inquiry_response_routing.py` | fast-path 詳細分類、トイレ施設 vs 商品、うんこ→店舗案内 |
+| `test_meta_triage_skip.py` | 質問形式は structural greeting 対象外 |
+| `test_status_diagnosis_builder.py` | 在庫ステータス・app_about 表示の更新 |
 
 ---
 

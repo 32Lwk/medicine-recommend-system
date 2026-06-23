@@ -49,4 +49,7 @@ def resolve_inappropriate_counseling_flags(
     if request_type in ("illegal", "controlled"):
         return False, False, symptom_type
 
+    if request_type == "medical_examination":
+        return False, True, symptom_type
+
     return True, True, symptom_type

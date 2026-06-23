@@ -231,6 +231,12 @@ def _product_category_path(product_category: dict[str, Any]) -> str:
     return " > ".join(parts)
 
 
+def _product_display_name(product_category: dict[str, Any]) -> str:
+    return str(
+        product_category.get("product") or product_category.get("subcategory") or ""
+    ).strip()
+
+
 def build_store_status_from_inquiry_result(
     store_inquiry_result: dict[str, Any],
     *,
@@ -241,9 +247,9 @@ def build_store_status_from_inquiry_result(
     sections: list[StatusSection] = []
     product_category = store_inquiry_result.get("product_category")
     if inquiry_type == "inventory" and isinstance(product_category, dict):
-        path = _product_category_path(product_category)
-        if path:
-            sections.append(StatusSection(title="お探しの商品", items=[path]))
+        product_name = _product_display_name(product_category)
+        if product_name and product_name not in simple_message:
+            sections.append(StatusSection(title="お探しの商品", items=[product_name]))
     facility_name = store_inquiry_result.get("facility_name")
     if inquiry_type == "facilities" and facility_name:
         sections.append(StatusSection(title="施設", items=[str(facility_name)]))
@@ -535,18 +541,24 @@ def build_concierge_app_about_status() -> StatusDiagnosisV1:
     from src.content.concierge_knowledge import get_app_info
 
     app = get_app_info()
-    paragraphs = [
-        str(app.get("purpose") or "").strip(),
-        str(app.get("audience") or "").strip(),
-    ]
-    message = "\n".join(p for p in paragraphs if p)
+    nature = str(app.get("service_nature") or "").strip().rstrip("。")
+    not_a = str(app.get("explicitly_not") or "").strip().rstrip("。")
+    purpose = str(app.get("purpose") or "").strip().rstrip("。")
+    parts = []
+    if nature:
+        parts.append(f"こちらは{nature}です")
+    if not_a:
+        parts.append(not_a)
+    if purpose:
+        parts.append(purpose)
+    message = "。".join(parts) + ("。" if parts else "")
     return StatusDiagnosisV1(
         render="sage_status",
         variant="notice",
         title="このツールについて",
         subtitle=str(app.get("name") or ""),
         message=message,
-        hints=["詳細は画面右上の ℹ️ からもご確認いただけます。"],
+        hints=[],
         kind="concierge_app_about",
         show_feedback=True,
     )

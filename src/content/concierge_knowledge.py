@@ -56,6 +56,20 @@ def get_policy_snippet() -> str:
     return str(load_concierge_knowledge().get("policy_snippet") or "")
 
 
+def get_service_identity_block() -> str:
+    """meta_triage / Concierge LLM 用のサービス立場説明（SSOT）。"""
+    app = get_app_info()
+    lines = [
+        f"性質: {app.get('service_nature', '')}",
+        f"ではない: {app.get('explicitly_not', '')}",
+        f"目的: {app.get('purpose', '')}",
+    ]
+    limits = get_limitations()
+    if limits:
+        lines.append("制限: " + " / ".join(limits[:4]))
+    return "\n".join(line for line in lines if line.strip())
+
+
 def get_handoff_intro_physical() -> str:
     return str(load_concierge_knowledge().get("handoff_intro_physical") or "")
 

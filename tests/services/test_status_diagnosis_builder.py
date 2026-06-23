@@ -96,11 +96,11 @@ def test_build_store_status_from_inquiry_result_inventory():
     }
     diag = build_store_status_from_inquiry_result(
         result,
-        simple_message="在庫確認についてお尋ねいただき、ありがとうございます。",
+        simple_message="「歯ブラシ」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。",
     )
     assert diag.title == "在庫確認"
-    assert diag.sections
-    assert "歯ブラシ" in diag.sections[0].items[0]
+    assert "歯ブラシ" in diag.message
+    assert not diag.sections
 
 
 def test_build_store_status_from_inquiry_result_facilities():
@@ -146,6 +146,8 @@ def test_build_concierge_app_about_status():
     diag = build_concierge_app_about_status()
     assert diag.render == "sage_status"
     assert diag.title == "このツールについて"
+    assert "こちらは" in diag.message
+    assert diag.message.count("\n") == 0
 
 
 def test_build_notice_status():

@@ -33,6 +33,21 @@ def test_structural_greeting_without_word_list(text: str):
     assert infer_structural_concierge_intent(text) == "greeting"
 
 
+@pytest.mark.parametrize(
+    "text",
+    ["病院ですか？", "医者ですか", "ここは薬局？"],
+)
+def test_structural_greeting_rejects_questions(text: str):
+    assert infer_structural_concierge_intent(text) is None
+
+
+def test_should_not_skip_meta_for_identity_question():
+    assert (
+        should_skip_meta_triage_llm(_TRIAGE, "病院ですか？", store_probable=False)
+        is False
+    )
+
+
 def test_structural_greeting_rejects_store_context():
     assert infer_structural_concierge_intent("トイレどこ") is None
 

@@ -170,13 +170,15 @@ def build_concierge_app_about_line_flex() -> Dict[str, Any]:
         "body_paragraphs": [
             p
             for p in (
+                app.get("explicitly_not", ""),
+                app.get("service_nature", ""),
                 app.get("name", ""),
                 app.get("purpose", ""),
                 app.get("audience", ""),
             )
             if p
         ],
-        "hints": ["詳細は画面右上の ℹ️ からもご確認いただけます。"],
+        "hints": ["症状やお薬のことがあれば、具体的にお書きください。"],
     }
 
 
@@ -185,11 +187,22 @@ def format_concierge_app_about_card(
     feedback_data: Optional[Dict[str, Any]] = None,
 ) -> str:
     app = get_app_info()
-    body = (
-        f"<p><strong>{html.escape(app.get('name', ''))}</strong></p>"
-        f"<p>{html.escape(app.get('purpose', ''))}</p>"
-        f"<p>{html.escape(app.get('audience', ''))}</p>"
-    )
+    nature = str(app.get("service_nature") or "").strip().rstrip("。")
+    not_a = str(app.get("explicitly_not") or "").strip().rstrip("。")
+    purpose = str(app.get("purpose") or "").strip().rstrip("。")
+    audience = str(app.get("audience") or "").strip().rstrip("。")
+    body = f"<p><strong>{html.escape(app.get('name', ''))}</strong></p>"
+    lead_parts = []
+    if nature:
+        lead_parts.append(f"こちらは{html.escape(nature)}です")
+    if not_a:
+        lead_parts.append(html.escape(not_a))
+    if lead_parts:
+        body += f"<p>{'。'.join(lead_parts)}。</p>"
+    if purpose:
+        body += f"<p>{html.escape(purpose)}。</p>"
+    if audience:
+        body += f"<p>{html.escape(audience)}。</p>"
     footer = ""
     if feedback_data:
         footer = format_feedback_buttons(
@@ -200,7 +213,7 @@ def format_concierge_app_about_card(
         variant="notice",
         title="このツールについて",
         body_html=body,
-        hints=["詳細は画面右上の ℹ️ からもご確認いただけます。"],
+        hints=["症状やお薬のことがあれば、具体的にお書きください。"],
         footer_html=footer,
     )
 

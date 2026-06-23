@@ -119,6 +119,56 @@ def has_store_scoped_location_context(user_text: str) -> bool:
     )
 
 
+_TOILET_NEED_PHRASES = tuple(_STORE_KW.toilet_keywords[:6])
+_TOILET_PRODUCT_MARKERS = ("トイレット", "トイレ用", "トイレ洗")
+
+
+def _is_toilet_product_query(user_text: str) -> bool:
+    """トイレットペーパー等の商品問い合わせ（施設案内と区別）。"""
+    t = _text_lower(user_text)
+    if any(m in t for m in _TOILET_PRODUCT_MARKERS):
+        return True
+    product_ctx = any(
+        k in t
+        for k in ("売", "買", "在庫", "扱", "取り", "購入", "ペーパー", "洗剤", "ブラシ")
+    )
+    if product_ctx and "トイレ" in t:
+        return True
+    info = classify_product_category(user_text)
+    if not info:
+        return False
+    for field in ("product", "matched_term", "category", "subcategory"):
+        val = str(info.get(field) or "").lower()
+        if any(m in val for m in _TOILET_PRODUCT_MARKERS):
+            return True
+    return False
+
+
+def _is_toilet_facility_request(user_text: str) -> bool:
+    """トイレ施設の場所・利用需要（商品名の「トイレ」と症状文脈は除外）。"""
+    if _is_toilet_product_query(user_text):
+        return False
+    if any(_contains_store_keyword(user_text, phrase) for phrase in _TOILET_NEED_PHRASES):
+        has_symptom = any(
+            _contains_store_keyword(user_text, k) for k in SYMPTOM_KEYWORDS_FOR_TOILET
+        )
+        return not has_symptom
+    for keyword in _STORE_KW.toilet_keywords:
+        if keyword in _TOILET_NEED_PHRASES:
+            continue
+        if not _contains_store_keyword(user_text, keyword):
+            continue
+        if keyword in ("トイレ", "といれ") and _is_toilet_product_query(user_text):
+            continue
+        has_symptom = any(
+            _contains_store_keyword(user_text, k) for k in SYMPTOM_KEYWORDS_FOR_TOILET
+        )
+        if has_symptom:
+            return False
+        return True
+    return False
+
+
 def _is_ambiguous_facility_defer_only(user_text: str) -> bool:
     """大学はどこ？など、店舗案内ではなく Concierge へ譲る曖昧施設の位置質問。"""
     t = _text_lower(user_text)
@@ -142,6 +192,8 @@ def is_store_route_locked(triage_result: Optional[Dict] = None) -> bool:
 
 def has_unambiguous_store_intent(user_text: str) -> bool:
     """医療相談と競合しない、明確な店舗案内・遺失物・在庫（店舗文脈）意図。"""
+    if _is_toilet_facility_request(user_text):
+        return True
     if _is_ambiguous_facility_defer_only(user_text):
         return False
     detected, itype = _probe_store_inquiry_keywords(user_text)
@@ -204,6 +256,12 @@ def is_probable_store_inquiry(
 
     if should_prioritize_medical_route_over_store(triage_result, user_text):
         return False
+    from src.services.concierge_intent import looks_like_service_identity_question
+
+    if looks_like_service_identity_question(user_text):
+        return False
+    if _is_toilet_facility_request(user_text):
+        return True
     if _is_ambiguous_facility_defer_only(user_text):
         return False
     if is_store_route_locked(triage_result):
@@ -337,23 +395,10 @@ def _probe_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
             logger.info(f"🔍 遺失物関連キーワード検出: {keyword}")
             return True, "lost_and_found"
     
-    # トイレ関連のキーワードをチェック（症状キーワードがない場合のみ）
-    has_toilet_keyword = any(
-        _contains_store_keyword(user_text, keyword)
-        for keyword in _STORE_KW.toilet_keywords
-    )
-    
-    if has_toilet_keyword:
-        # 症状キーワードが含まれている場合は医薬品推奨を優先（店舗案内として扱わない）
-        has_symptom_keyword = any(
-            _contains_store_keyword(user_text, keyword) for keyword in SYMPTOM_KEYWORDS_FOR_TOILET
-        )
-        if has_symptom_keyword:
-            logger.info(f"🔍 トイレ関連キーワード検出だが、症状キーワードも検出されたため医薬品推奨を優先")
-            return False, None
-        else:
-            logger.info(f"🔍 トイレ関連キーワード検出（症状キーワードなし）: 店舗案内として処理")
-            return True, "store_inquiry"
+    # トイレ関連（商品名の「トイレットペーパー」と区別）
+    if _is_toilet_facility_request(user_text):
+        logger.info("🔍 トイレ案内として処理")
+        return True, "store_inquiry"
     
     # その他の店舗案内関連のキーワードをチェック
     # 「どこ」「場所」単独は文脈依存（店内・周辺・トイレ等と組み合わせ時のみ）
@@ -641,13 +686,7 @@ def generate_store_location_response(user_text: str, store_location: Optional[st
             "structured_html": str
         }
     """
-    is_toilet_inquiry = any(
-        _contains_store_keyword(user_text, keyword)
-        for keyword in (
-            "トイレ", "といれ", "お手洗い", "便所", "化粧室", "洗面所",
-            "うんこしたい", "うんちしたい", "おしっこしたい", "用を足したい",
-        )
-    )
+    is_toilet_inquiry = _is_toilet_facility_request(user_text)
     
     if is_toilet_inquiry:
         # トイレの場所を尋ねている場合
@@ -779,25 +818,21 @@ def generate_facilities_inquiry_response(
             "structured_html": str
         }
     """
-    simple_message = """周辺施設についてお尋ねいただき、ありがとうございます。
+    label = facility_name or "周辺施設"
+    facility_display = f"（{facility_name}）" if facility_name else ""
+    simple_message = f"""{label}の場所についてお尋ねいただき、ありがとうございます。
 
-周辺施設の情報については、店内のスタッフにお尋ねいただければ、詳しくご案内いたします。
+周辺のご案内は詳しい情報をお持ちしていないため、店内のスタッフにお尋ねください。
 お近くのスタッフまでお気軽にお声がけください。"""
     
-    facility_display = f"（{facility_name}）" if facility_name else ""
-    
-    # 応答内容を先に生成（フィードバックセクション生成のため）
     response_content = simple_message
     
     structured_html = f"""<div class="store-inquiry-response">
-    <h4>🏢 周辺施設について{facility_display}</h4>
-    <p>周辺施設についてお尋ねいただき、ありがとうございます。</p>
+    <h4>🏢 {html.escape(label)}について{facility_display}</h4>
+    <p>{html.escape(simple_message).replace(chr(10), "<br>")}</p>
     <div class="inquiry-options">
         <p><strong>📍 ご案内方法</strong></p>
-        <ul>
-            <li>周辺施設の情報については、店内のスタッフにお尋ねいただければ、詳しくご案内いたします</li>
-            <li>お近くのスタッフまでお気軽にお声がけください</li>
-        </ul>
+        <p>店内のスタッフにお尋ねいただければ、周辺の施設についてご案内いたします。</p>
     </div>
     {generate_feedback_section(user_text, response_content)}
 </div>"""
@@ -1067,32 +1102,33 @@ def generate_inventory_inquiry_response(
             "structured_html": str
         }
     """
-    # カテゴリ情報の表示用テキストを生成
+    # 商品名は冒頭に簡潔に。カテゴリ階層は補足欄用
+    product_name = ""
     category_path = ""
-    product_hint = ""
     if product_category_info:
         category = product_category_info.get("category", "")
         subcategory = product_category_info.get("subcategory", "")
         product = product_category_info.get("product", "")
-        
-        if category and subcategory:
-            category_path = f"{category} > {subcategory}"
-            if product:
-                category_path += f" > {product}"
-            product_hint = f"\n\nお探しの商品: {category_path}"
-    
-    simple_message = f"""在庫確認についてお尋ねいただき、ありがとうございます。{product_hint}
+        product_name = str(product or subcategory or "").strip()
+        parts = [p for p in (category, subcategory, product) if p]
+        category_path = " > ".join(parts)
+
+    if product_name:
+        opening = f"「{product_name}」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。"
+    else:
+        opening = "在庫確認についてお尋ねいただき、ありがとうございます。"
+
+    simple_message = f"""{opening}
 
 店内のスタッフにお尋ねいただければ、在庫状況を詳しくご案内いたします。
 お近くのスタッフまでお気軽にお声がけください。"""
     
-    # 応答内容を先に生成（フィードバックセクション生成のため）
     response_content = simple_message
     
     structured_html = f"""<div class="store-inquiry-response">
     <h4>📦 在庫確認について</h4>
-    <p>在庫確認についてお尋ねいただき、ありがとうございます。</p>
-    {f'<p class="category-path"><strong>カテゴリ:</strong> {category_path}</p>' if category_path else ''}
+    <p>{html.escape(opening)}</p>
+    {f'<p class="category-path"><strong>売場の目安:</strong> {html.escape(category_path)}</p>' if category_path and category_path != product_name else ''}
     <div class="inquiry-options">
         <p><strong>📍 ご案内方法</strong></p>
         <ul>
@@ -1263,17 +1299,16 @@ def handle_store_inquiry_with_two_stage(
         if not inquiry_type and "lost_and_found" in sub:
             inquiry_type = "lost_and_found"
         inquiry_type = inquiry_type or "store_inquiry"
-        store_location = detect_store_location(active_text)
-        response = generate_store_inquiry_response(active_text, inquiry_type, store_location)
-        logger.info("🔍 店舗案内キーワード fast-path: %s", inquiry_type)
-        return {
-            "is_store_inquiry": True,
-            "inquiry_type": inquiry_type,
-            "store_location": store_location,
-            "response": response,
-            "confidence": max(float((triage_result or {}).get("confidence") or 0), 0.85),
-            "reasoning": "店舗案内キーワード fast-path",
-        }
+        confidence = max(float((triage_result or {}).get("confidence") or 0), 0.85)
+        result = _resolve_detailed_store_response(
+            active_text,
+            inquiry_type,
+            triage_result,
+            confidence=confidence,
+            reasoning="店舗案内キーワード fast-path",
+        )
+        logger.info("🔍 店舗案内キーワード fast-path: %s", result.get("inquiry_type"))
+        return result
 
     # 第2段階: 店舗案内の詳細分類
     llm_result = classify_inquiry_with_llm(primary, client, triage_result)
@@ -1548,6 +1583,36 @@ def detect_parking_inquiry(user_text: str) -> bool:
 
 def detect_services_inquiry(user_text: str) -> bool:
     return _detect_subtype_inquiry("services", user_text)
+
+
+def _resolve_detailed_store_response(
+    user_text: str,
+    inquiry_type: str,
+    triage_result: Optional[Dict],
+    *,
+    confidence: float = 0.85,
+    reasoning: str = "",
+) -> Dict:
+    """fast-path でも在庫・周辺施設・サブタイプの詳細分類を適用する。"""
+    llm_stub = {
+        "inquiry_type": inquiry_type,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    }
+    detailed = process_detailed_classification(user_text, llm_stub, triage_result)
+    if detailed:
+        return detailed
+    store_location = detect_store_location(user_text)
+    response = generate_store_inquiry_response(user_text, inquiry_type, store_location)
+    return {
+        "is_store_inquiry": True,
+        "inquiry_type": inquiry_type,
+        "store_location": store_location,
+        "product_category": None,
+        "response": response,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    }
 
 
 def process_detailed_classification(

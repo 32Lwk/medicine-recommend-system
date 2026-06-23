@@ -355,13 +355,10 @@ def generate_greeting_text(
 
 【要件】
 - ユーザーの挨拶のトーン・カジュアルさ・言い回しに合わせて返す
-  （例: 「はおー」→「はおー！」「やあ」→「やあ、こんにちは」「あろはー」→アロハ調）
-- 造語・省略・口語・方言・若者言葉・カタカナ・舶来語の変形も、その雰囲気を汲んで自然に返す
 - 1〜2文、100文字以内
-- こちらは一般用医薬品（OTC）の相談窓口であることを軽く伝える
+- こちらは一般用医薬品（OTC）の相談ツールであることを軽く伝える（病院・診療所ではない）
+- ユーザーが yes/no の質問形式（〜ですか？等）の場合は挨拶として扱わない。医療機関であるかのように「はい」と答えない
 - 最後に、症状やお薬の相談があれば具体的に書いてほしいと1文で促す
-- 毎回同じ定型文にせず、ユーザーの言葉に呼応したバリエーションにする
-- 「こんにちは。こちらでは市販薬に関する…」のような汎用テンプレのコピペは避ける
 - 診断・処方はしない
 """
     try:
@@ -397,6 +394,16 @@ def generate_chitchat_text(
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
+    from src.services.medical_examination_request import (
+        resolve_medical_examination_request_type,
+    )
+    from src.services.counseling.counseling_templates import (
+        generate_medical_examination_boundary_message,
+    )
+
+    if resolve_medical_examination_request_type(user_text):
+        return generate_medical_examination_boundary_message()
+
     hist = ""
     if history:
         lines = []

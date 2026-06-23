@@ -42,6 +42,12 @@ def generate_counseling_response(
             return generate_controlled_drug_first_counseling_message()
         if request_type in ["illegal", "controlled"]:
             return generate_illegal_drug_rejection_message(request_type)
+        if request_type == "medical_examination":
+            from src.services.counseling.counseling_templates import (
+                generate_medical_examination_boundary_message,
+            )
+
+            return generate_medical_examination_boundary_message()
         
         # 緊急避妊薬に関する質問を検出（処方薬の要求の場合）
         if request_type == "prescription":

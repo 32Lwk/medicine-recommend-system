@@ -142,6 +142,11 @@ def is_symptom_input(message: str) -> bool:
     if not message:
         return False
 
+    from src.services.store_inquiry_handler import _is_toilet_facility_request
+
+    if _is_toilet_facility_request(message):
+        return False
+
     text = message.strip()
     lower_text = text.lower()
 

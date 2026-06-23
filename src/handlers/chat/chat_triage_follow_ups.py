@@ -200,8 +200,8 @@ def run_triage_follow_ups(
         import traceback
         traceback.print_exc()
 
-    # ステップ3: 不適切な要求の検出（救済ロジック通過後）
-    if category == "Other" and "inappropriate_request" in subcategory:
+    # ステップ3: 不適切な要求・医療行為依頼（救済ロジック通過後）
+    if category == "Other":
         try:
             from src.services.counseling_response import (
                 detect_inappropriate_request,

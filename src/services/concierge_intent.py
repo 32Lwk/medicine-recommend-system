@@ -150,13 +150,57 @@ def _is_medicine_consultation(text: str) -> bool:
 
 
 
+def looks_like_user_question(text: str) -> bool:
+    """ユーザーが何かを尋ねている形式か（個別フレーズ列挙なし）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if "?" in t or "？" in t:
+        return True
+    return bool(
+        re.search(
+            r"(ですか|ますか|でしょうか|だろうか|かな|かい|かよ|のか|んですか)$",
+            t.rstrip("？?"),
+        )
+    )
+
+
+def looks_like_service_identity_question(text: str) -> bool:
+    """
+    本チャット／この場所が何であるかを問う質問（近くの施設の場所案内ではない）。
+
+    例: ここはクリニック？ / 病院ですか / 医者ですか
+    非該当: 病院はどこ？ / 近くのクリニック
+    """
+    t = (text or "").strip()
+    if not t or not looks_like_user_question(t):
+        return False
+    if re.search(r"(どこ|場所|近く|周辺|店内|売場)", t):
+        return False
+    if re.match(
+        r"^(ここ|こちら|これ|この(チャット|サービス|アプリ|ツール|ボット))(は|って)",
+        t,
+    ):
+        return True
+    if re.match(r"^(あなた|あんた)(は|って)", t):
+        return True
+    if re.match(
+        r"^(病院|医者|医師|クリニック|診療所|診察|薬局|薬屋|ドラッグストア)(ですか|ますか|かな|かい|かよ|？|\?)",
+        t,
+    ):
+        return True
+    return False
+
+
 def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     """
     短い非医療・非店舗入力を構造的に greeting とみなす（辞書登録なし）。
-    meta LLM スキップ時の軽量フォールバック用。
+    meta LLM スキップ時の軽量フォールバック用。質問形式は対象外。
     """
     text = (user_text or "").strip()
     if not text or len(text) > 12:
+        return None
+    if looks_like_user_question(text):
         return None
     if _is_medicine_consultation(text):
         return None
@@ -179,6 +223,10 @@ def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeInten
         "コンビニ",
         "薬",
         "医薬",
+        "うんこ",
+        "うんち",
+        "おしっこ",
+        "用を足",
     )
     if any(h in text for h in store_hints):
         return None

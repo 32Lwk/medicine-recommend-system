@@ -62,6 +62,16 @@ CONTROLLED_DRUG_FIRST_COUNSELING = """規制薬物（向精神薬・麻薬・指
 
 当システムは市販薬（OTC医薬品）の相談を承っております。不眠や不安など、市販薬で相談できる症状があればお知らせください。"""
 
+MEDICAL_EXAMINATION_BOUNDARY = """申し訳ありません。こちらは医師による診察・診断を行うサービスではなく、一般用医薬品（OTC）の相談窓口です。
+
+診察や診断が必要な場合は、医療機関（医師）を受診してください。
+
+市販薬の選び方や症状についてのご相談であれば、具体的なお困りごとをお書きください。"""
+
+
+def generate_medical_examination_boundary_message() -> str:
+    return MEDICAL_EXAMINATION_BOUNDARY
+
 
 def generate_controlled_drug_first_counseling_message() -> str:
     return CONTROLLED_DRUG_FIRST_COUNSELING

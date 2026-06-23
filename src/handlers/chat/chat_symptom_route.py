@@ -124,6 +124,23 @@ def run_symptom_recommendation(
     症状入力として医薬品推奨を実行（chat_handler 末尾ブロックの委譲先）。
     """
     from src.handlers.chat.emergency_dispatch import is_otc_flow_blocked
+    from src.services.counseling_triage import detect_inappropriate_request
+    from src.services.counseling.counseling_templates import (
+        generate_medical_examination_boundary_message,
+    )
+    from src.services.sage_bot_response import build_bot_response
+
+    if detect_inappropriate_request(user_message, triage_result or {}) == "medical_examination":
+        logger.info("🚫 医療行為依頼のため推奨フローをスキップ: %s", user_message)
+        boundary = generate_medical_examination_boundary_message()
+        bot_response = build_bot_response(
+            session,
+            sid,
+            legacy_content=boundary,
+        )
+        session.setdefault("messages", []).append(bot_response)
+        _mark_session_modified(session)
+        return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
     if is_otc_flow_blocked(session):
         from src.services.medical_emergency_templates import build_medical_emergency_html

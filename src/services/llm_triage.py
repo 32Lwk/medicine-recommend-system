@@ -169,8 +169,26 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 - 「心臓が痛い」「心臓部分が痛い」→ Emergency（身体的・緊急性高）
 - 「心が痛い」「心が痛む」→ Emotional または Ambiguous_Heart（曖昧性あり）
 - 「恋の病」「好きな人」→ Emotional（比喩的表現）
+【医療行為依頼フラグ（category より優先）】
+ユーザーが**このチャットボット**に対して、医師による診察・診断・診療をしてほしいと依頼しているかを `medical_examination_request` で必ず判定してください。
+
+- `medical_examination_request: true` のとき → **症状の有無にかかわらず** `category` は必ず **Other**（第二段階で inappropriate_request/medical_examination）
+- `medical_examination_request: false` のとき → 通常どおり症状・相談内容で category を決める
+
+**true の例（症状＋依頼の複合文を含む）**
+- 「診察してください」「診断して」「医者に見てほしい」
+- 「熱があるので診察してください」「腹が痛いので診察してください」「頭痛なので診断してください」
+- 「咳がひどいです。診療お願いします」
+
+**false の例**
+- 「頭痛がする」「発熱があります」（OTC 相談のみ。診察依頼なし）
+- 「診断された」「診察を受けた」（過去の報告）
+- 「熱があるので病院に行った方がいいですか？」（受診助言の相談。本チャットへの診察依頼ではない）
+
 - 「緊張する」「不安」→ Emotional
-- 「頭痛」「発熱」→ Physical
+- **【最優先・Physicalより前】症状の有無にかかわらず、本チャットへの医師による診察・診断・診療の依頼（「診察してください」「熱があるので診察してください」「診断して」など）→ Other（第二段階で inappropriate_request/medical_examination）**
+- **ただし「診断された」「診察を受けた」など過去の報告のみ → Physical または general_other**
+- 「頭痛」「発熱」→ Physical（上記の医療行為依頼が含まれない場合のみ）
 - **「眠くて寝てしまう」「仕事中に寝てしまう」「眠気が強い」「眠い」「眠たい」など、眠気（sleepiness/drowsiness）の症状を訴える → Physical**
 - **「眠れない」「不眠」「睡眠不足」「寝つきが悪い」など、不眠（insomnia）の症状を訴える → Emotional**
 - **「睡眠薬を教えて」「睡眠薬について」「睡眠薬を知りたい」「睡眠改善薬を教えて」など、睡眠薬に関する質問 → Emotional（不眠の症状に対するカウンセリングが必要なため）**
@@ -180,6 +198,7 @@ FIRST_STAGE_TRIAGE_PROMPT = """
 - **「在庫ありますか」「取り寄せできますか」「売り場はどこですか」など、店舗の在庫・売場位置の確認 → Other（第二段階で store_inquiry/inventory）**
 - **「忘れ物を拾いました」「落とし物を拾いました」など、遺失物に関する質問 → Other**
 - **「処方して」「処方してください」「処方薬を教えて」「処方薬をください」など、処方要求がある場合 → Other**
+- **「診察して」「診察してください」「診断して」「診療してください」など、医師による診察・診断の依頼 → Other（第二段階で inappropriate_request/medical_examination）**
 - **　処方箋医薬品名 → Other（処方箋医薬品のため、当システムでは対応不可）**
 - **「痩せ薬」「ダイエット薬」「減量薬」「やせ薬」などのキーワード → Other**
 - **「惚れ薬」「媚薬」「恋愛薬」などのキーワード → Other**
@@ -221,7 +240,8 @@ Ambiguous_Heart の場合は requires_immediate_action を false にしてくだ
 
 【分類例（参考）】
 - 「こんにちは」「おはよう」→ Other（挨拶。症状なし）
-- 「頭が痛い」「風邪をひいた」→ Physical
+- 「頭が痛い」「風邪をひいた」→ Physical（medical_examination_request が false の場合のみ）
+- **「熱があるので診察してください」「腹が痛いので診察してください」→ Other, medical_examination_request: true**
 - **短い症状入力**（「頭痛」「発熱」「咳」など症状キーワードのみ、2〜4文字含む）→ Physical
 - 「風邪薬を教えて」「風邪薬ありますか」「市販薬を教えてください」→ Physical（初回の薬探索・推奨依頼。店舗在庫ではない）
 - 「陸上競技で使える風邪薬を教えて」（初回・推奨履歴なし）→ Physical（症状＋競技条件での推奨。Ask ではない）
@@ -237,6 +257,7 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
     "category": "カテゴリ名（Physical/Emotional/Emergency/Ask/Other）",
     "confidence": 0.0-1.0の数値,
     "subcategory": "基本的なサブカテゴリ（例: heart_pain, anxiety, headache, drowsiness, insomnia, metaphorical, ambiguous_heart, general_other）。Otherカテゴリの場合は「general_other」を設定してください。詳細な分類は第二段階で行います。",
+    "medical_examination_request": true/false,
     "requires_immediate_action": true/false,
     "reasoning": "判定理由"
 }
@@ -256,17 +277,18 @@ SECOND_STAGE_OTHER_PROMPT = """
 7. **inappropriate_request/hair_growth**: 毛が生える・ハゲが治る薬の要求（「毛が生える」「ハゲが治る」「育毛剤」「発毛」など。ただし、市販薬のミノキシジルなどはケースバイケースで判断）
 8. **inappropriate_request/illegal**: 違法薬物の要求（「覚醒剤」「アンフェタミン」「メタンフェタミン」「大麻」「マリファナ」「THC」「ヘロイン」「モルヒネ」「オキシコドン」「LSD」「MDMA」「エクスタシー」「コカイン」「危険ドラッグ」「違法薬物」「フェンタニル」「メタドン」「合成カンナビノイド」「スパイス」「MDPV」「α-PVP」「4-MMC」「メフェドロン」「バルビツール酸系（違法使用）」「大麻をください」など）
 9. **inappropriate_request/controlled**: 規制薬物の要求（「向精神薬」「麻薬」「指定薬物」「処方薬の乱用」「医療用麻薬」「精神安定剤（違法使用）」「睡眠薬（違法使用）」「鎮痛薬（違法使用）」「オピオイド（違法使用）」「ベンゾジアゼピン系（違法使用）」など）
-10. **store_inquiry**: 店舗案内に関する質問（「場所を教えてください」「どこにありますか」「トイレはどこですか」など）
-11. **store_inquiry/inventory**: 在庫確認に関する質問（「ありますか」「在庫」「取り寄せ」など）
-12. **store_inquiry/facilities**: 周辺施設に関する質問（「近くに」「周辺に」「コンビニ」「銀行」など）
-13. **store_inquiry/tax_free**: 免税に関する質問（「免税」「免税対応」など）
-14. **store_inquiry/tourism**: 観光地に関する質問（「観光地」「観光」「名所」など）
-15. **store_inquiry/business_hours**: 営業時間に関する質問（「営業時間」「アクセス」「開店」「閉店」など）
-16. **store_inquiry/payment**: 支払いに関する質問（「支払い」「決済」「カード」「現金」など）
-17. **store_inquiry/parking**: 駐車場に関する質問（「駐車場」「パーキング」「駐車」など）
-18. **store_inquiry/services**: サービスに関する質問（「サービス」「取り扱い」「配達」など）
-19. **lost_and_found**: 遺失物に関する質問（「忘れ物を拾いました」「落とし物を拾いました」など）
-20. **general_other**: その他の挨拶や不明な入力（メタ質問・雑談・一声の挨拶もここ — 後段 Concierge が処理）
+10. **inappropriate_request/medical_examination**: 医師による診察・診断・診療の依頼（「診察してください」「診断して」「医者に見てほしい」「診療お願いします」など。当システムは医療行為を行えない。**ただし「診断された」「診察を受けた」など過去の事実の述べ方、症状の説明のみは general_other または Physical**）
+11. **store_inquiry**: 店舗案内に関する質問（「場所を教えてください」「どこにありますか」「トイレはどこですか」など）
+12. **store_inquiry/inventory**: 在庫確認に関する質問（「ありますか」「在庫」「取り寄せ」など）
+13. **store_inquiry/facilities**: 周辺施設に関する質問（「近くに」「周辺に」「コンビニ」「銀行」など）
+14. **store_inquiry/tax_free**: 免税に関する質問（「免税」「免税対応」など）
+15. **store_inquiry/tourism**: 観光地に関する質問（「観光地」「観光」「名所」など）
+16. **store_inquiry/business_hours**: 営業時間に関する質問（「営業時間」「アクセス」「開店」「閉店」など）
+17. **store_inquiry/payment**: 支払いに関する質問（「支払い」「決済」「カード」「現金」など）
+18. **store_inquiry/parking**: 駐車場に関する質問（「駐車場」「パーキング」「駐車」など）
+19. **store_inquiry/services**: サービスに関する質問（「サービス」「取り扱い」「配達」など）
+20. **lost_and_found**: 遺失物に関する質問（「忘れ物を拾いました」「落とし物を拾いました」など）
+21. **general_other**: その他の挨拶や不明な入力（メタ質問・雑談・一声の挨拶もここ — 後段 Concierge が処理）
 
 【重要な判定ルール（優先順位順）】
 - **メタ質問・雑談・挨拶**
@@ -277,6 +299,12 @@ SECOND_STAGE_OTHER_PROMPT = """
   - 「向精神薬」「麻薬」「指定薬物」「処方薬の乱用」「医療用麻薬」「精神安定剤（違法使用）」「睡眠薬（違法使用）」「鎮痛薬（違法使用）」「オピオイド（違法使用）」「ベンゾジアゼピン系（違法使用）」などのキーワード → inappropriate_request/controlled
 - **不適切な要求の検出**
   - 「処方して」「処方してください」「処方薬を教えて」「処方薬をください」「マンジャロ」「チルゼパチド」など → inappropriate_request/prescription（マンジャロは処方箋医薬品のため、違法薬物や規制薬物ではない）
+  - 「診察して」「診察してください」「診断して」「診療してください」「医者に見てほしい」「診療お願いします」など、**本チャットに対する医療行為の依頼** → inappropriate_request/medical_examination
+  - **症状＋依頼の複合文も同様**（例：「熱があるので診察してください」「腹が痛いので診察してください」→ medical_examination。Physical ではない）
+  - **ただし以下は medical_examination にしない：**
+    - 「診断された」「診察を受けた」など過去の事実・報告
+    - 具体的な症状の説明（例：「頭痛がします」→ Physical 第一段階）
+    - 医師受診の助言を求める一般的な相談で症状が主（例：「熱があるので病院に行った方がいい？」→ general_other または Physical）
   - 「痩せ薬」「ダイエット薬」「減量薬」「やせ薬」など → inappropriate_request/weight_loss
   - 「惚れ薬」「媚薬」「恋愛薬」など → inappropriate_request/love_potion
   - **重篤な疾患の完治・予防要求のみ** → inappropriate_request/cure_prevention（例：「がんを完治する薬」「糖尿病を完治したい」「心筋梗塞を予防したい」など）
@@ -292,6 +320,7 @@ SECOND_STAGE_OTHER_PROMPT = """
   - 「在庫ありますか」「取り寄せ」「売り場はどこ」「店に置いてありますか」など、**店舗の在庫・売場位置**の明示 → store_inquiry/inventory
   - **「風邪薬を教えて」「風邪薬ありますか」「市販薬を教えて」など、症状・薬探索の相談 → general_other（Physical 第一段階で分類。inventory ではない）**
   - **曖昧施設の位置質問（店舗・周辺文脈なし）**: 「大学はどこ？」「病院はどこ？」など、近くに/周辺に/店内などの文脈がなく単独の施設名＋位置質問 → general_other（Concierge へ。store_inquiry/facilities ではない）**
+  - **本チャットの性質を問う質問（店舗案内ではない）**: 「ここは〜？」「こちらは〜ですか」で、このチャットや画面が病院・クリニック等何であるかを確認する → general_other（app_about）。施設の場所を聞いているわけではない**
   - 「近くに」「周辺に」「コンビニ」「銀行」など → store_inquiry/facilities
   - 「免税」「免税対応」など → store_inquiry/tax_free
   - 「観光地」「観光」「名所」など → store_inquiry/tourism
@@ -319,12 +348,17 @@ SECOND_STAGE_OTHER_PROMPT = """
 - 「風邪薬を教えて」「市販薬ありますか」→ general_other（薬探索。Physical 第一段階で分類）
 - 「大学はどこ？」「病院はどこ？」（周辺・店内文脈なし）→ general_other
 - 「マンジャロを処方して」→ inappropriate_request/prescription
+- 「診察してください」→ inappropriate_request/medical_examination
+- 「熱があるので診察してください」→ inappropriate_request/medical_examination（症状があっても医療行為依頼を優先）
+- 「診断された」→ general_other（報告。症状相談へ誘導可）
+- 「診察してください」「医者に診てもらいたい」→ inappropriate_request/medical_examination
+- 「診断された」（過去の報告）→ general_other
 - 低い確信度の場合は、general_other に分類することを検討してください
 
 【回答形式】
 JSON形式で回答してください。以下の形式を厳密に守ってください：
 {
-    "subcategory": "詳細サブカテゴリ（上記の20種類のいずれか）",
+    "subcategory": "詳細サブカテゴリ（上記の21種類のいずれか）",
     "confidence": 0.0-1.0の数値,
     "reasoning": "判定理由"
 }
@@ -380,6 +414,43 @@ def llm_triage(
             "subcategory": f"inappropriate_request/{drug_type}",
             "requires_immediate_action": False,
             "reasoning": f"キーワードマッチングにより{drug_type}薬物を検出"
+        }
+
+    from src.services.medical_examination_request import (
+        detect_medical_examination_request_exact,
+    )
+
+    if detect_medical_examination_request_exact(user_text):
+        logger.info("🚫 医療行為依頼を検出（単独フレーズ fast-path）")
+        return {
+            "category": "Other",
+            "confidence": 1.0,
+            "subcategory": "inappropriate_request/medical_examination",
+            "requires_immediate_action": False,
+            "reasoning": "単独フレーズ完全一致により医療行為（診察・診断）依頼を検出",
+        }
+
+    from src.services.concierge_intent import looks_like_service_identity_question
+
+    if looks_like_service_identity_question(user_text):
+        logger.info("ℹ️ サービス本人確認質問を検出（general_other → app_about）")
+        return {
+            "category": "Other",
+            "confidence": 0.98,
+            "subcategory": "general_other",
+            "requires_immediate_action": False,
+            "service_identity_question": True,
+            "reasoning": "本チャットの性質を問う質問（店舗案内ではない）",
+        }
+
+    def _medical_examination_triage_result(reasoning: str, confidence: float = 0.98) -> Dict:
+        return {
+            "category": "Other",
+            "confidence": confidence,
+            "subcategory": "inappropriate_request/medical_examination",
+            "requires_immediate_action": False,
+            "medical_examination_request": True,
+            "reasoning": reasoning,
         }
     
     # ステップ0b: 挨拶・メタ質問は第一段階 LLM も省略（exact_match / keyword_probe のみ）
@@ -492,6 +563,16 @@ def llm_triage(
         subcategory = first_stage_result.get("subcategory", "general_other")
         requires_immediate_action = bool(first_stage_result.get("requires_immediate_action", False))
         reasoning = first_stage_result.get("reasoning", "判定理由が提供されませんでした")
+        medical_examination_request = bool(
+            first_stage_result.get("medical_examination_request", False)
+        )
+
+        if medical_examination_request:
+            logger.info("🚫 医療行為依頼を検出（第一段階LLM）")
+            return _medical_examination_triage_result(
+                f"第一段階: {reasoning}",
+                confidence=max(confidence, 0.95),
+            )
 
         if "ambiguous_heart" in (subcategory or "").lower():
             requires_immediate_action = False
