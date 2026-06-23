@@ -56,7 +56,7 @@ steps:
           --image="$${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
-          --set-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE}" \
+          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE}" \
           --quiet
 
 options:

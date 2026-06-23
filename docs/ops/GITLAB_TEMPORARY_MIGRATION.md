@@ -208,9 +208,23 @@ GitHub 停止で旧トリガーがリポジトリにアクセスできない場�
 
 トリガーの `_SERVICE_NAME` が `medicine-recommend-dev` になっているか確認。誤デプロイ時は Cloud Run コンソールで前リビジョンへロールバック。
 
-### 5.5 環境変数が消えたように見える
+### 5.5 環境変数が消えた（OPENAI / LINE Webhook 503 等）
 
-`cloudbuild.yaml` の deploy は `GIT_COMMIT` と `GIT_COMMIT_DATE` のみ `--set-env-vars` で更新。他のキー（`OPENAI_API_KEY_STAGING` 等）は通常は保持される。初回 GitLab デプロイ後に Cloud Run → `medicine-recommend-dev` → 変数タブで確認すること。
+**原因**: `gcloud run deploy --set-env-vars` は**既存の環境変数をすべて置き換える**（`GIT_COMMIT` / `GIT_COMMIT_DATE` だけ残り、他が消える）。2026-06-24 時点の GitLab デプロイでこの事象が発生した。
+
+**恒久対策**: `cloudbuild.yaml` は `--update-env-vars` を使用（他キーを保持したまま Git メタのみ更新）。
+
+**復旧手順**（dev 例）:
+
+1. GCP コンソール → Cloud Run → `medicine-recommend-dev` → **リビジョン** → 直前の正常リビジョンから環境変数一覧を控える（または Secret Manager / 手元メモから再設定）
+2. **変数とシークレット** タブで最低限以下を再設定:
+   - `OPENAI_API_KEY_STAGING`（または `OPENAI_API_KEY`）
+   - `APP_ENV=development`
+   - `LINE_WEBHOOK_ENABLED=true`
+   - `LINE_CHANNEL_SECRET` / `LINE_CHANNEL_ACCESS_TOKEN`
+   - `DATABASE_URL`（Neon pooler、利用時）
+3. 確認: `GET https://<dev-url>/line/webhook/status` → `enabled: true`, `channel_secret_configured: true`
+4. 修正済み `cloudbuild.yaml` を push して再デプロイ（以降は env が消えない）
 
 ---
 
