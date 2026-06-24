@@ -50,7 +50,7 @@
 
 ### Cloud Run デプロイ・運用
 
-- **`cloudbuild.yaml`**: `--startup-probe=type=http,path=/health,port=8080,...` を追加（最大約 120 秒まで起動待ち）
+- **`cloudbuild.yaml`**: `--startup-probe=httpGet.path=/health,httpGet.port=8080,...` を追加（最大約 120 秒まで起動待ち）
 - **`docs/ops/CLOUD_RUN_LLM_ENV.md`**: 起動プローブ設定の記載を追加
 
 ### フロントエンド
