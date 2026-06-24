@@ -281,6 +281,22 @@ class TestDiagnosisDetection(unittest.TestCase):
         self.assertFalse(response.get("diagnosis_only", True))
         self.assertTrue(response.get("should_show_counseling", False))
 
+    def test_033_hay_fever_consultation_entry(self):
+        """花粉症のみは OTC 相談入口 — 診断名ブロックしない"""
+        text = "花粉症です"
+        is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
+        self.assertFalse(is_diagnosis, "花粉症のみは通常相談フローへ")
+        self.assertIsNone(diagnosis_type)
+        self.assertIsNone(response)
+
+    def test_034_hay_fever_with_chronic_comorbidity(self):
+        """花粉症+持病併記は診断名ブロックを維持"""
+        text = "花粉症と糖尿病です"
+        is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
+        self.assertTrue(is_diagnosis)
+        self.assertIsNotNone(response)
+        self.assertIn("花粉症", response.get("detected_diagnoses", []))
+
 
 if __name__ == '__main__':
     # テストを実行

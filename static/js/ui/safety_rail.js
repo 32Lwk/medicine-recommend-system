@@ -186,6 +186,34 @@
     return v;
   }
 
+  function displayAllergies(attrs) {
+    attrs = attrs || {};
+    var list = [];
+    var allergies = attrs.allergies;
+    if (Array.isArray(allergies)) {
+      allergies.forEach(function (a) {
+        var t = String(a || '').trim();
+        if (t && t !== 'なし' && list.indexOf(t) < 0) list.push(t);
+      });
+    }
+    var envHistory = ['花粉症', 'アレルギー性鼻炎', '季節性アレルギー性鼻炎', '常年性アレルギー性鼻炎', 'アトピー', 'アトピー性皮膚炎'];
+    var envMap = {
+      '花粉症': '花粉',
+      'アレルギー性鼻炎': 'アレルギー性鼻炎',
+      '季節性アレルギー性鼻炎': 'アレルギー性鼻炎',
+      '常年性アレルギー性鼻炎': 'アレルギー性鼻炎',
+      'アトピー性皮膚炎': 'アトピー',
+      'アトピー': 'アトピー'
+    };
+    (attrs.medical_history || []).forEach(function (h) {
+      var text = String(h || '').trim();
+      if (!text) return;
+      var label = envMap[text] || (envHistory.indexOf(text) >= 0 ? text : null);
+      if (label && list.indexOf(label) < 0) list.push(label);
+    });
+    return list;
+  }
+
   function normalizeAttrs(attrs) {
     attrs = attrs || {};
     if (typeof attrs !== 'object') return {};
@@ -219,14 +247,12 @@
       pendingCount += 1;
     }
 
-    var allergies = attrs.allergies;
-    if (Array.isArray(allergies)) {
-      if (!allergies.length || allergies.indexOf('なし') >= 0) {
-        chips.push(chipEntry('ok', t('safetyAllergyNone')));
-      } else {
-        chips.push(chipEntry('warn', t('safetyAllergyPrefix') + allergies.join('、')));
-      }
-    } else if (!allergies) {
+    var allergies = displayAllergies(attrs);
+    if (allergies.length) {
+      chips.push(chipEntry('warn', t('safetyAllergyPrefix') + allergies.join('、')));
+    } else if (Array.isArray(attrs.allergies) && (!attrs.allergies.length || attrs.allergies.indexOf('なし') >= 0)) {
+      chips.push(chipEntry('ok', t('safetyAllergyNone')));
+    } else if (!attrs.allergies) {
       chips.push(chipEntry('pending', t('safetyAllergyPending'), t('safetyAllergyPendingShort')));
       pendingCount += 1;
     }
@@ -303,6 +329,7 @@
     mount: mount,
     buildContext: buildContext,
     normalizeAttrs: normalizeAttrs,
+    displayAllergies: displayAllergies,
     updateHeaderPhase: updateHeaderPhase,
     reflow: function () {
       if (activeRailEl) updateResponsiveRail(activeRailEl);

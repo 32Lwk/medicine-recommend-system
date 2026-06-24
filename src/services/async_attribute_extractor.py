@@ -12,6 +12,11 @@ from typing import Optional, Callable, Any
 logger = logging.getLogger(__name__)
 
 
+def _merge_list_attribute(existing, incoming):
+    from src.utils.allergen_attributes import merge_list_attribute
+    return merge_list_attribute(existing, incoming)
+
+
 def schedule_async_attribute_extraction(
     sid: str,
     message: str,
@@ -25,6 +30,7 @@ def schedule_async_attribute_extraction(
     def _run():
         try:
             from src.core.attribute_extractor import extract_user_attributes_multilingual
+            from src.utils.allergen_attributes import normalize_environmental_allergens
             from openai import OpenAI
             import os
 
@@ -67,19 +73,16 @@ def schedule_async_attribute_extraction(
                 if key == 'gender':
                     val = _norm_gender(val) if isinstance(val, str) else val
                 if key in ('allergies', 'current_medications', 'medical_history'):
-                    if isinstance(val, list) and val and (merged.get(key) or []) != val:
-                        merged[key] = val
+                    new_list, list_changed = _merge_list_attribute(merged.get(key) or [], val)
+                    if list_changed:
+                        merged[key] = new_list
                         updated = True
-                    elif isinstance(val, str) and val.strip():
-                        lst = [x.strip() for x in val.replace('、', ',').split(',') if x.strip()]
-                        if lst and (merged.get(key) or []) != lst:
-                            merged[key] = lst
-                            updated = True
                 elif merged.get(key) != val:
                     merged[key] = val
                     updated = True
 
-            if updated:
+            merged = normalize_environmental_allergens(merged)
+            if updated or merged != current_attrs:
                 session_data['user_attributes'] = merged
                 save_session_fn(sid, session_data)
                 try:

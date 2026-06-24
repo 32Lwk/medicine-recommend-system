@@ -38,9 +38,9 @@ def create_multilingual_attribute_extraction_prompt(user_text, language, user_in
 - gender: 性別（男性/女性）
 - pregnant: 妊娠中かどうか（true/false）
 - breastfeeding: 授乳中かどうか（true/false）
-- allergies: アレルギー（リスト）
+- allergies: 薬剤・食品・環境のアレルギー（リスト）。例: ペニシリン、卵、花粉、アレルギー性鼻炎
 - current_medications: 服用中の薬（リスト）
-- medical_history: 既往症（リスト）
+- medical_history: 診断済みの持病・疾患（リスト）。例: 糖尿病、高血圧（花粉症・アレルギー性鼻炎は allergies へ）
 - symptom_duration_days: 症状の期間（日数）
 - other_info: その他の情報（文字列）
 

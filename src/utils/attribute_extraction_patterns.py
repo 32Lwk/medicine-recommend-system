@@ -1,8 +1,8 @@
 """
 ユーザー属性抽出パターンモジュール
 
-正規表現ベースでメッセージから属性を抽出する責務を持つ。
-漢数字・英語・既往症・アレルギー・性別推論などに対応。
+正規表現で即時抽出できる属性（年齢・性別・妊娠・授乳）のみを扱う。
+アレルギー・既往症・服用中の薬は非同期 LLM 抽出に委譲する。
 """
 import re
 from typing import Dict, List, Any, Optional
@@ -65,8 +65,8 @@ MALE_SPECIFIC_TERMS = [
 
 def extract_regex_attributes(message: str) -> Dict[str, Any]:
     """
-    メッセージから正規表現でユーザー属性を抽出する。
-    漢数字・英語・既往症・アレルギー・性別推論に対応。
+    メッセージから正規表現でユーザー属性を抽出する（即時・スカラー中心）。
+    アレルギー・既往症・服用薬は async LLM 抽出を優先する。
     """
     attrs = {}
     msg = message.strip()
@@ -116,21 +116,6 @@ def extract_regex_attributes(message: str) -> Dict[str, Any]:
             v = int(m.group(1))
             if 0 < v < 150:
                 attrs['age'] = v
-
-    # アレルギー
-    allergy_attrs = _extract_allergies(msg, msg_lower)
-    if allergy_attrs:
-        attrs['allergies'] = allergy_attrs
-
-    # 既往症
-    history_attrs = _extract_medical_history(msg, msg_lower)
-    if history_attrs:
-        attrs['medical_history'] = history_attrs
-
-    # 服用中の薬
-    med_attrs = _extract_current_medications(msg, msg_lower)
-    if med_attrs:
-        attrs['current_medications'] = med_attrs
 
     return attrs
 

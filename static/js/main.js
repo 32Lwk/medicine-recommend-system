@@ -10326,9 +10326,14 @@ function appendQaDelta(text, section) {
     }
 
     function tryPromoteStreamingRecommendation(message, index) {
+        const isSageReco =
+            isSageDiagnosisMessage(message)
+            && message.diagnosis
+            && message.diagnosis.render === 'sage_reco';
         const content = (message && message.content) || '';
         if (
-            !content.includes('recommendation-result')
+            !isSageReco
+            && !content.includes('recommendation-result')
             && !content.includes('ui-reco-block')
             && !content.includes('ui-carousel')
         ) {
@@ -10344,9 +10349,18 @@ function appendQaDelta(text, section) {
         const messageKey = getMessageDomKey(message);
         wrapper.classList.remove('streaming-recommendation');
         wrapper.removeAttribute('data-streaming-recommendation');
-        wrapper.className = 'message bot';
+        wrapper.className = 'message bot' + (isSageReco ? ' message--sage-reco' : '');
         wrapper.setAttribute('data-message-id', messageKey);
         wrapper.setAttribute('data-message-index', String(index));
+        if (isSageReco) {
+            mountSageBotMessage(wrapper, message);
+            if (isSageUi() && window.RecommendationRenderer && window.RecommendationRenderer.bindRendered) {
+                window.RecommendationRenderer.bindRendered(wrapper);
+            }
+            streamingRecommendationEl = null;
+            resetRecommendationSseBulkState();
+            return true;
+        }
         if (content.includes('<div') || content.includes('<section')) {
             wrapper.innerHTML = content.indexOf('message-content') >= 0
                 ? content
@@ -12694,9 +12708,12 @@ function appendQaDelta(text, section) {
                     }
                 }
                 
-                // アレルギーを設定
-                if (attrs.allergies && Array.isArray(attrs.allergies) && attrs.allergies.length > 0) {
-                    document.getElementById('attr_allergies').value = attrs.allergies.join('、');
+                // アレルギーを設定（medical_history の花粉症等も表示に含める）
+                var allergyDisplay = (window.SafetyRail && window.SafetyRail.displayAllergies)
+                    ? window.SafetyRail.displayAllergies(attrs)
+                    : (Array.isArray(attrs.allergies) ? attrs.allergies : []);
+                if (allergyDisplay.length > 0) {
+                    document.getElementById('attr_allergies').value = allergyDisplay.join('、');
                 } else if (attrs.allergies && typeof attrs.allergies === 'string') {
                     document.getElementById('attr_allergies').value = attrs.allergies;
                 }
@@ -12931,8 +12948,13 @@ function appendQaDelta(text, section) {
                     }
                 }
                 
-                // アレルギーを設定
-                if (attrs.allergies) {
+                // アレルギーを設定（medical_history の花粉症等も表示に含める）
+                var allergyDisplay = (window.SafetyRail && window.SafetyRail.displayAllergies)
+                    ? window.SafetyRail.displayAllergies(attrs)
+                    : (Array.isArray(attrs.allergies) ? attrs.allergies : []);
+                if (allergyDisplay.length > 0) {
+                    document.getElementById('user_allergies').value = allergyDisplay.join('、');
+                } else if (attrs.allergies) {
                     if (Array.isArray(attrs.allergies)) {
                         document.getElementById('user_allergies').value = attrs.allergies.join('、');
                     } else if (typeof attrs.allergies === 'string') {

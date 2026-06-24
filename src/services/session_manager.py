@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 
 from src.utils.jst_datetime import now_jst_iso
+from src.utils.allergen_attributes import merge_chat_user_attributes
 
 from config.settings import (
     SESSION_TIMEOUT,
@@ -787,9 +788,10 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
         messages = session_data.get('messages') or []
     payload = {
         'messages': messages,
-        'user_attributes': session.get('user_attributes')
-        or session_data.get('user_attributes')
-        or {},
+        'user_attributes': merge_chat_user_attributes(
+            session_data.get('user_attributes'),
+            session.get('user_attributes'),
+        ),
         'session_active': True,
     }
     username = session.get('username')

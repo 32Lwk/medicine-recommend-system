@@ -10,6 +10,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# 診断名のみでも OTC 相談フローへ進めてよい疾患（ユーザーが相談入口として使うことが多い）
+OTC_CONSULTATION_ENTRY_DIAGNOSES = frozenset({
+    '花粉症',
+    'アレルギー性鼻炎',
+    '季節性アレルギー性鼻炎',
+    '常年性アレルギー性鼻炎',
+})
+
 # 副作用言及のキーワード
 SIDE_EFFECT_KEYWORDS = [
     '副作用', '副作用で', '副作用が', '副作用の', '副作用が出', '副作用が出た',
@@ -18,6 +26,22 @@ SIDE_EFFECT_KEYWORDS = [
     'お薬の副作用', '薬を飲んだら', '薬で', '飲み始めてから',
     '抗がん剤', '抗がん剤の副作用', '治療薬の副作用',
 ]
+
+
+def _is_otc_consultation_entry(
+    diagnosis_only: bool,
+    detected_names: list,
+    *,
+    has_side_effect: bool,
+    has_high_risk_context: bool,
+    has_treatment: bool,
+) -> bool:
+    """花粉症など OTC 相談入口 — 診断名ブロックをかけず通常フローへ。"""
+    if not diagnosis_only or has_side_effect or has_high_risk_context or has_treatment:
+        return False
+    if not detected_names:
+        return False
+    return all(d in OTC_CONSULTATION_ENTRY_DIAGNOSES for d in detected_names)
 
 
 def is_diagnosis_only(text: str, diagnosis: str) -> bool:
@@ -663,6 +687,19 @@ def is_diagnosis_term(text):
         logger.info(f"🔍 フィルタリング結果: diagnosis_only={diagnosis_only}, has_symptom={has_symptom}, has_treatment={has_treatment}, has_side_effect={has_side_effect}, has_high_risk_context={has_high_risk_context}")
     except Exception:
         pass  # ログ記録のエラーは無視
+
+    if _is_otc_consultation_entry(
+        diagnosis_only,
+        all_diagnosis_names,
+        has_side_effect=has_side_effect,
+        has_high_risk_context=has_high_risk_context,
+        has_treatment=has_treatment,
+    ):
+        logger.info(
+            "🌸 OTC相談入口: detected=%s — 診断名ブロックをスキップ",
+            all_diagnosis_names,
+        )
+        return (False, None, None)
     
     # メッセージ生成（高リスクコンテキストの場合は専用メッセージ）
     try:

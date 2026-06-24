@@ -37,7 +37,8 @@ def start_counseling_mode(
         'current_question_index': 0,
         'total_questions': len(initial_questions)
     }
-    session.modified = True
+    if hasattr(session, "modified"):
+        session.modified = True
 
 
 def handle_user_input_in_counseling_mode(

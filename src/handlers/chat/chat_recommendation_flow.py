@@ -562,10 +562,26 @@ def run_recommendation_flow(
                             registered_items.append('授乳状態: 授乳中（既に登録済み）')
                         else:
                             registered_items.append('授乳状態: 授乳していない（既に登録済み）')
-                    elif key in ['allergies', 'current_medications', 'medical_history']:
+                    elif key == 'allergies':
                         value = user_attributes.get(key, [])
                         if value:
-                            registered_items.append(f'{key}: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）')
+                            registered_items.append(
+                                f'アレルギー: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
+                            )
+                    elif key == 'medical_history':
+                        from src.utils.allergen_attributes import filter_display_medical_history
+
+                        value = filter_display_medical_history(user_attributes.get(key, []))
+                        if value:
+                            registered_items.append(
+                                f'既往症: {", ".join(value)}（既に登録済み）'
+                            )
+                    elif key == 'current_medications':
+                        value = user_attributes.get(key, [])
+                        if value:
+                            registered_items.append(
+                                f'服用中の薬: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
+                            )
                         
             # 妊娠可能性が検出された場合、通知メッセージに追加
             pregnancy_possible_value = user_attributes.get('pregnancy_possible')
@@ -746,7 +762,6 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    from src.services.session_manager import persist_session_attributes_only
                                     persist_session_attributes_only(sid, session_data)
                         except Exception as e:
                             logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
@@ -805,7 +820,6 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    from src.services.session_manager import persist_session_attributes_only
                                     persist_session_attributes_only(sid, session_data)
                         except Exception as e:
                             logger.info(f"⚠️ 性別自動登録の保存でエラー: {str(e)}")
@@ -1321,7 +1335,6 @@ def run_recommendation_flow(
                                 if session_data:
                                     session_data['user_attributes'] = user_attributes
                                     session_data['last_activity'] = datetime.now()
-                                    from src.services.session_manager import persist_session_attributes_only
                                     persist_session_attributes_only(sid, session_data)
                         elif current_gender == '男性':
                             # 既存の性別が「男性」の場合は警告のみ

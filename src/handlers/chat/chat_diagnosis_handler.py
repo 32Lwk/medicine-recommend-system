@@ -71,7 +71,7 @@ def handle_diagnosis_if_detected(
 
         merge_diagnosis_session(session, diagnosis_type, diagnosis_response)
 
-        if detected_diagnoses and not diagnosis_response.get("diagnosis_only", False):
+        if detected_diagnoses:
             if "user_attributes" not in session:
                 session["user_attributes"] = {}
             user_attributes = session.get("user_attributes", {})
@@ -81,6 +81,9 @@ def handle_diagnosis_if_detected(
                 if diagnosis and diagnosis not in user_attributes["medical_history"]:
                     user_attributes["medical_history"].append(diagnosis)
                     logger.info(f"📝 診断名を既往症として登録: {diagnosis}")
+            from src.utils.allergen_attributes import normalize_environmental_allergens
+
+            user_attributes = normalize_environmental_allergens(user_attributes)
             session["user_attributes"] = user_attributes
             session.modified = True
             if sid:

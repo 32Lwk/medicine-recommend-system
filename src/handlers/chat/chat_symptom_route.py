@@ -163,6 +163,14 @@ def run_symptom_recommendation(
         _mark_session_modified(session)
         return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
 
+    from src.utils.allergen_attributes import is_otc_allergy_consultation_entry
+    from src.handlers.chat.chat_pollen_consultation_route import run_otc_allergy_consultation_entry
+
+    if is_otc_allergy_consultation_entry(sanitized_message or user_message):
+        return run_otc_allergy_consultation_entry(
+            session, client_info, sid, user_message, recommendation_client
+        )
+
     ua = session.get("user_attributes", {}) or {}
     if ua.get("pregnant") is True:
         resp = _pregnancy_breastfeeding_escalation(
