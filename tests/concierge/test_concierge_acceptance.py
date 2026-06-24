@@ -19,15 +19,29 @@ def test_acceptance_capabilities_card(mock_llm):
     )
     session = {"messages": [], "user_attributes": {}}
     client = MagicMock(client_ip="127.0.0.1", user_agent="test")
-    try_concierge_response(
-        session, client, None,
-        "あなたにできることをまとめて", "あなたにできることをまとめて",
-        {"category": "Other", "confidence": 0.99}, MagicMock(),
-    )
+    with patch("src.agents.concierge_agent.concierge_chat") as mock_meta:
+        mock_meta.return_value = MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(
+                        content="市販薬の相談や安全性確認、多言語対応ができます。処方や診断は行いません。"
+                    )
+                )
+            ]
+        )
+        try_concierge_response(
+            session,
+            client,
+            None,
+            "あなたにできることをまとめて",
+            "あなたにできることをまとめて",
+            {"category": "Other", "confidence": 0.99, "concierge_intent": "capabilities"},
+            MagicMock(),
+        )
     bot = session["messages"][-1]
     assert bot["concierge_intent"] == "capabilities"
-    assert "chat-status-card" in bot["content"]
-    assert "処方" in bot["content"] or "OTC" in bot["content"] or "一般用" in bot["content"]
+    assert "処方" in _bot_message_text(bot) or "市販" in _bot_message_text(bot)
+    mock_meta.assert_called_once()
 
 
 @patch("src.core.llm_client.chat_completion_create")
@@ -37,17 +51,31 @@ def test_acceptance_architecture_no_denial(mock_llm):
     )
     session = {"messages": [], "user_attributes": {}}
     client = MagicMock(client_ip="127.0.0.1", user_agent="test")
-    try_concierge_response(
-        session, client, None,
-        "マルチエージェントなの？", "マルチエージェントなの？",
-        {"category": "Other", "confidence": 0.99}, MagicMock(),
-    )
-    assert "案内できません" not in session["messages"][-1]["content"]
-    assert "TriageAgent" in session["messages"][-1]["content"]
+    with patch("src.agents.concierge_agent.concierge_chat") as mock_meta:
+        mock_meta.return_value = MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(
+                        content="返信はAIが生成し、市販薬の候補はルールベースで選ばれます。TriageAgentなどが連携しています。"
+                    )
+                )
+            ]
+        )
+        try_concierge_response(
+            session,
+            client,
+            None,
+            "マルチエージェントなの？",
+            "マルチエージェントなの？",
+            {"category": "Other", "confidence": 0.99, "concierge_intent": "architecture"},
+            MagicMock(),
+        )
+    assert "案内できません" not in _bot_message_text(session["messages"][-1])
+    assert "TriageAgent" in _bot_message_text(session["messages"][-1])
 
 
 @patch("src.handlers.chat.chat_concierge_route.save_session_to_db")
-@patch("src.agents.concierge_agent.concierge_chat")
+@patch("src.core.llm_client.chat_completion_create")
 def test_acceptance_greeting_uses_llm_by_default(mock_chat, _save):
     mock_resp = MagicMock()
     mock_resp.choices = [
@@ -66,12 +94,12 @@ def test_acceptance_greeting_uses_llm_by_default(mock_chat, _save):
         },
         MagicMock(),
     )
-    mock_chat.assert_called_once()
+    mock_chat.assert_called()
     assert session["messages"][-1].get("greeting") is True
 
 
 @patch("src.handlers.chat.chat_concierge_route.save_session_to_db")
-@patch("src.agents.concierge_agent.concierge_chat")
+@patch("src.core.llm_client.chat_completion_create")
 def test_acceptance_greeting_falls_back_to_template_on_llm_failure(mock_chat, _save):
     mock_chat.side_effect = RuntimeError("llm unavailable")
     session = {"messages": [], "user_attributes": {}, "ui_variant": "sage"}
@@ -86,7 +114,7 @@ def test_acceptance_greeting_falls_back_to_template_on_llm_failure(mock_chat, _s
         },
         MagicMock(),
     )
-    mock_chat.assert_called_once()
+    mock_chat.assert_called()
     assert session["messages"][-1].get("greeting") is True
     assert session["messages"][-1]["content"]
 

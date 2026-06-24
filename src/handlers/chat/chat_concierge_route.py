@@ -134,6 +134,7 @@ def _log_concierge_response(
     content: str,
     llm_used: bool,
     user_input: str,
+    conversation_history: Optional[list] = None,
 ) -> None:
     try:
         from src.services.counseling.counseling_logger import log_counseling_response
@@ -146,9 +147,26 @@ def _log_concierge_response(
             confidence=1.0,
             counseling_mode={"concierge_intent": intent, "llm_used": llm_used},
             user_input=user_input,
+            conversation_history=conversation_history,
         )
     except Exception as exc:
         logger.debug("concierge log skipped: %s", exc)
+
+
+def _concierge_already_answered_user(session: Any, user_content: str) -> bool:
+    """同一ユーザー発言に対する Concierge 返信が直前に済んでいれば二重 POST を抑止。"""
+    messages = session.get("messages") or []
+    if len(messages) < 2:
+        return False
+    last = messages[-1]
+    if last.get("type") != "bot" or not last.get("concierge") or not last.get("greeting"):
+        return False
+    for msg in reversed(messages[:-1]):
+        if msg.get("type") == "user":
+            return msg.get("content") == user_content
+        if msg.get("type") == "bot" and not msg.get("user_info_notification"):
+            return False
+    return False
 
 
 def try_concierge_response(
@@ -183,6 +201,12 @@ def try_concierge_response(
     ):
         return None
 
+    user_turn_text = user_message or llm_text
+    if _concierge_already_answered_user(session, user_turn_text):
+        count = len(session.get("messages", []))
+        logger.info("⏭️ Concierge 二重 POST 抑止: user=%r", user_turn_text[:40])
+        return ({"status": "ok", "message_count": count}, 200)
+
     if (
         triage_result
         and triage_result.get("category") == "Other"
@@ -206,6 +230,9 @@ def try_concierge_response(
         append_user_message(session, user_message or llm_text)
 
     history = session.get("messages", [])[-10:]
+    from src.services.line_memory_context import get_counseling_conversation_history
+
+    log_history = get_counseling_conversation_history(session, sid)
     from src.services.pipeline_perf import mark_pipeline_step
 
     mark_pipeline_step("concierge_resolve_intent_start")
@@ -255,6 +282,7 @@ def try_concierge_response(
         content=payload["content"][:500],
         llm_used=bool(payload.get("llm_used")),
         user_input=llm_text,
+        conversation_history=log_history,
     )
     _mark_session_modified(session)
 

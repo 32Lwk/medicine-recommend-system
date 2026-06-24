@@ -228,11 +228,14 @@ def resolve_concierge_intent(
     llm_user_text: Optional[str] = None,
 ) -> Optional[ConciergeIntent]:
     from src.services.concierge_intent import _is_medicine_consultation
-    from src.services.concierge_orchestrator import enrich_other_concierge_intent
+    from src.services.concierge_orchestrator import (
+        enrich_other_concierge_intent,
+        resolve_intent_from_triage,
+    )
 
     text = (user_text or "").strip()
     llm_text = (llm_user_text or text).strip()
-    if not text or _is_medicine_consultation(text):
+    if not text:
         return None
 
     from src.services.routing_context import evaluate_store_gate
@@ -249,6 +252,9 @@ def resolve_concierge_intent(
     )
     if orchestrated:
         return orchestrated
+
+    if _is_medicine_consultation(text):
+        return None
 
     base = classify_concierge_intent(text)
     if base == "chitchat":
@@ -945,6 +951,157 @@ def generate_greeting_text(
     ), False
 
 
+_META_LLM_INTENTS = frozenset({"capabilities", "architecture", "app_about"})
+
+_META_INTENT_REQUIREMENTS = {
+    "capabilities": """【要件】
+- このツールでできること・できないことを、ユーザーの質問に直接答える
+- 会話履歴に既に触れた内容は繰り返さず、今回の質問に必要な範囲だけ補足する
+- 2〜5文・プレーンテキスト（Markdown不可）
+- 処方・診断は行わない旨を必要なときだけ簡潔に触れる""",
+    "architecture": """【要件】
+- マルチエージェント構成と、市販薬候補がルールベースで選ばれることを説明する
+- 「誰が回答したか」と聞かれた場合は、**このチャットの返信はAI（大規模言語モデル等）が生成している**こと、**市販薬の候補選定はルールベース**であることを明確に答える
+- 会話履歴（直前の説明など）を踏まえ、同じ説明の繰り返しを避ける
+- 2〜6文・プレーンテキスト（Markdown不可）""",
+    "app_about": """【要件】
+- このチャットが何であるか・何でないか（病院・診察・処方ではない）を、ユーザーの質問形式に合わせて答える
+- yes/no 確認には医療機関のように「はい」と答えず、本ツールの性質を短く説明する
+- 会話履歴を踏まえ、既出の窓口説明を丸ごと繰り返さない
+- 2〜5文・プレーンテキスト（Markdown不可）""",
+}
+
+
+def _meta_reference_block(intent: str) -> str:
+    from src.content.concierge_knowledge import (
+        get_agents,
+        get_capabilities,
+        get_limitations,
+        get_service_identity_block,
+        load_concierge_knowledge,
+    )
+
+    kb = load_concierge_knowledge()
+    app = kb.get("app") or {}
+    lines = [get_service_identity_block(), ""]
+    if intent == "capabilities":
+        lines.append("【できること（参照）】")
+        for cap in get_capabilities():
+            lines.append(f"- {cap.get('title')}: {cap.get('body')}")
+    elif intent == "architecture":
+        lines.append("【エージェント構成（参照）】")
+        for agent in get_agents():
+            lines.append(
+                f"- {agent.get('name_ja')}: {agent.get('role_one_liner')}"
+            )
+    else:
+        lines.append(f"【ツール概要（参照）】")
+        lines.append(f"名称: {app.get('name')}")
+        lines.append(f"目的: {app.get('purpose')}")
+        lines.append(f"対象: {app.get('audience')}")
+    lines.append("")
+    lines.append("【制限（参照）】")
+    for lim in get_limitations():
+        lines.append(f"- {lim}")
+    return "\n".join(lines)
+
+
+def _invoke_meta_concierge_llm(
+    client: OpenAI,
+    user_text: str,
+    intent: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> str:
+    hist = format_concierge_history_block(history, user_text)
+    context = format_concierge_context_block(history, user_text, mode="chitchat")
+    requirements = _META_INTENT_REQUIREMENTS[intent]
+    reference = _meta_reference_block(intent)
+    prompt = f"""{get_policy_snippet()}
+
+{reference}
+
+【会話履歴（参考）】
+{hist}
+
+【会話の文脈】
+{context}
+
+【ユーザーの質問】
+{user_text}
+
+{requirements}
+"""
+    resp = concierge_chat(
+        client,
+        f"concierge_agent.meta_{intent}",
+        [
+            {
+                "role": "system",
+                "content": (
+                    "あなたは市販薬相談ツールの案内役です。"
+                    "参照情報と会話履歴に基づき、正確で自然な続きの回答をします。"
+                    "薬名の創作や処方の約束はしません。"
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=520,
+        temperature=0.35,
+        session_id=session_id,
+    )
+    return (resp.choices[0].message.content or "").strip()
+
+
+def _meta_concierge_fallback_card(user_text: str, intent: str) -> str:
+    fb = _feedback_data(user_text, intent)
+    if intent == "capabilities":
+        return format_concierge_capabilities_card(feedback_data=fb)
+    if intent == "architecture":
+        return format_concierge_architecture_card(feedback_data=fb)
+    return format_concierge_app_about_card(feedback_data=fb)
+
+
+def generate_meta_concierge_text(
+    client: OpenAI,
+    user_text: str,
+    intent: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> tuple[str, bool]:
+    """capabilities / architecture / app_about を履歴付き LLM で回答する。"""
+    if intent not in _META_LLM_INTENTS:
+        raise ValueError(f"unsupported meta intent: {intent}")
+
+    for attempt in range(2):
+        try:
+            text = _invoke_meta_concierge_llm(
+                client,
+                user_text,
+                intent,
+                session_id=session_id,
+                history=history,
+            )
+            if text:
+                return text, True
+            logger.warning(
+                "Concierge meta LLM empty (%s), attempt=%s",
+                intent,
+                attempt + 1,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Concierge meta LLM failed (%s), attempt=%s: %s",
+                intent,
+                attempt + 1,
+                exc,
+            )
+
+    return _meta_concierge_fallback_card(user_text, intent), False
+
+
 def generate_chitchat_text(
     client: OpenAI,
     user_text: str,
@@ -1054,38 +1211,31 @@ def build_concierge_payload(
                 text, title="ご案内", kind="concierge_redirect"
             ).to_client_dict(),
         }
-    if intent == "capabilities":
-        from src.services.status_diagnosis_builder import build_concierge_capabilities_status
+    if intent in _META_LLM_INTENTS:
+        from src.services.status_diagnosis_builder import build_concierge_text_status
 
-        return {
-            "content": format_concierge_capabilities_card(feedback_data=fb),
-            "content_format": "status_card",
-            "line_flex": build_concierge_capabilities_line_flex(),
-            "concierge_intent": intent,
-            "llm_used": False,
-            "sage_diagnosis": build_concierge_capabilities_status().to_client_dict(),
+        title_map = {
+            "capabilities": "できること",
+            "architecture": "仕組み・回答者",
+            "app_about": "このツールについて",
         }
-    if intent == "architecture":
-        from src.services.status_diagnosis_builder import build_concierge_architecture_status
-
+        text, meta_llm_used = generate_meta_concierge_text(
+            client,
+            user_text,
+            intent,
+            session_id=session_id,
+            history=history,
+        )
         return {
-            "content": format_concierge_architecture_card(feedback_data=fb),
-            "content_format": "status_card",
-            "line_flex": build_concierge_architecture_line_flex(),
+            "content": text,
+            "content_format": "text",
             "concierge_intent": intent,
-            "llm_used": False,
-            "sage_diagnosis": build_concierge_architecture_status().to_client_dict(),
-        }
-    if intent == "app_about":
-        from src.services.status_diagnosis_builder import build_concierge_app_about_status
-
-        return {
-            "content": format_concierge_app_about_card(feedback_data=fb),
-            "content_format": "status_card",
-            "line_flex": build_concierge_app_about_line_flex(),
-            "concierge_intent": intent,
-            "llm_used": False,
-            "sage_diagnosis": build_concierge_app_about_status().to_client_dict(),
+            "llm_used": meta_llm_used,
+            "sage_diagnosis": build_concierge_text_status(
+                text,
+                title=title_map.get(intent, "ご案内"),
+                kind=f"concierge_{intent}",
+            ).to_client_dict(),
         }
     if intent == "doc_operator":
         return build_doc_operator_payload(
@@ -1168,16 +1318,32 @@ def should_concierge_handle(
     alt_texts: Optional[list] = None,
 ) -> bool:
     """Other または挨拶・感謝・雑談のみ Concierge。医薬品・Emergency・Physical は除外。"""
-    from src.services.concierge_intent import _is_medicine_consultation
+    from src.services.concierge_intent import (
+        _is_medicine_consultation,
+        triage_has_concierge_meta_intent,
+    )
     from src.services.routing_context import evaluate_store_gate
 
-    if not user_text or _is_medicine_consultation(user_text):
+    if not user_text:
         return False
 
     extra = [t for t in (alt_texts or []) if t]
     routing_source = (triage_result or {}).get("_routing_source_text")
     if routing_source:
         extra.append(routing_source)
+
+    if triage_has_concierge_meta_intent(triage_result):
+        if evaluate_store_gate(
+            user_text,
+            *extra,
+            triage_result=triage_result,
+            routing_ctx=None,
+        ):
+            return False
+        return (triage_result or {}).get("category") != "Emergency"
+
+    if _is_medicine_consultation(user_text):
+        return False
 
     if evaluate_store_gate(
         user_text,

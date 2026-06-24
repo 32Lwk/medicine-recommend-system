@@ -68,6 +68,9 @@ def run_otc_allergy_consultation_entry(
         save_session_to_db(sid, session_data)
 
     try:
+        from src.services.line_memory_context import get_counseling_conversation_history
+
+        log_history = get_counseling_conversation_history(session, sid)
         log_counseling_response(
             session_id=sid,
             response_content=response_text,
@@ -76,7 +79,7 @@ def run_otc_allergy_consultation_entry(
             confidence=0.9,
             counseling_mode=session.get("counseling_mode"),
             user_input=user_message,
-            conversation_history=None,
+            conversation_history=log_history,
         )
     except Exception:
         pass

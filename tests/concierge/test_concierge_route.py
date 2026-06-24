@@ -13,108 +13,89 @@ from src.handlers.chat.chat_concierge_route import (
 
 
 @patch("src.core.llm_client.chat_completion_create")
-
-def test_capabilities_returns_status_card(mock_llm):
-
-    mock_llm.return_value = MagicMock(
-
-        choices=[MagicMock(message=MagicMock(content='{"intent": "capabilities", "confidence": 0.95}'))]
-
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_capabilities_returns_status_card(mock_meta, mock_llm):
+    mock_meta.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="市販薬の相談や安全性確認ができます。処方や診断は行いません。"
+                )
+            )
+        ]
     )
-
+    mock_llm.return_value = MagicMock(
+        choices=[MagicMock(message=MagicMock(content='{"intent": "capabilities", "confidence": 0.95}'))]
+    )
     session = {"messages": [], "user_attributes": {}}
-
     client = MagicMock()
-
     client.client_ip = "127.0.0.1"
-
     client.user_agent = "test"
 
-
-
     resp = try_concierge_response(
-
         session,
-
         client,
-
         None,
-
         "あなたにできることをまとめて",
-
         "あなたにできることをまとめて",
-
-        {"category": "Other", "confidence": 0.99},
-
+        {"category": "Other", "confidence": 0.99, "concierge_intent": "capabilities"},
         MagicMock(),
-
     )
-
     assert resp is not None
-
     bots = [m for m in session["messages"] if m.get("type") == "bot"]
-
     assert len(bots) == 1
-
     assert bots[0].get("concierge_intent") == "capabilities"
-
-    assert "chat-status-card" in bots[0]["content"]
-
-
-
+    assert bots[0].get("content_format") == "text"
+    assert "処方" in bots[0]["content"] or "市販" in bots[0]["content"]
 
 
 @patch("src.core.llm_client.chat_completion_create")
-
-def test_architecture_no_internal_denial(mock_llm):
-
-    mock_llm.return_value = MagicMock(
-
-        choices=[MagicMock(message=MagicMock(content='{"intent": "architecture", "confidence": 0.9}'))]
-
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_architecture_no_internal_denial(mock_meta, mock_llm):
+    mock_meta.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="返信はAIが生成し、TriageAgent が振り分けます。"
+                )
+            )
+        ]
     )
-
+    mock_llm.return_value = MagicMock(
+        choices=[MagicMock(message=MagicMock(content='{"intent": "architecture", "confidence": 0.9}'))]
+    )
     session = {"messages": [], "user_attributes": {}}
-
     client = MagicMock()
-
     client.client_ip = "127.0.0.1"
-
     client.user_agent = "test"
 
-
-
     try_concierge_response(
-
         session,
-
         client,
-
         None,
-
         "マルチエージェントなの？",
-
         "マルチエージェントなの？",
-
-        {"category": "Other", "confidence": 0.99},
-
+        {"category": "Other", "confidence": 0.99, "concierge_intent": "architecture"},
         MagicMock(),
-
     )
-
     content = session["messages"][-1]["content"]
-
     assert "TriageAgent" in content
-
     assert "案内できません" not in content
 
 
-
-
-
 @patch("src.core.llm_client.chat_completion_create")
-def test_app_about_via_meta_triage(mock_llm):
-    """自己紹介・あなたについてはオーケストレーター meta_triage で app_about カードを返す。"""
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_app_about_via_meta_triage(mock_meta, mock_llm):
+    """自己紹介・あなたについては app_about を LLM で返す。"""
+    mock_meta.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="病院や診察所ではなく、市販薬の相談窓口です。"
+                )
+            )
+        ]
+    )
     mock_llm.return_value = MagicMock(
         choices=[MagicMock(message=MagicMock(content='{"intent": "app_about", "confidence": 0.95}'))]
     )
@@ -129,18 +110,27 @@ def test_app_about_via_meta_triage(mock_llm):
         None,
         "あなたについて教えてください。",
         "あなたについて教えてください。",
-        {"category": "Other", "confidence": 0.99},
+        {"category": "Other", "confidence": 0.99, "concierge_intent": "app_about"},
         MagicMock(),
     )
     assert resp is not None
     bot = session["messages"][-1]
     assert bot["concierge_intent"] == "app_about"
-    assert "chat-status-card" in bot["content"]
-    assert "一般用医薬品（OTC）の相談窓口です" not in bot["content"]
+    assert "病院" in bot["content"] or "医療機関" in bot["content"]
 
 
 @patch("src.core.llm_client.chat_completion_create")
-def test_self_intro_via_meta_triage(mock_llm):
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_self_intro_via_meta_triage(mock_meta, mock_llm):
+    mock_meta.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="市販薬の相談窓口です。診察や処方は行いません。"
+                )
+            )
+        ]
+    )
     mock_llm.return_value = MagicMock(
         choices=[MagicMock(message=MagicMock(content='{"intent": "app_about", "confidence": 0.95}'))]
     )
@@ -155,19 +145,29 @@ def test_self_intro_via_meta_triage(mock_llm):
         None,
         "自己紹介して",
         "自己紹介して",
-        {"category": "Other", "confidence": 0.99},
+        {"category": "Other", "confidence": 0.99, "concierge_intent": "app_about"},
         MagicMock(),
     )
     bot = session["messages"][-1]
     assert bot["concierge_intent"] == "app_about"
-    assert "一般用医薬品（OTC）の相談窓口です" not in bot["content"]
+    assert "市販" in bot["content"] or "相談" in bot["content"]
 
 
 @patch("src.core.llm_client.chat_completion_create")
-def test_concierge_runs_when_user_already_appended_in_pipeline(mock_llm):
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_concierge_runs_when_user_already_appended_in_pipeline(mock_meta, mock_llm):
     """append_user_message_if_needed 後でも Concierge が応答する。"""
+    mock_meta.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="市販薬の相談窓口です。"
+                )
+            )
+        ]
+    )
     mock_llm.return_value = MagicMock(
-        choices=[MagicMock(message=MagicMock(content='{"intent": "self_intro", "confidence": 0.95}'))]
+        choices=[MagicMock(message=MagicMock(content='{"intent": "app_about", "confidence": 0.95}'))]
     )
     session = {
         "messages": [{"type": "user", "content": "あんたについて教えて"}],
@@ -183,7 +183,7 @@ def test_concierge_runs_when_user_already_appended_in_pipeline(mock_llm):
         None,
         "あんたについて教えて",
         "あんたについて教えて",
-        {"category": "Other", "confidence": 0.99},
+        {"category": "Other", "confidence": 0.99, "concierge_intent": "app_about"},
         MagicMock(),
     )
     assert resp is not None

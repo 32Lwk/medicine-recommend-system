@@ -64,6 +64,7 @@ def _append_counseling_medicine_info(
     message_text: str,
     *,
     log_counseling_response,
+    conversation_history=None,
 ) -> None:
     from src.services.sage_bot_response import build_counseling_bot
 
@@ -96,7 +97,7 @@ def _append_counseling_medicine_info(
         confidence=confidence,
         counseling_mode=session.get("counseling_mode"),
         user_input=user_message,
-        conversation_history=None,
+        conversation_history=conversation_history,
     )
 
 
@@ -190,7 +191,7 @@ def handle_emotional_category(
             confidence=confidence,
             counseling_mode=session.get("counseling_mode"),
             user_input=user_message,
-            conversation_history=None,
+            conversation_history=conversation_history,
         )
 
         is_insomnia_counseling = (
@@ -213,6 +214,7 @@ def handle_emotional_category(
                 confidence,
                 INSOMNIA_MEDICINE_INFO,
                 log_counseling_response=log_counseling_response,
+                conversation_history=conversation_history,
             )
             logger.info(
                 "✅ 不眠カウンセリング開始: 医薬品情報メッセージ (symptom_type=%s, subcategory=%s)",
@@ -240,6 +242,7 @@ def handle_emotional_category(
                 confidence,
                 DROWSINESS_MEDICINE_INFO,
                 log_counseling_response=log_counseling_response,
+                conversation_history=conversation_history,
             )
             logger.info(
                 "✅ 眠気カウンセリング開始: 医薬品情報メッセージ (symptom_type=%s, subcategory=%s)",

@@ -57,6 +57,7 @@ steps:
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
           --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE}" \
+          --startup-probe=type=http,path=/health,port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=24 \
           --quiet
 
 options:

@@ -336,7 +336,7 @@ def run_triage_follow_ups(
                     confidence=confidence,
                     counseling_mode=session.get("counseling_mode"),
                     user_input=user_message,
-                    conversation_history=None,
+                    conversation_history=conversation_history,
                 )
                 logger.warning(f"⚠️ 不適切な要求検出: type={request_type}, session_id={sid}")
                 session.modified = True

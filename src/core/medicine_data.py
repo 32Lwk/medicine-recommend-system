@@ -190,6 +190,9 @@ def get_medicines_by_type(medicine_type, df_param=None):
     if "医薬品の種類" not in use_df.columns:
         logger.warning("CSVに医薬品の種類カラムがありません")
         return []
+    if medicine_type is None or str(medicine_type).strip() == "":
+        logger.warning("医薬品の種類が未指定です")
+        return []
     matched = use_df[use_df["医薬品の種類"].astype(str).str.contains(medicine_type, na=False)]
     medicines = []
     for _, row in matched.iterrows():

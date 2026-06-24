@@ -14,6 +14,7 @@ from src.services.counseling.counseling_questions import (
     generate_supportive_question,
 )
 from src.services.counseling.counseling_satisfaction import analyze_user_satisfaction
+from src.services.counseling.counseling_generator import generate_counseling_response
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode,
                     user_input=user_text,
-                    conversation_history=None
+                    conversation_history=conversation_history
                 )
                 logger.info(f"📊 カウンセリング中断: 理由=ユーザー明示的終了, "
                           f"質問回数={len(question_history)}, "
@@ -212,7 +213,7 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode,
                     user_input=user_text,
-                    conversation_history=None
+                    conversation_history=conversation_history
                 )
                 logger.warning(f"🚨 カウンセリング中断: 理由=危機検出（希死念慮・自傷他害の示唆）, "
                              f"質問回数={len(question_history)}, "
@@ -245,7 +246,7 @@ def process_counseling_answer(
                     confidence=None,
                     counseling_mode=counseling_mode,
                     user_input=user_text,
-                    conversation_history=None
+                    conversation_history=conversation_history
                 )
                 logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞（LLM判定）, "
                           f"質問回数={len(question_history)}, "
@@ -348,7 +349,7 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_text,
-                            conversation_history=None
+                            conversation_history=conversation_history
                         )
                         logger.info(f"📊 カウンセリング中断: 理由=ユーザー満足度高（満足度スコア={satisfaction.get('satisfaction_score', 0.0):.2f}）, "
                                   f"質問回数={len(question_history)}, "
@@ -386,7 +387,7 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_text,
-                            conversation_history=None
+                            conversation_history=conversation_history
                         )
                         logger.info(f"📊 カウンセリング中断: 理由=情報収集停滞, "
                                   f"質問回数={len(question_history)}, "
@@ -466,7 +467,7 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_text,
-                            conversation_history=None
+                            conversation_history=conversation_history
                         )
                     
                     return result
@@ -488,7 +489,7 @@ def process_counseling_answer(
                             confidence=None,
                             counseling_mode=counseling_mode,
                             user_input=user_text,
-                            conversation_history=None
+                            conversation_history=conversation_history
                         )
                     
                     return {

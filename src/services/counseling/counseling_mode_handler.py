@@ -63,6 +63,8 @@ def handle_user_input_in_counseling_mode(
     counseling_mode = session.get('counseling_mode', {})
     current_topic = counseling_mode.get('symptom_type', '')
     collected_info = counseling_mode.get('collected_info', {})
+    from src.services.line_memory_context import get_counseling_conversation_history
+    log_history = get_counseling_conversation_history(session, session_id)
     
     # 期間や妊娠/授乳の情報をチェック（不眠カウンセリングの場合）
     if current_topic == "insomnia":
@@ -115,7 +117,7 @@ def handle_user_input_in_counseling_mode(
                     confidence=None,
                     counseling_mode=counseling_mode,
                     user_input=user_text,
-                    conversation_history=None
+                    conversation_history=log_history
                 )
             
             return {
@@ -232,7 +234,7 @@ def handle_user_input_in_counseling_mode(
                         confidence=None,
                         counseling_mode=counseling_mode,
                         user_input=user_text,
-                        conversation_history=None
+                        conversation_history=log_history
                     )
                 
                 return {

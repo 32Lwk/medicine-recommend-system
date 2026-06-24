@@ -12756,7 +12756,7 @@ function appendQaDelta(text, section) {
         saveChatCache(getSidFromCookie(), dedupeMessageList(messages));
     }
 
-    // 定期的にメッセージ部分だけAPIで取得して再描画（間隔10秒）
+    // 定期的にメッセージ部分だけAPIで取得して再描画（間隔30秒）
     setInterval(function refreshMessagesPeriodically() {
         fetch(withVersion('/api/sessions'), {
             credentials: 'include',
@@ -12779,7 +12779,7 @@ function appendQaDelta(text, section) {
                 renderChatMessages(cached);
             }
         });
-    }, 10000);
+    }, 30000);
     
     // モーダル関連の関数
     function openAttributeModal() {

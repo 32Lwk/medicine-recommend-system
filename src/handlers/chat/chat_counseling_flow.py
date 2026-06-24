@@ -36,6 +36,20 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
     counseling_mode = session.get("counseling_mode", {})
     if not counseling_mode.get("active"):
         return (None, triage_result)
+
+    from src.services.concierge_intent import should_exit_counseling_for_concierge
+
+    if should_exit_counseling_for_concierge(
+        user_message,
+        triage_result=triage_result,
+        alt_texts=[processed_message],
+    ):
+        counseling_mode["active"] = False
+        session["counseling_mode"] = counseling_mode
+        session.modified = True
+        logger.info("🔄 カウンセリングモードを終了: メタ質問のため Concierge に委譲")
+        return (None, triage_result)
+
     if triage_result and triage_result.get("category") == "Physical":
         counseling_mode["active"] = False
         session["counseling_mode"] = counseling_mode
@@ -97,7 +111,7 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
                 confidence=None,
                 counseling_mode=counseling_mode,
                 user_input=user_message,
-                conversation_history=None,
+                conversation_history=conversation_history,
             )
             if sid:
                 session_data = get_session_from_db(sid)
@@ -136,7 +150,15 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         skip_counseling_response = response.get("type") == "topic_shift" and response.get("medicine_request")
         if skip_counseling_response:
             return (None, triage_result)
-        _append_counseling_response(session, sid, response, counseling_mode, user_message, log_counseling_response)
+        _append_counseling_response(
+            session,
+            sid,
+            response,
+            counseling_mode,
+            user_message,
+            log_counseling_response,
+            conversation_history=conversation_history,
+        )
         if sid:
             session_data = get_session_from_db(sid)
             if session_data:
@@ -156,7 +178,16 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
     return (None, triage_result)
 
 
-def _append_counseling_response(session, sid, response, counseling_mode, user_message, log_counseling_response):
+def _append_counseling_response(
+    session,
+    sid,
+    response,
+    counseling_mode,
+    user_message,
+    log_counseling_response,
+    *,
+    conversation_history=None,
+):
     """カウンセリング応答を session['messages'] に追加し、必要ならログする。"""
     from src.services.sage_bot_response import build_counseling_bot, build_crisis_bot
 
@@ -182,7 +213,7 @@ def _append_counseling_response(session, sid, response, counseling_mode, user_me
             confidence=None,
             counseling_mode=counseling_mode,
             user_input=user_message,
-            conversation_history=None,
+            conversation_history=conversation_history,
         )
 
     resp_type = response.get("type")
@@ -254,5 +285,5 @@ def _append_counseling_response(session, sid, response, counseling_mode, user_me
             confidence=None,
             counseling_mode=counseling_mode,
             user_input=user_message,
-            conversation_history=None,
+            conversation_history=conversation_history,
         )

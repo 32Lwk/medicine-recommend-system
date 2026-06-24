@@ -334,10 +334,30 @@ def test_greeting_payload_falls_back_to_template_on_llm_failure(mock_create):
     mock_create.assert_called_once()
 
 
-def test_architecture_payload_card():
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_architecture_payload_card(mock_chat):
+    mock_chat.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="返信はAIが生成し、TriageAgent が振り分けます。"
+                )
+            )
+        ]
+    )
     p = build_concierge_payload("architecture", "マルチエージェント？", MagicMock())
-    assert p["content_format"] == "status_card"
+    assert p["content_format"] == "text"
+    assert p["llm_used"] is True
     assert "TriageAgent" in p["content"]
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_meta_llm_retries_then_falls_back_to_card(mock_chat):
+    mock_chat.side_effect = [RuntimeError("llm down"), RuntimeError("llm down again")]
+    p = build_concierge_payload("capabilities", "できることは？", MagicMock())
+    assert p["llm_used"] is False
+    assert "chat-status-card" in p["content"]
+    assert mock_chat.call_count == 2
 
 
 @patch("src.agents.concierge_agent.classify_concierge_intent", return_value="chitchat")

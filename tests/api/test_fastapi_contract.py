@@ -507,6 +507,12 @@ def test_get_feedback_reports_db_fallback(client):
     assert r.status_code in (200, 500)
 
 
+def test_health_endpoint(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.json().get("status") == "ok"
+
+
 def test_admin_system_status_json(client):
     r = client.get("/admin/system_status")
     assert r.status_code == 200

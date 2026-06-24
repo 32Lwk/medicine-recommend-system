@@ -23,11 +23,22 @@ def test_hospital_question_routes_to_app_about(mock_meta):
     assert enriched.get("concierge_intent_source") == "meta_triage"
 
 
-def test_app_about_card_denies_hospital():
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_app_about_card_denies_hospital(mock_chat):
+    mock_chat.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content="病院や診察所ではなく、市販薬の相談窓口です。"
+                )
+            )
+        ]
+    )
     payload = build_concierge_payload("app_about", "病院ですか？", MagicMock())
     content = payload["content"]
     assert "病院" in content or "医療機関" in content
     assert payload["concierge_intent"] == "app_about"
+    assert payload["llm_used"] is True
 
 
 @patch("src.core.llm_client.chat_completion_create")

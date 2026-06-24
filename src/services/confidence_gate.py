@@ -233,7 +233,7 @@ def apply_confidence_gate(
                 response_type="low_confidence_confirmation",
                 category=category,
                 user_input=user_message,
-                conversation_history=None,
+                conversation_history=history[-10:],
                 confidence=confidence,
                 counseling_mode=None,
             )

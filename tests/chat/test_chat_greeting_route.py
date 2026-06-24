@@ -19,9 +19,9 @@ def _bot_text(bot_msg: dict) -> str:
 _SAGE_SESSION = {"ui_variant": "sage"}
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_returns_short_response(mock_chat):
-    mock_chat.return_value = _mock_greeting_llm("こんにちは！市販薬の相談窓口です。")
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_returns_short_response(mock_llm):
+    mock_llm.return_value = _mock_greeting_llm("こんにちは！市販薬の相談窓口です。")
     session = {"messages": [], "username": "test", "user_attributes": {}, **_SAGE_SESSION}
     client = MagicMock(client_ip="127.0.0.1", user_agent="test")
 
@@ -41,9 +41,9 @@ def test_greeting_returns_short_response(mock_chat):
     assert session["messages"][1].get("concierge") is True
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_casual_greeting_yaa(mock_chat):
-    mock_chat.return_value = _mock_greeting_llm("やあ！お薬の相談ならどうぞ。")
+@patch("src.core.llm_client.chat_completion_create")
+def test_casual_greeting_yaa(mock_llm):
+    mock_llm.return_value = _mock_greeting_llm("やあ！お薬の相談ならどうぞ。")
     session = {"messages": [], "username": "test", "user_attributes": {}, **_SAGE_SESSION}
     client = MagicMock(client_ip="127.0.0.1", user_agent="test")
 
@@ -55,9 +55,9 @@ def test_casual_greeting_yaa(mock_chat):
     assert "やあ" in _bot_text(session["messages"][-1])
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_casual_greeting_mirrors_user_tone(mock_chat):
-    mock_chat.return_value = _mock_greeting_llm(
+@patch("src.core.llm_client.chat_completion_create")
+def test_casual_greeting_mirrors_user_tone(mock_llm):
+    mock_llm.return_value = _mock_greeting_llm(
         "あろはー！市販薬の相談窓口です。お困りごとがあればどうぞ。"
     )
     session = {"messages": [], "username": "test", "user_attributes": {}, **_SAGE_SESSION}
@@ -87,10 +87,10 @@ def test_greeting_no_typo_konnichiwa():
         assert text in GREETING_INTRO_POOL or text.startswith("こんにちは")
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_repeat_gets_new_turn(mock_chat):
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_repeat_gets_new_turn(mock_llm):
     """2回目の挨拶でもユーザー発言と bot 返信が追記される（過去ログは消えない）。"""
-    mock_chat.return_value = _mock_greeting_llm("こんにちは！窓口です。")
+    mock_llm.return_value = _mock_greeting_llm("こんにちは！窓口です。")
     session = {
         "messages": [
             {"type": "user", "content": "こんにちは"},

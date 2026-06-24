@@ -223,7 +223,7 @@ def run_other_unknown_counseling(
             confidence=triage_result.get("confidence", 0.5),
             counseling_mode=session.get("counseling_mode"),
             user_input=user_message,
-            conversation_history=None,
+            conversation_history=conversation_history,
         )
         _mark_session_modified(session)
         message_count = len(session["messages"])

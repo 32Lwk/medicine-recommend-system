@@ -642,6 +642,17 @@ def _render_about_page(
     return templates.TemplateResponse(request, template_name, ctx)
 
 
+@app.get("/health")
+def health_check():
+    """Cloud Run 起動プローブ用（DB・LLM に依存しない軽量エンドポイント）。"""
+    import os
+
+    return {
+        "status": "ok",
+        "git_commit": os.environ.get("GIT_COMMIT", ""),
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 def get_root(request: Request, response: Response, sid: str = Depends(get_sid)):
     return _render_index(request, sid, app_base_path="")
@@ -2511,10 +2522,12 @@ def api_admin_sessions(
     )
     sessions_data = []
     all_sessions = get_all_sessions_from_db()
+    from src.handlers.line.line_session import resolve_session_line_context
+    from src.utils.admin_timestamp import format_admin_timestamp_iso
+
     for sess_id, info in all_sessions.items():
         if not isinstance(info, dict):
             continue
-        from src.handlers.line.line_session import resolve_session_line_context
 
         line_ctx = resolve_session_line_context(str(sess_id), info)
         sessions_data.append(

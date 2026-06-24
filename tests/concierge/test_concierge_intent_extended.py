@@ -57,6 +57,52 @@ def test_other_triage_handles_concierge():
     assert should_concierge_handle("できること", {"category": "Other", "confidence": 0.99})
 
 
+def test_otc_definition_with_capabilities_intent_routes_to_concierge():
+    triage = {
+        "category": "Other",
+        "confidence": 0.99,
+        "concierge_intent": "capabilities",
+        "concierge_intent_source": "meta_triage",
+    }
+    assert should_concierge_handle("OTCってなに？", triage)
+    session = {"concierge_state": {}}
+    assert (
+        resolve_concierge_intent(
+            "OTCってなに？",
+            session,
+            triage_result=triage,
+            client=MagicMock(),
+        )
+        == "capabilities"
+    )
+
+
+def test_otc_definition_is_not_medicine_consultation_block():
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    assert probe_meta_concierge_intent("OTCってなに？") == "capabilities"
+
+
+def test_who_answered_routes_to_architecture_probe():
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    assert probe_meta_concierge_intent("誰が回答したの？") == "architecture"
+
+
+def test_should_exit_counseling_for_meta_question():
+    from src.services.concierge_intent import should_exit_counseling_for_concierge
+
+    assert should_exit_counseling_for_concierge(
+        "誰が回答したの？",
+        triage_result={"category": "Other", "concierge_intent": "architecture"},
+    )
+    assert should_exit_counseling_for_concierge(
+        "OTCってなに？",
+        triage_result={"category": "Other", "concierge_intent": "capabilities"},
+    )
+    assert not should_exit_counseling_for_concierge("まだ眠れない")
+
+
 def test_redirect_after_two_chitchat():
     session = {"concierge_state": {"off_topic_turns": 2}}
     triage = {"concierge_intent": "chitchat"}

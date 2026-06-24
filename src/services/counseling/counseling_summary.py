@@ -96,7 +96,7 @@ def generate_counseling_summary(
                 confidence=None,
                 counseling_mode=counseling_mode,
                 user_input=user_text,
-                conversation_history=None
+                conversation_history=conversation_history
             )
         
         return response_text

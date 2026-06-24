@@ -98,6 +98,17 @@ _EXACT_THANKS = frozenset({
 
 })
 
+CONCIERGE_META_INTENTS = frozenset({
+    "capabilities",
+    "architecture",
+    "app_about",
+    "doc_privacy",
+    "doc_terms",
+    "doc_operator",
+    "doc_consultation",
+    "doc_app_overview",
+})
+
 
 
 def _normalize_exact(text: str) -> str:
@@ -115,6 +126,9 @@ def _normalize_exact(text: str) -> str:
 def _is_medicine_consultation(text: str) -> bool:
 
     t = text.lower()
+
+    if _is_medicine_term_definition(text):
+        return False
 
     hints = (
 
@@ -145,6 +159,49 @@ def _is_medicine_consultation(text: str) -> bool:
     )
 
     return any(h in t for h in hints)
+
+
+def _is_medicine_term_definition(text: str) -> bool:
+    """用語の意味を尋ねる質問（OTC/市販薬の定義など）は医薬品相談扱いにしない。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    tl = t.lower()
+    if not re.search(r"(って|とは|てなに|の意味|是什么|\?|？)", t):
+        return False
+    if re.search(r"otc", tl):
+        return True
+    if "市販薬" in t and not is_symptom_input(t):
+        return True
+    return False
+
+
+def triage_has_concierge_meta_intent(triage_result: dict | None) -> bool:
+    intent = (triage_result or {}).get("concierge_intent")
+    return intent in CONCIERGE_META_INTENTS
+
+
+def should_exit_counseling_for_concierge(
+    user_text: str,
+    *,
+    triage_result: dict | None = None,
+    alt_texts: list[str] | None = None,
+) -> bool:
+    """カウンセリング中でも Concierge に委譲すべきメタ質問か。"""
+    if triage_has_concierge_meta_intent(triage_result):
+        return True
+    for raw in (user_text, *(alt_texts or [])):
+        text = (raw or "").strip()
+        if not text:
+            continue
+        probed = probe_meta_concierge_intent(text)
+        if probed in CONCIERGE_META_INTENTS:
+            return True
+        if looks_like_service_identity_question(text):
+            return True
+        if re.search(r"(誰|だれ).{0,12}(回答|返信|答え|応答)", text):
+            return True
+    return False
 
 
 
@@ -300,6 +357,9 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(何ができる|できること|対応言語)"), "capabilities"),
+    (re.compile(r"otc.{0,12}(って|とは|てなに|の意味)", re.I), "capabilities"),
+    (re.compile(r"市販薬.{0,12}(って|とは|てなに|の意味)"), "capabilities"),
+    (re.compile(r"(誰|だれ).{0,12}(回答|返信|答え|応答)"), "architecture"),
     (re.compile(r"プライバシー|個人情報"), "doc_privacy"),
     (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),

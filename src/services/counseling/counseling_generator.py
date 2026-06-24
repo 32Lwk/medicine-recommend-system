@@ -520,7 +520,7 @@ def generate_counseling_response(
                 confidence=None,
                 counseling_mode=None,
                 user_input=user_text,
-                conversation_history=None
+                conversation_history=conversation_history
             )
         
         return response_text

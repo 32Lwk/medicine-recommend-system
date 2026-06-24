@@ -50,6 +50,7 @@ gcloud run services update medicine-recommend \
 ```
 
 - CPU 常時割り当て: Cloud Run コンソール「CPU は常に割り当てる」を有効化（詳細は [CAPACITY_PLANNING.md](CAPACITY_PLANNING.md)）
+- 起動プローブ: `cloudbuild.yaml` で `GET /health` を startup probe に設定（新リビジョンがトラフィック受付前に起動完了を待つ）
 - `DATABASE_URL` は Neon **pooler** ホスト（`-pooler`）を使用
 - デプロイ後 `/admin/system_status` で `database.available=true` を確認
 
