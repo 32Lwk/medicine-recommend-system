@@ -1,6 +1,76 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月24日**（Concierge 挨拶強化・攻撃的入力境界・LLM 生入力・チャット UI 同期）
+**最終更新日: 2026年6月25日**（GCP ログ解析基盤・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ）
+
+---
+
+## 2026年6月25日 — GCP ログ解析基盤・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ
+
+### 概要
+
+本番 GCP ログの分析結果に基づき、**import 欠落**（`counseling_processor` → `generate_counseling_response`）や**ルーティングミス**（OTC/市販薬の用語定義質問が医薬品相談に誤分類）を修正した。Concierge の **capabilities / architecture / app_about** メタ質問を固定カードから**会話履歴付き LLM 応答**に刷新し、カウンセリング中のメタ質問は Concierge に委譲する。**カウンセリング詳細ログ**（`counseling_detail_log.jsonl`）へ `conversation_history` を記録するようチャット全ルートを統一。あわせて **GCP Cloud Logging エクスポートの決定的前処理パイプライン**（パーサー・セッション会話分析・CLI・skill）を新設。運用面では **`GET /health` 起動プローブ**でデプロイ直後の 503 を抑止し、フロントのセッション同期間隔を **30 秒**に変更した。
+
+### GCP ログ解析基盤（新規）
+
+- **`gcp_cloud_run_log_parser.py`（新規）**: `downloaded-logs-*.json` を `LogEntry` に読み込み、HTTP エラー・パイプライン性能・LLM コスト・LINE webhook・チャットフロー trace・Neon DB・デプロイリビジョン・ユーザー会話などをセクション JSON に分割
+- **`session_conversation_analysis.py`（新規）**: カウンセリング詳細ログと trace を突合し、ターン単位の issue 検出・セッション grade・intent mismatch・会話履歴再構成
+- **`medicine_recommendation_log_extractor.py`（新規）**: Physical / 薬推奨パイプラインイベント（症状検出・推奨医薬品・agent_step handoff）の抽出
+- **`quality_metrics.py`（新規）**: 解析バンドルから会話品質・HTTP エラー集計メトリクスを生成
+- **`scripts/analyze_gcp_logs.py`（新規）**: CLI。`log/analysis/<stem>/manifest.json` と `sections/*.json` を出力
+- **`.cursor/skills/gcp-log-analysis/SKILL.md`（新規）**: エクスポート JSON → CLI 抽出 → セクション並列 LLM 解釈 → Markdown レポートのワークフロー
+
+### Concierge メタ質問の LLM 化とルーティング修正
+
+- **`concierge_agent.py`**
+  - `generate_meta_concierge_text` / `_invoke_meta_concierge_llm`（新規）: `capabilities`・`architecture`・`app_about` を履歴・文脈ブロック付き LLM で回答。フォールバックは従来カード
+  - `resolve_concierge_intent`: 店舗ゲート・オーケストレータを**医薬品相談判定より先**に評価（OTC 用語質問の誤除外を防止）
+- **`concierge_intent.py`**
+  - `CONCIERGE_META_INTENTS` / `triage_has_concierge_meta_intent` / `should_exit_counseling_for_concierge`（新規）
+  - `_is_medicine_term_definition`（新規）: 「OTCって何？」「市販薬とは」等を医薬品相談から除外
+  - メタ probe に OTC/市販薬用語定義・「誰が回答したか」パターンを追加
+- **`chat_concierge_route.py`**
+  - メタ intent 応答を LLM 経由に切替
+  - `_concierge_already_answered_user`（新規）: 同一挨拶の二重 POST を抑止（duplicate_skip 廃止方針との両立）
+  - Concierge ログに `conversation_history` を付与
+
+### カウンセリング中のメタ質問委譲と詳細ログ履歴
+
+- **`chat_counseling_flow.py`**: `should_exit_counseling_for_concierge` でカウンセリングモードを終了し Concierge に委譲
+- **`counseling_processor.py`**: 欠落していた `generate_counseling_response` の import を追加（本番 `NameError` 修正）
+- **会話履歴ログ統一**（`conversation_history=None` → 実履歴）:
+  - `chat_counseling_flow.py`, `chat_emotional_route.py`, `chat_category_route.py`, `chat_other_counseling_route.py`, `chat_triage_follow_ups.py`, `chat_pollen_consultation_route.py`, `chat_concierge_route.py`
+  - `get_counseling_conversation_history`（`line_memory_context`）経由で取得
+
+### 防御的ガード・管理 API
+
+- **`medicine_data.py`**: `get_medicines_by_type(None)` / 空文字で空リストを返すガード（CSV 全件マッチ防止）
+- **`main.py`**
+  - `GET /health`（新規）: Cloud Run 起動プローブ用の軽量エンドポイント（`status`・`git_commit`）
+  - `api_admin_sessions`: `resolve_session_line_context` / `format_admin_timestamp_iso` の import をループ外へ移動
+
+### Cloud Run デプロイ・運用
+
+- **`cloudbuild.yaml`**: `--startup-probe=type=http,path=/health,port=8080,...` を追加（最大約 120 秒まで起動待ち）
+- **`docs/ops/CLOUD_RUN_LLM_ENV.md`**: 起動プローブ設定の記載を追加
+
+### フロントエンド
+
+- **`static/js/main.js`**: セッション定期同期の `setInterval` を 10 秒 → **30 秒**に変更（API 負荷軽減）
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_gcp_cloud_run_log_parser.py`（新規） | ログ読込・セクション抽出・バンドル書き出し |
+| `test_gcp_log_analysis_incremental.py`（新規） | 増分解析・マニフェスト整合 |
+| `test_session_conversation_analysis.py`（新規） | ターン issue 検出・セッション grade・intent mismatch |
+| `test_counseling_processor_import.py`（新規） | `generate_counseling_response` import 解決 |
+| `test_medicine_data_guard.py`（新規） | `get_medicines_by_type` の None/空文字ガード |
+| `test_concierge_intent_extended.py`（新規） | OTC 用語・メタ質問・医薬品相談境界 |
+| `test_concierge_route.py` | メタ intent の LLM 応答・二重 POST 抑止 |
+| `test_concierge_acceptance.py` / `test_concierge_agent.py` | メタ LLM 化・ルーティング順序に合わせて更新 |
+| `test_hospital_identity_question.py` / `test_chat_greeting_route.py` | 委譲・挨拶境界の調整 |
+| `test_fastapi_contract.py` | `GET /health` の契約テスト |
 
 ---
 
