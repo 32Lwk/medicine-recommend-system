@@ -3,8 +3,8 @@ from src.utils.user_attribute_registration import (
     append_user_attribute_registration_notice,
     build_registration_notice_items,
     register_user_attributes_from_message,
+    try_early_attribute_registration_ui,
 )
-
 
 def test_register_pollen_sync():
     session = {}
@@ -53,3 +53,28 @@ def test_append_notice_after_register():
     assert "花粉" in (diag.get("message") or "") or any(
         "花粉" in str(s) for s in (diag.get("sections") or [])
     )
+
+
+def test_early_ui_persists_user_and_notice():
+    session = {"messages": []}
+    saved = {}
+
+    def _save(sid, data):
+        saved["data"] = data
+
+    register_user_attributes_from_message(
+        session,
+        "sid-early",
+        "花粉症です",
+        schedule_async_extraction=False,
+    )
+    assert try_early_attribute_registration_ui(
+        session,
+        "sid-early",
+        "花粉症です",
+        save_to_db_fn=_save,
+        get_session_from_db_fn=lambda _sid: {"session_id": "sid-early", "messages": []},
+    )
+    assert session.get("_user_attr_notice_appended") is True
+    assert len(session["messages"]) == 2
+    assert saved["data"]["user_attributes"]["allergies"] == ["花粉"]

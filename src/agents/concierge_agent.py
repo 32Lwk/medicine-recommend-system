@@ -4,12 +4,18 @@ ConciergeAgent — 挨拶・メタ質問・軽い雑談・Physical ハンドオ�
 from __future__ import annotations
 
 import logging
+import random
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from openai import OpenAI
 
 from src.content.concierge_docs import DOC_CONCIERGE_INTENTS, load_concierge_doc
-from src.content.concierge_knowledge import get_handoff_intro_physical, get_policy_snippet
+from src.content.concierge_knowledge import (
+    get_handoff_intro_physical,
+    get_policy_snippet,
+    get_service_identity_block,
+)
 from src.services.concierge_intent import ConciergeIntent, classify_concierge_intent
 from src.services.concierge_orchestrator import resolve_intent_from_triage
 from src.services.concierge_llm import concierge_chat
@@ -74,6 +80,22 @@ def count_same_greeting_exchange_rounds(
     return rounds
 
 
+def _is_greeting_like_user_message(content: str) -> bool:
+    """挨拶・一声の呼びかけは話題抽出から除外する。"""
+    if classify_concierge_intent(content) in ("greeting", "thanks"):
+        return True
+    if is_short_impatient_callout(content):
+        return True
+    try:
+        from src.services.concierge_intent import infer_structural_concierge_intent
+
+        if infer_structural_concierge_intent(content) == "greeting":
+            return True
+    except ImportError:
+        pass
+    return False
+
+
 def _extract_substantive_user_topics(
     msgs: List[Dict[str, str]],
 ) -> List[str]:
@@ -83,10 +105,7 @@ def _extract_substantive_user_topics(
         if m.get("type") != "user":
             continue
         content = str(m.get("content") or "").strip()
-        if not content:
-            continue
-        intent = classify_concierge_intent(content)
-        if intent in ("greeting", "thanks"):
+        if not content or _is_greeting_like_user_message(content):
             continue
         topics.append(content[:80])
     return topics[-3:]
@@ -135,7 +154,7 @@ def format_concierge_context_block(
         if rounds >= 3:
             lines.append(
                 "- 同じセッション内の連続挨拶なので「また来てくれて」等の再来訪表現は不自然。"
-                "「こちらにいます」「はい、どうぞ」など軽く応じる"
+                "「お声がけありがとうございます」など軽く応じる"
             )
 
     topics = _extract_substantive_user_topics(prior)
@@ -144,10 +163,13 @@ def format_concierge_context_block(
         lines.append(
             "- 話題に自然につなげられるなら1文だけ触れてよい（長く繰り返さない）"
         )
-    elif mode == "greeting" and not infer_is_first_greeting_contact(history):
+    elif mode == "greeting" and not infer_is_first_greeting_contact(history, user_text=user_text):
         lines.append(
             "- まだ具体的な相談はない。窓口説明を繰り返さず、様子を見る一言で受け止める"
         )
+
+    if is_short_impatient_callout(text):
+        lines.append("- 短い呼びかけへの返答は2文程度・60〜120文字")
 
     last_bot = _last_bot_reply_snippet(
         prior,
@@ -471,52 +493,29 @@ def build_doc_operator_payload(
 
 _GREETING_SYSTEM_PROMPT = (
     "あなたは市販薬相談ツールの案内役です。"
-    "薬局の相談窓口で、落ち着いて耳を傾けるスタッフのように話します。"
-    "会話履歴と文脈メモを読み、毎回言い回しを変えて自然な続きの返答をします。"
-    "ユーザーの挨拶の温度感（カジュアルさ・元気さ）にはミラーリングで合わせます。"
-    "ただしやや攻撃的・苛立ちのときは、ミラーリングより寄り添い・傾聴を優先し、"
-    "批判・説教・突き放し・皮肉にはなりません。"
+    "薬局の相談窓口のスタッフのように、会話の流れを読んで自然な続きの返答をします。"
+    "毎回言い回しを変え、説教・突き放し・皮肉にはなりません。"
 )
 
-_GREETING_PROMPT_REQUIREMENTS = """【優先順位】
-1. 相手を煽らない・責めない・突き放さない
-2. ミラーリング（挨拶語・カジュアルさ・温度感）。失礼語・罵倒は繰り返さない
-3. やや攻撃的・苛立ちのときは 2 より先に寄り添い・傾聴（受け止め・安心）
-4. 初回のみツール説明。継続の呼びかけでは繰り返さない
-5. 自然な促し（お気軽に／お聞かせください）
+_GREETING_PROMPT_REQUIREMENTS = """【方針】
+- 会話履歴と文脈を踏まえ、状況に合った自然な日本語で返す
+- 2〜3文・60〜120文字程度（1文だけの極端に短い返答は避ける）
+- 直前の bot 返答と同じ言い回し・同じ構成は使わない
+- 失礼語・罵倒は繰り返さない。焦りや呼びかけには落ち着いて応じる
+- 医薬品は「市販薬」と表記。「OTC」は使わない
+- 初回接触では市販薬相談窓口であることと相談例を簡潔に含める。継続の呼びかけでは窓口説明を繰り返さない"""
 
-【口調・ブランド】
-- ユーザーのトーン・カジュアルさ・温度感に合わせて返す（ミラーリング）。挨拶語（やあ・こんにちは等）のミラーリングは可
-- 失礼語・罵倒（おい・ふざけんな等）は繰り返さず、感情（焦り・困惑・呼びかけ）だけを汲み取る
-- 薬局の相談窓口として落ち着きと信頼感を保つ。ふざけた・命令的・攻撃的な印象は出さない
-- 基本は丁寧語（です・ます）。ユーザーがタメ口・強めの口調のときは、柔らかい丁寧語（〜ですね／〜でしょうか）で距離を縮める
+_GREETING_MIN_CHARS_FIRST = 60
+_GREETING_MIN_CHARS_CONTINUED = 60
+_GREETING_MAX_CHARS = 130
+_GREETING_LLM_MAX_TOKENS = 512
+_GREETING_MAX_LLM_ATTEMPTS = 3
 
-【苛立ち・やや強い口調への対応】
-- 少し攻撃的・荒い表現でも、相手を責めたり逆上させたり煽ったりしない
-- 「はい、どうしましたか？」のように事務的・突き放し・煽られているように聞こえる言い方は避ける
-- 入力の促しは「お気軽にお聞かせください」「お気軽にどうぞ」「教えていただければ」など自然な言い回しにする
-- 禁止（不自然・事務的）:「やわらかく書いてください」「短く書いてください」「具体的に書いてください」「〜ですので、〜（説明的）」「気になることがあれば（堅い）」
-- 例（短い呼びかけ・苛立ち）:「お声がけありがとうございます。ちゃんと受け止めていますので、何かお困りのことがあればお聞かせください。」「焦らなくて大丈夫です。どうされたいか、ゆっくり教えていただけますか？」
-- 例（カジュアル挨拶・初回）:「やあ、こんにちは。こちらは市販薬の相談窓口です。頭痛やのどの痛み、お薬の選び方など、お気軽にご相談ください。」「こんにちは。症状や市販薬のことでお困りでしたら、できる範囲でお手伝いします。まずは気になることをお聞かせください。」
-- 例（継続の呼びかけ）:「お声がけありがとうございます。何かお困りのことはありますか？」「はい、こちらにいます。お体のことで気になることがあれば、お聞かせください。」
-- 例文はそのままコピーせず、同等の情報量でユーザー入力に合わせて言い換える
-
-【会話の継続】
-- 会話履歴と【会話の文脈】を必ず読み、これまでのやり取りに沿って返す
-- 会話履歴に直前の挨拶・案内があるとき、市販薬相談ツール・窓口の説明の繰り返しはしない
-- 同じ挨拶を連続で受け取ったときは、毎回言い回しを変える（2回目・3回目で同じ定型文にしない）
-- 「また来てくれてありがとう」は同じセッション内の連続挨拶では不自然。使わない
-- 「おい」「ねえ」「もしもし」など短い呼びかけは会話の続き。まず受け止めてから、困りごとを穏やかに尋ねる
-- 以前に触れた症状・話題があれば、自然な範囲で1文だけ思い出す（長く繰り返さない）
-
-【内容・長さ】
-- 1文だけの極端に短い返答は避ける（目安: 初回 80〜180 文字・2〜3文、継続 50〜120 文字・2文程度）
-- 初回接触が「はい」のときのみ: 挨拶への返答に加え、市販薬相談窓口であることと相談例（頭痛・のどの痛み・飲み合わせ等）を含め、最後に自然な促しを入れる
-- 初回接触が「いいえ」のとき: ツール説明・窓口紹介は書かず、受け止め＋穏やかな質問の2文にとどめる
-- 医薬品を指すときは必ず「市販薬」を使う。「OTC」「OTC薬」は使わない
-- yes/no で本サービスの性質を聞いた場合は挨拶として扱わない。挨拶返答内で医療機関であるかのように「はい」と答えない
-- 「病院ではない」「診療所ではない」等の否定説明は書かない
-- 診断・処方はしない"""
+_GREETING_SANITIZE_OPENINGS = (
+    "お声がけありがとうございます。",
+    "呼びかけありがとうございます。",
+    "承知しました。",
+)
 
 _CHITCHAT_SYSTEM_PROMPT = (
     "あなたは市販薬相談ツールの案内役です。"
@@ -547,12 +546,197 @@ _CHITCHAT_PROMPT_REQUIREMENTS = """【優先順位】
 - 医療診断・処方はしない
 - お薬の相談へ戻すときは「お気軽にお聞かせください」等の自然な言い回しで促す"""
 
+_SHORT_CALLOUT_EXACT = frozenset({
+    "おい",
+    "ねえ",
+    "ねぇ",
+    "もしもし",
+    "あの",
+    "なあ",
+    "なぁ",
+})
+
+_RUDE_MIRROR_PREFIXES = ("おい", "ねえ", "ねぇ", "もしもし", "ふざけんな")
+
+_SHORT_CALLOUT_FALLBACK = (
+    "お声がけありがとうございます。"
+    "何かお困りのことがあれば、お気軽にお聞かせください。"
+)
+
+_SHORT_CALLOUT_FIRST_POOL = [
+    (
+        "お声がけありがとうございます。"
+        "こちらは市販薬の相談窓口です。頭痛やのどの痛み、鼻水など、お気軽にご相談ください。"
+    ),
+    (
+        "こんにちは。市販薬の相談をお手伝いします。"
+        "頭痛・のどの痛み・胃の不調など、気になる症状をそのまま教えてください。"
+    ),
+]
+
+_SHORT_CALLOUT_CONTINUED_POOL = [
+    (
+        "お声がけありがとうございます。"
+        "何かお困りのことがあれば、症状やいつからかを短くでもお聞かせください。"
+    ),
+    (
+        "呼びかけありがとうございます。"
+        "続きのご相談があれば、気になる点をそのままお書きください。"
+    ),
+    (
+        "お待たせしました。"
+        "お体のことで気になる点があれば、市販薬の候補を一緒に見ていきます。"
+    ),
+    (
+        "承知しました。"
+        "ほかにご質問や気になる症状があれば、お気軽にお聞かせください。"
+    ),
+]
+
+
+def _normalize_callout_text(text: str) -> str:
+    return re.sub(r"\s+", "", (text or "").strip())
+
+
+def is_short_impatient_callout(text: str) -> bool:
+    """焦り・呼びかけの短い入力（失礼語ミラーリング対象外）。"""
+    return _normalize_callout_text(text) in _SHORT_CALLOUT_EXACT
+
+
+def build_short_callout_greeting_text(*, is_first: bool, exclude: str = "") -> str:
+    """短い呼びかけの LLM 失敗時・重複回避フォールバック。"""
+    pool = list(_SHORT_CALLOUT_FIRST_POOL if is_first else _SHORT_CALLOUT_CONTINUED_POOL)
+    random.shuffle(pool)
+    for candidate in pool:
+        if exclude and greeting_responses_too_similar(candidate, exclude):
+            continue
+        return candidate
+    return pool[0] if pool else _SHORT_CALLOUT_FALLBACK
+
+
+def _normalize_greeting_compare_text(text: str) -> str:
+    return re.sub(r"[\s　、。,.!?！？]", "", (text or "").strip())
+
+
+def greeting_response_too_short(text: str, *, is_first: bool) -> bool:
+    minimum = _GREETING_MIN_CHARS_FIRST if is_first else _GREETING_MIN_CHARS_CONTINUED
+    return len((text or "").strip()) < minimum
+
+
+def greeting_response_too_long(text: str) -> bool:
+    return len((text or "").strip()) > _GREETING_MAX_CHARS
+
+
+def _greeting_opening_signature(text: str) -> str:
+    first = re.split(r"[。.!?！？\n]", (text or "").strip(), maxsplit=1)[0]
+    return _normalize_greeting_compare_text(first)[:16]
+
+
+def _pick_sanitize_opening(*, avoid: str = "") -> str:
+    avoid_sig = _greeting_opening_signature(avoid)
+    candidates = list(_GREETING_SANITIZE_OPENINGS)
+    random.shuffle(candidates)
+    for opening in candidates:
+        if avoid_sig and _greeting_opening_signature(opening) == avoid_sig:
+            continue
+        return opening
+    return candidates[0]
+
+
+def greeting_response_needs_retry(
+    text: str,
+    *,
+    is_first: bool,
+    last_bot: str = "",
+) -> bool:
+    if not (text or "").strip():
+        return True
+    if greeting_response_too_short(text, is_first=is_first):
+        return True
+    if greeting_response_too_long(text):
+        return True
+    if last_bot and greeting_responses_too_similar(text, last_bot):
+        return True
+    return False
+
+
+def _greeting_service_context_block() -> str:
+    """挨拶 LLM 用: ポリシーと本ツールの立場・制限（SSOT）。"""
+    identity = get_service_identity_block()
+    parts = [get_policy_snippet()]
+    if identity:
+        parts.append(f"【本ツールについて（遵守）】\n{identity}")
+    return "\n\n".join(parts)
+
+
+def greeting_responses_too_similar(a: str, b: str) -> bool:
+    """挨拶返答が直前と実質同じか。"""
+    na = _normalize_greeting_compare_text(a)
+    nb = _normalize_greeting_compare_text(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    shorter, longer = (na, nb) if len(na) <= len(nb) else (nb, na)
+    if len(shorter) >= 12 and shorter in longer:
+        return True
+    sig_a = _greeting_opening_signature(a)
+    sig_b = _greeting_opening_signature(b)
+    if sig_a and sig_b and len(sig_a) >= 8 and sig_a == sig_b:
+        return True
+    return False
+
+
+def sanitize_greeting_response(
+    text: str,
+    user_text: str,
+    *,
+    avoid_opening: str = "",
+) -> str:
+    """LLM 挨拶返答の最小限の後処理（失礼語ミラーリング等）。"""
+    result = (text or "").strip()
+    if not result:
+        return result
+
+    replacement_opening = _pick_sanitize_opening(avoid=avoid_opening)
+    normalized_user = _normalize_callout_text(user_text)
+    if is_short_impatient_callout(user_text):
+        for prefix in _RUDE_MIRROR_PREFIXES:
+            if normalized_user == prefix or normalized_user.startswith(prefix):
+                result = re.sub(
+                    rf"^{re.escape(prefix)}[、，,。\s]+",
+                    "",
+                    result,
+                )
+                break
+
+    result = re.sub(
+        r"はい、こちらにいます[。.]?\s*",
+        replacement_opening,
+        result,
+    )
+    if is_short_impatient_callout(user_text):
+        result = re.sub(
+            r"^はい、どうぞ[、，,。.]?\s*",
+            replacement_opening,
+            result,
+        )
+
+    if is_short_impatient_callout(user_text) and not result:
+        result = _SHORT_CALLOUT_FALLBACK
+    return result.strip()
+
 
 def infer_is_first_greeting_contact(
     history: Optional[List[Dict[str, str]]],
+    *,
+    user_text: str = "",
 ) -> bool:
     """挨拶返答用: これまでに Concierge/挨拶 bot 応答がなければ初回接触。"""
-    msgs = list(history or [])
+    prior = _prior_history_for_prompt(history, user_text)
+    if _extract_substantive_user_topics(prior):
+        return False
+    msgs = list(prior or [])
     if not msgs:
         return True
     for msg in reversed(msgs):
@@ -567,36 +751,71 @@ def infer_is_first_greeting_contact(
     return True
 
 
-def generate_greeting_text(
+def _invoke_greeting_llm(
     client: OpenAI,
-    user_text: str,
+    prompt: str,
     *,
-    session_id: Optional[str] = None,
-    history: Optional[List[Dict[str, str]]] = None,
-) -> tuple[str, bool]:
-    """挨拶返答。既定は LLM。失敗時のみ build_greeting_text にフォールバック。"""
-    hist = format_concierge_history_block(history, user_text)
-    context = format_concierge_context_block(history, user_text, mode="greeting")
-    is_first = infer_is_first_greeting_contact(history)
-    first_label = "はい" if is_first else "いいえ"
-    if is_first:
-        contact_block = (
-            "【初回接触の追加要件】\n"
-            "- 2〜3文・80〜180文字を目安に、窓口説明と相談例を含めて返す\n"
-            "- 構成の目安: 挨拶への返答 → 市販薬相談窓口であること → "
-            "相談例1つ（頭痛・のどの痛み・飲み合わせ等）→ 自然な促し"
+    session_id: Optional[str],
+    temperature: float,
+) -> str:
+    from src.core.llm_client import chat_completion_create, extract_completion_text
+
+    resp = chat_completion_create(
+        client,
+        model_role="concierge_greeting",
+        path="concierge_agent.greeting",
+        messages=[
+            {"role": "system", "content": _GREETING_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=_GREETING_LLM_MAX_TOKENS,
+        temperature=temperature,
+    )
+    return extract_completion_text(resp)
+
+
+def _greeting_retry_hint(
+    *,
+    attempt: int,
+    is_first: bool,
+    last_bot: str,
+    prior_text: str,
+) -> str:
+    hints: List[str] = []
+    if prior_text and greeting_response_too_short(prior_text, is_first=is_first):
+        hints.append(
+            "【重要】前の返答が短すぎました。必ず60〜120文字・2〜3文で書き直してください。"
         )
-        temperature = 0.55
-    else:
-        contact_block = (
-            "【継続接触の追加要件】\n"
-            "- 2文・50〜120文字を目安に返す\n"
-            "- 窓口説明・市販薬相談ツールの紹介は書かない\n"
-            "- 【会話の文脈】と履歴を踏まえ、毎回言い回しを変えて受け止める\n"
-            "- 同じ挨拶の連続なら、直前の返答と異なる表現にする"
+    if prior_text and greeting_response_too_long(prior_text):
+        hints.append(
+            "【重要】前の返答が長すぎました。120文字以内・2〜3文に収めて書き直してください。"
         )
-        temperature = 0.62
-    prompt = f"""{get_policy_snippet()}
+    if prior_text and last_bot and greeting_responses_too_similar(prior_text, last_bot):
+        hints.append(
+            "【重要】直前の bot 返答と同じ書き出し・構成は不可。別の自然な表現で書き直してください。"
+        )
+    if attempt >= 2:
+        hints.append(
+            "【重要】毎回書き出しを変え、具体例を1つ入れて、読みやすい2〜3文にしてください。"
+        )
+    if is_first and attempt >= 1:
+        hints.append(
+            "【重要】初回接触です。市販薬相談窓口であることと、相談例（頭痛・のどの痛み等）を含めてください。"
+        )
+    return "\n".join(hints)
+
+
+def _build_greeting_user_prompt(
+    *,
+    hist: str,
+    context: str,
+    first_label: str,
+    contact_block: str,
+    user_text: str,
+    variation_hint: str = "",
+) -> str:
+    variation_section = f"\n{variation_hint}\n" if variation_hint else ""
+    return f"""{_greeting_service_context_block()}
 
 【会話履歴（参考）】
 {hist}
@@ -608,34 +827,122 @@ def generate_greeting_text(
 {first_label}
 
 {contact_block}
-
+{variation_section}
 【ユーザーの挨拶】
 {user_text}
 
 【要件】
 {_GREETING_PROMPT_REQUIREMENTS}
 """
-    try:
-        resp = concierge_chat(
-            client,
-            "concierge_agent.greeting",
-            [
-                {
-                    "role": "system",
-                    "content": _GREETING_SYSTEM_PROMPT,
-                },
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=300,
-            temperature=temperature,
-            session_id=session_id,
+
+
+def generate_greeting_text(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> tuple[str, bool]:
+    """挨拶返答。既定は LLM。失敗時のみ build_greeting_text にフォールバック。"""
+    hist = format_concierge_history_block(history, user_text)
+    context = format_concierge_context_block(history, user_text, mode="greeting")
+    is_first = infer_is_first_greeting_contact(history, user_text=user_text)
+    first_label = "はい" if is_first else "いいえ"
+    rounds = count_same_greeting_exchange_rounds(history, user_text)
+    prior = _prior_history_for_prompt(history, user_text)
+    last_bot = _last_bot_reply_snippet(prior, greeting_only=True)
+
+    if is_first:
+        contact_block = (
+            "【今回の要点】\n"
+            "- 挨拶への返答、市販薬相談窓口であること、相談例（頭痛・のどの痛み等）を含める\n"
+            "- 2〜3文・60〜120文字程度"
         )
-        text = (resp.choices[0].message.content or "").strip()
-        if text:
-            return text, True
+    else:
+        contact_block = (
+            "【今回の要点】\n"
+            "- 窓口説明は繰り返さず、会話の続きとして受け止める\n"
+            "- 2文・60〜120文字程度"
+        )
+    if rounds >= 2:
+        contact_block += (
+            f"\n- 同じ入力「{user_text.strip()}」の {rounds} 回目。"
+            "直前の bot 返答と異なる言い回しにする"
+        )
+
+    temperature = min(0.62 + (rounds - 1) * 0.08, 0.86)
+    try:
+        best_text = ""
+        prior_text = ""
+        for attempt in range(_GREETING_MAX_LLM_ATTEMPTS):
+            variation_hint = _greeting_retry_hint(
+                attempt=attempt,
+                is_first=is_first,
+                last_bot=last_bot or "",
+                prior_text=prior_text,
+            )
+            prompt = _build_greeting_user_prompt(
+                hist=hist,
+                context=context,
+                first_label=first_label,
+                contact_block=contact_block,
+                user_text=user_text,
+                variation_hint=variation_hint,
+            )
+            attempt_temp = min(temperature + attempt * 0.1, 0.95)
+            raw = _invoke_greeting_llm(
+                client,
+                prompt,
+                session_id=session_id,
+                temperature=attempt_temp,
+            )
+            text = sanitize_greeting_response(
+                raw,
+                user_text,
+                avoid_opening=last_bot or best_text,
+            )
+            prior_text = text
+            if text and len(text) > len(best_text):
+                best_text = text
+            if text and not greeting_response_needs_retry(
+                text,
+                is_first=is_first,
+                last_bot=last_bot or "",
+            ):
+                return text, True
+
+        if best_text and not greeting_response_needs_retry(
+            best_text,
+            is_first=is_first,
+            last_bot=last_bot or "",
+        ):
+            return best_text, True
+
+        if is_short_impatient_callout(user_text):
+            alt = build_short_callout_greeting_text(
+                is_first=is_first,
+                exclude=last_bot or best_text,
+            )
+            return sanitize_greeting_response(
+                alt,
+                user_text,
+                avoid_opening=last_bot or "",
+            ), False
+        if best_text:
+            return best_text, True
     except Exception as exc:
         logger.warning("Concierge greeting LLM failed: %s", exc)
-    return build_greeting_text(user_text), False
+    if is_short_impatient_callout(user_text):
+        fallback = build_short_callout_greeting_text(
+            is_first=is_first, exclude=last_bot or ""
+        )
+    else:
+        fallback = build_greeting_text(user_text)
+    return sanitize_greeting_response(
+        fallback,
+        user_text,
+        avoid_opening=last_bot or "",
+    ), False
 
 
 def generate_chitchat_text(

@@ -31,6 +31,7 @@ _LEGACY = {
     "nlu": "gpt-4o-mini",
     "counsel": "gpt-4o-mini",
     "concierge": "gpt-4o-mini",
+    "concierge_greeting": "gpt-4o-mini",
     "explain": "gpt-4o",
     "ask": "gpt-4o-mini",
     "admin": "gpt-4o-mini",
@@ -42,6 +43,7 @@ _GPT5 = {
     "nlu": "gpt-5.4-mini",
     "counsel": "gpt-5.4-mini",
     "concierge": "gpt-5.4-mini",
+    "concierge_greeting": "gpt-4o-mini",
     "explain": "gpt-5.5",
     "ask": "gpt-5.4-mini",
     "admin": "gpt-5.4-mini",
@@ -56,7 +58,7 @@ _PROFILE_MODELS = _GPT5 if LLM_MODEL_PROFILE == "gpt5" else _LEGACY
 
 
 def get_model(role: str) -> str:
-    """role: triage | nlu | counsel | concierge | explain | ask | admin"""
+    """role: triage | nlu | counsel | concierge | concierge_greeting | explain | ask | admin"""
     try:
         from config.llm_runtime import get_request_profile
         req_profile = get_request_profile()
@@ -88,6 +90,7 @@ _ROLE_TIMEOUT_SEC = {
     "explain": 60.0,
     "counsel": 20.0,
     "concierge": 12.0,
+    "concierge_greeting": 12.0,
     "moderation": 8.0,
     "nlu": 15.0,
     "ask": 20.0,

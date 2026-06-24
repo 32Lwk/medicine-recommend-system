@@ -4,52 +4,55 @@ from unittest.mock import MagicMock, patch
 from src.agents.concierge_agent import (
     _GREETING_PROMPT_REQUIREMENTS,
     _GREETING_SYSTEM_PROMPT,
+    _extract_substantive_user_topics,
+    _greeting_service_context_block,
     build_concierge_payload,
+    build_short_callout_greeting_text,
     count_same_greeting_exchange_rounds,
     format_concierge_context_block,
     generate_greeting_text,
+    greeting_response_too_short,
+    greeting_responses_too_similar,
     infer_is_first_greeting_contact,
+    is_short_impatient_callout,
     resolve_concierge_intent,
+    sanitize_greeting_response,
 )
 
 
-def test_greeting_prompt_prioritizes_trust_and_ichiyaku_wording():
+def test_greeting_prompt_is_concise_and_principle_based():
     assert "市販薬" in _GREETING_PROMPT_REQUIREMENTS
-    assert "OTC" in _GREETING_PROMPT_REQUIREMENTS and "使わない" in _GREETING_PROMPT_REQUIREMENTS
-    assert "ミラーリング" in _GREETING_PROMPT_REQUIREMENTS
-    assert "寄り添" in _GREETING_PROMPT_REQUIREMENTS
-    assert "傾聴" in _GREETING_PROMPT_REQUIREMENTS
-    assert "おい" in _GREETING_PROMPT_REQUIREMENTS or "ねえ" in _GREETING_PROMPT_REQUIREMENTS
-    assert "会話の継続" in _GREETING_PROMPT_REQUIREMENTS
-    assert "また来てくれて" in _GREETING_PROMPT_REQUIREMENTS
-    assert "初回接触" in _GREETING_PROMPT_REQUIREMENTS
-    assert "優先順位" in _GREETING_PROMPT_REQUIREMENTS
-    assert "80〜180" in _GREETING_PROMPT_REQUIREMENTS
-    assert "例文はそのままコピーせず" in _GREETING_PROMPT_REQUIREMENTS
-    assert "煽" in _GREETING_PROMPT_REQUIREMENTS
-    assert "やわらかく書いて" in _GREETING_PROMPT_REQUIREMENTS
-    assert "お気軽" in _GREETING_PROMPT_REQUIREMENTS
-    assert "ミラーリング" in _GREETING_SYSTEM_PROMPT
+    assert "60〜120" in _GREETING_PROMPT_REQUIREMENTS
+    assert "直前の bot 返答" in _GREETING_PROMPT_REQUIREMENTS
+    assert "例（短い呼びかけ" not in _GREETING_PROMPT_REQUIREMENTS
+    assert "禁止（不自然" not in _GREETING_PROMPT_REQUIREMENTS
+    assert "自然な続き" in _GREETING_SYSTEM_PROMPT
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_llm_prompt_includes_first_contact_flag(mock_chat):
+def test_greeting_service_context_includes_policy_and_limitations():
+    block = _greeting_service_context_block()
+    assert "診断・処方" in block
+    assert "本ツールについて" in block
+    assert "制限:" in block
+
+
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_llm_prompt_includes_first_contact_flag(mock_create):
     mock_resp = MagicMock()
     mock_resp.choices = [MagicMock(message=MagicMock(content="やあ！"))]
-    mock_chat.return_value = mock_resp
+    mock_create.return_value = mock_resp
     generate_greeting_text(MagicMock(), "やあ", history=[])
-    user_prompt = mock_chat.call_args[0][2][1]["content"]
+    user_prompt = mock_create.call_args.kwargs["messages"][1]["content"]
     assert "【初回接触】" in user_prompt
     assert "はい" in user_prompt
-    assert "初回接触の追加要件" in user_prompt
+    assert "【今回の要点】" in user_prompt
 
     history = [
         {"type": "bot", "greeting": True, "content": "こんにちは"},
     ]
-    generate_greeting_text(MagicMock(), "おい", history=history)
-    user_prompt = mock_chat.call_args[0][2][1]["content"]
+    generate_greeting_text(MagicMock(), "やあ", history=history)
+    user_prompt = mock_create.call_args.kwargs["messages"][1]["content"]
     assert "いいえ" in user_prompt.split("【初回接触】")[1].split("\n")[1]
-    assert "継続接触の追加要件" in user_prompt
     assert "【会話の文脈】" in user_prompt
 
 
@@ -85,7 +88,6 @@ def test_format_concierge_context_block_warns_on_repeated_greeting():
     ]
     block3 = format_concierge_context_block(triple, "やあ", mode="greeting")
     assert "3 回目" in block3
-    assert "また来てくれて" in block3
 
 
 @patch("src.agents.concierge_agent.concierge_chat")
@@ -122,30 +124,166 @@ def test_infer_is_first_greeting_contact():
         ]
     ) is False
     assert infer_is_first_greeting_contact(
-        [{"type": "user", "content": "頭痛"}]
+        [{"type": "user", "content": "やあ"}]
     ) is True
+    assert infer_is_first_greeting_contact(
+        [{"type": "user", "content": "頭痛"}]
+    ) is False
+    assert infer_is_first_greeting_contact(
+        [
+            {"type": "user", "content": "花粉症で頭痛"},
+            {"type": "bot", "content": "推奨結果"},
+            {"type": "user", "content": "おい"},
+        ],
+        user_text="おい",
+    ) is False
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_llm_prompt_includes_brand_guidelines(mock_chat):
+def test_extract_substantive_user_topics_excludes_callouts():
+    msgs = [
+        {"type": "user", "content": "やあ"},
+        {"type": "bot", "content": "hi", "greeting": True},
+        {"type": "user", "content": "おい"},
+        {"type": "user", "content": "花粉症で頭痛"},
+    ]
+    assert _extract_substantive_user_topics(msgs) == ["花粉症で頭痛"]
+
+
+def test_is_short_impatient_callout():
+    assert is_short_impatient_callout("おい")
+    assert is_short_impatient_callout("  ねえ  ")
+    assert not is_short_impatient_callout("こんにちは")
+
+
+def test_greeting_response_too_short():
+    assert greeting_response_too_short("おい、どう？", is_first=True)
+    assert not greeting_response_too_short(
+        "お声がけありがとうございます。こちらは市販薬の相談窓口です。頭痛やのどの痛み、鼻水、胃の不調など、お気軽にご相談ください。",
+        is_first=True,
+    )
+
+
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_llm_uses_greeting_role_and_temperature(mock_create):
     mock_resp = MagicMock()
     mock_resp.choices = [MagicMock(message=MagicMock(content="こんにちは。"))]
-    mock_chat.return_value = mock_resp
+    mock_create.return_value = mock_resp
+    generate_greeting_text(MagicMock(), "やあ", history=[])
+    kwargs = mock_create.call_args.kwargs
+    assert kwargs.get("model_role") == "concierge_greeting"
+    assert kwargs.get("temperature") is not None
+    assert kwargs.get("max_tokens") >= 256
+
+
+def test_greeting_responses_too_similar_detects_same_opening():
+    a = "お声がけありがとうございます。何かお困りでしょうか？"
+    b = "お声がけありがとうございます。続きがあればお聞かせください。"
+    assert greeting_responses_too_similar(a, b)
+
+
+def test_greeting_responses_too_similar():
+    a = "どうされましたか。焦らなくて大丈夫です、困っていることをそのまま教えてください。"
+    assert greeting_responses_too_similar(a, a)
+    assert greeting_responses_too_similar(a, a.replace("。", ""))
+    assert not greeting_responses_too_similar(
+        "お声がけありがとうございます。何かお困りでしょうか？",
+        "はい、どうぞ。続きがあればお聞かせください。",
+    )
+
+
+def test_sanitize_greeting_response_strips_rude_mirroring():
+    raw = "おい、こちらは市販薬の相談窓口です。お気軽にどうぞ。"
+    cleaned = sanitize_greeting_response(raw, "おい")
+    assert not cleaned.startswith("おい")
+
+
+def test_sanitize_greeting_response_replaces_hai_dozo_on_callout():
+    raw = "はい、どうぞ。気になる症状を教えてください。"
+    cleaned = sanitize_greeting_response(raw, "おい")
+    assert not cleaned.startswith("はい、どうぞ")
+    assert cleaned.endswith("気になる症状を教えてください。")
+
+
+def test_sanitize_greeting_response_replaces_kochira_ni_imasu():
+    raw = "はい、こちらにいます。花粉症の頭痛のことも含めて、お聞かせください。"
+    cleaned = sanitize_greeting_response(raw, "おい")
+    assert "こちらにいます" not in cleaned
+    assert "花粉症" in cleaned
+    assert not cleaned.startswith("はい、こちらにいます")
+
+
+@patch("src.core.llm_client.chat_completion_create")
+def test_short_callout_retries_when_same_as_last_bot(mock_create):
+    duplicate = "どうされましたか。焦らなくて大丈夫です、困っていることをそのまま教えてください。"
+    alt = (
+        "呼びかけありがとうございます。"
+        "続きのご相談があれば、気になる症状やいつからかを短くでもお聞かせください。"
+        "市販薬の候補を一緒に見ていきます。"
+    )
+    mock_resp_dup = MagicMock()
+    mock_resp_dup.choices = [MagicMock(message=MagicMock(content=duplicate))]
+    mock_resp_alt = MagicMock()
+    mock_resp_alt.choices = [MagicMock(message=MagicMock(content=alt))]
+    mock_create.side_effect = [mock_resp_dup, mock_resp_alt]
+    history = [
+        {"type": "user", "content": "やあ"},
+        {"type": "bot", "greeting": True, "content": duplicate},
+    ]
+    text, used = generate_greeting_text(MagicMock(), "おい", history=history)
+    assert mock_create.call_count == 2
+    assert used is True
+    assert text == alt
+
+
+@patch("src.core.llm_client.chat_completion_create")
+def test_short_callout_uses_llm(mock_create):
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(
+            message=MagicMock(
+                content=(
+                    "お声がけありがとうございます。花粉症の頭痛の続きでしたら、"
+                    "いつ頃から・どのくらい続いているかも含めて、お気軽にお聞かせください。"
+                )
+            )
+        )
+    ]
+    mock_create.return_value = mock_resp
+    history = [
+        {"type": "user", "content": "花粉症で頭痛"},
+        {"type": "bot", "content": "推奨結果"},
+    ]
+    text, used = generate_greeting_text(MagicMock(), "おい", history=history)
+    assert mock_create.call_count == 1
+    assert used is True
+    assert "花粉症" in text
+    user_prompt = mock_create.call_args.kwargs["messages"][1]["content"]
+    assert "本ツールについて" in user_prompt
+
+
+def test_build_short_callout_greeting_text_avoids_duplicate():
+    prev = "お声がけありがとうございます。何かお困りのことがあれば、お聞かせください。"
+    alt = build_short_callout_greeting_text(is_first=False, exclude=prev)
+    assert not greeting_responses_too_similar(alt, prev)
+
+
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_llm_prompt_includes_brand_guidelines(mock_create):
+    mock_resp = MagicMock()
+    mock_resp.choices = [MagicMock(message=MagicMock(content="こんにちは。"))]
+    mock_create.return_value = mock_resp
     generate_greeting_text(MagicMock(), "やあ")
-    user_prompt = mock_chat.call_args[0][2][1]["content"]
+    user_prompt = mock_create.call_args.kwargs["messages"][1]["content"]
     assert "市販薬" in user_prompt
-    assert "ミラーリング" in user_prompt
-    assert "寄り添" in user_prompt
-    assert "会話の継続" in user_prompt
-    system_prompt = mock_chat.call_args[0][2][0]["content"]
-    assert "ミラーリング" in system_prompt
+    system_prompt = mock_create.call_args.kwargs["messages"][0]["content"]
+    assert "自然な続き" in system_prompt
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_llm_prompt_expands_sage_status_history(mock_chat):
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_llm_prompt_expands_sage_status_history(mock_create):
     mock_resp = MagicMock()
     mock_resp.choices = [MagicMock(message=MagicMock(content="お声がけありがとうございます。何かお困りでしょうか？"))]
-    mock_chat.return_value = mock_resp
+    mock_create.return_value = mock_resp
     history = [
         {"type": "user", "content": "やー"},
         {
@@ -158,44 +296,42 @@ def test_greeting_llm_prompt_expands_sage_status_history(mock_chat):
             },
         },
     ]
-    generate_greeting_text(MagicMock(), "おい", history=history)
-    user_prompt = mock_chat.call_args[0][2][1]["content"]
+    generate_greeting_text(MagicMock(), "やあ", history=history)
+    user_prompt = mock_create.call_args.kwargs["messages"][1]["content"]
     assert "市販薬の相談ツールです" in user_prompt
     assert "sage_status" not in user_prompt
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_payload_uses_llm_by_default(mock_chat):
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_payload_uses_llm_by_default(mock_create):
     mock_resp = MagicMock()
     mock_resp.choices = [
         MagicMock(
             message=MagicMock(
                 content=(
                     "やあ、こんにちは。こちらは市販薬の相談窓口です。"
-                    "頭痛やのどの痛みなど、お気軽にご相談ください。"
+                    "頭痛やのどの痛み、鼻水、胃の不調など、気になる症状をお気軽にご相談ください。"
                 )
             )
         )
     ]
-    mock_chat.return_value = mock_resp
+    mock_create.return_value = mock_resp
     client = MagicMock()
     p = build_concierge_payload("greeting", "やあ", client)
     assert p["content_format"] == "text"
     assert p["llm_used"] is True
     assert p.get("greeting") is True
-    mock_chat.assert_called_once()
+    mock_create.assert_called_once()
 
 
-@patch("src.agents.concierge_agent.concierge_chat")
-def test_greeting_payload_falls_back_to_template_on_llm_failure(mock_chat):
-    mock_chat.side_effect = RuntimeError("llm unavailable")
+@patch("src.core.llm_client.chat_completion_create")
+def test_greeting_payload_falls_back_to_template_on_llm_failure(mock_create):
+    mock_create.side_effect = RuntimeError("llm unavailable")
     client = MagicMock()
     p = build_concierge_payload("greeting", "やあ", client)
     assert p["llm_used"] is False
     assert p.get("greeting") is True
-    assert "やわらかく" not in p["content"]
-    assert "具体的に" not in p["content"]
-    mock_chat.assert_called_once()
+    mock_create.assert_called_once()
 
 
 def test_architecture_payload_card():

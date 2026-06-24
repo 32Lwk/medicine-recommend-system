@@ -169,6 +169,16 @@ def validate_and_block_input(session, client, user_message, sid):
             get_session_from_db_fn=get_session_from_db,
             schedule_async_extraction=not (sid and is_line_session_id(sid)),
         )
+        from src.utils.user_attribute_registration import try_early_attribute_registration_ui
+
+        try_early_attribute_registration_ui(
+            session,
+            sid,
+            sanitized_message,
+            save_to_db_fn=save_session_to_db,
+            get_session_from_db_fn=get_session_from_db,
+            client_info=client,
+        )
     except Exception as e:
         logger.warning(f"⚠️ ユーザー属性登録でエラー: {e}")
 

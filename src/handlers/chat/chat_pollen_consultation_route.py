@@ -7,10 +7,8 @@ from datetime import datetime
 from typing import Any, Optional
 
 from src.services.session_manager import (
-    append_user_message,
     get_session_from_db,
     save_session_to_db,
-    was_last_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,12 +40,6 @@ def run_otc_allergy_consultation_entry(
     from src.services.sage_bot_response import build_counseling_bot
 
     text = (user_message or "").strip()
-    if text and not was_last_user_message(session, text):
-        append_user_message(session, text)
-
-    from src.utils.user_attribute_registration import append_user_attribute_registration_notice
-
-    append_user_attribute_registration_notice(session, sid)
 
     response_text = build_allergy_entry_response(text)
     start_counseling_mode(session, "allergy", _ALLERGY_INITIAL_QUESTIONS)

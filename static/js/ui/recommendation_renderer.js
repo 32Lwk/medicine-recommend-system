@@ -666,7 +666,7 @@
 
     if (diag && diag.doctor_consultation) {
 
-      var consult = stripHtmlText(diag.doctor_consultation);
+      var consult = String(diag.doctor_consultation || '').trim();
 
       if (consult) {
 
@@ -674,7 +674,9 @@
 
           '<div class="ui-alert ui-alert--danger ui-reco-doctor">' +
 
-            '<strong>🏥 ' + esc(t('doctorConsultTitle')) + '</strong><br>' + esc(consult) +
+            '<strong>🏥 ' + esc(t('doctorConsultTitle')) + '</strong><br>' +
+
+            esc(consult).replace(/\n/g, '<br>') +
 
           '</div>'
 

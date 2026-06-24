@@ -542,132 +542,135 @@ def run_recommendation_flow(
         # 登録された情報をまとめて通知（成功・失敗に関係なく）
         logger.info(f"📢 通知メッセージ生成処理を開始")
         try:
-            registered_items = []
-            for key, info in registered_info.items():
-                if info['registered']:
-                    registered_items.append(info['message'])
-                elif user_attributes.get(key) is not None:
-                    # 既に登録済みの情報も表示
-                    if key == 'gender':
-                        registered_items.append(f'性別: {user_attributes.get(key)}（既に登録済み）')
-                    elif key == 'age':
-                        registered_items.append(f'年齢: {user_attributes.get(key)}歳（既に登録済み）')
-                    elif key == 'pregnant':
-                        if user_attributes.get(key):
-                            registered_items.append('妊娠状態: 妊娠中（既に登録済み）')
-                        else:
-                            registered_items.append('妊娠状態: 妊娠していない（既に登録済み）')
-                    elif key == 'breastfeeding':
-                        if user_attributes.get(key):
-                            registered_items.append('授乳状態: 授乳中（既に登録済み）')
-                        else:
-                            registered_items.append('授乳状態: 授乳していない（既に登録済み）')
-                    elif key == 'allergies':
-                        value = user_attributes.get(key, [])
-                        if value:
-                            registered_items.append(
-                                f'アレルギー: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
-                            )
-                    elif key == 'medical_history':
-                        from src.utils.allergen_attributes import filter_display_medical_history
+            if not session.get("_user_attr_notice_appended"):
+                registered_items = []
+                for key, info in registered_info.items():
+                    if info['registered']:
+                        registered_items.append(info['message'])
+                    elif user_attributes.get(key) is not None:
+                        # 既に登録済みの情報も表示
+                        if key == 'gender':
+                            registered_items.append(f'性別: {user_attributes.get(key)}（既に登録済み）')
+                        elif key == 'age':
+                            registered_items.append(f'年齢: {user_attributes.get(key)}歳（既に登録済み）')
+                        elif key == 'pregnant':
+                            if user_attributes.get(key):
+                                registered_items.append('妊娠状態: 妊娠中（既に登録済み）')
+                            else:
+                                registered_items.append('妊娠状態: 妊娠していない（既に登録済み）')
+                        elif key == 'breastfeeding':
+                            if user_attributes.get(key):
+                                registered_items.append('授乳状態: 授乳中（既に登録済み）')
+                            else:
+                                registered_items.append('授乳状態: 授乳していない（既に登録済み）')
+                        elif key == 'allergies':
+                            value = user_attributes.get(key, [])
+                            if value:
+                                registered_items.append(
+                                    f'アレルギー: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
+                                )
+                        elif key == 'medical_history':
+                            from src.utils.allergen_attributes import filter_display_medical_history
 
-                        value = filter_display_medical_history(user_attributes.get(key, []))
-                        if value:
-                            registered_items.append(
-                                f'既往症: {", ".join(value)}（既に登録済み）'
-                            )
-                    elif key == 'current_medications':
-                        value = user_attributes.get(key, [])
-                        if value:
-                            registered_items.append(
-                                f'服用中の薬: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
-                            )
-                        
-            # 妊娠可能性が検出された場合、通知メッセージに追加
-            pregnancy_possible_value = user_attributes.get('pregnancy_possible')
-            if pregnancy_possible_value in ['high', 'low']:
-                # 妊娠可能性が検出された場合、「可能性あり」として表示
-                registered_items.append('妊娠状態: 可能性あり')
-                        
-            # 登録された情報がある場合、またはエラーが発生した場合に通知メッセージを生成
-            if registered_items or not info_registration_success:
-                # 通知メッセージを生成
-                if registered_items:
-                    info_message = "💡 以下の情報を登録しました：\n" + "\n".join([f"・{item}" for item in registered_items])
-                else:
-                    info_message = "💡 情報登録を試行しましたが、新しい情報は検出されませんでした。"
-                            
-                if not info_registration_success:
-                    info_message += "\n\n⚠️ 情報登録処理中にエラーが発生しましたが、医薬品推奨を続行します。"
-                            
-                # 通知メッセージをセッションに追加（即座に表示されるように）
-                if 'messages' not in session:
-                    session['messages'] = []
-                            
-                import html
-                from src.services.sage_bot_response import build_bot_response
-                from src.services.status_diagnosis_builder import build_user_info_registration_status
+                            value = filter_display_medical_history(user_attributes.get(key, []))
+                            if value:
+                                registered_items.append(
+                                    f'既往症: {", ".join(value)}（既に登録済み）'
+                                )
+                        elif key == 'current_medications':
+                            value = user_attributes.get(key, [])
+                            if value:
+                                registered_items.append(
+                                    f'服用中の薬: {", ".join(value) if isinstance(value, list) else value}（既に登録済み）'
+                                )
 
-                escaped_info_message = html.escape(info_message)
-                info_message_html = escaped_info_message.replace('\n', '<br>')
-                legacy_content = (
-                    f'<div class="chat-response user-info-notification">'
-                    f'<p>{info_message_html}</p>'
-                    f'<button class="edit-info-btn" onclick="editUserInfo()">情報を修正</button></div>'
-                )
-                plain_items = [
-                    item.lstrip("・") if item.startswith("・") else item
-                    for item in registered_items
-                ]
-                sage_diag = build_user_info_registration_status(
-                    plain_items,
-                    had_error=not info_registration_success,
-                ).to_client_dict()
-                sid_notify = session.get('_id')
-                info_bot_response = build_bot_response(
-                    session,
-                    sid_notify,
-                    sage_diagnosis=sage_diag,
-                    legacy_content=legacy_content,
-                    user_info_notification=True,
-                )
-                # ユーザーメッセージの直後に追加（最後のユーザーメッセージの後）
-                user_msg_index = -1
-                for i in range(len(session['messages']) - 1, -1, -1):
-                    if session['messages'][i].get('type') == 'user':
-                        user_msg_index = i
-                        break
-                            
-                if user_msg_index >= 0:
-                    # ユーザーメッセージの直後に挿入
-                    session['messages'].insert(user_msg_index + 1, info_bot_response)
-                else:
-                    # ユーザーメッセージが見つからない場合は最後に追加
-                    session['messages'].append(info_bot_response)
-                session.modified = True
-                logger.info(f"📢 情報登録通知メッセージを追加: {len(registered_items)}件の情報を登録（user_msg_index={user_msg_index}）")
-                            
-                # DBにも保存
-                sid = session.get('_id')
-                if sid:
-                    session_data = get_session_from_db(sid)
-                    if session_data:
-                        if 'messages' not in session_data:
-                            session_data['messages'] = []
-                        # DBでも同様にユーザーメッセージの直後に挿入
-                        user_msg_index_db = -1
-                        for i in range(len(session_data['messages']) - 1, -1, -1):
-                            if session_data['messages'][i].get('type') == 'user':
-                                user_msg_index_db = i
-                                break
-                                    
-                        if user_msg_index_db >= 0:
-                            session_data['messages'].insert(user_msg_index_db + 1, info_bot_response)
-                        else:
-                            session_data['messages'].append(info_bot_response)
-                        session_data['last_activity'] = datetime.now()
-                        save_session_to_db(sid, session_data)
-                        logger.info(f"💾 情報登録通知メッセージをDBに保存（user_msg_index_db={user_msg_index_db}）")
+                # 妊娠可能性が検出された場合、通知メッセージに追加
+                pregnancy_possible_value = user_attributes.get('pregnancy_possible')
+                if pregnancy_possible_value in ['high', 'low']:
+                    # 妊娠可能性が検出された場合、「可能性あり」として表示
+                    registered_items.append('妊娠状態: 可能性あり')
+
+                # 登録された情報がある場合、またはエラーが発生した場合に通知メッセージを生成
+                if registered_items or not info_registration_success:
+                    # 通知メッセージを生成
+                    if registered_items:
+                        info_message = "💡 以下の情報を登録しました：\n" + "\n".join([f"・{item}" for item in registered_items])
+                    else:
+                        info_message = "💡 情報登録を試行しましたが、新しい情報は検出されませんでした。"
+
+                    if not info_registration_success:
+                        info_message += "\n\n⚠️ 情報登録処理中にエラーが発生しましたが、医薬品推奨を続行します。"
+
+                    # 通知メッセージをセッションに追加（即座に表示されるように）
+                    if 'messages' not in session:
+                        session['messages'] = []
+
+                    import html
+                    from src.services.sage_bot_response import build_bot_response
+                    from src.services.status_diagnosis_builder import build_user_info_registration_status
+
+                    escaped_info_message = html.escape(info_message)
+                    info_message_html = escaped_info_message.replace('\n', '<br>')
+                    legacy_content = (
+                        f'<div class="chat-response user-info-notification">'
+                        f'<p>{info_message_html}</p>'
+                        f'<button class="edit-info-btn" onclick="editUserInfo()">情報を修正</button></div>'
+                    )
+                    plain_items = [
+                        item.lstrip("・") if item.startswith("・") else item
+                        for item in registered_items
+                    ]
+                    sage_diag = build_user_info_registration_status(
+                        plain_items,
+                        had_error=not info_registration_success,
+                    ).to_client_dict()
+                    sid_notify = session.get('_id')
+                    info_bot_response = build_bot_response(
+                        session,
+                        sid_notify,
+                        sage_diagnosis=sage_diag,
+                        legacy_content=legacy_content,
+                        user_info_notification=True,
+                    )
+                    # ユーザーメッセージの直後に追加（最後のユーザーメッセージの後）
+                    user_msg_index = -1
+                    for i in range(len(session['messages']) - 1, -1, -1):
+                        if session['messages'][i].get('type') == 'user':
+                            user_msg_index = i
+                            break
+
+                    if user_msg_index >= 0:
+                        # ユーザーメッセージの直後に挿入
+                        session['messages'].insert(user_msg_index + 1, info_bot_response)
+                    else:
+                        # ユーザーメッセージが見つからない場合は最後に追加
+                        session['messages'].append(info_bot_response)
+                    session.modified = True
+                    logger.info(f"📢 情報登録通知メッセージを追加: {len(registered_items)}件の情報を登録（user_msg_index={user_msg_index}）")
+
+                    # DBにも保存
+                    sid = session.get('_id')
+                    if sid:
+                        session_data = get_session_from_db(sid)
+                        if session_data:
+                            if 'messages' not in session_data:
+                                session_data['messages'] = []
+                            # DBでも同様にユーザーメッセージの直後に挿入
+                            user_msg_index_db = -1
+                            for i in range(len(session_data['messages']) - 1, -1, -1):
+                                if session_data['messages'][i].get('type') == 'user':
+                                    user_msg_index_db = i
+                                    break
+
+                            if user_msg_index_db >= 0:
+                                session_data['messages'].insert(user_msg_index_db + 1, info_bot_response)
+                            else:
+                                session_data['messages'].append(info_bot_response)
+                            session_data['last_activity'] = datetime.now()
+                            save_session_to_db(sid, session_data)
+                            logger.info(f"💾 情報登録通知メッセージをDBに保存（user_msg_index_db={user_msg_index_db}）")
+            else:
+                logger.info("📢 初期段階で属性通知済み — 推奨フローの通知をスキップ")
         except Exception as e:
             logger.info(f"⚠️ 通知メッセージの生成でエラー: {str(e)}")
                     

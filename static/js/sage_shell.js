@@ -103,11 +103,16 @@
   window.SageShell = {
     isSage: isSage,
     refreshSafetyRail: function (attrs) {
-      if (attrs && window.SafetyRail && window.SafetyRail.normalizeAttrs) {
-        attrs = window.SafetyRail.normalizeAttrs(attrs);
+      var normalized = attrs;
+      if (normalized && window.SafetyRail && window.SafetyRail.normalizeAttrs) {
+        normalized = window.SafetyRail.normalizeAttrs(normalized);
       }
-      if (attrs) window.__lastUserAttributes = attrs;
-      if (window.SafetyRail) window.SafetyRail.mount(attrs || window.__lastUserAttributes || {});
+      if (normalized && Object.keys(normalized).length > 0) {
+        window.__lastUserAttributes = normalized;
+      }
+      if (window.SafetyRail) {
+        window.SafetyRail.mount(window.__lastUserAttributes || {});
+      }
     },
     refreshHeaderPhase: refreshHeaderPhase,
     updateHeaderSymptoms: function () {

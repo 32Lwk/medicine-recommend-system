@@ -289,6 +289,14 @@ class TestDiagnosisDetection(unittest.TestCase):
         self.assertIsNone(diagnosis_type)
         self.assertIsNone(response)
 
+    def test_033b_hay_fever_with_explicit_symptom_skips_diagnosis_block(self):
+        """花粉症+頭痛など具体症状 — 診断名ブロックせず症状フローへ"""
+        text = "花粉症で、頭が痛いです"
+        is_diagnosis, diagnosis_type, response = is_diagnosis_term(text)
+        self.assertFalse(is_diagnosis, "環境アレルギー+具体症状は診断名ブロックしない")
+        self.assertIsNone(diagnosis_type)
+        self.assertIsNone(response)
+
     def test_034_hay_fever_with_chronic_comorbidity(self):
         """花粉症+持病併記は診断名ブロックを維持"""
         text = "花粉症と糖尿病です"

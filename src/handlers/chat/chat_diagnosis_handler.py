@@ -17,6 +17,8 @@ from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
     append_user_message,
+    has_diagnosis_notice_for_user,
+    should_skip_append_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -67,6 +69,16 @@ def handle_diagnosis_if_detected(
             f"should_show_counseling={should_show_counseling}"
         )
 
+        if has_diagnosis_notice_for_user(session, sanitized_message):
+            logger.info(
+                "🏥 診断名通知済み — 重複スキップ: %s",
+                sanitized_message[:80],
+            )
+            if has_side_effect or not should_show_counseling:
+                message_count = len(session.get("messages") or [])
+                return ({"status": "ok", "message_count": message_count}, 200)
+            return None
+
         from src.core.diagnosis_guard import merge_diagnosis_session
 
         merge_diagnosis_session(session, diagnosis_type, diagnosis_response)
@@ -77,12 +89,17 @@ def handle_diagnosis_if_detected(
             user_attributes = session.get("user_attributes", {})
             if "medical_history" not in user_attributes:
                 user_attributes["medical_history"] = []
+            from src.utils.allergen_attributes import (
+                is_environmental_allergy_label,
+                normalize_environmental_allergens,
+            )
+
             for diagnosis in detected_diagnoses:
+                if is_environmental_allergy_label(diagnosis):
+                    continue
                 if diagnosis and diagnosis not in user_attributes["medical_history"]:
                     user_attributes["medical_history"].append(diagnosis)
                     logger.info(f"📝 診断名を既往症として登録: {diagnosis}")
-            from src.utils.allergen_attributes import normalize_environmental_allergens
-
             user_attributes = normalize_environmental_allergens(user_attributes)
             session["user_attributes"] = user_attributes
             session.modified = True
@@ -93,8 +110,15 @@ def handle_diagnosis_if_detected(
                     session_data["last_activity"] = datetime.now()
                     save_session_to_db(sid, session_data)
 
-        user_msg = append_user_message(session, sanitized_message)
-        if sid:
+        if should_skip_append_user_message(session, sanitized_message):
+            user_msg = None
+            for msg in reversed(session.get("messages") or []):
+                if msg.get("type") == "user" and msg.get("content") == sanitized_message:
+                    user_msg = msg
+                    break
+        else:
+            user_msg = append_user_message(session, sanitized_message)
+        if sid and user_msg:
             session_data = get_session_from_db(sid)
             if not session_data:
                 session_data = {

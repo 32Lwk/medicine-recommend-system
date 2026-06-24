@@ -44,6 +44,27 @@ def _is_otc_consultation_entry(
     return all(d in OTC_CONSULTATION_ENTRY_DIAGNOSES for d in detected_names)
 
 
+def _should_skip_environmental_allergy_diagnosis_block(
+    text: str,
+    detected_names: list,
+    *,
+    has_side_effect: bool,
+    has_high_risk_context: bool,
+    has_treatment: bool,
+) -> bool:
+    """花粉症+頭痛など — allergies で管理し診断名カウンセリング・Physical ブロックを避ける。"""
+    if has_side_effect or has_high_risk_context or has_treatment:
+        return False
+    if not detected_names or not all(d in OTC_CONSULTATION_ENTRY_DIAGNOSES for d in detected_names):
+        return False
+    try:
+        from src.utils.input_helpers import has_explicit_symptom_signal
+
+        return has_explicit_symptom_signal(text)
+    except ImportError:
+        return False
+
+
 def is_diagnosis_only(text: str, diagnosis: str) -> bool:
     """
     テキストが診断名のみ（症状の記述がない）かどうかを判定する。
@@ -697,6 +718,19 @@ def is_diagnosis_term(text):
     ):
         logger.info(
             "🌸 OTC相談入口: detected=%s — 診断名ブロックをスキップ",
+            all_diagnosis_names,
+        )
+        return (False, None, None)
+
+    if _should_skip_environmental_allergy_diagnosis_block(
+        text,
+        all_diagnosis_names,
+        has_side_effect=has_side_effect,
+        has_high_risk_context=has_high_risk_context,
+        has_treatment=has_treatment,
+    ):
+        logger.info(
+            "🌸 環境アレルギー+具体症状: detected=%s — 診断名ブロックをスキップ",
             all_diagnosis_names,
         )
         return (False, None, None)

@@ -143,6 +143,8 @@ _LLM_INTERNAL_KWARGS = frozenset({"session_id", "on_delta"})
 def _prepare_chat_completion_kwargs(model: str, kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """Chat Completions 向けにトークン上限・temperature を正規化する。"""
     prepared = {k: v for k, v in kwargs.items() if k not in _LLM_INTERNAL_KWARGS}
+    # Chat Completions API は reasoning_effort 非対応（Responses API 専用）
+    prepared.pop("reasoning_effort", None)
     if "max_tokens" in prepared and _uses_max_completion_tokens(model):
         prepared["max_completion_tokens"] = prepared.pop("max_tokens")
     if not _supports_custom_temperature(model) and "temperature" in prepared:
@@ -163,6 +165,7 @@ def _extract_responses_text(resp: Any) -> str:
 
 
 def _responses_create(client: OpenAI, model: str, messages: List[Dict[str, str]], **kwargs: Any) -> _CompletionAdapter:
+    reasoning_effort = kwargs.pop("reasoning_effort", None)
     kwargs = _prepare_chat_completion_kwargs(model, kwargs)
     req: Dict[str, Any] = {"model": model, "input": messages}
     if "max_tokens" in kwargs:
@@ -171,6 +174,8 @@ def _responses_create(client: OpenAI, model: str, messages: List[Dict[str, str]]
         req["max_output_tokens"] = kwargs.pop("max_completion_tokens")
     if "temperature" in kwargs:
         req["temperature"] = kwargs["temperature"]
+    if reasoning_effort:
+        req["reasoning"] = {"effort": reasoning_effort}
     rf = kwargs.pop("response_format", None)
     if rf and rf.get("type") == "json_object":
         req["text"] = {"format": {"type": "json_object"}}
@@ -188,7 +193,7 @@ def _invoke_llm(
     messages: List[Dict[str, str]],
     model_role: Optional[str] = None,
     **kwargs: Any,
-) -> Any:
+) -> tuple[Any, str]:
     use_resp = (
         hasattr(client, "responses")
         and (
@@ -200,11 +205,16 @@ def _invoke_llm(
         kwargs.setdefault("timeout", get_role_timeout_sec(model_role))
     if use_resp:
         try:
-            return _responses_create(client, model, messages, **kwargs)
+            return _responses_create(client, model, messages, **kwargs), "responses"
         except Exception as e:
-            logger.warning("Responses API failed, fallback to Chat Completions: %s", e)
+            logger.warning(
+                "Responses API failed, fallback to Chat Completions: role=%s model=%s err=%s",
+                model_role,
+                model,
+                e,
+            )
     chat_kwargs = _prepare_chat_completion_kwargs(model, kwargs)
-    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs)
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
 
 
 def chat_completion_create(
@@ -219,10 +229,9 @@ def chat_completion_create(
     _budget_guard_or_raise()
     resolved = model or get_model(model_role)
     t0 = time.time()
-    response = _invoke_llm(
+    response, api_kind = _invoke_llm(
         client, model=resolved, messages=messages, model_role=model_role, **kwargs
     )
-    api_kind = "responses" if use_responses_api_for_role(model_role) else "completions"
     _record_response(resolved, path, (time.time() - t0) * 1000, response, api_kind=api_kind)
     return response
 

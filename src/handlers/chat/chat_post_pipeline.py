@@ -136,6 +136,7 @@ def run_chat_post_pipeline(
         return resp if resp else ({"status": "ok", "message_count": 0}, 200)
 
     session.setdefault("messages", [])
+    session.pop("_user_attr_notice_appended", None)
 
     mark_pipeline_step("session_db_read")
     session_data_for_ai = _load_session_snapshot_for_pipeline(sid)

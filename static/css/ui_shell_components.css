@@ -2365,6 +2365,7 @@ body:has(#app > .ui-app) #app {
 }
 
 .ui-alert--danger { background: #ffebee; border: 2px solid var(--ui-danger); }
+.ui-reco-doctor { white-space: pre-line; line-height: 1.55; }
 .ui-alert--warn { background: #fff3e0; border: 2px solid #ff9800; }
 .ui-alert--info { background: #e3f2fd; border-left: 4px solid var(--ui-accent); }
 .ui-alert--caution { background: #fff8e1; border-left: 4px solid var(--ui-warn); }

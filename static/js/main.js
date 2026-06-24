@@ -1349,13 +1349,60 @@
         }
     }
 
+    let lastSyncedUserAttributesFingerprint = '';
+
+    function userAttributesFingerprint(attrs) {
+        if (!attrs || typeof attrs !== 'object') {
+            return '';
+        }
+        try {
+            const normalized = window.SafetyRail && window.SafetyRail.normalizeAttrs
+                ? window.SafetyRail.normalizeAttrs(attrs)
+                : attrs;
+            return JSON.stringify(normalized || {});
+        } catch (e) {
+            return '';
+        }
+    }
+
     function refreshSageSafetyRail(attrs) {
         if (!isSageUi() || !window.SageShell) return;
-        if (attrs && window.SafetyRail && window.SafetyRail.normalizeAttrs) {
-            attrs = window.SafetyRail.normalizeAttrs(attrs);
+        let normalized = attrs;
+        if (normalized && window.SafetyRail && window.SafetyRail.normalizeAttrs) {
+            normalized = window.SafetyRail.normalizeAttrs(normalized);
         }
-        if (attrs) window.__lastUserAttributes = attrs;
-        window.SageShell.refreshSafetyRail(attrs || window.__lastUserAttributes || {});
+        if (normalized && Object.keys(normalized).length > 0) {
+            window.__lastUserAttributes = normalized;
+            lastSyncedUserAttributesFingerprint = userAttributesFingerprint(normalized);
+        }
+        window.SageShell.refreshSafetyRail(window.__lastUserAttributes || {});
+    }
+
+    /** /api/sessions の user_attributes を Safety Rail に即反映（メッセージ同期ブロック中も実行） */
+    function syncSessionUserAttributes(sessionData) {
+        const incoming = sessionData && sessionData.user_attributes;
+        if (!incoming || typeof incoming !== 'object') {
+            return;
+        }
+        let normalized = incoming;
+        if (window.SafetyRail && window.SafetyRail.normalizeAttrs) {
+            normalized = window.SafetyRail.normalizeAttrs(incoming);
+        }
+        if (!normalized || Object.keys(normalized).length === 0) {
+            return;
+        }
+        const merged = Object.assign({}, window.__lastUserAttributes || {}, normalized);
+        const fp = userAttributesFingerprint(merged);
+        if (!fp || fp === '{}' || fp === lastSyncedUserAttributesFingerprint) {
+            return;
+        }
+        lastSyncedUserAttributesFingerprint = fp;
+        refreshSageSafetyRail(merged);
+    }
+
+    function applySessionMetaUpdates(sessionData) {
+        updateSessionSafetyBanners(sessionData);
+        syncSessionUserAttributes(sessionData);
     }
 
     function getLatestRecommendationRoot() {
@@ -5738,13 +5785,53 @@
         return list.slice(baseline);
     }
 
-    /** 今回ターンの user に対する bot がセッション上確定したか */
-    function isCurrentTurnComplete(messages) {
+    /** ユーザー属性登録など、本応答前の中間 bot（処理バブル解除・ターン完了には含めない） */
+    function isInterimTurnBotMessage(message) {
+        if (!message || message.type !== 'bot' || message.error) {
+            return false;
+        }
+        if (message.user_info_notification === true) {
+            return true;
+        }
+        const kind = message.diagnosis && message.diagnosis.kind;
+        return kind === 'user_info_registration' || kind === 'attribute_update_confirmation';
+    }
+
+    function findLastTurnCompletingBotMessage(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        for (let i = list.length - 1; i >= 0; i--) {
+            const m = list[i];
+            if (m && m.type === 'bot' && !m.error && !isInterimTurnBotMessage(m)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    /** 今回ターンの user に対する bot（acceptBot で interim 含否を制御） */
+    function currentTurnHasBotResponse(messages, acceptBot) {
         const pendingUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
         const turn = getCurrentTurnMessages(messages);
         if (turn.length === 0) {
             return false;
         }
+        const botOk = typeof acceptBot === 'function'
+            ? acceptBot
+            : function (m) { return !isInterimTurnBotMessage(m); };
+
+        function sliceHasBot(slice, userIndex) {
+            if (userIndex < 0) {
+                return false;
+            }
+            for (let j = userIndex + 1; j < slice.length; j++) {
+                const followUp = slice[j];
+                if (followUp && followUp.type === 'bot' && !followUp.error && botOk(followUp)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         if (pendingUser) {
             let userIndex = -1;
             for (let i = turn.length - 1; i >= 0; i--) {
@@ -5767,13 +5854,7 @@
                 }
                 return false;
             }
-            for (let j = userIndex + 1; j < turn.length; j++) {
-                const followUp = turn[j];
-                if (followUp && followUp.type === 'bot' && !followUp.error) {
-                    return true;
-                }
-            }
-            return false;
+            return sliceHasBot(turn, userIndex);
         }
         if (isBlockedTurnCompleteInSlice(turn)) {
             return true;
@@ -5783,15 +5864,19 @@
             if (!message || message.type !== 'user') {
                 continue;
             }
-            for (let j = i + 1; j < turn.length; j++) {
-                const followUp = turn[j];
-                if (followUp && followUp.type === 'bot' && !followUp.error) {
-                    return true;
-                }
-            }
-            return false;
+            return sliceHasBot(turn, i);
         }
         return false;
+    }
+
+    /** 中間 bot を含め、今回ターンに bot が1件でもあるか（同期ゲート用） */
+    function hasPartialTurnBotResponse(messages) {
+        return currentTurnHasBotResponse(messages, function () { return true; });
+    }
+
+    /** 今回ターンの user に対する本応答 bot がセッション上確定したか */
+    function isCurrentTurnComplete(messages) {
+        return currentTurnHasBotResponse(messages);
     }
 
     /** 今回ターンの bot 応答が DOM に描画済みか */
@@ -5816,16 +5901,27 @@
         if (!chatMessages) {
             return false;
         }
-        const turnBots = getBotNodesAfterLastUserDom(chatMessages, merged);
-        if (turnBots.length === 0) {
+        const lastBotMsg = findLastTurnCompletingBotMessage(merged);
+        if (!lastBotMsg) {
             return false;
         }
-        const lastBot = turnBots[turnBots.length - 1];
+        let lastBot = getMessageNodeByKey(chatMessages, stableMessageKey(lastBotMsg), 'bot');
+        if (!lastBot) {
+            const turnBots = getBotNodesAfterLastUserDom(chatMessages, merged);
+            for (let i = turnBots.length - 1; i >= 0; i--) {
+                if (botNodeTextMatchesMessage(turnBots[i], lastBotMsg)) {
+                    lastBot = turnBots[i];
+                    break;
+                }
+            }
+        }
+        if (!lastBot) {
+            return false;
+        }
         if (isSageBubbleMountedInNode(lastBot)) {
             return true;
         }
-        const lastBotMsg = findLastBotMessage(merged);
-        if (lastBotMsg && isSecurityNoticeBotMessage(lastBotMsg)) {
+        if (isSecurityNoticeBotMessage(lastBotMsg)) {
             return isSecurityNoticeBotNodeVisible(lastBot, lastBotMsg);
         }
         if (lastBot.querySelector(
@@ -7536,7 +7632,7 @@
         } else if (userNodes.length > 0) {
             lastUserNode = userNodes[userNodes.length - 1];
         }
-        const lastBotMsg = findLastBotMessage(messages);
+        const lastBotMsg = findLastTurnCompletingBotMessage(messages);
         if (!lastBotMsg) {
             return userRendered;
         }
@@ -7697,7 +7793,7 @@
         if (!chatMessages) {
             return false;
         }
-        const lastBotMsg = findLastBotMessage(messages) || messages[messages.length - 1];
+        const lastBotMsg = findLastTurnCompletingBotMessage(messages);
         if (!lastBotMsg || lastBotMsg.type !== 'bot') {
             return false;
         }
@@ -7921,7 +8017,7 @@
                 && !isProcessingInFlight()
                 && !isDevPreviewTriggerText(lastUser)
             ) {
-                const orphanBot = findLastBotMessage(merged);
+                const orphanBot = findLastTurnCompletingBotMessage(merged);
                 if (orphanBot && !isChatResponseComplete(merged)) {
                     merged = normalizeTurnTail(merged, orphanBot, null, lastUser);
                 }
@@ -8046,11 +8142,12 @@
     }
 
     function applySessionMessages(sessionData, options) {
+        syncSessionUserAttributes(sessionData);
         let opts = Object.assign({}, options || {});
         if (processingBubbleLocked && !postResponseResolved) {
             const preview = resolveSessionMessages(sessionData || {}, { allowRestore: false });
             if (
-                !isCurrentTurnComplete(preview)
+                !hasPartialTurnBotResponse(preview)
                 && isSubmitting
                 && !awaitingPostResponse
             ) {
@@ -8105,6 +8202,7 @@
 
     /** 10秒ポーリング・デバウンス復旧用: サーバーに応答があるのに DOM 未反映なら強制同期 */
     function applyPeriodicSessionSync(sessionData) {
+        syncSessionUserAttributes(sessionData);
         const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
         if (merged.length === 0) {
             return;
@@ -8277,7 +8375,7 @@
             const sid = getSidFromCookie();
             let payload = donePayload;
             if (payload && !payload.bot_message) {
-                const cachedBot = findLastBotMessage(loadChatCache(sid));
+                const cachedBot = findLastTurnCompletingBotMessage(loadChatCache(sid));
                 if (cachedBot) {
                     payload = Object.assign({}, payload, { bot_message: cachedBot });
                 }
@@ -8294,7 +8392,7 @@
                     resolveSessionMessages({ session_id: sid, messages: loadChatCache(sid) }, { allowRestore: false }),
                     lastUser
                 );
-                const lastBot = findLastBotMessage(merged);
+                const lastBot = findLastTurnCompletingBotMessage(merged);
                 if (lastBot && !isChatResponseComplete(merged)) {
                     merged = normalizeTurnTail(merged, lastBot, null, lastUser);
                     saveChatCache(sid, merged);
@@ -8990,7 +9088,7 @@
                         .then(function () {
                             fetch(withVersion('/api/sessions'), { credentials: 'include' })
                                 .then(function (r) { return r.json(); })
-                                .then(updateSessionSafetyBanners)
+                                .then(applySessionMetaUpdates)
                                 .catch(function () {});
                         })
                         .catch(function () { showErrorMessage('解除に失敗しました'); });
@@ -9017,7 +9115,7 @@
                         .then(function () {
                             fetch(withVersion('/api/sessions'), { credentials: 'include' })
                                 .then(function (r) { return r.json(); })
-                                .then(updateSessionSafetyBanners)
+                                .then(applySessionMetaUpdates)
                                 .catch(function () {});
                         })
                         .catch(function () { showErrorMessage('操作に失敗しました'); });
@@ -9026,6 +9124,7 @@
         }
     }
     window.updateSessionSafetyBanners = updateSessionSafetyBanners;
+    window.syncSessionUserAttributes = syncSessionUserAttributes;
 
     function buildProcessingPollOptions(onUpdate) {
         return {
@@ -10497,6 +10596,7 @@ function appendQaDelta(text, section) {
                     if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken) {
                         return;
                     }
+                    syncSessionUserAttributes(sessionData);
                     const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
                     if (!isChatResponseComplete(merged)) {
                         if (tryNum < 12) {
@@ -10636,6 +10736,7 @@ function appendQaDelta(text, section) {
                         if (onComplete) onComplete();
                         return;
                     }
+                    syncSessionUserAttributes(sessionData);
                     const mergedAfterPost = resolveSessionMessages(sessionData || {});
                     if (mergedAfterPost.length > 0 && isChatResponseComplete(mergedAfterPost)) {
                         rememberLatestBotForFeedback(mergedAfterPost);
@@ -11575,8 +11676,10 @@ function appendQaDelta(text, section) {
             sessionStorage.removeItem('chatSubmitBaselineLength');
         } catch (e) { /* ignore */ }
         lastRenderedMessagesFingerprint = '';
+        lastSyncedUserAttributesFingerprint = '';
         sessionHandoffFromLine = null;
         window.__handoffFromLine = null;
+        window.__lastUserAttributes = {};
     }
 
     // 新しいセッションを開始する関数
@@ -11813,6 +11916,9 @@ function appendQaDelta(text, section) {
         }
         const last = messages[messages.length - 1];
         if (!(last && last.type === 'bot' && !last.error)) {
+            return false;
+        }
+        if (isInterimTurnBotMessage(last)) {
             return false;
         }
         if (hasOutstandingUserTurn(messages)) {

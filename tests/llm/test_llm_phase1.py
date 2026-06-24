@@ -60,6 +60,13 @@ def test_prepare_chat_completion_kwargs_gpt5():
     out55 = _prepare_chat_completion_kwargs("gpt-5.5", {"temperature": 0.3})
     assert "temperature" not in out55
 
+    out_reason = _prepare_chat_completion_kwargs(
+        "gpt-5.4-mini",
+        {"max_tokens": 300, "reasoning_effort": "minimal"},
+    )
+    assert "reasoning_effort" not in out_reason
+    assert out_reason["max_completion_tokens"] == 300
+
 
 def test_prepare_chat_completion_kwargs_legacy():
     from src.core.llm_client import _prepare_chat_completion_kwargs

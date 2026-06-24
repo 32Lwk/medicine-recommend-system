@@ -127,6 +127,66 @@ def register_user_attributes_from_message(
     return updated, extracted
 
 
+def try_early_attribute_registration_ui(
+    session: dict,
+    sid: Optional[str],
+    user_message: str,
+    *,
+    save_to_db_fn=None,
+    get_session_from_db_fn=None,
+    client_info: Any = None,
+) -> bool:
+    """
+    トリアージ前 — ユーザーメッセージ直後に属性通知を挿入し DB へ即時反映する。
+    """
+    reg = session.get("_latest_attr_registration") or {}
+    if not reg.get("extracted"):
+        return False
+    if session.get("_user_attr_notice_appended"):
+        return False
+
+    from src.services.session_manager import append_user_message, should_skip_append_user_message
+
+    text = (user_message or "").strip()
+    if text and not should_skip_append_user_message(session, text):
+        append_user_message(session, text)
+
+    if not append_user_attribute_registration_notice(session, sid):
+        return False
+
+    session["_user_attr_notice_appended"] = True
+    if hasattr(session, "modified"):
+        session.modified = True
+
+    if sid and save_to_db_fn and get_session_from_db_fn:
+        try:
+            session_data = get_session_from_db_fn(sid)
+            if session_data:
+                session_data["messages"] = list(session.get("messages") or [])
+                session_data["user_attributes"] = dict(session.get("user_attributes") or {})
+                session_data["last_activity"] = datetime.now()
+                save_to_db_fn(sid, session_data)
+            elif client_info is not None:
+                save_to_db_fn(
+                    sid,
+                    {
+                        "session_id": sid,
+                        "username": session.get("username", "Unknown"),
+                        "messages": list(session.get("messages") or []),
+                        "session_active": True,
+                        "last_activity": datetime.now(),
+                        "client_ip": getattr(client_info, "client_ip", None),
+                        "user_agent": getattr(client_info, "user_agent", None),
+                        "user_attributes": dict(session.get("user_attributes") or {}),
+                    },
+                )
+        except Exception as e:
+            logger.warning("⚠️ 初期属性通知のDB保存でエラー: %s", e)
+
+    logger.info("📢 ユーザー属性登録通知（初期段階）")
+    return True
+
+
 def _schedule_async(sid: str, message: str, get_session_fn, save_session_fn) -> None:
     """非同期LLM抽出をスケジュール（メイン処理をブロックしない）"""
     try:

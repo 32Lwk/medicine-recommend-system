@@ -631,6 +631,59 @@ def was_last_user_message(session, content: str) -> bool:
     return last.get('type') == 'user' and last.get('content') == content
 
 
+def should_skip_duplicate_user_append(session, content: str) -> bool:
+    """ユーザー情報通知 bot 等を挟んでも、同一ターン内の user 二重追加を防ぐ。"""
+    messages = session.get('messages') or []
+    for msg in reversed(messages):
+        if msg.get('type') == 'user':
+            return msg.get('content') == content
+        if msg.get('type') == 'bot':
+            if msg.get('user_info_notification'):
+                continue
+            if is_diagnosis_notice_bot_message(msg):
+                continue
+            return False
+    return False
+
+
+def is_diagnosis_notice_bot_message(msg: dict) -> bool:
+    """診断名カウンセリング・Physical ブロック bot（user 重複判定用）。"""
+    if not msg or msg.get('type') != 'bot':
+        return False
+    if msg.get('diagnosis_type') or msg.get('diagnosis_physical_blocked'):
+        return True
+    kind = (msg.get('diagnosis') or {}).get('kind')
+    return kind in ('diagnosis_detected', 'diagnosis_physical_blocked')
+
+
+def has_diagnosis_notice_for_user(session, user_content: str) -> bool:
+    """同一 user 文言に対する診断名通知 bot が既にセッションにあるか。"""
+    messages = session.get('messages') or []
+    for i in range(len(messages) - 1, -1, -1):
+        msg = messages[i]
+        if msg.get('type') != 'bot' or not is_diagnosis_notice_bot_message(msg):
+            continue
+        for j in range(i - 1, -1, -1):
+            prev = messages[j]
+            if prev.get('type') == 'user':
+                return prev.get('content') == user_content
+            if (
+                prev.get('type') == 'bot'
+                and not prev.get('user_info_notification')
+                and not is_diagnosis_notice_bot_message(prev)
+            ):
+                break
+        return False
+    return False
+
+
+def should_skip_append_user_message(session, content: str) -> bool:
+    """user メッセージ追記をスキップすべきか（末尾一致 + 通知挟み込み）。"""
+    return was_last_user_message(session, content) or should_skip_duplicate_user_append(
+        session, content
+    )
+
+
 def has_recent_counseling_reply_for_user(session, user_content: str) -> bool:
     """直前が同一内容 user へのカウンセリング bot 返信なら True（並列 POST 防止）。
 

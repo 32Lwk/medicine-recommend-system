@@ -14,6 +14,7 @@ from src.services.session_manager import (
     get_session_from_db,
     save_session_to_db,
     was_last_user_message,
+    should_skip_append_user_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,7 +91,7 @@ def append_user_message_if_needed(
     original_user_message: str,
 ) -> None:
     """セッションと DB にユーザーメッセージを追加（重複防止）"""
-    if was_last_user_message(session, original_user_message):
+    if should_skip_append_user_message(session, original_user_message):
         return
     user_msg = append_user_message(session, original_user_message)
     if not sid:
@@ -98,7 +99,7 @@ def append_user_message_if_needed(
     session_data = get_session_from_db(sid)
     if session_data:
         session_data.setdefault("messages", [])
-        if not was_last_user_message(session_data, original_user_message):
+        if not should_skip_append_user_message(session_data, original_user_message):
             session_data["messages"].append(user_msg)
             session_data["last_activity"] = now_jst_iso()
             save_session_to_db(sid, session_data)

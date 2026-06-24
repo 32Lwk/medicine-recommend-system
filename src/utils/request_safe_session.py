@@ -7,6 +7,13 @@ FastAPI では都度新規インスタンスを生成し、DB・Cookie（sid）�
 from collections.abc import MutableMapping
 
 
+class _PopMissing:
+    pass
+
+
+_POP_MISSING = _PopMissing()
+
+
 class RequestSafeSession(MutableMapping):
     """dict + modified フラグ。ネストした list の in-place 変更後は呼び出し側で modified を立てる。"""
 
@@ -50,11 +57,11 @@ class RequestSafeSession(MutableMapping):
             self._modified = True
         return self._store[key]
 
-    def pop(self, key, default=None):
-        self._modified = True
+    def pop(self, key, default=_POP_MISSING):
         if key in self._store:
+            self._modified = True
             return self._store.pop(key)
-        if default is not None:
+        if default is not _POP_MISSING:
             return default
         raise KeyError(key)
 
