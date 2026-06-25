@@ -109,6 +109,21 @@ CONCIERGE_META_INTENTS = frozenset({
     "doc_app_overview",
 })
 
+_LEGAL_COMPLIANCE_META_RE = re.compile(
+    r"薬機法|医薬品医療機器等法|景表法|景品表示法"
+    r"|(法令|法的).{0,10}(問題|違反|遵守|適合|大丈夫)"
+    r"|(この|本)(サービス|アプリ|ツール|チャット).{0,16}(違法|合法|問題ない|大丈夫)"
+    r"|コンプライアンス",
+    re.IGNORECASE,
+)
+
+
+def is_legal_compliance_meta_question(text: str) -> bool:
+    """薬機法・景表法等の法令・コンプライアンスに関するメタ質問（医薬品相談ではない）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    return bool(_LEGAL_COMPLIANCE_META_RE.search(t))
 
 
 def _normalize_exact(text: str) -> str:
@@ -128,6 +143,9 @@ def _is_medicine_consultation(text: str) -> bool:
     t = text.lower()
 
     if _is_medicine_term_definition(text):
+        return False
+
+    if is_legal_compliance_meta_question(text):
         return False
 
     hints = (
@@ -196,6 +214,8 @@ def should_exit_counseling_for_concierge(
             continue
         probed = probe_meta_concierge_intent(text)
         if probed in CONCIERGE_META_INTENTS:
+            return True
+        if is_legal_compliance_meta_question(text):
             return True
         if looks_like_service_identity_question(text):
             return True
@@ -359,6 +379,11 @@ _PRE_TRIAGE_META_INTENTS = frozenset({
 })
 
 _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
+    (re.compile(r"薬機法|医薬品医療機器等法|景表法|景品表示法"), "doc_terms"),
+    (re.compile(r"(法令|法的).{0,10}(問題|違反|遵守|適合|大丈夫)"), "doc_terms"),
+    (re.compile(r"(この|本)(サービス|アプリ|ツール|チャット).{0,16}(違法|合法|問題ない)"), "doc_terms"),
+    (re.compile(r"プラポリ|プライバシー|個人情報|privacy", re.I), "doc_privacy"),
+    (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
     (re.compile(r"(あなた|あんた)(について|は誰|って何|は何|のこと)"), "app_about"),
     (re.compile(r"自己紹介"), "app_about"),
     (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
@@ -371,8 +396,6 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(誰|だれ).{0,12}(回答|返信|答え|応答)"), "architecture"),
     (re.compile(r"(今|いま).{0,12}(答え|回答|返信|応答)"), "architecture"),
     (re.compile(r"(答え|回答|返信|応答).{0,12}(誰|だれ|なに|何)"), "architecture"),
-    (re.compile(r"プライバシー|個人情報"), "doc_privacy"),
-    (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),

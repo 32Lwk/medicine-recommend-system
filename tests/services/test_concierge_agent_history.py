@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from src.services.concierge_agent_history import (
     format_concierge_agent_history_block,
+    is_agent_roster_question,
     is_architecture_explanation_question,
     is_multi_agent_concept_question,
     is_who_is_answering_question,
@@ -46,7 +47,9 @@ def test_who_is_answering_question_detected():
 def test_multi_agent_concept_not_who_question():
     assert is_multi_agent_concept_question("マルチエージェントは何？")
     assert is_architecture_explanation_question("マルチエージェントの構成を教えて")
-    assert is_architecture_explanation_question("役割分担を説明して")
+    assert is_agent_roster_question("マルチエージェントの構成を教えて")
+    assert is_agent_roster_question("役割分担を説明して")
+    assert not is_agent_roster_question("マルチエージェントは何？")
     assert not is_architecture_explanation_question("今答えているのは誰？")
 
 

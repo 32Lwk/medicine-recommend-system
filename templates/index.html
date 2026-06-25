@@ -530,6 +530,15 @@
                         </div>
                         <div class="list-item-arrow">→</div>
                     </div>
+                    {% else %}
+                    <div class="list-item ui-list-item" onclick="showDetailPage('disclaimer')">
+                        <div class="list-item-icon ui-list-icon">🧾</div>
+                        <div class="ui-list-text">
+                            <div class="list-item-title ui-list-title" id="list-disclaimer-title">利用規約・免責</div>
+                            <div class="list-item-description ui-list-desc" id="list-disclaimer-desc">β版の利用条件と免責事項</div>
+                        </div>
+                        <div class="list-item-arrow ui-list-arrow">→</div>
+                    </div>
                     {% endif %}
                     
                     <div class="list-item{% if ui_variant == 'sage' %} ui-list-item{% endif %}" onclick="showDetailPage('privacy')">

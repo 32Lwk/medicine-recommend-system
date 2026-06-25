@@ -45,8 +45,9 @@ def test_capabilities_returns_status_card(mock_meta, mock_llm):
     bots = [m for m in session["messages"] if m.get("type") == "bot"]
     assert len(bots) == 1
     assert bots[0].get("concierge_intent") == "capabilities"
-    assert bots[0].get("content_format") == "text"
-    assert "処方" in bots[0]["content"] or "市販" in bots[0]["content"]
+    assert bots[0].get("content_format") == "status_card"
+    body = bots[0].get("content") or bots[0].get("sage_diagnosis", {}).get("message", "")
+    assert "処方" in body or "市販" in body
 
 
 @patch("src.core.llm_client.chat_completion_create")
@@ -259,8 +260,9 @@ def test_doc_privacy_via_meta_triage(mock_meta_chat, mock_concierge_chat):
     assert resp is not None
     bot = session["messages"][-1]
     assert bot["concierge_intent"] == "doc_privacy"
-    assert bot["content_format"] == "text"
-    assert "収集" in bot["content"]
+    assert bot["content_format"] == "status_card"
+    body = bot.get("content") or bot.get("sage_diagnosis", {}).get("message", "")
+    assert "収集" in body
 
 
 @patch("src.agents.concierge_agent.generate_greeting_text", return_value=("またこんにちは", True))

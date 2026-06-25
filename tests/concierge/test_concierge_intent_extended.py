@@ -100,6 +100,7 @@ def test_should_exit_counseling_for_meta_question():
         "OTCってなに？",
         triage_result={"category": "Other", "concierge_intent": "capabilities"},
     )
+    assert should_exit_counseling_for_concierge("薬機法上問題ないの？")
     assert not should_exit_counseling_for_concierge("まだ眠れない")
 
 
@@ -133,6 +134,9 @@ def test_none_for_empty():
         ("マルチエージェントなの？", "architecture"),
         ("今答えているのは誰？", "architecture"),
         ("プライバシーポリシーは？", "doc_privacy"),
+        ("プラポリは？", "doc_privacy"),
+        ("薬機法上問題ないの？", "doc_terms"),
+        ("利用規約は？", "doc_terms"),
     ],
 )
 def test_probe_meta_concierge_intent(text, expected):

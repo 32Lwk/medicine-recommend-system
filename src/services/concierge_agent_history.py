@@ -39,6 +39,14 @@ _ARCHITECTURE_EXPLAIN_RE = re.compile(
     re.IGNORECASE,
 )
 
+_AGENT_ROSTER_RE = re.compile(
+    r"エージェント.{0,8}(一覧|種類|どんな|何がある|構成)"
+    r"|(構成|役割|分担).{0,12}(教えて|説明|知りたい|聞きたい|は)"
+    r"|(教えて|説明して).{0,12}(構成|役割|分担)"
+    r"|内部構成",
+    re.IGNORECASE,
+)
+
 
 def is_who_is_answering_question(text: str) -> bool:
     return bool(_WHO_IS_ANSWERING_RE.search((text or "").strip()))
@@ -58,6 +66,14 @@ def is_architecture_explanation_question(text: str) -> bool:
     if not t or is_who_is_answering_question(t):
         return False
     return bool(_ARCHITECTURE_EXPLAIN_RE.search(t))
+
+
+def is_agent_roster_question(text: str) -> bool:
+    """エージェント一覧・構成・役割分担の明示的な質問。"""
+    t = (text or "").strip()
+    if not t or is_who_is_answering_question(t):
+        return False
+    return bool(_AGENT_ROSTER_RE.search(t))
 
 
 def resolve_bot_responding_agent(msg: Dict[str, Any]) -> Optional[str]:

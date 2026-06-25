@@ -219,6 +219,7 @@ def format_meta_concierge_context_block(
 ) -> str:
     """メタ質問（仕組み・誰が答えているか等）向けの文脈メモ。"""
     from src.services.concierge_agent_history import (
+        is_agent_roster_question,
         is_architecture_explanation_question,
         is_multi_agent_concept_question,
         is_who_is_answering_question,
@@ -228,7 +229,8 @@ def format_meta_concierge_context_block(
     prior = _prior_history_for_prompt(history, user_text)
     lines: List[str] = []
     who_question = is_who_is_answering_question(user_text)
-    arch_explain = is_architecture_explanation_question(user_text)
+    roster_question = is_agent_roster_question(user_text)
+    multi_agent_question = is_multi_agent_concept_question(user_text)
 
     if who_question:
         last_agent = resolve_last_responding_agent(prior)
@@ -244,9 +246,9 @@ def format_meta_concierge_context_block(
                 "のように担当名から始める"
             )
     elif intent == "architecture":
-        if arch_explain:
+        if roster_question:
             lines.append(
-                "- ユーザーはマルチエージェントの構成・役割分担・仕組みについて聞いている"
+                "- ユーザーはマルチエージェントの構成・役割分担について聞いている"
             )
             lines.append(
                 "- 本文は導入2〜4文のみ。エージェント一覧はシステムが別カードで表示するため本文に列挙しない"
@@ -257,8 +259,15 @@ def format_meta_concierge_context_block(
             lines.append(
                 "- 会話履歴に既出の説明があれば補足にとどめ、同じ説明の繰り返しを避ける"
             )
+        elif multi_agent_question:
             lines.append(
-                "- ユーザーの聞き方（構成・意味・仕組み）に合わせ、自然な言い回しで答える"
+                "- ユーザーはマルチエージェントの意味・このサービスの役割分担について聞いている"
+            )
+            lines.append(
+                "- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない"
+            )
+            lines.append(
+                "- マルチエージェント＝複数の専門担当が連携する仕組みであることを中心に説明する"
             )
         else:
             lines.append(
@@ -397,12 +406,23 @@ def generate_doc_answer_text(
             lines.append(f"{role}: {content}")
         hist = "\n".join(lines)
     if intent in _DOC_REFERENCE_ONLY_INTENTS:
-        requirements = """【要件】
+        from src.services.concierge_intent import is_legal_compliance_meta_question
+
+        legal_q = intent == "doc_terms" and is_legal_compliance_meta_question(user_text)
+        legal_extra = ""
+        if legal_q:
+            legal_extra = """
+- 薬機法・景表法等について「問題ない」「合法」と断言しない
+- 法令遵守条項および目的・免責条項に基づき、本サービスの位置づけ（OTC参考案内・診断処方なし・β版）を説明する
+- 症状やお薬の相談を促す締めの文は付けない"""
+        requirements = f"""【要件】
 - 上記ドキュメントに書かれた内容のみに基づいて回答する（推測・補完しない）
-- ドキュメントにない事項だけ「ドキュメントに記載がありません」と明記する
+- 回答は要点を5〜8項目の箇条書き（「・」1行1項目）にまとめる。全文の写し出しはしない
+- ユーザーの質問に直接関係する要点を優先する
+- ドキュメントにない事項は「ドキュメントに記載がありません」と明記する
 - 連絡先・URL・禁止事項などはドキュメントの表記を変えず正確に伝える
-- 箇条書きまたは短い段落で分かりやすく（Markdown は使わずプレーンテキスト）
-- ドキュメント本文に無い免責・診断不可・相談促しなどの定型文は付けない
+- 詳細は画面右上の ℹ️（情報）から各種ドキュメントの全文を確認できる旨を最後に1文で案内する
+- ドキュメント本文に無い免責・診断不可・相談促しなどの定型文は付けない{legal_extra}
 """
     elif intent == "doc_operator":
         requirements = f"""{get_policy_snippet()}
@@ -457,7 +477,7 @@ def generate_doc_answer_text(
                 },
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=900,
+            max_tokens=550,
             temperature=0.2,
             session_id=session_id,
         )
@@ -1297,7 +1317,7 @@ def _meta_reference_block(intent: str) -> str:
 def _meta_requirements_for(user_text: str, intent: str) -> str:
     """intent 共通要件に、今回の質問タイプ限定の追記を付ける。"""
     from src.services.concierge_agent_history import (
-        is_architecture_explanation_question,
+        is_agent_roster_question,
         is_multi_agent_concept_question,
         is_who_is_answering_question,
     )
@@ -1315,7 +1335,7 @@ def _meta_requirements_for(user_text: str, intent: str) -> str:
 - 会話履歴の【直前の返信担当】を第一文で明示する（例: 「いまの案内は ConciergeAgent が担当しています」）
 - 続けて、このチャットの返信文はAIが生成していること、市販薬候補選定はルールベースであることを短く述べる"""
         )
-    if is_architecture_explanation_question(user_text):
+    if is_agent_roster_question(user_text):
         return (
             base
             + """
@@ -1326,6 +1346,16 @@ def _meta_requirements_for(user_text: str, intent: str) -> str:
 - 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
 - 会話履歴を踏まえ、既出説明の繰り返しや長いフロー例（「たとえば A→B→C」）は避ける
 - 市販薬がルールベースで選ばれることは1文だけ触れてよい"""
+        )
+    if is_multi_agent_concept_question(user_text):
+        return (
+            base
+            + """
+
+【今回の質問に限定】
+- マルチエージェントの意味と、このサービスでの役割分担を説明する
+- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
+- 一般論＋このツールでの例（振り分け→専門担当）を簡潔に述べる"""
         )
     return (
         base
@@ -1452,15 +1482,14 @@ def _assemble_dynamic_concierge_payload(
     fb = feedback_data if feedback_data is not None else _feedback_data(user_text, intent)
 
     if llm_used:
-        from src.services.concierge_agent_history import (
-            is_architecture_explanation_question,
-        )
-        from src.services.concierge_templates import merge_agent_roster_section
+        from src.services.concierge_agent_history import is_agent_roster_question
 
         plain = (body_text or "").strip()
         include_roster = (
-            intent == "architecture" and is_architecture_explanation_question(user_text)
+            intent == "architecture" and is_agent_roster_question(user_text)
         )
+        from src.services.concierge_templates import merge_agent_roster_section
+
         display_message, section_specs = structure_concierge_meta_display(intent, plain)
         if include_roster:
             section_specs = merge_agent_roster_section(section_specs)
@@ -1738,7 +1767,10 @@ def should_concierge_handle(
 ) -> bool:
     """Other または挨拶・感謝・雑談のみ Concierge。医薬品・Emergency・Physical は除外。"""
     from src.services.concierge_intent import (
+        CONCIERGE_META_INTENTS,
         _is_medicine_consultation,
+        is_legal_compliance_meta_question,
+        probe_meta_concierge_intent,
         triage_has_concierge_meta_intent,
     )
     from src.services.routing_context import evaluate_store_gate
@@ -1750,6 +1782,33 @@ def should_concierge_handle(
     routing_source = (triage_result or {}).get("_routing_source_text")
     if routing_source:
         extra.append(routing_source)
+
+    def _concierge_meta_allowed() -> bool:
+        return (triage_result or {}).get("category") != "Emergency"
+
+    for candidate in (user_text, *extra):
+        text = (candidate or "").strip()
+        if not text:
+            continue
+        probed = probe_meta_concierge_intent(text)
+        if probed in CONCIERGE_META_INTENTS:
+            if evaluate_store_gate(
+                user_text,
+                *extra,
+                triage_result=triage_result,
+                routing_ctx=None,
+            ):
+                return False
+            return _concierge_meta_allowed()
+        if is_legal_compliance_meta_question(text):
+            if evaluate_store_gate(
+                user_text,
+                *extra,
+                triage_result=triage_result,
+                routing_ctx=None,
+            ):
+                return False
+            return _concierge_meta_allowed()
 
     if triage_has_concierge_meta_intent(triage_result):
         if evaluate_store_gate(

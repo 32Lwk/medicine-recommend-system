@@ -1,10 +1,10 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月25日**（GCP ログ解析基盤・LINE 絵文字/スタンプ対応・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ）
+**最終更新日: 2026年6月25日**（GCP ログ差分取得・カウンセリング詳細ログ網羅・Concierge 挨拶/感謝/メタ表示改善・法令コンプライアンスルーティング・免責第3条改定）
 
 ---
 
-## 2026年6月25日 — GCP ログ解析基盤・LINE 絵文字/スタンプ対応・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ
+## 2026年6月25日 — GCP ログ解析・LINE 絵文字/スタンプ・Concierge メタ質問 LLM 化・法令コンプライアンス・免責改定
 
 ### 概要
 
@@ -13,6 +13,8 @@
 LINE 向けには **絵文字のみ入力**をトリアージ前に処理するルート（侮辱絵文字は長めの自己紹介、それ以外は軽量 LLM 5 分類 → Concierge/Emotional）と、**公式スタンプの挨拶・感謝をテキストに変換**して既存フローへ渡す処理を実装。画像・音声など非テキストは種別ごとの案内文で応答する。
 
 運用面では **`GET /health` 起動プローブ**でデプロイ直後の 503 を抑止し、フロントのセッション同期間隔を **30 秒**に変更した。
+
+**午後の追記:** ローカル最新以降の **GCP ログ差分エクスポート**（`prepare_gcp_log_analysis.py`）と、emoji / Concierge / LINE 経路の **counseling_detail 記録漏れ**を補完。Concierge の**挨拶・感謝の口調ミラーリング**と**挑発的短呼びかけ**（「おい」「ねえ」等）のサニタイズ、**architecture メタ質問**の動的カード表示と担当ロスター分離を実装。**薬機法・景表法**など法令コンプライアンス質問を `doc_terms` へルーティングし、利用規約**第3条**に医薬品関連法令への配慮を統合した。
 
 ### GCP ログ解析基盤（新規）
 
@@ -83,9 +85,57 @@ LINE 向けには **絵文字のみ入力**をトリアージ前に処理する�
 - **`cloudbuild.yaml`**: `--startup-probe=httpGet.path=/health,httpGet.port=8080,...` を追加（最大約 120 秒まで起動待ち）
 - **`docs/ops/CLOUD_RUN_LLM_ENV.md`**: 起動プローブ設定の記載を追加
 
+### GCP ログ差分取得とカウンセリング詳細ログの網羅（追記）
+
+- **`scripts/export_gcp_logs.py`（新規）**: `gcloud logging read` で Cloud Run ログを `log/raw/downloaded-logs-*.json` にエクスポート。`--since-last-local` でローカル最新カバレッジ以降のみ取得
+- **`scripts/prepare_gcp_log_analysis.py`（新規）**: 差分エクスポート → `analyze_gcp_logs.py` まで一括実行。`status: ready / no_gap / empty / dry_run` を返す
+- **`gcp_log_export.py` / `gcp_log_local_state.py`（新規）**: エクスポート状態（`log/raw/export_state.json`）と `metadata.json` の `time_range.end` から baseline を解決
+- **`.cursor/skills/gcp-log-analysis/`**: Step 0 差分取得手順・multitask 起動フレーズを追記
+- **`structured_logger.py`**: Cloud Logging の行分割を避けるため **compact 1 行 JSON** 出力に変更
+- **`gcp_cloud_run_log_parser.py`**: `conversation_history` 内のネスト `{` / `}` でブロックが途中分割されないよう **brace depth 追跡**。compact 1 行 JSON も同一関数で解析
+- **`counseling_logger.py`**
+  - `mark_counseling_detail_logged` / `was_counseling_detail_logged`: 同一ターン二重記録抑止
+  - `maybe_log_line_turn_counseling_detail`: LINE 配信直前フォールバック（emoji 短応答等の未記録経路を補完）
+  - `resolve_bot_message_plain_text`: Flex / HTML からログ用プレーンテキスト抽出
+- **`chat_emoji_route.py` / `chat_concierge_route.py` / `line_message_handler.py`**: 上記 counseling_detail 記録を各経路に接続
+
+### Concierge 挨拶・感謝・メタ表示の品質改善（追記）
+
+- **`concierge_agent.py`**
+  - **挨拶**: ユーザー口調へのミラーリング強化。挑発的短呼びかけ（「おい」「ねえ」「もしもし」等）の**口調真似を検出・除去**し、リトライヒントで LLM に再生成を促す
+  - **感謝**: `generate_thanks_text`（新規）— 会話履歴・文脈付き LLM 応答。フォールバックは `build_thanks_text`
+  - **メタ質問**: `format_meta_concierge_context_block`（新規）— who-is-answering / multi-agent / architecture 向け文脈メモ
+  - **ドキュメント回答**: 要点 5〜8 項目の箇条書き化。全文写し出し禁止。ℹ️ から全文確認できる旨を末尾に案内
+- **`concierge_agent_history.py`（新規）**: Concierge 専用履歴ブロック整形、`resolve_last_responding_agent`、`is_who_is_answering_question`、`is_multi_agent_concept_question`、`is_architecture_explanation_question`、`is_agent_roster_question`
+- **`concierge_templates.py`**: `structure_concierge_meta_display` / `split_dynamic_body_paragraphs` / `build_dynamic_concierge_line_flex` — LLM 本文を段落・箇条書きに構造化。`build_agent_roster_items` / `merge_agent_roster_section` で担当一覧カードを分離表示
+- **`emoji_intent.py`**: 侮辱・挑発絵文字向け `generate_offensive_emoji_response_llm`（新規）。複数フォールバック文
+- **`chat_emoji_route.py`**: offensive 絵文字を LLM 寄り添い応答へ。counseling_detail ログ付与
+- **`static/css/sage_terrace.css`**: メタ status カードの段落・箇条書きスタイル
+- **`static/js/ui/status_renderer.js`**: `content_format: status_card` の動的セクション描画対応
+
+### architecture メタ質問の役割一覧カード（追記）
+
+- **`concierge_agent.py`**: `is_agent_roster_question` 時のみ `merge_agent_roster_section` で「担当の役割」カードを付与。LLM 本文は導入 2〜4 文に制限し、エージェント一覧の箇条書き埋め込みを禁止
+- **`is_architecture_explanation_question`**: マルチエージェントの意味・仕組み説明と、構成・役割一覧質問を分離
+
+### 法令・コンプライアンス質問のルーティングと免責改定（追記）
+
+- **`concierge_intent.py`**
+  - `is_legal_compliance_meta_question`（新規）: 薬機法・景表法・「違法じゃない？」等を検出
+  - `_is_medicine_consultation` から除外し、`probe_meta_concierge_intent` → `doc_terms` へルーティング
+  - `should_exit_counseling_for_concierge` でカウンセリング中の法令質問を Concierge に委譲
+  - `_META_PROBE_RULES` に薬機法・景表法・プラポリ・利用規約パターンを優先追加
+- **`meta_triage.py`**: `doc_terms` / `doc_privacy` のプロンプト例に法令遵守・薬機法質問を明記
+- **`concierge_agent.py`**: 法令コンプライアンス質問時は「合法」「問題ない」と断言しない追加要件。OTC 参考案内・β版の位置づけを説明
+- **`docs/public/免責事項・利用規約.md`**: 第3条を「免責事項および医薬品関連法令への配慮」に改題（改定履歴 2026-06-25 追記）
+- **`about_modal_html.json`**: 第3条の日英韓中 4 言語 HTML を同期更新
+- **`static/js/main.js`**: 情報モーダル内の第3条を 4 言語で同期（薬機法・景表法・ルールベース選定・AI 生成・β版免責）
+- **`templates/index.html`**: 非 Sage UI の情報一覧に「利用規約・免責」リスト項目を追加
+
 ### フロントエンド
 
 - **`static/js/main.js`**: セッション定期同期の `setInterval` を 10 秒 → **30 秒**に変更（API 負荷軽減）
+- **`static/js/main.js`**: Sage Terrace 情報モーダルのリスト項目タイトル・説明を `sageModal` マップで上書き（`site-about` / `app-overview` / `disclaimer` 等）
 
 ### テスト
 
@@ -106,6 +156,19 @@ LINE 向けには **絵文字のみ入力**をトリアージ前に処理する�
 | `test_emoji_intent.py`（新規） | JSON パース・soft intro・unknown ack・LLM 分類 |
 | `test_emoji_input.py`（新規） | 絵文字のみ判定・侮辱絵文字検出 |
 | `test_line_non_text.py`（新規） | 非テキスト案内・スタンプ keywords/公式マップ/variant 展開・dispatch 統合 |
+| `test_gcp_log_local_state.py`（新規） | baseline 解決・export_state 読み書き |
+| `test_export_gcp_logs.py`（新規） | 差分エクスポート CLI・filter 生成 |
+| `test_counseling_delivery_log.py`（新規） | LINE 配信フォールバック・二重記録抑止 |
+| `test_structured_logger.py`（新規） | compact JSON 1 行出力 |
+| `test_gcp_cloud_run_log_parser.py` | ネスト conversation_history・compact JSON 解析 |
+| `test_concierge_agent_history.py`（新規） | who-is-answering・roster・architecture 判定 |
+| `test_concierge_meta_display.py`（新規） | 動的メタ表示・inline bullet 抽出・roster マージ |
+| `test_concierge_agent.py` | 挑発呼びかけサニタイズ・感謝 LLM・roster カード付与 |
+| `test_emoji_intent.py` | offensive フォールバック全件・LLM 応答 |
+| `test_chat_emoji_route.py` | counseling_detail ログ・offensive LLM 経路 |
+| `test_line_flex_status_spec.py` | 動的 status カード Flex 仕様 |
+| `test_legal_compliance_routing.py`（新規） | 薬機法→doc_terms・医薬品相談除外・カウンセリング委譲 |
+| `test_concierge_intent_extended.py` / `test_concierge_route.py` | 法令質問ルーティング・doc_terms ペイロード |
 
 ---
 
