@@ -204,6 +204,20 @@
     return t('statusBadgeNote') || '補足';
   }
 
+  function formatAgentRoleListItem(item) {
+    var text = String(item || '').trim().replace(/^・+/, '');
+    var match = text.match(/^([A-Za-z][A-Za-z0-9]*(?:Agent|Orchestrator|Manager|Router))\s*[：:]\s*(.+)$/);
+    if (match) {
+      return (
+        '<li class="ui-agent-role-item">' +
+          '<span class="ui-agent-role-item__name">' + esc(match[1]) + '</span>' +
+          '<span class="ui-agent-role-item__desc">' + esc(match[2].trim()) + '</span>' +
+        '</li>'
+      );
+    }
+    return '<li>' + esc(text) + '</li>';
+  }
+
   function sectionsHtml(sections, variant) {
     if (!sections || !sections.length) return '';
     var sev = variantOverlapSeverity(variant || 'notice');
@@ -214,6 +228,9 @@
           var body = sec.html
             ? sec.html
             : (sec.items || []).map(function (item) {
+              if (/Agent|Orchestrator|Manager|Router/.test(String(item || ''))) {
+                return formatAgentRoleListItem(item);
+              }
               return '<li>' + esc(item) + '</li>';
             }).join('');
           if (!sec.html && body) {
@@ -329,11 +346,17 @@
       bodyParts.push('<p class="ui-status-advice__lead">' + esc(subtitle) + '</p>');
     }
     if (message) {
-      bodyParts.push(
-        '<p class="ui-status-advice__text">' +
-          esc(message).replace(/\n/g, '<br>') +
-        '</p>'
-      );
+      var paras = message.split(/\n\n+/).filter(function (p) { return p.trim(); });
+      if (!paras.length) {
+        paras = [message];
+      }
+      paras.forEach(function (para) {
+        bodyParts.push(
+          '<p class="ui-status-advice__text">' +
+            esc(para.trim()).replace(/\n/g, '<br>') +
+          '</p>'
+        );
+      });
     }
     return bodyParts.join('');
   }

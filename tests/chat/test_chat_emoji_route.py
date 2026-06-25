@@ -11,9 +11,9 @@ def _client():
     return ChatClientInfo(client_ip="line-webhook", user_agent="test")
 
 
-@patch("src.handlers.chat.chat_emoji_route.build_emoji_soft_intro_text", return_value="INTRO")
+@patch("src.handlers.chat.chat_emoji_route.generate_offensive_emoji_response_llm", return_value="お気持ち、受け止めました。お薬のことでしたらお聞かせください。")
 @patch("src.services.counseling.counseling_logger.log_counseling_response")
-def test_offensive_emoji_soft_intro_line_only(mock_log, mock_intro):
+def test_offensive_emoji_empathetic_ack_line_only(mock_log, mock_response):
     session = {"messages": []}
     resp = try_emoji_pre_triage_route(
         session,
@@ -26,10 +26,11 @@ def test_offensive_emoji_soft_intro_line_only(mock_log, mock_intro):
     assert resp is not None
     assert resp[0]["status"] == "ok"
     bot = session["messages"][-1]
-    assert bot.get("diagnosis", {}).get("message") == "INTRO" or bot.get("content") == "INTRO"
-    mock_intro.assert_called_once()
+    assert bot.get("content_format") == "status_card"
+    assert bot.get("line_flex") is not None
+    mock_response.assert_called_once()
     mock_log.assert_called_once()
-    assert mock_log.call_args.kwargs["response_type"] == "emoji_soft_intro"
+    assert mock_log.call_args.kwargs["response_type"] == "emoji_offensive_ack"
     assert mock_log.call_args.kwargs["user_input"] == "🖕"
 
 

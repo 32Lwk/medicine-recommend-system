@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from src.services.emoji_intent import (
     _parse_emoji_intent_json,
-    build_emoji_soft_intro_text,
+    build_offensive_emoji_fallback_text,
     build_emoji_unknown_ack_text,
     classify_emoji_intent_llm,
 )
@@ -17,12 +17,20 @@ def test_parse_emoji_intent_json():
     assert conf == 0.95
 
 
-def test_soft_intro_no_insult_mention():
-    text = build_emoji_soft_intro_text()
-    assert "攻撃" not in text
-    assert "侮辱" not in text
-    assert "市販薬" in text or "一般用医薬品" in text
-    assert len(text) > 200
+def test_offensive_fallback_is_short_and_empathetic():
+    from src.services.emoji_intent import _OFFENSIVE_EMOJI_FALLBACKS
+
+    for text in _OFFENSIVE_EMOJI_FALLBACKS:
+        assert "攻撃" not in text
+        assert "侮辱" not in text
+        assert len(text) <= 180
+        assert (
+            "お気持ち" in text
+            or "受け止め" in text
+            or "お聞かせ" in text
+            or "お声がけ" in text
+            or "お手伝い" in text
+        )
 
 
 def test_unknown_ack_mentions_text_prompt():

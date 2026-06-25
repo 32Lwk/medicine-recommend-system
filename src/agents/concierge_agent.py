@@ -24,12 +24,16 @@ from src.services.concierge_templates import (
     build_concierge_architecture_line_flex,
     build_concierge_capabilities_line_flex,
     build_concierge_operator_line_flex,
+    build_dynamic_concierge_line_flex,
+    structure_concierge_meta_display,
+    split_dynamic_body_paragraphs,
     build_greeting_text,
     build_redirect_text,
     build_thanks_text,
     format_concierge_app_about_card,
     format_concierge_architecture_card,
     format_concierge_capabilities_card,
+    format_dynamic_concierge_meta_card,
     format_concierge_operator_card,
 )
 
@@ -170,6 +174,9 @@ def format_concierge_context_block(
 
     if is_short_impatient_callout(text):
         lines.append("- 短い呼びかけへの返答は2文程度・60〜120文字")
+        lines.append(
+            "- 挑発的・失礼な言い回し（おい、ねえ、もしもし等）は真似せず、柔らかい丁寧語で受け止める"
+        )
 
     last_bot = _last_bot_reply_snippet(
         prior,
@@ -181,6 +188,11 @@ def format_concierge_context_block(
         lines.append(f"- 直前の bot 返答: {last_bot}")
         lines.append("- 上記と同じフレーズ・構成は繰り返さない")
 
+    if mode == "thanks":
+        lines.append(
+            f"- ユーザーの感謝「{text}」の言い回し・丁寧さに合わせて返す"
+        )
+
     if mode == "chitchat" and not lines:
         lines.append("- 雑談の流れを踏まえ、前の話題に自然につなげる")
 
@@ -191,10 +203,78 @@ def format_concierge_history_block(
     history: Optional[List[Dict[str, str]]],
     user_text: str,
 ) -> str:
-    from src.services.triage_history import format_triage_history_block
+    from src.services.concierge_agent_history import format_concierge_agent_history_block
 
     prior = _prior_history_for_prompt(history, user_text)
-    return format_triage_history_block(prior[-_CONCIERGE_PROMPT_HISTORY_LIMIT:])
+    return format_concierge_agent_history_block(
+        prior[-_CONCIERGE_PROMPT_HISTORY_LIMIT:]
+    )
+
+
+def format_meta_concierge_context_block(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+    *,
+    intent: str,
+) -> str:
+    """メタ質問（仕組み・誰が答えているか等）向けの文脈メモ。"""
+    from src.services.concierge_agent_history import (
+        is_multi_agent_concept_question,
+        is_who_is_answering_question,
+        resolve_last_responding_agent,
+    )
+
+    prior = _prior_history_for_prompt(history, user_text)
+    lines: List[str] = []
+    who_question = is_who_is_answering_question(user_text)
+    multi_agent_question = is_multi_agent_concept_question(user_text)
+
+    if who_question:
+        last_agent = resolve_last_responding_agent(prior)
+        if last_agent:
+            lines.append(f"- 直前の返信担当（推定）: {last_agent}")
+        lines.append(
+            "- ユーザーは「いま誰が答えているか」を聞いている。"
+            "直前の返信担当名を最初の1文で明示し、その返信文はAIが生成していることも短く述べる"
+        )
+        if last_agent:
+            lines.append(
+                f"- 回答の第一文は「いまの案内は{last_agent}が担当しています」"
+                "のように担当名から始める"
+            )
+    elif intent == "architecture":
+        if multi_agent_question:
+            lines.append(
+                "- ユーザーはマルチエージェントの意味・このサービスの役割分担について聞いている"
+            )
+            lines.append(
+                "- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない"
+            )
+            lines.append(
+                "- マルチエージェント＝複数の専門担当が連携する仕組みであることを中心に説明する"
+            )
+        else:
+            lines.append(
+                "- ユーザーは仕組み・技術・構成について聞いている（担当者の確認ではない）"
+            )
+            lines.append(
+                "- 聞かれていない限り、担当エージェント名や「いま誰が答えているか」から答えを始めない"
+            )
+        lines.append(
+            "- エージェントの役割一覧は本文に箇条書きで埋め込まない"
+            "（前置きの説明文のみ。一覧はシステムが別表示する）"
+        )
+
+    topics = _extract_substantive_user_topics(prior)
+    if topics:
+        lines.append(f"- これまでの話題: {' / '.join(topics)}")
+
+    last_bot = _last_bot_reply_snippet(prior, greeting_only=False)
+    if last_bot:
+        lines.append(f"- 直前の bot 返答: {last_bot}")
+        lines.append("- 直前と同じ説明の繰り返しは避ける")
+
+    return "\n".join(lines) if lines else "- 特になし"
 
 
 def get_concierge_state(session: Any) -> Dict[str, Any]:
@@ -504,12 +584,28 @@ _GREETING_SYSTEM_PROMPT = (
 )
 
 _GREETING_PROMPT_REQUIREMENTS = """【方針】
+- 【ユーザーの挨拶】の言い回し・丁寧さ・温度感にミラーリングして返す（例:「やあ」→「やあ！」、「おはようございます」→丁寧な朝の挨拶）
+- 挑発的・失礼な短い呼びかけ（おい、ねえ、もしもし等）は口調・言葉を真似せず、柔らかい丁寧語で落ち着いて受け止める。罵倒は繰り返さない
 - 会話履歴と文脈を踏まえ、状況に合った自然な日本語で返す
 - 2〜3文・60〜120文字程度（1文だけの極端に短い返答は避ける）
 - 直前の bot 返答と同じ言い回し・同じ構成は使わない
-- 失礼語・罵倒は繰り返さない。焦りや呼びかけには落ち着いて応じる
+- 焦りや呼びかけには落ち着いて応じる
 - 医薬品は「市販薬」と表記。「OTC」は使わない
 - 初回接触では市販薬相談窓口であることと相談例を簡潔に含める。継続の呼びかけでは窓口説明を繰り返さない"""
+
+_THANKS_SYSTEM_PROMPT = (
+    "あなたは市販薬相談ツールの案内役です。"
+    "感謝の言葉にはユーザーの口調・丁寧さに合わせて自然に返し、毎回言い回しを変えます。"
+    "説教・突き放し・皮肉にはなりません。"
+)
+
+_THANKS_PROMPT_REQUIREMENTS = """【方針】
+- 【ユーザーの感謝】の言い回し・丁寧さにミラーリングして返す（例:「ありがとう」→「どういたしまして」、「ありがとうございます」→「こちらこそありがとうございます」）
+- 会話履歴と文脈を踏まえ、直前の相談内容があれば1文だけ自然に触れてよい
+- 1〜2文・40〜100文字程度
+- 直前の bot 返答と同じ言い回し・同じ構成は使わない
+- 医薬品は「市販薬」と表記。「OTC」は使わない
+- ほかに相談があれば自然に促す（毎回同じ定型句にしない）"""
 
 _GREETING_MIN_CHARS_FIRST = 60
 _GREETING_MIN_CHARS_CONTINUED = 60
@@ -533,7 +629,7 @@ _CHITCHAT_SYSTEM_PROMPT = (
 _CHITCHAT_PROMPT_REQUIREMENTS = """【優先順位】
 1. 相手を煽らない・責めない
 2. 会話履歴・文脈に沿った自然な続き
-3. ミラーリング（温度感）。失礼語は繰り返さない
+3. ミラーリング（温度感）。挑発的・失礼な呼びかけ（おい、ねえ等）は口調を真似しない。失礼語は繰り返さない
 4. 苛立ちがあれば寄り添い・傾聴を優先
 
 【口調】
@@ -563,6 +659,14 @@ _SHORT_CALLOUT_EXACT = frozenset({
 })
 
 _RUDE_MIRROR_PREFIXES = ("おい", "ねえ", "ねぇ", "もしもし", "ふざけんな")
+
+# 挑発的呼びかけの書き出し除去用（「おい、」だけでなく「おい！」も対象）
+_CALLOUT_OPENING_PUNCT = r"[、，,。．.\s!！?？…~～]+"
+
+# 挑発的呼びかけへのカジュアル返し（元気かい？・教えてね 等）
+_CASUAL_MIRROR_TONE_RE = re.compile(
+    r"(元気かい|教えてね|だよね|じゃん|ってば|聞いてよ|どうしたの)"
+)
 
 _SHORT_CALLOUT_FALLBACK = (
     "お声がけありがとうございます。"
@@ -649,11 +753,78 @@ def _pick_sanitize_opening(*, avoid: str = "") -> str:
     return candidates[0]
 
 
+def is_provocative_short_callout(user_text: str) -> bool:
+    """おい・ねえ等、口調ミラーリングを避ける短い呼びかけ。"""
+    return _normalize_callout_text(user_text) in frozenset(_RUDE_MIRROR_PREFIXES)
+
+
+def greeting_response_mirrors_provocative_callout(text: str, user_text: str) -> bool:
+    """挑発的・失礼な短い呼びかけの口調を bot が繰り返していないか。"""
+    if not is_short_impatient_callout(user_text):
+        return False
+    word = _normalize_callout_text(user_text)
+    if not word:
+        return False
+    stripped = (text or "").strip()
+    if not stripped:
+        return False
+    if re.match(
+        rf"^{re.escape(word)}{_CALLOUT_OPENING_PUNCT}",
+        _normalize_callout_text(stripped),
+    ):
+        return True
+    opening = _greeting_opening_signature(stripped)
+    if opening and opening == _normalize_greeting_compare_text(word):
+        return True
+    if is_provocative_short_callout(user_text) and _CASUAL_MIRROR_TONE_RE.search(
+        stripped
+    ):
+        return True
+    return False
+
+
+def _starts_with_safe_callout_opening(text: str) -> bool:
+    t = (text or "").strip()
+    if not t:
+        return False
+    for opening in _GREETING_SANITIZE_OPENINGS:
+        if t.startswith(opening):
+            return True
+    for prefix in ("こんにちは", "おはよう", "こんばんは", "はじめまして", "初めまして"):
+        if t.startswith(prefix):
+            return True
+    return False
+
+
+def _strip_provocative_mirror_opening(result: str, user_text: str) -> str:
+    """返答先頭の挑発的ミラーリング（おい！ 等）を除去する。"""
+    if not is_short_impatient_callout(user_text):
+        return result
+    word = _normalize_callout_text(user_text)
+    stripped = (result or "").strip()
+    if word:
+        stripped = re.sub(
+            rf"^{re.escape(word)}{_CALLOUT_OPENING_PUNCT}?",
+            "",
+            stripped,
+            count=1,
+        )
+    for prefix in _RUDE_MIRROR_PREFIXES:
+        stripped = re.sub(
+            rf"^{re.escape(prefix)}{_CALLOUT_OPENING_PUNCT}?",
+            "",
+            stripped,
+            count=1,
+        )
+    return stripped.strip()
+
+
 def greeting_response_needs_retry(
     text: str,
     *,
     is_first: bool,
     last_bot: str = "",
+    user_text: str = "",
 ) -> bool:
     if not (text or "").strip():
         return True
@@ -662,6 +833,8 @@ def greeting_response_needs_retry(
     if greeting_response_too_long(text):
         return True
     if last_bot and greeting_responses_too_similar(text, last_bot):
+        return True
+    if user_text and greeting_response_mirrors_provocative_callout(text, user_text):
         return True
     return False
 
@@ -705,16 +878,8 @@ def sanitize_greeting_response(
         return result
 
     replacement_opening = _pick_sanitize_opening(avoid=avoid_opening)
-    normalized_user = _normalize_callout_text(user_text)
     if is_short_impatient_callout(user_text):
-        for prefix in _RUDE_MIRROR_PREFIXES:
-            if normalized_user == prefix or normalized_user.startswith(prefix):
-                result = re.sub(
-                    rf"^{re.escape(prefix)}[、，,。\s]+",
-                    "",
-                    result,
-                )
-                break
+        result = _strip_provocative_mirror_opening(result, user_text)
 
     result = re.sub(
         r"はい、こちらにいます[。.]?\s*",
@@ -727,6 +892,8 @@ def sanitize_greeting_response(
             replacement_opening,
             result,
         )
+        if result and not _starts_with_safe_callout_opening(result):
+            result = replacement_opening + result
 
     if is_short_impatient_callout(user_text) and not result:
         result = _SHORT_CALLOUT_FALLBACK
@@ -786,6 +953,7 @@ def _greeting_retry_hint(
     is_first: bool,
     last_bot: str,
     prior_text: str,
+    user_text: str = "",
 ) -> str:
     hints: List[str] = []
     if prior_text and greeting_response_too_short(prior_text, is_first=is_first):
@@ -799,6 +967,13 @@ def _greeting_retry_hint(
     if prior_text and last_bot and greeting_responses_too_similar(prior_text, last_bot):
         hints.append(
             "【重要】直前の bot 返答と同じ書き出し・構成は不可。別の自然な表現で書き直してください。"
+        )
+    if prior_text and user_text and greeting_response_mirrors_provocative_callout(
+        prior_text, user_text
+    ):
+        hints.append(
+            "【重要】挑発的・失礼な呼びかけ（おい、ねえ等）の口調は真似しないでください。"
+            "「おい！」などで書き出さず、柔らかい丁寧語で受け止めて書き直してください。"
         )
     if attempt >= 2:
         hints.append(
@@ -886,6 +1061,7 @@ def generate_greeting_text(
                 is_first=is_first,
                 last_bot=last_bot or "",
                 prior_text=prior_text,
+                user_text=user_text,
             )
             prompt = _build_greeting_user_prompt(
                 hist=hist,
@@ -914,6 +1090,7 @@ def generate_greeting_text(
                 text,
                 is_first=is_first,
                 last_bot=last_bot or "",
+                user_text=user_text,
             ):
                 return text, True
 
@@ -921,6 +1098,7 @@ def generate_greeting_text(
             best_text,
             is_first=is_first,
             last_bot=last_bot or "",
+            user_text=user_text,
         ):
             return best_text, True
 
@@ -934,8 +1112,20 @@ def generate_greeting_text(
                 user_text,
                 avoid_opening=last_bot or "",
             ), False
-        if best_text:
+        if best_text and not greeting_response_mirrors_provocative_callout(
+            best_text, user_text
+        ):
             return best_text, True
+        if is_provocative_short_callout(user_text):
+            alt = build_short_callout_greeting_text(
+                is_first=is_first,
+                exclude=last_bot or best_text,
+            )
+            return sanitize_greeting_response(
+                alt,
+                user_text,
+                avoid_opening=last_bot or "",
+            ), False
     except Exception as exc:
         logger.warning("Concierge greeting LLM failed: %s", exc)
     if is_short_impatient_callout(user_text):
@@ -951,24 +1141,103 @@ def generate_greeting_text(
     ), False
 
 
+def generate_thanks_text(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> tuple[str, bool]:
+    """感謝返答。合成テキスト（スタンプ解釈含む）の口調を踏まえ LLM で返す。"""
+    hist = format_concierge_history_block(history, user_text)
+    context = format_concierge_context_block(history, user_text, mode="thanks")
+    prompt = f"""{get_policy_snippet()}
+
+【会話履歴（参考）】
+{hist}
+
+【会話の文脈】
+{context}
+
+【ユーザーの感謝】
+{user_text}
+
+【要件】
+{_THANKS_PROMPT_REQUIREMENTS}
+"""
+    try:
+        resp = concierge_chat(
+            client,
+            "concierge_agent.thanks",
+            [
+                {"role": "system", "content": _THANKS_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=180,
+            temperature=0.58,
+            session_id=session_id,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        if text:
+            return text, True
+    except Exception as exc:
+        logger.warning("Concierge thanks LLM failed: %s", exc)
+    return build_thanks_text(user_text), False
+
+
 _META_LLM_INTENTS = frozenset({"capabilities", "architecture", "app_about"})
+
+_META_CARD_TITLES: dict[str, str] = {
+    "capabilities": "できること",
+    "architecture": "仕組み・技術",
+    "app_about": "このツールについて",
+    "doc_app_overview": "アプリ概要",
+    "doc_privacy": "プライバシー",
+    "doc_terms": "利用規約・免責",
+    "doc_consultation": "相談先・窓口",
+}
+
+# メタ質問カードでは「次に試すこと」ヒントを出さない（フィードバックのみ）
+_META_CARD_HINTS: dict[str, list[str]] = {
+    "capabilities": [],
+    "architecture": [],
+    "app_about": [],
+    "doc_app_overview": [],
+    "doc_privacy": [],
+    "doc_terms": [],
+    "doc_consultation": [],
+}
+
+_META_STATIC_LINE_FLEX = {
+    "capabilities": build_concierge_capabilities_line_flex,
+    "architecture": build_concierge_architecture_line_flex,
+    "app_about": build_concierge_app_about_line_flex,
+}
 
 _META_INTENT_REQUIREMENTS = {
     "capabilities": """【要件】
 - このツールでできること・できないことを、ユーザーの質問に直接答える
 - 会話履歴に既に触れた内容は繰り返さず、今回の質問に必要な範囲だけ補足する
 - 2〜5文・プレーンテキスト（Markdown不可）
+- 話題が変わるときは空行を1行入れる
+- 箇条書きにする場合は「・」で1項目1行
 - 処方・診断は行わない旨を必要なときだけ簡潔に触れる""",
     "architecture": """【要件】
-- マルチエージェント構成と、市販薬候補がルールベースで選ばれることを説明する
-- 「誰が回答したか」と聞かれた場合は、**このチャットの返信はAI（大規模言語モデル等）が生成している**こと、**市販薬の候補選定はルールベース**であることを明確に答える
+- ユーザーの質問の主題（マルチエージェントの意味、技術構成、仕組み、誰が答えたか等）に直接答える
+- マルチエージェント＝複数の専門担当が連携する仕組みであることを、聞かれたときは中心に説明する
+- 市販薬候補がルールベースで選ばれることは、質問に関係するときだけ簡潔に触れる
+- 技術スタック・開発環境・デプロイ構成の質問には、参照情報の技術一覧に基づいて答える
 - 会話履歴（直前の説明など）を踏まえ、同じ説明の繰り返しを避ける
-- 2〜6文・プレーンテキスト（Markdown不可）""",
+- 2〜6文・プレーンテキスト（Markdown不可）
+- 話題が変わるときは空行を1行入れる
+- エージェントの役割一覧は本文に「・」箇条書きで書かない（前置きの説明のみ）""",
     "app_about": """【要件】
 - このチャットが何であるか・何でないか（病院・診察・処方ではない）を、ユーザーの質問形式に合わせて答える
+- 「今誰が答えているか」は app_about ではなく architecture の話題 — その場合は AI 返信と役割分担を答える
 - yes/no 確認には医療機関のように「はい」と答えず、本ツールの性質を短く説明する
 - 会話履歴を踏まえ、既出の窓口説明を丸ごと繰り返さない
-- 2〜5文・プレーンテキスト（Markdown不可）""",
+- 2〜5文・プレーンテキスト（Markdown不可）
+- 話題が変わるときは空行を1行入れる""",
 }
 
 
@@ -994,6 +1263,18 @@ def _meta_reference_block(intent: str) -> str:
             lines.append(
                 f"- {agent.get('name_ja')}: {agent.get('role_one_liner')}"
             )
+        try:
+            from src.content.about_i18n import get_about_bundle
+
+            tech = get_about_bundle("index", "ja")
+            bullets = tech.get("tech_bullets") or []
+            if bullets:
+                lines.append("")
+                lines.append("【技術スタック（参照）】")
+                for item in bullets:
+                    lines.append(f"- {item}")
+        except Exception:
+            pass
     else:
         lines.append(f"【ツール概要（参照）】")
         lines.append(f"名称: {app.get('name')}")
@@ -1006,6 +1287,45 @@ def _meta_reference_block(intent: str) -> str:
     return "\n".join(lines)
 
 
+def _meta_requirements_for(user_text: str, intent: str) -> str:
+    """intent 共通要件に、今回の質問タイプ限定の追記を付ける。"""
+    from src.services.concierge_agent_history import (
+        is_multi_agent_concept_question,
+        is_who_is_answering_question,
+    )
+
+    base = _META_INTENT_REQUIREMENTS[intent]
+    if intent != "architecture":
+        return base
+    if is_who_is_answering_question(user_text):
+        return (
+            base
+            + """
+
+【今回の質問に限定】
+- 「誰が答えているか」「誰が回答したか」への直接回答とする
+- 会話履歴の【直前の返信担当】を第一文で明示する（例: 「いまの案内は ConciergeAgent が担当しています」）
+- 続けて、このチャットの返信文はAIが生成していること、市販薬候補選定はルールベースであることを短く述べる"""
+        )
+    if is_multi_agent_concept_question(user_text):
+        return (
+            base
+            + """
+
+【今回の質問に限定】
+- マルチエージェントの意味と、このサービスでの役割分担を説明する
+- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
+- 一般論＋このツールでの例（振り分け→専門担当）を簡潔に述べる"""
+        )
+    return (
+        base
+        + """
+
+【今回の質問に限定】
+- 担当エージェント名や「いま誰が答えているか」から答えを始めない（ユーザーが明示的に聞いていない限り）"""
+    )
+
+
 def _invoke_meta_concierge_llm(
     client: OpenAI,
     user_text: str,
@@ -1015,8 +1335,8 @@ def _invoke_meta_concierge_llm(
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
     hist = format_concierge_history_block(history, user_text)
-    context = format_concierge_context_block(history, user_text, mode="chitchat")
-    requirements = _META_INTENT_REQUIREMENTS[intent]
+    context = format_meta_concierge_context_block(history, user_text, intent=intent)
+    requirements = _meta_requirements_for(user_text, intent)
     reference = _meta_reference_block(intent)
     prompt = f"""{get_policy_snippet()}
 
@@ -1100,6 +1420,98 @@ def generate_meta_concierge_text(
             )
 
     return _meta_concierge_fallback_card(user_text, intent), False
+
+
+def _assemble_dynamic_concierge_payload(
+    *,
+    intent: str,
+    user_text: str,
+    body_text: str,
+    llm_used: bool,
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> ResponsePayload:
+    """
+    メタ質問・ドキュメント案内など、LLM 動的本文を Web カード + LINE Flex で返す。
+    LLM 失敗時は静的カード（intent ごとのフォールバック HTML）を使う。
+    """
+    from src.services.status_diagnosis_builder import build_notice_status
+
+    title = _META_CARD_TITLES.get(intent, "ご案内")
+    hints = _META_CARD_HINTS.get(intent, [])
+    kind = f"concierge_{intent}"
+    fb = feedback_data if feedback_data is not None else _feedback_data(user_text, intent)
+
+    if llm_used:
+        plain = (body_text or "").strip()
+        display_message, section_specs = structure_concierge_meta_display(intent, plain)
+        from src.services.status_diagnosis_builder import StatusSection
+
+        sections = [
+            StatusSection(title=s["title"], items=s["items"])
+            for s in section_specs
+            if s.get("title") and s.get("items")
+        ]
+        return {
+            "content": format_dynamic_concierge_meta_card(
+                title=title,
+                body_text=plain,
+                hints=hints,
+                feedback_data=fb,
+                intent=intent,
+            ),
+            "content_format": "status_card",
+            "line_flex": build_dynamic_concierge_line_flex(
+                title=title,
+                body_text=body_text,
+                hints=hints,
+                intent=intent,
+            ),
+            "concierge_intent": intent,
+            "llm_used": True,
+            "sage_diagnosis": build_notice_status(
+                display_message,
+                title=title,
+                hints=hints,
+                sections=sections,
+                kind=kind,
+                show_feedback=True,
+                feedback_context=fb,
+            ).to_client_dict(),
+        }
+
+    static_html = (body_text or "").strip()
+    line_flex_builder = _META_STATIC_LINE_FLEX.get(intent)
+    line_flex = line_flex_builder() if line_flex_builder else build_dynamic_concierge_line_flex(
+        title=title,
+        body_text=html_to_plain_from_card(static_html) if "chat-status-card" in static_html else static_html,
+        hints=hints,
+    )
+    plain_message = (
+        html_to_plain_from_card(static_html)
+        if "chat-status-card" in static_html
+        else static_html
+    )
+    return {
+        "content": static_html,
+        "content_format": "status_card",
+        "line_flex": line_flex,
+        "concierge_intent": intent,
+        "llm_used": False,
+        "sage_diagnosis": build_notice_status(
+            plain_message,
+            title=title,
+            hints=hints,
+            kind=kind,
+            show_feedback=True,
+            feedback_context=fb,
+        ).to_client_dict(),
+    }
+
+
+def html_to_plain_from_card(html_content: str) -> str:
+    from src.handlers.line.flex_messages import html_to_plain_text
+
+    return html_to_plain_text(html_content)
 
 
 def generate_chitchat_text(
@@ -1188,12 +1600,14 @@ def build_concierge_payload(
     if intent == "thanks":
         from src.services.status_diagnosis_builder import build_concierge_text_status
 
-        text = build_thanks_text()
+        text, thanks_llm_used = generate_thanks_text(
+            client, user_text, session_id=session_id, history=history
+        )
         return {
             "content": text,
             "content_format": "text",
             "concierge_intent": intent,
-            "llm_used": False,
+            "llm_used": thanks_llm_used,
             "sage_diagnosis": build_concierge_text_status(
                 text, title="お礼", kind="concierge_thanks"
             ).to_client_dict(),
@@ -1212,13 +1626,6 @@ def build_concierge_payload(
             ).to_client_dict(),
         }
     if intent in _META_LLM_INTENTS:
-        from src.services.status_diagnosis_builder import build_concierge_text_status
-
-        title_map = {
-            "capabilities": "できること",
-            "architecture": "仕組み・回答者",
-            "app_about": "このツールについて",
-        }
         text, meta_llm_used = generate_meta_concierge_text(
             client,
             user_text,
@@ -1226,17 +1633,13 @@ def build_concierge_payload(
             session_id=session_id,
             history=history,
         )
-        return {
-            "content": text,
-            "content_format": "text",
-            "concierge_intent": intent,
-            "llm_used": meta_llm_used,
-            "sage_diagnosis": build_concierge_text_status(
-                text,
-                title=title_map.get(intent, "ご案内"),
-                kind=f"concierge_{intent}",
-            ).to_client_dict(),
-        }
+        return _assemble_dynamic_concierge_payload(
+            intent=intent,
+            user_text=user_text,
+            body_text=text,
+            llm_used=meta_llm_used,
+            feedback_data=fb,
+        )
     if intent == "doc_operator":
         return build_doc_operator_payload(
             user_text,
@@ -1246,8 +1649,6 @@ def build_concierge_payload(
             feedback_data=fb,
         )
     if intent in DOC_CONCIERGE_INTENTS:
-        from src.services.status_diagnosis_builder import build_concierge_text_status
-
         text = generate_doc_answer_text(
             client,
             user_text,
@@ -1255,17 +1656,13 @@ def build_concierge_payload(
             session_id=session_id,
             history=history,
         )
-        return {
-            "content": text,
-            "content_format": "text",
-            "concierge_intent": intent,
-            "llm_used": True,
-            "sage_diagnosis": build_concierge_text_status(
-                text,
-                title="ドキュメント案内",
-                kind=f"concierge_{intent}",
-            ).to_client_dict(),
-        }
+        return _assemble_dynamic_concierge_payload(
+            intent=intent,
+            user_text=user_text,
+            body_text=text,
+            llm_used=True,
+            feedback_data=fb,
+        )
     if intent == "chitchat":
         from src.services.status_diagnosis_builder import build_concierge_text_status
 

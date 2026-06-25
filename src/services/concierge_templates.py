@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Dict, List, Optional
 
 from src.content.concierge_knowledge import (
@@ -31,7 +32,19 @@ def _intro_paragraphs_html(intro_text: str) -> str:
     return "".join(f"<p>{html.escape(p)}</p>" for p in parts)
 
 
-def build_thanks_text() -> str:
+def build_thanks_text(user_message: str = "") -> str:
+    """LLM 失敗時のフォールバック。ユーザーの感謝の丁寧さに合わせる。"""
+    text = (user_message or "").strip()
+    if "ございます" in text or "ありがとうござい" in text:
+        return (
+            "こちらこそありがとうございます。"
+            "ほかにご質問や気になる症状があれば、お気軽にお聞かせください。"
+        )
+    if re.search(r"(サンキュー|thanks|thank\s*you)", text, re.I):
+        return (
+            "どういたしまして！"
+            "ほかに気になることがあれば、お気軽にどうぞ。"
+        )
     return (
         "どういたしまして。ほかにご質問や症状がございましたら、"
         "お気軽にお聞かせください。"
@@ -43,6 +56,219 @@ def build_redirect_text() -> str:
         "こちらは一般用医薬品（OTC）の相談窓口です。"
         "頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。"
     )
+
+
+def _split_japanese_sentences(text: str) -> List[str]:
+    """句点・感嘆符で文を分割（区切り文字は各文末尾に残す）。"""
+    raw = (text or "").strip()
+    if not raw:
+        return []
+    parts = re.split(r"(?<=[。！？!?])\s*", raw)
+    return [p.strip() for p in parts if p.strip()]
+
+
+def split_dynamic_body_paragraphs(text: str) -> List[str]:
+    """LLM プレーンテキストを status / LINE Flex 用段落に分割する。"""
+    raw = (text or "").strip()
+    if not raw:
+        return []
+    parts = [p.strip() for p in re.split(r"\n\s*\n", raw) if p.strip()]
+    if len(parts) <= 1:
+        lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+        if len(lines) > 1 and all(ln.startswith(("・", "-", "•")) for ln in lines):
+            return lines
+        parts = [raw]
+
+    out: List[str] = []
+    for part in parts:
+        if len(part) > 100 or ("。" in part and part.count("。") >= 2):
+            out.extend(_split_japanese_sentences(part))
+        else:
+            out.append(part)
+    return out
+
+
+_AGENT_BULLET_INLINE_RE = re.compile(
+    r"[、，]?\s*・\s*"
+    r"([A-Za-z][A-Za-z0-9]*(?:Agent|Orchestrator|Manager|Router))"
+    r"\s*[：:]\s*"
+    r"([^・]+?)"
+    r"(?=(?:[、，]\s*・\s*[A-Za-z])|[。！？!?]|$)"
+)
+
+
+def _normalize_agent_bullet(name: str, desc: str) -> str:
+    clean_desc = (desc or "").strip().rstrip("、，,.")
+    return f"{name}：{clean_desc}"
+
+
+def extract_inline_agent_bullets(text: str) -> tuple[str, List[str]]:
+    """文中に埋め込まれた「・TriageAgent：…」を prose と箇条書きに分離する。"""
+    raw = (text or "").strip()
+    if not raw or "・" not in raw:
+        return raw, []
+    bullets: List[str] = []
+    for match in _AGENT_BULLET_INLINE_RE.finditer(raw):
+        bullets.append(_normalize_agent_bullet(match.group(1), match.group(2)))
+    if not bullets:
+        return raw, []
+
+    prose = _AGENT_BULLET_INLINE_RE.sub("", raw)
+    prose = re.sub(r"[、，]\s*$", "", prose.strip())
+    prose = re.sub(r"^[、，]\s*", "", prose)
+    prose = re.sub(r"\s{2,}", " ", prose)
+    prose = re.sub(r"(?:たとえば|例えば|例として)\s*$", "", prose).strip()
+    prose = re.sub(r"、\s*という形です。?$", "。", prose)
+    if prose and not prose.endswith(("。", "！", "？")):
+        prose += "。"
+    return prose, bullets
+
+
+def structure_concierge_meta_display(
+    intent: str,
+    body_text: str,
+) -> tuple[str, List[Dict[str, Any]]]:
+    """
+    Web Sage / LINE 向けに読みやすく整形。
+    Returns (message_with_paragraph_breaks, sections_for_sage_ui).
+    """
+    paragraphs = split_dynamic_body_paragraphs(body_text)
+    sections: List[Dict[str, Any]] = []
+    all_bullets: List[str] = []
+    prose_parts: List[str] = []
+
+    bullet_prefixes = ("・", "-", "•")
+    for part in paragraphs:
+        if part.startswith(bullet_prefixes):
+            all_bullets.append(part.lstrip("・-• ").strip())
+            continue
+        prose, inline_bullets = extract_inline_agent_bullets(part)
+        if inline_bullets:
+            all_bullets.extend(inline_bullets)
+            if prose:
+                prose_parts.append(prose)
+        else:
+            prose_parts.append(part)
+
+    if all_bullets and intent in ("architecture", "capabilities"):
+        deduped: List[str] = []
+        seen: set[str] = set()
+        for item in all_bullets:
+            key = item.split("：", 1)[0]
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(item)
+        sections.append(
+            {
+                "title": "担当の役割" if intent == "architecture" else "できること",
+                "items": deduped,
+            }
+        )
+
+    message = "\n\n".join(prose_parts) if prose_parts else (body_text or "").strip()
+    return message, sections
+
+
+def build_agent_roster_items() -> List[str]:
+    """concierge_knowledge のエージェント一覧（表示用）。"""
+    from src.content.concierge_knowledge import get_agents
+
+    items: List[str] = []
+    for agent in get_agents():
+        name = str(agent.get("name_ja") or agent.get("id") or "").strip()
+        role = str(agent.get("role_one_liner") or "").strip()
+        if name and role:
+            items.append(f"{name}：{role}")
+    return items
+
+
+def merge_agent_roster_section(
+    sections: List[Dict[str, Any]],
+    *,
+    title: str = "担当の役割",
+) -> List[Dict[str, Any]]:
+    """architecture 説明時に SSOT のエージェント一覧セクションを付与する。"""
+    roster = build_agent_roster_items()
+    if not roster:
+        return sections
+    for spec in sections:
+        if spec.get("title") == title:
+            return sections
+    return [*sections, {"title": title, "items": roster}]
+
+
+def format_dynamic_concierge_meta_card(
+    *,
+    title: str,
+    body_text: str,
+    subtitle: str = "",
+    hints: Optional[List[str]] = None,
+    feedback_data: Optional[Dict[str, Any]] = None,
+    variant: str = "notice",
+    intent: str = "",
+    include_agent_roster: bool = False,
+) -> str:
+    """LLM 生成本文から Web 用 status カード HTML を組み立てる。"""
+    display_message, section_specs = structure_concierge_meta_display(
+        intent or "app_about",
+        body_text,
+    )
+    if include_agent_roster and (intent or "") == "architecture":
+        section_specs = merge_agent_roster_section(section_specs)
+    paragraphs = split_dynamic_body_paragraphs(display_message)
+    body_html = "".join(f"<p>{html.escape(p)}</p>" for p in paragraphs)
+    for spec in section_specs:
+        items = spec.get("items") or []
+        if items:
+            body_html += _list_section(str(spec.get("title") or ""), items)
+    footer = ""
+    if feedback_data:
+        footer = format_feedback_buttons(
+            feedback_data,
+            question="このご案内は分かりやすかったですか？",
+        )
+    return format_status_card(
+        variant=variant,
+        title=title,
+        subtitle=subtitle,
+        body_html=body_html,
+        hints=hints or [],
+        footer_html=footer,
+    )
+
+
+def build_dynamic_concierge_line_flex(
+    *,
+    title: str,
+    body_text: str,
+    subtitle: str = "",
+    hints: Optional[List[str]] = None,
+    variant: str = "notice",
+    intent: str = "",
+    include_agent_roster: bool = False,
+) -> Dict[str, Any]:
+    """LLM 生成本文から LINE status Flex スペックを組み立てる。"""
+    display_message, section_specs = structure_concierge_meta_display(
+        intent or "app_about",
+        body_text,
+    )
+    if include_agent_roster and (intent or "") == "architecture":
+        section_specs = merge_agent_roster_section(section_specs)
+    body = split_dynamic_body_paragraphs(display_message)
+    for spec in section_specs:
+        title_label = str(spec.get("title") or "").strip()
+        items = spec.get("items") or []
+        if title_label and items:
+            body.append(title_label)
+            body.extend(items)
+    return {
+        "variant": variant,
+        "title": title,
+        "subtitle": subtitle,
+        "body_paragraphs": body,
+        "hints": list(hints or []),
+    }
 
 
 def _list_section(title: str, items: List[str]) -> str:

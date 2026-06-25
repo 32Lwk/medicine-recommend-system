@@ -14,9 +14,9 @@ from openai import OpenAI
 
 from src.services.emoji_intent import (
     EmojiIntent,
-    build_emoji_soft_intro_text,
     build_emoji_unknown_ack_text,
     classify_emoji_intent_llm,
+    generate_offensive_emoji_response_llm,
 )
 from src.utils.emoji_input import contains_offensive_emoji, is_emoji_only_message
 
@@ -72,6 +72,90 @@ def _append_text_bot(
     if greeting:
         bot["greeting"] = True
     session.setdefault("messages", []).append(bot)
+
+
+def _append_dynamic_status_bot(
+    session: Any,
+    sid: Optional[str],
+    *,
+    body_text: str,
+    title: str,
+    kind: str,
+    line_flex: dict[str, Any],
+    content_html: str,
+) -> None:
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_notice_status
+
+    bot = build_bot_response(
+        session,
+        sid,
+        legacy_content=content_html,
+        sage_diagnosis=build_notice_status(
+            body_text,
+            title=title,
+            kind=kind,
+            hints=["お体の不調やお薬のことがあれば、テキストでお聞かせください。"],
+            show_feedback=False,
+        ).to_client_dict(),
+        concierge=True,
+        content_format="status_card",
+        uuid=str(uuid.uuid4()),
+    )
+    bot["line_flex"] = line_flex
+    session.setdefault("messages", []).append(bot)
+
+
+def _finish_offensive_emoji_response(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    recommendation_client: OpenAI,
+) -> ResponseTuple:
+    from src.services.concierge_templates import (
+        build_dynamic_concierge_line_flex,
+        format_dynamic_concierge_meta_card,
+    )
+
+    bot_text = generate_offensive_emoji_response_llm(
+        recommendation_client,
+        user_message,
+        session_id=sid,
+    )
+    title = "お気持ち"
+    hints = ["お体の不調やお薬のことがあれば、テキストでお聞かせください。"]
+    line_flex = build_dynamic_concierge_line_flex(
+        title=title,
+        body_text=bot_text,
+        hints=hints,
+    )
+    content_html = format_dynamic_concierge_meta_card(
+        title=title,
+        body_text=bot_text,
+        hints=hints,
+    )
+    _append_user_turn(session, user_message)
+    _append_dynamic_status_bot(
+        session,
+        sid,
+        body_text=bot_text,
+        title=title,
+        kind="emoji_offensive_ack",
+        line_flex=line_flex,
+        content_html=content_html,
+    )
+    _log_emoji_plain_response(
+        session,
+        sid,
+        user_message,
+        bot_text,
+        response_type="emoji_offensive_ack",
+    )
+    _mark_session_modified(session)
+    _sync_session_db(session, client_info, sid)
+    count = len(session.get("messages", []))
+    return ({"status": "ok", "message_count": count}, 200)
 
 
 def _sync_session_db(session: Any, client_info: Any, sid: Optional[str]) -> None:
@@ -233,16 +317,12 @@ def _route_by_emoji_intent(
     intent: EmojiIntent,
 ) -> Optional[ResponseTuple]:
     if intent == "offensive":
-        return _finish_plain_response(
+        return _finish_offensive_emoji_response(
             session,
             client_info,
             sid,
             user_message,
-            build_emoji_soft_intro_text(),
-            title="このツールについて",
-            kind="emoji_soft_intro",
-            concierge=True,
-            concierge_intent="app_about",
+            recommendation_client,
         )
     if intent in ("greeting", "thanks"):
         return _route_emoji_concierge(
@@ -301,18 +381,14 @@ def try_emoji_pre_triage_route(
     mark_pipeline_step("emoji_route_start")
 
     if contains_offensive_emoji(text):
-        logger.info("🎭 emoji_route: offensive emoji detected (soft intro)")
+        logger.info("🎭 emoji_route: offensive emoji detected (empathetic ack)")
         mark_pipeline_step("emoji_route_offensive")
-        return _finish_plain_response(
+        return _finish_offensive_emoji_response(
             session,
             client_info,
             sid,
             user_message,
-            build_emoji_soft_intro_text(),
-            title="このツールについて",
-            kind="emoji_soft_intro",
-            concierge=True,
-            concierge_intent="app_about",
+            recommendation_client,
         )
 
     if not is_emoji_only_message(text):

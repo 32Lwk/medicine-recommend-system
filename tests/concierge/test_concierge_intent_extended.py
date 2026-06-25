@@ -131,6 +131,7 @@ def test_none_for_empty():
         ("自己紹介してください", "app_about"),
         ("何ができる？", "capabilities"),
         ("マルチエージェントなの？", "architecture"),
+        ("今答えているのは誰？", "architecture"),
         ("プライバシーポリシーは？", "doc_privacy"),
     ],
 )

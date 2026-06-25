@@ -40,7 +40,21 @@ def test_parse_status_card_html_extracts_title_and_variant():
 
 
 def test_concierge_app_about_uses_custom_header_not_generic_info():
-    p = build_concierge_payload("app_about", "自己紹介してください", MagicMock())
+    from unittest.mock import patch
+
+    with patch(
+        "src.agents.concierge_agent.concierge_chat",
+        return_value=MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(
+                        content="私は市販薬の相談をお手伝いするチャットツールです。"
+                    )
+                )
+            ]
+        ),
+    ):
+        p = build_concierge_payload("app_about", "自己紹介してください", MagicMock())
     bot = {
         "type": "bot",
         "content": p["content"],
@@ -54,6 +68,12 @@ def test_concierge_app_about_uses_custom_header_not_generic_info():
     assert messages[0]["type"] == "flex"
     assert header == "このツールについて"
     assert messages[0]["contents"]["header"]["backgroundColor"] == "#8EB8E8"
+    body_texts = [
+        c.get("text", "")
+        for c in messages[0]["contents"]["body"]["contents"]
+        if c.get("type") == "text"
+    ]
+    assert any("市販薬" in t for t in body_texts)
 
 
 def test_line_flex_builder_matches_template_title():

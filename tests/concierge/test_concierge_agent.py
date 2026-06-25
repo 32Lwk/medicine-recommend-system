@@ -13,6 +13,7 @@ from src.agents.concierge_agent import (
     generate_greeting_text,
     greeting_response_too_short,
     greeting_responses_too_similar,
+    greeting_response_mirrors_provocative_callout,
     infer_is_first_greeting_contact,
     is_short_impatient_callout,
     resolve_concierge_intent,
@@ -24,6 +25,7 @@ def test_greeting_prompt_is_concise_and_principle_based():
     assert "市販薬" in _GREETING_PROMPT_REQUIREMENTS
     assert "60〜120" in _GREETING_PROMPT_REQUIREMENTS
     assert "直前の bot 返答" in _GREETING_PROMPT_REQUIREMENTS
+    assert "ミラーリング" in _GREETING_PROMPT_REQUIREMENTS
     assert "例（短い呼びかけ" not in _GREETING_PROMPT_REQUIREMENTS
     assert "禁止（不自然" not in _GREETING_PROMPT_REQUIREMENTS
     assert "自然な続き" in _GREETING_SYSTEM_PROMPT
@@ -197,6 +199,30 @@ def test_sanitize_greeting_response_strips_rude_mirroring():
     assert not cleaned.startswith("おい")
 
 
+def test_sanitize_greeting_response_strips_rude_mirroring_exclamation():
+    from src.agents.concierge_agent import _GREETING_SANITIZE_OPENINGS
+
+    raw = (
+        "おい！元気かい？市販薬について何か気になることがあれば、ぜひ教えてね。"
+        "風邪の症状や頭痛、アレルギーの対策など、具体的にお話ししてもらえればお手伝いできるよ。"
+    )
+    cleaned = sanitize_greeting_response(raw, "おい")
+    assert not cleaned.startswith("おい")
+    assert any(cleaned.startswith(o) for o in _GREETING_SANITIZE_OPENINGS)
+
+
+def test_greeting_response_mirrors_provocative_callout_detects_exclamation():
+    assert greeting_response_mirrors_provocative_callout("おい！元気かい？", "おい")
+    assert greeting_response_mirrors_provocative_callout(
+        "承知しました。元気かい？市販薬について教えてね。",
+        "おい",
+    )
+    assert not greeting_response_mirrors_provocative_callout(
+        "お声がけありがとうございます。お困りのことがあればお聞かせください。",
+        "おい",
+    )
+
+
 def test_sanitize_greeting_response_replaces_hai_dozo_on_callout():
     raw = "はい、どうぞ。気になる症状を教えてください。"
     cleaned = sanitize_greeting_response(raw, "おい")
@@ -335,6 +361,45 @@ def test_greeting_payload_falls_back_to_template_on_llm_failure(mock_create):
 
 
 @patch("src.agents.concierge_agent.concierge_chat")
+def test_meta_payload_has_no_hints(mock_chat):
+    mock_chat.return_value = MagicMock(
+        choices=[MagicMock(message=MagicMock(content="説明です。"))]
+    )
+    p = build_concierge_payload("architecture", "仕組みは？", MagicMock())
+    assert p["sage_diagnosis"].get("hints") == []
+    assert p.get("line_flex", {}).get("hints") == []
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_architecture_multi_agent_prompt_avoids_who_lead(mock_chat):
+    captured: dict = {}
+
+    def _capture(client, path, messages, **kwargs):
+        captured["user"] = messages[-1]["content"]
+        return MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(
+                        content=(
+                            "マルチエージェントは、役割ごとに分かれた担当が連携する仕組みです。"
+                            "このサービスでは、最初に内容を振り分け、症状相談・案内・店舗案内などを"
+                            "それぞれの担当に渡します。"
+                        )
+                    )
+                )
+            ]
+        )
+
+    mock_chat.side_effect = _capture
+    p = build_concierge_payload("architecture", "マルチエージェントは何？", MagicMock())
+    prompt = captured["user"]
+    assert "担当宣言から答えを始めない" in prompt
+    assert "いま誰が答えているか" in prompt
+    assert "第一文は「いまの案内は" not in prompt
+    assert not p["sage_diagnosis"]["message"].startswith("いまの案内は")
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
 def test_architecture_payload_card(mock_chat):
     mock_chat.return_value = MagicMock(
         choices=[
@@ -346,8 +411,9 @@ def test_architecture_payload_card(mock_chat):
         ]
     )
     p = build_concierge_payload("architecture", "マルチエージェント？", MagicMock())
-    assert p["content_format"] == "text"
+    assert p["content_format"] == "status_card"
     assert p["llm_used"] is True
+    assert p.get("line_flex") is not None
     assert "TriageAgent" in p["content"]
 
 
@@ -402,3 +468,54 @@ def test_chitchat_uses_llm(mock_chat):
     mock_chat.return_value = mock_resp
     p = build_concierge_payload("chitchat", "暇だな", MagicMock())
     assert p["llm_used"] is True
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_thanks_llm_prompt_includes_user_text(mock_chat):
+    from src.agents.concierge_agent import generate_thanks_text
+
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(
+            message=MagicMock(
+                content="こちらこそありがとうございます。お役に立てて何よりです。"
+            )
+        )
+    ]
+    mock_chat.return_value = mock_resp
+    text, used = generate_thanks_text(MagicMock(), "ありがとうございます")
+    assert used is True
+    assert "ありがとう" in text
+    user_prompt = mock_chat.call_args[0][2][1]["content"]
+    assert "【ユーザーの感謝】" in user_prompt
+    assert "ありがとうございます" in user_prompt
+    assert "ミラーリング" in user_prompt
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_thanks_payload_uses_llm(mock_chat):
+    mock_resp = MagicMock()
+    mock_resp.choices = [
+        MagicMock(message=MagicMock(content="どういたしまして！また何かあればどうぞ。"))
+    ]
+    mock_chat.return_value = mock_resp
+    p = build_concierge_payload("thanks", "ありがとう", MagicMock())
+    assert p["llm_used"] is True
+    assert p["concierge_intent"] == "thanks"
+    assert "どういたしまして" in p["content"]
+
+
+def test_format_concierge_context_block_thanks_mode():
+    block = format_concierge_context_block([], "ありがとうございます", mode="thanks")
+    assert "ありがとうございます" in block
+    assert "丁寧さ" in block
+
+
+def test_build_thanks_text_fallback_mirrors_formality():
+    from src.services.concierge_templates import build_thanks_text
+
+    casual = build_thanks_text("ありがとう")
+    formal = build_thanks_text("ありがとうございます")
+    assert "どういたしまして" in casual
+    assert "こちらこそありがとうございます" in formal
+    assert casual != formal
