@@ -110,6 +110,54 @@ def validate_and_block_input(session, client, user_message, sid):
         pass
 
     try:
+        # known_attack_rules → 即時警告（SECURITY_ROLLOUT_PHASE 非依存）。続けて security_validator でスコアリング。
+        from src.security.known_attack_rules import KNOWN_ATTACK_WARN_MESSAGE, match_known_attack
+        from src.security.security_logger import log_input_validation
+
+        matched, rule_id = match_known_attack(user_message)
+        if matched:
+            logger.warning("🛡️ 既知攻撃ルールにより即時警告応答: rule=%s", rule_id)
+            log_input_validation(
+                user_id=session.get("username", "unknown"),
+                input_text=user_message,
+                risk_score=100,
+                is_safe=False,
+                warnings=[f"known_attack:{rule_id}"],
+                sanitized_text=user_message,
+            )
+            _append_blocked_user_message(session)
+            _append_security_block_bot(
+                session,
+                sid,
+                KNOWN_ATTACK_WARN_MESSAGE,
+                kind="known_attack",
+                variant="caution",
+            )
+            if hasattr(session, "modified"):
+                session.modified = True
+            _persist_block_messages_to_db(session, client, sid)
+            if sid:
+                try:
+                    from src.services.processing_status import clear_processing_status
+
+                    clear_processing_status(sid)
+                except ImportError:
+                    pass
+            return (
+                None,
+                (
+                    {
+                        "status": "ok",
+                        "message_count": len(session.get("messages", [])),
+                        "response": KNOWN_ATTACK_WARN_MESSAGE,
+                    },
+                    200,
+                ),
+            )
+    except ImportError:
+        pass
+
+    try:
         from src.security.security_validator import validate_user_input
         from src.security.security_config import should_block_input
         from src.security.security_logger import log_input_validation

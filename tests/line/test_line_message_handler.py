@@ -84,6 +84,10 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         {"type": "flex", "altText": "b", "contents": {}},
     ]
 
+    async def _post_adds_bot(session, *_args, **_kwargs):
+        session.setdefault("messages", []).append(bot_msg)
+        return ({"status": "ok"}, 200)
+
     with (
         patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock) as mock_loading,
         patch("src.handlers.line.line_message_handler.reply_messages", new_callable=AsyncMock) as mock_reply,
@@ -103,8 +107,8 @@ def test_process_text_message_replies_after_pipeline(monkeypatch):
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
         mock_reply.return_value = True
-        mock_post.return_value = ({"status": "ok"}, 200)
-        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_post.side_effect = _post_adds_bot
+        mock_prime.return_value = {"messages": [], "user_attributes": {}, "language": "ja"}
         mock_monitor.return_value = MagicMock()
         asyncio.run(
             _process_text_message(
@@ -143,6 +147,10 @@ def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
         },
     }
 
+    async def _post_adds_bot(session, *_args, **_kwargs):
+        session.setdefault("messages", []).append(bot_msg)
+        return ({"status": "ok"}, 200)
+
     with (
         patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock),
         patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
@@ -163,8 +171,8 @@ def test_process_text_message_progressive_uses_deliver_final(monkeypatch):
         patch("src.services.processing_status.mark_processing_step"),
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
-        mock_post.return_value = ({"status": "ok"}, 200)
-        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_post.side_effect = _post_adds_bot
+        mock_prime.return_value = {"messages": [], "user_attributes": {}, "language": "ja"}
         mock_monitor.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "頭が痛い", "reply-tok"))
 
@@ -186,6 +194,10 @@ def test_process_text_message_non_physical_calls_deliver_final(monkeypatch):
         "diagnosis": {"status": "success", "medicine_type": "解熱鎮痛剤", "recommended_medicines": []},
     }
 
+    async def _post_adds_bot(session, *_args, **_kwargs):
+        session.setdefault("messages", []).append(bot_msg)
+        return ({"status": "ok"}, 200)
+
     with (
         patch("src.handlers.line.line_loading.start_loading_animation", new_callable=AsyncMock),
         patch("src.handlers.line.line_message_handler.handle_chat_post_async", new_callable=AsyncMock) as mock_post,
@@ -206,8 +218,8 @@ def test_process_text_message_non_physical_calls_deliver_final(monkeypatch):
         patch("src.services.processing_status.mark_processing_step"),
         patch("src.handlers.line.line_message_handler.get_global_monitor") as mock_monitor,
     ):
-        mock_post.return_value = ({"status": "ok"}, 200)
-        mock_prime.return_value = MagicMock(get=MagicMock(return_value="ja"))
+        mock_post.side_effect = _post_adds_bot
+        mock_prime.return_value = {"messages": [], "user_attributes": {}, "language": "ja"}
         mock_monitor.return_value = MagicMock()
         asyncio.run(_process_text_message("Utest", "最近眠れない", "reply-tok"))
 

@@ -107,8 +107,11 @@ def enrich_other_concierge_intent(
                 structural,
             )
         else:
+            out["concierge_intent"] = "redirect"
+            out["concierge_intent_source"] = "general_other_fallback"
             logger.info(
-                "🛎️ ConciergeOrchestrator: meta LLM skipped (general_other high conf)"
+                "🛎️ ConciergeOrchestrator: meta LLM skipped (general_other high conf), "
+                "fallback intent=redirect"
             )
         return out
 
@@ -146,6 +149,8 @@ def enrich_other_concierge_intent(
             )
     else:
         logger.info("🛎️ ConciergeOrchestrator: meta intent unresolved (none)")
+        out["concierge_intent"] = "redirect"
+        out["concierge_intent_source"] = "meta_unresolved_fallback"
     return out
 
 

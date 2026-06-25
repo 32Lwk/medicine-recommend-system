@@ -68,3 +68,27 @@ def test_sync_messages_not_shadowed_by_conditional_import():
         "from src.handlers.chat.chat_session_route import sync_messages_to_db_for_admin"
         not in src
     )
+
+
+def test_finalize_pipeline_response_appends_redirect_when_no_bot():
+    """当該ターンで bot が無い場合、終端ガードが redirect を補完する。"""
+    from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
+
+    session = {
+        "messages": [{"type": "user", "content": "ふわふわ"}],
+        "user_attributes": {},
+        "ui_variant": "sage",
+    }
+    client = ChatClientInfo(client_ip="127.0.0.1", user_agent="test")
+    body, status = finalize_pipeline_response(
+        session,
+        "sid-guard",
+        client,
+        0,
+        ({"status": "ok", "message_count": 1}, 200),
+    )
+    assert status == 200
+    assert body.get("pipeline_end_guard") == "redirect"
+    bots = [m for m in session["messages"] if m.get("type") == "bot"]
+    assert len(bots) == 1
+    assert bots[0].get("concierge_intent") == "redirect"

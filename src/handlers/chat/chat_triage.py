@@ -40,6 +40,18 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
     mark_processing_step(sid, "triage")
     triage_result = None
     try:
+        from src.security.llm_security_check import schedule_llm_security_audit
+
+        schedule_llm_security_audit(
+            sanitized_message,
+            recommendation_client,
+            sid=sid,
+            user_id=session.get("username", "unknown"),
+        )
+    except ImportError:
+        pass
+
+    try:
         from src.agents.triage_agent import run_triage_agent
         from src.services.triage_analytics import log_triage_result
 

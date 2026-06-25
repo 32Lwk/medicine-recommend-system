@@ -112,6 +112,26 @@ def _ensure_user_message_for_counseling(
     _mark_session_modified(session)
 
 
+def _concierge_answered_current_turn(session: Any, original_user_message: str) -> bool:
+    """当該ユーザー発言に対する Concierge bot が既に追記済みか。"""
+    messages = session.get("messages") or []
+    if not messages or not original_user_message:
+        return False
+    last_user_idx: int | None = None
+    for i in range(len(messages) - 1, -1, -1):
+        msg = messages[i]
+        if msg.get("type") == "user":
+            if msg.get("content") == original_user_message:
+                last_user_idx = i
+            break
+    if last_user_idx is None:
+        return False
+    for msg in messages[last_user_idx + 1 :]:
+        if msg.get("type") == "bot" and msg.get("concierge"):
+            return True
+    return False
+
+
 def run_other_unknown_counseling(
     session: Any,
     client_info: Any,
@@ -130,12 +150,20 @@ def run_other_unknown_counseling(
     from src.agents.concierge_agent import should_concierge_handle
 
     check_text = (sanitized_message or original_user_message or "").strip()
-    if should_concierge_handle(
-        check_text,
-        triage_result,
-        alt_texts=[original_user_message, user_message, processed_message],
+    concierge_intent = (triage_result or {}).get("concierge_intent")
+    if (
+        should_concierge_handle(
+            check_text,
+            triage_result,
+            alt_texts=[original_user_message, user_message, processed_message],
+        )
+        and concierge_intent
+        and _concierge_answered_current_turn(session, original_user_message)
     ):
-        logger.info("⏭️ Concierge 対象のため不明要求カウンセリングをスキップ")
+        logger.info(
+            "⏭️ Concierge intent=%s かつ bot 応答済みのため不明要求カウンセリングをスキップ",
+            concierge_intent,
+        )
         return None
 
     logger.info("🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")

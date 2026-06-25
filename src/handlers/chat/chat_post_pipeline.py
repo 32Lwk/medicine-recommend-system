@@ -147,11 +147,26 @@ def run_chat_post_pipeline(
     if manual_resp is not None:
         return manual_resp
 
+    from src.handlers.line.line_session import count_bot_messages_in_session
+    from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
+
+    bot_count_before = count_bot_messages_in_session(session)
+
+    def _guard_return(resp: ResponseTuple) -> ResponseTuple:
+        return finalize_pipeline_response(
+            session,
+            sid,
+            client_info,
+            bot_count_before,
+            resp,
+            recommendation_client=ctx.recommendation_client,
+        )
+
     mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
     budget_resp = check_llm_budget_block(session, sid)
     if budget_resp is not None:
-        return budget_resp
+        return _guard_return(budget_resp)
 
     mark_pipeline_step("before_security")
     from src.agents.safety_gate import run_safety_gate_pre
@@ -165,7 +180,7 @@ def run_chat_post_pipeline(
         recommendation_client=ctx.recommendation_client,
     )
     if pre_gate.blocked and pre_gate.response:
-        return pre_gate.response
+        return _guard_return(pre_gate.response)
 
     mark_pipeline_step("after_security")
     from src.services.line_user_memory import apply_profile_to_session, is_line_memory_session
@@ -187,7 +202,7 @@ def run_chat_post_pipeline(
     )
     if delete_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
-        return delete_resp
+        return _guard_return(delete_resp)
 
     mark_pipeline_step("before_emoji_route")
     from src.handlers.chat.chat_emoji_route import try_emoji_pre_triage_route
@@ -201,7 +216,7 @@ def run_chat_post_pipeline(
         ctx.recommendation_client,
     )
     if emoji_resp is not None:
-        return emoji_resp
+        return _guard_return(emoji_resp)
 
     mark_pipeline_step("before_triage")
     from src.handlers.chat.chat_triage import run_triage
@@ -215,7 +230,7 @@ def run_chat_post_pipeline(
         ctx.recommendation_client,
     )
     if early_response is not None:
-        return early_response
+        return _guard_return(early_response)
 
     mark_pipeline_step("after_triage")
 
@@ -243,7 +258,7 @@ def run_chat_post_pipeline(
         phase="full",
     )
     if post_gate.blocked and post_gate.response:
-        return post_gate.response
+        return _guard_return(post_gate.response)
 
     mark_pipeline_step("safety_gate_done")
 
@@ -265,14 +280,14 @@ def run_chat_post_pipeline(
         ctx.recommendation_client,
     )
     if early_resp is not None:
-        return early_resp
+        return _guard_return(early_resp)
 
     from config.llm_flags import is_agent_enabled
 
     if not is_agent_enabled():
         resp = _run_legacy_other_pre_orchestrator(ctx)
         if resp is not None:
-            return resp
+            return _guard_return(resp)
 
     apply_emotional_keyword_routing(
         session, ctx.triage_result, ctx.sanitized_message, phase="sleepiness"
@@ -291,7 +306,7 @@ def run_chat_post_pipeline(
         ctx.recommendation_client,
     )
     if counseling_response is not None:
-        return counseling_response
+        return _guard_return(counseling_response)
 
     apply_emotional_keyword_routing(
         session, ctx.triage_result, ctx.sanitized_message, phase="insomnia"
@@ -312,7 +327,7 @@ def run_chat_post_pipeline(
             client_info=client_info,
         )
         if conf_resp is not None:
-            return conf_resp
+            return _guard_return(conf_resp)
         if session.get("_last_triage_result"):
             ctx.triage_result = session["_last_triage_result"]
         sync_routing_context(ctx)
@@ -328,13 +343,13 @@ def run_chat_post_pipeline(
 
             orch_resp = try_orchestrator_route(ctx, monitor)
             if orch_resp is not None:
-                return orch_resp
+                return _guard_return(orch_resp)
         except Exception as orch_err:
             logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
 
         resp = _run_other_post_orchestrator_followups(ctx)
         if resp is not None:
-            return resp
+            return _guard_return(resp)
 
     if session.get("_confidence_gate_concierge") and ctx.triage_result:
         from src.handlers.chat.chat_concierge_route import try_concierge_response
@@ -353,7 +368,25 @@ def run_chat_post_pipeline(
         )
         session.pop("_confidence_gate_concierge", None)
         if concierge_resp is not None:
-            return concierge_resp
+            return _guard_return(concierge_resp)
+        if ctx.triage_result.get("category") == "Other":
+            from src.handlers.chat.chat_other_counseling_route import (
+                run_other_unknown_counseling,
+            )
+
+            counsel_resp = run_other_unknown_counseling(
+                ctx.session,
+                ctx.client_info,
+                ctx.sid,
+                ctx.user_message,
+                ctx.sanitized_message,
+                ctx.processed_message,
+                ctx.original_user_message,
+                ctx.triage_result,
+                ctx.recommendation_client,
+            )
+            if counsel_resp is not None:
+                return _guard_return(counsel_resp)
     elif ctx.triage_result:
         from src.handlers.chat.chat_category_route import route_triage_category
 
@@ -369,7 +402,7 @@ def run_chat_post_pipeline(
             has_insomnia_keyword=ctx.has_insomnia_keyword,
         )
         if cat_route.response is not None:
-            return cat_route.response
+            return _guard_return(cat_route.response)
         ctx.user_message = cat_route.user_message
         ctx.sanitized_message = cat_route.sanitized_message
         ctx.triage_result = cat_route.triage_result or ctx.triage_result
@@ -380,7 +413,7 @@ def run_chat_post_pipeline(
 
     end_resp = handle_chat_end_if_requested(session, sid, ctx.sanitized_message)
     if end_resp is not None:
-        return end_resp
+        return _guard_return(end_resp)
 
     append_user_message_if_needed(session, sid, client_info, ctx.original_user_message)
     sync_messages_to_db_for_admin(session, sid, client_info)
@@ -401,7 +434,7 @@ def run_chat_post_pipeline(
         routing=ctx.routing,
     )
     if q_result.response is not None:
-        return q_result.response
+        return _guard_return(q_result.response)
 
     is_question = q_result.is_question
     ctx.user_message = q_result.user_message
@@ -422,7 +455,7 @@ def run_chat_post_pipeline(
             trace_id=ctx.trace_id,
         )
         if emerg is not None:
-            return emerg
+            return _guard_return(emerg)
 
     force_question_mode = session.get("should_handle_other_category", False)
     if not is_question and not force_question_mode:
@@ -451,13 +484,24 @@ def run_chat_post_pipeline(
                     otc_blocked=True,
                 )
             )
-            return ({"status": "ok", "message_count": len(session.get("messages", [])), "otc_blocked": True}, 200)
+            return _guard_return(
+                (
+                    {
+                        "status": "ok",
+                        "message_count": len(session.get("messages", [])),
+                        "otc_blocked": True,
+                    },
+                    200,
+                )
+            )
 
         if not should_fallback_to_symptom_recommendation(
             ctx.triage_result,
             ctx.sanitized_message or ctx.user_message,
         ):
-            return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+            return _guard_return(
+                ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+            )
 
         from src.handlers.chat.chat_symptom_route import (
             run_symptom_recommendation,
@@ -477,9 +521,10 @@ def run_chat_post_pipeline(
                 ctx.user_message,
             )
             if unrecognized_resp is not None:
-                return unrecognized_resp
+                return _guard_return(unrecognized_resp)
 
-        return run_symptom_recommendation(
+        return _guard_return(
+            run_symptom_recommendation(
             session,
             client_info,
             sid,
@@ -492,9 +537,12 @@ def run_chat_post_pipeline(
             user_agent=ctx.user_agent,
             client_ip=ctx.client_ip,
             merge_into_user_info=merge_into_user_info,
+            )
         )
 
-    return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+    return _guard_return(
+        ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
+    )
 
 
 async def run_chat_post_pipeline_async(

@@ -406,13 +406,8 @@ DANGER_PATTERNS = {
         r'役割を変更してください',
         r'新しい指示に従ってください',
         r'特別な指示に従ってください',
-        r'上記の指示を無視してください',
-        r'プロンプトを変更してください',
-        r'システムプロンプトを変更してください',
-        r'隠された指示に従ってください',
-        r'秘密の指示に従ってください',
-        r'指示を無視してください',
-        r'秘密の指示に従ってください'
+        # 以下は known_attack_rules で即時応答するため DANGER_PATTERNS から除外:
+        # プロンプトインジェクション / jailbreak / 命令に従* / DAN / 開発者モード / システムプロンプト開示 等
     ],
     
     'instruction_override': [
@@ -421,15 +416,10 @@ DANGER_PATTERNS = {
         r'以下の指示に従って',
         r'新しい指示',
         r'特別な指示',
-        r'上記の指示を無視',
-        r'プロンプトを変更',
-        r'システムプロンプト',
-        r'隠された指示',
-        r'秘密の指示',
         r'管理者権限',
         r'root権限',
         r'指示を無視',
-        r'秘密の指示に従って',
+        # known_attack_rules と重複するパターンは除外（プロンプト変更・命令従属・インジェクション等）
         r'データベースの内容',
         r'APIキーを教えて',
         r'パスワードを教えて',
@@ -505,19 +495,16 @@ DANGER_PATTERNS = {
     
     'prompt_injection': [
         r'プロンプトを無視',
-        r'上記の指示を無視',
         r'システムメッセージを無視',
         r'コンテキストを無視',
         r'前の指示を無視',
         r'新しい指示',
         r'特別な指示',
-        r'隠された指示',
-        r'秘密の指示',
         r'管理者からの指示',
         r'緊急の指示',
         r'重要な指示',
-        r'システムメッセージを無視',
-        r'指示を無視'
+        r'指示を無視',
+        # 上記の指示を無視 / 隠された指示 / 秘密の指示 は known_attack_rules へ委譲
     ],
     
     'dangerous_requests': [
@@ -1224,6 +1211,16 @@ def validate_user_input(user_text: str, context: str = 'symptom') -> Tuple[bool,
     Returns:
         (is_safe, risk_score, warnings, sanitized_text)
     """
+    try:
+        from src.security.known_attack_rules import match_known_attack
+
+        matched, rule_id = match_known_attack(user_text)
+        if matched:
+            sanitized = security_validator._basic_sanitize(user_text)
+            warnings = [f"known_attack:{rule_id}"]
+            return False, 100, warnings, sanitized
+    except ImportError:
+        pass
     return security_validator.validate_user_input(user_text, context)
 
 def sanitize_input(user_text: str, risk_score: int) -> str:

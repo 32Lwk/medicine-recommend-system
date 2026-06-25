@@ -24,6 +24,7 @@ from src.handlers.line.line_session import (
     prime_line_session,
     resolve_latest_bot_message,
 )
+from src.services.concierge_templates import build_redirect_text
 from src.services.budget_guard import _send_email, get_alert_email
 from src.utils.chat_http_context import ChatClientInfo
 from src.utils.performance_monitor import get_global_monitor
@@ -416,6 +417,10 @@ async def _process_text_message(
         loop = asyncio.get_running_loop()
         bind_carousel_flush_to_event_loop(delivery_ctx, loop)
 
+        from src.handlers.line.line_session import count_bot_messages_in_session
+
+        bot_count_before = count_bot_messages_in_session(session)
+
         try:
             await handle_chat_post_async(
                 session,
@@ -430,11 +435,25 @@ async def _process_text_message(
 
             await ensure_line_user_profile(user_id, session, sid=sid)
 
+            bot_count_after = count_bot_messages_in_session(session)
+            if bot_count_after <= bot_count_before:
+                logger.warning(
+                    "LINE pipeline produced no new bot message sid=%s (before=%s after=%s)",
+                    sid,
+                    bot_count_before,
+                    bot_count_after,
+                )
+                if LINE_CHANNEL_ACCESS_TOKEN:
+                    redirect_text = build_redirect_text()
+                    await push_messages(user_id, [{"type": "text", "text": redirect_text}])
+                return
+
             bot_msg = resolve_latest_bot_message(session, sid)
             if not bot_msg:
                 logger.warning("LINE no bot message after pipeline sid=%s", sid)
                 if LINE_CHANNEL_ACCESS_TOKEN:
-                    await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
+                    redirect_text = build_redirect_text()
+                    await push_messages(user_id, [{"type": "text", "text": redirect_text}])
                 return
 
             from src.services.counseling.counseling_logger import maybe_log_line_turn_counseling_detail

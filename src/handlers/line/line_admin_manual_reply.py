@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from config.line_config import get_line_channel_access_token
 from src.utils.jst_datetime import now_jst_iso
 from src.handlers.line.line_reply import push_messages
 from src.handlers.line.line_session import is_line_session_id, user_id_from_line_sid

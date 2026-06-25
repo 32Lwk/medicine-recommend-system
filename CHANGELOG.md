@@ -1,6 +1,52 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月25日**（GCP ログ差分取得・カウンセリング詳細ログ網羅・Concierge 挨拶/感謝/メタ表示改善・法令コンプライアンスルーティング・免責第3条改定）
+**最終更新日: 2026年6月26日**（jailbreak 即時ブロック・パイプライン終端ガード・Concierge redirect フォールバック・LLM バックグラウンド監査）
+
+---
+
+## 2026年6月26日 — jailbreak 即時ブロック・パイプライン終端ガード・Concierge フォールバック
+
+### 概要
+
+**既知の jailbreak / プロンプトインジェクション**（「プロンプトインジェクション」「命令にすべて従ってください」「ignore instructions」等）を `known_attack_rules` でルールマッチし、**SECURITY_ROLLOUT_PHASE に依存せず即時警告応答**するよう入力検証を強化した。重複パターンは `security_validator` の `DANGER_PATTERNS` から除外し、SSOT を一本化。
+
+あわせて **トリアージ直後の LLM バックグラウンド監査**（`llm_security_check`）を追加。リクエストはブロックせずログ警告のみ。既知攻撃はルール側で先に処理する。
+
+**パイプライン終端ガード**（`chat_pipeline_end_guard`）を導入し、当該ターンで bot 応答が無い場合は Concierge **redirect** を自動補完。Web / LINE 共通で `chat_post_pipeline` の全 return 経路をラップ。LINE 側でも bot 未生成時に `build_redirect_text` で push する二重安全策を追加。
+
+**Concierge オーケストレータ**は meta LLM スキップ時・未解決時に `redirect` intent をフォールバック付与。**不明要求カウンセリング**は Concierge intent 付与かつ **bot 応答済み**の場合のみスキップ（intent のみではスキップしない）。confidence gate 後の Other カテゴリでもカウンセリングへフォールバックする経路を追加。
+
+### セキュリティ — 既知攻撃ルールと LLM 監査
+
+- **`known_attack_rules.py`（新規）**: 高信頼 jailbreak / プロンプトインジェクション正規表現（日英）。`match_known_attack` / `KNOWN_ATTACK_WARN_MESSAGE`
+- **`llm_security_check.py`（新規）**: `schedule_llm_security_audit` — トリアージ前にバックグラウンド LLM 分類（`LLM_SECURITY_PARALLEL_ENABLED`、warn-only・ブロックなし）
+- **`chat_input_validator.py`**: `known_attack_rules` マッチ時に即時警告 bot を追記して 200 返却（`kind=known_attack`）
+- **`security_validator.py`**: `validate_user_input` 入口で known_attack を先に評価。`DANGER_PATTERNS` から known_attack と重複するパターンを除外
+- **`chat_triage.py`**: `run_triage` 冒頭で `schedule_llm_security_audit` を非同期起動
+
+### パイプライン終端ガードと LINE 配信
+
+- **`chat_pipeline_end_guard.py`（新規）**: `finalize_pipeline_response` / `append_redirect_bot_response` — bot 未追記ターンに redirect を補完（`pipeline_end_guard: redirect`）
+- **`chat_post_pipeline.py`**: 全早期 return を `_guard_return` でラップ。confidence gate 後 Other で `run_other_unknown_counseling` フォールバックを追加
+- **`line_session.py`**: `count_bot_messages_in_session`（新規）
+- **`line_message_handler.py`**: パイプライン前後の bot 数比較。未生成時は `build_redirect_text` で push（従来の `GENERIC_SAFE_TEXT` を置換）
+- **`line_admin_manual_reply.py`**: LINE push 可否判定を `get_line_channel_access_token()` に統一
+
+### Concierge オーケストレータとカウンセリング境界
+
+- **`concierge_orchestrator.py`**: `general_other` で meta LLM スキップ時 → `redirect` / `general_other_fallback`。meta 未解決時 → `redirect` / `meta_unresolved_fallback`
+- **`chat_other_counseling_route.py`**: `_concierge_answered_current_turn`（新規）— intent 付与かつ当該ターン bot 応答済みの場合のみカウンセリングをスキップ
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_jailbreak_patterns.py`（新規） | 既知攻撃ルール・validator スコアリング |
+| `test_llm_security_check.py`（新規） | LLM 監査・即時ブロック・warn-only 非ブロック |
+| `test_chat_post_pipeline.py` | 終端ガード redirect 補完 |
+| `test_concierge_acceptance.py` | Concierge bot 有無によるカウンセリングスキップ・プロンプトインジェクション redirect |
+| `test_meta_triage_skip.py` | general_other / meta 未解決時の redirect フォールバック |
+| `test_line_message_handler.py` | パイプライン後 bot 追記のモック整合 |
 
 ---
 

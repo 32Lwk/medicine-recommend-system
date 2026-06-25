@@ -246,6 +246,12 @@ def get_latest_bot_message_from_session(session: Any) -> dict | None:
     return None
 
 
+def count_bot_messages_in_session(session: Any) -> int:
+    """インメモリセッション内の bot メッセージ数。"""
+    messages = session.get("messages") if hasattr(session, "get") else []
+    return sum(1 for m in messages if isinstance(m, dict) and m.get("type") == "bot")
+
+
 def get_latest_bot_message(sid: str) -> dict | None:
     """メモリまたは DB から最新の bot メッセージを取得。"""
     session_data = get_session_from_memory(sid)
