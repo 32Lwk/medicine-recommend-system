@@ -34,9 +34,6 @@ GENERIC_SAFE_TEXT = (
     "処理中に問題が発生しました。しばらくして再送するか、薬剤師にご相談ください。"
 )
 GROUP_UNSUPPORTED_TEXT = "現在は個人チャットのみ対応しています。"
-NON_TEXT_HINT = (
-    "スタンプ・画像には対応していません。症状はテキストでお送りください。例: 頭が痛い"
-)
 FOLLOW_WELCOME_TEXT = (
     "友だち追加ありがとうございます。"
     "お困りの症状をテキストでお知らせいただければ、お薬の候補をご提案します。"
@@ -249,8 +246,41 @@ async def _dispatch_event(event: dict[str, Any]) -> None:
     if not user_id:
         return
 
-    if message.get("type") != "text":
-        await _dispatch_quick_text_reply(user_id, reply_token, NON_TEXT_HINT, event)
+    msg_type = message.get("type")
+    if msg_type == "sticker":
+        from src.handlers.line.line_non_text import (
+            STICKER_UNSUPPORTED_REPLY,
+            try_resolve_sticker_as_text,
+        )
+
+        synthetic = try_resolve_sticker_as_text(message)
+        if synthetic:
+            logger.info(
+                "LINE sticker resolved as text userId=%s packageId=%s stickerId=%s text=%s",
+                user_id,
+                message.get("packageId"),
+                message.get("stickerId"),
+                synthetic,
+            )
+            await _process_text_message(user_id, synthetic, reply_token, event=event)
+            return
+        await _dispatch_quick_text_reply(
+            user_id,
+            reply_token,
+            STICKER_UNSUPPORTED_REPLY,
+            event,
+        )
+        return
+
+    if msg_type != "text":
+        from src.handlers.line.line_non_text import build_non_text_reply
+
+        await _dispatch_quick_text_reply(
+            user_id,
+            reply_token,
+            build_non_text_reply(str(msg_type or "")),
+            event,
+        )
         return
 
     text = (message.get("text") or "").strip()

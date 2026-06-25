@@ -1,14 +1,18 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月25日**（GCP ログ解析基盤・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ）
+**最終更新日: 2026年6月25日**（GCP ログ解析基盤・LINE 絵文字/スタンプ対応・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ）
 
 ---
 
-## 2026年6月25日 — GCP ログ解析基盤・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ
+## 2026年6月25日 — GCP ログ解析基盤・LINE 絵文字/スタンプ対応・Concierge メタ質問 LLM 化・カウンセリング履歴ログ・Cloud Run 起動プローブ
 
 ### 概要
 
-本番 GCP ログの分析結果に基づき、**import 欠落**（`counseling_processor` → `generate_counseling_response`）や**ルーティングミス**（OTC/市販薬の用語定義質問が医薬品相談に誤分類）を修正した。Concierge の **capabilities / architecture / app_about** メタ質問を固定カードから**会話履歴付き LLM 応答**に刷新し、カウンセリング中のメタ質問は Concierge に委譲する。**カウンセリング詳細ログ**（`counseling_detail_log.jsonl`）へ `conversation_history` を記録するようチャット全ルートを統一。あわせて **GCP Cloud Logging エクスポートの決定的前処理パイプライン**（パーサー・セッション会話分析・CLI・skill）を新設。運用面では **`GET /health` 起動プローブ**でデプロイ直後の 503 を抑止し、フロントのセッション同期間隔を **30 秒**に変更した。
+本番 GCP ログの分析結果に基づき、**import 欠落**（`counseling_processor` → `generate_counseling_response`）や**ルーティングミス**（OTC/市販薬の用語定義質問が医薬品相談に誤分類）を修正した。Concierge の **capabilities / architecture / app_about** メタ質問を固定カードから**会話履歴付き LLM 応答**に刷新し、カウンセリング中のメタ質問は Concierge に委譲する。**カウンセリング詳細ログ**（`counseling_detail_log.jsonl`）へ `conversation_history` を記録するようチャット全ルートを統一。あわせて **GCP Cloud Logging エクスポートの決定的前処理パイプライン**（パーサー・セッション会話分析・CLI・skill）を新設し、**セッション別 Markdown トランスクリプト**と**マルチタスク並列解析**ワークフローを追加した。
+
+LINE 向けには **絵文字のみ入力**をトリアージ前に処理するルート（侮辱絵文字は長めの自己紹介、それ以外は軽量 LLM 5 分類 → Concierge/Emotional）と、**公式スタンプの挨拶・感謝をテキストに変換**して既存フローへ渡す処理を実装。画像・音声など非テキストは種別ごとの案内文で応答する。
+
+運用面では **`GET /health` 起動プローブ**でデプロイ直後の 503 を抑止し、フロントのセッション同期間隔を **30 秒**に変更した。
 
 ### GCP ログ解析基盤（新規）
 
@@ -18,6 +22,32 @@
 - **`quality_metrics.py`（新規）**: 解析バンドルから会話品質・HTTP エラー集計メトリクスを生成
 - **`scripts/analyze_gcp_logs.py`（新規）**: CLI。`log/analysis/<stem>/manifest.json` と `sections/*.json` を出力
 - **`.cursor/skills/gcp-log-analysis/SKILL.md`（新規）**: エクスポート JSON → CLI 抽出 → セクション並列 LLM 解釈 → Markdown レポートのワークフロー
+- **`session_transcript_markdown.py`（新規）**: セッション会話を送受信時刻・E2E/フェーズ別処理時間付き Markdown に整形。CLI バンドル出力時に `sessions/*.md` を自動生成
+- **`session_conversation_analysis.py`（拡張）**: trace 突合を「ユーザー送信時刻 ≥ trace 開始」の前方一致に修正。ターンに `timing`（`build_turn_timing`）と `enrich_routing_from_trace` を付与
+- **`gcp_cloud_run_log_parser.py`（拡張）**: `write_session_transcripts` 連携。`manifest.json` に `session_transcripts` パスを記録
+- **`.cursor/skills/gcp-log-analysis/references/multitask-orchestration.md`（新規）**: Wave A（固定 4 セクション）+ Wave B（セッション単位）の Task 並列起動手順
+- **`references/report-template.md`（更新）**: セッショントランスクリプト参照・マルチタスク下書きマージ形式を追記
+
+### LINE 絵文字ルート（トリアージ前）
+
+- **`chat_emoji_route.py`（新規）**: `try_emoji_pre_triage_route` — LINE セッション限定、`run_triage` 直前に挿入
+  - 侮辱絵文字（テキスト併記含む）→ `build_emoji_soft_intro_text`（侮辱への言及なし・concierge_knowledge SSOT 由来の長め自己紹介）
+  - 絵文字のみ → 軽量 LLM 5 分類（`greeting` / `thanks` / `emotional` / `offensive` / `unknown`）
+  - `greeting`・`thanks` → Concierge、`emotional` → Emotional ルート、`unknown` → テキスト入力を促す中立応答
+- **`emoji_intent.py`（新規）**: `classify_emoji_intent_llm` / `build_emoji_soft_intro_text` / `build_emoji_unknown_ack_text`
+- **`emoji_input.py`（新規）**: `is_emoji_only_message` / `contains_offensive_emoji` / `extract_emojis`（Unicode 絵文字検出）
+- **`chat_post_pipeline.py`**: `before_emoji_route` 計測付きで絵文字ルートをトリアージ前に実行
+- **`concierge_intent.py`**: `infer_structural_concierge_intent` が絵文字のみ入力を構造 intent から除外（LLM 分類との二重判定防止）
+- **`config/llm_config.py`**: `emoji_intent` ロール（`gpt-4o-mini`、タイムアウト 8 秒）を追加
+
+### LINE スタンプ・非テキストメッセージ
+
+- **`line_non_text.py`（新規）**: スタンプ・画像・音声・動画・ファイル・位置情報の案内とスタンプ解釈
+  - `try_resolve_sticker_as_text`: 挨拶・感謝スタンプを合成テキストへ変換し既存テキストフローへ渡す
+  - `build_non_text_reply`: メッセージ種別ごとの未対応案内文
+  - `keywords` / `classify_concierge_intent` / 正規表現による greeting・thanks 判定
+- **`data/line_official_sticker_intents.json`（新規）**: 公式スタンプ `packageId`/`stickerId` → 合成テキストマップ。`variant_groups` で多言語パックの index 展開
+- **`line_message_handler.py`**: スタンプは解釈成功時に `_process_text_message` へ委譲。未登録スタンプは `STICKER_UNSUPPORTED_REPLY`。その他非テキストは種別別案内
 
 ### Concierge メタ質問の LLM 化とルーティング修正
 
@@ -71,6 +101,11 @@
 | `test_concierge_acceptance.py` / `test_concierge_agent.py` | メタ LLM 化・ルーティング順序に合わせて更新 |
 | `test_hospital_identity_question.py` / `test_chat_greeting_route.py` | 委譲・挨拶境界の調整 |
 | `test_fastapi_contract.py` | `GET /health` の契約テスト |
+| `test_session_transcript_markdown.py`（新規） | フェーズ breakdown 要約・ターン timing・Markdown トランスクリプト |
+| `test_chat_emoji_route.py`（新規） | 侮辱絵文字・絵文字のみ unknown・greeting→Concierge・非 LINE スキップ |
+| `test_emoji_intent.py`（新規） | JSON パース・soft intro・unknown ack・LLM 分類 |
+| `test_emoji_input.py`（新規） | 絵文字のみ判定・侮辱絵文字検出 |
+| `test_line_non_text.py`（新規） | 非テキスト案内・スタンプ keywords/公式マップ/variant 展開・dispatch 統合 |
 
 ---
 

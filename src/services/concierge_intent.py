@@ -258,6 +258,13 @@ def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeInten
     if not text or len(text) > 12:
         return None
     try:
+        from src.utils.emoji_input import is_emoji_only_message
+
+        if is_emoji_only_message(text):
+            return None
+    except ImportError:
+        pass
+    try:
         from src.security.aggressive_input import is_aggressive_expression
 
         if is_aggressive_expression(text)[0]:

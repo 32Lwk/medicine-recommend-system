@@ -189,6 +189,20 @@ def run_chat_post_pipeline(
         sync_messages_to_db_for_admin(session, sid, client_info)
         return delete_resp
 
+    mark_pipeline_step("before_emoji_route")
+    from src.handlers.chat.chat_emoji_route import try_emoji_pre_triage_route
+
+    emoji_resp = try_emoji_pre_triage_route(
+        session,
+        client_info,
+        sid,
+        ctx.user_message,
+        ctx.sanitized_message or ctx.user_message,
+        ctx.recommendation_client,
+    )
+    if emoji_resp is not None:
+        return emoji_resp
+
     mark_pipeline_step("before_triage")
     from src.handlers.chat.chat_triage import run_triage
 

@@ -35,19 +35,36 @@
 | session_id | channel | ターン数 | 総合 grade | critical | warning | 要約 |
 |------------|---------|----------|------------|----------|---------|------|
 
-grade: `good` / `acceptable_with_issues` / `needs_improvement` / `poor`
+### セッション別 — 会話 transcript（必須・全ターン）
 
-### セッション別詳細（問題のあるセッション優先）
+**各 session について以下を必ず含める**（抜粋禁止。`sessions/<safe_id>.md` と同等の詳細度）。
 
-各セッションについて:
+#### セッション: `<session_id>`
 
-1. **時系列ターン一覧**（user_input → input_labels → routing → turn_grade）
-2. **セッション全体の強み / 弱み**（`evaluation.strengths` / `weaknesses`）
-3. **文脈を踏まえた総合コメント**（繰り返し挨拶、説明後の「えっ？」など）
+1. **会話サマリ表**（全ターン）
 
-### 意図ずれ・品質問題（自動検出）
+| # | ユーザー送信（推定） | ボット返信時刻 | ユーザー入力 | ボット返信（全文または十分な長さ） | E2E | pipeline total | 前ターンからの間隔 |
+|---|---------------------|----------------|--------------|-----------------------------------|-----|----------------|-------------------|
 
-`user_sessions.intent_mismatches` を使用:
+2. **ターン別処理時間**（全ターン・`turns[].timing` を使用）
+
+各ターンごとに:
+
+| フェーズ | 時間 |
+|---------|------|
+| POST→セキュリティ完了 | … |
+| セキュリティ | … |
+| トリアージ | … |
+| オーケストレーター | … |
+| Concierge 応答生成 | … |
+
+3. **LLM 呼び出し**（ターンごと・あれば path / latency / cost）
+
+4. **評価**: input_labels, routing（intent/triage/trace_id）, LLM verdict, 原因
+
+データソース: `sections/user_sessions.json` の `turns[].timing`, `turns[].routing`, `sessions/<safe_id>.md`
+
+### 意図ずれ・品質問題
 
 | 時刻 | session_id | ユーザー入力 | issue_type | 深刻度 | 原因仮説 |
 |------|------------|--------------|------------|--------|----------|
@@ -70,6 +87,6 @@ grade: `good` / `acceptable_with_issues` / `needs_improvement` / `poor`
 
 ## 付録
 
-- 抽出ディレクトリ: `log/analysis/<stem>/`
-- セッション JSON: `sections/user_sessions.json` → `session_conversations`
+- 抽出: `log/analysis/<stem>/`
+- セッション transcript: `sessions/<safe_session_id>.md`
 - manifest: `manifest.json`

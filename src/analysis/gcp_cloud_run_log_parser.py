@@ -26,6 +26,7 @@ from src.analysis.session_conversation_analysis import (
     build_session_conversations,
     dedupe_counseling_details,
 )
+from src.analysis.session_transcript_markdown import write_session_transcripts
 
 TRACE_ID_RE = re.compile(
     r"trace_id[=:\s\"]+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
@@ -729,6 +730,13 @@ def write_analysis_bundle(
     manifest_path = output_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     paths["manifest"] = str(manifest_path)
+
+    sc = bundle.get("sections", {}).get("user_sessions", {}).get("session_conversations")
+    if sc:
+        session_md_paths = write_session_transcripts(sc, output_dir)
+        manifest["session_transcripts"] = session_md_paths
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        paths["session_transcripts_dir"] = str(output_dir / "sessions")
 
     quality = build_quality_metrics(bundle)
     quality_path = output_dir / "quality_metrics.json"

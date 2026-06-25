@@ -9,6 +9,11 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from src.analysis.session_transcript_markdown import (
+    build_turn_timing,
+    enrich_routing_from_trace,
+)
+
 GREETING_INPUT_RE = re.compile(
     r"^(やあ|やっ|おい|こんにちは|こんばんは|おはよう|hello|hi|hey|👋|🙋)[\s!！.。?？]*$",
     re.I,
@@ -135,12 +140,16 @@ def _match_trace_for_turn(
     for trace in traces:
         if trace.get("session_id") and trace.get("session_id") != session_id:
             continue
-        delta = _seconds_between(timestamp, trace.get("started_at"))
-        if delta is None:
+        started = trace.get("started_at")
+        ts_resp, ts_start = _parse_ts(timestamp), _parse_ts(started)
+        if not ts_resp or not ts_start:
             continue
-        if delta > window_seconds:
+        if ts_start > ts_resp:
             continue
-        score = delta
+        delta_sec = (ts_resp - ts_start).total_seconds()
+        if delta_sec > window_seconds:
+            continue
+        score = delta_sec
         trace_msg = (trace.get("user_message") or "").strip()
         if trace_msg and trace_msg == user_input.strip():
             score -= 10.0
@@ -407,6 +416,7 @@ def build_session_conversations(
 
         session_traces = traces_by_session.get(session_id, [])
         built_turns: List[Dict[str, Any]] = []
+        prev_response_at: Optional[str] = None
 
         for obj in turns_sorted:
             user_input = str(obj.get("user_input") or "")
@@ -420,7 +430,12 @@ def build_session_conversations(
                 timestamp=timestamp,
                 user_input=user_input,
             )
-            routing = _routing_from_trace(matched_trace)
+            routing = enrich_routing_from_trace(matched_trace)
+            timing = build_turn_timing(
+                trace=matched_trace,
+                response_at=timestamp,
+                previous_response_at=prev_response_at,
+            )
             issues = detect_turn_issues(
                 user_input=user_input,
                 response=response,
@@ -435,6 +450,7 @@ def build_session_conversations(
                 "response_html": response.strip().startswith("<"),
                 "input_labels": input_labels,
                 "routing": routing,
+                "timing": timing,
                 "conversation_history": _conversation_history_before(built_turns),
                 "heuristic_signals": issues,
                 "issues": issues,
@@ -448,6 +464,7 @@ def build_session_conversations(
                 ),
             }
             built_turns.append(turn)
+            prev_response_at = timestamp
             for issue in issues:
                 all_mismatches.append(
                     {
