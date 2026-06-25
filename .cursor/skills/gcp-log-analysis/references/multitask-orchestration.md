@@ -2,6 +2,20 @@
 
 親エージェントが従う起動パターン。ユーザーが「multitask」「並列」「ユーザーごと」と言ったときも同じ。
 
+## Step 0 — 差分取得（multitask 標準）
+
+**JSON path が無い**、またはユーザーが「最新」「差分」「since last local」と言った場合、Wave A より前に必ず実行:
+
+```bash
+python scripts/prepare_gcp_log_analysis.py --since-last-local --service medicine-recommend-dev
+```
+
+- 成功 (`status: ready`) → `output_dir` を `<stem>` として Wave A/B へ（Step 1 は prepare 内で済み）
+- `no_gap` → 最新である旨を報告。全量再取得が必要なら `--freshness 24h` または path 指定をユーザーに確認
+- `gcloud` 未インストール / 認証エラー → ユーザーに SDK 設定を案内。path 指定があれば Step 0 スキップ可
+
+**path あり** → Step 0 スキップ。`analyze_gcp_logs.py` のみ（または prepare に path を渡す）。
+
 ## 起動数の式
 
 ```
@@ -87,7 +101,15 @@ Language: Japanese
 
 ## ユーザー向け起動フレーズ（コピー可）
 
-### 標準（4 + セッション数）
+### 標準（差分自動取得 + 4 + セッション数）
+
+```text
+@gcp-log-analysis multitaskモードで解析して。
+ローカル最新との差分を GCP から取得してから、Wave A 4エージェント並列 + セッションごとに追加エージェント並列。
+service: medicine-recommend-dev
+```
+
+### 標準（path 指定・差分取得なし）
 
 ```text
 @gcp-log-analysis multitaskモードで解析して。

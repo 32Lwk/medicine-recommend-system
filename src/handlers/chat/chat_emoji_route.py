@@ -100,6 +100,33 @@ def _sync_session_db(session: Any, client_info: Any, sid: Optional[str]) -> None
     sync_concierge_db(session, client_info, sid)
 
 
+def _log_emoji_plain_response(
+    session: Any,
+    sid: Optional[str],
+    user_message: str,
+    bot_text: str,
+    *,
+    response_type: str,
+) -> None:
+    if not sid or not user_message or not bot_text:
+        return
+    try:
+        from src.services.counseling.counseling_logger import log_counseling_response
+        from src.services.line_memory_context import get_counseling_conversation_history
+
+        log_counseling_response(
+            session_id=sid,
+            response_content=bot_text,
+            response_type=response_type,
+            category="Concierge",
+            user_input=user_message,
+            conversation_history=get_counseling_conversation_history(session, sid),
+            session=session,
+        )
+    except Exception as exc:
+        logger.debug("emoji route counseling log skipped: %s", exc)
+
+
 def _finish_plain_response(
     session: Any,
     client_info: Any,
@@ -121,6 +148,13 @@ def _finish_plain_response(
         kind=kind,
         concierge=concierge,
         concierge_intent=concierge_intent,
+    )
+    _log_emoji_plain_response(
+        session,
+        sid,
+        user_message,
+        bot_text,
+        response_type=kind,
     )
     _mark_session_modified(session)
     _sync_session_db(session, client_info, sid)

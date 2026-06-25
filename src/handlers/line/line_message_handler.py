@@ -437,6 +437,10 @@ async def _process_text_message(
                     await push_messages(user_id, [{"type": "text", "text": GENERIC_SAFE_TEXT}])
                 return
 
+            from src.services.counseling.counseling_logger import maybe_log_line_turn_counseling_detail
+
+            maybe_log_line_turn_counseling_detail(session, sid, text, bot_msg)
+
             line_messages = build_line_messages_from_bot_message(
                 bot_msg,
                 lang=lang,

@@ -13,6 +13,7 @@ from src.analysis.gcp_cloud_run_log_parser import (
     extract_http_errors,
     extract_user_sessions,
     load_gcp_log_entries,
+    _extract_multiline_json_objects,
 )
 
 @pytest.fixture
@@ -131,3 +132,68 @@ def test_chat_flow_triage_japanese(tmp_path: Path) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
     flow = extract_chat_flow(load_gcp_log_entries(path))
     assert flow["exported_traces"][0]["triage"]["category"] == "Physical"
+
+
+def test_multiline_json_with_nested_conversation_history(tmp_path: Path) -> None:
+    """conversation_history 内の `}` でブロックが途中終了しないこと。"""
+    payload = [
+        {"textPayload": "{"},
+        {"textPayload": '  "log_type": "counseling_detail",'},
+        {"textPayload": '  "timestamp": "2026-06-25T03:00:12.380973",'},
+        {"textPayload": '  "session_id": "sess-nested",'},
+        {"textPayload": '  "user_input": "このツールで何ができる？",'},
+        {"textPayload": '  "response": "市販薬の候補を案内できます。",'},
+        {"textPayload": '  "conversation_history": ['},
+        {"textPayload": "    {"},
+        {"textPayload": '      "type": "user",'},
+        {"textPayload": '      "content": "このツールで何ができる？",'},
+        {"textPayload": '      "timestamp": "2026-06-25T12:00:07+09:00",'},
+        {"textPayload": '      "uuid": "3541a96d-d266-45a6-b050-8bd0a12913d0"'},
+        {"textPayload": "    }"},
+        {"textPayload": "  ]"},
+        {"textPayload": "}"},
+    ]
+    path = tmp_path / "nested.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    entries = load_gcp_log_entries(path)
+    objs = _extract_multiline_json_objects(entries)
+    counseling = [o for o in objs if o.get("log_type") == "counseling_detail"]
+    assert len(counseling) == 1
+    assert counseling[0]["session_id"] == "sess-nested"
+    assert counseling[0]["response"] == "市販薬の候補を案内できます。"
+    assert len(counseling[0]["conversation_history"]) == 1
+
+    sessions = extract_user_sessions(entries, max_counseling=10)
+    assert sessions["counseling_detail_count"] == 1
+    turn = sessions["session_conversations"]["sessions"][0]["turns"][0]
+    assert turn["response_preview"].startswith("市販薬")
+
+
+def test_compact_single_line_structured_log(tmp_path: Path) -> None:
+    """structured_logger の 1 行 JSON 出力をそのまま拾えること。"""
+    compact = json.dumps(
+        {
+            "log_type": "counseling_detail",
+            "timestamp": "2026-06-25T03:00:12.380973",
+            "session_id": "sess-compact",
+            "user_input": "hello",
+            "response": "hi there",
+            "conversation_history": [{"type": "user", "content": "hello"}],
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    payload = [
+        {
+            "textPayload": (
+                f"2026-06-25 03:00:12,380 - INFO - カウンセリング詳細ログ [session_id: sess-compact]\n{compact}"
+            ),
+        },
+    ]
+    path = tmp_path / "compact.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    entries = load_gcp_log_entries(path)
+    objs = _extract_multiline_json_objects(entries)
+    counseling = [o for o in objs if o.get("log_type") == "counseling_detail"]
+    assert len(counseling) == 1
+    assert counseling[0]["response"] == "hi there"

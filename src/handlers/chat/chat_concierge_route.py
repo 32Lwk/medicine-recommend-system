@@ -129,6 +129,7 @@ def _sync_session_db(
 
 def _log_concierge_response(
     *,
+    session: Any,
     session_id: Optional[str],
     intent: str,
     content: str,
@@ -148,6 +149,7 @@ def _log_concierge_response(
             counseling_mode={"concierge_intent": intent, "llm_used": llm_used},
             user_input=user_input,
             conversation_history=conversation_history,
+            session=session,
         )
     except Exception as exc:
         logger.debug("concierge log skipped: %s", exc)
@@ -277,6 +279,7 @@ def try_concierge_response(
         reset_off_topic=should_reset_off_topic(routing_text),
     )
     _log_concierge_response(
+        session=session,
         session_id=sid,
         intent=intent,
         content=payload["content"][:500],

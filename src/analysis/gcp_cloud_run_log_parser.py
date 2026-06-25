@@ -158,32 +158,83 @@ def _safe_literal_eval(blob: str) -> Optional[Dict[str, Any]]:
     return value if isinstance(value, dict) else None
 
 
+def _json_brace_depth_delta(text: str) -> int:
+    """JSON 文字列リテラル外の `{` / `}` だけを数え、深さの増減を返す。"""
+    delta = 0
+    in_string = False
+    escape = False
+    for ch in text:
+        if escape:
+            escape = False
+            continue
+        if ch == "\\":
+            if in_string:
+                escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            delta += 1
+        elif ch == "}":
+            delta -= 1
+    return delta
+
+
+def _try_parse_json_dict(blob: str) -> Optional[Dict[str, Any]]:
+    try:
+        obj = json.loads(blob)
+    except json.JSONDecodeError:
+        return None
+    return obj if isinstance(obj, dict) else None
+
+
+def _extract_json_from_log_line(stripped: str) -> Optional[Dict[str, Any]]:
+    """1 行ログ（compact JSON またはログ接頭辞付き）から dict を取り出す。"""
+    start = stripped.find(JSON_LOG_START)
+    if start < 0:
+        return None
+    return _try_parse_json_dict(stripped[start:])
+
+
 def _extract_multiline_json_objects(entries: Sequence[LogEntry]) -> List[Dict[str, Any]]:
-    """structured_logger が行分割した JSON ブロックを再構成する。"""
+    """structured_logger が行分割した JSON ブロックを再構成する。
+
+    旧実装は行単位の ``}`` でブロック終了とみなしていたため、
+    ``conversation_history`` 内のネスト ``{`` / ``}`` で途中分割されていた。
+    brace depth を追跡し、トップレベルが閉じた時点で ``json.loads`` する。
+    compact 1 行 JSON（``structured_logger`` 現行出力）も同関数で拾う。
+    """
     objects: List[Dict[str, Any]] = []
     buffer: List[str] = []
-    in_block = False
+    depth = 0
 
     for entry in entries:
-        line = entry.text.rstrip("\n")
-        stripped = line.strip()
-        if stripped == JSON_LOG_START:
-            in_block = True
-            buffer = [stripped]
+        stripped = entry.text.rstrip("\n").strip()
+        if not stripped:
             continue
-        if not in_block:
+
+        if depth == 0:
+            inline = _extract_json_from_log_line(stripped)
+            if inline is not None:
+                objects.append(inline)
+                continue
+            if stripped == JSON_LOG_START:
+                buffer = [stripped]
+                depth = 1
             continue
+
         buffer.append(stripped)
-        if stripped == JSON_LOG_END or stripped.endswith(JSON_LOG_END):
-            blob = "\n".join(buffer)
-            try:
-                obj = json.loads(blob)
-                if isinstance(obj, dict):
-                    objects.append(obj)
-            except json.JSONDecodeError:
-                pass
-            in_block = False
+        depth += _json_brace_depth_delta(stripped)
+        if depth <= 0:
+            obj = _try_parse_json_dict("\n".join(buffer))
+            if obj is not None:
+                objects.append(obj)
             buffer = []
+            depth = 0
+
     return objects
 
 

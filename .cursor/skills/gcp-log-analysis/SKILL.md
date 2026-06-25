@@ -2,10 +2,11 @@
 name: gcp-log-analysis
 description: >-
   Analyzes GCP Cloud Logging exports (downloaded-logs-*.json) for medicine-recommend
-  Cloud Run. Runs scripts/analyze_gcp_logs.py, then multitask parallel agents: 4 fixed
-  section groups plus one background agent per user session. Writes Markdown to
-  log/analysis/. Use when the user paths GCP log JSON, asks for multitask log analysis,
-  per-user session review, or dev/prod incident investigation.
+  Cloud Run. Runs scripts/prepare_gcp_log_analysis.py (optional incremental fetch),
+  scripts/analyze_gcp_logs.py, then multitask parallel agents: 4 fixed section groups
+  plus one background agent per user session. Writes Markdown to log/analysis/. Use when
+  the user paths GCP log JSON, asks for multitask log analysis, per-user session review,
+  dev/prod incident investigation, or incremental log sync since last local export.
 ---
 
 # GCP Log Analysis (medicine-recommend)
@@ -14,9 +15,12 @@ description: >-
 
 User provides a **path** to `downloaded-logs-*.json` (GCP Console export) and wants automated analysis.
 
+**Multitask モード**でパス未指定、または「差分」「最新」「since last local」と言われた場合は、Step 0 でローカル最新カバレッジ以降を GCP から自動取得する。
+
 ## Workflow overview
 
 ```
+0. (multitask / 差分) prepare  →  log/raw/downloaded-logs-*.json（incremental）
 1. CLI extract  →  log/analysis/<stem>/
 2. Wave A       →  4 Task subagents (fixed groups, run_in_background, one message)
 3. Wave B       →  N Task subagents (one per session / user, run_in_background, one message)
@@ -25,9 +29,46 @@ User provides a **path** to `downloaded-logs-*.json` (GCP Console export) and wa
 
 詳細オーケストレーション: [references/multitask-orchestration.md](references/multitask-orchestration.md)
 
+## Step 0 — Incremental fetch (multitask / 差分のみ)
+
+ローカル baseline は次を参照する（**より新しい `time_range.end` を採用**）:
+
+- `log/analysis/*/metadata.json`
+- `log/raw/export_state.json`（`export_gcp_logs.py` / `prepare_gcp_log_analysis.py` が更新）
+
+### 自動取得（推奨）
+
+repo root から:
+
+```bash
+python scripts/prepare_gcp_log_analysis.py --since-last-local --service medicine-recommend-dev
+```
+
+| 終了コード / `status` | 意味 | 親エージェントの動作 |
+|----------------------|------|---------------------|
+| `ready` | 差分取得 + Step 1 完了 | 出力 JSON の `output_dir` / `manifest` で Wave A/B へ |
+| `no_gap` | ローカルが既に最新 | ユーザーに報告。必要なら `--freshness` や明示 path を確認 |
+| `empty` | 差分期間にログ 0 件 | 報告して終了 |
+| `dry_run` | filter / 時間窓のみ | gcloud 実行前の確認用 |
+
+**baseline 無し**（初回）: `--fallback-freshness 24h`（既定）で直近 24 時間を取得。
+
+**本番**を対象にする場合は `--service medicine-recommend` を明示。
+
+### エクスポートのみ（Step 1 前に手動確認したい場合）
+
+```bash
+python scripts/export_gcp_logs.py --since-last-local --service medicine-recommend-dev
+python scripts/analyze_gcp_logs.py log/raw/downloaded-logs-....json
+```
+
+### パス指定時
+
+ユーザーが JSON path を渡した場合は **Step 0 をスキップ**（既存フロー）。比較解析・再解析はそのファイルをそのまま使う。
+
 ## Step 1 — Deterministic extraction
 
-Run from repo root:
+Run from repo root（Step 0 で `prepare` 済みなら **再実行不要**。未実行時のみ）:
 
 ```bash
 python scripts/analyze_gcp_logs.py "<absolute-or-relative-path-to-log.json>"
@@ -146,6 +187,7 @@ If user asks for a specific `trace_id` or `session_id`:
 
 ## Related
 
+- Incremental export: `scripts/prepare_gcp_log_analysis.py`, `scripts/export_gcp_logs.py`
 - Ad-hoc prototype: `tmp_log_analysis.py` (superseded by this skill + CLI)
 - Recommendation quality reviews: `medicine-recommendation-advisor` → `log/reviews/`
 - Dev daily logs (local): `log/log/yyyy-mm-dd-n.md` (different format)

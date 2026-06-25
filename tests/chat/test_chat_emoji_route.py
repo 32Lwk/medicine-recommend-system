@@ -12,7 +12,8 @@ def _client():
 
 
 @patch("src.handlers.chat.chat_emoji_route.build_emoji_soft_intro_text", return_value="INTRO")
-def test_offensive_emoji_soft_intro_line_only(mock_intro):
+@patch("src.services.counseling.counseling_logger.log_counseling_response")
+def test_offensive_emoji_soft_intro_line_only(mock_log, mock_intro):
     session = {"messages": []}
     resp = try_emoji_pre_triage_route(
         session,
@@ -27,6 +28,9 @@ def test_offensive_emoji_soft_intro_line_only(mock_intro):
     bot = session["messages"][-1]
     assert bot.get("diagnosis", {}).get("message") == "INTRO" or bot.get("content") == "INTRO"
     mock_intro.assert_called_once()
+    mock_log.assert_called_once()
+    assert mock_log.call_args.kwargs["response_type"] == "emoji_soft_intro"
+    assert mock_log.call_args.kwargs["user_input"] == "🖕"
 
 
 def test_non_line_session_skipped():
@@ -44,7 +48,8 @@ def test_non_line_session_skipped():
 
 @patch("src.handlers.chat.chat_emoji_route.classify_emoji_intent_llm", return_value=("unknown", 0.5))
 @patch("src.handlers.chat.chat_emoji_route.build_emoji_unknown_ack_text", return_value="ACK")
-def test_emoji_only_unknown_ack(mock_ack, mock_llm):
+@patch("src.services.counseling.counseling_logger.log_counseling_response")
+def test_emoji_only_unknown_ack(mock_log, mock_ack, mock_llm):
     session = {"messages": []}
     resp = try_emoji_pre_triage_route(
         session,
@@ -58,6 +63,8 @@ def test_emoji_only_unknown_ack(mock_ack, mock_llm):
     mock_llm.assert_called_once()
     bot = session["messages"][-1]
     assert bot.get("diagnosis", {}).get("message") == "ACK" or bot.get("content") == "ACK"
+    mock_log.assert_called_once()
+    assert mock_log.call_args.kwargs["response_type"] == "emoji_unknown_ack"
 
 
 @patch("src.handlers.chat.chat_emoji_route.classify_emoji_intent_llm")

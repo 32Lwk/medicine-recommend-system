@@ -43,7 +43,10 @@ def _write_to_app_log(level: str, message: str, data: Dict) -> None:
         data: ログデータ（JSON形式で出力）
     """
     try:
-        log_data_str = json.dumps(data, ensure_ascii=False, indent=2)
+        # Cloud Logging は改行ごとに別エントリになるため、1 行 compact JSON にする。
+        # 解析側 gcp_cloud_run_log_parser も multiline 再構成に対応しているが、
+        # 出力を 1 行にすることで conversation_history 等のネスト分割を根本回避する。
+        log_data_str = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
         log_message = f"[{level}] {message}\n{log_data_str}"
         
         if level == 'ERROR':
