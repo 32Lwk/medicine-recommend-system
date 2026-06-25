@@ -7095,8 +7095,14 @@
             }
             if (!pendingNode && pendingNodes.length) {
                 pendingNode = pendingNodes.find(function (node) {
-                    return messageNodeTextContent(node) === lastUser;
+                    return messageNodeTextContent(node) === lastUser
+                        || messageNodeTextContent(node) === BLOCKED_USER_PLACEHOLDER
+                        || node.getAttribute('data-temporary') === 'true';
                 }) || null;
+            }
+            if (!pendingNode) {
+                const chatMessages = document.getElementById('chatMessages');
+                pendingNode = findOptimisticUserNodeForBlockedTurn(chatMessages);
             }
         }
         if (!pendingNode) {
@@ -7389,6 +7395,106 @@
         return null;
     }
 
+    /**
+     * ブロック確定後も chatPendingTurnId が消えていてキー不一致になる楽観 user を拾う。
+     * pending-user:{turnId} と pending-user:{原文先頭} の両方を試す。
+     */
+    function findOptimisticUserNodeForBlockedTurn(chatMessages) {
+        if (!chatMessages) {
+            return null;
+        }
+        const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+        const activeTurnId = getActivePendingTurnId();
+        const inflight = loadInFlightTurn(getSidFromCookie());
+        const turnIds = [];
+        if (activeTurnId) {
+            turnIds.push(activeTurnId);
+        }
+        if (inflight && inflight.pendingTurnId && turnIds.indexOf(inflight.pendingTurnId) < 0) {
+            turnIds.push(inflight.pendingTurnId);
+        }
+        for (let i = 0; i < turnIds.length; i++) {
+            const byTurn = getMessageNodeByKey(
+                chatMessages,
+                pendingUserDomKey(null, turnIds[i]),
+                'user'
+            );
+            if (byTurn) {
+                return byTurn;
+            }
+        }
+        if (lastUser) {
+            const byTextKey = getMessageNodeByKey(
+                chatMessages,
+                pendingUserDomKey(lastUser),
+                'user'
+            );
+            if (byTextKey) {
+                return byTextKey;
+            }
+        }
+        const userNodes = chatMessages.querySelectorAll('.message.user');
+        for (let j = userNodes.length - 1; j >= 0; j--) {
+            const node = userNodes[j];
+            if (node.id === 'currentTypingIndicator') {
+                continue;
+            }
+            const nodeText = messageNodeTextContent(node);
+            const nodeKey = node.getAttribute('data-message-id') || '';
+            if (lastUser && nodeText === lastUser) {
+                return node;
+            }
+            if (nodeText === BLOCKED_USER_PLACEHOLDER) {
+                return node;
+            }
+            if (node.getAttribute('data-temporary') === 'true') {
+                return node;
+            }
+            if (nodeKey.indexOf('pending-user:') === 0) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /** セッション上ブロック user が1件なのに DOM に複数ある場合は1件に畳む */
+    function collapseDuplicateBlockedUserDomNodes(chatMessages, messages) {
+        if (!chatMessages) {
+            return;
+        }
+        const blockedInSession = (messages || []).filter(isBlockedUserPlaceholderMessage).length;
+        if (blockedInSession !== 1) {
+            return;
+        }
+        const blockedNodes = [];
+        chatMessages.querySelectorAll('.message.user').forEach(function (node) {
+            if (node.id === 'currentTypingIndicator') {
+                return;
+            }
+            if (messageNodeTextContent(node) === BLOCKED_USER_PLACEHOLDER) {
+                blockedNodes.push(node);
+            }
+        });
+        if (blockedNodes.length <= 1) {
+            return;
+        }
+        let kept = null;
+        blockedNodes.forEach(function (node) {
+            const key = node.getAttribute('data-message-id') || '';
+            if (key.indexOf('u:') === 0 || key.indexOf('m:') === 0) {
+                kept = node;
+            }
+        });
+        if (!kept) {
+            kept = blockedNodes[blockedNodes.length - 1];
+        }
+        blockedNodes.forEach(function (node) {
+            if (node !== kept) {
+                node.remove();
+            }
+        });
+    }
+
     function findUserMessageNodeInDom(chatMessages, message, messageKey) {
         const key = messageKey || getMessageDomKey(message);
         const confirmed = getMessageNodeByKey(chatMessages, key, 'user');
@@ -7400,19 +7506,9 @@
             return null;
         }
         if (text === BLOCKED_USER_PLACEHOLDER) {
-            const pendingOriginal = (sessionStorage.getItem('lastUserMessage') || '').trim();
-            const activeTurnId = getActivePendingTurnId();
-            if (pendingOriginal) {
-                const pendingNode = getMessageNodeByKey(
-                    chatMessages,
-                    activeTurnId
-                        ? pendingUserDomKey(null, activeTurnId)
-                        : pendingUserDomKey(pendingOriginal),
-                    'user'
-                );
-                if (pendingNode) {
-                    return pendingNode;
-                }
+            const optimistic = findOptimisticUserNodeForBlockedTurn(chatMessages);
+            if (optimistic) {
+                return optimistic;
             }
             return findBlockedUserNodeInDom(chatMessages);
         }
@@ -12260,6 +12356,16 @@ function appendQaDelta(text, section) {
                 return;
             }
             const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+            const serverHasBlockedTurn = (messages || []).some(isBlockedUserPlaceholderMessage);
+            if (
+                serverHasBlockedTurn
+                && (
+                    text === BLOCKED_USER_PLACEHOLDER
+                    || (lastUser && text === lastUser)
+                )
+            ) {
+                return;
+            }
             const onServer = (messages || []).some(function (m) {
                 return m.type === 'user' && userMessageText(m) === text;
             });
@@ -12376,6 +12482,7 @@ function appendQaDelta(text, section) {
             }
             appendMessageNodeToChat(chatMessages, messageDiv);
         });
+        collapseDuplicateBlockedUserDomNodes(chatMessages, messages);
     }
 
     function clearRenderedChatMessagesExceptInitial() {
@@ -12752,6 +12859,7 @@ function appendQaDelta(text, section) {
         syncChatMessageOrder(messages, cardsByAnchor, chatMessages);
 
         collapseDuplicateUserDomNodes(chatMessages);
+        collapseDuplicateBlockedUserDomNodes(chatMessages, messages);
 
         ensureSessionMessagesInDom(messages);
         upgradeHandoffLegacyMessages(messages, chatMessages, {

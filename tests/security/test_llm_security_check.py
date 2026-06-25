@@ -32,7 +32,10 @@ def test_known_attack_immediate_response_in_validator():
     sanitized, err = validate_and_block_input(session, client, msg, "line:Utest")
     assert err is not None
     assert sanitized is None
+    user_msgs = [m for m in session["messages"] if m.get("type") == "user"]
     bot_msgs = [m for m in session["messages"] if m.get("type") == "bot"]
+    assert len(user_msgs) == 1
+    assert user_msgs[0]["content"] == "（この入力はブロックされました）"
     assert bot_msgs
     assert (bot_msgs[0].get("diagnosis") or {}).get("kind") == "known_attack"
 

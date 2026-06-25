@@ -37,12 +37,16 @@
 - **`concierge_orchestrator.py`**: `general_other` で meta LLM スキップ時 → `redirect` / `general_other_fallback`。meta 未解決時 → `redirect` / `meta_unresolved_fallback`
 - **`chat_other_counseling_route.py`**: `_concierge_answered_current_turn`（新規）— intent 付与かつ当該ターン bot 応答済みの場合のみカウンセリングをスキップ
 
+### フロントエンド — ブロック user DOM 安定化
+
+- **`static/js/main.js`**: ブロック確定後も `chatPendingTurnId` 消失・キー不一致で楽観 user を拾う `findOptimisticUserNodeForBlockedTurn`。セッション上ブロック user が1件のとき DOM 重複を畳む `collapseDuplicateBlockedUserDomNodes`。同期時のブロックプレースホルダ重複 append を抑止
+
 ### テスト
 
 | テスト | 内容 |
 |--------|------|
 | `test_jailbreak_patterns.py`（新規） | 既知攻撃ルール・validator スコアリング |
-| `test_llm_security_check.py`（新規） | LLM 監査・即時ブロック・warn-only 非ブロック |
+| `test_llm_security_check.py`（新規） | LLM 監査・即時ブロック・warn-only 非ブロック・ブロック user プレースホルダ追記 |
 | `test_chat_post_pipeline.py` | 終端ガード redirect 補完 |
 | `test_concierge_acceptance.py` | Concierge bot 有無によるカウンセリングスキップ・プロンプトインジェクション redirect |
 | `test_meta_triage_skip.py` | general_other / meta 未解決時の redirect フォールバック |
