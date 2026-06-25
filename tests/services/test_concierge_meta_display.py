@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from src.services.concierge_templates import (
+    build_agent_roster_items,
     extract_inline_agent_bullets,
+    merge_agent_roster_section,
     split_dynamic_body_paragraphs,
     structure_concierge_meta_display,
 )

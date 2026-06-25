@@ -19,6 +19,10 @@ from src.agents.concierge_agent import (
     resolve_concierge_intent,
     sanitize_greeting_response,
 )
+from src.services.concierge_templates import (
+    build_agent_roster_items,
+    merge_agent_roster_section,
+)
 
 
 def test_greeting_prompt_is_concise_and_principle_based():
@@ -368,6 +372,43 @@ def test_meta_payload_has_no_hints(mock_chat):
     p = build_concierge_payload("architecture", "仕組みは？", MagicMock())
     assert p["sage_diagnosis"].get("hints") == []
     assert p.get("line_flex", {}).get("hints") == []
+
+
+def test_merge_agent_roster_section_adds_knowledge_agents():
+    sections = merge_agent_roster_section([])
+    assert sections
+    assert sections[0]["title"] == "担当の役割"
+    roster = build_agent_roster_items()
+    assert len(sections[0]["items"]) == len(roster)
+    assert any("TriageAgent" in item for item in sections[0]["items"])
+
+
+@patch("src.agents.concierge_agent.concierge_chat")
+def test_architecture_structure_question_includes_roster(mock_chat):
+    mock_chat.return_value = MagicMock(
+        choices=[
+            MagicMock(
+                message=MagicMock(
+                    content=(
+                        "マルチエージェントは、用途ごとに分かれた担当が連携する仕組みです。"
+                        "このサービスでも、最初に振り分けてから専門の担当が応答します。"
+                    )
+                )
+            )
+        ]
+    )
+    p = build_concierge_payload(
+        "architecture",
+        "マルチエージェントの構成を教えて",
+        MagicMock(),
+    )
+    section_titles = [s["title"] for s in p["sage_diagnosis"].get("sections", [])]
+    assert "担当の役割" in section_titles
+    assert any(
+        "TriageAgent" in item
+        for s in p["sage_diagnosis"]["sections"]
+        for item in s["items"]
+    )
 
 
 @patch("src.agents.concierge_agent.concierge_chat")

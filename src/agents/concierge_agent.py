@@ -219,6 +219,7 @@ def format_meta_concierge_context_block(
 ) -> str:
     """メタ質問（仕組み・誰が答えているか等）向けの文脈メモ。"""
     from src.services.concierge_agent_history import (
+        is_architecture_explanation_question,
         is_multi_agent_concept_question,
         is_who_is_answering_question,
         resolve_last_responding_agent,
@@ -227,7 +228,7 @@ def format_meta_concierge_context_block(
     prior = _prior_history_for_prompt(history, user_text)
     lines: List[str] = []
     who_question = is_who_is_answering_question(user_text)
-    multi_agent_question = is_multi_agent_concept_question(user_text)
+    arch_explain = is_architecture_explanation_question(user_text)
 
     if who_question:
         last_agent = resolve_last_responding_agent(prior)
@@ -243,15 +244,21 @@ def format_meta_concierge_context_block(
                 "のように担当名から始める"
             )
     elif intent == "architecture":
-        if multi_agent_question:
+        if arch_explain:
             lines.append(
-                "- ユーザーはマルチエージェントの意味・このサービスの役割分担について聞いている"
+                "- ユーザーはマルチエージェントの構成・役割分担・仕組みについて聞いている"
+            )
+            lines.append(
+                "- 本文は導入2〜4文のみ。エージェント一覧はシステムが別カードで表示するため本文に列挙しない"
             )
             lines.append(
                 "- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない"
             )
             lines.append(
-                "- マルチエージェント＝複数の専門担当が連携する仕組みであることを中心に説明する"
+                "- 会話履歴に既出の説明があれば補足にとどめ、同じ説明の繰り返しを避ける"
+            )
+            lines.append(
+                "- ユーザーの聞き方（構成・意味・仕組み）に合わせ、自然な言い回しで答える"
             )
         else:
             lines.append(
@@ -1290,6 +1297,7 @@ def _meta_reference_block(intent: str) -> str:
 def _meta_requirements_for(user_text: str, intent: str) -> str:
     """intent 共通要件に、今回の質問タイプ限定の追記を付ける。"""
     from src.services.concierge_agent_history import (
+        is_architecture_explanation_question,
         is_multi_agent_concept_question,
         is_who_is_answering_question,
     )
@@ -1307,15 +1315,17 @@ def _meta_requirements_for(user_text: str, intent: str) -> str:
 - 会話履歴の【直前の返信担当】を第一文で明示する（例: 「いまの案内は ConciergeAgent が担当しています」）
 - 続けて、このチャットの返信文はAIが生成していること、市販薬候補選定はルールベースであることを短く述べる"""
         )
-    if is_multi_agent_concept_question(user_text):
+    if is_architecture_explanation_question(user_text):
         return (
             base
             + """
 
 【今回の質問に限定】
-- マルチエージェントの意味と、このサービスでの役割分担を説明する
+- マルチエージェントの意味と、このサービスでの役割分担・構成を、ユーザーの聞き方に合わせて説明する
+- 本文は導入2〜4文にとどめる（エージェント一覧はシステムが別表示するため本文に列挙しない）
 - 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
-- 一般論＋このツールでの例（振り分け→専門担当）を簡潔に述べる"""
+- 会話履歴を踏まえ、既出説明の繰り返しや長いフロー例（「たとえば A→B→C」）は避ける
+- 市販薬がルールベースで選ばれることは1文だけ触れてよい"""
         )
     return (
         base
@@ -1442,8 +1452,18 @@ def _assemble_dynamic_concierge_payload(
     fb = feedback_data if feedback_data is not None else _feedback_data(user_text, intent)
 
     if llm_used:
+        from src.services.concierge_agent_history import (
+            is_architecture_explanation_question,
+        )
+        from src.services.concierge_templates import merge_agent_roster_section
+
         plain = (body_text or "").strip()
+        include_roster = (
+            intent == "architecture" and is_architecture_explanation_question(user_text)
+        )
         display_message, section_specs = structure_concierge_meta_display(intent, plain)
+        if include_roster:
+            section_specs = merge_agent_roster_section(section_specs)
         from src.services.status_diagnosis_builder import StatusSection
 
         sections = [
@@ -1458,6 +1478,7 @@ def _assemble_dynamic_concierge_payload(
                 hints=hints,
                 feedback_data=fb,
                 intent=intent,
+                include_agent_roster=include_roster,
             ),
             "content_format": "status_card",
             "line_flex": build_dynamic_concierge_line_flex(
@@ -1465,6 +1486,7 @@ def _assemble_dynamic_concierge_payload(
                 body_text=body_text,
                 hints=hints,
                 intent=intent,
+                include_agent_roster=include_roster,
             ),
             "concierge_intent": intent,
             "llm_used": True,
