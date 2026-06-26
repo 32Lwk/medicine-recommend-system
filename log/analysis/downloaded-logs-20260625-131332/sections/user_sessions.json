@@ -1,0 +1,1576 @@
+{
+  "counseling_detail_count": 7,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 7,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:00:12.380973",
+      "session_id": "1782074044488131856187",
+      "user_input": "このツールで何ができる？",
+      "response": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "このツールで何ができる？",
+          "timestamp": "2026-06-25T12:00:07+09:00",
+          "uuid": "3541a96d-d266-45a6-b050-8bd0a12913d0"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:00:38.977093",
+      "session_id": "1782074044488131856187",
+      "user_input": "誰が答えた？",
+      "response": "このチャットの返答自体はAIが生成しています。  \nそのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。  \nつまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "3541a96d-d266-45a6-b050-8bd0a12913d0",
+          "content": "このツールで何ができる？",
+          "timestamp": "2026-06-25T12:00:07+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "61fc0217-af6b-4fb4-9a89-5090ed485456",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_capabilities",
+            "hints": [],
+            "title": "できること",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:00:12+09:00",
+          "content_format": "text",
+          "concierge_intent": "capabilities"
+        },
+        {
+          "type": "user",
+          "content": "誰が答えた？",
+          "timestamp": "2026-06-25T12:00:35+09:00",
+          "uuid": "3a084edb-0a38-41a4-990b-e56f6908c666"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:03:00.881466",
+      "session_id": "1782074044488131856187",
+      "user_input": "マルチエージェントってなに？",
+      "response": "マルチエージェントは、1つのAIが全部をやるのではなく、役割ごとに分かれた担当が連携する仕組みです。たとえば、このツールでは症状の整理、店舗案内、雑談対応、緊急時の案内などをそれぞれ別の担当が受け持ちます。市販薬の候補を出す部分は、会話の雰囲気で自由に決めるのではなく、あらかじめ決めたルールに沿って選ばれます。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "3541a96d-d266-45a6-b050-8bd0a12913d0",
+          "content": "このツールで何ができる？",
+          "timestamp": "2026-06-25T12:00:07+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "61fc0217-af6b-4fb4-9a89-5090ed485456",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_capabilities",
+            "hints": [],
+            "title": "できること",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:00:12+09:00",
+          "content_format": "text",
+          "concierge_intent": "capabilities"
+        },
+        {
+          "type": "user",
+          "uuid": "3a084edb-0a38-41a4-990b-e56f6908c666",
+          "content": "誰が答えた？",
+          "timestamp": "2026-06-25T12:00:35+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "651060bb-c4bb-46e5-af8d-070a207f5b93",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_architecture",
+            "hints": [],
+            "title": "仕組み・回答者",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "このチャットの返答自体はAIが生成しています。  \nそのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。  \nつまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:00:38+09:00",
+          "content_format": "text",
+          "concierge_intent": "architecture"
+        },
+        {
+          "type": "user",
+          "content": "マルチエージェントってなに？",
+          "timestamp": "2026-06-25T12:02:58+09:00",
+          "uuid": "9c5da765-4e23-44a9-8941-74be4f4b47f9"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:03:36.325423",
+      "session_id": "1782074044488131856187",
+      "user_input": "あんたについておしえて",
+      "response": "私は、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補や注意点をチャットで案内するツールです。  \n薬の候補は、会話の雰囲気で自由に作るのではなく、決められたルールに沿って選ばれます。  \n診断や処方は行わず、必要に応じて受診の目安や薬剤師・登録販売者への相談も案内します。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "3541a96d-d266-45a6-b050-8bd0a12913d0",
+          "content": "このツールで何ができる？",
+          "timestamp": "2026-06-25T12:00:07+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "61fc0217-af6b-4fb4-9a89-5090ed485456",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_capabilities",
+            "hints": [],
+            "title": "できること",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:00:12+09:00",
+          "content_format": "text",
+          "concierge_intent": "capabilities"
+        },
+        {
+          "type": "user",
+          "uuid": "3a084edb-0a38-41a4-990b-e56f6908c666",
+          "content": "誰が答えた？",
+          "timestamp": "2026-06-25T12:00:35+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "651060bb-c4bb-46e5-af8d-070a207f5b93",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_architecture",
+            "hints": [],
+            "title": "仕組み・回答者",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "このチャットの返答自体はAIが生成しています。  \nそのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。  \nつまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:00:38+09:00",
+          "content_format": "text",
+          "concierge_intent": "architecture"
+        },
+        {
+          "type": "user",
+          "uuid": "9c5da765-4e23-44a9-8941-74be4f4b47f9",
+          "content": "マルチエージェントってなに？",
+          "timestamp": "2026-06-25T12:02:58+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "aa36f1b2-bc5d-4cab-a4ac-e488f47705b1",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_architecture",
+            "hints": [],
+            "title": "仕組み・回答者",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "マルチエージェントは、1つのAIが全部をやるのではなく、役割ごとに分かれた担当が連携する仕組みです。たとえば、このツールでは症状の整理、店舗案内、雑談対応、緊急時の案内などをそれぞれ別の担当が受け持ちます。市販薬の候補を出す部分は、会話の雰囲気で自由に決めるのではなく、あらかじめ決めたルールに沿って選ばれます。",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false
+          },
+          "timestamp": "2026-06-25T12:03:00+09:00",
+          "content_format": "text",
+          "concierge_intent": "architecture"
+        },
+        {
+          "type": "user",
+          "content": "あんたについておしえて",
+          "timestamp": "2026-06-25T12:03:32+09:00",
+          "uuid": "ad7260a4-074b-4355-91b6-7e6ce7faa0da"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:08:59.718885",
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "user_input": "😭",
+      "response": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。",
+      "conversation_history": [
+        {
+          "type": "system",
+          "content": "【ユーザー長期プロファイル】\n（未登録）\n\n【過去の相談エピソード要約（最新順）】\n（過去の相談要約なし）"
+        },
+        {
+          "type": "user",
+          "content": "‎( > ·̫ <)👍🏻🌟"
+        },
+        {
+          "type": "user",
+          "content": "😭"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:09:03.808790",
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "user_input": "😭",
+      "response": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。",
+      "conversation_history": [
+        {
+          "type": "system",
+          "content": "【ユーザー長期プロファイル】\n（未登録）\n\n【過去の相談エピソード要約（最新順）】\n（過去の相談要約なし）"
+        },
+        {
+          "type": "user",
+          "content": "‎( > ·̫ <)👍🏻🌟"
+        },
+        {
+          "type": "user",
+          "content": "😭"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T03:10:28.097320",
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "user_input": "ああ",
+      "response": "こんにちは！お越しいただきありがとうございます。こちらは市販薬に関する相談をお受けするツールです。お身体の不調や気になる症状について、ぜひお話ししてみてください。例えば、頭痛や風邪の症状など、具体的に教えていただけると助かります。",
+      "conversation_history": [
+        {
+          "type": "system",
+          "content": "【ユーザー長期プロファイル】\n（未登録）\n\n【過去の相談エピソード要約（最新順）】\n（過去の相談要約なし）"
+        },
+        {
+          "type": "user",
+          "content": "😄"
+        },
+        {
+          "type": "bot",
+          "content": "[ステータス] ご案内: メッセージありがとうございます。\nこちらはチャット型医薬品相談ツール（β版）です。絵文字だけだと意図が伝わりにくい場合があります。\nお身体の症状やご質問を、テキストでお書きいただけますか。\n例：頭が痛い、のどの痛み、眠れない など"
+        },
+        {
+          "type": "user",
+          "content": "ああ"
+        }
+      ]
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-06-25T03:00:05.781015Z",
+      "message": "2026-06-25 03:00:05,782 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:34.469590Z",
+      "message": "2026-06-25 03:00:34,471 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:57.053439Z",
+      "message": "2026-06-25 03:02:57,053 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:31.685895Z",
+      "message": "2026-06-25 03:03:31,686 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.239902Z",
+      "message": "2026-06-25 03:08:36,241 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:45.041750Z",
+      "message": "2026-06-25 03:08:45,042 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:56.756564Z",
+      "message": "2026-06-25 03:08:56,757 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:09:09.947612Z",
+      "message": "2026-06-25 03:09:09,948 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:09:23.439626Z",
+      "message": "2026-06-25 03:09:23,440 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:21.380038Z",
+      "message": "2026-06-25 03:10:21,380 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 2,
+    "exported_session_count": 2,
+    "sessions": [
+      {
+        "session_id": "1782074044488131856187",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-06-25T03:00:12.380973",
+          "end": "2026-06-25T03:03:36.325423"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "このツールで何ができる？"
+          },
+          {
+            "role": "assistant",
+            "content": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。"
+          },
+          {
+            "role": "user",
+            "content": "誰が答えた？"
+          },
+          {
+            "role": "assistant",
+            "content": "このチャットの返答自体はAIが生成しています。 そのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。 つまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。"
+          },
+          {
+            "role": "user",
+            "content": "マルチエージェントってなに？"
+          },
+          {
+            "role": "assistant",
+            "content": "マルチエージェントは、1つのAIが全部をやるのではなく、役割ごとに分かれた担当が連携する仕組みです。たとえば、このツールでは症状の整理、店舗案内、雑談対応、緊急時の案内などをそれぞれ別の担当が受け持ちます。市販薬の候補を出す部分は、会話の雰囲気で自由に決めるのではなく、あらかじめ決めたルールに沿って選ばれます。"
+          },
+          {
+            "role": "user",
+            "content": "あんたについておしえて"
+          },
+          {
+            "role": "assistant",
+            "content": "私は、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補や注意点をチャットで案内するツールです。 薬の候補は、会話の雰囲気で自由に作るのではなく、決められたルールに沿って選ばれます。 診断や処方は行わず、必要に応じて受診の目安や薬剤師・登録販売者への相談も案内します。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-06-25T03:00:12.380973",
+            "user_input": "このツールで何ができる？",
+            "response_preview": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。",
+            "response_html": false,
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "d5e8b30a-fdb6-49e0-b2b7-b5abca3eb914",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "capabilities",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8996.79,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 1062.7,
+                "triage_ms": 715.8,
+                "post_to_security_ms": 2251.9,
+                "safety_gate_ms": 1692.5,
+                "confidence_gate_ms": 615.6,
+                "orchestrator_ms": 4434.4,
+                "concierge_build_ms": 3530.1,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:00:03.972065Z",
+              "response_at": "2026-06-25T03:00:12.380973",
+              "e2e_ms": 8408.9,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 8996.79,
+              "phase_summary_ms": {
+                "security_ms": 1062.7,
+                "triage_ms": 715.8,
+                "post_to_security_ms": 2251.9,
+                "safety_gate_ms": 1692.5,
+                "confidence_gate_ms": 615.6,
+                "orchestrator_ms": 4434.4,
+                "concierge_build_ms": 3530.1,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.84,
+                "parsed_message": 1.44,
+                "session_db_read": 1.7,
+                "after_get_session_db": 292.42,
+                "before_llm_setup": 583.67,
+                "before_security": 1190.09,
+                "after_security": 2252.77,
+                "before_emoji_route": 2267.17,
+                "before_triage": 2297.17,
+                "after_triage": 3013.0,
+                "safety_gate_done": 3945.27,
+                "confidence_gate_done": 4560.83,
+                "before_orchestrator": 4560.86,
+                "orch_handoff": 4582.73,
+                "orch_pre_social_intent": 4598.28,
+                "orch_enrich_start": 4722.73,
+                "orch_enrich_end": 4729.91,
+                "orch_route_concierge_start": 4729.92,
+                "concierge_resolve_intent_start": 4859.6,
+                "concierge_resolve_intent_end": 4859.69,
+                "concierge_build_payload_start": 4860.04,
+                "concierge_build_payload_end": 8390.13,
+                "orch_route_concierge_end": 8995.25,
+                "orch_route_end": 8995.28
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 2940.27,
+              "llm_session_cost_jpy": 0.0265,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:00:11.777767",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_capabilities",
+                  "latency_ms": 2940.27,
+                  "prompt_tokens": 782,
+                  "completion_tokens": 101,
+                  "cost_jpy": 0.0265,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-06-25T03:00:38.977093",
+            "user_input": "誰が答えた？",
+            "response_preview": "このチャットの返答自体はAIが生成しています。 そのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。 つまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。",
+            "response_html": false,
+            "input_labels": [
+              "about_or_capabilities"
+            ],
+            "routing": {
+              "trace_id": "b660c5b1-712e-499d-bc12-92a30c19eba0",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "architecture",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 6600.55,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 682.3,
+                "triage_ms": 14.1,
+                "post_to_security_ms": 1869.3,
+                "safety_gate_ms": 932.4,
+                "confidence_gate_ms": 593.2,
+                "orchestrator_ms": 3204.6,
+                "concierge_build_ms": 2430.6,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:00:32.962615Z",
+              "response_at": "2026-06-25T03:00:38.977093",
+              "e2e_ms": 6014.5,
+              "since_previous_turn_ms": 26596.1,
+              "pipeline_total_ms": 6600.55,
+              "phase_summary_ms": {
+                "security_ms": 682.3,
+                "triage_ms": 14.1,
+                "post_to_security_ms": 1869.3,
+                "safety_gate_ms": 932.4,
+                "confidence_gate_ms": 593.2,
+                "orchestrator_ms": 3204.6,
+                "concierge_build_ms": 2430.6,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.81,
+                "parsed_message": 1.79,
+                "session_db_read": 2.18,
+                "after_get_session_db": 299.18,
+                "before_llm_setup": 594.18,
+                "before_security": 1187.78,
+                "after_security": 1870.08,
+                "before_emoji_route": 1870.9,
+                "before_triage": 1873.64,
+                "after_triage": 1887.72,
+                "safety_gate_done": 2802.46,
+                "confidence_gate_done": 3395.65,
+                "before_orchestrator": 3395.69,
+                "orch_handoff": 3398.38,
+                "orch_pre_social_intent": 3399.73,
+                "orch_enrich_start": 3482.44,
+                "orch_enrich_end": 3483.02,
+                "orch_route_concierge_start": 3483.03,
+                "concierge_resolve_intent_start": 3579.88,
+                "concierge_resolve_intent_end": 3579.95,
+                "concierge_build_payload_start": 3580.25,
+                "concierge_build_payload_end": 6010.85,
+                "orch_route_concierge_end": 6600.27,
+                "orch_route_end": 6600.3
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1839.61,
+              "llm_session_cost_jpy": 0.0379,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:00:38.386449",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_architecture",
+                  "latency_ms": 1839.61,
+                  "prompt_tokens": 1157,
+                  "completion_tokens": 106,
+                  "cost_jpy": 0.0379,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "このツールで何ができる？"
+              },
+              {
+                "role": "assistant",
+                "content": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。"
+              }
+            ],
+            "heuristic_signals": [
+              {
+                "type": "about_question_mishandled",
+                "severity": "warning",
+                "cause_hypothesis": "meta/concierge intent=architecture が about 系質問と不一致",
+                "evidence": "input='誰が答えた？'"
+              }
+            ],
+            "issues": [
+              {
+                "type": "about_question_mishandled",
+                "severity": "warning",
+                "cause_hypothesis": "meta/concierge intent=architecture が about 系質問と不一致",
+                "evidence": "input='誰が答えた？'"
+              }
+            ],
+            "llm_review_required": true,
+            "turn_grade": "warning"
+          },
+          {
+            "timestamp": "2026-06-25T03:03:00.881466",
+            "user_input": "マルチエージェントってなに？",
+            "response_preview": "マルチエージェントは、1つのAIが全部をやるのではなく、役割ごとに分かれた担当が連携する仕組みです。たとえば、このツールでは症状の整理、店舗案内、雑談対応、緊急時の案内などをそれぞれ別の担当が受け持ちます。市販薬の候補を出す部分は、会話の雰囲気で自由に決めるのではなく、あらかじめ決めたルールに沿って選ばれます。",
+            "response_html": false,
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "96c84af6-651e-4634-ab0c-ec2102d5a815",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "architecture",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 5586.31,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 6.2,
+                "triage_ms": 1.4,
+                "post_to_security_ms": 1176.5,
+                "safety_gate_ms": 980.7,
+                "confidence_gate_ms": 591.7,
+                "orchestrator_ms": 2836.5,
+                "concierge_build_ms": 2098.0,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:02:55.881731Z",
+              "response_at": "2026-06-25T03:03:00.881466",
+              "e2e_ms": 4999.7,
+              "since_previous_turn_ms": 141904.4,
+              "pipeline_total_ms": 5586.31,
+              "phase_summary_ms": {
+                "security_ms": 6.2,
+                "triage_ms": 1.4,
+                "post_to_security_ms": 1176.5,
+                "safety_gate_ms": 980.7,
+                "confidence_gate_ms": 591.7,
+                "orchestrator_ms": 2836.5,
+                "concierge_build_ms": 2098.0,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.63,
+                "parsed_message": 0.8,
+                "session_db_read": 0.88,
+                "after_get_session_db": 296.97,
+                "before_llm_setup": 587.9,
+                "before_security": 1170.94,
+                "after_security": 1177.12,
+                "before_emoji_route": 1177.15,
+                "before_triage": 1177.17,
+                "after_triage": 1178.62,
+                "safety_gate_done": 2157.8,
+                "confidence_gate_done": 2749.5,
+                "before_orchestrator": 2749.53,
+                "orch_handoff": 2750.23,
+                "orch_pre_social_intent": 2750.35,
+                "orch_enrich_start": 2825.46,
+                "orch_enrich_end": 2825.51,
+                "orch_route_concierge_start": 2825.51,
+                "concierge_resolve_intent_start": 2899.91,
+                "concierge_resolve_intent_end": 2899.95,
+                "concierge_build_payload_start": 2900.22,
+                "concierge_build_payload_end": 4998.2,
+                "orch_route_concierge_end": 5585.99,
+                "orch_route_end": 5586.01
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1511.71,
+              "llm_session_cost_jpy": 0.0145,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:03:00.298080",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_architecture",
+                  "latency_ms": 1511.71,
+                  "prompt_tokens": 446,
+                  "completion_tokens": 39,
+                  "cost_jpy": 0.0145,
+                  "prompt_version": "completions_stream"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "このツールで何ができる？"
+              },
+              {
+                "role": "assistant",
+                "content": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。"
+              },
+              {
+                "role": "user",
+                "content": "誰が答えた？"
+              },
+              {
+                "role": "assistant",
+                "content": "このチャットの返答自体はAIが生成しています。 そのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。 つまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-06-25T03:03:36.325423",
+            "user_input": "あんたについておしえて",
+            "response_preview": "私は、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補や注意点をチャットで案内するツールです。 薬の候補は、会話の雰囲気で自由に作るのではなく、決められたルールに沿って選ばれます。 診断や処方は行わず、必要に応じて受診の目安や薬剤師・登録販売者への相談も案内します。",
+            "response_html": false,
+            "input_labels": [
+              "about_or_capabilities"
+            ],
+            "routing": {
+              "trace_id": "2420230e-d488-4cbe-8875-89bb63d9032b",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "app_about",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 6117.13,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 14.3,
+                "triage_ms": 1.6,
+                "post_to_security_ms": 901.4,
+                "safety_gate_ms": 947.9,
+                "confidence_gate_ms": 584.7,
+                "orchestrator_ms": 3682.5,
+                "concierge_build_ms": 3011.3,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:03:30.797379Z",
+              "response_at": "2026-06-25T03:03:36.325423",
+              "e2e_ms": 5528.0,
+              "since_previous_turn_ms": 35444.0,
+              "pipeline_total_ms": 6117.13,
+              "phase_summary_ms": {
+                "security_ms": 14.3,
+                "triage_ms": 1.6,
+                "post_to_security_ms": 901.4,
+                "safety_gate_ms": 947.9,
+                "confidence_gate_ms": 584.7,
+                "orchestrator_ms": 3682.5,
+                "concierge_build_ms": 3011.3,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.49,
+                "parsed_message": 0.83,
+                "session_db_read": 0.91,
+                "after_get_session_db": 294.76,
+                "before_llm_setup": 589.75,
+                "before_security": 887.57,
+                "after_security": 901.85,
+                "before_emoji_route": 901.88,
+                "before_triage": 901.89,
+                "after_triage": 903.53,
+                "safety_gate_done": 1849.75,
+                "confidence_gate_done": 2434.46,
+                "before_orchestrator": 2434.49,
+                "orch_handoff": 2435.96,
+                "orch_pre_social_intent": 2436.17,
+                "orch_enrich_start": 2477.88,
+                "orch_enrich_end": 2477.92,
+                "orch_route_concierge_start": 2477.92,
+                "concierge_resolve_intent_start": 2514.34,
+                "concierge_resolve_intent_end": 2514.38,
+                "concierge_build_payload_start": 2514.67,
+                "concierge_build_payload_end": 5525.95,
+                "orch_route_concierge_end": 6116.96,
+                "orch_route_end": 6116.98
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 2416.54,
+              "llm_session_cost_jpy": 0.014,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:03:35.739720",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_app_about",
+                  "latency_ms": 2416.54,
+                  "prompt_tokens": 433,
+                  "completion_tokens": 35,
+                  "cost_jpy": 0.014,
+                  "prompt_version": "completions_stream"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "このツールで何ができる？"
+              },
+              {
+                "role": "assistant",
+                "content": "このツールでは、症状や年齢、持病、飲んでいる薬などをもとに、市販薬の候補を安全面も含めて案内できます。あわせて、飲み合わせやアレルギー、受診の目安も確認できます。処方薬の案内や診断はできませんが、店内の場所や落とし物など店舗に関するご質問にも対応できます。"
+              },
+              {
+                "role": "user",
+                "content": "誰が答えた？"
+              },
+              {
+                "role": "assistant",
+                "content": "このチャットの返答自体はAIが生成しています。 そのうえで、内容に応じて案内の担当が分かれるマルチエージェント構成になっており、市販薬の候補はルールベースの条件判定で選ばれます。 つまり、文章を作るのはAIですが、薬の候補を決める部分は決められたルールに沿って行われています。"
+              },
+              {
+                "role": "user",
+                "content": "マルチエージェントってなに？"
+              },
+              {
+                "role": "assistant",
+                "content": "マルチエージェントは、1つのAIが全部をやるのではなく、役割ごとに分かれた担当が連携する仕組みです。たとえば、このツールでは症状の整理、店舗案内、雑談対応、緊急時の案内などをそれぞれ別の担当が受け持ちます。市販薬の候補を出す部分は、会話の雰囲気で自由に決めるのではなく、あらかじめ決めたルールに沿って選ばれます。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 4,
+          "issue_count": 1,
+          "critical_count": 0,
+          "warning_count": 1,
+          "issue_type_counts": {
+            "about_question_mishandled": 1
+          },
+          "overall_grade": "acceptable_with_issues",
+          "strengths": [
+            "3/4 ターンは応答が入力意図と整合"
+          ],
+          "weaknesses": [
+            "about_question_mishandled: 1件"
+          ],
+          "summary": "session=1782074044488131856187 turns=4 grade=acceptable_with_issues issues=[about_question_mishandled×1] first='このツールで何ができる？' last='あんたについておしえて'"
+        },
+        "llm_session_review_required": true,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+        "channel": "line",
+        "time_range": {
+          "start": "2026-06-25T03:08:59.718885",
+          "end": "2026-06-25T03:10:28.097320"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "😭"
+          },
+          {
+            "role": "assistant",
+            "content": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。"
+          },
+          {
+            "role": "user",
+            "content": "😭"
+          },
+          {
+            "role": "assistant",
+            "content": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。"
+          },
+          {
+            "role": "user",
+            "content": "ああ"
+          },
+          {
+            "role": "assistant",
+            "content": "こんにちは！お越しいただきありがとうございます。こちらは市販薬に関する相談をお受けするツールです。お身体の不調や気になる症状について、ぜひお話ししてみてください。例えば、頭痛や風邪の症状など、具体的に教えていただけると助かります。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-06-25T03:08:59.718885",
+            "user_input": "😭",
+            "response_preview": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。",
+            "response_html": false,
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "9f38282c-2b56-4176-9e02-4e405752e03d",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 6141.64,
+              "channel": "line",
+              "phase_summary_ms": {
+                "security_ms": 9.0,
+                "triage_ms": 3820.7,
+                "post_to_security_ms": 9.5,
+                "safety_gate_ms": 3841.8,
+                "confidence_gate_ms": 374.4,
+                "orchestrator_ms": 271.5,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 2
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:08:36.238083Z",
+              "response_at": "2026-06-25T03:08:59.718885",
+              "e2e_ms": 23480.8,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 6141.64,
+              "phase_summary_ms": {
+                "security_ms": 9.0,
+                "triage_ms": 3820.7,
+                "post_to_security_ms": 9.5,
+                "safety_gate_ms": 3841.8,
+                "confidence_gate_ms": 374.4,
+                "orchestrator_ms": 271.5,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "line_loading_start": 60.05,
+                "post_start": 60.92,
+                "parsed_message": 61.26,
+                "session_db_read": 61.33,
+                "after_get_session_db": 61.35,
+                "before_llm_setup": 61.36,
+                "before_security": 61.4,
+                "after_security": 70.4,
+                "before_emoji_route": 71.34,
+                "emoji_route_start": 71.36,
+                "emoji_route_skip_not_emoji_only": 71.46,
+                "before_triage": 71.89,
+                "after_triage": 3892.61,
+                "safety_gate_done": 3912.17,
+                "confidence_gate_done": 4286.55,
+                "before_orchestrator": 4286.58,
+                "orch_handoff": 4287.37,
+                "orch_pre_social_intent": 4287.48,
+                "orch_enrich_start": 4326.39,
+                "orch_enrich_end": 4333.75,
+                "orch_route_concierge_start": 4333.76,
+                "concierge_resolve_intent_start": 4370.36,
+                "concierge_resolve_intent_end": 4465.15,
+                "orch_route_concierge_end": 4465.79,
+                "orch_route_end": 4558.04,
+                "delivery_mode": 5475.61,
+                "line_reply_done": 5475.63,
+                "session_db_write": 5475.82
+              },
+              "llm_call_count": 2,
+              "llm_total_latency_ms": 2642.1899999999996,
+              "llm_session_cost_jpy": 0.2068,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:08:37.714791",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1463.34,
+                  "prompt_tokens": 3222,
+                  "completion_tokens": 93,
+                  "cost_jpy": 0.0994,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T03:08:39.488393",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1178.85,
+                  "prompt_tokens": 3493,
+                  "completion_tokens": 87,
+                  "cost_jpy": 0.1074,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-06-25T03:09:03.808790",
+            "user_input": "😭",
+            "response_preview": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。",
+            "response_html": false,
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "9f38282c-2b56-4176-9e02-4e405752e03d",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 6141.64,
+              "channel": "line",
+              "phase_summary_ms": {
+                "security_ms": 9.0,
+                "triage_ms": 3820.7,
+                "post_to_security_ms": 9.5,
+                "safety_gate_ms": 3841.8,
+                "confidence_gate_ms": 374.4,
+                "orchestrator_ms": 271.5,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 2
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:08:36.238083Z",
+              "response_at": "2026-06-25T03:09:03.808790",
+              "e2e_ms": 27570.7,
+              "since_previous_turn_ms": 4089.9,
+              "pipeline_total_ms": 6141.64,
+              "phase_summary_ms": {
+                "security_ms": 9.0,
+                "triage_ms": 3820.7,
+                "post_to_security_ms": 9.5,
+                "safety_gate_ms": 3841.8,
+                "confidence_gate_ms": 374.4,
+                "orchestrator_ms": 271.5,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "line_loading_start": 60.05,
+                "post_start": 60.92,
+                "parsed_message": 61.26,
+                "session_db_read": 61.33,
+                "after_get_session_db": 61.35,
+                "before_llm_setup": 61.36,
+                "before_security": 61.4,
+                "after_security": 70.4,
+                "before_emoji_route": 71.34,
+                "emoji_route_start": 71.36,
+                "emoji_route_skip_not_emoji_only": 71.46,
+                "before_triage": 71.89,
+                "after_triage": 3892.61,
+                "safety_gate_done": 3912.17,
+                "confidence_gate_done": 4286.55,
+                "before_orchestrator": 4286.58,
+                "orch_handoff": 4287.37,
+                "orch_pre_social_intent": 4287.48,
+                "orch_enrich_start": 4326.39,
+                "orch_enrich_end": 4333.75,
+                "orch_route_concierge_start": 4333.76,
+                "concierge_resolve_intent_start": 4370.36,
+                "concierge_resolve_intent_end": 4465.15,
+                "orch_route_concierge_end": 4465.79,
+                "orch_route_end": 4558.04,
+                "delivery_mode": 5475.61,
+                "line_reply_done": 5475.63,
+                "session_db_write": 5475.82
+              },
+              "llm_call_count": 2,
+              "llm_total_latency_ms": 2642.1899999999996,
+              "llm_session_cost_jpy": 0.2068,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:08:37.714791",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1463.34,
+                  "prompt_tokens": 3222,
+                  "completion_tokens": 93,
+                  "cost_jpy": 0.0994,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T03:08:39.488393",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1178.85,
+                  "prompt_tokens": 3493,
+                  "completion_tokens": 87,
+                  "cost_jpy": 0.1074,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "😭"
+              },
+              {
+                "role": "assistant",
+                "content": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。"
+              }
+            ],
+            "heuristic_signals": [
+              {
+                "type": "duplicate_turn",
+                "severity": "info",
+                "cause_hypothesis": "同一セッション内で同一入出力が繰り返された（再送または重複処理）",
+                "evidence": "input='😭'"
+              }
+            ],
+            "issues": [
+              {
+                "type": "duplicate_turn",
+                "severity": "info",
+                "cause_hypothesis": "同一セッション内で同一入出力が繰り返された（再送または重複処理）",
+                "evidence": "input='😭'"
+              }
+            ],
+            "llm_review_required": true,
+            "turn_grade": "warning"
+          },
+          {
+            "timestamp": "2026-06-25T03:10:28.097320",
+            "user_input": "ああ",
+            "response_preview": "こんにちは！お越しいただきありがとうございます。こちらは市販薬に関する相談をお受けするツールです。お身体の不調や気になる症状について、ぜひお話ししてみてください。例えば、頭痛や風邪の症状など、具体的に教えていただけると助かります。",
+            "response_html": false,
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "007eb56d-d750-4880-8a80-ed2b1f9ee4df",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": "greeting",
+              "meta_intent": null,
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8881.03,
+              "channel": "line",
+              "phase_summary_ms": {
+                "security_ms": 4.7,
+                "triage_ms": 4167.7,
+                "post_to_security_ms": 292.6,
+                "safety_gate_ms": 4172.5,
+                "confidence_gate_ms": 362.2,
+                "orchestrator_ms": 2967.1,
+                "concierge_build_ms": 2078.0,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 3
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T03:10:21.090277Z",
+              "response_at": "2026-06-25T03:10:28.097320",
+              "e2e_ms": 7007.0,
+              "since_previous_turn_ms": 84288.5,
+              "pipeline_total_ms": 8881.03,
+              "phase_summary_ms": {
+                "security_ms": 4.7,
+                "triage_ms": 4167.7,
+                "post_to_security_ms": 292.6,
+                "safety_gate_ms": 4172.5,
+                "confidence_gate_ms": 362.2,
+                "orchestrator_ms": 2967.1,
+                "concierge_build_ms": 2078.0,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "line_loading_start": 56.63,
+                "post_start": 57.86,
+                "parsed_message": 58.14,
+                "session_db_read": 58.27,
+                "after_get_session_db": 58.33,
+                "before_llm_setup": 58.34,
+                "before_security": 345.76,
+                "after_security": 350.47,
+                "before_emoji_route": 350.56,
+                "emoji_route_start": 350.57,
+                "emoji_route_skip_not_emoji_only": 350.58,
+                "before_triage": 350.59,
+                "after_triage": 4518.32,
+                "safety_gate_done": 4523.0,
+                "confidence_gate_done": 4885.23,
+                "before_orchestrator": 4885.26,
+                "orch_handoff": 4885.97,
+                "orch_pre_social_intent": 4886.14,
+                "orch_enrich_start": 4926.21,
+                "orch_enrich_end": 4930.44,
+                "orch_route_concierge_start": 4930.45,
+                "concierge_resolve_intent_start": 4983.39,
+                "concierge_resolve_intent_end": 4983.43,
+                "concierge_build_payload_start": 4983.76,
+                "concierge_build_payload_end": 7061.74,
+                "orch_route_concierge_end": 7852.31,
+                "orch_route_end": 7852.34,
+                "delivery_mode": 8301.63,
+                "line_reply_done": 8301.65,
+                "session_db_write": 8301.7
+              },
+              "llm_call_count": 3,
+              "llm_total_latency_ms": 4517.389999999999,
+              "llm_session_cost_jpy": 0.2301,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T03:10:23.297886",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1912.59,
+                  "prompt_tokens": 3155,
+                  "completion_tokens": 103,
+                  "cost_jpy": 0.0977,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T03:10:24.976992",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1101.77,
+                  "prompt_tokens": 3426,
+                  "completion_tokens": 73,
+                  "cost_jpy": 0.105,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T03:10:27.520976",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1503.03,
+                  "prompt_tokens": 839,
+                  "completion_tokens": 73,
+                  "cost_jpy": 0.0274,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "😭"
+              },
+              {
+                "role": "assistant",
+                "content": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。"
+              },
+              {
+                "role": "user",
+                "content": "😭"
+              },
+              {
+                "role": "assistant",
+                "content": "つらいですね。無理しなくて大丈夫です。今は少し休んで、深呼吸だけでもOK。ひとりじゃないですよ、ゆっくりで大丈夫、応援しています。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 3,
+          "issue_count": 1,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {
+            "duplicate_turn": 1
+          },
+          "overall_grade": "good",
+          "strengths": [
+            "2/3 ターンは応答が入力意図と整合"
+          ],
+          "weaknesses": [
+            "duplicate_turn: 1件"
+          ],
+          "summary": "session=line:U20a3beee49563dcd07bb3dd0fc1ca32c turns=3 grade=good issues=[duplicate_turn×1] first='😭' last='ああ'"
+        },
+        "llm_session_review_required": true,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [
+      {
+        "session_id": "1782074044488131856187",
+        "timestamp": "2026-06-25T03:00:38.977093",
+        "user_input": "誰が答えた？",
+        "issue_type": "about_question_mishandled",
+        "severity": "warning",
+        "cause_hypothesis": "meta/concierge intent=architecture が about 系質問と不一致",
+        "evidence": "input='誰が答えた？'",
+        "routing": {
+          "trace_id": "b660c5b1-712e-499d-bc12-92a30c19eba0",
+          "triage": {
+            "category": "Other",
+            "subcategory": "general_other",
+            "confidence": 1.0
+          },
+          "concierge_intent": "architecture",
+          "structural_intent": null,
+          "meta_intent": null,
+          "handoff_target": "OtherHandler",
+          "concierge_handled": null,
+          "concierge_ms": null,
+          "total_ms": 6600.55,
+          "channel": "web",
+          "phase_summary_ms": {
+            "security_ms": 682.3,
+            "triage_ms": 14.1,
+            "post_to_security_ms": 1869.3,
+            "safety_gate_ms": 932.4,
+            "confidence_gate_ms": 593.2,
+            "orchestrator_ms": 3204.6,
+            "concierge_build_ms": 2430.6,
+            "meta_triage_ms": null
+          },
+          "llm_call_count": 1
+        }
+      },
+      {
+        "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+        "timestamp": "2026-06-25T03:09:03.808790",
+        "user_input": "😭",
+        "issue_type": "duplicate_turn",
+        "severity": "info",
+        "cause_hypothesis": "同一セッション内で同一入出力が繰り返された（再送または重複処理）",
+        "evidence": "input='😭'",
+        "routing": {
+          "trace_id": "9f38282c-2b56-4176-9e02-4e405752e03d",
+          "triage": {
+            "category": "Other",
+            "subcategory": "general_other",
+            "confidence": 0.99
+          },
+          "concierge_intent": null,
+          "structural_intent": null,
+          "meta_intent": null,
+          "handoff_target": "OtherHandler",
+          "concierge_handled": null,
+          "concierge_ms": null,
+          "total_ms": 6141.64,
+          "channel": "line",
+          "phase_summary_ms": {
+            "security_ms": 9.0,
+            "triage_ms": 3820.7,
+            "post_to_security_ms": 9.5,
+            "safety_gate_ms": 3841.8,
+            "confidence_gate_ms": 374.4,
+            "orchestrator_ms": 271.5,
+            "concierge_build_ms": null,
+            "meta_triage_ms": null
+          },
+          "llm_call_count": 2
+        }
+      }
+    ],
+    "mismatch_count": 2,
+    "sessions_by_grade": {
+      "acceptable_with_issues": 1,
+      "good": 1
+    },
+    "physical_recommendation_events": []
+  },
+  "intent_mismatches": [
+    {
+      "session_id": "1782074044488131856187",
+      "timestamp": "2026-06-25T03:00:38.977093",
+      "user_input": "誰が答えた？",
+      "issue_type": "about_question_mishandled",
+      "severity": "warning",
+      "cause_hypothesis": "meta/concierge intent=architecture が about 系質問と不一致",
+      "evidence": "input='誰が答えた？'",
+      "routing": {
+        "trace_id": "b660c5b1-712e-499d-bc12-92a30c19eba0",
+        "triage": {
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        "concierge_intent": "architecture",
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": "OtherHandler",
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 6600.55,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 682.3,
+          "triage_ms": 14.1,
+          "post_to_security_ms": 1869.3,
+          "safety_gate_ms": 932.4,
+          "confidence_gate_ms": 593.2,
+          "orchestrator_ms": 3204.6,
+          "concierge_build_ms": 2430.6,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    },
+    {
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "timestamp": "2026-06-25T03:09:03.808790",
+      "user_input": "😭",
+      "issue_type": "duplicate_turn",
+      "severity": "info",
+      "cause_hypothesis": "同一セッション内で同一入出力が繰り返された（再送または重複処理）",
+      "evidence": "input='😭'",
+      "routing": {
+        "trace_id": "9f38282c-2b56-4176-9e02-4e405752e03d",
+        "triage": {
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": "OtherHandler",
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 6141.64,
+        "channel": "line",
+        "phase_summary_ms": {
+          "security_ms": 9.0,
+          "triage_ms": 3820.7,
+          "post_to_security_ms": 9.5,
+          "safety_gate_ms": 3841.8,
+          "confidence_gate_ms": 374.4,
+          "orchestrator_ms": 271.5,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 2
+      }
+    }
+  ],
+  "intent_review_queue": [
+    {
+      "session_id": "1782074044488131856187",
+      "timestamp": "2026-06-25T03:00:38.977093",
+      "user_input": "誰が答えた？",
+      "issue_type": "about_question_mishandled",
+      "severity": "warning",
+      "cause_hypothesis": "meta/concierge intent=architecture が about 系質問と不一致",
+      "evidence": "input='誰が答えた？'",
+      "routing": {
+        "trace_id": "b660c5b1-712e-499d-bc12-92a30c19eba0",
+        "triage": {
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        "concierge_intent": "architecture",
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": "OtherHandler",
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 6600.55,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 682.3,
+          "triage_ms": 14.1,
+          "post_to_security_ms": 1869.3,
+          "safety_gate_ms": 932.4,
+          "confidence_gate_ms": 593.2,
+          "orchestrator_ms": 3204.6,
+          "concierge_build_ms": 2430.6,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    },
+    {
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "timestamp": "2026-06-25T03:09:03.808790",
+      "user_input": "😭",
+      "issue_type": "duplicate_turn",
+      "severity": "info",
+      "cause_hypothesis": "同一セッション内で同一入出力が繰り返された（再送または重複処理）",
+      "evidence": "input='😭'",
+      "routing": {
+        "trace_id": "9f38282c-2b56-4176-9e02-4e405752e03d",
+        "triage": {
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": "OtherHandler",
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 6141.64,
+        "channel": "line",
+        "phase_summary_ms": {
+          "security_ms": 9.0,
+          "triage_ms": 3820.7,
+          "post_to_security_ms": 9.5,
+          "safety_gate_ms": 3841.8,
+          "confidence_gate_ms": 374.4,
+          "orchestrator_ms": 271.5,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 2
+      }
+    }
+  ],
+  "sessions_by_grade": {
+    "acceptable_with_issues": 1,
+    "good": 1
+  }
+}

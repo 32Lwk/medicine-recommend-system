@@ -6,6 +6,8 @@ __pycache__/
 .env
 *.env
 *.log
+!log/
+!log/**
 .vscode/
 .idea/
 *.sqlite
@@ -32,11 +34,10 @@ DerivedData/
 user_interface_state.xcuserstate
 *.xcuserstate
 
-# Logs（評価レポート本体は ignore、README のみ追跡）
-log/**
-!log/reviews/
-!log/reviews/README.md
+# Logs（log/ 配下は追跡。tests/fixtures の jsonl は下記例外）
 *.jsonl
+!log/
+!log/**
 !tests/fixtures/**/*.jsonl
 
 # PowerShell scripts (local use only)
@@ -54,6 +55,10 @@ test_snapshots/
 # Python 仮想環境
 .venv/
 .venv*/
+
+# macOS
+.DS_Store
+**/.DS_Store
 
 # docs 生成物・一時ファイル
 docs/**/.DS_Store

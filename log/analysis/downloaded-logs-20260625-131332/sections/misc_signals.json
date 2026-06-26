@@ -1,0 +1,494 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-06-24T19:57:54.612465Z",
+      "message": "[2026-06-24 19:57:54 +0000] [3] [INFO] Worker exiting (pid: 3)"
+    },
+    {
+      "timestamp": "2026-06-24T19:57:54.912805Z",
+      "message": "[2026-06-24 19:57:54 +0000] [31] [INFO] Booting worker with pid: 31"
+    },
+    {
+      "timestamp": "2026-06-24T23:24:24.593181Z",
+      "message": "[2026-06-24 23:24:24 +0000] [31] [INFO] Worker exiting (pid: 31)"
+    },
+    {
+      "timestamp": "2026-06-24T23:24:24.941047Z",
+      "message": "[2026-06-24 23:24:24 +0000] [34] [INFO] Booting worker with pid: 34"
+    },
+    {
+      "timestamp": "2026-06-25T02:18:04.516906Z",
+      "message": "[2026-06-25 02:18:04 +0000] [2] [INFO] Worker exiting (pid: 2)"
+    },
+    {
+      "timestamp": "2026-06-25T02:18:05.102459Z",
+      "message": "[2026-06-25 02:18:05 +0000] [43] [INFO] Booting worker with pid: 43"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:09.340491Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:09.340535Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:09.340538Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:10.114490Z",
+      "message": "[2026-06-25 02:44:10 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:10.115658Z",
+      "message": "[2026-06-25 02:44:10 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:10.127623Z",
+      "message": "[2026-06-25 02:44:10 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:10.174157Z",
+      "message": "[2026-06-25 02:44:10 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:31.789779Z",
+      "message": "[2026-06-25 02:44:31 +0000] [1] [ERROR] Worker (pid:34) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:31.832914Z",
+      "message": "[2026-06-25 02:44:31 +0000] [1] [ERROR] Worker (pid:43) was sent SIGTERM!"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-06-25T01:57:31.946850Z",
+      "message": "2026-06-25 01:57:31,947 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T01:57:31.956420Z",
+      "message": "2026-06-25 01:57:31,957 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7ff50c928d40> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:09.340512Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-06-25T02:44:09.340516Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:08.842506Z",
+      "message": "2026-06-25 03:00:08,843 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:08.849691Z",
+      "message": "2026-06-25 03:00:08,851 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:08.850067Z",
+      "message": "2026-06-25 03:00:08,851 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=12.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:08.861082Z",
+      "message": "2026-06-25 03:00:08,862 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbf209d00> server_hostname='api.openai.com' timeout=12.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:11.770941Z",
+      "message": "2026-06-25 03:00:11,771 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:00:11 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110b8637fa3d5b3-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:11.772253Z",
+      "message": "2026-06-25 03:00:11,773 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:00:11.774134Z",
+      "message": "2026-06-25 03:00:11,775 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:00:11 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110b8637fa3d5b3-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:35.679686Z",
+      "message": "2026-06-25 03:00:35,681 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'You are a medical AI assistant that extracts user attributes from text.'}, {'role': 'user', 'content': '\\nあなたは医薬品推奨システムです。ユーザーのメッセージから以下の属性情報を抽出してください。\\n\\n【ユーザーのメ"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:35.684141Z",
+      "message": "2026-06-25 03:00:35,685 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:35.684450Z",
+      "message": "2026-06-25 03:00:35,685 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=15.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:35.689930Z",
+      "message": "2026-06-25 03:00:35,691 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbd19af90> server_hostname='api.openai.com' timeout=15.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.556643Z",
+      "message": "2026-06-25 03:00:36,555 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.556665Z",
+      "message": "2026-06-25 03:00:36,556 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.556670Z",
+      "message": "2026-06-25 03:00:36,557 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=12.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.559275Z",
+      "message": "2026-06-25 03:00:36,560 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbf209d00> server_hostname='api.openai.com' timeout=12.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:37.114638Z",
+      "message": "2026-06-25 03:00:37,116 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:00:37 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110b90b1ec525ca-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:37.115955Z",
+      "message": "2026-06-25 03:00:37,117 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:00:37.117980Z",
+      "message": "2026-06-25 03:00:37,119 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:00:37 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110b90b1ec525ca-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:38.380988Z",
+      "message": "2026-06-25 03:00:38,382 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:00:38 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110b910897b38ec-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:38.382154Z",
+      "message": "2026-06-25 03:00:38,383 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:00:38.383924Z",
+      "message": "2026-06-25 03:00:38,385 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:00:38 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110b910897b38ec-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:57.902728Z",
+      "message": "2026-06-25 03:02:57,903 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'You are a medical AI assistant that extracts user attributes from text.'}, {'role': 'user', 'content': '\\nあなたは医薬品推奨システムです。ユーザーのメッセージから以下の属性情報を抽出してください。\\n\\n【ユーザーのメ"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:57.903335Z",
+      "message": "2026-06-25 03:02:57,904 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:57.903715Z",
+      "message": "2026-06-25 03:02:57,904 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=15.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:57.908042Z",
+      "message": "2026-06-25 03:02:57,908 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbcd37da0> server_hostname='api.openai.com' timeout=15.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.810504Z",
+      "message": "2026-06-25 03:02:58,810 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.811419Z",
+      "message": "2026-06-25 03:02:58,811 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.812102Z",
+      "message": "2026-06-25 03:02:58,812 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=12.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.814532Z",
+      "message": "2026-06-25 03:02:58,815 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbf209d00> server_hostname='api.openai.com' timeout=12.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.409472Z",
+      "message": "2026-06-25 03:02:59,409 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:02:59 GMT'), (b'Content-Type', b'text/event-stream; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110bc89afe7f6fa-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), ("
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.410150Z",
+      "message": "2026-06-25 03:02:59,410 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.410434Z",
+      "message": "2026-06-25 03:02:59,410 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:02:59 GMT'), ('content-type', 'text/event-stream; charset=utf-8'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110bc89afe7f6fa-NRT'), ('cf-cache-status', 'DYNAMIC'), ('serv"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.894336Z",
+      "message": "2026-06-25 03:02:59,894 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:02:59 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110bc83f8d6c564-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.894973Z",
+      "message": "2026-06-25 03:02:59,895 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:02:59.896625Z",
+      "message": "2026-06-25 03:02:59,897 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:02:59 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110bc83f8d6c564-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:32.530848Z",
+      "message": "2026-06-25 03:03:32,531 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'You are a medical AI assistant that extracts user attributes from text.'}, {'role': 'user', 'content': '\\nあなたは医薬品推奨システムです。ユーザーのメッセージから以下の属性情報を抽出してください。\\n\\n【ユーザーのメ"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:32.531430Z",
+      "message": "2026-06-25 03:03:32,532 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:32.531674Z",
+      "message": "2026-06-25 03:03:32,532 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=15.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:32.535060Z",
+      "message": "2026-06-25 03:03:32,535 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9100e0> server_hostname='api.openai.com' timeout=15.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.327084Z",
+      "message": "2026-06-25 03:03:33,327 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.327911Z",
+      "message": "2026-06-25 03:03:33,328 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.328540Z",
+      "message": "2026-06-25 03:03:33,329 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=12.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.331350Z",
+      "message": "2026-06-25 03:03:33,331 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbf209d00> server_hostname='api.openai.com' timeout=12.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.788658Z",
+      "message": "2026-06-25 03:03:33,789 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:03:33 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110bd5c6f68d780-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.789377Z",
+      "message": "2026-06-25 03:03:33,789 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:03:33.790819Z",
+      "message": "2026-06-25 03:03:33,791 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:03:33 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110bd5c6f68d780-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:35.451380Z",
+      "message": "2026-06-25 03:03:35,451 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:03:35 GMT'), (b'Content-Type', b'text/event-stream; charset=utf-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110bd61596b4789-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), ("
+    },
+    {
+      "timestamp": "2026-06-25T03:03:35.451863Z",
+      "message": "2026-06-25 03:03:35,451 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:03:35.452127Z",
+      "message": "2026-06-25 03:03:35,452 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:03:35 GMT'), ('content-type', 'text/event-stream; charset=utf-8'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110bd61596b4789-NRT'), ('cf-cache-status', 'DYNAMIC'), ('serv"
+    },
+    {
+      "timestamp": "2026-06-25T03:06:53.315353Z",
+      "message": "2026-06-25 03:06:53,315 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:06:53.322283Z",
+      "message": "2026-06-25 03:06:53,322 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbd5812e0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:00.395899Z",
+      "message": "2026-06-25 03:07:00,397 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:00.400067Z",
+      "message": "2026-06-25 03:07:00,401 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9117f0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:13.697337Z",
+      "message": "2026-06-25 03:07:13,698 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:13.700925Z",
+      "message": "2026-06-25 03:07:13,701 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9117f0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:33.600907Z",
+      "message": "2026-06-25 03:07:33,601 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:07:33.606488Z",
+      "message": "2026-06-25 03:07:33,606 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9117f0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.178977Z",
+      "message": "2026-06-25 03:08:36,180 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.186530Z",
+      "message": "2026-06-25 03:08:36,187 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9117f0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.256127Z",
+      "message": "2026-06-25 03:08:36,257 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.257143Z",
+      "message": "2026-06-25 03:08:36,258 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.257862Z",
+      "message": "2026-06-25 03:08:36,259 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=8.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.262822Z",
+      "message": "2026-06-25 03:08:36,264 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbf209d00> server_hostname='api.openai.com' timeout=8.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:37.710946Z",
+      "message": "2026-06-25 03:08:37,711 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:08:37 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110c4c6a9f5d75e-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:37.711488Z",
+      "message": "2026-06-25 03:08:37,712 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:08:37.712888Z",
+      "message": "2026-06-25 03:08:37,713 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:08:37 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110c4c6a9f5d75e-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:38.313230Z",
+      "message": "2026-06-25 03:08:38,314 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。Otherカテゴリに分類された入力を詳細に分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。第一段階で「Other」カテゴリに分類されたユーザー入力を、以下の詳細なサブカテゴリに分類してください。\\n\\n【サブカテゴリ】\\n1. **inappro"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:38.314198Z",
+      "message": "2026-06-25 03:08:38,315 - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:39.484341Z",
+      "message": "2026-06-25 03:08:39,485 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 25 Jun 2026 03:08:39 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a110c4d378fed75e-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'clo"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:39.484929Z",
+      "message": "2026-06-25 03:08:39,486 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-06-25T03:08:39.486225Z",
+      "message": "2026-06-25 03:08:39,487 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Thu, 25 Jun 2026 03:08:39 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a110c4d378fed75e-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:41.570573Z",
+      "message": "2026-06-25 03:08:41,571 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:41.574058Z",
+      "message": "2026-06-25 03:08:41,575 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbc9117f0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:44.986421Z",
+      "message": "2026-06-25 03:08:44,987 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:44.991016Z",
+      "message": "2026-06-25 03:08:44,991 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fccbd5812e0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:45.049868Z",
+      "message": "2026-06-25 03:08:45,050 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは医薬品相談チャットにおける絵文字のみ入力の意図分類器です。\\n出力は JSON のみ。説明文は不要です。'}, {'role': 'user', 'content': '次の絵文字のみメッセージの意図を分類してください。\\n\\n【分類】\\n- greeting: 挨拶・呼びかけ（👋🙋等）\\n- thanks: 感謝・"
+    }
+  ],
+  "emergency": [
+    {
+      "timestamp": "2026-06-25T03:00:03.972743Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:32.964039Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.556643Z",
+      "message": "2026-06-25 03:00:36,555 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.810504Z",
+      "message": "2026-06-25 03:02:58,810 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:36.256127Z",
+      "message": "2026-06-25 03:08:36,257 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.086803Z",
+      "message": "2026-06-25 03:08:40,087 - INFO - 🔍 緊急事案検出開始: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.087057Z",
+      "message": "2026-06-25 03:08:40,088 - INFO - 🔍 緊急事案検出なし: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.465221Z",
+      "message": "2026-06-25 03:08:40,466 - INFO - 🔍 緊急事案検出開始: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.465406Z",
+      "message": "2026-06-25 03:08:40,466 - INFO - 🔍 緊急事案検出なし: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.465733Z",
+      "message": "2026-06-25 03:08:40,466 - INFO - 🔍 緊急事案検出開始: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:40.466126Z",
+      "message": "2026-06-25 03:08:40,467 - INFO - 🔍 緊急事案検出なし: ‎( > ·̫ <)👍🏻🌟"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:21.389185Z",
+      "message": "2026-06-25 03:10:21,389 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.553532Z",
+      "message": "2026-06-25 03:10:25,554 - INFO - 🔍 緊急事案検出開始: ああ"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.553667Z",
+      "message": "2026-06-25 03:10:25,554 - INFO - 🔍 緊急事案検出なし: ああ"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.919344Z",
+      "message": "2026-06-25 03:10:25,920 - INFO - 🔍 緊急事案検出開始: ああ"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.919490Z",
+      "message": "2026-06-25 03:10:25,920 - INFO - 🔍 緊急事案検出なし: ああ"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.919746Z",
+      "message": "2026-06-25 03:10:25,920 - INFO - 🔍 緊急事案検出開始: ああ"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:25.919870Z",
+      "message": "2026-06-25 03:10:25,920 - INFO - 🔍 緊急事案検出なし: ああ"
+    }
+  ],
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-06-25T03:00:12.968104Z",
+      "message": "2026-06-25 03:00:12,969 - INFO - PIPELINE_PERF {'channel': 'web', 'sid': '1782074044488131856187', 'total_ms': 8996.79, 'breakdown': {'post_start': 0.84, 'parsed_message': 1.44, 'session_db_read': 1.7, 'after_get_session_db': 292.42, 'before_llm_setup': 583.67, 'before_security': 1190.09, 'after_security': 2252.77, 'before_emoji_route': 2267.17, 'b"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:36.556643Z",
+      "message": "2026-06-25 03:00:36,555 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:00:39.563469Z",
+      "message": "2026-06-25 03:00:39,564 - INFO - PIPELINE_PERF {'channel': 'web', 'sid': '1782074044488131856187', 'total_ms': 6600.55, 'breakdown': {'post_start': 0.81, 'parsed_message': 1.79, 'session_db_read': 2.18, 'after_get_session_db': 299.18, 'before_llm_setup': 594.18, 'before_security': 1187.78, 'after_security': 1870.08, 'before_emoji_route': 1870.9, 'b"
+    },
+    {
+      "timestamp": "2026-06-25T03:02:58.810504Z",
+      "message": "2026-06-25 03:02:58,810 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。'}, {'role': 'user', 'content': 'あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「O"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:01.467126Z",
+      "message": "2026-06-25 03:03:01,467 - INFO - PIPELINE_PERF {'channel': 'web', 'sid': '1782074044488131856187', 'total_ms': 5586.31, 'breakdown': {'post_start': 0.63, 'parsed_message': 0.8, 'session_db_read': 0.88, 'after_get_session_db': 296.97, 'before_llm_setup': 587.9, 'before_security': 1170.94, 'after_security': 1177.12, 'before_emoji_route': 1177.15, 'be"
+    },
+    {
+      "timestamp": "2026-06-25T03:03:36.914513Z",
+      "message": "2026-06-25 03:03:36,914 - INFO - PIPELINE_PERF {'channel': 'web', 'sid': '1782074044488131856187', 'total_ms': 6117.13, 'breakdown': {'post_start': 0.49, 'parsed_message': 0.83, 'session_db_read': 0.91, 'after_get_session_db': 294.76, 'before_llm_setup': 589.75, 'before_security': 887.57, 'after_security': 901.85, 'before_emoji_route': 901.88, 'bef"
+    },
+    {
+      "timestamp": "2026-06-25T03:08:42.318973Z",
+      "message": "2026-06-25 03:08:42,320 - INFO - PIPELINE_PERF {'channel': 'line', 'sid': 'line:U20a3beee49563dcd07bb3dd0fc1ca32c', 'total_ms': 6141.64, 'breakdown': {'line_loading_start': 60.05, 'post_start': 60.92, 'parsed_message': 61.26, 'session_db_read': 61.33, 'after_get_session_db': 61.35, 'before_llm_setup': 61.36, 'before_security': 61.4, 'after_security"
+    },
+    {
+      "timestamp": "2026-06-25T03:10:29.914758Z",
+      "message": "2026-06-25 03:10:29,915 - INFO - PIPELINE_PERF {'channel': 'line', 'sid': 'line:U20a3beee49563dcd07bb3dd0fc1ca32c', 'total_ms': 8881.03, 'breakdown': {'line_loading_start': 56.63, 'post_start': 57.86, 'parsed_message': 58.14, 'session_db_read': 58.27, 'after_get_session_db': 58.33, 'before_llm_setup': 58.34, 'before_security': 345.76, 'after_securi"
+    }
+  ]
+}

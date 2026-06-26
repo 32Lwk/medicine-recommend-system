@@ -1,0 +1,463 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 13,
+    "by_status": {
+      "404": 4,
+      "405": 1,
+      "500": 8
+    },
+    "by_path": {
+      "POST /api/main_manual_reply_queue (500)": 8,
+      "GET /apple-touch-icon.png (404)": 2,
+      "GET /apple-touch-icon-precomposed.png (404)": 2,
+      "GET /line/webhook (405)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "POST /api/chat/stream": {
+        "count": 15,
+        "min": 4.378,
+        "max": 14.682,
+        "avg": 11.1,
+        "median": 12.28,
+        "p95": 13.608
+      },
+      "POST /api/admin/sessions/line%3AU20a3beee49563dcd07bb3dd0fc1ca32c/line_memory/backfill": {
+        "count": 1,
+        "min": 5.857,
+        "max": 5.857,
+        "avg": 5.857,
+        "median": 5.857,
+        "p95": 5.857
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-06-25T05:40:51.851536Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.356509751,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00124-gjq",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T05:40:51.851731Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.357353361,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00124-gjq",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T10:28:55.110375Z",
+        "status": 405,
+        "method": "GET",
+        "path": "/line/webhook",
+        "latency_s": 0.002141059,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:47.684091Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.716666866,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.069345Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.665867013,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.242456Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.682580382,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.429210Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.907681898,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.600988Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 1.329831023,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.781857Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.736230059,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.983247Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 1.538603697,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.148065Z",
+        "status": 500,
+        "method": "POST",
+        "path": "/api/main_manual_reply_queue",
+        "latency_s": 0.9650326,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00127-klm",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-26T02:49:33.360576Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.118622225,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00129-v9q",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-26T02:49:33.363726Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.00370634,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00129-v9q",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 35,
+    "top_patterns": [
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line",
+        "count": 8
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl",
+        "count": 8
+      },
+      {
+        "message": "[2026-06-25 15:39:54 +0000] [80] [ERROR] Exception in ASGI application",
+        "count": 2
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_transports/default.py\", line 6",
+        "count": 1
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 990, in",
+        "count": 1
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/agents/episode_summary_agent.py\", line 106, in run_episode_summary_a",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:48,376 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:48 +0000] [80] [ERROR] Exception in ASGI application",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:53,734 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:53 +0000] [80] [ERROR] Exception in ASGI application",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:53,922 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:53 +0000] [47] [ERROR] Exception in ASGI application",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:54,336 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:54,517 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:54 +0000] [47] [ERROR] Exception in ASGI application",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:54,929 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:55,111 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:55 +0000] [47] [ERROR] Exception in ASGI application",
+        "count": 1
+      },
+      {
+        "message": "2026-06-25 15:39:55,520 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "count": 1
+      },
+      {
+        "message": "[2026-06-25 15:39:55 +0000] [80] [ERROR] Exception in ASGI application",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-06-25T07:30:46.143877Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_transports/default.py\", line 69, in map_httpcore_exceptions\n    yield\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_transports/default.py\", line 233, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/usr/",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T07:30:46.143911Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 990, in _request\n    response = self._client.send(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:33:08.786282Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/agents/episode_summary_agent.py\", line 106, in run_episode_summary_agent\n    append_consultation_summary(line_sid, parsed, episode_id=episode_id)\nTypeError: append_consultation_summary() got an unexpected keyword argument 'episode_id'",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:48.374655Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:48.375535Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:48,376 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:48.401083Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:48 +0000] [80] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:48.401152Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.733129Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.733588Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:53,734 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.736338Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:53 +0000] [80] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.736538Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.921250Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.921811Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:53,922 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.926087Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:53 +0000] [47] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:53.926139Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.334889Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.335999Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:54,336 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.338212Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:54 +0000] [80] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.338273Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.516161Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.516720Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:54,517 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.519162Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:54 +0000] [47] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.519206Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.927971Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.928938Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:54,929 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.931268Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:54 +0000] [80] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:54.931335Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.109905Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.111062Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:55,111 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.113494Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:55 +0000] [47] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.113558Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.519529Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py\", line 165, in __call__\n    await self.app(scope, receive, _send)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 93, in __call__\n    await self.simple_response(scope, receive, send, request_headers=headers)\n  File \"/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py\", line 144, in simple_response\n    await self.app(scope, receive,",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.520300Z",
+        "severity": "DEFAULT",
+        "message": "2026-06-25 15:39:55,520 - ERROR - [ERROR] エラー詳細ログ [session_id: 1782074044488131856187] [type: NameError]",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.522381Z",
+        "severity": "DEFAULT",
+        "message": "[2026-06-25 15:39:55 +0000] [80] [ERROR] Exception in ASGI application",
+        "revision": "medicine-recommend-dev-00127-klm"
+      },
+      {
+        "timestamp": "2026-06-25T15:39:55.522438Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py\", line 401, in run_asgi\n    result = await app(  # type: ignore[func-returns-value]\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py\", line 70, in __call__\n    return await self.app(scope, receive, send)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python",
+        "revision": "medicine-recommend-dev-00127-klm"
+      }
+    ]
+  }
+}
