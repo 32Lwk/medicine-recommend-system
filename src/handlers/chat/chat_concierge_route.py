@@ -104,6 +104,10 @@ def _sync_session_db(
             "user_attributes": session.get("user_attributes") or existing.get("user_attributes") or {},
             "session_active": True,
         })
+        if session.get("concierge_state") is not None:
+            session_data["concierge_state"] = session.get("concierge_state")
+        if session.get("last_triage_result") is not None:
+            session_data["last_triage_result"] = session.get("last_triage_result")
         touch_session_in_memory(sid, session_data)
         maybe_persist_session_activity(sid, session_data)
         return
@@ -136,9 +140,17 @@ def _log_concierge_response(
     llm_used: bool,
     user_input: str,
     conversation_history: Optional[list] = None,
+    concierge_intent_source: Optional[str] = None,
 ) -> None:
     try:
         from src.services.counseling.counseling_logger import log_counseling_response
+
+        counseling_mode: Dict[str, Any] = {
+            "concierge_intent": intent,
+            "llm_used": llm_used,
+        }
+        if concierge_intent_source:
+            counseling_mode["concierge_intent_source"] = concierge_intent_source
 
         log_counseling_response(
             session_id=session_id,
@@ -146,7 +158,7 @@ def _log_concierge_response(
             response_type=f"concierge_{intent}",
             category="Concierge",
             confidence=1.0,
-            counseling_mode={"concierge_intent": intent, "llm_used": llm_used},
+            counseling_mode=counseling_mode,
             user_input=user_input,
             conversation_history=conversation_history,
             session=session,
@@ -224,6 +236,7 @@ def try_concierge_response(
             recommendation_client,
             conversation_history=history_pre,
             session_id=sid,
+            session=session,
             alt_texts=[user_message, processed_message],
             routing_ctx=routing_ctx,
         )
@@ -286,6 +299,7 @@ def try_concierge_response(
         llm_used=bool(payload.get("llm_used")),
         user_input=llm_text,
         conversation_history=log_history,
+        concierge_intent_source=(triage_result or {}).get("concierge_intent_source"),
     )
     _mark_session_modified(session)
 

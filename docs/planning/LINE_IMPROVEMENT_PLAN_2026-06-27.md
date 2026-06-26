@@ -65,7 +65,7 @@
 
 | ID | タスク | 受け入れ基準 |
 |----|--------|-------------|
-| P1-1 | architecture 文脈継続 | 「技術面を詳しく」→ architecture 維持 |
+| P1-1 | architecture 文脈継続 | ✅ 実装済み（`CONCIERGE_CONTEXT_ROUTING_PLAN` 参照） |
 | P1-2 | 範囲外 → redirect | プログラミング概念等が OTC テンプレにならない |
 | P1-3 | 発熱 vs 店舗ゲート | 「39度の熱」→ 店舗案内にならない |
 | P1-4 | `counseling_detail` 全経路化 | response_missing < 20% |

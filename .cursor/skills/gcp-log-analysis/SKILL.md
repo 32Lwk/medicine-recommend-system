@@ -135,6 +135,23 @@ Step 1 後、`user_sessions.json` → `session_conversations.sessions` の件数
 
 CLI は `log/analysis/<stem>/sessions/<safe_id>.md` にセッション transcript を自動生成する。Wave B / 最終レポートはこれを参照・拡張する。
 
+### Step 1 で組み立てるセッション transcript（2026-06 改善）
+
+`build_session_conversations` は次の **3 ソース** をマージして全ターンを復元する:
+
+| ソース | 内容 | 優先度 |
+|--------|------|--------|
+| `counseling_detail` | ユーザー入力・ボット返信全文・timestamp | 最高 |
+| `counseling_detail.conversation_history` | 同一レコード内の先行ターン（絵文字・挨拶など） | 中 |
+| `chat_flow.exported_traces` | `user_message` + ルーティング/遅延（返信本文なしの場合あり） | 補完 |
+
+- `counseling_detail` が **0 件でも** `chat_flow` に `session_id` があるセッションは **trace-only セッション** として `sessions[]` に含める。
+- 返信本文が無いターンは `response_missing: true` とし、transcript に「ログ未記録」と明記する。
+- **アプリ側（2026-06）**: 全経路で `finalize_pipeline_response` が `counseling_detail` を **非同期**（`ThreadPoolExecutor`）で全文出力。応答パスはブロックしない。デプロイ後は `response_missing` ターンが減る。
+- `quality_metrics.json` の `trace_only_session_count` / `chat_flow_trace_count` でギャップを確認できる。
+
+**Wave B / マージ時の必須ルール**: `sessions/<safe_id>.md` と `turns[]` の **全ターン** を最終レポートに転記する（1ターンに潰さない）。`response_missing` ターンはルーティング・遅延のみ評価可。
+
 ### Subagent prompt template（Wave A 共通）
 
 1. Read the assigned `log/analysis/<stem>/sections/<name>.json` files.
@@ -176,7 +193,7 @@ Delete or keep `draft_*.md` — prefer keeping drafts for audit.
 - Quote log evidence briefly (timestamp + message snippet); no huge dumps.
 - Distinguish **benign deploy noise** (Worker SIGTERM during rollout) from **user-facing 503**.
 - `service_name` in metadata determines dev vs prod; state which environment in the report.
-- If `counseling_details` is empty but `chat_flow` has traces, note possible log level / export filter gap.
+- If `counseling_details` is empty but `chat_flow` has traces, note possible log level / export filter gap — **trace-only sessions are still exported** with `response_missing` turns; recommend enabling `counseling_detail` on greeting/emoji/concierge routes for full bot text.
 
 ## Optional deep dive
 

@@ -270,11 +270,24 @@ def looks_like_service_identity_question(text: str) -> bool:
     return False
 
 
-def infer_structural_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
+def infer_structural_concierge_intent(
+    user_text: str,
+    *,
+    prior_meta_intent: Optional[str] = None,
+    conversation_history: Optional[list] = None,
+) -> Optional[ConciergeIntent]:
     """
     短い非医療・非店舗入力を構造的に greeting とみなす（辞書登録なし）。
     meta LLM スキップ時の軽量フォールバック用。質問形式は対象外。
     """
+    from src.services.concierge_agent_history import should_block_structural_greeting
+
+    if should_block_structural_greeting(
+        user_text,
+        prior_intent=prior_meta_intent,
+        conversation_history=conversation_history,
+    ):
+        return None
     text = (user_text or "").strip()
     if not text or len(text) > 12:
         return None

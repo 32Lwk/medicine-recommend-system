@@ -102,7 +102,20 @@ def log_counseling_response(
             "active": counseling_mode.get("active"),
             "question_count": len(counseling_mode.get("question_history", [])),
             "collected_info_count": len(counseling_mode.get("collected_info", {})),
+            "concierge_intent": counseling_mode.get("concierge_intent"),
+            "concierge_intent_source": counseling_mode.get("concierge_intent_source"),
+            "llm_used": counseling_mode.get("llm_used"),
         }
+
+    routing_meta = None
+    if counseling_mode:
+        routing_meta = {
+            k: counseling_mode.get(k)
+            for k in ("concierge_intent", "concierge_intent_source", "llm_used")
+            if counseling_mode.get(k) is not None
+        }
+        if not routing_meta:
+            routing_meta = None
 
     from src import PROJECT_ROOT
 
@@ -126,6 +139,7 @@ def log_counseling_response(
             response=response_content,
             conversation_history=conversation_history,
             async_log=True,
+            routing_meta=routing_meta,
         )
 
 

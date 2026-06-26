@@ -12,6 +12,7 @@ def build_quality_metrics(bundle: Dict[str, Any]) -> Dict[str, Any]:
     sections = bundle.get("sections") or {}
     user_sessions = sections.get("user_sessions") or {}
     sc = user_sessions.get("session_conversations") or {}
+    chat_flow = sections.get("chat_flow") or {}
     errors = sections.get("errors_http") or {}
 
     issue_totals: Counter[str] = Counter()
@@ -32,6 +33,9 @@ def build_quality_metrics(bundle: Dict[str, Any]) -> Dict[str, Any]:
         "conversation": {
             "session_count": sc.get("session_count", 0),
             "exported_session_count": sc.get("exported_session_count", 0),
+            "counseling_session_count": sc.get("counseling_session_count", 0),
+            "trace_only_session_count": sc.get("trace_only_session_count", 0),
+            "chat_flow_trace_count": sc.get("chat_flow_trace_count", chat_flow.get("trace_count", 0)),
             "sessions_by_grade": sc.get("sessions_by_grade") or {},
             "heuristic_mismatch_count": sc.get("mismatch_count", 0),
             "heuristic_issue_types": dict(issue_totals),

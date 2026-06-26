@@ -63,6 +63,11 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 本サービスの性質・立場を問う質問は app_about としてください（greeting / chitchat ではない）。
 公式ドキュメントの内容を聞いている場合は、該当する doc_* を選んでください。
 
+【フォローアップ（直前ターンの継続）】
+会話履歴で直前に architecture / capabilities / app_about / doc_* / session_ops の説明・カードを返している場合、
+「詳しく」「もっと」「続き」等の短い続きは **同じ intent を維持** してください（greeting ではない）。
+例: bot が技術スタックを説明した直後の「技術面を詳しく」→ architecture
+
 【補足（architecture 回答時に伝える事実）】
 市販薬（OTC）の候補選定はルールベースアルゴリズムのみで行い、LLM が自由に薬名を創作して決めることはありません。
 
@@ -92,14 +97,31 @@ def should_skip_meta_triage_llm(
     text: str,
     *,
     store_probable: bool = False,
+    prior_meta_intent: Optional[str] = None,
+    conversation_history: Optional[list] = None,
 ) -> bool:
     """
     general_other 高確信・非店舗・非医薬品相談で meta LLM を省略する。
     挨拶ワードリストは使わず、probe が None のときのみスキップ対象。
+    フォローアップ文・直前メタ意図がある場合はスキップしない。
     """
     if store_probable:
         return False
     if (triage or {}).get("category") != "Other":
+        return False
+
+    from src.services.concierge_agent_history import (
+        is_meta_follow_up_utterance,
+        should_block_structural_greeting,
+    )
+
+    if is_meta_follow_up_utterance(text):
+        return False
+    if should_block_structural_greeting(
+        text,
+        prior_intent=prior_meta_intent,
+        conversation_history=conversation_history,
+    ):
         return False
 
     sub = ((triage or {}).get("subcategory") or "").lower()

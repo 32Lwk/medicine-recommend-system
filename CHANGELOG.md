@@ -1,6 +1,66 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月26日**（jailbreak 即時ブロック・パイプライン終端ガード・Concierge redirect フォールバック・LLM バックグラウンド監査）
+**最終更新日: 2026年6月27日**（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）（jailbreak 即時ブロック・パイプライン終端ガード・Concierge redirect フォールバック・LLM バックグラウンド監査）
+
+---
+
+## 2026年6月27日 — SessionAgent・LINE QA（P0–P2）・Concierge 文脈ルーティング・GCP ログ分析強化
+
+### 概要
+
+GCP ログ分析（2026-06-25〜26）と開発 QA に基づき、**SessionAgent** でセッション統合・管理画面ルーティング・メモリ削除を集約し、**LINE 改善計画 P0–P2**（ルーティング修正・`counseling_detail` 全経路・攻撃入力・フィードバック期限・トリアージ短絡・pipeline_perf 警告）を実装した。
+
+続けて **Concierge 文脈ルーティング（CCR-P0〜P2）** により、architecture / doc_* / session_ops 等のメタ会話で「詳しく」「もっと」等のフォローアップが **greeting 誤分類** されないよう、prior intent 推定・structural greeting ガード・meta LLM スキップ条件を強化。**`concierge_state` の DB 同期**と **`concierge_intent_source` の counseling_detail 記録**でログ分析と dev QA の追跡性を向上。
+
+**GCP ログ分析パイプライン**は `counseling_detail`・`conversation_history`・`chat_flow` の 3 ソースマージ、**trace-only セッション**出力、`response_missing` 明示、品質メトリクス拡張、レポートテンプレート／skill 手順の更新を行った。
+
+### SessionAgent と LINE QA（P0–P2）
+
+- **`session_agent.py`（新規）**: セッション状態・削除・要約・統合ステータスを SessionAgent に集約。Concierge / 管理画面 / LINE から `classify_session_intent` 経由でルーティング
+- **`memory_delete_agent.py`**: SessionAgent 連携にリファクタ
+- **`status_diagnosis_builder.py`**: 統合セッション診断・Concierge カード向け表示を拡張
+- **`sage_message_plain.py`（新規）**: Flex / HTML 応答のプレーンテキスト化（ログ・分析用）
+- **`chat_pipeline_end_guard.py` / `chat_post_pipeline.py`**: 全経路で `counseling_detail` 非同期出力のカバレッジ拡大
+- **`chat_input_validator.py` / `known_attack_rules.py`**: 攻撃・挑発入力のパイプライン到達抑止を追加
+- **`line_feedback.py`**: フィードバック postback の期限切れ処理
+- **`line_flex_messages.py` / `line_menu_actions.py` / `line_quick_actions.py`**: Sage マーカー・メニュー整合
+- **`llm_triage.py`**: stage2 スキップ条件（短絡）の調整
+- **`pipeline_perf.py`**: 遅延・欠損 sid 等の警告ログ
+- **`docs/planning/LINE_IMPROVEMENT_PLAN_2026-06-27.md`（新規）**: P0–P3 タスク一覧と受け入れ基準
+
+### Concierge 文脈ルーティング（CCR）
+
+- **`concierge_agent_history.py`**: `doc_*` / `session_ops` をメタフォローアップ対象に追加。`resolve_prior_meta_intent`（`concierge_state.last_intent` 優先）、`should_block_structural_greeting`、`infer_lost_context_follow_up_intent`、`is_session_ops_bot_message`
+- **`concierge_orchestrator.py`**: `session` 引数、`prior_intent_follow_up` / `lost_context_follow_up`、session_ops 時の `session_intent` 付与（`_apply_follow_up_intent`）
+- **`concierge_intent.py`**: `infer_structural_concierge_intent` に prior intent / 履歴ガード
+- **`meta_triage.py`**: フォローアップ維持のプロンプト追記。フォローアップ文・直前メタ意図時は meta LLM スキップしない
+- **`concierge_agent.py`**: orchestrator へ `session` / `routing_ctx` を渡し、フォローアップ解決を state 優先に統一
+- **`chat_concierge_route.py`**: `_sync_session_db` で `concierge_state` / `last_triage_result` を永続化。Concierge ログに `concierge_intent_source`
+- **`chat_orchestrator.py` / `chat_post_pipeline.py`**: `enrich_other_concierge_intent` に `session` を渡す
+- **`counseling_logger.py` / `structured_logger.py`**: `routing_meta`（intent / source / llm_used）を `counseling_detail_log.jsonl` に出力
+- **`docs/planning/CONCIERGE_CONTEXT_ROUTING_PLAN_2026-06-27.md`（新規）**: 意思決定・フロー・CCR タスク定義
+
+### GCP ログ分析（セッション復元・品質）
+
+- **`session_conversation_analysis.py`**: 3 ソースマージ（`counseling_detail` / 埋め込み `conversation_history` / `chat_flow`）。trace-only セッション、`turn_source`・`response_missing`、`meta_follow_up_to_greeting`（critical）検出
+- **`session_transcript_markdown.py`**: ソース列・trace-only 注記・未記録返信の明示
+- **`gcp_cloud_run_log_parser.py`**: `PIPELINE_PERF` から `session_id`（sid）を trace に補完
+- **`quality_metrics.py`**: `counseling_session_count` / `trace_only_session_count` / `chat_flow_trace_count` を集計
+- **`.cursor/skills/gcp-log-analysis/`**: 3 ソースマージ手順、Wave B 全ターン展開、`response_missing` 評価ルール、レポートテンプレ更新
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_session_agent.py`（新規） | SessionAgent 分類・応答 |
+| `test_session_admin_routing.py`（新規） | 管理画面 session ルーティング |
+| `test_concierge_context_routing.py`（新規） | フォローアップ・structural guard・orchestrator |
+| `test_meta_triage_skip.py` | フォローアップ時 meta LLM 非スキップ |
+| `test_session_conversation_analysis.py` | meta_follow_up 検出・履歴展開・trace-only |
+| `test_counseling_detail_coverage.py`（新規） | counseling_detail 経路 |
+| `test_llm_triage_stage2_skip.py`（新規） | トリアージ短絡 |
+| `test_aggressive_pipeline_reach.py` / `test_jailbreak_patterns.py` | 攻撃入力 |
+| `test_chat_pipeline_end_guard.py` / `test_structured_logger_async.py` 等 | パイプライン終端・非同期ログ |
 
 ---
 
