@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from src.analysis.session_transcript_markdown import (
@@ -36,9 +36,13 @@ GREETING_RESPONSE_RE = re.compile(
 )
 MEDICAL_REFERRAL_RE = re.compile(r"医療機関|受診|病院|診察|医師に相談")
 ABOUT_CARD_RE = re.compile(r"このツールについて|chat-status-card--notice")
+META_FOLLOW_UP_INPUT_RE = re.compile(
+    r"(詳しく|もっと|続き|深く|さらに|具体的に|もう少し)"
+)
 
 ISSUE_DEFS: Tuple[Tuple[str, str], ...] = (
     ("greeting_to_non_greeting", "挨拶以外の入力に挨拶テンプレート応答"),
+    ("meta_follow_up_to_greeting", "メタ会話フォローアップが挨拶に化けた"),
     ("offensive_input_ignored", "攻撃的・不適切入力への適切な境界設定なし"),
     ("confusion_not_addressed", "困惑・疑問符入力への文脈ない応答"),
     ("image_gen_medical_referral", "画像生成依頼に受診勧告など不適切ルーティング"),
@@ -93,6 +97,8 @@ def classify_user_input(user_input: str) -> List[str]:
         labels.append("image_generation")
     if ABOUT_APP_RE.search(text):
         labels.append("about_or_capabilities")
+    if META_FOLLOW_UP_INPUT_RE.search(text):
+        labels.append("meta_follow_up")
     if OFF_TOPIC_RE.search(text):
         labels.append("off_topic_store")
     if PHYSICAL_SYMPTOM_RE.search(text):
@@ -136,6 +142,15 @@ def _match_trace_for_turn(
     user_input: str,
     window_seconds: float = 45.0,
 ) -> Optional[Dict[str, Any]]:
+    normalized_input = user_input.strip()
+    if not timestamp:
+        for trace in traces:
+            if trace.get("session_id") and trace.get("session_id") != session_id:
+                continue
+            if (trace.get("user_message") or "").strip() == normalized_input:
+                return trace
+        return None
+
     candidates: List[Tuple[float, Dict[str, Any]]] = []
     for trace in traces:
         if trace.get("session_id") and trace.get("session_id") != session_id:
@@ -151,13 +166,205 @@ def _match_trace_for_turn(
             continue
         score = delta_sec
         trace_msg = (trace.get("user_message") or "").strip()
-        if trace_msg and trace_msg == user_input.strip():
+        if trace_msg and trace_msg == normalized_input:
             score -= 10.0
         candidates.append((score, trace))
     if not candidates:
         return None
     candidates.sort(key=lambda x: x[0])
     return candidates[0][1]
+
+
+def _normalize_history_role(role: str) -> str:
+    value = (role or "").lower()
+    if value in ("user",):
+        return "user"
+    if value in ("bot", "assistant"):
+        return "assistant"
+    if value in ("system",):
+        return "system"
+    return value
+
+
+def extract_pairs_from_conversation_history(
+    history: Optional[Sequence[Dict[str, Any]]],
+) -> List[Dict[str, str]]:
+    """counseling_detail.conversation_history から user/bot ペアを抽出。"""
+    if not history:
+        return []
+    pairs: List[Dict[str, str]] = []
+    pending_user: Optional[str] = None
+    for item in history:
+        role = _normalize_history_role(str(item.get("type") or item.get("role") or ""))
+        content = str(item.get("content") or "").strip()
+        if role == "system" or not content:
+            continue
+        if role == "user":
+            pending_user = content
+        elif role == "assistant" and pending_user is not None:
+            pairs.append({"user_input": pending_user, "response": content})
+            pending_user = None
+    return pairs
+
+
+def _turn_dedupe_key(user_input: str, response: str) -> Tuple[str, str]:
+    return (user_input.strip(), _strip_html(response)[:240])
+
+
+def _estimate_response_timestamp_from_trace(trace: Optional[Dict[str, Any]]) -> Optional[str]:
+    if not trace:
+        return None
+    started = trace.get("started_at")
+    perf = trace.get("pipeline_perf") or {}
+    total_ms = perf.get("total_ms")
+    t0 = _parse_ts(started)
+    if t0 and total_ms is not None:
+        dt = t0 + timedelta(milliseconds=float(total_ms))
+        return dt.isoformat().replace("+00:00", "Z")
+    return started
+
+
+def _seed_sort_key(seed: Dict[str, Any]) -> datetime:
+    ts = seed.get("timestamp")
+    trace = seed.get("trace") or {}
+    parsed = _parse_ts(ts) or _parse_ts(trace.get("started_at"))
+    return parsed or datetime.min.replace(tzinfo=timezone.utc)
+
+
+def _collect_session_turn_seeds(
+    turns_raw: Sequence[Dict[str, Any]],
+    session_traces: Sequence[Dict[str, Any]],
+    *,
+    include_trace_only: bool,
+) -> List[Dict[str, Any]]:
+    """counseling_detail / conversation_history / chat_flow からターン候補を集約。"""
+    by_key: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    source_rank = {"counseling_detail": 0, "conversation_history": 1, "chat_flow": 2}
+
+    def upsert(
+        *,
+        user_input: str,
+        response: str,
+        timestamp: Optional[str],
+        source: str,
+        trace: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        key = _turn_dedupe_key(user_input, response)
+        existing = by_key.get(key)
+        if existing is None:
+            by_key[key] = {
+                "user_input": user_input,
+                "response": response,
+                "timestamp": timestamp,
+                "source": source,
+                "trace": trace,
+            }
+            return
+        if source_rank.get(source, 9) < source_rank.get(existing["source"], 9):
+            existing["source"] = source
+        if timestamp and not existing.get("timestamp"):
+            existing["timestamp"] = timestamp
+        if trace and not existing.get("trace"):
+            existing["trace"] = trace
+
+    for obj in sorted(turns_raw, key=lambda x: str(x.get("timestamp") or "")):
+        for pair in extract_pairs_from_conversation_history(obj.get("conversation_history")):
+            upsert(
+                user_input=pair["user_input"],
+                response=pair["response"],
+                timestamp=None,
+                source="conversation_history",
+            )
+        upsert(
+            user_input=str(obj.get("user_input") or ""),
+            response=str(obj.get("response") or ""),
+            timestamp=str(obj.get("timestamp") or "") or None,
+            source="counseling_detail",
+        )
+
+    if include_trace_only:
+        covered_inputs = {s["user_input"].strip() for s in by_key.values()}
+        for trace in sorted(session_traces, key=lambda t: str(t.get("started_at") or "")):
+            user_input = (trace.get("user_message") or "").strip()
+            if not user_input or user_input in covered_inputs:
+                continue
+            covered_inputs.add(user_input)
+            upsert(
+                user_input=user_input,
+                response="",
+                timestamp=_estimate_response_timestamp_from_trace(trace),
+                source="chat_flow",
+                trace=trace,
+            )
+
+    seeds = list(by_key.values())
+    seeds.sort(key=_seed_sort_key)
+    return seeds
+
+
+def _build_turn_from_seed(
+    seed: Dict[str, Any],
+    *,
+    session_id: str,
+    session_traces: Sequence[Dict[str, Any]],
+    prior_turns: Sequence[Dict[str, Any]],
+    prev_response_at: Optional[str],
+) -> Dict[str, Any]:
+    user_input = str(seed.get("user_input") or "")
+    response = str(seed.get("response") or "")
+    timestamp = seed.get("timestamp")
+    trace = seed.get("trace")
+    if not trace:
+        trace = _match_trace_for_turn(
+            session_traces,
+            session_id=session_id,
+            timestamp=str(timestamp or ""),
+            user_input=user_input,
+        )
+    if not timestamp:
+        timestamp = _estimate_response_timestamp_from_trace(trace)
+
+    plain = _strip_html(response)
+    response_missing = not plain.strip()
+    response_preview = plain[:500] if not response_missing else ""
+    input_labels = classify_user_input(user_input)
+    routing = enrich_routing_from_trace(trace)
+    timing = build_turn_timing(
+        trace=trace,
+        response_at=str(timestamp or ""),
+        previous_response_at=prev_response_at,
+    )
+    issues: List[Dict[str, Any]] = []
+    if not response_missing:
+        issues = detect_turn_issues(
+            user_input=user_input,
+            response=response,
+            input_labels=input_labels,
+            routing=routing,
+            prior_turns=prior_turns,
+        )
+    return {
+        "timestamp": timestamp,
+        "user_input": user_input,
+        "response_preview": response_preview,
+        "response_html": response.strip().startswith("<"),
+        "response_missing": response_missing,
+        "turn_source": seed.get("source"),
+        "input_labels": input_labels,
+        "routing": routing,
+        "timing": timing,
+        "conversation_history": _conversation_history_before(prior_turns),
+        "heuristic_signals": issues,
+        "issues": issues,
+        "llm_review_required": True,
+        "turn_grade": (
+            "critical"
+            if any(i["severity"] == "critical" for i in issues)
+            else "warning"
+            if issues
+            else "ok"
+        ),
+    }
 
 
 def _answers_about_question(user_input: str, plain: str) -> bool:
@@ -277,7 +484,14 @@ def detect_turn_issues(
 
     concierge_intent = routing.get("concierge_intent")
     if concierge_intent == "greeting" and not is_greeting_input and "physical_symptom" not in input_labels:
-        if "about_or_capabilities" in input_labels or "image_generation" in input_labels or "offensive" in input_labels:
+        if "meta_follow_up" in input_labels:
+            add(
+                "meta_follow_up_to_greeting",
+                "critical",
+                "メタ会話の続き（詳しく/もっと等）が greeting に誤分類",
+                f"input={user_input!r} intent=greeting",
+            )
+        elif "about_or_capabilities" in input_labels or "image_generation" in input_labels or "offensive" in input_labels:
             add(
                 "intent_routing_gap",
                 "warning",
@@ -408,74 +622,41 @@ def build_session_conversations(
 
     sessions_out: List[Dict[str, Any]] = []
     all_mismatches: List[Dict[str, Any]] = []
+    trace_only_session_count = 0
 
-    for session_id, turns_raw in sorted(by_session.items(), key=lambda x: x[0]):
-        turns_sorted = sorted(turns_raw, key=lambda t: str(t.get("timestamp") or ""))
-        if len(turns_sorted) > max_turns_per_session:
-            turns_sorted = turns_sorted[-max_turns_per_session:]
-
+    def build_one_session(session_id: str, turns_raw: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         session_traces = traces_by_session.get(session_id, [])
+        seeds = _collect_session_turn_seeds(
+            turns_raw,
+            session_traces,
+            include_trace_only=True,
+        )
+        if len(seeds) > max_turns_per_session:
+            seeds = seeds[-max_turns_per_session:]
+
         built_turns: List[Dict[str, Any]] = []
         prev_response_at: Optional[str] = None
-
-        for obj in turns_sorted:
-            user_input = str(obj.get("user_input") or "")
-            response = str(obj.get("response") or "")
-            timestamp = str(obj.get("timestamp") or "")
-            plain = _strip_html(response)
-            input_labels = classify_user_input(user_input)
-            matched_trace = _match_trace_for_turn(
-                session_traces,
+        for seed in seeds:
+            turn = _build_turn_from_seed(
+                seed,
                 session_id=session_id,
-                timestamp=timestamp,
-                user_input=user_input,
-            )
-            routing = enrich_routing_from_trace(matched_trace)
-            timing = build_turn_timing(
-                trace=matched_trace,
-                response_at=timestamp,
-                previous_response_at=prev_response_at,
-            )
-            issues = detect_turn_issues(
-                user_input=user_input,
-                response=response,
-                input_labels=input_labels,
-                routing=routing,
+                session_traces=session_traces,
                 prior_turns=built_turns,
+                prev_response_at=prev_response_at,
             )
-            turn = {
-                "timestamp": timestamp,
-                "user_input": user_input,
-                "response_preview": plain[:500],
-                "response_html": response.strip().startswith("<"),
-                "input_labels": input_labels,
-                "routing": routing,
-                "timing": timing,
-                "conversation_history": _conversation_history_before(built_turns),
-                "heuristic_signals": issues,
-                "issues": issues,
-                "llm_review_required": True,
-                "turn_grade": (
-                    "critical"
-                    if any(i["severity"] == "critical" for i in issues)
-                    else "warning"
-                    if issues
-                    else "ok"
-                ),
-            }
             built_turns.append(turn)
-            prev_response_at = timestamp
-            for issue in issues:
+            prev_response_at = str(turn.get("timestamp") or "") or prev_response_at
+            for issue in turn.get("issues") or []:
                 all_mismatches.append(
                     {
                         "session_id": session_id,
-                        "timestamp": timestamp,
-                        "user_input": user_input[:200],
+                        "timestamp": turn.get("timestamp"),
+                        "user_input": str(turn.get("user_input") or "")[:200],
                         "issue_type": issue["type"],
                         "severity": issue["severity"],
                         "cause_hypothesis": issue["cause_hypothesis"],
                         "evidence": issue["evidence"],
-                        "routing": routing,
+                        "routing": turn.get("routing") or {},
                     }
                 )
 
@@ -500,20 +681,31 @@ def build_session_conversations(
         }
         evaluation["summary"] = _summarize_session_narrative(session_id, built_turns, evaluation)
 
-        sessions_out.append(
-            {
-                "session_id": session_id,
-                "channel": _session_channel(session_id, built_turns),
-                "time_range": {
-                    "start": built_turns[0]["timestamp"] if built_turns else None,
-                    "end": built_turns[-1]["timestamp"] if built_turns else None,
-                },
-                "conversation_history": _full_conversation_history(built_turns),
-                "turns": built_turns,
-                "evaluation": evaluation,
-                "llm_session_review_required": True,
-            }
-        )
+        turn_sources = Counter(str(t.get("turn_source") or "unknown") for t in built_turns)
+        return {
+            "session_id": session_id,
+            "channel": _session_channel(session_id, built_turns),
+            "time_range": {
+                "start": built_turns[0]["timestamp"] if built_turns else None,
+                "end": built_turns[-1]["timestamp"] if built_turns else None,
+            },
+            "conversation_history": _full_conversation_history(built_turns),
+            "turns": built_turns,
+            "evaluation": evaluation,
+            "llm_session_review_required": True,
+            "turn_sources": dict(turn_sources),
+            "trace_only": not turns_raw,
+        }
+
+    counseling_session_ids = set(by_session.keys())
+    trace_session_ids = set(traces_by_session.keys())
+    all_session_ids = sorted(counseling_session_ids | trace_session_ids)
+
+    for session_id in all_session_ids:
+        turns_raw = by_session.get(session_id, [])
+        if not turns_raw and session_id in trace_session_ids:
+            trace_only_session_count += 1
+        sessions_out.append(build_one_session(session_id, turns_raw))
 
     sessions_out.sort(
         key=lambda s: (
@@ -531,8 +723,11 @@ def build_session_conversations(
     )
 
     return {
-        "session_count": len(by_session),
+        "session_count": len(all_session_ids),
         "exported_session_count": len(sessions_out),
+        "counseling_session_count": len(counseling_session_ids),
+        "trace_only_session_count": trace_only_session_count,
+        "chat_flow_trace_count": chat_flow.get("trace_count", len(traces)),
         "sessions": sessions_out,
         "intent_mismatches": all_mismatches,
         "mismatch_count": len(all_mismatches),

@@ -118,6 +118,7 @@ def log_counseling_detail(
     conversation_history: Optional[List[Dict]] = None,
     *,
     async_log: bool = True,
+    routing_meta: Optional[Dict[str, Any]] = None,
 ) -> None:
     """
     カウンセリングの詳細ログを記録
@@ -139,6 +140,10 @@ def log_counseling_detail(
         "response": response,
         "conversation_history": history,
     }
+    if routing_meta:
+        for key, val in routing_meta.items():
+            if val is not None:
+                payload[key] = val
 
     if async_log:
         _detail_log_executor.submit(_emit_counseling_detail, payload)

@@ -160,7 +160,11 @@ def render_turn_detail_block(turn: Dict[str, Any], index: int) -> List[str]:
         "**ボット返信**",
         "",
         "```",
-        _truncate(str(turn.get("response_preview") or ""), 1200),
+        (
+            "（ボット返信はログ未記録 — chat_flow のみ。counseling_detail またはアプリ側ログ出力を確認）"
+            if turn.get("response_missing")
+            else _truncate(str(turn.get("response_preview") or ""), 1200)
+        ),
         "```",
         "",
         "**処理フェーズ（ms・POST 起点の相対）**",
@@ -213,20 +217,30 @@ def render_session_transcript_markdown(session: Dict[str, Any]) -> str:
         f"| 期間 | `{_fmt_ts(time_range.get('start'))}` ～ `{_fmt_ts(time_range.get('end'))}` |",
         f"| ターン数 | {len(turns)} |",
         f"| heuristic grade | {evaluation.get('overall_grade', '—')} |",
+    ]
+    turn_sources = session.get("turn_sources") or {}
+    if turn_sources:
+        lines.append(f"| turn_sources | {turn_sources} |")
+    if session.get("trace_only"):
+        lines.append("| データソース | chat_flow のみ（counseling_detail なし） |")
+    lines.extend([
         "",
         "## 会話一覧（時系列）",
         "",
-        "| # | ユーザー送信（推定） | ボット返信時刻 | ユーザー入力 | ボット返信（抜粋） | E2E | pipeline | 前ターン間隔 |",
-        "|---|---------------------|----------------|--------------|-------------------|-----|----------|--------------|",
-    ]
+        "| # | ユーザー送信（推定） | ボット返信時刻 | ユーザー入力 | ボット返信（抜粋） | E2E | pipeline | 前ターン間隔 | ソース |",
+        "|---|---------------------|----------------|--------------|-------------------|-----|----------|--------------|--------|",
+    ])
     for i, turn in enumerate(turns, 1):
         timing = turn.get("timing") or {}
+        preview = str(turn.get("response_preview") or "")
+        if turn.get("response_missing"):
+            preview = "（ボット返信はログ未記録）"
         lines.append(
             f"| {i} | `{_fmt_ts(timing.get('user_message_at'))}` | `{_fmt_ts(timing.get('response_at'))}` | "
             f"{_truncate(str(turn.get('user_input') or ''), 40)} | "
-            f"{_truncate(str(turn.get('response_preview') or ''), 50)} | "
+            f"{_truncate(preview, 50)} | "
             f"{_fmt_ms(timing.get('e2e_ms'))} | {_fmt_ms(timing.get('pipeline_total_ms'))} | "
-            f"{_fmt_ms(timing.get('since_previous_turn_ms'))} |"
+            f"{_fmt_ms(timing.get('since_previous_turn_ms'))} | {turn.get('turn_source', '—')} |"
         )
 
     lines.extend(["", "## ターン別詳細（送受信・処理時間）", ""])

@@ -495,6 +495,7 @@ class ChatOrchestrator:
             self._client,
             conversation_history=history,
             session_id=ctx.sid,
+            session=ctx.session,
             alt_texts=[
                 t
                 for t in (

@@ -57,11 +57,100 @@ _ARCHITECTURE_TOPIC_RE = re.compile(
     re.IGNORECASE,
 )
 
+_DOC_FOLLOW_UP_INTENTS = frozenset({
+    "doc_privacy",
+    "doc_terms",
+    "doc_operator",
+    "doc_consultation",
+    "doc_app_overview",
+})
+
 _META_FOLLOW_UP_PRIOR_INTENTS = frozenset({
     "architecture",
     "capabilities",
     "app_about",
-})
+    "session_ops",
+}) | _DOC_FOLLOW_UP_INTENTS
+
+
+def is_meta_follow_up_utterance(text: str) -> bool:
+    """詳しく・もっと等のメタ会話フォローアップ表現か。"""
+    return bool(_META_FOLLOW_UP_RE.search((text or "").strip()))
+
+
+def is_session_ops_bot_message(msg: Dict[str, Any]) -> bool:
+    """直前 bot が SessionAgent / session_ops 応答か。"""
+    if msg.get("session_agent") or msg.get("session_agent_kind"):
+        return True
+    if str(msg.get("concierge_intent") or "") == "session_ops":
+        return True
+    diagnosis = msg.get("diagnosis")
+    if isinstance(diagnosis, dict):
+        kind = str(diagnosis.get("kind") or "").strip()
+        if kind.startswith("session_") or kind in ("concierge_session_ops",):
+            return True
+    return False
+
+
+def resolve_last_bot_message(messages: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """直近の bot メッセージ dict を返す。"""
+    for msg in reversed(messages or []):
+        if isinstance(msg, dict) and msg.get("type") == "bot":
+            return msg
+    return None
+
+
+def resolve_prior_meta_intent(
+    *,
+    session: Any = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
+) -> Optional[str]:
+    """concierge_state.last_intent を優先し、無ければ履歴から直近 intent を返す。"""
+    if session is not None:
+        try:
+            from src.agents.concierge_agent import get_concierge_state
+
+            last = get_concierge_state(session).get("last_intent")
+            if last:
+                return str(last)
+        except Exception:
+            pass
+    if conversation_history:
+        return resolve_last_concierge_intent(conversation_history)
+    return None
+
+
+def should_block_structural_greeting(
+    text: str,
+    *,
+    prior_intent: Optional[str] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
+) -> bool:
+    """
+    structural greeting 推定を禁止すべきか（フォローアップ regex または直前メタ意図）。
+    """
+    if is_meta_follow_up_utterance(text):
+        return True
+    if prior_intent in _META_FOLLOW_UP_PRIOR_INTENTS:
+        return True
+    if conversation_history:
+        hist_prior = resolve_last_concierge_intent(conversation_history)
+        if hist_prior in _META_FOLLOW_UP_PRIOR_INTENTS:
+            return True
+    return False
+
+
+def infer_lost_context_follow_up_intent(text: str) -> Optional[str]:
+    """
+    履歴・state 喪失時のフォローアップ推定（topic 語 + follow-up regex）。
+    曖昧な場合は None（meta LLM に委ねる）。
+    """
+    t = (text or "").strip()
+    if not t or not is_meta_follow_up_utterance(t) or len(t) > 40:
+        return None
+    if _ARCHITECTURE_TOPIC_RE.search(t) or len(t) <= 24:
+        return "architecture"
+    return None
 
 
 def resolve_last_concierge_intent(messages: List[Dict[str, Any]]) -> Optional[str]:
@@ -83,6 +172,8 @@ def resolve_last_concierge_intent(messages: List[Dict[str, Any]]) -> Optional[st
 def infer_prior_meta_follow_up_intent(
     text: str,
     prior_intent: Optional[str],
+    *,
+    last_bot: Optional[Dict[str, Any]] = None,
 ) -> Optional[str]:
     """直前のメタ意図に続く短いフォローアップ（例: 技術面を詳しく）を推定する。"""
     t = (text or "").strip()
@@ -96,6 +187,12 @@ def infer_prior_meta_follow_up_intent(
         if _ARCHITECTURE_TOPIC_RE.search(t) or len(t) <= 24:
             return "architecture"
         return None
+    if prior_intent == "session_ops":
+        if last_bot and is_session_ops_bot_message(last_bot):
+            return "session_ops"
+        return None
+    if prior_intent in _DOC_FOLLOW_UP_INTENTS:
+        return prior_intent
     if prior_intent in ("capabilities", "app_about"):
         return prior_intent
     return None

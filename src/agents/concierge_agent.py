@@ -344,18 +344,18 @@ def resolve_concierge_intent(
 
     from src.services.concierge_agent_history import (
         infer_prior_meta_follow_up_intent,
-        resolve_last_concierge_intent,
+        resolve_last_bot_message,
+        resolve_prior_meta_intent,
     )
 
-    state = get_concierge_state(session)
-    follow = infer_prior_meta_follow_up_intent(text, state.get("last_intent"))
+    last_bot = resolve_last_bot_message(conversation_history or [])
+    prior = resolve_prior_meta_intent(
+        session=session,
+        conversation_history=conversation_history,
+    )
+    follow = infer_prior_meta_follow_up_intent(text, prior, last_bot=last_bot)
     if follow:
         return follow  # type: ignore[return-value]
-    if conversation_history:
-        hist_prior = resolve_last_concierge_intent(conversation_history)
-        follow = infer_prior_meta_follow_up_intent(text, hist_prior)
-        if follow:
-            return follow  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
         triage_result, session, text, routing_ctx=routing_ctx
@@ -383,6 +383,8 @@ def resolve_concierge_intent(
             client,
             conversation_history=conversation_history,
             session_id=session_id,
+            session=session,
+            routing_ctx=routing_ctx,
         )
         resolved = resolve_intent_from_triage(enriched, session, text)
         if resolved:

@@ -72,6 +72,8 @@ Session JSON path: log/analysis/<stem>/sections/user_sessions.json
 Target session_id: <exact session_id>
 Read ONLY that session object inside session_conversations.sessions[].
 Use conversation_history and every turn's conversation_history for context.
+**Expand all turns** from `session.turns[]` (CLI already merges counseling_detail + conversation_history + chat_flow). Do not collapse to the last turn only.
+For `response_missing: true` turns, evaluate routing/timing only; state that bot text was not in logs.
 heuristic_signals are hints only — LLM makes final judgment.
 If medicine_recommendation_review.eligible_for_advisor: follow medicine-recommendation-advisor skill.
 Write: log/analysis/<stem>/draft_session_<safe_id>.md

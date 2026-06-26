@@ -29,6 +29,31 @@ _VALID_CONCIERGE_INTENTS = frozenset({
 })
 
 
+def _apply_follow_up_intent(
+    out: Dict[str, Any],
+    text: str,
+    follow: str,
+    *,
+    source: str,
+    last_bot: Optional[Dict[str, Any]] = None,
+    triage_result: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    out["concierge_intent"] = follow
+    out["concierge_intent_source"] = source
+    if follow == "session_ops":
+        from src.agents.session_agent import classify_session_intent
+
+        session_intent = classify_session_intent(text, triage_result=triage_result or out)
+        if session_intent == "none" and last_bot:
+            kind = str(last_bot.get("session_agent_kind") or "").strip()
+            if kind in ("delete", "summarize", "status"):
+                session_intent = kind  # type: ignore[assignment]
+        if session_intent != "none":
+            out["session_intent"] = session_intent
+    logger.info("🛎️ ConciergeOrchestrator: prior intent follow-up intent=%s", follow)
+    return out
+
+
 def enrich_other_concierge_intent(
     triage_result: Dict[str, Any],
     user_text: str,
@@ -36,6 +61,7 @@ def enrich_other_concierge_intent(
     *,
     conversation_history: Optional[list] = None,
     session_id: Optional[str] = None,
+    session: Any = None,
     alt_texts: Optional[list] = None,
     routing_ctx: Optional[Any] = None,
 ) -> Dict[str, Any]:
@@ -83,22 +109,40 @@ def enrich_other_concierge_intent(
 
     from src.services.concierge_intent import _is_medicine_consultation
 
-    if conversation_history and not _is_medicine_consultation(text):
+    prior_intent: Optional[str] = None
+    last_bot = None
+    if not _is_medicine_consultation(text):
         from src.services.concierge_agent_history import (
+            infer_lost_context_follow_up_intent,
             infer_prior_meta_follow_up_intent,
-            resolve_last_concierge_intent,
+            resolve_last_bot_message,
+            resolve_prior_meta_intent,
         )
 
-        prior = resolve_last_concierge_intent(conversation_history)
-        follow = infer_prior_meta_follow_up_intent(text, prior)
+        prior_intent = resolve_prior_meta_intent(
+            session=session,
+            conversation_history=conversation_history,
+        )
+        last_bot = resolve_last_bot_message(conversation_history or [])
+        follow = infer_prior_meta_follow_up_intent(text, prior_intent, last_bot=last_bot)
         if follow:
-            out["concierge_intent"] = follow
-            out["concierge_intent_source"] = "prior_intent_follow_up"
-            logger.info(
-                "🛎️ ConciergeOrchestrator: prior intent follow-up intent=%s",
+            return _apply_follow_up_intent(
+                out,
+                text,
                 follow,
+                source="prior_intent_follow_up",
+                last_bot=last_bot,
+                triage_result=out,
             )
-            return out
+        lost = infer_lost_context_follow_up_intent(text)
+        if lost:
+            return _apply_follow_up_intent(
+                out,
+                text,
+                lost,
+                source="lost_context_follow_up",
+                triage_result=out,
+            )
 
     from src.services.concierge_intent import probe_session_admin_intent
 
@@ -141,10 +185,20 @@ def enrich_other_concierge_intent(
         should_skip_meta_triage_llm,
     )
 
-    if should_skip_meta_triage_llm(out, text, store_probable=store_probable):
+    if should_skip_meta_triage_llm(
+        out,
+        text,
+        store_probable=store_probable,
+        prior_meta_intent=prior_intent,
+        conversation_history=conversation_history,
+    ):
         from src.services.concierge_intent import infer_structural_concierge_intent
 
-        structural = infer_structural_concierge_intent(text)
+        structural = infer_structural_concierge_intent(
+            text,
+            prior_meta_intent=prior_intent,
+            conversation_history=conversation_history,
+        )
         if structural:
             out["concierge_intent"] = structural
             out["concierge_intent_source"] = "structural_greeting"

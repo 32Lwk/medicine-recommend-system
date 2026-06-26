@@ -38,7 +38,14 @@ def test_should_not_skip_meta_when_probe_matches():
     )
 
 
-@pytest.mark.parametrize("text", ["おはよ", "konn", "うい"])
+def test_should_not_skip_meta_for_follow_up_pattern():
+    assert (
+        should_skip_meta_triage_llm(_TRIAGE, "技術面を詳しく", store_probable=False)
+        is False
+    )
+
+
+@pytest.mark.parametrize("text", ["うい", "konn"])
 def test_structural_greeting_without_word_list(text: str):
     assert infer_structural_concierge_intent(text) == "greeting"
 

@@ -592,6 +592,9 @@ def extract_chat_flow(entries: Sequence[LogEntry], *, max_traces: int = 60) -> D
             perf = _safe_literal_eval(perf_match.group(1))
             if perf:
                 bucket["pipeline_perf"] = perf
+                sid = perf.get("sid")
+                if sid and not bucket.get("session_id"):
+                    bucket["session_id"] = str(sid)
                 bucket["events"].append(
                     {
                         "ts": entry.timestamp,

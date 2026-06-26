@@ -643,6 +643,7 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
             ctx.recommendation_client,
             conversation_history=history,
             session_id=ctx.sid,
+            session=ctx.session,
             alt_texts=[
                 t
                 for t in (
