@@ -14,6 +14,7 @@ from src.handlers.line.line_feedback import (
     parse_feedback_postback,
     prepare_line_messages_with_feedback,
     register_line_feedback_pending,
+    should_offer_line_feedback,
 )
 from src.services.feedback_submit import submit_feedback_record
 
@@ -108,11 +109,34 @@ def test_handle_postback_submits_positive(mock_prime, mock_pending, mock_submit_
 @patch("src.handlers.line.line_feedback._load_pending_context", return_value=None)
 @patch("src.handlers.line.line_session.prime_line_session")
 @patch("config.line_config.LINE_CHANNEL_ACCESS_TOKEN", "token")
-def test_handle_postback_silent_when_expired(mock_prime, mock_pending):
+def test_handle_postback_replies_when_expired(mock_prime, mock_pending):
     mock_prime.return_value = {"username": "LINEユーザー", "detected_language": "ja"}
     with patch("src.handlers.line.line_reply.reply_messages", new_callable=AsyncMock) as mock_reply:
         asyncio.run(handle_line_feedback_postback("U1", "mrcfb|pos|abc12345", reply_token="tok"))
-    mock_reply.assert_not_awaited()
+    mock_reply.assert_awaited_once()
+    assert mock_reply.call_args[0][1][0]["text"] == "評価の有効期限が切れました。"
+
+
+def test_should_offer_line_feedback_skips_security_responses():
+    assert not should_offer_line_feedback(
+        {"diagnosis": {"kind": "aggressive_input", "show_feedback": False}}
+    )
+    assert should_offer_line_feedback({"diagnosis": {"kind": "session_summary", "show_feedback": True}})
+
+
+@patch("src.handlers.line.line_feedback._persist_pending_map")
+def test_prepare_line_messages_skips_feedback_for_security_bot(mock_persist):
+    bot = {"diagnosis": {"kind": "aggressive_input", "show_feedback": False, "message": "x"}}
+    flex = [{"type": "flex", "altText": "notice"}]
+    out = prepare_line_messages_with_feedback(
+        flex,
+        sid="line:U1",
+        user_message="しね",
+        bot_message=bot,
+        lang="ja",
+    )
+    assert "quickReply" not in out[0]
+    mock_persist.assert_not_called()
 
 
 @patch("src.services.feedback_submit.save_session_to_db")

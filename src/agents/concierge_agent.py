@@ -120,7 +120,7 @@ def _last_bot_reply_snippet(
     *,
     greeting_only: bool = False,
 ) -> str:
-    from src.services.line_memory_context import compress_message_for_llm
+    from src.utils.sage_message_plain import resolve_bot_user_facing_text
 
     for m in reversed(msgs):
         if m.get("type") != "bot":
@@ -130,8 +130,7 @@ def _last_bot_reply_snippet(
             kind = str(diag.get("kind") or "")
             if not (m.get("greeting") or kind == "concierge_greeting"):
                 continue
-        compressed = compress_message_for_llm(m)
-        snippet = str(compressed.get("content") or "").strip()[:120]
+        snippet = resolve_bot_user_facing_text(m)[:120]
         if snippet:
             return snippet
     return ""
@@ -342,6 +341,21 @@ def resolve_concierge_intent(
         routing_ctx=routing_ctx,
     ):
         return None
+
+    from src.services.concierge_agent_history import (
+        infer_prior_meta_follow_up_intent,
+        resolve_last_concierge_intent,
+    )
+
+    state = get_concierge_state(session)
+    follow = infer_prior_meta_follow_up_intent(text, state.get("last_intent"))
+    if follow:
+        return follow  # type: ignore[return-value]
+    if conversation_history:
+        hist_prior = resolve_last_concierge_intent(conversation_history)
+        follow = infer_prior_meta_follow_up_intent(text, hist_prior)
+        if follow:
+            return follow  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
         triage_result, session, text, routing_ctx=routing_ctx
@@ -618,7 +632,8 @@ _GREETING_PROMPT_REQUIREMENTS = """【方針】
 - 直前の bot 返答と同じ言い回し・同じ構成は使わない
 - 焦りや呼びかけには落ち着いて応じる
 - 医薬品は「市販薬」と表記。「OTC」は使わない
-- 初回接触では市販薬相談窓口であることと相談例を簡潔に含める。継続の呼びかけでは窓口説明を繰り返さない"""
+- 初回接触では市販薬相談窓口であることと相談例を簡潔に含める。継続の呼びかけでは窓口説明を繰り返さない
+- 内部ラベル（[ステータス]、[Q&A]、bot[...]、HTML/Markdown）を出力に含めない"""
 
 _THANKS_SYSTEM_PROMPT = (
     "あなたは市販薬相談ツールの案内役です。"
@@ -924,7 +939,9 @@ def sanitize_greeting_response(
 
     if is_short_impatient_callout(user_text) and not result:
         result = _SHORT_CALLOUT_FALLBACK
-    return result.strip()
+    from src.utils.sage_message_plain import strip_internal_llm_prefix
+
+    return strip_internal_llm_prefix(result.strip())
 
 
 def infer_is_first_greeting_contact(
@@ -1206,7 +1223,9 @@ def generate_thanks_text(
         )
         text = (resp.choices[0].message.content or "").strip()
         if text:
-            return text, True
+            from src.utils.sage_message_plain import strip_internal_llm_prefix
+
+            return strip_internal_llm_prefix(text), True
     except Exception as exc:
         logger.warning("Concierge thanks LLM failed: %s", exc)
     return build_thanks_text(user_text), False
@@ -1248,7 +1267,8 @@ _META_INTENT_REQUIREMENTS = {
 - 2〜5文・プレーンテキスト（Markdown不可）
 - 話題が変わるときは空行を1行入れる
 - 箇条書きにする場合は「・」で1項目1行
-- 処方・診断は行わない旨を必要なときだけ簡潔に触れる""",
+- 処方・診断は行わない旨を必要なときだけ簡潔に触れる
+- 内部ラベル（[ステータス]、[Q&A]、bot[...]、HTML/Markdown）を出力に含めない""",
     "architecture": """【要件】
 - ユーザーの質問の主題（マルチエージェントの意味、技術構成、仕組み、誰が答えたか等）に直接答える
 - マルチエージェント＝複数の専門担当が連携する仕組みであることを、聞かれたときは中心に説明する
@@ -1257,7 +1277,8 @@ _META_INTENT_REQUIREMENTS = {
 - 会話履歴（直前の説明など）を踏まえ、同じ説明の繰り返しを避ける
 - 2〜6文・プレーンテキスト（Markdown不可）
 - 話題が変わるときは空行を1行入れる
-- エージェントの役割一覧は本文に「・」箇条書きで書かない（前置きの説明のみ）""",
+- エージェントの役割一覧は本文に「・」箇条書きで書かない（前置きの説明のみ）
+- 内部ラベル（[ステータス]、[Q&A]、bot[...]、HTML/Markdown）を出力に含めない""",
     "app_about": """【要件】
 - このチャットが何であるか・何でないか（病院・診察・処方ではない）を、ユーザーの質問形式に合わせて答える
 - 「今誰が答えているか」は app_about ではなく architecture の話題 — その場合は AI 返信と役割分担を答える
@@ -1411,7 +1432,9 @@ def _invoke_meta_concierge_llm(
         temperature=0.35,
         session_id=session_id,
     )
-    return (resp.choices[0].message.content or "").strip()
+    from src.utils.sage_message_plain import strip_internal_llm_prefix
+
+    return strip_internal_llm_prefix((resp.choices[0].message.content or "").strip())
 
 
 def _meta_concierge_fallback_card(user_text: str, intent: str) -> str:
@@ -1599,6 +1622,8 @@ def generate_chitchat_text(
 {_CHITCHAT_PROMPT_REQUIREMENTS}
 """
     try:
+        from src.utils.sage_message_plain import strip_internal_llm_prefix
+
         resp = concierge_chat(
             client,
             "concierge_agent.chitchat",
@@ -1613,7 +1638,7 @@ def generate_chitchat_text(
             temperature=0.62,
             session_id=session_id,
         )
-        return (resp.choices[0].message.content or "").strip()
+        return strip_internal_llm_prefix((resp.choices[0].message.content or "").strip())
     except Exception as exc:
         logger.warning("Concierge chitchat LLM failed: %s", exc)
         return (
@@ -1776,6 +1801,9 @@ def should_concierge_handle(
     from src.services.routing_context import evaluate_store_gate
 
     if not user_text:
+        return False
+
+    if (triage_result or {}).get("concierge_intent") == "session_ops":
         return False
 
     extra = [t for t in (alt_texts or []) if t]

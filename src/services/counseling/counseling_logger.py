@@ -119,27 +119,33 @@ def log_counseling_response(
         logger.error(f"❌ カウンセリング返信ログ記録エラー: {e}")
 
     if log_counseling_detail and user_input:
+        mark_counseling_detail_logged(session, user_input)
         log_counseling_detail(
             session_id=session_id,
             user_input=user_input,
             response=response_content,
             conversation_history=conversation_history,
+            async_log=True,
         )
-        mark_counseling_detail_logged(session, user_input)
 
 
-def maybe_log_line_turn_counseling_detail(
+def maybe_log_turn_counseling_detail(
     session: Any,
     session_id: str | None,
     user_message: str,
     bot_message: dict | None,
 ) -> None:
     """
-    LINE 配信直前のフォールバック。
-    emoji 短応答など counseling_detail 未記録経路を補完する（同一ターン二重記録は抑止）。
+    パイプライン終端のフォールバック。
+    counseling_detail 未記録経路（Concierge / 絵文字 / greeting 等）を非同期で全文記録する。
     """
-    if not session_id or not user_message or not bot_message:
+    if not user_message or not bot_message:
         return
+    effective_sid = session_id or (
+        str(session.get("session_id") or session.get("_id") or "")
+        if isinstance(session, dict)
+        else ""
+    )
     if was_counseling_detail_logged(session, user_message):
         return
     response_content = resolve_bot_message_plain_text(bot_message)
@@ -151,21 +157,37 @@ def maybe_log_line_turn_counseling_detail(
         get_counseling_conversation_history = None  # type: ignore[assignment,misc]
 
     history = (
-        get_counseling_conversation_history(session, session_id)
+        get_counseling_conversation_history(session, effective_sid or session_id)
         if get_counseling_conversation_history
         else None
     )
     response_type = (
         bot_message.get("kind")
+        or bot_message.get("session_agent_kind")
         or bot_message.get("concierge_intent")
+        or (
+            (bot_message.get("diagnosis") or {}).get("kind")
+            if isinstance(bot_message.get("diagnosis"), dict)
+            else None
+        )
         or ("concierge" if bot_message.get("concierge") else None)
-        or "line_bot_reply"
+        or "bot_reply"
     )
     log_counseling_response(
-        session_id=session_id,
+        session_id=effective_sid or None,
         response_content=response_content,
         response_type=str(response_type),
         user_input=user_message,
         conversation_history=history,
         session=session,
     )
+
+
+def maybe_log_line_turn_counseling_detail(
+    session: Any,
+    session_id: str | None,
+    user_message: str,
+    bot_message: dict | None,
+) -> None:
+    """後方互換エイリアス（LINE 配信直前フォールバック）。"""
+    maybe_log_turn_counseling_detail(session, session_id, user_message, bot_message)

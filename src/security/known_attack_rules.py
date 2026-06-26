@@ -18,6 +18,14 @@ KNOWN_ATTACK_WARN_MESSAGE = (
 # (正規表現, ルールID) — 高信頼の既知攻撃のみ（誤検知を避ける）
 _KNOWN_ATTACK_RULES: List[Tuple[str, str]] = [
     (r"プロンプトインジェクション", "prompt_injection_ja"),
+    (r"(プロンプト|prompt).{0,20}(インジェクション|injection)", "prompt_injection_variant"),
+    (r"プロンプトインジェクション.{0,16}(耐性|テスト|検証|試験)", "prompt_injection_probe"),
+    (r"プロンプトインジェクション耐性", "prompt_injection_resilience_ja"),
+    (r"PI\s*耐性", "pi_resilience_probe"),
+    (r"PI\s*テスト", "pi_test_probe"),
+    (r"prompt\s*injection", "prompt_injection_en"),
+    (r"prompt\s*injection\s*(test|testing|resilience|robustness)", "prompt_injection_test_en"),
+    (r"\bPI\s+injection\s+test\b", "pi_injection_test_en"),
     (r"命令にすべて従", "obey_all_commands"),
     (r"すべての命令に従", "obey_all_commands_alt"),
     (r"命令に従ってください", "obey_commands_polite"),
@@ -27,6 +35,8 @@ _KNOWN_ATTACK_RULES: List[Tuple[str, str]] = [
     (r"DANモード", "dan_mode_ja"),
     (r"\bDAN\b.*\bmode\b", "dan_mode_en"),
     (r"システムプロンプトを(開示|表示|教え)", "reveal_system_prompt_ja"),
+    (r"システムプロンプト.{0,12}(教え|開示|見せ|出力|漏)", "reveal_system_prompt_ja_alt"),
+    (r"(API\s*キー|api\s*key).{0,16}(教え|開示|見せ|出力|漏)", "api_key_exfiltration"),
     (r"(show|reveal|print|display)\s+(your\s+)?(system\s+)?prompt", "reveal_system_prompt_en"),
     (r"開発者モード", "dev_mode_ja"),
     (r"\bdeveloper\s+mode\b", "dev_mode_en"),

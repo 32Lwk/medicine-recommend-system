@@ -203,6 +203,13 @@ def test_sanitize_greeting_response_strips_rude_mirroring():
     assert not cleaned.startswith("おい")
 
 
+def test_sanitize_greeting_response_strips_internal_status_prefix():
+    raw = "[ステータス] ご挨拶: こんにちは！お困りごとがあればどうぞ。"
+    cleaned = sanitize_greeting_response(raw, "はーわーく")
+    assert cleaned == "こんにちは！お困りごとがあればどうぞ。"
+    assert "[ステータス]" not in cleaned
+
+
 def test_sanitize_greeting_response_strips_rude_mirroring_exclamation():
     from src.agents.concierge_agent import _GREETING_SANITIZE_OPENINGS
 

@@ -268,6 +268,28 @@ def test_greeting_sage_marker_uses_diagnosis_message():
     assert "sage_status" not in messages[0]["text"]
 
 
+def test_greeting_sage_marker_strips_internal_prefix_for_line():
+    bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "greeting": True,
+        "concierge": True,
+        "concierge_intent": "greeting",
+        "content_format": "text",
+        "diagnosis": {
+            "render": "sage_status",
+            "layout": "plain",
+            "title": "ご挨拶",
+            "message": "[ステータス] ご挨拶: こんにちは！",
+            "kind": "concierge_greeting",
+        },
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages[0]["type"] == "text"
+    assert messages[0]["text"] == "こんにちは！"
+    assert "[ステータス]" not in messages[0]["text"]
+
+
 def test_counseling_sage_marker_uses_diagnosis_message():
     bot = {
         "type": "bot",

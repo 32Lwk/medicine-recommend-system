@@ -156,6 +156,15 @@ def test_build_notice_status():
     assert "症状" in diag.message
 
 
+def test_build_notice_status_strips_internal_prefix():
+    diag = build_notice_status(
+        "[ステータス] ご挨拶: こんにちは！",
+        title="ご挨拶",
+    )
+    assert diag.message == "こんにちは！"
+    assert "[ステータス]" not in diag.message
+
+
 def test_build_attribute_update_status():
     diag = build_attribute_update_status({"age": 30, "gender": "女性", "allergies": [], "current_medications": []})
     assert diag.sections

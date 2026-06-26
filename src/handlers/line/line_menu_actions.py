@@ -36,6 +36,8 @@ MENU_ACTIONS = frozenset(
         "pharmacist_cancel",
         "pharmacist_cancel_request",
         "return_ai",
+        "memory_delete_confirm",
+        "memory_delete_cancel",
     }
 )
 
@@ -60,6 +62,8 @@ def menu_display_texts() -> frozenset[str]:
             "pharmacist_return_ai_label",
             "pharmacist_confirm_yes",
             "pharmacist_confirm_no",
+            "memory_delete_confirm_yes",
+            "memory_delete_confirm_no",
         ):
             value = (ui.get(key) or "").strip()
             if value:
@@ -239,6 +243,34 @@ async def handle_line_menu_postback(
         result = return_session_to_ai(sid, lang=lang)
         text = result.get("reply_text") or ui.get("pharmacist_return_ai_message", "")
         await _reply_messages(user_id, [{"type": "text", "text": text}], reply_token=reply_token)
+        persist_line_session(sid, session)
+        return True
+
+    if action == "memory_delete_cancel":
+        session.pop("pending_memory_delete", None)
+        cancel_msg = ui.get(
+            "memory_delete_cancelled_message",
+            "削除はキャンセルしました。記憶はそのまま残しています。",
+        )
+        await _reply_messages(user_id, [{"type": "text", "text": cancel_msg}], reply_token=reply_token)
+        persist_line_session(sid, session)
+        return True
+
+    if action == "memory_delete_confirm" and extra == "yes":
+        from src.agents.session_agent import execute_confirmed_memory_delete
+        from src.services.sage_bot_response import build_bot_response
+
+        msg, sage_diag = execute_confirmed_memory_delete(sid, session)
+        bot = build_bot_response(
+            session,
+            sid,
+            sage_diagnosis=sage_diag,
+            legacy_content=msg,
+            session_agent=True,
+            session_agent_kind="delete",
+        )
+        session.setdefault("messages", []).append(bot)
+        await _reply_messages(user_id, [{"type": "text", "text": msg}], reply_token=reply_token)
         persist_line_session(sid, session)
         return True
 

@@ -32,6 +32,7 @@ _VALID_INTENTS = frozenset({
     "chitchat",
     "greeting",
     "redirect",
+    "session_ops",
     "none",
 })
 
@@ -52,6 +53,7 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 - doc_app_overview: アプリ概要.md の内容（開発背景・β版の目的・技術構成・対象者の詳細）（例: 「アプリの概要」「開発背景は？」「β版の対象者は？」）
 - chitchat: 雑談・天気・暇つぶし・話題の続き（挨拶ではない会話）
 - greeting: 挨拶・一声のみ（質問形式ではない短い呼びかけ）
+- session_ops: 相談履歴の削除・要約・ステータス確認（例: 「履歴消して」「履歴を要約して」「ステータスを教えて」「記憶を消して」「状態は？」）
 - redirect: 話題がずれている・医薬品相談へ誘導すべき
 - none: 上記以外（症状・店舗案内・医薬品相談・在庫確認などは none — stage2/triage の結果を尊重）
 
@@ -65,7 +67,7 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 市販薬（OTC）の候補選定はルールベースアルゴリズムのみで行い、LLM が自由に薬名を創作して決めることはありません。
 
 JSON形式:
-{{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|chitchat|greeting|redirect|none", "confidence": 0.0-1.0}}
+{{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|chitchat|greeting|session_ops|redirect|none", "confidence": 0.0-1.0}}
 """
 
 
@@ -99,6 +101,14 @@ def should_skip_meta_triage_llm(
         return False
     if (triage or {}).get("category") != "Other":
         return False
+
+    sub = ((triage or {}).get("subcategory") or "").lower()
+    if sub == "session_admin":
+        try:
+            conf = float((triage or {}).get("confidence", 0))
+        except (TypeError, ValueError):
+            return False
+        return conf >= 0.85
 
     from src.services.concierge_intent import (
         _is_medicine_consultation,
@@ -167,6 +177,10 @@ def classify_meta_concierge_intent(
         intent = str(data.get("intent") or "none").lower()
         if intent in ("self_intro", "about", "intro"):
             intent = "app_about"
+        if intent == "session_ops":
+            result = "session_ops"  # type: ignore[assignment]
+            _META_CACHE[cache_key] = (time.time(), result)
+            return result
         if intent == "none":
             _META_CACHE[cache_key] = (time.time(), None)
             return None

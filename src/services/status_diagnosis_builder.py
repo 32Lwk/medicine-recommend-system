@@ -392,11 +392,14 @@ def build_notice_status(
     show_feedback: bool = False,
     feedback_context: dict[str, Any] | None = None,
 ) -> StatusDiagnosisV1:
+    from src.utils.sage_message_plain import strip_internal_llm_prefix
+
+    clean_message = strip_internal_llm_prefix(message)
     return StatusDiagnosisV1(
         render="sage_status",
         variant=variant,  # type: ignore[arg-type]
         title=title,
-        message=message,
+        message=clean_message,
         hints=hints or [],
         sections=sections or [],
         show_feedback=show_feedback,
@@ -533,6 +536,90 @@ def build_concierge_architecture_status() -> StatusDiagnosisV1:
         hints=["お体の不調やお薬のことでしたら、症状を教えてください。"],
         sections=sections,
         kind="concierge_architecture",
+        show_feedback=True,
+    )
+
+
+def _mask_profile_for_user_display(profile: dict[str, Any]) -> list[str]:
+    """ユーザー向けステータスカード用に PII をマスクしたプロファイル要約。"""
+    p = profile or {}
+    items: list[str] = []
+
+    def _flag(key: str, label: str) -> None:
+        val = p.get(key)
+        if val is None or val == "" or val == []:
+            items.append(f"{label}: 未登録")
+        else:
+            items.append(f"{label}: 登録あり")
+
+    _flag("age", "年齢")
+    _flag("gender", "性別")
+    allergies = p.get("allergies") or []
+    if allergies:
+        items.append(f"アレルギー: {len(allergies)}件登録")
+    else:
+        items.append("アレルギー: 未登録")
+    meds = p.get("current_medications") or []
+    if meds:
+        items.append(f"服用中の薬: {len(meds)}件登録")
+    else:
+        items.append("服用中の薬: 未登録")
+    history = p.get("medical_history") or []
+    if history:
+        items.append(f"既往歴: {len(history)}件登録")
+    else:
+        items.append("既往歴: 未登録")
+    return items
+
+
+def build_session_integrated_status(
+    *,
+    session_snapshot: dict[str, Any],
+    profile: dict[str, Any],
+    summaries: list[dict[str, Any]] | None = None,
+) -> StatusDiagnosisV1:
+    """セッション + 長期記憶 + β版制限の統合ステータスカード（PII マスク）。"""
+    from src.content.concierge_knowledge import get_app_info, get_limitations
+
+    snap = session_snapshot or {}
+    live_msgs = snap.get("messages") or []
+    archive_msgs = snap.get("message_archive") or snap.get("messages_live") or []
+    msg_count = max(len(live_msgs), len(archive_msgs))
+    summary_count = len(summaries or [])
+    app = get_app_info()
+    limits = list(get_limitations() or [])[:4]
+
+    sections = [
+        StatusSection(
+            title="このセッション",
+            items=[
+                f"メッセージ数（概算）: {msg_count}",
+                f"セッション状態: {'アクティブ' if snap.get('session_active', True) else '非アクティブ'}",
+            ],
+        ),
+        StatusSection(title="長期記憶（マスク表示）", items=_mask_profile_for_user_display(profile)),
+        StatusSection(
+            title="相談要約",
+            items=[f"保存件数: {summary_count}件"],
+        ),
+        StatusSection(
+            title="β版のご案内",
+            items=limits or ["市販薬の相談支援ツール（試験運用）"],
+        ),
+    ]
+    message = (
+        f"{app.get('name', '本サービス')}の利用状況です。"
+        "個人を特定できる詳細は表示していません。"
+    )
+    return StatusDiagnosisV1(
+        render="sage_status",
+        variant="notice",
+        title="セッションステータス",
+        subtitle=str(app.get("name") or ""),
+        message=message,
+        sections=sections,
+        hints=["症状やお薬について、具体的にお書きください。"],
+        kind="session_integrated_status",
         show_feedback=True,
     )
 

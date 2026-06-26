@@ -16,6 +16,16 @@ _TRIAGE = {
 }
 
 
+def test_should_skip_meta_for_session_admin_high_conf():
+    triage = {"category": "Other", "confidence": 0.95, "subcategory": "session_admin"}
+    assert should_skip_meta_triage_llm(triage, "状態は？", store_probable=False) is True
+
+
+def test_should_not_skip_meta_for_session_admin_low_conf():
+    triage = {"category": "Other", "confidence": 0.5, "subcategory": "session_admin"}
+    assert should_skip_meta_triage_llm(triage, "状態は？", store_probable=False) is False
+
+
 def test_should_skip_meta_for_high_conf_general_other():
     assert should_skip_meta_triage_llm(_TRIAGE, "うい", store_probable=False) is True
     assert should_skip_meta_triage_llm(_TRIAGE, "うい", store_probable=True) is False

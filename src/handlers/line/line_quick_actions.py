@@ -46,6 +46,33 @@ def build_return_ai_quick_reply(ui: dict[str, str]) -> dict[str, Any]:
     }
 
 
+def build_delete_memory_quick_reply(ui: dict[str, str]) -> dict[str, Any]:
+    yes_label = ui.get("memory_delete_confirm_yes", "削除する")
+    no_label = ui.get("memory_delete_confirm_no", "キャンセル")
+    return {
+        "items": [
+            {
+                "type": "action",
+                "action": {
+                    "type": "postback",
+                    "label": yes_label,
+                    "data": f"{POSTBACK_PREFIX}|memory_delete_confirm|yes",
+                    "displayText": yes_label,
+                },
+            },
+            {
+                "type": "action",
+                "action": {
+                    "type": "postback",
+                    "label": no_label,
+                    "data": f"{POSTBACK_PREFIX}|memory_delete_cancel",
+                    "displayText": no_label,
+                },
+            },
+        ]
+    }
+
+
 def attach_session_quick_actions(
     line_messages: list[dict[str, Any]],
     session_data: dict[str, Any] | None,
@@ -57,7 +84,9 @@ def attach_session_quick_actions(
         return line_messages
     ui = get_line_ui_strings(lang)
     quick_reply = None
-    if is_pharmacist_request_pending(session_data):
+    if session_data.get("pending_memory_delete"):
+        quick_reply = build_delete_memory_quick_reply(ui)
+    elif is_pharmacist_request_pending(session_data):
         quick_reply = build_cancel_pharmacist_quick_reply(ui)
     elif should_offer_return_to_ai(session_data):
         quick_reply = build_return_ai_quick_reply(ui)

@@ -210,6 +210,7 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
             "counseling_mode",
             "last_triage_result",
             "_last_triage_result",
+            "pending_memory_delete",
         ):
             if flag in session_data:
                 session[flag] = session_data[flag]
@@ -238,6 +239,7 @@ def prime_line_session(user_id: str) -> RequestSafeSession:
 def get_latest_bot_message_from_session(session: Any) -> dict | None:
     """インメモリセッションから最新の bot メッセージを取得。"""
     messages = session.get("messages") if hasattr(session, "get") else []
+    messages = messages or []
     if not messages:
         return None
     for msg in reversed(messages):
@@ -249,6 +251,7 @@ def get_latest_bot_message_from_session(session: Any) -> dict | None:
 def count_bot_messages_in_session(session: Any) -> int:
     """インメモリセッション内の bot メッセージ数。"""
     messages = session.get("messages") if hasattr(session, "get") else []
+    messages = messages or []
     return sum(1 for m in messages if isinstance(m, dict) and m.get("type") == "bot")
 
 

@@ -37,8 +37,10 @@ def test_backfill_session_data_syncs_last_activity():
     stats = backfill_session_data(info)
     assert stats["normalized"] >= 1
     assert stats["last_activity_updated"] == 1
-    la = info["last_activity"]
-    assert isinstance(la, datetime)
+    from src.utils.admin_timestamp import parse_admin_timestamp
+
+    la = parse_admin_timestamp(info["last_activity"], naive_as_utc=True)
+    assert la is not None
     assert la.hour == 7
     assert la.tzinfo is not None
 

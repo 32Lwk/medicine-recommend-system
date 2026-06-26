@@ -16,6 +16,7 @@ def test_log_counseling_detail_emits_single_line_json(caplog) -> None:
         user_input="頭が痛い",
         response="お大事に。",
         conversation_history=[{"type": "user", "content": "頭が痛い"}],
+        async_log=False,
     )
 
     assert len(caplog.records) == 1

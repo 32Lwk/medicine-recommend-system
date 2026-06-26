@@ -6,10 +6,14 @@ app.logとJSONLファイルの両方に構造化ログを出力する機能を�
 import json
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+# counseling_detail 等の構造化ログは I/O のみ別スレッドで実行（応答パスをブロックしない）
+_detail_log_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="detail_log")
 
 # ログディレクトリのパス
 from src import PROJECT_ROOT
@@ -111,7 +115,9 @@ def log_counseling_detail(
     session_id: str,
     user_input: str,
     response: str,
-    conversation_history: Optional[List[Dict]] = None
+    conversation_history: Optional[List[Dict]] = None,
+    *,
+    async_log: bool = True,
 ) -> None:
     """
     カウンセリングの詳細ログを記録
@@ -120,27 +126,38 @@ def log_counseling_detail(
         session_id: セッションID
         user_input: ユーザー入力
         response: システムの返信
-        conversation_history: 会話履歴（最新N件、オプショナル。エラー時や不適切評価時のみ記録）
+        conversation_history: 会話履歴（最新N件、オプショナル）
+        async_log: True なら別スレッドで書き込み（既定・応答遅延なし）
     """
     timestamp = datetime.now().isoformat()
-    
-    # conversation_historyがNoneの場合は空リストとして扱う
-    history = conversation_history if conversation_history is not None else []
-    
-    log_data = {
+    history = list(conversation_history) if conversation_history is not None else []
+    payload = {
         "log_type": "counseling_detail",
         "timestamp": timestamp,
         "session_id": session_id,
         "user_input": user_input,
         "response": response,
-        "conversation_history": history
+        "conversation_history": history,
     }
-    
-    # JSONLファイルに出力
-    _write_to_jsonl("counseling_detail_log.jsonl", log_data)
-    
-    # app.logに出力
-    _write_to_app_log("INFO", f"カウンセリング詳細ログ [session_id: {session_id}]", log_data)
+
+    if async_log:
+        _detail_log_executor.submit(_emit_counseling_detail, payload)
+        return
+    _emit_counseling_detail(payload)
+
+
+def _emit_counseling_detail(log_data: Dict[str, Any]) -> None:
+    """counseling_detail を JSONL + app.log に書き込む（ワーカースレッド可）。"""
+    try:
+        _write_to_jsonl("counseling_detail_log.jsonl", log_data)
+        session_id = log_data.get("session_id", "")
+        _write_to_app_log(
+            "INFO",
+            f"カウンセリング詳細ログ [session_id: {session_id}]",
+            log_data,
+        )
+    except Exception as exc:
+        logger.error("counseling_detail 非同期書き込みエラー: %s", exc)
 
 
 def log_medicine_question_detail(

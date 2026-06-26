@@ -113,9 +113,25 @@ def run_chat_post_pipeline(
 
     logger.info("📨 POST処理開始 trace_id=%s", ctx.trace_id)
     from src.services.pipeline_perf import activate_pipeline_perf, mark_pipeline_step
+    from src.handlers.line.line_session import count_bot_messages_in_session
+    from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
 
     activate_pipeline_perf(sid)
     mark_pipeline_step("post_start")
+
+    bot_count_before = count_bot_messages_in_session(session)
+
+    def _guard_return(resp: ResponseTuple) -> ResponseTuple:
+        return finalize_pipeline_response(
+            session,
+            sid,
+            client_info,
+            bot_count_before,
+            resp,
+            recommendation_client=ctx.recommendation_client,
+            user_message=ctx.original_user_message or ctx.user_message,
+        )
+
     ctx.user_message = parse_incoming_message(session, message)
     mark_pipeline_step("parsed_message")
 
@@ -127,7 +143,7 @@ def run_chat_post_pipeline(
         user_agent=ctx.user_agent,
     )
     if dev_trigger_resp is not None:
-        return dev_trigger_resp
+        return _guard_return(dev_trigger_resp)
 
     if not ctx.user_message:
         resp = empty_message_response(
@@ -145,22 +161,7 @@ def run_chat_post_pipeline(
         session, client_info, sid, ctx.user_message, session_data_for_ai
     )
     if manual_resp is not None:
-        return manual_resp
-
-    from src.handlers.line.line_session import count_bot_messages_in_session
-    from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
-
-    bot_count_before = count_bot_messages_in_session(session)
-
-    def _guard_return(resp: ResponseTuple) -> ResponseTuple:
-        return finalize_pipeline_response(
-            session,
-            sid,
-            client_info,
-            bot_count_before,
-            resp,
-            recommendation_client=ctx.recommendation_client,
-        )
+        return _guard_return(manual_resp)
 
     mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
@@ -192,17 +193,17 @@ def run_chat_post_pipeline(
         if owner:
             apply_profile_to_session(session, owner)
 
-    from src.agents.memory_delete_agent import try_handle_memory_delete
+    from src.agents.session_agent import try_handle_session_request
 
-    delete_resp = try_handle_memory_delete(
+    session_fast_resp = try_handle_session_request(
         session,
         sid,
         ctx.sanitized_message or ctx.user_message,
         ctx.recommendation_client,
     )
-    if delete_resp is not None:
+    if session_fast_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
-        return _guard_return(delete_resp)
+        return _guard_return(session_fast_resp)
 
     mark_pipeline_step("before_emoji_route")
     from src.handlers.chat.chat_emoji_route import try_emoji_pre_triage_route
@@ -244,6 +245,19 @@ def run_chat_post_pipeline(
     )
 
     sync_routing_context(ctx)
+
+    from src.agents.session_agent import try_handle_session_request
+
+    session_triage_resp = try_handle_session_request(
+        session,
+        sid,
+        ctx.sanitized_message or ctx.user_message,
+        ctx.recommendation_client,
+        triage_result=ctx.triage_result,
+    )
+    if session_triage_resp is not None:
+        sync_messages_to_db_for_admin(session, sid, client_info)
+        return _guard_return(session_triage_resp)
 
     from src.agents.safety_gate import run_safety_gate
 

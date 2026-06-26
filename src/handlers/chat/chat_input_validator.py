@@ -79,19 +79,21 @@ def validate_and_block_input(session, client, user_message, sid):
         (sanitized_message, error_response) - error_response が (dict, status) なら return する。
     """
     try:
-        from src.security.absolute_blocklist import is_absolutely_blocked
-        blocked, _ = is_absolutely_blocked(user_message)
-        if blocked:
-            logger.warning("🚫 絶対ブロックリストにより入力が拒否されました")
-            # セキュリティブロック以外の不適切内容はユーザーフレンドリーなプレーンテキストで返す
-            from src.security.aggressive_input import AGGRESSIVE_INPUT_NOTICE_MESSAGE
+        from src.security.aggressive_input import (
+            AGGRESSIVE_INPUT_NOTICE_MESSAGE,
+            is_aggressive_expression,
+        )
 
+        aggressive, reason = is_aggressive_expression(user_message)
+        if aggressive:
+            logger.warning("🚫 攻撃的入力により拒否されました: reason=%s", reason)
             block_message = AGGRESSIVE_INPUT_NOTICE_MESSAGE
             _append_blocked_user_message(session)
             _append_security_block_bot(
-                session, sid, block_message, kind="absolute_block", variant="security"
+                session, sid, block_message, kind="aggressive_input", variant="security"
             )
-            session.modified = True
+            if hasattr(session, "modified"):
+                session.modified = True
             _persist_block_messages_to_db(session, client, sid)
             if sid:
                 try:
@@ -100,12 +102,18 @@ def validate_and_block_input(session, client, user_message, sid):
                     clear_processing_status(sid)
                 except ImportError:
                     pass
-            message_count = len(session['messages'])
-            return (None, ({
-                'status': 'ok',
-                'message_count': message_count,
-                'response': block_message
-            }, 200))
+            message_count = len(session["messages"])
+            return (
+                None,
+                (
+                    {
+                        "status": "ok",
+                        "message_count": message_count,
+                        "response": block_message,
+                    },
+                    200,
+                ),
+            )
     except ImportError:
         pass
 

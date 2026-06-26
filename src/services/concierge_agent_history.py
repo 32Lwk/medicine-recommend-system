@@ -48,6 +48,59 @@ _AGENT_ROSTER_RE = re.compile(
 )
 
 
+_META_FOLLOW_UP_RE = re.compile(
+    r"(詳しく|もっと|続き|深く|さらに|具体的に|もう少し)"
+)
+
+_ARCHITECTURE_TOPIC_RE = re.compile(
+    r"技術|仕組み|構成|スタック|エージェント|インフラ|デプロイ|内部|バックエンド|フロント|マルチ",
+    re.IGNORECASE,
+)
+
+_META_FOLLOW_UP_PRIOR_INTENTS = frozenset({
+    "architecture",
+    "capabilities",
+    "app_about",
+})
+
+
+def resolve_last_concierge_intent(messages: List[Dict[str, Any]]) -> Optional[str]:
+    """直近 bot メッセージの concierge_intent を返す。"""
+    for msg in reversed(messages or []):
+        if not isinstance(msg, dict) or msg.get("type") != "bot":
+            continue
+        intent = msg.get("concierge_intent")
+        if intent:
+            return str(intent)
+        diagnosis = msg.get("diagnosis")
+        if isinstance(diagnosis, dict):
+            kind = str(diagnosis.get("kind") or "").strip()
+            if kind.startswith("concierge_"):
+                return kind.replace("concierge_", "", 1)
+    return None
+
+
+def infer_prior_meta_follow_up_intent(
+    text: str,
+    prior_intent: Optional[str],
+) -> Optional[str]:
+    """直前のメタ意図に続く短いフォローアップ（例: 技術面を詳しく）を推定する。"""
+    t = (text or "").strip()
+    if not t or not prior_intent or prior_intent not in _META_FOLLOW_UP_PRIOR_INTENTS:
+        return None
+    if not _META_FOLLOW_UP_RE.search(t):
+        return None
+    if len(t) > 40:
+        return None
+    if prior_intent == "architecture":
+        if _ARCHITECTURE_TOPIC_RE.search(t) or len(t) <= 24:
+            return "architecture"
+        return None
+    if prior_intent in ("capabilities", "app_about"):
+        return prior_intent
+    return None
+
+
 def is_who_is_answering_question(text: str) -> bool:
     return bool(_WHO_IS_ANSWERING_RE.search((text or "").strip()))
 
@@ -125,15 +178,17 @@ def format_concierge_agent_history_block(messages: List[Dict[str, Any]]) -> str:
     """会話履歴に返信担当エージェント名を付与して LLM に渡す。"""
     if not messages:
         return "（なし）"
-    from src.services.line_memory_context import compress_message_for_llm
+    from src.utils.sage_message_plain import resolve_bot_user_facing_text
 
     lines: list[str] = []
     for msg in messages:
         if not isinstance(msg, dict):
             continue
-        compressed = compress_message_for_llm(msg)
-        role = compressed.get("type") or "user"
-        content = (compressed.get("content") or "").strip()[:300]
+        role = msg.get("type") or "user"
+        if role == "bot":
+            content = resolve_bot_user_facing_text(msg)[:300]
+        else:
+            content = str(msg.get("content") or "").strip()[:300]
         if not content:
             continue
         if role == "bot":
