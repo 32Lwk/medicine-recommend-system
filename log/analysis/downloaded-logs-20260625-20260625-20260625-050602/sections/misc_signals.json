@@ -1,0 +1,12 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-06-25T04:59:22.318034Z",
+      "message": "[2026-06-25 04:59:22 +0000] [2] [INFO] Worker exiting (pid: 2)"
+    },
+    {
+      "timestamp": "2026-06-25T04:59:22.657383Z",
+      "message": "[2026-06-25 04:59:22 +0000] [66] [INFO] Booting worker with pid: 66"
+    }
+  ]
+}

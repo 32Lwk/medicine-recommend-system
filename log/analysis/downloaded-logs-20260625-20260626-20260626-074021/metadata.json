@@ -1,0 +1,32 @@
+{
+  "source_path": "/Users/yuto/Programing/medicine-recommend-system/log/raw/downloaded-logs-20260625-20260626-20260626-074021.json",
+  "source_name": "downloaded-logs-20260625-20260626-20260626-074021.json",
+  "entry_count": 41402,
+  "time_range": {
+    "start": "2026-06-25T05:05:32.214554Z",
+    "end": "2026-06-26T07:39:49.075948Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 41402
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00129-v9q": 20978,
+    "medicine-recommend-dev-00127-klm": 15651,
+    "medicine-recommend-dev-00124-gjq": 2135,
+    "medicine-recommend-dev-00123-bpf": 1237,
+    "medicine-recommend-dev-00126-fln": 951,
+    "medicine-recommend-dev-00128-zqr": 342,
+    "medicine-recommend-dev-00125-jw2": 95
+  },
+  "commit_shas": {
+    "a7455d2bb00b2538316be114a876bf78f10f4544": 41377
+  },
+  "severity_counts": {
+    "DEFAULT": 31742,
+    "INFO": 9622,
+    "NOTICE": 6,
+    "WARNING": 5,
+    "ERROR": 27
+  }
+}

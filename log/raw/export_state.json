@@ -1,0 +1,12 @@
+{
+  "by_service": {
+    "medicine-recommend-dev": {
+      "last_start": "2026-06-25T05:05:32Z",
+      "last_end": "2026-06-26T07:40:21Z",
+      "source_path": "/Users/yuto/Programing/medicine-recommend-system/log/raw/downloaded-logs-20260625-20260626-20260626-074021.json",
+      "source_kind": "export",
+      "entry_count": 41402,
+      "exported_at": "2026-06-26T07:43:33Z"
+    }
+  }
+}

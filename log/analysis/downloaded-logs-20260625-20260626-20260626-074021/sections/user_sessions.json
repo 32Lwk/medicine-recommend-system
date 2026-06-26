@@ -1,0 +1,397 @@
+{
+  "counseling_detail_count": 1,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 1,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-06-25T05:36:23.331810",
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "user_input": "おまえだれ？",
+      "response": "私は、症状をもとに市販薬の相談をお手伝いするチャット型医薬品相談ツールです。  \n病院や診療所のように診察や処方をするものではなく、一般用医薬品の案内をするためのものです。  \n今気になっている症状があれば、できるだけ具体的に教えてください。",
+      "conversation_history": [
+        {
+          "type": "system",
+          "content": "【ユーザー長期プロファイル】\n（未登録）\n\n【過去の相談エピソード要約（最新順）】\n（過去の相談要約なし）"
+        },
+        {
+          "type": "user",
+          "content": "😄"
+        },
+        {
+          "type": "bot",
+          "content": "[ステータス] ご案内: メッセージありがとうございます。\nこちらはチャット型医薬品相談ツール（β版）です。絵文字だけだと意図が伝わりにくい場合があります。\nお身体の症状やご質問を、テキストでお書きいただけますか。\n例：頭が痛い、のどの痛み、眠れない など"
+        },
+        {
+          "type": "user",
+          "content": "ああ"
+        },
+        {
+          "type": "bot",
+          "content": "[ステータス] ご挨拶: こんにちは！お越しいただきありがとうございます。こちらは市販薬に関する相談をお受けするツールです。お身体の不調や気になる症状について、ぜひお話ししてみてください。例えば、頭痛や風邪の症状など、具体的に教えていただけると助かります。"
+        },
+        {
+          "type": "user",
+          "content": "おまえだれ？"
+        }
+      ]
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-06-25T05:36:13.396098Z",
+      "message": "2026-06-25 05:36:13,396 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:36:28.617486Z",
+      "message": "2026-06-25 05:36:28,618 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:38:42.080166Z",
+      "message": "2026-06-25 05:38:42,081 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:39:11.051183Z",
+      "message": "2026-06-25 05:39:11,051 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:40:58.348379Z",
+      "message": "2026-06-25 05:40:58,349 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:52:49.994255Z",
+      "message": "2026-06-25 05:52:49,994 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:53:57.044381Z",
+      "message": "2026-06-25 05:53:57,045 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T05:54:02.424309Z",
+      "message": "2026-06-25 05:54:02,425 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:28:49.669557Z",
+      "message": "2026-06-25 07:28:49,670 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:28:59.100220Z",
+      "message": "2026-06-25 07:28:59,100 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:29:42.269756Z",
+      "message": "2026-06-25 07:29:42,270 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:29:55.042654Z",
+      "message": "2026-06-25 07:29:55,043 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:30:11.247149Z",
+      "message": "2026-06-25 07:30:11,247 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:30:38.090454Z",
+      "message": "2026-06-25 07:30:38,091 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:31:36.820886Z",
+      "message": "2026-06-25 07:31:36,821 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:32:15.642206Z",
+      "message": "2026-06-25 07:32:15,643 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:33:05.486107Z",
+      "message": "2026-06-25 07:33:05,487 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:33:17.790428Z",
+      "message": "2026-06-25 07:33:17,791 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T07:33:43.391080Z",
+      "message": "2026-06-25 07:33:43,391 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:13:18.442175Z",
+      "message": "2026-06-25 15:13:18,443 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:14:11.169979Z",
+      "message": "2026-06-25 15:14:11,171 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:14:43.731785Z",
+      "message": "2026-06-25 15:14:43,732 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:15:41.284191Z",
+      "message": "2026-06-25 15:15:41,285 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:15:58.116266Z",
+      "message": "2026-06-25 15:15:58,117 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:18:40.152599Z",
+      "message": "2026-06-25 15:18:40,153 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:21:57.004730Z",
+      "message": "2026-06-25 15:21:57,005 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:22:31.456339Z",
+      "message": "2026-06-25 15:22:31,456 - INFO - Security validation: score=100, safe=False, warnings=1"
+    },
+    {
+      "timestamp": "2026-06-25T15:22:31.456339Z",
+      "message": "2026-06-25 15:22:31,456 - INFO - Security validation: score=100, safe=False, warnings=1"
+    },
+    {
+      "timestamp": "2026-06-25T15:22:43.611385Z",
+      "message": "2026-06-25 15:22:43,611 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:25:21.603768Z",
+      "message": "2026-06-25 15:25:21,604 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:31:20.047389Z",
+      "message": "2026-06-25 15:31:20,048 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:40:22.437657Z",
+      "message": "2026-06-25 15:40:22,438 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:43:23.022538Z",
+      "message": "2026-06-25 15:43:23,023 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:49:33.167366Z",
+      "message": "2026-06-25 15:49:33,167 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T15:49:40.827276Z",
+      "message": "2026-06-25 15:49:40,827 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T17:13:20.912048Z",
+      "message": "2026-06-25 17:13:20,913 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T17:13:32.688549Z",
+      "message": "2026-06-25 17:13:32,689 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T17:13:53.081005Z",
+      "message": "2026-06-25 17:13:53,082 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T17:14:15.800712Z",
+      "message": "2026-06-25 17:14:15,802 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-06-25T17:14:39.575914Z",
+      "message": "2026-06-25 17:14:39,577 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 1,
+    "exported_session_count": 1,
+    "sessions": [
+      {
+        "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+        "channel": "line",
+        "time_range": {
+          "start": "2026-06-25T05:36:23.331810",
+          "end": "2026-06-25T05:36:23.331810"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "おまえだれ？"
+          },
+          {
+            "role": "assistant",
+            "content": "私は、症状をもとに市販薬の相談をお手伝いするチャット型医薬品相談ツールです。 病院や診療所のように診察や処方をするものではなく、一般用医薬品の案内をするためのものです。 今気になっている症状があれば、できるだけ具体的に教えてください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-06-25T05:36:23.331810",
+            "user_input": "おまえだれ？",
+            "response_preview": "私は、症状をもとに市販薬の相談をお手伝いするチャット型医薬品相談ツールです。 病院や診療所のように診察や処方をするものではなく、一般用医薬品の案内をするためのものです。 今気になっている症状があれば、できるだけ具体的に教えてください。",
+            "response_html": false,
+            "input_labels": [
+              "about_or_capabilities"
+            ],
+            "routing": {
+              "trace_id": "75349150-f5d2-40a8-97bf-cd516949d4b5",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "app_about",
+              "structural_intent": null,
+              "meta_intent": "app_about",
+              "handoff_target": "OtherHandler",
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 12086.61,
+              "channel": "line",
+              "phase_summary_ms": {
+                "security_ms": 5.5,
+                "triage_ms": 5294.5,
+                "post_to_security_ms": 6.0,
+                "safety_gate_ms": 5297.4,
+                "confidence_gate_ms": 365.9,
+                "orchestrator_ms": 5063.3,
+                "concierge_build_ms": 2232.4,
+                "meta_triage_ms": 1888.5
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-06-25T05:36:13.393699Z",
+              "response_at": "2026-06-25T05:36:23.331810",
+              "e2e_ms": 9938.1,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 12086.61,
+              "phase_summary_ms": {
+                "security_ms": 5.5,
+                "triage_ms": 5294.5,
+                "post_to_security_ms": 6.0,
+                "safety_gate_ms": 5297.4,
+                "confidence_gate_ms": 365.9,
+                "orchestrator_ms": 5063.3,
+                "concierge_build_ms": 2232.4,
+                "meta_triage_ms": 1888.5
+              },
+              "breakdown_ms": {
+                "line_loading_start": 78.34,
+                "post_start": 79.36,
+                "parsed_message": 79.58,
+                "session_db_read": 79.68,
+                "after_get_session_db": 79.7,
+                "before_llm_setup": 79.72,
+                "before_security": 79.83,
+                "after_security": 85.33,
+                "before_emoji_route": 85.43,
+                "emoji_route_start": 85.47,
+                "emoji_route_skip_not_emoji_only": 85.49,
+                "before_triage": 85.49,
+                "after_triage": 5379.95,
+                "safety_gate_done": 5382.78,
+                "confidence_gate_done": 5748.67,
+                "before_orchestrator": 5748.7,
+                "orch_handoff": 5749.51,
+                "orch_pre_social_intent": 5749.62,
+                "orch_enrich_start": 5822.8,
+                "meta_triage_start": 5822.87,
+                "meta_triage_end": 7711.39,
+                "orch_enrich_end": 7717.11,
+                "orch_route_concierge_start": 7717.12,
+                "concierge_resolve_intent_start": 7781.88,
+                "concierge_resolve_intent_end": 7781.92,
+                "concierge_build_payload_start": 7782.15,
+                "concierge_build_payload_end": 10014.54,
+                "orch_route_concierge_end": 10812.02,
+                "orch_route_end": 10812.04,
+                "delivery_mode": 11420.98,
+                "line_reply_done": 11421.0,
+                "session_db_write": 11421.04
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 7099.689999999999,
+              "llm_session_cost_jpy": 0.2817,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-06-25T05:36:16.165374",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2763.83,
+                  "prompt_tokens": 3251,
+                  "completion_tokens": 103,
+                  "cost_jpy": 0.1006,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T05:36:18.118024",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1374.15,
+                  "prompt_tokens": 3522,
+                  "completion_tokens": 78,
+                  "cost_jpy": 0.108,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T05:36:20.447712",
+                  "model": "gpt-5.4-mini",
+                  "path": "meta_triage.classify",
+                  "latency_ms": 1309.31,
+                  "prompt_tokens": 1258,
+                  "completion_tokens": 18,
+                  "cost_jpy": 0.0383,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-06-25T05:36:22.752547",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_app_about",
+                  "latency_ms": 1652.4,
+                  "prompt_tokens": 1068,
+                  "completion_tokens": 91,
+                  "cost_jpy": 0.0348,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=line:U20a3beee49563dcd07bb3dd0fc1ca32c turns=1 grade=good first='おまえだれ？' last='おまえだれ？'"
+        },
+        "llm_session_review_required": true,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 1
+    },
+    "physical_recommendation_events": []
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 1
+  }
+}

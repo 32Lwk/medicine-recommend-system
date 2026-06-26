@@ -1,0 +1,31 @@
+{
+  "count": 3,
+  "top_patterns": [
+    {
+      "message": "2026-06-25 04:59:26,620 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-06-25 04:59:28,179 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-06-25 04:59:29,002 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-06-25T04:59:26.619649Z",
+      "message": "2026-06-25 04:59:26,620 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-06-25T04:59:28.178615Z",
+      "message": "2026-06-25 04:59:28,179 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-06-25T04:59:29.001779Z",
+      "message": "2026-06-25 04:59:29,002 - INFO - ✅ Database initialized successfully."
+    }
+  ]
+}

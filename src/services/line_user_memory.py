@@ -207,8 +207,10 @@ def upsert_consultation_summary(line_sid: str, summary: dict[str, Any], *, episo
     save_line_memory(line_sid, profile=profile, summaries=summaries[-line_memory_summary_max():])
 
 
-def append_consultation_summary(line_sid: str, summary: dict[str, Any]) -> None:
-    upsert_consultation_summary(line_sid, summary)
+def append_consultation_summary(
+    line_sid: str, summary: dict[str, Any], *, episode_id: str | None = None
+) -> None:
+    upsert_consultation_summary(line_sid, summary, episode_id=episode_id)
 
 
 def delete_line_memory(
