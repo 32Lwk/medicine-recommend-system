@@ -4,9 +4,15 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from src.handlers.line.line_session import (
+    count_bot_messages_in_session,
     get_latest_bot_message_from_session,
     resolve_latest_bot_message,
 )
+
+
+def test_count_bot_messages_handles_none_messages():
+    assert count_bot_messages_in_session({"messages": None}) == 0
+    assert get_latest_bot_message_from_session({"messages": None}) is None
 
 
 def test_get_latest_bot_message_from_session():

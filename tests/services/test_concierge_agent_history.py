@@ -39,6 +39,30 @@ def test_history_block_includes_agent_label():
     assert "今答えているのは誰？" in block
 
 
+def test_history_block_uses_plain_text_not_status_compression():
+    block = format_concierge_agent_history_block(
+        [
+            {"type": "user", "content": "やあ"},
+            {
+                "type": "bot",
+                "content": "sage_status",
+                "greeting": True,
+                "concierge": True,
+                "concierge_intent": "greeting",
+                "diagnosis": {
+                    "render": "sage_status",
+                    "title": "ご挨拶",
+                    "message": "こんにちは！",
+                    "kind": "concierge_greeting",
+                },
+            },
+            {"type": "user", "content": "はーわーく"},
+        ]
+    )
+    assert "[ステータス]" not in block
+    assert "bot[ConciergeAgent]: こんにちは！" in block
+
+
 def test_who_is_answering_question_detected():
     assert is_who_is_answering_question("今答えているのは誰？")
     assert is_who_is_answering_question("誰が回答したの？")

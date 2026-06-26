@@ -198,6 +198,28 @@ def attach_feedback_quick_reply(
     return out
 
 
+def should_offer_line_feedback(bot_message: dict[str, Any] | None) -> bool:
+    """診断カードの show_feedback やセキュリティ応答では Quick Reply を付けない。"""
+    if not bot_message:
+        return True
+    if bot_message.get("manual_reply"):
+        return False
+    diagnosis = bot_message.get("diagnosis")
+    if isinstance(diagnosis, dict):
+        if diagnosis.get("show_feedback") is False:
+            return False
+        kind = str(diagnosis.get("kind") or "")
+        if kind in (
+            "known_attack",
+            "absolute_block",
+            "security_block",
+            "security_warn",
+            "aggressive_input",
+        ):
+            return False
+    return True
+
+
 def prepare_line_messages_with_feedback(
     line_messages: list[dict[str, Any]],
     *,
@@ -207,6 +229,9 @@ def prepare_line_messages_with_feedback(
     lang: str | None,
 ) -> list[dict[str, Any]]:
     if not line_messages:
+        return line_messages
+    if not should_offer_line_feedback(bot_message):
+        _load_pending_map(sid)
         return line_messages
     ui = get_line_ui_strings(lang)
     ai_response = _summarize_ai_response(bot_message, line_messages)
@@ -300,12 +325,14 @@ async def handle_line_feedback_postback(
 
     context = _load_pending_context(sid, feedback_key)
     if not context:
-        # 期限切れ・別インスタンス再起動後の古いボタン等。ユーザーへの返信は出さない。
         logger.info(
-            "LINE feedback postback ignored (no pending context): sid=%s key=%s",
+            "LINE feedback postback expired (no pending context): sid=%s key=%s",
             sid,
             feedback_key,
         )
+        expired = ui.get("feedback_expired", "評価の有効期限が切れました。")
+        if reply_token and LINE_CHANNEL_ACCESS_TOKEN:
+            await reply_messages(reply_token, [{"type": "text", "text": expired}])
         return
 
     username = session.get("username") or "LINEユーザー"

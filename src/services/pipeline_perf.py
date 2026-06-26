@@ -10,6 +10,8 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+_PIPELINE_PERF_WARN_MS = 10_000.0
+
 _active_sid: ContextVar[str | None] = ContextVar("pipeline_perf_active_sid", default=None)
 
 # sync-only / sid なしフォールバック
@@ -193,7 +195,8 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
             payload.update(bucket.extra)
         if extra:
             payload.update(extra)
-        logger.info("PIPELINE_PERF %s", payload)
+        log_fn = logger.warning if total_ms >= _PIPELINE_PERF_WARN_MS else logger.info
+        log_fn("PIPELINE_PERF %s", payload)
         return
 
     steps = _steps.get() or {}
@@ -217,4 +220,5 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
         payload["llm"] = get_llm_summary()
     except Exception:
         pass
-    logger.info("PIPELINE_PERF %s", payload)
+    log_fn = logger.warning if total_ms >= _PIPELINE_PERF_WARN_MS else logger.info
+    log_fn("PIPELINE_PERF %s", payload)

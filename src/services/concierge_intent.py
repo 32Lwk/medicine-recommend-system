@@ -28,6 +28,7 @@ ConciergeIntent = Literal[
     "chitchat",
     "redirect",
     "medical_handoff",
+    "session_ops",
 ]
 
 
@@ -399,7 +400,17 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
+    (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),
+    (re.compile(r"(プログラミング|アルゴリズム|データ構造).{0,8}(とは|って何)"), "redirect"),
 ]
+
+
+def probe_session_admin_intent(user_text: str) -> Optional[str]:
+    """セッション操作（削除・要約・ステータス）のキーワードプローブ。"""
+    from src.agents.session_agent import probe_session_admin_intent as _probe
+
+    intent = _probe(user_text)
+    return intent if intent else None
 
 
 def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:

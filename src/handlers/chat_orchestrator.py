@@ -231,9 +231,12 @@ class ChatOrchestrator:
                     mark_pipeline_step("orch_enrich_start")
                     self._enrich_concierge_intent(ctx)
                     mark_pipeline_step("orch_enrich_end")
-                    mark_pipeline_step("orch_route_concierge_start")
-                    resp = self._route_concierge(ctx, monitor)
-                    mark_pipeline_step("orch_route_concierge_end")
+                    resp = self._try_session_agent(ctx)
+                    triage_after = ctx.triage_result or {}
+                    if resp is None and triage_after.get("concierge_intent") != "session_ops":
+                        mark_pipeline_step("orch_route_concierge_start")
+                        resp = self._route_concierge(ctx, monitor)
+                        mark_pipeline_step("orch_route_concierge_end")
                 if resp is None:
                     resp = self._route_store(ctx)
             else:
@@ -460,6 +463,22 @@ class ChatOrchestrator:
             logger.info("💊 初回セッション: オーケストレーターが Ask→Physical 推奨へ")
             return self._route_physical(ctx, None)
         return None
+
+    def _try_session_agent(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.agents.session_agent import classify_session_intent, try_handle_session_request
+
+        triage = dict(ctx.triage_result or {})
+        user_text = ctx.sanitized_message or ctx.user_message or ""
+        if triage.get("concierge_intent") == "session_ops" and not triage.get("session_intent"):
+            triage["session_intent"] = classify_session_intent(user_text, triage_result=triage)
+            ctx.triage_result = triage
+        return try_handle_session_request(
+            ctx.session,
+            ctx.sid,
+            user_text,
+            self._client,
+            triage_result=triage,
+        )
 
     def _enrich_concierge_intent(self, ctx: Any) -> None:
         from src.services.concierge_orchestrator import enrich_other_concierge_intent

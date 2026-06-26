@@ -256,6 +256,10 @@ def is_probable_store_inquiry(
 
     if should_prioritize_medical_route_over_store(triage_result, user_text):
         return False
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
+    if has_explicit_symptom_signal(user_text) and not _has_explicit_store_stock_intent(user_text):
+        return False
     from src.services.concierge_intent import looks_like_service_identity_question
 
     if looks_like_service_identity_question(user_text):

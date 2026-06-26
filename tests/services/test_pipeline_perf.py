@@ -59,3 +59,16 @@ def test_bind_does_not_reset_existing_bucket():
 
     assert "first" in payload["breakdown"]
     assert "second" in payload["breakdown"]
+
+
+def test_log_pipeline_perf_warns_when_slow():
+    sid = "line-slow"
+    bind_pipeline_perf(sid=sid, channel="line")
+
+    with patch("src.services.pipeline_perf.logger") as mock_logger, patch(
+        "src.services.pipeline_perf._elapsed_ms", return_value=12_500.0
+    ):
+        log_pipeline_perf(sid=sid)
+        mock_logger.warning.assert_called_once()
+        mock_logger.info.assert_not_called()
+        assert mock_logger.warning.call_args[0][1]["total_ms"] == 12_500.0

@@ -148,7 +148,10 @@ def test_apply_admin_manual_reply_persists_before_clearing_admin_request():
     assert len(stored.get("messages") or []) == 1
     assert stored["messages"][0]["manual_reply"] is True
     assert stored.get("admin_request") is None
-    assert isinstance(stored["last_activity"], datetime)
+    from src.utils.admin_timestamp import parse_admin_timestamp
+
+    la = parse_admin_timestamp(stored["last_activity"], naive_as_utc=True)
+    assert la is not None
     assert len(save_calls) >= 2
     first_save_msgs = save_calls[0].get("messages") or []
     assert first_save_msgs and first_save_msgs[0]["content"] == "手動返信テスト"

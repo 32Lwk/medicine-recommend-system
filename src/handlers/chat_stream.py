@@ -74,6 +74,20 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
             if db_attrs:
                 current_attrs = safe_session.get("user_attributes", {}) or {}
                 safe_session["user_attributes"] = {**current_attrs, **db_attrs}
+            for flag in (
+                "detected_language",
+                "language",
+                "medical_emergency_otc_locked",
+                "crisis_detected",
+                "emergency_detected",
+                "concierge_state",
+                "counseling_mode",
+                "last_triage_result",
+                "_last_triage_result",
+                "pending_memory_delete",
+            ):
+                if flag in session_data:
+                    safe_session[flag] = session_data[flag]
 
 
 def _sse_line(event: str, data: Dict[str, Any], event_id: Optional[str] = None) -> str:

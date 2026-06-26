@@ -18,6 +18,11 @@ _DELETE_HINTS = (
     "記憶削除",
     "履歴を削除",
     "履歴削除",
+    "履歴消して",
+    "履歴消",
+    "履歴を消",
+    "チャット履歴.*消",
+    "会話履歴.*消",
     "忘れて",
     "忘れてください",
     "データを削除",
@@ -170,61 +175,7 @@ def try_handle_memory_delete(
     user_text: str,
     client: Any,
 ) -> Optional[ResponseTuple]:
-    """記憶削除依頼なら同期処理して応答を返す。"""
-    from src.services.line_user_memory import (
-        is_line_memory_session,
-        load_line_memory,
-        profile_to_user_attributes,
-        resolve_memory_owner_sid,
-    )
-    from src.utils.agent_trace import log_agent_step
+    """記憶削除依頼なら SessionAgent へ委譲（Quick Reply 確認付き）。"""
+    from src.agents.session_agent import try_handle_session_request
 
-    if not is_line_memory_session(sid, session):
-        return None
-
-    owner = resolve_memory_owner_sid(sid, session)
-    if not owner:
-        return None
-
-    profile, summaries = load_line_memory(owner)
-    plan = classify_memory_delete_intent(user_text, client, profile=profile)
-    if not plan.get("is_delete_request"):
-        return None
-
-    execute_memory_delete(owner, plan)
-    refreshed, _ = load_line_memory(owner)
-    if session is not None and hasattr(session, "__setitem__"):
-        session["user_attributes"] = profile_to_user_attributes(refreshed)
-
-    msg = plan.get("confirmation_message") or "記憶を削除しました。"
-    log_agent_step(
-        None,
-        "MemoryDeleteAgent",
-        "memory_deleted",
-        sid=owner,
-        payload={"scope": plan.get("scope")},
-    )
-    bot = {
-        "type": "bot",
-        "content": msg,
-        "diagnosis": {
-            "render": "sage_status",
-            "variant": "info",
-            "title": "記憶の削除",
-            "message": msg,
-            "kind": "memory_delete",
-        },
-    }
-    session.setdefault("messages", []).append({"type": "user", "content": user_text})
-    session["messages"].append(bot)
-    try:
-        from src.services.session_manager import get_session_from_db, save_session_to_db
-
-        if sid:
-            data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
-            data["messages"] = list(session.get("messages") or [])
-            data["user_attributes"] = profile_to_user_attributes(refreshed)
-            save_session_to_db(sid, data)
-    except Exception:
-        logger.warning("MemoryDeleteAgent session persist failed sid=%s", sid, exc_info=True)
-    return ({"status": "ok", "message_count": len(session.get("messages") or [])}, 200)
+    return try_handle_session_request(session, sid, user_text, client)

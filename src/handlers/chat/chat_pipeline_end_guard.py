@@ -10,7 +10,11 @@ from typing import Any, Optional, Tuple
 
 from openai import OpenAI
 
-from src.handlers.line.line_session import count_bot_messages_in_session
+from src.handlers.line.line_session import (
+    count_bot_messages_in_session,
+    get_latest_bot_message_from_session,
+    resolve_latest_bot_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +46,53 @@ def append_redirect_bot_response(
     return bot
 
 
+def _user_input_for_latest_bot(session: Any) -> str:
+    """直近 bot の直前 user メッセージを返す。"""
+    messages = session.get("messages") if hasattr(session, "get") else []
+    if not messages:
+        return ""
+    last_bot_idx: int | None = None
+    for idx in range(len(messages) - 1, -1, -1):
+        msg = messages[idx]
+        if isinstance(msg, dict) and msg.get("type") == "bot":
+            last_bot_idx = idx
+            break
+    if last_bot_idx is None:
+        return ""
+    for idx in range(last_bot_idx - 1, -1, -1):
+        msg = messages[idx]
+        if isinstance(msg, dict) and msg.get("type") == "user":
+            content = msg.get("content")
+            return str(content) if content is not None else ""
+    return ""
+
+
+def _schedule_turn_detail_log(
+    session: Any,
+    sid: Optional[str],
+    *,
+    user_message: Optional[str] = None,
+) -> None:
+    """新規 bot 応答があれば counseling_detail を非同期で記録（Web/LINE 共通）。"""
+    effective_sid = sid or (
+        str(session.get("session_id") or session.get("_id") or "")
+        if isinstance(session, dict)
+        else ""
+    )
+    bot_msg = resolve_latest_bot_message(session, effective_sid or None) or get_latest_bot_message_from_session(session)
+    if not bot_msg:
+        return
+    user_input = (user_message or _user_input_for_latest_bot(session) or "").strip()
+    if not user_input:
+        return
+    try:
+        from src.services.counseling.counseling_logger import maybe_log_turn_counseling_detail
+
+        maybe_log_turn_counseling_detail(session, effective_sid or None, user_input, bot_msg)
+    except Exception as exc:
+        logger.debug("turn detail log skipped: %s", exc)
+
+
 def finalize_pipeline_response(
     session: Any,
     sid: Optional[str],
@@ -50,11 +101,14 @@ def finalize_pipeline_response(
     response: ResponseTuple,
     *,
     recommendation_client: Optional[OpenAI] = None,
+    user_message: Optional[str] = None,
 ) -> ResponseTuple:
     """応答返却直前に bot 追記有無を確認し、無ければ redirect を補完する。"""
     if count_bot_messages_in_session(session) > bot_count_before:
+        _schedule_turn_detail_log(session, sid, user_message=user_message)
         return response
     append_redirect_bot_response(session, sid, client_info, recommendation_client)
+    _schedule_turn_detail_log(session, sid, user_message=user_message)
     body, status = response
     new_body = dict(body) if isinstance(body, dict) else {"status": "ok"}
     new_body["message_count"] = len(session.get("messages", []))

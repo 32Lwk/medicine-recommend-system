@@ -48,6 +48,25 @@ def _concierge_fast_path_hint(user_text: str) -> tuple[str, str] | None:
         return probed, "keyword_probe"
     return None
 
+
+def _session_admin_fast_path(user_text: str) -> Optional[Dict]:
+    """session_admin キーワード確定時は stage1/stage2 LLM を省略。"""
+    from src.services.concierge_intent import probe_session_admin_intent
+
+    intent = probe_session_admin_intent(user_text)
+    if not intent:
+        return None
+    return {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "session_admin",
+        "requires_immediate_action": False,
+        "reasoning": f"session_admin keyword probe ({intent})",
+        "session_intent": intent,
+        "concierge_intent": "session_ops",
+        "concierge_intent_source": "session_keyword_probe",
+    }
+
 # 違法薬物のキーワードリスト（単語一致による高速検出）
 ILLEGAL_DRUG_KEYWORDS = [
     "覚醒剤", "アンフェタミン", "メタンフェタミン", "大麻", "マリファナ", "THC", 
@@ -288,7 +307,8 @@ SECOND_STAGE_OTHER_PROMPT = """
 18. **store_inquiry/parking**: 駐車場に関する質問（「駐車場」「パーキング」「駐車」など）
 19. **store_inquiry/services**: サービスに関する質問（「サービス」「取り扱い」「配達」など）
 20. **lost_and_found**: 遺失物に関する質問（「忘れ物を拾いました」「落とし物を拾いました」など）
-21. **general_other**: その他の挨拶や不明な入力（メタ質問・雑談・一声の挨拶もここ — 後段 Concierge が処理）
+21. **session_admin**: 相談履歴・記憶の削除・要約・ステータス確認（「履歴消して」「記憶を消して」「履歴を要約して」「ステータスを教えて」「状態は？」など）
+22. **general_other**: その他の挨拶や不明な入力（メタ質問・雑談・一声の挨拶もここ — 後段 Concierge が処理）
 
 【重要な判定ルール（優先順位順）】
 - **メタ質問・雑談・挨拶**
@@ -330,6 +350,8 @@ SECOND_STAGE_OTHER_PROMPT = """
   - 「サービス」「取り扱い」「配達」など → store_inquiry/services
 - **遺失物関連の検出**
   - 「忘れ物を拾いました」「落とし物を拾いました」など → lost_and_found
+- **セッション操作（記憶・履歴）**
+  - 「履歴消して」「記憶を消して」「履歴を要約して」「ステータスを教えて」など → session_admin
 - **会話履歴・フォローアップ**
   - 直前の会話に在庫確認・店舗案内の文脈があり、現在の入力が「ありますか」「在庫は？」など短い追い質問のみ → store_inquiry/inventory
   - 直前の会話に症状・薬探索の文脈があり、短い追い質問 → general_other（Physical 経路）
@@ -353,12 +375,13 @@ SECOND_STAGE_OTHER_PROMPT = """
 - 「診断された」→ general_other（報告。症状相談へ誘導可）
 - 「診察してください」「医者に診てもらいたい」→ inappropriate_request/medical_examination
 - 「診断された」（過去の報告）→ general_other
+- 「履歴消して」「ステータスを教えて」→ session_admin
 - 低い確信度の場合は、general_other に分類することを検討してください
 
 【回答形式】
 JSON形式で回答してください。以下の形式を厳密に守ってください：
 {
-    "subcategory": "詳細サブカテゴリ（上記の21種類のいずれか）",
+    "subcategory": "詳細サブカテゴリ（上記の22種類のいずれか）",
     "confidence": 0.0-1.0の数値,
     "reasoning": "判定理由"
 }
@@ -453,6 +476,14 @@ def llm_triage(
             "reasoning": reasoning,
         }
     
+    session_fast = _session_admin_fast_path(user_text)
+    if session_fast:
+        logger.info(
+            "⏭️ トリアージ省略: session_admin intent=%s",
+            session_fast.get("session_intent"),
+        )
+        return session_fast
+
     # ステップ0b: 挨拶・メタ質問は第一段階 LLM も省略（exact_match / keyword_probe のみ）
     fast_hint = _concierge_fast_path_hint(user_text)
     if fast_hint:
@@ -592,20 +623,38 @@ def llm_triage(
         
         concierge_intent: str | None = None
         concierge_intent_source: str | None = None
+        session_intent: str | None = None
 
         # 第二段階：Otherカテゴリの場合は詳細分類を実行
         if category == "Other":
+            session_probe = _session_admin_fast_path(user_text)
             fast_hint = _concierge_fast_path_hint(user_text)
-            if fast_hint and confidence >= _STAGE2_SKIP_MIN_CONFIDENCE:
+            stage2_skipped = False
+
+            if session_probe and confidence >= _STAGE2_SKIP_MIN_CONFIDENCE:
+                subcategory = "session_admin"
+                confidence = max(confidence, float(session_probe.get("confidence", 1.0)))
+                reasoning = f"{reasoning} | stage2 skipped (session_keyword_probe)"
+                session_intent = session_probe.get("session_intent")
+                concierge_intent = "session_ops"
+                concierge_intent_source = "session_keyword_probe"
+                stage2_skipped = True
+                logger.info(
+                    "⏭️ 第二段階トリアージ省略: session_admin intent=%s",
+                    session_intent,
+                )
+            elif fast_hint and confidence >= _STAGE2_SKIP_MIN_CONFIDENCE:
                 concierge_intent, concierge_intent_source = fast_hint
                 subcategory = "general_other"
                 reasoning = f"{reasoning} | stage2 skipped ({concierge_intent_source})"
+                stage2_skipped = True
                 logger.info(
                     "⏭️ 第二段階トリアージ省略: concierge_intent=%s source=%s",
                     concierge_intent,
                     concierge_intent_source,
                 )
-            else:
+
+            if not stage2_skipped:
                 try:
                     second_response = chat_completion_create(
                         client,
@@ -663,6 +712,8 @@ def llm_triage(
         if concierge_intent:
             result["concierge_intent"] = concierge_intent
             result["concierge_intent_source"] = concierge_intent_source
+        if session_intent:
+            result["session_intent"] = session_intent
         
         # 不適切な要求が検出された場合、キャッシュを無効化（誤分類を防ぐため）
         if use_cache:

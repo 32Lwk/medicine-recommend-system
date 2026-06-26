@@ -64,6 +64,52 @@ def enrich_other_concierge_intent(
         out.pop("concierge_intent_source", None)
         return out
 
+    sub = str((out or {}).get("subcategory") or "").lower()
+    try:
+        triage_conf = float((out or {}).get("confidence", 0))
+    except (TypeError, ValueError):
+        triage_conf = 0.0
+    if sub == "session_admin" and triage_conf >= 0.85:
+        from src.agents.session_agent import classify_session_intent
+
+        out["concierge_intent"] = "session_ops"
+        out["concierge_intent_source"] = "triage_session_admin"
+        out["session_intent"] = classify_session_intent(text, triage_result=out)
+        logger.info(
+            "🛎️ ConciergeOrchestrator: triage session_admin intent=%s (meta skipped)",
+            out["session_intent"],
+        )
+        return out
+
+    from src.services.concierge_intent import _is_medicine_consultation
+
+    if conversation_history and not _is_medicine_consultation(text):
+        from src.services.concierge_agent_history import (
+            infer_prior_meta_follow_up_intent,
+            resolve_last_concierge_intent,
+        )
+
+        prior = resolve_last_concierge_intent(conversation_history)
+        follow = infer_prior_meta_follow_up_intent(text, prior)
+        if follow:
+            out["concierge_intent"] = follow
+            out["concierge_intent_source"] = "prior_intent_follow_up"
+            logger.info(
+                "🛎️ ConciergeOrchestrator: prior intent follow-up intent=%s",
+                follow,
+            )
+            return out
+
+    from src.services.concierge_intent import probe_session_admin_intent
+
+    probed_session = probe_session_admin_intent(text)
+    if probed_session:
+        out["session_intent"] = probed_session
+        out["concierge_intent"] = "session_ops"
+        out["concierge_intent_source"] = "session_keyword_probe"
+        logger.info("🛎️ ConciergeOrchestrator: session_intent=%s (probe)", probed_session)
+        return out
+
     if out.get("concierge_intent") in _VALID_CONCIERGE_INTENTS:
         return out
 
@@ -135,6 +181,14 @@ def enrich_other_concierge_intent(
             "🛎️ ConciergeOrchestrator: store inquiry, ignore meta intent=%s",
             meta,
         )
+        return out
+    if meta == "session_ops":
+        from src.agents.session_agent import classify_session_intent
+
+        out["concierge_intent"] = "session_ops"
+        out["concierge_intent_source"] = "meta_triage"
+        out["session_intent"] = classify_session_intent(text, triage_result=out)
+        logger.info("🛎️ ConciergeOrchestrator: meta session_ops intent=%s", out["session_intent"])
         return out
     if meta:
         out["concierge_intent"] = meta

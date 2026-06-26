@@ -109,17 +109,9 @@ def _is_sage_content_marker(text: str | None) -> bool:
 
 
 def _diagnosis_plain_message(diagnosis: dict[str, Any]) -> str:
-    message = str(diagnosis.get("message") or "").strip()
-    if message:
-        return message
-    for section in diagnosis.get("sections") or []:
-        if not isinstance(section, dict):
-            continue
-        items = section.get("items") or []
-        lines = [str(item).strip() for item in items if str(item).strip()]
-        if lines:
-            return "\n".join(lines)
-    return ""
+    from src.utils.sage_message_plain import diagnosis_plain_message
+
+    return diagnosis_plain_message(diagnosis)
 
 
 def _resolve_bot_plain_text(bot_message: dict[str, Any]) -> str:
