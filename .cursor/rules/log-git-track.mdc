@@ -1,0 +1,32 @@
+---
+description: GitLab プッシュ時に log/ 配下を必ずコミットに含める
+alwaysApply: true
+---
+
+# log/ の Git 追跡と GitLab プッシュ
+
+## 方針
+
+**`log/` 配下のファイルは GitLab への push に必ず含める。** 実行ログ・分析成果物・jsonl・`.log`・`log/analysis/`・`log/log/`・`log/raw/` など、ローカルで生成・更新されたものも意図的に除外しない。
+
+## .gitignore との関係
+
+- リポジトリルートの `*.log` / `*.jsonl` は無視されるが、**`!log/` と `!log/**` で `log/` 配下は追跡対象**
+- エージェントが push / commit を依頼されたとき、`log/` に変更・未追跡がある場合は **`git add log/`** してコミットに含める
+
+## コミット・プッシュ手順（log あり）
+
+1. `git status` で `log/` の modified / untracked を確認
+2. `git add log/`（必要なら `git add -u log/` と未追跡の両方）
+3. ソース変更と同一コミットでも、log 専用コミット（`chore: sync log/`）でも可 — **いずれも push 前に含めること**
+4. push 先は **GitLab**（`.cursor/rules/git-remote.mdc` 参照）
+
+## 除外してよいもの（log/ 外）
+
+- `tmp_*` / `tmp_session_analysis/` 等の一時分析スクリプト（リポジトリルート）
+- `.tmp_*`（認証情報を含む可能性 — `.gitignore` 済み）
+- `__pycache__/`、`.env` 等の標準 ignore
+
+## 注意
+
+- `log/` に PII やシークレットが混ざる可能性がある場合でも、**プロジェクト方針として追跡する**。マスクやサニタイズが必要なら別 issue で対応する。

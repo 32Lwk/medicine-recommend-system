@@ -1,0 +1,221 @@
+Filtered unique messages: 884
+
+PATTERNS:
+  short directives: 292
+  detailed specs: 275
+  improve/fix requests: 237
+  verify/check: 199
+  medicine domain: 184
+  execute/plan: 114
+  ask questions first: 96
+  UI focus: 89
+  push/deploy: 61
+  numbered lists: 48
+  cost/infra: 47
+  thanks/continue: 35
+  skills usage: 28
+  infographic/design: 5
+
+=== REPRESENTATIVE MESSAGES ===
+
+[1] 花粉症で総合感冒薬のみ top1 になるバグを /medicine-recommendation-advisor を活用して改善してください。
+
+[2] 脆弱性スキャン
+脆弱性スキャンは、イメージがレジストリに push されるときにイメージを自動的にスキャンして、既知のセキュリティ脆弱性や脅威を診断します。新たな脆弱性が発見されると、Artifact Registry にあるイメージに影響するかどうかが確認されます。スキャンは Container Scanning API によって提供されます。サポートされているパッケージのタイプはこちら に記載されています。詳細 
+
+  スキャン: オフ
+
+[3] doda アイデアコンペティションとしてください。
+
+@docs/未踏/docs/proposal.tex:349 はもう必要ないのではないですか？
+
+[4] https://developers.line.biz/ja/news/2019/11/11/liff-cannot-be-used-with-messaging-api-channels/ を確認して
+
+[5] A. キーワード辞書の整理・拡張だけ
+なお、目的としてはマルチエージェントにおける案内エージェントようです。
+
+[6] チャット型医薬品相談ツールという特徴を盛り込んで優しい雰囲気で@static/favicon.ico.png @docs/未踏/docs/image/Demo.png @docs/未踏/docs/image/iPad-PRO-11-medicine.yutok.dev (15).png @docs/未踏/docs/image/carousel_webui.png を参考にしつつ複数パターン作成してください。
+
+[7] 本アプリケーションにおける技術スタックを分かりやすく。対外的に説明するための資料の画像を生成してください。
+
+[8] reduced_motionって何ですか？
+また、追加すべき内容や改善すべき内容をすべて質問してください。
+また、季節やイベントごとでのパーティクルのアイデア出しして、1年間の計画を作成してください。なお、わからないことはすべて質問してください。質問は最低でも10個してください。
+
+[9] DOM Path: div.chat-container > div#chatMessages
+Position: top=137px, left=80px, width=900px, height=414px
+HTML Element: 🌸 🌸 🌸 🌸 ✨ ✨ 🦋 🌸 ✨ 🦋 🌸 ✨ 🦋 ✨ ✨ 🌸 🌸 こんにちは！どのような症状でお困りでしょうか？ 例：「頭痛がする」「喉が痛い」「熱がある」など の左右の下の画像に関して  DOM Path: div.chat-container > div#chatMessages
+Position: top=137px, left=0px, width=799px, height=414px
+HTML Element: 🌸 🌸 🦋 🦋 ✨ 🦋 🌸 🦋 ✨ 🌸 🦋 🌸 🌸 こんにちは！どのような症状でお困りでしょうか？ 例：「頭痛がする」「喉が痛い」「熱がある」など 内の中途半端な位置にあるので改善してください。
+
+[10] メッセージを送信後に範囲がいように大きくなり、スクロールバーが発生するバグがあるので改善してください。
+
+[11] 3月12日のサポセン前日設営及びすまい
+3月13日のサポセン
+を欠席させていただきたいです。メールの文面を考えてください。なお、以下の文面も参考にしてください。
+
+名古屋大学生協新入生サポートセンター
+学生アドバイザー団体ReNU
+チーフML様
+
+お世話になっております。
+名古屋大学理学部物理学科2年の川嶋です。
+2月10日開催予定の提案体験会についてご連絡いたします。
+
+誠に申し訳ございませんが、都合により不参加とさせていただきます。
+
+ご迷惑をおかけしますが、どうぞよろしくお願いいたします。
+ｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰｰ
+名古屋大学生協新入生サポートセンター
+学生アドバイザー団体ReNU(リニュー)
+理学部 物理学科 2年
+川嶋宥翔（KAWASHIMA Yuto）
+mail:kawashima.yuto.24renu@gmail.com
+
+[12] 高校時代に関して@docs/未踏/docs/proposal.tex:344-345 のみの方がいいですか?なお、缶サットは2022年7月できのくにプログラミングコンテストが2022年12月です。
+
+@docs/未踏/docs/proposal.tex:371-373 に関して簡潔にでいいので、以下の内容を参考にしてください。なお、以下は志望理由書であるので最適化してください。
+（１）あなたが名古屋大学理学部で理学を学びたい理由，理学を学ぶことによるあなた自身の将来像
+   私は貴学で宇宙の大規模構造と初期宇宙について学びたい。私は幼い頃、新聞で宇宙の形成過程についての記事を読み、どのように宇宙が現在のような構造を持つようになったのかについて興味を持つようになった。その後、宇宙に関する科学誌を読み、宇宙について学びたいと思う気持ちをより強める中で貴学の先生方の論述を興味深く拝読した。特に、宮武先生の機械学習を用いた宇宙の構造形成シミュレーションに強い興味を持ち、宇宙の大規模構造研究の最先端である貴学で、先生方にご教授頂きながら専門的な研究に取り組みたいと考え、貴学を志望するようになった。私は、大学四年次には貴学の宇宙論研究室に所属し、宇宙マイクロ波背景放射の観測解析を通したインフレーション理論の考察や、機械学習を用いた宇宙空間の解析を研究したい。将来は様々な観測データから宇宙を多角的に解析し、宇宙空間の大規模構造や宇宙創成のシナリオ解明に貢献出来る研究者となることを志望する。
+
+[13] DOM Path: div#app > div.ui-app > header.ui-header ui-header--toolbar > div.ui-brand ui-brand--toolbar > h1
+Position: top=11px, left=63px, width=495px, height=18px
+HTML Element: OTC相談 DOM Path: div#app > div.ui-app > header.ui-header ui-header--toolbar > div.ui-brand ui-brand--toolbar > p.ui-header-pha.e
+Position: top=30px, left=63px, width=234px, height=17px
+HTML Element: 3件のOTC医薬品 の内容を改善してください。
+
+[14] マッピングを追加
+選択した Cloud Run サービスにドメインとサブドメインをマッピングできます。 詳細 
+1
+ドメインを選択または入力してください
+所有権を証明
+3
+DNS レコードを更新する
+マッピングするサービスを選択
+medicine-recommend (asia-northeast1)
+確認済みドメインを選択
+yutok.dev
+サブドメインを指定
+https://
+.yutok.dev
+ベースドメインをマッピングするには空白のままにします
+
+[15] 1.はい
+2.原則不可です。(リスクが高いからです。）
+3.オーケストレーターに任せたいです。なお、基準は推奨して質問してください。
+4.いいえ、カウンセリングフローから医薬品推奨に流したい
+5.どうすべきだと思いますか？推奨して
+6.はい
+7.はい
+8.はい
+9.はい
+10.どうすべきだと思いますか？
+11.はい
+12.はい
+13.お願いします。
+14.不可です。
+
+[16] Physical / 店舗案内 / 推奨フローなど、他の巨大分岐も同様にルートへ切り出す場合は続けて対応してください
+
+[17] DOM Path: div.chat-container > div.chat-input > form#chatForm > div.input-group onboarding-highlight
+Position: top=796px, left=40px, width=877px, height=58px
+HTML Element: 🎤 送信 を確認してください。まだステップ1 DOM Path: div#onboarding-container
+Position: top=207px, left=239px, width=480px, height=459px
+HTML Element: 💬🎤 スキップして始める 🩺 ステップ1：今の症状を伝える 「頭が痛い」「咳が止まらない」など、感じている症状を自由に入力してください。 テキストと音声入力に対応し、左上のボタンから英語・中国語・韓国語へ切り替えられます。 ※AIの返信は、送信した文章の言語を自動検出し、日本語以外（英語・中国語・韓国語など）と判定された場合に自動翻訳されます。左上の切替は主に画面の文言表示です。 次 の際に使えます。
+
+[18] ご確認いただきたい点
+1.「県内自治体の73%で店舗数が全国平均を大きく下回る」
+和歌山県内のデータと思いますが、出典（例：経済産業省の商業動態統計や独自調査）はありますか？ あれば本文または脚注に追記したいです。
+独自調査です。@docs/LaTex/photo/wakayama.png を結果として用意しました。なお、@docs/LaTex/photo/dragstore_injapan.png の画像と1つにして左右で配置してください。
+
+2.「売上高は10兆円を超えた」
+ドラッグストア市場全体の数字と思いますが、出典（業界団体の調査や経済産業省データなど）はありますか？
+出典:(『日本のドラッグストア実態調査(日本チェーンドラッグストア協会 )』)
+
+3.市販薬依存65.2%の出典
+厚生労働省や関連学会の報告などを想定していますが、正式な出典があれば明記したいです。
+出典:厚生労働省「医薬品の過剰摂取が原因と疑われる救急搬送人員の調査結果」(2023年)
+
+内容が文章としてきれいではないので改善してください。
+また、改善において大規模な改変を許可します。なお、改善すべきてんや追加すべき内容やわからないことはすべて質問してください。
+
+[19] ToDoを細分化してください。また、レイテンシを抑えるために非同期や本体に影響を与えないようにしてください。なお、わからないことはすべて質問してください。
+
+[20] DOM Path: header.about-header chat-header about-header--about about-header--.ite-top > div.about-header-top > div.about-header-top-left > div.language-.elector > div#aboutLangDropdown
+Position: top=55px, left=21px, width=150px, height=183px
+HTML Element: 🇯🇵 日本語 🇺🇸 English 🇰🇷 한국어 🇨🇳 中文 が下に来ているのと文字色と背景のいろが同じなので改善してください。
+
+[21] 画面の幅が小さい際に DOM Path: div#onboarding-container > div.onboarding-body > div.onboarding-top-row > button#onboarding-skip-btn
+Position: top=124px, left=61px, width=141px, height=44px
+HTML Element: スキップして始める DOM Path: div#onboarding-container > div.onboarding-body > div.onboarding-top-row > div#onboarding-active-visual > div.onboarding-vi.ual
+Position: top=106px, left=24px, width=55px, height=80px
+HTML Element: 🚧💊 が重なっているのでレスポンシブにしたです。
+
+[22] まとめつつ、詳細なコメントや調査を行い、内容やsub-issueを整理したりなどをしてほしいです。可能ですか？
+
+[23] チャットのストリーム表示と DOM Path: div.chat-container > div#chatMessages > div.me.age bot[1]
+Position: top=368px, left=100px, width=860px, height=112px
+HTML Element: こんにちは。こちらは医薬品相談の窓口です。ご相談内容がまだ不明のため、症状・お薬の名前・飲み方・気になる副作用など、具体的に教えてください。医薬品に関する内容であれば、できる範囲でご案内します。 の間でチカチカするので改善してください。
+
+[24] DOM Path: div#onboarding-container > div.onboarding-.croll .croll-container > div.onboarding-.croll-content .croll-content > div#onboarding-slides > div.onboarding-.lide active > details.onboarding-detail > div.onboarding-detail.-content
+Position: top=315px, left=271px, width=397px, height=255px
+HTML Element: 潜在空間によるスコアリングの大規模改修 GPT-4系からGPT-5系への移行 UI・導線の最適化 マルチエージェントモデルの更新 カルーセル型UIの導入 画像の導入 セキュリティ向上 音声入力の向上 体調推定の実装（計画中） パーソナライズ機能の実装（計画中） をチェックリスト化して実装した内容をチェックしていって、線を引けるようにしてください。
+
+[25] 現在GCPでデプロイしており、https://medicine.yutok.dev/ です。
+GCPでのデプロイにあたり、/testを実装して、メインの更新を停止して、/testで開発環境としたいです。可能ですか？
+
+[26] DOM Path: div#onboarding-container
+Position: top=36px, left=239px, width=480px, height=653px
+HTML Element: スキップして始める 🚧💊 🛠️ 開発環境(dev)へようこそ 🛠️ ここは開発環境(dev)です このページはテスター・開発者向けの開発環境です。本番環境(安定版)とは別のサーバーで動作しており、最新の改良はすべてここで進めています。 新機能や改善案をいち早く試せる環境です。表示崩れ・一時的なエラー・データのリセットが発生する場合があります。 通常ご利用の方は、安定版である本番環境を のスクロールバーに関して、サイト全体のUIにあわせてスクロールバーを実装したいです。
+スクロールバーのデザインを考えてください。
+なお、わからないことはすべてasking questionしてください。
+
+[27] DEVのバッジを左上に表示するようにしてください。また、タイトルに関してβ版をなくした方がよくないですか？
+
+[28] DOM Path: div.container > main > div#center-panel > div.panel-header > span#chat-title
+Position: top=83px, left=340px, width=303px, height=30px
+HTML Element: LINEユーザー1CA32C (LINE:U20A3BEEE49563DCD07BB3DD0FC1CA32C) がユーザー名を表示できないのはなぜ？
+
+[29] ユーザーメッセージが一度消えてからリロード時に再表示されるので原因を確認して改善してください。また、処理中バブルに関しても同様に消えてしまうので、原因を確認して改善してください。また、同じ内容を入力時にスキップされている可能性があるので原因を確認して改善してください。 @c:\Users\yutok\.cursor\projects\d-Programing-medicine-recommend\terminals\4.txt:760-1054 
+ DOM Path: div.chat-container ui-app > div.chat-me.age.-viewport > div#chatMessages
+Position: top=93px, left=1px, width=694px, height=576px
+HTML Element: こんにちは！どのような症状でお困りでしょうか？ 例：「頭痛がする」「喉が痛い」「熱がある」など こんにちは ℹ️ ご挨拶 こんにちは。症状・お薬名・服用状況などを教えていただければ、できる限りご案内します。お気軽にどうぞ。 AI分析中 1 / 14 入力を確認しています DOM Path: div.chat-container ui-app > div.chat-me.age.-viewport > div#chatMessages > div#currentTypingIndicator
+Position: top=401px, left=9px, width=678px, height=106px
+HTML Element: AI分析中 1 / 14 入力を確認しています が常に表示されるようになってしまっているので原因を確認して改善してください。
+
+[30] DOM Path: div.chat-container > div#infoModal > div.modal-content > div#infoModalHeader > h2#modalTitle
+Position: top=63px, left=71px, width=599px, height=36px
+HTML Element: アプリ概要・運営者情報 は左に固定してください。
+
+[31] できるだけ画像や絵文字などを用いたいので不足している画像などはすべて画像を生成AIで作成するようにした上で本サイトの紹介をおしゃれにかつユーザーに本アプリケーションの魅力や能力、技術面などをうまく伝えるようなAIへの指示文や導入するスキルの指示文を考えてください。
+なお、AIへの指示文には役割や権威、などを組み込んでください。
+
+[32] 少子高齢化が進む日本では、医療機関や薬剤師に過度に依存しないセルフメディケーションの重要性が高まっている。一方で、ドラッグストアでは人手不足や多言語対応の難しさにより十分な説明を受けられない場面も多く、利用者が自己判断で一般用医薬品を選択した結果、誤った薬の選択や過剰使用、副作用のリスクが社会課題となっている。薬機法改正により一般用医薬品のインターネット販売が解禁され購入機会は拡大したが、適切な知識を伴わない購入も増加している。
+本プロジェクトでは、大規模言語モデルを活用した独自の医薬品選択アルゴリズムを基盤とするチャット型支援ツールを開発する。利用者は症状を自然言語で入力するだけで、安全性を考慮した一般用医薬品の候補や受診の目安を提示される。年齢や既往歴などの利用者属性もチャット形式で考慮できるため、従来の検索型システムよりも柔軟で精度の高い推奨を実現し、誤用の防止と安心できるセルフメディケーションを支援する。
+既にWeb上で公開・運用しているシステムを基盤とし、開発期間中は潜在空間ベクトル類似度モジュールを新規実装する。症状と医薬品を同一の意味空間に変換し、既存のルールベース評価と組み合わせたハイブリッドスコアリングを導入することで、症状表現の揺れや多様な言い回しにも対応し、推奨精度を向上させる。また、推奨結果をカルーセル型UIと医薬品画像で提示することで、利用者が直感的に理解しやすい設計とする。さらに専門家監修による検証を並行して行い、安全性と説明可能性の両立を図る。
+本システムにより、住む地域や言語、時間帯に左右されず、誰もが「どこでも・安心して」医薬品を選択できる社会の実現を目指す。これは、地域医療の未来を支え、持続可能な社会づくりの挑戦だ。このシステムで、日本のセルフメディケーションを次のステージへ進めて行く。
+
+[33] 横軸にスクロールバーが出ているので改善してください。また、縦のスクロールバーの範囲にヘッダーを含めないでください。
+
+[34] DOM Path: div.chat-container > div#chatMessages
+Position: top=173px, left=29px, width=900px, height=602px
+HTML Element: 🌷 ✨ ✨ 🌷 ✨ ✨ ✨ 🌷 🌷 ✨ ✨ 🌷 ✨ ✨ ✨ 🌷 ✨ 🌷 🌷 🌷 ✨ 🌷 🌷 🌷 こんにちは！どのような症状でお困りでしょうか？ 例：「頭痛がする」「喉が痛い」「熱がある」など 薬剤師対応を要請しました。しばらくお待ちください。 のパーティクルに関して落ちてくるのではなく、再生成が繰り返されているようになっていてちらつくので改善してください。
+
+[35] ショートカット(ctrl+c,v)などが効かないので原因を確認してください。
+なお、本アプリケーションとは関係ありません
+
+[36] LINEのユーザー情報は取得できないの？ DOM Path: div.container > main > div#center-panel > div.panel-header > span#chat-title
+Position: top=83px, left=220px, width=423px, height=30px
+HTML Element: LINEユーザー1CA32C (LINE:U20A3BEEE49563DCD07BB3DD0FC1CA32C)
+
+[37] FastAPI 移行の仕上げ（Flask 依存整理）
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+[38] cloud_buildで本番環境と開発環境がありますが、本番環境でもwebhookが起動しているのはもったいなくないですか？
+
+[39] 概要に関しては@docs/未踏/docs/proposal.tex を参考に開発の背景などを踏まえてください。ドラッグストアでの勤務経験をもとに、誰もが「どこでも・安心して」医薬品を選択できる社会を作りたい。
+
+[40] 背景の降っている雪に関して、桜の花びらに変更することは可能ですか？また、梅雨では雨にしたり、ほかにも1年間を通したアイデア出しをしてください。なお、まだ変更しないでください。
