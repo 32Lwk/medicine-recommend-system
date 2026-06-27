@@ -264,6 +264,13 @@ def is_probable_store_inquiry(
 
     if looks_like_service_identity_question(user_text):
         return False
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        if classify_medicine_procurement_route(user_text):
+            return True
+    except ImportError:
+        pass
     if _is_toilet_facility_request(user_text):
         return True
     if _is_ambiguous_facility_defer_only(user_text):
@@ -805,6 +812,62 @@ def generate_store_location_response(user_text: str, store_location: Optional[st
     }
 
 
+def generate_medicine_procurement_response(user_text: str, route: str) -> Dict[str, str]:
+    """OTC 購入先・処方箋医薬品の薬局案内応答。"""
+    if route == "pharmacy_prescription":
+        simple_message = """処方箋医薬品の入手についてお尋ねいただき、ありがとうございます。
+
+処方箋医薬品は医師の処方と薬局での調剤が必要です。処方箋をお持ちのうえ、お近くの薬局または店内の薬局売場のスタッフにお尋ねください。
+スタッフが受付・売場のご案内をいたします。"""
+        title = "💊 処方箋医薬品・薬局について"
+    else:
+        simple_message = """市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。
+
+当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。
+お近くのスタッフまでお気軽にお声がけください。"""
+        title = "🛒 市販薬の購入場所について"
+
+    response_content = simple_message
+    structured_html = f"""<div class="store-inquiry-response">
+    <h4>{html.escape(title)}</h4>
+    <p>{html.escape(simple_message).replace(chr(10), "<br>")}</p>
+    <div class="inquiry-options">
+        <p><strong>📍 ご案内方法</strong></p>
+        <p>店内のスタッフにお尋ねいただければ、売場や薬局窓口をご案内いたします。</p>
+    </div>
+    {generate_feedback_section(user_text, response_content)}
+</div>"""
+    return {
+        "simple_message": simple_message,
+        "structured_html": structured_html,
+    }
+
+
+def _resolve_procurement_store_response(
+    user_text: str,
+    triage_result: Optional[Dict],
+    *,
+    confidence: float = 0.9,
+    reasoning: str = "医薬品購入先 fast-path",
+) -> Dict:
+    from src.services.counseling_triage import classify_medicine_procurement_route
+
+    route = classify_medicine_procurement_route(user_text) or "otc_store"
+    inquiry_type = "facilities" if route == "pharmacy_prescription" else "inventory"
+    response = generate_medicine_procurement_response(user_text, route)
+    return {
+        "is_store_inquiry": True,
+        "inquiry_type": inquiry_type,
+        "store_location": detect_store_location(user_text),
+        "product_category": None,
+        "facility_name": "薬局" if route == "pharmacy_prescription" else None,
+        "procurement_route": route,
+        "response": response,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    }
+
+
 def generate_facilities_inquiry_response(
     user_text: str,
     facility_name: Optional[str] = None
@@ -1291,6 +1354,23 @@ def handle_store_inquiry_with_two_stage(
 
     if probable:
         active_text = primary
+        try:
+            from src.services.counseling_triage import classify_medicine_procurement_route
+
+            proc_route = classify_medicine_procurement_route(active_text)
+            if proc_route:
+                result = _resolve_procurement_store_response(
+                    active_text,
+                    triage_result,
+                    reasoning="医薬品購入先 fast-path",
+                )
+                logger.info(
+                    "🔍 医薬品購入先 fast-path: route=%s",
+                    proc_route,
+                )
+                return result
+        except ImportError:
+            pass
         detected, inquiry_type = False, None
         for candidate in texts:
             if not is_probable_store_inquiry(candidate, triage_result):
@@ -1627,6 +1707,20 @@ def process_detailed_classification(
     """
     高確信度の場合の詳細分類処理
     """
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        proc_route = classify_medicine_procurement_route(user_text)
+        if proc_route:
+            return _resolve_procurement_store_response(
+                user_text,
+                triage_result,
+                confidence=float(llm_result.get("confidence") or 0.9),
+                reasoning=llm_result.get("reasoning") or "医薬品購入先",
+            )
+    except ImportError:
+        pass
+
     inquiry_type = llm_result.get("inquiry_type") or "store_inquiry"
     
     # 在庫確認の検出（商品名が検出された場合は優先的に処理）

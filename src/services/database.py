@@ -593,6 +593,14 @@ class DatabaseManager:
             );
             """
             cursor.execute(create_global_state_table_sql)
+
+            create_line_webhook_dedup_sql = """
+            CREATE TABLE IF NOT EXISTS line_webhook_dedup (
+                dedup_key VARCHAR(220) PRIMARY KEY,
+                seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+            cursor.execute(create_line_webhook_dedup_sql)
             
             conn.commit()
             
@@ -615,6 +623,12 @@ class DatabaseManager:
             ON sessions(last_activity);
             """
             cursor.execute(index_sessions_sql)
+
+            index_line_webhook_dedup_sql = """
+            CREATE INDEX IF NOT EXISTS idx_line_webhook_dedup_seen_at
+            ON line_webhook_dedup(seen_at);
+            """
+            cursor.execute(index_line_webhook_dedup_sql)
             
             # global_stateテーブルのインデックス
             index_global_state_sql = """
@@ -1184,6 +1198,47 @@ class DatabaseManager:
                 conn.rollback()
                 self.put_connection(conn)
             return 0
+    
+    def try_claim_line_webhook_event(self, dedup_key: str, *, ttl_sec: int = 120) -> Optional[bool]:
+        """
+        Webhook 去重キーを DB で claim する（Cloud Run 複数インスタンス向け）。
+
+        Returns:
+            True  — 初回 claim 成功
+            False — 既に claim 済み（TTL 内）
+            None  — DB 利用不可（呼び出し側でファイル去重へフォールバック）
+        """
+        if not dedup_key:
+            return None
+        conn = self.get_connection()
+        if not conn:
+            return None
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "DELETE FROM line_webhook_dedup WHERE seen_at < NOW() - (%s * INTERVAL '1 second');",
+                (ttl_sec,),
+            )
+            cursor.execute(
+                """
+                INSERT INTO line_webhook_dedup (dedup_key, seen_at)
+                VALUES (%s, CURRENT_TIMESTAMP)
+                ON CONFLICT (dedup_key) DO NOTHING
+                RETURNING dedup_key;
+                """,
+                (dedup_key[:220],),
+            )
+            row = cursor.fetchone()
+            conn.commit()
+            cursor.close()
+            self.put_connection(conn)
+            return bool(row)
+        except Exception as e:
+            logger.warning("line_webhook_dedup claim failed: %s", e)
+            if conn:
+                conn.rollback()
+                self.put_connection(conn)
+            return None
     
     def delete_session(self, session_id):
         """セッションを削除"""

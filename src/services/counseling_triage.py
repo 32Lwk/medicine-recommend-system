@@ -186,6 +186,73 @@ def is_psychiatric_disease_request(user_text: str, triage_result: Optional[Dict]
     return False
 
 
+_PRESCRIPTION_CONTEXT_HINTS = (
+    "処方箋",
+    "処方",
+    "prescription",
+    "rx",
+)
+_PROCUREMENT_HINTS = (
+    "購入先",
+    "買う場所",
+    "どこで買",
+    "どこで購入",
+    "入手先",
+    "入手方法",
+    "購入方法",
+    "売ってる",
+    "売っている",
+    "買える",
+    "where to buy",
+)
+
+
+def _has_procurement_intent(text: str, lower: str) -> bool:
+    if any(h in text or h in lower for h in _PROCUREMENT_HINTS):
+        return True
+    return ("処方箋なし" in text or "処方なし" in text) and (
+        "購入" in text or "買" in text or "入手" in text
+    )
+
+
+def classify_medicine_procurement_route(user_text: str) -> Optional[str]:
+    """
+    医薬品の購入先・入手要求を店舗案内経路へ振り分ける。
+
+    Returns:
+        "otc_store": 処方箋なし・OTC 文脈 → 店内売場案内
+        "pharmacy_prescription": 処方箋/Rx 文脈 → 薬局案内
+        None: 対象外
+    """
+    text = (user_text or "").strip()
+    if not text:
+        return None
+    lower = text.lower()
+    if not _has_procurement_intent(text, lower):
+        return None
+
+    no_rx = (
+        "処方箋なし" in text
+        or "処方なし" in text
+        or "rxなし" in lower
+        or "no prescription" in lower
+    )
+    if no_rx:
+        return "otc_store"
+
+    has_rx = any(h in text or h in lower for h in _PRESCRIPTION_CONTEXT_HINTS)
+    if has_rx:
+        return "pharmacy_prescription"
+    return None
+
+
+def detect_prescription_procurement_request(user_text: str) -> bool:
+    """
+    医薬品購入先・入手要求（店舗/薬局案内へ誘導すべき入力）を検出する。
+    """
+    return classify_medicine_procurement_route(user_text) is not None
+
+
 def detect_inappropriate_request(user_text: str, triage_result: Dict) -> Optional[str]:
     """
     不適切な要求の種類を判定

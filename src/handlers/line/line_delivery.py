@@ -140,6 +140,18 @@ async def deliver_line_messages(
                 slow_path=slow_path,
             )
             return True
+        if ctx is not None and ctx.reply_token_unavailable:
+            logger.info(
+                "LINE reply token unavailable; skip push fallback (likely duplicate webhook) userId=%s",
+                user_id,
+            )
+            ctx.delivered = True
+            _record_delivery_perf(
+                delivery_mode="reply_token_unavailable",
+                event_timestamp_ms=effective_ts,
+                slow_path=slow_path,
+            )
+            return False
         logger.warning("LINE reply failed; falling back to push userId=%s", user_id)
 
     delivered = False

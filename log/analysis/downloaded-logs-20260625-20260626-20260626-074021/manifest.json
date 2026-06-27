@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-06-26T16:43:36",
-  "metadata_path": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/metadata.json",
+  "generated_at": "2026-06-27T00:18:35",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\metadata.json",
   "sections": {
-    "metadata": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/metadata.json",
-    "errors_http": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/errors_http.json",
-    "pipeline_perf": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/pipeline_perf.json",
-    "llm_cost": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/llm_cost.json",
-    "deploy_revision": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/deploy_revision.json",
-    "db_neon": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/db_neon.json",
-    "line_webhook": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/line_webhook.json",
-    "chat_flow": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/chat_flow.json",
-    "user_sessions": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/user_sessions.json",
-    "misc_signals": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sections/misc_signals.json",
-    "manifest": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/manifest.json"
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\manifest.json"
   },
   "analysis_groups": {
     "infra_errors": [
@@ -41,6 +41,8 @@
     "quality_summary": "quality_metrics.json"
   },
   "session_transcripts": {
-    "line:U20a3beee49563dcd07bb3dd0fc1ca32c": "/Users/yuto/Programing/medicine-recommend-system/log/analysis/downloaded-logs-20260625-20260626-20260626-074021/sessions/line_U20a3beee49563dcd07bb3dd0fc1ca32c.md"
+    "1782074044488131856187": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sessions\\1782074044488131856187.md",
+    "1782086778494340519691": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sessions\\1782086778494340519691.md",
+    "line:U20a3beee49563dcd07bb3dd0fc1ca32c": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260625-20260626-20260626-074021\\sessions\\line_U20a3beee49563dcd07bb3dd0fc1ca32c.md"
   }
 }

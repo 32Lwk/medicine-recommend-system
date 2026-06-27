@@ -101,6 +101,20 @@ def extract_webhook_dedup_key(event: dict[str, Any]) -> str | None:
     return None
 
 
+def _try_db_webhook_claim(dedup_key: str) -> bool | None:
+    """DB で webhook 去重。True=新規 / False=重複 / None=DB 未使用。"""
+    try:
+        from src.services.database import get_database
+
+        db = get_database()
+        if db is None or not getattr(db, "is_available", lambda: False)():
+            return None
+        return db.try_claim_line_webhook_event(dedup_key, ttl_sec=int(_TTL_SEC))
+    except Exception:
+        logger.debug("LINE webhook DB dedup unavailable", exc_info=True)
+        return None
+
+
 def mark_webhook_event_seen(dedup_key: str | None) -> bool:
     """
     Webhook イベントを記録する。
@@ -115,6 +129,12 @@ def mark_webhook_event_seen(dedup_key: str | None) -> bool:
     now = time.time()
     _purge_expired(now)
     if dedup_key in _seen:
+        return True
+
+    db_claim = _try_db_webhook_claim(dedup_key)
+    if db_claim is False:
+        _seen[dedup_key] = now
+        logger.info("LINE duplicate webhook event skipped (db) key=%s", dedup_key[:80])
         return True
 
     if not _claim_cross_process("wh", dedup_key):

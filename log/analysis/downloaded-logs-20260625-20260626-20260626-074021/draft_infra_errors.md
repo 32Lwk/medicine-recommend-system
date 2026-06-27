@@ -86,13 +86,13 @@
   ```
 
 **コード根拠**:
-- `episode_summary_agent.py:106` が `append_consultation_summary(line_sid, parsed, episode_id=episode_id)` を呼ぶ。
-- `line_user_memory.py` の `append_consultation_summary()` は `(line_sid, summary)` のみ受け付け。
-- `episode_id` 対応は `upsert_consultation_summary()` 側（`episode_id` kwarg あり）に実装済み。
+- デプロイ commit `a7455d2` の `append_consultation_summary()` は `(line_sid, summary)` のみ（`episode_id` 非対応）。
+- `episode_summary_agent.py:106` は `episode_id=episode_id` を渡しており API 不整合。
+- 現行ワーキングツリーでは `append_consultation_summary` が `upsert_consultation_summary(..., episode_id=episode_id)` へ透過するよう修正済み（**未デプロイ**）。
 
 **推奨アクション**:
-1. `episode_summary_agent.py` で `upsert_consultation_summary` を直接呼ぶ、または `append_consultation_summary` に `episode_id` を透過する。
-2. 既存テスト `tests/line/test_line_user_memory.py::test_upsert_consultation_summary_same_episode` を agent 経由でもカバー。
+1. `line_user_memory.py` の `episode_id` 透過修正を **dev へデプロイ**（ローカル修正済みならデプロイのみ）。
+2. 既存テスト `tests/line/test_line_user_memory.py` に agent 経由の smoke を追加し CI で検出。
 
 ---
 

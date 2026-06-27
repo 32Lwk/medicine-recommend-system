@@ -1891,12 +1891,12 @@ function loadManualReplyMessage() {
         return;
     }
     
-    fetch('/api/manual_reply_message', {
+    fetch('/api/manual_reply_message', adminFetchOptions({
         headers: {
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
         }
-    })
+    }))
     .then(res => {
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -1957,13 +1957,13 @@ function saveManualReplyMessage() {
     console.log('🔵 Saving message (trimmed length:', message.length, '):', message.substring(0, 100) + (message.length > 100 ? '...' : ''));
     lastMessageSaveTime = Date.now(); // 保存時刻を記録
     
-    fetch('/api/manual_reply_message', {
+    fetch('/api/manual_reply_message', adminFetchOptions({
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ message: message })
-    })
+    }))
     .then(res => {
         if (!res.ok) {
             return res.json().then(data => {
@@ -3806,7 +3806,7 @@ function renderChatMessages(messages) {
 // システム状況取得
 function loadMonitoringData() {
     // アクセス統計の読み込み
-    fetch('/admin/access_stats')
+    fetch('/admin/access_stats', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const accessStats = document.getElementById('accessStats');
@@ -3821,7 +3821,7 @@ function loadMonitoringData() {
     });
 
     // パフォーマンス統計の読み込み
-    fetch('/admin/performance_stats')
+    fetch('/admin/performance_stats', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const performanceStats = document.getElementById('performanceStats');
@@ -3839,7 +3839,7 @@ function loadMonitoringData() {
     });
 
     // ブラウザ分布の読み込み
-    fetch('/admin/browser_distribution')
+    fetch('/admin/browser_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const browserDistribution = document.getElementById('browserDistribution');
@@ -3854,7 +3854,7 @@ function loadMonitoringData() {
     });
 
     // OS分布の読み込み
-    fetch('/admin/os_distribution')
+    fetch('/admin/os_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const osDistribution = document.getElementById('osDistribution');
@@ -3869,7 +3869,7 @@ function loadMonitoringData() {
     });
 
     // デバイス分布の読み込み
-    fetch('/admin/device_distribution')
+    fetch('/admin/device_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const deviceDistribution = document.getElementById('deviceDistribution');
@@ -3884,7 +3884,7 @@ function loadMonitoringData() {
     });
 
     // リアルタイム監視の読み込み
-    fetch('/admin/realtime_monitoring')
+    fetch('/admin/realtime_monitoring', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const realtimeMonitoring = document.getElementById('realtimeMonitoring');
@@ -3908,7 +3908,7 @@ function refreshMonitoringData() {
 
 function exportMonitoringData() {
     // 監視データのエクスポート機能
-    fetch('/admin/export_monitoring_data')
+    fetch('/admin/export_monitoring_data', adminFetchOptions())
     .then(response => response.blob())
     .then(blob => {
         const url = window.URL.createObjectURL(blob);
@@ -3926,7 +3926,7 @@ function exportMonitoringData() {
 }
 
 function loadSystemStatus() {
-    fetch('/admin/system_status')
+    fetch('/admin/system_status', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         const content = document.getElementById('systemStatusContent');
@@ -4021,13 +4021,13 @@ function sendMedicineChat() {
         </style>
     `;
     
-    fetch('/admin/medicine_chat', {
+    fetch('/admin/medicine_chat', adminFetchOptions({
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({message: input})
-    })
+    }))
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok') {
@@ -4106,9 +4106,7 @@ function sendMedicineChat() {
 
 // ログクリア機能
 function clearAllLogs() {
-    fetch('/clear_logs', {
-        method: 'POST'
-    })
+    fetch('/clear_logs', adminFetchOptions({ method: 'POST' }))
     .then(response => response.json())
     .then(data => {
         // 成功通知を表示
@@ -5173,12 +5171,7 @@ function loadFeedbackReports() {
     };
     
     // 統計用に常に全データを取得
-    fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}` , {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
+    fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}`, adminFetchOptions())
     .then(response => {
         // HTTPステータスコードをチェック
         if (!response.ok) {
@@ -5213,12 +5206,7 @@ function loadFeedbackReports() {
         
         // 表示用データを取得
         const displayUrl = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}&t=${Date.now()}`;
-        return fetch(displayUrl, {
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
-        });
+        return fetch(displayUrl, adminFetchOptions());
     })
     .then(response => {
         // 前の処理でエラーが発生した場合は何もしない
@@ -5474,12 +5462,12 @@ function resolveFeedback(feedbackId) {
         return;
     }
     
-    fetch(`/api/resolve_feedback/${feedbackId}`, {
+    fetch(`/api/resolve_feedback/${feedbackId}`, adminFetchOptions({
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }
-    })
+    }))
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
@@ -5499,12 +5487,12 @@ function deleteFeedback(feedbackId) {
     if (!confirm('この報告を削除しますか？')) {
         return;
     }
-    fetch(`/api/delete_feedback/${feedbackId}`, {
+    fetch(`/api/delete_feedback/${feedbackId}`, adminFetchOptions({
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }
-    })
+    }))
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
@@ -7329,7 +7317,7 @@ renderQueue = function(queue) {
 // ページ読み込み時のモバイル要素の表示/非表示は、最初のDOMContentLoadedイベントリスナーで処理される
 
 function loadLlmSystemMessages() {
-    fetch('/admin/llm_settings', { headers: { 'Cache-Control': 'no-cache' } })
+    fetch('/admin/llm_settings', adminFetchOptions({ headers: { 'Cache-Control': 'no-cache' } }))
         .then(r => r.json())
         .then(data => {
             const msgs = (data.settings && data.settings.messages) || {};
@@ -7356,11 +7344,11 @@ function saveLlmSystemMessages() {
             unsupported_medicine_type: document.getElementById('msgUnsupportedType')?.value || '',
         },
     };
-    fetch('/admin/llm_settings', {
+    fetch('/admin/llm_settings', adminFetchOptions({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-    })
+    }))
         .then(r => r.json())
         .then(() => showNotification('システム文案を保存しました', 'success'))
         .catch(err => {
@@ -7373,7 +7361,7 @@ window.loadLlmSystemMessages = loadLlmSystemMessages;
 window.saveLlmSystemMessages = saveLlmSystemMessages;
 
 function loadLlmSettings() {
-    fetch('/admin/llm_settings')
+    fetch('/admin/llm_settings', adminFetchOptions())
         .then(r => r.json())
         .then(data => {
             const msgs = (data.settings && data.settings.messages) || {};
@@ -7383,7 +7371,7 @@ function loadLlmSettings() {
             if (elBudget) elBudget.value = msgs.budget_hard_stop || '';
             if (elUnsup) elUnsup.value = msgs.unsupported_medicine_type || '';
             if (elMail) elMail.value = (data.settings && data.settings.alert_email) || '';
-            return fetch('/admin/golden_cases');
+            return fetch('/admin/golden_cases', adminFetchOptions());
         })
         .then(r => r.json())
         .then(data => {
@@ -7405,11 +7393,11 @@ function saveLlmSettings() {
             unsupported_medicine_type: document.getElementById('msgUnsupportedType')?.value || '',
         },
     };
-    fetch('/admin/llm_settings', {
+    fetch('/admin/llm_settings', adminFetchOptions({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-    })
+    }))
         .then(r => r.json())
         .then(() => alert('LLM設定を保存しました'))
         .catch(err => alert('保存に失敗しました: ' + err));
@@ -7422,11 +7410,11 @@ function addGoldenCase() {
         alert('入力文を入力してください');
         return;
     }
-    fetch('/admin/golden_cases', {
+    fetch('/admin/golden_cases', adminFetchOptions({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input_text, expected_category, source: 'pharmacist' }),
-    })
+    }))
         .then(r => r.json())
         .then(data => {
             if (data.status === 'ok') {

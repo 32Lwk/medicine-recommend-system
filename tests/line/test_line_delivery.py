@@ -94,3 +94,34 @@ def test_deliver_line_messages_push_fallback_when_reply_fails():
     assert ok is True
     reply_fn.assert_awaited_once()
     push_fn.assert_awaited_once()
+
+
+def test_deliver_line_messages_skips_push_when_reply_token_unavailable():
+    ctx = LineDeliveryContext(
+        user_id="U1",
+        reply_token="tok",
+        lang="ja",
+        sid="line:U1",
+        reply_token_unavailable=True,
+    )
+    set_line_delivery_context(ctx)
+    reply_fn = AsyncMock(return_value=False)
+    push_fn = AsyncMock(return_value=True)
+    with patch("src.handlers.line.line_delivery.get_line_channel_access_token", return_value="token"):
+        try:
+            ok = asyncio.run(
+                deliver_line_messages(
+                    "U1",
+                    [{"type": "text", "text": "hello"}],
+                    reply_token="tok",
+                    reply_fn=reply_fn,
+                    push_chunk_fn=push_fn,
+                    event_timestamp_ms=int(time.time() * 1000),
+                )
+            )
+        finally:
+            set_line_delivery_context(None)
+    assert ok is False
+    assert ctx.delivered is True
+    reply_fn.assert_awaited_once()
+    push_fn.assert_not_awaited()

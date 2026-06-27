@@ -207,7 +207,13 @@ def test_set_language_invalid_400(client):
     assert r.status_code == 400
 
 
+def test_ai_control_get_json_requires_admin(client):
+    r = client.get("/api/ai_control")
+    assert r.status_code == 401
+
+
 def test_ai_control_get_json(client):
+    _set_admin_cookie(client)
     r = client.get("/api/ai_control")
     assert r.status_code == 200
     j = r.json()
@@ -462,7 +468,13 @@ def test_admin_delete_session_messages_requires_admin(client):
     assert r.status_code == 401
 
 
+def test_admin_mode_post_requires_admin(client):
+    r = client.post("/api/admin_mode")
+    assert r.status_code == 401
+
+
 def test_admin_mode_post(client):
+    _set_admin_cookie(client)
     r = client.post("/api/admin_mode")
     assert r.status_code == 200
     j = r.json()
@@ -476,6 +488,7 @@ def test_request_admin_requires_cookie_session(client):
 
 
 def test_api_status_and_performance_and_logs(client):
+    _set_admin_cookie(client)
     for path in ("/api/status", "/api/performance", "/api/logs"):
         r = client.get(path)
         assert r.status_code == 200
@@ -483,7 +496,13 @@ def test_api_status_and_performance_and_logs(client):
     assert "csv_load_status" in s
 
 
+def test_api_status_requires_admin(client):
+    r = client.get("/api/status")
+    assert r.status_code == 401
+
+
 def test_all_sessions_and_session_stats(client):
+    _set_admin_cookie(client)
     r = client.get("/api/all_sessions")
     assert r.status_code == 200
     data = r.json()
@@ -494,11 +513,22 @@ def test_all_sessions_and_session_stats(client):
     assert r2.status_code == 200
 
 
+def test_all_sessions_requires_admin(client):
+    r = client.get("/api/all_sessions")
+    assert r.status_code == 401
+
+
 def test_debug_manual_replies(client):
+    _set_admin_cookie(client)
     r = client.get("/api/debug_manual_replies")
     assert r.status_code == 200
     j = r.json()
     assert "manual_reply_queue" in j
+
+
+def test_debug_manual_replies_requires_admin(client):
+    r = client.get("/api/debug_manual_replies")
+    assert r.status_code == 401
 
 
 def test_get_feedback_reports_db_fallback(client):
@@ -513,7 +543,13 @@ def test_health_endpoint(client):
     assert r.json().get("status") == "ok"
 
 
+def test_admin_system_status_requires_admin(client):
+    r = client.get("/admin/system_status")
+    assert r.status_code == 401
+
+
 def test_admin_system_status_json(client):
+    _set_admin_cookie(client)
     r = client.get("/admin/system_status")
     assert r.status_code == 200
     j = r.json()
@@ -526,8 +562,14 @@ def test_admin_system_status_json(client):
 
 
 def test_admin_access_stats_json(client):
+    _set_admin_cookie(client)
     r = client.get("/admin/access_stats")
     assert r.status_code == 200
+
+
+def test_admin_access_stats_requires_admin(client):
+    r = client.get("/admin/access_stats")
+    assert r.status_code == 401
 
 
 def test_api_admin_sessions_list(client):
