@@ -214,6 +214,45 @@ async def _app_lifespan(app: FastAPI):
 app = FastAPI(redirect_slashes=False, lifespan=_app_lifespan)
 security_basic = HTTPBasic(auto_error=False)
 
+
+def _admin_unauthorized_response():
+    return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+
+def _require_admin(
+    request: Request,
+    credentials: HTTPBasicCredentials | None = None,
+) -> bool:
+    from src.services.admin_auth import (
+        ADMIN_COOKIE_NAME,
+        credentials_match,
+        verify_admin_token,
+    )
+
+    if credentials and credentials_match(credentials.username, credentials.password):
+        return True
+    return verify_admin_token(request.cookies.get(ADMIN_COOKIE_NAME))
+
+
+def _admin_json_guard(
+    request: Request,
+    creds: HTTPBasicCredentials | None = None,
+):
+    if not _require_admin(request, creds):
+        return _admin_unauthorized_response()
+    return None
+
+
+def admin_json_auth(
+    request: Request,
+    creds: HTTPBasicCredentials | None = Depends(security_basic),
+) -> None:
+    """管理系 JSON API 用 Depends — 内部で _admin_json_guard を呼ぶ。"""
+    auth_err = _admin_json_guard(request, creds)
+    if auth_err is not None:
+        raise StarletteHTTPException(status_code=401, detail="Unauthorized")
+
+
 # CORS
 cors_cfg = get_cors_config()
 allow_origins = cors_cfg.get("origins", [])
@@ -1072,8 +1111,9 @@ def api_processing_status_get(
 
     target_sid = sid
     if session_id:
-        if not _require_admin(request, creds):
-            return JSONResponse({"error": "Unauthorized"}, status_code=401)
+        auth_err = _admin_json_guard(request, creds)
+        if auth_err:
+            return auth_err
         target_sid = session_id
     return get_processing_status(target_sid)
 
@@ -1329,7 +1369,11 @@ async def submit_feedback(
 
 
 @app.get("/api/get_feedback_reports")
-def get_feedback_reports(limit: int = 100, unresolved_only: bool = False):
+def get_feedback_reports(
+    limit: int = 100,
+    unresolved_only: bool = False,
+    _: None = Depends(admin_json_auth),
+):
     db = get_database()
     if db and (db.connection or db.connection_pool):
         reports = db.get_feedback_reports(limit=limit, unresolved_only=unresolved_only)
@@ -1345,7 +1389,7 @@ def get_feedback_reports(limit: int = 100, unresolved_only: bool = False):
 
 
 @app.post("/api/resolve_feedback/{feedback_id}")
-def resolve_feedback(feedback_id: int):
+def resolve_feedback(feedback_id: int, _: None = Depends(admin_json_auth)):
     db = get_database()
     if db and (db.connection or db.connection_pool):
         if db.resolve_feedback(feedback_id):
@@ -1361,7 +1405,7 @@ def resolve_feedback(feedback_id: int):
 
 
 @app.post("/api/delete_feedback/{feedback_id}")
-def delete_feedback(feedback_id: int):
+def delete_feedback(feedback_id: int, _: None = Depends(admin_json_auth)):
     db = get_database()
     if db and (db.connection or db.connection_pool):
         if db.delete_feedback(feedback_id):
@@ -1374,34 +1418,6 @@ def delete_feedback(feedback_id: int):
             return {"status": "success", "storage": "dev_fallback"}
         return JSONResponse({"error": "Feedback not found"}, status_code=404)
     return JSONResponse({"error": "Database not available"}, status_code=500)
-
-
-def _admin_unauthorized_response():
-    return JSONResponse({"error": "Unauthorized"}, status_code=401)
-
-
-def _require_admin(
-    request: Request,
-    credentials: HTTPBasicCredentials | None = None,
-) -> bool:
-    from src.services.admin_auth import (
-        ADMIN_COOKIE_NAME,
-        credentials_match,
-        verify_admin_token,
-    )
-
-    if credentials and credentials_match(credentials.username, credentials.password):
-        return True
-    return verify_admin_token(request.cookies.get(ADMIN_COOKIE_NAME))
-
-
-def _admin_json_guard(
-    request: Request,
-    creds: HTTPBasicCredentials | None = None,
-):
-    if not _require_admin(request, creds):
-        return _admin_unauthorized_response()
-    return None
 
 
 def _set_admin_cookie(response: Response) -> None:
@@ -1556,11 +1572,8 @@ def _list_admin_sessions(meaningful_only: bool = True):
 @app.get("/api/main_sessions")
 def api_main_sessions(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     raw = request.query_params.get("meaningful_only", "1")
     meaningful_only = str(raw).strip().lower() not in ("0", "false", "no")
     cleanup_old_sessions(
@@ -1576,11 +1589,8 @@ def api_main_sessions(
 async def api_main_session(
     request: Request,
     session_id: str,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     if not session_id:
         return JSONResponse({"status": "error", "message": "session_id required"}, status_code=400)
     from src.handlers.line.line_session import is_line_session_id, normalize_line_session_id
@@ -1621,11 +1631,8 @@ async def api_main_session(
 @app.post("/api/main_line_profile_refresh")
 async def api_main_line_profile_refresh(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1643,13 +1650,9 @@ async def api_main_line_profile_refresh(
 
 @app.get("/api/main_manual_reply_queue")
 def api_main_manual_reply_queue(
-    request: Request,
     priority_tag: str | None = None,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     from src.utils.admin_snippet import truncate_user_text
 
     queue = get_manual_reply_queue()
@@ -1668,11 +1671,8 @@ def api_main_manual_reply_queue(
 @app.post("/api/main_manual_reply_queue")
 async def api_main_manual_reply_queue_post(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1752,13 +1752,7 @@ async def api_main_manual_reply_queue_post(
 
 
 @app.get("/api/main_ai_control")
-def api_main_ai_control(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
+def api_main_ai_control(_: None = Depends(admin_json_auth)):
     return {
         "ai_auto_reply": get_ai_auto_reply(),
         "admin_mode": get_admin_mode(),
@@ -1769,11 +1763,8 @@ def api_main_ai_control(
 @app.post("/api/main_ai_control")
 async def api_main_ai_control_post(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1804,12 +1795,15 @@ async def api_main_ai_control_post(
 
 
 @app.get("/api/manual_reply_message")
-def api_manual_reply_message_get():
+def api_manual_reply_message_get(_: None = Depends(admin_json_auth)):
     return {"message": get_manual_reply_message()}
 
 
 @app.post("/api/manual_reply_message")
-async def api_manual_reply_message_post(request: Request):
+async def api_manual_reply_message_post(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1822,7 +1816,7 @@ async def api_manual_reply_message_post(request: Request):
 
 
 @app.get("/api/status")
-def api_status(sid: str = Depends(get_sid)):
+def api_status(sid: str = Depends(get_sid), _: None = Depends(admin_json_auth)):
     from src.core.medicine_logic import csv_load_status
 
     return {
@@ -1843,19 +1837,19 @@ def api_status(sid: str = Depends(get_sid)):
 
 
 @app.get("/api/performance")
-def api_performance():
+def api_performance(_: None = Depends(admin_json_auth)):
     return performance_stats
 
 
 @app.get("/api/logs")
-def api_logs():
+def api_logs(_: None = Depends(admin_json_auth)):
     if not isinstance(network_logs, list):
         return []
     return network_logs
 
 
 @app.post("/api/admin_mode")
-def api_admin_mode():
+def api_admin_mode(_: None = Depends(admin_json_auth)):
     set_admin_mode(True)
     set_ai_auto_reply(False)
     return {
@@ -1866,7 +1860,7 @@ def api_admin_mode():
 
 
 @app.get("/api/ai_control")
-def api_ai_control_get():
+def api_ai_control_get(_: None = Depends(admin_json_auth)):
     return {
         "ai_auto_reply": get_ai_auto_reply(),
         "manual_reply_queue_count": len(get_manual_reply_queue()),
@@ -1874,7 +1868,10 @@ def api_ai_control_get():
 
 
 @app.post("/api/ai_control")
-async def api_ai_control_post(request: Request):
+async def api_ai_control_post(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1889,12 +1886,15 @@ async def api_ai_control_post(request: Request):
 
 
 @app.get("/api/manual_reply_queue")
-def api_manual_reply_queue_get():
+def api_manual_reply_queue_get(_: None = Depends(admin_json_auth)):
     return get_manual_reply_queue()
 
 
 @app.post("/api/manual_reply_queue")
-async def api_manual_reply_queue_post(request: Request):
+async def api_manual_reply_queue_post(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -1932,7 +1932,7 @@ async def api_manual_reply_queue_post(request: Request):
 
 
 @app.get("/api/all_sessions")
-def api_all_sessions():
+def api_all_sessions(_: None = Depends(admin_json_auth)):
     result = []
     all_sessions = get_all_sessions_from_db()
     for sess_id, info in all_sessions.items():
@@ -1950,7 +1950,7 @@ def api_all_sessions():
 
 
 @app.get("/api/session_stats")
-def api_session_stats():
+def api_session_stats(_: None = Depends(admin_json_auth)):
     from config.settings import MAX_SESSIONS, SESSION_TIMEOUT
 
     current_time = time.time()
@@ -2011,7 +2011,7 @@ def api_session_stats():
 
 
 @app.get("/api/debug_manual_replies")
-def api_debug_manual_replies():
+def api_debug_manual_replies(_: None = Depends(admin_json_auth)):
     all_sessions = get_all_sessions_from_db()
     queue = get_manual_reply_queue()
     sessions_with_manual_replies = []
@@ -2136,7 +2136,7 @@ async def api_translate(request: Request):
 
 
 @app.get("/admin/system_status")
-def admin_system_status():
+def admin_system_status(_: None = Depends(admin_json_auth)):
     from config.settings import SESSION_TIMEOUT
 
     all_sessions = get_all_sessions_from_db()
@@ -2174,42 +2174,42 @@ def admin_system_status():
 
 
 @app.get("/admin/access_stats")
-def admin_access_stats():
+def admin_access_stats(_: None = Depends(admin_json_auth)):
     from src.services.analytics import get_access_statistics
 
     return get_access_statistics()
 
 
 @app.get("/admin/performance_stats")
-def admin_performance_stats():
+def admin_performance_stats(_: None = Depends(admin_json_auth)):
     from src.utils.performance_monitor import get_performance_statistics
 
     return get_performance_statistics()
 
 
 @app.get("/admin/browser_distribution")
-def admin_browser_distribution():
+def admin_browser_distribution(_: None = Depends(admin_json_auth)):
     from src.services.analytics import get_browser_distribution
 
     return get_browser_distribution()
 
 
 @app.get("/admin/os_distribution")
-def admin_os_distribution():
+def admin_os_distribution(_: None = Depends(admin_json_auth)):
     from src.services.analytics import get_os_distribution
 
     return get_os_distribution()
 
 
 @app.get("/admin/device_distribution")
-def admin_device_distribution():
+def admin_device_distribution(_: None = Depends(admin_json_auth)):
     from src.services.analytics import get_device_distribution
 
     return get_device_distribution()
 
 
 @app.get("/admin/realtime_monitoring")
-def admin_realtime_monitoring():
+def admin_realtime_monitoring(_: None = Depends(admin_json_auth)):
     monitor = get_global_monitor()
     metrics = monitor.get_metrics()
     all_sessions = get_all_sessions_from_db()
@@ -2224,7 +2224,7 @@ def admin_realtime_monitoring():
 
 
 @app.get("/admin/export_monitoring_data")
-def admin_export_monitoring_data():
+def admin_export_monitoring_data(_: None = Depends(admin_json_auth)):
     from src.services.analytics import get_access_statistics
     from src.utils.performance_monitor import get_performance_statistics
 
@@ -2236,12 +2236,7 @@ def admin_export_monitoring_data():
 
 
 @app.get("/admin/llm_settings")
-def admin_llm_settings_get(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    if not _require_admin(request, creds):
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+def admin_llm_settings_get(_: None = Depends(admin_json_auth)):
     from src.services.budget_guard import ensure_llm_admin_defaults, get_admin_settings, get_monthly_usage
 
     ensure_llm_admin_defaults()
@@ -2258,10 +2253,8 @@ def admin_llm_settings_get(
 @app.post("/admin/llm_settings")
 async def admin_llm_settings_post(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    if not _require_admin(request, creds):
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2287,24 +2280,14 @@ async def admin_llm_settings_post(
 
 
 @app.get("/admin/golden_cases")
-def admin_golden_cases_list(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    if not _require_admin(request, creds):
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+def admin_golden_cases_list(_: None = Depends(admin_json_auth)):
     from src.services.admin_settings_service import list_golden_cases
 
     return {"cases": list_golden_cases()}
 
 
 @app.get("/admin/golden_cases/export")
-def admin_golden_cases_export(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    if not _require_admin(request, creds):
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+def admin_golden_cases_export(_: None = Depends(admin_json_auth)):
     from src.services.admin_settings_service import export_golden_jsonl
 
     body = export_golden_jsonl()
@@ -2318,10 +2301,8 @@ def admin_golden_cases_export(
 @app.post("/admin/golden_cases")
 async def admin_golden_cases_create(
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    if not _require_admin(request, creds):
-        return JSONResponse({"error": "Unauthorized"}, status_code=401)
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2339,7 +2320,10 @@ async def admin_golden_cases_create(
 
 
 @app.post("/admin/ai_control")
-async def admin_ai_control_route(request: Request):
+async def admin_ai_control_route(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2357,7 +2341,10 @@ async def admin_ai_control_route(request: Request):
 
 
 @app.post("/admin/medicine_chat")
-async def admin_medicine_chat_route(request: Request):
+async def admin_medicine_chat_route(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2498,7 +2485,7 @@ async def admin_medicine_chat_route(request: Request):
 
 
 @app.post("/clear_logs")
-def clear_logs():
+def clear_logs(_: None = Depends(admin_json_auth)):
     network_logs.clear()
     db = get_database()
     if db and (db.connection or db.connection_pool):
@@ -2526,13 +2513,7 @@ def clear_logs():
 
 
 @app.get("/api/admin/sessions")
-def api_admin_sessions(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
+def api_admin_sessions(_: None = Depends(admin_json_auth)):
     cleanup_old_sessions(
         force=True,
         exclude_current_session=False,
@@ -2571,13 +2552,7 @@ def api_admin_sessions(
 
 
 @app.post("/api/admin/sessions/purge_empty")
-def api_admin_purge_empty_sessions(
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
-):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
+def api_admin_purge_empty_sessions(_: None = Depends(admin_json_auth)):
     db = get_database()
     if not db or not (db.connection or db.connection_pool):
         return JSONResponse({"status": "error", "message": "データベース接続エラー"}, status_code=500)
@@ -2589,19 +2564,15 @@ def api_admin_purge_empty_sessions(
 @app.delete("/api/admin/sessions/{session_id}")
 def api_admin_delete_session(
     session_id: str,
-    request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     if delete_session_by_id(session_id):
         return {"status": "success", "message": "セッションを削除しました"}
     return JSONResponse({"status": "error", "message": "セッションが見つかりませんでした"}, status_code=404)
 
 
 @app.delete("/api/admin/sessions/delete_all")
-def api_admin_delete_all_sessions():
+def api_admin_delete_all_sessions(_: None = Depends(admin_json_auth)):
     db = get_database()
     if db and (db.connection or db.connection_pool):
         deleted_count = db.delete_all_sessions()
@@ -2613,11 +2584,8 @@ def api_admin_delete_all_sessions():
 async def api_admin_delete_session_messages(
     session_id: str,
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2654,7 +2622,11 @@ async def api_admin_delete_session_messages(
 
 
 @app.put("/api/admin/sessions/{session_id}")
-async def api_admin_update_session(session_id: str, request: Request):
+async def api_admin_update_session(
+    session_id: str,
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2669,19 +2641,16 @@ async def api_admin_update_session(session_id: str, request: Request):
         session_data["user_attributes"] = data["user_attributes"]
     session_data["last_activity"] = datetime.now()
     save_session_to_db(session_id, session_data)
-    return {"status": "success", "message": "セッション情報を更新しました"    }
+    return {"status": "success", "message": "セッション情報を更新しました"}
 
 
 @app.post("/api/admin/sessions/{session_id}/line_memory/backfill")
 async def api_admin_backfill_line_memory(
     session_id: str,
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
     """管理画面: message_archive から長期記憶をバックフィル。"""
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2722,12 +2691,9 @@ async def api_admin_backfill_line_memory(
 async def api_admin_delete_line_memory(
     session_id: str,
     request: Request,
-    creds: HTTPBasicCredentials | None = Depends(security_basic),
+    _: None = Depends(admin_json_auth),
 ):
     """管理画面: LINE 長期記憶の削除（全件 / 部分）。"""
-    auth_err = _admin_json_guard(request, creds)
-    if auth_err:
-        return auth_err
     data, err = await _read_json_dict(request)
     if err:
         return err
@@ -2766,7 +2732,10 @@ async def api_admin_delete_line_memory(
 
 
 @app.post("/api/admin/send_message")
-async def api_admin_send_message(request: Request):
+async def api_admin_send_message(
+    request: Request,
+    _: None = Depends(admin_json_auth),
+):
     data, err = await _read_json_dict(request)
     if err:
         return err

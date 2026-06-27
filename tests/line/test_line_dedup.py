@@ -40,6 +40,13 @@ def test_mark_webhook_event_seen_detects_duplicate_in_process():
     assert line_dedup.mark_webhook_event_seen(key) is True
 
 
+def test_mark_webhook_event_seen_db_duplicate(monkeypatch):
+    key = "wev:evt-db-dup"
+    monkeypatch.setattr(line_dedup, "_try_db_webhook_claim", lambda _k: False)
+    assert line_dedup.mark_webhook_event_seen(key) is True
+    assert line_dedup.mark_webhook_event_seen(key) is True
+
+
 @pytest.mark.skipif(os.name == "nt", reason="ファイル去重は Linux 向け")
 def test_mark_webhook_event_seen_detects_duplicate_across_claim(tmp_path):
     key = "wev:evt-file"

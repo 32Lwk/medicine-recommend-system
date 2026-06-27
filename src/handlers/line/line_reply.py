@@ -57,6 +57,23 @@ def resolve_http_client() -> httpx.AsyncClient:
     return client
 
 
+def _mark_reply_token_unavailable(status_code: int, body: str) -> None:
+    """Reply token 失効・使用済み時は Push フォールバックを抑止（二重配信防止）。"""
+    if status_code != 400:
+        return
+    lower = (body or "").lower()
+    if "reply token" not in lower and "replytoken" not in lower:
+        return
+    try:
+        from src.handlers.line.line_progressive_delivery import get_line_delivery_context
+
+        ctx = get_line_delivery_context()
+        if ctx is not None:
+            ctx.reply_token_unavailable = True
+    except ImportError:
+        pass
+
+
 async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bool:
     hdrs = _headers()
     if not hdrs:
@@ -67,11 +84,14 @@ async def _post_json(url: str, payload: dict[str, Any], *, log_label: str) -> bo
     try:
         response = await client.post(url, headers=hdrs, json=payload)
         if response.status_code >= 400:
+            body = (response.text or "")[:500]
+            if log_label == "reply":
+                _mark_reply_token_unavailable(response.status_code, body)
             logger.warning(
                 "LINE %s failed status=%s body=%s",
                 log_label,
                 response.status_code,
-                (response.text or "")[:500],
+                body,
             )
             return False
         logger.info("LINE %s ok", log_label)

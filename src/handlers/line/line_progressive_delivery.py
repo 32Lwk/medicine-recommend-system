@@ -32,6 +32,7 @@ class LineDeliveryContext:
     dedup_key: str | None = None
     event_timestamp_ms: int | None = None
     delivered: bool = False
+    reply_token_unavailable: bool = False
     carousel_flush: CarouselFlushFn | None = field(default=None, repr=False)
 
 
@@ -253,12 +254,7 @@ async def deliver_final_line_messages(
     from config.line_config import LINE_CHANNEL_ACCESS_TOKEN
 
     ctx = get_line_delivery_context()
-    if (
-        ctx is None
-        or not ctx.use_progressive
-        or ctx.carousel_failed
-        or not ctx.carousel_sent
-    ):
+    if ctx is None or not ctx.use_progressive:
         await deliver_all_fn(
             user_id,
             line_messages,
@@ -270,52 +266,53 @@ async def deliver_final_line_messages(
         )
         return
 
-    if not bot_message or not LINE_CHANNEL_ACCESS_TOKEN:
-        return
+    # carousel Push 済み（flush タイムアウト含む）のとき full bundle を再送しない
+    if ctx.carousel_sent:
+        if not bot_message or not LINE_CHANNEL_ACCESS_TOKEN:
+            return
 
-    messages = build_final_line_messages(
-        bot_message,
-        sid=sid or ctx.sid,
-        user_message=user_message,
-        lang=lang,
-    )
-    if not messages:
-        await deliver_all_fn(
-            user_id,
-            line_messages,
-            reply_token=reply_token,
-            sid=sid,
+        messages = build_final_line_messages(
+            bot_message,
+            sid=sid or ctx.sid,
             user_message=user_message,
-            bot_message=bot_message,
             lang=lang,
         )
+        if not messages:
+            logger.warning(
+                "LINE progressive advice build failed; skip full bundle (carousel already sent) userId=%s",
+                user_id,
+            )
+            return
+
+        from src.handlers.line.line_delivery import deliver_line_messages
+
+        token = reply_token or ctx.reply_token
+        delivered = await deliver_line_messages(
+            user_id,
+            messages,
+            reply_token=token,
+            reply_fn=reply_fn,
+            push_chunk_fn=push_chunk_fn,
+            event_timestamp_ms=ctx.event_timestamp_ms,
+        )
+        if delivered:
+            logger.info("LINE progressive advice+feedback delivered userId=%s", user_id)
+        else:
+            logger.warning(
+                "LINE progressive advice delivery failed; skip full bundle (carousel already sent) userId=%s",
+                user_id,
+            )
         return
 
-    from src.handlers.line.line_delivery import deliver_line_messages
-
-    token = reply_token or ctx.reply_token
-    delivered = await deliver_line_messages(
-        user_id,
-        messages,
-        reply_token=token,
-        reply_fn=reply_fn,
-        push_chunk_fn=push_chunk_fn,
-        event_timestamp_ms=ctx.event_timestamp_ms,
-    )
-    if delivered:
-        logger.info("LINE progressive advice+feedback delivered userId=%s", user_id)
-        return
-
-    logger.warning("LINE progressive delivery failed; full bundle fallback userId=%s", user_id)
+    # carousel 未送信（Push 失敗等）→ 従来どおり一括 Flex
     await deliver_all_fn(
         user_id,
         line_messages,
-        reply_token=None,
+        reply_token=reply_token,
         sid=sid,
         user_message=user_message,
         bot_message=bot_message,
         lang=lang,
-        force_delivery=True,
     )
 
 

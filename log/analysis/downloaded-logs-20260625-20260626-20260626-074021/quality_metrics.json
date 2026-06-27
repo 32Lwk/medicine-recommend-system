@@ -1,9 +1,12 @@
 {
   "conversation": {
-    "session_count": 1,
-    "exported_session_count": 1,
+    "session_count": 3,
+    "exported_session_count": 3,
+    "counseling_session_count": 1,
+    "trace_only_session_count": 2,
+    "chat_flow_trace_count": 44,
     "sessions_by_grade": {
-      "good": 1
+      "good": 3
     },
     "heuristic_mismatch_count": 0,
     "heuristic_issue_types": {},

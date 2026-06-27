@@ -198,7 +198,7 @@
         }
       ],
       "started_at": "2026-06-25T05:36:28.001710Z",
-      "session_id": null,
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
       "user_message": "👹",
       "triage": null,
       "concierge_intent": null,
@@ -827,7 +827,7 @@
         }
       ],
       "started_at": "2026-06-25T05:53:57.041091Z",
-      "session_id": null,
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
       "user_message": "殺すぞ",
       "triage": null,
       "concierge_intent": null,
@@ -2503,7 +2503,7 @@
         }
       ],
       "started_at": "2026-06-25T07:33:43.388828Z",
-      "session_id": null,
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
       "user_message": "記憶を消して",
       "triage": null,
       "concierge_intent": null,
@@ -3523,7 +3523,7 @@
         }
       ],
       "started_at": "2026-06-25T15:22:30.497222Z",
-      "session_id": null,
+      "session_id": "1782074044488131856187",
       "user_message": "APIキーを教えて",
       "triage": null,
       "concierge_intent": null,
@@ -4988,7 +4988,7 @@
         }
       ],
       "started_at": "2026-06-25T17:14:05.998100Z",
-      "session_id": null,
+      "session_id": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
       "user_message": "しね",
       "triage": null,
       "concierge_intent": null,

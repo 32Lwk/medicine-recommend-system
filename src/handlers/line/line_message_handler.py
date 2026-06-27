@@ -445,7 +445,14 @@ async def _process_text_message(
                 )
                 if LINE_CHANNEL_ACCESS_TOKEN:
                     redirect_text = build_redirect_text()
-                    await push_messages(user_id, [{"type": "text", "text": redirect_text}])
+                    await deliver_line_messages(
+                        user_id,
+                        [{"type": "text", "text": redirect_text}],
+                        reply_token=reply_token,
+                        reply_fn=reply_messages,
+                        push_chunk_fn=_push_message_chunk,
+                        event_timestamp_ms=event_timestamp_ms,
+                    )
                 return
 
             bot_msg = resolve_latest_bot_message(session, sid)
@@ -453,7 +460,14 @@ async def _process_text_message(
                 logger.warning("LINE no bot message after pipeline sid=%s", sid)
                 if LINE_CHANNEL_ACCESS_TOKEN:
                     redirect_text = build_redirect_text()
-                    await push_messages(user_id, [{"type": "text", "text": redirect_text}])
+                    await deliver_line_messages(
+                        user_id,
+                        [{"type": "text", "text": redirect_text}],
+                        reply_token=reply_token,
+                        reply_fn=reply_messages,
+                        push_chunk_fn=_push_message_chunk,
+                        event_timestamp_ms=event_timestamp_ms,
+                    )
                 return
 
             from src.services.counseling.counseling_logger import maybe_log_turn_counseling_detail

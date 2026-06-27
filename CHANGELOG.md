@@ -1,6 +1,57 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月27日**（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）（jailbreak 即時ブロック・パイプライン終端ガード・Concierge redirect フォールバック・LLM バックグラウンド監査）
+**最終更新日: 2026年6月27日**（管理 API 認証統一・LINE 二重配信防止・医薬品購入先ルーティング・ローカルレッドチーム）（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）
+
+---
+
+## 2026年6月27日（後半） — 管理 API 認証・LINE 二重配信防止・医薬品購入先ルーティング・レッドチーム
+
+### 概要
+
+ローカルレッドチーム（148 ケース）で判明した **管理 JSON API 無認証露出** を `admin_json_auth` Depends により一括修正。**LINE Webhook 重複**による二重 Push を DB 去重・reply token 失効検知・progressive 配信ロジックで抑止。
+
+**医薬品購入先・入手要求**（「処方箋なしの購入先」「処方箋の購入先」等）を店舗案内 fast-path へ振り分け、Concierge structural greeting 誤分類と不適切カウンセリング経路を回避。**`scripts/local_red_team_runner.py`** でオフライン／HTTP 混在のセキュリティ回帰を自動化。
+
+### 管理 API 認証統一（レッドチーム P0）
+
+- **`main.py`**: `admin_json_auth` Depends を新設し、管理系 JSON エンドポイント（`/admin/*`・`/api/status`・`/api/performance`・フィードバック CRUD 等）に一括適用
+- **`static/js/admin_chat.js`**: 監視・LLM 設定・フィードバック・手動返信等の fetch を `adminFetchOptions()` 経由に統一
+- **`tests/api/test_fastapi_contract.py`**: 未認証 401 / cookie 認証 200 の契約テストを追加
+
+### LINE Webhook 去重・二重配信防止
+
+- **`database.py`**: `line_webhook_dedup` テーブルと `try_claim_line_webhook_event`（Cloud Run 複数インスタンス向け TTL claim）
+- **`line_dedup.py`**: DB claim をファイル去重の前段に追加
+- **`line_reply.py`**: reply token 400 失効時に `reply_token_unavailable` を設定
+- **`line_delivery.py`**: reply token 不可時は Push フォールバックをスキップ（二重配信防止）
+- **`line_progressive_delivery.py`**: carousel Push 済み時は full bundle 再送を抑止。未送信時は reply_token 付き一括配信
+- **`line_message_handler.py`**: pipeline 後 redirect を `deliver_line_messages` 経由に統一
+
+### 医薬品購入先ルーティング
+
+- **`counseling_triage.py`**: `classify_medicine_procurement_route` / `detect_prescription_procurement_request` — OTC（`otc_store`）と処方箋（`pharmacy_prescription`）を分岐
+- **`store_inquiry_handler.py`**: `generate_medicine_procurement_response` と fast-path / 詳細分類での `_resolve_procurement_store_response`
+- **`concierge_intent.py`**: 購入先要求を structural greeting から除外。`_is_medicine_consultation` に「処方箋」「処方」「購入先」「入手」を追加
+- **`config/keywords.py`**: 単独「処方」を `TREATMENT_KEYWORDS` から除外（購入先 fast-path との競合回避）
+
+### セキュリティ・その他
+
+- **`security_validator.py`**: `DANGER_PATTERNS` の不正正規表現（`+` 連結）を修正
+
+### ローカルレッドチーム
+
+- **`scripts/local_red_team_runner.py`（新規）**: known_attack / PI プローブ / 暴言 / マルチターン / red_team.jsonl 等 148 ケースをローカル FastAPI へ投入
+- **`log/analysis/local_red_team_2026-06-27.md` / `.json`**: 実行結果（known_attack 30/30 ブロック、管理 API 露出を修正前に記録）
+
+### テスト
+
+| テスト | 内容 |
+|--------|------|
+| `test_prescription_procurement_guard.py`（新規） | 購入先分類・店舗案内 fast-path・Concierge 誤分類防止 |
+| `test_fastapi_contract.py` | 管理 API 401/200 契約 |
+| `test_line_dedup.py` | DB 去重 duplicate 検出 |
+| `test_line_delivery.py` | reply token 不可時 Push スキップ |
+| `test_line_progressive_delivery.py` | carousel 済み full bundle 再送抑止 |
 
 ---
 

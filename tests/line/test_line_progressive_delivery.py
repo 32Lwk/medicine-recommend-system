@@ -206,6 +206,55 @@ def test_deliver_final_falls_back_when_carousel_failed():
     deliver_all.assert_awaited_once()
 
 
+def test_deliver_final_after_carousel_flush_timeout_skips_full_bundle():
+    """carousel Push 済み + flush タイムアウト時は advice のみ（full bundle 再送しない）。"""
+    ctx = LineDeliveryContext(
+        user_id="U1",
+        reply_token="tok",
+        lang="ja",
+        sid="line:U1",
+        use_progressive=True,
+        carousel_sent=True,
+        carousel_failed=True,
+        event_timestamp_ms=int(__import__("time").time() * 1000),
+    )
+    set_line_delivery_context(ctx)
+    bot = {
+        "diagnosis": {
+            "medicine_type": "解熱鎮痛薬",
+            "recommended_medicines": [{"product_name": "A", "explanation": "x"}],
+        }
+    }
+    deliver_all = AsyncMock()
+    reply_fn = AsyncMock(return_value=True)
+    push_chunk = AsyncMock()
+
+    with (
+        patch("config.line_config.LINE_CHANNEL_ACCESS_TOKEN", "token"),
+        patch("src.handlers.line.line_delivery.get_line_channel_access_token", return_value="token"),
+    ):
+        try:
+            asyncio.run(
+                deliver_final_line_messages(
+                    "U1",
+                    [{"type": "flex", "altText": "full"}],
+                    reply_token="tok",
+                    sid="line:U1",
+                    user_message="頭痛",
+                    bot_message=bot,
+                    lang="ja",
+                    push_chunk_fn=push_chunk,
+                    reply_fn=reply_fn,
+                    deliver_all_fn=deliver_all,
+                )
+            )
+        finally:
+            set_line_delivery_context(None)
+
+    reply_fn.assert_awaited_once()
+    deliver_all.assert_not_awaited()
+
+
 def test_schedule_carousel_push_uses_flush_when_bound():
     ctx = LineDeliveryContext(user_id="U1", reply_token="tok", lang="ja", sid="line:U1")
     calls: list[dict] = []

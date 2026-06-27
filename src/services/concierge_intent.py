@@ -175,6 +175,14 @@ def _is_medicine_consultation(text: str) -> bool:
 
         "禁忌",
 
+        "処方箋",
+
+        "処方",
+
+        "購入先",
+
+        "入手",
+
     )
 
     return any(h in t for h in hints)
@@ -291,6 +299,13 @@ def infer_structural_concierge_intent(
     text = (user_text or "").strip()
     if not text or len(text) > 12:
         return None
+    try:
+        from src.services.counseling_triage import detect_prescription_procurement_request
+
+        if detect_prescription_procurement_request(text):
+            return None
+    except ImportError:
+        pass
     try:
         from src.utils.emoji_input import is_emoji_only_message
 
