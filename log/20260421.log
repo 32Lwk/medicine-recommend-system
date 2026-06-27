@@ -1,0 +1,95 @@
+DEFAULT 2026-04-21T08:44:48.288361Z 2026-04-21 08:44:48,289 - INFO - 不足情報検出（優先度: important）
+DEFAULT 2026-04-21T08:44:48.288489Z 2026-04-21 08:44:48,289 - INFO - 推奨は続行しますが、追加質問も表示します
+DEFAULT 2026-04-21T08:44:48.288691Z 2026-04-21 08:44:48,289 - INFO - アレルギー症状を検出: 目のかゆみ=True, アレルギー指標=True, ユーザー入力=花粉症がひどい
+DEFAULT 2026-04-21T08:44:48.288788Z 2026-04-21 08:44:48,289 - INFO - アレルギー症状（目のかゆみ + くしゃみ/鼻水）を検出。鼻炎用薬カテゴリを追加しました
+DEFAULT 2026-04-21T08:44:48.288888Z 2026-04-21 08:44:48,290 - INFO - アレルギー症状が検出されたため、風邪薬へのペナルティを適用します
+DEFAULT 2026-04-21T08:44:48.289028Z 2026-04-21 08:44:48,290 - INFO - 推定された医薬品の種類（拡張後）: {'鼻炎用薬', '目薬', '風邪薬'}
+DEFAULT 2026-04-21T08:44:48.289123Z 2026-04-21 08:44:48,290 - INFO - アレルギー症状が検出されました（目のかゆみ: True, アレルギー指標: True）。鼻炎用薬を優先します
+DEFAULT 2026-04-21T08:44:48.397176Z 169.254.169.126 - admin [21/Apr/2026:08:44:48 +0000] "GET /api/main_manual_reply_queue HTTP/1.1" 200 500 "https://medicine.yutok.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+DEFAULT 2026-04-21T08:44:48.864142Z 2026-04-21 08:44:48,865 - INFO - 候補抽出完了: 鼻炎用薬: 437件, 目薬: 769件, 風邪薬: 1158件 (合計: 2305件)
+DEFAULT 2026-04-21T08:44:48.864794Z 2026-04-21 08:44:48,865 - INFO - 候補医薬品数: 2305 (フィルタリング後)
+DEFAULT 2026-04-21T08:44:48.864905Z 2026-04-21 08:44:48,866 - INFO - 候補医薬品の種類別内訳: {'鼻炎用薬': 429, '目薬': 750, '風邪薬': 1126}
+DEFAULT 2026-04-21T08:44:48.893745Z 2026-04-21 08:44:48,894 - INFO - 15歳以上のユーザーのため小児専用製品を71件除外しました
+INFO 2026-04-21T08:44:49.292139Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 1.93 KiB] [httpRequest.latency: 490 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/main_sessions
+DEFAULT 2026-04-21T08:44:49.783383Z 169.254.169.126 - admin [21/Apr/2026:08:44:49 +0000] "GET /api/main_sessions HTTP/1.1" 200 1753 "https://medicine.yutok.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+INFO 2026-04-21T08:44:51.963887Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 569 B] [httpRequest.latency: 571 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/sessions?v={{%20version%20}}
+DEFAULT 2026-04-21T08:44:52.128358Z 2026-04-21 08:44:52,128 - INFO - 🔍 /api/sessions called - Session ID: 1776758497715392184603
+DEFAULT 2026-04-21T08:44:52.128580Z 2026-04-21 08:44:52,129 - INFO - 🔍 sessions keys: ['1776759268451354959054', '1776758497715392184603']
+DEFAULT 2026-04-21T08:44:52.534936Z 2026-04-21 08:44:52,535 - INFO - 🔄 既存セッション更新: 1776758497715392184603 (0 messages)
+DEFAULT 2026-04-21T08:44:52.535038Z 2026-04-21 08:44:52,535 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1776758497715392184603)
+DEFAULT 2026-04-21T08:44:52.535244Z 2026-04-21 08:44:52,535 - INFO - ✅ /api/sessions レスポンス: 0 messages
+DEFAULT 2026-04-21T08:44:52.536019Z 169.254.169.126 - admin [21/Apr/2026:08:44:52 +0000] "GET /api/sessions?v=%7B%7B%20version%20%7D%7D HTTP/1.1" 200 350 "https://medicine.yutok.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+DEFAULT 2026-04-21T08:44:57.654061Z 2026-04-21 08:44:57,654 - INFO - 🔍 痛みの緊急性判定: is_primary=False, pain_level=mild, keywords=[]
+DEFAULT 2026-04-21T08:44:57.654310Z 2026-04-21 08:44:57,655 - INFO - 🔍 other_medicines: 0件 - []
+DEFAULT 2026-04-21T08:44:57.654429Z 2026-04-21 08:44:57,655 - INFO - 🔍 comprehensive_cold: 新スカイブブロンゴールド微粒
+DEFAULT 2026-04-21T08:44:57.654529Z 2026-04-21 08:44:57,655 - INFO - 🔍 external_throat_medicines: 0件
+DEFAULT 2026-04-21T08:44:57.654651Z 2026-04-21 08:44:57,655 - INFO - ✅ 風邪症状: 総合風邪薬を1位に配置: 新スカイブブロンゴールド微粒
+DEFAULT 2026-04-21T08:44:57.654754Z 2026-04-21 08:44:57,655 - INFO - 🔍 2位選定開始: top_2_candidates=1, other_medicines=0
+DEFAULT 2026-04-21T08:44:57.654898Z 2026-04-21 08:44:57,655 - INFO - ✅ 風邪症状: 総合風邪薬を2位に配置: バファリンかぜＥＸ錠《瓶》
+DEFAULT 2026-04-21T08:44:57.656149Z 2026-04-21 08:44:57,657 - INFO - ✅ 3位候補を追加: 新チルニン小児シロップ (現在の選定数: 3)
+DEFAULT 2026-04-21T08:44:57.657047Z 2026-04-21 08:44:57,657 - INFO - 不足情報による減点情報を保存: penalty=0.150, missing_fields=['age', 'gender', 'pregnancy_status', 'symptom_duration', 'allergies']
+DEFAULT 2026-04-21T08:44:57.657177Z 2026-04-21 08:44:57,658 - INFO - 減点適用前 rank1: 新スカイブブロンゴールド微粒 final_score=1.363, raw_score=1.363
+DEFAULT 2026-04-21T08:44:57.657332Z 2026-04-21 08:44:57,658 - INFO - 減点適用前 rank2: バファリンかぜＥＸ錠《瓶》 final_score=1.363, raw_score=1.363
+DEFAULT 2026-04-21T08:44:57.657473Z 2026-04-21 08:44:57,658 - INFO - 減点適用前 rank3: 新チルニン小児シロップ final_score=0.900, raw_score=0.900
+INFO 2026-04-21T08:45:01.951111Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 569 B] [httpRequest.latency: 652 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/sessions?v={{%20version%20}}
+DEFAULT 2026-04-21T08:45:02.196776Z 2026-04-21 08:45:02,197 - INFO - 🔍 /api/sessions called - Session ID: 1776758497715392184603
+DEFAULT 2026-04-21T08:45:02.196889Z 2026-04-21 08:45:02,197 - INFO - 🔍 sessions keys: ['1776758497715392184603', '1776759268451354959054']
+DEFAULT 2026-04-21T08:45:02.278765Z 2026-04-21 08:45:02,279 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+DEFAULT 2026-04-21T08:45:02.603288Z 2026-04-21 08:45:02,604 - INFO - 🔄 既存セッション更新: 1776758497715392184603 (0 messages)
+DEFAULT 2026-04-21T08:45:02.603400Z 2026-04-21 08:45:02,604 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1776758497715392184603)
+DEFAULT 2026-04-21T08:45:02.603622Z 2026-04-21 08:45:02,604 - INFO - ✅ /api/sessions レスポンス: 0 messages
+DEFAULT 2026-04-21T08:45:02.604504Z 169.254.169.126 - admin [21/Apr/2026:08:45:02 +0000] "GET /api/sessions?v=%7B%7B%20version%20%7D%7D HTTP/1.1" 200 350 "https://medicine.yutok.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+DEFAULT 2026-04-21T08:45:05.933222Z 2026-04-21 08:45:05,933 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+DEFAULT 2026-04-21T08:45:05.935103Z 2026-04-21 08:45:05,935 - INFO - 使用上の注意生成完了: 3件
+DEFAULT 2026-04-21T08:45:05.935296Z 2026-04-21 08:45:05,935 - INFO - 推奨完了: 3件の医薬品を推奨
+DEFAULT 2026-04-21T08:45:05.937352Z 2026-04-21 08:45:05,937 - INFO - 🔍 Rule-based result: success
+DEFAULT 2026-04-21T08:45:05.937495Z 2026-04-21 08:45:05,937 - INFO - 🔍 Rule-based medicines count: 3
+DEFAULT 2026-04-21T08:45:05.937773Z 2026-04-21 08:45:05,938 - INFO - ❓ Missing attributes detected: 5 questions, priority: critical
+DEFAULT 2026-04-21T08:45:05.937872Z 2026-04-21 08:45:05,938 - INFO - 💊 MEDICINE_LOGIC CALL:
+DEFAULT 2026-04-21T08:45:05.937985Z 2026-04-21 08:45:05,938 - INFO - Function: hybrid_recommendation (rule_based)
+DEFAULT 2026-04-21T08:45:05.938076Z 2026-04-21 08:45:05,938 - INFO - Input: {'user_message': '花粉症がひどい'}
+DEFAULT 2026-04-21T08:45:05.938163Z 2026-04-21 08:45:05,938 - INFO - Execution Time: 23.325s
+DEFAULT 2026-04-21T08:45:05.938258Z 2026-04-21 08:45:05,938 - INFO - Output: {'symptoms': ['鼻水', '鼻づまり', 'くしゃみ'], 'medicine_type': '抗アレルギー薬', 'recommended_medicines_count': 3, 'algorithm': 'rule_based'}
+DEFAULT 2026-04-21T08:45:05.938400Z 2026-04-21 08:45:05,938 - INFO - 🌐 NETWORK REQUEST:
+DEFAULT 2026-04-21T08:45:05.938484Z 2026-04-21 08:45:05,938 - INFO - Method: POST
+DEFAULT 2026-04-21T08:45:05.938571Z 2026-04-21 08:45:05,939 - INFO - Endpoint: メインサイト - ハイブリッド医薬品推奨 (rule_based)
+DEFAULT 2026-04-21T08:45:05.938656Z 2026-04-21 08:45:05,939 - INFO - Request Data: {'symptom': '花粉症がひどい'}
+DEFAULT 2026-04-21T08:45:05.938745Z 2026-04-21 08:45:05,939 - INFO - Response Time: 23.325s
+DEFAULT 2026-04-21T08:45:05.938841Z 2026-04-21 08:45:05,939 - INFO - Status: success
+DEFAULT 2026-04-21T08:45:05.939167Z 2026-04-21 08:45:05,939 - INFO - Response Data: {'recommendation': {'symptoms': ['鼻水', '鼻づまり', 'くしゃみ'], 'medicine_type': '抗アレルギー薬', 'recommended_medicines': [{'rank': 1, 'number': 1, 'product_name': '新スカイブブロンゴールド微粒', 'manufacturer': '米田薬品工業', 'medicine_type': '風邪薬', 'classification': '指定第2類', 'efficacy': '鼻水、鼻づまり、くしゃみ、のどの痛み、せき、たん、悪寒、発熱、頭痛、関節の痛み、筋肉の痛み', 'usage': '成人（１５歳以上）：１回１包\n１２歳以上１５歳未満：１回２／３包\n１２歳未満：服用しないでください\n１日３回食後なるべく３０分以内に服用してください\n＜用法・用量に関連する注意＞\n用法・用量を厳守してください\n小児に服用させる場合には、保護者の指導監督のもとに服用させてください', 'age_restriction': '12歳以上', 'ingredients': 'アセトアミノフェン\nクロルフェニラミンマレイン酸塩\nグアイフェネシン\nジヒドロコデインリン酸塩\nリボフラビン\n無水カフェイン\nｄｌ−メチルエフェドリン塩酸塩', 'doping_prohibited': '禁止物質あり', 'competition_category': 'S6. 興奮剤', 'conditions': 'エフェドリン及びメチルエフェドリンは、それぞれの尿中の濃度が１ミリリットルにつき１０マイクログラムを超える場合には、禁止する', 'usage_notes': '＜用法・用量に関連する注意＞\n用法・用量を厳守してください', 'score': 1.3628613464494066, 'relative_score': 1.0, 'display_score': 85.0, 'score_level': '中', 'score_breakdown': {'symptom_match': 0.5499999999999999, 'efficacy_specificity': 0.5, 'body_part_match': 0.0, 'age_fit': 0.58, 'usage_convenience': 0.5, 'side_effect_risk': -0.2, 'interaction_risk': 0.0, 'symptom_specificity_penalty': 0.0, 'ingredient_boost': 0.0, 'user_preference_bonus': 0.0, 'life_stage_boost': 0.0, 'sho_bonus': 0.0, 'risk_ingredient_penalty': 0.0, 'throat_bonus': 0.0, 'symptom_specific_boost': 0.0, 'multi_symptom_bonus': 0.0, 'multi_symptom_cold_bonus': 0.15, 'comprehensive_cold_bonus': 0.9, 'pattern_bonus': 0.0, 'allergy_penalty': -0.2, 'allergy_boost': 0.0, 'hangover_boost': 0.0, 'tiebreaker_boost': 0.05, 'base_score': 0.3296, 'adjusted_base_score': 0.55, 'adjustment_score': 1.2000000000000004, 'kampo_adjustment': 0.0, 'kakkonto_penalty': 0.0, 'completeness_penalty': -0.15, 'missing_fields_detail': {'age': 0.15, 'gender': 0.05, 'pregnancy_status': 0.15, 'symptom_duration': 0.02, 'allergies': 0.15}}, 'explanation': '⚠️ 症状への適合度は中程度 | ⚠️ 軽度の副作用リスク | ✅ 相互作用リスクは低め | 主成分: アセトアミノフェン, クロルフェニラミンマレイン酸塩, グアイフェネシン | 風邪薬として効果が期待できます', 'reason': '⚠️ 症状への適合度は中程度 | ⚠️ 軽度の副作用リスク | ✅ 相互作用リスクは低め | 主成分: アセトアミノフェン, クロルフェニラミンマレイン酸塩, グアイフェネシン | 風邪薬として効果が期待できます', 'allergy_warning': '', 'interaction_warnings': [], 'completeness_penalty': 0.15, 'max_possible_score': 0.85, 'raw_score': 1.3628613464494066, 'original_rank': 1}, {'rank': 2, 'number': 2, 'product_name': 'バファリンかぜＥＸ錠《瓶》', 'manufacturer': 'ライオン', 'medicine_type': '風邪薬', 'classification': '指定第2類', 'efficacy': '発熱、悪寒、のどの痛み、頭痛、鼻水、鼻づまり、くしゃみ、せき、たん、関節の痛み、筋肉の痛み', 'usage': '次の量を食後なるべく３０分以内に…
+DEFAULT 2026-04-21T08:45:09.463029Z 2026-04-21 08:45:09,463 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+DEFAULT 2026-04-21T08:45:09.464387Z 2026-04-21 08:45:09,465 - INFO - ✅ 個別アドバイス生成完了: 211字
+DEFAULT 2026-04-21T08:45:09.474383Z 2026-04-21 08:45:09,474 - INFO - [INFO] 医薬品推奨詳細ログ [session_id: 1776759268451354959054]
+DEFAULT 2026-04-21T08:45:09.474390Z {
+DEFAULT 2026-04-21T08:45:09.474394Z "log_type": "recommendation_detail",
+DEFAULT 2026-04-21T08:45:09.474397Z "timestamp": "2026-04-21T08:45:09.472948",
+DEFAULT 2026-04-21T08:45:09.474399Z "session_id": "1776759268451354959054",
+DEFAULT 2026-04-21T08:45:09.474403Z "user_input": "花粉症がひどい",
+DEFAULT 2026-04-21T08:45:09.475139Z "app_output": "\n <div class=\"recommendation-result\">\n \n \n <div class=\"collapsible-section\" data-collapsible=\"true\" data-default-expanded=\"false\" role=\"region\" aria-label=\"ご入力について\" style=\"background: #e3f2fd; border-left: 4px solid #2196f3;\">\n <button class=\"collapse-toggle\" aria-expanded=\"false\" aria-controls=\"ambiguous-warning-content\" aria-label=\"詳細を見る\">\n <span class=\"collapse-icon\">▼</span>\n <h4 style=\"color: #1976d2; margin-top: 0; display: inline;\">ℹ️ ご入力について</h4>\n </button>\n <div class=\"collapse-content\" id=\"ambiguous-warning-content\" style=\"padding: 20px; margin: 15px 0;\">\n <p style=\"margin: 5px 0; line-height: 1.6;\">ご入力いただいた内容から、複数の症状が推定されました。より正確な推奨のため、具体的な症状（発熱、咳、鼻水など）を詳しく教えていただくと、より適切な医薬品をご提案できます。</p>\n </div>\n </div>\n \n \n \n <div class=\"warning-info\" role=\"region\" aria-label=\"あなたに合わせたアドバイス\" style=\"padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #2196f3;\">\n <h4 style=\"color: #1976d2; margin-top: 0;\">💡 あなたに合わせたアドバイス</h4>\n <p style=\"margin: 5px 0; line-height: 1.6; white-space: pre-wrap;\">花粉症がひどいとのこと、お辛いですね。鼻水や鼻づまり、くしゃみといった症状には、まず新スカイブブロンゴールド微粒をおすすめします。これは、あなたのような複数の症状を同時に和らげることができる薬です。ただし、しっかりと水分を取って、体調管理も忘れずに行ってくださいね。また、感染症のリスクが高まる時期でもありますので、インフルエンザの予防も心がけてください。少しでも楽になれるよう、心から願っています。お大事にしてください。</p>\n </div>\n \n \n <div class=\"collapsible-section\" data-collapsible=\"true\" data-default-expanded=\"false\" role=\"region\" aria-label=\"症状分析結果\">\n <button class=\"collapse-toggle\" aria-expanded=\"false\" aria-controls=\"symptom-analysis-content\" aria-label=\"詳細を見る\">\n <span class=\"collapse-icon\">▼</span>\n <h4 style=\"color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 8px; display: inline;\">🔍 症状分析結果</h4>\n </button>\n <div class=\"collapse-content\" id=\"symptom-analysis-content\">\n <p><strong>推測される症状:</strong> 鼻水, 鼻づまり, くしゃみ</p>\n <p><strong>医薬品の種類:</strong> 抗アレルギー薬</p>\n </div>\n </div>\n \n \n <div style=\"background: #e8f5e9; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #4caf50;\">\n <h4 style=\"color: #2e7d32; margin-top: 0;\">💊 推奨医薬品</h4>\n \n <div class=\"warning-critical\" role=\"region\" aria-label=\"成分の重複について（重複禁止）\" style=\"background: white; padding: 15px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #d32f2f;\">\n …
+DEFAULT 2026-04-21T08:45:09.475332Z 2026-04-21 08:45:09,476 - INFO - 🔍 bot_response check: in locals=True, bot_response=True
+DEFAULT 2026-04-21T08:45:09.475575Z 2026-04-21 08:45:09,476 - INFO - ✅ bot_response found, content length: 53571
+DEFAULT 2026-04-21T08:45:10.290482Z 2026-04-21 08:45:10,290 - INFO - 💾 メッセージ保存完了: 3 messages
+DEFAULT 2026-04-21T08:45:10.766616Z 2026-04-21 08:45:10,767 - INFO - 💊 医薬品相談回答処理終了 - フラグクリア完了
+DEFAULT 2026-04-21T08:45:10.925850Z 2026-04-21 08:45:10,926 - INFO - 📝 Manual replies preserved: 2 messages
+INFO 2026-04-21T08:45:11.962124Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 569 B] [httpRequest.latency: 893 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/sessions?v={{%20version%20}}
+DEFAULT 2026-04-21T08:45:12.449648Z 2026-04-21 08:45:12,450 - INFO - 🔍 /api/sessions called - Session ID: 1776758497715392184603
+DEFAULT 2026-04-21T08:45:12.449786Z 2026-04-21 08:45:12,450 - INFO - 🔍 sessions keys: ['1776759268451354959054', '1776758497715392184603']
+DEFAULT 2026-04-21T08:45:12.855446Z 2026-04-21 08:45:12,855 - INFO - 🔄 既存セッション更新: 1776758497715392184603 (0 messages)
+DEFAULT 2026-04-21T08:45:12.855564Z 2026-04-21 08:45:12,856 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1776758497715392184603)
+DEFAULT 2026-04-21T08:45:12.855878Z 2026-04-21 08:45:12,856 - INFO - ✅ /api/sessions レスポンス: 0 messages
+DEFAULT 2026-04-21T08:45:12.856841Z 169.254.169.126 - admin [21/Apr/2026:08:45:12 +0000] "GET /api/sessions?v=%7B%7B%20version%20%7D%7D HTTP/1.1" 200 350 "https://medicine.yutok.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+DEFAULT 2026-04-21T08:45:13.324870Z 2026-04-21 08:45:13,325 - INFO - ✅ POST処理完了 - JSON返却: 3 messages
+DEFAULT 2026-04-21T08:45:13.326334Z 169.254.169.126 - - [21/Apr/2026:08:45:13 +0000] "POST /?v=%7B%7B%20version%20%7D%7D HTTP/1.1" 200 34 "https://medicine.yutok.dev/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+INFO 2026-04-21T08:45:13.917845Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 113.02 KiB] [httpRequest.latency: 892 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/sessions?v={{%20version%20}}
+DEFAULT 2026-04-21T08:45:14.238360Z 2026-04-21 08:45:14,239 - INFO - 🔍 /api/sessions called - Session ID: 1776759268451354959054
+DEFAULT 2026-04-21T08:45:14.238489Z 2026-04-21 08:45:14,239 - INFO - 🔍 sessions keys: ['1776758497715392184603', '1776759268451354959054']
+DEFAULT 2026-04-21T08:45:14.808808Z 2026-04-21 08:45:14,809 - INFO - 🔄 既存セッション更新: 1776759268451354959054 (3 messages)
+DEFAULT 2026-04-21T08:45:14.808905Z 2026-04-21 08:45:14,809 - INFO - 📦 /api/sessions - DBから取得: 3 messages (sid=1776759268451354959054)
+DEFAULT 2026-04-21T08:45:14.809304Z 2026-04-21 08:45:14,810 - INFO - ✅ /api/sessions レスポンス: 3 messages
+DEFAULT 2026-04-21T08:45:14.811544Z 169.254.169.126 - - [21/Apr/2026:08:45:14 +0000] "GET /api/sessions?v=%7B%7B%20version%20%7D%7D HTTP/1.1" 200 115512 "https://medicine.yutok.dev/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+INFO 2026-04-21T08:45:21.959691Z [httpRequest.requestMethod: GET] [httpRequest.status: 200] [httpRequest.responseSize: 569 B] [httpRequest.latency: 877 ms] [httpRequest.userAgent: Chrome 147.0.0.0] https://medicine.yutok.dev/api/sessions?v={{%20version%20}}
+DEFAULT 2026-04-21T08:45:22.438482Z 2026-04-21 08:45:22,438 - INFO - 🔍 /api/sessions called - Session ID: 1776758497715392184603
+DEFAULT 2026-04-21T08:45:22.438646Z 2026-04-21 08:45:22,439 - INFO - 🔍 sessions keys: ['1776759268451354959054', '1776758497715392184603']
+DEFAULT 2026-04-21T08:45:22.837500Z 2026-04-21 08:45:22,837 - INFO - 🔄 既存セッション更新: 1776758497715392184603 (0 messages)
+DEFAULT 2026-04-21T08:45:22.837623Z 2026-04-21 08:45:22,838 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1776758497715392184603)
+DEFAULT 2026-04-21T08:45:22.837924Z 2026-04-21 08:45:22,838 - INFO - ✅ /api/sessions レスポンス: 0 messages

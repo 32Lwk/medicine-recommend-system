@@ -1,0 +1,250 @@
+2025-12-11T14:09:23.525248118Z 2025-12-11 14:09:23,525 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:09:23.525281269Z 2025-12-11 14:09:23,525 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:09:23.622800443Z 2025-12-11 14:09:23,622 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:09:23.622859174Z 2025-12-11 14:09:23,622 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:09:23.623221591Z 2025-12-11 14:09:23,623 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:09:23.624424446Z 10.24.15.57 - - [11/Dec/2025:14:09:23 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:10:23.046763561Z 2025-12-11 14:10:23,046 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:10:23.046813832Z 2025-12-11 14:10:23,046 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:10:23.052827564Z 2025-12-11 14:10:23,052 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:10:23.052916386Z 2025-12-11 14:10:23,052 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:10:23.05313279Z 2025-12-11 14:10:23,053 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:10:23.054183782Z 10.24.15.57 - - [11/Dec/2025:14:10:23 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:11:23.221105201Z 2025-12-11 14:11:23,220 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:11:23.221206963Z 2025-12-11 14:11:23,221 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:11:23.227076052Z 2025-12-11 14:11:23,226 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:11:23.227155913Z 2025-12-11 14:11:23,227 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:11:23.227355607Z 2025-12-11 14:11:23,227 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:11:23.228286296Z 10.25.231.226 - - [11/Dec/2025:14:11:23 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:12:23.056125057Z 2025-12-11 14:12:23,055 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:12:23.056170508Z 2025-12-11 14:12:23,056 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:12:23.062397224Z 2025-12-11 14:12:23,062 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:12:23.063750801Z 2025-12-11 14:12:23,062 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:12:23.063768912Z 2025-12-11 14:12:23,062 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:12:23.063772232Z 10.25.44.209 - - [11/Dec/2025:14:12:23 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:23.350632404Z 2025-12-11 14:13:23,350 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:13:23.350665224Z 2025-12-11 14:13:23,350 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:13:23.356068444Z 2025-12-11 14:13:23,355 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:13:23.356147495Z 2025-12-11 14:13:23,356 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:13:23.356330089Z 2025-12-11 14:13:23,356 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:13:23.357140175Z 10.25.187.125 - - [11/Dec/2025:14:13:23 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:50.763885784Z 2025-12-11 14:13:50,763 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:13:50.763919744Z 2025-12-11 14:13:50,763 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816', '1765461313897508126910', '1765461306443005258903']
+2025-12-11T14:13:50.769511338Z 2025-12-11 14:13:50,769 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:13:50.769544638Z 2025-12-11 14:13:50,769 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:13:50.769758392Z 2025-12-11 14:13:50,769 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:13:50.770950597Z 10.25.231.226 - - [11/Dec/2025:14:13:50 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:52.684642184Z 2025-12-11 14:13:52,684 - INFO - ✅ Cleaned up 2 expired sessions
+2025-12-11T14:13:52.684670914Z 2025-12-11 14:13:52,684 - INFO - 🧹 セッションクリーンアップ完了: 2件削除
+2025-12-11T14:13:52.686800517Z 2025-12-11 14:13:52,686 - INFO - 🔍 Current session ID: 1765460101040568888816
+2025-12-11T14:13:52.686816968Z 2025-12-11 14:13:52,686 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816']
+2025-12-11T14:13:52.686821518Z 2025-12-11 14:13:52,686 - INFO - 👤 Existing session accessed: ユーザー3 for IP: 10.24.81.234
+2025-12-11T14:13:52.690630165Z 2025-12-11 14:13:52,690 - INFO - 📥 Session messages restored from DB: 2 messages (full history)
+2025-12-11T14:13:52.696956913Z 2025-12-11 14:13:52,696 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:13:52.70522361Z 2025-12-11 14:13:52,704 - INFO - 📝 Session 1765460101040568888816 updated: 2 messages (DB保存完了)
+2025-12-11T14:13:52.705377164Z 2025-12-11 14:13:52,705 - INFO - 📝 Session cookie size reduced - messages only in DB
+2025-12-11T14:13:52.705532577Z 2025-12-11 14:13:52,705 - INFO - 💾 チャット履歴永続化完了: 2 messages
+2025-12-11T14:13:54.71038397Z 2025-12-11 14:13:54,710 - INFO - ✅ GET処理完了 - HTML返却: 2 messages
+2025-12-11T14:13:54.713174476Z /opt/render/project/src/.venv/lib/python3.11/site-packages/werkzeug/sansio/response.py:224: UserWarning: The 'session' cookie is too large: the value was 10144 bytes but the header required 39 extra bytes. The final size was 10183 bytes but the limit is 4093 bytes. Browsers may silently ignore cookies larger than this.
+2025-12-11T14:13:54.713193277Z   dump_cookie(
+2025-12-11T14:13:54.714023744Z 10.24.81.234 - - [11/Dec/2025:14:13:54 +0000] "GET / HTTP/1.1" 200 20108 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:54.717361332Z 2025-12-11 14:13:54,717 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:13:54.717457193Z 2025-12-11 14:13:54,717 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816']
+2025-12-11T14:13:54.723462255Z 2025-12-11 14:13:54,723 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:13:54.723558657Z 2025-12-11 14:13:54,723 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:13:54.723797012Z 2025-12-11 14:13:54,723 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:13:54.725105818Z 10.25.231.226 - - [11/Dec/2025:14:13:54 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:54.90246448Z 10.25.187.125 - - [11/Dec/2025:14:13:54 +0000] "GET /static/css/main.css HTTP/1.1" 200 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:54.909027473Z 10.25.231.226 - - [11/Dec/2025:14:13:54 +0000] "GET /static/js/main.js HTTP/1.1" 200 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:55.179745496Z 2025-12-11 14:13:55,178 - INFO - 🔍 /api/sessions called - Session ID: 1765460101040568888816
+2025-12-11T14:13:55.179765166Z 2025-12-11 14:13:55,179 - INFO - 🔍 ALL_SESSIONS keys: ['1765460101040568888816']
+2025-12-11T14:13:55.187982983Z 2025-12-11 14:13:55,187 - INFO - 🔄 既存セッション更新: 1765460101040568888816 (2 messages)
+2025-12-11T14:13:55.188012173Z 2025-12-11 14:13:55,187 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765460101040568888816)
+2025-12-11T14:13:55.188321579Z 2025-12-11 14:13:55,188 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:13:55.189750159Z 10.25.231.226 - - [11/Dec/2025:14:13:55 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65697 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:13:55.191427962Z 10.24.81.234 - - [11/Dec/2025:14:13:55 +0000] "GET /favicon.ico HTTP/1.1" 204 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:00.732870561Z 10.25.187.125 - - [11/Dec/2025:14:14:00 +0000] "POST /new_session?v={{%20version%20}} HTTP/1.1" 200 144 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:00.958579582Z 2025-12-11 14:14:00,958 - INFO - 🔍 Current session ID: 1765462440726137270915151248
+2025-12-11T14:14:00.958618093Z 2025-12-11 14:14:00,958 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:00.958717005Z 2025-12-11 14:14:00,958 - INFO - 👤 Existing session accessed: ユーザー1 for IP: 10.25.44.209
+2025-12-11T14:14:00.959905479Z 2025-12-11 14:14:00,959 - INFO - 📥 Session messages restored from DB: 0 messages (full history)
+2025-12-11T14:14:00.963090274Z 2025-12-11 14:14:00,962 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:00.96687525Z 2025-12-11 14:14:00,966 - INFO - 📝 Session 1765462440726137270915151248 updated: 0 messages (DB保存完了)
+2025-12-11T14:14:00.967033353Z 2025-12-11 14:14:00,966 - INFO - 📝 Session cookie size reduced - messages only in DB
+2025-12-11T14:14:00.967195557Z 2025-12-11 14:14:00,967 - INFO - 💾 チャット履歴永続化完了: 0 messages
+2025-12-11T14:14:02.972742205Z 2025-12-11 14:14:02,972 - INFO - ✅ GET処理完了 - HTML返却: 0 messages
+2025-12-11T14:14:02.974821447Z 10.25.44.209 - - [11/Dec/2025:14:14:02 +0000] "GET / HTTP/1.1" 200 20108 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:03.1290485Z 10.24.15.57 - - [11/Dec/2025:14:14:03 +0000] "GET /static/js/main.js HTTP/1.1" 304 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:03.142493632Z 10.24.237.106 - - [11/Dec/2025:14:14:03 +0000] "GET /static/css/main.css HTTP/1.1" 304 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:03.323192652Z 10.25.231.226 - - [11/Dec/2025:14:14:03 +0000] "GET /favicon.ico HTTP/1.1" 204 0 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:03.339939321Z 2025-12-11 14:14:03,339 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:03.339967812Z 2025-12-11 14:14:03,339 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:03.344026014Z 2025-12-11 14:14:03,343 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:03.344082675Z 2025-12-11 14:14:03,344 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:03.344262999Z 2025-12-11 14:14:03,344 - INFO - 📝 Session cookie size reduced - messages only in DB
+2025-12-11T14:14:03.344366711Z 2025-12-11 14:14:03,344 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:03.345348561Z 10.25.187.125 - - [11/Dec/2025:14:14:03 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:14.026913354Z 2025-12-11 14:14:14,026 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:14.027243621Z 2025-12-11 14:14:14,027 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:14.033765143Z 2025-12-11 14:14:14,033 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:14.03412763Z 2025-12-11 14:14:14,033 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:14.03413888Z 2025-12-11 14:14:14,033 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:14.034787854Z 10.24.15.57 - - [11/Dec/2025:14:14:14 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:24.037253857Z 2025-12-11 14:14:24,037 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:24.037291268Z 2025-12-11 14:14:24,037 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:24.040036853Z 2025-12-11 14:14:24,039 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:24.040108695Z 2025-12-11 14:14:24,040 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:24.040241877Z 2025-12-11 14:14:24,040 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:24.040956592Z 10.24.15.57 - - [11/Dec/2025:14:14:24 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:34.036001608Z 2025-12-11 14:14:34,035 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:34.036046869Z 2025-12-11 14:14:34,035 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:34.039018769Z 2025-12-11 14:14:34,038 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:34.039094601Z 2025-12-11 14:14:34,039 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:34.039263084Z 2025-12-11 14:14:34,039 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:34.039923787Z 10.24.237.106 - - [11/Dec/2025:14:14:34 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:44.04301575Z 2025-12-11 14:14:44,042 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:44.043054121Z 2025-12-11 14:14:44,042 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:44.046498661Z 2025-12-11 14:14:44,046 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:44.046523541Z 2025-12-11 14:14:44,046 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:44.047902149Z 10.25.231.226 - - [11/Dec/2025:14:14:44 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:14:44.047903799Z 2025-12-11 14:14:44,046 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:54.034110873Z 2025-12-11 14:14:54,033 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:14:54.034208475Z 2025-12-11 14:14:54,034 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:14:54.037348279Z 2025-12-11 14:14:54,037 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:14:54.037360309Z 2025-12-11 14:14:54,037 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:14:54.037367089Z 2025-12-11 14:14:54,037 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:14:54.038068293Z 10.24.81.234 - - [11/Dec/2025:14:14:54 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:15:03.306259977Z 2025-12-11 14:15:03,306 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:15:03.306322838Z 2025-12-11 14:15:03,306 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:15:03.309508533Z 2025-12-11 14:15:03,309 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (0 messages)
+2025-12-11T14:15:03.309588935Z 2025-12-11 14:15:03,309 - INFO - 📦 /api/sessions - DBから取得: 0 messages (sid=1765462440726137270915151248)
+2025-12-11T14:15:03.309743208Z 2025-12-11 14:15:03,309 - INFO - ✅ /api/sessions レスポンス: 0 messages
+2025-12-11T14:15:03.310590015Z 10.25.231.226 - - [11/Dec/2025:14:15:03 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 356 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:15:04.671323966Z 2025-12-11 14:15:04,671 - INFO - 🌍 UI言語を設定: zh
+2025-12-11T14:15:04.672825527Z 10.25.231.226 - - [11/Dec/2025:14:15:04 +0000] "POST /api/set_language HTTP/1.1" 200 68 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:15:10.327787078Z 2025-12-11 14:15:10,327 - INFO - 🔍 Current session ID: 1765462440726137270915151248
+2025-12-11T14:15:10.327824078Z 2025-12-11 14:15:10,327 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:15:10.327866339Z 2025-12-11 14:15:10,327 - INFO - 👤 Existing session accessed: ユーザー1 for IP: 10.24.15.57
+2025-12-11T14:15:10.421978725Z 2025-12-11 14:15:10,421 - INFO - 📥 Session messages restored from DB: 0 messages (full history)
+2025-12-11T14:15:10.422039457Z 2025-12-11 14:15:10,421 - INFO - 📨 POST処理開始
+2025-12-11T14:15:10.423450815Z 2025-12-11 14:15:10,423 - INFO - 📝 受信メッセージ: 我的陰莖癢
+2025-12-11T14:15:10.487077054Z 2025-12-11 14:15:10,486 - INFO - Security validation: score=0, safe=True, warnings=0
+2025-12-11T14:15:10.487336749Z 2025-12-11 14:15:10,487 - INFO - 👤 USER INTERACTION:
+2025-12-11T14:15:10.487402851Z 2025-12-11 14:15:10,487 - INFO -    Session ID: 1765462440726137270915151248
+2025-12-11T14:15:10.487429691Z 2025-12-11 14:15:10,487 - INFO -    Username: ユーザー1
+2025-12-11T14:15:10.487506993Z 2025-12-11 14:15:10,487 - INFO -    User Message: 我的陰莖癢
+2025-12-11T14:15:10.487578874Z 2025-12-11 14:15:10,487 - INFO -    Response Type: POST
+2025-12-11T14:15:10.488024173Z 2025-12-11 14:15:10,487 - INFO - ✅ ユーザーメッセージ追加: 我的陰莖癢...
+2025-12-11T14:15:10.525752018Z 2025-12-11 14:15:10,525 - INFO - 🌍 検出された言語: zh
+2025-12-11T14:15:10.52588826Z 2025-12-11 14:15:10,525 - INFO - 🏥 SYMPTOM INPUT DETECTED: 我的陰莖癢
+2025-12-11T14:15:10.526044964Z 2025-12-11 14:15:10,525 - INFO - 💊 医薬品相談回答処理開始 - フラグ設定完了
+2025-12-11T14:15:10.526175396Z 2025-12-11 14:15:10,526 - INFO - 🔍 Calling select_symptoms_via_gpt...
+2025-12-11T14:15:11.387504052Z 2025-12-11 14:15:11,387 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:11.400050247Z 2025-12-11 14:15:11,399 - INFO - 💊 MEDICINE_LOGIC CALL:
+2025-12-11T14:15:11.400076987Z 2025-12-11 14:15:11,400 - INFO -    Function: select_symptoms_via_gpt
+2025-12-11T14:15:11.400151849Z 2025-12-11 14:15:11,400 - INFO -    Input: {'user_message': '我的陰莖癢'}
+2025-12-11T14:15:11.400178739Z 2025-12-11 14:15:11,400 - INFO -    Execution Time: 0.874s
+2025-12-11T14:15:11.400258691Z 2025-12-11 14:15:11,400 - INFO -    Output: {'matched_symptoms': {'status': 'success', 'symptoms': ['かゆみ'], 'message': 'Extracted 1 symptoms'}}
+2025-12-11T14:15:11.400354543Z 2025-12-11 14:15:11,400 - INFO - 💊 Hybrid medicine recommendation system starting...
+2025-12-11T14:15:11.434395612Z 2025-12-11 14:15:11,434 - INFO - 🔍 Step 1: Analyzing medicine type with ChatGPT...
+2025-12-11T14:15:12.447427941Z 2025-12-11 14:15:12,447 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:12.450361121Z 2025-12-11 14:15:12,450 - INFO - 📋 Detected medicine type: 外用薬（皮膚）
+2025-12-11T14:15:12.450442572Z 2025-12-11 14:15:12,450 - INFO - 📋 Detected symptoms: ['かゆみ']
+2025-12-11T14:15:12.863937048Z 2025-12-11 14:15:12,863 - INFO - ✅ Using RULE-BASED algorithm for 外用薬（皮膚）
+2025-12-11T14:15:12.868077751Z 2025-12-11 14:15:12,867 - INFO - 📋 User info for recommendation: age=None, gender=None, pregnant=None, allergies=[]
+2025-12-11T14:15:12.870140203Z 2025-12-11 14:15:12,869 - INFO - Security validation: score=0, safe=True, warnings=0
+2025-12-11T14:15:14.527689807Z 2025-12-11 14:15:14,527 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:14.535620238Z 2025-12-11 14:15:14,533 - INFO - NLU信頼度スコア: 0.00, 検出症状数: 1
+2025-12-11T14:15:18.658472037Z 2025-12-11 14:15:18,658 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:18.663481479Z 2025-12-11 14:15:18,663 - INFO - 不足情報検出（優先度: critical）
+2025-12-11T14:15:18.6635377Z 2025-12-11 14:15:18,663 - INFO - 推奨は続行しますが、追加質問も表示します
+2025-12-11T14:15:18.663672423Z 2025-12-11 14:15:18,663 - INFO - 推定された医薬品の種類（拡張後）: {'外用薬（皮膚）'}
+2025-12-11T14:15:19.284433906Z 2025-12-11 14:15:19,284 - INFO - 候補医薬品数: 3206 (フィルタリング後)
+2025-12-11T14:15:19.298649544Z 2025-12-11 14:15:19,298 - INFO - 15歳以上のユーザーのため小児専用製品を16件除外しました
+2025-12-11T14:15:19.355262061Z 2025-12-11 14:15:19,355 - INFO - 乗り物酔い症状がないため、乗り物酔い薬を25件除外しました
+2025-12-11T14:15:19.556576339Z 2025-12-11 14:15:19,556 - INFO - 簡易スコアリング完了: 3165件 → 上位750件を選別
+2025-12-11T14:15:21.978779251Z 2025-12-11 14:15:21,978 - INFO - Min-Max正規化適用: raw_score範囲 [0.315, 0.661], 範囲幅: 0.346
+2025-12-11T14:15:21.987787604Z 2025-12-11 14:15:21,987 - INFO - 詳細スコアリング完了: 750件 → 上位3件を選択（成分多様性考慮）
+2025-12-11T14:15:32.64243399Z 2025-12-11 14:15:32,642 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:32.711889767Z 2025-12-11 14:15:32,709 - INFO - 使用上の注意生成完了: 3件
+2025-12-11T14:15:32.711911467Z 2025-12-11 14:15:32,710 - INFO - 推奨完了: 3件の医薬品を推奨
+2025-12-11T14:15:32.726703307Z 2025-12-11 14:15:32,726 - INFO - 🔍 Rule-based result: success
+2025-12-11T14:15:32.72686205Z 2025-12-11 14:15:32,726 - INFO - 🔍 Rule-based medicines count: 3
+2025-12-11T14:15:32.727079124Z 2025-12-11 14:15:32,727 - INFO - ❓ Missing attributes detected: 6 questions, priority: critical
+2025-12-11T14:15:32.727158056Z 2025-12-11 14:15:32,727 - INFO - 💊 MEDICINE_LOGIC CALL:
+2025-12-11T14:15:32.72835108Z 2025-12-11 14:15:32,727 - INFO -    Function: hybrid_recommendation (rule_based)
+2025-12-11T14:15:32.72835897Z 2025-12-11 14:15:32,727 - INFO -    Input: {'user_message': '我的陰莖癢'}
+2025-12-11T14:15:32.72836169Z 2025-12-11 14:15:32,727 - INFO -    Execution Time: 21.293s
+2025-12-11T14:15:32.72836439Z 2025-12-11 14:15:32,727 - INFO -    Output: {'symptoms': ['かゆみ'], 'medicine_type': '外用薬（皮膚）', 'recommended_medicines_count': 3, 'algorithm': 'rule_based'}
+2025-12-11T14:15:32.72836655Z 2025-12-11 14:15:32,727 - INFO - 🌐 NETWORK REQUEST:
+2025-12-11T14:15:32.728370531Z 2025-12-11 14:15:32,727 - INFO -    Method: POST
+2025-12-11T14:15:32.728373041Z 2025-12-11 14:15:32,727 - INFO -    Endpoint: メインサイト - ハイブリッド医薬品推奨 (rule_based)
+2025-12-11T14:15:32.728375311Z 2025-12-11 14:15:32,727 - INFO -    Request Data: {'symptom': '我的陰莖癢'}
+2025-12-11T14:15:32.728377601Z 2025-12-11 14:15:32,727 - INFO -    Response Time: 21.293s
+2025-12-11T14:15:32.728379691Z 2025-12-11 14:15:32,727 - INFO -    Status: success
+2025-12-11T14:15:32.728393121Z 2025-12-11 14:15:32,727 - INFO -    Response Data: {'recommendation': {'symptoms': ['かゆみ'], 'medicine_type': '外用薬（皮膚）', 'recommended_medicines': [{'rank': 1, 'number': 1, 'product_name': 'ジュラール', 'manufacturer': 'ゼリア新薬工業', 'medicine_type': '外用薬（皮膚）', 'classification': '第3類', 'efficacy': '虫さされ、かゆみ止め', 'usage': '適量を塗布又は擦り込んでください\r\n＜用法・用量に関連する注意＞\r\n１．小児に使用する場合には、特に注意し、保護者の指導監督のもとに使用してください\r\n２．目に入らないように注意してください万一、目に入った場合には、すぐに水又はぬるま湯で洗い、直ちに眼科医の診療を受けてください\r\n３．外用にのみ使用してください\r\n４．定められた用法・用量を守ってください\r\n５．局所刺激作用があるので、患部に軽く塗るだけにとどめ、ガーゼ、脱脂綿等に浸して患部に貼付しないでください', 'age_restriction': nan, 'ingredients': 'アンモニア\nイソプロピルメチルフェノール\nジフェンヒドラミン\nｄｌ−カンフル\nｌ−メントール', 'doping_prohibited': '禁止物質なし', 'competition_category': '', 'conditions': '', 'usage_notes': '＜用法・用量に関連する注意＞\r\n１．小児に使用する場合には、特に注意し、保護者の指導監督のもとに使用してください\r\n２．目に入らないように注意してください万一、目に入った場合には、すぐに水又はぬるま湯で洗い、直ちに眼科医の診療を受けてください\r', 'score': 1.0, 'relative_score': 1.0, 'score_level': '高', 'score_breakdown': {'symptom_match': 0.9, 'efficacy_specificity': 0.98125, 'body_part_match': 0.0, 'age_fit': 1.0, 'usage_convenience': 0.5, 'side_effect_risk': -0.5, 'interaction_risk': 0.0, 'symptom_specificity_penalty': 0.0, 'risk_ingredient_penalty': 0.0, 'throat_bonus': 0.0, 'symptom_specific_boost': 0.0, 'multi_symptom_bonus': 0.0, 'allergy_penalty': 0.0, 'allergy_boost': 0.0, 'base_score': 0.6512500000000001, 'adjusted_base_score': 0.6512500000000001, 'adjustment_score': 0.0, 'kampo_adjustment': 0.0}, 'explanation': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: アンモニア, イソプロピルメチルフェノール, ジフェンヒドラミン | 外用薬（皮膚）として効果が期待できます', 'reason': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: アンモニア, イソプロピルメチルフェノール, ジフェンヒドラミン | 外用薬（皮膚）として効果が期待できます', 'allergy_warning': '', 'interaction_warnings': []}, {'rank': 2, 'number': 2, 'product_name': 'マキロンかゆみどめパッチ', 'manufacturer': '救急薬品工業', 'medicine_type': '外用薬（皮膚）', 'classification': '第3類', 'efficacy': '虫さされ、かゆみ、しもやけ', 'usage': 'パッチを台紙からはがし、１日数回患部に貼ってください\r\n＜使用法に関連する注意＞\r\n１．使用法を厳守してください\r\n２．小児に使用させる場合には、保護者の指導監督のもとに使用させてください\r\n３．外用にのみ使用してください\r\n４．汗をかいたり、皮膚がぬれているときは、よくふき取ってから使用してください\r\n５．同じ場所に長時間使用しないでください', 'age_restriction': nan, 'ingredients': 'イソプロピルメチルフェノール\nクロタミトン\nグリチルレチン酸\nジフェンヒドラミン', 'doping_prohibited': '禁止物質なし', 'competition_category': '', 'conditions': '', 'usage_notes': '＜使用法に関連する注意＞\r\n１．使用法を厳守してください\r', 'score': 0.9989102253138913, 'relative_score': 0.9989102253138913, 'score_level': '高', 'score_breakdown': {'symptom_match': 0.9, 'efficacy_specificity': 0.9770833333333333, 'body_part_match': 0.0, 'age_fit': 1.0, 'usage_convenience': 0.5, 'side_effect_risk': -0.5, 'interaction_risk': 0.0, 'symptom_specificity_penalty': 0.0, 'risk_ingredient_penalty': 0.0, 'throat_bonus': 0.0, 'symptom_specific_boost': 0.0, 'multi_symptom_bonus': 0.0, 'allergy_penalty': 0.0, 'allergy_boost': 0.0, 'base_score': 0.6504166666666668, 'adjusted_base_score': 0.6504166666666668, 'adjustment_score': 0.0, 'kampo_adjustment': 0.0}, 'explanation': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: イソプロピルメチルフェノール, クロタミトン, グリチルレチン酸 | 外用薬（皮膚）として効果が期待できます', 'reason': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: イソプロピルメチルフェノール, クロタミトン, グリチルレチン酸 | 外用薬（皮膚）として効果が期待できます', 'allergy_warning': '', 'interaction_warnings': []}, {'rank': 3, 'number': 3, 'product_name': 'メンソレータムカブレーナ乳液', 'manufacturer': 'ジャパンメディック', 'medicine_type': '外用薬（皮膚）', 'classification': '第2類', 'efficacy': '湿疹、皮ふ炎、ただれ、あせも、かぶれ、かゆみ、おむつかぶれ', 'usage': '１日数回、適量を患部に塗布してください\r\n＜用法・用量に関連する注意＞\r\n１．小児に使用させる場合には、保護者の指導監督のもとに使用させてください\r\n２．目に入らないようにご注意ください万一、目に入った場合には、すぐに水又はぬるま湯で洗ってくださいなお、症状が重い場合には、眼科医の診療を受けてください\r\n３．外用にのみご使用ください\r\n４．患部を清潔にした後、ご使用ください', 'age_restriction': nan, 'ingredients': 'イソプロピルメチルフェノール\nウフェナマート\nグリチルレチン酸\nジフェンヒドラミン\nトコフェロール酢酸エステル', 'doping_prohibited': '禁止物質なし', 'competition_category': '', 'conditions': '', 'usage_notes': '＜用法・用量に関連する注意＞\r\n２．目に入らないようにご注意ください万一、目に入った場合には、すぐに水又はぬるま湯で洗ってくださいなお、症状が重い場合には、眼科医の診療を受けてください\r', 'score': 0.9923270754633297, 'relative_score': 0.9923270754633297, 'score_level': '高', 'score_breakdown': {'symptom_match': 0.9, 'efficacy_specificity': 0.9520833333333333, 'body_part_match': 0.0, 'age_fit': 1.0, 'usage_convenience': 0.5, 'side_effect_risk': -0.5, 'interaction_risk': 0.0, 'symptom_specificity_penalty': 0.0, 'risk_ingredient_penalty': 0.0, 'throat_bonus': 0.0, 'symptom_specific_boost': 0.0, 'multi_symptom_bonus': 0.0, 'allergy_penalty': 0.0, 'allergy_boost': 0.0, 'base_score': 0.6454166666666667, 'adjusted_base_score': 0.6454166666666667, 'adjustment_score': 0.0, 'kampo_adjustment': 0.0}, 'explanation': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: イソプロピルメチルフェノール, ウフェナマート, グリチルレチン酸 | 外用薬（皮膚）として効果が期待できます', 'reason': '✅ 症状に非常によく適合: かゆみに特化した効果 | ✅ 効能が症状に特化 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: イソプロピルメチルフェノール, ウフェナマート, グリチルレチン酸 | 外用薬（皮膚）として効果が期待できます', 'allergy_warning': '', 'interaction_warnings': []}], 'usage_notes': '1つ目：ジュラール\n効能: 虫さされ、かゆみ止め\n\n用法用量の注意:\n・小児に使用する場合は保護者の指導監督のもとに使用\n・目に入らないよう注意し、入った場合はすぐに洗い流す\n\n年齢制限: なし\n\nドーピング: 禁止物質なし\n\n2つ目：マキロンかゆみどめパッチ\n効能: 虫さされ、かゆみ、しもやけ\n\n用法用量の注意:\n・小児に使用する場合は保護者の指導監督のもとに使用\n・汗をかいたり皮膚がぬれているときはよくふき取ってから使用\n\n年齢制限: なし\n\nドーピング: 禁止物質なし\n\n3つ目：メンソレータムカブレーナ乳液\n効能: 湿疹、皮ふ炎、ただれ、あせも、かぶれ、かゆみ、おむつかぶれ\n\n用法用量の注意:\n・小児に使用する場合は保護者の指導監督のもとに使用\n・目に入らないよう注意し、入った場合はすぐに洗い流す\n\n年齢制限: なし\n\nドーピング: 禁止物質なし\n\n【使ってはいけない人】\n・過去に医薬品でアレルギー症状を起こしたことがある方\n・医師の治療を受けている方\n・高齢者の方（医師や薬剤師にご相談ください）\n\n【服用時の注意】\n・用法用量を厳守してください\n・なるべく空腹時の服用は避けてください\n・アレルギー体質の方は成分を確認してください\n・服用後、乗り物や機械の運転操作をしないでください（眠気が出る場合があります）', 'doctor_consultation': '【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合', 'additional_questions': ['年齢を教えてください。（医薬品の適切な選択に必要です）', '性別を教えてください。（男性/女性）', '症状はいつ頃から続いていますか？（例：昨日から、3日前から）', 'アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）', '現在服用中の薬はありますか？', '持病や既往歴はありますか？'], 'critical_questions': ['かゆみはいつから始まりましたか？'], 'influenza_risk': False, 'influenza_reason': '', 'algorithm': 'rule_based', 'missing_priority': 'critical'}}
+2025-12-11T14:15:35.393077667Z 2025-12-11 14:15:35,391 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-12-11T14:15:35.404726143Z 2025-12-11 14:15:35,402 - INFO - ✅ 個別アドバイス生成完了: 157字
+2025-12-11T14:15:35.404745054Z 2025-12-11 14:15:35,403 - INFO - 🌍 翻訳開始: zh
+2025-12-11T14:15:35.70865977Z 2025-12-11 14:15:35,708 - INFO - Request to DeepL API method=POST url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:37.442397328Z 2025-12-11 14:15:37,442 - INFO - DeepL API response status_code=200 url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:37.442610172Z 2025-12-11 14:15:37,442 - INFO - ✅ DeepL翻訳完了 (zh): 1.73秒, 6075文字
+2025-12-11T14:15:37.444593793Z 2025-12-11 14:15:37,444 - INFO - ✅ 翻訳完了: zh
+2025-12-11T14:15:37.445071072Z 2025-12-11 14:15:37,444 - INFO - Request to DeepL API method=POST url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:38.11837035Z 2025-12-11 14:15:38,118 - INFO - DeepL API response status_code=200 url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:38.118445362Z 2025-12-11 14:15:38,118 - INFO - ✅ DeepL翻訳完了 (zh): 0.67秒, 12文字
+2025-12-11T14:15:38.120911172Z 2025-12-11 14:15:38,120 - INFO - Request to DeepL API method=POST url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:38.782384571Z 2025-12-11 14:15:38,782 - INFO - DeepL API response status_code=200 url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:38.782498293Z 2025-12-11 14:15:38,782 - INFO - ✅ DeepL翻訳完了 (zh): 0.66秒, 2文字
+2025-12-11T14:15:38.785028964Z 2025-12-11 14:15:38,784 - INFO - Request to DeepL API method=POST url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:39.470764004Z 2025-12-11 14:15:39,469 - INFO - DeepL API response status_code=200 url=https://api-free.deepl.com/v2/translate
+2025-12-11T14:15:39.470781855Z 2025-12-11 14:15:39,469 - INFO - ✅ DeepL翻訳完了 (zh): 0.69秒, 3文字
+2025-12-11T14:15:39.472480349Z 2025-12-11 14:15:39,472 - INFO - 💾 管理者専用詳細情報を保存: 1765462440726137270915151248 (session_id付与済み)
+2025-12-11T14:15:39.472651393Z 2025-12-11 14:15:39,472 - INFO - 🔍 bot_response check: in locals=True, bot_response=True
+2025-12-11T14:15:39.472770975Z 2025-12-11 14:15:39,472 - INFO - ✅ bot_response found, content length: 27599
+2025-12-11T14:15:39.478412239Z 2025-12-11 14:15:39,478 - INFO - 💾 メッセージ保存完了: 2 messages
+2025-12-11T14:15:39.480733766Z 2025-12-11 14:15:39,480 - INFO - 💊 医薬品相談回答処理終了 - フラグクリア完了
+2025-12-11T14:15:39.486909411Z 2025-12-11 14:15:39,486 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (2 messages)
+2025-12-11T14:15:39.494320572Z 2025-12-11 14:15:39,494 - INFO - 📝 Session 1765462440726137270915151248 updated: 2 messages (DB保存完了)
+2025-12-11T14:15:39.494671579Z 2025-12-11 14:15:39,494 - INFO - 📝 Session cookie size reduced - messages only in DB
+2025-12-11T14:15:39.494821982Z 2025-12-11 14:15:39,494 - INFO - 💾 チャット履歴永続化完了: 2 messages
+2025-12-11T14:15:40.375740656Z [2025-12-11 14:15:40 +0000] [55] [CRITICAL] WORKER TIMEOUT (pid:64)
+2025-12-11T14:15:40.376334908Z [2025-12-11 14:15:40 +0000] [64] [INFO] Worker exiting (pid: 64)
+2025-12-11T14:15:40.376518702Z ユーザー入力: 我的陰莖癢
+2025-12-11T14:15:40.376525202Z === 症状分析開始 ===
+2025-12-11T14:15:40.376527402Z 症状文: 我的陰莖癢
+2025-12-11T14:15:40.376529402Z ChatGPT応答: {
+2025-12-11T14:15:40.376531402Z     "symptoms": ["かゆみ"],
+2025-12-11T14:15:40.376533382Z     "medicine_type": "外用薬（皮膚）"
+2025-12-11T14:15:40.376535412Z }
+2025-12-11T14:15:40.376538202Z 解析結果: {'symptoms': ['かゆみ'], 'medicine_type': '外用薬（皮膚）'}
+2025-12-11T14:15:41.178545888Z [2025-12-11 14:15:41 +0000] [55] [ERROR] Worker (pid:64) exited with code 1
+2025-12-11T14:15:41.178567898Z [2025-12-11 14:15:41 +0000] [55] [ERROR] Worker (pid:64) exited with code 1.
+2025-12-11T14:15:41.184936667Z [2025-12-11 14:15:41 +0000] [67] [INFO] Booting worker with pid: 67
+2025-12-11T14:15:43.286557988Z 2025-12-11 14:15:43,286 - WARNING - ⚠️ Connection validation failed: SSL error: decryption failed or bad record mac
+2025-12-11T14:15:43.286576828Z , reconnecting...
+2025-12-11T14:15:43.328559939Z 2025-12-11 14:15:43,328 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)
+2025-12-11T14:15:43.333778434Z 2025-12-11 14:15:43,333 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:15:43.333817125Z 2025-12-11 14:15:43,333 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:15:43.424169675Z 2025-12-11 14:15:43,423 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (2 messages)
+2025-12-11T14:15:43.424510462Z 2025-12-11 14:15:43,424 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765462440726137270915151248)
+2025-12-11T14:15:43.425708356Z 2025-12-11 14:15:43,424 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:15:43.428398961Z 10.25.187.125 - - [11/Dec/2025:14:15:43 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65039 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:15:53.295788768Z 2025-12-11 14:15:53,295 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:15:53.295815378Z 2025-12-11 14:15:53,295 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:15:53.304037735Z 2025-12-11 14:15:53,303 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (2 messages)
+2025-12-11T14:15:53.304143017Z 2025-12-11 14:15:53,304 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765462440726137270915151248)
+2025-12-11T14:15:53.304374102Z 2025-12-11 14:15:53,304 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:15:53.305657258Z 10.25.44.209 - - [11/Dec/2025:14:15:53 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65039 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:16:04.055271709Z 2025-12-11 14:16:04,055 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:16:04.055357251Z 2025-12-11 14:16:04,055 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:16:04.061174429Z 2025-12-11 14:16:04,060 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (2 messages)
+2025-12-11T14:16:04.061204339Z 2025-12-11 14:16:04,061 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765462440726137270915151248)
+2025-12-11T14:16:04.061459494Z 2025-12-11 14:16:04,061 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:16:04.062636538Z 10.24.237.106 - - [11/Dec/2025:14:16:04 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65039 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+2025-12-11T14:16:14.044193184Z 2025-12-11 14:16:14,043 - INFO - 🔍 /api/sessions called - Session ID: 1765462440726137270915151248
+2025-12-11T14:16:14.044228175Z 2025-12-11 14:16:14,044 - INFO - 🔍 ALL_SESSIONS keys: ['1765462440726137270915151248', '1765460101040568888816']
+2025-12-11T14:16:14.049782638Z 2025-12-11 14:16:14,049 - INFO - 🔄 既存セッション更新: 1765462440726137270915151248 (2 messages)
+2025-12-11T14:16:14.049805878Z 2025-12-11 14:16:14,049 - INFO - 📦 /api/sessions - DBから取得: 2 messages (sid=1765462440726137270915151248)
+2025-12-11T14:16:14.050067653Z 2025-12-11 14:16:14,049 - INFO - ✅ /api/sessions レスポンス: 2 messages
+2025-12-11T14:16:14.051232887Z 10.25.231.226 - - [11/Dec/2025:14:16:14 +0000] "GET /api/sessions?v={{%20version%20}} HTTP/1.1" 200 65039 "https://medicine-recommend-system.onrender.com/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
