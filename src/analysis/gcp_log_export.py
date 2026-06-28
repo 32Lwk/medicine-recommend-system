@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, Iterator, List, Optional, Sequence
 
-DEFAULT_PROJECT_ID = "340042923793"
+DEFAULT_PROJECT_ID = "medicine-recommend"
 FRESHNESS_RE = re.compile(r"^(\d+)([dhms])$", re.I)
 
 
@@ -91,7 +92,7 @@ def build_log_filter(
     parts.append(f'timestamp<="{format_timestamp(window_end)}"')
     if extra_filter:
         parts.append(f"({extra_filter.strip()})")
-    return "\n".join(parts)
+    return " AND ".join(parts)
 
 
 def merge_log_entries(chunks: Iterable[Sequence[dict]]) -> List[dict]:
@@ -109,10 +110,21 @@ def merge_log_entries(chunks: Iterable[Sequence[dict]]) -> List[dict]:
     return merged
 
 
+def _gcloud_executable() -> str:
+    path = shutil.which("gcloud")
+    if not path:
+        raise RuntimeError("gcloud CLI not found")
+    return path
+
+
 def resolve_project_id(explicit: Optional[str]) -> str:
     if explicit:
         return explicit
-    cmd = ["gcloud", "config", "get-value", "project"]
+    try:
+        gcloud = _gcloud_executable()
+    except RuntimeError:
+        return DEFAULT_PROJECT_ID
+    cmd = [gcloud, "config", "get-value", "project"]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except FileNotFoundError:
@@ -130,8 +142,12 @@ def fetch_log_entries(
     limit: int,
     order: str = "asc",
 ) -> List[dict]:
+    try:
+        gcloud = _gcloud_executable()
+    except RuntimeError as exc:
+        raise RuntimeError("gcloud CLI not found") from exc
     cmd = [
-        "gcloud",
+        gcloud,
         "logging",
         "read",
         log_filter,
@@ -140,10 +156,7 @@ def fetch_log_entries(
         f"--order={order}",
         f"--limit={limit}",
     ]
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    except FileNotFoundError as exc:
-        raise RuntimeError("gcloud CLI not found") from exc
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         message = (result.stderr or result.stdout or "gcloud logging read failed").strip()
         raise RuntimeError(message)

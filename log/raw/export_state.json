@@ -1,12 +1,12 @@
 {
   "by_service": {
     "medicine-recommend-dev": {
-      "last_start": "2026-06-25T05:05:32Z",
-      "last_end": "2026-06-26T07:40:21Z",
-      "source_path": "/Users/yuto/Programing/medicine-recommend-system/log/raw/downloaded-logs-20260625-20260626-20260626-074021.json",
+      "last_start": "2026-06-26T07:39:51Z",
+      "last_end": "2026-06-27T16:27:35Z",
+      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260626-20260627-20260627-162735.json",
       "source_kind": "export",
-      "entry_count": 41402,
-      "exported_at": "2026-06-26T07:43:33Z"
+      "entry_count": 90877,
+      "exported_at": "2026-06-27T16:32:05Z"
     }
   }
 }
