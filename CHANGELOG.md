@@ -1,6 +1,6 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月28日**（Chat Pipeline v2 Wave 0–4 コード実装・IntentRouter・履歴統合・KPI）（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）
+**最終更新日: 2026年6月28日**（Chat Pipeline v2 Wave 0–4・dev 一括 ON env・IntentRouter・履歴統合・KPI）（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）
 
 ---
 
@@ -8,7 +8,7 @@
 
 ### 概要
 
-**ブランチ `feature/chat-pipeline-v2`** に Web / LINE 共通チャット基盤 v2 を実装。決定権分散（SessionAgent 多重呼び出し・legacy fallback 競合）と履歴注入の散在を `src/dialogue/` へ集約。OTC 推奨本体は **rule_based 維持**。全フラグは **既定 OFF**（カナリア段階投入）。
+**ブランチ `feature/chat-pipeline-v2`** に Web / LINE 共通チャット基盤 v2 を実装。決定権分散（SessionAgent 多重呼び出し・legacy fallback 競合）と履歴注入の散在を `src/dialogue/` へ集約。OTC 推奨本体は **rule_based 維持**。**本番は OFF**、**dev（`APP_ENV=development`）は v2 全機能が一括 ON**。
 
 **実装計画**: [docs/planning/CHAT_PIPELINE_V2_PLAN.md](docs/planning/CHAT_PIPELINE_V2_PLAN.md)（49/54 todo 完了、残 5 件は人手ゲート）
 
@@ -100,6 +100,25 @@
 | `tests/utils/test_correction_detection.py` | 訂正検出 |
 | `tests/services/test_counseling_generator_user_inject.py` | user ターン注入 |
 | `tests/analysis/test_intent_router_log_analysis.py` | dialogue_flags 集計 |
+
+
+### 環境変数 — dev 一括 ON（2026-06-28 追記）
+
+ローカル / GCP dev で **段階フラグ・ALLOWLIST 不要** に v2 全機能を使えるよう `config/llm_flags.py` を変更。
+
+| 環境 | 設定 |
+|------|------|
+| **ローカル** | `.env` の `APP_ENV=development` のみ（`.env.example` 既定） |
+| **GCP dev** | Cloud Run に `APP_ENV=development` |
+| **明示 ON** | `CHAT_PIPELINE_V2=true` 1 変数（IntentRouter / dispatch / LLM までカスケード ON） |
+| **本番** | `APP_ENV=production` + 未設定 = **OFF**（従来どおり） |
+
+- **`config/llm_flags.py`**: `CHAT_PIPELINE_V2=true` 時、サブフラグ未設定 = router / dispatch / LLM すべて ON。development ランタイムでは `CHAT_PIPELINE_V2` 未設定でも v2 全機能有効
+- **`.env.example`**: v2 フラグの dev 向け説明を追記
+- **`scripts/dev_v2_flags.ps1`**: 簡素化（`CHAT_PIPELINE_V2=true` のみ、`-Off` で明示 OFF）
+- **`scripts/cloudrun_v2_env.example`**: `APP_ENV=development` 中心に整理
+- **`docs/dev/CHAT_PIPELINE_V2.md` / `CHAT_PIPELINE_V2_PLAN.md`**: 一括 ON 手順を更新
+- **`tests/dialogue/test_v2_flags.py`**: dev 自動 ON・カスケード・opt-out テスト追加
 
 ### 残タスク（人手ゲート — 5 件）
 
