@@ -3,6 +3,7 @@
 app.logとJSONLファイルの両方に構造化ログを出力する機能を提供
 """
 
+import atexit
 import json
 import os
 import logging
@@ -12,8 +13,9 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# counseling_detail 等の構造化ログは I/O のみ別スレッドで実行（応答パスをブロックしない）
+# counseling_detail の JSONL 書き込みのみ別スレッド（stdout/GCP は同期 — Cloud Run で応答返却後にワーカーが落ちると非同期 emit が欠落する）
 _detail_log_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="detail_log")
+atexit.register(lambda: _detail_log_executor.shutdown(wait=False, cancel_futures=False))
 
 # ログディレクトリのパス
 from src import PROJECT_ROOT
@@ -145,24 +147,33 @@ def log_counseling_detail(
             if val is not None:
                 payload[key] = val
 
-    if async_log:
-        _detail_log_executor.submit(_emit_counseling_detail, payload)
-        return
-    _emit_counseling_detail(payload)
-
-
-def _emit_counseling_detail(log_data: Dict[str, Any]) -> None:
-    """counseling_detail を JSONL + app.log に書き込む（ワーカースレッド可）。"""
+    session_id = payload.get("session_id", "")
     try:
-        _write_to_jsonl("counseling_detail_log.jsonl", log_data)
-        session_id = log_data.get("session_id", "")
+        # GCP Cloud Logging は stdout 経由のため、HTTP 応答前に同期で出す。
         _write_to_app_log(
             "INFO",
             f"カウンセリング詳細ログ [session_id: {session_id}]",
-            log_data,
+            payload,
         )
     except Exception as exc:
-        logger.error("counseling_detail 非同期書き込みエラー: %s", exc)
+        logger.error("counseling_detail app.log 書き込みエラー: %s", exc)
+        raise
+
+    if async_log:
+        _detail_log_executor.submit(
+            _write_counseling_detail_jsonl,
+            payload,
+        )
+        return
+    _write_counseling_detail_jsonl(payload)
+
+
+def _write_counseling_detail_jsonl(log_data: Dict[str, Any]) -> None:
+    """counseling_detail を JSONL に書き込む（ワーカースレッド可）。"""
+    try:
+        _write_to_jsonl("counseling_detail_log.jsonl", log_data)
+    except Exception as exc:
+        logger.error("counseling_detail JSONL 書き込みエラー: %s", exc)
 
 
 def log_medicine_question_detail(
