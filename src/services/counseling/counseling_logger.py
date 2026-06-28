@@ -132,7 +132,6 @@ def log_counseling_response(
         logger.error(f"❌ カウンセリング返信ログ記録エラー: {e}")
 
     if log_counseling_detail and user_input:
-        mark_counseling_detail_logged(session, user_input)
         log_counseling_detail(
             session_id=session_id,
             user_input=user_input,
@@ -141,6 +140,7 @@ def log_counseling_response(
             async_log=True,
             routing_meta=routing_meta,
         )
+        mark_counseling_detail_logged(session, user_input)
 
 
 def maybe_log_turn_counseling_detail(
