@@ -189,9 +189,9 @@ def _handle_inappropriate_from_triage(
             session,
             request_type,
         )
-        from src.services.line_memory_context import get_counseling_conversation_history
+        from src.dialogue.history import resolve_counseling_history_with_fallback
 
-        conversation_history = get_counseling_conversation_history(session, sid)
+        conversation_history = resolve_counseling_history_with_fallback(session, sid)
         initial_response = generate_counseling_response(
             symptom_type,
             user_message,
@@ -207,6 +207,12 @@ def _handle_inappropriate_from_triage(
 
         if start_counseling:
             start_counseling_mode(session, symptom_type, initial_questions)
+            try:
+                from src.dialogue.sync_legacy import mirror_counseling_mode
+
+                mirror_counseling_mode(session, sid)
+            except Exception:
+                pass
         if request_type == "controlled" and counseling_response:
             mark_controlled_drug_counseling_done(session)
 

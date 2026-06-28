@@ -1769,6 +1769,19 @@ def run_recommendation_flow(
                         session.pop('reanalysis_attributes', None)
                     influenza_risk = recommendation_result.get('influenza_risk', False)
                     influenza_reason = recommendation_result.get('influenza_reason', '')
+                    history_block = ""
+                    try:
+                        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+                        if is_chat_pipeline_v2_for_session(sid):
+                            from src.dialogue.history import resolve_physical_history_with_fallback
+                            from src.services.triage_history import format_triage_history_block
+
+                            history_block = format_triage_history_block(
+                                resolve_physical_history_with_fallback(session, sid)
+                            )
+                    except Exception:
+                        pass
                     personalized_advice = generate_personalized_advice(
                         user_attrs,
                         recommended_medicines,
@@ -1778,6 +1791,7 @@ def run_recommendation_flow(
                         influenza_risk=influenza_risk,
                         influenza_reason=influenza_reason,
                         session_id=sid,
+                        conversation_history_block=history_block,
                     )
                     mark_pipeline_step("personalized_advice")
                     if recommended_medicines and sid and not line_session:

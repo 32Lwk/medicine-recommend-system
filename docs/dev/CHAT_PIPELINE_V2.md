@@ -1,0 +1,182 @@
+# Chat Pipeline v2
+
+**ブランチ**: `feature/chat-pipeline-v2`  
+**フラグ**: `CHAT_PIPELINE_V2=false`（デフォルト）
+
+| 環境変数 | 用途 |
+|---------|------|
+| `CHAT_PIPELINE_V2` | グローバル ON/OFF |
+| `CHAT_PIPELINE_V2_ALLOWLIST` | カンマ区切り sid。非空時はリスト内のみ v2 |
+| `CHAT_PIPELINE_V2_DENYLIST` | カンマ区切り sid。v2 から除外（ロールバック） |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER` | Wave 1b shadow ON（要 `CHAT_PIPELINE_V2=true`）。dispatch は旧 pipeline のまま |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | Wave 1b 本線 dispatch ON（要 `INTENT_ROUTER=true`）。`AgentDispatcher` が orchestrator より先に実行 |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | Wave 1b Stage B — gate 未決定時 structured LLM（要 `INTENT_ROUTER=true`） |
+
+| Wave 1a 実装済み | `DialogueContext` / `ContextProvider` / `SessionOps` / `ResponseEnvelope` / pipeline hook / Web SSE・LINE 配信アダプタ |
+| Wave 1b shadow | `src/dialogue/routing/` gate → LLM map → guards。`dialogue_state.routing` に記録のみ |
+| Wave 1b dispatch | `src/dialogue/dispatcher.py` — `try_agent_dispatch` が legacy handler へ委譲。未対応は ChatOrchestrator へ |
+| Wave 1b LLM | `intent_router_llm.py` — structured JSON（`docs/schemas/intent_router_v1.json`）。OFF 時 triage マップのみ |
+| Wave 2 移行 | `sync_legacy.py` — counseling / handoff / pending の dual-write（v2 ON 時） |
+| Wave 2 Concierge | `concierge_context.py` — `dialogue_state.concierge` 優先の last_intent 解決 |
+| Wave 2 履歴 | `history.py` — v2 時 ContextProvider 窓（triage / concierge / counseling） |
+
+---
+
+## 目的
+
+Web / LINE 共通チャット基盤の **決定権分散**（SessionAgent×2、SafetyGate×2、meta_triage、legacy fallback 競合）と **履歴注入の散在** を解消する。OTC 推奨本体は **rule_based 維持**（ハイブリッド方針）。
+
+正解源: [`CHAT_ROUTE_EXPECTATIONS.md`](CHAT_ROUTE_EXPECTATIONS.md) + [`tests/fixtures/expected_v2_diff.yaml`](../../tests/fixtures/expected_v2_diff.yaml)（旧 pipeline 一致は副次）。
+
+---
+
+## パッケージ境界
+
+| パス | 責務 | Wave |
+|------|------|------|
+| `src/dialogue/` | DialogueContext、ContextProvider、SessionOps、ResponseEnvelope、Pipeline v2 hook | 1a–1b |
+| `src/core/` | rule_based 推奨、medicine_logic、スコアリング CSV | 変更最小 |
+| `src/agents/` | 各 Agent 実装（ContextBundle 受け取りへ段階移行） | 2–3 |
+| `src/handlers/chat/` | エントリ（`chat_post_pipeline`）。v2 ON 時のみ `dialogue` へ委譲 | 1a |
+
+**禁止**: `src/dialogue/` から `medicine_logic` の推奨スコアリングを直接呼ばない（Physical Agent 経由）。
+
+---
+
+## フェーズ概要
+
+```
+Pre-P0 (v2 ブランチ先頭, 3–5 営業日)
+  → dev 手動デプロイ + LINE QA 10 項目 (48h SLA)
+Wave 0 (3–4 週): 仕様・シナリオ・schema・ベースライン
+Wave 1a: DialogueContext + ContextProvider + SessionOps + Envelope（category routing は旧 100%）
+Wave 1b: 2 段 IntentRouter (gate → LLM)
+Wave 2–4: Agent 適応、legacy 削除、観測性統一
+```
+
+**CCR ブロッカー**: [`CONCIERGE_CONTEXT_ROUTING_PLAN`](../planning/CONCIERGE_CONTEXT_ROUTING_PLAN_2026-06-27.md) の `concierge_state` 永続化が main/dev マージ完了まで **Wave 1a 開始不可**。
+
+**Pre-P0 ゲート**: [`PRE_P0_LINE_QA_10.md`](../ops/PRE_P0_LINE_QA_10.md) 全 Pass まで Wave 0 本実装（1a コード）着手停止。
+
+---
+
+## Wave 1a スコープ境界（生命線）
+
+### 変更してよいもの
+
+- `src/dialogue/context.py` — load/save、dual-write
+- `src/dialogue/context_provider.py` — agent_kind 別履歴窓
+- `src/dialogue/session_ops.py` — delete / summarize / status（SessionAgent から移行）
+- `src/dialogue/envelope.py` — `delivery_mode`: `sync` | `sse_phased` | `line_chunked`
+- `src/handlers/chat/chat_pipeline_end_guard.py` — fail-loud 連動（Pre-P0 後）
+- `chat_post_pipeline.py` — **SessionOps 差し替え hook のみ**（v2 フラグ ON 時）
+
+### 変更禁止（Wave 1b まで CI fail: `w1a-scope-creep-lint`）
+
+- `chat_triage.py` / `meta_triage.py` / category 分岐
+- `ChatOrchestrator` の dispatch 表
+- `concierge_enrich` の独立経路
+- legacy fallback の削除（Wave 3）
+
+### 正直な期待値
+
+| 領域 | Wave 1a 完了時 | 改善時期 |
+|------|---------------|---------|
+| SessionOps / status / delete | 改善 | 1a |
+| response_missing / end_guard | 改善（Pre-P0 + 1a） | Pre-P0〜1a |
+| Physical / fever routing | 旧 pipeline 維持 | 1b |
+| Counseling / Emotional 文脈 | **弱いまま正常** | Wave 2 |
+| architecture follow-up | CCR 依存、部分改善 | CCR + 2 |
+
+---
+
+## dual-write 読取優先順位
+
+DialogueContext 合成ビュー（Wave 1a）:
+
+1. `session.dialogue_state`（v2 正）
+2. `session.concierge_state`（CCR 移行中）
+3. レガシー: `pending_memory_delete`, `counseling_mode`, `handoff_*` 等
+
+書込: v2 フィールド + レガシー mirror（移行期のみ）。owner 表は [`CHAT_ROUTE_EXPECTATIONS.md`](CHAT_ROUTE_EXPECTATIONS.md) §移行。
+
+---
+
+## ContextProvider override（default 8 ターン）
+
+| agent_kind | max_turns | 備考 |
+|------------|-----------|------|
+| default | 8 | 一般 |
+| session_ops | 6 | 操作意図は直近で足りる |
+| physical | 12 | 症状ヒアリング |
+| counseling | 10 | Wave 2 で 20 へ拡張検討 |
+| concierge | 8 | redirect / architecture |
+| emergency | 4 | 最小遅延 |
+| store | 6 | 店舗意図は短窓 |
+| emotional | 10 | Wave 2 で強化 |
+
+---
+
+## correction 再実行契約
+
+- **1 HTTP POST = 1 パイプライン実行**（再帰 dispatch 禁止）
+- correction 入力時: 直前 bot 応答を **無効化せず**、新 route で上書き応答を返す
+- Agent 別: Physical → 推奨再計算、SessionOps → 意図再分類、Concierge → topic 維持
+
+---
+
+## follow-up 内容 KPI（Wave 0 仕様）
+
+architecture 系 follow-up（例: 「技術面を詳しく」）:
+
+- greeting 禁止（「こんにちは」単独応答は Fail）
+- 技術語彙 1 つ以上（スタック / API / インフラ等）または前ターン topic 明示参照
+
+---
+
+## ベースライン（Wave 0 計測）
+
+**ソース**: `log/analysis/2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md`（medicine-recommend-dev, ~31h）
+
+| KPI | 値 | 備考 |
+|-----|-----|------|
+| counseling_detail 出力率 | **0%**（36/36 turns response_missing） | 最大リスク |
+| end_guard redirect 補完 | 要再計測（script） | Pre-P0 で fail-loud 化 |
+| fast-path 比率 | 要 `measure_pipeline_baseline.py` | triage スキップ集計 |
+| LINE reply_fallback_push | 9 件 / 期間 | token 失効 |
+| 最遅 POST | 49.4s（`頭痛い`） | rule_based + explanation 直列 |
+| session_admin handoff 失敗 | T9/T21 等 | Pre-P0 + 1a 対象 |
+
+再計測: `python scripts/measure_pipeline_baseline.py --log-dir log/analysis/downloaded-logs-20260626-20260627-20260627-162735`
+
+IntentRouter shadow/dispatch: `python scripts/measure_intent_router_shadow.py --json`
+
+dev カナリア（PowerShell）: `. .\scripts\dev_v2_flags.ps1 -Sid "line:YOUR_USER_ID"`（shadow のみ）  
+本線 dispatch: `-Dispatch` / Stage B LLM: `-Llm`  
+契約テスト: `.\scripts\verify_chat_pipeline_v2.ps1`  
+Cloud Run env 例: [`scripts/cloudrun_v2_env.example`](../scripts/cloudrun_v2_env.example)
+
+---
+
+## LINE_IMPROVEMENT 統合
+
+[`LINE_IMPROVEMENT_PLAN_2026-06-27.md`](../planning/LINE_IMPROVEMENT_PLAN_2026-06-27.md) の P0-2〜6 + P1-3,6,7 は **v2 Pre-P0 に統合**。**別 MR 禁止**。
+
+---
+
+## 関連ドキュメント
+
+- [CHAT_ROUTE_EXPECTATIONS.md](CHAT_ROUTE_EXPECTATIONS.md) — 決定権マトリクス・期待 route
+- [ROUTE_SPEC.md](ROUTE_SPEC.md) — HTTP API 仕様
+- [ARCHITECTURE_MULTI_AGENT.md](ARCHITECTURE_MULTI_AGENT.md) — 現行 Agent 構成
+- [schemas/dialogue_context_v1.json](../schemas/dialogue_context_v1.json) — DialogueContext schema
+- [tests/fixtures/route_spec_scenarios.yaml](../../tests/fixtures/route_spec_scenarios.yaml) — 30+ シナリオ
+
+---
+
+## スケジュール（確定）
+
+- Pre-P0: **3–5 営業日**
+- Wave 0: **3–4 週**
+- 全体: 工数 **13–18 週**、カレンダー **約 4–5 ヶ月**
+- Wave 1a 完了時 **1b ゲートレビュー**必須

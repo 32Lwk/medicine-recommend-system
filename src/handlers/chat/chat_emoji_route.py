@@ -196,7 +196,10 @@ def _log_emoji_plain_response(
         return
     try:
         from src.services.counseling.counseling_logger import log_counseling_response
-        from src.services.line_memory_context import get_counseling_conversation_history
+
+        from src.dialogue.history import resolve_counseling_history_with_fallback
+
+        log_hist = resolve_counseling_history_with_fallback(session, sid)
 
         log_counseling_response(
             session_id=sid,
@@ -204,7 +207,7 @@ def _log_emoji_plain_response(
             response_type=response_type,
             category="Concierge",
             user_input=user_message,
-            conversation_history=get_counseling_conversation_history(session, sid),
+            conversation_history=log_hist,
             session=session,
         )
     except Exception as exc:

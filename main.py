@@ -651,7 +651,7 @@ def _render_about_page(
     if page_id == "index":
         # Always use full index bundle + canonical hero (never medicine_recommended on /about).
         bundle = dict(i18n.get_about_bundle("index", lang))
-        bundle["hero_image"] = "img/about/generated/hero-pharmacy-chat.png"
+        bundle["hero_image"] = "img/about/generated/about/hero/hero-pharmacy-chat.png"
         if not (bundle.get("hero_alt") or "").strip():
             bundle["hero_alt"] = i18n.get_about_bundle("index", "ja")["hero_alt"]
         bundle["tech_diagram"] = i18n.build_tech_diagram(lang)

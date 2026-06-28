@@ -122,6 +122,7 @@ def enrich_other_concierge_intent(
         prior_intent = resolve_prior_meta_intent(
             session=session,
             conversation_history=conversation_history,
+            sid=session_id,
         )
         last_bot = resolve_last_bot_message(conversation_history or [])
         follow = infer_prior_meta_follow_up_intent(text, prior_intent, last_bot=last_bot)
@@ -267,6 +268,7 @@ def resolve_intent_from_triage(
     session: Any,
     user_text: str,
     *,
+    sid: Optional[str] = None,
     routing_ctx: Optional[Any] = None,
     alt_texts: Optional[list] = None,
 ) -> Optional[ConciergeIntent]:
@@ -287,10 +289,9 @@ def resolve_intent_from_triage(
         return None
 
     if pre == "chitchat":
-        from src.agents.concierge_agent import get_concierge_state
+        from src.dialogue.concierge_context import resolve_off_topic_turns
 
-        state = get_concierge_state(session)
-        if int(state.get("off_topic_turns") or 0) >= 2:
+        if resolve_off_topic_turns(session, sid) >= 2:
             return "redirect"
     return pre  # type: ignore[return-value]
 

@@ -13,6 +13,15 @@ from src.services.session_manager import get_session_from_db, save_session_to_db
 logger = logging.getLogger(__name__)
 
 
+def _mirror_counseling_if_v2(session, sid) -> None:
+    try:
+        from src.dialogue.sync_legacy import mirror_counseling_mode
+
+        mirror_counseling_mode(session, sid)
+    except Exception:
+        logger.debug("mirror_counseling_mode skipped", exc_info=True)
+
+
 def run_counseling_flow(session, client, sid, user_message, processed_message, triage_result, recommendation_client):
     """
     カウンセリングモードが有効な場合の処理を実行する。
@@ -47,6 +56,7 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         counseling_mode["active"] = False
         session["counseling_mode"] = counseling_mode
         session.modified = True
+        _mirror_counseling_if_v2(session, sid)
         logger.info("🔄 カウンセリングモードを終了: メタ質問のため Concierge に委譲")
         return (None, triage_result)
 
@@ -54,15 +64,16 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         counseling_mode["active"] = False
         session["counseling_mode"] = counseling_mode
         session.modified = True
+        _mirror_counseling_if_v2(session, sid)
         logger.info("🔄 カウンセリングモードを終了: Physicalカテゴリの症状入力のため、通常の医薬品推奨フローに移行")
         return (None, triage_result)
     try:
         from src.services.counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
         from src.services.triage_analytics import log_topic_shift_detection
 
-        from src.services.line_memory_context import get_counseling_conversation_history
+        from src.dialogue.history import resolve_counseling_history_with_fallback
 
-        conversation_history = get_counseling_conversation_history(session, sid)
+        conversation_history = resolve_counseling_history_with_fallback(session, sid)
         response = handle_user_input_in_counseling_mode(
             user_message, session, recommendation_client, session_id=sid
         )
