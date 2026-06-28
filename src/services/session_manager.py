@@ -874,6 +874,8 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
         'last_triage_result',
         '_last_triage_result',
         'pending_memory_delete',
+        'dialogue_state',
+        '_fever_context_active',
     ):
         if flag_key in session:
             payload[flag_key] = session[flag_key]

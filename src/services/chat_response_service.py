@@ -147,6 +147,7 @@ def generate_personalized_advice(
     influenza_risk: bool = False,
     influenza_reason: str = "",
     session_id: Optional[str] = None,
+    conversation_history_block: str = "",
 ) -> str:
     """
     ユーザー属性に基づいた個別アドバイスをChatGPTで生成（インフルエンザリスク対応含む）
@@ -159,6 +160,7 @@ def generate_personalized_advice(
         user_text: ユーザーの入力テキスト
         influenza_risk: インフルエンザリスクの有無
         influenza_reason: インフルエンザリスクの理由
+        conversation_history_block: 直近会話（v2 Physical 窓など）のテキストブロック
 
     Returns:
         個別アドバイステキスト
@@ -205,13 +207,16 @@ def generate_personalized_advice(
     if risk_warnings:
         risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば薬剤師または登録販売者にご相談ください。"
 
+    history_section = ""
+    if conversation_history_block:
+        history_section = f"【直近の会話】\n{conversation_history_block}\n"
+
     prompt = f"""
 あなたは登録販売者です。以下のユーザー情報と推奨医薬品を基に、このユーザーに合わせた個別のアドバイスを100-200字程度で生成してください。
 
 【ユーザーの入力】
 {user_text if user_text else '症状情報なし'}
-
-【ユーザー情報】
+{history_section}【ユーザー情報】
 {attr_summary}
 
 【症状】
@@ -374,10 +379,34 @@ def build_question_response(
         from src.services.line_user_memory import is_line_memory_session
 
         memory_block = ""
-        if is_line_memory_session(sid, session):
-            from src.services.line_memory_context import get_llm_conversation_context
+        try:
+            from config.llm_flags import is_chat_pipeline_v2_for_session
 
-            conversation_history, memory_block = get_llm_conversation_context(session, sid, limit=5)
+            if is_chat_pipeline_v2_for_session(sid):
+                from src.dialogue.history import resolve_conversation_history_with_fallback
+                from src.services.line_memory_context import build_long_term_memory_block
+
+                conversation_history = resolve_conversation_history_with_fallback(
+                    session, sid, agent_kind="default", limit=10
+                )
+                if is_line_memory_session(sid, session):
+                    memory_block = build_long_term_memory_block(session, sid)
+            elif is_line_memory_session(sid, session):
+                from src.services.line_memory_context import get_llm_conversation_context
+
+                conversation_history, memory_block = get_llm_conversation_context(
+                    session, sid, limit=5
+                )
+        except Exception:
+            if is_line_memory_session(sid, session):
+                try:
+                    from src.services.line_memory_context import get_llm_conversation_context
+
+                    conversation_history, memory_block = get_llm_conversation_context(
+                        session, sid, limit=5
+                    )
+                except Exception:
+                    pass
         chat_response = chat_with_medicine_context(
             user_message,
             conversation_history,

@@ -104,15 +104,16 @@ def resolve_prior_meta_intent(
     *,
     session: Any = None,
     conversation_history: Optional[List[Dict[str, Any]]] = None,
+    sid: Optional[str] = None,
 ) -> Optional[str]:
-    """concierge_state.last_intent を優先し、無ければ履歴から直近 intent を返す。"""
+    """dialogue_state / concierge_state.last_intent を優先し、無ければ履歴から返す。"""
     if session is not None:
         try:
-            from src.agents.concierge_agent import get_concierge_state
+            from src.dialogue.concierge_context import resolve_last_intent_for_session
 
-            last = get_concierge_state(session).get("last_intent")
+            last = resolve_last_intent_for_session(session, sid)
             if last:
-                return str(last)
+                return last
         except Exception:
             pass
     if conversation_history:

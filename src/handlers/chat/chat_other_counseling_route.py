@@ -192,9 +192,9 @@ def run_other_unknown_counseling(
         )
 
         symptom_type = "inappropriate_request/unknown"
-        from src.services.line_memory_context import get_counseling_conversation_history
+        from src.dialogue.history import resolve_counseling_history_with_fallback
 
-        conversation_history = get_counseling_conversation_history(session, sid)
+        conversation_history = resolve_counseling_history_with_fallback(session, sid)
         initial_response = generate_counseling_response(
             symptom_type,
             original_user_message,
@@ -218,6 +218,12 @@ def run_other_unknown_counseling(
 
         initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
         start_counseling_mode(session, symptom_type, initial_questions)
+        try:
+            from src.dialogue.sync_legacy import mirror_counseling_mode
+
+            mirror_counseling_mode(session, sid)
+        except Exception:
+            pass
 
         from src.services.sage_bot_response import build_counseling_bot
 

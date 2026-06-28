@@ -11,7 +11,6 @@ from typing import Any, Dict, Optional, Tuple
 from openai import OpenAI
 
 from config.routing_config import triage_confidence_threshold
-from src.services.triage_history import get_recent_messages
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +133,11 @@ def apply_confidence_gate(
     category = triage_result.get("category", "Other")
     confidence = float(triage_result.get("confidence", 1.0))
     threshold = triage_confidence_threshold()
-    history = get_recent_messages(session, sid)
+    from src.dialogue.history import resolve_conversation_history_with_fallback
+
+    history = resolve_conversation_history_with_fallback(
+        session, sid, agent_kind="default"
+    )
     cache_hist = ""
     cache_mem = ""
     try:

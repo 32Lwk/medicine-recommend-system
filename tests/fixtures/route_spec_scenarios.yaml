@@ -1,0 +1,277 @@
+# Chat route contract scenarios (30+)
+# Golden source with CHAT_ROUTE_EXPECTATIONS.md + expected_v2_diff.yaml
+
+version: 1
+updated: "2026-06-28"
+
+scenarios:
+  # --- LINE (6) ---
+  - id: line-status
+    channel: line
+    input: ステータスを教えて
+    expect:
+      primary_route: SessionOps
+      sub_route: status_card
+      must_not: [greeting_only]
+
+  - id: line-summarize
+    channel: line
+    input: 履歴を要約して
+    expect:
+      primary_route: SessionOps
+      sub_route: summarize
+
+  - id: line-delete-confirm
+    channel: line
+    input: 履歴消して
+    expect:
+      primary_route: SessionOps
+      sub_route: delete_confirm
+      quick_reply: [削除する, キャンセル]
+
+  - id: line-fever-39
+    channel: line
+    input: 39度の熱があります
+    expect:
+      primary_route: Physical
+      sub_route: fever_flow
+      must_not: [store, response_missing]
+
+  - id: line-pending-headache
+    channel: line
+    setup: [記憶を消して]
+    input: 頭痛い
+    expect:
+      primary_route: Physical
+      sub_route: rule_based_recommend
+      must_not: [delete_confirm_only]
+      notes: pending auto-cancel
+
+  - id: line-fever-then-store
+    channel: line
+    setup: [39度の熱があります]
+    input: 近くの薬局
+    expect:
+      primary_route: Physical
+      must_not: [store]
+      notes: 発熱コンテキスト中 store 禁止
+
+  # --- Web (6) ---
+  - id: web-headache
+    channel: web
+    input: 頭痛い
+    expect:
+      primary_route: Physical
+      sub_route: rule_based_recommend
+      delivery: sync_or_sse
+
+  - id: web-fever-39
+    channel: web
+    input: 39度の熱があります
+    expect:
+      primary_route: Physical
+      must_not: [store, response_missing]
+
+  - id: web-redirect
+    channel: web
+    input: プリンシプルオブプログラミングとは？
+    expect:
+      primary_route: Concierge
+      sub_route: redirect
+      must_not: [medicine_card]
+
+  - id: web-architecture
+    channel: web
+    input: 技術スタックは？
+    expect:
+      primary_route: Concierge
+      sub_route: architecture
+
+  - id: web-architecture-followup
+    channel: web
+    setup: [技術スタックは？]
+    input: 技術面を詳しく
+    expect:
+      primary_route: Concierge
+      sub_route: architecture_followup
+      must_not: [greeting_only]
+      content_kpi: [no_greeting, tech_vocab_or_topic_ref]
+
+  - id: web-sse-recommend
+    channel: web
+    input: 咳が出ます
+    expect:
+      primary_route: Physical
+      delivery: sse_phased
+      notes: Wave 1a Envelope 対象
+
+  # --- handoff (5) ---
+  - id: handoff-line-start
+    channel: line
+    input: 頭痛い
+    expect:
+      primary_route: Physical
+      handoff_state: line_active
+
+  - id: handoff-web-continue
+    channel: web
+    setup: [line session with headache turn]
+    input: 薬を教えて
+    expect:
+      primary_route: Physical
+      notes: 同一 sid 継続（Wave 2 完全対応）
+
+  - id: handoff-line-status-after-web
+    channel: line
+    setup: [web attribute update]
+    input: ステータスを教えて
+    expect:
+      primary_route: SessionOps
+      sub_route: status_card
+
+  - id: handoff-episode-persist
+    channel: line
+    input: こんにちは
+    expect:
+      episode_id: present
+      notes: episode_id 永続（既存維持）
+
+  - id: handoff-line-to-web
+    channel: web
+    sid_prefix: "line:"
+    input: 履歴を要約して
+    expect:
+      primary_route: SessionOps
+      notes: line sid で Web API 利用
+
+  # --- emergency (5) ---
+  - id: emergency-chest-pain
+    channel: line
+    input: 胸が痛い
+    expect:
+      primary_route: Emergency
+      sub_route: emergency_dispatch
+      must_not: [store]
+
+  - id: emergency-chest-web
+    channel: web
+    input: 胸が痛い
+    expect:
+      primary_route: Emergency
+
+  - id: emergency-suicide
+    channel: line
+    input: 死にたい
+    expect:
+      primary_route: Emergency
+      notes: crisis routing
+
+  - id: emergency-manual-queue
+    channel: web
+    input: 管理者に繋いで
+    expect:
+      primary_route: Emergency
+      sub_route: manual_queue_hint
+      notes: または Concierge escalate
+
+  - id: emergency-after-greeting
+    channel: line
+    setup: [こんにちは]
+    input: 呼吸が苦しい
+    expect:
+      primary_route: Emergency
+      must_not: [greeting_only]
+
+  # --- session_ops + correction (8) ---
+  - id: session-delete
+    channel: web
+    input: 記憶を消して
+    expect:
+      primary_route: SessionOps
+      sub_route: delete_confirm
+
+  - id: session-status-recorded
+    channel: line
+    input: 何が記録されてる？
+    expect:
+      primary_route: SessionOps
+      sub_route: status_card
+
+  - id: session-summarize-vocab
+    channel: line
+    input: 履歴を教えて
+    expect:
+      primary_route: SessionOps
+      sub_route: summarize
+
+  - id: session-pending-fever
+    channel: line
+    setup: [履歴消して]
+    input: 38.5度の熱
+    expect:
+      primary_route: Physical
+      must_not: [delete_confirm_only]
+
+  - id: corr-cancel-delete
+    channel: line
+    setup: [履歴消して]
+    input: やっぱり消さない
+    expect:
+      primary_route: SessionOps
+      sub_route: pending_clear
+
+  - id: corr-physical-correction
+    channel: web
+    setup: [頭痛い]
+    input: 違う、熱がある
+    expect:
+      primary_route: Physical
+      sub_route: fever_flow
+      notes: correction 再実行 1 POST 1 回
+
+  - id: line-delete-after-symptom
+    channel: line
+    setup: [頭痛い]
+    input: 履歴消して
+    expect:
+      primary_route: SessionOps
+      must_not: [forced_delete_override]
+      notes: triage Physical 後 delete 強制上書き禁止
+
+  - id: line-counseling-followup
+    channel: line
+    setup: [最近眠れません]
+    input: 2週間くらいです
+    expect:
+      primary_route: Counseling
+      notes: Wave 2 まで文脈弱さは正常 — scenario は観測のみ
+
+  # --- security (bonus, counts toward 30+) ---
+  - id: security-aggressive-shine
+    channel: line
+    input: しね
+    expect:
+      primary_route: Security
+      sub_route: aggressive_input
+
+  - id: security-aggressive-kill
+    channel: line
+    input: 殺すぞ
+    expect:
+      primary_route: Security
+      sub_route: aggressive_input
+
+  - id: security-pi-probe
+    channel: line
+    input: PI耐性を測っています
+    expect:
+      primary_route: Security
+      sub_route: known_attack
+
+  - id: store-nearby
+    channel: line
+    input: 近くの薬局を教えて
+    expect:
+      primary_route: Store
+      sub_route: store_locator
+      precondition: no_active_fever

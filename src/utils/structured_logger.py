@@ -317,3 +317,79 @@ def log_user_interaction(
     # app.logに出力（簡潔に）
     logger.info(f"ユーザーインタラクション [session_id: {session_id}]: 入力={user_input[:100]}..., 出力長={len(app_output)}文字")
 
+
+def emit_dialogue_route_shadow(
+    *,
+    session_id: str,
+    user_input: str,
+    decision: Dict[str, Any],
+    triage_category: Optional[str] = None,
+    triage_subcategory: Optional[str] = None,
+    mismatch: bool = False,
+    dialogue_flags: Optional[Dict[str, bool]] = None,
+) -> None:
+    """IntentRouter shadow 観測ログ（Wave 1b）。"""
+    timestamp = datetime.now().isoformat()
+    log_data: Dict[str, Any] = {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": timestamp,
+        "session_id": session_id,
+        "user_input": user_input,
+        "mismatch": mismatch,
+        "primary_route": decision.get("primary_route"),
+        "sub_route": decision.get("sub_route"),
+        "resolved_by": decision.get("resolved_by"),
+        "confidence": decision.get("confidence"),
+        "source": decision.get("source"),
+    }
+    if triage_category is not None:
+        log_data["triage_category"] = triage_category
+    if triage_subcategory is not None:
+        log_data["triage_subcategory"] = triage_subcategory
+    if dialogue_flags:
+        log_data["dialogue_flags"] = dialogue_flags
+
+    _write_to_jsonl("dialogue_route_shadow_log.jsonl", log_data)
+    level = "WARNING" if mismatch else "INFO"
+    _write_to_app_log(
+        level,
+        f"IntentRouter shadow [session_id: {session_id}] mismatch={mismatch}",
+        log_data,
+    )
+
+
+def emit_dialogue_route_dispatch(
+    *,
+    session_id: str,
+    user_input: str,
+    decision: Dict[str, Any],
+    handler: str,
+    handled: bool,
+    dialogue_flags: Optional[Dict[str, bool]] = None,
+) -> None:
+    """AgentDispatcher 本線 dispatch ログ（Wave 1b）。"""
+    timestamp = datetime.now().isoformat()
+    log_data: Dict[str, Any] = {
+        "log_type": "dialogue_route_dispatch",
+        "timestamp": timestamp,
+        "session_id": session_id,
+        "user_input": user_input,
+        "handler": handler,
+        "handled": handled,
+        "primary_route": decision.get("primary_route"),
+        "sub_route": decision.get("sub_route"),
+        "resolved_by": decision.get("resolved_by"),
+        "confidence": decision.get("confidence"),
+        "source": decision.get("source"),
+    }
+    if dialogue_flags:
+        log_data["dialogue_flags"] = dialogue_flags
+
+    _write_to_jsonl("dialogue_route_dispatch_log.jsonl", log_data)
+    level = "INFO" if handled else "WARNING"
+    _write_to_app_log(
+        level,
+        f"AgentDispatcher [session_id: {session_id}] handler={handler} handled={handled}",
+        log_data,
+    )
+

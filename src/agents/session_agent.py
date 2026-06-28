@@ -32,11 +32,14 @@ _STATUS_HINTS = (
     r"今の状態",
     r"セッション.*状態",
     r"記憶.*状態",
+    r"何が記録",
+    r"記録.*教えて",
 )
 
 _SUMMARIZE_HINTS = (
     r"履歴を要約",
     r"履歴要約",
+    r"履歴を教えて",
     r"相談履歴",
     r"これまでの相談",
     r"会話を要約",
@@ -130,7 +133,22 @@ def _is_delete_confirm_yes(text: str) -> bool:
 
 
 def _is_delete_confirm_no(text: str) -> bool:
-    return _normalize_confirm(text) in _DELETE_CONFIRM_NO
+    norm = _normalize_confirm(text)
+    if norm in _DELETE_CONFIRM_NO:
+        return True
+    cancel_patterns = (
+        r"消さない",
+        r"消すのはやめ",
+        r"削除しない",
+        r"削除.*やめ",
+        r"やっぱり.*やめ",
+    )
+    return any(re.search(pat, norm) for pat in cancel_patterns)
+
+
+def is_pending_delete_cancel(text: str) -> bool:
+    """pending_memory_delete 確認中のキャンセル発話。"""
+    return _is_delete_confirm_no(text)
 
 
 def _persist_session_messages(
@@ -188,6 +206,74 @@ def _build_bot(
     )
 
 
+def _clear_pending_memory_delete(session: Any, sid: str | None) -> None:
+    session.pop("pending_memory_delete", None)
+    try:
+        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+        if is_chat_pipeline_v2_for_session(sid):
+            from src.dialogue.context import load_dialogue_context, save_dialogue_context
+
+            ctx = load_dialogue_context(session)
+            pending = ctx.get("pending") or {}
+            pending.pop("session_delete", None)
+            ctx["pending"] = pending
+            save_dialogue_context(session, ctx)
+    except Exception:
+        logger.debug("dialogue_state pending clear skipped sid=%s", sid, exc_info=True)
+    try:
+        from src.services.session_manager import get_session_from_db, save_session_to_db
+
+        if sid:
+            data = get_session_from_db(sid) or {"session_id": sid}
+            data.pop("pending_memory_delete", None)
+            save_session_to_db(sid, data)
+    except Exception:
+        logger.warning("SessionAgent clear pending failed sid=%s", sid, exc_info=True)
+
+
+def _pending_cancelled_by_medical_priority(
+    user_text: str,
+    *,
+    triage_result: dict[str, Any] | None = None,
+) -> bool:
+    """削除確認待ち中に Physical/Emergency 症状が来たら pending を解消する。"""
+    triage = triage_result or {}
+    category = str(triage.get("category") or "")
+    if category in ("Physical", "Emergency"):
+        from config.routing_config import triage_confidence_threshold
+
+        if float(triage.get("confidence") or 0.0) >= triage_confidence_threshold():
+            return True
+    from src.utils.input_helpers import has_explicit_symptom_signal, has_fever_signal
+
+    text = (user_text or "").strip()
+    if has_fever_signal(text) or has_explicit_symptom_signal(text):
+        return True
+    return False
+
+
+def _delete_plan_for_intent(
+    user_text: str,
+    client: Any,
+    *,
+    triage_result: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """削除意図に対する plan。triage Physical 等では delete を強制しない。"""
+    plan = classify_memory_delete_intent(user_text, client)
+    if plan.get("is_delete_request"):
+        return plan
+
+    session_intent = str((triage_result or {}).get("session_intent") or "").lower()
+    if session_intent == "delete":
+        return {"is_delete_request": True, "scope": "all"}
+
+    if _looks_like_delete_request(user_text) or _matches_any(user_text, _SESSION_ADMIN_LOOSE_DELETE):
+        return {"is_delete_request": True, "scope": "all"}
+
+    return None
+
+
 def _handle_delete_confirm(
     session: Any,
     sid: str | None,
@@ -199,7 +285,7 @@ def _handle_delete_confirm(
     from src.utils.agent_trace import log_agent_step
 
     if _is_delete_confirm_no(user_text):
-        session.pop("pending_memory_delete", None)
+        _clear_pending_memory_delete(session, sid)
         msg = "削除はキャンセルしました。記憶はそのまま残しています。"
         sage_diag = build_notice_status(
             msg,
@@ -212,7 +298,10 @@ def _handle_delete_confirm(
         return _ok_response(session)
 
     if not _is_delete_confirm_yes(user_text):
-        msg = "削除する場合は「はい」、やめる場合は「いいえ」とお送りください。"
+        msg = (
+            "削除する場合は「削除する」、やめる場合は「キャンセル」とお送りください。"
+            "（「はい」「いいえ」でも受け付けます）"
+        )
         sage_diag = build_notice_status(
             msg,
             title="記憶の削除（確認）",
@@ -265,7 +354,7 @@ def _request_delete_confirmation(
     session["pending_memory_delete"] = {"scope": "all", "owner": owner}
     msg = (
         "保存している相談記憶・プロファイル・要約をすべて削除します。"
-        "よろしければ「はい」、やめる場合は「いいえ」とお送りください。"
+        "よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。"
     )
     sage_diag = build_notice_status(
         msg,
@@ -408,6 +497,26 @@ def try_handle_session_request(
         return None
 
     if session.get("pending_memory_delete"):
+        if _pending_cancelled_by_medical_priority(
+            user_text,
+            triage_result=triage_result,
+        ):
+            _clear_pending_memory_delete(session, sid)
+            try:
+                from src.dialogue.sync_legacy import mirror_pending_medical_cancel
+
+                mirror_pending_medical_cancel(session, sid)
+            except Exception:
+                logger.debug(
+                    "SessionAgent: mirror_pending_medical_cancel skipped sid=%s",
+                    sid,
+                    exc_info=True,
+                )
+            logger.info(
+                "SessionAgent: pending delete cancelled for medical priority sid=%s",
+                sid,
+            )
+            return None
         return _handle_delete_confirm(session, sid, user_text, owner)
 
     intent = classify_session_intent(user_text, triage_result=triage_result)
@@ -415,10 +524,11 @@ def try_handle_session_request(
         return None
 
     if intent == "delete":
-        plan = classify_memory_delete_intent(user_text, client)
-        if not plan.get("is_delete_request") and triage_result:
-            plan = {"is_delete_request": True, "scope": "all"}
-        if not plan.get("is_delete_request"):
+        triage_cat = str((triage_result or {}).get("category") or "")
+        if triage_cat in ("Physical", "Emergency"):
+            return None
+        plan = _delete_plan_for_intent(user_text, client, triage_result=triage_result)
+        if not plan:
             return None
         return _request_delete_confirmation(session, sid, user_text, owner)
 

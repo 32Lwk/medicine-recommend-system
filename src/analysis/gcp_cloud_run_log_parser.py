@@ -621,6 +621,19 @@ def extract_chat_flow(entries: Sequence[LogEntry], *, max_traces: int = 60) -> D
     }
 
 
+def extract_intent_router_logs(entries: Sequence[LogEntry]) -> Dict[str, Any]:
+    """dialogue_route_shadow / dialogue_route_dispatch 構造化ログを抽出。"""
+    from src.analysis.intent_router_log_analysis import measure_intent_router_logs
+
+    rows = [
+        obj
+        for obj in _extract_multiline_json_objects(entries)
+        if obj.get("log_type") in ("dialogue_route_shadow", "dialogue_route_dispatch")
+    ]
+    metrics = measure_intent_router_logs(rows)
+    return {"rows": rows, **metrics}
+
+
 def extract_user_sessions(
     entries: Sequence[LogEntry],
     *,
@@ -657,6 +670,7 @@ def extract_user_sessions(
     )
     rec_events = extract_physical_recommendation_events(entries)
     session_data = attach_physical_recommendation_context(session_data, rec_events)
+    intent_router = extract_intent_router_logs(entries)
 
     return {
         "counseling_detail_count": total_counseling,
@@ -668,6 +682,7 @@ def extract_user_sessions(
         "intent_mismatches": session_data.get("intent_mismatches") or [],
         "intent_review_queue": session_data.get("intent_mismatches") or [],
         "sessions_by_grade": session_data.get("sessions_by_grade") or {},
+        "intent_router": intent_router,
     }
 
 
