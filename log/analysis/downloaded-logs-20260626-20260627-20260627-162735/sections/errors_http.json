@@ -1,0 +1,212 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 2,
+    "by_status": {
+      "405": 1,
+      "503": 1
+    },
+    "by_path": {
+      "PATCH /api/sessions/activity (503)": 1,
+      "GET /line/webhook (405)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "POST /line/webhook": {
+        "count": 50,
+        "min": 0.002,
+        "max": 15.347,
+        "avg": 1.17,
+        "median": 0.369,
+        "p95": 13.179
+      },
+      "GET /admin/login": {
+        "count": 1,
+        "min": 14.238,
+        "max": 14.238,
+        "avg": 14.238,
+        "median": 14.238,
+        "p95": 14.238
+      },
+      "POST /api/chat/stream": {
+        "count": 1,
+        "min": 11.137,
+        "max": 11.137,
+        "avg": 11.137,
+        "median": 11.137,
+        "p95": 11.137
+      },
+      "GET /api/main_sessions": {
+        "count": 33,
+        "min": 0.606,
+        "max": 6.562,
+        "avg": 1.345,
+        "median": 0.829,
+        "p95": 2.087
+      },
+      "POST /api/admin/sessions/line%3AU20a3beee49563dcd07bb3dd0fc1ca32c/line_memory/backfill": {
+        "count": 1,
+        "min": 7.025,
+        "max": 7.025,
+        "avg": 7.025,
+        "median": 7.025,
+        "p95": 7.025
+      },
+      "GET /line/webhook": {
+        "count": 1,
+        "min": 14.618,
+        "max": 14.618,
+        "avg": 14.618,
+        "median": 14.618,
+        "p95": 14.618
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-06-26T21:51:47.279732Z",
+        "status": 503,
+        "method": "PATCH",
+        "path": "/api/sessions/activity",
+        "latency_s": 0.587001623,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00133-tl7",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-06-27T14:13:53.701893Z",
+        "status": 405,
+        "method": "GET",
+        "path": "/line/webhook",
+        "latency_s": 14.618303149,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00136-tjd",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 16,
+    "top_patterns": [
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.f",
+        "count": 6
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 68, in _post_json\n    response = ",
+        "count": 3
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 92, in get_json\n    response = aw",
+        "count": 3
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/counseling/counseling_processor.py\", line 406, in process_c",
+        "count": 2
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/chat/chat_recommendation_flow.py\", line 1022, in run_recomm",
+        "count": 1
+      },
+      {
+        "message": "The request failed because either the HTTP response was malformed or connection to the instance had an error. Additional",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-06-26T18:59:58.496940Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 68, in _post_json\n    response = await client.post(url, headers=hdrs, json=payload)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1892, in post\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:00:21.654752Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/chat/chat_recommendation_flow.py\", line 1022, in run_recommendation_flow\n    symptom_data = SYMPTOM_DICTIONARY.get(symptom_name)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unhashable type: 'dict'",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:01:00.379546Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 68, in _post_json\n    response = await client.post(url, headers=hdrs, json=payload)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1892, in post\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:01:28.633979Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 92, in get_json\n    response = await client.get(url, headers=hdrs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1801, in get\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send(request, auth=auth, follow_redir",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:01:58.893723Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 92, in get_json\n    response = await client.get(url, headers=hdrs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1801, in get\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send(request, auth=auth, follow_redir",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.657537Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.670688Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.671999Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.673333Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.674521Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:23.675994Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1114, in emit\n    self.flush()\n  File \"/usr/local/lib/python3.11/logging/__init__.py\", line 1094, in flush\n    self.stream.flush()\nRuntimeError: reentrant call inside <_io.BufferedWriter name='/app/log/app.log'>",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T19:02:28.456307Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 92, in get_json\n    response = await client.get(url, headers=hdrs)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1801, in get\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send(request, auth=auth, follow_redir",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-26T21:51:47.279732Z",
+        "severity": "ERROR",
+        "message": "The request failed because either the HTTP response was malformed or connection to the instance had an error. Additional troubleshooting documentation can be found at: https://cloud.google.com/run/docs/troubleshooting#malformed-response-or-connection-error",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-27T02:42:51.581182Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/handlers/line/line_reply.py\", line 68, in _post_json\n    response = await client.post(url, headers=hdrs, json=payload)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1892, in post\n    return await self.request(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_client.py\", line 1574, in request\n    return await self.send",
+        "revision": "medicine-recommend-dev-00133-tl7"
+      },
+      {
+        "timestamp": "2026-06-27T04:04:18.053864Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/counseling/counseling_processor.py\", line 406, in process_counseling_answer\n    question_decision = should_ask_question(\n                        ^^^^^^^^^^^^^^^^^^^\nNameError: name 'should_ask_question' is not defined",
+        "revision": "medicine-recommend-dev-00136-tjd"
+      },
+      {
+        "timestamp": "2026-06-27T04:47:28.636327Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/counseling/counseling_processor.py\", line 406, in process_counseling_answer\n    question_decision = should_ask_question(\n                        ^^^^^^^^^^^^^^^^^^^\nNameError: name 'should_ask_question' is not defined",
+        "revision": "medicine-recommend-dev-00136-tjd"
+      }
+    ]
+  }
+}
