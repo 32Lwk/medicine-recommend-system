@@ -1,16 +1,28 @@
 # Chat Pipeline v2
 
 **ブランチ**: `feature/chat-pipeline-v2`  
-**フラグ**: `CHAT_PIPELINE_V2=false`（デフォルト）
+**フラグ**: 本番 `APP_ENV=production` では **OFF**。ローカル / GCP dev（`APP_ENV=development`）では **未設定でも v2 全機能有効**。
+
+### 一括 ON（dev 推奨 — 追加 env 不要）
+
+| 環境 | 設定 |
+|------|------|
+| ローカル | `.env` に `APP_ENV=development`（`.env.example` 既定）のみで OK |
+| GCP dev | Cloud Run に `APP_ENV=development` |
+| 明示 ON | `CHAT_PIPELINE_V2=true` 1 変数（router / dispatch / LLM までカスケード ON） |
+
+`CHAT_PIPELINE_V2=true` 時、サブフラグ未設定 = **IntentRouter + dispatch + LLM すべて ON**。ALLOWLIST 不要（全セッション v2）。
+
+### 環境変数一覧
 
 | 環境変数 | 用途 |
 |---------|------|
-| `CHAT_PIPELINE_V2` | グローバル ON/OFF |
-| `CHAT_PIPELINE_V2_ALLOWLIST` | カンマ区切り sid。非空時はリスト内のみ v2 |
-| `CHAT_PIPELINE_V2_DENYLIST` | カンマ区切り sid。v2 から除外（ロールバック） |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER` | Wave 1b shadow ON（要 `CHAT_PIPELINE_V2=true`）。dispatch は旧 pipeline のまま |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | Wave 1b 本線 dispatch ON（要 `INTENT_ROUTER=true`）。`AgentDispatcher` が orchestrator より先に実行 |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | Wave 1b Stage B — gate 未決定時 structured LLM（要 `INTENT_ROUTER=true`） |
+| `CHAT_PIPELINE_V2` | グローバル ON/OFF。dev 未設定時は development ランタイムで自動 ON |
+| `CHAT_PIPELINE_V2_ALLOWLIST` | （本番カナリア用）非空時はリスト内 sid のみ v2 |
+| `CHAT_PIPELINE_V2_DENYLIST` | 一致 sid を v2 から除外 |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER` | 既定 ON。`false` で router 全体 OFF |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | 既定 ON。`false` で shadow のみ（旧 orchestrator dispatch） |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | 既定 ON。`false` で gate/triage のみ |
 
 | Wave 1a 実装済み | `DialogueContext` / `ContextProvider` / `SessionOps` / `ResponseEnvelope` / pipeline hook / Web SSE・LINE 配信アダプタ |
 | Wave 1b shadow | `src/dialogue/routing/` gate → LLM map → guards。`dialogue_state.routing` に記録のみ |

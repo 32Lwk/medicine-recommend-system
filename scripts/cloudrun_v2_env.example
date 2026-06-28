@@ -1,9 +1,17 @@
-# Cloud Run / ローカル — Chat Pipeline v2 環境変数例
-# dev カナリア: ALLOWLIST で sid を限定すること
+# Cloud Run dev — Chat Pipeline v2 一括 ON
+# APP_ENV=development なら CHAT_PIPELINE_V2 未設定でも v2 全機能有効。
+# 本番 (APP_ENV=production) では CHAT_PIPELINE_V2 未設定 = OFF。
 
-CHAT_PIPELINE_V2=true
-CHAT_PIPELINE_V2_ALLOWLIST=line:YOUR_LINE_USER_ID
-CHAT_PIPELINE_V2_INTENT_ROUTER=true
-# CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH=true
-# CHAT_PIPELINE_V2_INTENT_ROUTER_LLM=true
+APP_ENV=development
+
+# 明示 ON（dev 自動 ON と同等。本番カナリア時のみ使用）
+# CHAT_PIPELINE_V2=true
+
+# 本番カナリア用（通常 dev では不要）
+# CHAT_PIPELINE_V2_ALLOWLIST=line:YOUR_LINE_USER_ID
 # CHAT_PIPELINE_V2_DENYLIST=line:ROLLBACK_USER_ID
+
+# 段階的 OFF（v2 は ON のまま一部だけ無効化する場合）
+# CHAT_PIPELINE_V2_INTENT_ROUTER=false
+# CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH=false
+# CHAT_PIPELINE_V2_INTENT_ROUTER_LLM=false

@@ -39,13 +39,40 @@ def get_canary_percent() -> int:
         return 0
 
 
+def _is_pytest_running() -> bool:
+    """pytest 実行中は dev 自動 ON を抑止（既存テストの v2 OFF 前提を維持）。"""
+    return bool(os.getenv("PYTEST_CURRENT_TEST"))
+
+
 def is_chat_pipeline_v2_enabled() -> bool:
     """
     Chat Pipeline v2 キルスイッチ（Web / LINE 共通）。
-    OFF（デフォルト）: 現行 chat_post_pipeline 経路。
-    ON: src/dialogue/ 経路（Wave 1a 以降で段階的に有効化）。
+    - 明示 true/false → その値
+    - 未設定 + 開発ランタイム（APP_ENV=development 等）→ True（ローカル / GCP dev 一括 ON）
+    - 未設定 + 本番 → False
+    ON 時は IntentRouter / dispatch / LLM も未設定ならすべて True（段階フラグ不要）。
     """
-    return _flag("CHAT_PIPELINE_V2", False)
+    val = os.getenv("CHAT_PIPELINE_V2")
+    if val is not None:
+        return _flag("CHAT_PIPELINE_V2", False)
+    if _is_pytest_running():
+        return False
+    from config.app_config import is_development_runtime
+
+    return is_development_runtime()
+
+
+def _v2_subflag_enabled(name: str) -> bool:
+    """
+    v2 サブフラグ。CHAT_PIPELINE_V2 有効時は未設定なら True（一括 ON）。
+    明示 false で個別 OFF（本番カナリア用）。
+    """
+    if not is_chat_pipeline_v2_enabled():
+        return False
+    val = os.getenv(name)
+    if val is None:
+        return True
+    return val.strip().lower() in ("1", "true", "yes", "on")
 
 
 def _parse_sid_list(env_name: str) -> frozenset[str]:
@@ -76,31 +103,29 @@ def is_chat_pipeline_v2_for_session(sid: str | None) -> bool:
 
 def is_intent_router_v2_enabled(sid: str | None = None) -> bool:
     """
-    Wave 1b IntentRouter shadow / 将来 dispatch 切替。
-    CHAT_PIPELINE_V2_INTENT_ROUTER=true かつ v2 セッション有効時のみ。
+    Wave 1b IntentRouter。
+    v2 有効時は既定 ON。CHAT_PIPELINE_V2_INTENT_ROUTER=false で shadow のみ / OFF。
     """
     if not is_chat_pipeline_v2_for_session(sid):
         return False
-    return _flag("CHAT_PIPELINE_V2_INTENT_ROUTER", False)
+    return _v2_subflag_enabled("CHAT_PIPELINE_V2_INTENT_ROUTER")
 
 
 def is_intent_router_dispatch_enabled(sid: str | None = None) -> bool:
     """
-    Wave 1b IntentRouter 本線 dispatch（要 shadow フラグ群）。
-    CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH=true かつ INTENT_ROUTER 有効時のみ。
-    OFF 時は shadow 記録のみで ChatOrchestrator が dispatch。
+    Wave 1b IntentRouter 本線 dispatch。
+    v2 + router 有効時は既定 ON。CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH=false で shadow のみ。
     """
     if not is_intent_router_v2_enabled(sid):
         return False
-    return _flag("CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH", False)
+    return _v2_subflag_enabled("CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH")
 
 
 def is_intent_router_llm_enabled(sid: str | None = None) -> bool:
     """
     Wave 1b Stage B — structured LLM IntentRouter。
-    CHAT_PIPELINE_V2_INTENT_ROUTER_LLM=true かつ INTENT_ROUTER 有効時のみ。
-    OFF 時は triage マップのみ（現行 shadow 互換）。
+    v2 + router 有効時は既定 ON。CHAT_PIPELINE_V2_INTENT_ROUTER_LLM=false で gate/triage のみ。
     """
     if not is_intent_router_v2_enabled(sid):
         return False
-    return _flag("CHAT_PIPELINE_V2_INTENT_ROUTER_LLM", False)
+    return _v2_subflag_enabled("CHAT_PIPELINE_V2_INTENT_ROUTER_LLM")

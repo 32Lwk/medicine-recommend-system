@@ -85,18 +85,20 @@ CI: `scripts/check_w1a_scope.py`（w1a-scope-creep-lint）
 
 ---
 
-## 環境変数（すべて既定 OFF）
+## 環境変数
+
+**dev（ローカル / GCP dev）**: `APP_ENV=development` のみで v2 全機能有効。ALLOWLIST・段階フラグ不要。
+
+**本番**: `APP_ENV=production` + `CHAT_PIPELINE_V2` 未設定 = OFF。投入時は `CHAT_PIPELINE_V2=true`（サブフラグはカスケード ON）。
 
 | 変数 | 用途 |
 |------|------|
-| `CHAT_PIPELINE_V2` | グローバル ON/OFF |
-| `CHAT_PIPELINE_V2_ALLOWLIST` / `DENYLIST` | セッション単位カナリア |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER` | Wave 1b shadow |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | 本線 dispatch |
-| `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | Stage B structured LLM |
+| `CHAT_PIPELINE_V2` | グローバル ON/OFF（dev 未設定時は development で自動 ON） |
+| `CHAT_PIPELINE_V2_ALLOWLIST` / `DENYLIST` | 本番カナリア用（dev では不要） |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER` 等 | 既定 ON。`false` で個別 OFF |
 
-dev カナリア: `scripts/dev_v2_flags.ps1`  
-契約テスト: `scripts/verify_chat_pipeline_v2.ps1`
+dev 補助: `scripts/dev_v2_flags.ps1`（`-Off` で明示 OFF）  
+Cloud Run 例: `scripts/cloudrun_v2_env.example`
 
 ---
 
