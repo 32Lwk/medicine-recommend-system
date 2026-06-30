@@ -1,0 +1,970 @@
+{
+  "meta": {
+    "date": "2026-06-30",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-30T04:54:23.691525+00:00",
+    "elapsed_sec": 1934.1,
+    "scenario_count": 106,
+    "total_turns": 370,
+    "auto_pass": 74,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "session-ops-01",
+      "session_id": "1782795263715876768139",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-02",
+      "session_id": "1782795263980852412073",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-03",
+      "session_id": "1782795264242752450914",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-04",
+      "session_id": "1782795264503293777096",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-05",
+      "session_id": "1782795264764894431147",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-06",
+      "session_id": "1782795269417928626576",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-07",
+      "session_id": "1782795273124653996076",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-08",
+      "session_id": "1782795278734915860012",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-09",
+      "session_id": "1782795278997002435297",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-10",
+      "session_id": "1782795279258710307192",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-11",
+      "session_id": "1782795279520299912219",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "session-ops-12",
+      "session_id": "1782795285139297956549",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-01",
+      "session_id": "1782795285401800914369",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-02",
+      "session_id": "1782795289211536135567",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-03",
+      "session_id": "1782795292947625748748",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-04",
+      "session_id": "1782795296698094578895",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-05",
+      "session_id": "1782795300614746942059",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-06",
+      "session_id": "1782795304495264210687",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-07",
+      "session_id": "1782795308213850849452",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-08",
+      "session_id": "1782795312169269310232",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-09",
+      "session_id": "1782795315909923695098",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-10",
+      "session_id": "1782795319985589529492",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-11",
+      "session_id": "1782795323667026368228",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-12",
+      "session_id": "1782795327482829613338",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-13",
+      "session_id": "1782795331193683565965",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-14",
+      "session_id": "1782795334958975154332",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-15",
+      "session_id": "1782795338730875572046",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-16",
+      "session_id": "1782795344016514483456",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-17",
+      "session_id": "1782795347706886587606",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-18",
+      "session_id": "1782795351567305214609",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-01",
+      "session_id": "1782795355208732312387",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-02",
+      "session_id": "1782795359125438799603",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-03",
+      "session_id": "1782795362898567647275",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-04",
+      "session_id": "1782795366797478225611",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-05",
+      "session_id": "1782795370519825420736",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-06",
+      "session_id": "1782795374408076616661",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-07",
+      "session_id": "1782795378395884735980",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-08",
+      "session_id": "1782795381965528211749",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-09",
+      "session_id": "1782795385658747923804",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-fever-10",
+      "session_id": "1782795389454703301188",
+      "category": "physical_fever",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-01",
+      "session_id": "1782795393195820603088",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-02",
+      "session_id": "1782795395295062374585",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-03",
+      "session_id": "1782795400946776229523",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-04",
+      "session_id": "1782795403018039573278",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-05",
+      "session_id": "1782795406963432651145",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-06",
+      "session_id": "1782795412282898360072",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-07",
+      "session_id": "1782795412542132426559",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-08",
+      "session_id": "1782795417923740503297",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-09",
+      "session_id": "1782795421942547978701",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-10",
+      "session_id": "1782795427475821798829",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-11",
+      "session_id": "1782795433219953286358",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-12",
+      "session_id": "1782795438687235871763",
+      "category": "concierge",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-01",
+      "session_id": "1782795444387265415180",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-02",
+      "session_id": "1782795455301885289206",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-03",
+      "session_id": "1782795466348712412414",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-04",
+      "session_id": "1782795473633192476695",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-05",
+      "session_id": "1782795482748288692296",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-06",
+      "session_id": "1782795488517632680475",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-07",
+      "session_id": "1782795499723729486251",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "concierge-followup-08",
+      "session_id": "1782795509358293375108",
+      "category": "concierge_followup",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-01",
+      "session_id": "1782795520828371648285",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-02",
+      "session_id": "1782795532089179229919",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-03",
+      "session_id": "1782795543123981159852",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-04",
+      "session_id": "1782795554114651777370",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-05",
+      "session_id": "1782795565087414151151",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-06",
+      "session_id": "1782795575993808261382",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-07",
+      "session_id": "1782795585195070246089",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-08",
+      "session_id": "1782795596012999975764",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-09",
+      "session_id": "1782795607125464169475",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-10",
+      "session_id": "1782795618001563778318",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-11",
+      "session_id": "1782795629322280665219",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "counseling-ctx-12",
+      "session_id": "1782795638720589630616",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-01",
+      "session_id": "1782795649550506753444",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-02",
+      "session_id": "1782795660582011382386",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-03",
+      "session_id": "1782795671642501235303",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-04",
+      "session_id": "1782795679281263509469",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-05",
+      "session_id": "1782795687045395138017",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-06",
+      "session_id": "1782795692950006173098",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-07",
+      "session_id": "1782795703897643396334",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-08",
+      "session_id": "1782795711512193316521",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-09",
+      "session_id": "1782795715601110237969",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "correction-10",
+      "session_id": "1782795719500175165327",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-01",
+      "session_id": "1782795726927305450875",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-02",
+      "session_id": "1782795727194260247673",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-03",
+      "session_id": "1782795730963468721153",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-04",
+      "session_id": "1782795731224629931006",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-05",
+      "session_id": "1782795731492802731757",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-06",
+      "session_id": "1782795731761134208653",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-07",
+      "session_id": "1782795737451779138443",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "emergency-08",
+      "session_id": "1782795743291620135887",
+      "category": "emergency",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-01",
+      "session_id": "1782795743558562199484",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-02",
+      "session_id": "1782795747504701475394",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-03",
+      "session_id": "1782795751292360606210",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-04",
+      "session_id": "1782795756874649643931",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-05",
+      "session_id": "1782795762616679438663",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "store-06",
+      "session_id": "1782795768041070172299",
+      "category": "store",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "security-01",
+      "session_id": "1782795771991445809233",
+      "category": "security",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "security-02",
+      "session_id": "1782795772249656715929",
+      "category": "security",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "security-03",
+      "session_id": "1782795772509012222059",
+      "category": "security",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "security-04",
+      "session_id": "1782795772767427271437",
+      "category": "security",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-physical-headache",
+      "session_id": "1782795773032181325179",
+      "category": "physical",
+      "persona_id": "physical-headache",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-anxious-parent-fever",
+      "session_id": "1782796006159518210733",
+      "category": "physical_fever",
+      "persona_id": "anxious-parent-fever",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-tech-curious",
+      "session_id": "1782796244898621705628",
+      "category": "concierge",
+      "persona_id": "tech-curious",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-line-memory-user",
+      "session_id": "1782796484886993643166",
+      "category": "session_ops",
+      "persona_id": "line-memory-user",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-correction-user",
+      "session_id": "1782796723088895628753",
+      "category": "correction",
+      "persona_id": "correction-user",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-counseling-insomnia",
+      "session_id": "1782796960511771776409",
+      "category": "counseling_context",
+      "persona_id": "counseling-insomnia",
+      "turns": 40,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

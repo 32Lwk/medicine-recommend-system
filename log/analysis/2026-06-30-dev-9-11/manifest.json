@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-07-01T00:28:38",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\metadata.json",
+  "sections": {
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {
+    "1782805521537902706377": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805521537902706377.md",
+    "1782807339088497318100": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782807339088497318100.md",
+    "1782805458833392231257": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805458833392231257.md",
+    "1782805461108842142615": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805461108842142615.md",
+    "1782803879041294993639": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782803879041294993639.md",
+    "1782803971852814141598": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782803971852814141598.md",
+    "1782804269020726411823": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782804269020726411823.md",
+    "1782805140322702824048": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805140322702824048.md",
+    "1782803626881423182981": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782803626881423182981.md",
+    "1782803701223065130102": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782803701223065130102.md",
+    "1782803974796973395581": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782803974796973395581.md",
+    "1782804271141452941458": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782804271141452941458.md",
+    "1782805135584965823175": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805135584965823175.md",
+    "1782805339008060878332": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805339008060878332.md",
+    "1782805340507892908343": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805340507892908343.md",
+    "1782805357301709128384": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805357301709128384.md",
+    "1782805359406352384977": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805359406352384977.md",
+    "1782805391399007990681": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805391399007990681.md",
+    "1782805397504630440054": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805397504630440054.md",
+    "1782805410082500799926": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805410082500799926.md",
+    "1782805414228537991922": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805414228537991922.md",
+    "1782805426261093798847": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805426261093798847.md",
+    "1782805431427041981257": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782805431427041981257.md",
+    "1782318435507458417027": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782318435507458417027.md",
+    "1782405712667296997550": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782405712667296997550.md",
+    "1782796484886993643166": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782796484886993643166.md",
+    "1782796723088895628753": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782796723088895628753.md",
+    "1782796960511771776409": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782796960511771776409.md",
+    "1782797730258964215336": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782797730258964215336.md",
+    "1782798519518950444175": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782798519518950444175.md",
+    "1782798568048453594892": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782798568048453594892.md",
+    "1782798939203856761749": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782798939203856761749.md",
+    "1782798967024083605949": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782798967024083605949.md",
+    "1782799318884254660026": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782799318884254660026.md",
+    "1782799785476910498730": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782799785476910498730.md",
+    "1782800299681238942594": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782800299681238942594.md",
+    "1782800875315527848942": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782800875315527848942.md",
+    "1782801115130888890802": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801115130888890802.md",
+    "1782801675970172836299": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801675970172836299.md",
+    "1782801683639425787927": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801683639425787927.md",
+    "1782801691176450675468": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801691176450675468.md",
+    "1782801698526540736069": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801698526540736069.md",
+    "1782801706225226470325": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801706225226470325.md",
+    "1782801714055239722955": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801714055239722955.md",
+    "1782801721717543100551": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801721717543100551.md",
+    "1782801729041528283717": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801729041528283717.md",
+    "1782801762826800301165": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801762826800301165.md",
+    "1782801770265977592379": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801770265977592379.md",
+    "1782801779446063782557": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801779446063782557.md",
+    "1782801785062729889274": "D:\\Programing\\medicine-recommend\\log\\analysis\\2026-06-30-dev-9-11\\sessions\\1782801785062729889274.md"
+  }
+}
