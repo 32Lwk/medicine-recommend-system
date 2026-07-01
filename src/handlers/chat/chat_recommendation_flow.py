@@ -2591,9 +2591,39 @@ def run_recommendation_flow(
                     feedback_negative = "不適切"
                     if detected_language != 'ja':
                         try:
-                            feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client, session_id=sid)
-                            feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client, session_id=sid)
-                            feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client, session_id=sid)
+                            # Phase 1 sub2: 独立した翻訳呼び出しを並列化（フラグ ON 時）。
+                            # 依存関係がない 3 文の翻訳を同時実行し i18n セッションの直列待ちを短縮。
+                            # JA セッションはこのブロック自体をスキップするためベースライン不変。
+                            _reco_parallel = False
+                            try:
+                                from config.llm_flags import is_reco_parallel_enabled
+
+                                _reco_parallel = is_reco_parallel_enabled()
+                            except Exception:
+                                _reco_parallel = False
+
+                            if _reco_parallel:
+                                from concurrent.futures import ThreadPoolExecutor
+
+                                from src.services.pipeline_perf import activate_pipeline_perf
+
+                                def _tr(text: str) -> str:
+                                    activate_pipeline_perf(sid)
+                                    return translate_medicine_recommendation(
+                                        text, detected_language, recommendation_client, session_id=sid
+                                    )
+
+                                with ThreadPoolExecutor(max_workers=3) as _pool:
+                                    _ft = _pool.submit(_tr, feedback_text)
+                                    _fp = _pool.submit(_tr, feedback_positive)
+                                    _fn = _pool.submit(_tr, feedback_negative)
+                                    feedback_text_translated = _ft.result()
+                                    feedback_positive_translated = _fp.result()
+                                    feedback_negative_translated = _fn.result()
+                            else:
+                                feedback_text_translated = translate_medicine_recommendation(feedback_text, detected_language, recommendation_client, session_id=sid)
+                                feedback_positive_translated = translate_medicine_recommendation(feedback_positive, detected_language, recommendation_client, session_id=sid)
+                                feedback_negative_translated = translate_medicine_recommendation(feedback_negative, detected_language, recommendation_client, session_id=sid)
                             if feedback_text_translated and feedback_text_translated != feedback_text:
                                 feedback_text = feedback_text_translated
                             if feedback_positive_translated and feedback_positive_translated != feedback_positive:

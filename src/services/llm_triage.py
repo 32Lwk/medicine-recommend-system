@@ -394,6 +394,41 @@ JSON形式で回答してください。以下の形式を厳密に守ってく�
 """
 
 
+# Phase 1 sub1: stage1+stage2 を 1 回で返させる統合指示（両プロンプトのルールを温存）
+_COMBINED_TRIAGE_BRIDGE = """
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【統合分類の最終指示（最優先・上記の個別JSON形式より優先）】
+上記の第一段階ルールと第二段階ルールの両方を適用し、**1 回で**次の JSON のみを返してください。
+- category は Physical/Emotional/Emergency/Ask/Other のいずれか。
+- subcategory は、category が Other の場合は上記【サブカテゴリ】22 種の詳細分類から選ぶ。
+  Other 以外の場合は基本サブカテゴリ（heart_pain, anxiety, headache, drowsiness, insomnia,
+  ambiguous_heart, general_other など）を設定。
+- 判定は第二段階の詳細ルールも反映すること（例: 店舗在庫→store_inquiry/inventory、
+  記憶操作→session_admin、処方要求→inappropriate_request/prescription 等）。
+
+{
+    "category": "Physical/Emotional/Emergency/Ask/Other",
+    "confidence": 0.0-1.0,
+    "subcategory": "詳細サブカテゴリ（Other時は22種のいずれか、それ以外は基本）",
+    "medical_examination_request": true/false,
+    "requires_immediate_action": true/false,
+    "reasoning": "判定理由"
+}
+"""
+
+
+def _build_combined_triage_content(history_section: str, user_text: str) -> str:
+    """stage1 と stage2 のルールを 1 プロンプトに統合したユーザーメッセージ本文。"""
+    return (
+        f"{FIRST_STAGE_TRIAGE_PROMPT}\n\n"
+        f"{SECOND_STAGE_OTHER_PROMPT}\n"
+        f"{_COMBINED_TRIAGE_BRIDGE}"
+        f"{history_section}\n\n"
+        f"【ユーザーの入力】\n{user_text}"
+    )
+
+
 def llm_triage(
     user_text: str,
     client: OpenAI,
@@ -558,23 +593,34 @@ def llm_triage(
 
     try:
         from src.core.llm_client import chat_completion_create
+        from config.llm_flags import is_triage_single_call_enabled
+
+        single_call = is_triage_single_call_enabled()
+        if single_call:
+            stage1_content = _build_combined_triage_content(history_section, user_text)
+            stage1_path = "llm_triage.combined"
+            stage1_max_tokens = 400
+        else:
+            stage1_content = (
+                f"{FIRST_STAGE_TRIAGE_PROMPT}{history_section}\n\n"
+                f"【ユーザーの入力】\n{user_text}"
+            )
+            stage1_path = "llm_triage.stage1"
+            stage1_max_tokens = 300
 
         response = chat_completion_create(
             client,
             model_role="triage",
-            path="llm_triage.stage1",
+            path=stage1_path,
             messages=[
                 {"role": "system", "content": "あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。"},
                 {
                     "role": "user",
-                    "content": (
-                        f"{FIRST_STAGE_TRIAGE_PROMPT}{history_section}\n\n"
-                        f"【ユーザーの入力】\n{user_text}"
-                    ),
+                    "content": stage1_content,
                 },
             ],
             temperature=0.1,
-            max_tokens=300,
+            max_tokens=stage1_max_tokens,
             response_format={"type": "json_object"},
         )
 
@@ -632,7 +678,8 @@ def llm_triage(
         session_intent: str | None = None
 
         # 第二段階：Otherカテゴリの場合は詳細分類を実行
-        if category == "Other":
+        # single_call 時は統合呼び出しで subcategory が既に詳細化済みのため stage2 を省略。
+        if category == "Other" and not single_call:
             session_probe = _session_admin_fast_path(user_text)
             fast_hint = _concierge_fast_path_hint(user_text)
             stage2_skipped = False

@@ -9073,3 +9073,173 @@
 {"timestamp": "2026-07-01T04:23:43.537170", "event_type": "input_validation", "user_id": "ユーザー203", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ああ"}}
 {"timestamp": "2026-07-01T16:08:59.976701", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-01T16:08:59.977309", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "yaa"}}
+{"timestamp": "2026-07-02T02:38:20.255767", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:38:20.256321", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛い"}}
+{"timestamp": "2026-07-02T02:38:28.751333", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:40:39.854506", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:40:39.855215", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-02T02:40:50.401985", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:40:50.402537", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T02:41:04.186575", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:41:04.187205", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プリンシプルオブプログラミングとは？"}}
+{"timestamp": "2026-07-02T02:41:15.293323", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:41:15.293897", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このサービスは何ができますか？"}}
+{"timestamp": "2026-07-02T02:41:30.115820", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:41:30.116388", "event_type": "input_validation", "user_id": "ユーザー7", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Sage Terraceとは"}}
+{"timestamp": "2026-07-02T02:41:43.800758", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:41:43.801213", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "APIの仕組みを教えて"}}
+{"timestamp": "2026-07-02T02:42:01.267889", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:42:01.268469", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "データはどこに保存されますか？"}}
+{"timestamp": "2026-07-02T02:42:14.929533", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:42:14.930421", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プライバシーについて"}}
+{"timestamp": "2026-07-02T02:42:29.605343", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:42:29.605980", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "対応言語は？"}}
+{"timestamp": "2026-07-02T02:42:42.751848", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:42:42.752437", "event_type": "input_validation", "user_id": "ユーザー13", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品推奨の仕組み"}}
+{"timestamp": "2026-07-02T02:43:01.678442", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:43:01.679014", "event_type": "input_validation", "user_id": "ユーザー14", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "rule_basedとは"}}
+{"timestamp": "2026-07-02T02:43:20.297600", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:43:20.298285", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成を教えて"}}
+{"timestamp": "2026-07-02T02:44:37.428960", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:44:37.429656", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛い"}}
+{"timestamp": "2026-07-02T02:45:14.536777", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:45:14.537306", "event_type": "input_validation", "user_id": "ユーザー17", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-02T02:45:20.861614", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:45:51.505896", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:45:51.506562", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "咳が出ます"}}
+{"timestamp": "2026-07-02T02:45:57.839318", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:46:31.055391", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:46:31.056015", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛い"}}
+{"timestamp": "2026-07-02T02:46:37.464313", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:47:15.375833", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:47:15.376413", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "鼻水が止まらない"}}
+{"timestamp": "2026-07-02T02:47:21.513207", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:47:57.352820", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:47:57.353387", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "胃が痛い"}}
+{"timestamp": "2026-07-02T02:48:03.245461", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:48:35.106423", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:48:35.107140", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "下痢をしています"}}
+{"timestamp": "2026-07-02T02:48:40.853013", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:49:15.938964", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:49:15.939509", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "便秘です"}}
+{"timestamp": "2026-07-02T02:49:23.654983", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:49:55.232553", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:49:55.233202", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "目がかゆい"}}
+{"timestamp": "2026-07-02T02:50:01.509887", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:50:35.520157", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:50:35.520762", "event_type": "input_validation", "user_id": "ユーザー25", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "耳が痛い"}}
+{"timestamp": "2026-07-02T02:50:41.337505", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:50:41.339252", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:50:41.339854", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "耳が痛い"}}
+{"timestamp": "2026-07-02T02:50:51.595884", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:50:51.596450", "event_type": "input_validation", "user_id": "ユーザー26", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩こりがひどい"}}
+{"timestamp": "2026-07-02T02:50:57.882575", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:51:38.160480", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:51:38.161082", "event_type": "input_validation", "user_id": "ユーザー27", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腰が痛い"}}
+{"timestamp": "2026-07-02T02:51:44.604823", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:51:44.606867", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:51:44.607476", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腰が痛い"}}
+{"timestamp": "2026-07-02T02:52:18.146519", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:52:18.147100", "event_type": "input_validation", "user_id": "ユーザー28", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "めまいがする"}}
+{"timestamp": "2026-07-02T02:52:24.669153", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:52:50.728078", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:52:50.728700", "event_type": "input_validation", "user_id": "ユーザー29", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "吐き気がします"}}
+{"timestamp": "2026-07-02T02:52:56.996168", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:53:44.394561", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:53:44.395163", "event_type": "input_validation", "user_id": "ユーザー30", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "かゆみがあります"}}
+{"timestamp": "2026-07-02T02:53:52.643664", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:54:25.314452", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:54:25.315073", "event_type": "input_validation", "user_id": "ユーザー31", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "湿疹が出ました"}}
+{"timestamp": "2026-07-02T02:54:33.092300", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:55:08.619390", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:55:08.620006", "event_type": "input_validation", "user_id": "ユーザー32", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "口内炎が痛い"}}
+{"timestamp": "2026-07-02T02:55:15.022016", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:55:15.024064", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:55:15.024477", "event_type": "input_validation", "user_id": "unknown", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "口内炎が痛い"}}
+{"timestamp": "2026-07-02T02:55:47.121184", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:55:47.121769", "event_type": "input_validation", "user_id": "ユーザー33", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "筋肉痛です"}}
+{"timestamp": "2026-07-02T02:55:53.490209", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:57:38.117820", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:57:38.118248", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛い"}}
+{"timestamp": "2026-07-02T02:57:44.432545", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:58:11.988909", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:58:11.989468", "event_type": "input_validation", "user_id": "ユーザー34", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-02T02:58:18.085256", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:58:35.035127", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:58:35.035695", "event_type": "input_validation", "user_id": "ユーザー35", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "咳が出ます"}}
+{"timestamp": "2026-07-02T02:58:40.636881", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:59:16.851405", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:59:16.852004", "event_type": "input_validation", "user_id": "ユーザー36", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛い"}}
+{"timestamp": "2026-07-02T02:59:22.749935", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:59:44.571603", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T02:59:44.572188", "event_type": "input_validation", "user_id": "ユーザー37", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "鼻水が止まらない"}}
+{"timestamp": "2026-07-02T02:59:51.457106", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:00:26.598560", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:00:26.599070", "event_type": "input_validation", "user_id": "ユーザー38", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "胃が痛い"}}
+{"timestamp": "2026-07-02T03:00:32.787720", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:01:07.947159", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:01:07.947752", "event_type": "input_validation", "user_id": "ユーザー39", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "下痢をしています"}}
+{"timestamp": "2026-07-02T03:01:14.096346", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:01:34.792092", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:01:34.793000", "event_type": "input_validation", "user_id": "ユーザー40", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "便秘です"}}
+{"timestamp": "2026-07-02T03:01:40.964386", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:15.029928", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:15.030572", "event_type": "input_validation", "user_id": "ユーザー41", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "目がかゆい"}}
+{"timestamp": "2026-07-02T03:02:21.076603", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:45.967972", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:45.968570", "event_type": "input_validation", "user_id": "ユーザー42", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "耳が痛い"}}
+{"timestamp": "2026-07-02T03:02:52.394341", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:52.396390", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:02:52.396921", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "耳が痛い"}}
+{"timestamp": "2026-07-02T03:03:02.801962", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:03:02.802593", "event_type": "input_validation", "user_id": "ユーザー43", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "肩こりがひどい"}}
+{"timestamp": "2026-07-02T03:03:08.596458", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:03:31.775724", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:03:31.776408", "event_type": "input_validation", "user_id": "ユーザー44", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腰が痛い"}}
+{"timestamp": "2026-07-02T03:03:38.024598", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:03:38.026321", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:03:38.027009", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "腰が痛い"}}
+{"timestamp": "2026-07-02T03:04:01.659686", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:04:01.660501", "event_type": "input_validation", "user_id": "ユーザー45", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "めまいがする"}}
+{"timestamp": "2026-07-02T03:04:08.408859", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:04:24.293118", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:04:24.293873", "event_type": "input_validation", "user_id": "ユーザー46", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "吐き気がします"}}
+{"timestamp": "2026-07-02T03:04:30.697908", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:04:57.811068", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:04:57.811786", "event_type": "input_validation", "user_id": "ユーザー47", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "かゆみがあります"}}
+{"timestamp": "2026-07-02T03:05:06.457218", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:05:32.256875", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:05:32.257668", "event_type": "input_validation", "user_id": "ユーザー48", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "湿疹が出ました"}}
+{"timestamp": "2026-07-02T03:05:38.642315", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:06:02.304465", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:06:02.305062", "event_type": "input_validation", "user_id": "ユーザー49", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "口内炎が痛い"}}
+{"timestamp": "2026-07-02T03:06:08.674496", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:06:08.676804", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:06:08.677170", "event_type": "input_validation", "user_id": "unknown", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "口内炎が痛い"}}
+{"timestamp": "2026-07-02T03:06:32.259853", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:06:32.260545", "event_type": "input_validation", "user_id": "ユーザー50", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "筋肉痛です"}}
+{"timestamp": "2026-07-02T03:06:38.465960", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:07:44.364620", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:07:44.365155", "event_type": "input_validation", "user_id": "ユーザー51", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-02T03:07:55.608366", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:07:55.608831", "event_type": "input_validation", "user_id": "ユーザー52", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T03:08:09.024680", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:08:09.025249", "event_type": "input_validation", "user_id": "ユーザー53", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プリンシプルオブプログラミングとは？"}}
+{"timestamp": "2026-07-02T03:08:19.877940", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:08:19.878582", "event_type": "input_validation", "user_id": "ユーザー54", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このサービスは何ができますか？"}}
+{"timestamp": "2026-07-02T03:08:34.553733", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:08:34.554268", "event_type": "input_validation", "user_id": "ユーザー55", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Sage Terraceとは"}}
+{"timestamp": "2026-07-02T03:08:47.909152", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:08:47.909677", "event_type": "input_validation", "user_id": "ユーザー56", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "APIの仕組みを教えて"}}
+{"timestamp": "2026-07-02T03:09:03.943071", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:09:03.943872", "event_type": "input_validation", "user_id": "ユーザー57", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "データはどこに保存されますか？"}}
+{"timestamp": "2026-07-02T03:09:17.094207", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:09:17.094823", "event_type": "input_validation", "user_id": "ユーザー58", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プライバシーについて"}}
+{"timestamp": "2026-07-02T03:09:33.875694", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:09:33.876403", "event_type": "input_validation", "user_id": "ユーザー59", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "対応言語は？"}}
+{"timestamp": "2026-07-02T03:09:46.963291", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:09:46.964106", "event_type": "input_validation", "user_id": "ユーザー60", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品推奨の仕組み"}}
+{"timestamp": "2026-07-02T03:10:04.760503", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:10:04.761127", "event_type": "input_validation", "user_id": "ユーザー62", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "rule_basedとは"}}
+{"timestamp": "2026-07-02T03:10:21.038652", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T03:10:21.039288", "event_type": "input_validation", "user_id": "ユーザー63", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成を教えて"}}
