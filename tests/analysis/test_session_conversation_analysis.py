@@ -18,6 +18,12 @@ def test_classify_meta_follow_up() -> None:
     assert "meta_follow_up" in classify_user_input("技術面を詳しく")
 
 
+def test_classify_about_app_not_greeting() -> None:
+    labels = classify_user_input("おまえだれ？")
+    assert "about_or_capabilities" in labels
+    assert "greeting" not in labels
+
+
 def test_detect_meta_follow_up_to_greeting() -> None:
     issues = detect_turn_issues(
         user_input="技術面を詳しく",
@@ -39,6 +45,51 @@ def test_detect_image_gen_medical_referral() -> None:
         prior_turns=[],
     )
     assert any(i["type"] == "image_gen_medical_referral" for i in issues)
+
+
+def test_store_response_not_flagged_as_greeting_mishandle() -> None:
+    issues = detect_turn_issues(
+        user_input="マツキヨは近くにありますか",
+        response="お近くのスタッフにお声がけください。店内のスタッフがご案内します。",
+        input_labels=classify_user_input("マツキヨは近くにありますか"),
+        routing={"kind": "store_locator"},
+        prior_turns=[],
+    )
+    assert not any(i["type"] == "greeting_to_non_greeting" for i in issues)
+
+
+def test_security_response_not_flagged_as_greeting_mishandle() -> None:
+    issues = detect_turn_issues(
+        user_input="しね",
+        response="攻撃的な表現はお答えできません。市販薬の相談であればお手伝いします。",
+        input_labels=classify_user_input("しね"),
+        routing={"kind": "aggressive_input"},
+        prior_turns=[],
+    )
+    assert not any(i["type"] == "greeting_to_non_greeting" for i in issues)
+
+
+def test_about_question_not_false_positive_greeting_issue() -> None:
+    issues = detect_turn_issues(
+        user_input="おまえだれ？",
+        response="こんにちは！市販薬に関する相談を承っております。",
+        input_labels=classify_user_input("おまえだれ？"),
+        routing={},
+        prior_turns=[],
+    )
+    assert any(i["type"] == "about_question_mishandled" for i in issues)
+    assert not any(i["type"] == "greeting_to_non_greeting" for i in issues)
+
+
+def test_off_topic_store_with_medicine_template_flagged() -> None:
+    issues = detect_turn_issues(
+        user_input="マチュピチュへの行き方",
+        response="こんにちは！市販薬に関する相談を承っております。",
+        input_labels=classify_user_input("マチュピチュへの行き方"),
+        routing={},
+        prior_turns=[],
+    )
+    assert any(i["type"] == "off_topic_pivoted" for i in issues)
 
 
 def test_build_session_groups_and_grades() -> None:

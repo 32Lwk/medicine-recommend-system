@@ -76,6 +76,45 @@ def _load_session_snapshot_for_pipeline(sid: Optional[str]) -> dict:
     return snap or {}
 
 
+def _try_session_ops_handler(
+    session: Any,
+    sid: Optional[str],
+    user_text: str,
+    client: Any,
+    *,
+    triage_result: Optional[Dict[str, Any]] = None,
+    phase: str = "fast",
+) -> Optional[ResponseTuple]:
+    """v2 ON 時は dialogue SessionOps、OFF 時は SessionAgent（Wave 1a 境界）。"""
+    from src.dialogue.pipeline import try_session_ops_route
+
+    v2_resp = try_session_ops_route(
+        session,
+        sid,
+        user_text,
+        client,
+        triage_result=triage_result,
+        phase=phase,
+    )
+    if v2_resp is not None:
+        return v2_resp
+
+    from config.llm_flags import is_chat_pipeline_v2_for_session
+
+    if is_chat_pipeline_v2_for_session(sid):
+        return None
+
+    from src.agents.session_agent import try_handle_session_request
+
+    return try_handle_session_request(
+        session,
+        sid,
+        user_text,
+        client,
+        triage_result=triage_result,
+    )
+
+
 def sync_routing_context(ctx: ChatPostContext) -> None:
     """トリアージ・履歴・ゲート状態を RoutingContext に同期する。"""
     from src.services.routing_context import RoutingContext
@@ -91,6 +130,19 @@ def sync_routing_context(ctx: ChatPostContext) -> None:
     triage = ctx.routing.triage_result
     if triage:
         ctx.session["last_triage_result"] = triage
+        sub = str(triage.get("subcategory") or "").lower()
+        from src.utils.input_helpers import has_fever_signal
+
+        if "fever" in sub or has_fever_signal(ctx.user_message):
+            ctx.session["_fever_context_active"] = True
+
+    try:
+        from src.dialogue.sync_legacy import sync_dialogue_legacy_mirrors, mark_correction_in_dialogue_state
+
+        sync_dialogue_legacy_mirrors(ctx.session, ctx.sid)
+        mark_correction_in_dialogue_state(ctx.session, ctx.sid, ctx.user_message)
+    except Exception:
+        logger.debug("sync_dialogue_legacy_mirrors skipped", exc_info=True)
 
 
 def run_chat_post_pipeline(
@@ -122,7 +174,7 @@ def run_chat_post_pipeline(
     bot_count_before = count_bot_messages_in_session(session)
 
     def _guard_return(resp: ResponseTuple) -> ResponseTuple:
-        return finalize_pipeline_response(
+        final = finalize_pipeline_response(
             session,
             sid,
             client_info,
@@ -131,6 +183,13 @@ def run_chat_post_pipeline(
             recommendation_client=ctx.recommendation_client,
             user_message=ctx.original_user_message or ctx.user_message,
         )
+        try:
+            from src.dialogue.adapters.web_sse import record_pipeline_envelope
+
+            record_pipeline_envelope(session, sid, final)
+        except Exception:
+            logger.debug("record_pipeline_envelope skipped", exc_info=True)
+        return final
 
     ctx.user_message = parse_incoming_message(session, message)
     mark_pipeline_step("parsed_message")
@@ -163,6 +222,20 @@ def run_chat_post_pipeline(
     if manual_resp is not None:
         return _guard_return(manual_resp)
 
+    from src.agents.session_agent import probe_session_admin_intent
+
+    if probe_session_admin_intent(ctx.user_message):
+        session_admin_resp = _try_session_ops_handler(
+            session,
+            sid,
+            ctx.user_message,
+            ctx.recommendation_client,
+            phase="admin_probe",
+        )
+        if session_admin_resp is not None:
+            sync_messages_to_db_for_admin(session, sid, client_info)
+            return _guard_return(session_admin_resp)
+
     mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
     budget_resp = check_llm_budget_block(session, sid)
@@ -184,6 +257,32 @@ def run_chat_post_pipeline(
         return _guard_return(pre_gate.response)
 
     mark_pipeline_step("after_security")
+
+    from src.handlers.chat.chat_echo_guard import (
+        build_echo_guard_response,
+        detect_echo_user_input,
+    )
+
+    is_echo, echo_reason = detect_echo_user_input(session, ctx.user_message)
+    if is_echo:
+        try:
+            from src.utils.structured_logger import log_counseling_detail
+
+            log_counseling_detail(
+                session_id=sid,
+                echo_detected=True,
+                echo_reason=echo_reason,
+                user_input=ctx.user_message[:200],
+            )
+        except Exception:
+            logger.debug("echo_detected log skipped", exc_info=True)
+        bot = build_echo_guard_response(session, sid)
+        session.setdefault("messages", []).append(bot)
+        return _guard_return(
+            {"status": "ok", "message_count": len(session.get("messages", []))},
+            200,
+        )
+
     from src.services.line_user_memory import apply_profile_to_session, is_line_memory_session
 
     if is_line_memory_session(sid, session):
@@ -193,13 +292,12 @@ def run_chat_post_pipeline(
         if owner:
             apply_profile_to_session(session, owner)
 
-    from src.agents.session_agent import try_handle_session_request
-
-    session_fast_resp = try_handle_session_request(
+    session_fast_resp = _try_session_ops_handler(
         session,
         sid,
         ctx.sanitized_message or ctx.user_message,
         ctx.recommendation_client,
+        phase="fast",
     )
     if session_fast_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
@@ -246,14 +344,26 @@ def run_chat_post_pipeline(
 
     sync_routing_context(ctx)
 
-    from src.agents.session_agent import try_handle_session_request
+    try:
+        from src.dialogue.routing.shadow import run_and_record_shadow
 
-    session_triage_resp = try_handle_session_request(
+        run_and_record_shadow(
+            session,
+            sid,
+            ctx.sanitized_message or ctx.user_message,
+            ctx.triage_result,
+            ctx.recommendation_client,
+        )
+    except Exception:
+        logger.debug("intent_router_shadow skipped", exc_info=True)
+
+    session_triage_resp = _try_session_ops_handler(
         session,
         sid,
         ctx.sanitized_message or ctx.user_message,
         ctx.recommendation_client,
         triage_result=ctx.triage_result,
+        phase="triage",
     )
     if session_triage_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
@@ -299,9 +409,12 @@ def run_chat_post_pipeline(
     from config.llm_flags import is_agent_enabled
 
     if not is_agent_enabled():
-        resp = _run_legacy_other_pre_orchestrator(ctx)
-        if resp is not None:
-            return _guard_return(resp)
+        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+        if not is_chat_pipeline_v2_for_session(sid):
+            resp = _run_legacy_other_pre_orchestrator(ctx)
+            if resp is not None:
+                return _guard_return(resp)
 
     apply_emotional_keyword_routing(
         session, ctx.triage_result, ctx.sanitized_message, phase="sleepiness"
@@ -328,6 +441,23 @@ def run_chat_post_pipeline(
     ctx.has_sleepiness_keyword = session.get("has_sleepiness_keyword", False)
     ctx.has_insomnia_keyword = session.get("has_insomnia_keyword", False)
 
+    _run_moderation_if_needed(ctx)
+
+    if is_agent_enabled():
+        mark_pipeline_step("before_orchestrator")
+        try:
+            from config.llm_flags import is_intent_router_dispatch_enabled
+
+            if is_intent_router_dispatch_enabled(sid):
+                from src.dialogue.dispatcher import try_agent_dispatch
+
+                dispatch_resp = try_agent_dispatch(ctx, monitor)
+                if dispatch_resp is not None:
+                    session.pop("triage_clarify_sent", None)
+                    return _guard_return(dispatch_resp)
+        except Exception:
+            logger.debug("intent_router_dispatch skipped", exc_info=True)
+
     if ctx.triage_result:
         from src.handlers.chat.chat_confidence_route import check_triage_confidence
 
@@ -348,10 +478,18 @@ def run_chat_post_pipeline(
 
     mark_pipeline_step("confidence_gate_done")
 
-    _run_moderation_if_needed(ctx)
+    from src.handlers.chat.llm_pipeline_guard import try_llm_pipeline_short_circuit
+
+    short_circuit = try_llm_pipeline_short_circuit(
+        session,
+        sid,
+        ctx.triage_result,
+        user_message=ctx.user_message,
+    )
+    if short_circuit is not None:
+        return _guard_return(short_circuit)
 
     if is_agent_enabled():
-        mark_pipeline_step("before_orchestrator")
         try:
             from src.handlers.chat_orchestrator import try_orchestrator_route
 
@@ -628,15 +766,22 @@ def _try_concierge_before_store(ctx: ChatPostContext) -> Optional[ResponseTuple]
     try:
         from src.services.concierge_orchestrator import enrich_other_concierge_intent
         from src.handlers.chat.chat_concierge_route import try_concierge_response
+        from config.llm_flags import is_chat_pipeline_v2_for_session
 
-        history = (ctx.session.get("messages") or [])[-10:]
-        from src.services.line_user_memory import is_line_memory_session
+        if is_chat_pipeline_v2_for_session(ctx.sid):
+            from src.dialogue.history import resolve_concierge_history_with_fallback
 
-        memory_block = ""
-        if is_line_memory_session(ctx.sid, ctx.session):
-            from src.services.line_memory_context import get_llm_conversation_context
+            history = resolve_concierge_history_with_fallback(ctx.session, ctx.sid)
+        else:
+            history = (ctx.session.get("messages") or [])[-10:]
+            from src.services.line_user_memory import is_line_memory_session
 
-            history, _memory_block = get_llm_conversation_context(ctx.session, ctx.sid, limit=5)
+            if is_line_memory_session(ctx.sid, ctx.session):
+                from src.services.line_memory_context import get_llm_conversation_context
+
+                history, _memory_block = get_llm_conversation_context(
+                    ctx.session, ctx.sid, limit=5
+                )
         ctx.triage_result = enrich_other_concierge_intent(
             dict(triage),
             ctx.llm_user_text,

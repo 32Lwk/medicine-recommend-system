@@ -152,6 +152,16 @@ def get_counseling_conversation_history(
     sid: str | None,
 ) -> list[dict[str, Any]]:
     """カウンセリング経路向け: 長期記憶ブロック + 直近圧縮会話。"""
+    try:
+        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+        if is_chat_pipeline_v2_for_session(sid):
+            from src.dialogue.history import resolve_counseling_history_with_fallback
+
+            return resolve_counseling_history_with_fallback(session, sid)
+    except Exception:
+        pass
+
     owner = resolve_memory_owner_sid(sid, session)
     if not owner:
         msgs = list(session.get("messages") or []) if session and hasattr(session, "get") else []

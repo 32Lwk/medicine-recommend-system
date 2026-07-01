@@ -520,6 +520,22 @@ def _session_last_activity_ts(info) -> float:
     return 0.0
 
 
+V2_TEST_UA_MARKER = "local-v2-chat-test"
+
+
+def is_v2_local_test_session(info) -> bool:
+    """local_v2_chat_test_runner 由来のセッションか（クリーンアップ・admin 表示用）。"""
+    if not isinstance(info, dict):
+        return False
+    if info.get("v2_local_test"):
+        return True
+    username = str(info.get("username") or "")
+    if username.startswith("v2-test-"):
+        return True
+    ua = str(info.get("user_agent") or "")
+    return V2_TEST_UA_MARKER in ua
+
+
 def get_manual_reply_session_ids():
     """手動返信キューに載っている session_id の集合。"""
     ids = set()
@@ -548,6 +564,8 @@ def get_cleanup_exclude_session_ids(extra_ids=None):
         except ImportError:
             is_line_session_id = lambda _sid: False  # type: ignore[misc, assignment]
         if is_line_session_id(str(sid)):
+            exclude.add(str(sid))
+        if is_v2_local_test_session(info):
             exclude.add(str(sid))
     return list(exclude)
 
@@ -850,6 +868,14 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
     username = session.get('username')
     if username:
         payload['username'] = username
+    elif session_data.get('username'):
+        payload['username'] = session_data.get('username')
+    for meta_key in ('v2_local_test', 'v2_test_scenario', 'user_agent', 'client_ip'):
+        val = session.get(meta_key)
+        if val is None:
+            val = session_data.get(meta_key)
+        if val is not None:
+            payload[meta_key] = val
     if session.get('line_profile'):
         payload['line_profile'] = session.get('line_profile')
     if session_data.get('message_archive'):
@@ -874,6 +900,8 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
         'last_triage_result',
         '_last_triage_result',
         'pending_memory_delete',
+        'dialogue_state',
+        '_fever_context_active',
     ):
         if flag_key in session:
             payload[flag_key] = session[flag_key]
@@ -965,6 +993,8 @@ def cleanup_old_sessions(
             continue
         if not isinstance(session_info, dict):
             continue
+        if is_v2_local_test_session(session_info):
+            continue
         messages = session_info.get('messages') or []
         last_ts = _session_last_activity_ts(session_info)
         try:
@@ -982,7 +1012,11 @@ def cleanup_old_sessions(
 
     all_sessions = get_all_sessions_from_db()
     if len(all_sessions) > MAX_SESSIONS:
-        other_sessions = {k: v for k, v in all_sessions.items() if k != current_sid}
+        other_sessions = {
+            k: v
+            for k, v in all_sessions.items()
+            if k != current_sid and not is_v2_local_test_session(v)
+        }
         if other_sessions:
             sorted_sessions = sorted(
                 other_sessions.items(),

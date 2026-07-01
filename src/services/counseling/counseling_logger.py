@@ -166,15 +166,13 @@ def maybe_log_turn_counseling_detail(
     if not response_content:
         return
     try:
-        from src.services.line_memory_context import get_counseling_conversation_history
-    except ImportError:
-        get_counseling_conversation_history = None  # type: ignore[assignment,misc]
+        from src.dialogue.history import resolve_counseling_history_with_fallback
 
-    history = (
-        get_counseling_conversation_history(session, effective_sid or session_id)
-        if get_counseling_conversation_history
-        else None
-    )
+        history = resolve_counseling_history_with_fallback(
+            session, effective_sid or session_id
+        )
+    except Exception:
+        history = None
     response_type = (
         bot_message.get("kind")
         or bot_message.get("session_agent_kind")

@@ -60,16 +60,33 @@ def resolve_nlu_for_recommendation(
     context_text = preference_context_text(user_text, user_info)
     detected_language = resolve_message_language(user_text or context_text, session)
 
+    enriched_info = dict(user_info)
+    if session is not None and session_id:
+        try:
+            from config.llm_flags import is_chat_pipeline_v2_for_session
+
+            if is_chat_pipeline_v2_for_session(session_id):
+                from src.dialogue.history import resolve_physical_history_with_fallback
+                from src.services.triage_history import format_triage_history_block
+
+                block = format_triage_history_block(
+                    resolve_physical_history_with_fallback(session, session_id, limit=6)
+                )
+                if block.strip():
+                    enriched_info["_physical_history_block"] = block
+        except Exception:
+            pass
+
     nlu: Dict[str, Any] = {}
     llm_prefs: Dict[str, Any] = {}
 
     def _symptoms_task():
-        return _run_symptom_nlu(user_text, user_info, client, session_id)
+        return _run_symptom_nlu(user_text, enriched_info, client, session_id)
 
     def _prefs_task():
         return extract_preferences_with_gpt(
             user_text,
-            user_info,
+            enriched_info,
             client,
             detected_language,
             session_id=session_id,

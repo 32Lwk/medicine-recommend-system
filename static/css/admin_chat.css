@@ -1006,6 +1006,20 @@ main.right-panel-collapsed #center-resizer {
     font-weight: 600;
 }
 
+.session-v2-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-full);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #1b5e20;
+    background: #c8e6c9;
+    border: 1px solid #81c784;
+}
+
 .session-preview {
     font-size: 0.85rem;
     color: var(--text-sub);

@@ -24,8 +24,11 @@ def test_triage_cache_entry_eviction():
 
 
 def test_llm_triage_cache_hit_skips_api():
+    from src.services.triage_cache import build_cache_key
+
     text = f"テスト頭痛キャッシュ専用_{uuid.uuid4().hex}"
-    lt._triage_cache[text.strip()] = lt._TriageCacheEntry(
+    cache_key = build_cache_key(text)
+    lt._triage_cache[cache_key] = lt._TriageCacheEntry(
         created_at=datetime.now(),
         result={"category": "Physical", "confidence": 0.9},
     )

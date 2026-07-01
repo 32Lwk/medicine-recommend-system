@@ -33,7 +33,10 @@ def test_build_low_confidence_clarify_message_category_specific(category, snippe
 
 
 @patch("src.services.confidence_gate.triage_confidence_threshold", return_value=0.75)
-@patch("src.services.confidence_gate.get_recent_messages", return_value=[])
+@patch(
+    "src.dialogue.history.resolve_conversation_history_with_fallback",
+    return_value=[],
+)
 @patch("src.services.confidence_gate.retry_triage_with_fallback_model", return_value=None)
 @patch("src.services.counseling_response.log_counseling_response")
 def test_physical_low_confidence_uses_category_clarify(
@@ -55,7 +58,10 @@ def test_physical_low_confidence_uses_category_clarify(
 
 
 @patch("src.services.confidence_gate.triage_confidence_threshold", return_value=0.75)
-@patch("src.services.confidence_gate.get_recent_messages", return_value=[])
+@patch(
+    "src.dialogue.history.resolve_conversation_history_with_fallback",
+    return_value=[],
+)
 @patch("src.services.confidence_gate.retry_triage_with_fallback_model", return_value=None)
 def test_low_confidence_triggers_concierge_flag(mock_retry, mock_hist, mock_thresh):
     session = {}
@@ -74,7 +80,10 @@ def test_low_confidence_triggers_concierge_flag(mock_retry, mock_hist, mock_thre
 
 
 @patch("src.services.confidence_gate.triage_confidence_threshold", return_value=0.75)
-@patch("src.services.confidence_gate.get_recent_messages", return_value=[])
+@patch(
+    "src.dialogue.history.resolve_conversation_history_with_fallback",
+    return_value=[],
+)
 @patch("src.services.confidence_gate.retry_triage_with_fallback_model")
 def test_retry_on_low_confidence(mock_retry, mock_hist, mock_thresh):
     mock_retry.return_value = {"category": "Ask", "confidence": 0.9}

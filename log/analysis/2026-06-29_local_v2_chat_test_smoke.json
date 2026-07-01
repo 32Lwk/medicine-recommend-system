@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "date": "2026-06-29",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-29T14:10:03.851204+00:00",
+    "elapsed_sec": 391.8,
+    "scenario_count": 1,
+    "total_turns": 0,
+    "auto_pass": 0,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "metrics": {},
+  "results": [
+    {
+      "scenario_id": "gpt-physical-headache",
+      "category": "physical",
+      "wave": "gpt-scale",
+      "session_id": "",
+      "turns": [],
+      "auto_pass": false,
+      "auto_notes": [],
+      "auto_failures": [
+        "exception:HTTPConnectionPool(host='127.0.0.1', port=5000): Max retries exceeded with url: / (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=5000): Failed to establish a new connection: [WinError 10061] 対象のコンピューターによって拒否されたため、接続できませんでした。\"))"
+      ],
+      "description": "",
+      "persona_id": "physical-headache",
+      "intent_eval": {}
+    }
+  ]
+}

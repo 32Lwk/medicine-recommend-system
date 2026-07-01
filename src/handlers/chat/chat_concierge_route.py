@@ -196,6 +196,12 @@ def try_concierge_response(
     processed_message: str = "",
     routing_ctx: Any = None,
 ) -> Optional[ResponseTuple]:
+    from src.services.llm_unavailability import should_block_llm_dependent_reply
+
+    if should_block_llm_dependent_reply(session):
+        logger.info("Skipping Concierge: LLM infrastructure degraded sid=%s", sid)
+        return None
+
     routing_text = (sanitized_message or user_message or "").strip()
     llm_text = resolve_llm_user_text(user_message=user_message)
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
@@ -227,9 +233,10 @@ def try_concierge_response(
         and not triage_result.get("concierge_intent")
     ):
         from src.services.concierge_orchestrator import enrich_other_concierge_intent
-        from src.services.triage_history import get_recent_messages
 
-        history_pre = get_recent_messages(session, sid)
+        from src.dialogue.history import resolve_concierge_history_with_fallback
+
+        history_pre = resolve_concierge_history_with_fallback(session, sid)
         triage_result = enrich_other_concierge_intent(
             triage_result,
             llm_text,
@@ -244,10 +251,13 @@ def try_concierge_response(
     if not was_last_user_message(session, user_message or llm_text):
         append_user_message(session, user_message or llm_text)
 
-    history = session.get("messages", [])[-10:]
-    from src.services.line_memory_context import get_counseling_conversation_history
+    from src.dialogue.history import (
+        resolve_concierge_history_with_fallback,
+        resolve_counseling_history_with_fallback,
+    )
 
-    log_history = get_counseling_conversation_history(session, sid)
+    history = resolve_concierge_history_with_fallback(session, sid)
+    log_history = resolve_counseling_history_with_fallback(session, sid)
     from src.services.pipeline_perf import mark_pipeline_step
 
     mark_pipeline_step("concierge_resolve_intent_start")
@@ -291,6 +301,12 @@ def try_concierge_response(
         intent,
         reset_off_topic=should_reset_off_topic(routing_text),
     )
+    try:
+        from src.dialogue.context import mirror_concierge_intent
+
+        mirror_concierge_intent(session, sid, intent)
+    except Exception:
+        logger.debug("mirror_concierge_intent skipped", exc_info=True)
     _log_concierge_response(
         session=session,
         session_id=sid,

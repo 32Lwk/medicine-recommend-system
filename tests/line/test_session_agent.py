@@ -71,6 +71,90 @@ def test_try_handle_status(_snap, _load, _owner, _is_line):
     assert diag.get("kind") == "session_integrated_status"
 
 
+def test_classify_session_intent_status_vocab():
+    assert classify_session_intent("何が記録されてる？") == "status"
+    assert classify_session_intent("記録を教えて") == "status"
+
+
+@patch("src.services.line_user_memory.is_line_memory_session", return_value=True)
+@patch("src.services.line_user_memory.resolve_memory_owner_sid", return_value="line:Utest")
+def test_pending_delete_cancel_phrase_variants(_owner, _is_line):
+    session: dict = {
+        "messages": [],
+        "pending_memory_delete": {"scope": "all", "owner": "line:Utest"},
+    }
+    resp = try_handle_session_request(session, "line:Utest", "やっぱり消さない", MagicMock())
+    assert resp is not None
+    assert "pending_memory_delete" not in session
+
+
+@patch("src.services.line_user_memory.is_line_memory_session", return_value=True)
+@patch("src.services.line_user_memory.resolve_memory_owner_sid", return_value="line:Utest")
+def test_pending_delete_cancelled_for_headache(_owner, _is_line):
+    session: dict = {
+        "messages": [],
+        "pending_memory_delete": {"scope": "all", "owner": "line:Utest"},
+    }
+    resp = try_handle_session_request(session, "line:Utest", "頭痛い", MagicMock())
+    assert resp is None
+    assert "pending_memory_delete" not in session
+
+
+@patch("src.services.line_user_memory.is_line_memory_session", return_value=True)
+@patch("src.services.line_user_memory.resolve_memory_owner_sid", return_value="line:Utest")
+def test_pending_delete_cancelled_mirrors_v2_flag(_owner, _is_line, monkeypatch):
+    monkeypatch.setenv("CHAT_PIPELINE_V2", "true")
+    session: dict = {
+        "messages": [],
+        "pending_memory_delete": {"scope": "all", "owner": "line:Utest"},
+    }
+    resp = try_handle_session_request(session, "line:Utest", "39度の熱があります", MagicMock())
+    assert resp is None
+    assert "pending_memory_delete" not in session
+    assert session["dialogue_state"]["flags"]["pending_cancelled_by_physical"] is True
+
+
+@patch("src.services.line_user_memory.is_line_memory_session", return_value=True)
+@patch("src.services.line_user_memory.resolve_memory_owner_sid", return_value="line:Utest")
+@patch("src.agents.session_agent.classify_memory_delete_intent")
+def test_delete_not_forced_on_physical_triage(mock_classify, _owner, _is_line):
+    mock_classify.return_value = {"is_delete_request": False}
+    session: dict = {"messages": []}
+    triage = {
+        "category": "Physical",
+        "confidence": 0.99,
+        "subcategory": "fever",
+        "session_intent": "delete",
+    }
+    resp = try_handle_session_request(
+        session,
+        "line:Utest",
+        "頭痛い",
+        MagicMock(),
+        triage_result=triage,
+    )
+    assert resp is None
+    assert "pending_memory_delete" not in session
+
+
+@patch("src.services.line_user_memory.is_line_memory_session", return_value=True)
+@patch("src.services.line_user_memory.resolve_memory_owner_sid", return_value="line:Utest")
+@patch("src.agents.session_agent.classify_memory_delete_intent")
+def test_delete_still_works_with_session_intent(mock_classify, _owner, _is_line):
+    mock_classify.return_value = {"is_delete_request": False}
+    session: dict = {"messages": []}
+    triage = {"category": "Other", "session_intent": "delete", "subcategory": "session_admin"}
+    resp = try_handle_session_request(
+        session,
+        "line:Utest",
+        "整理して",
+        MagicMock(),
+        triage_result=triage,
+    )
+    assert resp is not None
+    assert session.get("pending_memory_delete")
+
+
 @patch("src.services.line_user_memory.is_line_memory_session", return_value=False)
 def test_non_line_session_skipped(_is_line):
     session: dict = {"messages": []}

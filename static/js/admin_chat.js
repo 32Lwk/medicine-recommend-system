@@ -14,6 +14,7 @@ console.log('📄 Script loaded successfully');
 let currentSessionId = null;
 let allSessions = [];
 let sessionListMeaningfulOnly = true;
+let sessionListV2TestOnly = false;
 let sessionListSelectMode = false;
 const selectedSidebarSessionIds = new Set();
 let chatMessageSelectMode = false;
@@ -39,6 +40,11 @@ function showAdminToast(message, durationMs) {
 
 function buildMainSessionsUrl() {
     return '/api/main_sessions?meaningful_only=' + (sessionListMeaningfulOnly ? '1' : '0');
+}
+
+function buildMainSessionUrl(sessionId) {
+    const normalizedId = normalizeLineSessionId(sessionId);
+    return '/api/main_session?session_id=' + encodeURIComponent(normalizedId);
 }
 
 function adminFetchOptions(extra) {
@@ -79,6 +85,28 @@ function checkAdminApiResponse(response) {
         return false;
     }
     return true;
+}
+
+function onSessionListV2TestToggle() {
+    const el = document.getElementById('show-v2-test-sessions');
+    sessionListV2TestOnly = !!(el && el.checked);
+    refreshSessionList();
+}
+
+function isV2LocalTestSession(session) {
+    if (!session) return false;
+    if (session.v2_local_test) return true;
+    const ua = String(session.user_agent || '');
+    if (ua.indexOf('local-v2-chat-test') >= 0) return true;
+    const name = String(session.username || '');
+    return name.indexOf('v2-test-') === 0;
+}
+
+function renderV2TestBadge(session) {
+    if (!isV2LocalTestSession(session)) return '';
+    const scenario = session.v2_test_scenario ? String(session.v2_test_scenario) : '';
+    const title = scenario ? 'v2テスト: ' + scenario : 'v2ローカルテスト';
+    return '<span class="session-v2-badge" title="' + escapeHtml(title) + '">v2</span>';
 }
 
 function onSessionListFilterToggle() {
@@ -133,7 +161,9 @@ function extractMessageSearchableText(msg) {
 function sessionMatchesSearchTerm(session, searchTerm) {
     const username = (session.username || '').toLowerCase();
     const sessionId = (session.session_id || '').toLowerCase();
-    if (username.includes(searchTerm) || sessionId.includes(searchTerm)) {
+    const scenario = (session.v2_test_scenario || '').toLowerCase();
+    const userAgent = (session.user_agent || '').toLowerCase();
+    if (username.includes(searchTerm) || sessionId.includes(searchTerm) || scenario.includes(searchTerm) || userAgent.includes(searchTerm)) {
         return true;
     }
     const messageLists = [session.messages, session.messages_live].filter(function(list) {
@@ -153,10 +183,16 @@ function sessionMatchesSearchTerm(session, searchTerm) {
 function getFilteredSessions() {
     const searchEl = document.getElementById('session-search');
     const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase().trim();
-    if (!searchTerm) {
-        return allSessions;
+    let sessions = allSessions;
+    if (sessionListV2TestOnly) {
+        sessions = sessions.filter(function(session) {
+            return isV2LocalTestSession(session);
+        });
     }
-    return allSessions.filter(function(session) {
+    if (!searchTerm) {
+        return sessions;
+    }
+    return sessions.filter(function(session) {
         return sessionMatchesSearchTerm(session, searchTerm);
     });
 }
@@ -1623,11 +1659,14 @@ function loadChatHistory(sessionId) {
         updateLineMemoryBtnVisibility(null);
     }
     
-    adminFetchJson(
-        isLineSessionId(sessionId)
-            ? ('/api/main_session?session_id=' + encodeURIComponent(sessionId))
-            : buildMainSessionsUrl()
-    )
+    const cachedSession = findCachedAdminSession(sessionId);
+    if (cachedSession && Array.isArray(cachedSession.messages) && cachedSession.messages.length > 0) {
+        currentDetailedDiagnosis = cachedSession.detailed_diagnosis || null;
+        currentMessages = cachedSession.messages;
+        renderChatMessages(cachedSession.messages);
+    }
+
+    adminFetchJson(buildMainSessionUrl(sessionId))
         .then(data => {
             console.log('Chat history data:', data);
             let targetSession = null;
@@ -1635,10 +1674,7 @@ function loadChatHistory(sessionId) {
                 targetSession = data.session;
                 upsertAdminSessionRow(targetSession);
             } else {
-                const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-                targetSession = sessionsArray.find(function (session) {
-                    return normalizeLineSessionId(session.session_id) === sessionId;
-                }) || null;
+                targetSession = cachedSession;
             }
             
             if (targetSession && targetSession.messages && Array.isArray(targetSession.messages)) {
@@ -3337,20 +3373,26 @@ function normalizeAdminMessagesForDisplay(messages, session) {
         });
 }
 
+function findCachedAdminSession(sessionId) {
+    const normalizedId = normalizeLineSessionId(sessionId);
+    return allSessions.find(function (session) {
+        return normalizeLineSessionId(session.session_id) === normalizedId;
+    }) || null;
+}
+
 function fetchAdminSessionMessages(sessionId) {
     const normalizedId = normalizeLineSessionId(sessionId);
-    const url = isLineSessionId(normalizedId)
-        ? ('/api/main_session?session_id=' + encodeURIComponent(normalizedId))
-        : buildMainSessionsUrl();
-    return adminFetchJson(url).then(function (data) {
-        if (data && data.session) {
-            return data.session;
-        }
-        const sessionsArray = data.sessions || (Array.isArray(data) ? data : []);
-        return sessionsArray.find(function (session) {
-            return normalizeLineSessionId(session.session_id) === normalizedId;
-        }) || null;
-    });
+    const cached = findCachedAdminSession(normalizedId);
+    return adminFetchJson(buildMainSessionUrl(normalizedId))
+        .then(function (data) {
+            if (data && data.session) {
+                return data.session;
+            }
+            return cached;
+        })
+        .catch(function () {
+            return cached;
+        });
 }
 
 function scrollAdminChatToBottom() {
@@ -4603,7 +4645,7 @@ function renderSessionList(sessions) {
     sessions.forEach((session, idx) => {
         const username = resolveSessionDisplayUsername(session, idx);
         const messageCount = getSessionMessageCount(session);
-        const isSelected = currentSessionId === session.session_id;
+        const isSelected = normalizeLineSessionId(currentSessionId) === normalizeLineSessionId(session.session_id);
         
         // 最後のメッセージを取得（Sage マーカーは diagnosis から復元）
         let lastMessage = resolveSessionPreviewText(session);
@@ -4647,6 +4689,7 @@ function renderSessionList(sessions) {
                 <div class="session-meta">
                     <div class="session-meta__left">
                         <span class="session-time">${lastUpdate}</span>
+                        ${renderV2TestBadge(session)}
                         ${renderSessionLineBadge(session)}
                     </div>
                     <span class="session-count-pill" style="background: ${isCrisisSession ? 'var(--danger)' : messageCountColor};">${messageCount}件</span>

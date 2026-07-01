@@ -85,6 +85,9 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                 "last_triage_result",
                 "_last_triage_result",
                 "pending_memory_delete",
+                "dialogue_state",
+                "_fever_context_active",
+                "_pipeline_end_guard",
             ):
                 if flag in session_data:
                     safe_session[flag] = session_data[flag]
@@ -265,6 +268,9 @@ async def stream_chat_events(
                     messages = list(session_data.get("messages") or [])
                     done = _build_sse_done_event(body, status_code, messages)
                     payload = done.to_payload()
+                    from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
+
+                    payload = merge_dialogue_delivery_into_done(payload, session_data, sid)
                     if done.error or done.warning:
                         preview_payload = {
                             "error": done.error,
@@ -302,6 +308,11 @@ async def stream_chat_events(
                 trace_id=trace_id,
             )
             done_payload = done.to_payload()
+            from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
+
+            done_payload = merge_dialogue_delivery_into_done(
+                done_payload, safe_session, sid
+            )
             if done.error or done.warning:
                 preview_payload = {
                     "error": done.error,
