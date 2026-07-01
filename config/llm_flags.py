@@ -129,3 +129,36 @@ def is_intent_router_llm_enabled(sid: str | None = None) -> bool:
     if not is_intent_router_v2_enabled(sid):
         return False
     return _v2_subflag_enabled("CHAT_PIPELINE_V2_INTENT_ROUTER_LLM")
+
+
+# --- Phase 1 レイテンシ最適化フラグ（既定 OFF = post-p0 と同一挙動） ---
+# 独立フラグにして A/B（OFF=baseline / ON=after）を同一ビルドで計測可能にする。
+
+
+def is_triage_single_call_enabled() -> bool:
+    """トリアージ stage1+stage2 を 1 回の structured call に統合（既定 OFF）。
+
+    OFF 時は従来の 2 段（Other 時のみ stage2）。ルーティング結果は等価を維持する。
+    """
+    return _flag("LATENCY_TRIAGE_SINGLE_CALL", False)
+
+
+def is_explain_fast_lowrisk_enabled() -> bool:
+    """低リスク症状の説明生成（explain ロール）を高速モデルに切替（既定 OFF）。
+
+    高リスク（小児/発熱/妊娠授乳/高齢/持病・治療中/併用薬/アレルギー）は上位モデル維持。
+    """
+    return _flag("LATENCY_EXPLAIN_FAST_LOWRISK", False)
+
+
+def is_explain_cache_enabled() -> bool:
+    """バッチ使用上の注意（explain）の結果キャッシュ（既定 OFF）。
+
+    キーに医薬品セット＋リスク関連ユーザー属性＋症状を含め、個別因子絡みは都度生成。
+    """
+    return _flag("LATENCY_EXPLAIN_CACHE", False)
+
+
+def is_reco_parallel_enabled() -> bool:
+    """推奨フローの独立 LLM 処理（使用上の注意 / 個別アドバイス）の並列化（既定 OFF）。"""
+    return _flag("LATENCY_RECO_PARALLEL", False)

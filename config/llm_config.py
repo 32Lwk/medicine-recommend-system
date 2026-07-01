@@ -77,6 +77,27 @@ def get_model(role: str) -> str:
     return _PROFILE_MODELS.get(role, _LEGACY["triage"])
 
 
+def get_explain_model(is_high_risk: bool) -> str | None:
+    """低リスク症状の説明生成に使う高速モデル名を返す（Phase 1 レイテンシ）。
+
+    - フラグ OFF もしくは高リスク → None（呼び出し側は既定の explain モデル= gpt-5.5 を使用）
+    - 低リスク かつ フラグ ON → 高速モデル（gpt5 プロファイル: gpt-5.4-mini / legacy: gpt-4o-mini）
+
+    高リスクの判定は呼び出し側（説明生成）で行う。ここではモデル名の解決のみ。
+    """
+    try:
+        from config.llm_flags import is_explain_fast_lowrisk_enabled
+    except ImportError:
+        return None
+    if is_high_risk or not is_explain_fast_lowrisk_enabled():
+        return None
+    override = os.getenv("OPENAI_MODEL_EXPLAIN_FAST")
+    if override:
+        return override.strip()
+    # mini 系（プロファイル準拠）。nlu ロールは両プロファイルとも mini。
+    return _PROFILE_MODELS.get("nlu", _LEGACY["nlu"])
+
+
 def use_responses_api() -> bool:
     return _get_bool("OPENAI_USE_RESPONSES_API", False)
 

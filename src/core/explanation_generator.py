@@ -9,6 +9,7 @@ import logging
 import math
 import os
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List
 
@@ -22,6 +23,97 @@ _DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
 # 使用上の注意生成のキャッシュ（generate_usage_notes 用）
 _usage_notes_cache = {}
+
+# バッチ使用上の注意のキャッシュ（generate_usage_notes_and_consultation_with_gpt 用）
+# キー: 医薬品セット + リスク関連ユーザー属性 + 症状。個別因子はキーに含めるため
+# 誤って個別化を欠いた応答を返さない（"個別因子絡みは都度生成"）。
+_batch_notes_cache: dict[str, tuple[float, Dict]] = {}
+_BATCH_NOTES_TTL_SEC = 24 * 3600
+_BATCH_NOTES_MAX = 200
+
+
+def _batch_notes_cache_key(
+    recommended_medicines: List[Dict],
+    nlu_result: Dict | None,
+    user_info: Dict | None,
+) -> str:
+    ui = user_info or {}
+    names = sorted(str(m.get("product_name", "") or m.get("name", "")) for m in recommended_medicines)
+    risk_keys = {
+        k: ui.get(k)
+        for k in (
+            "age", "pregnant", "breastfeeding", "allergies",
+            "current_medications", "treatment_mention", "user_body_part",
+        )
+    }
+    symptoms = sorted(_symptom_names((nlu_result or {}).get("symptoms")))
+    return json.dumps(
+        {"m": names, "u": risk_keys, "s": symptoms},
+        ensure_ascii=False,
+        sort_keys=True,
+        default=str,
+    )
+
+# 発熱・高リスク症状の語彙（説明生成のリスク判定用）
+_HIGH_RISK_SYMPTOM_TOKENS = ("発熱", "高熱", "熱", "インフル")
+
+
+def _symptom_names(symptoms) -> List[str]:
+    out: List[str] = []
+    for s in symptoms or []:
+        if isinstance(s, dict):
+            name = s.get("name")
+            if name:
+                out.append(str(name))
+        elif s:
+            out.append(str(s))
+    return out
+
+
+def assess_explanation_risk(
+    user_info: Dict | None,
+    nlu_result: Dict | None = None,
+    medicines: List[Dict] | None = None,
+    symptoms=None,
+) -> bool:
+    """説明生成を上位モデルで行うべき「高リスク」かを判定する（Phase 1 sub3）。
+
+    高リスク: 小児/高齢/妊娠授乳/持病・治療中/併用薬/アレルギー/発熱・インフル文脈、
+    もしくは推奨薬にリスク成分・ドーピング・低スコア警告がある場合。
+    低リスク: 上記に該当しない一般的な単一症状。
+    """
+    ui = user_info or {}
+    age = ui.get("age")
+    try:
+        if age is not None and (int(age) < 15 or int(age) >= 65):
+            return True
+    except (TypeError, ValueError):
+        pass
+    if ui.get("pregnant") or ui.get("breastfeeding"):
+        return True
+    if ui.get("treatment_mention"):
+        return True
+    meds = ui.get("current_medications")
+    if meds and meds not in (["なし"], []):
+        return True
+    allergies = ui.get("allergies")
+    if allergies and allergies not in (["なし"], []):
+        return True
+
+    names = _symptom_names(symptoms)
+    if nlu_result:
+        names += _symptom_names(nlu_result.get("symptoms"))
+    if any(tok in name for name in names for tok in _HIGH_RISK_SYMPTOM_TOKENS):
+        return True
+
+    for m in medicines or []:
+        if not isinstance(m, dict):
+            continue
+        if m.get("risk_warning") or m.get("risk_ingredient") or m.get("low_score_warning"):
+            return True
+        if str(m.get("doping_prohibited", "")).strip() == "禁止物質あり":
+            return True
+    return False
 
 
 def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dict = None, symptoms: list = None) -> str:
@@ -162,11 +254,16 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
 """
 
         from src.core.llm_client import chat_completion_create
+        from config.llm_config import get_explain_model
 
+        fast_model = get_explain_model(
+            assess_explanation_risk(user_info, medicines=[medicine_info], symptoms=symptoms)
+        )
         response = chat_completion_create(
             client,
             model_role="explain",
             path="explanation_generator.usage_notes",
+            model=fast_model,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt},
@@ -439,6 +536,20 @@ def generate_usage_notes_and_consultation_with_gpt(
     使用上の注意と医師相談が必要な場合のアドバイスを生成
     3件まとめて1回のAPI呼び出しで処理（高速化）
     """
+    # Phase 1 sub4: 同一入力（医薬品セット+リスク属性+症状）のキャッシュ（フラグ ON 時）
+    cache_key = None
+    try:
+        from config.llm_flags import is_explain_cache_enabled
+
+        if is_explain_cache_enabled():
+            cache_key = _batch_notes_cache_key(recommended_medicines, nlu_result, user_info)
+            hit = _batch_notes_cache.get(cache_key)
+            if hit and (time.time() - hit[0]) <= _BATCH_NOTES_TTL_SEC:
+                logger.info("📋 バッチ使用上の注意をキャッシュから取得")
+                return dict(hit[1])
+    except Exception:
+        cache_key = None
+
     medicines_info = []
     for i, med in enumerate(recommended_medicines, 1):
         age_restriction = med.get('age_restriction', '')
@@ -489,11 +600,16 @@ def generate_usage_notes_and_consultation_with_gpt(
 
     try:
         from src.core.llm_client import chat_completion_create
+        from config.llm_config import get_explain_model
 
+        fast_model = get_explain_model(
+            assess_explanation_risk(user_info, nlu_result, recommended_medicines)
+        )
         response = chat_completion_create(
             client,
             model_role="explain",
             path="explanation_generator.batch_usage_notes",
+            model=fast_model,
             messages=[
                 {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
                 {"role": "user", "content": prompt},
@@ -687,11 +803,19 @@ def generate_usage_notes_and_consultation_with_gpt(
 
     treatment_warning = general_notes.get('treatment_warning', False)
 
-    return {
+    result = {
         "usage_notes": usage_notes_combined,
         "doctor_consultation": doctor_consultation,
         "treatment_warning": treatment_warning
     }
+
+    if cache_key is not None:
+        if len(_batch_notes_cache) >= _BATCH_NOTES_MAX:
+            oldest = min(_batch_notes_cache, key=lambda k: _batch_notes_cache[k][0])
+            _batch_notes_cache.pop(oldest, None)
+        _batch_notes_cache[cache_key] = (time.time(), dict(result))
+
+    return result
 
 
 def generate_default_usage_notes_and_consultation(recommended_medicines: List[Dict], user_info: Dict, nlu_result: Dict = None) -> Dict:
