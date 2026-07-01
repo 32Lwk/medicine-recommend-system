@@ -295,6 +295,27 @@ def has_explicit_symptom_signal(message: str) -> bool:
     if has_symptom_keyword:
         return True
     if any(k in text for k in recommendation_intent_keywords):
+        if _is_store_procurement_intent(text):
+            return False
+        return True
+    return False
+
+
+def _is_store_procurement_intent(text: str) -> bool:
+    """市販薬の購入先・在庫照会は症状シグナルではない。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        if classify_medicine_procurement_route(t):
+            return True
+    except ImportError:
+        pass
+    if "購入先" in t or "買える場所" in t or "買える店" in t:
+        return True
+    if "市販薬" in t and any(h in t for h in ("どこ", "近く", "場所", "購入", "買")):
         return True
     return False
 

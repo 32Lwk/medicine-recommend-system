@@ -91,6 +91,129 @@ def _handle_web_summarize(
     return _ok_response(session)
 
 
+def _clear_web_session_data(session: Any, sid: str | None) -> None:
+    if session is not None and hasattr(session, "__setitem__"):
+        session["messages"] = []
+        session.pop("user_attributes", None)
+        session.pop("last_triage_result", None)
+        session.pop("counseling_mode", None)
+        session.pop("concierge_state", None)
+        session.pop("triage_clarify_sent", None)
+    try:
+        from src.dialogue.context import load_dialogue_context, save_dialogue_context
+
+        ctx = load_dialogue_context(session)
+        for key in ("counseling", "concierge", "routing", "handoff"):
+            ctx.pop(key, None)
+        ctx["flags"] = {}
+        save_dialogue_context(session, ctx, dual_write=True)
+    except Exception:
+        logger.debug("web session clear dialogue_state skipped", exc_info=True)
+    if sid:
+        try:
+            from src.services.session_manager import get_session_from_db, save_session_to_db
+
+            data = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+            data["messages"] = []
+            data.pop("user_attributes", None)
+            data.pop("pending_memory_delete", None)
+            save_session_to_db(sid, data)
+        except Exception:
+            logger.debug("web session clear db skipped", exc_info=True)
+
+
+def _handle_web_delete(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+) -> ResponseTuple:
+    from src.agents.session_agent import (
+        _build_bot,
+        _clear_pending_memory_delete,
+        _is_delete_confirm_no,
+        _is_delete_confirm_yes,
+        _ok_response,
+        _persist_session_messages,
+    )
+    from src.services.status_diagnosis_builder import build_notice_status
+    from src.utils.agent_trace import log_agent_step
+
+    if _is_delete_confirm_no(user_text):
+        _clear_pending_memory_delete(session, sid)
+        msg = "削除はキャンセルしました。記憶はそのまま残しています。"
+        sage_diag = build_notice_status(
+            msg,
+            title="記憶の削除",
+            kind="memory_delete_cancelled",
+        ).to_client_dict()
+        bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete_cancelled")
+        _persist_session_messages(session, sid, user_text, bot)
+        log_agent_step(None, "SessionOps", "web_memory_delete_cancelled", sid=sid)
+        return _ok_response(session)
+
+    if session.get("pending_memory_delete"):
+        from src.agents.session_agent import _is_pending_delete_explain_request
+
+        if _is_pending_delete_explain_request(user_text):
+            msg = (
+                "現在、記憶の削除確認をお待ちしています。"
+                "削除対象は、この端末の相談履歴と保存情報です。"
+                "実行する場合は「削除する」、やめる場合は「キャンセル」とお送りください。"
+            )
+            sage_diag = build_notice_status(
+                msg,
+                title="記憶の削除（確認中）",
+                kind="memory_delete_explain",
+            ).to_client_dict()
+            bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete_explain")
+            _persist_session_messages(session, sid, user_text, bot)
+            log_agent_step(None, "SessionOps", "web_memory_delete_explain", sid=sid)
+            return _ok_response(session)
+
+    if session.get("pending_memory_delete") and not _is_delete_confirm_yes(user_text):
+        msg = (
+            "削除する場合は「削除する」、やめる場合は「キャンセル」とお送りください。"
+            "（「はい」「いいえ」でも受け付けます）"
+        )
+        sage_diag = build_notice_status(
+            msg,
+            title="記憶の削除（確認）",
+            kind="memory_delete_pending",
+        ).to_client_dict()
+        bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete_pending")
+        _persist_session_messages(session, sid, user_text, bot)
+        return _ok_response(session)
+
+    if session.get("pending_memory_delete") and _is_delete_confirm_yes(user_text):
+        _clear_web_session_data(session, sid)
+        session.pop("pending_memory_delete", None)
+        msg = "この端末の相談履歴と保存情報を削除しました。"
+        sage_diag = build_notice_status(
+            msg,
+            title="記憶の削除",
+            kind="memory_delete",
+        ).to_client_dict()
+        bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete")
+        _persist_session_messages(session, sid, user_text, bot)
+        log_agent_step(None, "SessionOps", "web_memory_deleted", sid=sid)
+        return _ok_response(session)
+
+    session["pending_memory_delete"] = {"scope": "all", "owner": sid or "web"}
+    msg = (
+        "このチャットの相談履歴と保存情報を削除します。"
+        "よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。"
+    )
+    sage_diag = build_notice_status(
+        msg,
+        title="記憶の削除（確認）",
+        kind="memory_delete_confirm",
+    ).to_client_dict()
+    bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete_confirm")
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionOps", "web_memory_delete_confirm_requested", sid=sid)
+    return _ok_response(session)
+
+
 def try_handle_session_ops(
     session: Any,
     sid: str | None,
@@ -102,7 +225,7 @@ def try_handle_session_ops(
     """
     SessionOps 統一入口。
     LINE: delete / summarize / status（SessionAgent 委譲）
-    Web: status / summarize のみ（delete は None → 通常ルート）
+    Web: delete / summarize / status
     """
     _sync_dialogue_state(session, sid)
 
@@ -121,8 +244,10 @@ def try_handle_session_ops(
         return resp
 
     intent = classify_session_intent(user_text, triage_result=triage_result)
-    if intent == "delete":
-        return None
+    if intent == "delete" or session.get("pending_memory_delete"):
+        resp = _handle_web_delete(session, sid, user_text)
+        _sync_dialogue_state(session, sid)
+        return resp
     if intent == "status":
         resp = _handle_web_status(session, sid, user_text)
         _sync_dialogue_state(session, sid)

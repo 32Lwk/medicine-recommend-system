@@ -22,7 +22,7 @@ def test_web_status(_db, _is_line):
 
 
 @patch("src.services.line_user_memory.is_line_memory_session", return_value=False)
-def test_web_delete_not_handled(_is_line):
+def test_web_delete_requests_confirmation(_is_line):
     session: dict = {"messages": []}
     resp = try_handle_session_ops(
         session,
@@ -30,7 +30,9 @@ def test_web_delete_not_handled(_is_line):
         "履歴消して",
         MagicMock(),
     )
-    assert resp is None
+    assert resp is not None
+    assert resp[1] == 200
+    assert session.get("pending_memory_delete")
 
 
 @patch("src.services.line_user_memory.is_line_memory_session", return_value=True)

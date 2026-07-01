@@ -237,7 +237,16 @@ class ChatOrchestrator:
                     if not is_intent_router_dispatch_enabled(ctx.sid):
                         resp = self._try_session_agent(ctx)
                     else:
-                        resp = None
+                        from src.dialogue.pipeline import try_session_ops_route
+
+                        resp = try_session_ops_route(
+                            ctx.session,
+                            ctx.sid,
+                            ctx.sanitized_message or ctx.user_message,
+                            self._client,
+                            triage_result=ctx.triage_result,
+                            phase="orchestrator_other",
+                        )
                     triage_after = ctx.triage_result or {}
                     if resp is None and triage_after.get("concierge_intent") != "session_ops":
                         mark_pipeline_step("orch_route_concierge_start")

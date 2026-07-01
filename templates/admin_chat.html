@@ -157,6 +157,10 @@
                             <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
                             空セッションを含む
                         </label>
+                        <label class="session-list-filter">
+                            <input type="checkbox" id="show-v2-test-sessions" onchange="onSessionListV2TestToggle()">
+                            v2テストのみ
+                        </label>
                         <div class="session-list-toolbar-actions">
                             <button type="button" id="session-list-select-btn" class="session-list-action-btn" onclick="toggleSessionListSelectMode()" title="複数選択して削除" aria-label="複数選択して削除">
                                 <i class="fa-solid fa-list-check" aria-hidden="true"></i>

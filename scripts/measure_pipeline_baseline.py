@@ -22,6 +22,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DEFAULT_COUNSELING = ROOT / "log" / "counseling_detail_log.jsonl"
 DEFAULT_SHADOW = ROOT / "log" / "dialogue_route_shadow_log.jsonl"
 DEFAULT_DISPATCH = ROOT / "log" / "dialogue_route_dispatch_log.jsonl"

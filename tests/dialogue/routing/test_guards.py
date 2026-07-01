@@ -35,6 +35,19 @@ def test_physical_symptom_skips_low_confidence_clarification():
     assert out.resolved_by == "llm"
 
 
+def test_gate_confidence_not_downgraded_by_low_triage():
+    decision = RouteDecision(
+        primary_route="Concierge",
+        sub_route="architecture",
+        confidence=0.95,
+        resolved_by="gate",
+    )
+    triage = {"category": "Other", "confidence": 0.2}
+    out = apply_post_route_guards(decision, "技術スタックは？", {}, triage_result=triage)
+    assert out.sub_route == "architecture"
+    assert out.resolved_by == "gate"
+
+
 def test_low_confidence_triggers_clarification_without_symptom():
     decision = RouteDecision(
         primary_route="Physical",

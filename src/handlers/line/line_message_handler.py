@@ -483,8 +483,14 @@ async def _process_text_message(
             maybe_log_turn_counseling_detail(session, sid, text, bot_msg)
 
             from src.dialogue.adapters.line_delivery import resolve_line_messages
+            from src.services.llm_unavailability import resolve_line_messages_with_optional_notice
 
-            line_messages = resolve_line_messages(bot_msg, session, sid, lang)
+            line_messages = resolve_line_messages_with_optional_notice(
+                bot_msg,
+                session,
+                sid,
+                lang,
+            )
             if not LINE_CHANNEL_ACCESS_TOKEN:
                 return
 

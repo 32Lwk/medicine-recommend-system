@@ -149,6 +149,14 @@ def _is_medicine_consultation(text: str) -> bool:
     if is_legal_compliance_meta_question(text):
         return False
 
+    if re.search(r"ルールベース|rule[\s-]?based", text, re.I) and re.search(
+        r"(選び方|スコア|仕組み|アルゴリズム|どう選|推奨)", text, re.I
+    ):
+        return False
+
+    if re.search(r"データ.{0,12}(保存|どこ|記憶)", text):
+        return False
+
     hints = (
 
         "薬",
@@ -418,7 +426,10 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(技術スタック|技術構成|開発環境|使ってる技術|tech\s*stack|デプロイ|インフラ)"), "architecture"),
-    (re.compile(r"(FastAPI|Cloud\s*Run|PostgreSQL|Gunicorn|Neon)"), "architecture"),
+    (re.compile(r"(FastAPI|Cloud\s*Run|PostgreSQL|Gunicorn|Neon|Sage\s*Terrace)"), "architecture"),
+    (re.compile(r"ルールベース|rule[\s-]?based"), "architecture"),
+    (re.compile(r"データ.{0,12}(保存|どこ)"), "architecture"),
+    (re.compile(r"(記憶|保存).{0,12}(どこ|仕組み|方法)"), "architecture"),
     (re.compile(r"(何ができる|できること|対応言語)"), "capabilities"),
     (re.compile(r"otc.{0,12}(って|とは|てなに|の意味)", re.I), "capabilities"),
     (re.compile(r"市販薬.{0,12}(って|とは|てなに|の意味)"), "capabilities"),

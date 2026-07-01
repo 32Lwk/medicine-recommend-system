@@ -107,6 +107,52 @@ def load_gcp_log_entries(path: Path) -> List[LogEntry]:
     return [LogEntry.from_gcp(item) for item in data]
 
 
+DEV_MD_HEADER_RE = re.compile(r"^# Development log (?P<date>\d{4}-\d{2}-\d{2})\s*$")
+DEV_MD_BULLET_RE = re.compile(
+    r"^- `(?P<time>\d{2}:\d{2}:\d{2}\.\d{3})` \*\*(?P<level>\w+)\*\* `(?P<logger>[^`]+)`: (?P<message>.*)$"
+)
+
+
+def load_dev_markdown_log_entries(path: Path) -> List[LogEntry]:
+    """log/log/yyyy-mm-dd-n.md（開発日次 Markdown）を LogEntry 列に変換する。"""
+    entries: List[LogEntry] = []
+    current_date: Optional[str] = None
+    with path.open(encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.rstrip("\n")
+            if not line or line.startswith("  <details>") or line.startswith("</details>"):
+                continue
+            header = DEV_MD_HEADER_RE.match(line)
+            if header:
+                current_date = header.group("date")
+                continue
+            bullet = DEV_MD_BULLET_RE.match(line)
+            if bullet:
+                day = current_date or "1970-01-01"
+                ts = f"{day}T{bullet.group('time')}"
+                entries.append(
+                    LogEntry(
+                        timestamp=ts,
+                        severity=bullet.group("level"),
+                        text=bullet.group("message"),
+                        labels={"logger": bullet.group("logger"), "environment": "local-dev"},
+                    )
+                )
+                continue
+            stripped = line.strip()
+            if stripped.startswith(JSON_LOG_START):
+                prev_ts = entries[-1].timestamp if entries else ""
+                entries.append(
+                    LogEntry(
+                        timestamp=prev_ts,
+                        severity="INFO",
+                        text=stripped,
+                        labels={"environment": "local-dev"},
+                    )
+                )
+    return entries
+
+
 def _parse_latency_seconds(value: str) -> Optional[float]:
     if not value:
         return None
@@ -724,17 +770,20 @@ SECTION_BUILDERS: Dict[str, Any] = {
 }
 
 
-def build_analysis_bundle(
+def build_analysis_bundle_from_entries(
+    entries: Sequence[LogEntry],
     source_path: Path,
     *,
     max_samples: int = 80,
     max_traces: int = 200,
     max_counseling: int = 500,
     max_sessions: int = 50,
+    environment: Optional[str] = None,
 ) -> Dict[str, Any]:
-    entries = load_gcp_log_entries(source_path)
-
     metadata = extract_metadata(entries, source_path)
+    if environment:
+        metadata["environment"] = environment
+        metadata["primary_service"] = environment
     chat_flow = extract_chat_flow(entries, max_traces=max_traces)
     sections: Dict[str, Any] = {}
 
@@ -758,6 +807,52 @@ def build_analysis_bundle(
             sections[name] = builder(entries)
 
     return {"metadata": metadata, "sections": sections}
+
+
+def build_analysis_bundle(
+    source_path: Path,
+    *,
+    max_samples: int = 80,
+    max_traces: int = 200,
+    max_counseling: int = 500,
+    max_sessions: int = 50,
+) -> Dict[str, Any]:
+    entries = load_gcp_log_entries(source_path)
+    return build_analysis_bundle_from_entries(
+        entries,
+        source_path,
+        max_samples=max_samples,
+        max_traces=max_traces,
+        max_counseling=max_counseling,
+        max_sessions=max_sessions,
+    )
+
+
+def build_analysis_bundle_from_dev_logs(
+    paths: Sequence[Path],
+    *,
+    output_label: Optional[str] = None,
+    max_samples: int = 80,
+    max_traces: int = 200,
+    max_counseling: int = 500,
+    max_sessions: int = 50,
+) -> Dict[str, Any]:
+    """複数の開発 Markdown ログを時系列マージして解析バンドルを構築する。"""
+    entries: List[LogEntry] = []
+    for path in paths:
+        entries.extend(load_dev_markdown_log_entries(path))
+    entries.sort(key=lambda e: e.timestamp or "")
+    label = output_label or "+".join(p.stem for p in paths)
+    virtual_source = paths[0].parent / f"{label}.md"
+    return build_analysis_bundle_from_entries(
+        entries,
+        virtual_source,
+        max_samples=max_samples,
+        max_traces=max_traces,
+        max_counseling=max_counseling,
+        max_sessions=max_sessions,
+        environment="local-dev",
+    )
 
 
 def write_analysis_bundle(

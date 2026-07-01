@@ -222,6 +222,20 @@ def run_chat_post_pipeline(
     if manual_resp is not None:
         return _guard_return(manual_resp)
 
+    from src.agents.session_agent import probe_session_admin_intent
+
+    if probe_session_admin_intent(ctx.user_message):
+        session_admin_resp = _try_session_ops_handler(
+            session,
+            sid,
+            ctx.user_message,
+            ctx.recommendation_client,
+            phase="admin_probe",
+        )
+        if session_admin_resp is not None:
+            sync_messages_to_db_for_admin(session, sid, client_info)
+            return _guard_return(session_admin_resp)
+
     mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
     budget_resp = check_llm_budget_block(session, sid)
@@ -243,6 +257,32 @@ def run_chat_post_pipeline(
         return _guard_return(pre_gate.response)
 
     mark_pipeline_step("after_security")
+
+    from src.handlers.chat.chat_echo_guard import (
+        build_echo_guard_response,
+        detect_echo_user_input,
+    )
+
+    is_echo, echo_reason = detect_echo_user_input(session, ctx.user_message)
+    if is_echo:
+        try:
+            from src.utils.structured_logger import log_counseling_detail
+
+            log_counseling_detail(
+                session_id=sid,
+                echo_detected=True,
+                echo_reason=echo_reason,
+                user_input=ctx.user_message[:200],
+            )
+        except Exception:
+            logger.debug("echo_detected log skipped", exc_info=True)
+        bot = build_echo_guard_response(session, sid)
+        session.setdefault("messages", []).append(bot)
+        return _guard_return(
+            {"status": "ok", "message_count": len(session.get("messages", []))},
+            200,
+        )
+
     from src.services.line_user_memory import apply_profile_to_session, is_line_memory_session
 
     if is_line_memory_session(sid, session):
@@ -401,6 +441,23 @@ def run_chat_post_pipeline(
     ctx.has_sleepiness_keyword = session.get("has_sleepiness_keyword", False)
     ctx.has_insomnia_keyword = session.get("has_insomnia_keyword", False)
 
+    _run_moderation_if_needed(ctx)
+
+    if is_agent_enabled():
+        mark_pipeline_step("before_orchestrator")
+        try:
+            from config.llm_flags import is_intent_router_dispatch_enabled
+
+            if is_intent_router_dispatch_enabled(sid):
+                from src.dialogue.dispatcher import try_agent_dispatch
+
+                dispatch_resp = try_agent_dispatch(ctx, monitor)
+                if dispatch_resp is not None:
+                    session.pop("triage_clarify_sent", None)
+                    return _guard_return(dispatch_resp)
+        except Exception:
+            logger.debug("intent_router_dispatch skipped", exc_info=True)
+
     if ctx.triage_result:
         from src.handlers.chat.chat_confidence_route import check_triage_confidence
 
@@ -421,22 +478,18 @@ def run_chat_post_pipeline(
 
     mark_pipeline_step("confidence_gate_done")
 
-    _run_moderation_if_needed(ctx)
+    from src.handlers.chat.llm_pipeline_guard import try_llm_pipeline_short_circuit
+
+    short_circuit = try_llm_pipeline_short_circuit(
+        session,
+        sid,
+        ctx.triage_result,
+        user_message=ctx.user_message,
+    )
+    if short_circuit is not None:
+        return _guard_return(short_circuit)
 
     if is_agent_enabled():
-        mark_pipeline_step("before_orchestrator")
-        try:
-            from config.llm_flags import is_intent_router_dispatch_enabled
-
-            if is_intent_router_dispatch_enabled(sid):
-                from src.dialogue.dispatcher import try_agent_dispatch
-
-                dispatch_resp = try_agent_dispatch(ctx, monitor)
-                if dispatch_resp is not None:
-                    return _guard_return(dispatch_resp)
-        except Exception:
-            logger.debug("intent_router_dispatch skipped", exc_info=True)
-
         try:
             from src.handlers.chat_orchestrator import try_orchestrator_route
 

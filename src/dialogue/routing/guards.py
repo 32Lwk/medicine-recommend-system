@@ -15,6 +15,11 @@ def apply_post_route_guards(
     triage_result: dict[str, Any] | None = None,
 ) -> RouteDecision:
     """発熱コンテキスト中の store 禁止、低 confidence 時の clarification 等。"""
+    from src.services.llm_unavailability import should_block_llm_dependent_reply
+
+    if session is not None and should_block_llm_dependent_reply(session):
+        return decision
+
     from src.utils.input_helpers import (
         has_fever_signal,
         session_has_fever_context,
@@ -38,7 +43,8 @@ def apply_post_route_guards(
 
     triage = triage_result or {}
     conf = decision.confidence
-    if triage.get("confidence") is not None:
+    # gate 即決定は triage の低信頼で clarification に落とさない
+    if decision.resolved_by != "gate" and triage.get("confidence") is not None:
         conf = min(conf, float(triage.get("confidence") or 0))
 
     threshold = triage_confidence_threshold()
@@ -48,6 +54,8 @@ def apply_post_route_guards(
         if decision.primary_route == "Physical" and (
             fever_active or has_explicit_symptom_signal(user_text)
         ):
+            return decision
+        if decision.resolved_by == "gate" and decision.confidence >= threshold:
             return decision
         return RouteDecision(
             primary_route=decision.primary_route,
