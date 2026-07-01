@@ -63,6 +63,86 @@ def _mark_session_modified(session: Any) -> None:
         session.modified = True
 
 
+def _find_last_recommendation(session: Any, sid: Optional[str]) -> Optional[dict]:
+    messages = session.get("messages") or []
+    if sid:
+        sd = get_session_from_db(sid)
+        if sd and len(sd.get("messages") or []) >= len(messages):
+            messages = sd.get("messages") or messages
+    for msg in reversed(messages):
+        if msg.get("type") != "bot":
+            continue
+        diag = msg.get("diagnosis") or {}
+        meds = diag.get("recommended_medicines") or []
+        if meds:
+            return diag
+        if diag.get("render") == "sage_reco" and diag.get("symptoms"):
+            return diag
+    return None
+
+
+def _should_use_recommendation_summary_mode(session: Any, sanitized_message: str) -> bool:
+    """直近推奨直後の曖昧な症状繰り返しは再スコアリングせず要約モードへ。"""
+    text = (sanitized_message or "").strip()
+    if not text or len(text) > 40:
+        return False
+    if any(k in text for k in ATTR_KEYWORDS):
+        return False
+    if any(p in text for p in QUESTION_PATTERNS):
+        return False
+    if any(k in text for k in PREFERS_KAMPO_KEYWORDS + PREFERS_NOT_KAMPO_KEYWORDS):
+        return False
+    return _find_last_recommendation(session, None) is not None
+
+
+def _build_recommendation_summary_response(
+    session: Any,
+    sid: Optional[str],
+    *,
+    user_message: str,
+) -> ResponseTuple:
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_notice_status
+
+    diag = _find_last_recommendation(session, sid) or {}
+    meds = diag.get("recommended_medicines") or []
+    names = [
+        str(m.get("product_name") or m.get("name") or "").strip()
+        for m in meds[:3]
+        if isinstance(m, dict)
+    ]
+    names = [n for n in names if n]
+    symptoms = diag.get("symptoms") or []
+    symptom_text = "、".join(symptoms[:3]) if symptoms else "ご相談の症状"
+    if names:
+        med_text = "、".join(names)
+        message = (
+            f"先ほどのご相談（{symptom_text}）では、{med_text} などをご案内しました。"
+            "用法用量や飲み合わせについて、ほかに知りたいことはありますか？"
+        )
+    else:
+        message = (
+            "先ほどの市販薬のご案内を踏まえ、ほかに知りたいことや気になる点はありますか？"
+        )
+    sage_diag = build_notice_status(
+        message,
+        title="推奨の確認",
+        kind="recommendation_summary",
+    ).to_client_dict()
+    bot = build_bot_response(session, sid, sage_diagnosis=sage_diag, legacy_content=message)
+    session.setdefault("messages", []).append(
+        {"type": "user", "content": user_message, "timestamp": datetime.now().isoformat()}
+    )
+    session["messages"].append(bot)
+    _mark_session_modified(session)
+    if sid:
+        sd = get_session_from_db(sid) or {"session_id": sid, "messages": []}
+        sd["messages"] = list(session.get("messages") or [])
+        sd["last_activity"] = datetime.now()
+        save_session_to_db(sid, sd)
+    return {"status": "ok", "message_count": len(session.get("messages", []))}, 200
+
+
 def _escalation_response(
     session: Any,
     sid: Optional[str],
@@ -151,6 +231,16 @@ def run_recommendation_followups(
     Other かつ店舗案内でない場合の再推奨・医薬品質問フォローアップ。
     早期応答時は response を、漢方フォロー時はメッセージ差し替えを返す。
     """
+    if _should_use_recommendation_summary_mode(session, sanitized_message):
+        logger.info("推奨要約モード: 直近推奨後の曖昧入力のため再スコアリングをスキップ")
+        return FollowupResult(
+            response=_build_recommendation_summary_response(
+                session,
+                sid,
+                user_message=original_user_message or user_message,
+            )
+        )
+
     is_kampo_preference_refinement = False
     has_kampo_pref = any(
         kw in sanitized_message

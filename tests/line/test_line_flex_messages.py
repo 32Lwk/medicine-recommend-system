@@ -370,3 +370,62 @@ def test_score_three_tier_colors():
 def test_carousel_alt_includes_count():
     messages = build_line_messages_from_bot_message(_success_bot_message())
     assert "（3件）" in messages[1]["altText"]
+
+
+def test_llm_unavailable_error_card_flex():
+    from src.services.status_diagnosis_builder import build_llm_unavailable_status
+
+    bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "diagnosis": build_llm_unavailable_status().to_client_dict(),
+        "llm_unavailable": True,
+    }
+    messages = build_line_messages_from_bot_message(bot)
+    assert len(messages) == 1
+    assert messages[0]["type"] == "flex"
+    header = messages[0]["contents"]["header"]["contents"][0]["text"]
+    assert "詳しいAIご案内" in header
+    body_text = " ".join(
+        block.get("text", "")
+        for block in messages[0]["contents"]["body"]["contents"]
+        if block.get("type") == "text"
+    )
+    assert "ご利用の目安" in body_text
+    assert "引き続きお試しいただける" in body_text
+    assert "429" not in body_text
+
+
+def test_resolve_line_messages_with_optional_notice():
+    from src.services.llm_unavailability import resolve_line_messages_with_optional_notice
+    from src.services.status_diagnosis_builder import build_llm_unavailable_status
+
+    notice_diag = build_llm_unavailable_status().to_client_dict()
+    notice_bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "uuid": "notice-1",
+        "diagnosis": notice_diag,
+    }
+    latest_bot = {
+        "type": "bot",
+        "content": "sage_status",
+        "uuid": "latest-1",
+        "diagnosis": {
+            "schema_version": 1,
+            "render": "sage_status",
+            "variant": "notice",
+            "title": "追加案内",
+            "message": "症状に合う市販薬をご案内します。",
+        },
+    }
+    session = {"messages": [], "_llm_unavailable_notice_bot": notice_bot}
+    line_messages = resolve_line_messages_with_optional_notice(
+        latest_bot,
+        session,
+        "sid-line",
+        "ja",
+    )
+    assert len(line_messages) == 2
+    assert "詳しいAIご案内" in line_messages[0]["contents"]["header"]["contents"][0]["text"]
+    assert "追加案内" in line_messages[1]["contents"]["header"]["contents"][0]["text"]

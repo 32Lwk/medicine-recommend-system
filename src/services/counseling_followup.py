@@ -7,11 +7,64 @@ counseling_response から分離（SRP改善）。
 
 import json
 import logging
-from typing import Dict, List
+import difflib
+import re
+from typing import Dict, List, Optional
 
 from openai import OpenAI
 
 logger = logging.getLogger(__name__)
+
+_DEDUP_SIMILARITY_THRESHOLD = 0.85
+
+
+def _normalize_question_text(text: str) -> str:
+    return re.sub(r"\s+", "", (text or "").strip().lower())
+
+
+def filter_duplicate_counseling_questions(
+    questions: List[str],
+    prior_questions: List[str],
+) -> List[str]:
+    """直近に出した質問と重複するフォローアップを除外する。"""
+    prior_norm = {_normalize_question_text(q) for q in prior_questions if q}
+    filtered: List[str] = []
+    for question in questions or []:
+        q = (question or "").strip()
+        if not q:
+            continue
+        norm = _normalize_question_text(q)
+        if norm in prior_norm:
+            continue
+        if any(
+            norm in p or p in norm
+            for p in prior_norm
+            if len(p) >= 6 and len(norm) >= 6
+        ):
+            continue
+        if any(
+            difflib.SequenceMatcher(None, norm, p).ratio() >= _DEDUP_SIMILARITY_THRESHOLD
+            for p in prior_norm
+            if len(p) >= 8
+        ):
+            continue
+        if any(
+            difflib.SequenceMatcher(None, norm, _normalize_question_text(f)).ratio()
+            >= _DEDUP_SIMILARITY_THRESHOLD
+            for f in filtered
+        ):
+            continue
+        filtered.append(q)
+        prior_norm.add(norm)
+    return filtered
+
+
+def prior_questions_from_history(question_history: List[Dict]) -> List[str]:
+    return [
+        str(item.get("question") or "").strip()
+        for item in (question_history or [])
+        if item.get("question")
+    ]
 
 
 def calculate_adaptive_question_limit(
@@ -93,7 +146,17 @@ def should_ask_question(
 def generate_follow_up_questions(
     symptom_type: str,
     collected_info: Dict,
-    client: OpenAI
+    client: OpenAI,
+    prior_questions: Optional[List[str]] = None,
+) -> List[str]:
+    questions = _generate_follow_up_questions_impl(symptom_type, collected_info, client)
+    return filter_duplicate_counseling_questions(questions, prior_questions or [])
+
+
+def _generate_follow_up_questions_impl(
+    symptom_type: str,
+    collected_info: Dict,
+    client: OpenAI,
 ) -> List[str]:
     """
     フォローアップ質問を生成

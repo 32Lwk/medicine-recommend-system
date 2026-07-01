@@ -161,7 +161,9 @@ def handle_emotional_category(
             conversation_history=conversation_history,
             session_id=sid,
         )
-        initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
+        initial_questions = generate_follow_up_questions(
+            symptom_type, {}, recommendation_client, prior_questions=[]
+        )
         start_counseling_mode(session, symptom_type, initial_questions)
 
         try:

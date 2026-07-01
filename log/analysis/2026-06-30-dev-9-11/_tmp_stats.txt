@@ -1,0 +1,9 @@
+EMERGENCY_INPUTS {'繧ゅ≧蟆代＠隧ｳ縺励￥謨吶∴縺ｦ縺上□縺輔＞': 39, '鮠ｻ豌ｴ縺梧ｭ｢縺ｾ繧峨↑縺・: 1}
+OPENAI_TYPES {'http_429_only': 55, 'insufficient_quota': 15, 'counseling_detail': 10}
+OPENAI_TIME 2026-06-30T14:15:52.962 2026-06-30T14:16:19.298
+GUNICORN {'NameError': 78} range 2026-06-30T16:12:47.086 2026-06-30T17:41:22.790
+EMERGENCY_TRACES 11
+EMERGENCY_TRACE_INPUTS {'閭ｸ縺檎李縺・: 3, '蜻ｼ蜷ｸ縺瑚協縺励＞': 1, '諢剰ｭ倥′繧ゅ≧繧阪≧縺ｨ縺吶ｋ': 2, '螟ｧ驥丞・陦縺励※縺・∪縺・: 2, '逞呎肇縺励※縺・ｋ': 1, '阮ｬ繧貞､ｧ驥上↓鬟ｲ繧薙□': 1, '諢剰ｭ倥′縺ｪ縺・ｺｺ縺後＞繧・: 1}
+DB_NEON_COUNT 18
+DB_RESTARTS 6
+SOURCE_MISSING

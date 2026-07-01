@@ -322,6 +322,7 @@ def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
             save_dialogue_context(ctx.session, dctx, dual_write=False)
         except Exception:
             logger.debug("dialogue_state routing persist skipped", exc_info=True)
+        ctx.session.pop("triage_clarify_sent", None)
         try:
             from src.dialogue.sync_legacy import sync_dialogue_legacy_mirrors
 

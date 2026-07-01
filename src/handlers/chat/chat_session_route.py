@@ -133,26 +133,30 @@ def sync_messages_to_db_for_admin(
 
     session_data = get_session_from_db(sid) or {}
     existing_messages = list(session_data.get("messages", []))
-    new_user_messages = [m for m in session.get("messages", []) if m.get("type") == "user"]
-    for new_msg in new_user_messages:
+    session_messages = list(session.get("messages", []) or [])
+    merged_messages = list(existing_messages)
+    for new_msg in session_messages:
         if not any(
-            ex.get("type") == "user"
+            ex.get("type") == new_msg.get("type")
             and ex.get("content") == new_msg.get("content")
             and ex.get("uuid") == new_msg.get("uuid")
-            for ex in existing_messages
+            and ex.get("timestamp") == new_msg.get("timestamp")
+            for ex in merged_messages
         ):
-            existing_messages.append(new_msg)
-    if not existing_messages:
+            merged_messages.append(new_msg)
+    if not merged_messages:
         return
     ensure_session_persisted(
         sid,
         {
-            "messages": existing_messages,
+            "messages": merged_messages,
             "user_attributes": session.get("user_attributes", session_data.get("user_attributes", {})),
             "username": session.get("username") or session_data.get("username"),
             "session_active": True,
             "client_ip": getattr(client_info, "client_ip", None),
             "user_agent": getattr(client_info, "user_agent", None),
+            "v2_local_test": session.get("v2_local_test", session_data.get("v2_local_test")),
+            "v2_test_scenario": session.get("v2_test_scenario", session_data.get("v2_test_scenario")),
         },
         None,
     )

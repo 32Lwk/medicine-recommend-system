@@ -40,6 +40,78 @@ from src.handlers.chat.chat_response_builder import build_success_response
 
 logger = logging.getLogger(__name__)
 
+_PEDIATRIC_HINTS = (
+    "子ども",
+    "子供",
+    "こども",
+    "小児",
+    "赤ちゃん",
+    "幼児",
+    "息子",
+    "娘",
+    "孫",
+)
+
+
+def _pediatric_context_without_confirmed_age(user_text: str, user_info: dict) -> bool:
+    if user_info.get("age") is not None:
+        return False
+    t = f"{user_text or ''} {user_info.get('user_text') or ''}"
+    return any(h in t for h in _PEDIATRIC_HINTS)
+
+
+def _filter_medicines_when_age_unknown(medicines: list, user_info: dict) -> list:
+    if user_info.get("age") is not None or not medicines:
+        return medicines
+    filtered = []
+    for med in medicines:
+        restriction = str(med.get("age_restriction") or "")
+        match = re.search(r"(\d+)歳", restriction)
+        if match and int(match.group(1)) >= 12:
+            continue
+        filtered.append(med)
+    return filtered
+
+
+def _build_pediatric_age_inquiry_response(session, sid):
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_notice_status
+
+    message = (
+        "お子さまの年齢が分かると、より安全な市販薬をご案内できます。"
+        "何歳か教えていただけますか。高熱が続く場合や状態が悪い場合は、早めに医療機関へご相談ください。"
+    )
+    sage_diag = build_notice_status(
+        message,
+        title="年齢の確認",
+        kind="pediatric_age_required",
+    ).to_client_dict()
+    bot = build_bot_response(session, sid, sage_diagnosis=sage_diag, legacy_content=message)
+    session.setdefault("messages", []).append(bot)
+    return {"status": "ok", "message_count": len(session.get("messages", []))}, 200
+
+
+def _build_empty_recommendation_fallback(session, sid, recommendation_result: dict, user_message: str):
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_notice_status
+    from src.services.reco_error_messages import ERROR_MESSAGES
+
+    doctor = (recommendation_result.get("doctor_consultation") or "").strip()
+    no_msg = ERROR_MESSAGES["no_candidates"]["main_message"]
+    message = doctor or no_msg
+    hints = list(ERROR_MESSAGES["no_candidates"].get("recommendations") or [])
+    sage_diag = build_notice_status(
+        message,
+        title=ERROR_MESSAGES["no_candidates"]["title"],
+        kind="no_recommendation",
+        hints=hints[:3] if hints else None,
+    ).to_client_dict()
+    bot = build_bot_response(session, sid, sage_diagnosis=sage_diag, legacy_content=message)
+    session.setdefault("messages", []).append(bot)
+    session["physical_consultation_active"] = True
+    logger.info("Empty recommendation fallback sid=%s user=%r", sid, (user_message or "")[:80])
+    return {"status": "ok", "message_count": len(session.get("messages", []))}, 200
+
 
 def _emit_explanation_followup_sse(
     session,
@@ -1015,19 +1087,21 @@ def run_recommendation_flow(
                 # 「その他」の場合でも、NLU解析結果から症状を取得し、適切なmedicine_typeを推測
                 if nlu_symptoms:
                     from src.core.rule_based_recommendation import SYMPTOM_DICTIONARY
-                                
+                    from src.utils.symptom_helpers import normalize_symptom_names
+
+                    symptom_names = normalize_symptom_names(nlu_symptoms)
                     # NLU解析結果から検出された症状に基づいてmedicine_typeを推測
                     detected_medicine_types = set()
-                    for symptom_name in nlu_symptoms:
+                    for symptom_name in symptom_names:
                         symptom_data = SYMPTOM_DICTIONARY.get(symptom_name)
                         if symptom_data:
                             medicine_types_for_symptom = symptom_data.get('medicine_types', [])
                             detected_medicine_types.update(medicine_types_for_symptom)
-                                
+
                     if detected_medicine_types:
                         # 最初に見つかったmedicine_typeを使用（優先順位は症状のweightに基づく）
                         medicine_type = list(detected_medicine_types)[0]
-                        logger.info(f"🔍 NLU解析結果からmedicine_typeを推測: {medicine_type} (検出された症状: {nlu_symptoms})")
+                        logger.info(f"🔍 NLU解析結果からmedicine_typeを推測: {medicine_type} (検出された症状: {symptom_names})")
                         
             # 妊娠の可能性が検出された場合の処理
             pregnancy_message = None
@@ -1288,6 +1362,9 @@ def run_recommendation_flow(
                 if physical_blocked is not None:
                     return physical_blocked
 
+                if _pediatric_context_without_confirmed_age(sanitized_message, user_info):
+                    return _build_pediatric_age_inquiry_response(session, sid)
+
                 mark_pipeline_step("rule_based_start")
                 recommendation_result = _invoke_rule_based_recommendation(
                     processed_message,
@@ -1297,11 +1374,34 @@ def run_recommendation_flow(
                     nlu_result,
                     llm_user_text=llm_text,
                 )
-                mark_pipeline_step("rule_based_done")
+                mark_pipeline_step("rule_based_scoring_only_done")
                             
                 # ルールベース結果のデバッグログ
                 logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
                 logger.info(f"🔍 Rule-based medicines count: {len(recommendation_result.get('recommended_medicines', []))}")
+                _rb_meds = recommendation_result.get("recommended_medicines", [])
+                _filtered_meds = _filter_medicines_when_age_unknown(_rb_meds, user_info)
+                if len(_filtered_meds) != len(_rb_meds):
+                    recommendation_result["recommended_medicines"] = _filtered_meds
+                    logger.info(
+                        "🔒 age unknown: filtered age-restricted medicines %s -> %s",
+                        len(_rb_meds),
+                        len(_filtered_meds),
+                    )
+
+                if (
+                    not recommendation_result.get("recommended_medicines")
+                    and not recommendation_result.get("error")
+                    and not recommendation_result.get("escalation")
+                ):
+                    return _build_empty_recommendation_fallback(
+                        session,
+                        sid,
+                        recommendation_result,
+                        sanitized_message,
+                    )
+
+                session["physical_consultation_active"] = True
                             
                 # NLU解析結果から性別自動判定と妊娠の可能性を取得
                 nlu_result = recommendation_result.get('nlu_result', {})
@@ -1438,6 +1538,7 @@ def run_recommendation_flow(
                                 
                     # 使用上の注意をChatGPTで自動生成（並列・最大3件）
                     mark_processing_step(sid, "usage_notes")
+                    mark_pipeline_step("explanation_phase_start")
                     usage_notes = recommendation_result.get('usage_notes', '')
                     if not usage_notes or usage_notes == '添付文書をよく読んでご使用ください。':
                         try:
@@ -1445,13 +1546,11 @@ def run_recommendation_flow(
                                 generate_usage_notes_parallel,
                             )
 
-                            mark_pipeline_step("usage_notes_start")
                             generated_notes = generate_usage_notes_parallel(
                                 recommended_medicines,
                                 user_info=user_info,
                                 nlu_result=nlu_result,
                             )
-                            mark_pipeline_step("usage_notes_done")
                             if generated_notes:
                                 usage_notes = '<br><br>'.join(generated_notes)
                             else:
@@ -1459,7 +1558,19 @@ def run_recommendation_flow(
                         except Exception as e:
                             logger.warning(f"使用上の注意一括生成エラー: {e}")
                             usage_notes = '添付文書をよく読んでご使用ください。'
-                                
+                    mark_pipeline_step("explanation_phase_done")
+                    if sid and recommended_medicines:
+                        try:
+                            from src.services.sse_emit import emit_bot_followup
+
+                            emit_bot_followup(
+                                session_id=sid,
+                                message_type="explanations_ready",
+                                payload={"usage_notes_chars": len(usage_notes or "")},
+                            )
+                        except Exception:
+                            pass
+
                     doctor_consultation = recommendation_result.get('doctor_consultation', '症状が改善しない場合は医師にご相談ください。')
                                 
                     # 症状の重症度による受診勧奨チェック

@@ -116,6 +116,20 @@ def finalize_pipeline_response(
         _schedule_turn_detail_log(session, sid, user_message=user_message)
         return response
 
+    try:
+        from src.services.llm_unavailability import is_llm_infrastructure_degraded
+
+        if is_llm_infrastructure_degraded(session):
+            if hasattr(session, "__setitem__"):
+                session.pop("_pipeline_end_guard", None)
+            _schedule_turn_detail_log(session, sid, user_message=user_message)
+            body, status = response
+            new_body = dict(body) if isinstance(body, dict) else {"status": "ok"}
+            new_body["message_count"] = len(session.get("messages", []))
+            return new_body, status
+    except Exception:
+        pass
+
     logger.error(
         "Pipeline end guard: response_missing sid=%s user_input=%r",
         sid,

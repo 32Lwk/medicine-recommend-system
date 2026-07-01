@@ -879,6 +879,20 @@ _PLAIN_TEXT_CONCIERGE_INTENTS = frozenset(
 )
 
 
+def _diagnosis_hints_with_sections(diagnosis: dict[str, Any]) -> list[str]:
+    hints = [str(h).strip() for h in (diagnosis.get("hints") or []) if str(h).strip()]
+    for sec in diagnosis.get("sections") or []:
+        if not isinstance(sec, dict):
+            continue
+        title = str(sec.get("title") or "").strip()
+        items = [str(item).strip() for item in (sec.get("items") or []) if str(item).strip()]
+        if not title or not items:
+            continue
+        hints.append(f"【{title}】")
+        hints.extend(items)
+    return hints
+
+
 def _try_sage_diagnosis_status_flex(
     bot_message: dict[str, Any],
     *,
@@ -896,7 +910,7 @@ def _try_sage_diagnosis_status_flex(
     if not title:
         return None
     message = _diagnosis_plain_message(diagnosis)
-    hints = [str(h).strip() for h in (diagnosis.get("hints") or []) if str(h).strip()]
+    hints = _diagnosis_hints_with_sections(diagnosis)
     return _status_flex_message(
         _normalize_variant(str(diagnosis.get("variant") or "info")),
         title=title,

@@ -34,6 +34,25 @@ _STATUS_HINTS = (
     r"記憶.*状態",
     r"何が記録",
     r"記録.*教えて",
+    r"保存されている情報",
+    r"保存されている",
+)
+
+_DELETE_EXPLAIN_HINTS = (
+    r"何が.*削除",
+    r"何を.*削除",
+    r"何が消",
+    r"何を消",
+    r"どんな.*削除",
+    r"削除.*内容",
+    r"消える",
+    r"説明して",
+    r"教えて.*削除",
+)
+
+_DESTRUCTIVE_DELETE_RE = re.compile(
+    r"(消して|削除|消去|忘れて|全部消|すべて消|全て消|履歴消|記憶消|データ.*消|会話.*削除)",
+    re.I,
 )
 
 _SUMMARIZE_HINTS = (
@@ -52,6 +71,8 @@ _SESSION_ADMIN_LOOSE_DELETE = (
     r"履歴.*消",
     r"記憶.*消",
     r"データ.*消",
+    r"会話.*削除",
+    r"削除したい",
     r"全部消",
     r"すべて消",
     r"全て消",
@@ -67,6 +88,8 @@ _SESSION_ADMIN_LOOSE_STATUS = (
     r"ステータス",
     r"状態",
     r"状況",
+    r"保存されている",
+    r"記録",
 )
 
 
@@ -74,6 +97,23 @@ def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     for pat in patterns:
         if re.search(pat, text):
             return True
+    return False
+
+
+def _has_destructive_delete_intent(text: str) -> bool:
+    if _looks_like_delete_request(text):
+        return True
+    return bool(_DESTRUCTIVE_DELETE_RE.search(text or ""))
+
+
+def _is_pending_delete_explain_request(text: str) -> bool:
+    t = (text or "").strip()
+    if not t:
+        return False
+    if _matches_any(t, _DELETE_EXPLAIN_HINTS):
+        return True
+    if _matches_any(t, _STATUS_HINTS):
+        return True
     return False
 
 
@@ -87,7 +127,7 @@ def classify_session_intent(
     if not t:
         return "none"
 
-    if _looks_like_delete_request(t):
+    if _has_destructive_delete_intent(t):
         return "delete"
     if _matches_any(t, _SUMMARIZE_HINTS):
         return "summarize"
@@ -108,7 +148,7 @@ def classify_session_intent(
     if session_intent in ("delete", "summarize", "status"):
         return session_intent  # type: ignore[return-value]
 
-    if _matches_any(t, _SESSION_ADMIN_LOOSE_DELETE):
+    if _has_destructive_delete_intent(t):
         return "delete"
     if _matches_any(t, _SESSION_ADMIN_LOOSE_SUMMARIZE):
         return "summarize"
@@ -342,6 +382,32 @@ def _handle_delete_confirm(
     return _ok_response(session)
 
 
+def _handle_pending_delete_explain(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+    owner: str,
+) -> ResponseTuple:
+    from src.services.status_diagnosis_builder import build_notice_status
+    from src.utils.agent_trace import log_agent_step
+
+    msg = (
+        "現在、記憶の削除確認をお待ちしています。"
+        "削除対象は、これまでの相談記憶・プロフィール（年齢・アレルギー等）・要約です。"
+        "実行する場合は「削除する」、やめる場合は「キャンセル」とお送りください。"
+    )
+    sage_diag = build_notice_status(
+        msg,
+        title="記憶の削除（確認中）",
+        kind="memory_delete_explain",
+        hints=["削除後は元に戻せません"],
+    ).to_client_dict()
+    bot = _build_bot(session, sid, sage_diag=sage_diag, legacy_message=msg, kind="delete_explain")
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionAgent", "memory_delete_explain", sid=owner)
+    return _ok_response(session)
+
+
 def _request_delete_confirmation(
     session: Any,
     sid: str | None,
@@ -517,6 +583,10 @@ def try_handle_session_request(
                 sid,
             )
             return None
+        if is_pending_delete_cancel(user_text):
+            return _handle_delete_confirm(session, sid, user_text, owner)
+        if _is_pending_delete_explain_request(user_text):
+            return _handle_pending_delete_explain(session, sid, user_text, owner)
         return _handle_delete_confirm(session, sid, user_text, owner)
 
     intent = classify_session_intent(user_text, triage_result=triage_result)

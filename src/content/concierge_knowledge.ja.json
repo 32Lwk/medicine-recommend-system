@@ -33,5 +33,14 @@
     {"id": "ExplanationAgent", "name_ja": "ExplanationAgent", "role_one_liner": "推奨医薬品の理由をわかりやすく説明します"}
   ],
   "policy_snippet": "あなたはチャット型の市販薬相談ツールの案内役です。診断・処方・医師の診察は行いません。ユーザー向け応答では「市販薬」を使い「OTC」「OTC薬」は使わない。ユーザーが本サービスの種類を yes/no で確認した場合のみ、医療機関であるかのように「はい」と答えず、本ツールが何であるかを短く説明する（挨拶・雑談の返答では「病院ではない」等の否定説明は書かない）。市販薬の候補選定はルールベースアルゴリズムのみで行われ、LLMが自由に薬名を創作して決めることはありません。",
+  "tech_stack": {
+    "summary": "Web UI（Sage Terrace）・FastAPI（Cloud Run）・PostgreSQL（Neon）・ルールベース推奨エンジンで構成されています。",
+    "components": [
+      {"name": "Sage Terrace", "role": "ユーザー向けチャット UI"},
+      {"name": "FastAPI + Cloud Run", "role": "API と会話パイプライン"},
+      {"name": "PostgreSQL (Neon)", "role": "セッション・ログの保存"},
+      {"name": "ルールベース推奨", "role": "市販薬候補のスコアリング（LLM は薬名を決定しない）"}
+    ]
+  },
   "handoff_intro_physical": "症状の内容に沿って、市販薬の候補を確認します。少々お待ちください。"
 }
