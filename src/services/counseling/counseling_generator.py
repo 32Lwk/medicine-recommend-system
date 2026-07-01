@@ -15,6 +15,20 @@ from src.services.counseling.counseling_format import format_conversation_histor
 
 logger = logging.getLogger(__name__)
 
+
+def _ensure_user_turn_at_end(
+    conversation_history: List[Dict],
+    user_text: str,
+) -> List[Dict]:
+    """conversation_history の末尾に current user_text を注入する（v2 Wave 2）。"""
+    if not conversation_history:
+        return [{"type": "user", "content": user_text}]
+    last = conversation_history[-1]
+    if last.get("type") == "user" and (last.get("content") or "").strip() == user_text.strip():
+        return conversation_history
+    return list(conversation_history) + [{"type": "user", "content": user_text}]
+
+
 def generate_counseling_response(
     symptom_type: str,
     user_text: str,
@@ -35,6 +49,10 @@ def generate_counseling_response(
     Returns:
         カウンセリング的返信テキスト
     """
+    # v2: generator 直前に current user turn を history 末尾に注入
+    if conversation_history is not None and user_text and not symptom_type.startswith("inappropriate_request/"):
+        conversation_history = _ensure_user_turn_at_end(conversation_history, user_text)
+
     # 違法薬物・規制薬物の場合は、テンプレートベースのメッセージを返す
     if symptom_type.startswith("inappropriate_request/"):
         request_type = symptom_type.split("/")[1]

@@ -29,15 +29,12 @@ def test_finalize_pipeline_schedules_detail_log_when_bot_added() -> None:
     mock_schedule.assert_called_once_with(session, "sess1", user_message="やあ")
 
 
-def test_finalize_pipeline_schedules_detail_log_on_redirect() -> None:
+def test_finalize_pipeline_fail_loud_on_missing_bot() -> None:
     session: dict = {"messages": []}
     with patch(
-        "src.handlers.chat.chat_pipeline_end_guard.append_redirect_bot_response",
-        return_value={"type": "bot", "content": "redirect"},
-    ), patch(
         "src.handlers.chat.chat_pipeline_end_guard._schedule_turn_detail_log"
     ) as mock_schedule:
-        finalize_pipeline_response(
+        body, status = finalize_pipeline_response(
             session,
             "sess2",
             object(),
@@ -45,4 +42,7 @@ def test_finalize_pipeline_schedules_detail_log_on_redirect() -> None:
             response=({"status": "ok"}, 200),
             user_message="hello",
         )
+    assert status == 200
+    assert body.get("pipeline_end_guard") == "missing"
+    assert session["messages"] == []
     mock_schedule.assert_called_once()

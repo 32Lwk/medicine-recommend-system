@@ -95,3 +95,8 @@
 **404**: 未一致パスは `index.html` を **404** で返却（自動リダイレクトなし）。
 
 **未確定・環境依存**: OpenAI/DB 接続が無い場合の各エンドポイントのメッセージは `.env` と `init_database()` の成否に依存。
+
+### チャットルート期待挙動（Chat Pipeline v2）
+
+HTTP 表とは別に、**1 発話 → bot 応答** のルーティング期待値は [`CHAT_ROUTE_EXPECTATIONS.md`](CHAT_ROUTE_EXPECTATIONS.md) を正とする。  
+契約テスト: `tests/contract/test_route_spec_expectations.py` / `tests/fixtures/route_spec_scenarios.yaml`。

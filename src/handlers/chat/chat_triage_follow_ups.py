@@ -139,10 +139,10 @@ def run_triage_follow_ups(
                         save_session_to_db(sid, session_data)
 
                 symptom_type = "inappropriate_request/prevention"
-                conversation_history = (
-                    session.get("messages", [])[-10:]
-                    if len(session.get("messages", [])) > 10
-                    else session.get("messages", [])
+                from src.dialogue.history import resolve_counseling_history_with_fallback
+
+                conversation_history = resolve_counseling_history_with_fallback(
+                    session, sid, limit=10
                 )
                 initial_response = generate_counseling_response(
                     symptom_type, user_message, recommendation_client,
@@ -267,10 +267,10 @@ def run_triage_follow_ups(
                     session,
                     request_type,
                 )
-                conversation_history = (
-                    session.get("messages", [])[-10:]
-                    if len(session.get("messages", [])) > 10
-                    else session.get("messages", [])
+                from src.dialogue.history import resolve_counseling_history_with_fallback
+
+                conversation_history = resolve_counseling_history_with_fallback(
+                    session, sid, limit=10
                 )
                 initial_response = generate_counseling_response(
                     symptom_type, user_message, recommendation_client,

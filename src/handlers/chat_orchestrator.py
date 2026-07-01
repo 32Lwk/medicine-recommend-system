@@ -169,6 +169,7 @@ class ChatOrchestrator:
         skip_store_gate = should_prioritize_medical_route_over_store(
             ctx.triage_result,
             store_message,
+            session=ctx.session,
         )
         routing_ctx = getattr(ctx, "routing", None)
         if not skip_store_gate and evaluate_store_gate(
@@ -231,7 +232,21 @@ class ChatOrchestrator:
                     mark_pipeline_step("orch_enrich_start")
                     self._enrich_concierge_intent(ctx)
                     mark_pipeline_step("orch_enrich_end")
-                    resp = self._try_session_agent(ctx)
+                    from config.llm_flags import is_intent_router_dispatch_enabled
+
+                    if not is_intent_router_dispatch_enabled(ctx.sid):
+                        resp = self._try_session_agent(ctx)
+                    else:
+                        from src.dialogue.pipeline import try_session_ops_route
+
+                        resp = try_session_ops_route(
+                            ctx.session,
+                            ctx.sid,
+                            ctx.sanitized_message or ctx.user_message,
+                            self._client,
+                            triage_result=ctx.triage_result,
+                            phase="orchestrator_other",
+                        )
                     triage_after = ctx.triage_result or {}
                     if resp is None and triage_after.get("concierge_intent") != "session_ops":
                         mark_pipeline_step("orch_route_concierge_start")
@@ -485,7 +500,9 @@ class ChatOrchestrator:
 
         if not ctx.triage_result:
             return
-        history = ctx.session.get("messages", [])[-10:]
+        from src.dialogue.history import resolve_concierge_history_with_fallback
+
+        history = resolve_concierge_history_with_fallback(ctx.session, ctx.sid)
         enriched = enrich_other_concierge_intent(
             ctx.triage_result,
             resolve_llm_user_text(

@@ -1,0 +1,1282 @@
+{
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-06-30T14:15:52.812",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:15:52.810627\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.467",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:15:54.467327\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.468",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:15:54.468930\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:29+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.469",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3512.76, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.32, 'session_db_read': 0.35, 'after_get_session_db': 0.36, 'before_llm_setup': 0.36, 'before_security': 0.39, 'after_security': 4.0, 'before_emoji_route': 4.33, 'before_triage': 4.33, 'after_triage': 7.71, 'sa"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.199",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:00.198037\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.026",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:02.026867\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.028",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:02.028245\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:35+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.028",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 5408.64, 'breakdown': {'post_start': 0.21, 'parsed_message': 0.33, 'session_db_read': 0.37, 'after_get_session_db': 0.38, 'before_llm_setup': 0.38, 'before_security': 0.42, 'after_security': 4.77, 'before_emoji_route': 5.21, 'before_triage': 5.22, 'after_triage': 1775.18,"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.993",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:05.992498\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.604",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:07.604841\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.606",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:07.606905\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:41+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.607",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3444.19, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.31, 'session_db_read': 0.35, 'after_get_session_db': 0.35, 'before_llm_setup': 0.36, 'before_security': 0.39, 'after_security': 4.29, 'before_emoji_route': 4.68, 'before_triage': 4.68, 'after_triage': 8.33, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.613",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:11.612116\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.486",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:13.486089\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.487",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:13.487622\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:46+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.488",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3626.51, 'breakdown': {'post_start': 0.25, 'parsed_message': 0.42, 'session_db_read': 0.46, 'after_get_session_db': 0.46, 'before_llm_setup': 0.47, 'before_security': 0.49, 'after_security': 4.52, 'before_emoji_route': 4.91, 'before_triage': 4.91, 'after_triage': 8.55, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.419",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:17.417675\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.297",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:19.297263\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.298",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:19.298621\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:52+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.299",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3595.07, 'breakdown': {'post_start': 0.18, 'parsed_message': 0.33, 'session_db_read': 0.37, 'after_get_session_db': 0.38, 'before_llm_setup': 0.38, 'before_security': 0.41, 'after_security': 5.13, 'before_emoji_route': 5.53, 'before_triage': 5.54, 'after_triage': 9.17, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:23.376",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:23.374699\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:25.203",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:25.203480\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:25.205",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:25.205007\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:00+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:25.205",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3687.58, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.31, 'session_db_read': 0.34, 'after_get_session_db': 0.34, 'before_llm_setup': 0.35, 'before_security': 0.38, 'after_security': 5.01, 'before_emoji_route': 5.47, 'before_triage': 5.47, 'after_triage': 8.83, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:29.095",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:29.093615\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:30.925",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:30.925829\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:30.927",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:30.927045\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:05+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:30.927",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3676.9, 'breakdown': {'post_start': 0.21, 'parsed_message': 0.33, 'session_db_read': 0.36, 'after_get_session_db': 0.37, 'before_llm_setup': 0.38, 'before_security': 0.4, 'after_security': 4.47, 'before_emoji_route': 4.86, 'before_triage': 4.86, 'after_triage': 8.19, 'saf"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:34.930",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:34.929021\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:36.762",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:36.762515\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:36.763",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:36.763634\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:11+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:36.764",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3701.62, 'breakdown': {'post_start': 0.17, 'parsed_message': 0.34, 'session_db_read': 0.38, 'after_get_session_db': 0.39, 'before_llm_setup': 0.4, 'before_security': 0.43, 'after_security': 4.16, 'before_emoji_route': 4.5, 'before_triage': 4.51, 'after_triage': 8.41, 'saf"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:40.487",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:40.485538\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:42.133",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:42.133765\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:42.135",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:42.135241\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:17+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:42.135",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3266.01, 'breakdown': {'post_start': 0.25, 'parsed_message': 0.41, 'session_db_read': 0.44, 'after_get_session_db': 0.45, 'before_llm_setup': 0.46, 'before_security': 0.48, 'after_security': 4.13, 'before_emoji_route': 4.46, 'before_triage': 4.47, 'after_triage': 7.44, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:46.142",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:46.140714\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:47.794",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:47.794880\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:47.796",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:47.796194\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:23+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:47.796",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3454.7, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.31, 'session_db_read': 0.34, 'after_get_session_db': 0.35, 'before_llm_setup': 0.35, 'before_security': 0.38, 'after_security': 4.11, 'before_emoji_route': 4.44, 'before_triage': 4.45, 'after_triage': 7.43, 'sa"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:51.470",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:51.468421\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:53.302",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:53.302565\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:53.304",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:53.304241\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:29+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:53.304",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3507.39, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.31, 'session_db_read': 0.34, 'after_get_session_db': 0.35, 'before_llm_setup': 0.35, 'before_security': 0.38, 'after_security': 5.12, 'before_emoji_route': 5.49, 'before_triage': 5.5, 'after_triage': 9.6, 'saf"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:57.094",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:16:57.092944\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:58.803",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:58.803004\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:58.806",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:58.806165\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:34+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:58.808",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3403.75, 'breakdown': {'post_start': 0.19, 'parsed_message': 0.31, 'session_db_read': 0.34, 'after_get_session_db': 0.35, 'before_llm_setup': 0.35, 'before_security': 0.38, 'after_security': 3.91, 'before_emoji_route': 4.27, 'before_triage': 4.28, 'after_triage': 7.68, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:02.739",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:02.737283\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:04.532",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:04.532390\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:04.533",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:04.533784\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:40+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:04.534",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3562.21, 'breakdown': {'post_start': 0.18, 'parsed_message': 0.3, 'session_db_read': 0.34, 'after_get_session_db': 0.34, 'before_llm_setup': 0.35, 'before_security': 0.38, 'after_security': 4.39, 'before_emoji_route': 4.77, 'before_triage': 4.78, 'after_triage': 8.37, 'sa"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:08.539",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:08.538154\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:10.236",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:10.235976\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:10.238",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:10.238196\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:46+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:10.238",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3553.02, 'breakdown': {'post_start': 0.2, 'parsed_message': 0.45, 'session_db_read': 0.49, 'after_get_session_db': 0.5, 'before_llm_setup': 0.5, 'before_security': 0.54, 'after_security': 5.6, 'before_emoji_route': 5.96, 'before_triage': 5.97, 'after_triage': 9.63, 'safet"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:14.301",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:14.299515\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:15.980",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:15.980333\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:15.981",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:15.981612\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:51+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:15.982",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3558.32, 'breakdown': {'post_start': 0.17, 'parsed_message': 0.31, 'session_db_read': 0.34, 'after_get_session_db': 0.35, 'before_llm_setup': 0.36, 'before_security': 0.38, 'after_security': 4.01, 'before_emoji_route': 4.38, 'before_triage': 4.38, 'after_triage': 7.89, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:19.936",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:19.934335\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:21.642",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:21.642746\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:21.644",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:21.644070\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:16:57+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:21.644",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3509.88, 'breakdown': {'post_start': 0.26, 'parsed_message': 0.4, 'session_db_read': 0.44, 'after_get_session_db': 0.45, 'before_llm_setup': 0.46, 'before_security': 0.49, 'after_security': 6.27, 'before_emoji_route': 6.65, 'before_triage': 6.66, 'after_triage': 10.35, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:25.603",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:25.603307\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:27.498",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:27.498282\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:27.499",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:27.499935\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:17:02+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:27.500",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3643.61, 'breakdown': {'post_start': 0.16, 'parsed_message': 0.28, 'session_db_read': 0.32, 'after_get_session_db': 0.33, 'before_llm_setup': 0.33, 'before_security': 0.36, 'after_security': 4.45, 'before_emoji_route': 4.86, 'before_triage': 4.87, 'after_triage': 8.37, 's"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:31.469",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:31.468973\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:33.237",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:33.237036\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:33.238",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:33.238903\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:17:08+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:33.239",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3682.84, 'breakdown': {'post_start': 0.16, 'parsed_message': 0.55, 'session_db_read': 0.6, 'after_get_session_db': 0.62, 'before_llm_setup': 0.62, 'before_security': 0.67, 'after_security': 5.05, 'before_emoji_route': 5.46, 'before_triage': 5.47, 'after_triage': 9.24, 'sa"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:36.993",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:36.991690\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:38.805",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:38.805594\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:38.806",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:38.806925\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:17:14+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:38.807",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3499.54, 'breakdown': {'post_start': 0.24, 'parsed_message': 0.36, 'session_db_read': 0.4, 'after_get_session_db': 0.42, 'before_llm_setup': 0.42, 'before_security': 0.46, 'after_security': 5.84, 'before_emoji_route': 6.48, 'before_triage': 6.5, 'after_triage': 10.55, 'sa"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:42.786",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-06-30T14:17:42.784456\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"clarification\",\"resolved_by\":\"guard\",\"confidence\":0.0,\"source\":\"low_confidence_clarification\",\"triage_category\":\"Other\",\"triage_subcategory\":\"error"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:44.595",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:44.595921\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:44.597",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:17:44.597197\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:17:19+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:17:44.597",
+      "message": "PIPELINE_PERF {'channel': 'web', 'sid': '1782796484886993643166', 'total_ms': 3603.2, 'breakdown': {'post_start': 0.16, 'parsed_message': 0.3, 'session_db_read': 0.33, 'after_get_session_db': 0.34, 'before_llm_setup': 0.35, 'before_security': 0.37, 'after_security': 4.87, 'before_emoji_route': 5.29, 'before_triage': 5.3, 'after_triage': 9.19, 'safe"
+    }
+  ],
+  "emergency": [
+    {
+      "timestamp": "2026-06-30T14:15:52.813",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:52.813",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.200",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.200",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.994",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.995",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.614",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.614",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.420",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.420",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:23.377",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:23.377",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:29.096",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:29.096",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:34.930",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:34.930",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:40.488",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:40.488",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:46.142",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:46.142",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:51.470",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:51.471",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:57.094",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:57.095",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:02.739",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:02.740",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:08.540",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:08.540",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:14.301",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:14.301",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:19.936",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:19.937",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:25.606",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:25.606",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:31.471",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:31.471",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:36.994",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:36.994",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:42.786",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:42.787",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:48.534",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:48.534",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:54.174",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:54.174",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:59.959",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:17:59.959",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:07.770",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:07.770",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:13.368",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:13.368",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:19.058",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:19.058",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:24.640",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:24.640",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:30.214",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:30.214",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:35.590",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:35.590",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:41.069",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:41.069",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:44.799",
+      "message": "🔍 緊急事案検出開始: 鼻水が止まらない"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:44.799",
+      "message": "🔍 緊急事案検出なし: 鼻水が止まらない"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:52.170",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:52.170",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:59.755",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:18:59.755",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:07.732",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:07.732",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:15.610",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:15.610",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:21.410",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:21.410",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:27.316",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:27.316",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:33.311",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:33.311",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:38.959",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:38.960",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:44.675",
+      "message": "🔍 緊急事案検出開始: もう少し詳しく教えてください"
+    },
+    {
+      "timestamp": "2026-06-30T14:19:44.676",
+      "message": "🔍 緊急事案検出なし: もう少し詳しく教えてください"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-06-30T14:15:52.962",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:52.964",
+      "message": "ChatGPT API呼び出しエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:52.974",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:53.562",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.461",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.463",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.467",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:15:54.467327\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:54.468",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:15:54.468930\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:29+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:15:56.779",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:56.782",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:56.960",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:57.314",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:57.319",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:57.496",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.379",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.382",
+      "message": "LLM security classify failed sid=1782796484886993643166: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insu"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.388",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.391",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.559",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.593",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:15:58.595",
+      "message": "ChatGPT API呼び出しエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:15:59.167",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.193",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.358",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:00.978",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.021",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.023",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.026",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:02.026867\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:02.028",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:02.028245\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:35+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:04.327",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:04.374",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:04.488",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:04.860",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:04.976",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.059",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.958",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.960",
+      "message": "LLM security classify failed sid=1782796484886993643166: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insu"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:05.987",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:06.054",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:06.056",
+      "message": "ChatGPT API呼び出しエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:06.152",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:06.681",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.597",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.600",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.604",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:07.604841\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:07.606",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:07.606905\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:41+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.031",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.039",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.254",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.666",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.666",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:10.854",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.594",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.596",
+      "message": "LLM security classify failed sid=1782796484886993643166: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insu"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.606",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.774",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.804",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:11.807",
+      "message": "ChatGPT API呼び出しエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:12.312",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.480",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.482",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.486",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:13.486089\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:13.487",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:13.487622\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:46+09:00\","
+    },
+    {
+      "timestamp": "2026-06-30T14:16:15.855",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:15.871",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:16.051",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:16.382",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:16.488",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:16.644",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.412",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.417",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.427",
+      "message": "LLM security classify failed sid=1782796484886993643166: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insu"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.571",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.755",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:17.757",
+      "message": "ChatGPT API呼び出しエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:18.205",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.291",
+      "message": "HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 429 Too Many Requests\""
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.293",
+      "message": "LLMトリアージエラー: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.297",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:19.297263\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"bot\",\"content\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お"
+    },
+    {
+      "timestamp": "2026-06-30T14:16:19.298",
+      "message": "{\"log_type\":\"counseling_detail\",\"timestamp\":\"2026-06-30T14:16:19.298621\",\"session_id\":\"1782796484886993643166\",\"user_input\":\"もう少し詳しく教えてください\",\"response\":\"「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？\",\"conversation_history\":[{\"type\":\"user\",\"content\":\"もう少し詳しく教えてください\",\"timestamp\":\"2026-06-30T14:15:52+09:00\","
+    }
+  ],
+  "gunicorn": [
+    {
+      "timestamp": "2026-06-30T16:12:47.086",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:12:47.086245\",\"session_id\":\"1782803551337675373790\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:12:47.157",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:12:47.157164\",\"session_id\":\"1782803554467281281336\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:07.034",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:07.034092\",\"session_id\":\"1782803569651529301833\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:09.654",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:09.653945\",\"session_id\":\"1782803568409559810832\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:26.166",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:26.165829\",\"session_id\":\"1782803589002770103211\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:28.423",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:28.423438\",\"session_id\":\"1782803590690432545701\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:44.713",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:44.713299\",\"session_id\":\"1782803607808472279728\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:13:47.879",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:13:47.878737\",\"session_id\":\"1782803609115829104546\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:14:38.177",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:14:38.176975\",\"session_id\":\"1782803662357438220258\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:14:42.502",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:14:42.502153\",\"session_id\":\"1782803670921271900674\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:14:59.397",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:14:59.397659\",\"session_id\":\"1782803679915260110945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:15:03.758",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:15:03.758055\",\"session_id\":\"1782803685304114121515\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:13.274",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:13.274366\",\"session_id\":\"1782803820502763450456\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:16.926",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:16.926646\",\"session_id\":\"1782803825851570923043\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:27.441",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:27.441003\",\"session_id\":\"1782803820502763450456\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:31.162",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:31.162331\",\"session_id\":\"1782803825851570923043\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:41.200",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:41.199839\",\"session_id\":\"1782803848961415474365\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:46.029",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:46.028905\",\"session_id\":\"1782803852365461195695\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:57.655",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:57.654856\",\"session_id\":\"1782803848961415474365\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:17:59.649",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:17:59.649131\",\"session_id\":\"1782803852365461195695\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:18:44.892",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:18:44.892382\",\"session_id\":\"1782803913245420447801\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:18:49.600",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:18:49.599791\",\"session_id\":\"1782803915536114135183\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:18:59.481",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:18:59.480836\",\"session_id\":\"1782803913245420447801\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:19:01.346",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:19:01.346155\",\"session_id\":\"1782803915536114135183\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:19:30.494",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:19:30.493747\",\"session_id\":\"1782803940738633380221\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:19:33.170",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:19:33.170446\",\"session_id\":\"1782803942027293904212\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:24:27.810",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:24:27.810604\",\"session_id\":\"1782804227596613633356\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:27:35.239",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:27:35.239152\",\"session_id\":\"1782804431375061787154\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:27:37.714",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:27:37.714199\",\"session_id\":\"1782804428750952438733\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:28:04.016",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:28:04.015725\",\"session_id\":\"1782804456680446570493\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:28:07.816",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:28:07.816042\",\"session_id\":\"1782804459219470609494\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:43:09.877",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:43:09.877007\",\"session_id\":\"1782805375588144746483\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T16:43:15.138",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T16:43:15.138496\",\"session_id\":\"1782805378346914704349\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:15:37.554",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:15:37.554175\",\"session_id\":\"1782805521537902706377\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:22:05.052",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:22:05.052110\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:25:16.945",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:25:16.945106\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:29:55.301",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:29:55.300982\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:30:08.252",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:30:08.252049\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:30:24.001",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:30:24.000865\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:30:37.688",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:30:37.688307\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:30:51.155",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:30:51.155403\",\"session_id\":\"1782807339088497318100\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:31:05.981",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:31:05.981531\",\"session_id\":\"1782808252692956856945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:31:16.648",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:31:16.647908\",\"session_id\":\"1782808252692956856945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:31:30.318",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:31:30.317591\",\"session_id\":\"1782808252692956856945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:31:43.267",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:31:43.267205\",\"session_id\":\"1782808252692956856945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:31:56.762",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:31:56.762418\",\"session_id\":\"1782808252692956856945\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:33:02.149",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:33:02.148904\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:33:17.778",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:33:17.777782\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:33:30.875",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:33:30.875463\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:33:54.560",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:33:54.559938\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:34:07.267",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:34:07.267010\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:34:20.949",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:34:20.949291\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:34:34.246",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:34:34.246182\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:34:51.442",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:34:51.442321\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:35:05.711",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:35:05.711666\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:35:32.623",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:35:32.623269\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:35:46.575",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:35:46.574747\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:36:00.390",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:36:00.389699\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:36:15.648",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:36:15.647884\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:36:30.189",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:36:30.188876\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:36:43.166",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:36:43.166649\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:37:11.011",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:37:11.011144\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:37:24.545",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:37:24.545264\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:37:40.944",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:37:40.944402\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:37:54.149",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:37:54.149399\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:38:07.559",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:38:07.558963\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:38:21.031",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:38:21.030636\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:38:34.659",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:38:34.659136\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:38:48.342",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:38:48.341780\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:39:02.201",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:39:02.201595\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:39:16.572",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:39:16.571764\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:39:29.306",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:39:29.306070\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:39:42.985",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:39:42.984932\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:39:57.528",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:39:57.527876\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:40:10.749",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:40:10.748974\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:40:27.900",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:40:27.900213\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:40:40.958",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:40:40.958327\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    },
+    {
+      "timestamp": "2026-06-30T17:41:22.790",
+      "message": "{\"log_type\":\"error_detail\",\"timestamp\":\"2026-06-30T17:41:22.789802\",\"session_id\":\"1782808317704216829375\",\"error_type\":\"NameError\",\"error_message\":\"name 'is_llm_triage_infrastructure_error' is not defined\",\"stack_trace\":\"Traceback (most recent call last):\\n  File \\\"D:\\\\Programing\\\\medicine-recommend\\\\.venv\\\\Lib\\\\site-packages\\\\starlette\\\\middleware"
+    }
+  ]
+}

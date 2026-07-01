@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://medicine-recommend.local/schemas/dialogue_context_v1.json",
+  "title": "DialogueContext",
+  "description": "Chat Pipeline v2 session dialogue state (Wave 1a)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "episode_id": {
+      "type": ["string", "null"],
+      "description": "Consultation episode identifier (existing field mirror)"
+    },
+    "pending": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "session_delete": {
+          "type": ["object", "null"],
+          "properties": {
+            "requested_at": { "type": "string", "format": "date-time" },
+            "scope": { "enum": ["all", "summaries", "profile"] }
+          }
+        }
+      }
+    },
+    "concierge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "topic": { "type": ["string", "null"] },
+        "last_intent": { "type": ["string", "null"] },
+        "architecture_depth": { "type": "integer", "minimum": 0 },
+        "off_topic_turns": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "counseling": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "active": { "type": "boolean", "default": false },
+        "theme": { "type": ["string", "null"] }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "active_channel": { "enum": ["web", "line", null] },
+        "last_switch_at": { "type": ["string", "null"], "format": "date-time" },
+        "target": { "type": ["string", "null"], "description": "Agent handoff target mirror" }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "description": "Last resolved route (observability; Wave 1b+)",
+      "properties": {
+        "primary_route": { "type": "string" },
+        "sub_route": { "type": ["string", "null"] },
+        "resolved_by": { "enum": ["gate", "llm", "legacy", null] }
+      }
+    },
+    "flags": {
+      "type": "object",
+      "properties": {
+        "fever_context": { "type": "boolean" },
+        "pending_cancelled_by_physical": { "type": "boolean" }
+      }
+    }
+  },
+  "required": ["version"]
+}

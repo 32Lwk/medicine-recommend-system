@@ -2,7 +2,27 @@
 
 **作成日**: 2026-06-27  
 **根拠**: GCPログ分析（2026-06-25〜26）、LINE QA トーク履歴、コードベース照合  
-**ステータス**: 意思決定済み — 実装待ち（1 MR / dev デプロイ）
+**ステータス**: **v2 Pre-P0 へ統合 — 本計画の単独 MR は禁止**
+
+> **2026-06-28 統合決定（D7）**: P0-2〜6 および P1-3,6,7 は [`feature/chat-pipeline-v2`](../../docs/dev/CHAT_PIPELINE_V2.md) ブランチの Pre-P0 に吸収する。別 MR での実装・dev デプロイは行わない。合格基準は [`PRE_P0_LINE_QA_10.md`](../ops/PRE_P0_LINE_QA_10.md)（10 項目全 Pass）。
+
+---
+
+## v2 Pre-P0 マッピング表
+
+| 本計画 ID | v2 todo / 内容 | 備考 |
+|-----------|---------------|------|
+| P0-2 SessionAgent | `pre-p0-*` + `w1a-session-ops` | 3 意図 greeting 化を解消 |
+| P0-3 session_admin triage | Pre-P0 + Wave 1b IntentRouter | 1a では旧 triage 100% |
+| P0-4 3 経路到達 | Pre-P0 delete 上書き廃止 + SessionOps 一本化（1a） | fast-path / meta 競合縮小 |
+| P0-5 Quick Reply 削除確認 | `pre-p0-quick-reply-unify` | はい/いいえ 後方互換 |
+| P0-6 回帰テスト | `pre-p0-tests` | session_admin E2E |
+| P0-1 dev デプロイ | `pre-p0-dev-deploy-manual` | **48h SLA** + QA10 |
+| P1-3 発熱 vs 店舗 | `pre-p0-fever-store` | 39度の熱 |
+| P1-6 aggressive | `pre-p0-aggressive` | 到達監査 |
+| P1-7 feedback expired | `pre-p0-feedback-expired` | B+D |
+| P1-4 counseling_detail | Wave 4 観測性 | Pre-P0 で end_guard 改善 |
+| P2 性能 | v2 スコープ外（別 issue 可） | triage 短縮 |
 
 ---
 

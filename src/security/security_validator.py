@@ -423,8 +423,9 @@ DANGER_PATTERNS = {
         r'データベースの内容',
         r'APIキーを教えて',
         r'パスワードを教えて',
+        r'API.*キー.{0,8}(教え|開示|渡|提供|公開)',
+        r'API.*(secret|token).{0,8}(教え|開示|渡|提供|公開)',
         r'API.*渡して',
-        r'API.*教えて',
         r'API.*提供',
         r'API.*公開',
         r'キー.*渡して',
@@ -436,7 +437,6 @@ DANGER_PATTERNS = {
         r'トークン.*提供',
         r'トークン.*公開',
         r'APIを渡して',
-        r'APIを教えて',
         r'APIを提供',
         r'APIを公開',
         r'キーを渡して',
@@ -1004,7 +1004,17 @@ SAFE_START_PATTERNS = [
     r'^.*(相談|質問|教えて|知りたい|聞きたい|お願い)',
     r'^.*(年齢|歳|性別|妊娠|授乳|アレルギー|持病|既往歴)',
     r'^.*(いつから|どのくらい|どの程度|どのくらい前|何日前|何時間前)',
-    r'^.*(改善|悪化|変化|続く|止まらない|治らない|良くならない)'
+    r'^.*(改善|悪化|変化|続く|止まらない|治らない|良くならない)',
+    r'^(API|SSE|REST|HTTP).{0,24}(仕組み|について|とは|動作|説明)',
+    r'^(技術|インフラ|アーキテクチャ|内部構成|データ保存).{0,24}(教え|説明|とは|について)',
+]
+
+# Concierge 向け教育質問 — data_extraction 誤検知を抑止
+_EDUCATIONAL_META_SAFE_PATTERNS = [
+    re.compile(r"APIの仕組み", re.I),
+    re.compile(r"SSEについて", re.I),
+    re.compile(r"API.{0,12}(仕組み|について|とは|動作)", re.I),
+    re.compile(r"(技術スタック|インフラ構成|データはどこ|データ保存|Sage\s*Terrace|ルールベース).{0,16}(教え|説明|とは|について)", re.I),
 ]
 
 class SecurityValidator:
@@ -1085,6 +1095,9 @@ class SecurityValidator:
     
     def _calculate_risk_score(self, text: str) -> int:
         """危険度スコア算出（0-100）"""
+        if any(p.search(text) for p in _EDUCATIONAL_META_SAFE_PATTERNS):
+            return 0
+
         risk_score = 0
         total_danger_matches = 0
 

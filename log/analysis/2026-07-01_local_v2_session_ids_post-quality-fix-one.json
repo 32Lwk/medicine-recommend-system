@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "date": "2026-07-01",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-30T17:05:14.547943+00:00",
+    "elapsed_sec": 9.7,
+    "scenario_count": 1,
+    "total_turns": 1,
+    "auto_pass": 0,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "session-ops-01",
+      "session_id": "1782839114573469589883",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

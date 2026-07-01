@@ -40,6 +40,43 @@ def test_fever_symptom_prioritizes_medical_over_store():
     assert has_unambiguous_store_intent(text) is False
 
 
+def test_fever_session_context_blocks_store_after_fever_turn():
+    session = {
+        "messages": [
+            {"type": "user", "content": "39度の熱があります"},
+            {"type": "bot", "content": "ok"},
+        ]
+    }
+    triage = {"category": "Other", "confidence": 0.5, "subcategory": "general_other"}
+    assert should_prioritize_medical_route_over_store(
+        triage, "近くの薬局", session=session
+    ) is True
+    from src.services.routing_context import RoutingContext, evaluate_store_gate
+
+    routing_ctx = RoutingContext.build(
+        session, "line:U1", "近くの薬局", triage_result=triage
+    )
+    assert (
+        evaluate_store_gate(
+            "近くの薬局",
+            triage_result=triage,
+            routing_ctx=routing_ctx,
+        )
+        is False
+    )
+
+
+def test_fever_dialogue_state_flag_blocks_store():
+    session = {
+        "dialogue_state": {"version": 1, "flags": {"fever_context": True}},
+        "messages": [],
+    }
+    triage = {"category": "Other", "confidence": 0.5, "subcategory": "general_other"}
+    assert should_prioritize_medical_route_over_store(
+        triage, "トイレどこ？", session=session
+    ) is True
+
+
 def test_store_subcategory_not_medical_priority():
     triage = {
         "category": "Ask",

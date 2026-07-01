@@ -49,6 +49,40 @@ def build_system_error_status(
     )
 
 
+def build_llm_unavailable_status(
+    *,
+    feedback_context: dict[str, Any] | None = None,
+) -> StatusDiagnosisV1:
+    """OpenAI quota / 429 等 — 既存 error カード（sage_status variant=error）。"""
+    from src.services.budget_guard import get_admin_message
+
+    info = ERROR_MESSAGES["llm_unavailable"]
+    admin_body = (get_admin_message("llm_unavailable") or "").strip()
+    message = admin_body or info["main_message"]
+    summary = list(info.get("summary_items") or [])
+    if not summary:
+        summary = list(info.get("available_features") or []) + list(
+            info.get("unavailable_features") or []
+        )
+    sections: list[StatusSection] = (
+        [StatusSection(title="ご利用の目安", items=summary)] if summary else []
+    )
+    hints = list(info.get("recommendations") or [])
+    return StatusDiagnosisV1(
+        render="sage_status",
+        variant="error",
+        title=info["title"],
+        subtitle=info.get("subtitle") or "",
+        message=message,
+        hints=hints,
+        sections=sections,
+        show_feedback=True,
+        show_bug_report=True,
+        feedback_context=feedback_context,
+        kind="llm_unavailable",
+    )
+
+
 def build_escalation_status(
     message: str,
     *,
@@ -237,6 +271,39 @@ def _product_display_name(product_category: dict[str, Any]) -> str:
     ).strip()
 
 
+_STORE_USER_INTENT_KIND = {
+    "facilities": "store_facilities",
+    "locator": "store_locator",
+    "inventory": "store_inventory",
+    "external_chain": "store_locator",
+}
+
+
+def resolve_store_diagnosis_kind(
+    store_inquiry_result: dict[str, Any],
+    *,
+    user_text: str = "",
+) -> str:
+    intent = store_inquiry_result.get("user_intent")
+    if not intent and user_text:
+        try:
+            from src.services.store_inquiry_handler import classify_store_user_intent
+
+            intent = classify_store_user_intent(user_text)
+        except Exception:
+            intent = None
+    if isinstance(intent, str) and intent in _STORE_USER_INTENT_KIND:
+        return _STORE_USER_INTENT_KIND[intent]
+    inquiry_type = store_inquiry_result.get("inquiry_type")
+    if inquiry_type == "store_inquiry":
+        return "store_inquiry"
+    if isinstance(inquiry_type, str) and inquiry_type.startswith("store_"):
+        return inquiry_type
+    if inquiry_type:
+        return f"store_{inquiry_type}"
+    return "store_inquiry"
+
+
 def build_store_status_from_inquiry_result(
     store_inquiry_result: dict[str, Any],
     *,
@@ -253,6 +320,7 @@ def build_store_status_from_inquiry_result(
     facility_name = store_inquiry_result.get("facility_name")
     if inquiry_type == "facilities" and facility_name:
         sections.append(StatusSection(title="施設", items=[str(facility_name)]))
+    user_text = str((feedback_context or {}).get("user_message") or "")
     return StatusDiagnosisV1(
         render="sage_status",
         variant="notice",
@@ -260,7 +328,7 @@ def build_store_status_from_inquiry_result(
         message=simple_message.strip(),
         hints=[],
         sections=sections,
-        kind=f"store_{inquiry_type}" if inquiry_type else "store_inquiry",
+        kind=resolve_store_diagnosis_kind(store_inquiry_result, user_text=user_text),
         show_feedback=True,
         feedback_context=feedback_context,
     )

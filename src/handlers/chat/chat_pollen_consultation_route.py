@@ -68,9 +68,9 @@ def run_otc_allergy_consultation_entry(
         save_session_to_db(sid, session_data)
 
     try:
-        from src.services.line_memory_context import get_counseling_conversation_history
+        from src.dialogue.history import resolve_counseling_history_with_fallback
 
-        log_history = get_counseling_conversation_history(session, sid)
+        log_history = resolve_counseling_history_with_fallback(session, sid)
         log_counseling_response(
             session_id=sid,
             response_content=response_text,

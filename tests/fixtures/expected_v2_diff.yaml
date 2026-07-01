@@ -1,0 +1,95 @@
+# Chat Pipeline v2 — 意図的 breaking change 一覧
+# 正解源: docs/dev/CHAT_ROUTE_EXPECTATIONS.md + route_spec_scenarios.yaml
+# 旧 pipeline 一致は副次（既知バグを golden 化しない）
+
+version: 1
+updated: "2026-06-28"
+
+changes:
+  - id: diff-pending-physical-priority
+    area: session_ops
+    old_behavior: pending_memory_delete が全入力を削除確認に吸収
+    new_behavior: Physical / Emergency 入力で pending を auto-cancel し症状を優先
+    wave: pre-p0
+    scenarios: [line-pending-headache, session-pending-fever]
+
+  - id: diff-delete-triage-override
+    area: session_ops
+    old_behavior: triage Physical 判定時も SessionAgent が delete に強制上書き (L417-420)
+    new_behavior: triage category を尊重、session_admin のみ SessionOps
+    wave: pre-p0
+    scenarios: [line-delete-after-symptom]
+
+  - id: diff-end-guard-fail-loud
+    area: observability
+    old_behavior: response_missing 時 end_guard が redirect を silent 補完
+    new_behavior: fail-loud（ログ + 構造化 detail）、redirect 補完は Pre-P0 後に限定
+    wave: pre-p0
+    scenarios: [line-fever-39, web-fever-39]
+
+  - id: diff-fever-no-store
+    area: routing
+    old_behavior: 発熱入力後に店舗案内 Flex が出ることがある
+    new_behavior: 発熱コンテキスト中は store route 禁止
+    wave: pre-p0
+    scenarios: [line-fever-39, line-fever-then-store]
+
+  - id: diff-status-vocab
+    area: session_ops
+    old_behavior: 「何が記録されてる？」等が greeting / 未分類
+    new_behavior: status_card へ分類
+    wave: pre-p0
+    scenarios: [session-status-recorded, line-status]
+
+  - id: diff-quick-reply-labels
+    area: line_ux
+    old_behavior: Quick Reply ラベルが「はい/いいえ」と「削除する/キャンセル」混在
+    new_behavior: 削除確認は「削除する/キャンセル」統一（はい/いいえ 後方互換受理）
+    wave: pre-p0
+    scenarios: [line-delete-confirm]
+
+  - id: diff-single-session-ops
+    area: architecture
+    old_behavior: SessionAgent が fast-path / triage / meta で多重呼び出し
+    new_behavior: SessionOpsHandler 単一入口（1a）
+    wave: w1a
+    scenarios: [line-status, session-summarize-vocab, session-delete]
+
+  - id: diff-dialogue-context
+    area: state
+    old_behavior: pending / concierge / counseling が session 直下に分散
+    new_behavior: dialogue_state 合成ビュー + dual-write
+    wave: w1a
+    scenarios: [handoff-line-to-web]
+
+  - id: diff-intent-router-single
+    area: routing
+    old_behavior: triage + meta_triage + orchestrator + legacy fallback 競合
+    new_behavior: 2 段 IntentRouter (gate → LLM) が category 決定権を持つ
+    wave: w1b
+    scenarios: [web-headache, handoff-line-start]
+
+  - id: diff-context-provider-unified
+    area: context
+    old_behavior: 履歴窓 3/5/8/10/20 が各 Agent に散在
+    new_behavior: ContextProvider agent_kind override 表に統一
+    wave: w1a
+    scenarios: [web-architecture-followup]
+
+  - id: diff-response-envelope
+    area: delivery
+    old_behavior: Web SSE / LINE chunk が handler 各所に分岐
+    new_behavior: ResponseEnvelope.delivery_mode 単一
+    wave: w1a
+    scenarios: [web-sse-recommend, handoff-line-start]
+
+  - id: diff-counseling-context-wave2
+    area: counseling
+    old_behavior: Emotional 文脈が弱い（既知）
+    new_behavior: Wave 2 まで **変更なし（正常）** — 1a/1b では改善しない
+    wave: w2
+    scenarios: [line-counseling-followup]
+
+not_breaking:
+  - id: keep-rule-based-otc
+    note: OTC 推奨スコアリングは rule_based 維持（GPT recommend fallback は従来どおり OFF 既定）

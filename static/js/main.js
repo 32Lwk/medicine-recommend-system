@@ -5853,13 +5853,22 @@
         return kind === 'user_info_registration' || kind === 'attribute_update_confirmation';
     }
 
-    function findLastTurnCompletingBotMessage(messages) {
+    function findLastTurnCompletingBotMessage(messages, options) {
+        const opts = options || {};
+        const skipInfra = opts.includeInfraNotice === true;
         const list = Array.isArray(messages) ? messages : [];
         for (let i = list.length - 1; i >= 0; i--) {
             const m = list[i];
-            if (m && m.type === 'bot' && !m.error && !isInterimTurnBotMessage(m)) {
-                return m;
+            if (!m || m.type !== 'bot' || m.error || isInterimTurnBotMessage(m)) {
+                continue;
             }
+            if (!skipInfra && isInfraNoticeBotMessage(m)) {
+                continue;
+            }
+            return m;
+        }
+        if (!skipInfra) {
+            return findLastTurnCompletingBotMessage(messages, { includeInfraNotice: true });
         }
         return null;
     }
@@ -6010,6 +6019,9 @@
         if (chatStreamInProgress && hasActiveStreamingContent()) {
             return false;
         }
+        if (isCurrentTurnComplete(merged)) {
+            ensureInfraNoticeBotsInDom(merged);
+        }
         if (
             isCurrentTurnComplete(merged)
             && !isCurrentTurnBotVisibleInDomLoose(merged)
@@ -6022,7 +6034,8 @@
                 document.getElementById('chatMessages')
             );
         }
-        const domReady = isCurrentTurnBotVisibleInDomLoose(merged);
+        const domReady = isCurrentTurnBotVisibleInDomLoose(merged)
+            && areCurrentTurnInfraNoticesRenderedInDom(merged);
         const sessionReady = isPostResponseReady(merged)
             || (isCurrentTurnComplete(merged) && domReady);
         if (!domReady && !sessionReady) {
@@ -6030,6 +6043,7 @@
         }
         if (!postResponseResolved) {
             markPostResponseResolved({ preserveStatusCards: true });
+            clearTransientDisplayErrorsIfBotReady(merged);
         }
         if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
             ProcessingStatus.stopProcessingPoll();
@@ -6945,6 +6959,10 @@
         'security_block',
         'security_warn',
     ]);
+    const INFRA_NOTICE_BOT_KINDS = new Set([
+        'llm_unavailable',
+        'budget_blocked',
+    ]);
 
     function isSecurityNoticeBotMessage(message) {
         if (!message || message.type !== 'bot') {
@@ -6952,6 +6970,14 @@
         }
         const kind = message.diagnosis && message.diagnosis.kind;
         return SECURITY_NOTICE_BOT_KINDS.has(kind);
+    }
+
+    function isInfraNoticeBotMessage(message) {
+        if (!message || message.type !== 'bot') {
+            return false;
+        }
+        const kind = message.diagnosis && message.diagnosis.kind;
+        return INFRA_NOTICE_BOT_KINDS.has(kind);
     }
 
     /** セキュリティ案内 bot が DOM 上で実際に見えているか */
@@ -6973,6 +6999,135 @@
             }
         }
         return !!botNode.querySelector('.ui-bubble--status, .chat-status-card, .message-content');
+    }
+
+    /** LLM 障害・予算ブロック等のインフラ案内 bot が DOM 上で実際に見えているか */
+    function isInfraNoticeBotNodeVisible(botNode, botMsg) {
+        if (!botNode || !isInfraNoticeBotMessage(botMsg)) {
+            return false;
+        }
+        if (!isSageBubbleMountedInNode(botNode)) {
+            mountSageBotMessage(botNode, botMsg);
+        }
+        if (isSageBubbleMountedInNode(botNode)) {
+            return true;
+        }
+        const diag = botMsg.diagnosis || {};
+        const noticeText = String(diag.title || diag.message || '').trim();
+        if (noticeText) {
+            const nodeText = (botNode.textContent || '').replace(/\s+/g, ' ').trim();
+            if (nodeText.includes(noticeText.slice(0, 24))) {
+                return true;
+            }
+        }
+        return !!botNode.querySelector('.ui-bubble--status, .chat-status-card, .message-content');
+    }
+
+    function findInfraNoticeBotsInScope(scope) {
+        const list = Array.isArray(scope) ? scope : [];
+        return list.filter(isInfraNoticeBotMessage);
+    }
+
+    function sessionMessagesHaveInfraNotice(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        for (let i = 0; i < list.length; i++) {
+            if (isInfraNoticeBotMessage(list[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function resolveMessagesForTransientErrorGuard() {
+        const sid = getSidFromCookie();
+        return resolveSessionMessages(
+            { session_id: sid, messages: loadChatCache(sid) },
+            { allowRestore: false }
+        );
+    }
+
+    /** LLM 障害カード等の本応答が来る見込みのとき、一時的な表示エラーカードを出さない */
+    function shouldSuppressTransientClientErrorCard(messages) {
+        const merged = Array.isArray(messages) && messages.length > 0
+            ? messages
+            : resolveMessagesForTransientErrorGuard();
+        if (sessionMessagesHaveInfraNotice(merged)) {
+            return true;
+        }
+        if (sessionMessagesHaveInfraNotice(getCurrentTurnMessages(merged))) {
+            return true;
+        }
+        return !!(processingBubbleLocked && awaitingPostResponse);
+    }
+
+    function clearTransientDisplayErrorsIfBotReady(messages) {
+        const merged = Array.isArray(messages) ? messages : resolveMessagesForTransientErrorGuard();
+        if (
+            areCurrentTurnInfraNoticesRenderedInDom(merged)
+            || (isCurrentTurnComplete(merged) && isSessionRenderStable(merged))
+        ) {
+            clearPersistentStatusMessages();
+        }
+    }
+
+    /** 同一ターン内の LLM 障害カード等を DOM に載せる（本応答より先に付く場合がある） */
+    function ensureInfraNoticeBotsInDom(messages) {
+        const merged = Array.isArray(messages) ? messages : [];
+        const turn = getCurrentTurnMessages(merged);
+        const scope = turn.length > 0 ? turn : merged;
+        const notices = findInfraNoticeBotsInScope(scope);
+        if (notices.length === 0) {
+            return true;
+        }
+        ensureSessionMessagesInDom(merged);
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return false;
+        }
+        let allVisible = true;
+        notices.forEach(function (notice) {
+            const botKey = stableMessageKey(notice);
+            let botNode = getMessageNodeByKey(chatMessages, botKey, 'bot');
+            if (!botNode) {
+                const index = merged.indexOf(notice);
+                const messageDiv = createDomNodeForSessionMessage(
+                    notice,
+                    index >= 0 ? index : merged.length - 1
+                );
+                if (messageDiv) {
+                    appendMessageNodeToChat(chatMessages, messageDiv);
+                    botNode = messageDiv;
+                }
+            }
+            if (botNode) {
+                mountSageBotMessage(botNode, notice);
+            }
+            if (!isInfraNoticeBotNodeVisible(botNode, notice)) {
+                allVisible = false;
+            }
+        });
+        if (allVisible) {
+            clearTransientDisplayErrorsIfBotReady(merged);
+        }
+        return allVisible;
+    }
+
+    function areCurrentTurnInfraNoticesRenderedInDom(messages) {
+        const turn = getCurrentTurnMessages(messages);
+        const notices = findInfraNoticeBotsInScope(turn);
+        if (notices.length === 0) {
+            return true;
+        }
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return false;
+        }
+        for (let i = 0; i < notices.length; i++) {
+            if (!isSessionMessageRenderedInDom(chatMessages, notices[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** ブロック・セキュリティ応答を DOM に載せる（完了判定の前に呼ぶ） */
@@ -7195,6 +7350,76 @@
         return null;
     }
 
+    function findUserMessageByText(messages, text) {
+        const target = (text || '').trim();
+        if (!target) {
+            return null;
+        }
+        const list = Array.isArray(messages) ? messages : [];
+        for (let i = list.length - 1; i >= 0; i--) {
+            const message = list[i];
+            if (message && message.type === 'user' && userMessageText(message) === target) {
+                return message;
+            }
+        }
+        return null;
+    }
+
+    function pickPreferredUserMessage(a, b) {
+        if (!a) {
+            return b;
+        }
+        if (!b) {
+            return a;
+        }
+        const aConfirmed = !!(a.uuid || a.message_id);
+        const bConfirmed = !!(b.uuid || b.message_id);
+        if (aConfirmed && !bConfirmed) {
+            return a;
+        }
+        if (bConfirmed && !aConfirmed) {
+            return b;
+        }
+        if (a.pending_local && !b.pending_local) {
+            return b;
+        }
+        if (!a.pending_local && b.pending_local) {
+            return a;
+        }
+        return a;
+    }
+
+    /** 同一文言の user が複数ある履歴を1件に畳む（uuid 確定を優先） */
+    function collapseDuplicateUserMessages(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        const out = [];
+        const indexByText = new Map();
+        list.forEach(function (message) {
+            if (!message || !message.type) {
+                return;
+            }
+            if (message.type !== 'user') {
+                out.push(message);
+                return;
+            }
+            const text = userMessageText(message);
+            if (!text) {
+                out.push(message);
+                return;
+            }
+            if (!indexByText.has(text)) {
+                indexByText.set(text, out.length);
+                out.push(message);
+                return;
+            }
+            const prevIndex = indexByText.get(text);
+            const prev = out[prevIndex];
+            const preferred = pickPreferredUserMessage(prev, message);
+            out[prevIndex] = preferred;
+        });
+        return out;
+    }
+
     function stableMessageKey(message) {
         if (message && message.uuid) {
             return 'u:' + message.uuid;
@@ -7346,7 +7571,10 @@
                 return false;
             }
             if (localMsg.pending_turn_id) {
-                return false;
+                if (loadInFlightTurn(getSidFromCookie())) {
+                    return false;
+                }
+                return userMessageText(m) === localText && !!(m.uuid || m.message_id);
             }
             return userMessageText(m) === localText;
         });
@@ -7505,6 +7733,28 @@
         if (!text) {
             return null;
         }
+        const sameTextNodes = [];
+        chatMessages.querySelectorAll('.message.user').forEach(function (node) {
+            if (node.id === 'currentTypingIndicator') {
+                return;
+            }
+            if (messageNodeTextContent(node) === text) {
+                sameTextNodes.push(node);
+            }
+        });
+        if (sameTextNodes.length > 0) {
+            let preferred = sameTextNodes[0];
+            sameTextNodes.forEach(function (node) {
+                const nodeKey = node.getAttribute('data-message-id') || '';
+                const preferredKey = preferred.getAttribute('data-message-id') || '';
+                const nodeConfirmed = nodeKey.indexOf('u:') === 0 || nodeKey.indexOf('m:') === 0;
+                const preferredConfirmed = preferredKey.indexOf('u:') === 0 || preferredKey.indexOf('m:') === 0;
+                if (!preferredConfirmed && nodeConfirmed) {
+                    preferred = node;
+                }
+            });
+            return preferred;
+        }
         if (text === BLOCKED_USER_PLACEHOLDER) {
             const optimistic = findOptimisticUserNodeForBlockedTurn(chatMessages);
             if (optimistic) {
@@ -7542,11 +7792,51 @@
         return findUserMessageNodeInDom(chatMessages, message, messageKey);
     }
 
-    /** DOM 上の連続する同一 user 文言を1件に統合（pending → uuid 確定を優先） */
-    function collapseDuplicateUserDomNodes(chatMessages) {
+    /** DOM 上の同一 user 文言を1件に統合（pending → uuid 確定を優先） */
+    function collapseDuplicateUserDomNodes(chatMessages, messages) {
         if (!chatMessages) {
             return;
         }
+        const textToNodes = new Map();
+        chatMessages.querySelectorAll('.message.user').forEach(function (node) {
+            if (node.id === 'currentTypingIndicator') {
+                return;
+            }
+            const text = messageNodeTextContent(node);
+            if (!text) {
+                return;
+            }
+            if (!textToNodes.has(text)) {
+                textToNodes.set(text, []);
+            }
+            textToNodes.get(text).push(node);
+        });
+        textToNodes.forEach(function (nodes) {
+            if (nodes.length <= 1) {
+                return;
+            }
+            let kept = nodes[0];
+            nodes.forEach(function (node) {
+                const nodeKey = node.getAttribute('data-message-id') || '';
+                const keptKey = kept.getAttribute('data-message-id') || '';
+                const nodeConfirmed = nodeKey.indexOf('u:') === 0 || nodeKey.indexOf('m:') === 0;
+                const keptConfirmed = keptKey.indexOf('u:') === 0 || keptKey.indexOf('m:') === 0;
+                if (!keptConfirmed && nodeConfirmed) {
+                    kept = node;
+                } else if (
+                    keptKey.indexOf('pending-user:') === 0
+                    && nodeKey.indexOf('pending-user:') !== 0
+                    && nodeConfirmed
+                ) {
+                    kept = node;
+                }
+            });
+            nodes.forEach(function (node) {
+                if (node !== kept) {
+                    node.remove();
+                }
+            });
+        });
         let prevUser = null;
         let prevText = '';
         chatMessages.querySelectorAll('.message.user').forEach(function (node) {
@@ -7817,6 +8107,12 @@
         if (!isBotResponseRendered(messages)) {
             return false;
         }
+        if (!areCurrentTurnInfraNoticesRenderedInDom(messages)) {
+            ensureInfraNoticeBotsInDom(messages);
+            if (!areCurrentTurnInfraNoticesRenderedInDom(messages)) {
+                return false;
+            }
+        }
         return isLatestUserMessageRendered(messages);
     }
 
@@ -7834,6 +8130,9 @@
         }
         if (isSecurityNoticeBotMessage(message)) {
             return isSecurityNoticeBotNodeVisible(node, message);
+        }
+        if (isInfraNoticeBotMessage(message)) {
+            return isInfraNoticeBotNodeVisible(node, message);
         }
         if (isSageDiagnosisMessage(message)) {
             return isSageBubbleMountedInNode(node);
@@ -7929,7 +8228,7 @@
             seen.add(k);
             out.push(m);
         });
-        return out;
+        return collapseDuplicateUserMessages(out);
     }
 
     function messagesFingerprint(messages) {
@@ -8111,11 +8410,14 @@
                     return isBlockedUserPlaceholderMessage(m) && (m.uuid || m.message_id);
                 });
             if (!skipOptimisticDuplicate && !skipBlockedDuplicate) {
-                const uKey = stableMessageKey(userCandidate);
-                if (!msgs.some(function (m) {
-                    return stableMessageKey(m) === uKey;
-                })) {
-                    msgs.push(userCandidate);
+                const existingUser = findUserMessageByText(msgs, candidateText);
+                if (!existingUser) {
+                    const uKey = stableMessageKey(userCandidate);
+                    if (!msgs.some(function (m) {
+                        return stableMessageKey(m) === uKey;
+                    })) {
+                        msgs.push(userCandidate);
+                    }
                 }
             }
         }
@@ -8180,18 +8482,21 @@
             return false;
         }
 
+        ensureInfraNoticeBotsInDom(merged);
         const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
         saveChatCache(sid, merged);
-        const turnAlreadyVisible = isSessionRenderStable(merged);
+        const needsInfraRender = findInfraNoticeBotsInScope(getCurrentTurnMessages(merged)).length > 0
+            && !areCurrentTurnInfraNoticesRenderedInDom(merged);
         const applied = applyBotResponseSession(
             { session_id: sid, messages: merged },
             {
                 preserveStatusCards: false,
-                forceRender: false,
+                forceRender: needsInfraRender,
             }
         );
         if (applied) {
             markPostResponseResolved();
+            clearTransientDisplayErrorsIfBotReady(merged);
         }
         return applied;
     }
@@ -8328,8 +8633,9 @@
         }
         const fp = messagesFingerprint(merged);
         const turnRendered = isSessionRenderStable(merged);
+        const infraRendered = areCurrentTurnInfraNoticesRenderedInDom(merged);
         if (!opts.forceRender && fp === lastRenderedMessagesFingerprint) {
-            if (turnRendered) {
+            if (turnRendered && infraRendered) {
                 updateSessionSafetyBanners(sessionData);
                 refreshSageSafetyRail((sessionData && sessionData.user_attributes) || {});
                 if (opts.suppressTypingIndicator && !processingBubbleLocked && !shouldKeepProcessingBubble(merged)) {
@@ -8340,6 +8646,7 @@
             }
         }
         renderChatMessages(merged, Object.assign({}, opts, { sessionData: sessionData }));
+        ensureInfraNoticeBotsInDom(merged);
         if (isSessionRenderStable(merged)) {
             lastRenderedMessagesFingerprint = fp;
         }
@@ -8385,6 +8692,7 @@
             }
             if (isCurrentTurnComplete(merged) && !isSessionRenderStable(merged)) {
                 ensureSecurityNoticeTurnInDom(merged);
+                ensureInfraNoticeBotsInDom(merged);
                 applySessionMessages(sessionData, {
                     allowRestore: false,
                     forceRender: true,
@@ -8514,6 +8822,7 @@
                 );
                 saveChatCache(sidForSecurity, mergedSecurity);
                 ensureSecurityNoticeTurnInDom(mergedSecurity);
+                ensureInfraNoticeBotsInDom(mergedSecurity);
                 if (finalizeProcessingTurnIfReady(mergedSecurity)) {
                     return true;
                 }
@@ -8557,6 +8866,13 @@
 
             if (!resolved && !postResponseResolved) {
                 scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+            }
+            if (resolved) {
+                const mergedAfterUnlock = resolveSessionMessages(
+                    { session_id: sid, messages: loadChatCache(sid) },
+                    { allowRestore: false }
+                );
+                ensureInfraNoticeBotsInDom(mergedAfterUnlock);
             }
             return resolved;
         } catch (err) {
@@ -9578,6 +9894,19 @@
             return;
         }
 
+        if (variant === 'error') {
+            const errText = String(rawMessage || '');
+            if (
+                isInternalClientErrorMessage(errText)
+                || shouldSuppressTransientClientErrorCard(null)
+            ) {
+                if (!postResponseResolved) {
+                    scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+                }
+                return;
+            }
+        }
+
         const securityScore = resolveSecurityScore(riskScore);
         const friendly = mapToUserFriendlyError(rawMessage);
         const reportAttrs = [
@@ -9857,6 +10186,16 @@
 
     function showErrorMessage(message, riskScore = null, anchorIndex = null) {
         showStatusMessage('error-message', 'error', message, riskScore, anchorIndex);
+    }
+
+    function showDeferredFetchErrorMessage(message) {
+        if (shouldSuppressPostFetchError() || shouldSuppressTransientClientErrorCard(null)) {
+            if (!postResponseResolved) {
+                scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+            }
+            return;
+        }
+        showErrorMessage(message);
     }
 
     function showWarningMessage(message, riskScore = null, anchorIndex = null) {
@@ -10796,14 +11135,6 @@ function appendQaDelta(text, section) {
             }
             return;
         }
-        if (postMeta.donePayload && postMeta.donePayload.bot_message) {
-            if (unlockPostResponseUI(postMeta.donePayload)) {
-                if (onComplete) {
-                    onComplete();
-                }
-                return;
-            }
-        }
         let retryCount = 0;
         let fetchSeq = 0;
         const hasDoneBot = !!(postMeta.donePayload && postMeta.donePayload.bot_message);
@@ -10856,7 +11187,7 @@ function appendQaDelta(text, section) {
                     removeStreamingMedicineCards();
                     removeStreamingChatBubble();
                     removeStreamingQaResponse();
-                    showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                    showDeferredFetchErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                     restoreSubmitButton();
                     clearSlowRequestTimer();
                     if (onComplete) onComplete();
@@ -10986,7 +11317,7 @@ function appendQaDelta(text, section) {
                     removeStreamingMedicineCards();
                     removeStreamingChatBubble();
                     removeStreamingQaResponse();
-                    showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                    showDeferredFetchErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                     restoreSubmitButton();
                     clearSlowRequestTimer();
                     if (onComplete) onComplete();
@@ -11126,8 +11457,12 @@ function appendQaDelta(text, section) {
                 if (gen !== chatSubmitGeneration || postResponseResolved) {
                     return;
                 }
-                if (!unlockPostResponseUI(donePayload) && !isResponseVisibleInDom(null)) {
-                    showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                if (
+                    !unlockPostResponseUI(donePayload)
+                    && !isResponseVisibleInDom(null)
+                    && !shouldSuppressTransientClientErrorCard(null)
+                ) {
+                    showDeferredFetchErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                 }
                 dismissTypingIndicator(null, { force: true });
                 endAwaitingPostResponse();
@@ -11242,7 +11577,17 @@ function appendQaDelta(text, section) {
                     clearSlowRequestTimer();
                     restoreSubmitButton();
                     if (!hasActiveStreamingContent()) {
-                        showErrorMessage((ev.data && ev.data.message) || '');
+                        const errText = (ev.data && ev.data.message) || '';
+                        if (
+                            isInternalClientErrorMessage(errText)
+                            || shouldSuppressTransientClientErrorCard(null)
+                        ) {
+                            if (!postResponseResolved) {
+                                scheduleDeferredSessionRecovery(gen, 0);
+                            }
+                        } else {
+                            showErrorMessage(errText);
+                        }
                     }
                 }
             },
@@ -11306,6 +11651,7 @@ function appendQaDelta(text, section) {
         const sid = getSidFromCookie();
         saveChatCache(sid, merged);
         ensureSecurityNoticeTurnInDom(merged);
+        ensureInfraNoticeBotsInDom(merged);
         applySessionMessages(sessionData, {
             preserveStatusCards: true,
             forceRender: true,
@@ -11415,7 +11761,7 @@ function appendQaDelta(text, section) {
                         console.error('Max retries reached after timeout');
                         dismissTypingIndicator(null, { force: true });
                         removeProcessingMessage();
-                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        showDeferredFetchErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                         restoreSubmitButton();
                     }
                 }, 2000); // 2秒でタイムアウト
@@ -11477,7 +11823,7 @@ function appendQaDelta(text, section) {
                         console.error('Max retries reached, showing error');
                         dismissTypingIndicatorWhenReady(mergedAfterPost, { force: true });
                         removeProcessingMessage();
-                        showErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
+                        showDeferredFetchErrorMessage('申し訳ございません。応答の取得に時間がかかっています。ページを再読み込みしてください。');
                         restoreSubmitButton();
                     }
                 })
@@ -12858,7 +13204,7 @@ function appendQaDelta(text, section) {
 
         syncChatMessageOrder(messages, cardsByAnchor, chatMessages);
 
-        collapseDuplicateUserDomNodes(chatMessages);
+        collapseDuplicateUserDomNodes(chatMessages, messages);
         collapseDuplicateBlockedUserDomNodes(chatMessages, messages);
 
         ensureSessionMessagesInDom(messages);

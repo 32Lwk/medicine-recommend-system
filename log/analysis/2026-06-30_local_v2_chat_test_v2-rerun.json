@@ -1,0 +1,1974 @@
+{
+  "meta": {
+    "date": "2026-06-30",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-29T16:29:12.487526+00:00",
+    "elapsed_sec": 1727.3,
+    "scenario_count": 3,
+    "total_turns": 126,
+    "auto_pass": 3,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1782750552.4875238,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "D:\\Programing\\medicine-recommend\\log\\counseling_detail_log.jsonl",
+        "counseling_detail_total": 4468,
+        "with_response": 4468,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 1912,
+          "shadow_mismatch": 104,
+          "shadow_mismatch_rate_pct": 5.44,
+          "shadow_by_primary_route": {
+            "Physical": 172,
+            "SessionOps": 14,
+            "Concierge": 1696,
+            "Emergency": 18,
+            "Store": 12
+          },
+          "shadow_by_resolved_by": {
+            "gate": 223,
+            "llm": 1,
+            "legacy": 40,
+            "guard": 1648
+          },
+          "shadow_with_fever_context_flag": 33,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 0,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 150,
+          "dispatch_handled": 133,
+          "dispatch_unhandled": 17,
+          "dispatch_success_rate_pct": 88.67,
+          "dispatch_by_handler": {
+            "physical_agent": 53,
+            "emergency_agent": 35,
+            "session_ops": 14,
+            "concierge_agent": 48
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "gcp_analysis": {
+          "source_md": "log\\analysis\\2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md",
+          "counseling_detail_count_from_report": 0,
+          "turns_response_missing_from_report": 36,
+          "line_reply_fallback_push": 9,
+          "slowest_post_seconds": 49.4
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "exit_code": 0,
+      "data": {
+        "sources": {
+          "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+          "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+          "gcp_log": null
+        },
+        "local": {
+          "shadow_total": 1912,
+          "shadow_mismatch": 104,
+          "shadow_mismatch_rate_pct": 5.44,
+          "shadow_by_primary_route": {
+            "Physical": 172,
+            "SessionOps": 14,
+            "Concierge": 1696,
+            "Emergency": 18,
+            "Store": 12
+          },
+          "shadow_by_resolved_by": {
+            "gate": 223,
+            "llm": 1,
+            "legacy": 40,
+            "guard": 1648
+          },
+          "shadow_with_fever_context_flag": 33,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 0,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 150,
+          "dispatch_handled": 133,
+          "dispatch_unhandled": 17,
+          "dispatch_success_rate_pct": 88.67,
+          "dispatch_by_handler": {
+            "physical_agent": 53,
+            "emergency_agent": 35,
+            "session_ops": 14,
+            "concierge_agent": 48
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            }
+          ]
+        }
+      },
+      "stderr": ""
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 3,
+      "counseling_rows_matched": 252,
+      "route_rows_matched": 126,
+      "per_session": {
+        "1782752031568788205123": {
+          "counseling_turns": 84,
+          "counseling_with_response": 84,
+          "route_events": 42,
+          "routes": {
+            "Concierge": 42
+          },
+          "intent_samples": [
+            {
+              "user_input": "このチャットの仕組みを教えて",
+              "has_response": true
+            },
+            {
+              "user_input": "このチャットの仕組みを教えて",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            }
+          ]
+        },
+        "1782750552491412765961": {
+          "counseling_turns": 84,
+          "counseling_with_response": 84,
+          "route_events": 42,
+          "routes": {
+            "Physical": 1,
+            "Concierge": 41
+          },
+          "intent_samples": [
+            {
+              "user_input": "頭痛い",
+              "has_response": true
+            },
+            {
+              "user_input": "頭痛い",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            }
+          ]
+        },
+        "1782751574578851167878": {
+          "counseling_turns": 84,
+          "counseling_with_response": 84,
+          "route_events": 42,
+          "routes": {
+            "Physical": 1,
+            "Concierge": 41
+          },
+          "intent_samples": [
+            {
+              "user_input": "子供が熱を出しました",
+              "has_response": true
+            },
+            {
+              "user_input": "子供が熱を出しました",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し詳しく教えてください",
+              "has_response": true
+            }
+          ]
+        }
+      },
+      "intent_router_metrics": {
+        "shadow_total": 126,
+        "shadow_mismatch": 2,
+        "shadow_mismatch_rate_pct": 1.59,
+        "shadow_by_primary_route": {
+          "Physical": 2,
+          "Concierge": 124
+        },
+        "shadow_by_resolved_by": {
+          "gate": 2,
+          "guard": 124
+        },
+        "shadow_with_fever_context_flag": 0,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 0,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 0,
+        "dispatch_handled": 0,
+        "dispatch_unhandled": 0,
+        "dispatch_success_rate_pct": 0.0,
+        "dispatch_by_handler": {},
+        "mismatch_samples": [
+          {
+            "session_id": "1782750552491412765961",
+            "user_input": "頭痛い",
+            "primary_route": "Physical",
+            "triage_category": "Other",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782751574578851167878",
+            "user_input": "子供が熱を出しました",
+            "primary_route": "Physical",
+            "triage_category": "Other",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 940,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 471,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 2
+  },
+  "results": [
+    {
+      "scenario_id": "gpt-physical-headache",
+      "category": "physical",
+      "wave": "gpt-scale",
+      "session_id": "1782750552491412765961",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭痛い",
+          "http_status": 200,
+          "elapsed_ms": 23116,
+          "diagnosis_kind": null,
+          "response_snippet": "「頭痛い」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「頭痛い」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 19906,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21689,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20871,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 4,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 22695,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 5,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 19230,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 6,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 17587,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 7,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 18930,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 8,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 14950,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 9,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20085,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 10,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20863,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 11,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20756,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 12,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21927,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 13,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21147,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 14,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 18642,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 15,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 23043,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 16,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20903,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 17,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 22759,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 18,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 23851,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 19,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21136,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 20,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20644,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 21,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 17615,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 22,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20178,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 23,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20365,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 24,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21213,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 25,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20021,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 26,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 22936,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 27,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20725,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 28,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21549,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 29,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 25453,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 30,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21401,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 31,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 22446,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 32,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 17957,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 33,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 19788,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 34,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21050,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 35,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21013,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 36,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 18709,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 37,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 24275,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 38,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 24398,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 39,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20645,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 40,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 23845,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 41,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21827,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "頭痛の患者",
+      "persona_id": "physical-headache",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "gpt-anxious-parent-fever",
+      "category": "physical_fever",
+      "wave": "gpt-scale",
+      "session_id": "1782751574578851167878",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "子供が熱を出しました",
+          "http_status": 200,
+          "elapsed_ms": 21836,
+          "diagnosis_kind": null,
+          "response_snippet": "「子供が熱を出しました」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「子供が熱を出しました」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21927,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20997,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 23145,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 4,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 23794,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 5,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 20494,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 6,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 22150,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 7,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 21993,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 8,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 18206,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 9,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 18937,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 10,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 19230,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 11,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 17787,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 12,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3544,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 13,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3518,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 14,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3716,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 15,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3555,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 16,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3480,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 17,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3581,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 18,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3642,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 19,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5341,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 20,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3683,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 21,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3656,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 22,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3468,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 23,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3434,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 24,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3598,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 25,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3772,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 26,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3686,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 27,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3377,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 28,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3538,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 29,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3610,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 30,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3430,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 31,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3656,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 32,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3384,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 33,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3453,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 34,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3349,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 35,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3625,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 36,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3677,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 37,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3339,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 38,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3236,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 39,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3505,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 40,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3346,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 41,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3726,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "不安な親（子の発熱）",
+      "persona_id": "anxious-parent-fever",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "gpt-tech-curious",
+      "category": "concierge",
+      "wave": "gpt-scale",
+      "session_id": "1782752031568788205123",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "このチャットの仕組みを教えて",
+          "http_status": 200,
+          "elapsed_ms": 5491,
+          "diagnosis_kind": null,
+          "response_snippet": "「このチャットの仕組みを教えて」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「このチャットの仕組みを教えて」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5141,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5609,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5148,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 4,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5578,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 5,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3380,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 6,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3604,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 7,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3459,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 8,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3396,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 9,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3468,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 10,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3541,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 11,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3471,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 12,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3478,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 13,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3430,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 14,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3580,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 15,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3653,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 16,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3312,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 17,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3475,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 18,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3531,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 19,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5279,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 20,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3421,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 21,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3537,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 22,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3632,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 23,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3438,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 24,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3459,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 25,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3629,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 26,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3505,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 27,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3590,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 28,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3496,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 29,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3482,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 30,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3479,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 31,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3504,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 32,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3564,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 33,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3535,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 34,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3696,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 35,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3563,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 36,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3523,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 37,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3596,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 38,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3331,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 39,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3482,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 40,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 3723,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 41,
+          "user_message": "もう少し詳しく教えてください",
+          "http_status": 200,
+          "elapsed_ms": 5597,
+          "diagnosis_kind": null,
+          "response_snippet": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "response_full": "「もう少し詳しく教えてください」について、Otherと判定しましたが、確信度が低いため確認させてください。症状・お薬の目的・困っていることをもう少し具体的に教えていただけますか？",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "技術に興味のあるユーザー",
+      "persona_id": "tech-curious",
+      "intent_eval": {}
+    }
+  ]
+}

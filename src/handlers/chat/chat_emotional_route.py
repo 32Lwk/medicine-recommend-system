@@ -145,9 +145,14 @@ def handle_emotional_category(
             symptom_type = "insomnia"
             logger.info("🔄 不眠関連キーワード直接検出により、symptom_typeを'insomnia'に変更しました")
 
-        from src.services.line_memory_context import get_counseling_conversation_history
+        try:
+            from src.dialogue.history import resolve_emotional_history_with_fallback
 
-        conversation_history = get_counseling_conversation_history(session, sid)
+            conversation_history = resolve_emotional_history_with_fallback(session, sid)
+        except Exception:
+            from src.dialogue.history import resolve_counseling_history_with_fallback
+
+            conversation_history = resolve_counseling_history_with_fallback(session, sid)
 
         initial_response = generate_counseling_response(
             symptom_type,
@@ -156,8 +161,17 @@ def handle_emotional_category(
             conversation_history=conversation_history,
             session_id=sid,
         )
-        initial_questions = generate_follow_up_questions(symptom_type, {}, recommendation_client)
+        initial_questions = generate_follow_up_questions(
+            symptom_type, {}, recommendation_client, prior_questions=[]
+        )
         start_counseling_mode(session, symptom_type, initial_questions)
+
+        try:
+            from src.dialogue.sync_legacy import mirror_counseling_mode
+
+            mirror_counseling_mode(session, sid)
+        except Exception:
+            pass
 
         first_question = initial_questions[0] if initial_questions else None
         if first_question:

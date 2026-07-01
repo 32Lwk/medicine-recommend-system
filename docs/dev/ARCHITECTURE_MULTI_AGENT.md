@@ -92,3 +92,61 @@ Web 引き継ぎセッションは `handoff_from_line` で記憶オーナーを 
 ## 緊急メール通知
 
 `emergency_dispatch` がキュー登録時に `emergency_notify.notify_emergency_detected` を呼ぶ。宛先は管理設定の `alert_email`（`budget_guard.get_alert_email`）。`EMERGENCY_EMAIL_ENABLED=false` で無効化。SMTP 未設定時は `smtp_not_configured` をキュー `notification_status.email` に記録。
+
+---
+
+## Chat Pipeline v2 アーキテクチャ（Wave 1b〜2）
+
+`CHAT_PIPELINE_V2=true` 時の routing フロー。フラグ OFF 時は旧 pipeline（ChatOrchestrator 経路）を維持。
+
+```mermaid
+flowchart TB
+    subgraph pipeline [chat_post_pipeline]
+        A[ユーザー発話] --> SP[SessionOps fast-path\nv2: DialogueSessionOps]
+        SP -->|handled| RESP
+        SP -->|miss| TR[Triage / SafetyGate]
+        TR --> SYNC[sync_routing_context\ndialogue_state dual-write\ncorrection_detected mark]
+        SYNC --> SHADOW[IntentRouter shadow\nrun_and_record_shadow]
+        SHADOW --> DISP{dispatch?\nCHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH}
+        DISP -->|ON| AGD[AgentDispatcher\ntry_agent_dispatch]
+        AGD -->|handled| RESP
+        AGD -->|miss/clarify| ORCH
+        DISP -->|OFF| ORCH[ChatOrchestrator\nlegacy 100%]
+        ORCH --> RESP[finalize_pipeline_response\nend_guard fail-loud]
+    end
+
+    subgraph dialogue [src/dialogue/]
+        GateA[Stage A gate\ndeterministic_gate]
+        GateB[Stage B intent_router\ntriage_map + LLM]
+        GateC[Stage C guards\nfever/store/clarify]
+        GateA --> GateB --> GateC
+    end
+
+    SHADOW -.->|resolve_route| GateA
+    AGD -.->|_load_decision| GateA
+```
+
+### 環境変数とフェーズ
+
+| 変数 | 効果 |
+|------|------|
+| `CHAT_PIPELINE_V2` | グローバル ON/OFF |
+| `CHAT_PIPELINE_V2_ALLOWLIST` / `DENYLIST` | セッション単位カナリア |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER` | shadow（観測のみ） |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | 本線 dispatch |
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | Stage B structured LLM |
+
+### Wave 別 dialogue パッケージ
+
+| パッケージ | 責務 | Wave |
+|-----------|------|------|
+| `src/dialogue/context.py` | DialogueContext load/save/dual-write | 1a |
+| `src/dialogue/context_provider.py` | agent_kind 別履歴窓 | 1a |
+| `src/dialogue/session_ops.py` | SessionOps 統一入口 | 1a |
+| `src/dialogue/envelope.py` | ResponseEnvelope delivery_mode | 1a |
+| `src/dialogue/routing/gate.py` | Stage A gate | 1b |
+| `src/dialogue/routing/intent_router_llm.py` | Stage B LLM | 1b |
+| `src/dialogue/routing/guards.py` | Stage C 後段ガード | 1b |
+| `src/dialogue/dispatcher.py` | AgentDispatcher | 1b |
+| `src/dialogue/history.py` | with_fallback 履歴解決 | 2 |
+| `src/dialogue/sync_legacy.py` | legacy dual-write + correction mark | 2 |

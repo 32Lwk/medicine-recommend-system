@@ -651,7 +651,7 @@ def _render_about_page(
     if page_id == "index":
         # Always use full index bundle + canonical hero (never medicine_recommended on /about).
         bundle = dict(i18n.get_about_bundle("index", lang))
-        bundle["hero_image"] = "img/about/generated/hero-pharmacy-chat.png"
+        bundle["hero_image"] = "img/about/generated/about/hero/hero-pharmacy-chat.png"
         if not (bundle.get("hero_alt") or "").strip():
             bundle["hero_alt"] = i18n.get_about_bundle("index", "ja")["hero_alt"]
         bundle["tech_diagram"] = i18n.build_tech_diagram(lang)
@@ -881,6 +881,24 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                     safe_session[flag] = session_data[flag]
 
 
+def _enrich_v2_test_chat_body(body: dict, session, request: Request) -> dict:
+    """local_v2_chat_test_runner 向け: POST 本文に直近 bot を同梱（DB 同期待ち不要）。"""
+    ua = str(request.headers.get("User-Agent") or "")
+    if "local-v2-chat-test" not in ua or not isinstance(body, dict):
+        return body
+    try:
+        from src.handlers.line.line_session import get_latest_bot_message_from_session
+
+        bot = get_latest_bot_message_from_session(session)
+        if not bot:
+            return body
+        out = dict(body)
+        out["latest_bot"] = bot
+        return out
+    except Exception:
+        return body
+
+
 def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONResponse:
     from src.core.language_utils import update_session_language_from_message
     from src.services.processing_status import (
@@ -906,6 +924,7 @@ def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONRe
         if not isinstance(body, dict) or not isinstance(status_code, int):
             body = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
             status_code = 500
+        body = _enrich_v2_test_chat_body(body, safe_session, request)
         return JSONResponse(content=body, status_code=status_code)
     finally:
         if sid:
@@ -994,34 +1013,46 @@ async def new_session(request: Request, response: Response):
         except Exception:
             pass
         try:
-            delete_session_by_id(old_sid)
+            from src.services.session_manager import get_session_from_db, is_v2_local_test_session
+
+            old_info = get_session_from_db(old_sid) or {}
+            if not is_v2_local_test_session(old_info):
+                delete_session_by_id(old_sid)
         except Exception:
             pass
     sid = str(int(time.time() * 1000000)) + str(random.randint(100000, 999999))
     response.set_cookie(COOKIE_NAME_SID, sid, **COOKIE_SETTINGS)
-    username = f"ユーザー{get_next_user_number()}"
-    ensure_session_persisted(
-        sid,
-        {
-            "messages": [],
-            "username": username,
-            "user_attributes": {
-                "age": None,
-                "gender": None,
-                "pregnant": None,
-                "breastfeeding": None,
-                "current_medications": [],
-                "allergies": [],
-                "medical_history": [],
-                "symptom_duration_days": None,
-                "other_info": None,
-                "diagnosis_session_active": False,
-                "diagnosis_block_types": [],
-            },
-            "session_active": False,
+    ua = request.headers.get("User-Agent", "") or ""
+    scenario = (request.headers.get("X-V2-Test-Scenario") or "").strip()
+    v2_test = "local-v2-chat-test" in ua
+    if v2_test:
+        slug = scenario[:32] if scenario else sid[-8:]
+        username = f"v2-test-{slug}"
+    else:
+        username = f"ユーザー{get_next_user_number()}"
+    session_payload: dict = {
+        "messages": [],
+        "username": username,
+        "user_attributes": {
+            "age": None,
+            "gender": None,
+            "pregnant": None,
+            "breastfeeding": None,
+            "current_medications": [],
+            "allergies": [],
+            "medical_history": [],
+            "symptom_duration_days": None,
+            "other_info": None,
+            "diagnosis_session_active": False,
+            "diagnosis_block_types": [],
         },
-        request,
-    )
+        "session_active": False,
+    }
+    if v2_test:
+        session_payload["v2_local_test"] = True
+        if scenario:
+            session_payload["v2_test_scenario"] = scenario
+    ensure_session_persisted(sid, session_payload, request)
 
     return {"message": "新しいセッションを開始しました", "username": username, "session_id": sid}
 
@@ -1533,6 +1564,8 @@ def _session_row_for_admin(sess_id, info):
         "lifecycle_log": info.get("lifecycle_log") or [],
         "client_ip": info.get("client_ip", ""),
         "user_agent": info.get("user_agent", ""),
+        "v2_local_test": bool(info.get("v2_local_test")),
+        "v2_test_scenario": info.get("v2_test_scenario", ""),
         "handoff_from_line": line_ctx.get("handoff_from_line"),
         "is_line_session": bool(line_ctx.get("is_line_session")),
         "is_line_handoff": bool(line_ctx.get("is_line_handoff")),
@@ -2539,6 +2572,8 @@ def api_admin_sessions(_: None = Depends(admin_json_auth)):
                 "session_active": bool(info.get("session_active", True)),
                 "client_ip": str(info.get("client_ip", "")),
                 "user_agent": str(info.get("user_agent", "")),
+                "v2_local_test": bool(info.get("v2_local_test")),
+                "v2_test_scenario": str(info.get("v2_test_scenario") or ""),
                 "user_attributes": dict(info.get("user_attributes", {}) or {}),
                 "detailed_diagnosis": info.get("detailed_diagnosis"),
                 "message_count": len(info.get("messages", []) or []),

@@ -352,13 +352,14 @@ def resolve_concierge_intent(
     prior = resolve_prior_meta_intent(
         session=session,
         conversation_history=conversation_history,
+        sid=session_id,
     )
     follow = infer_prior_meta_follow_up_intent(text, prior, last_bot=last_bot)
     if follow:
         return follow  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
-        triage_result, session, text, routing_ctx=routing_ctx
+        triage_result, session, text, sid=session_id, routing_ctx=routing_ctx
     )
     if orchestrated:
         return orchestrated
@@ -368,8 +369,9 @@ def resolve_concierge_intent(
 
     base = classify_concierge_intent(text)
     if base == "chitchat":
-        state = get_concierge_state(session)
-        if int(state.get("off_topic_turns") or 0) >= 2:
+        from src.dialogue.concierge_context import resolve_off_topic_turns
+
+        if resolve_off_topic_turns(session, session_id) >= 2:
             return "redirect"
         return "chitchat"
     if base in ("greeting", "thanks"):
@@ -386,7 +388,7 @@ def resolve_concierge_intent(
             session=session,
             routing_ctx=routing_ctx,
         )
-        resolved = resolve_intent_from_triage(enriched, session, text)
+        resolved = resolve_intent_from_triage(enriched, session, text, sid=session_id)
         if resolved:
             return resolved
         if enriched.get("concierge_intent") == "redirect":

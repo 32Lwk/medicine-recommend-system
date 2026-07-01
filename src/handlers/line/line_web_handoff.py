@@ -109,12 +109,38 @@ def _needs_personalized_advice(diagnosis: dict[str, Any]) -> bool:
     return not str(diagnosis.get("personalized_advice") or "").strip()
 
 
+def _physical_history_block(line_sid: str | None, session: Any = None) -> str:
+    """v2 Physical 窓を personalized_advice 用テキストに変換。"""
+    if not line_sid:
+        return ""
+    try:
+        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+        if not is_chat_pipeline_v2_for_session(line_sid):
+            return ""
+        if session is None:
+            from src.services.session_manager import get_session_from_db
+
+            session = get_session_from_db(line_sid)
+        if not session:
+            return ""
+        from src.dialogue.history import resolve_physical_history_with_fallback
+        from src.services.triage_history import format_triage_history_block
+
+        return format_triage_history_block(
+            resolve_physical_history_with_fallback(session, line_sid, limit=6)
+        )
+    except Exception:
+        return ""
+
+
 def _maybe_enrich_personalized_advice(
     diagnosis: dict[str, Any],
     *,
     user_attributes: dict[str, Any] | None,
     user_text: str,
     line_sid: str | None,
+    session: Any = None,
 ) -> dict[str, Any]:
     if not _needs_personalized_advice(diagnosis):
         return diagnosis
@@ -135,6 +161,7 @@ def _maybe_enrich_personalized_advice(
             influenza_risk=bool(diagnosis.get("influenza_risk")),
             influenza_reason=str(diagnosis.get("influenza_reason") or ""),
             session_id=line_sid,
+            conversation_history_block=_physical_history_block(line_sid, session),
         )
     except Exception:
         logger.warning("handoff: personalized_advice generation failed", exc_info=True)

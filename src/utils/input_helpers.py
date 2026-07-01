@@ -295,6 +295,27 @@ def has_explicit_symptom_signal(message: str) -> bool:
     if has_symptom_keyword:
         return True
     if any(k in text for k in recommendation_intent_keywords):
+        if _is_store_procurement_intent(text):
+            return False
+        return True
+    return False
+
+
+def _is_store_procurement_intent(text: str) -> bool:
+    """市販薬の購入先・在庫照会は症状シグナルではない。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        if classify_medicine_procurement_route(t):
+            return True
+    except ImportError:
+        pass
+    if "購入先" in t or "買える場所" in t or "買える店" in t:
+        return True
+    if "市販薬" in t and any(h in t for h in ("どこ", "近く", "場所", "購入", "買")):
         return True
     return False
 
@@ -402,16 +423,68 @@ def should_apply_unrecognized_symptom_gate(
     return False
 
 
+_FEVER_TEXT_KEYWORDS = (
+    "発熱",
+    "高熱",
+    "微熱",
+    "熱があります",
+    "熱があ",
+    "熱っぽ",
+    "熱が出",
+)
+_FEVER_DEGREE_RE = re.compile(r"\d{2}(?:\.\d+)?\s*度")
+
+
+def has_fever_signal(message: str) -> bool:
+    """発熱・体温表現を含む入力か（店舗ゲート抑止・pending 解消用）。"""
+    text = (message or "").strip()
+    if not text:
+        return False
+    if _FEVER_DEGREE_RE.search(text):
+        return True
+    return any(k in text for k in _FEVER_TEXT_KEYWORDS)
+
+
+def session_has_fever_context(session: Any, *, max_user_turns: int = 8) -> bool:
+    """直近ターンまたはセッションフラグに発熱コンテキストがあるか。"""
+    if not session or not hasattr(session, "get"):
+        return False
+    if session.get("_fever_context_active"):
+        return True
+    ds = session.get("dialogue_state")
+    if isinstance(ds, dict) and (ds.get("flags") or {}).get("fever_context"):
+        return True
+    messages = session.get("messages") or []
+    user_seen = 0
+    for msg in reversed(messages):
+        if not isinstance(msg, dict) or msg.get("type") != "user":
+            continue
+        user_seen += 1
+        if user_seen > max_user_turns:
+            break
+        if has_fever_signal(str(msg.get("content") or "")):
+            return True
+    return False
+
+
 def should_prioritize_medical_route_over_store(
     triage_result: Optional[Dict[str, Any]],
     message: str = "",
+    *,
+    session: Any = None,
 ) -> bool:
     """
     Physical/Ask トリアージが十分な確信度のとき、
     キーワード型の店舗ゲートより医療経路を優先する。
 
     トイレ・遺失物など明確な店舗意図は store 側を維持する。
+    発熱コンテキスト（当該入力または直近セッション）でも store を抑止する。
     """
+    if has_fever_signal(message):
+        return True
+    if session is not None and session_has_fever_context(session):
+        return True
+
     triage = triage_result or {}
     category = triage.get("category", "")
     if category not in ("Physical", "Ask"):
@@ -498,3 +571,30 @@ def should_fallback_to_symptom_recommendation(
     if category == "Emergency":
         return False
     return category not in ("Other",)
+
+
+_CORRECTION_PATTERNS: tuple[str, ...] = (
+    r"^違う",
+    r"^違います",
+    r"^いや[、。\s]",
+    r"^いいえ[、。\s]",
+    r"^そうじゃなくて",
+    r"^そうではなく",
+    r"^正しくは",
+    r"^正確には",
+    r"^訂正",
+    r"^ちが[うい]",
+    r"^間違[えい]",
+    r"^さっきと違",
+)
+
+
+def detect_correction_intent(user_text: str) -> bool:
+    """ユーザーが直前発話を訂正しようとしているか（correction re-execution 契約）。"""
+    text = (user_text or "").strip()
+    if not text:
+        return False
+    for pat in _CORRECTION_PATTERNS:
+        if re.search(pat, text):
+            return True
+    return False

@@ -12,6 +12,23 @@ from src.services.triage_history import (
 )
 
 
+def _resolve_history_for_routing(
+    session: Any,
+    sid: Optional[str],
+) -> List[Dict[str, Any]]:
+    """v2 ON 時は ContextProvider 窓、OFF 時は get_recent_messages。"""
+    try:
+        from config.llm_flags import is_chat_pipeline_v2_for_session
+
+        if is_chat_pipeline_v2_for_session(sid):
+            from src.dialogue.history import resolve_conversation_history_with_fallback
+
+            return resolve_conversation_history_with_fallback(session, sid, agent_kind="default")
+    except Exception:
+        pass
+    return get_recent_messages(session, sid)
+
+
 @dataclass
 class RoutingContext:
     session_id: Optional[str]
@@ -24,6 +41,7 @@ class RoutingContext:
     pending_route_is_question: Optional[bool] = None
     store_probable: Optional[bool] = None
     store_gate_evaluated: bool = False
+    session: Any = None
 
     @property
     def triage_category(self) -> str:
@@ -47,7 +65,7 @@ class RoutingContext:
         *,
         pending_route_is_question: Optional[bool] = None,
     ) -> "RoutingContext":
-        hist = get_recent_messages(session, sid)
+        hist = _resolve_history_for_routing(session, sid)
         triage = dict(
             triage_result
             or session.get("last_triage_result")
@@ -66,6 +84,7 @@ class RoutingContext:
             history_messages=hist,
             confidence_gate_concierge=bool(session.get("_confidence_gate_concierge")),
             pending_route_is_question=pending,
+            session=session,
         )
 
     @classmethod
@@ -112,9 +131,13 @@ def evaluate_store_gate(
     primary = variants[0] if variants else ""
     from src.services.concierge_intent import looks_like_service_identity_question
 
+    session = routing_ctx.session if routing_ctx is not None else None
+
     if any(looks_like_service_identity_question(t) for t in variants):
         result = False
-    elif should_prioritize_medical_route_over_store(triage_result, primary):
+    elif should_prioritize_medical_route_over_store(
+        triage_result, primary, session=session
+    ):
         result = False
     else:
         result = is_probable_store_inquiry_any(*variants, triage_result=triage_result)

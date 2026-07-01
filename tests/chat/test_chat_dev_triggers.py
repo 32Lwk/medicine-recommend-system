@@ -73,6 +73,39 @@ def test_sage_reco_preview(mock_db, mock_save, mock_dev):
 
 
 @patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)
+@patch("src.handlers.chat.chat_dev_triggers.save_session_to_db")
+@patch("src.handlers.chat.chat_dev_triggers.get_session_from_db", return_value=None)
+def test_sage_llm_unavailable_preview(mock_db, mock_save, mock_dev):
+    del mock_db, mock_save, mock_dev
+    session = _FakeSession(messages=[])
+    body, status = try_dev_error_trigger(session, None, "mrcdev00000000000016")
+    assert status == 200
+    assert body["dev_preview_kind"] == "sage_llm_unavailable"
+    bot = session["messages"][-1]
+    assert bot["content"] == "sage_status"
+    assert bot.get("llm_unavailable") is True
+    diag = bot["diagnosis"]
+    assert diag["render"] == "sage_status"
+    assert diag["variant"] == "error"
+    assert diag["kind"] == "llm_unavailable"
+    assert "詳しいAIご案内" in str(diag.get("title") or "")
+
+
+@patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)
+@patch("src.handlers.chat.chat_dev_triggers.save_session_to_db")
+@patch("src.handlers.chat.chat_dev_triggers.get_session_from_db", return_value=None)
+def test_sage_medicine_type_preview(mock_db, mock_save, mock_dev):
+    del mock_db, mock_save, mock_dev
+    session = _FakeSession(messages=[])
+    body, status = try_dev_error_trigger(session, None, "mrcdev00000000000017")
+    assert status == 200
+    assert body["dev_preview_kind"] == "sage_medicine_type"
+    bot = session["messages"][-1]
+    assert bot["content"] == "sage_status"
+    assert bot["diagnosis"]["render"] == "sage_status"
+
+
+@patch("src.handlers.chat.chat_dev_triggers.is_development_runtime", return_value=True)
 def test_partial_match_does_not_trigger(mock_dev):
     del mock_dev
     session = _FakeSession(messages=[])
