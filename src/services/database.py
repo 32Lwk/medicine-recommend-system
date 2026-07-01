@@ -827,11 +827,17 @@ class DatabaseManager:
             return obj
 
     def _pack_session_metadata(self, data: dict) -> dict | None:
-        """message_archive / line_profile / lifecycle_log を session_metadata に格納。"""
+        """message_archive / line_profile / lifecycle_log / v2 テストタグを session_metadata に格納。"""
         if not isinstance(data, dict):
             return None
         meta: dict = {}
-        for key in ("message_archive", "line_profile", "lifecycle_log"):
+        for key in (
+            "message_archive",
+            "line_profile",
+            "lifecycle_log",
+            "v2_local_test",
+            "v2_test_scenario",
+        ):
             val = data.get(key)
             if val is not None:
                 meta[key] = self._convert_nan_to_null(val)
@@ -852,7 +858,13 @@ class DatabaseManager:
                 return session_data
         if not isinstance(raw, dict):
             return session_data
-        for key in ("message_archive", "line_profile", "lifecycle_log"):
+        for key in (
+            "message_archive",
+            "line_profile",
+            "lifecycle_log",
+            "v2_local_test",
+            "v2_test_scenario",
+        ):
             if raw.get(key) is not None and not session_data.get(key):
                 session_data[key] = raw[key]
         return session_data
@@ -1165,6 +1177,10 @@ class DatabaseManager:
                     (COALESCE(session_active, true) = true AND last_activity < NOW() - INTERVAL '{int(timeout_seconds)} seconds')
                 )
             """
+            v2_guard = (
+                " AND COALESCE(user_agent, '') NOT LIKE '%%local-v2-chat-test%%' "
+                " AND COALESCE(username, '') NOT LIKE 'v2-test-%%' "
+            )
             if not skip_empty_sessions:
                 expire_clause += f"""
                 OR
@@ -1176,11 +1192,12 @@ class DatabaseManager:
                 delete_sql = f"""
                 DELETE FROM sessions
                 WHERE ({expire_clause})
+                {v2_guard}
                 AND session_id NOT IN ({placeholders});
                 """
                 cursor.execute(delete_sql, tuple(exclude_list))
             else:
-                delete_sql = f"DELETE FROM sessions WHERE ({expire_clause});"
+                delete_sql = f"DELETE FROM sessions WHERE ({expire_clause}){v2_guard};"
                 cursor.execute(delete_sql)
             deleted_count = cursor.rowcount
             conn.commit()

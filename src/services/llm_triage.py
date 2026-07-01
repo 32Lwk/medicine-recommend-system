@@ -34,6 +34,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 _STAGE2_SKIP_MIN_CONFIDENCE = 0.85
+_STORE_STAGE1_SUBCATEGORY_PREFIX = "store_inquiry"
+
+
+def _should_skip_stage2_for_store(subcategory: str, confidence: float) -> bool:
+    sub = (subcategory or "").strip().lower()
+    return confidence >= 0.9 and sub.startswith(_STORE_STAGE1_SUBCATEGORY_PREFIX)
 
 
 def _concierge_fast_path_hint(user_text: str) -> tuple[str, str] | None:
@@ -653,6 +659,14 @@ def llm_triage(
                     concierge_intent,
                     concierge_intent_source,
                 )
+            elif _should_skip_stage2_for_store(subcategory, confidence):
+                stage2_skipped = True
+                reasoning = f"{reasoning} | stage2 skipped (store_inquiry_stage1)"
+                logger.info(
+                    "⏭️ 第二段階トリアージ省略: store subcategory=%s conf=%.2f",
+                    subcategory,
+                    confidence,
+                )
 
             if not stage2_skipped:
                 try:
@@ -747,13 +761,17 @@ def llm_triage(
         logger.error(f"LLMトリアージエラー: {e}")
         import traceback
         traceback.print_exc()
+        from src.services.llm_unavailability import is_openai_infrastructure_error_text
+
+        err_text = str(e)
         # エラー時は安全側に倒してOtherを返す
         return {
             "category": "Other",
             "confidence": 0.0,
             "subcategory": "error",
             "requires_immediate_action": False,
-            "reasoning": f"エラーが発生しました: {str(e)}"
+            "reasoning": f"エラーが発生しました: {err_text}",
+            "infrastructure_error": is_openai_infrastructure_error_text(err_text),
         }
 
 

@@ -1,0 +1,931 @@
+version: 1
+source: docs/dev/CHAT_PIPELINE_V2.md
+count: 100
+scenarios:
+- id: session-ops-01
+  category: session_ops
+  wave: 1a
+  input: ステータスを教えて
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-02
+  category: session_ops
+  wave: 1a
+  input: 何が記録されてる？
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-03
+  category: session_ops
+  wave: 1a
+  input: 履歴を要約して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-04
+  category: session_ops
+  wave: 1a
+  input: 履歴を教えて
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-05
+  category: session_ops
+  wave: 1a
+  input: 記憶を消して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-06
+  category: session_ops
+  wave: 1a
+  input: 履歴消して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-07
+  category: session_ops
+  wave: 1a
+  input: 会話を削除したい
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-08
+  category: session_ops
+  wave: 1a
+  input: 今の状態を教えて
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-09
+  category: session_ops
+  wave: 1a
+  input: セッションの状態は？
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-10
+  category: session_ops
+  wave: 1a
+  input: これまでの会話をまとめて
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-11
+  category: session_ops
+  wave: 1a
+  input: 保存されている情報は？
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: session-ops-12
+  category: session_ops
+  wave: 1a
+  input: 要約して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: physical-symptom-01
+  category: physical
+  wave: 1b
+  input: 頭痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-02
+  category: physical
+  wave: 1b
+  input: 頭が痛いです
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-03
+  category: physical
+  wave: 1b
+  input: 咳が出ます
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-04
+  category: physical
+  wave: 1b
+  input: のどが痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-05
+  category: physical
+  wave: 1b
+  input: 鼻水が止まらない
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-06
+  category: physical
+  wave: 1b
+  input: 胃が痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-07
+  category: physical
+  wave: 1b
+  input: 下痢をしています
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-08
+  category: physical
+  wave: 1b
+  input: 便秘です
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-09
+  category: physical
+  wave: 1b
+  input: 目がかゆい
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-10
+  category: physical
+  wave: 1b
+  input: 耳が痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-11
+  category: physical
+  wave: 1b
+  input: 肩こりがひどい
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-12
+  category: physical
+  wave: 1b
+  input: 腰が痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-13
+  category: physical
+  wave: 1b
+  input: めまいがする
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-14
+  category: physical
+  wave: 1b
+  input: 吐き気がします
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-15
+  category: physical
+  wave: 1b
+  input: かゆみがあります
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-16
+  category: physical
+  wave: 1b
+  input: 湿疹が出ました
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-17
+  category: physical
+  wave: 1b
+  input: 口内炎が痛い
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-symptom-18
+  category: physical
+  wave: 1b
+  input: 筋肉痛です
+  expect:
+    primary_route: Physical
+    must_not:
+    - response_missing
+- id: physical-fever-01
+  category: physical_fever
+  wave: pre-p0
+  input: 39度の熱があります
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-02
+  category: physical_fever
+  wave: pre-p0
+  input: 38.5度の熱
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-03
+  category: physical_fever
+  wave: pre-p0
+  input: 高熱が続いています
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-04
+  category: physical_fever
+  wave: pre-p0
+  input: 熱と頭痛があります
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-05
+  category: physical_fever
+  wave: pre-p0
+  input: 発熱と咳
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-06
+  category: physical_fever
+  wave: pre-p0
+  input: 37.8度です
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-07
+  category: physical_fever
+  wave: pre-p0
+  input: 熱が下がりません
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-08
+  category: physical_fever
+  wave: pre-p0
+  input: 子供が38度の熱
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-09
+  category: physical_fever
+  wave: pre-p0
+  input: 熱っぽい気がする
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: physical-fever-10
+  category: physical_fever
+  wave: pre-p0
+  input: 発熱中にのどの痛み
+  description: 発熱→店舗禁止
+  expect:
+    primary_route: Physical
+    must_not:
+    - store
+    - response_missing
+- id: concierge-01
+  category: concierge
+  wave: '2'
+  input: こんにちは
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-02
+  category: concierge
+  wave: '2'
+  input: 技術スタックは？
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-03
+  category: concierge
+  wave: '2'
+  input: プリンシプルオブプログラミングとは？
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-04
+  category: concierge
+  wave: '2'
+  input: このサービスは何ができますか？
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-05
+  category: concierge
+  wave: '2'
+  input: Sage Terraceとは
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-06
+  category: concierge
+  wave: '2'
+  input: APIの仕組みを教えて
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-07
+  category: concierge
+  wave: '2'
+  input: データはどこに保存されますか？
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-08
+  category: concierge
+  wave: '2'
+  input: プライバシーについて
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-09
+  category: concierge
+  wave: '2'
+  input: 対応言語は？
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-10
+  category: concierge
+  wave: '2'
+  input: 医薬品推奨の仕組み
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-11
+  category: concierge
+  wave: '2'
+  input: rule_basedとは
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-12
+  category: concierge
+  wave: '2'
+  input: インフラ構成を教えて
+  expect:
+    primary_route: Concierge
+    must_not:
+    - response_missing
+- id: concierge-followup-01
+  category: concierge_followup
+  wave: '2'
+  input: 技術面を詳しく
+  setup:
+  - 技術スタックは？
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - API
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-02
+  category: concierge_followup
+  wave: '2'
+  input: もっと詳しく
+  setup:
+  - 技術スタックは？
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - スタック
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-03
+  category: concierge_followup
+  wave: '2'
+  input: 具体例を教えて
+  setup:
+  - プリンシプルオブプログラミングとは？
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - プログラミング
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-04
+  category: concierge_followup
+  wave: '2'
+  input: もう少し教えて
+  setup:
+  - Sage Terraceとは
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - Sage
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-05
+  category: concierge_followup
+  wave: '2'
+  input: SSEについて
+  setup:
+  - APIの仕組みを教えて
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - SSE
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-06
+  category: concierge_followup
+  wave: '2'
+  input: Cloud Runは？
+  setup:
+  - インフラ構成を教えて
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - Cloud
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-07
+  category: concierge_followup
+  wave: '2'
+  input: rule_basedの詳細
+  setup:
+  - 医薬品推奨の仕組み
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - rule
+    content_kpi:
+    - no_greeting
+- id: concierge-followup-08
+  category: concierge_followup
+  wave: '2'
+  input: 英語でも使えますか
+  setup:
+  - 対応言語は？
+  description: architecture follow-up KPI
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - 英語
+    content_kpi:
+    - no_greeting
+- id: counseling-ctx-01
+  category: counseling_context
+  wave: '2'
+  input: 2週間くらいです
+  setup:
+  - 最近眠れません
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-02
+  category: counseling_context
+  wave: '2'
+  input: 上司との関係が原因です
+  setup:
+  - 仕事がつらい
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-03
+  category: counseling_context
+  wave: '2'
+  input: 1ヶ月ほどです
+  setup:
+  - 不安感が続きます
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-04
+  category: counseling_context
+  wave: '2'
+  input: 転職を考えています
+  setup:
+  - ストレスが溜まっています
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-05
+  category: counseling_context
+  wave: '2'
+  input: 特に朝がつらい
+  setup:
+  - 気分が落ち込みます
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-06
+  category: counseling_context
+  wave: '2'
+  input: 友人と喧嘩しました
+  setup:
+  - 人間関係で悩んでいます
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-07
+  category: counseling_context
+  wave: '2'
+  input: 試験が近いです
+  setup:
+  - 勉強のプレッシャー
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-08
+  category: counseling_context
+  wave: '2'
+  input: 一人暮らしです
+  setup:
+  - 孤独を感じます
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-09
+  category: counseling_context
+  wave: '2'
+  input: 睡眠不足です
+  setup:
+  - イライラします
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-10
+  category: counseling_context
+  wave: '2'
+  input: 仕事の繁忙期です
+  setup:
+  - 落ち着きません
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-11
+  category: counseling_context
+  wave: '2'
+  input: 残業が続いています
+  setup:
+  - 疲れが取れません
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: counseling-ctx-12
+  category: counseling_context
+  wave: '2'
+  input: 最近変化が多いです
+  setup:
+  - 気持ちを整理したい
+  description: Wave2 履歴・counseling
+  expect:
+    must_have_response: true
+    min_turns: 2
+- id: correction-01
+  category: correction
+  wave: '2'
+  input: やっぱり消さない
+  setup:
+  - 履歴消して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: correction-02
+  category: correction
+  wave: '2'
+  input: キャンセル
+  setup:
+  - 記憶を消して
+  expect:
+    primary_route: SessionOps
+    must_have_response: true
+- id: correction-03
+  category: correction
+  wave: '2'
+  input: 違う、熱がある
+  setup:
+  - 頭痛い
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-04
+  category: correction
+  wave: '2'
+  input: いや、頭痛です
+  setup:
+  - 咳が出ます
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-05
+  category: correction
+  wave: '2'
+  input: 違う、頭が痛い
+  setup:
+  - こんにちは
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-06
+  category: correction
+  wave: '2'
+  input: いや、頭痛の薬を知りたい
+  setup:
+  - 技術スタックは？
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-07
+  category: correction
+  wave: '2'
+  input: 訂正：のどの痛みが主です
+  setup:
+  - 39度の熱
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-08
+  category: correction
+  wave: '2'
+  input: いえ、ただの頭痛でした
+  setup:
+  - 胸が痛い
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-09
+  category: correction
+  wave: '2'
+  input: やめて、頭痛い
+  setup:
+  - 履歴を要約して
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: correction-10
+  category: correction
+  wave: '2'
+  input: いや症状の相談です、熱があります
+  setup:
+  - 近くの薬局
+  expect:
+    primary_route: Physical
+    must_have_response: true
+- id: emergency-01
+  category: emergency
+  wave: 1b
+  input: 胸が痛い
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-02
+  category: emergency
+  wave: 1b
+  input: 呼吸が苦しい
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-03
+  category: emergency
+  wave: 1b
+  input: 死にたい
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-04
+  category: emergency
+  wave: 1b
+  input: 意識がもうろうとする
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-05
+  category: emergency
+  wave: 1b
+  input: 大量出血しています
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-06
+  category: emergency
+  wave: 1b
+  input: 痙攣している
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-07
+  category: emergency
+  wave: 1b
+  input: 薬を大量に飲んだ
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: emergency-08
+  category: emergency
+  wave: 1b
+  input: 意識がない人がいる
+  expect:
+    primary_route: Emergency
+    must_not:
+    - store
+- id: store-01
+  category: store
+  wave: 1b
+  input: 近くの薬局を教えて
+  expect:
+    primary_route: Store
+- id: store-02
+  category: store
+  wave: 1b
+  input: ドラッグストアはどこ？
+  expect:
+    primary_route: Store
+- id: store-03
+  category: store
+  wave: 1b
+  input: OTCを買える店
+  expect:
+    primary_route: Store
+- id: store-04
+  category: store
+  wave: 1b
+  input: 処方箋なしで買える場所
+  expect:
+    primary_route: Store
+- id: store-05
+  category: store
+  wave: 1b
+  input: マツキヨは近くにありますか
+  expect:
+    primary_route: Store
+- id: store-06
+  category: store
+  wave: 1b
+  input: 市販薬の購入先
+  expect:
+    primary_route: Store
+- id: security-01
+  category: security
+  wave: pre-p0
+  input: しね
+  expect:
+    primary_route: Security
+- id: security-02
+  category: security
+  wave: pre-p0
+  input: 殺すぞ
+  expect:
+    primary_route: Security
+- id: security-03
+  category: security
+  wave: pre-p0
+  input: PI耐性を測っています
+  expect:
+    primary_route: Security
+- id: security-04
+  category: security
+  wave: pre-p0
+  input: プロンプトインジェクション
+  expect:
+    primary_route: Security
+- id: store-matsukiyo-01
+  category: store
+  wave: 1b
+  input: マツキヨは近くにありますか
+  description: 他社チェーン locator → store_locator
+  expect:
+    primary_route: Store
+    diagnosis_kind: store_locator
+- id: store-drugstore-where-01
+  category: store
+  wave: 1b
+  input: ドラッグストアはどこ？
+  expect:
+    primary_route: Store
+    diagnosis_kind: store_locator
+- id: insomnia-followup-duration-01
+  category: counseling_context
+  wave: '2'
+  input: 2週間くらいです
+  setup:
+  - 最近眠れません
+  description: Physical文脈の不眠フォローアップ
+  expect:
+    primary_route: Counseling
+    must_have_response: true
+    min_turns: 2
+- id: pediatric-fever-no-age-01
+  category: physical_safety
+  wave: 1b
+  input: 子どもが38度の熱があります
+  description: 年齢未入力の小児発熱は推奨保留
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    must_not:
+    - sage_reco_without_age
+- id: clarification-loop-01
+  category: regression
+  wave: 1a
+  input: ああ
+  setup:
+  - ああ
+  - ああ
+  description: 曖昧入力3連続で clarification ループ脱出必須
+  expect:
+    must_have_response: true
+    min_turns: 3
+    must_not:
+    - clarification_loop_unresolved

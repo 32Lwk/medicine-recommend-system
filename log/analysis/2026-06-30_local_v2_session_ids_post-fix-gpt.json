@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "date": "2026-06-30",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-30T07:45:21.512496+00:00",
+    "elapsed_sec": 3362.2,
+    "scenario_count": 4,
+    "total_turns": 80,
+    "auto_pass": 0,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-physical-headache",
+      "session_id": "1782805521537902706377",
+      "category": "physical",
+      "persona_id": "physical-headache",
+      "turns": 40,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-line-memory-user",
+      "session_id": "1782808317704216829375",
+      "category": "session_ops",
+      "persona_id": "line-memory-user",
+      "turns": 40,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

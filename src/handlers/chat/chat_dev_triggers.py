@@ -34,7 +34,8 @@ _DEFAULT_TRIGGERS: Dict[str, str] = {
     "sage_emergency": "mrcdev00000000000013",
     "sage_security": "mrcdev00000000000014",
     "sage_counseling": "mrcdev00000000000015",
-    "sage_medicine_type": "mrcdev00000000000016",
+    "sage_llm_unavailable": "mrcdev00000000000016",
+    "sage_medicine_type": "mrcdev00000000000017",
 }
 
 _ENV_KEYS = {
@@ -53,6 +54,7 @@ _ENV_KEYS = {
     "sage_emergency": "DEV_SAGE_TRIGGER_EMERGENCY",
     "sage_security": "DEV_SAGE_TRIGGER_SECURITY",
     "sage_counseling": "DEV_SAGE_TRIGGER_COUNSELING",
+    "sage_llm_unavailable": "DEV_SAGE_TRIGGER_LLM_UNAVAILABLE",
     "sage_medicine_type": "DEV_SAGE_TRIGGER_MEDICINE_TYPE",
 }
 
@@ -184,6 +186,7 @@ def _dev_sage_bot_response(session: Any, sid: Optional[str], sage_diag: Any) -> 
         "content": marker,
         "diagnosis": diag_dict,
         "dev_preview": True,
+        **({"llm_unavailable": True} if diag_dict.get("kind") == "llm_unavailable" else {}),
     }
 
 
@@ -197,6 +200,7 @@ def _dev_sage_preview_builders() -> Dict[str, Callable[[], Any]]:
         build_emergency_status,
         build_escalation_status,
         build_error_status,
+        build_llm_unavailable_status,
         build_medicine_type_unrecognized_status,
         build_qa_from_chat_response,
         build_store_status_from_inquiry_result,
@@ -287,6 +291,9 @@ def _dev_sage_preview_builders() -> Dict[str, Callable[[], Any]]:
             "【開発プレビュー】お気持ち、よくわかります。もう少し詳しく教えていただけますか。",
             title="カウンセリング",
             kind="counseling",
+        ),
+        "sage_llm_unavailable": lambda: build_llm_unavailable_status(
+            feedback_context={"user_message": "dev", "ai_response": "preview"},
         ),
         "sage_medicine_type": lambda: build_medicine_type_unrecognized_status(
             feedback_context={"user_message": "dev", "ai_response": "preview"},

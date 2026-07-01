@@ -28,6 +28,61 @@ STORE_LOCATION_KEYWORDS = {
     "inside": _STORE_KW.store_location_inside,
     "outside": _STORE_KW.store_location_outside,
 }
+
+_EXTERNAL_CHAIN_KEYWORDS = (
+    "マツキヨ",
+    "マツモトキヨシ",
+    "ウエルシア",
+    "ツルハ",
+    "サンドラッグ",
+    "ココカラファインファーマシー",
+    "ココカラ",
+    "スギ薬局",
+    "セイムス",
+)
+
+_LOCATION_INQUIRY_HINTS = ("近く", "どこ", "ありますか", "近隣", "場所")
+
+
+def classify_store_user_intent(user_text: str) -> str:
+    """
+    店舗入力の意図分類。
+    Returns: facilities | locator | inventory | external_chain | generic
+    """
+    t = (user_text or "").strip()
+    if not t:
+        return "generic"
+    if _has_explicit_store_stock_intent(t):
+        return "inventory"
+    if detect_external_chain_location_inquiry(t):
+        return "external_chain"
+    if any(h in t for h in _LOCATION_INQUIRY_HINTS) or "ドラッグストア" in t:
+        if any(k in t for k in ("薬局", "ドラッグストア", "店", "売場")):
+            return "locator"
+        return "facilities"
+    return "generic"
+
+
+def detect_external_chain_location_inquiry(user_text: str) -> bool:
+    t = user_text or ""
+    if "ドラッグストア" in t and any(h in t for h in _LOCATION_INQUIRY_HINTS):
+        return True
+    has_chain = any(k in t for k in _EXTERNAL_CHAIN_KEYWORDS)
+    has_location = any(h in t for h in _LOCATION_INQUIRY_HINTS)
+    return bool(has_chain and has_location)
+
+
+def _external_chain_location_message() -> Dict[str, str]:
+    simple_message = (
+        "当キオスクでは近隣店舗の位置情報は提供できません。"
+        "地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n"
+        "店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。"
+    )
+    structured_html = f"""<div class="store-inquiry-response">
+    <h4>🏪 近隣店舗のご案内</h4>
+    <p>{html.escape(simple_message).replace(chr(10), "<br>")}</p>
+</div>"""
+    return {"simple_message": simple_message, "structured_html": structured_html}
 INVENTORY_INQUIRY_KEYWORDS = _STORE_KW.inventory_inquiry_keywords
 SYMPTOM_KEYWORDS = _STORE_KW.symptom_keywords
 FACILITIES_SPATIAL_KEYWORDS = _STORE_KW.spatial_keywords
@@ -256,6 +311,13 @@ def is_probable_store_inquiry(
 
     if should_prioritize_medical_route_over_store(triage_result, user_text):
         return False
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        if classify_medicine_procurement_route(user_text):
+            return True
+    except ImportError:
+        pass
     from src.utils.input_helpers import has_explicit_symptom_signal
 
     if has_explicit_symptom_signal(user_text) and not _has_explicit_store_stock_intent(user_text):
@@ -264,13 +326,6 @@ def is_probable_store_inquiry(
 
     if looks_like_service_identity_question(user_text):
         return False
-    try:
-        from src.services.counseling_triage import classify_medicine_procurement_route
-
-        if classify_medicine_procurement_route(user_text):
-            return True
-    except ImportError:
-        pass
     if _is_toilet_facility_request(user_text):
         return True
     if _is_ambiguous_facility_defer_only(user_text):
@@ -697,6 +752,10 @@ def generate_store_location_response(user_text: str, store_location: Optional[st
             "structured_html": str
         }
     """
+    intent = classify_store_user_intent(user_text)
+    if intent == "external_chain":
+        return _external_chain_location_message()
+
     is_toilet_inquiry = _is_toilet_facility_request(user_text)
     
     if is_toilet_inquiry:

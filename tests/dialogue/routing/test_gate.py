@@ -60,3 +60,58 @@ def test_gate_pending_delete_cancel():
     assert d.primary_route == "SessionOps"
     assert d.sub_route == "pending_clear"
     assert d.source == "pending_delete_cancel"
+
+
+def test_gate_pharmacy_location():
+    d = run_deterministic_gate("近くの薬局を教えて", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Store"
+
+
+def test_gate_store_procurement_intent():
+    d = run_deterministic_gate("市販薬の購入先", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Store"
+
+
+def test_gate_drugstore_where_not_physical():
+    d = run_deterministic_gate("ドラッグストアはどこ？", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Store"
+    assert d.primary_route != "Physical"
+
+
+def test_gate_matsukiyo_locator():
+    d = run_deterministic_gate("マツキヨは近くにありますか", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Store"
+
+
+def test_gate_medical_emergency_seizure():
+    d = run_deterministic_gate("痙攣している", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Emergency"
+
+
+def test_gate_concierge_architecture_follow_up():
+    session = {
+        "messages": [
+            {"type": "user", "content": "技術スタックは？"},
+            {
+                "type": "bot",
+                "content": "architecture info",
+                "concierge_intent": "architecture",
+            },
+        ],
+        "concierge_state": {"last_intent": "architecture"},
+    }
+    d = run_deterministic_gate("もっと詳しく", session, "web-1")
+    assert d is not None
+    assert d.primary_route == "Concierge"
+    assert d.sub_route == "architecture"
+
+
+def test_gate_correction_physical():
+    d = run_deterministic_gate("違う、熱がある", {}, "web-1")
+    assert d is not None
+    assert d.primary_route == "Physical"

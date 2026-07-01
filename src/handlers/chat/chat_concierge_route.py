@@ -196,6 +196,12 @@ def try_concierge_response(
     processed_message: str = "",
     routing_ctx: Any = None,
 ) -> Optional[ResponseTuple]:
+    from src.services.llm_unavailability import should_block_llm_dependent_reply
+
+    if should_block_llm_dependent_reply(session):
+        logger.info("Skipping Concierge: LLM infrastructure degraded sid=%s", sid)
+        return None
+
     routing_text = (sanitized_message or user_message or "").strip()
     llm_text = resolve_llm_user_text(user_message=user_message)
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]

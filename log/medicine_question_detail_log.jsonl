@@ -9,3 +9,7 @@
 {"log_type": "medicine_question_detail", "timestamp": "2025-12-30T21:10:40.242104", "session_id": "17670871201764532801744", "user_input": "緑内障です。乗り物酔いの薬を教えてください。", "response": "緑内障の方が使用できる乗り物酔いの薬については、一般的に抗ヒスタミン薬が含まれるものは避けるべきとされています。具体的な薬の選択については、お近くの登録販売者にご相談ください。"}
 {"log_type": "medicine_question_detail", "timestamp": "2025-12-31T02:15:43.271467", "session_id": "17671149241894879968592", "user_input": "緑内障です。乗り物酔いの薬を教えて", "response": "緑内障の方が使用できる乗り物酔いの薬については、特定の成分が含まれていないものを選ぶ必要があります。一般的に、抗ヒスタミン薬は緑内障の方には適さない場合があります。お近くの登録販売者にご相談ください。"}
 {"log_type": "medicine_question_detail", "timestamp": "2026-06-17T15:59:35.376557", "session_id": "1781678892761483323225", "user_input": "陸上部でも使えるの？", "response": ""}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-01T02:43:36.821405", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-01T02:46:54.579569", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-01T02:58:17.923065", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-01T03:08:40.883996", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
