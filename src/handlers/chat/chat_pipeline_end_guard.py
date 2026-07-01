@@ -37,7 +37,13 @@ def append_redirect_bot_response(
     )
 
     client = recommendation_client or default_client
-    payload = build_concierge_payload("redirect", "", client, session_id=sid, history=[])
+    try:
+        from src.dialogue.history import resolve_concierge_history_with_fallback
+
+        history = resolve_concierge_history_with_fallback(session, sid)
+    except Exception:
+        history = []
+    payload = build_concierge_payload("redirect", "", client, session_id=sid, history=history)
     bot = _append_bot_message(session, payload, sid)
     _mark_session_modified(session)
     if sid and client_info is not None:
@@ -103,14 +109,37 @@ def finalize_pipeline_response(
     recommendation_client: Optional[OpenAI] = None,
     user_message: Optional[str] = None,
 ) -> ResponseTuple:
-    """応答返却直前に bot 追記有無を確認し、無ければ redirect を補完する。"""
+    """応答返却直前に bot 追記有無を確認する。無応答時は fail-loud（redirect 補完しない）。"""
     if count_bot_messages_in_session(session) > bot_count_before:
+        if hasattr(session, "__setitem__"):
+            session.pop("_pipeline_end_guard", None)
         _schedule_turn_detail_log(session, sid, user_message=user_message)
         return response
-    append_redirect_bot_response(session, sid, client_info, recommendation_client)
+
+    try:
+        from src.services.llm_unavailability import is_llm_infrastructure_degraded
+
+        if is_llm_infrastructure_degraded(session):
+            if hasattr(session, "__setitem__"):
+                session.pop("_pipeline_end_guard", None)
+            _schedule_turn_detail_log(session, sid, user_message=user_message)
+            body, status = response
+            new_body = dict(body) if isinstance(body, dict) else {"status": "ok"}
+            new_body["message_count"] = len(session.get("messages", []))
+            return new_body, status
+    except Exception:
+        pass
+
+    logger.error(
+        "Pipeline end guard: response_missing sid=%s user_input=%r",
+        sid,
+        (user_message or _user_input_for_latest_bot(session))[:200],
+    )
+    if hasattr(session, "__setitem__"):
+        session["_pipeline_end_guard"] = "missing"
     _schedule_turn_detail_log(session, sid, user_message=user_message)
     body, status = response
     new_body = dict(body) if isinstance(body, dict) else {"status": "ok"}
     new_body["message_count"] = len(session.get("messages", []))
-    new_body["pipeline_end_guard"] = "redirect"
+    new_body["pipeline_end_guard"] = "missing"
     return new_body, status

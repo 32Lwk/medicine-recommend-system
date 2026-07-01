@@ -437,6 +437,14 @@ async def _process_text_message(
 
             bot_count_after = count_bot_messages_in_session(session)
             if bot_count_after <= bot_count_before:
+                from src.dialogue.adapters.line_delivery import should_skip_redirect_on_missing_bot
+
+                if should_skip_redirect_on_missing_bot(session):
+                    logger.error(
+                        "LINE response_missing (fail-loud); skip redirect sid=%s",
+                        sid,
+                    )
+                    return
                 logger.warning(
                     "LINE pipeline produced no new bot message sid=%s (before=%s after=%s)",
                     sid,
@@ -474,10 +482,14 @@ async def _process_text_message(
 
             maybe_log_turn_counseling_detail(session, sid, text, bot_msg)
 
-            line_messages = build_line_messages_from_bot_message(
+            from src.dialogue.adapters.line_delivery import resolve_line_messages
+            from src.services.llm_unavailability import resolve_line_messages_with_optional_notice
+
+            line_messages = resolve_line_messages_with_optional_notice(
                 bot_msg,
-                lang=lang,
-                session_id=sid,
+                session,
+                sid,
+                lang,
             )
             if not LINE_CHANNEL_ACCESS_TOKEN:
                 return

@@ -1,4 +1,4 @@
-# 開発用 UI プレビュー（16パターン）
+# 開発用 UI プレビュー（17パターン）
 
 **対象環境:** `APP_ENV=development`（または `is_development_runtime()` が true のとき）のみ。  
 **本番:** トリガー語を送っても通常のチャットとして処理され、プレビューは発火しません。
@@ -31,13 +31,14 @@ Sage 描画: `status_renderer.js` / `recommendation_renderer.js`（`body[data-ui
 | 13 | `mrcdev00000000000013` | 緊急 | `sage_status` critical |
 | 14 | `mrcdev00000000000014` | 危機支援 | `sage_status` security |
 | 15 | `mrcdev00000000000015` | カウンセリング | `sage_status` notice |
-| 16 | `mrcdev00000000000016` | 医薬品種類不明 | `sage_status` caution |
+| 16 | `mrcdev00000000000016` | LLM 障害（quota 等） | `sage_status` error |
+| 17 | `mrcdev00000000000017` | 医薬品種類不明 | `sage_status` caution |
 
-04〜16 は `diagnosis` v1 + マーカー（Sage UI）で描画されます。
+04〜17 は `diagnosis` v1 + マーカー（Sage UI）で描画されます。
 
 ## 環境変数（任意）
 
-`DEV_ERROR_TRIGGER_*`（01〜07）および `DEV_SAGE_TRIGGER_*`（08〜16）で上書き可能。  
+`DEV_ERROR_TRIGGER_*`（01〜07）および `DEV_SAGE_TRIGGER_*`（08〜17）で上書き可能。  
 未設定時は上表の既定トークンを使用。
 
 ## テスト

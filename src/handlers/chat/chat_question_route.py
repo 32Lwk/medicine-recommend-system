@@ -387,7 +387,9 @@ def handle_question_flow(
             from src.services.sage_bot_response import build_bot_response
             from src.services.status_diagnosis_builder import build_concierge_text_status
 
-            history = session.get("messages", [])[-10:]
+            from src.dialogue.history import resolve_concierge_history_with_fallback
+
+            history = resolve_concierge_history_with_fallback(session, sid)
             greeting_response, _ = generate_greeting_text(
                 recommendation_client,
                 user_message,

@@ -558,3 +558,13 @@ def test_resume_route_expired(client):
     ):
         r = client.get("/resume/expired", follow_redirects=False)
     assert r.status_code == 410
+
+
+@patch("config.llm_flags.is_chat_pipeline_v2_for_session", return_value=True)
+@patch("src.dialogue.history.resolve_physical_history_with_fallback")
+@patch("src.services.triage_history.format_triage_history_block", return_value="user: 頭痛")
+def test_physical_history_block_v2(mock_format, mock_hist, _v2):
+    mock_hist.return_value = [{"type": "user", "content": "頭痛"}]
+    block = handoff._physical_history_block("line:U1", {"messages": []})
+    assert block == "user: 頭痛"
+    mock_hist.assert_called_once_with({"messages": []}, "line:U1", limit=6)

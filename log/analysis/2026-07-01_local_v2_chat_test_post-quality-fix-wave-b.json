@@ -1,0 +1,1656 @@
+{
+  "meta": {
+    "date": "2026-07-01",
+    "base_url": "http://127.0.0.1:5010/",
+    "started_at": "2026-06-30T17:08:33.457053+00:00",
+    "elapsed_sec": 947.0,
+    "scenario_count": 30,
+    "total_turns": 30,
+    "auto_pass": 25,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1782839313.4570496,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "D:\\Programing\\medicine-recommend\\log\\counseling_detail_log.jsonl",
+        "counseling_detail_total": 6205,
+        "with_response": 6205,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 2898,
+          "shadow_mismatch": 174,
+          "shadow_mismatch_rate_pct": 6.0,
+          "shadow_by_primary_route": {
+            "Physical": 400,
+            "SessionOps": 39,
+            "Concierge": 2330,
+            "Emergency": 44,
+            "Store": 31,
+            "Counseling": 54
+          },
+          "shadow_by_resolved_by": {
+            "gate": 515,
+            "llm": 23,
+            "legacy": 211,
+            "guard": 2149
+          },
+          "shadow_with_fever_context_flag": 89,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 33,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 529,
+          "dispatch_handled": 424,
+          "dispatch_unhandled": 105,
+          "dispatch_success_rate_pct": 80.15,
+          "dispatch_by_handler": {
+            "physical_agent": 215,
+            "emergency_agent": 35,
+            "session_ops": 37,
+            "concierge_agent": 177,
+            "counseling_processor": 52,
+            "store_inquiry": 13
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "gcp_analysis": {
+          "source_md": "log\\analysis\\2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md",
+          "counseling_detail_count_from_report": 0,
+          "turns_response_missing_from_report": 36,
+          "line_reply_fallback_push": 9,
+          "slowest_post_seconds": 49.4
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "exit_code": 0,
+      "data": {
+        "sources": {
+          "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+          "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+          "gcp_log": null
+        },
+        "local": {
+          "shadow_total": 2898,
+          "shadow_mismatch": 174,
+          "shadow_mismatch_rate_pct": 6.0,
+          "shadow_by_primary_route": {
+            "Physical": 400,
+            "SessionOps": 39,
+            "Concierge": 2330,
+            "Emergency": 44,
+            "Store": 31,
+            "Counseling": 54
+          },
+          "shadow_by_resolved_by": {
+            "gate": 515,
+            "llm": 23,
+            "legacy": 211,
+            "guard": 2149
+          },
+          "shadow_with_fever_context_flag": 89,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 33,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 529,
+          "dispatch_handled": 424,
+          "dispatch_unhandled": 105,
+          "dispatch_success_rate_pct": 80.15,
+          "dispatch_by_handler": {
+            "physical_agent": 215,
+            "emergency_agent": 35,
+            "session_ops": 37,
+            "concierge_agent": 177,
+            "counseling_processor": 52,
+            "store_inquiry": 13
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "dialogue_flags": null
+            }
+          ]
+        }
+      },
+      "stderr": ""
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 30,
+      "counseling_rows_matched": 30,
+      "route_rows_matched": 36,
+      "per_session": {
+        "1782839342841348527345": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴消して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839331192866257560": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839325364107273150": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴を要約して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839926481346647744": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "腰が痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839360306972136041": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "セッションの状態は？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839973113192363777": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "めまいがする",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839432297743472014": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "頭が痛いです",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839348667078507845": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "会話を削除したい",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839377796623680427": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "要約して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839585728756260295": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "鼻水が止まらない",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839782369087660892": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "目がかゆい",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839876611470509365": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "肩こりがひどい",
+              "has_response": true
+            }
+          ]
+        },
+        "1782840111075744107115": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "湿疹が出ました",
+              "has_response": true
+            }
+          ]
+        },
+        "1782840206380577266515": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "筋肉痛です",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839337026767519976": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "記憶を消して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782840061012287622287": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "かゆみがあります",
+              "has_response": true
+            }
+          ]
+        },
+        "1782840007732029480616": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "吐き気がします",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839681237094920983": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "下痢をしています",
+              "has_response": true
+            }
+          ]
+        },
+        "1782840162210863572224": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "口内炎が痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839371958363199551": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "保存されている情報は？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839734301424556194": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "便秘です",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839366119917115612": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "これまでの会話をまとめて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839383545755595365": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "頭痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839480665563957649": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "咳が出ます",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839635419823529265": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "胃が痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839313487447935082": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "ステータスを教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839533191211119713": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "のどが痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839354485193965216": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "今の状態を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839827485671258799": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "耳が痛い",
+              "has_response": true
+            }
+          ]
+        },
+        "1782839319545779318158": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "何が記録されてる？",
+              "has_response": true
+            }
+          ]
+        }
+      },
+      "intent_router_metrics": {
+        "shadow_total": 18,
+        "shadow_mismatch": 0,
+        "shadow_mismatch_rate_pct": 0.0,
+        "shadow_by_primary_route": {
+          "Physical": 18
+        },
+        "shadow_by_resolved_by": {
+          "gate": 17,
+          "legacy": 1
+        },
+        "shadow_with_fever_context_flag": 0,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 0,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 18,
+        "dispatch_handled": 18,
+        "dispatch_unhandled": 0,
+        "dispatch_success_rate_pct": 100.0,
+        "dispatch_by_handler": {
+          "physical_agent": 18
+        },
+        "mismatch_samples": []
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 35,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 18,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 18
+  },
+  "results": [
+    {
+      "scenario_id": "session-ops-01",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839313487447935082",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ステータスを教えて",
+          "http_status": 200,
+          "elapsed_ms": 4280,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-02",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839319545779318158",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "何が記録されてる？",
+          "http_status": 200,
+          "elapsed_ms": 4043,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-03",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839325364107273150",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴を要約して",
+          "http_status": 200,
+          "elapsed_ms": 4053,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-04",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839331192866257560",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴を教えて",
+          "http_status": 200,
+          "elapsed_ms": 4058,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-05",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839337026767519976",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "記憶を消して",
+          "http_status": 200,
+          "elapsed_ms": 4042,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-06",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839342841348527345",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴消して",
+          "http_status": 200,
+          "elapsed_ms": 4050,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-07",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839348667078507845",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "会話を削除したい",
+          "http_status": 200,
+          "elapsed_ms": 4044,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-08",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839354485193965216",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "今の状態を教えて",
+          "http_status": 200,
+          "elapsed_ms": 4049,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-09",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839360306972136041",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "セッションの状態は？",
+          "http_status": 200,
+          "elapsed_ms": 4040,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-10",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839366119917115612",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "これまでの会話をまとめて",
+          "http_status": 200,
+          "elapsed_ms": 4055,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-11",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839371958363199551",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "保存されている情報は？",
+          "http_status": 200,
+          "elapsed_ms": 4055,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "session-ops-12",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782839377796623680427",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "要約して",
+          "http_status": 200,
+          "elapsed_ms": 3970,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-01",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839383545755595365",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭痛い",
+          "http_status": 200,
+          "elapsed_ms": 46977,
+          "diagnosis_kind": "no_recommendation",
+          "response_snippet": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "response_full": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-02",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839432297743472014",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭が痛いです",
+          "http_status": 200,
+          "elapsed_ms": 46588,
+          "diagnosis_kind": "no_recommendation",
+          "response_snippet": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "response_full": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-03",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839480665563957649",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "咳が出ます",
+          "http_status": 200,
+          "elapsed_ms": 50722,
+          "diagnosis_kind": null,
+          "response_snippet": "咳が出るんですね、つらいですね。のどの刺激で咳が出ている時は、ベンザブロックトローチや新エスベナントローチのような、のどをうるおして咳をやわらげる薬が向いています。水分をとり、加湿して安静にしてください。高熱や強いだるさがあれば、インフルエンザの可能性もあるので受診を。",
+          "response_full": "咳が出るんですね、つらいですね。のどの刺激で咳が出ている時は、ベンザブロックトローチや新エスベナントローチのような、のどをうるおして咳をやわらげる薬が向いています。水分をとり、加湿して安静にしてください。高熱や強いだるさがあれば、インフルエンザの可能性もあるので受診を。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-04",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839533191211119713",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "のどが痛い",
+          "http_status": 200,
+          "elapsed_ms": 50733,
+          "diagnosis_kind": null,
+          "response_snippet": "のどが痛いの、つらいですね。まずはスカイブブロンのどスプレーやトピックＧトローチで、のどを直接うるおしながら痛みを和らげるのが合っています。痛みや発熱が強いときはイブプロフェンも選択肢です。胃が弱い方、妊娠中の方は注意してください。高熱や関節痛があればインフルエンザも疑い、受診をおすすめします。",
+          "response_full": "のどが痛いの、つらいですね。まずはスカイブブロンのどスプレーやトピックＧトローチで、のどを直接うるおしながら痛みを和らげるのが合っています。痛みや発熱が強いときはイブプロフェンも選択肢です。胃が弱い方、妊娠中の方は注意してください。高熱や関節痛があればインフルエンザも疑い、受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-05",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839585728756260295",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "鼻水が止まらない",
+          "http_status": 200,
+          "elapsed_ms": 47903,
+          "diagnosis_kind": null,
+          "response_snippet": "鼻水が止まらないのですね、つらいですね。水っぽい鼻水なら、体質や症状に合いやすい小青龍湯が候補です。角野龍雲湯も鼻水の不調に用いられます。まずは水分補給と保温を心がけ、眠気や持病、妊娠中の方は服用前に確認してください。発熱や強いだるさがあればインフルエンザも疑い、早めに受診を。",
+          "response_full": "鼻水が止まらないのですね、つらいですね。水っぽい鼻水なら、体質や症状に合いやすい小青龍湯が候補です。角野龍雲湯も鼻水の不調に用いられます。まずは水分補給と保温を心がけ、眠気や持病、妊娠中の方は服用前に確認してください。発熱や強いだるさがあればインフルエンザも疑い、早めに受診を。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-06",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839635419823529265",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "胃が痛い",
+          "http_status": 200,
+          "elapsed_ms": 44043,
+          "diagnosis_kind": null,
+          "response_snippet": "胃が痛いのはつらいですね。新キャベジンコーワSは、胃酸や胃の荒れによる痛みに使いやすく、ザッツ錠も胃の不快感を和らげるお薬です。まずは食事を無理せず、刺激物やアルコールは控えてください。強い痛み、吐き気、黒い便、発熱がある、または長引く場合は早めに受診しましょう。",
+          "response_full": "胃が痛いのはつらいですね。新キャベジンコーワSは、胃酸や胃の荒れによる痛みに使いやすく、ザッツ錠も胃の不快感を和らげるお薬です。まずは食事を無理せず、刺激物やアルコールは控えてください。強い痛み、吐き気、黒い便、発熱がある、または長引く場合は早めに受診しましょう。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-07",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839681237094920983",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "下痢をしています",
+          "http_status": 200,
+          "elapsed_ms": 51281,
+          "diagnosis_kind": null,
+          "response_snippet": "下痢をしていてつらいですね。まずは水分を少しずつとり、胃腸を休めてください。富士はら薬「赤玉」や高砂オウレン類は、下痢の症状に合わせて選びやすいです。血便、高熱、強い腹痛、脱水がある場合や長引く場合は受診を。インフルエンザで下痢が出ることもあるので、発熱やだるさがあれば注意してください。",
+          "response_full": "下痢をしていてつらいですね。まずは水分を少しずつとり、胃腸を休めてください。富士はら薬「赤玉」や高砂オウレン類は、下痢の症状に合わせて選びやすいです。血便、高熱、強い腹痛、脱水がある場合や長引く場合は受診を。インフルエンザで下痢が出ることもあるので、発熱やだるさがあれば注意してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-08",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839734301424556194",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "便秘です",
+          "http_status": 200,
+          "elapsed_ms": 46296,
+          "diagnosis_kind": null,
+          "response_snippet": "便秘でつらいですね。まずは水分と食物繊維を意識し、軽い運動も試してみてください。つらいお腹の張りや早く出したいときは、浣腸が直接効きやすいです。腹痛、吐き気、血便がある、何日も出ない場合は無理せず受診してください。",
+          "response_full": "便秘でつらいですね。まずは水分と食物繊維を意識し、軽い運動も試してみてください。つらいお腹の張りや早く出したいときは、浣腸が直接効きやすいです。腹痛、吐き気、血便がある、何日も出ない場合は無理せず受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "route_mismatch expected=Physical got=unknown kind=None"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-09",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839782369087660892",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "目がかゆい",
+          "http_status": 200,
+          "elapsed_ms": 43351,
+          "diagnosis_kind": null,
+          "response_snippet": "目がかゆいのですね、つらいですね。まずはこすらず、手を洗ってから冷やすと少し楽になることがあります。今回の症状には、かゆみや炎症を抑えやすいリビメックスコーワシリーズが合っています。目の中には入れず、赤み・痛み・見えにくさがあれば受診してください。",
+          "response_full": "目がかゆいのですね、つらいですね。まずはこすらず、手を洗ってから冷やすと少し楽になることがあります。今回の症状には、かゆみや炎症を抑えやすいリビメックスコーワシリーズが合っています。目の中には入れず、赤み・痛み・見えにくさがあれば受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-10",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839827485671258799",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "耳が痛い",
+          "http_status": 200,
+          "elapsed_ms": 47358,
+          "diagnosis_kind": null,
+          "response_snippet": "耳が痛いのですね、つらいですね。耳鳴りもあるなら、まずは耳を触りすぎず清潔を保ち、痛みが強い時は無理せず受診も考えてください。キップパイロール-HIは耳まわりの炎症やかゆみ対策、オリブ油は乾燥時の保護に役立ちます。発熱や風邪症状があればインフルエンザにも注意してください。",
+          "response_full": "耳が痛いのですね、つらいですね。耳鳴りもあるなら、まずは耳を触りすぎず清潔を保ち、痛みが強い時は無理せず受診も考えてください。キップパイロール-HIは耳まわりの炎症やかゆみ対策、オリブ油は乾燥時の保護に役立ちます。発熱や風邪症状があればインフルエンザにも注意してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-11",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839876611470509365",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "肩こりがひどい",
+          "http_status": 200,
+          "elapsed_ms": 48056,
+          "diagnosis_kind": null,
+          "response_snippet": "肩こりがひどいんですね、つらいですね。まずは、つらい部分に貼るイブロックフィルムプラスターや冷感タイプのイブロック冷感Ｓが使いやすいです。デーチカも痛みと炎症をやわらげる選択肢です。かぶれやすい方、妊娠中、持病や服薬中なら使用前に確認を。発熱や強いだるさがあれば受診も検討してください。",
+          "response_full": "肩こりがひどいんですね、つらいですね。まずは、つらい部分に貼るイブロックフィルムプラスターや冷感タイプのイブロック冷感Ｓが使いやすいです。デーチカも痛みと炎症をやわらげる選択肢です。かぶれやすい方、妊娠中、持病や服薬中なら使用前に確認を。発熱や強いだるさがあれば受診も検討してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-12",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839926481346647744",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "腰が痛い",
+          "http_status": 200,
+          "elapsed_ms": 44845,
+          "diagnosis_kind": null,
+          "response_snippet": "腰が痛いんですね、つらいですね。まずは無理をせず、湿布で痛む部分をやさしくケアするのがよさそうです。サロンパス30やイブロックフィルムプラスター、イブロック冷感Sは、腰の痛みに使いやすい貼り薬です。かぶれや強い痛み、足のしびれがある時は受診してください。",
+          "response_full": "腰が痛いんですね、つらいですね。まずは無理をせず、湿布で痛む部分をやさしくケアするのがよさそうです。サロンパス30やイブロックフィルムプラスター、イブロック冷感Sは、腰の痛みに使いやすい貼り薬です。かぶれや強い痛み、足のしびれがある時は受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "route_mismatch expected=Physical got=unknown kind=None"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-13",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782839973113192363777",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "めまいがする",
+          "http_status": 200,
+          "elapsed_ms": 32810,
+          "diagnosis_kind": "no_recommendation",
+          "response_snippet": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "response_full": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-14",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782840007732029480616",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "吐き気がします",
+          "http_status": 200,
+          "elapsed_ms": 51476,
+          "diagnosis_kind": null,
+          "response_snippet": "吐き気がつらいですね。女性の方で、つわりのような時にも使いやすい胃腸薬として「胃健錠」を案内します。胃の不快感やむかつきをやわらげる目的に合っています。まずは無理せず水分を少しずつ取り、食事は消化のよいものを。妊娠の可能性がある場合は、服用前に念のため確認してください。",
+          "response_full": "吐き気がつらいですね。女性の方で、つわりのような時にも使いやすい胃腸薬として「胃健錠」を案内します。胃の不快感やむかつきをやわらげる目的に合っています。まずは無理せず水分を少しずつ取り、食事は消化のよいものを。妊娠の可能性がある場合は、服用前に念のため確認してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "route_mismatch expected=Physical got=unknown kind=None"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-15",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782840061012287622287",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "かゆみがあります",
+          "http_status": 200,
+          "elapsed_ms": 48298,
+          "diagnosis_kind": null,
+          "response_snippet": "かゆみがあるのですね、つらいですね。まずは掻かずに、清潔と保湿を心がけてください。リビメックスコーワやタクトプラス、ベトノバールＳは、皮膚の炎症とかゆみをしっかり抑える目的で使います。広範囲や顔、ジュクジュクする所は注意し、改善しなければ受診を。",
+          "response_full": "かゆみがあるのですね、つらいですね。まずは掻かずに、清潔と保湿を心がけてください。リビメックスコーワやタクトプラス、ベトノバールＳは、皮膚の炎症とかゆみをしっかり抑える目的で使います。広範囲や顔、ジュクジュクする所は注意し、改善しなければ受診を。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "route_mismatch expected=Physical got=unknown kind=None"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-16",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782840111075744107115",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "湿疹が出ました",
+          "http_status": 200,
+          "elapsed_ms": 49328,
+          "diagnosis_kind": null,
+          "response_snippet": "湿疹が出てつらいですね。かゆみや赤みがある湿疹には、外用のメンソレータムメディクイッククリームS／プロクリームが使いやすいです。まずは薄く塗り、こすらず清潔・保湿を心がけてください。広がる、膿む、顔や目の周りに出る、数日でよくならない時は受診をおすすめします。",
+          "response_full": "湿疹が出てつらいですね。かゆみや赤みがある湿疹には、外用のメンソレータムメディクイッククリームS／プロクリームが使いやすいです。まずは薄く塗り、こすらず清潔・保湿を心がけてください。広がる、膿む、顔や目の周りに出る、数日でよくならない時は受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-17",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782840162210863572224",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "口内炎が痛い",
+          "http_status": 200,
+          "elapsed_ms": 42325,
+          "diagnosis_kind": null,
+          "response_snippet": "口内炎が痛いのはつらいですね。キップパイロール-Hiは患部を保護しつつ炎症を和らげ、オリブ油「タイセイ」Pは口内の乾燥や刺激をやさしく守ります。クールスロートはのどの痛みもある時に使いやすいです。食事はしみる物を避け、長引く・悪化する場合は受診してください。",
+          "response_full": "口内炎が痛いのはつらいですね。キップパイロール-Hiは患部を保護しつつ炎症を和らげ、オリブ油「タイセイ」Pは口内の乾燥や刺激をやさしく守ります。クールスロートはのどの痛みもある時に使いやすいです。食事はしみる物を避け、長引く・悪化する場合は受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "route_mismatch expected=Physical got=unknown kind=None"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    },
+    {
+      "scenario_id": "physical-symptom-18",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1782840206380577266515",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "筋肉痛です",
+          "http_status": 200,
+          "elapsed_ms": 52603,
+          "diagnosis_kind": null,
+          "response_snippet": "筋肉痛でつらいですね。サロンパス30は、痛む部分に直接貼れて、筋肉のこわばりや張りを和らげやすいので、今回のような筋肉痛に使いやすいです。かぶれや傷のある所は避け、強い痛み・腫れ・熱感がある、発熱やインフルエンザが疑われる場合は受診してください。",
+          "response_full": "筋肉痛でつらいですね。サロンパス30は、痛む部分に直接貼れて、筋肉のこわばりや張りを和らげやすいので、今回のような筋肉痛に使いやすいです。かぶれや傷のある所は避け、強い痛み・腫れ・熱感がある、発熱やインフルエンザが疑われる場合は受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    }
+  ]
+}

@@ -11,7 +11,6 @@ from typing import Any, Dict, Optional, Tuple
 from openai import OpenAI
 
 from config.routing_config import triage_confidence_threshold
-from src.services.triage_history import get_recent_messages
 
 logger = logging.getLogger(__name__)
 
@@ -131,10 +130,29 @@ def apply_confidence_gate(
     if not triage_result:
         return None, triage_result
 
+    from src.services.llm_unavailability import (
+        is_llm_triage_infrastructure_error,
+        mark_llm_infrastructure_degraded,
+    )
+
+    if is_llm_triage_infrastructure_error(triage_result):
+        mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+        return None, triage_result
+
     category = triage_result.get("category", "Other")
     confidence = float(triage_result.get("confidence", 1.0))
     threshold = triage_confidence_threshold()
-    history = get_recent_messages(session, sid)
+
+    from src.agents.session_agent import probe_session_admin_intent
+
+    if probe_session_admin_intent(sanitized_message or user_message):
+        return None, triage_result
+
+    from src.dialogue.history import resolve_conversation_history_with_fallback
+
+    history = resolve_conversation_history_with_fallback(
+        session, sid, agent_kind="default"
+    )
     cache_hist = ""
     cache_mem = ""
     try:
@@ -176,16 +194,19 @@ def apply_confidence_gate(
 
     if confidence < threshold:
         _invalidate_triage_cache()
-        retried = retry_triage_with_fallback_model(
-            user_message,
-            recommendation_client,
-            conversation_history=history,
-        )
-        if retried:
-            triage_result = {**triage_result, **retried}
-            confidence = float(triage_result.get("confidence", confidence))
-            category = triage_result.get("category", category)
-            _invalidate_triage_cache()
+        from src.services.llm_unavailability import should_block_llm_dependent_reply
+
+        if not should_block_llm_dependent_reply(session):
+            retried = retry_triage_with_fallback_model(
+                user_message,
+                recommendation_client,
+                conversation_history=history,
+            )
+            if retried:
+                triage_result = {**triage_result, **retried}
+                confidence = float(triage_result.get("confidence", confidence))
+                category = triage_result.get("category", category)
+                _invalidate_triage_cache()
 
     if confidence >= threshold:
         return None, triage_result
@@ -195,6 +216,18 @@ def apply_confidence_gate(
         return None, triage_result
 
     if not _clarify_already_sent(session):
+        from src.handlers.chat.llm_pipeline_guard import (
+            clarification_loop_exceeded,
+            record_clarification_text,
+        )
+        from src.services.llm_unavailability import (
+            mark_llm_infrastructure_degraded,
+            should_block_llm_dependent_reply,
+        )
+
+        if should_block_llm_dependent_reply(session):
+            return None, triage_result
+
         _invalidate_triage_cache()
         _mark_clarify_sent(session)
         if sid:
@@ -227,6 +260,18 @@ def apply_confidence_gate(
                     category,
                     user_message,
                 )
+            if clarification_loop_exceeded(session, confirmation_message):
+                mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+                from src.services.llm_unavailability import build_llm_unavailable_bot_message
+
+                bot = build_llm_unavailable_bot_message(session, sid)
+                session.setdefault("messages", []).append(bot)
+                _mark_session_modified(session)
+                return (
+                    {"status": "ok", "message_count": len(session.get("messages", []))},
+                    200,
+                ), triage_result
+            record_clarification_text(session, confirmation_message)
             log_counseling_response(
                 session_id=sid,
                 response_content=confirmation_message,

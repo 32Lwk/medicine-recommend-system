@@ -193,6 +193,13 @@ def run_symptom_recommendation(
     logger.info("💊 推奨フロー処理開始（Physical） - フラグ設定完了")
 
     try:
+        from src.dialogue.sync_legacy import clear_pending_medical_cancel_flag
+
+        clear_pending_medical_cancel_flag(session, sid)
+    except Exception:
+        pass
+
+    try:
         from config.llm_flags import is_agent_enabled
 
         if is_agent_enabled():

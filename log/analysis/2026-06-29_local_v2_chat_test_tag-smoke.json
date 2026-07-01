@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "date": "2026-06-29",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-06-29T14:16:55.408149+00:00",
+    "elapsed_sec": 7.9,
+    "scenario_count": 1,
+    "total_turns": 1,
+    "auto_pass": 1,
+    "use_gpt_user": true,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {},
+  "results": [
+    {
+      "scenario_id": "session-ops-01",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782742615433495386227",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ステータスを教えて",
+          "http_status": 200,
+          "elapsed_ms": 5843,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {}
+    }
+  ]
+}

@@ -1,6 +1,258 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年6月27日**（管理 API 認証統一・LINE 二重配信防止・医薬品購入先ルーティング・ローカルレッドチーム）（SessionAgent・LINE QA P0–P2・Concierge 文脈ルーティング・GCP ログ分析セッション復元強化）
+**最終更新日: 2026年7月1日**（UX 品質改善 Wave A–B・v2 ローカル統合テスト基盤・IntentRouter gate 拡張・LLM 障害耐性・SessionOps Web delete・推奨重複抑制）
+
+---
+
+## 2026年7月1日 — UX 品質改善・v2 統合テスト基盤・ルーティング強化
+
+### 概要
+
+**ブランチ `feature/chat-pipeline-v2`** に、会話品質評価（`log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md`）で判明した Concierge 意図分類・Store 購入先・SessionOps・推奨フォローアップの弱点を修正。あわせて **ローカル v2 統合テストランナー**（100 YAML シナリオ + GPT ペルソナ）と **Admin v2 テストセッション分離** を整備。
+
+| 関連ドキュメント | 用途 |
+|-----------------|------|
+| [CHAT_PIPELINE_V2.md](docs/dev/CHAT_PIPELINE_V2.md) | v2 技術仕様 |
+| [.cursor/skills/local-v2-chat-test/SKILL.md](.cursor/skills/local-v2-chat-test/SKILL.md) | ローカル v2 テスト手順 |
+| [DEV_ERROR_UI_PREVIEW.md](docs/ops/DEV_ERROR_UI_PREVIEW.md) | LLM 障害 UI プレビュー |
+
+### Wave A — IntentRouter gate 拡張・ルーティング精度
+
+- **`src/dialogue/routing/gate.py`**: Stage A 決定論ゲートを大幅拡張
+  - 医療緊急・感情カウンセリング・薬局位置意図のキーワードヒント
+  - `_resolve_concierge_follow_up` — Concierge 技術質問のフォローアップ文脈継続
+  - `_resolve_correction_route` — 訂正意図の gate 即決
+  - `_has_pharmacy_location_intent` — OTC 購入先・薬局案内の補完判定
+  - カウンセリング/Physical ライフスタイルのフォローアップ回答検出
+- **`src/services/concierge_intent.py`**: `_META_PROBE_RULES` に `rule_based`・データ保存・Sage Terrace 等を追加。医薬品相談誤分類の除外ルール強化
+- **`src/content/concierge_knowledge.ja.json`**: アーキテクチャ・rule_based・データ保存のナレッジ補完
+- **`src/services/store_inquiry_handler.py`**: 医薬品購入先 fast-path・`store_locator` diagnosis kind の整備
+- **`src/services/llm_triage.py`**: Concierge/SessionOps/Store の stage1–2 スキップ fast-path。`FIRST_STAGE_TRIAGE_PROMPT` に Store/Concierge 例示追加
+- **`src/handlers/chat/chat_concierge_route.py`**: meta probe 連携の改善
+- **`src/handlers/chat/chat_emotional_route.py`**: 感情ルートの gate 連携調整
+- **`src/dialogue/routing/guards.py`**: fever/store/confidence ガードの微調整
+
+### Wave B — パイプライン順序・障害耐性・エコー検知
+
+- **`src/handlers/chat/chat_post_pipeline.py`**: パイプライン順序再編
+  - SessionOps admin probe を LLM 前に早期実行
+  - エコー検知（`chat_echo_guard`）を security 直後に挿入
+  - IntentRouter dispatch を confidence_gate 前に移動（clarification ループ短絡のため）
+- **`src/handlers/chat/chat_echo_guard.py`（新規）**: ボット発話のユーザー入力への混入（エコー）検知・応答
+- **`src/handlers/chat/llm_pipeline_guard.py`（新規）**: LLM インフラ障害・clarification ループの単一短絡入口
+- **`src/services/llm_unavailability.py`（新規）**: OpenAI quota/429 検知、セッション degraded フラグ、error カード通知
+- **`src/services/confidence_gate.py`**: LLM 障害時の clarification 抑制・pipeline guard 連携
+- **`src/services/status_diagnosis_builder.py`**: `build_llm_unavailable_status` 追加
+- **`src/services/reco_error_messages.py`**: LLM 障害向けメッセージ追加
+- **`static/js/main.js`**: インフラ通知 bot をターン完了判定から除外（`isInfraNoticeBotMessage`）、SSE 同期改善
+- **`docs/ops/DEV_ERROR_UI_PREVIEW.md`**: LLM 障害 UI の dev プレビュー手順追記
+
+### SessionOps・推奨・カウンセリング品質
+
+- **`src/dialogue/session_ops.py`**: Web でも delete フロー完備（確認→実行→キャンセル）。`dialogue_state` / DB クリア連携
+- **`src/agents/session_agent.py`**: SessionOps 品質改善（status 語彙・delete 連携）
+- **`src/handlers/chat/chat_recommendation_followup.py`**: 直近推奨後の曖昧入力を再スコアリングせず **推奨要約モード**（`recommendation_summary`）へ
+- **`src/handlers/chat/chat_recommendation_flow.py`**: 小児文脈で年齢未確認時は推奨前に年齢確認（`pediatric_age_required`）
+- **`src/services/counseling_followup.py`**: 同一フォローアップ質問の重複抑制（`filter_duplicate_counseling_questions`）
+- **`src/core/explanation_generator.py`**: 説明文生成の品質調整
+- **`src/utils/symptom_helpers.py`（新規）**: 症状名正規化ユーティリティ
+- **`src/utils/input_helpers.py`**: 訂正・入力ヘルパー拡張
+
+### v2 ローカル統合テスト基盤
+
+- **`scripts/local_v2_chat_test_runner.py`（新規）**: HTTP 経由の v2 統合テスト（YAML 100 シナリオ、GPT ペルソナ、意図評価、レポート出力）
+- **`tests/fixtures/v2_local_chat_scenarios.yaml`（新規）**: session_ops / physical / store / concierge / security 等 100 シナリオ
+- **`tests/fixtures/v2_gpt_personas.yaml`（新規）**: GPT ユーザーシミュレータ用ペルソナ
+- **`scripts/analyze_dev_logs.py`（新規）**: dev ログ分析
+- **`scripts/build_session_transcript_report.py`（新規）**: セッショントランスクリプトレポート生成
+- **`scripts/merge_dev_log_report.py`（新規）**: dev ログレポートマージ
+- **`.cursor/skills/local-v2-chat-test/`（新規）**: ローカル v2 テストスキル（SKILL / reference / evaluation）
+- **`main.py`**:
+  - v2 テスト UA（`local-v2-chat-test`）でセッションに `v2_local_test` / `v2_test_scenario` タグ
+  - POST `/chat` 応答に `latest_bot` 同梱（SSE 待機不要化）
+  - v2 テストセッションは `new_session` 時に旧セッション削除をスキップ
+  - Admin API に `v2_local_test` / `v2_test_scenario` フィールド追加
+- **`src/services/session_manager.py`**: `is_v2_local_test_session` ガード
+- **`src/services/database.py`**: v2 テストセッションのクリーンアップ保護
+- **`static/js/admin_chat.js` / `static/css/admin_chat.css` / `templates/admin_chat.html`**: Admin「v2テストのみ」フィルタ・バッジ表示
+
+### 分析・観測・その他
+
+- **`src/analysis/gcp_cloud_run_log_parser.py`**: ログパーサ拡張（dialogue_route / counseling_detail 連携）
+- **`src/analysis/session_conversation_analysis.py`**: セッション会話分析の symptom 正規化連携
+- **`scripts/measure_intent_router_shadow.py` / `measure_pipeline_baseline.py`**: v2 テスト連携フラグ
+- **`src/security/security_validator.py`**: セキュリティ検証の調整
+- **`src/handlers/line/flex_messages.py` / `line_message_handler.py`**: LINE Flex・ハンドラ微調整
+- **`src/handlers/chat/chat_dev_triggers.py`**: dev トリガー拡張
+- **`src/handlers/chat/chat_pipeline_end_guard.py`**: end_guard の調整
+- **`src/handlers/chat/chat_session_route.py`**: セッションルート調整
+- **`src/services/chat_response_service.py`**: 応答サービス微調整
+- **`src/services/counseling/counseling_processor.py`**: カウンセリング処理調整
+- **`src/agents/ask_agent.py` / `emergency_classifier.py` / `memory_delete_agent.py`**: エージェント微調整
+- **`src/dialogue/dispatcher.py`**: dispatcher ログ・委譲調整
+
+### テスト（新規・拡張）
+
+| テスト | 内容 |
+|--------|------|
+| `tests/handlers/test_chat_echo_guard.py` | エコー検知 |
+| `tests/handlers/test_llm_pipeline_guard.py` | LLM 短絡・clarification ループ |
+| `tests/routing/test_llm_unavailability.py` | LLM 障害検知・通知 |
+| `tests/handlers/test_pediatric_safety.py` | 小児年齢確認 |
+| `tests/services/test_counseling_followup_dedup.py` | カウンセリング質問重複抑制 |
+| `tests/services/test_concierge_intent_probe.py` | meta probe 意図 |
+| `tests/services/test_store_diagnosis_kind.py` | store diagnosis kind |
+| `tests/services/test_database_cleanup_v2_guard.py` | v2 テストセッション DB 保護 |
+| `tests/agents/test_session_ops_quality.py` | SessionOps 品質 |
+| `tests/llm/test_llm_triage_stage2_store_skip.py` | Store stage2 スキップ |
+| `tests/utils/test_symptom_helpers.py` | 症状正規化 |
+| `tests/dialogue/routing/test_gate.py` | gate 拡張シナリオ |
+| `tests/dialogue/routing/test_guards.py` | guards 拡張 |
+| `tests/dialogue/test_session_ops.py` | Web delete |
+| `tests/line/test_line_flex_messages.py` | Flex メッセージ |
+| `tests/routing/test_confidence_gate.py` | confidence gate |
+| `tests/routing/test_triage_cache_ttl.py` | triage キャッシュ |
+| `tests/chat/test_chat_dev_triggers.py` | dev トリガー |
+| `tests/analysis/test_session_conversation_analysis.py` | セッション分析 |
+
+### 検証結果（ローカル v2 統合テスト）
+
+- **フルスイート**（`2026-07-01_local_v2_chat_test_post-quality-fix-full`）: 105 セッション / 138 ターン、自動合格 **77** / 要確認 **28**
+- カテゴリ別: session_ops **12/12**、emergency **8/8**、counseling_context **13/13**、physical_fever **10/10**
+- 改善余地: concierge **2/12**、concierge_followup **1/8**、store **3/8**（次イテレーション対象）
+- IntentRouter shadow mismatch rate: **8.47%**（118 shadow / 10 mismatch）
+
+### ログ・分析成果物
+
+- **`log/analysis/`**: 2026-06-29〜07-01 の v2 統合テストレポート（JSON/MD）、GCP dev ログ分析（`2026-06-30-dev-9-11/`）、シミュレーション評価
+- **`log/log/`**: 日次マークダウンログ（2026-06-29〜07-01）
+- 各種 JSONL（`dialogue_route_*`、`counseling_detail`、`triage_analytics` 等）を同期
+
+---
+
+## 2026年6月28日 — Chat Pipeline v2（Wave 0–4 コード実装）
+
+### 概要
+
+**ブランチ `feature/chat-pipeline-v2`** に Web / LINE 共通チャット基盤 v2 を実装。決定権分散（SessionAgent 多重呼び出し・legacy fallback 競合）と履歴注入の散在を `src/dialogue/` へ集約。OTC 推奨本体は **rule_based 維持**。**本番は OFF**、**dev（`APP_ENV=development`）は v2 全機能が一括 ON**。
+
+**実装計画**: [docs/planning/CHAT_PIPELINE_V2_PLAN.md](docs/planning/CHAT_PIPELINE_V2_PLAN.md)（49/54 todo 完了、残 5 件は人手ゲート）
+
+| 関連ドキュメント | 用途 |
+|-----------------|------|
+| [CHAT_PIPELINE_V2.md](docs/dev/CHAT_PIPELINE_V2.md) | 技術仕様・フラグ・ベースライン |
+| [CHAT_ROUTE_EXPECTATIONS.md](docs/dev/CHAT_ROUTE_EXPECTATIONS.md) | ルート期待値・決定権マトリクス |
+| [PRE_P0_LINE_QA_10.md](docs/ops/PRE_P0_LINE_QA_10.md) | dev 手動 QA 10 項目 |
+| [ARCHITECTURE_MULTI_AGENT.md](docs/dev/ARCHITECTURE_MULTI_AGENT.md) | v2 アーキテクチャ図（追記） |
+
+### Pre-P0（LINE 改善 P0–P2 → v2 統合）
+
+- **`session_agent.py`**: delete 強制上書き削除、`pending_memory_delete` 中 Physical/Emergency 自動キャンセル、status 語彙拡張、Quick Reply 削除/キャンセル統一、`is_pending_delete_cancel` 公開
+- **`chat_pipeline_end_guard.py`**: fail-loud（`response_missing` 時 redirect 補完しない）
+- **`gate.py`**: pending delete キャンセル → `SessionOps/pending_clear` 即決
+- **`counseling_triage.py` / LINE ルート**: 発熱→店舗禁止ゲート、aggressive_input 監査、フィードバック期限切れ B+D
+- **`docs/ops/PRE_P0_LINE_QA_10.md`（新規）**: 10 項目 QA チェックリスト
+
+### Wave 0 — 仕様・シナリオ・スキーマ
+
+- **`docs/dev/ROUTE_SPEC.md`**: 決定権マトリクス・期待 route 表
+- **`docs/dev/CHAT_PIPELINE_V2.md`（新規）**: v2 技術仕様・パッケージ境界・ベースライン数値
+- **`docs/schemas/dialogue_state_v1.json`（新規）**: DialogueContext JSON Schema v1
+- **`docs/schemas/intent_router_v1.json`（新規）**: IntentRouter structured output schema
+- **`tests/fixtures/route_spec_scenarios.yaml` / `expected_v2_diff.yaml`（新規）**: 契約シナリオ・breaking change 列挙
+- **`scripts/measure_pipeline_baseline.py`（新規）**: response_missing / end_guard / fast-path 集計
+
+### Wave 1a — DialogueContext / SessionOps / Envelope
+
+- **`src/dialogue/`（新規パッケージ）**:
+  - `context.py` — load/save、合成ビュー、dual-write
+  - `context_provider.py` — agent_kind 別履歴窓（default 8 / physical 12 等）
+  - `session_ops.py` — delete / summarize / status（SessionAgent から移行）
+  - `envelope.py` — `delivery_mode`: sync | sse_phased | line_chunked
+  - `pipeline.py` — v2 hook（SessionOps + end_guard のみ）
+  - `adapters/web_sse.py` / `adapters/line_delivery.py` — 配信アダプタ
+- **`config/llm_flags.py`**: `CHAT_PIPELINE_V2` + ALLOWLIST / DENYLIST per-session ロールバック
+- **`scripts/check_w1a_scope.py`（新規）**: Wave 1a 境界違反 CI lint
+- **`scripts/dev_v2_flags.ps1` / `scripts/cloudrun_v2_env.example`（新規）**: dev カナリア用
+
+### Wave 1b — IntentRouter + AgentDispatcher
+
+- **`src/dialogue/routing/`（新規）**:
+  - `gate.py` — Stage A 決定論ゲート（pending delete、症状、店舗等）
+  - `intent_router_llm.py` — Stage B structured LLM（`CHAT_PIPELINE_V2_INTENT_ROUTER_LLM`）
+  - `guards.py` — Stage C fever/store/confidence<0.75 clarification（Physical 明示症状時は clarification スキップ）
+  - `shadow.py` — shadow ログ + `dialogue_flags`（fever_context / pending_cancelled_by_physical）
+  - `metrics.py` — legacy 併存 route 一致率
+- **`src/dialogue/dispatcher.py`**: `try_agent_dispatch` — legacy handler へ委譲、dispatch ログに `dialogue_flags`
+- **`chat_orchestrator.py`**: v2 dispatch ON 時 `_try_session_agent` スキップ
+- **`scripts/measure_intent_router_shadow.py`（新規）**: shadow ログ集計
+
+### Wave 2 — 履歴統合・correction・counseling
+
+- **`src/dialogue/history.py`**: `resolve_*_with_fallback` 系（emergency / emotional / physical / counseling / concierge）
+- **`src/dialogue/sync_legacy.py`**: dual-write、`mark_correction_in_dialogue_state`
+- **`src/dialogue/concierge_context.py`**: `dialogue_state.concierge` 優先 last_intent
+- **`input_helpers.py`**: `detect_correction_intent`（訂正パターン検出）
+- **`counseling_generator.py`**: `_ensure_user_turn_at_end` — LLM 直前に現ターン user 注入
+- 履歴 fallback 統合: `line_memory_context.py`, `routing_context.py`, `chat_response_service.py`, `nlu_resolve.py`, `chat_recommendation_flow.py`, `line_web_handoff.py`, `chat_triage.py`, `chat_emotional_route.py`, `chat_post_pipeline.py`
+
+### Wave 3 — legacy 整理
+
+- **`chat_post_pipeline.py`**: v2 ON 時 `_run_legacy_other_pre_orchestrator` ガード
+- SessionAgent pipeline 三重呼び出し削除（orchestrator + dispatcher 連携）
+
+### Wave 4 — 観測性・KPI
+
+- **`scripts/kpi_dashboard_v2.py`（新規）**: shadow / dispatch / counseling_detail 集計ダッシュボード
+- **`src/analysis/intent_router_log_analysis.py`（新規）**: `dialogue_flags` 集計拡張
+- **`structured_logger.py`**: `emit_dialogue_route_dispatch` に `dialogue_flags` 追加
+- **`docs/dev/ARCHITECTURE_MULTI_AGENT.md`**: v2 Mermaid フロー図・環境変数表
+
+### CI / 検証
+
+- **`.gitlab-ci.yml`（新規）**: `verify_chat_pipeline_v2.ps1` 契約スイート
+- **`scripts/verify_chat_pipeline_v2.ps1`（新規）**: v2 コアテスト一括実行（152 passed）
+
+### テスト（新規・拡張）
+
+| テスト | 内容 |
+|--------|------|
+| `tests/dialogue/` | context / envelope / session_ops / routing / correction |
+| `tests/contract/test_intent_router_scenarios.py` | ROUTE_SPEC 契約シナリオ |
+| `tests/contract/test_route_spec_expectations.py` | 期待 route 検証 |
+| `tests/handlers/test_chat_pipeline_end_guard_fail_loud.py` | end_guard fail-loud |
+| `tests/services/test_line_memory_context_v2.py` | v2 履歴委譲 |
+| `tests/services/test_chat_response_service_v2.py` | v2 履歴統合 |
+| `tests/utils/test_correction_detection.py` | 訂正検出 |
+| `tests/services/test_counseling_generator_user_inject.py` | user ターン注入 |
+| `tests/analysis/test_intent_router_log_analysis.py` | dialogue_flags 集計 |
+
+
+### 環境変数 — dev 一括 ON（2026-06-28 追記）
+
+ローカル / GCP dev で **段階フラグ・ALLOWLIST 不要** に v2 全機能を使えるよう `config/llm_flags.py` を変更。
+
+| 環境 | 設定 |
+|------|------|
+| **ローカル** | `.env` の `APP_ENV=development` のみ（`.env.example` 既定） |
+| **GCP dev** | Cloud Run に `APP_ENV=development` |
+| **明示 ON** | `CHAT_PIPELINE_V2=true` 1 変数（IntentRouter / dispatch / LLM までカスケード ON） |
+| **本番** | `APP_ENV=production` + 未設定 = **OFF**（従来どおり） |
+
+- **`config/llm_flags.py`**: `CHAT_PIPELINE_V2=true` 時、サブフラグ未設定 = router / dispatch / LLM すべて ON。development ランタイムでは `CHAT_PIPELINE_V2` 未設定でも v2 全機能有効
+- **`.env.example`**: v2 フラグの dev 向け説明を追記
+- **`scripts/dev_v2_flags.ps1`**: 簡素化（`CHAT_PIPELINE_V2=true` のみ、`-Off` で明示 OFF）
+- **`scripts/cloudrun_v2_env.example`**: `APP_ENV=development` 中心に整理
+- **`docs/dev/CHAT_PIPELINE_V2.md` / `CHAT_PIPELINE_V2_PLAN.md`**: 一括 ON 手順を更新
+- **`tests/dialogue/test_v2_flags.py`**: dev 自動 ON・カスケード・opt-out テスト追加
+
+### 残タスク（人手ゲート — 5 件）
+
+1. CCR `concierge_state` 永続化を main/dev にマージ（Wave 1a ブロッカー）
+2. Pre-P0: 48h 以内 dev 手動デプロイ + LINE QA 10 項目全合格
+3. Wave 0 レビュー承認（ROUTE_SPEC + diff + baseline + schema）
+4. Wave 1a dev 手動 QA + ゲートレビュー
+5. Wave 4: dev v2 デフォルト ON + 2 週 soak
 
 ---
 

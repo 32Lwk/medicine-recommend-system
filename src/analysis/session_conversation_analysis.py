@@ -23,7 +23,9 @@ OFFENSIVE_INPUT_RE = re.compile(r"[🖕💩👹]|クソ|死ね|ふざけ|バカ|
 IMAGE_GEN_RE = re.compile(r"画像|生成して|draw|generate.*image|作って", re.I)
 OFF_TOPIC_RE = re.compile(r"マチュピチュ|迷子|観光|遺失|在庫|トイレ|駐車")
 ABOUT_APP_RE = re.compile(
-    r"について|教えて$|あなた|おまえ|君は|だれ|誰|どこ|病院|クリニック|otcって|OTCって|できること",
+    r"(アプリ|サービス|サイト|このツール|このチャット).*(について|教えて|できること)"
+    r"|あなた|おまえ|君は|だれ|誰"
+    r"|otcって|OTCって",
     re.I,
 )
 PHYSICAL_SYMPTOM_RE = re.compile(
@@ -31,8 +33,19 @@ PHYSICAL_SYMPTOM_RE = re.compile(
     re.I,
 )
 GREETING_RESPONSE_RE = re.compile(
-    r"こんにちは|お気軽に|何かお困り|お待ちして|ご相談|お聞かせください|feel free|hello",
+    r"こんにちは|何かお困り|お待ちして|お聞かせください|feel free",
     re.I,
+)
+_STORE_RESPONSE_MARKERS = (
+    "店内のスタッフ",
+    "お近くのスタッフ",
+    "店舗案内",
+    "在庫",
+)
+_SECURITY_RESPONSE_MARKERS = (
+    "攻撃的な表現",
+    "不審なパターン",
+    "お答えできません",
 )
 MEDICAL_REFERRAL_RE = re.compile(r"医療機関|受診|病院|診察|医師に相談")
 ABOUT_CARD_RE = re.compile(r"このツールについて|chat-status-card--notice")
@@ -403,6 +416,17 @@ def detect_turn_issues(
 
     is_greeting_input = "greeting" in input_labels or "short_or_emoji" in input_labels
     looks_greeting_response = bool(GREETING_RESPONSE_RE.search(plain))
+    route_kind = str((routing or {}).get("kind") or "")
+    if any(m in plain for m in _STORE_RESPONSE_MARKERS) or route_kind in (
+        "store_facilities",
+        "store_inventory",
+        "store_locator",
+        "aggressive_input",
+        "known_attack",
+    ):
+        looks_greeting_response = False
+    if any(m in plain for m in _SECURITY_RESPONSE_MARKERS):
+        looks_greeting_response = False
 
     if not is_greeting_input and looks_greeting_response:
         if "offensive" in input_labels:

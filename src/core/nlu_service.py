@@ -709,6 +709,8 @@ def _build_symptom_gpt_user_prompt(
     gender = user_info.get("gender", "不明")
     pregnant = user_info.get("pregnant", False)
     breastfeeding = user_info.get("breastfeeding", False)
+    history_block = str(user_info.get("_physical_history_block") or "").strip()
+    history_section = f"\n【直近の会話】\n{history_block}\n" if history_block else ""
 
     if lang == "ja":
         return f"""
@@ -716,8 +718,7 @@ def _build_symptom_gpt_user_prompt(
 
 【ユーザー入力】
 {sanitized_text}
-
-【ユーザー情報】
+{history_section}【ユーザー情報】
 年齢: {age}
 性別: {gender}
 妊娠中: {pregnant}
@@ -763,13 +764,16 @@ def _build_symptom_gpt_user_prompt(
         "zh": "Chinese",
     }
     lang_label = lang_labels.get(lang, "English")
+    history_block = str(user_info.get("_physical_history_block") or "").strip()
+    history_section = (
+        f"\n【Recent conversation】\n{history_block}\n" if history_block else ""
+    )
     return f"""
 You are a medical NLU system. The user wrote in {lang_label}. Extract structured symptom data for Japanese OTC routing.
 
 【User input】
 {sanitized_text}
-
-【User context】
+{history_section}【User context】
 Age: {age}
 Gender: {gender}
 Pregnant: {pregnant}

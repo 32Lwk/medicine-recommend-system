@@ -11,6 +11,7 @@ from src.analysis.gcp_cloud_run_log_parser import (
     build_analysis_bundle,
     extract_chat_flow,
     extract_http_errors,
+    extract_intent_router_logs,
     extract_user_sessions,
     load_gcp_log_entries,
     _extract_multiline_json_objects,
@@ -197,3 +198,35 @@ def test_compact_single_line_structured_log(tmp_path: Path) -> None:
     counseling = [o for o in objs if o.get("log_type") == "counseling_detail"]
     assert len(counseling) == 1
     assert counseling[0]["response"] == "hi there"
+
+
+def test_extract_intent_router_logs(tmp_path: Path) -> None:
+    compact = json.dumps(
+        {
+            "log_type": "dialogue_route_shadow",
+            "session_id": "line:U1",
+            "primary_route": "Physical",
+            "resolved_by": "gate",
+            "mismatch": True,
+            "user_input": "頭痛い",
+            "triage_category": "Other",
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    payload = [
+        {
+            "textPayload": (
+                f"2026-06-25 04:00:00,000 - INFO - IntentRouter shadow [session_id: line:U1]\n{compact}"
+            ),
+        },
+    ]
+    path = tmp_path / "shadow.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    entries = load_gcp_log_entries(path)
+    bundle = extract_intent_router_logs(entries)
+    assert bundle["shadow_total"] == 1
+    assert bundle["shadow_mismatch"] == 1
+
+    sessions = extract_user_sessions(entries, max_counseling=5)
+    assert sessions["intent_router"]["shadow_total"] == 1

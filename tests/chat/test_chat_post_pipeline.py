@@ -70,8 +70,8 @@ def test_sync_messages_not_shadowed_by_conditional_import():
     )
 
 
-def test_finalize_pipeline_response_appends_redirect_when_no_bot():
-    """当該ターンで bot が無い場合、終端ガードが redirect を補完する。"""
+def test_finalize_pipeline_response_fail_loud_when_no_bot():
+    """当該ターンで bot が無い場合、redirect を補完せず missing を返す。"""
     from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
 
     session = {
@@ -86,9 +86,9 @@ def test_finalize_pipeline_response_appends_redirect_when_no_bot():
         client,
         0,
         ({"status": "ok", "message_count": 1}, 200),
+        user_message="ふわふわ",
     )
     assert status == 200
-    assert body.get("pipeline_end_guard") == "redirect"
+    assert body.get("pipeline_end_guard") == "missing"
     bots = [m for m in session["messages"] if m.get("type") == "bot"]
-    assert len(bots) == 1
-    assert bots[0].get("concierge_intent") == "redirect"
+    assert len(bots) == 0

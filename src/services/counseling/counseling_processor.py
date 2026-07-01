@@ -15,6 +15,11 @@ from src.services.counseling.counseling_questions import (
 )
 from src.services.counseling.counseling_satisfaction import analyze_user_satisfaction
 from src.services.counseling.counseling_generator import generate_counseling_response
+from src.services.counseling_followup import (
+    generate_follow_up_questions,
+    prior_questions_from_history,
+    should_ask_question,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -435,7 +440,8 @@ def process_counseling_answer(
                     next_questions = generate_follow_up_questions(
                         symptom_type,
                         counseling_mode.get('collected_info', {}),
-                        client
+                        client,
+                        prior_questions=prior_questions_from_history(question_history),
                     )
                     next_question = next_questions[0] if next_questions else None
                 

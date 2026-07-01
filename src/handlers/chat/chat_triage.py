@@ -55,14 +55,17 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
         from src.agents.triage_agent import run_triage_agent
         from src.services.triage_analytics import log_triage_result
 
-        from src.services.triage_history import get_recent_messages
         from src.services.line_memory_context import (
             build_long_term_memory_block,
             merge_profile_into_user_info,
         )
 
         user_info = merge_profile_into_user_info(session, sid)
-        conversation_history = get_recent_messages(session, sid)
+        from src.dialogue.history import resolve_conversation_history_with_fallback
+
+        conversation_history = resolve_conversation_history_with_fallback(
+            session, sid, agent_kind="default"
+        )
         memory_block = build_long_term_memory_block(session, sid)
         start_time = time.time()
         triage_result = run_triage_agent(
@@ -114,10 +117,11 @@ def run_triage(session, client, sid, user_message, sanitized_message, recommenda
             generate_contextual_emergency_message,
         )
 
-        conversation_history = []
-        from src.services.triage_history import get_recent_messages
+        from src.dialogue.history import resolve_emergency_history_with_fallback
 
-        conversation_history = get_recent_messages(session, sid, limit=20)
+        conversation_history = resolve_emergency_history_with_fallback(
+            session, sid, limit=20
+        )
 
         logger.debug(f"   会話履歴取得: {len(conversation_history)}メッセージ")
 
