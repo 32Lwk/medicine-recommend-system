@@ -197,6 +197,7 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
             payload.update(extra)
         log_fn = logger.warning if total_ms >= _PIPELINE_PERF_WARN_MS else logger.info
         log_fn("PIPELINE_PERF %s", payload)
+        _emit_pipeline_perf_jsonl(payload)
         return
 
     steps = _steps.get() or {}
@@ -222,3 +223,14 @@ def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = 
         pass
     log_fn = logger.warning if total_ms >= _PIPELINE_PERF_WARN_MS else logger.info
     log_fn("PIPELINE_PERF %s", payload)
+    _emit_pipeline_perf_jsonl(payload)
+
+
+def _emit_pipeline_perf_jsonl(payload: dict[str, Any]) -> None:
+    """構造化 JSONL sink（p50/p95・フェーズ別内訳の機械集計用）。失敗しても無視。"""
+    try:
+        from src.utils.structured_logger import emit_pipeline_perf
+
+        emit_pipeline_perf(payload)
+    except Exception:
+        pass
