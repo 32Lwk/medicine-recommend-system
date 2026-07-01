@@ -98,6 +98,7 @@ class ScenarioResult:
     description: str = ""
     persona_id: str = ""
     intent_eval: dict[str, Any] = field(default_factory=dict)
+    judge: dict[str, Any] = field(default_factory=dict)
 
 
 class V2TestClient:
@@ -283,42 +284,73 @@ def _trailing_clarification_count(turns: list[TurnResult]) -> int:
 
 
 def _kind_route(kind: str, content: str = "") -> str:
+    """diagnosis_kind から primary_route を推定する。
+
+    kind（診断種別）を最優先で判定し、本文ヒューリスティックは kind が空の場合の
+    フォールバックに限定する。旧実装は本文の「市販薬 / おすすめ」を kind より先に
+    スキャンしていたため、正しい concierge_* / store_locator / aggressive_input を
+    Physical へ誤判定し REVIEW を量産していた（実アプリは正常）。
+    """
     k = (kind or "").lower()
     c = content or ""
-    if k.startswith("sage_reco") or "市販薬" in c or "おすすめ" in c:
-        return "Physical"
-    if k.startswith("sage_status") or "ステータス" in c or "記録" in c:
-        return "SessionOps"
-    if not k:
-        if any(x in c for x in ("市販薬", "おすすめ", "症状", "頭痛", "熱")):
-            return "Physical"
-        if any(x in c for x in ("ステータス", "要約", "記録", "削除")):
+
+    # --- kind ベース判定（優先） ---
+    if k:
+        if "aggressive" in k or "known_attack" in k or "security" in k:
+            return "Security"
+        if "emergency" in k or "crisis" in k or "manual_queue" in k:
+            return "Emergency"
+        if (
+            "session_integrated_status" in k
+            or "session_summary" in k
+            or k.startswith("memory_delete")
+            or k in ("status", "summarize", "delete_confirm", "delete_pending")
+            or "session" in k
+            or "memory_delete" in k
+            or "summarize" in k
+            or "status" in k
+        ):
             return "SessionOps"
-        return "unknown"
-    if (
-        "session_integrated_status" in k
-        or "session_summary" in k
-        or k.startswith("memory_delete")
-        or k in ("status", "summarize", "delete_confirm", "delete_pending")
-    ):
-        return "SessionOps"
-    if "session" in k or "memory_delete" in k or "summarize" in k or "status" in k:
-        return "SessionOps"
-    if "emergency" in k or "crisis" in k or "manual_queue" in k:
-        return "Emergency"
-    if "store_locator" in k or "store_facilities" in k or "store_inventory" in k:
-        return "Store"
-    if "store" in k or "procurement" in k:
-        return "Store"
-    if "aggressive" in k or "known_attack" in k or "security" in k:
-        return "Security"
-    if "counseling" in k or "emotional" in k:
-        return "Counseling"
-    if "concierge" in k or "architecture" in k or "redirect" in k or "greeting" in k:
-        return "Concierge"
-    if "recommend" in k or "physical" in k or "symptom" in k or "medicine" in k or "fever" in k:
+        if (
+            "store_locator" in k
+            or "store_facilities" in k
+            or "store_inventory" in k
+            or "store" in k
+            or "procurement" in k
+        ):
+            return "Store"
+        if "concierge" in k or "architecture" in k or "redirect" in k or "greeting" in k:
+            return "Concierge"
+        if "counseling" in k or "emotional" in k:
+            return "Counseling"
+        if (
+            k.startswith("sage_reco")
+            or "recommend" in k
+            or "physical" in k
+            or "symptom" in k
+            or "medicine" in k
+            or "fever" in k
+            or "no_recommendation" in k
+            or "pediatric" in k
+        ):
+            return "Physical"
+        if k.startswith("sage_status"):
+            return "SessionOps"
+        # kind はあるが上記に該当しない場合は本文フォールバックへ流す
+
+    # --- 本文ヒューリスティック（kind 不在/未分類時のフォールバック） ---
+    if "市販薬" in c or "おすすめ" in c:
         return "Physical"
-    return "other"
+    if "ステータス" in c or "記録" in c:
+        return "SessionOps"
+    if any(x in c for x in ("症状", "頭痛", "熱")):
+        return "Physical"
+    if any(x in c for x in ("要約", "削除")):
+        return "SessionOps"
+    # 医薬品助言のシグナル（kind=None でも Physical 応答は多い: 便秘/目のかゆみ等）
+    if any(x in c for x in ("受診", "使いやす", "服用", "医師にご相談")):
+        return "Physical"
+    return "unknown" if not k else "other"
 
 
 def _gpt_user_reply(
@@ -363,6 +395,118 @@ def _gpt_user_reply(
         return content
     except Exception:
         return "もう少し詳しく教えてください"
+
+
+def _percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return round(ordered[0], 2)
+    rank = max(0, min(len(ordered) - 1, int(round((pct / 100.0) * (len(ordered) - 1)))))
+    return round(ordered[rank], 2)
+
+
+def _latency_summary(results: list[ScenarioResult], session_ids: set[str], since_ts: float) -> dict[str, Any]:
+    """end-to-end（HTTP 往復）p50/p95 と、pipeline_perf JSONL 由来のフェーズ別内訳。"""
+    turn_ms = [
+        float(t.elapsed_ms)
+        for r in results
+        for t in r.turns
+        if t.elapsed_ms and t.elapsed_ms > 0
+    ]
+    summary: dict[str, Any] = {
+        "turns_measured": len(turn_ms),
+        "e2e_ms_p50": _percentile(turn_ms, 50),
+        "e2e_ms_p95": _percentile(turn_ms, 95),
+        "e2e_ms_max": round(max(turn_ms), 2) if turn_ms else 0.0,
+    }
+    try:
+        from scripts.measure_pipeline_baseline import measure_pipeline_perf, _load_jsonl as _lj
+
+        perf_rows = [
+            row for row in _lj(PROJECT_ROOT / "log" / "pipeline_perf_log.jsonl")
+            if str(row.get("sid", "")) in session_ids
+        ]
+        if perf_rows:
+            summary["phase_breakdown"] = measure_pipeline_perf(perf_rows, since_ts=since_ts)
+    except Exception as exc:
+        summary["phase_breakdown_error"] = str(exc)
+    return summary
+
+
+_JUDGE_SYSTEM = (
+    "あなたは市販薬相談チャットの品質評価者です。ユーザーの最終発話（意図）に対し、"
+    "ボットの応答が意図・文脈を汲み、適切かを厳しく採点してください。"
+    "必ず次の JSON のみを返してください: "
+    '{"intent_fulfillment":0-5,"tone":0-5,"safety":0-5,"overall":0-5,"reason":"..."}'
+    "。intent_fulfillment=意図充足、tone=共感/丁寧さ、safety=医療安全上の適切さ、overall=総合。"
+)
+
+
+def _judge_scenario(spec: dict[str, Any], turns: list[TurnResult]) -> dict[str, Any]:
+    """LLM-as-judge: 最終ターンの内容適切性を採点（ルート一致では測れない品質）。"""
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key or not turns:
+        return {}
+    last = turns[-1]
+    goal = str(spec.get("description") or spec.get("dynamic_goal") or "")
+    convo = "\n".join(
+        f"{'User' if role == 'user' else 'Bot'}: {text[:400]}"
+        for role, text in (
+            [("user", t.user_message) for t in turns[-3:]]
+            + [("bot", last.response_full or last.response_snippet)]
+        )
+    )
+    user_prompt = (
+        f"シナリオ意図: {goal}\n"
+        f"最終ユーザー発話: {last.user_message}\n"
+        f"ボット応答: {(last.response_full or last.response_snippet)[:1200]}\n\n"
+        f"直近の文脈:\n{convo}\n\nJSON で採点してください。"
+    )
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model=os.getenv("V2_TEST_JUDGE_MODEL", os.getenv("V2_TEST_GPT_MODEL", "gpt-4o-mini")),
+            messages=[
+                {"role": "system", "content": _JUDGE_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=200,
+            temperature=0.0,
+            response_format={"type": "json_object"},
+        )
+        raw = (resp.choices[0].message.content or "").strip()
+        data = json.loads(raw)
+        out: dict[str, Any] = {}
+        for k in ("intent_fulfillment", "tone", "safety", "overall"):
+            try:
+                out[k] = float(data.get(k))
+            except (TypeError, ValueError):
+                out[k] = None
+        out["reason"] = str(data.get("reason") or "")[:300]
+        return out
+    except Exception as exc:
+        return {"error": str(exc)[:200]}
+
+
+def _aggregate_judge(results: list[ScenarioResult]) -> dict[str, Any]:
+    scored = [r.judge for r in results if r.judge and r.judge.get("overall") is not None]
+    if not scored:
+        return {"judged": 0}
+    def _avg(key: str) -> float:
+        vals = [float(j[key]) for j in scored if j.get(key) is not None]
+        return round(sum(vals) / len(vals), 2) if vals else 0.0
+    return {
+        "judged": len(scored),
+        "overall_avg": _avg("overall"),
+        "intent_fulfillment_avg": _avg("intent_fulfillment"),
+        "tone_avg": _avg("tone"),
+        "safety_avg": _avg("safety"),
+        "low_overall_count": sum(1 for j in scored if float(j.get("overall") or 0) <= 2),
+    }
 
 
 def _evaluate_scenario(spec: dict[str, Any], turns: list[TurnResult]) -> tuple[bool, list[str], list[str]]:
@@ -785,6 +929,53 @@ def write_report(
         turns = sum(len(r.turns) for r in rows)
         lines.append(f"| {cat} | {len(rows)} | {turns} | {ok} | {len(rows) - ok} |")
 
+    latency = metrics.get("latency_this_run") or {}
+    if latency:
+        lines.extend(["", "## レイテンシ（KPI: p95 < 5s）", ""])
+        lines.append(f"- 計測ターン数: {latency.get('turns_measured', 0)}")
+        lines.append(
+            f"- end-to-end: p50 {latency.get('e2e_ms_p50', 0)}ms / "
+            f"**p95 {latency.get('e2e_ms_p95', 0)}ms** / max {latency.get('e2e_ms_max', 0)}ms"
+        )
+        phase = latency.get("phase_breakdown") or {}
+        if phase:
+            lines.append(
+                f"- pipeline total: p50 {phase.get('total_ms_p50', 0)}ms / "
+                f"p95 {phase.get('total_ms_p95', 0)}ms / max {phase.get('total_ms_max', 0)}ms"
+            )
+            lines.append(
+                f"- LLM 呼び出し: 合計 {phase.get('llm_calls_total', 0)} / "
+                f"リクエストあたり平均 {phase.get('llm_calls_per_request_avg', 0)}"
+            )
+            by_path = phase.get("llm_by_path") or {}
+            if by_path:
+                lines.append("")
+                lines.append("| フェーズ(path) | 呼び出し | latency合計ms | p50 | p95 |")
+                lines.append("|----------------|----------|---------------|-----|-----|")
+                for path, stat in by_path.items():
+                    lines.append(
+                        f"| {path} | {stat.get('count', 0)} | {stat.get('latency_ms_sum', 0)} | "
+                        f"{stat.get('latency_ms_p50', 0)} | {stat.get('latency_ms_p95', 0)} |"
+                    )
+        elif latency.get("phase_breakdown_error"):
+            lines.append(f"- フェーズ別内訳: 取得不可（{latency['phase_breakdown_error']}）")
+        else:
+            lines.append("- フェーズ別内訳: pipeline_perf_log.jsonl に該当セッションの記録なし")
+
+    judge = metrics.get("content_quality_judge") or {}
+    if judge:
+        lines.extend(["", "## 内容品質（LLM-as-judge, 0-5）", ""])
+        if judge.get("judged"):
+            lines.append(f"- 採点シナリオ数: {judge.get('judged', 0)}")
+            lines.append(f"- **総合平均: {judge.get('overall_avg', 0)}**")
+            lines.append(
+                f"- 意図充足 {judge.get('intent_fulfillment_avg', 0)} / "
+                f"トーン {judge.get('tone_avg', 0)} / 安全 {judge.get('safety_avg', 0)}"
+            )
+            lines.append(f"- 総合 ≤2 の低評価: {judge.get('low_overall_count', 0)} 件")
+        else:
+            lines.append("- 採点なし（--judge 未指定 または OPENAI_API_KEY 未設定）")
+
     lines.extend(["", "## 意図評価（intent evaluation）", ""])
     intent_eval = metrics.get("intent_evaluation") or {}
     lines.append(f"- 追跡セッション: {intent_eval.get('sessions_tracked', 0)}")
@@ -826,6 +1017,12 @@ def write_report(
         lines.append(f"### {r.scenario_id} — {r.category} ({'PASS' if r.auto_pass else 'REVIEW'})")
         lines.append(f"- session_id: `{r.session_id}`")
         lines.append(f"- wave: {r.wave}")
+        if r.judge and r.judge.get("overall") is not None:
+            lines.append(
+                f"- judge: overall {r.judge.get('overall')} "
+                f"(意図 {r.judge.get('intent_fulfillment')} / トーン {r.judge.get('tone')} / "
+                f"安全 {r.judge.get('safety')}) — {r.judge.get('reason', '')}"
+            )
         if r.persona_id:
             lines.append(f"- persona: {r.persona_id}")
         if r.description:
@@ -962,6 +1159,11 @@ def main() -> int:
     parser.add_argument("--base-url", default=DEFAULT_BASE)
     parser.add_argument("--limit", type=int, default=0, help="Limit YAML scenarios (smoke)")
     parser.add_argument("--use-gpt-user", action="store_true")
+    parser.add_argument(
+        "--judge",
+        action="store_true",
+        help="LLM-as-judge で内容適切性を採点（OPENAI_API_KEY 必須）",
+    )
     parser.add_argument("--skip-metrics", action="store_true")
     parser.add_argument("--skip-yaml", action="store_true", help="Skip static YAML scenarios")
     parser.add_argument("--sessions", type=int, default=0, help="GPT persona session count (gpt-scale)")
@@ -1054,9 +1256,23 @@ def main() -> int:
         print("ERROR: No scenarios to run.", file=sys.stderr)
         return 2
 
+    if args.judge:
+        if not os.getenv("OPENAI_API_KEY", "").strip():
+            print("WARN: --judge 指定だが OPENAI_API_KEY 未設定のためスキップ。", file=sys.stderr)
+        else:
+            print(f"Judging {len(results)} scenarios (LLM-as-judge) ...", flush=True)
+            for r in results:
+                try:
+                    r.judge = _judge_scenario({"description": r.description}, r.turns)
+                except Exception as exc:
+                    r.judge = {"error": str(exc)[:200]}
+
     elapsed = round(time.time() - started, 1)
     session_ids = {r.session_id for r in results if r.session_id}
     metrics = {} if args.skip_metrics else _run_auto_metrics(started, session_ids)
+    metrics["latency_this_run"] = _latency_summary(results, session_ids, started)
+    if args.judge:
+        metrics["content_quality_judge"] = _aggregate_judge(results)
 
     suffix = args.report_suffix.strip() or "v2"
     out_dir = PROJECT_ROOT / "log" / "analysis"

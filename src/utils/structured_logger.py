@@ -318,6 +318,24 @@ def log_user_interaction(
     logger.info(f"ユーザーインタラクション [session_id: {session_id}]: 入力={user_input[:100]}..., 出力長={len(app_output)}文字")
 
 
+def emit_pipeline_perf(payload: Dict[str, Any]) -> None:
+    """PIPELINE_PERF ペイロードを構造化 JSONL に永続化する（計測専用・非挙動）。
+
+    `log_pipeline_perf` が既に app.log へ `PIPELINE_PERF ...` を出力しているが、
+    ローカル/テストでは p50/p95 やフェーズ別（triage/説明/翻訳）内訳を機械的に
+    集計できる JSONL sink が無かったため、それを補う。
+    """
+    try:
+        log_data = {
+            "log_type": "pipeline_perf",
+            "timestamp": datetime.now().isoformat(),
+            **payload,
+        }
+        _write_to_jsonl("pipeline_perf_log.jsonl", log_data)
+    except Exception as exc:  # 計測失敗は本処理に影響させない
+        logger.error("pipeline_perf JSONL 書き込みエラー: %s", exc)
+
+
 def emit_dialogue_route_shadow(
     *,
     session_id: str,
