@@ -74,6 +74,11 @@ def get_handoff_intro_physical() -> str:
     return str(load_concierge_knowledge().get("handoff_intro_physical") or "")
 
 
+def get_technical_details() -> Dict[str, str]:
+    """Phase 3 (p3-concierge): API/SSE/rule_based の技術詳細（development 限定開示用）。"""
+    return dict(load_concierge_knowledge().get("technical_details") or {})
+
+
 def key_facts_for_sync_test() -> Dict[str, bool]:
     """ℹ️ モーダル等と照合する主要事実"""
     limits = " ".join(get_limitations())

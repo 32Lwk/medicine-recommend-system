@@ -343,7 +343,7 @@ def resolve_concierge_intent(
         return None
 
     from src.services.concierge_agent_history import (
-        infer_prior_meta_follow_up_intent,
+        resolve_concierge_follow_up_intent,
         resolve_last_bot_message,
         resolve_prior_meta_intent,
     )
@@ -354,7 +354,7 @@ def resolve_concierge_intent(
         conversation_history=conversation_history,
         sid=session_id,
     )
-    follow = infer_prior_meta_follow_up_intent(text, prior, last_bot=last_bot)
+    follow = resolve_concierge_follow_up_intent(text, prior, last_bot=last_bot)
     if follow:
         return follow  # type: ignore[return-value]
 
@@ -1325,6 +1325,33 @@ def _meta_reference_block(intent: str) -> str:
                 lines.append("【技術スタック（参照）】")
                 for item in bullets:
                     lines.append(f"- {item}")
+        except Exception:
+            pass
+
+        # Phase 3 (p3-concierge, 前半): API/SSE/rule_based の技術詳細は
+        # ROUTING_CONCIERGE_INTENT ON かつ development ランタイム限定で追加開示する
+        # （production は上記の既存抽象コンテンツのみで変更なし）。
+        try:
+            from config.llm_flags import is_concierge_intent_routing_enabled
+
+            if is_concierge_intent_routing_enabled():
+                from config.app_config import is_development_runtime
+
+                if is_development_runtime():
+                    from src.content.concierge_knowledge import get_technical_details
+
+                    details = get_technical_details()
+                    ordered_keys = (
+                        "api_description",
+                        "sse_description",
+                        "rule_based_description",
+                    )
+                    detail_lines = [details[k] for k in ordered_keys if details.get(k)]
+                    if detail_lines:
+                        lines.append("")
+                        lines.append("【技術詳細（開発環境限定・参照）】")
+                        for item in detail_lines:
+                            lines.append(f"- {item}")
         except Exception:
             pass
     else:

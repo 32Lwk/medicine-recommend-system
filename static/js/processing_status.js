@@ -64,7 +64,8 @@
                 },
                 medicine_select: {
                     explanation: '推奨理由を作成しています',
-                    rule_match: '症状に合う市販薬候補をルールで照合しています'
+                    rule_match: '症状に合う市販薬候補をルールで照合しています',
+                    candidate_match: '候補を照合しています'
                 },
                 attributes: {
                     nlu: '症状と属性を整理しています'
@@ -72,7 +73,15 @@
                 symptom_analysis: {
                     llm_classify: 'AIで症状と医薬品の種類を分類しています',
                     symptom_extract: 'お話から症状キーワードを抽出しています',
+                    symptom_check: '症状を確認しています',
                     contraindication_prep: '年齢・妊娠・併用薬など禁忌の前提を確認しています'
+                }
+            },
+            flowSteps: {
+                physical: {
+                    triage: '症状相談として受け付けています',
+                    symptom_analysis: '症状を確認しています',
+                    medicine_select: '候補を照合しています'
                 }
             }
         },
@@ -107,11 +116,13 @@
                 },
                 medicine_select: {
                     explanation: 'Generating recommendation reasons',
-                    rule_match: 'Matching OTC candidates to your symptoms'
+                    rule_match: 'Matching OTC candidates to your symptoms',
+                    candidate_match: 'Comparing medicine candidates'
                 },
                 symptom_analysis: {
                     llm_classify: 'Classifying symptoms and OTC medicine type with AI',
                     symptom_extract: 'Extracting symptom keywords from your message',
+                    symptom_check: 'Reviewing your symptoms',
                     contraindication_prep: 'Checking age, pregnancy, and drug interaction prerequisites'
                 },
                 medicine_qa: {
@@ -618,6 +629,28 @@
         return false;
     }
 
+    function resolveMascotState(data) {
+        if (!data) {
+            return 'idle';
+        }
+        var stepId = data.step_id || '';
+        var detailCode = data.detail_code || '';
+        if (stepId === 'symptom_analysis' || detailCode === 'symptom_check') {
+            return 'symptom';
+        }
+        if (stepId === 'medicine_select' && (
+            detailCode === 'candidate_match' ||
+            detailCode === 'rule_match' ||
+            detailCode === 'scoring'
+        )) {
+            return 'match';
+        }
+        if (stepId === 'usage_notes') {
+            return 'notes';
+        }
+        return 'idle';
+    }
+
     function buildProcessingCardElement(label, step, total, percent, badge, progressAria, detailLabel, meta) {
         meta = meta || {};
         var locale = meta.locale || getLocale(getCurrentLang(null));
@@ -641,6 +674,19 @@
         header.appendChild(badgeEl);
         header.appendChild(pillEl);
 
+        if (!showTechnical) {
+            var mascotRow = document.createElement('div');
+            mascotRow.className = 'processing-status-mascot-row';
+            var mascotEl = document.createElement('span');
+            mascotEl.className = 'processing-status-mascot processing-status-mascot--' + (meta.mascotState || 'idle');
+            mascotEl.setAttribute('aria-hidden', 'true');
+            mascotRow.appendChild(mascotEl);
+            card.appendChild(header);
+            card.appendChild(mascotRow);
+        } else {
+            card.appendChild(header);
+        }
+
         var labelEl = document.createElement('p');
         labelEl.className = 'processing-status-label';
         labelEl.textContent = label || locale.defaultLabel;
@@ -658,7 +704,6 @@
         fill.style.width = safePercent + '%';
 
         track.appendChild(fill);
-        card.appendChild(header);
         card.appendChild(labelEl);
         if (!showTechnical && meta.slow_hint) {
             var slowHintEl = document.createElement('p');
@@ -782,6 +827,10 @@
         if (pillEl) {
             pillEl.textContent = step + ' / ' + total;
         }
+        var mascotEl = wrapper.querySelector('.processing-status-mascot');
+        if (mascotEl && meta.mascotState) {
+            mascotEl.className = 'processing-status-mascot processing-status-mascot--' + meta.mascotState;
+        }
         if (fillEl) {
             fillEl.style.width = percent + '%';
         }
@@ -839,6 +888,7 @@
         var meta = {
             showTechnical: showTechnical,
             locale: displayLocale,
+            mascotState: resolveMascotState(localized),
             agent_display: localized.agent_display || '',
             slow_hint: localized.slow_hint || '',
             agent_name: showTechnical ? localized.agent_name : '',
@@ -922,6 +972,10 @@
             }
         }
         if (pillEl) pillEl.textContent = step + ' / ' + total;
+        var mascotEl = wrapper.querySelector('.processing-status-mascot');
+        if (mascotEl && meta.mascotState) {
+            mascotEl.className = 'processing-status-mascot processing-status-mascot--' + meta.mascotState;
+        }
         if (fillEl) fillEl.style.width = percent + '%';
         if (trackEl) {
             trackEl.setAttribute('aria-valuenow', String(percent));

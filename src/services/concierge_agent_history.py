@@ -52,6 +52,22 @@ _META_FOLLOW_UP_RE = re.compile(
     r"(詳しく|もっと|続き|深く|さらに|具体的に|もう少し)"
 )
 
+# Phase 3 (p3-concierge MR-4): 拡張フォローアップ表現（ROUTING_CONCIERGE_FOLLOWUP ON 時）
+_META_FOLLOW_UP_EXTENDED_EXTRA = re.compile(
+    r"(具体例|例を|について|詳細)"
+)
+
+_TOPIC_CONTINUATION_RE = re.compile(
+    r"sse|cloud\s*run|rule[_\s-]?based|gcp|fastapi|postgresql|neon|gunicorn|"
+    r"英語|多言語|対応言語|インフラ|api|デプロイ|マルチ|エージェント|"
+    r"sage\s*terrace|otc|市販|プログラミング|スタック",
+    re.IGNORECASE,
+)
+
+_PHYSICAL_SYMPTOM_RE = re.compile(
+    r"頭痛|発熱|熱が|咳|腹痛|吐き気|めまい|下痢|肩こり|鼻水|喉"
+)
+
 _ARCHITECTURE_TOPIC_RE = re.compile(
     r"技術|仕組み|構成|スタック|エージェント|インフラ|デプロイ|内部|バックエンド|フロント|マルチ",
     re.IGNORECASE,
@@ -72,10 +88,36 @@ _META_FOLLOW_UP_PRIOR_INTENTS = frozenset({
     "session_ops",
 }) | _DOC_FOLLOW_UP_INTENTS
 
+_FOLLOW_UP_PRIOR_EXTENDED = _META_FOLLOW_UP_PRIOR_INTENTS | frozenset({"redirect"})
+
+
+def _is_concierge_followup_routing_enabled() -> bool:
+    try:
+        from config.llm_flags import is_concierge_followup_routing_enabled
+
+        return is_concierge_followup_routing_enabled()
+    except ImportError:
+        return False
+
+
+def _is_short_continuation_question(text: str) -> bool:
+    t = (text or "").strip()
+    if not t or len(t) > 40:
+        return False
+    return bool(re.search(r"[?？]$|ですか|ますか|でしょうか", t))
+
 
 def is_meta_follow_up_utterance(text: str) -> bool:
     """詳しく・もっと等のメタ会話フォローアップ表現か。"""
-    return bool(_META_FOLLOW_UP_RE.search((text or "").strip()))
+    t = (text or "").strip()
+    if _META_FOLLOW_UP_RE.search(t):
+        return True
+    if _is_concierge_followup_routing_enabled():
+        if _META_FOLLOW_UP_EXTENDED_EXTRA.search(t):
+            return True
+        if len(t) <= 40 and _TOPIC_CONTINUATION_RE.search(t):
+            return True
+    return False
 
 
 def is_session_ops_bot_message(msg: Dict[str, Any]) -> bool:
@@ -132,11 +174,14 @@ def should_block_structural_greeting(
     """
     if is_meta_follow_up_utterance(text):
         return True
-    if prior_intent in _META_FOLLOW_UP_PRIOR_INTENTS:
+    block_prior = _META_FOLLOW_UP_PRIOR_INTENTS
+    if _is_concierge_followup_routing_enabled():
+        block_prior = _FOLLOW_UP_PRIOR_EXTENDED
+    if prior_intent in block_prior:
         return True
     if conversation_history:
         hist_prior = resolve_last_concierge_intent(conversation_history)
-        if hist_prior in _META_FOLLOW_UP_PRIOR_INTENTS:
+        if hist_prior in block_prior:
             return True
     return False
 
@@ -196,6 +241,61 @@ def infer_prior_meta_follow_up_intent(
         return prior_intent
     if prior_intent in ("capabilities", "app_about"):
         return prior_intent
+    return None
+
+
+def infer_enhanced_concierge_follow_up_intent(
+    text: str,
+    prior_intent: Optional[str],
+    *,
+    last_bot: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    """MR-4 拡張フォローアップ（redirect 継続・トピック継続・具体例等）。"""
+    t = (text or "").strip()
+    if not t or not prior_intent or prior_intent not in _FOLLOW_UP_PRIOR_EXTENDED:
+        return None
+    if len(t) > 40:
+        return None
+    if _PHYSICAL_SYMPTOM_RE.search(t):
+        return None
+
+    has_signal = (
+        _META_FOLLOW_UP_EXTENDED_EXTRA.search(t)
+        or _TOPIC_CONTINUATION_RE.search(t)
+        or _is_short_continuation_question(t)
+    )
+    if not has_signal:
+        return None
+
+    if prior_intent == "redirect":
+        return "redirect"
+    if prior_intent == "architecture":
+        return "architecture"
+    if prior_intent == "session_ops":
+        if last_bot and is_session_ops_bot_message(last_bot):
+            return "session_ops"
+        return None
+    if prior_intent in _DOC_FOLLOW_UP_INTENTS:
+        return prior_intent
+    if prior_intent in ("capabilities", "app_about"):
+        return prior_intent
+    return None
+
+
+def resolve_concierge_follow_up_intent(
+    text: str,
+    prior_intent: Optional[str],
+    *,
+    last_bot: Optional[Dict[str, Any]] = None,
+) -> Optional[str]:
+    """Gate / orchestrator 共用。基本フォローアップ後、フラグ ON 時は拡張検出。"""
+    base = infer_prior_meta_follow_up_intent(text, prior_intent, last_bot=last_bot)
+    if base:
+        return base
+    if _is_concierge_followup_routing_enabled():
+        return infer_enhanced_concierge_follow_up_intent(
+            text, prior_intent, last_bot=last_bot
+        )
     return None
 
 

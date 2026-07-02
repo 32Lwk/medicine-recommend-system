@@ -166,6 +166,21 @@ def run_other_unknown_counseling(
         )
         return None
 
+    try:
+        from config.llm_flags import is_ux_correction_delete_cancel_enabled
+        from src.dialogue.session_ops import try_answer_pending_delete_cancel
+
+        if is_ux_correction_delete_cancel_enabled():
+            cancel_resp = try_answer_pending_delete_cancel(
+                session,
+                sid,
+                sanitized_message or original_user_message or user_message,
+            )
+            if cancel_resp is not None:
+                return cancel_resp
+    except Exception:
+        logger.debug("pending delete cancel counseling bypass skipped", exc_info=True)
+
     logger.info("🔍 店舗案内ではないと判定されたため、カウンセリングフローに流す")
     _ensure_user_message_for_counseling(
         session, client_info, sid, original_user_message

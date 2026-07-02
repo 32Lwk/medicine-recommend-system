@@ -114,7 +114,7 @@ def enrich_other_concierge_intent(
     if not _is_medicine_consultation(text):
         from src.services.concierge_agent_history import (
             infer_lost_context_follow_up_intent,
-            infer_prior_meta_follow_up_intent,
+            resolve_concierge_follow_up_intent,
             resolve_last_bot_message,
             resolve_prior_meta_intent,
         )
@@ -125,7 +125,7 @@ def enrich_other_concierge_intent(
             sid=session_id,
         )
         last_bot = resolve_last_bot_message(conversation_history or [])
-        follow = infer_prior_meta_follow_up_intent(text, prior_intent, last_bot=last_bot)
+        follow = resolve_concierge_follow_up_intent(text, prior_intent, last_bot=last_bot)
         if follow:
             return _apply_follow_up_intent(
                 out,

@@ -23,6 +23,41 @@ from src.services.counseling_followup import (
 
 logger = logging.getLogger(__name__)
 
+# Phase 2 (p2-counseling, Subtask B): エラーフォールバック定型句のセッション内ローテーション
+_SUPPORTIVE_CLOSING_PHRASES = (
+    "応援しています。",
+    "無理せず、ご自身のペースで大丈夫ですよ。",
+    "あなたの味方です。",
+    "少しずつで大丈夫ですからね。",
+    "いつでもお話を聞かせてください。",
+)
+
+
+def _pick_session_closing_phrase(session: Dict) -> str:
+    """flag ON 時、セッション内で直近使用した定型句を避けて選ぶ簡易ローテーション。
+
+    flag OFF は従来どおり固定の「応援しています。」を返す（現状維持）。
+    """
+    try:
+        from config.llm_flags import is_counseling_tone_variety_enabled
+
+        if not is_counseling_tone_variety_enabled():
+            return _SUPPORTIVE_CLOSING_PHRASES[0]
+    except ImportError:
+        return _SUPPORTIVE_CLOSING_PHRASES[0]
+
+    counseling_mode = session.get("counseling_mode") or {}
+    used = counseling_mode.get("recent_tone_phrases") or []
+    candidates = [p for p in _SUPPORTIVE_CLOSING_PHRASES if p not in used[-2:]] or list(_SUPPORTIVE_CLOSING_PHRASES)
+    chosen = candidates[0]
+    used = list(used) + [chosen]
+    counseling_mode["recent_tone_phrases"] = used[-5:]
+    session["counseling_mode"] = counseling_mode
+    if hasattr(session, "modified"):
+        session.modified = True
+    return chosen
+
+
 def process_counseling_answer(
     user_text: str,
     session: Dict,
@@ -563,7 +598,7 @@ def process_counseling_answer(
         if symptom_type in MEDICAL_SYMPTOM_TYPES:
             error_content = 'エラーが発生しました。もう一度お試しください。'
         else:
-            error_content = '申し訳ございません。エラーが発生しました。応援しています。'
+            error_content = f'申し訳ございません。エラーが発生しました。{_pick_session_closing_phrase(session)}'
         
         # エラー時もログ記録を試みる
         if session_id:

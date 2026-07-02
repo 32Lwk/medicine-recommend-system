@@ -902,6 +902,7 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
         'pending_memory_delete',
         'dialogue_state',
         '_fever_context_active',
+        'clarification_text_counts',
     ):
         if flag_key in session:
             payload[flag_key] = session[flag_key]

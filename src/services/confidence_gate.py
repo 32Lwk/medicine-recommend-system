@@ -52,9 +52,51 @@ def _mark_clarify_sent(session: Any) -> None:
     session["triage_clarify_sent"] = True
 
 
-def build_low_confidence_clarify_message(category: str, user_message: str) -> str:
-    """カテゴリ別の低確信確認メッセージ。"""
+def build_low_confidence_clarify_message(
+    category: str,
+    user_message: str,
+    *,
+    tier: int = 1,
+) -> str:
+    """カテゴリ別の低確信確認メッセージ。tier=2 は progressive（別の具体例）。"""
     quoted = f"「{user_message}」"
+    if tier >= 2:
+        if category == "Physical":
+            return (
+                f"{quoted}について、確信度が低いためもう一度整理させてください。"
+                "次のような症状に近いものはありますか？\n"
+                "・咳・鼻水・のどの痛み（風邪系）\n"
+                "・腹痛・吐き気・下痢（胃腸系）\n"
+                "・めまい・疲れやすさ・だるさ\n"
+                "いつ頃から・どのくらいの強さかも教えていただけますか？"
+            )
+        if category == "Ask":
+            return (
+                f"{quoted}について、もう一度整理させてください。"
+                "次のいずれに近いでしょうか？\n"
+                "・お薬の飲み方・用量\n"
+                "・副作用や併用の注意\n"
+                "・症状に合う薬の選び方\n"
+                "該当するものを教えていただくか、具体的な薬名をお書きください。"
+            )
+        if category == "Emotional":
+            return (
+                f"{quoted}について、もう一度整理させてください。"
+                "次のいずれに近い気持ちでしょうか？\n"
+                "・不安や緊張で眠れない\n"
+                "・落ち込みや疲れが続く\n"
+                "・ストレスで体調も悪い\n"
+                "近いものを教えていただくか、今いちばんつらいことを一言でお書きください。"
+            )
+        return (
+            f"{quoted}について、もう一度整理させてください。"
+            "次の例に近い内容を教えていただけますか？\n"
+            "・頭痛で市販薬を知りたい\n"
+            "・発熱が続いている\n"
+            "・眠れない・気持ちが落ち着かない\n"
+            "症状・お薬の目的・困っていることのいずれかを具体的にお書きください。"
+        )
+
     if category == "Physical":
         return (
             f"{quoted}について、症状相談と判定しましたが、"
@@ -218,7 +260,9 @@ def apply_confidence_gate(
     if not _clarify_already_sent(session):
         from src.handlers.chat.llm_pipeline_guard import (
             clarification_loop_exceeded,
+            get_clarification_attempt,
             record_clarification_text,
+            should_escape_clarification_loop,
         )
         from src.services.llm_unavailability import (
             mark_llm_infrastructure_degraded,
@@ -227,6 +271,27 @@ def apply_confidence_gate(
 
         if should_block_llm_dependent_reply(session):
             return None, triage_result
+
+        try:
+            from config.llm_flags import is_ux_progressive_clarification_enabled
+
+            progressive = is_ux_progressive_clarification_enabled()
+        except ImportError:
+            progressive = False
+
+        if progressive and should_escape_clarification_loop(session, progressive=True):
+            mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+            from src.services.llm_unavailability import build_llm_unavailable_bot_message
+
+            bot = build_llm_unavailable_bot_message(session, sid)
+            session.setdefault("messages", []).append(bot)
+            _mark_session_modified(session)
+            return (
+                {"status": "ok", "message_count": len(session.get("messages", []))},
+                200,
+            ), triage_result
+
+        clarify_tier = get_clarification_attempt(session) if progressive else 1
 
         _invalidate_triage_cache()
         _mark_clarify_sent(session)
@@ -246,7 +311,7 @@ def apply_confidence_gate(
             )
             from src.services.session_manager import get_session_from_db, save_session_to_db
 
-            if category == "Emotional":
+            if category == "Emotional" and clarify_tier <= 1:
                 symptom_type = detect_emotional_symptom_type(sanitized_message, triage_result)
                 confirmation_message = generate_counseling_response(
                     symptom_type,
@@ -259,6 +324,7 @@ def apply_confidence_gate(
                 confirmation_message = build_low_confidence_clarify_message(
                     category,
                     user_message,
+                    tier=clarify_tier if progressive else 1,
                 )
             if clarification_loop_exceeded(session, confirmation_message):
                 mark_llm_infrastructure_degraded(session, sid, user_message=user_message)

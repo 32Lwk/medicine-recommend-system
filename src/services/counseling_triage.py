@@ -203,8 +203,26 @@ _PROCUREMENT_HINTS = (
     "売ってる",
     "売っている",
     "買える",
+    "買える店",
+    "購入できる",
+    "売っている店",
+    "取り扱っている",
+    "OTCを買",
     "where to buy",
 )
+
+# Phase 3 (p3-store-procurement): 明示的な処方箋文脈が無くても OTC/市販薬文脈が
+# 明示されていれば "otc_store" をデフォルトとするための語彙（フラグ ON 時のみ使用）。
+_OTC_CONTEXT_HINTS = ("otc", "市販薬", "市販の薬")
+
+
+def _is_store_procurement_routing_enabled() -> bool:
+    try:
+        from config.llm_flags import is_store_procurement_routing_enabled
+
+        return is_store_procurement_routing_enabled()
+    except ImportError:
+        return False
 
 
 def _has_procurement_intent(text: str, lower: str) -> bool:
@@ -243,6 +261,11 @@ def classify_medicine_procurement_route(user_text: str) -> Optional[str]:
     has_rx = any(h in text or h in lower for h in _PRESCRIPTION_CONTEXT_HINTS)
     if has_rx:
         return "pharmacy_prescription"
+
+    # 処方箋文脈が明示されていない場合、OTC/市販薬文脈が明示されていれば
+    # otc_store をデフォルトとする（フラグ ON 時のみ。「OTCを買える店」「市販薬の購入先」等）。
+    if _is_store_procurement_routing_enabled() and any(h in lower for h in _OTC_CONTEXT_HINTS):
+        return "otc_store"
     return None
 
 

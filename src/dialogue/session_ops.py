@@ -6,6 +6,8 @@ from typing import Any, Optional
 
 from src.agents.session_agent import (
     classify_session_intent,
+    classify_session_ops_detail,
+    is_pending_delete_cancel,
     try_handle_session_request,
 )
 from src.dialogue.context import load_dialogue_context, save_dialogue_context
@@ -13,6 +15,103 @@ from src.dialogue.context import load_dialogue_context, save_dialogue_context
 logger = logging.getLogger(__name__)
 
 ResponseTuple = tuple[dict, int]
+
+_DELETE_CONFIRM_BOT_KINDS = frozenset(
+    {
+        "memory_delete_confirm",
+        "delete_confirm",
+        "memory_delete_pending",
+        "delete_pending",
+        "memory_delete_explain",
+        "delete_explain",
+    }
+)
+_DELETE_CONFIRM_AGENT_KINDS = frozenset({"delete_confirm", "delete_pending", "delete_explain"})
+
+
+def _pending_delete_from_dialogue_state(session: Any) -> dict[str, Any] | None:
+    ctx = session.get("dialogue_state")
+    if not isinstance(ctx, dict):
+        return None
+    pending = (ctx.get("pending") or {}).get("session_delete")
+    return pending if isinstance(pending, dict) else None
+
+
+def _last_bot_awaiting_delete_confirmation(session: Any) -> bool:
+    messages = session.get("messages") or []
+    for msg in reversed(messages):
+        if not isinstance(msg, dict) or msg.get("type") != "bot":
+            continue
+        diag = msg.get("diagnosis")
+        if isinstance(diag, dict):
+            kind = str(diag.get("kind") or "").strip()
+            if kind in _DELETE_CONFIRM_BOT_KINDS:
+                return True
+        agent_kind = str(msg.get("session_agent_kind") or "").strip()
+        if agent_kind in _DELETE_CONFIRM_AGENT_KINDS:
+            return True
+        return False
+    return False
+
+
+def is_awaiting_memory_delete_confirmation(
+    session: Any,
+    *,
+    allow_bot_confirm_fallback: bool = False,
+) -> bool:
+    if session.get("pending_memory_delete"):
+        return True
+    if _pending_delete_from_dialogue_state(session):
+        return True
+    if allow_bot_confirm_fallback and _last_bot_awaiting_delete_confirmation(session):
+        return True
+    return False
+
+
+def _ensure_legacy_pending_for_delete(session: Any, sid: str | None) -> None:
+    if session.get("pending_memory_delete"):
+        return
+    dlg = _pending_delete_from_dialogue_state(session)
+    session["pending_memory_delete"] = {
+        "scope": (dlg or {}).get("scope") or "all",
+        "owner": sid or "web",
+    }
+
+
+def try_handle_pending_delete_cancel(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+) -> bool:
+    """UX_CORRECTION_DELETE_CANCEL: 削除確認待ち + キャンセル発話なら legacy pending を復元する。"""
+    try:
+        from config.llm_flags import is_ux_correction_delete_cancel_enabled
+    except ImportError:
+        return False
+    if not is_ux_correction_delete_cancel_enabled():
+        return False
+    if not is_pending_delete_cancel(user_text):
+        return False
+    if not is_awaiting_memory_delete_confirmation(
+        session,
+        allow_bot_confirm_fallback=True,
+    ):
+        return False
+    _ensure_legacy_pending_for_delete(session, sid)
+    return True
+
+
+def try_answer_pending_delete_cancel(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+) -> Optional[ResponseTuple]:
+    """counseling 直前の最終ガード: 削除キャンセルを SessionOps で返す。"""
+    if not try_handle_pending_delete_cancel(session, sid, user_text):
+        return None
+    resp = _handle_web_delete(session, sid, user_text)
+    _sync_dialogue_state(session, sid)
+    return resp
 
 
 def _sync_dialogue_state(session: Any, sid: str | None) -> None:
@@ -88,6 +187,50 @@ def _handle_web_summarize(
         sid=sid,
         payload={"source": source},
     )
+    return _ok_response(session)
+
+
+def _handle_web_recorded_items(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+) -> ResponseTuple:
+    from src.agents.session_agent import _build_bot, _ok_response, _persist_session_messages
+    from src.services.status_diagnosis_builder import build_session_recorded_items_status
+    from src.utils.agent_trace import log_agent_step
+
+    snapshot = dict(session) if isinstance(session, dict) else {}
+    profile = snapshot.get("user_attributes") or {}
+    sage_diag = build_session_recorded_items_status(
+        session_snapshot=snapshot,
+        profile=profile,
+    ).to_client_dict()
+    message = str(sage_diag.get("message") or "")
+    bot = _build_bot(
+        session, sid, sage_diag=sage_diag, legacy_message=message, kind="recorded_items"
+    )
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionOps", "web_session_recorded_items", sid=sid)
+    return _ok_response(session)
+
+
+def _handle_web_history_overview(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+) -> ResponseTuple:
+    from src.agents.session_agent import _build_bot, _ok_response, _persist_session_messages
+    from src.services.status_diagnosis_builder import build_session_history_overview
+    from src.utils.agent_trace import log_agent_step
+
+    snapshot = dict(session) if isinstance(session, dict) else {}
+    sage_diag = build_session_history_overview(session_snapshot=snapshot).to_client_dict()
+    message = str(sage_diag.get("message") or "")
+    bot = _build_bot(
+        session, sid, sage_diag=sage_diag, legacy_message=message, kind="history_overview"
+    )
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionOps", "web_session_history_overview", sid=sid)
     return _ok_response(session)
 
 
@@ -243,16 +386,38 @@ def try_handle_session_ops(
             _sync_dialogue_state(session, sid)
         return resp
 
+    if try_handle_pending_delete_cancel(session, sid, user_text):
+        resp = _handle_web_delete(session, sid, user_text)
+        _sync_dialogue_state(session, sid)
+        return resp
+
     intent = classify_session_intent(user_text, triage_result=triage_result)
+    detail = None
+    try:
+        from config.llm_flags import is_ux_session_ops_real_data_enabled
+
+        if is_ux_session_ops_real_data_enabled():
+            detail = classify_session_ops_detail(user_text, triage_result=triage_result)
+    except ImportError:
+        detail = None
+
     if intent == "delete" or session.get("pending_memory_delete"):
         resp = _handle_web_delete(session, sid, user_text)
         _sync_dialogue_state(session, sid)
         return resp
-    if intent == "status":
+    if detail == "recorded_items":
+        resp = _handle_web_recorded_items(session, sid, user_text)
+        _sync_dialogue_state(session, sid)
+        return resp
+    if detail == "history_overview":
+        resp = _handle_web_history_overview(session, sid, user_text)
+        _sync_dialogue_state(session, sid)
+        return resp
+    if intent == "status" or detail == "status":
         resp = _handle_web_status(session, sid, user_text)
         _sync_dialogue_state(session, sid)
         return resp
-    if intent == "summarize":
+    if intent == "summarize" or detail == "summarize":
         resp = _handle_web_summarize(session, sid, user_text, client)
         _sync_dialogue_state(session, sid)
         return resp
