@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "service": "medicine-recommend-dev",
+    "region": "asia-northeast1",
+    "project": "medicine-recommend",
+    "revision_before": "medicine-recommend-dev-00141-j7b",
+    "revision_after": "medicine-recommend-dev-00142-ln2",
+    "url": "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app",
+    "rollout_at": "2026-07-02T15:30:00+00:00",
+    "monitoring_window_hours": 24,
+    "monitoring_ends_at": "2026-07-03T15:30:00+00:00",
+    "smoke_sid": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+    "allowlist_env": "none (dev bulk rollout)"
+  },
+  "env_diff_added": {
+    "CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY": "true",
+    "CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM": "true",
+    "RECO_LOW_RISK_HEADACHE": "true",
+    "ROUTING_STORE_PROCUREMENT": "true",
+    "ROUTING_CONCIERGE_INTENT": "true",
+    "ROUTING_CONCIERGE_FOLLOWUP": "true",
+    "UX_CORRECTION_DELETE_CANCEL": "true",
+    "UX_SESSION_OPS_REAL_DATA": "true",
+    "UX_PROGRESSIVE_CLARIFICATION": "true",
+    "UX_RECO_DEDUP": "true"
+  },
+  "env_preserved_checks": {
+    "APP_ENV": "development",
+    "DATABASE_URL_set": true,
+    "OPENAI_API_KEY_set": true,
+    "env_count_before": 11,
+    "env_count_after": 21,
+    "allowlist_keys_present": false
+  },
+  "smoke": {
+    "report": "log/analysis/2026-07-02_canary_sim_smoke_p4b-dev-rollout-smoke.json",
+    "all_ok": true,
+    "canary_dispatch_gcp_log": "Physical handled=True, Store handled=True"
+  },
+  "kpi_baseline_t0": {
+    "dispatch_success_rate_pct": 100.0,
+    "dispatch_handled": 2,
+    "dispatch_unhandled": 0,
+    "handler_none": 0,
+    "shadow_regression_pct": null,
+    "major_safety_incidents": 0,
+    "note": "t0 = post-deploy smoke + GCP AgentDispatcher log (canary sid)"
+  },
+  "kpi_thresholds": {
+    "dispatch_success_rate_pct_min": 92,
+    "handler_none_max": 0,
+    "shadow_regression_pct_max": 0.5,
+    "major_safety_incidents_max": 0
+  },
+  "kpi_t24h": null,
+  "status": "monitoring_active",
+  "prod_canary1_go": "pending_24h_dev_kpi"
+}

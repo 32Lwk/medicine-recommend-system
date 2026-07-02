@@ -187,11 +187,35 @@ def call_intent_router_llm(
         return None
 
 
+_HIGH_GATE_CONFIDENCE = 0.85
+
+
 def pick_best_route_decision(
-    *candidates: RouteDecision | None,
+    legacy: RouteDecision | None = None,
+    gate_decision: RouteDecision | None = None,
+    llm: RouteDecision | None = None,
+    *,
+    primary_llm_over_legacy: bool = False,
 ) -> RouteDecision | None:
-    """confidence 最大の RouteDecision を返す。"""
-    valid = [c for c in candidates if c is not None]
+    """
+    legacy / gate / llm から最良の RouteDecision を選ぶ。
+
+    PRIMARY OFF: 有効候補の confidence 最大（従来互換）。
+    PRIMARY ON: 高信頼 gate (>=0.85) を維持。未決定帯では llm を legacy より優先。
+    llm が None のときのみ legacy / 低信頼 gate にフォールバック。
+    """
+    if gate_decision is not None and gate_decision.confidence >= _HIGH_GATE_CONFIDENCE:
+        return gate_decision
+
+    if primary_llm_over_legacy:
+        if llm is not None:
+            return llm
+        fallback = [c for c in (legacy, gate_decision) if c is not None]
+        if not fallback:
+            return None
+        return max(fallback, key=lambda d: d.confidence)
+
+    valid = [c for c in (legacy, gate_decision, llm) if c is not None]
     if not valid:
         return None
     return max(valid, key=lambda d: d.confidence)

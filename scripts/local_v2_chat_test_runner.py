@@ -729,6 +729,111 @@ def _load_personas() -> list[dict[str, Any]]:
     return list(data.get("personas") or [])
 
 
+def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+    """checkpoint / report の原子書き込み（.tmp → replace）。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(path)
+
+
+def _checkpoint_path(date_slug: str, suffix: str) -> Path:
+    out_dir = PROJECT_ROOT / "log" / "analysis"
+    return out_dir / f"{date_slug}_local_v2_chat_test_{suffix}.checkpoint.json"
+
+
+def _load_report_json(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        raise FileNotFoundError(f"Report not found: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _ids_from_report(report: dict[str, Any], *, failed_only: bool) -> list[str]:
+    rows = report.get("results") or []
+    ids: list[str] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        sid = str(row.get("scenario_id") or "").strip()
+        if not sid:
+            continue
+        if failed_only and row.get("auto_pass"):
+            continue
+        ids.append(sid)
+    return ids
+
+
+def _scenario_result_from_dict(row: dict[str, Any]) -> ScenarioResult:
+    turns = [
+        TurnResult(**t) if isinstance(t, dict) else t
+        for t in (row.get("turns") or [])
+    ]
+    return ScenarioResult(
+        scenario_id=str(row.get("scenario_id") or ""),
+        category=str(row.get("category") or ""),
+        wave=str(row.get("wave") or ""),
+        session_id=str(row.get("session_id") or ""),
+        turns=turns,
+        auto_pass=bool(row.get("auto_pass")),
+        auto_notes=list(row.get("auto_notes") or []),
+        auto_failures=list(row.get("auto_failures") or []),
+        description=str(row.get("description") or ""),
+        persona_id=str(row.get("persona_id") or ""),
+        intent_eval=dict(row.get("intent_eval") or {}),
+        judge=dict(row.get("judge") or {}),
+    )
+
+
+def _merge_report_results(
+    base_results: list[dict[str, Any]],
+    new_results: list[ScenarioResult],
+) -> list[ScenarioResult]:
+    """scenario_id をキーに base を new で上書きマージ（順序は base 優先 + 新規末尾）。"""
+    by_id: dict[str, ScenarioResult] = {}
+    order: list[str] = []
+    for row in base_results:
+        if not isinstance(row, dict):
+            continue
+        sid = str(row.get("scenario_id") or "").strip()
+        if not sid:
+            continue
+        by_id[sid] = _scenario_result_from_dict(row)
+        if sid not in order:
+            order.append(sid)
+    for r in new_results:
+        if r.scenario_id not in order:
+            order.append(r.scenario_id)
+        by_id[r.scenario_id] = r
+    return [by_id[sid] for sid in order if sid in by_id]
+
+
+def _save_checkpoint(
+    path: Path,
+    *,
+    meta: dict[str, Any],
+    results: list[ScenarioResult],
+) -> None:
+    payload = {
+        "meta": meta,
+        "completed_ids": [r.scenario_id for r in results],
+        "results": [asdict(r) for r in results],
+    }
+    _atomic_write_json(path, payload)
+
+
+def _load_checkpoint(path: Path) -> tuple[dict[str, Any], list[ScenarioResult]]:
+    if not path.is_file():
+        return {}, []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    meta = dict(data.get("meta") or {})
+    results = [
+        _scenario_result_from_dict(row)
+        for row in (data.get("results") or [])
+        if isinstance(row, dict)
+    ]
+    return meta, results
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if not path.is_file():
@@ -823,6 +928,100 @@ def _evaluate_intent_for_sessions(
     return summary
 
 
+def _collect_intent_router_shadow_metrics() -> dict[str, Any]:
+    """measure_intent_router_shadow を in-process で実行（subprocess より軽量）。"""
+    try:
+        from scripts.measure_intent_router_shadow import collect_intent_router_shadow_metrics
+
+        return collect_intent_router_shadow_metrics()
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
+def _intent_router_shadow_local(metrics: dict[str, Any]) -> dict[str, Any]:
+    block = metrics.get("intent_router_shadow") or {}
+    if isinstance(block.get("data"), dict):
+        return block["data"].get("local") or {}
+    if isinstance(block.get("local"), dict):
+        return block["local"]
+    return {}
+
+
+def _format_intent_router_shadow_section(metrics: dict[str, Any]) -> list[str]:
+    """レポート用 IntentRouter KPI セクション（Phase 4a 指標）。"""
+    if metrics.get("intent_router_shadow_skipped"):
+        return [
+            "",
+            "## IntentRouter Shadow / Dispatch KPI",
+            "",
+            "_`--skip-metrics` のため計測スキップ_",
+        ]
+
+    local = _intent_router_shadow_local(metrics)
+    if not local:
+        err = (metrics.get("intent_router_shadow") or {}).get("error")
+        return [
+            "",
+            "## IntentRouter Shadow / Dispatch KPI",
+            "",
+            f"_計測データなし{'（' + err + '）' if err else ''}_",
+        ]
+
+    lines = [
+        "",
+        "## IntentRouter Shadow / Dispatch KPI",
+        "",
+        "Wave 1b shadow / dispatch 観測（`measure_intent_router_shadow`、4a-1 分類指標）。",
+        "",
+        "| 指標 | 値 |",
+        "|------|-----|",
+        f"| **dispatch_success_rate_pct** | **{local.get('dispatch_success_rate_pct', 0)}%** "
+        f"({local.get('dispatch_handled', 0)}/{local.get('dispatch_total', 0)}) |",
+        f"| **shadow_regression_mismatch_rate_pct** | **{local.get('shadow_regression_mismatch_rate_pct', 0)}%** "
+        f"({local.get('shadow_regression_mismatch', 0)}/{local.get('shadow_total', 0)}) |",
+        f"| shadow_mismatch_rate_pct | {local.get('shadow_mismatch_rate_pct', 0)}% |",
+        f"| shadow_improvement_mismatch_rate_pct | {local.get('shadow_improvement_mismatch_rate_pct', 0)}% |",
+        f"| shadow_exempt_rate_pct | {local.get('shadow_exempt_rate_pct', 0)}% |",
+        f"| dispatch_unhandled | {local.get('dispatch_unhandled', 0)} |",
+    ]
+    by_kind = local.get("shadow_by_mismatch_kind") or {}
+    if by_kind:
+        kind_summary = ", ".join(f"{k}:{v}" for k, v in sorted(by_kind.items()))
+        lines.append(f"| shadow_by_mismatch_kind | {kind_summary} |")
+    return lines
+
+
+def write_intent_router_metrics_json(
+    meta: dict[str, Any],
+    metrics: dict[str, Any],
+    out_path: Path,
+) -> None:
+    """log/analysis/ 向け IntentRouter KPI JSON サマリ。"""
+    block = metrics.get("intent_router_shadow") or {}
+    payload = {
+        "meta": {
+            "report_suffix": meta.get("report_suffix"),
+            "date": meta.get("date"),
+            "started_at": meta.get("started_at"),
+            "elapsed_sec": meta.get("elapsed_sec"),
+            "scenario_count": meta.get("scenario_count"),
+            "total_turns": meta.get("total_turns"),
+        },
+        "skipped": bool(metrics.get("intent_router_shadow_skipped")),
+    }
+    if isinstance(block.get("data"), dict):
+        payload.update(block["data"])
+    elif block.get("local") or block.get("sources"):
+        payload["sources"] = block.get("sources")
+        payload["local"] = block.get("local")
+        if block.get("gcp"):
+            payload["gcp"] = block["gcp"]
+    elif block.get("error"):
+        payload["error"] = block["error"]
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def _run_auto_metrics(since_ts: float, session_ids: set[str]) -> dict[str, Any]:
     out: dict[str, Any] = {"since_unix": since_ts}
     env = os.environ.copy()
@@ -830,7 +1029,6 @@ def _run_auto_metrics(since_ts: float, session_ids: set[str]) -> dict[str, Any]:
 
     for script, key in (
         ("scripts/measure_pipeline_baseline.py", "pipeline_baseline"),
-        ("scripts/measure_intent_router_shadow.py", "intent_router_shadow"),
     ):
         path = PROJECT_ROOT / script
         if not path.is_file():
@@ -857,6 +1055,8 @@ def _run_auto_metrics(since_ts: float, session_ids: set[str]) -> dict[str, Any]:
             }
         except Exception as exc:
             out[key] = {"error": str(exc)}
+
+    out["intent_router_shadow"] = _collect_intent_router_shadow_metrics()
 
     out["intent_evaluation"] = _evaluate_intent_for_sessions(session_ids, since_ts)
 
@@ -924,6 +1124,8 @@ def write_report(
         ok = sum(1 for r in rows if r.auto_pass)
         turns = sum(len(r.turns) for r in rows)
         lines.append(f"- **{cat}**: {ok}/{len(rows)} 自動合格 / {turns} ターン")
+
+    lines.extend(_format_intent_router_shadow_section(metrics))
 
     lines.extend(["", "## カテゴリ別", "", "| カテゴリ | セッション | ターン | 合格 | 要確認 |", "|----------|------------|--------|------|--------|"])
     for cat, rows in sorted(by_cat.items()):
@@ -1176,6 +1378,31 @@ def main() -> int:
         default="",
         help="Comma-separated YAML category filter (e.g. session_ops,emergency)",
     )
+    parser.add_argument(
+        "--scenario-ids",
+        default="",
+        help="Comma-separated scenario id filter (e.g. counseling-01,store-03)",
+    )
+    parser.add_argument(
+        "--from-report",
+        default="",
+        help="Previous report JSON path; filter scenarios by ids in that report",
+    )
+    parser.add_argument(
+        "--failed-only",
+        action="store_true",
+        help="With --from-report: run only auto_pass=false scenarios",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from checkpoint; skip completed scenario ids",
+    )
+    parser.add_argument(
+        "--merge-report",
+        default="",
+        help="Merge new results into this base report JSON before writing output",
+    )
     args = parser.parse_args()
 
     gpt_scale = args.sessions > 0 or args.min_chats > 0
@@ -1200,24 +1427,53 @@ def main() -> int:
     started = time.time()
     started_at = datetime.now(timezone.utc).isoformat()
     date_slug = datetime.now().strftime("%Y-%m-%d")
+    suffix = args.report_suffix.strip() or "v2"
+    checkpoint_path = _checkpoint_path(date_slug, suffix)
     results: list[ScenarioResult] = []
+    resumed_meta: dict[str, Any] = {}
+
+    if args.resume:
+        resumed_meta, results = _load_checkpoint(checkpoint_path)
+        if results:
+            print(
+                f"Resume: loaded {len(results)} completed scenarios from {checkpoint_path}",
+                flush=True,
+            )
+
+    completed_ids = {r.scenario_id for r in results}
 
     if not args.skip_yaml:
         scenarios = _load_scenarios()
         if args.categories.strip():
             cats = {c.strip() for c in args.categories.split(",") if c.strip()}
             scenarios = [s for s in scenarios if str(s.get("category") or "") in cats]
+        if args.scenario_ids.strip():
+            wanted = {s.strip() for s in args.scenario_ids.split(",") if s.strip()}
+            scenarios = [s for s in scenarios if str(s.get("id") or "") in wanted]
+        if args.from_report.strip():
+            report = _load_report_json(Path(args.from_report))
+            report_ids = _ids_from_report(report, failed_only=args.failed_only)
+            wanted = set(report_ids)
+            scenarios = [s for s in scenarios if str(s.get("id") or "") in wanted]
+            if not scenarios and report_ids:
+                print(
+                    f"WARN: --from-report matched 0 YAML scenarios for ids: {report_ids[:10]}",
+                    file=sys.stderr,
+                )
+        if args.resume:
+            scenarios = [s for s in scenarios if str(s.get("id") or "") not in completed_ids]
         if args.limit > 0:
             scenarios = scenarios[: args.limit]
         print(f"Running {len(scenarios)} YAML scenarios against {args.base_url} ...")
         for i, spec in enumerate(scenarios, 1):
-            print(f"  [yaml {i}/{len(scenarios)}] {spec.get('id')} ...", flush=True)
+            sid = str(spec.get("id"))
+            print(f"  [yaml {i}/{len(scenarios)}] {sid} ...", flush=True)
             try:
                 results.append(_run_scenario(client, spec, use_gpt_user=args.use_gpt_user))
             except Exception as exc:
                 results.append(
                     ScenarioResult(
-                        scenario_id=str(spec.get("id", f"error_{i}")),
+                        scenario_id=sid or f"error_{i}",
                         category=str(spec.get("category", "error")),
                         wave=str(spec.get("wave", "")),
                         session_id="",
@@ -1225,6 +1481,15 @@ def main() -> int:
                         auto_failures=[f"exception:{exc}"],
                     )
                 )
+            if args.resume:
+                partial_meta = {
+                    "date": date_slug,
+                    "report_suffix": suffix,
+                    "base_url": args.base_url,
+                    "started_at": resumed_meta.get("started_at") or started_at,
+                    "resume": True,
+                }
+                _save_checkpoint(checkpoint_path, meta=partial_meta, results=results)
 
     if gpt_scale:
         personas = _load_personas()
@@ -1264,25 +1529,36 @@ def main() -> int:
         else:
             print(f"Judging {len(results)} scenarios (LLM-as-judge) ...", flush=True)
             for r in results:
+                if r.judge:
+                    continue
                 try:
                     r.judge = _judge_scenario({"description": r.description}, r.turns)
                 except Exception as exc:
                     r.judge = {"error": str(exc)[:200]}
 
+    if args.merge_report.strip():
+        base = _load_report_json(Path(args.merge_report))
+        base_rows = base.get("results") or []
+        results = _merge_report_results(base_rows, results)
+        print(f"Merged into base report: {len(results)} total scenarios", flush=True)
+
     elapsed = round(time.time() - started, 1)
     session_ids = {r.session_id for r in results if r.session_id}
-    metrics = {} if args.skip_metrics else _run_auto_metrics(started, session_ids)
+    if args.skip_metrics:
+        metrics: dict[str, Any] = {"intent_router_shadow_skipped": True}
+    else:
+        metrics = _run_auto_metrics(started, session_ids)
     metrics["latency_this_run"] = _latency_summary(results, session_ids, started)
     if args.judge:
         metrics["content_quality_judge"] = _aggregate_judge(results)
 
-    suffix = args.report_suffix.strip() or "v2"
     out_dir = PROJECT_ROOT / "log" / "analysis"
     out_md = out_dir / f"{date_slug}_local_v2_chat_test_{suffix}.md"
     out_json = out_dir / f"{date_slug}_local_v2_chat_test_{suffix}.json"
     total_turns = sum(len(r.turns) for r in results)
     meta = {
         "date": date_slug,
+        "report_suffix": suffix,
         "base_url": args.base_url,
         "started_at": started_at,
         "elapsed_sec": elapsed,
@@ -1294,6 +1570,8 @@ def main() -> int:
         "v2_enabled": is_chat_pipeline_v2_enabled(),
     }
     write_report(results, meta, metrics, out_md, out_json)
+    metrics_json = out_dir / f"{date_slug}_local_v2_intent_router_metrics_{suffix}.json"
+    write_intent_router_metrics_json(meta, metrics, metrics_json)
     eval_md = out_dir / f"{date_slug}_local_v2_simulation_eval_{suffix}.md"
     write_simulation_eval_report(results, meta, metrics, eval_md)
     session_index = out_dir / f"{date_slug}_local_v2_session_ids_{suffix}.json"
@@ -1302,6 +1580,7 @@ def main() -> int:
     passed = meta["auto_pass"]
     print(f"\nDone: {passed}/{len(results)} auto-pass, {total_turns} turns.")
     print(f"Report: {out_md}")
+    print(f"Metrics: {metrics_json}")
     print(f"Eval:   {eval_md}")
     print(f"IDs:    {session_index}")
     print("Admin review: http://127.0.0.1:5000/admin")

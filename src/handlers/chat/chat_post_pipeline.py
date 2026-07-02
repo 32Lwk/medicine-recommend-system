@@ -170,6 +170,8 @@ def run_chat_post_pipeline(
 
     activate_pipeline_perf(sid)
     mark_pipeline_step("post_start")
+    session.pop("_router_dispatch_handled_turn", None)
+    session.pop("_router_dispatch_attempted", None)
 
     bot_count_before = count_bot_messages_in_session(session)
 
@@ -455,6 +457,14 @@ def run_chat_post_pipeline(
                 if dispatch_resp is not None:
                     session.pop("triage_clarify_sent", None)
                     return _guard_return(dispatch_resp)
+                dec = session.get("_intent_router_dispatch")
+                if dec or (ctx.triage_result or {}).get("_intent_router_dispatch"):
+                    logger.info(
+                        "dispatch_none_orchestrator_fallback sid=%s router=%s triage_cat=%s",
+                        sid,
+                        dec,
+                        (ctx.triage_result or {}).get("category"),
+                    )
         except Exception:
             logger.debug("intent_router_dispatch skipped", exc_info=True)
 
@@ -490,76 +500,82 @@ def run_chat_post_pipeline(
         return _guard_return(short_circuit)
 
     if is_agent_enabled():
-        try:
-            from src.handlers.chat_orchestrator import try_orchestrator_route
+        if not _legacy_trim_blocks_path(ctx, "orchestrator"):
+            try:
+                from src.handlers.chat_orchestrator import try_orchestrator_route
 
-            orch_resp = try_orchestrator_route(ctx, monitor)
-            if orch_resp is not None:
-                return _guard_return(orch_resp)
-        except Exception as orch_err:
-            logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
+                orch_resp = try_orchestrator_route(ctx, monitor)
+                if orch_resp is not None:
+                    return _guard_return(orch_resp)
+            except Exception as orch_err:
+                logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
 
-        resp = _run_other_post_orchestrator_followups(ctx)
-        if resp is not None:
-            return _guard_return(resp)
+        if not _legacy_trim_blocks_path(ctx, "other_post_orchestrator"):
+            resp = _run_other_post_orchestrator_followups(ctx)
+            if resp is not None:
+                return _guard_return(resp)
 
     if session.get("_confidence_gate_concierge") and ctx.triage_result:
-        from src.handlers.chat.chat_concierge_route import try_concierge_response
+        if _legacy_trim_blocks_path(ctx, "confidence_gate_concierge"):
+            session.pop("_confidence_gate_concierge", None)
+        else:
+            from src.handlers.chat.chat_concierge_route import try_concierge_response
 
-        concierge_resp = try_concierge_response(
-            session,
-            client_info,
-            sid,
-            ctx.user_message,
-            ctx.sanitized_message,
-            ctx.triage_result,
-            ctx.recommendation_client,
-            monitor=monitor,
-            processed_message=ctx.processed_message,
-            routing_ctx=ctx.routing,
-        )
-        session.pop("_confidence_gate_concierge", None)
-        if concierge_resp is not None:
-            return _guard_return(concierge_resp)
-        if ctx.triage_result.get("category") == "Other":
-            from src.handlers.chat.chat_other_counseling_route import (
-                run_other_unknown_counseling,
-            )
-
-            counsel_resp = run_other_unknown_counseling(
-                ctx.session,
-                ctx.client_info,
-                ctx.sid,
+            concierge_resp = try_concierge_response(
+                session,
+                client_info,
+                sid,
                 ctx.user_message,
                 ctx.sanitized_message,
-                ctx.processed_message,
-                ctx.original_user_message,
                 ctx.triage_result,
                 ctx.recommendation_client,
+                monitor=monitor,
+                processed_message=ctx.processed_message,
+                routing_ctx=ctx.routing,
             )
-            if counsel_resp is not None:
-                return _guard_return(counsel_resp)
-    elif ctx.triage_result:
-        from src.handlers.chat.chat_category_route import route_triage_category
+            session.pop("_confidence_gate_concierge", None)
+            if concierge_resp is not None:
+                return _guard_return(concierge_resp)
+            if ctx.triage_result.get("category") == "Other":
+                from src.handlers.chat.chat_other_counseling_route import (
+                    run_other_unknown_counseling,
+                )
 
-        cat_route = route_triage_category(
-            session,
-            sid,
-            ctx.user_message,
-            ctx.sanitized_message,
-            ctx.triage_result,
-            ctx.recommendation_client,
-            inappropriate_request_detected=ctx.inappropriate_request_detected,
-            has_sleepiness_keyword=ctx.has_sleepiness_keyword,
-            has_insomnia_keyword=ctx.has_insomnia_keyword,
-        )
-        if cat_route.response is not None:
-            return _guard_return(cat_route.response)
-        ctx.user_message = cat_route.user_message
-        ctx.sanitized_message = cat_route.sanitized_message
-        ctx.triage_result = cat_route.triage_result or ctx.triage_result
-        if cat_route.is_question is not None:
-            ctx.pending_route_is_question = cat_route.is_question
+                counsel_resp = run_other_unknown_counseling(
+                    ctx.session,
+                    ctx.client_info,
+                    ctx.sid,
+                    ctx.user_message,
+                    ctx.sanitized_message,
+                    ctx.processed_message,
+                    ctx.original_user_message,
+                    ctx.triage_result,
+                    ctx.recommendation_client,
+                )
+                if counsel_resp is not None:
+                    return _guard_return(counsel_resp)
+    elif ctx.triage_result:
+        if not _legacy_trim_blocks_path(ctx, "route_triage_category"):
+            from src.handlers.chat.chat_category_route import route_triage_category
+
+            cat_route = route_triage_category(
+                session,
+                sid,
+                ctx.user_message,
+                ctx.sanitized_message,
+                ctx.triage_result,
+                ctx.recommendation_client,
+                inappropriate_request_detected=ctx.inappropriate_request_detected,
+                has_sleepiness_keyword=ctx.has_sleepiness_keyword,
+                has_insomnia_keyword=ctx.has_insomnia_keyword,
+            )
+            if cat_route.response is not None:
+                return _guard_return(cat_route.response)
+            ctx.user_message = cat_route.user_message
+            ctx.sanitized_message = cat_route.sanitized_message
+            ctx.triage_result = cat_route.triage_result or ctx.triage_result
+            if cat_route.is_question is not None:
+                ctx.pending_route_is_question = cat_route.is_question
 
     session["last_trace_id"] = ctx.trace_id
 
@@ -834,6 +850,58 @@ def _try_store_inquiry_response(ctx: ChatPostContext) -> Optional[ResponseTuple]
         logger.error("❌ 店舗案内・遺失物関連機能でエラー: %s", e)
         traceback.print_exc()
     return None
+
+
+def _legacy_fallback_allow_reason(ctx: ChatPostContext) -> str:
+    """TRIM ON 時に legacy 経路を許可する理由（観測用）。"""
+    dec = ctx.session.get("_intent_router_dispatch")
+    if isinstance(dec, dict):
+        route = dec.get("primary_route")
+        if route in (None, "", "Unknown"):
+            return "unknown_route"
+        if dec.get("sub_route") == "clarification":
+            return "clarification"
+        if ctx.session.get("_router_dispatch_attempted") and not ctx.session.get(
+            "_router_dispatch_handled_turn"
+        ):
+            return "handler_fallback"
+    if not dec and not (ctx.triage_result or {}).get("_intent_router_dispatch"):
+        return "no_router_decision"
+    return "safety_fallback"
+
+
+def _legacy_trim_blocks_path(ctx: ChatPostContext, path: str) -> bool:
+    """
+    PRIMARY + LEGACY_FALLBACK_TRIM 時、dispatch 成功後の legacy 再実行をブロック。
+  Unknown / clarification / handler None は False（許可）を返す。
+    """
+    from config.llm_flags import is_legacy_fallback_trim_enabled
+
+    if not is_legacy_fallback_trim_enabled(ctx.sid):
+        return False
+
+    if ctx.session.get("_router_dispatch_handled_turn"):
+        if path == "route_triage_category":
+            logger.info(
+                "legacy_category_route_skipped sid=%s reason=dispatch_handled",
+                ctx.sid,
+            )
+        else:
+            logger.info(
+                "legacy_fallback_trimmed sid=%s path=%s reason=dispatch_handled",
+                ctx.sid,
+                path,
+            )
+        return True
+
+    reason = _legacy_fallback_allow_reason(ctx)
+    logger.info(
+        "legacy_fallback_allowed sid=%s path=%s reason=%s",
+        ctx.sid,
+        path,
+        reason,
+    )
+    return False
 
 
 def _run_other_post_orchestrator_followups(ctx: ChatPostContext) -> Optional[ResponseTuple]:

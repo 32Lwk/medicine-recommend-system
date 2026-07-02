@@ -344,6 +344,7 @@ def emit_dialogue_route_shadow(
     triage_category: Optional[str] = None,
     triage_subcategory: Optional[str] = None,
     mismatch: bool = False,
+    mismatch_kind: Optional[str] = None,
     dialogue_flags: Optional[Dict[str, bool]] = None,
 ) -> None:
     """IntentRouter shadow 観測ログ（Wave 1b）。"""
@@ -364,6 +365,8 @@ def emit_dialogue_route_shadow(
         log_data["triage_category"] = triage_category
     if triage_subcategory is not None:
         log_data["triage_subcategory"] = triage_subcategory
+    if mismatch_kind:
+        log_data["mismatch_kind"] = mismatch_kind
     if dialogue_flags:
         log_data["dialogue_flags"] = dialogue_flags
 

@@ -74,6 +74,8 @@ def run_intent_router_llm(
         pick_best_route_decision,
     )
 
+    from config.llm_flags import is_intent_router_primary_enabled
+
     legacy = map_triage_to_route(triage_result)
     llm = call_intent_router_llm(
         user_text,
@@ -82,4 +84,10 @@ def run_intent_router_llm(
         triage_result=triage_result,
         client=client,
     )
-    return pick_best_route_decision(legacy, gate_decision, llm)
+    primary = is_intent_router_primary_enabled(sid)
+    return pick_best_route_decision(
+        legacy,
+        gate_decision,
+        llm,
+        primary_llm_over_legacy=primary,
+    )
