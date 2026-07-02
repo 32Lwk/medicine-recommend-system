@@ -22,6 +22,45 @@ def _mirror_counseling_if_v2(session, sid) -> None:
         logger.debug("mirror_counseling_mode skipped", exc_info=True)
 
 
+# Phase 2 (p2-counseling, Subtask A): 明確な身体症状を含まないフォローアップの判定に使う
+# 一般的な身体症状マーカー（config.keywords.SYMPTOM_KEYWORDS を補完）。
+_GENERIC_PHYSICAL_MARKERS = ("痛い", "痛む", "痛み", "熱が", "熱です", "熱があり", "熱っぽ")
+
+
+def _is_counseling_context_maintain_enabled() -> bool:
+    try:
+        from config.llm_flags import is_counseling_context_maintain_enabled
+
+        return is_counseling_context_maintain_enabled()
+    except ImportError:
+        return False
+
+
+def _looks_like_counseling_continuation(user_message: str, counseling_mode: dict) -> bool:
+    """counseling_mode.active 中の期間/状況フォローアップを「継続シグナル」と判定する（ルールベース）。
+
+    「1ヶ月ほどです」「残業が続いています」等、明確な身体症状キーワードを含まない
+    フォローアップ回答は、triage が Physical と誤判定してもカウンセリングを継続する対象とする。
+    - 既にカウンセリングの質問を1件以上出している（=フォローアップの文脈が成立している）ことを要件にする
+      （開始直後で質問が無い段階は新規トピックの可能性が高いため対象外）
+    - 明確な身体症状キーワードを含む場合は対象外（Physical へ正しく切り替える）
+    """
+    if not counseling_mode.get("question_history"):
+        return False
+    text = (user_message or "").strip()
+    if not text:
+        return False
+    if any(marker in text for marker in _GENERIC_PHYSICAL_MARKERS):
+        return False
+    try:
+        from config.keywords import SYMPTOM_KEYWORDS
+    except ImportError:
+        SYMPTOM_KEYWORDS = []
+    if any(kw in text for kw in SYMPTOM_KEYWORDS):
+        return False
+    return True
+
+
 def run_counseling_flow(session, client, sid, user_message, processed_message, triage_result, recommendation_client):
     """
     カウンセリングモードが有効な場合の処理を実行する。
@@ -61,12 +100,20 @@ def run_counseling_flow(session, client, sid, user_message, processed_message, t
         return (None, triage_result)
 
     if triage_result and triage_result.get("category") == "Physical":
-        counseling_mode["active"] = False
-        session["counseling_mode"] = counseling_mode
-        session.modified = True
-        _mirror_counseling_if_v2(session, sid)
-        logger.info("🔄 カウンセリングモードを終了: Physicalカテゴリの症状入力のため、通常の医薬品推奨フローに移行")
-        return (None, triage_result)
+        if _is_counseling_context_maintain_enabled() and _looks_like_counseling_continuation(
+            user_message, counseling_mode
+        ):
+            logger.info(
+                "🔄 カウンセリング継続: triage=Physicalだが期間/状況フォローアップのため継続 (msg=%s)",
+                (user_message or "")[:50],
+            )
+        else:
+            counseling_mode["active"] = False
+            session["counseling_mode"] = counseling_mode
+            session.modified = True
+            _mirror_counseling_if_v2(session, sid)
+            logger.info("🔄 カウンセリングモードを終了: Physicalカテゴリの症状入力のため、通常の医薬品推奨フローに移行")
+            return (None, triage_result)
     try:
         from src.services.counseling_response import handle_user_input_in_counseling_mode, log_counseling_response
         from src.services.triage_analytics import log_topic_shift_detection

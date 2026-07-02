@@ -78,9 +78,19 @@ def _enforce_symptom_match_threshold(
         is_fever_only = cold_symptom_count == 1 and any(
             s.get("name") == "発熱" for s in symptoms
         )
+        is_headache_only = cold_symptom_count == 1 and "頭痛" in symptom_names
+
+        headache_threshold_bypass = False
+        if is_headache_only:
+            try:
+                from config.llm_flags import is_low_risk_headache_reco_enabled
+
+                headache_threshold_bypass = is_low_risk_headache_reco_enabled()
+            except ImportError:
+                headache_threshold_bypass = False
 
         if (
-            is_fever_only
+            (is_fever_only or headache_threshold_bypass)
             and is_major_analgesic
             and "解熱鎮痛薬" in candidate.get("medicine_type", "")
         ):

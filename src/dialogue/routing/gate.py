@@ -141,6 +141,18 @@ def _has_pharmacy_location_intent(text: str) -> bool:
         return True
     if "市販薬" in t and ("購入" in t or "買" in t or "どこ" in t):
         return True
+    # Phase 3 (p3-store-procurement): "OTC" 表記の購入先クエリも同様に扱う（フラグ ON 時のみ）。
+    try:
+        from config.llm_flags import is_store_procurement_routing_enabled
+
+        if (
+            is_store_procurement_routing_enabled()
+            and "otc" in lower
+            and ("購入" in t or "買" in t or "どこ" in t)
+        ):
+            return True
+    except ImportError:
+        pass
     return False
 
 
@@ -151,7 +163,7 @@ def _resolve_concierge_follow_up(
 ) -> RouteDecision | None:
     try:
         from src.services.concierge_agent_history import (
-            infer_prior_meta_follow_up_intent,
+            resolve_concierge_follow_up_intent,
             resolve_last_bot_message,
             resolve_prior_meta_intent,
         )
@@ -162,7 +174,7 @@ def _resolve_concierge_follow_up(
     if not prior:
         return None
     last_bot = resolve_last_bot_message((session or {}).get("messages") or [])
-    follow = infer_prior_meta_follow_up_intent(text, prior, last_bot=last_bot)
+    follow = resolve_concierge_follow_up_intent(text, prior, last_bot=last_bot)
     if not follow:
         return None
     return RouteDecision(

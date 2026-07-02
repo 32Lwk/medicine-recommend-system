@@ -3,10 +3,17 @@
 """
 from typing import Dict, Any
 
-def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
+def get_counseling_prompt_template(symptom_type: str, *, tone_variety: bool = False) -> Dict[str, str]:
     """
     症状タイプに応じたプロンプトテンプレートを取得
-    
+
+    Args:
+        symptom_type: 症状タイプ
+        tone_variety: Phase 2 (p2-counseling, Subtask B)。True の場合、非医療系
+            （general_emotional 等）テンプレートの定型句リテラル例示を抽象化し、
+            `{avoid_phrases_hint}` プレースホルダで直近使用済み表現の回避を指示する。
+            既定 False = 現状のテンプレート（互換維持）。
+
     Returns:
         {
             "system_message": str,
@@ -438,6 +445,37 @@ def get_counseling_prompt_template(symptom_type: str) -> Dict[str, str]:
     
     else:
         # 非医療関連: 応援を重視したプロンプト
+        if tone_variety:
+            return {
+                "system_message": (
+                    "あなたは医薬品相談AIアシスタントです。医療的アドバイスよりも心理的サポートを優先し、"
+                    "ユーザーに寄り添い、共感を伝えてください。同じ言い回しの連続使用は避け、"
+                    "状況に応じた自然な表現を選んでください。"
+                ),
+                "user_prompt_template": """
+あなたは医薬品相談AIアシスタントです。ユーザーの悩みや感情に対して、
+温かく共感的な返信を生成してください。
+{history_context}
+【ユーザーの入力】
+{user_text}
+
+【症状タイプ】
+{symptom_type}
+{avoid_phrases_hint}
+【返信の要件】
+- **共感的なトーン**: ユーザーの気持ちに寄り添う自然な言葉を選ぶ（決まり文句の丸暗記のような表現は避ける）
+- **多様な表現**: 定型句だけに頼らず、その時々の状況に合わせた言い回しにする
+- **前向きさと配慮のバランス**: 励ましすぎず、押し付けがましくならないようにする
+- **質問は最小限に**: 不必要な質問は避け、共感メッセージを優先する
+- **短めで簡潔に**: 100-150文字程度で簡潔に
+- **パーソナライズ**: 会話履歴からユーザーの状況を理解し、それに合わせた表現にする
+- **共感レベルは適度に**: 過度な共感を避け、自然な表現にする
+- **会話の流れを自然に**: 機械的な質問を避け、自然な会話の流れを保つ
+- **医療的アドバイスは最小限に**: 必要最小限の医療的アドバイスのみ
+""",
+                "response_requirements": "共感を重視した温かい返信（同じ言い回しの連続使用を避ける、100-150文字程度）",
+                "max_length": 150
+            }
         return {
             "system_message": "あなたは医薬品相談AIアシスタントです。医療的アドバイスよりも心理的サポートを優先し、ユーザーを応援し、励まします。",
             "user_prompt_template": """

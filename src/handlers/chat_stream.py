@@ -86,6 +86,7 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                 "_last_triage_result",
                 "pending_memory_delete",
                 "dialogue_state",
+                "clarification_text_counts",
                 "_fever_context_active",
                 "_pipeline_end_guard",
             ):

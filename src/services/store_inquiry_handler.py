@@ -247,6 +247,13 @@ def is_store_route_locked(triage_result: Optional[Dict] = None) -> bool:
 
 def has_unambiguous_store_intent(user_text: str) -> bool:
     """医療相談と競合しない、明確な店舗案内・遺失物・在庫（店舗文脈）意図。"""
+    try:
+        from src.services.counseling_triage import classify_medicine_procurement_route
+
+        if classify_medicine_procurement_route(user_text):
+            return True
+    except ImportError:
+        pass
     if _is_toilet_facility_request(user_text):
         return True
     if _is_ambiguous_facility_defer_only(user_text):

@@ -640,6 +640,143 @@ def _mask_profile_for_user_display(profile: dict[str, Any]) -> list[str]:
     return items
 
 
+def _attribute_record_items(attrs: dict[str, Any]) -> list[str]:
+    """user_attributes / profile から記録項目一覧を組み立てる。"""
+    a = attrs or {}
+    items: list[str] = []
+
+    def _line(key: str, label: str, *, count_list: bool = False) -> None:
+        val = a.get(key)
+        if val is None or val == "" or val == []:
+            items.append(f"{label}: 未登録")
+        elif count_list and isinstance(val, list):
+            items.append(f"{label}: {len(val)}件登録")
+        else:
+            items.append(f"{label}: 登録あり")
+
+    _line("age", "年齢")
+    _line("gender", "性別")
+    pregnant = a.get("pregnant")
+    if pregnant is True:
+        items.append("妊娠: はい")
+    elif pregnant is False:
+        items.append("妊娠: いいえ")
+    else:
+        items.append("妊娠: 未登録")
+    breastfeeding = a.get("breastfeeding")
+    if breastfeeding is True:
+        items.append("授乳: はい")
+    elif breastfeeding is False:
+        items.append("授乳: いいえ")
+    else:
+        items.append("授乳: 未登録")
+    _line("allergies", "アレルギー", count_list=True)
+    _line("current_medications", "服用中の薬", count_list=True)
+    _line("medical_history", "既往歴", count_list=True)
+    duration = a.get("symptom_duration_days")
+    if duration is not None and duration != "":
+        items.append("症状の続いている期間: 登録あり")
+    else:
+        items.append("症状の続いている期間: 未登録")
+    return items
+
+
+def build_session_recorded_items_status(
+    *,
+    session_snapshot: dict[str, Any],
+    profile: dict[str, Any] | None = None,
+) -> StatusDiagnosisV1:
+    """記録項目・保存情報の実データ一覧。"""
+    snap = session_snapshot or {}
+    attrs = snap.get("user_attributes") or profile or {}
+    messages = snap.get("messages") or []
+    user_count = sum(1 for m in messages if isinstance(m, dict) and m.get("type") == "user")
+    bot_count = sum(1 for m in messages if isinstance(m, dict) and m.get("type") == "bot")
+
+    session_items = [
+        f"このセッションの発言: ユーザー {user_count}件 / 応答 {bot_count}件",
+    ]
+    if snap.get("counseling_mode", {}).get("active"):
+        session_items.append("カウンセリングモード: 有効")
+    triage = snap.get("last_triage_result") or snap.get("_last_triage_result")
+    if isinstance(triage, dict) and triage.get("category"):
+        session_items.append(f"直近トリアージ: {triage.get('category')}")
+    if snap.get("pending_memory_delete"):
+        session_items.append("記憶削除: 確認待ち")
+
+    sections = [
+        StatusSection(title="ユーザー属性（保存情報）", items=_attribute_record_items(attrs)),
+        StatusSection(title="このセッション", items=session_items),
+    ]
+    registered = sum(1 for line in _attribute_record_items(attrs) if "登録あり" in line or "件登録" in line)
+    message = (
+        f"現在 {registered} 項目の属性情報が登録されています。"
+        f"このセッションには {user_count} 件のご発言があります。"
+    )
+    return StatusDiagnosisV1(
+        render="sage_status",
+        variant="notice",
+        title="記録されている情報",
+        message=message,
+        sections=sections,
+        hints=["未登録の項目は、症状相談の際にお伝えいただくと反映されます。"],
+        kind="session_recorded_items",
+        show_feedback=True,
+    )
+
+
+def build_session_history_overview(
+    *,
+    session_snapshot: dict[str, Any],
+) -> StatusDiagnosisV1:
+    """会話履歴の件数と直近発言の参照（要約 LLM は使わない）。"""
+    snap = session_snapshot or {}
+    messages = [m for m in (snap.get("messages") or []) if isinstance(m, dict)]
+    user_msgs = [m for m in messages if m.get("type") == "user"]
+    bot_count = sum(1 for m in messages if m.get("type") == "bot")
+
+    if not user_msgs:
+        return build_notice_status(
+            "まだ会話履歴はありません。症状やお薬についてお話しいただくと、ここに履歴が表示されます。",
+            title="会話履歴",
+            kind="session_history_overview",
+            show_feedback=True,
+        )
+
+    preview_items: list[str] = []
+    for idx, msg in enumerate(user_msgs[-3:], start=max(1, len(user_msgs) - 2)):
+        content = str(msg.get("content") or "").strip().replace("\n", " ")
+        if len(content) > 72:
+            content = content[:72] + "…"
+        preview_items.append(f"{idx}. {content or '（空）'}")
+
+    sections = [
+        StatusSection(
+            title="概要",
+            items=[
+                f"会話メッセージ合計: {len(messages)}件",
+                f"あなたの発言: {len(user_msgs)}件",
+                f"応答: {bot_count}件",
+            ],
+        ),
+        StatusSection(title="直近のご発言", items=preview_items),
+    ]
+    message = (
+        f"このセッションの会話は {len(user_msgs)} 件です。"
+        "直近の内容を表示しています（要約ではありません）。"
+    )
+    return StatusDiagnosisV1(
+        render="sage_status",
+        variant="notice",
+        title="会話履歴",
+        message=message,
+        sections=sections,
+        hints=["内容を要約したい場合は「履歴を要約して」とお送りください。"],
+        kind="session_history_overview",
+        show_feedback=True,
+    )
+
+
 def build_session_integrated_status(
     *,
     session_snapshot: dict[str, Any],

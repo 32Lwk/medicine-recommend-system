@@ -16,6 +16,62 @@ from src.services.counseling.counseling_format import format_conversation_histor
 logger = logging.getLogger(__name__)
 
 
+# Phase 2 (p2-counseling, Subtask B): 反復しやすい定型句（直近使用検出用）
+_STOCK_TONE_PHRASES = (
+    "応援しています",
+    "大丈夫ですよ",
+    "無理しなくて大丈夫",
+    "頑張って",
+    "きっと大丈夫",
+    "お気持ちよく分かります",
+)
+
+
+_SUPPORTIVE_CLOSING_PHRASES = (
+    "応援しています。",
+    "無理せず、ご自身のペースで大丈夫ですよ。",
+    "あなたの味方です。",
+    "少しずつで大丈夫ですからね。",
+    "いつでもお話を聞かせてください。",
+)
+
+
+def _pick_supportive_closing_phrase() -> str:
+    """flag ON 時、エラーフォールバックの定型句を簡易ローテーションする（session 非依存）。
+
+    flag OFF は従来どおり固定の「応援しています。」を返す（現状維持）。
+    """
+    try:
+        from config.llm_flags import is_counseling_tone_variety_enabled
+
+        if not is_counseling_tone_variety_enabled():
+            return _SUPPORTIVE_CLOSING_PHRASES[0]
+    except ImportError:
+        return _SUPPORTIVE_CLOSING_PHRASES[0]
+    import random
+
+    return random.choice(_SUPPORTIVE_CLOSING_PHRASES)
+
+
+def _build_avoid_phrases_hint(conversation_history: List[Dict], enabled: bool) -> str:
+    """直近のボット応答で使用済みの定型句を検出し、LLM への回避指示テキストを組み立てる。
+
+    flag OFF またはヒットなしの場合は空文字（テンプレートの `{avoid_phrases_hint}` は無害な空欄）。
+    """
+    if not enabled or not conversation_history:
+        return ""
+    recent_bot_texts = [
+        str(m.get("content") or "") for m in conversation_history[-6:] if m.get("type") == "bot"
+    ]
+    if not recent_bot_texts:
+        return ""
+    used = [p for p in _STOCK_TONE_PHRASES if any(p in t for t in recent_bot_texts)]
+    if not used:
+        return ""
+    joined = "」「".join(used)
+    return f"\n【注意】直近の返信で「{joined}」という表現をすでに使っています。今回は別の言い回しにしてください。\n"
+
+
 def _ensure_user_turn_at_end(
     conversation_history: List[Dict],
     user_text: str,
@@ -452,8 +508,14 @@ def generate_counseling_response(
     
     # app_spec / メタ質問は ConciergeAgent（chat_concierge_route）で処理
 
-    # プロンプトテンプレートを取得
-    template = get_counseling_prompt_template(symptom_type)
+    # プロンプトテンプレートを取得（Phase 2 Subtask B: tone_variety フラグで定型句反復を抑制）
+    try:
+        from config.llm_flags import is_counseling_tone_variety_enabled
+
+        tone_variety_enabled = is_counseling_tone_variety_enabled()
+    except ImportError:
+        tone_variety_enabled = False
+    template = get_counseling_prompt_template(symptom_type, tone_variety=tone_variety_enabled)
     
     # 会話履歴の準備（直近10件）
     history_context = ""
@@ -466,11 +528,14 @@ def generate_counseling_response(
     【会話履歴（文脈理解のため）】
     {history_text}
     """
-    
+
+    avoid_phrases_hint = _build_avoid_phrases_hint(conversation_history, tone_variety_enabled)
+
     prompt = template["user_prompt_template"].format(
         history_context=history_context,
         user_text=user_text,
-        symptom_type=symptom_type
+        symptom_type=symptom_type,
+        avoid_phrases_hint=avoid_phrases_hint,
     )
     
     max_length = template.get("max_length", 200)
@@ -564,7 +629,7 @@ def generate_counseling_response(
             if symptom_type in MEDICAL_SYMPTOM_TYPES:
                 error_response = "お気持ちをお聞かせいただき、ありがとうございます。詳しくお話を伺いたいので、もう少し詳しく教えていただけますか？"
             else:
-                error_response = "お気持ちをお聞かせいただき、ありがとうございます。応援しています。"
+                error_response = f"お気持ちをお聞かせいただき、ありがとうございます。{_pick_supportive_closing_phrase()}"
         
         # エラー時もログ記録を試みる
         if session_id:

@@ -60,9 +60,28 @@ def _pediatric_context_without_confirmed_age(user_text: str, user_info: dict) ->
     return any(h in t for h in _PEDIATRIC_HINTS)
 
 
-def _filter_medicines_when_age_unknown(medicines: list, user_info: dict) -> list:
+def _filter_medicines_when_age_unknown(
+    medicines: list,
+    user_info: dict,
+    *,
+    nlu_result: dict | None = None,
+    user_text: str = "",
+) -> list:
     if user_info.get("age") is not None or not medicines:
         return medicines
+    try:
+        from config.llm_flags import is_low_risk_headache_reco_enabled
+        from src.core.recommendation.low_risk_symptoms import (
+            filter_headache_analgesics_for_unknown_age,
+            is_low_risk_headache_only,
+        )
+
+        if is_low_risk_headache_reco_enabled() and is_low_risk_headache_only(
+            nlu_result, user_text=user_text, user_info=user_info
+        ):
+            return filter_headache_analgesics_for_unknown_age(medicines)
+    except ImportError:
+        pass
     filtered = []
     for med in medicines:
         restriction = str(med.get("age_restriction") or "")
@@ -171,6 +190,8 @@ def _invoke_rule_based_recommendation(
     nlu_result: dict | None,
     *,
     llm_user_text: str | None = None,
+    precomputed_missing_info: dict | None = None,
+    defer_explanation_llm: bool = False,
 ):
     """rule_based_medicine_recommendation を毎回正しいモジュールから呼ぶ（古いキャッシュ回避）。"""
     from src.core.rule_based_recommendation import (
@@ -184,7 +205,52 @@ def _invoke_rule_based_recommendation(
         session_id=session_id,
         precomputed_nlu=nlu_result or None,
         llm_user_text=llm_user_text,
+        precomputed_missing_info=precomputed_missing_info,
+        defer_explanation_llm=defer_explanation_llm,
     )
+
+
+def _apply_external_rb_llm_layers(
+    recommendation_result: dict,
+    *,
+    user_info: dict,
+    user_text: str,
+    client,
+    nlu_result: dict | None,
+    sid: str | None,
+) -> dict:
+    """LATENCY_RB_LLM_EXTERNAL=ON 時: 説明 LLM を rb 外で実行し結果をマージする。"""
+    if recommendation_result.get("status") != "success":
+        return recommendation_result
+    if not recommendation_result.get("recommended_medicines"):
+        return recommendation_result
+
+    from src.core.explanation_generator import generate_usage_notes_and_consultation_with_gpt
+    from src.core.rule_based_recommendation import merge_pollen_combination_into_usage
+    from src.services.pipeline_perf import mark_pipeline_step
+    from src.services.processing_status import mark_processing_step
+
+    mark_processing_step(sid, "usage_notes")
+    rb_nlu = recommendation_result.get("nlu_result") or nlu_result or {}
+    usage = generate_usage_notes_and_consultation_with_gpt(
+        recommendation_result["recommended_medicines"],
+        rb_nlu,
+        user_info,
+        client,
+    )
+    usage = merge_pollen_combination_into_usage(
+        usage,
+        recommendation_result["recommended_medicines"],
+        rb_nlu,
+        user_text,
+    )
+    recommendation_result["usage_notes"] = usage.get("usage_notes", "")
+    recommendation_result["doctor_consultation"] = usage.get(
+        "doctor_consultation",
+        recommendation_result.get("doctor_consultation", ""),
+    )
+    mark_pipeline_step("rb_explain_batch_done")
+    return recommendation_result
 
 
 def run_recommendation_flow(
@@ -203,6 +269,16 @@ def run_recommendation_flow(
         user_message = processed_message or sanitized_message or ""
     llm_text = resolve_llm_user_text(user_message=user_message)
     from src.services.processing_status import mark_processing_step
+
+    try:
+        from src.handlers.chat.reco_dedup import try_reco_flow_entry_short_circuit
+
+        reco_early = try_reco_flow_entry_short_circuit(session, sid, user_message)
+        if reco_early is not None:
+            mark_processing_step(sid, "finalize")
+            return reco_early
+    except ImportError:
+        pass
 
     mark_processing_step(sid, "attributes", detail_code="profile_register")
     from src.handlers.line.line_progressive_delivery import register_triage_for_line
@@ -1365,6 +1441,25 @@ def run_recommendation_flow(
                 if _pediatric_context_without_confirmed_age(sanitized_message, user_info):
                     return _build_pediatric_age_inquiry_response(session, sid)
 
+                from config.llm_flags import is_rb_llm_external_enabled
+                from src.core.missing_info_service import check_missing_information
+
+                rb_llm_external = is_rb_llm_external_enabled()
+                precomputed_missing_info = None
+                defer_explanation_llm = False
+                if rb_llm_external:
+                    defer_explanation_llm = True
+                    mark_processing_step(sid, "symptom_analysis", detail_code="symptom_check")
+                    precomputed_missing_info = check_missing_information(
+                        user_info,
+                        nlu_result,
+                        sanitized_message,
+                        recommendation_client,
+                    )
+                else:
+                    mark_processing_step(sid, "symptom_analysis", detail_code="symptom_check")
+
+                mark_processing_step(sid, "medicine_select", detail_code="candidate_match")
                 mark_pipeline_step("rule_based_start")
                 recommendation_result = _invoke_rule_based_recommendation(
                     processed_message,
@@ -1373,14 +1468,30 @@ def run_recommendation_flow(
                     sid,
                     nlu_result,
                     llm_user_text=llm_text,
+                    precomputed_missing_info=precomputed_missing_info,
+                    defer_explanation_llm=defer_explanation_llm,
                 )
                 mark_pipeline_step("rule_based_scoring_only_done")
-                            
+                if rb_llm_external:
+                    recommendation_result = _apply_external_rb_llm_layers(
+                        recommendation_result,
+                        user_info=user_info,
+                        user_text=processed_message or sanitized_message,
+                        client=recommendation_client,
+                        nlu_result=nlu_result,
+                        sid=sid,
+                    )
+
                 # ルールベース結果のデバッグログ
                 logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
                 logger.info(f"🔍 Rule-based medicines count: {len(recommendation_result.get('recommended_medicines', []))}")
                 _rb_meds = recommendation_result.get("recommended_medicines", [])
-                _filtered_meds = _filter_medicines_when_age_unknown(_rb_meds, user_info)
+                _filtered_meds = _filter_medicines_when_age_unknown(
+                    _rb_meds,
+                    user_info,
+                    nlu_result=recommendation_result.get("nlu_result"),
+                    user_text=processed_message or sanitized_message,
+                )
                 if len(_filtered_meds) != len(_rb_meds):
                     recommendation_result["recommended_medicines"] = _filtered_meds
                     logger.info(
@@ -1813,6 +1924,21 @@ def run_recommendation_flow(
             recommended_medicines = recommendation_result.get('recommended_medicines', [])
             usage_notes = recommendation_result.get('usage_notes', '')
             doctor_consultation = recommendation_result.get('doctor_consultation', '')
+
+            try:
+                from src.handlers.chat.reco_dedup import try_skip_duplicate_medicine_list
+
+                dup_early = try_skip_duplicate_medicine_list(
+                    session,
+                    sid,
+                    recommended_medicines,
+                    user_message=user_message or "",
+                )
+                if dup_early is not None:
+                    mark_processing_step(sid, "finalize")
+                    return dup_early
+            except ImportError:
+                pass
                         
             from src.handlers.line.line_session import is_line_session_id
             from src.services.recommendation_client_payload import is_sage_web_ui

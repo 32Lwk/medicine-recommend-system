@@ -162,3 +162,151 @@ def is_explain_cache_enabled() -> bool:
 def is_reco_parallel_enabled() -> bool:
     """推奨フローの独立 LLM 処理（使用上の注意 / 個別アドバイス）の並列化（既定 OFF）。"""
     return _flag("LATENCY_RECO_PARALLEL", False)
+
+
+# --- Phase 1b スコアリング/LLM境界（既定 OFF = post-p0 と同一挙動） ---
+
+
+def is_explain_batch_stabilize_enabled() -> bool:
+    """説明 batch の empty completion 対策（リトライ・max_tokens 増）を有効化（既定 OFF）。"""
+    return _flag("LATENCY_EXPLAIN_BATCH_STABILIZE", False)
+
+
+def is_rb_llm_external_enabled() -> bool:
+    """missing_info / 説明生成 LLM を rule_based 関数外（chat flow）へ移す（既定 OFF）。
+
+    ON 時、rule_based 計測区間は純 Python スコアリング中心になり、p1 説明最適化が e2e に反映されやすくなる。
+    """
+    return _flag("LATENCY_RB_LLM_EXTERNAL", False)
+
+
+def is_score_parallel_enabled() -> bool:
+    """quick / detailed スコアリングループの ThreadPool 並列化（既定 OFF）。"""
+    return _flag("LATENCY_SCORE_PARALLEL", False)
+
+
+# --- Phase 2 安全ガードフラグ（既定 OFF = 現状維持） ---
+
+
+def is_violence_context_guard_enabled() -> bool:
+    """store_emergency_handler の violence 曖昧語（「喧嘩」等）に文脈ガードを適用（既定 OFF）。
+
+    ON 時、曖昧語単体では緊急検知せず、強い暴力シグナルの共起を要求する
+    （「友人と喧嘩しました」等の心理相談文脈を誤って緊急扱いしないため）。
+    """
+    return _flag("SAFETY_VIOLENCE_CONTEXT_GUARD", False)
+
+
+def is_emergency_channel_split_enabled() -> bool:
+    """緊急応答メッセージをチャネル別に出し分ける（既定 OFF）。
+
+    ON 時、Web/LINE チャネルでは「店内のスタッフに連絡」系の文言を
+    公的窓口（119/110/受診）中心の文言に置き換える。店頭キオスク
+    （`is_kiosk_deployment()`）ではスタッフ文言を維持する。
+    """
+    return _flag("SAFETY_EMERGENCY_CHANNEL_SPLIT", False)
+
+
+def is_kiosk_deployment() -> bool:
+    """このデプロイが店頭キオスク運用かどうか（既定 False = Web/LINE 相当）。
+
+    店頭キオスクは物理的に別デプロイ/別インスタンスとして運用される想定のため、
+    セッション単位ではなくデプロイ単位の環境フラグで判定する。
+    """
+    return _flag("EMERGENCY_KIOSK_MODE", False)
+
+
+def is_counseling_context_maintain_enabled() -> bool:
+    """counseling_mode.active 中の期間/状況フォローアップで文脈を維持する（既定 OFF）。
+
+    ON 時、triage が Physical と判定しても、明確な身体症状キーワードを含まない
+    フォローアップ回答（「1ヶ月ほどです」「残業が続いています」等）ではカウンセリングを
+    終了しない（「1ヶ月ほどです」等が no_recommendation 受診テンプレへ落ちる回帰の是正）。
+    """
+    return _flag("UX_COUNSELING_CONTEXT_MAINTAIN", False)
+
+
+def is_counseling_tone_variety_enabled() -> bool:
+    """counseling 応答の定型句（「応援しています」等）反復を抑制する（既定 OFF）。
+
+    ON 時、プロンプトの定型句リテラル例示を抽象化し、直近使用済みの定型句を
+    避けるよう LLM に指示する。エラーフォールバックの定型句もローテーションする。
+    """
+    return _flag("UX_COUNSELING_TONE_VARIETY", False)
+
+
+def is_concierge_intent_routing_enabled() -> bool:
+    """Concierge 意図分類の拡張プローブ（API/SSE/rule_based 等）を有効化する（既定 OFF）。
+
+    ON 時、`_META_PROBE_RULES` に無い技術系メタ質問（「APIの仕組みを教えて」「SSEについて」
+    「rule_basedとは」「医薬品推奨の仕組み」等）も architecture intent として検出する。
+    技術詳細コンテンツ（concierge_knowledge.ja.json の technical_details）は本フラグ ON かつ
+    development ランタイムの場合のみ参照される（production は既存の抽象的な内容のまま）。
+    """
+    return _flag("ROUTING_CONCIERGE_INTENT", False)
+
+
+def is_concierge_followup_routing_enabled() -> bool:
+    """Concierge フォローアップ文脈維持（MR-4）を有効化する（既定 OFF）。
+
+    ON 時、直前ターンの concierge_intent（redirect 含む）を継承し、
+    「具体例を教えて」「SSEについて」「Cloud Runは？」等の短いトピック継続を
+    gate / orchestrator で Concierge に優先ルーティングする（症状文脈より優先）。
+    """
+    return _flag("ROUTING_CONCIERGE_FOLLOWUP", False)
+
+
+def is_store_procurement_routing_enabled() -> bool:
+    """医薬品購入先クエリ（「OTCを買える店」「市販薬の購入先」等）の Store ルーティングを補完する（既定 OFF）。
+
+    ON 時、`classify_medicine_procurement_route` は明示的な処方箋文脈が無くても
+    OTC/市販薬文脈が明示されていれば "otc_store" をデフォルトとする
+    （店舗案内へ正しく振り分け、`counseling_unknown_request`/Physical への誤流入を防ぐ）。
+    """
+    return _flag("ROUTING_STORE_PROCUREMENT", False)
+
+
+def is_low_risk_headache_reco_enabled() -> bool:
+    """頻出・低リスクの単独頭痛で OTC 解熱鎮痛薬を提示する（既定 OFF）。
+
+    ON 時、年齢未入力セッションでも主要解熱鎮痛薬を `_filter_medicines_when_age_unknown`
+    で全除外しない（小児文脈・赤旗頭痛は除外）。めまい等 CAUTION_DEFER 症状は変更しない。
+    """
+    return _flag("RECO_LOW_RISK_HEADACHE", False)
+
+
+def is_ux_correction_delete_cancel_enabled() -> bool:
+    """削除確認待ちからの「キャンセル」「やっぱり消さない」を SessionOps で明示応答する（既定 OFF）。
+
+    ON 時、pending_memory_delete がセッションに無くても dialogue_state.pending.session_delete
+    または直前 bot の memory_delete_confirm から削除確認待ちを復元し、
+    counseling_unknown_request へ流さず memory_delete_cancelled を返す。
+    """
+    return _flag("UX_CORRECTION_DELETE_CANCEL", False)
+
+
+def is_ux_session_ops_real_data_enabled() -> bool:
+    """SessionOps の質問種別ごとに実データ応答を返す（既定 OFF）。
+
+    ON 時、ステータス / 記録項目一覧 / LLM要約 / 会話履歴参照を別 handler・別 kind で出し分ける。
+    OFF 時は従来どおり status→統合ステータス、summarize→要約（履歴参照も要約経路）の使い回し。
+    """
+    return _flag("UX_SESSION_OPS_REAL_DATA", False)
+
+
+def is_ux_progressive_clarification_enabled() -> bool:
+    """曖昧入力連続時に clarification 文案を段階的に変える（既定 OFF）。
+
+    ON 時、1回目は従来の確認質問、2回目は別の症状例・選択肢、3回目以降は既存の
+    clarification ループ脱出（llm_unavailable short_circuit）と整合する。
+    """
+    return _flag("UX_PROGRESSIVE_CLARIFICATION", False)
+
+
+def is_ux_reco_dedup_enabled() -> bool:
+    """マルチターン同一推奨の抑制 + 終了意図検出（既定 OFF）。
+
+    ON 時、前ターンと同一の推奨薬リストは再推奨せず要約応答へ。
+    「ありがとう」「これで終わり」等の終了意図では sage_reco を出さず締め応答へ。
+    """
+    return _flag("UX_RECO_DEDUP", False)

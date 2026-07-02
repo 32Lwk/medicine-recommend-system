@@ -16,7 +16,49 @@ _CLARIFICATION_PATTERNS = (
     re.compile(r"確信度が低いため確認"),
     re.compile(r"もう少し詳しく教えて"),
     re.compile(r"具体的に教えていただけますか"),
+    re.compile(r"もう一度整理させてください"),
+    re.compile(r"次のような症状に近い"),
+    re.compile(r"次のいずれに近い"),
 )
+
+
+def _bot_message_text(msg: dict) -> str:
+    content = str(msg.get("content") or msg.get("personalized_advice") or "").strip()
+    if not content:
+        diag = msg.get("diagnosis") or {}
+        content = str(diag.get("message") or diag.get("title") or "").strip()
+    return content
+
+
+def is_clarification_bot_text(text: str) -> bool:
+    return bool(text) and any(p.search(text) for p in _CLARIFICATION_PATTERNS)
+
+
+def count_prior_clarification_bots(session: Any) -> int:
+    """セッション履歴上の clarification bot 応答数（HTTP マルチターン用）。"""
+    count = 0
+    for msg in session.get("messages") or []:
+        if not isinstance(msg, dict) or msg.get("type") != "bot":
+            continue
+        if is_clarification_bot_text(_bot_message_text(msg)):
+            count += 1
+    return count
+
+
+def get_clarification_attempt(session: Any) -> int:
+    """次に送る clarification の段階（1=初回, 2=progressive, 3+=脱出）。"""
+    prior = count_prior_clarification_bots(session)
+    counts = session.get("clarification_text_counts") or {}
+    if isinstance(counts, dict) and counts:
+        prior = max(prior, sum(int(v) for v in counts.values()))
+    return prior + 1
+
+
+def should_escape_clarification_loop(session: Any, *, progressive: bool = False) -> bool:
+    """clarification ループ脱出が必要か。"""
+    if progressive:
+        return get_clarification_attempt(session) >= 3
+    return False
 
 
 def _normalize_clarification_key(text: str) -> str:
@@ -47,11 +89,8 @@ def _last_bot_clarification_text(session: Any) -> str:
     for msg in reversed(messages):
         if not isinstance(msg, dict) or msg.get("type") != "bot":
             continue
-        content = str(msg.get("content") or msg.get("personalized_advice") or "").strip()
-        if not content:
-            diag = msg.get("diagnosis") or {}
-            content = str(diag.get("message") or diag.get("title") or "").strip()
-        if content and any(p.search(content) for p in _CLARIFICATION_PATTERNS):
+        content = _bot_message_text(msg)
+        if is_clarification_bot_text(content):
             return content
     return ""
 
@@ -85,6 +124,20 @@ def try_llm_pipeline_short_circuit(
         return {"status": "ok", "message_count": len(session.get("messages", []))}, 200
 
     last_clarify = _last_bot_clarification_text(session)
+    try:
+        from config.llm_flags import is_ux_progressive_clarification_enabled
+
+        progressive = is_ux_progressive_clarification_enabled()
+    except ImportError:
+        progressive = False
+
+    if progressive and should_escape_clarification_loop(session, progressive=True):
+        logger.warning("Progressive clarification loop escape sid=%s attempt>=3", sid)
+        mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+        bot = build_llm_unavailable_bot_message(session, sid)
+        session.setdefault("messages", []).append(bot)
+        return {"status": "ok", "message_count": len(session.get("messages", []))}, 200
+
     if last_clarify and clarification_loop_exceeded(session, last_clarify):
         logger.warning(
             "Clarification loop detected sid=%s count>=%s",

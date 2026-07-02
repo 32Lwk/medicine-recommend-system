@@ -57,6 +57,43 @@ from src.utils.candidate_normalizer import normalize_candidate_for_scoring
 logger = logging.getLogger(__name__)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
 
+
+def _mark_rb_pipeline_step(step: str) -> None:
+    """rule_based 内部区間の pipeline_perf マーク（計測専用・失敗時は無視）。"""
+    try:
+        from src.services.pipeline_perf import mark_pipeline_step
+
+        mark_pipeline_step(step)
+    except Exception:
+        pass
+
+
+def merge_pollen_combination_into_usage(
+    usage_and_consultation: Dict,
+    recommendations: List[Dict],
+    nlu_result: Dict,
+    user_text: str,
+) -> Dict:
+    """花粉症併用注意を usage_notes に追記（rb 内/flow 外の両方から利用）。"""
+    try:
+        from src.core.candidate_scoring import is_pollen_rhinitis_focus
+        from src.core.recommendation.pollen_combination_advice import build_pollen_combination_advice
+
+        symptom_names = [s.get("name") for s in nlu_result.get("symptoms", []) if s.get("name")]
+        if is_pollen_rhinitis_focus(
+            user_text, symptom_names, str(nlu_result.get("medicine_type") or "")
+        ):
+            combo_html = build_pollen_combination_advice(recommendations)
+            if combo_html:
+                base_notes = usage_and_consultation.get("usage_notes") or ""
+                usage_and_consultation = dict(usage_and_consultation)
+                usage_and_consultation["usage_notes"] = (
+                    f"{base_notes}\n\n{combo_html}" if base_notes else combo_html
+                )
+    except Exception as combo_err:
+        logger.warning("花粉症併用注意の生成でエラー: %s", combo_err)
+    return usage_and_consultation
+
 # CSVファイルのパス設定（プロジェクトルート基準）
 from src import PROJECT_ROOT
 BASE_DIR = PROJECT_ROOT
@@ -247,6 +284,8 @@ def rule_based_recommendation(
     *,
     precomputed_nlu: Optional[Dict] = None,
     llm_user_text: Optional[str] = None,
+    precomputed_missing_info: Optional[Dict] = None,
+    defer_explanation_llm: bool = False,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのメイン関数（全医薬品種類対応）
@@ -581,7 +620,11 @@ def rule_based_recommendation(
     # ステップ1.5: 不足情報のチェック
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ1.5: 不足情報のチェック ---")
-    missing_info_result = check_missing_information(user_info, nlu_result, user_text, client)
+    if precomputed_missing_info is not None:
+        missing_info_result = dict(precomputed_missing_info)
+    else:
+        missing_info_result = check_missing_information(user_info, nlu_result, user_text, client)
+    _mark_rb_pipeline_step("rb_missing_info_done")
     
     # 不足情報による減点を事前に計算（後で使用するため）
     from src.core.user_detection import calculate_completeness_penalty
@@ -981,7 +1024,24 @@ def rule_based_recommendation(
     # 簡易スコアで上位N×250件を選別（異なる薬効カテゴリの多様性確保）
     # 候補数が少ない場合は全件を詳細スコアリング（精度確保）
     selection_count = min(top_n * 250, len(candidates))
-    quick_scores = [(calculate_quick_score(c, nlu_result, scoring_user_info), c) for c in candidates]
+
+    try:
+        from config.llm_flags import is_score_parallel_enabled
+        _parallel_scores = is_score_parallel_enabled()
+    except Exception:
+        _parallel_scores = False
+
+    if _parallel_scores and len(candidates) > 1:
+        from concurrent.futures import ThreadPoolExecutor
+
+        def _quick_pair(c):
+            return (calculate_quick_score(c, nlu_result, scoring_user_info), c)
+
+        _workers = min(8, len(candidates))
+        with ThreadPoolExecutor(max_workers=_workers) as pool:
+            quick_scores = list(pool.map(_quick_pair, candidates))
+    else:
+        quick_scores = [(calculate_quick_score(c, nlu_result, scoring_user_info), c) for c in candidates]
     
     # 解熱鎮痛薬と外用薬（のど）のquick_scoreをログ出力（DEBUGレベル）
     for score, candidate in quick_scores:
@@ -1133,44 +1193,81 @@ def rule_based_recommendation(
     analgesic_scores = []
     throat_external_scores = []
     top_10_scores = []
-    
-    for idx, (score, candidate) in enumerate(top_candidates_for_scoring):
+
+    def _apply_detailed_score(idx_score_candidate):
+        idx, (score, candidate) = idx_score_candidate
         score_result = calculate_final_score(candidate, nlu_result, scoring_user_info, user_text)
         if score_result is None:
-            logger.warning(f"calculate_final_score returned None for candidate: {candidate.get('product_name', '')}")
+            logger.warning(
+                "calculate_final_score returned None for candidate: %s",
+                candidate.get("product_name", ""),
+            )
             score_result = {
                 "total_score": 0.0,
                 "raw_score": 0.0,
                 "score_breakdown": {},
             }
-        candidate['final_score'] = score_result['total_score']
-        candidate['raw_score'] = score_result.get('raw_score', score_result['total_score'])
-        candidate['score_breakdown'] = score_result['score_breakdown']
-        if 'allergy_warning' in score_result:
-            candidate['allergy_warning'] = score_result['allergy_warning']
-        if 'interaction_warnings' in score_result:
-            candidate['interaction_warnings'] = score_result['interaction_warnings']
-        
-        # 上位10件のみ詳細ログ出力（本番環境ではDEBUGレベル）
-        medicine_type = candidate.get('medicine_type', '')
-        product_name = candidate.get('product_name', '')
-        raw_score = candidate['raw_score']
-        
-        if idx < 10:
-            score_breakdown = score_result.get('score_breakdown', {})
+        candidate["final_score"] = score_result["total_score"]
+        candidate["raw_score"] = score_result.get("raw_score", score_result["total_score"])
+        candidate["score_breakdown"] = score_result["score_breakdown"]
+        if "allergy_warning" in score_result:
+            candidate["allergy_warning"] = score_result["allergy_warning"]
+        if "interaction_warnings" in score_result:
+            candidate["interaction_warnings"] = score_result["interaction_warnings"]
+        medicine_type = candidate.get("medicine_type", "")
+        product_name = candidate.get("product_name", "")
+        raw_score = candidate["raw_score"]
+        return idx, score, candidate, score_result, medicine_type, product_name, raw_score
+
+    if _parallel_scores and len(top_candidates_for_scoring) > 1:
+        from concurrent.futures import ThreadPoolExecutor
+
+        indexed = list(enumerate(top_candidates_for_scoring))
+        _d_workers = min(8, len(indexed))
+        with ThreadPoolExecutor(max_workers=_d_workers) as pool:
+            scored = list(pool.map(_apply_detailed_score, indexed))
+        for idx, score, candidate, score_result, medicine_type, product_name, raw_score in sorted(
+            scored, key=lambda x: x[0]
+        ):
+            if idx < 10:
+                score_breakdown = score_result.get("score_breakdown", {})
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(
+                        "詳細スコアリング結果: medicine_type=%s, product_name=%s, raw_score=%.3f",
+                        medicine_type,
+                        product_name,
+                        raw_score,
+                    )
+            if "解熱鎮痛薬" in medicine_type:
+                analgesic_scores.append((product_name, raw_score))
+            if "外用薬（のど）" in medicine_type:
+                throat_external_scores.append((product_name, raw_score))
+            if idx < 10:
+                top_10_scores.append((product_name, medicine_type, raw_score))
             if DEBUG_MODE or logger.level <= logging.DEBUG:
-                logger.debug(f"詳細スコアリング結果: medicine_type={medicine_type}, product_name={product_name}, raw_score={raw_score:.3f}, base_score={score_breakdown.get('base_score', 0.0):.3f}, adjusted_base_score={score_breakdown.get('adjusted_base_score', 0.0):.3f}, throat_bonus={score_breakdown.get('throat_bonus', 0.0):.3f}, symptom_specific_boost={score_breakdown.get('symptom_specific_boost', 0.0):.3f}, multi_symptom_bonus={score_breakdown.get('multi_symptom_bonus', 0.0):.3f}, pattern_bonus={score_breakdown.get('pattern_bonus', 0.0):.3f}, adjustment_score={score_result.get('adjustment_score', 0.0):.3f}")
-        
-        # サマリーログ用のデータ収集
-        if '解熱鎮痛薬' in medicine_type:
-            analgesic_scores.append((product_name, raw_score))
-        if '外用薬（のど）' in medicine_type:
-            throat_external_scores.append((product_name, raw_score))
-        if idx < 10:
-            top_10_scores.append((product_name, medicine_type, raw_score))
-        
-        if DEBUG_MODE or logger.level <= logging.DEBUG:
-            logger.debug(f"{product_name}: raw={raw_score:.3f}, final={candidate['final_score']:.3f}")
+                logger.debug(
+                    "%s: raw=%.3f, final=%.3f",
+                    product_name,
+                    raw_score,
+                    candidate["final_score"],
+                )
+    else:
+        for idx, (score, candidate) in enumerate(top_candidates_for_scoring):
+            _, _, _, score_result, medicine_type, product_name, raw_score = _apply_detailed_score(
+                (idx, (score, candidate))
+            )
+            if idx < 10:
+                score_breakdown = score_result.get("score_breakdown", {})
+                if DEBUG_MODE or logger.level <= logging.DEBUG:
+                    logger.debug(f"詳細スコアリング結果: medicine_type={medicine_type}, product_name={product_name}, raw_score={raw_score:.3f}, base_score={score_breakdown.get('base_score', 0.0):.3f}, adjusted_base_score={score_breakdown.get('adjusted_base_score', 0.0):.3f}, throat_bonus={score_breakdown.get('throat_bonus', 0.0):.3f}, symptom_specific_boost={score_breakdown.get('symptom_specific_boost', 0.0):.3f}, multi_symptom_bonus={score_breakdown.get('multi_symptom_bonus', 0.0):.3f}, pattern_bonus={score_breakdown.get('pattern_bonus', 0.0):.3f}, adjustment_score={score_result.get('adjustment_score', 0.0):.3f}")
+            if "解熱鎮痛薬" in medicine_type:
+                analgesic_scores.append((product_name, raw_score))
+            if "外用薬（のど）" in medicine_type:
+                throat_external_scores.append((product_name, raw_score))
+            if idx < 10:
+                top_10_scores.append((product_name, medicine_type, raw_score))
+            if DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"{product_name}: raw={raw_score:.3f}, final={candidate['final_score']:.3f}")
     
     # サマリーログ出力
     if analgesic_scores:
@@ -1493,7 +1590,9 @@ def rule_based_recommendation(
     
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"最終的な順序復元: original_rankに基づいて順序を復元: {len(validated_candidates)}件")
-    
+
+    _mark_rb_pipeline_step("rb_scoring_only_done")
+
     # ステップ6: 説明生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ6: 説明生成 ---")
@@ -1546,30 +1645,17 @@ def rule_based_recommendation(
     # ステップ7: 使用上の注意と医師相談アドバイスをChatGPTで生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
-    usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
-        recommendations, nlu_result, scoring_user_info, client
-    )
-
-    try:
-        from src.core.candidate_scoring import is_pollen_rhinitis_focus
-        from src.core.recommendation.pollen_combination_advice import (
-            build_pollen_combination_advice,
+    if defer_explanation_llm:
+        usage_and_consultation = {"usage_notes": "", "doctor_consultation": ""}
+    else:
+        usage_and_consultation = generate_usage_notes_and_consultation_with_gpt(
+            recommendations, nlu_result, scoring_user_info, client
         )
+        _mark_rb_pipeline_step("rb_explain_batch_done")
 
-        symptom_names_for_pollen = [
-            s.get("name") for s in nlu_result.get("symptoms", []) if s.get("name")
-        ]
-        if is_pollen_rhinitis_focus(
-            user_text, symptom_names_for_pollen, str(nlu_result.get("medicine_type") or "")
-        ):
-            combo_html = build_pollen_combination_advice(recommendations)
-            if combo_html:
-                base_notes = usage_and_consultation.get("usage_notes") or ""
-                usage_and_consultation["usage_notes"] = (
-                    f"{base_notes}\n\n{combo_html}" if base_notes else combo_html
-                )
-    except Exception as combo_err:
-        logger.warning(f"花粉症併用注意の生成でエラー: {combo_err}")
+    usage_and_consultation = merge_pollen_combination_into_usage(
+        usage_and_consultation, recommendations, nlu_result, user_text
+    )
     
     logger.info(f"推奨完了: {len(recommendations)}件の医薬品を推奨")
     if DEBUG_MODE or logger.level <= logging.DEBUG:
@@ -1659,6 +1745,8 @@ def rule_based_medicine_recommendation(
     *,
     precomputed_nlu: Optional[Dict] = None,
     llm_user_text: Optional[str] = None,
+    precomputed_missing_info: Optional[Dict] = None,
+    defer_explanation_llm: bool = False,
 ) -> Dict:
     """
     ルールベース医薬品推奨システムのラッパー関数（app.pyから呼び出し用）
@@ -1670,6 +1758,8 @@ def rule_based_medicine_recommendation(
         top_n: 推奨医薬品数
         session_id: セッションID（キャッシュ用）
         precomputed_nlu: 推奨フローで既に取得済みの NLU（再実行を避ける）
+        precomputed_missing_info: flow 側で取得済みの不足情報（LLM 外部化時）
+        defer_explanation_llm: True のときステップ7 LLM をスキップ
     
     Returns:
         推奨結果
@@ -1691,6 +1781,8 @@ def rule_based_medicine_recommendation(
         session_id=session_id,
         precomputed_nlu=precomputed_nlu,
         llm_user_text=llm_user_text,
+        precomputed_missing_info=precomputed_missing_info,
+        defer_explanation_llm=defer_explanation_llm,
     )
     
     return result

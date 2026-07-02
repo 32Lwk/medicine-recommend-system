@@ -602,9 +602,17 @@ def generate_usage_notes_and_consultation_with_gpt(
         from src.core.llm_client import chat_completion_create
         from config.llm_config import get_explain_model
 
+        try:
+            from config.llm_flags import is_explain_batch_stabilize_enabled
+
+            _batch_stabilize = is_explain_batch_stabilize_enabled()
+        except Exception:
+            _batch_stabilize = False
+
         fast_model = get_explain_model(
             assess_explanation_risk(user_info, nlu_result, recommended_medicines)
         )
+        _batch_max_tokens = 900 if _batch_stabilize else 600
         response = chat_completion_create(
             client,
             model_role="explain",
@@ -615,13 +623,29 @@ def generate_usage_notes_and_consultation_with_gpt(
                 {"role": "user", "content": prompt},
             ],
             temperature=0.1,
-            max_tokens=600,
+            max_tokens=_batch_max_tokens,
             response_format={"type": "json_object"},
         )
 
         from src.core.llm_client import extract_completion_text
 
         result_text = extract_completion_text(response)
+        if not result_text and _batch_stabilize:
+            logger.info("batch usage_notes empty — retrying with max_tokens=1200")
+            response = chat_completion_create(
+                client,
+                model_role="explain",
+                path="explanation_generator.batch_usage_notes",
+                model=fast_model,
+                messages=[
+                    {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.0,
+                max_tokens=1200,
+                response_format={"type": "json_object"},
+            )
+            result_text = extract_completion_text(response)
         if not result_text:
             raise ValueError("empty completion content")
         result_json = json.loads(result_text)
