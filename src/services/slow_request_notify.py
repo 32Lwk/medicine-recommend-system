@@ -28,6 +28,31 @@ def _summarize_processing_status(status: Optional[dict[str, Any]]) -> str:
     return " / ".join(parts)
 
 
+def _build_session_investigation_snapshot(
+    session_data: Optional[dict[str, Any]],
+) -> dict[str, Any]:
+    if not isinstance(session_data, dict):
+        return {}
+    msgs = session_data.get("messages")
+    snap: dict[str, Any] = {}
+    if isinstance(msgs, list):
+        snap["message_count"] = len(msgs)
+        if msgs:
+            last = msgs[-1]
+            if isinstance(last, dict):
+                snap["last_message_type"] = last.get("type")
+                diagnosis = last.get("diagnosis")
+                if isinstance(diagnosis, dict):
+                    for key in ("render", "flow_id", "medicine_type"):
+                        if diagnosis.get(key):
+                            snap[f"last_bot_{key}"] = diagnosis.get(key)
+    for key in ("username", "channel", "line_user_id"):
+        value = session_data.get(key)
+        if value:
+            snap[key] = value
+    return snap
+
+
 def notify_slow_request(
     session_id: Optional[str],
     *,
@@ -37,6 +62,8 @@ def notify_slow_request(
     username: str = "",
     processing_status: Optional[dict[str, Any]] = None,
     client_context: Optional[dict[str, Any]] = None,
+    session_investigation: Optional[dict[str, Any]] = None,
+    pipeline_perf_snapshot: Optional[dict[str, Any]] = None,
 ) -> None:
     msg_preview = (last_user_message or "")[:200]
     logger.warning(
@@ -56,6 +83,8 @@ def notify_slow_request(
         last_user_message=msg_preview,
         processing_status=processing_status,
         client_context=client_context or {},
+        session_investigation=session_investigation or {},
+        pipeline_perf_snapshot=pipeline_perf_snapshot,
         server_time=datetime.now().isoformat(),
         pid=os.getpid(),
     )

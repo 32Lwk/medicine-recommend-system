@@ -14,9 +14,13 @@ console.log('📄 Script loaded successfully');
 let currentSessionId = null;
 let allSessions = [];
 let sessionListMeaningfulOnly = true;
-let sessionListV2TestOnly = false;
+let sessionListShowV2Test = false;
+let sessionListChannelFilter = 'all';
 let sessionListSelectMode = false;
 const selectedSidebarSessionIds = new Set();
+let queueListSelectMode = false;
+const selectedQueueSessionIds = new Set();
+let lastRenderedQueueData = [];
 let chatMessageSelectMode = false;
 const selectedChatMessageKeys = new Set();
 
@@ -89,8 +93,55 @@ function checkAdminApiResponse(response) {
 
 function onSessionListV2TestToggle() {
     const el = document.getElementById('show-v2-test-sessions');
-    sessionListV2TestOnly = !!(el && el.checked);
+    sessionListShowV2Test = !!(el && el.checked);
+    if (!sessionListShowV2Test) {
+        if (sessionListChannelFilter === 'v2') {
+            sessionListChannelFilter = 'all';
+            document.querySelectorAll('.session-channel-pill').forEach(function(btn) {
+                const active = btn.getAttribute('data-channel') === 'all';
+                btn.classList.toggle('session-channel-pill--active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+    }
     refreshSessionList();
+}
+
+function setSessionChannelFilter(channel) {
+    sessionListChannelFilter = channel || 'all';
+    if (channel === 'v2' && !sessionListShowV2Test) {
+        sessionListShowV2Test = true;
+        const v2Toggle = document.getElementById('show-v2-test-sessions');
+        if (v2Toggle) {
+            v2Toggle.checked = true;
+        }
+    }
+    document.querySelectorAll('.session-channel-pill').forEach(function(btn) {
+        const active = btn.getAttribute('data-channel') === sessionListChannelFilter;
+        btn.classList.toggle('session-channel-pill--active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    refreshSessionList();
+}
+
+function resolveSessionChannelKind(session) {
+    if (isV2LocalTestSession(session)) {
+        return 'v2';
+    }
+    if (isLineHandoffSession(session)) {
+        return 'line';
+    }
+    if (isLineSession(session)) {
+        return 'line';
+    }
+    return 'web';
+}
+
+function sessionMatchesChannelFilter(session) {
+    if (!session || sessionListChannelFilter === 'all') {
+        return true;
+    }
+    return resolveSessionChannelKind(session) === sessionListChannelFilter;
 }
 
 function isV2LocalTestSession(session) {
@@ -184,17 +235,142 @@ function getFilteredSessions() {
     const searchEl = document.getElementById('session-search');
     const searchTerm = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase().trim();
     let sessions = allSessions;
-    if (sessionListV2TestOnly) {
+    if (!sessionListShowV2Test) {
         sessions = sessions.filter(function(session) {
-            return isV2LocalTestSession(session);
+            return !isV2LocalTestSession(session);
         });
     }
+    sessions = sessions.filter(sessionMatchesChannelFilter);
     if (!searchTerm) {
         return sessions;
     }
     return sessions.filter(function(session) {
         return sessionMatchesSearchTerm(session, searchTerm);
     });
+}
+
+function escapeJsString(value) {
+    return String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function updateQueueListToolbar() {
+    const selectBtn = document.getElementById('queue-list-select-btn');
+    const deleteBtn = document.getElementById('queue-list-delete-selected-btn');
+    const deleteBadge = document.getElementById('queue-list-delete-badge');
+    if (selectBtn) {
+        const icon = selectBtn.querySelector('i');
+        if (icon) {
+            icon.className = queueListSelectMode ? 'fa-solid fa-check' : 'fa-solid fa-list-check';
+        }
+        const selectTitle = queueListSelectMode ? '選択を完了' : '複数選択して削除';
+        selectBtn.title = selectTitle;
+        selectBtn.setAttribute('aria-label', selectTitle);
+        selectBtn.classList.toggle('session-list-action-btn--active', queueListSelectMode);
+    }
+    if (deleteBtn) {
+        const count = selectedQueueSessionIds.size;
+        deleteBtn.style.display = queueListSelectMode && count > 0 ? 'inline-flex' : 'none';
+        const deleteTitle = count > 0 ? count + '件をキューから削除' : '選択したキューを削除';
+        deleteBtn.title = deleteTitle;
+        deleteBtn.setAttribute('aria-label', deleteTitle);
+        if (deleteBadge) {
+            if (count > 0) {
+                deleteBadge.textContent = String(count);
+                deleteBadge.hidden = false;
+            } else {
+                deleteBadge.hidden = true;
+            }
+        }
+    }
+}
+
+function toggleQueueListSelectMode() {
+    queueListSelectMode = !queueListSelectMode;
+    if (!queueListSelectMode) {
+        selectedQueueSessionIds.clear();
+    }
+    updateQueueListToolbar();
+    renderQueue(lastRenderedQueueData);
+}
+
+function toggleQueueItemSelection(sessionId, checked) {
+    if (!sessionId) {
+        return;
+    }
+    if (checked) {
+        selectedQueueSessionIds.add(sessionId);
+    } else {
+        selectedQueueSessionIds.delete(sessionId);
+    }
+    updateQueueListToolbar();
+}
+
+function handleQueueItemHeaderClick(event, sessionId, accordionId, accordionContentId) {
+    if (queueListSelectMode) {
+        event.preventDefault();
+        event.stopPropagation();
+        const item = event.currentTarget ? event.currentTarget.closest('.queue-accordion-item') : null;
+        const cb = item ? item.querySelector('.queue-select-cb') : null;
+        if (cb) {
+            cb.checked = !cb.checked;
+            toggleQueueItemSelection(sessionId, cb.checked);
+            item.classList.toggle('queue-accordion-item--selected', cb.checked);
+        }
+        return;
+    }
+    toggleQueueAccordion(accordionId, accordionContentId);
+}
+
+function removeQueueItem(sessionId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (!sessionId) {
+        return;
+    }
+    if (!confirm('このキュー項目を削除します。よろしいですか？')) {
+        return;
+    }
+    _postManualQueueAction({ action: 'remove', session_id: sessionId }, 'キューから削除しました');
+}
+
+function deleteSelectedQueueItems() {
+    const ids = Array.from(selectedQueueSessionIds);
+    if (!ids.length) {
+        return;
+    }
+    if (!confirm(ids.length + '件のキュー項目を削除します。よろしいですか？')) {
+        return;
+    }
+    Promise.all(ids.map(function(sessionId) {
+        return adminFetchJson('/api/main_manual_reply_queue', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'remove', session_id: sessionId }),
+        }).then(function(data) {
+            return { sessionId: sessionId, ok: !(data.error || data.status === 'error') };
+        }).catch(function() {
+            return { sessionId: sessionId, ok: false };
+        });
+    }))
+        .then(function(results) {
+            const failed = results.filter(function(result) { return !result.ok; });
+            const deleted = results.length - failed.length;
+            if (deleted > 0) {
+                showAdminToast(deleted + '件のキュー項目を削除しました', 4000);
+            }
+            if (failed.length > 0) {
+                showAdminToast(failed.length + '件の削除に失敗しました');
+            }
+            selectedQueueSessionIds.clear();
+            queueListSelectMode = false;
+            updateQueueListToolbar();
+            refreshQueue();
+        })
+        .catch(function() {
+            showAdminToast('キュー項目の削除に失敗しました');
+        });
 }
 
 function updateSessionListToolbar() {
@@ -578,12 +754,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById('clearLogsBtn').addEventListener('click', function() {
-        if (confirm('すべてのログをクリアしますか？')) {
-            clearAllLogs();
-        }
+        openClearLogsModal();
     });
     
     // 不具合報告ボタンのイベントリスナー
+    initFeedbackReportFilterChips();
+    bindFeedbackBulkLayoutObserver();
     const feedbackReportsBtn = document.getElementById('feedbackReportsBtn');
     if (feedbackReportsBtn) {
         feedbackReportsBtn.addEventListener('click', function() {
@@ -649,6 +825,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (modal.id === 'userAttributesModal') {
                 console.log('🔴 Clicked outside userAttributesModal (on backdrop), closing...');
                 closeUserAttributesModal();
+            } else if (modal.id && typeof closeAdminModal === 'function') {
+                closeAdminModal(modal.id);
             } else {
                 modal.style.display = 'none';
                 modal.classList.remove('show');
@@ -731,13 +909,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (icon) icon.classList.add('rotated');
     }
     
-    // AI管理アコーディオンをデフォルトで開く
-    const aiAccordion = document.getElementById('ai-management-accordion');
-    if (aiAccordion) {
-        aiAccordion.classList.add('open');
-        const icon = document.getElementById('ai-management-accordion-icon');
-        if (icon) icon.classList.add('rotated');
-    }
 });
 
 // 手動更新関数（グローバルスコープ）
@@ -1049,49 +1220,75 @@ function updateRightPanelExpandBadge(queueCount) {
     }
 }
 
+const FEEDBACK_REPORTS_MODAL_ID = 'feedbackReportsModal';
+const FEEDBACK_REPORTS_STACK_CHILDREN = new Set([
+    'feedbackDetailModal',
+    'feedbackChatPreviewModal',
+    'aiFullTextModal',
+]);
+
+function isFeedbackReportsStackChild(modalId) {
+    return FEEDBACK_REPORTS_STACK_CHILDREN.has(modalId);
+}
+
+function getFeedbackReportsStackKeepOpen(modalId) {
+    if (!isFeedbackReportsStackChild(modalId)) {
+        return [];
+    }
+    const keep = [];
+    [FEEDBACK_REPORTS_MODAL_ID].concat(Array.from(FEEDBACK_REPORTS_STACK_CHILDREN)).forEach(function(id) {
+        if (id === modalId) {
+            return;
+        }
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('show')) {
+            keep.push(id);
+        }
+    });
+    return keep;
+}
+
+function ensureAdminModalVisible(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        return null;
+    }
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    modal.style.cssText = '';
+    modal.classList.add('show');
+    modal.offsetHeight;
+    return modal;
+}
+
 // モーダル表示関数（グローバル）
-function showModal(modalId) {
+function showModal(modalId, options) {
     console.log('🔵 showModal called with modalId:', modalId);
-    
-    // 他のモーダルを閉じる
+
+    const keepOpenIds = new Set((options && options.keepOpen) || []);
+    getFeedbackReportsStackKeepOpen(modalId).forEach(function(id) {
+        keepOpenIds.add(id);
+    });
+
     const allModals = document.querySelectorAll('.admin-modal, .modal');
-    allModals.forEach(modal => {
-        if (modal.id !== modalId) {
+    allModals.forEach(function(modal) {
+        if (modal.id !== modalId && !keepOpenIds.has(modal.id)) {
             modal.style.display = 'none';
             modal.classList.remove('show');
         }
     });
-    
-    const modal = document.getElementById(modalId);
+
+    keepOpenIds.forEach(function(id) {
+        ensureAdminModalVisible(id);
+    });
+
+    const modal = ensureAdminModalVisible(modalId);
     if (modal) {
-        // モーダルをbodyの直接の子要素として移動（確実にレンダリングされるように）
-        if (modal.parentElement !== document.body) {
-            console.log('🔵 Moving modal to body');
-            document.body.appendChild(modal);
+        if (keepOpenIds.size > 0) {
+            document.body.classList.add('admin-modal-stack-open');
         }
-        
-        // 既存のインラインスタイルをクリアしてCSSに任せる
-        modal.style.cssText = '';
-        
-        // showクラスを追加（CSSで #feedbackReportsModal.show のスタイルが適用される）
-        modal.classList.add('show');
-        
-        // 強制的にレイアウトを再計算
-        modal.offsetHeight;
-        
         console.log('🔵 Modal shown:', modalId);
-        console.log('🔵 Modal classes:', modal.className);
-        console.log('🔵 Modal parent:', modal.parentElement.tagName);
-        
-        // 少し遅延してサイズを確認
-        setTimeout(() => {
-            const rect = modal.getBoundingClientRect();
-            const computed = window.getComputedStyle(modal);
-            console.log('🔵 Modal rect:', rect);
-            console.log('🔵 Modal computed display:', computed.display);
-            console.log('🔵 Modal computed width:', computed.width);
-            console.log('🔵 Modal computed height:', computed.height);
-        }, 50);
     } else {
         console.error('❌ Modal element not found:', modalId);
     }
@@ -1100,6 +1297,35 @@ function showModal(modalId) {
 // グローバルスコープに明示的に割り当て（onclick属性から呼び出せるように）
 // DOMContentLoadedの前に設定するため、即座に実行
 window.showModal = showModal;
+
+function closeAdminModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = '';
+    }
+
+    if (isFeedbackReportsStackChild(modalId)) {
+        const parent = document.getElementById(FEEDBACK_REPORTS_MODAL_ID);
+        const anyChildOpen = Array.from(FEEDBACK_REPORTS_STACK_CHILDREN).some(function(id) {
+            const child = document.getElementById(id);
+            return child && child.classList.contains('show');
+        });
+        if (parent && !anyChildOpen) {
+            ensureAdminModalVisible(FEEDBACK_REPORTS_MODAL_ID);
+            document.body.classList.remove('admin-modal-stack-open');
+        }
+        return;
+    }
+
+    if (modalId === FEEDBACK_REPORTS_MODAL_ID) {
+        FEEDBACK_REPORTS_STACK_CHILDREN.forEach(function(childId) {
+            closeAdminModal(childId);
+        });
+        document.body.classList.remove('admin-modal-stack-open');
+    }
+}
+window.closeAdminModal = closeAdminModal;
 
 // メニュー外クリックで閉じる
 document.addEventListener('click', function(event) {
@@ -1111,6 +1337,12 @@ document.addEventListener('click', function(event) {
 });
 
 function manualRefresh() {
+    const refreshBtn = document.getElementById('header-refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.classList.add('is-refreshing');
+        refreshBtn.disabled = true;
+    }
+
     // キューとセッション情報を一度に更新
     Promise.all([
         adminFetchJson('/api/main_manual_reply_queue'),
@@ -1151,6 +1383,12 @@ function manualRefresh() {
         console.error('Manual refresh error:', error);
         const errorMessage = error.message || '更新エラーが発生しました';
         showNotification(errorMessage, 'error');
+    })
+    .finally(function() {
+        if (refreshBtn) {
+            refreshBtn.classList.remove('is-refreshing');
+            refreshBtn.disabled = false;
+        }
     });
 }
 
@@ -1379,12 +1617,39 @@ function _formatEmailNotifyStatus(item) {
     return labels[st] || (st ? '✉️ ' + st : '');
 }
 
+function setQueueViewFilter(value) {
+    const select = document.getElementById('queue-view-filter');
+    if (select) {
+        select.value = value || 'all';
+    }
+    document.querySelectorAll('#queue-view-pills .queue-filter-pill').forEach(function(btn) {
+        const active = btn.getAttribute('data-value') === (value || 'all');
+        btn.classList.toggle('queue-filter-pill--active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    refreshQueue();
+}
+
+function setQueuePriorityFilter(value) {
+    const select = document.getElementById('queue-priority-filter');
+    if (select) {
+        select.value = value || '';
+    }
+    document.querySelectorAll('#queue-priority-pills .queue-filter-pill').forEach(function(btn) {
+        const active = btn.getAttribute('data-value') === (value || '');
+        btn.classList.toggle('queue-filter-pill--active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    refreshQueue();
+}
+
 function renderQueue(queue) {
     const content = document.getElementById('manual-reply-queue');
     const filterEl = document.getElementById('queue-priority-filter');
     const filterTag = filterEl ? filterEl.value : '';
     const viewEl = document.getElementById('queue-view-filter');
     const viewFilter = viewEl ? viewEl.value : 'all';
+    lastRenderedQueueData = Array.isArray(queue) ? queue.slice() : [];
 
     if (!content) return;
 
@@ -1411,9 +1676,10 @@ function renderQueue(queue) {
 
     if (!Array.isArray(queue) || queue.length === 0) {
         content.innerHTML = `
-            <div class="empty-state">
+            <div class="empty-state queue-empty-state">
                 <i class="fa-solid fa-inbox"></i>
                 <p>手動返信待ちのメッセージがありません</p>
+                <p class="queue-empty-state__hint">フィルタを「すべて」に戻すと件数が変わる場合があります</p>
             </div>
         `;
         return;
@@ -1463,8 +1729,9 @@ function renderQueue(queue) {
             const subtype = item.emergency_subtype || item.emergency_type;
             const typeName = QUEUE_SUBTYPE_LABELS[subtype] || emergencyTypeNames[subtype] || emergencyTypeNames[item.emergency_type] || '緊急';
             const priLabel = QUEUE_PRIORITY_LABELS[item.priority_tag] || '';
-            const priBadge = priLabel ? `<span class="priority-tag-badge" style="font-size:0.65rem;background:#fff3e0;color:#e65100;padding:1px 4px;border-radius:3px;margin-left:4px;">${priLabel}</span>` : '';
-            itemBadge = `<span class="emergency-badge" title="${typeName}">${itemIcon} ${typeName}</span>${priBadge}`;
+            const priClass = item.priority_tag ? ' queue-priority-tag--' + item.priority_tag.replace(/_/g, '-') : '';
+            const priBadge = priLabel ? `<span class="queue-priority-tag${priClass}">${escapeHtml(priLabel)}</span>` : '';
+            itemBadge = `<span class="emergency-badge" title="${escapeHtml(typeName)}">${itemIcon} ${escapeHtml(typeName)}</span>${priBadge}`;
         } else if (isCrisisItem) {
             itemClass = 'queue-item crisis-queue-item';
             itemIcon = '🚨';
@@ -1472,6 +1739,12 @@ function renderQueue(queue) {
             itemTitle = '自殺・自傷';
             itemBadge = '<span class="crisis-badge">🚨 緊急</span>';
         }
+
+        const priLabelCommon = QUEUE_PRIORITY_LABELS[item.priority_tag] || '';
+        const priClassCommon = item.priority_tag ? ' queue-priority-tag--' + item.priority_tag.replace(/_/g, '-') : '';
+        const priBadgeCommon = priLabelCommon ? `<span class="queue-priority-tag${priClassCommon}">${escapeHtml(priLabelCommon)}</span>` : '';
+        const ackBadge = item.acknowledged ? '<span class="queue-ack-badge">確認済</span>' : '';
+        const headerBadges = [itemBadge, !isEmergencyItem ? priBadgeCommon : '', ackBadge].filter(Boolean).join('');
         
         const accordionId = `queue-accordion-${index}`;
         const accordionContentId = `queue-accordion-content-${index}`;
@@ -1496,44 +1769,58 @@ function renderQueue(queue) {
         // アクティブセッションかどうかを判定
         const isActiveSession = currentSessionId && item.session_id && currentSessionId === item.session_id;
         const activeMarker = isActiveSession ? '<span class="active-session-marker" style="position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; background: #28a745; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10;"></span>' : '';
+        const sid = escapeJsString(item.session_id || '');
+        const isChecked = selectedQueueSessionIds.has(item.session_id);
+        const selectCheckbox = queueListSelectMode
+            ? '<input type="checkbox" class="queue-select-cb"' + (isChecked ? ' checked' : '') +
+              ' onclick="event.stopPropagation(); toggleQueueItemSelection(\'' + sid + '\', this.checked); this.closest(\'.queue-accordion-item\').classList.toggle(\'queue-accordion-item--selected\', this.checked);">'
+            : '';
         
         html += `
-            <div class="${itemClass} queue-accordion-item" style="position: relative;">
+            <div class="${itemClass} queue-accordion-item${isActiveSession ? ' current-session' : ''}${queueListSelectMode ? ' queue-accordion-item--selectable' : ''}${isChecked ? ' queue-accordion-item--selected' : ''}" data-session-id="${escapeHtml(item.session_id || '')}">
                 ${activeMarker}
-                <div class="queue-accordion-header" onclick="toggleQueueAccordion('${accordionId}', '${accordionContentId}')">
-                    <div style="flex: 1; min-width: 0;">
-                        <span class="session-id" style="font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">${escapeHtml(shortSessionId)} ${itemBadge}</span>
-                        <div style="font-size: 0.75rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortMessage)}</div>
+                <div class="queue-accordion-item__top">
+                ${selectCheckbox}
+                <div class="queue-accordion-header" onclick="handleQueueItemHeaderClick(event, '${sid}', '${accordionId}', '${accordionContentId}')">
+                    <div class="queue-accordion-header__main">
+                        <div class="queue-accordion-header__top">
+                            <span class="queue-item-session-id">${escapeHtml(shortSessionId)}</span>
+                            <div class="queue-item-badges">${headerBadges}</div>
+                        </div>
+                        <div class="queue-item-snippet">${escapeHtml(shortMessage)}</div>
                     </div>
-                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" style="flex-shrink: 0; margin-left: 4px;"></i>
+                    <i class="fa-solid fa-chevron-down queue-accordion-icon" id="${accordionId}-icon" aria-hidden="true"></i>
                 </div>
-                <div class="queue-accordion-content" id="${accordionContentId}" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
-                    <div style="padding: 4px 8px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <div class="user-message" style="margin-bottom: 6px; font-size: 0.75rem;">
-                            <strong>👤 ユーザー:</strong> ${escapeHtml(_queueDetailMessage(item))}
+                </div>
+                <div class="queue-accordion-content" id="${accordionContentId}">
+                    <div class="queue-accordion-body">
+                        <div class="queue-detail-message">
+                            <span class="queue-detail-label">ユーザー</span>
+                            <p>${escapeHtml(_queueDetailMessage(item))}</p>
                         </div>
                         ${keywordsDisplay}
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.7rem; color: #666; margin-bottom: 6px;">
-                            <span><strong>🕐</strong> ${escapeHtml(item.timestamp || '不明')}</span>
+                        <div class="queue-detail-meta">
+                            <span><i class="fa-regular fa-clock" aria-hidden="true"></i> ${escapeHtml(item.timestamp || '不明')}</span>
                             ${_formatEmailNotifyStatus(item) ? '<span>' + escapeHtml(_formatEmailNotifyStatus(item)) + '</span>' : ''}
                         </div>
-                        <div style="font-size: 0.65rem; color: #999; margin-bottom: 6px; word-break: break-all;">
-                            ID: ${escapeHtml(item.session_id || '不明')}
-                        </div>
-                        ${item.trace_id ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">trace: ' + escapeHtml(item.trace_id) + '</div>' : ''}
-                        ${item.triage_summary ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">triage: ' + escapeHtml(JSON.stringify(item.triage_summary)) + '</div>' : ''}
-                        ${item.moderation_label ? '<div style="font-size:0.65rem;color:#666;margin-bottom:4px;">moderation: ' + escapeHtml(item.moderation_label) + '</div>' : ''}
-                        <div class="reply-section" style="margin-top: 6px;">
-                            <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..." style="width: 100%; padding: 6px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.8rem; resize: vertical; min-height: 50px; max-height: 100px;"></textarea>
-                            <div style="display: flex; gap: 6px; margin-top: 6px;">
-                                <button class="reply-btn" onclick="sendReplyFromQueue('${item.session_id}', ${index}, event)" style="flex: 1; padding: 6px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                    <i class="fa-solid fa-paper-plane"></i> 送信
+                        <div class="queue-detail-id">ID: ${escapeHtml(item.session_id || '不明')}</div>
+                        ${item.trace_id ? '<div class="queue-detail-extra">trace: ' + escapeHtml(item.trace_id) + '</div>' : ''}
+                        ${item.triage_summary ? '<div class="queue-detail-extra">triage: ' + escapeHtml(JSON.stringify(item.triage_summary)) + '</div>' : ''}
+                        ${item.moderation_label ? '<div class="queue-detail-extra">moderation: ' + escapeHtml(item.moderation_label) + '</div>' : ''}
+                        <div class="reply-section">
+                            <textarea class="reply-input" id="reply-${index}" placeholder="返信メッセージを入力..."></textarea>
+                            <div class="queue-reply-actions">
+                                <button class="reply-btn" onclick="sendReplyFromQueue('${sid}', ${index}, event)">
+                                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 送信
                                 </button>
-                                <button class="btn btn-info" onclick="selectSession(event, '${item.session_id}', ${index}); event.stopPropagation();" style="flex: 1; padding: 6px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                                    <i class="fa-solid fa-comments"></i> 移動
+                                <button class="btn btn-info queue-open-session-btn" onclick="selectSession(event, '${sid}', ${index}); event.stopPropagation();">
+                                    <i class="fa-solid fa-comments" aria-hidden="true"></i> 移動
                                 </button>
-                                ${!item.acknowledged ? `<button type="button" class="btn btn-secondary" onclick="acknowledgeQueueItem('${item.session_id}', event)" style="flex: 1; padding: 6px; font-size: 0.75rem;">確認済</button>` : '<span style="font-size:0.7rem;color:#28a745;">✓ 確認済</span>'}
-                                ${item.notification_status && item.notification_status.email && item.notification_status.email !== 'sent' ? `<button type="button" class="btn btn-warning" onclick="retryEmergencyEmail('${item.session_id}', event)" style="flex: 1; padding: 6px; font-size: 0.75rem;">メール再送</button>` : ''}
+                                ${!item.acknowledged ? `<button type="button" class="btn btn-secondary queue-ack-btn" onclick="acknowledgeQueueItem('${sid}', event)">確認済</button>` : '<span class="queue-ack-done">✓ 確認済</span>'}
+                                ${item.notification_status && item.notification_status.email && item.notification_status.email !== 'sent' ? `<button type="button" class="btn btn-warning queue-email-retry-btn" onclick="retryEmergencyEmail('${sid}', event)">メール再送</button>` : ''}
+                                <button type="button" class="btn btn-danger queue-remove-btn" onclick="removeQueueItem('${sid}', event)">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i> 削除
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1543,44 +1830,47 @@ function renderQueue(queue) {
     });
     
     content.innerHTML = html;
-    
-    // 緊急事案と危機対応セッションの数をカウントして表示
-    const emergencyCount = queue.filter(item => item.status === 'emergency_detected').length;
-    const crisisCount = queue.filter(item => item.status === 'crisis_detected' || item.priority === 'high').length;
-    const totalUrgentCount = emergencyCount + crisisCount;
-    
-    const crisisCountElement = document.getElementById('crisis-count');
-    if (crisisCountElement) {
-        if (totalUrgentCount > 0) {
-            let countText = '';
-            if (emergencyCount > 0 && crisisCount > 0) {
-                countText = `🚨 緊急: ${totalUrgentCount}件 (緊急事案: ${emergencyCount}件, 自殺・自傷: ${crisisCount}件)`;
-            } else if (emergencyCount > 0) {
-                countText = `🚨 緊急事案: ${emergencyCount}件`;
-            } else {
-                countText = `🚨 緊急: ${crisisCount}件`;
-            }
-            crisisCountElement.textContent = countText;
-            crisisCountElement.style.background = '#ffebee';
-            crisisCountElement.style.color = '#e74c3c';
-        } else {
-            crisisCountElement.textContent = '';
-        }
-    }
+    updateQueueListToolbar();
 }
 
 // キューアコーディオンの開閉
 function toggleQueueAccordion(accordionId, contentId) {
     const content = document.getElementById(contentId);
     const icon = document.getElementById(accordionId + '-icon');
-    
-    if (content.style.maxHeight === '0px' || content.style.maxHeight === '') {
+    const item = content ? content.closest('.queue-accordion-item') : null;
+
+    if (!content) return;
+
+    const isOpen = item && item.classList.contains('is-open');
+    document.querySelectorAll('#manual-reply-queue .queue-accordion-item.is-open').forEach(function(openItem) {
+        if (openItem !== item) {
+            openItem.classList.remove('is-open');
+            const openContent = openItem.querySelector('.queue-accordion-content');
+            const openIcon = openItem.querySelector('.queue-accordion-icon');
+            if (openContent) {
+                openContent.style.maxHeight = '0px';
+            }
+            if (openIcon) {
+                openIcon.style.transform = 'rotate(0deg)';
+            }
+        }
+    });
+
+    if (!isOpen) {
+        if (item) item.classList.add('is-open');
         content.style.maxHeight = content.scrollHeight + 'px';
         if (icon) icon.style.transform = 'rotate(180deg)';
     } else {
+        if (item) item.classList.remove('is-open');
         content.style.maxHeight = '0px';
         if (icon) icon.style.transform = 'rotate(0deg)';
     }
+
+    setTimeout(function() {
+        if (typeof adjustManualReplyQueueHeight === 'function') {
+            adjustManualReplyQueueHeight();
+        }
+    }, 180);
 }
 
 function updateCriticalQueueBadge(queue) {
@@ -1589,14 +1879,24 @@ function updateCriticalQueueBadge(queue) {
         const tag = item.priority_tag || '';
         return (tag === 'critical_crisis' || tag === 'critical_medical') && !item.acknowledged;
     }).length;
-    const el = document.getElementById('crisis-count');
-    if (!el) return;
+    const totalCount = items.length;
+    const crisisCountElement = document.getElementById('crisis-count');
+    const totalEl = document.getElementById('queue-panel-total-count');
+    const criticalEl = document.getElementById('queue-panel-critical-count');
+    if (totalEl) {
+        totalEl.textContent = String(totalCount);
+    }
+    if (criticalEl) {
+        criticalEl.textContent = String(critical);
+        criticalEl.classList.toggle('queue-stat-card__value--alert', critical > 0);
+    }
+    if (!crisisCountElement) return;
     if (critical > 0) {
-        el.textContent = '未確認クリティカル: ' + critical + '件';
-        el.style.background = '#ffebee';
-        el.style.color = '#c62828';
+        crisisCountElement.textContent = '未確認クリティカル ' + critical + '件';
+        crisisCountElement.hidden = false;
     } else {
-        el.textContent = '';
+        crisisCountElement.textContent = '';
+        crisisCountElement.hidden = true;
     }
 }
 
@@ -2082,14 +2382,48 @@ function isLineSessionId(sessionId) {
     return Boolean(sessionId && String(sessionId).toLowerCase().startsWith('line:'));
 }
 
-function isLineSession(session) {
+function userIdFromLineSid(sessionId) {
+    const normalized = normalizeLineSessionId(sessionId);
+    if (!normalized || !isLineSessionId(normalized)) {
+        return null;
+    }
+    const userId = normalized.slice(5).trim();
+    return userId || null;
+}
+
+function isNativeLineUserId(userId) {
+    if (!userId || typeof userId !== 'string') {
+        return false;
+    }
+    const trimmed = userId.trim();
+    return /^U[a-f0-9]{32}$/i.test(trimmed);
+}
+
+function isNativeLineSession(session) {
+    if (!session || isV2LocalTestSession(session)) {
+        return false;
+    }
+    if (session.is_line_session === true) {
+        return true;
+    }
+    return isNativeLineUserId(userIdFromLineSid(session.session_id));
+}
+
+function isLineHandoffSession(session) {
     if (!session) {
         return false;
     }
-    if (session.is_line_related === true) {
+    if (session.is_line_handoff === true) {
         return true;
     }
-    if (session.is_line_session === true) {
+    return Boolean(session.handoff_from_line && isLineSessionId(session.handoff_from_line) && !isNativeLineSession(session));
+}
+
+function isLineSession(session) {
+    if (!session || isV2LocalTestSession(session)) {
+        return false;
+    }
+    if (session.is_line_related === true && (isNativeLineSession(session) || isLineHandoffSession(session))) {
         return true;
     }
     if (session.is_line_handoff === true) {
@@ -2098,25 +2432,43 @@ function isLineSession(session) {
     if (session.handoff_from_line && isLineSessionId(session.handoff_from_line)) {
         return true;
     }
-    if (session.line_memory_owner_sid && isLineSessionId(session.line_memory_owner_sid)) {
+    if (session.line_memory_owner_sid && isLineSessionId(session.line_memory_owner_sid) && isNativeLineSession(session)) {
         return true;
     }
-    return isLineSessionId(session.session_id);
+    return isNativeLineSession(session);
+}
+
+function renderSessionChannelBadge(kind, label, title) {
+    const iconClass = kind === 'line'
+        ? 'fa-brands fa-line'
+        : kind === 'v2'
+            ? 'fa-solid fa-flask'
+            : kind === 'handoff'
+                ? 'fa-solid fa-right-left'
+                : 'fa-solid fa-globe';
+    return (
+        '<span class="session-channel-badge session-channel-badge--' + kind + '" title="' + escapeHtml(title) + '">' +
+        '<i class="' + iconClass + '" aria-hidden="true"></i>' +
+        '<span>' + escapeHtml(label) + '</span></span>'
+    );
 }
 
 function renderSessionLineBadge(session) {
-    if (!isLineSession(session)) {
-        return '';
+    if (isV2LocalTestSession(session)) {
+        const scenario = session.v2_test_scenario ? String(session.v2_test_scenario) : '';
+        const title = scenario ? 'v2テスト: ' + scenario : 'v2ローカル/Canaryテスト（Web経由）';
+        return renderSessionChannelBadge('v2', 'v2テスト', title);
     }
-    const isHandoff = session.is_line_handoff === true
-        || (session.handoff_from_line && !isLineSessionId(session.session_id));
-    const title = isHandoff ? 'LINE 引き継ぎ（Web セッション）' : 'LINE セッション';
-    const label = isHandoff ? 'LINE→Web' : 'LINE';
-    return (
-        '<span class="session-channel-badge session-channel-badge--line" title="' + escapeHtml(title) + '">' +
-        '<i class="fa-brands fa-line" aria-hidden="true"></i>' +
-        '<span>' + escapeHtml(label) + '</span></span>'
-    );
+    if (isLineHandoffSession(session)) {
+        return renderSessionChannelBadge('handoff', 'LINE→Web', 'LINE 引き継ぎ（Web セッション）');
+    }
+    if (isNativeLineSession(session)) {
+        return renderSessionChannelBadge('line', 'LINE', 'LINE 公式アカウント経由のセッション');
+    }
+    if (isLineSessionId(session && session.session_id)) {
+        return renderSessionChannelBadge('line', 'LINE', 'LINE 形式のセッション（テスト/カナリアを含む）');
+    }
+    return renderSessionChannelBadge('web', 'Web', 'Webチャット');
 }
 
 const SAGE_CONTENT_MARKERS = new Set(['sage_reco', 'sage_status', 'sage_qa']);
@@ -2183,9 +2535,9 @@ function parseAdminTimestamp(value, options) {
     var naiveAsUtc = options.naiveAsUtc;
     if (naiveAsUtc === undefined) {
         if (options.session) {
-            naiveAsUtc = isLineSession(options.session);
+            naiveAsUtc = isNativeLineSession(options.session);
         } else if (currentSessionId) {
-            naiveAsUtc = isLineSessionId(currentSessionId);
+            naiveAsUtc = isNativeLineUserId(userIdFromLineSid(currentSessionId));
         } else {
             naiveAsUtc = false;
         }
@@ -3278,9 +3630,35 @@ function formatAdminPlainText(text) {
     return escapeHtml(text || '').replace(/\n/g, '<br>');
 }
 
+function isAdminBlockedUserMessage(msg) {
+    if (!msg || msg.type !== 'user') {
+        return false;
+    }
+    if (msg.admin_only === true || msg.blocked_input === true) {
+        return true;
+    }
+    const content = String(msg.content || '').trim();
+    return content === '（この入力はブロックされました）';
+}
+
+function getAdminBlockedUserDisplayText(msg) {
+    const original = String(msg.original_content || '').trim();
+    if (original) {
+        return original;
+    }
+    const content = String(msg.content || '').trim();
+    if (content && content !== '（この入力はブロックされました）') {
+        return content;
+    }
+    return '（ブロックされた入力・原文なし）';
+}
+
 function getAdminMessageText(msg) {
     if (!msg || typeof msg !== 'object') {
         return '';
+    }
+    if (isAdminBlockedUserMessage(msg)) {
+        return getAdminBlockedUserDisplayText(msg);
     }
     const fields = ['content', 'message', 'text', 'user_message'];
     for (let i = 0; i < fields.length; i++) {
@@ -3581,8 +3959,9 @@ function resolveCurrentAdminSessionRow() {
     }) || null;
 }
 
-function renderChatMessages(messages) {
-    const chatMessages = document.getElementById('chat-messages');
+function renderChatMessages(messages, targetEl) {
+    const chatMessages = targetEl || document.getElementById('chat-messages');
+    const previewMode = Boolean(targetEl);
     const chatSession = resolveCurrentAdminSessionRow();
     messages = normalizeAdminMessagesForDisplay(messages, chatSession);
     
@@ -3593,14 +3972,16 @@ function renderChatMessages(messages) {
                 <p>メッセージ履歴がありません</p>
             </div>
         `;
-        updateChatMessageSelectToolbar();
+        if (!previewMode) {
+            updateChatMessageSelectToolbar();
+        }
         return;
     }
     
     console.log('📨 Rendering chat messages:', messages.length, 'messages');
     
     let html = '';
-    if (currentSessionId && isLineSessionId(currentSessionId)) {
+    if (!previewMode && currentSessionId && isLineSessionId(currentSessionId)) {
         const sess = allSessions.find(function (s) {
             return normalizeLineSessionId(s.session_id) === currentSessionId;
         });
@@ -3640,16 +4021,26 @@ function renderChatMessages(messages) {
                 indicator = '<span class="ai-indicator">🤖 AI返信</span><br>';
             }
         } else if (msg.type === 'user') {
-            indicator = '<span class="user-indicator">👤 ユーザー</span><br>';
+            if (isAdminBlockedUserMessage(msg)) {
+                indicator = '<span class="user-indicator blocked-input-indicator" style="color:#c62828;font-weight:bold;background:#ffebee;padding:2px 6px;border-radius:4px;">🚫 ブロック入力</span><br>';
+            } else {
+                indicator = '<span class="user-indicator">👤 ユーザー</span><br>';
+            }
         }
         
         let messageContentHtml = '';
 
         if (msg.type === 'user') {
             const userText = getAdminMessageText(msg);
-            messageContentHtml = userText
-                ? formatAdminPlainText(userText)
-                : '<span class="admin-message-empty">(メッセージ本文なし)</span>';
+            if (isAdminBlockedUserMessage(msg)) {
+                messageContentHtml = userText
+                    ? formatAdminPlainText(userText)
+                    : '<span class="admin-message-empty">(メッセージ本文なし)</span>';
+            } else {
+                messageContentHtml = userText
+                    ? formatAdminPlainText(userText)
+                    : '<span class="admin-message-empty">(メッセージ本文なし)</span>';
+            }
         } else if (msg.type === 'bot' && msg.diagnosis && (msg.diagnosis.render === 'sage_status' || msg.diagnosis.render === 'sage_qa') && window.StatusRenderer) {
             messageContentHtml = window.StatusRenderer.buildSageStatusBubbleHtml(msg.diagnosis) || formatAdminPlainText(msg.diagnosis.message || '');
         } else if (msg.type === 'bot' && isStatusCardHtml(msg.content)) {
@@ -3832,8 +4223,10 @@ function renderChatMessages(messages) {
     
     chatMessages.innerHTML = html;
     console.log('✅ Chat messages rendered');
-    updateChatMessageSelectToolbar();
-    scrollAdminChatToBottom();
+    if (!previewMode) {
+        updateChatMessageSelectToolbar();
+        scrollAdminChatToBottom();
+    }
 }
 
 // HTMLエスケープ関数（既に上部で定義済み）
@@ -3846,101 +4239,104 @@ function renderChatMessages(messages) {
 // 重複したsetAIMode関数は削除（425行目の実装を使用）
 
 // システム状況取得
+function adminKvLine(label, value) {
+    return '<p><strong>' + escapeHtml(label) + ':</strong> ' + escapeHtml(String(value)) + '</p>';
+}
+
+function adminKvError(message) {
+    return '<p class="admin-kv-list__error">' + escapeHtml(message) + '</p>';
+}
+
+function adminKvFromEntries(data, emptyMessage) {
+    const entries = Object.entries(data || {});
+    if (!entries.length) {
+        return '<p>' + escapeHtml(emptyMessage) + '</p>';
+    }
+    return entries.map(function(entry) {
+        const key = entry[0];
+        const stats = entry[1];
+        return adminKvLine(key, stats.count + '件 (' + stats.percentage.toFixed(1) + '%)');
+    }).join('');
+}
+
+function adminPanelCard(titleHtml, linesHtml, variant) {
+    const variantClass = variant ? ' admin-panel-card--' + variant : '';
+    return '<section class="admin-panel-card' + variantClass + '">' +
+        '<h3 class="admin-panel-card__title">' + titleHtml + '</h3>' +
+        '<div class="admin-kv-list">' + linesHtml + '</div></section>';
+}
+
 function loadMonitoringData() {
-    // アクセス統計の読み込み
     fetch('/admin/access_stats', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const accessStats = document.getElementById('accessStats');
-        accessStats.innerHTML = `
-            <p style="color: #333333;"><strong>総アクセス数:</strong> ${data.total_accesses || 0}</p>
-            <p style="color: #333333;"><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
-            <p style="color: #333333;"><strong>最終更新:</strong> ${new Date().toLocaleString('ja-JP')}</p>
-        `;
+        document.getElementById('accessStats').innerHTML =
+            adminKvLine('総アクセス数', data.total_accesses || 0) +
+            adminKvLine('平均レスポンス時間', (data.avg_response_time || 0).toFixed(2) + 'ms') +
+            adminKvLine('最終更新', new Date().toLocaleString('ja-JP'));
     })
-    .catch(error => {
-        document.getElementById('accessStats').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('accessStats').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 
-    // パフォーマンス統計の読み込み
     fetch('/admin/performance_stats', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const performanceStats = document.getElementById('performanceStats');
-        performanceStats.innerHTML = `
-            <p style="color: #333333;"><strong>総リクエスト数:</strong> ${data.total_requests || 0}</p>
-            <p style="color: #333333;"><strong>平均レスポンス時間:</strong> ${(data.avg_response_time || 0).toFixed(2)}ms</p>
-            <p style="color: #333333;"><strong>平均メモリ使用率:</strong> ${(data.avg_memory_usage || 0).toFixed(1)}%</p>
-            <p style="color: #333333;"><strong>平均CPU使用率:</strong> ${(data.avg_cpu_usage || 0).toFixed(1)}%</p>
-            <p style="color: #333333;"><strong>キャッシュヒット率:</strong> ${(data.avg_cache_hit_rate || 0).toFixed(1)}%</p>
-            <p style="color: #333333;"><strong>エラー率:</strong> ${(data.error_rate || 0).toFixed(1)}%</p>
-        `;
+        document.getElementById('performanceStats').innerHTML =
+            adminKvLine('総リクエスト数', data.total_requests || 0) +
+            adminKvLine('平均レスポンス時間', (data.avg_response_time || 0).toFixed(2) + 'ms') +
+            adminKvLine('平均メモリ使用率', (data.avg_memory_usage || 0).toFixed(1) + '%') +
+            adminKvLine('平均CPU使用率', (data.avg_cpu_usage || 0).toFixed(1) + '%') +
+            adminKvLine('キャッシュヒット率', (data.avg_cache_hit_rate || 0).toFixed(1) + '%') +
+            adminKvLine('エラー率', (data.error_rate || 0).toFixed(1) + '%');
     })
-    .catch(error => {
-        document.getElementById('performanceStats').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('performanceStats').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 
-    // ブラウザ分布の読み込み
     fetch('/admin/browser_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const browserDistribution = document.getElementById('browserDistribution');
-        let html = '';
-        for (const [browser, stats] of Object.entries(data)) {
-            html += `<p style="color: #333333;"><strong>${browser}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
-        }
-        browserDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
+        document.getElementById('browserDistribution').innerHTML =
+            adminKvFromEntries(data, 'データがありません');
     })
-    .catch(error => {
-        document.getElementById('browserDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('browserDistribution').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 
-    // OS分布の読み込み
     fetch('/admin/os_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const osDistribution = document.getElementById('osDistribution');
-        let html = '';
-        for (const [os, stats] of Object.entries(data)) {
-            html += `<p style="color: #333333;"><strong>${os}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
-        }
-        osDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
+        document.getElementById('osDistribution').innerHTML =
+            adminKvFromEntries(data, 'データがありません');
     })
-    .catch(error => {
-        document.getElementById('osDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('osDistribution').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 
-    // デバイス分布の読み込み
     fetch('/admin/device_distribution', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const deviceDistribution = document.getElementById('deviceDistribution');
-        let html = '';
-        for (const [device, stats] of Object.entries(data)) {
-            html += `<p style="color: #333333;"><strong>${device}:</strong> ${stats.count}件 (${stats.percentage.toFixed(1)}%)</p>`;
-        }
-        deviceDistribution.innerHTML = html || '<p style="color: #333333;">データがありません</p>';
+        document.getElementById('deviceDistribution').innerHTML =
+            adminKvFromEntries(data, 'データがありません');
     })
-    .catch(error => {
-        document.getElementById('deviceDistribution').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('deviceDistribution').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 
-    // リアルタイム監視の読み込み
     fetch('/admin/realtime_monitoring', adminFetchOptions())
     .then(response => response.json())
     .then(data => {
-        const realtimeMonitoring = document.getElementById('realtimeMonitoring');
-        realtimeMonitoring.innerHTML = `
-            <p style="color: #333333;"><strong>現在のメモリ使用率:</strong> ${data.memory_usage_percent || 0}%</p>
-            <p style="color: #333333;"><strong>現在のCPU使用率:</strong> ${data.cpu_usage_percent || 0}%</p>
-            <p style="color: #333333;"><strong>現在のレスポンス時間:</strong> ${data.response_time_ms || 0}ms</p>
-            <p style="color: #333333;"><strong>アクティブセッション:</strong> ${data.active_sessions || 0}</p>
-            <p style="color: #333333;"><strong>API呼び出し回数:</strong> ${data.api_calls || 0}</p>
-            <p style="color: #333333;"><strong>キャッシュヒット率:</strong> ${(data.cache_hit_rate || 0).toFixed(1)}%</p>
-        `;
+        document.getElementById('realtimeMonitoring').innerHTML =
+            adminKvLine('現在のメモリ使用率', (data.memory_usage_percent || 0) + '%') +
+            adminKvLine('現在のCPU使用率', (data.cpu_usage_percent || 0) + '%') +
+            adminKvLine('現在のレスポンス時間', (data.response_time_ms || 0) + 'ms') +
+            adminKvLine('アクティブセッション', data.active_sessions || 0) +
+            adminKvLine('API呼び出し回数', data.api_calls || 0) +
+            adminKvLine('キャッシュヒット率', (data.cache_hit_rate || 0).toFixed(1) + '%');
     })
-    .catch(error => {
-        document.getElementById('realtimeMonitoring').innerHTML = '<p style="color: red;">エラー: データの読み込みに失敗しました</p>';
+    .catch(function() {
+        document.getElementById('realtimeMonitoring').innerHTML = adminKvError('データの読み込みに失敗しました');
     });
 }
 
@@ -3976,68 +4372,68 @@ function loadSystemStatus() {
         const perfStats = data.performance_stats || {};
         const dbStatus = data.database || {};
         const dbWarnings = dbStatus.config_warnings || [];
-        
-        content.innerHTML = `
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #dee2e6;">
-                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📊 システム全体</h3>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">ステータス:</strong> ${data.status === 'ok' ? '✅ 正常' : '❌ エラー'}</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総セッション数:</strong> ${data.total_sessions}件</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">アクティブセッション:</strong> ${data.active_sessions}件</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">手動返信待ち:</strong> ${data.manual_reply_queue}件</p>
-            </div>
-            
-            <div style="background: #e8eaf6; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c5cae9;">
-                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">🗄️ データベース</h3>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">接続:</strong> ${dbStatus.available ? '✅ 利用可能' : '❌ 不可'}</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">永続化:</strong> ${dbStatus.persist_enabled ? '✅ 有効' : '⚠️ 無効（メモリのみ）'}</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">設定:</strong> ${dbStatus.configured ? '✅ DATABASE_URL あり' : '⚪ 未設定'}</p>
-                ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">Pooler:</strong> ${dbStatus.uses_pooler ? '✅ 使用' : '⚠️ 未使用'}</p>` : ''}
-                ${dbStatus.configured ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">SSL mode:</strong> ${dbStatus.sslmode || 'require'}</p>` : ''}
-                ${dbStatus.channel_binding ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">channel_binding:</strong> ${dbStatus.channel_binding}</p>` : ''}
-                ${dbStatus.last_connect_error ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">直近の接続エラー:</strong> ${dbStatus.last_connect_error}</p>` : ''}
-                ${dbStatus.startup_skip_reason ? `<p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> ${dbStatus.startup_skip_reason}</p>` : (!dbStatus.available && dbStatus.configured ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">スキップ理由:</strong> 不明（起動ログを確認）</p>` : '')}
-                ${dbWarnings.length ? `<p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">警告:</strong> ${dbWarnings.join(' ')}</p>` : ''}
-            </div>
-            
-            <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #c8e6c9;">
-                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">🤖 AI設定</h3>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">AI自動応答:</strong> ${data.ai_auto_reply ? '✅ ON' : '⚠️ OFF'}</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">管理者モード:</strong> ${data.admin_mode ? '✅ ON' : '⚪ OFF'}</p>
-            </div>
-            
-            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe0b2;">
-                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📁 CSVデータ</h3>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">読み込み状態:</strong> ${csvStatus.success ? '✅ 成功' : '❌ 失敗'}</p>
-                ${csvStatus.success ? `
-                    <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">エンコーディング:</strong> ${csvStatus.encoding || 'N/A'}</p>
-                    <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">行数:</strong> ${csvStatus.row_count || 0}行</p>
-                    <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">列数:</strong> ${csvStatus.col_count || 0}列</p>
-                ` : `
-                    <p style="color: #c62828; margin: 8px 0;"><strong style="color: #495057;">エラー:</strong> ${csvStatus.error || '不明なエラー'}</p>
-                `}
-            </div>
-            
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 1px solid #bbdefb;">
-                <h3 style="margin-bottom: 10px; color: #2c3e50; font-weight: 600;">📈 パフォーマンス統計</h3>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総リクエスト数:</strong> ${perfStats.total_requests || 0}件</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">成功:</strong> ${perfStats.successful_requests || 0}件</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">失敗:</strong> ${perfStats.failed_requests || 0}件</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">平均応答時間:</strong> ${(perfStats.average_response_time || 0).toFixed(2)}秒</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">総トークン使用量:</strong> ${perfStats.total_tokens_used || 0}</p>
-                <p style="color: #333; margin: 8px 0;"><strong style="color: #495057;">今日のAPI呼び出し:</strong> ${perfStats.api_calls_today || 0}回</p>
-            </div>
-            
-            <p style="margin-top: 15px; text-align: center; color: #666;"><small>最終更新: ${new Date().toLocaleString('ja-JP')}</small></p>
-        `;
+
+        let dbLines =
+            adminKvLine('接続', dbStatus.available ? '✅ 利用可能' : '❌ 不可') +
+            adminKvLine('永続化', dbStatus.persist_enabled ? '✅ 有効' : '⚠️ 無効（メモリのみ）') +
+            adminKvLine('設定', dbStatus.configured ? '✅ DATABASE_URL あり' : '⚪ 未設定');
+        if (dbStatus.configured) {
+            dbLines += adminKvLine('Pooler', dbStatus.uses_pooler ? '✅ 使用' : '⚠️ 未使用');
+            dbLines += adminKvLine('SSL mode', dbStatus.sslmode || 'require');
+        }
+        if (dbStatus.channel_binding) {
+            dbLines += adminKvLine('channel_binding', dbStatus.channel_binding);
+        }
+        if (dbStatus.last_connect_error) {
+            dbLines += '<p class="admin-kv-list__error"><strong>直近の接続エラー:</strong> ' + escapeHtml(dbStatus.last_connect_error) + '</p>';
+        }
+        if (dbStatus.startup_skip_reason) {
+            dbLines += adminKvLine('スキップ理由', dbStatus.startup_skip_reason);
+        } else if (!dbStatus.available && dbStatus.configured) {
+            dbLines += adminKvLine('スキップ理由', '不明（起動ログを確認）');
+        }
+        if (dbWarnings.length) {
+            dbLines += '<p class="admin-kv-list__error"><strong>警告:</strong> ' + escapeHtml(dbWarnings.join(' ')) + '</p>';
+        }
+
+        let csvLines = adminKvLine('読み込み状態', csvStatus.success ? '✅ 成功' : '❌ 失敗');
+        if (csvStatus.success) {
+            csvLines +=
+                adminKvLine('エンコーディング', csvStatus.encoding || 'N/A') +
+                adminKvLine('行数', (csvStatus.row_count || 0) + '行') +
+                adminKvLine('列数', (csvStatus.col_count || 0) + '列');
+        } else {
+            csvLines += '<p class="admin-kv-list__error"><strong>エラー:</strong> ' + escapeHtml(csvStatus.error || '不明なエラー') + '</p>';
+        }
+
+        content.innerHTML =
+            adminPanelCard('<i class="fa-solid fa-gauge-high" aria-hidden="true"></i> システム全体',
+                adminKvLine('ステータス', data.status === 'ok' ? '✅ 正常' : '❌ エラー') +
+                adminKvLine('総セッション数', (data.total_sessions || 0) + '件') +
+                adminKvLine('アクティブセッション', (data.active_sessions || 0) + '件') +
+                adminKvLine('手動返信待ち', (data.manual_reply_queue || 0) + '件')) +
+            adminPanelCard('<i class="fa-solid fa-database" aria-hidden="true"></i> データベース', dbLines, 'info') +
+            adminPanelCard('<i class="fa-solid fa-robot" aria-hidden="true"></i> AI設定',
+                adminKvLine('AI自動応答', data.ai_auto_reply ? '✅ ON' : '⚠️ OFF') +
+                adminKvLine('管理者モード', data.admin_mode ? '✅ ON' : '⚪ OFF'), 'success') +
+            adminPanelCard('<i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSVデータ', csvLines, 'warn') +
+            adminPanelCard('<i class="fa-solid fa-chart-simple" aria-hidden="true"></i> パフォーマンス統計',
+                adminKvLine('総リクエスト数', (perfStats.total_requests || 0) + '件') +
+                adminKvLine('成功', (perfStats.successful_requests || 0) + '件') +
+                adminKvLine('失敗', (perfStats.failed_requests || 0) + '件') +
+                adminKvLine('平均応答時間', (perfStats.average_response_time || 0).toFixed(2) + '秒') +
+                adminKvLine('総トークン使用量', perfStats.total_tokens_used || 0) +
+                adminKvLine('今日のAPI呼び出し', (perfStats.api_calls_today || 0) + '回')) +
+            '<p class="admin-modal-updated-at">最終更新: ' + escapeHtml(new Date().toLocaleString('ja-JP')) + '</p>';
     })
     .catch(error => {
         console.error('Error:', error);
-        document.getElementById('systemStatusContent').innerHTML = `
-            <div style="background: #ffebee; padding: 15px; border-radius: 8px; color: #c62828;">
-                <p><strong>❌ エラーが発生しました</strong></p>
-                <p>${error.message || 'システム状況の取得に失敗しました'}</p>
-            </div>
-        `;
+        document.getElementById('systemStatusContent').innerHTML =
+            '<section class="admin-panel-card admin-panel-card--danger">' +
+            '<h3 class="admin-panel-card__title"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> エラー</h3>' +
+            '<div class="admin-kv-list">' +
+            adminKvError(error.message || 'システム状況の取得に失敗しました') +
+            '</div></section>';
     });
 }
 
@@ -4161,35 +4557,10 @@ function clearAllLogs() {
             notification.remove();
         }, 3000);
         
-        // 手動返信待ちキューをクリア
-        const queueDiv = document.getElementById('manual-reply-queue');
-        if (queueDiv) {
-            queueDiv.innerHTML = `
-                <div class="empty-state" style="text-align: center; color: #888; font-size: 0.9em; padding: 50px 0;">
-                    <div style="font-size: 3em;">📭</div>
-                    <p style="margin-top: 10px;">手動返信待ちなし</p>
-                </div>
-            `;
-        }
-        
-        // 緊急件数カウンターをリセット
-        const crisisCountElement = document.getElementById('crisis-count');
-        if (crisisCountElement) {
-            crisisCountElement.textContent = '';
-            crisisCountElement.style.background = '#e3f2fd';
-            crisisCountElement.style.color = '#1976d2';
-        }
-        
-        // セッション一覧を更新
+        loadManualReplyQueue();
         if (typeof loadSessions === 'function') {
             loadSessions();
         }
-        
-        // 統計情報を更新
-        const queueCountEl = document.getElementById('queue-count');
-        if (queueCountEl) queueCountEl.textContent = '0';
-        const totalSessionsEl = document.getElementById('total-sessions') || document.getElementById('session-count');
-        if (totalSessionsEl) totalSessionsEl.textContent = '0';
     })
     .catch(error => {
         console.error('Error:', error);
@@ -4629,7 +5000,7 @@ function renderSessionList(sessions) {
         const emptyHint = searchTerm
             ? '検索条件に一致するセッションがありません'
             : sessionListMeaningfulOnly
-                ? '会話のあるセッションがありません。「空セッションを含む」で全件表示できます。'
+                ? '会話のあるセッションがありません。「空セッション」を ON にすると全件表示できます。'
                 : 'セッションがありません';
         sidebar.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users"></i><p>' + escapeHtml(emptyHint) + '</p></div>';
         if (isMobile() && !currentSessionId) {
@@ -4664,7 +5035,7 @@ function renderSessionList(sessions) {
         const shortSessionId = session.session_id ? session.session_id.substring(0, 8) + '...' : 'unknown';
         
         // 危機対応セッションの場合は特別なスタイルを適用
-        const isLine = isLineSession(session);
+        const isLine = isNativeLineSession(session);
         let sessionClass = 'session-item';
         if (isCrisisSession) {
             sessionClass += ' crisis';
@@ -4673,6 +5044,10 @@ function renderSessionList(sessions) {
         }
         if (isLine) {
             sessionClass += ' session-item--line';
+        } else if (isV2LocalTestSession(session)) {
+            sessionClass += ' session-item--v2-test';
+        } else {
+            sessionClass += ' session-item--web';
         }
         const sid = String(session.session_id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const safeUsername = String(username).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -4689,7 +5064,6 @@ function renderSessionList(sessions) {
                 <div class="session-meta">
                     <div class="session-meta__left">
                         <span class="session-time">${lastUpdate}</span>
-                        ${renderV2TestBadge(session)}
                         ${renderSessionLineBadge(session)}
                     </div>
                     <span class="session-count-pill" style="background: ${isCrisisSession ? 'var(--danger)' : messageCountColor};">${messageCount}件</span>
@@ -5142,6 +5516,7 @@ const FEEDBACK_REPORT_TYPES_DISPLAYED = new Set([
     'processing_timeout',
     'positive_feedback',
     'ai_positive',
+    'security_warning',
 ]);
 
 function isFeedbackReportDisplayed(report) {
@@ -5161,9 +5536,1174 @@ function getFeedbackReportTypeLabel(reportType) {
     }[reportType] || reportType;
 }
 
+let feedbackReportsIndex = {};
+let feedbackReportsCache = [];
+let feedbackReportsSelectMode = false;
+let selectedFeedbackReportIds = new Set();
+let feedbackReportsDisplayedIds = [];
+let feedbackChatPreviewReportId = null;
+
+const FEEDBACK_FILTER_TYPE_GROUPS = {
+    evaluation_positive: ['ai_positive', 'positive_feedback'],
+    evaluation_negative: ['ai_negative', 'negative_feedback'],
+    bug_report: ['bug_report'],
+    slow_request: ['slow_request'],
+    processing_timeout: ['processing_timeout'],
+    security_warning: ['security_warning'],
+};
+
+function getFeedbackReportChannel(report) {
+    const meta = parseFeedbackMetadata(report.metadata);
+    const source = String(meta.source || '').toLowerCase();
+    if (source === 'line') {
+        return 'line';
+    }
+    const sessionId = String(report.session_id || '');
+    if (sessionId.indexOf('line:') === 0) {
+        return 'line';
+    }
+    if (report.report_type === 'positive_feedback') {
+        return 'line';
+    }
+    return 'web';
+}
+
+function getFeedbackReportFilterState() {
+    function readChipGroup(groupId) {
+        const group = document.getElementById(groupId);
+        if (!group) {
+            return 'all';
+        }
+        const active = group.querySelector('.admin-feedback-chip.is-active');
+        return active ? (active.getAttribute('data-value') || 'all') : 'all';
+    }
+    return {
+        resolved: readChipGroup('feedbackFilterResolvedGroup'),
+        type: readChipGroup('feedbackFilterTypeGroup'),
+        channel: readChipGroup('feedbackFilterChannelGroup'),
+    };
+}
+
+function initFeedbackReportFilterChips() {
+    ['feedbackFilterResolvedGroup', 'feedbackFilterTypeGroup', 'feedbackFilterChannelGroup'].forEach(function(groupId) {
+        const group = document.getElementById(groupId);
+        if (!group || group.dataset.bound === '1') {
+            return;
+        }
+        group.dataset.bound = '1';
+        group.querySelectorAll('.admin-feedback-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                group.querySelectorAll('.admin-feedback-chip').forEach(function(item) {
+                    item.classList.remove('is-active');
+                });
+                chip.classList.add('is-active');
+                onFeedbackReportFiltersChanged();
+            });
+        });
+    });
+}
+
+function setFeedbackFilterChipValue(groupId, value) {
+    const group = document.getElementById(groupId);
+    if (!group) {
+        return;
+    }
+    let matched = false;
+    group.querySelectorAll('.admin-feedback-chip').forEach(function(chip) {
+        const isMatch = (chip.getAttribute('data-value') || '') === value;
+        chip.classList.toggle('is-active', isMatch);
+        if (isMatch) {
+            matched = true;
+        }
+    });
+    if (!matched) {
+        const first = group.querySelector('.admin-feedback-chip[data-value="all"]') || group.querySelector('.admin-feedback-chip');
+        if (first) {
+            group.querySelectorAll('.admin-feedback-chip').forEach(function(chip) {
+                chip.classList.remove('is-active');
+            });
+            first.classList.add('is-active');
+        }
+    }
+}
+
+function applyFeedbackReportFilters(reports) {
+    const filters = getFeedbackReportFilterState();
+    return (reports || []).filter(function(report) {
+        if (!isFeedbackReportDisplayed(report)) {
+            return false;
+        }
+        if (filters.resolved === 'unresolved' && report.resolved) {
+            return false;
+        }
+        if (filters.resolved === 'resolved' && !report.resolved) {
+            return false;
+        }
+        if (filters.type !== 'all') {
+            const allowedTypes = FEEDBACK_FILTER_TYPE_GROUPS[filters.type];
+            if (!allowedTypes || allowedTypes.indexOf(report.report_type) === -1) {
+                return false;
+            }
+        }
+        if (filters.channel !== 'all' && getFeedbackReportChannel(report) !== filters.channel) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function updateFeedbackFilterResultCount(filteredCount, totalCount) {
+    const el = document.getElementById('feedbackFilterResultCount');
+    if (!el) {
+        return;
+    }
+    if (!totalCount) {
+        el.textContent = '';
+        return;
+    }
+    if (filteredCount === totalCount) {
+        el.textContent = filteredCount + '件';
+    } else {
+        el.textContent = filteredCount + ' / ' + totalCount + '件';
+    }
+}
+
+function onFeedbackReportFiltersChanged() {
+    const displayed = applyFeedbackReportFilters(feedbackReportsCache);
+    updateFeedbackFilterResultCount(displayed.length, feedbackReportsCache.length);
+    renderFeedbackReports(displayed);
+}
+
+let feedbackBulkLayoutObserver = null;
+
+function getFeedbackFilterRoot() {
+    return document.querySelector('#feedbackReportsModal .admin-feedback-filter');
+}
+
+function placeFeedbackBulkInline() {
+    const filter = getFeedbackFilterRoot();
+    const actions = filter && filter.querySelector('.admin-feedback-filter__actions');
+    const selectBtn = document.getElementById('feedback-reports-select-btn');
+    const bulk = document.getElementById('feedback-reports-bulk-toolbar');
+    if (!actions || !selectBtn || !bulk) {
+        return;
+    }
+    bulk.classList.remove('admin-feedback-filter__bulk--docked');
+    if (bulk.parentElement !== actions) {
+        selectBtn.insertAdjacentElement('afterend', bulk);
+    }
+}
+
+function placeFeedbackBulkDocked() {
+    const filter = getFeedbackFilterRoot();
+    const bulk = document.getElementById('feedback-reports-bulk-toolbar');
+    if (!filter || !bulk) {
+        return;
+    }
+    bulk.classList.add('admin-feedback-filter__bulk--docked');
+    if (bulk.parentElement !== filter) {
+        filter.appendChild(bulk);
+    }
+}
+
+function syncFeedbackBulkToolbarPlacement() {
+    const filter = getFeedbackFilterRoot();
+    const bar = filter && filter.querySelector('.admin-feedback-filter__bar');
+    const bulk = document.getElementById('feedback-reports-bulk-toolbar');
+    if (!filter || !bar || !bulk) {
+        return;
+    }
+    if (bulk.hidden) {
+        placeFeedbackBulkInline();
+        bulk.classList.remove('admin-feedback-filter__bulk--docked');
+        return;
+    }
+    placeFeedbackBulkInline();
+    if (bar.scrollWidth > bar.clientWidth + 1) {
+        placeFeedbackBulkDocked();
+    }
+}
+
+function scheduleFeedbackBulkToolbarPlacement() {
+    window.requestAnimationFrame(function() {
+        syncFeedbackBulkToolbarPlacement();
+        window.requestAnimationFrame(syncFeedbackBulkToolbarPlacement);
+    });
+}
+
+function bindFeedbackBulkLayoutObserver() {
+    const filter = getFeedbackFilterRoot();
+    if (!filter || typeof ResizeObserver === 'undefined') {
+        return;
+    }
+    if (feedbackBulkLayoutObserver) {
+        feedbackBulkLayoutObserver.disconnect();
+    }
+    feedbackBulkLayoutObserver = new ResizeObserver(function() {
+        scheduleFeedbackBulkToolbarPlacement();
+    });
+    feedbackBulkLayoutObserver.observe(filter);
+    const bar = filter.querySelector('.admin-feedback-filter__bar');
+    if (bar) {
+        feedbackBulkLayoutObserver.observe(bar);
+    }
+}
+
+function updateFeedbackReportsToolbar() {
+    const selectBtn = document.getElementById('feedback-reports-select-btn');
+    const bulkToolbar = document.getElementById('feedback-reports-bulk-toolbar');
+    const resolveBtn = document.getElementById('feedback-reports-resolve-selected-btn');
+    const deleteBtn = document.getElementById('feedback-reports-delete-selected-btn');
+    const resolveBadge = document.getElementById('feedback-reports-resolve-badge');
+    const deleteBadge = document.getElementById('feedback-reports-delete-badge');
+    const selectedCount = selectedFeedbackReportIds.size;
+    const unresolvedSelected = Array.from(selectedFeedbackReportIds).filter(function(id) {
+        const report = feedbackReportsIndex[id];
+        return report && !report.resolved;
+    }).length;
+
+    if (selectBtn) {
+        const icon = selectBtn.querySelector('i');
+        if (icon) {
+            icon.className = feedbackReportsSelectMode ? 'fa-solid fa-check' : 'fa-solid fa-list-check';
+        }
+        const title = feedbackReportsSelectMode ? '選択を完了' : '複数選択';
+        selectBtn.title = title;
+        selectBtn.setAttribute('aria-label', title);
+        selectBtn.classList.toggle('session-list-action-btn--active', feedbackReportsSelectMode);
+    }
+    if (bulkToolbar) {
+        bulkToolbar.hidden = !feedbackReportsSelectMode;
+    }
+    if (resolveBtn) {
+        const show = feedbackReportsSelectMode && unresolvedSelected > 0;
+        resolveBtn.style.display = show ? 'inline-flex' : 'none';
+        const title = unresolvedSelected > 0 ? unresolvedSelected + '件を解決' : '選択した報告を解決';
+        resolveBtn.title = title;
+        resolveBtn.setAttribute('aria-label', title);
+        if (resolveBadge) {
+            if (show) {
+                resolveBadge.textContent = String(unresolvedSelected);
+                resolveBadge.hidden = false;
+                resolveBadge.style.background = 'var(--success, #16a34a)';
+            } else {
+                resolveBadge.hidden = true;
+            }
+        }
+    }
+    if (deleteBtn) {
+        const show = feedbackReportsSelectMode && selectedCount > 0;
+        deleteBtn.style.display = show ? 'inline-flex' : 'none';
+        const title = selectedCount > 0 ? selectedCount + '件を削除' : '選択した報告を削除';
+        deleteBtn.title = title;
+        deleteBtn.setAttribute('aria-label', title);
+        if (deleteBadge) {
+            if (show) {
+                deleteBadge.textContent = String(selectedCount);
+                deleteBadge.hidden = false;
+            } else {
+                deleteBadge.hidden = true;
+            }
+        }
+    }
+    scheduleFeedbackBulkToolbarPlacement();
+}
+
+function toggleFeedbackReportsSelectMode() {
+    feedbackReportsSelectMode = !feedbackReportsSelectMode;
+    if (!feedbackReportsSelectMode) {
+        selectedFeedbackReportIds.clear();
+    }
+    updateFeedbackReportsToolbar();
+    renderFeedbackReports(applyFeedbackReportFilters(feedbackReportsCache));
+}
+
+function syncFeedbackReportRowHighlight(reportId, checked) {
+    const row = document.querySelector('#feedbackReportsContent tr[data-feedback-id="' + reportId + '"]');
+    if (!row) {
+        return;
+    }
+    row.classList.toggle('feedback-row--selected', !!checked);
+}
+
+function toggleFeedbackReportSelection(reportId, checked) {
+    if (!reportId) {
+        return;
+    }
+    if (checked) {
+        selectedFeedbackReportIds.add(reportId);
+    } else {
+        selectedFeedbackReportIds.delete(reportId);
+    }
+    syncFeedbackReportRowHighlight(reportId, checked);
+    updateFeedbackSelectAllState();
+    updateFeedbackReportsToolbar();
+}
+
+function updateFeedbackSelectAllState() {
+    const selectAll = document.getElementById('feedback-select-all-cb');
+    if (!selectAll) {
+        return;
+    }
+    const allSelected = feedbackReportsDisplayedIds.length > 0 &&
+        feedbackReportsDisplayedIds.every(function(id) { return selectedFeedbackReportIds.has(id); });
+    const someSelected = feedbackReportsDisplayedIds.some(function(id) { return selectedFeedbackReportIds.has(id); });
+    selectAll.checked = allSelected;
+    selectAll.indeterminate = !allSelected && someSelected;
+}
+
+function toggleAllFeedbackReportSelection(checked) {
+    feedbackReportsDisplayedIds.forEach(function(id) {
+        if (checked) {
+            selectedFeedbackReportIds.add(id);
+        } else {
+            selectedFeedbackReportIds.delete(id);
+        }
+    });
+    updateFeedbackReportsToolbar();
+    document.querySelectorAll('#feedbackReportsContent .feedback-select-cb').forEach(function(cb) {
+        cb.checked = checked;
+    });
+    document.querySelectorAll('#feedbackReportsContent tr[data-feedback-id]').forEach(function(row) {
+        row.classList.toggle('feedback-row--selected', checked);
+    });
+    updateFeedbackSelectAllState();
+}
+
+function handleFeedbackReportRowClick(event, reportId) {
+    if (!feedbackReportsSelectMode) {
+        return;
+    }
+    if (event.target && event.target.closest('button, a, input, .admin-table-actions')) {
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const row = event.currentTarget;
+    const cb = row && row.querySelector('.feedback-select-cb');
+    if (cb) {
+        cb.checked = !cb.checked;
+        toggleFeedbackReportSelection(reportId, cb.checked);
+    }
+}
+
+function resolveSelectedFeedbackReports() {
+    const ids = Array.from(selectedFeedbackReportIds).filter(function(id) {
+        const report = feedbackReportsIndex[id];
+        return report && !report.resolved;
+    });
+    if (!ids.length) {
+        return;
+    }
+    if (!confirm(ids.length + '件の報告を解決済みにマークします。よろしいですか？')) {
+        return;
+    }
+    Promise.all(ids.map(function(feedbackId) {
+        return fetch('/api/resolve_feedback/' + feedbackId, adminFetchOptions({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        })).then(function(response) {
+            return response.json().then(function(data) {
+                return { feedbackId: feedbackId, ok: response.ok, data: data };
+            });
+        });
+    }))
+        .then(function(results) {
+            const failed = results.filter(function(r) {
+                return !r.ok || !r.data || r.data.status !== 'success';
+            });
+            const resolved = results.length - failed.length;
+            if (resolved > 0) {
+                showNotification(resolved + '件の報告を解決済みにしました', 'success');
+            }
+            if (failed.length > 0) {
+                showNotification(failed.length + '件の解決に失敗しました', 'error');
+            }
+            selectedFeedbackReportIds.clear();
+            feedbackReportsSelectMode = false;
+            updateFeedbackReportsToolbar();
+            loadFeedbackReports();
+        })
+        .catch(function() {
+            showNotification('一括解決に失敗しました', 'error');
+        });
+}
+
+function deleteSelectedFeedbackReports() {
+    const ids = Array.from(selectedFeedbackReportIds);
+    if (!ids.length) {
+        return;
+    }
+    if (!confirm(ids.length + '件の報告を削除します。よろしいですか？')) {
+        return;
+    }
+    Promise.all(ids.map(function(feedbackId) {
+        return fetch('/api/delete_feedback/' + feedbackId, adminFetchOptions({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        })).then(function(response) {
+            return response.json().then(function(data) {
+                return { feedbackId: feedbackId, ok: response.ok, data: data };
+            });
+        });
+    }))
+        .then(function(results) {
+            const failed = results.filter(function(r) {
+                return !r.ok || !r.data || r.data.status !== 'success';
+            });
+            const deleted = results.length - failed.length;
+            if (deleted > 0) {
+                showNotification(deleted + '件の報告を削除しました', 'success');
+            }
+            if (failed.length > 0) {
+                showNotification(failed.length + '件の削除に失敗しました', 'error');
+            }
+            selectedFeedbackReportIds.clear();
+            feedbackReportsSelectMode = false;
+            updateFeedbackReportsToolbar();
+            loadFeedbackReports();
+        })
+        .catch(function() {
+            showNotification('一括削除に失敗しました', 'error');
+        });
+}
+
+function resetFeedbackReportFilters() {
+    setFeedbackFilterChipValue('feedbackFilterResolvedGroup', 'all');
+    setFeedbackFilterChipValue('feedbackFilterTypeGroup', 'all');
+    setFeedbackFilterChipValue('feedbackFilterChannelGroup', 'all');
+    onFeedbackReportFiltersChanged();
+}
+
+const FEEDBACK_NEGATIVE_REASON_LABELS = {
+    no_recommendation: '推奨医薬品が示されなかった',
+    wrong_recommendation: '推奨内容が不適切',
+    safety_concern: '安全性への懸念',
+    other: 'その他'
+};
+
+function parseFeedbackMetadata(raw) {
+    if (!raw) {
+        return {};
+    }
+    if (typeof raw === 'object') {
+        return raw;
+    }
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return {};
+    }
+}
+
+function feedbackTypeBadge(reportType) {
+    const label = getFeedbackReportTypeLabel(reportType);
+    let variant = 'neutral';
+    if (reportType === 'ai_positive' || reportType === 'positive_feedback') {
+        variant = 'success';
+    } else if (reportType === 'ai_negative' || reportType === 'negative_feedback') {
+        variant = 'danger';
+    } else if (reportType === 'security_warning' || reportType === 'processing_timeout') {
+        variant = 'warn';
+    } else if (reportType === 'bug_report' || reportType === 'slow_request') {
+        variant = 'info';
+    }
+    return '<span class="admin-badge admin-badge--' + variant + '">' + escapeHtml(label) + '</span>';
+}
+
+function stripHtmlForAdminPreview(html) {
+    return String(html || '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function sanitizeAdminPreviewHtml(html) {
+    return String(html || '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+        .replace(/javascript:/gi, '');
+}
+
+function normalizeFeedbackMatchText(text) {
+    return stripHtmlForAdminPreview(String(text || '')).replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function getFeedbackBotMatchText(botMsg) {
+    if (!botMsg) {
+        return '';
+    }
+    let text = getAdminMessageText(botMsg) || botMsg.content || '';
+    if (botMsg.diagnosis && botMsg.diagnosis.message) {
+        text = String(botMsg.diagnosis.message) + ' ' + text;
+    }
+    if (botMsg.diagnosis && (botMsg.diagnosis.render === 'sage_status' || botMsg.diagnosis.render === 'sage_qa') && window.StatusRenderer) {
+        const statusHtml = window.StatusRenderer.buildSageStatusBubbleHtml(botMsg.diagnosis);
+        if (statusHtml) {
+            text = statusHtml + ' ' + text;
+        }
+    }
+    return normalizeFeedbackMatchText(text);
+}
+
+function botMessageMatchesFeedbackReport(botMsg, reportAiResponse) {
+    const reportPlain = normalizeFeedbackMatchText(reportAiResponse);
+    if (!reportPlain) {
+        return true;
+    }
+    const botPlain = getFeedbackBotMatchText(botMsg);
+    if (!botPlain) {
+        return false;
+    }
+    if (botPlain.includes(reportPlain) || reportPlain.includes(botPlain)) {
+        return true;
+    }
+    const reportWords = reportPlain.split(/\s+/).filter(Boolean);
+    if (reportWords.length > 0 && reportWords.length <= 6) {
+        return reportWords.every(function(word) {
+            return botPlain.includes(word);
+        });
+    }
+    return false;
+}
+
+function userMessageMatchesFeedbackReport(userMsg, reportUserMessage) {
+    const targetUser = normalizeFeedbackMatchText(reportUserMessage);
+    if (!targetUser) {
+        return true;
+    }
+    const userText = normalizeFeedbackMatchText(getAdminMessageText(userMsg));
+    return userText === targetUser || userText.includes(targetUser) || targetUser.includes(userText);
+}
+
+function findFeedbackReportMessagePair(messages, report, session) {
+    const list = normalizeAdminMessagesForDisplay(messages, session);
+    const reportTime = report.created_at ? new Date(report.created_at).getTime() : NaN;
+    let best = null;
+    let bestScore = -Infinity;
+
+    for (let i = 0; i < list.length; i++) {
+        const msg = list[i];
+        if (msg.type !== 'user' || !userMessageMatchesFeedbackReport(msg, report.user_message)) {
+            continue;
+        }
+        const userText = normalizeFeedbackMatchText(getAdminMessageText(msg));
+        const targetUser = normalizeFeedbackMatchText(report.user_message);
+
+        for (let j = i + 1; j < list.length; j++) {
+            const next = list[j];
+            if (next.type === 'user') {
+                break;
+            }
+            if (next.type !== 'bot' || !botMessageMatchesFeedbackReport(next, report.ai_response)) {
+                continue;
+            }
+
+            let score = 0;
+            if (userText === targetUser) {
+                score += 100;
+            } else if (userText.includes(targetUser) || targetUser.includes(userText)) {
+                score += 60;
+            }
+            const botTime = parseAdminMessageTimestamp(next, session);
+            if (!Number.isNaN(reportTime) && botTime != null) {
+                score -= Math.min(Math.abs(reportTime - botTime) / 60000, 80);
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                best = { userMsg: msg, botMsg: next };
+            }
+            break;
+        }
+    }
+
+    if (!best) {
+        for (let j = 0; j < list.length; j++) {
+            const botMsg = list[j];
+            if (botMsg.type !== 'bot' || !botMessageMatchesFeedbackReport(botMsg, report.ai_response)) {
+                continue;
+            }
+            let userMsg = null;
+            for (let k = j - 1; k >= 0; k--) {
+                if (list[k].type === 'user') {
+                    userMsg = list[k];
+                    break;
+                }
+            }
+            if (userMsg) {
+                best = { userMsg: userMsg, botMsg: botMsg };
+            }
+            break;
+        }
+    }
+    return best;
+}
+
+function renderFeedbackReportMessagesHtml(report, session, options) {
+    options = options || {};
+    if (isFeedbackInvestigationReport(report) && (options.parts || 'both') !== 'user') {
+        const log = buildFeedbackInvestigationLog(report);
+        const wrapperClass = options.wrapperClass || 'admin-feedback-chat-thread-messages';
+        let html = '<div class="' + escapeHtml(wrapperClass) + ' app-scrollbar">';
+        if ((options.parts || 'both') === 'both') {
+            const userMsg = { type: 'user', content: report.user_message || '（入力なし）' };
+            const tempUser = document.createElement('div');
+            const savedSessionId = currentSessionId;
+            const savedDiag = currentDetailedDiagnosis;
+            try {
+                currentSessionId = null;
+                currentDetailedDiagnosis = null;
+                renderChatMessages([userMsg], tempUser);
+            } finally {
+                currentSessionId = savedSessionId;
+                currentDetailedDiagnosis = savedDiag;
+            }
+            html += tempUser.innerHTML;
+        }
+        html += '<pre class="admin-feedback-investigation-log admin-text-pre app-scrollbar">' +
+            escapeHtml(log) + '</pre></div>';
+        return { html: html, usedSessionMessages: false, investigation: true };
+    }
+    const parts = options.parts || 'both';
+    const wrapperClass = options.wrapperClass || 'admin-feedback-chat-thread-messages';
+    const savedSessionId = currentSessionId;
+    const savedDiag = currentDetailedDiagnosis;
+    const tempDiv = document.createElement('div');
+    let usedSessionMessages = false;
+
+    function messagesForParts(pair) {
+        if (!pair) {
+            return null;
+        }
+        if (parts === 'bot') {
+            return [pair.botMsg];
+        }
+        if (parts === 'user') {
+            return [pair.userMsg];
+        }
+        return [pair.userMsg, pair.botMsg];
+    }
+
+    function fallbackMessages() {
+        const fallback = [];
+        if (parts === 'both' || parts === 'user') {
+            fallback.push({ type: 'user', content: report.user_message || '（入力なし）' });
+        }
+        if (parts === 'both' || parts === 'bot') {
+            fallback.push({ type: 'bot', content: report.ai_response || '' });
+        }
+        return fallback;
+    }
+
+    try {
+        if (session && Array.isArray(session.messages) && session.messages.length) {
+            currentSessionId = normalizeLineSessionId(session.session_id);
+            currentDetailedDiagnosis = session.detailed_diagnosis || null;
+            const pair = findFeedbackReportMessagePair(session.messages, report, session);
+            const msgs = messagesForParts(pair);
+            if (msgs && msgs.length) {
+                renderChatMessages(msgs, tempDiv);
+                usedSessionMessages = true;
+            }
+        }
+        if (!usedSessionMessages) {
+            currentSessionId = null;
+            currentDetailedDiagnosis = null;
+            renderChatMessages(fallbackMessages(), tempDiv);
+        }
+    } finally {
+        currentSessionId = savedSessionId;
+        currentDetailedDiagnosis = savedDiag;
+    }
+
+    let html = '<div class="' + escapeHtml(wrapperClass) + ' app-scrollbar">';
+    if (options.showFallbackNote && session && !usedSessionMessages) {
+        html += '<p class="admin-feedback-chat-preview-fallback-note">該当メッセージを特定できなかったため、報告に保存された内容を表示しています。</p>';
+    }
+    html += tempDiv.innerHTML + '</div>';
+    return { html: html, usedSessionMessages: usedSessionMessages };
+}
+
+function renderFeedbackPreviewMessagesHtml(report, session, options) {
+    return renderFeedbackReportMessagesHtml(report, session, Object.assign({ parts: 'both' }, options || {}));
+}
+
+function fetchFeedbackReportSession(report) {
+    const sessionId = (report.session_id || '').trim();
+    if (!sessionId) {
+        return Promise.resolve(null);
+    }
+    return adminFetchJson(buildMainSessionUrl(sessionId))
+        .then(function(data) {
+            const session = data && data.session ? data.session : null;
+            if (session) {
+                upsertAdminSessionRow(session);
+            }
+            return session;
+        })
+        .catch(function() {
+            return null;
+        });
+}
+
+function isFeedbackInvestigationReport(report) {
+    return report && (report.report_type === 'slow_request' || report.report_type === 'processing_timeout');
+}
+
+function appendFeedbackInvestigationLines(lines, title, entries) {
+    const items = (entries || []).filter(function(entry) {
+        return entry && entry[1] !== undefined && entry[1] !== null && String(entry[1]).trim() !== '';
+    });
+    if (!items.length) {
+        return;
+    }
+    lines.push(title);
+    items.forEach(function(entry) {
+        lines.push('  ' + entry[0] + ': ' + entry[1]);
+    });
+    lines.push('');
+}
+
+function buildFeedbackInvestigationLog(report) {
+    const meta = parseFeedbackMetadata(report.metadata);
+    const lines = ['【調査用ログ】', ''];
+
+    if (report.report_type === 'slow_request') {
+        lines.push('ユーザーが「時間がかかっています」を押した時点のスナップショットです。');
+        lines.push('（レイテンシ・コストは調査参考値であり、課金根拠ではありません）');
+        lines.push('');
+    } else if (report.report_type === 'processing_timeout') {
+        lines.push('処理タイムアウトとして記録された報告です。');
+        lines.push('');
+    }
+
+    const processing = meta.processing_status;
+    if (processing && typeof processing === 'object') {
+        appendFeedbackInvestigationLines(lines, '■ サーバー処理状況（通知時点）', [
+            ['アクティブ', processing.active ? 'はい' : 'いいえ'],
+            ['ステップID', processing.step_id || processing.current_step],
+            ['表示ラベル', processing.label || processing.current_label],
+            ['進捗', processing.percent != null ? processing.percent + '%' : ''],
+            ['フロー', processing.flow_id],
+            ['担当エージェント', processing.agent_name],
+            ['担当役割', processing.agent_role],
+            ['遅延ヒント', processing.slow_hint],
+            ['フローヒント', processing.flow_hint],
+        ]);
+        if (processing.advice_preview) {
+            lines.push('  応答プレビュー: ' + feedbackTruncate(processing.advice_preview, 400));
+            lines.push('');
+        }
+    }
+
+    const client = meta.client_context;
+    if (client && typeof client === 'object') {
+        appendFeedbackInvestigationLines(lines, '■ クライアント状況', [
+            ['待機時間', client.waiting_ms != null ? client.waiting_ms + ' ms' : ''],
+            ['UIラベル', client.processing_label],
+            ['UIステップ', client.processing_step],
+            ['UI進捗', client.processing_percent],
+            ['言語', client.language],
+            ['報告時刻', client.reported_at],
+            ['ページURL', client.page_url],
+        ]);
+    }
+
+    const perf = meta.pipeline_perf_snapshot;
+    if (perf && typeof perf === 'object') {
+        appendFeedbackInvestigationLines(lines, '■ パイプライン計測（通知時点）', [
+            ['チャネル', perf.channel],
+            ['経過時間', perf.elapsed_ms != null ? perf.elapsed_ms + ' ms' : ''],
+        ]);
+        if (perf.breakdown && typeof perf.breakdown === 'object') {
+            Object.keys(perf.breakdown).forEach(function(step) {
+                lines.push('  ' + step + ': ' + perf.breakdown[step] + ' ms');
+            });
+        }
+        if (perf.llm && typeof perf.llm === 'object') {
+            appendFeedbackInvestigationLines(lines, '  LLM（調査参考）', [
+                ['呼び出し回数', perf.llm.llm_call_count],
+                ['合計レイテンシ', perf.llm.llm_total_latency_ms != null ? perf.llm.llm_total_latency_ms + ' ms' : ''],
+                ['概算コスト', perf.llm.llm_session_cost_jpy != null ? perf.llm.llm_session_cost_jpy + ' JPY' : ''],
+                ['モデル', perf.llm.model_profile],
+            ]);
+        }
+        if (perf.extra && typeof perf.extra === 'object' && Object.keys(perf.extra).length) {
+            lines.push('  追加計測: ' + JSON.stringify(perf.extra));
+            lines.push('');
+        }
+    }
+
+    const sessionSnap = meta.session_investigation;
+    if (sessionSnap && typeof sessionSnap === 'object') {
+        appendFeedbackInvestigationLines(lines, '■ セッション状況', [
+            ['メッセージ数', sessionSnap.message_count],
+            ['最終メッセージ種別', sessionSnap.last_message_type],
+            ['最終bot render', sessionSnap.last_bot_render],
+            ['最終bot flow', sessionSnap.last_bot_flow],
+            ['ユーザー名', sessionSnap.username],
+            ['チャネル', sessionSnap.channel],
+        ]);
+    }
+
+    appendFeedbackInvestigationLines(lines, '■ 接続情報', [
+        ['IP', meta.client_ip],
+        ['User-Agent', meta.user_agent],
+        ['サーバー時刻', meta.server_time],
+        ['PID', meta.pid],
+    ]);
+
+    if (report.ai_response) {
+        lines.push('■ 要約（DB保存値）');
+        lines.push('  ' + report.ai_response);
+        lines.push('');
+    }
+
+    const traceKeys = Object.keys(meta).filter(function(key) {
+        return ['processing_status', 'client_context', 'pipeline_perf_snapshot', 'session_investigation',
+            'source', 'event', 'session_id', 'client_ip', 'user_agent', 'last_user_message',
+            'server_time', 'pid', 'recorded_at'].indexOf(key) === -1;
+    });
+    if (traceKeys.length) {
+        lines.push('■ その他メタデータ');
+        traceKeys.forEach(function(key) {
+            try {
+                lines.push('  ' + key + ': ' + JSON.stringify(meta[key]));
+            } catch (e) {
+                lines.push('  ' + key + ': ' + String(meta[key]));
+            }
+        });
+    }
+
+    return lines.join('\n').trim();
+}
+
+function buildFeedbackBotLogPlainText(botMsg) {
+    if (!botMsg) {
+        return '';
+    }
+    if (botMsg.diagnosis && typeof botMsg.diagnosis === 'object') {
+        const diag = botMsg.diagnosis;
+        const parts = [];
+        if (diag.title) {
+            parts.push(String(diag.title));
+        }
+        if (diag.subtitle) {
+            parts.push(String(diag.subtitle));
+        }
+        if (diag.message) {
+            parts.push(String(diag.message));
+        }
+        (diag.hints || []).forEach(function(hint) {
+            if (hint) {
+                parts.push(String(hint));
+            }
+        });
+        (diag.sections || []).forEach(function(section) {
+            if (section && section.title) {
+                parts.push('\n[' + section.title + ']');
+            }
+            (section && section.items ? section.items : []).forEach(function(item) {
+                if (item) {
+                    parts.push('・' + String(item));
+                }
+            });
+        });
+        if (parts.length) {
+            return parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+        }
+        if (window.TtsBuilder && typeof window.TtsBuilder.buildFromDiagnosis === 'function') {
+            const fromDiag = window.TtsBuilder.buildFromDiagnosis(diag);
+            if (fromDiag) {
+                return fromDiag.replace(/。/g, '。\n').replace(/\n{3,}/g, '\n\n').trim();
+            }
+        }
+    }
+    const content = botMsg.content || '';
+    if (content && (shouldRenderBotContentAsHtml(botMsg, content) || isStatusCardHtml(content))) {
+        if (window.TtsBuilder && typeof window.TtsBuilder.stripHtml === 'function') {
+            return window.TtsBuilder.stripHtml(content);
+        }
+        return stripHtmlForAdminPreview(content);
+    }
+    return getAdminMessageText(botMsg) || stripHtmlForAdminPreview(content);
+}
+
+function buildFeedbackDetailLogContent(report, session) {
+    if (isFeedbackInvestigationReport(report)) {
+        return {
+            userText: report.user_message || '（入力なし）',
+            botText: buildFeedbackInvestigationLog(report),
+            investigation: true,
+        };
+    }
+    let userText = report.user_message || '';
+    let botText = '';
+    if (session && Array.isArray(session.messages)) {
+        const pair = findFeedbackReportMessagePair(session.messages, report, session);
+        if (pair) {
+            if (pair.userMsg) {
+                userText = getAdminMessageText(pair.userMsg) || userText;
+            }
+            if (pair.botMsg) {
+                botText = buildFeedbackBotLogPlainText(pair.botMsg);
+            }
+        }
+    }
+    if (!botText) {
+        botText = stripHtmlForAdminPreview(report.ai_response) || '（出力なし）';
+    }
+    return {
+        userText: userText || '（入力なし）',
+        botText: botText,
+        investigation: false,
+    };
+}
+
+function loadFeedbackDetailOutput(report) {
+    const outputEl = document.getElementById('feedbackDetailOutput');
+    const inputEl = document.getElementById('feedbackDetailInput');
+    if (outputEl) {
+        outputEl.innerHTML = '<div class="admin-feedback-chat-thread-loading">読み込み中...</div>';
+    }
+
+    function applyRendered(session) {
+        const log = buildFeedbackDetailLogContent(report, session);
+        if (inputEl) {
+            inputEl.textContent = log.userText;
+        }
+        if (outputEl) {
+            const preClass = log.investigation
+                ? 'admin-feedback-investigation-log admin-text-pre app-scrollbar'
+                : 'admin-feedback-detail-log-pre admin-text-pre app-scrollbar';
+            outputEl.innerHTML = '<pre class="' + preClass + '">' + escapeHtml(log.botText) + '</pre>';
+        }
+    }
+
+    return fetchFeedbackReportSession(report).then(applyRendered);
+}
+
+function loadFeedbackChatPreviewThread(report) {
+    const threadEl = document.getElementById('feedbackChatPreviewThread');
+    const noticeEl = document.getElementById('feedbackChatPreviewNotice');
+    if (threadEl) {
+        threadEl.innerHTML = '<div class="admin-feedback-chat-thread-loading">読み込み中...</div>';
+    }
+
+    return fetchFeedbackReportSession(report)
+        .then(function(session) {
+            const rendered = renderFeedbackPreviewMessagesHtml(report, session, {
+                showFallbackNote: Boolean(session),
+            });
+            if (threadEl) {
+                threadEl.innerHTML = rendered.html;
+            }
+            if (noticeEl) {
+                if (rendered.usedSessionMessages) {
+                    noticeEl.textContent = 'セッション履歴から報告時点の入出力を表示しています。';
+                } else if (session) {
+                    noticeEl.textContent = '該当メッセージを特定できなかったため、報告に保存された入出力を表示しています。';
+                } else {
+                    noticeEl.textContent = 'セッションを取得できないため、報告に保存された入出力のみ表示しています。';
+                }
+            }
+            return rendered;
+        })
+        .catch(function() {
+            const rendered = renderFeedbackPreviewMessagesHtml(report, null, { showFallbackNote: false });
+            if (threadEl) {
+                threadEl.innerHTML = rendered.html;
+            }
+            if (noticeEl) {
+                noticeEl.textContent = 'セッションの取得に失敗したため、報告に保存された入出力のみ表示しています。';
+            }
+            return rendered;
+        });
+}
+
+function closeAllFeedbackModals() {
+    document.body.classList.remove('admin-modal-stack-open');
+    [FEEDBACK_REPORTS_MODAL_ID].concat(Array.from(FEEDBACK_REPORTS_STACK_CHILDREN)).forEach(function(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = '';
+        }
+    });
+}
+
+function closeAllAdminModals() {
+    document.body.classList.remove('admin-modal-stack-open');
+    document.querySelectorAll('.admin-modal, .modal').forEach(function(modal) {
+        modal.classList.remove('show');
+        modal.style.display = '';
+    });
+}
+
+function checkAdminSessionExistsInDb(sessionId) {
+    if (findAdminSessionById(sessionId)) {
+        return Promise.resolve(true);
+    }
+    return adminFetchJson(buildMainSessionUrl(sessionId))
+        .then(function(data) {
+            if (data && data.session) {
+                upsertAdminSessionRow(data.session);
+                return true;
+            }
+            return false;
+        })
+        .catch(function() {
+            return false;
+        });
+}
+
+function setFeedbackChatPreviewGoButtonState(enabled, title) {
+    const btn = document.getElementById('feedbackChatPreviewGoChatBtn');
+    if (!btn) {
+        return;
+    }
+    btn.disabled = !enabled;
+    btn.title = title || (enabled ? '管理画面のチャットを開く' : 'セッションがDBにありません');
+    btn.classList.toggle('btn-primary', enabled);
+    btn.classList.toggle('btn-secondary', !enabled);
+    btn.innerHTML = enabled
+        ? '<i class="fa-solid fa-comment" aria-hidden="true"></i><span>チャットへ</span>'
+        : '<i class="fa-solid fa-comment-slash" aria-hidden="true"></i><span>チャットへ</span>';
+}
+
+function refreshFeedbackChatPreviewGoButton(report) {
+    const sessionId = (report.session_id || '').trim();
+    if (!sessionId) {
+        setFeedbackChatPreviewGoButtonState(false, 'セッションIDが記録されていません');
+        return;
+    }
+    if (findAdminSessionById(sessionId)) {
+        setFeedbackChatPreviewGoButtonState(true);
+        return;
+    }
+    setFeedbackChatPreviewGoButtonState(false, 'セッションを確認中...');
+    checkAdminSessionExistsInDb(sessionId)
+        .then(function(exists) {
+            setFeedbackChatPreviewGoButtonState(
+                exists,
+                exists ? '管理画面のチャットを開く' : 'セッションはDBに存在しません（削除済みまたは期限切れ）'
+            );
+        });
+}
+
+function openFeedbackPreviewGoToChat() {
+    const report = feedbackReportsIndex[feedbackChatPreviewReportId];
+    if (!report) {
+        showNotification('報告データが見つかりません。', 'warning');
+        return;
+    }
+    const sessionId = (report.session_id || '').trim();
+    const username = report.username || 'Unknown';
+    if (!sessionId) {
+        showNotification('セッションIDが記録されていません。', 'warning');
+        return;
+    }
+    const proceed = function() {
+        closeAllAdminModals();
+        navigateToAdminSession(sessionId, username, { skipCloseModals: true });
+    };
+    checkAdminSessionExistsInDb(sessionId)
+        .then(function(exists) {
+            if (exists) {
+                proceed();
+            } else {
+                showNotification('セッションがDBに存在しません。', 'warning');
+                setFeedbackChatPreviewGoButtonState(false, 'セッションはDBに存在しません');
+            }
+        });
+}
+
+function feedbackTruncate(text, maxLen) {
+    const value = String(text || '').trim();
+    if (value.length <= maxLen) {
+        return value;
+    }
+    return value.slice(0, maxLen) + '…';
+}
+
+function buildFeedbackEvaluationSummary(report) {
+    const meta = parseFeedbackMetadata(report.metadata);
+    const lines = [];
+    const type = getFeedbackReportTypeLabel(report.report_type);
+
+    lines.push('報告種別: ' + type);
+
+    if (report.report_type === 'positive_feedback' || report.report_type === 'ai_positive') {
+        lines.push('ユーザー操作により、直前の AI 応答が「適切」と記録されました。');
+    } else if (report.report_type === 'negative_feedback' || report.report_type === 'ai_negative') {
+        lines.push('ユーザー操作により、直前の AI 応答が「不適切」と記録されました。');
+        if (report.negative_reason) {
+            lines.push(
+                '不適切理由: ' +
+                (FEEDBACK_NEGATIVE_REASON_LABELS[report.negative_reason] || report.negative_reason)
+            );
+        }
+    } else if (report.report_type === 'security_warning') {
+        lines.push('セキュリティ判定により警告が記録されました。');
+    } else if (report.report_type === 'slow_request') {
+        lines.push('応答が遅延したため、ユーザー操作により遅延通知として記録されました。');
+        const meta = parseFeedbackMetadata(report.metadata);
+        const ps = meta.processing_status;
+        if (ps && ps.step_id) {
+            lines.push('遅延時ステップ: ' + (ps.label || ps.step_id) +
+                (ps.percent != null ? ' (' + ps.percent + '%)' : ''));
+        }
+        if (meta.client_context && meta.client_context.waiting_ms != null) {
+            lines.push('クライアント待機: ' + meta.client_context.waiting_ms + ' ms');
+        }
+        if (meta.pipeline_perf_snapshot && meta.pipeline_perf_snapshot.elapsed_ms != null) {
+            lines.push('サーバー経過: ' + meta.pipeline_perf_snapshot.elapsed_ms + ' ms（調査参考）');
+        }
+    } else if (report.report_type === 'processing_timeout') {
+        lines.push('処理タイムアウトが発生したため、自動的に記録されました。');
+    } else if (report.report_type === 'bug_report') {
+        lines.push('ユーザーから不具合報告が送信されました。');
+    }
+
+    if (report.security_score !== null && report.security_score !== undefined) {
+        lines.push('セキュリティスコア: ' + Number(report.security_score).toFixed(1));
+    }
+    if (meta.source) {
+        lines.push('記録元: ' + meta.source);
+    }
+    if (meta.event) {
+        lines.push('トリガーイベント: ' + meta.event);
+    }
+    if (meta.line_user_id) {
+        lines.push('LINEユーザーID: ' + meta.line_user_id);
+    }
+    if (meta.session_id && meta.session_id !== report.session_id) {
+        lines.push('トレース上のセッション: ' + meta.session_id);
+    }
+    if (report.session_id) {
+        lines.push('セッションID: ' + report.session_id);
+    }
+    if (report.feedback_text) {
+        lines.push('フィードバック本文: ' + report.feedback_text);
+    }
+    if (report.created_at) {
+        lines.push('記録日時: ' + new Date(report.created_at).toLocaleString('ja-JP'));
+    }
+
+    return lines.join('\n');
+}
+
 function formatFeedbackTraceText(report) {
-    const meta = report.metadata;
-    if (!meta || typeof meta !== 'object' || Object.keys(meta).length === 0) {
+    const meta = parseFeedbackMetadata(report.metadata);
+    if (!meta || Object.keys(meta).length === 0) {
         return '';
     }
     try {
@@ -5173,124 +6713,296 @@ function formatFeedbackTraceText(report) {
     }
 }
 
+function openFeedbackDetailModal(reportId) {
+    const report = feedbackReportsIndex[reportId];
+    if (!report) {
+        showNotification('報告データが見つかりません。一覧を更新してください。', 'warning');
+        return;
+    }
+
+    const titleEl = document.getElementById('feedbackDetailTitle');
+    const metaSection = document.getElementById('feedbackDetailMetaSection');
+    const metaEl = document.getElementById('feedbackDetailMeta');
+    const extraSection = document.getElementById('feedbackDetailExtraSection');
+    const extraEl = document.getElementById('feedbackDetailExtra');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fa-solid fa-route" aria-hidden="true"></i> <span>報告 #' +
+            escapeHtml(String(reportId)) + ' — 入出力ログ</span>';
+    }
+    document.getElementById('feedbackDetailSummary').textContent = buildFeedbackEvaluationSummary(report);
+    document.getElementById('feedbackDetailInput').textContent = report.user_message || '（入力なし）';
+    const outputEl = document.getElementById('feedbackDetailOutput');
+    if (outputEl) {
+        outputEl.innerHTML = '<div class="admin-feedback-chat-thread-loading">読み込み中...</div>';
+    }
+
+    const traceText = formatFeedbackTraceText(report);
+    if (metaSection && metaEl) {
+        if (traceText) {
+            metaEl.textContent = traceText;
+            metaSection.hidden = false;
+        } else {
+            metaEl.textContent = '';
+            metaSection.hidden = true;
+        }
+    }
+
+    if (extraSection && extraEl) {
+        const extraLines = [];
+        if (report.username) {
+            extraLines.push(adminKvLine('ユーザー名', report.username));
+        }
+        if (report.security_score !== null && report.security_score !== undefined) {
+            extraLines.push(adminKvLine('セキュリティスコア', Number(report.security_score).toFixed(1)));
+        }
+        if (report.negative_reason) {
+            extraLines.push(adminKvLine(
+                '不適切理由',
+                FEEDBACK_NEGATIVE_REASON_LABELS[report.negative_reason] || report.negative_reason
+            ));
+        }
+        if (report.feedback_text) {
+            extraLines.push(adminKvLine('フィードバック', report.feedback_text));
+        }
+        if (extraLines.length) {
+            extraEl.innerHTML = extraLines.join('');
+            extraSection.hidden = false;
+        } else {
+            extraEl.innerHTML = '';
+            extraSection.hidden = true;
+        }
+    }
+
+    showModal('feedbackDetailModal');
+    loadFeedbackDetailOutput(report);
+}
+
 function openFeedbackTraceModal(buttonEl) {
     const fullText = buttonEl.getAttribute('data-full-text') || '';
-    const modal = document.getElementById('aiFullTextModal');
     const body = document.getElementById('aiFullTextBody');
-    if (modal && body) {
-        if (modal.parentElement !== document.body) {
-            document.body.appendChild(modal);
-        }
+    if (body) {
         body.textContent = fullText;
-        modal.classList.add('show');
+        showModal('aiFullTextModal');
     }
 }
 
+function findAdminSessionById(sessionId) {
+    if (!sessionId) {
+        return null;
+    }
+    const normalized = normalizeLineSessionId(sessionId);
+    return allSessions.find(function(s) {
+        return normalizeLineSessionId(s.session_id) === normalized;
+    }) || null;
+}
+
+function highlightSessionInSidebar(sessionId) {
+    document.querySelectorAll('.session-item').forEach(function(item) {
+        item.classList.remove('active');
+        const handler = item.getAttribute('onclick') || '';
+        if (handler.indexOf(sessionId) !== -1) {
+            item.classList.add('active');
+        }
+    });
+}
+
+function navigateToAdminSession(sessionId, username, options) {
+    options = options || {};
+    if (!options.skipCloseModals) {
+        closeAllFeedbackModals();
+    }
+
+    if (isMobile()) {
+        openMobileChat(sessionId);
+        return;
+    }
+    if (isTablet()) {
+        openTabletChat(sessionId);
+        return;
+    }
+
+    currentSessionId = normalizeLineSessionId(sessionId);
+    highlightSessionInSidebar(sessionId);
+
+    const sess = findAdminSessionById(sessionId);
+    updateChatTitleFromSession(sess || { username: username }, currentSessionId);
+
+    const chatInput = document.getElementById('chat-input');
+    const micBtn = document.getElementById('mic-btn');
+    if (chatInput) {
+        chatInput.disabled = false;
+        chatInput.placeholder = '返信を入力...';
+    }
+    if (micBtn) {
+        micBtn.disabled = false;
+    }
+    updateSendButtonState();
+    loadChatHistory(sessionId);
+    showNotification((username || 'ユーザー') + ' のセッションを開きました', 'success');
+}
+
+function openFeedbackChatPreviewModal(report, reason) {
+    feedbackChatPreviewReportId = report.id;
+    const titleEl = document.getElementById('feedbackChatPreviewTitle');
+    const noticeEl = document.getElementById('feedbackChatPreviewNotice');
+    const metaEl = document.getElementById('feedbackChatPreviewMeta');
+    const threadEl = document.getElementById('feedbackChatPreviewThread');
+
+    if (titleEl) {
+        titleEl.innerHTML =
+            '<i class="fa-solid fa-comments" aria-hidden="true"></i> <span>報告 #' +
+            escapeHtml(String(report.id)) + ' のチャット</span>';
+    }
+    if (noticeEl) {
+        noticeEl.textContent = 'チャット内容を読み込み中...';
+    }
+    if (metaEl) {
+        let metaHtml = '';
+        if (report.username) {
+            metaHtml += adminKvLine('ユーザー', report.username);
+        }
+        if (report.session_id) {
+            metaHtml += adminKvLine('セッションID', report.session_id);
+        }
+        if (report.created_at) {
+            metaHtml += adminKvLine('報告日時', new Date(report.created_at).toLocaleString('ja-JP'));
+        }
+        metaEl.innerHTML = metaHtml || '<p>メタ情報なし</p>';
+    }
+    refreshFeedbackChatPreviewGoButton(report);
+    if (threadEl) {
+        threadEl.innerHTML = '<div class="admin-feedback-chat-thread-loading">読み込み中...</div>';
+    }
+    showModal('feedbackChatPreviewModal');
+    loadFeedbackChatPreviewThread(report);
+}
+
+function openFeedbackReportPreviewModal(reportId) {
+    const report = feedbackReportsIndex[reportId];
+    if (!report) {
+        showNotification('報告データが見つかりません。一覧を更新してください。', 'warning');
+        return;
+    }
+    openFeedbackChatPreviewModal(report, '報告に保存された入出力を表示しています。');
+}
+
+function openFeedbackReportChat(reportId) {
+    const report = feedbackReportsIndex[reportId];
+    if (!report) {
+        showNotification('報告データが見つかりません。一覧を更新してください。', 'warning');
+        return;
+    }
+
+    const sessionId = (report.session_id || '').trim();
+    const username = report.username || 'Unknown';
+
+    if (!sessionId) {
+        openFeedbackChatPreviewModal(report, 'セッションIDが記録されていないため、報告時点の入出力のみ表示します。');
+        return;
+    }
+
+    const cached = findAdminSessionById(sessionId);
+    if (cached) {
+        navigateToAdminSession(sessionId, username);
+        return;
+    }
+
+    fetch('/api/admin/sessions', adminFetchOptions())
+        .then(function(response) {
+            if (!checkAdminApiResponse(response)) {
+                return null;
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (!data) {
+                openFeedbackChatPreviewModal(report, 'セッション一覧の取得に失敗したため、報告時点の入出力のみ表示します。');
+                return;
+            }
+            const sessions = data.sessions || [];
+            allSessions = sessions;
+            renderSessionList(allSessions);
+            const session = sessions.find(function(s) {
+                return normalizeLineSessionId(s.session_id) === normalizeLineSessionId(sessionId);
+            });
+            if (session) {
+                navigateToAdminSession(sessionId, session.username || username);
+            } else {
+                openFeedbackChatPreviewModal(
+                    report,
+                    'セッション「' + sessionId + '」は削除済みか期限切れのため、報告時点の入出力のみ表示します。'
+                );
+            }
+        })
+        .catch(function() {
+            openFeedbackChatPreviewModal(report, 'セッションの確認中にエラーが発生したため、報告時点の入出力のみ表示します。');
+        });
+}
+
 function loadFeedbackReports() {
-    const unresolvedOnly = document.getElementById('unresolvedOnly') ? document.getElementById('unresolvedOnly').checked : false;
     const contentElement = document.getElementById('feedbackReportsContent');
     
     if (!contentElement) {
         console.error('❌ feedbackReportsContent element not found');
         return;
     }
+
+    bindFeedbackBulkLayoutObserver();
     
     // 読み込み中メッセージを表示
-    contentElement.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>';
+    contentElement.innerHTML = '<p class="admin-modal-loading">読み込み中...</p>';
     
     // エラーメッセージを表示するヘルパー関数
     const showError = (errorMessage) => {
+        feedbackReportsCache = [];
         try {
             updateFeedbackStats([]);
         } catch (e) {
             console.error('❌ updateFeedbackStats error:', e);
         }
-        contentElement.innerHTML = 
-            `<div style="padding: 20px; text-align: center;">
-                <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ データベースに接続できません</p>
-                <p style="color: #666; font-size: 0.9rem;">${errorMessage}</p>
-                <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">ローカル環境ではデータベース接続が必要です。</p>
-            </div>`;
+        updateFeedbackFilterResultCount(0, 0);
+        contentElement.innerHTML =
+            '<section class="admin-panel-card admin-panel-card--danger">' +
+            '<h3 class="admin-panel-card__title"><i class="fa-solid fa-database" aria-hidden="true"></i> データベースに接続できません</h3>' +
+            '<div class="admin-kv-list">' +
+            '<p>' + escapeHtml(errorMessage) + '</p>' +
+            '<p class="admin-modal-section__desc">ローカル環境ではデータベース接続が必要です。</p>' +
+            '</div></section>';
     };
     
-    // 統計用に常に全データを取得
     fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}`, adminFetchOptions())
     .then(response => {
-        // HTTPステータスコードをチェック
         if (!response.ok) {
             return response.json().catch(() => {
-                // JSON解析に失敗した場合
                 return { error: `HTTP ${response.status}: ${response.statusText}` };
             }).then(errData => {
                 showError(errData.error || `HTTP ${response.status}: ${response.statusText}`);
-                // エラーを投げずに、処理を停止するための特別な値を返す
-                return { _stopProcessing: true };
-            });
-        }
-        return response.json();
-    })
-    .then(allData => {
-        // エラーで処理が停止された場合は何もしない
-        if (!allData || allData._stopProcessing) {
-            return null;
-        }
-        
-        if (allData.error) {
-            showError(allData.error);
-            return null;
-        }
-        
-        // 統計は全データから計算
-        try {
-            updateFeedbackStats(allData.reports || []);
-        } catch (e) {
-            console.error('❌ updateFeedbackStats error:', e);
-        }
-        
-        // 表示用データを取得
-        const displayUrl = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}&t=${Date.now()}`;
-        return fetch(displayUrl, adminFetchOptions());
-    })
-    .then(response => {
-        // 前の処理でエラーが発生した場合は何もしない
-        if (!response) {
-            return null;
-        }
-        
-        // HTTPステータスコードをチェック
-        if (!response.ok) {
-            return response.json().catch(() => {
-                // JSON解析に失敗した場合
-                return { error: `HTTP ${response.status}: ${response.statusText}` };
-            }).then(errData => {
-                contentElement.innerHTML = 
-                    `<div style="padding: 20px; text-align: center;">
-                        <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ エラーが発生しました</p>
-                        <p style="color: #666; font-size: 0.9rem;">${errData.error || `HTTP ${response.status}: ${response.statusText}`}</p>
-                    </div>`;
-                // エラーを投げずに、処理を停止するための特別な値を返す
                 return { _stopProcessing: true };
             });
         }
         return response.json();
     })
     .then(data => {
-        // データがない場合、またはエラーで処理が停止された場合は何もしない
         if (!data || data._stopProcessing) {
             return;
         }
         
         if (data.error) {
-            contentElement.innerHTML = 
-                `<div style="padding: 20px; text-align: center;">
-                    <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ エラーが発生しました</p>
-                    <p style="color: #666; font-size: 0.9rem;">${data.error}</p>
-                </div>`;
+            showError(data.error);
             return;
         }
         
-        const reports = data.reports || [];
-        const filteredReports = reports.filter(isFeedbackReportDisplayed);
+        feedbackReportsCache = data.reports || [];
+        try {
+            updateFeedbackStats(feedbackReportsCache);
+        } catch (e) {
+            console.error('❌ updateFeedbackStats error:', e);
+        }
+
+        const filteredReports = applyFeedbackReportFilters(feedbackReportsCache);
+        updateFeedbackFilterResultCount(filteredReports.length, feedbackReportsCache.length);
         try {
             renderFeedbackReports(filteredReports);
         } catch (e) {
@@ -5298,135 +7010,99 @@ function loadFeedbackReports() {
             contentElement.innerHTML = 
                 `<div style="padding: 20px; text-align: center;">
                     <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ 表示エラー</p>
-                    <p style="color: #666; font-size: 0.9rem;">データの表示に失敗しました</p>
+                    <p style="color: #666; font-size: 0.9rem;">${escapeHtml(e.message || String(e))}</p>
                 </div>`;
         }
     })
     .catch(error => {
-        console.error('❌ Feedback reports fetch error:', error);
-        // エラーでも統計を初期化して表示
-        try {
-            updateFeedbackStats([]);
-        } catch (e) {
-            console.error('❌ updateFeedbackStats error:', e);
-        }
-        contentElement.innerHTML = 
-            `<div style="padding: 20px; text-align: center;">
-                <p style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">⚠️ 通信エラー</p>
-                <p style="color: #666; font-size: 0.9rem;">${error.message || 'データの取得に失敗しました'}</p>
-            </div>`;
+        console.error('❌ loadFeedbackReports error:', error);
+        showError(error.message || '読み込みに失敗しました');
     });
 }
 
 function renderFeedbackReports(reports) {
     const content = document.getElementById('feedbackReportsContent');
-    
+    feedbackReportsIndex = {};
+    feedbackReportsDisplayedIds = reports.map(function(report) { return report.id; });
+
     if (reports.length === 0) {
-        content.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">報告はありません</p>';
+        content.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox" aria-hidden="true"></i><p>報告はありません</p></div>';
+        updateFeedbackReportsToolbar();
         return;
     }
-    
-    let html = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-            <thead>
-                <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">報告日時</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">タイプ</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">ユーザー</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">ユーザーメッセージ</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">AI応答/警告</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">スコア</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">フィードバック</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">状態</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; color: #000; background-color: #f8f9fa;">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    
-    reports.forEach(report => {
-        const reportTypeText = getFeedbackReportTypeLabel(report.report_type);
-        const traceText = formatFeedbackTraceText(report);
-        const hasTrace = Boolean(traceText);
-        
+
+    reports.forEach(function(report) {
+        feedbackReportsIndex[report.id] = report;
+    });
+
+    const allSelected = feedbackReportsDisplayedIds.length > 0 &&
+        feedbackReportsDisplayedIds.every(function(id) { return selectedFeedbackReportIds.has(id); });
+    const someSelected = feedbackReportsDisplayedIds.some(function(id) { return selectedFeedbackReportIds.has(id); });
+
+    let html = '<div class="admin-data-table-wrap"><table class="admin-data-table admin-data-table--feedback admin-data-table--feedback-compact"><thead><tr>';
+    if (feedbackReportsSelectMode) {
+        html += '<th class="cell--select"><input type="checkbox" id="feedback-select-all-cb" class="feedback-select-cb"' +
+            (allSelected ? ' checked' : '') +
+            ' onchange="toggleAllFeedbackReportSelection(this.checked)" aria-label="表示中の報告をすべて選択"></th>';
+    }
+    html += '<th>報告日時</th><th>タイプ</th><th>ユーザー</th><th>入力（抜粋）</th><th>出力（抜粋）</th><th>状態</th><th>操作</th>' +
+        '</tr></thead><tbody>';
+
+    reports.forEach(function(report) {
+        const reportTypeHtml = feedbackTypeBadge(report.report_type);
         const statusText = report.resolved ? '解決済み' : '未解決';
-        const statusColor = report.resolved ? '#28a745' : '#dc3545';
-        
-        // HTMLタグを削除してプレーンテキスト化
-        let plainAiResponse = report.ai_response || '-';
-        
-        // HTMLタグを完全に削除（より強力な処理）
-        plainAiResponse = plainAiResponse
-            .replace(/<script[^>]*>.*?<\/script>/gi, '')  // scriptタグを削除
-            .replace(/<style[^>]*>.*?<\/style>/gi, '')    // styleタグを削除
-            .replace(/<[^>]*>/g, '')  // 残りのHTMLタグを削除
-            .replace(/&lt;/g, '<')   // HTMLエンティティをデコード
-            .replace(/&gt;/g, '>')
-            .replace(/&amp;/g, '&')
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/&#x27;/g, "'")
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&apos;/g, "'")
-            .replace(/&hellip;/g, '...')
-            .replace(/&mdash;/g, '—')
-            .replace(/&ndash;/g, '–')
-            .replace(/&amp;#39;/g, "'")  // 追加のHTMLエンティティ
-            .replace(/&amp;lt;/g, '<')
-            .replace(/&amp;gt;/g, '>')
-            .replace(/&amp;quot;/g, '"')
-            .replace(/&amp;amp;/g, '&')
-            .replace(/\r?\n/g, ' ') // 改行をスペースに
-            .replace(/\s+/g, ' ')  // 複数の空白を1つに
-            .replace(/^\s+|\s+$/g, '')  // 前後の空白を削除
-            .trim();
-        
-        // 50文字超はボタンのみ表示（全文はモーダル）
-        const threshold = 50;
-        const isLong = plainAiResponse.length > threshold;
-        
+        const statusPillClass = report.resolved ? 'admin-status-pill--resolved' : 'admin-status-pill--unresolved';
+        const statusIcon = report.resolved ? 'fa-circle-check' : 'fa-circle-exclamation';
+        const inputPlain = stripHtmlForAdminPreview(report.user_message || '-');
+        const outputPlain = stripHtmlForAdminPreview(report.ai_response || '-');
+        const inputPreview = feedbackTruncate(inputPlain, 72);
+        const outputPreview = feedbackTruncate(outputPlain, 72);
+        const isChecked = selectedFeedbackReportIds.has(report.id);
+        const rowClass = feedbackReportsSelectMode ? ' feedback-row--selectable' + (isChecked ? ' feedback-row--selected' : '') : '';
+        const rowClick = feedbackReportsSelectMode
+            ? (' onclick="handleFeedbackReportRowClick(event, ' + report.id + ')"')
+            : '';
+        const userCell = feedbackReportsSelectMode
+            ? ('<td>' + escapeHtml(report.username || 'Unknown') + '</td>')
+            : ('<td class="cell--clickable" role="button" tabindex="0" onclick="openFeedbackReportChat(' + report.id + ')" onkeydown="if (event.key === \'Enter\' || event.key === \' \') { event.preventDefault(); openFeedbackReportChat(' + report.id + '); }" title="クリックでチャットを開く">' + escapeHtml(report.username || 'Unknown') + '</td>');
+        const previewClick = feedbackReportsSelectMode
+            ? ''
+            : (' role="button" tabindex="0" onclick="openFeedbackReportPreviewModal(' + report.id + ')" onkeydown="if (event.key === \'Enter\' || event.key === \' \') { event.preventDefault(); openFeedbackReportPreviewModal(' + report.id + '); }"');
+        const selectCell = feedbackReportsSelectMode
+            ? ('<td class="cell--select"><input type="checkbox" class="feedback-select-cb"' +
+                (isChecked ? ' checked' : '') +
+                ' onclick="event.stopPropagation()" onchange="toggleFeedbackReportSelection(' + report.id + ', this.checked)" aria-label="報告 #' + report.id + ' を選択"></td>')
+            : '';
+
         html += `
-            <tr style="border-bottom: 1px solid #dee2e6;">
-                <td style="padding: 10px; border: 1px solid #dee2e6; font-size: 0.9em; color: #333;">${new Date(report.created_at).toLocaleString('ja-JP')}</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${reportTypeText}</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">${report.username || 'Unknown'}</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">${report.user_message || '-'}</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333; font-size: 0.75rem; line-height: 1.4;">
-                    <div id="ai-response-${report.id}" style="max-height: 80px; overflow: hidden; position: relative; white-space: normal; font-size: 0.75rem; line-height: 1.4;" data-expanded="false" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}">
-                        ${isLong ? '' : escapeHtml(plainAiResponse)}
-                    </div>
-                    ${isLong ? 
-                        `<div style="display:flex; align-items:center; justify-content:center; min-height:40px;">
-                            <button onclick="openAiResponseModal(this)" data-full-text="${plainAiResponse.replace(/"/g, '&quot;')}" data-security-score="${report.security_score !== null && report.security_score !== undefined ? report.security_score.toFixed(1) : ''}" class="admin-btn" style="padding: 6px 12px; font-size: 0.8em; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">詳細を表示</button>
-                         </div>`
-                    : ''}
+            <tr class="${rowClass.trim()}" data-feedback-id="${report.id}"${rowClick}>
+                ${selectCell}
+                <td class="cell--datetime">
+                    <div>${new Date(report.created_at).toLocaleString('ja-JP')}</div>
+                    <div class="cell--id">#${report.id}</div>
                 </td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; color: #333;">
-                    ${report.security_score !== null && report.security_score !== undefined 
-                        ? report.security_score.toFixed(1) 
-                        : '-'}
-                </td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word; color: #333;">
-                    <div>${escapeHtml(report.feedback_text || '-')}</div>
-                    ${hasTrace ?
-                        `<div style="margin-top:6px;">
-                            <button onclick="openFeedbackTraceModal(this)" data-full-text="${traceText.replace(/"/g, '&quot;')}" class="admin-btn" style="padding: 4px 8px; font-size: 0.75em; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">トレース詳細</button>
-                         </div>`
-                    : ''}
-                </td>
-                <td style="padding: 10px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
-                <td style="padding: 10px; border: 1px solid #dee2e6;">
-                    <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
-                        ${!report.resolved ? `<button onclick="resolveFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em;">解決済み</button>` : ''}
-                        <button onclick="deleteFeedback(${report.id})" class="admin-btn" style="padding: 6px 10px; font-size: 0.8em; background:#dc3545; color:#fff;">削除</button>
+                <td>${reportTypeHtml}</td>
+                ${userCell}
+                <td class="cell--preview cell--clickable"${previewClick} title="${escapeHtml(inputPlain)}${feedbackReportsSelectMode ? '' : '（クリックで入出力を表示）'}">${escapeHtml(inputPreview)}</td>
+                <td class="cell--preview-output cell--clickable"${previewClick} title="${escapeHtml(outputPlain)}${feedbackReportsSelectMode ? '' : '（クリックで入出力を表示）'}">${escapeHtml(outputPreview)}</td>
+                <td><span class="admin-status-pill ${statusPillClass}"><i class="fa-solid ${statusIcon}" aria-hidden="true"></i> ${statusText}</span></td>
+                <td>
+                    <div class="admin-table-actions admin-table-actions--tight">
+                        <button type="button" onclick="event.stopPropagation(); openFeedbackDetailModal(${report.id})" class="btn btn-info btn-sm admin-feedback-row-btn" title="入力・出力・評価経緯を表示">
+                            <i class="fa-solid fa-route" aria-hidden="true"></i> ログ
+                        </button>
+                        ${!report.resolved ? `<button type="button" onclick="event.stopPropagation(); resolveFeedback(${report.id})" class="btn btn-success btn-sm admin-feedback-row-btn">解決</button>` : ''}
+                        <button type="button" onclick="event.stopPropagation(); deleteFeedback(${report.id})" class="btn btn-danger btn-sm admin-feedback-row-btn">削除</button>
                     </div>
                 </td>
             </tr>
         `;
     });
-    
-    html += '</tbody></table>';
+
+    html += '</tbody></table></div>';
     content.innerHTML = html;
+    updateFeedbackSelectAllState();
+    updateFeedbackReportsToolbar();
 }
 
 function updateFeedbackStats(reports) {
@@ -5552,23 +7228,23 @@ function deleteFeedback(feedbackId) {
 }
 
 function exportFeedbackReports() {
-    const unresolvedOnly = document.getElementById('unresolvedOnly').checked;
-    const url = `/api/get_feedback_reports?unresolved_only=${unresolvedOnly}`;
-    
-    fetch(url, {
-        headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-        }
-    })
+    if (feedbackReportsCache.length) {
+        const reports = applyFeedbackReportFilters(feedbackReportsCache);
+        const csvContent = generateCSV(reports);
+        downloadCSV(csvContent, 'feedback_reports.csv');
+        return;
+    }
+
+    fetch(`/api/get_feedback_reports?unresolved_only=false&t=${Date.now()}`, adminFetchOptions())
     .then(response => response.json())
     .then(data => {
         if (data.error) {
             showNotification(`エラー: ${data.error}`, 'error');
             return;
         }
-        
-        const reports = (data.reports || []).filter(isFeedbackReportDisplayed);
+
+        feedbackReportsCache = data.reports || [];
+        const reports = applyFeedbackReportFilters(feedbackReportsCache);
         const csvContent = generateCSV(reports);
         downloadCSV(csvContent, 'feedback_reports.csv');
     })
@@ -5635,24 +7311,12 @@ function openAiResponseModal(buttonEl) {
             displayText = `セキュリティスコア: ${securityScore}\n\n${fullText}`;
         }
         
-        body.textContent = displayText; // プレーンテキストとして安全に表示
-        
-        // 既存のインラインスタイルをクリアしてCSSに任せる
-        modal.style.cssText = '';
-        
-        // showクラスを追加（CSSで .admin-modal.show のスタイルが適用される）
-        modal.classList.add('show');
-        
-        // 強制的にレイアウトを再計算
-        modal.offsetHeight;
+        body.textContent = displayText;
+        showModal('aiFullTextModal');
     }
 }
 function closeAiResponseModal() {
-    const modal = document.getElementById('aiFullTextModal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-    }
+    closeAdminModal('aiFullTextModal');
 }
 
 // スコア詳細モーダル関連の関数
@@ -5722,27 +7386,23 @@ function showScoreModal(medicineId, medicineIndex) {
 }
 
 // セッション管理機能
+function escapeJsString(value) {
+    return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function openSessionManagement() {
-    const modal = document.getElementById('sessionManagementModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-        refreshSessionManagement();
-    }
+    showModal('sessionManagementModal');
+    refreshSessionManagement();
 }
 
 function closeSessionManagement() {
-    const modal = document.getElementById('sessionManagementModal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-    }
+    closeAdminModal('sessionManagementModal');
 }
 
 function refreshSessionManagement() {
     const listContainer = document.getElementById('session-management-list');
-    listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">読み込み中...</div>';
-    
+    listContainer.innerHTML = '<p class="admin-modal-loading">読み込み中...</p>';
+
     fetch('/api/admin/sessions', adminFetchOptions())
         .then(function(response) {
             if (!checkAdminApiResponse(response)) {
@@ -5757,58 +7417,58 @@ function refreshSessionManagement() {
             if (data.sessions && data.sessions.length > 0) {
                 renderSessionManagementList(data.sessions);
             } else {
-                listContainer.innerHTML = '<div style="text-align: center; padding: 50px; color: #888;"><i class="fa-solid fa-inbox" style="font-size: 3em; display: block; margin-bottom: 10px; opacity: 0.5;"></i><p style="margin-top: 10px;">セッションがありません</p></div>';
+                listContainer.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox" aria-hidden="true"></i><p>セッションがありません</p></div>';
             }
         })
         .catch(error => {
             console.error('Error loading sessions:', error);
-            listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">エラー: セッション情報の読み込みに失敗しました</div>';
+            listContainer.innerHTML = '<div class="admin-panel-card admin-panel-card--danger"><p class="admin-kv-list__error">セッション情報の読み込みに失敗しました</p></div>';
         });
 }
 
 function renderSessionManagementList(sessions) {
     const listContainer = document.getElementById('session-management-list');
-    let html = '<div style="display: grid; gap: 10px;">';
-    
+    let html = '';
+
     sessions.forEach(session => {
         const lastActivity = formatAdminDateTime(session.last_activity) || '不明';
         const sessionActive = session.session_active !== false ? '✅ アクティブ' : '❌ 終了';
         const messageCount = session.messages ? session.messages.length : 0;
-        
+        const sessionId = escapeJsString(session.session_id);
+
         html += `
-            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">${escapeHtml(session.username || 'Unknown')}</div>
-                        <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">ID: <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">${escapeHtml(session.session_id)}</code></div>
-                        <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${sessionActive} | メッセージ数: ${messageCount}</div>
-                        <div style="font-size: 0.85em; color: #666;">最終アクティビティ: ${lastActivity}</div>
-                        ${session.client_ip ? `<div style="font-size: 0.85em; color: #666;">IP: ${escapeHtml(session.client_ip)}</div>` : ''}
+            <article class="admin-session-card">
+                <div class="admin-session-card__top">
+                    <div>
+                        <div class="admin-session-card__name">${escapeHtml(session.username || 'Unknown')}</div>
+                        <div class="admin-session-card__meta">ID: <code>${escapeHtml(session.session_id)}</code></div>
+                        <div class="admin-session-card__meta">${sessionActive} | メッセージ数: ${messageCount}</div>
+                        <div class="admin-session-card__meta">最終アクティビティ: ${lastActivity}</div>
+                        ${session.client_ip ? '<div class="admin-session-card__meta">IP: ' + escapeHtml(session.client_ip) + '</div>' : ''}
                     </div>
-                    <div style="display: flex; gap: 5px; flex-direction: column;">
-                        <button class="btn btn-danger" onclick="deleteSession('${session.session_id}')" style="padding: 5px 10px; font-size: 0.8em;">🗑️ 削除</button>
-                        <button class="btn btn-info" onclick="editSession('${session.session_id}')" style="padding: 5px 10px; font-size: 0.8em;">✏️ 編集</button>
+                    <div class="admin-session-card__actions">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteSession('${sessionId}')">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i> 削除
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" onclick="editSession('${sessionId}')">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i> 編集
+                        </button>
                     </div>
                 </div>
-            </div>
+            </article>
         `;
     });
-    
-    html += '</div>';
+
     listContainer.innerHTML = html;
 }
 
 function filterSessionManagement() {
     const searchInput = document.getElementById('session-search-input').value.toLowerCase();
-    const sessionItems = document.querySelectorAll('#session-management-list > div > div');
-    
+    const sessionItems = document.querySelectorAll('#session-management-list .admin-session-card');
+
     sessionItems.forEach(item => {
         const text = item.textContent.toLowerCase();
-        if (text.includes(searchInput)) {
-            item.style.display = '';
-        } else {
-            item.style.display = 'none';
-        }
+        item.style.display = text.includes(searchInput) ? '' : 'none';
     });
 }
 
@@ -5916,11 +7576,7 @@ function editSession(sessionId) {
 }
 
 function closeScoreModal() {
-    const modal = document.getElementById('scoreModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-    }
+    closeAdminModal('scoreModal');
 }
 
 function generateScoreDetailHtml(medicine) {

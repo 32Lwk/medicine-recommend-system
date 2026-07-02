@@ -13,6 +13,7 @@ from src.security.aggressive_input import (
     is_aggressive_expression,
     is_non_absolute_aggressive_expression,
 )
+from src.security.input_block_responses import NOTICE_BY_CATEGORY
 from src.services.concierge_intent import infer_structural_concierge_intent
 
 
@@ -66,3 +67,13 @@ def test_handle_returns_aggressive_notice(mock_save):
 def test_detect_aggressive_expression_helper():
     assert detect_aggressive_expression("殺すぞ")
     assert not detect_aggressive_expression("こんにちは")
+    assert not detect_aggressive_expression("レイプ")
+
+
+def test_sex_uses_sexual_content_message_not_aggressive():
+    from src.security.input_block_responses import match_input_block
+
+    notice = match_input_block("sex")
+    assert notice is not None
+    assert notice.message != AGGRESSIVE_INPUT_NOTICE_MESSAGE
+    assert notice.message == NOTICE_BY_CATEGORY["sexual_content"]

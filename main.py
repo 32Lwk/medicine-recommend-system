@@ -45,7 +45,6 @@ from src.handlers.chat_handler import handle_chat_post
 from src.utils.chat_http_context import ChatClientInfo
 from src.services.database import get_database, init_database, log_database_startup_summary
 from src.services.session_manager import (
-    clear_sessions_fallback,
     cleanup_old_sessions,
     get_admin_mode,
     get_admin_sessions,
@@ -59,6 +58,7 @@ from src.services.session_manager import (
     maybe_persist_session_activity,
     merge_session_messages,
     normalize_session_messages,
+    filter_messages_for_user_api,
     persist_session_from_chat_state,
     ensure_session_persisted,
     purge_empty_sessions_on_startup,
@@ -1096,8 +1096,9 @@ async def api_slow_request_notify(
     sid: str = Depends(get_sid),
 ):
     from src.services.processing_status import get_processing_status
+    from src.services.pipeline_perf import capture_pipeline_perf_investigation_snapshot
     from src.services.session_manager import get_session_from_db
-    from src.services.slow_request_notify import notify_slow_request
+    from src.services.slow_request_notify import notify_slow_request, _build_session_investigation_snapshot
 
     client_info = ChatClientInfo.from_starlette_request(request)
     body: dict = {}
@@ -1129,6 +1130,8 @@ async def api_slow_request_notify(
         username=username,
         processing_status=processing_status,
         client_context=client_context,
+        session_investigation=_build_session_investigation_snapshot(session_data),
+        pipeline_perf_snapshot=capture_pipeline_perf_investigation_snapshot(sid),
     )
     return {"status": "ok"}
 
@@ -1161,7 +1164,9 @@ async def api_sessions_get(
     if session_data:
         session_data["last_activity"] = datetime.now()
         maybe_persist_session_activity(sid, session_data)
-        messages = normalize_session_messages(session_data.get("messages", []) or [])
+        messages = filter_messages_for_user_api(
+            normalize_session_messages(session_data.get("messages", []) or [])
+        )
         from src.schemas.recommendation_diagnosis_v1 import strip_for_user_api
 
         for msg in messages:
@@ -1284,12 +1289,13 @@ async def api_sessions_restore(
 
     server_messages = session_data.get("messages") or []
     if server_messages:
+        filtered = filter_messages_for_user_api(normalize_session_messages(server_messages))
         return {
             "status": "ok",
             "session_id": sid,
-            "messages_count": len(server_messages),
+            "messages_count": len(filtered),
             "restored": False,
-            "messages": server_messages,
+            "messages": filtered,
         }
 
     merged = merge_session_messages([], client_messages)
@@ -1312,13 +1318,14 @@ async def api_sessions_restore(
     )
     session_data = get_session_from_db(sid) or session_data
     session_data["messages"] = merged
+    filtered = filter_messages_for_user_api(normalize_session_messages(merged))
 
     return {
         "status": "ok",
         "session_id": sid,
-        "messages_count": len(merged),
+        "messages_count": len(filtered),
         "restored": len(merged) > 0,
-        "messages": merged,
+        "messages": filtered,
     }
 
 
@@ -2522,19 +2529,6 @@ async def admin_medicine_chat_route(
 @app.post("/clear_logs")
 def clear_logs(_: None = Depends(admin_json_auth)):
     network_logs.clear()
-    db = get_database()
-    if db and (db.connection or db.connection_pool):
-        all_sessions = get_all_sessions_from_db()
-        for sess_id in list(all_sessions.keys()):
-            try:
-                db.delete_session(sess_id)
-            except Exception:
-                pass
-        logger.info("🗑️ All sessions cleared from database")
-    else:
-        clear_sessions_fallback()
-        logger.warning("⚠️ DB unavailable, cleared memory sessions only")
-    set_manual_reply_queue([])
     log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "log", "recommendation_log.jsonl")
     if os.path.exists(log_file):
         try:
@@ -2543,8 +2537,8 @@ def clear_logs(_: None = Depends(admin_json_auth)):
             logger.info("📝 ログファイルをクリアしました")
         except Exception as e:
             logger.error("❌ ログファイルのクリアに失敗: %s", e)
-    logger.info("🗑️ ログ、セッション履歴、手動返信待ちキューをすべてクリアしました")
-    return {"status": "ok", "message": "ログ、セッション履歴、手動返信待ちキューをクリアしました"}
+    logger.info("🗑️ 表示ログをクリアしました（DB セッション・手動返信キューは保持）")
+    return {"status": "ok", "message": "表示ログをクリアしました（セッション履歴は保持）"}
 
 
 @app.get("/api/admin/sessions")

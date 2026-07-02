@@ -57,6 +57,13 @@ def _register_token(
     global _unique_token_count
     if not norm or len(norm) < _MIN_TOKEN_LEN:
         return
+    try:
+        from src.services.store_facility_index import is_facility_name
+
+        if is_facility_name(norm) or is_facility_name(matched_keyword):
+            return
+    except ImportError:
+        pass
     if norm in _token_to_info:
         return
     _token_to_info[norm] = {
@@ -172,6 +179,14 @@ def classify_product_category(user_text: str) -> Optional[Dict]:
 
     info = _match_automaton(norm_text)
     if info:
+        try:
+            from src.services.store_facility_index import is_facility_name
+
+            matched = info.get("matched_keyword") or info.get("product") or ""
+            if is_facility_name(matched):
+                return None
+        except ImportError:
+            pass
         logger.info(
             "🔍 商品カテゴリ検出: %s > %s > %s",
             info["category"],
@@ -189,3 +204,16 @@ def index_stats() -> Dict[str, int]:
         "raw_categories": _raw_category_count,
         "unique_tokens": _unique_token_count,
     }
+
+
+def reset_product_index_cache() -> None:
+    """テスト用: 商品インデックスキャッシュをクリア。"""
+    global _index_built, _token_to_info, _automaton, _ac_available
+    global _fallback_warned, _raw_category_count, _unique_token_count
+    _index_built = False
+    _token_to_info = {}
+    _automaton = None
+    _ac_available = None
+    _fallback_warned = False
+    _raw_category_count = 0
+    _unique_token_count = 0
