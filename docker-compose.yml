@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: medicine-recommend-postgres
+    environment:
+      POSTGRES_USER: medicine
+      POSTGRES_PASSWORD: medicine
+      POSTGRES_DB: medicine_recommend
+    ports:
+      - "5432:5432"
+    volumes:
+      - medicine_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicine -d medicine_recommend"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  medicine_pg_data:

@@ -633,7 +633,11 @@ def normalize_handoff_messages(
 
         normalized.append(msg)
 
-    return normalized
+    try:
+        from src.services.session_manager import filter_messages_for_user_api
+        return filter_messages_for_user_api(normalized)
+    except ImportError:
+        return normalized
 
 
 

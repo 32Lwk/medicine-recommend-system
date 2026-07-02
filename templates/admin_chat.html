@@ -21,35 +21,33 @@
                     <i class="fa-solid fa-staff-snake"></i>
                     <span>医薬品相談管理画面</span>
         </div>
-                <div class="header-system-controls app-scrollbar">
-                    <button class="header-control-btn" id="aiControlBtn" onclick="showModal('aiControlModal')" title="AI管理">
-                        <i class="fa-solid fa-robot"></i>
-                        <span>AI管理</span>
-                    </button>
-                    <button class="header-control-btn" id="systemStatusBtn" onclick="showModal('systemStatusModal'); loadSystemStatus();" title="システム状況">
-                        <i class="fa-solid fa-server"></i>
-                        <span>システム状況</span>
-                    </button>
-                    <button class="header-control-btn" id="monitoringBtn" onclick="showModal('monitoringModal'); loadMonitoringData();" title="監視ダッシュボード">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>監視</span>
-                    </button>
-                    <button class="header-control-btn" id="llmSettingsBtn" onclick="showModal('llmSettingsModal'); loadLlmSettings();" title="LLM設定・ゴールデン">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>LLM</span>
-                    </button>
-                    <button class="header-control-btn" id="medicineChatBtn" onclick="showModal('medicineChatModal')" title="医薬品相談テスト">
-                        <i class="fa-solid fa-vial"></i>
-                        <span>テスト</span>
-                    </button>
-                    <button class="header-control-btn" id="feedbackReportsBtn" title="不具合報告">
-                        <i class="fa-solid fa-bug"></i>
-                        <span>不具合</span>
-                    </button>
-                    <button class="header-control-btn" id="clearLogsBtn" onclick="if (confirm('すべてのログをクリアしますか？')) { clearAllLogs(); }" title="ログクリア">
-                        <i class="fa-solid fa-trash"></i>
-                        <span>ログ</span>
-                    </button>
+                <div class="header-system-controls" aria-label="管理メニュー">
+                    <div class="header-tool-group">
+                        <button type="button" class="header-icon-btn" id="aiControlBtn" onclick="showModal('aiControlModal')" title="AI管理" aria-label="AI管理">
+                            <i class="fa-solid fa-robot" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="sessionManageHeaderBtn" onclick="openSessionManagement()" title="セッション管理" aria-label="セッション管理">
+                            <i class="fa-solid fa-list" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="systemStatusBtn" onclick="showModal('systemStatusModal'); loadSystemStatus();" title="システム状況" aria-label="システム状況">
+                            <i class="fa-solid fa-server" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="monitoringBtn" onclick="showModal('monitoringModal'); loadMonitoringData();" title="監視ダッシュボード" aria-label="監視ダッシュボード">
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="llmSettingsBtn" onclick="showModal('llmSettingsModal'); loadLlmSettings();" title="LLM設定" aria-label="LLM設定">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="medicineChatBtn" onclick="showModal('medicineChatModal')" title="医薬品テスト" aria-label="医薬品テスト">
+                            <i class="fa-solid fa-vial" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn" id="feedbackReportsBtn" title="不具合報告" aria-label="不具合報告">
+                            <i class="fa-solid fa-bug" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="header-icon-btn header-icon-btn--danger" id="clearLogsBtn" onclick="openClearLogsModal()" title="ログクリア" aria-label="ログクリア">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
             </div>
         </div>
             <div class="header-controls">
@@ -57,8 +55,8 @@
                     <i class="fa-solid fa-robot" aria-hidden="true"></i>
                     <span id="ai-status-text">AI状態確認中...</span>
                         </div>
-                <button class="action-btn" onclick="manualRefresh()" title="データ更新">
-                    <i class="fa-solid fa-rotate-right"></i>
+                <button type="button" class="action-btn" id="header-refresh-btn" onclick="manualRefresh()" title="キューとセッション一覧を更新" aria-label="キューとセッション一覧を更新">
+                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
                 </button>
                 <button class="action-btn" id="menu-toggle-btn" onclick="toggleMobileMenu()" title="メニュー">
                     <i class="fa-solid fa-bars"></i>
@@ -72,6 +70,10 @@
                 <i class="fa-solid fa-robot"></i>
                 <span>AI管理</span>
             </button>
+            <button class="control-btn-mobile" onclick="openSessionManagement(); toggleMobileMenu();">
+                <i class="fa-solid fa-list"></i>
+                <span>セッション管理</span>
+            </button>
             <button class="control-btn-mobile" onclick="showModal('systemStatusModal'); loadSystemStatus(); toggleMobileMenu();">
                 <i class="fa-solid fa-server"></i>
                 <span>システム状況</span>
@@ -80,21 +82,21 @@
                 <i class="fa-solid fa-chart-line"></i>
                 <span>監視ダッシュボード</span>
             </button>
+            <button class="control-btn-mobile" onclick="showModal('llmSettingsModal'); loadLlmSettings(); toggleMobileMenu();">
+                <i class="fa-solid fa-sliders"></i>
+                <span>LLM設定</span>
+            </button>
             <button class="control-btn-mobile" onclick="showModal('medicineChatModal'); toggleMobileMenu();">
                 <i class="fa-solid fa-vial"></i>
-                <span>医薬品相談テスト</span>
+                <span>医薬品テスト</span>
             </button>
             <button class="control-btn-mobile" id="feedbackReportsBtnMobile" onclick="toggleMobileMenu();">
                 <i class="fa-solid fa-bug"></i>
                 <span>不具合報告</span>
             </button>
-            <button class="control-btn-mobile" onclick="if (confirm('すべてのログをクリアしますか？')) { clearAllLogs(); } toggleMobileMenu();">
+            <button class="control-btn-mobile" onclick="openClearLogsModal(); toggleMobileMenu();">
                 <i class="fa-solid fa-trash"></i>
                 <span>ログクリア</span>
-            </button>
-            <button class="control-btn-mobile" onclick="openSessionManagement(); toggleMobileMenu();">
-                <i class="fa-solid fa-list"></i>
-                <span>セッション管理</span>
             </button>
                             </div>
 
@@ -153,14 +155,30 @@
                 <div class="search-box">
                     <input type="text" class="search-input" id="session-search" placeholder="ユーザー名・チャット内容で検索..." onkeyup="filterSessions()">
                     <div class="session-list-toolbar">
-                        <label class="session-list-filter">
-                            <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
-                            空セッションを含む
-                        </label>
-                        <label class="session-list-filter">
-                            <input type="checkbox" id="show-v2-test-sessions" onchange="onSessionListV2TestToggle()">
-                            v2テストのみ
-                        </label>
+                        <div class="session-list-filters">
+                            <div class="session-filter-row">
+                                <span class="session-filter-label">表示</span>
+                                <label class="toggle-switch" title="メッセージのない空セッションを一覧に含める">
+                                    <input type="checkbox" id="show-empty-sessions" onchange="onSessionListFilterToggle()">
+                                    <span class="toggle-switch__track" aria-hidden="true"><span class="toggle-switch__thumb"></span></span>
+                                    <span class="toggle-switch__text">空セッション</span>
+                                </label>
+                                <label class="toggle-switch" title="v2ローカルテスト・Canaryセッションを一覧に含める">
+                                    <input type="checkbox" id="show-v2-test-sessions" onchange="onSessionListV2TestToggle()">
+                                    <span class="toggle-switch__track" aria-hidden="true"><span class="toggle-switch__thumb"></span></span>
+                                    <span class="toggle-switch__text">v2テスト</span>
+                                </label>
+                            </div>
+                            <div class="session-filter-row">
+                                <span class="session-filter-label">チャネル</span>
+                                <div class="session-channel-pills" role="group" aria-label="チャネルで絞り込み">
+                                    <button type="button" class="session-channel-pill session-channel-pill--active" data-channel="all" onclick="setSessionChannelFilter('all')">すべて</button>
+                                    <button type="button" class="session-channel-pill" data-channel="web" onclick="setSessionChannelFilter('web')">Web</button>
+                                    <button type="button" class="session-channel-pill" data-channel="line" onclick="setSessionChannelFilter('line')">LINE</button>
+                                    <button type="button" class="session-channel-pill" data-channel="v2" onclick="setSessionChannelFilter('v2')">v2</button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="session-list-toolbar-actions">
                             <button type="button" id="session-list-select-btn" class="session-list-action-btn" onclick="toggleSessionListSelectMode()" title="複数選択して削除" aria-label="複数選択して削除">
                                 <i class="fa-solid fa-list-check" aria-hidden="true"></i>
@@ -259,68 +277,55 @@
 
                 <div id="right-panel-controls-view" class="right-panel-tab-view" role="tabpanel" aria-labelledby="right-panel-tab-controls">
                 
-                <!-- AI Management Section (Accordion) -->
-                <div class="accordion">
-                    <div class="accordion-header" onclick="toggleAccordion('ai-management-accordion')">
-                        <span class="accordion-title">
-                            <i class="fa-solid fa-robot"></i> AI管理
-                        </span>
-                        <i class="fa-solid fa-chevron-down accordion-icon" id="ai-management-accordion-icon"></i>
-                    </div>
-                    <div class="accordion-content" id="ai-management-accordion">
-                        <div class="info-section ai-management-body">
-                            <div id="ai-status-info">
-                                <div class="info-label">現在の状態</div>
-                                <div class="info-value" id="status-text">状態確認中...</div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <button class="btn btn-success" id="ai-on-btn" onclick="setAIMode('auto')" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-power-off"></i> AI自動応答ON
-                                </button>
-                                <button class="btn btn-danger" id="ai-off-btn" onclick="setAIMode('manual')" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-power-off"></i> AI自動応答OFF
-                                </button>
-                                <button class="btn btn-warning" id="admin-mode-btn" onclick="setAIMode('admin')" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-user-doctor"></i> 薬剤師対応モード
-                                </button>
-                                <button class="btn btn-info" id="session-manage-btn" onclick="openSessionManagement()" style="width: 100%; padding: 0.5rem; font-size: 0.875rem;">
-                                    <i class="fa-solid fa-list"></i> セッション管理
-                                </button>
-                            </div>
+                <!-- Manual Reply Queue Section -->
+                <div class="info-section manual-reply-queue-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                    <div class="queue-section-header">
+                        <div class="queue-section-header__title">
+                            <h4>手動返信待ちキュー</h4>
+                            <span id="crisis-count" class="queue-critical-badge" hidden></span>
+                        </div>
+                        <div class="queue-section-header__actions">
+                            <button type="button" id="queue-list-select-btn" class="session-list-action-btn" onclick="toggleQueueListSelectMode()" title="複数選択して削除" aria-label="複数選択して削除">
+                                <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" id="queue-list-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger" onclick="deleteSelectedQueueItems()" style="display:none;" title="選択したキューを削除" aria-label="選択したキューを削除">
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                <span class="session-list-action-btn__badge" id="queue-list-delete-badge" hidden></span>
+                            </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Manual Reply Queue Section -->
-                <div class="info-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                        <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600;">手動返信待ちキュー</h4>
-                        <span id="crisis-count" style="background: #fee2e2; color: var(--danger); padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;"></span>
+                    <div class="queue-stats-row" aria-live="polite">
+                        <div class="queue-stat-card">
+                            <span class="queue-stat-card__label">キュー件数</span>
+                            <span class="queue-stat-card__value" id="queue-panel-total-count">0</span>
+                        </div>
+                        <div class="queue-stat-card queue-stat-card--critical">
+                            <span class="queue-stat-card__label">未確認クリティカル</span>
+                            <span class="queue-stat-card__value" id="queue-panel-critical-count">0</span>
+                        </div>
                     </div>
-                    <div style="margin-bottom: 0.5rem;">
-                        <label for="queue-view-filter" style="font-size: 0.75rem; color: #666; display: block; margin-bottom: 0.25rem;">表示フィルタ</label>
-                        <select id="queue-view-filter" class="form-control" style="width: 100%; font-size: 0.8rem; padding: 0.35rem; margin-bottom: 0.35rem;" onchange="refreshQueue()">
-                            <option value="all">すべて</option>
-                            <option value="critical">クリティカル（未確認）</option>
-                            <option value="store">店舗インシデント</option>
-                            <option value="acknowledged">確認済み</option>
-                        </select>
-                        <label for="queue-priority-filter" style="font-size: 0.75rem; color: #666; display: block; margin-bottom: 0.25rem;">優先度フィルタ</label>
-                        <select id="queue-priority-filter" class="form-control" style="width: 100%; font-size: 0.8rem; padding: 0.35rem;" onchange="refreshQueue()">
-                            <option value="">すべて</option>
-                            <option value="critical_crisis">クライシス（最優先）</option>
-                            <option value="critical_medical">メディカル緊急</option>
-                            <option value="store_high">店舗・高</option>
-                            <option value="store_low">店舗・低</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <button class="btn btn-success" id="refresh-btn" onclick="manualRefresh()" style="flex: 1; padding: 0.5rem; font-size: 0.8rem;">
-                            <i class="fa-solid fa-rotate-right"></i> 更新
-                        </button>
-                        <button class="btn btn-info" onclick="refreshQueue()" style="flex: 1; padding: 0.5rem; font-size: 0.8rem;">
-                            <i class="fa-solid fa-list"></i> キュー
-                        </button>
+                    <div class="queue-filter-bar">
+                        <div class="queue-filter-group">
+                            <span class="queue-filter-label">種別</span>
+                            <div class="queue-filter-pills app-scrollbar" id="queue-view-pills" role="group" aria-label="キュー種別フィルタ">
+                                <button type="button" class="queue-filter-pill queue-filter-pill--active" data-value="all" onclick="setQueueViewFilter('all')">すべて</button>
+                                <button type="button" class="queue-filter-pill" data-value="critical" onclick="setQueueViewFilter('critical')">未確認</button>
+                                <button type="button" class="queue-filter-pill" data-value="store" onclick="setQueueViewFilter('store')">店舗</button>
+                                <button type="button" class="queue-filter-pill" data-value="acknowledged" onclick="setQueueViewFilter('acknowledged')">確認済</button>
+                            </div>
+                            <input type="hidden" id="queue-view-filter" value="all">
+                        </div>
+                        <div class="queue-filter-group">
+                            <span class="queue-filter-label">優先度</span>
+                            <div class="queue-filter-pills app-scrollbar" id="queue-priority-pills" role="group" aria-label="キュー優先度フィルタ">
+                                <button type="button" class="queue-filter-pill queue-filter-pill--active" data-value="" onclick="setQueuePriorityFilter('')">すべて</button>
+                                <button type="button" class="queue-filter-pill" data-value="critical_crisis" onclick="setQueuePriorityFilter('critical_crisis')">クライシス</button>
+                                <button type="button" class="queue-filter-pill" data-value="critical_medical" onclick="setQueuePriorityFilter('critical_medical')">メディカル</button>
+                                <button type="button" class="queue-filter-pill" data-value="store_high" onclick="setQueuePriorityFilter('store_high')">店舗・高</button>
+                                <button type="button" class="queue-filter-pill" data-value="store_low" onclick="setQueuePriorityFilter('store_low')">店舗・低</button>
+                            </div>
+                            <input type="hidden" id="queue-priority-filter" value="">
+                        </div>
                     </div>
                     <div id="manual-reply-queue" class="app-scrollbar" style="flex: 1; overflow-y: auto; min-height: 200px; height: 0; margin: 0; padding: 0;">
                         <div class="empty-state">
@@ -373,120 +378,126 @@
     <div class="notification" id="notification"></div>
     
     <!-- 管理画面用モーダル -->
-    <div id="aiControlModal" class="modal admin-modal">
+    <div id="aiControlModal" class="modal admin-modal admin-modal--lg">
         <div class="modal-content admin-modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">
-                    <i class="fa-solid fa-robot"></i>
+                    <i class="fa-solid fa-robot" aria-hidden="true"></i>
                     <span>AI管理</span>
                 </h2>
-                <button class="close-btn close" onclick="this.closest('.modal').classList.remove('show');">&times;</button>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('aiControlModal')" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body" style="padding: var(--spacing-lg);">
-                <div style="margin-bottom: var(--spacing-lg);">
-                    <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
-                        <button onclick="setAIMode('auto')" class="btn btn-success" style="flex: 1;">
-                            <i class="fa-solid fa-power-off"></i>
+            <div class="modal-body app-scrollbar">
+                <div class="ai-control-summary">
+                    <div class="ai-control-status-card">
+                        <span class="ai-control-status-card__label">現在の状態</span>
+                        <span class="ai-control-status-card__value" id="status-text">状態確認中...</span>
+                    </div>
+                    <div class="ai-control-actions">
+                        <button type="button" onclick="setAIMode('auto')" class="btn btn-success" id="ai-on-btn">
+                            <i class="fa-solid fa-power-off" aria-hidden="true"></i>
                             <span>自動応答ON</span>
                         </button>
-                        <button onclick="setAIMode('manual')" class="btn btn-danger" style="flex: 1;">
-                            <i class="fa-solid fa-power-off"></i>
+                        <button type="button" onclick="setAIMode('manual')" class="btn btn-danger" id="ai-off-btn">
+                            <i class="fa-solid fa-power-off" aria-hidden="true"></i>
                             <span>自動応答OFF</span>
+                        </button>
+                        <button type="button" onclick="setAIMode('admin')" class="btn btn-warning" id="admin-mode-btn">
+                            <i class="fa-solid fa-user-doctor" aria-hidden="true"></i>
+                            <span>薬剤師対応</span>
+                        </button>
+                        <button type="button" onclick="openSessionManagement()" class="btn btn-info" id="session-manage-btn">
+                            <i class="fa-solid fa-list" aria-hidden="true"></i>
+                            <span>セッション管理</span>
                         </button>
                     </div>
                 </div>
-                
-                <div id="manualMessageSection" style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
-                    <label style="display: block; margin-bottom: var(--spacing-sm); font-weight: var(--font-weight-semibold); color: var(--text-main);">
-                        <i class="fa-solid fa-comment-dots"></i>
-                        <span>自動応答OFF時の返信メッセージ</span>
-                    </label>
-                    <textarea 
-                        id="manualReplyMessage" 
-                        rows="4" 
-                        placeholder="例：申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。"
-                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-size-base); resize: vertical; min-height: 100px;"
-                    ></textarea>
-                    <div style="margin-top: var(--spacing-sm); display: flex; gap: var(--spacing-sm);">
-                        <button onclick="saveManualReplyMessage()" class="btn btn-info" style="flex: 1;">
-                            <i class="fa-solid fa-save"></i>
-                            <span>メッセージを保存</span>
+
+                <section class="admin-modal-section" id="manualMessageSection">
+                    <h3 class="admin-modal-section__title"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> 自動応答OFF時の返信メッセージ</h3>
+                    <p class="admin-modal-section__desc">自動応答OFF時にユーザーへ自動送信される文言です。</p>
+                    <div class="admin-modal-field">
+                        <textarea id="manualReplyMessage" rows="4" placeholder="例：申し訳ございません。現在、AI自動応答が一時停止されています。担当者が確認次第、回答いたします。"></textarea>
+                    </div>
+                    <div class="admin-modal-actions">
+                        <button type="button" onclick="saveManualReplyMessage()" class="btn btn-info">
+                            <i class="fa-solid fa-save" aria-hidden="true"></i>
+                            <span>保存</span>
                         </button>
-                        <button onclick="resetManualReplyMessage()" class="btn btn-secondary" style="flex: 1;">
-                            <i class="fa-solid fa-rotate-left"></i>
+                        <button type="button" onclick="resetManualReplyMessage()" class="btn btn-secondary">
+                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                             <span>リセット</span>
                         </button>
                     </div>
-                    <p style="margin-top: var(--spacing-sm); font-size: 0.875rem; color: var(--text-sub);">
-                        <i class="fa-solid fa-info-circle"></i>
-                        このメッセージは、自動応答OFF時にユーザーに自動送信されます。
-                    </p>
-                </div>
+                </section>
 
-                <div id="systemMessagesSection" style="margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border);">
-                    <label style="display: block; margin-bottom: var(--spacing-sm); font-weight: var(--font-weight-semibold); color: var(--text-main);">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>LLMシステム文案</span>
-                    </label>
-                    <p style="font-size: 0.875rem; color: var(--text-sub); margin-bottom: var(--spacing-md);">
-                        予算超過・非対応タイプ時にチャットへ表示する文言です。
-                    </p>
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">予算超過時 (budget_hard_stop)</label>
-                    <textarea id="msgBudgetHardStop" rows="3" placeholder="例：申し訳ございません。現在、AI自動応答を一時停止しています。"
-                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-md); resize: vertical;"></textarea>
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">非対応 medicine_type (unsupported_medicine_type)</label>
-                    <textarea id="msgUnsupportedType" rows="3" placeholder="例：お近くの登録販売者にご相談ください。"
-                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-md); resize: vertical;"></textarea>
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.875rem;">セッションコストアラート送信先メール</label>
-                    <input type="email" id="llmAlertEmail" value="yuto.k051028@gmail.com"
-                        style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: inherit; margin-bottom: var(--spacing-sm);" />
-                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm);">
-                        <button type="button" onclick="saveLlmSystemMessages()" class="btn btn-info" style="flex: 1;">
-                            <i class="fa-solid fa-save"></i>
-                            <span>システム文案を保存</span>
+                <section class="admin-modal-section" id="systemMessagesSection">
+                    <h3 class="admin-modal-section__title"><i class="fa-solid fa-sliders" aria-hidden="true"></i> LLMシステム文案</h3>
+                    <p class="admin-modal-section__desc">予算超過・非対応タイプ時にチャットへ表示する文言です。</p>
+                    <div class="admin-modal-field">
+                        <label for="msgBudgetHardStop">予算超過時 (budget_hard_stop)</label>
+                        <textarea id="msgBudgetHardStop" rows="3" placeholder="例：申し訳ございません。現在、AI自動応答を一時停止しています。"></textarea>
+                    </div>
+                    <div class="admin-modal-field">
+                        <label for="msgUnsupportedType">非対応 medicine_type (unsupported_medicine_type)</label>
+                        <textarea id="msgUnsupportedType" rows="3" placeholder="例：お近くの登録販売者にご相談ください。"></textarea>
+                    </div>
+                    <div class="admin-modal-field">
+                        <label for="llmAlertEmail">セッションコストアラート送信先メール</label>
+                        <input type="email" id="llmAlertEmail" value="yuto.k051028@gmail.com">
+                    </div>
+                    <div class="admin-modal-actions">
+                        <button type="button" onclick="saveLlmSystemMessages()" class="btn btn-info">
+                            <i class="fa-solid fa-save" aria-hidden="true"></i>
+                            <span>保存</span>
                         </button>
-                        <button type="button" onclick="loadLlmSystemMessages()" class="btn btn-secondary" style="flex: 1;">
-                            <i class="fa-solid fa-rotate-left"></i>
+                        <button type="button" onclick="loadLlmSystemMessages()" class="btn btn-secondary">
+                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
                             <span>再読み込み</span>
                         </button>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </div>
     
-    <div id="systemStatusModal" class="modal admin-modal">
+    <div id="systemStatusModal" class="modal admin-modal admin-modal--lg">
         <div class="modal-content admin-modal-content">
             <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-server"></i> システム状況</h2>
-                <button class="close-btn close" onclick="this.closest('.modal').classList.remove('show');">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-server" aria-hidden="true"></i> <span>システム状況</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('systemStatusModal')" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
-            <div id="systemStatusContent">
-                <p>読み込み中...</p>
+            <div class="modal-body app-scrollbar">
+                <div id="systemStatusContent" class="admin-modal-stack">
+                    <p class="admin-modal-loading">読み込み中...</p>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- セッション管理モーダル -->
-    <div id="sessionManagementModal" class="admin-modal">
-        <div class="admin-modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-            <span class="close" onclick="closeSessionManagement()" style="float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-            <h2 style="margin-bottom: 20px;">📋 セッション管理</h2>
-            
-            <!-- 操作ボタン -->
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button class="btn btn-info" onclick="refreshSessionManagement()" style="padding: 8px 16px; font-size: 0.9em;">🔄 更新</button>
-                <button class="btn btn-warning" onclick="purgeEmptySessions()" style="padding: 8px 16px; font-size: 0.9em;">🧹 空セッション削除</button>
-                <button class="btn btn-danger" onclick="deleteAllSessions()" style="padding: 8px 16px; font-size: 0.9em;">🗑️ 全削除</button>
-                <input type="text" id="session-search-input" placeholder="🔍 セッションID/ユーザー名で検索" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;" onkeyup="filterSessionManagement()">
+    <div id="sessionManagementModal" class="admin-modal modal admin-modal--xl">
+        <div class="admin-modal-content modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-list" aria-hidden="true"></i> <span>セッション管理</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('sessionManagementModal')" aria-label="閉じる">&times;</button>
             </div>
-            
-            <!-- セッション一覧 -->
-            <div id="session-management-list" style="max-height: 500px; overflow-y: auto;">
+            <div class="modal-body app-scrollbar">
+                <div class="admin-modal-toolbar">
+                    <button type="button" class="btn btn-info btn-sm" onclick="refreshSessionManagement()">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> 更新
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="purgeEmptySessions()">
+                        <i class="fa-solid fa-broom" aria-hidden="true"></i> 空セッション削除
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllSessions()">
+                        <i class="fa-solid fa-trash" aria-hidden="true"></i> 全削除
+                    </button>
+                    <input type="search" id="session-search-input" class="admin-modal-search" placeholder="セッションID / ユーザー名で検索" oninput="filterSessionManagement()">
+                </div>
+                <div id="session-management-list" class="admin-session-list app-scrollbar">
                     <div class="empty-state">
-                        <i class="fa-solid fa-list"></i>
+                        <i class="fa-solid fa-list" aria-hidden="true"></i>
                         <p>セッション情報を読み込み中...</p>
                     </div>
                 </div>
@@ -494,110 +505,102 @@
         </div>
     </div>
 
-    <div id="llmSettingsModal" class="admin-modal modal">
-        <div class="admin-modal-content modal-content" style="max-width: 720px;">
+    <div id="llmSettingsModal" class="admin-modal modal admin-modal--md">
+        <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-flask"></i> ゴールデンケース</h2>
-                <button class="close-btn close">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i> <span>LLM設定</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('llmSettingsModal')" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
-                <p style="font-size:0.875rem;color:var(--text-sub);margin-bottom:12px;">薬剤師入力用ゴールデンケース（Neon DB）</p>
-                <textarea id="goldenInputText" placeholder="入力文" rows="2" style="width:100%;margin-bottom:6px;"></textarea>
-                <select id="goldenCategory" style="width:100%;margin-bottom:8px;padding:8px;">
-                    <option value="Physical">Physical</option>
-                    <option value="Emotional">Emotional</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="Ask">Ask</option>
-                    <option value="Other">Other</option>
-                </select>
-                <button type="button" class="btn btn-primary" onclick="addGoldenCase()">ゴールデン追加</button>
-                <a href="/admin/golden_cases/export" style="margin-left:8px;">JSONLエクスポート</a>
-                <div id="goldenCasesList" style="margin-top:12px;max-height:180px;overflow:auto;font-size:0.85rem;"></div>
+            <div class="modal-body app-scrollbar">
+                <p class="admin-modal-section__desc">薬剤師入力用ゴールデンケース（Neon DB）</p>
+                <div class="admin-modal-field">
+                    <label for="goldenInputText">入力文</label>
+                    <textarea id="goldenInputText" placeholder="入力文" rows="2"></textarea>
+                </div>
+                <div class="admin-modal-field">
+                    <label for="goldenCategory">カテゴリ</label>
+                    <select id="goldenCategory">
+                        <option value="Physical">Physical</option>
+                        <option value="Emotional">Emotional</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Ask">Ask</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="admin-modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="addGoldenCase()">ゴールデン追加</button>
+                    <a class="btn btn-secondary" href="/admin/golden_cases/export">JSONLエクスポート</a>
+                </div>
+                <div id="goldenCasesList" class="admin-modal-sublist app-scrollbar"></div>
             </div>
         </div>
     </div>
 
-    <div id="medicineChatModal" class="admin-modal modal">
+    <div id="medicineChatModal" class="admin-modal modal admin-modal--lg">
         <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-vial"></i> 医薬品相談テスト</h2>
-                <button class="close-btn close">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-vial" aria-hidden="true"></i> <span>医薬品テスト</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('medicineChatModal')" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
-                <textarea id="medicineChatInput" placeholder="症状や質問を入力してください...（例：頭が痛いです、のどが痛い）" rows="4" style="width: 100%; padding: 12px; font-size: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); resize: vertical; font-family: inherit; margin-bottom: 1rem;"></textarea>
-                <button onclick="sendMedicineChat()" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
-                    <i class="fa-solid fa-paper-plane"></i> 送信
+            <div class="modal-body app-scrollbar">
+                <div class="admin-modal-field">
+                    <label for="medicineChatInput">症状・質問</label>
+                    <textarea id="medicineChatInput" placeholder="例：頭が痛いです、のどが痛い" rows="4"></textarea>
+                </div>
+                <button type="button" onclick="sendMedicineChat()" class="btn btn-primary admin-modal-submit-btn">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> 送信
                 </button>
-                <div id="medicineChatResult" style="margin-top: 1.5rem; padding: 1rem; background: var(--background); border-radius: var(--radius-md); border: 1px solid var(--border); min-height: 100px; max-height: 600px; overflow-y: auto;">
-                    <p style="color: var(--text-sub); text-align: center; padding: 2rem 0;">結果がここに表示されます...</p>
+                <div id="medicineChatResult" class="admin-modal-result app-scrollbar">
+                    <p class="admin-modal-result__placeholder">結果がここに表示されます</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 監視ダッシュボードモーダル -->
-    <div id="monitoringModal" class="admin-modal modal">
-        <div class="admin-modal-content modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+    <div id="monitoringModal" class="admin-modal modal admin-modal--xl">
+        <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-chart-line"></i> 監視ダッシュボード</h2>
-                <button class="close-btn close">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> <span>監視ダッシュボード</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('monitoringModal')" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body app-scrollbar">
             <div id="monitoringContent">
-                <div class="monitoring-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-                    <!-- アクセス統計 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🌐 アクセス統計</h3>
-                        <div id="accessStats" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- パフォーマンス統計 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">⚡ パフォーマンス統計</h3>
-                        <div id="performanceStats" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- ブラウザ分布 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🌍 ブラウザ分布</h3>
-                        <div id="browserDistribution" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- OS分布 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">💻 OS分布</h3>
-                        <div id="osDistribution" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- デバイス分布 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">📱 デバイス分布</h3>
-                        <div id="deviceDistribution" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- リアルタイム監視 -->
-                    <div class="monitoring-card" style="background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e9ecef;">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">🔄 リアルタイム監視</h3>
-                        <div id="realtimeMonitoring" style="color: #333333;">
-                            <p style="color: #333333;">読み込み中...</p>
-                        </div>
-                    </div>
+                <div class="admin-monitoring-grid">
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-globe" aria-hidden="true"></i> アクセス統計</h3>
+                        <div id="accessStats" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> パフォーマンス</h3>
+                        <div id="performanceStats" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-brands fa-chrome" aria-hidden="true"></i> ブラウザ分布</h3>
+                        <div id="browserDistribution" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-laptop" aria-hidden="true"></i> OS分布</h3>
+                        <div id="osDistribution" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> デバイス分布</h3>
+                        <div id="deviceDistribution" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-wave-square" aria-hidden="true"></i> リアルタイム</h3>
+                        <div id="realtimeMonitoring" class="admin-kv-list"><p>読み込み中...</p></div>
+                    </section>
                 </div>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="refreshMonitoringData()" class="admin-btn" style="padding: 10px 20px; font-size: 14px;">🔄 データ更新</button>
-                    <button onclick="exportMonitoringData()" class="admin-btn" style="padding: 10px 20px; font-size: 14px; margin-left: 10px;">📊 データエクスポート</button>
+                <div class="admin-modal-actions admin-modal-actions--center">
+                    <button type="button" onclick="refreshMonitoringData()" class="btn btn-info">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> 更新
+                    </button>
+                    <button type="button" onclick="exportMonitoringData()" class="btn btn-secondary">
+                        <i class="fa-solid fa-file-export" aria-hidden="true"></i> エクスポート
+                    </button>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -626,84 +629,212 @@
     </div>
 
     <!-- 不具合報告モーダル -->
-    <div id="feedbackReportsModal" class="admin-modal modal">
-        <div class="admin-modal-content modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+    <div id="feedbackReportsModal" class="admin-modal modal admin-modal--2xl">
+        <div class="admin-modal-content modal-content">
+            <div class="modal-header modal-header--with-actions">
+                <h2 class="modal-title"><i class="fa-solid fa-bug" aria-hidden="true"></i> <span>不具合報告一覧</span></h2>
+                <div class="modal-header__toolbar">
+                    <button type="button" onclick="loadFeedbackReports()" class="btn btn-info btn-sm modal-header__btn">
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> 更新
+                    </button>
+                    <button type="button" onclick="exportFeedbackReports()" class="btn btn-secondary btn-sm modal-header__btn">
+                        <i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV
+                    </button>
+                </div>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('feedbackReportsModal')" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body admin-modal-body--feedback">
+                <div class="admin-feedback-panel">
+                    <div id="feedbackStats" class="admin-stat-grid admin-stat-grid--feedback admin-stat-grid--compact">
+                        <div class="admin-stat-chip admin-stat-chip--compact">
+                            <div class="admin-stat-chip__value admin-stat-chip__value--danger" id="totalReports">-</div>
+                            <div class="admin-stat-chip__label">総報告数</div>
+                        </div>
+                        <div class="admin-stat-chip admin-stat-chip--compact">
+                            <div class="admin-stat-chip__value admin-stat-chip__value--success" id="resolvedReports">-</div>
+                            <div class="admin-stat-chip__label">解決済み</div>
+                        </div>
+                        <div class="admin-stat-chip admin-stat-chip--compact">
+                            <div class="admin-stat-chip__value admin-stat-chip__value--warn" id="unresolvedReports">-</div>
+                            <div class="admin-stat-chip__label">未解決</div>
+                        </div>
+                        <div class="admin-stat-chip admin-stat-chip--compact">
+                            <div class="admin-stat-chip__value admin-stat-chip__value--success" id="positiveRatio">-</div>
+                            <div class="admin-stat-chip__label">適切率</div>
+                        </div>
+                        <div class="admin-stat-chip admin-stat-chip--compact">
+                            <div class="admin-stat-chip__value admin-stat-chip__value--danger" id="negativeRatio">-</div>
+                            <div class="admin-stat-chip__label">不適切率</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-feedback-filter">
+                    <div class="admin-feedback-filter__bar">
+                        <span class="admin-feedback-filter__label" title="状態">状態</span>
+                        <div class="admin-feedback-chip-group" id="feedbackFilterResolvedGroup" role="group" aria-label="状態">
+                            <button type="button" class="admin-feedback-chip is-active" data-value="all">全</button>
+                            <button type="button" class="admin-feedback-chip" data-value="unresolved">未</button>
+                            <button type="button" class="admin-feedback-chip" data-value="resolved">済</button>
+                        </div>
+                        <span class="admin-feedback-filter__sep" aria-hidden="true"></span>
+                        <span class="admin-feedback-filter__label" title="チャネル">CH</span>
+                        <div class="admin-feedback-chip-group" id="feedbackFilterChannelGroup" role="group" aria-label="チャネル">
+                            <button type="button" class="admin-feedback-chip is-active" data-value="all">全</button>
+                            <button type="button" class="admin-feedback-chip" data-value="line">LINE</button>
+                            <button type="button" class="admin-feedback-chip" data-value="web">Web</button>
+                        </div>
+                        <span class="admin-feedback-filter__sep" aria-hidden="true"></span>
+                        <div class="admin-feedback-filter__type">
+                            <span class="admin-feedback-filter__label" title="種類">種類</span>
+                            <div class="admin-feedback-chip-group admin-feedback-chip-group--scroll" id="feedbackFilterTypeGroup" role="group" aria-label="種類">
+                                <button type="button" class="admin-feedback-chip is-active" data-value="all">全</button>
+                                <button type="button" class="admin-feedback-chip" data-value="evaluation_positive" title="評価（適切）">適切</button>
+                                <button type="button" class="admin-feedback-chip" data-value="evaluation_negative" title="評価（不適切）">不適切</button>
+                                <button type="button" class="admin-feedback-chip" data-value="bug_report" title="不具合報告">不具合</button>
+                                <button type="button" class="admin-feedback-chip" data-value="slow_request" title="処理遅延通知">遅延</button>
+                                <button type="button" class="admin-feedback-chip" data-value="processing_timeout" title="処理タイムアウト">TO</button>
+                                <button type="button" class="admin-feedback-chip" data-value="security_warning" title="セキュリティ警告">SEC</button>
+                            </div>
+                        </div>
+                        <div class="admin-feedback-filter__actions">
+                            <span id="feedbackFilterResultCount" class="admin-feedback-filter__count"></span>
+                            <button type="button" class="admin-feedback-filter__reset" onclick="resetFeedbackReportFilters()" title="フィルターをリセット" aria-label="フィルターをリセット">
+                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" id="feedback-reports-select-btn" class="session-list-action-btn admin-feedback-action-btn" onclick="toggleFeedbackReportsSelectMode()" title="複数選択" aria-label="複数選択">
+                                <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                            </button>
+                            <div id="feedback-reports-bulk-toolbar" class="admin-feedback-filter__bulk" hidden>
+                                <button type="button" id="feedback-reports-resolve-selected-btn" class="session-list-action-btn session-list-action-btn--success admin-feedback-action-btn" onclick="resolveSelectedFeedbackReports()" style="display:none;" title="選択した報告を解決済みにする" aria-label="選択した報告を解決済みにする">
+                                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                    <span class="session-list-action-btn__badge" id="feedback-reports-resolve-badge" hidden></span>
+                                </button>
+                                <button type="button" id="feedback-reports-delete-selected-btn" class="session-list-action-btn session-list-action-btn--danger admin-feedback-action-btn" onclick="deleteSelectedFeedbackReports()" style="display:none;" title="選択した報告を削除" aria-label="選択した報告を削除">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                    <span class="session-list-action-btn__badge" id="feedback-reports-delete-badge" hidden></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="feedbackReportsContent" class="admin-feedback-table-area app-scrollbar">
+                    <p class="admin-modal-loading">読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 不具合報告: 入出力ログ追跡モーダル -->
+    <div id="feedbackDetailModal" class="admin-modal modal admin-modal--lg admin-modal--stack-child">
+        <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">🐛 不具合報告一覧</h2>
-                <button class="close-btn close" onclick="this.closest('.modal').classList.remove('show');">&times;</button>
+                <h2 class="modal-title" id="feedbackDetailTitle"><i class="fa-solid fa-route" aria-hidden="true"></i> <span>評価ログ追跡</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('feedbackDetailModal')" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body app-scrollbar">
+                <section class="admin-panel-card admin-panel-card--info">
+                    <h3 class="admin-panel-card__title"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> 評価の経緯</h3>
+                    <pre id="feedbackDetailSummary" class="admin-feedback-log-block admin-text-pre app-scrollbar"></pre>
+                </section>
+                <div class="admin-feedback-log-grid">
+                    <section class="admin-panel-card">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-user" aria-hidden="true"></i> ユーザー入力</h3>
+                        <pre id="feedbackDetailInput" class="admin-feedback-log-block admin-text-pre app-scrollbar"></pre>
+                    </section>
+                    <section class="admin-panel-card admin-panel-card--feedback-output">
+                        <h3 class="admin-panel-card__title"><i class="fa-solid fa-robot" aria-hidden="true"></i> AI出力</h3>
+                        <div id="feedbackDetailOutput" class="admin-feedback-detail-output app-scrollbar"></div>
+                    </section>
+                </div>
+                <section class="admin-panel-card" id="feedbackDetailMetaSection" hidden>
+                    <h3 class="admin-panel-card__title"><i class="fa-solid fa-code-branch" aria-hidden="true"></i> トレースメタデータ</h3>
+                    <pre id="feedbackDetailMeta" class="admin-feedback-log-block admin-text-pre app-scrollbar"></pre>
+                </section>
+                <section class="admin-panel-card admin-panel-card--warn" id="feedbackDetailExtraSection" hidden>
+                    <h3 class="admin-panel-card__title"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> 補足情報</h3>
+                    <div id="feedbackDetailExtra" class="admin-kv-list"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- 不具合報告: セッション未存在時の簡易チャット表示 -->
+    <div id="feedbackChatPreviewModal" class="admin-modal modal admin-modal--lg admin-modal--stack-child">
+        <div class="admin-modal-content modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="feedbackChatPreviewTitle"><i class="fa-solid fa-comments" aria-hidden="true"></i> <span>報告時のチャット</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('feedbackChatPreviewModal')" aria-label="閉じる">&times;</button>
+            </div>
+            <div class="modal-body app-scrollbar admin-modal-body--feedback-preview">
+                <div class="admin-feedback-chat-preview-header">
+                    <div class="admin-feedback-chat-preview-meta-row">
+                        <div id="feedbackChatPreviewMeta" class="admin-kv-list admin-feedback-chat-preview-meta"></div>
+                        <button type="button" id="feedbackChatPreviewGoChatBtn" class="btn btn-secondary btn-sm admin-feedback-go-chat-btn" onclick="openFeedbackPreviewGoToChat()" disabled title="セッションがDBにありません">
+                            <i class="fa-solid fa-comment" aria-hidden="true"></i>
+                            <span>チャットへ</span>
+                        </button>
+                    </div>
+                    <p id="feedbackChatPreviewNotice" class="admin-feedback-chat-preview-notice"></p>
+                </div>
+                <div id="feedbackChatPreviewThread" class="admin-feedback-chat-thread"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ログクリア確認モーダル -->
+    <div id="clearLogsModal" class="admin-modal modal admin-modal--md">
+        <div class="admin-modal-content modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-trash" aria-hidden="true"></i> <span>ログクリア</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAdminModal('clearLogsModal')" aria-label="閉じる">&times;</button>
             </div>
             <div class="modal-body">
-            <div style="margin-bottom: 20px;">
-                <button onclick="loadFeedbackReports()" class="admin-btn">🔄 更新</button>
-                <button onclick="exportFeedbackReports()" class="admin-btn">📊 CSV出力</button>
-                <div style="margin-top: 15px; display: flex; align-items: center; gap: 20px; flex-wrap: nowrap; overflow-x: auto;">
-                    <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;">
-                        <input type="checkbox" id="unresolvedOnly" onchange="loadFeedbackReports()" style="transform: scale(0.33);"> 未解決のみ表示
-                    </label>
-                </div>
-            </div>
-            <div id="feedbackStats" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;" id="totalReports">-</div>
-                            <div style="font-size: 12px; color: #666;">総報告数</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; color: #28a745;" id="resolvedReports">-</div>
-                            <div style="font-size: 12px; color: #666;">解決済み</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;" id="unresolvedReports">-</div>
-                            <div style="font-size: 12px; color: #666;">未解決</div>
-                        </div>
+                <section class="admin-panel-card admin-panel-card--warn">
+                    <h3 class="admin-panel-card__title"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> 実行前にご確認ください</h3>
+                    <div class="admin-kv-list">
+                        <p>表示用ログ（<code>log/recommendation_log.jsonl</code> など）をクリアします。</p>
                     </div>
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; font-weight: bold; color: #28a745;" id="positiveRatio">-</div>
-                            <div style="font-size: 12px; color: #666;">適切率</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 18px; font-weight: bold; color: #dc3545;" id="negativeRatio">-</div>
-                            <div style="font-size: 12px; color: #666;">不適切率</div>
-                        </div>
-                    </div>
+                </section>
+                <ul class="admin-clear-logs-list">
+                    <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> セッション履歴は<strong>保持</strong>されます</li>
+                    <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> 手動返信キューは<strong>保持</strong>されます</li>
+                    <li><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i> ネットワークログの表示キャッシュは<strong>クリア</strong>されます</li>
+                </ul>
+                <div class="admin-modal-actions admin-modal-actions--center">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdminModal('clearLogsModal')">キャンセル</button>
+                    <button type="button" class="btn btn-danger" id="confirmClearLogsBtn" onclick="confirmClearLogs()">
+                        <i class="fa-solid fa-trash" aria-hidden="true"></i> ログをクリア
+                    </button>
                 </div>
-            </div>
-            <div id="feedbackReportsContent">
-                <p style="text-align: center; padding: 20px; color: #666;">読み込み中...</p>
-            </div>
             </div>
         </div>
     </div>
 
     <!-- AI応答全文表示モーダル（不具合報告用） -->
-    <div id="aiFullTextModal" class="admin-modal">
-        <div class="admin-modal-content" style="max-width: 800px;">
+    <div id="aiFullTextModal" class="admin-modal modal admin-modal--md">
+        <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">AI応答（全文）</h2>
-                <button class="close-btn close" onclick="closeAiResponseModal()">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-message" aria-hidden="true"></i> <span>AI応答（全文）</span></h2>
+                <button type="button" class="close-btn close" onclick="closeAiResponseModal()" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
-                <div id="aiFullTextBody" style="white-space: pre-wrap; background:#fff; color:#333; padding:12px; border:1px solid #dee2e6; border-radius:6px; max-height:60vh; overflow:auto;"></div>
+            <div class="modal-body app-scrollbar">
+                <div id="aiFullTextBody" class="admin-modal-result admin-text-pre"></div>
             </div>
-            <div class="modal-footer" style="margin-top: 12px; text-align: right;">
-                <button class="admin-btn" onclick="closeAiResponseModal()">閉じる</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAiResponseModal()">閉じる</button>
             </div>
         </div>
     </div>
 
     <!-- スコア詳細モーダル -->
-    <div id="scoreModal" class="admin-modal">
-        <div class="admin-modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
+    <div id="scoreModal" class="admin-modal modal admin-modal--lg">
+        <div class="admin-modal-content modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">📊 医薬品スコア詳細</h2>
-                <button class="close-btn close" onclick="closeScoreModal()">&times;</button>
+                <h2 class="modal-title"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> <span>医薬品スコア詳細</span></h2>
+                <button type="button" class="close-btn close" onclick="closeScoreModal()" aria-label="閉じる">&times;</button>
             </div>
-            <div class="modal-body">
-                <div id="scoreModalContent">
-                    <!-- スコア詳細がここに表示される -->
-                </div>
+            <div class="modal-body app-scrollbar">
+                <div id="scoreModalContent" class="admin-modal-stack"></div>
             </div>
         </div>
     </div>

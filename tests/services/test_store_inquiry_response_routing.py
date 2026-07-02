@@ -36,6 +36,11 @@ def test_fast_path_uses_detailed_classification(text, expected_type, snippet):
     assert result is not None
     assert result["inquiry_type"] == expected_type
     assert snippet in result["response"]["simple_message"]
+    if expected_type == "facilities":
+        msg = result["response"]["simple_message"]
+        assert "店内" in msg
+        assert "お店の外" in msg
+        assert "当キオスク" not in msg
 
 
 def test_toilet_need_routes_to_store_not_concierge_greeting():

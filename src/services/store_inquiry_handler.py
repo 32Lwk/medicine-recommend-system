@@ -29,17 +29,29 @@ STORE_LOCATION_KEYWORDS = {
     "outside": _STORE_KW.store_location_outside,
 }
 
-_EXTERNAL_CHAIN_KEYWORDS = (
-    "マツキヨ",
-    "マツモトキヨシ",
-    "ウエルシア",
-    "ツルハ",
-    "サンドラッグ",
-    "ココカラファインファーマシー",
-    "ココカラ",
-    "スギ薬局",
-    "セイムス",
-)
+_EXTERNAL_CHAIN_KEYWORDS = None  # lazy: store_facility_index.get_external_chain_labels()
+
+
+def _external_chain_keywords() -> tuple[str, ...]:
+    global _EXTERNAL_CHAIN_KEYWORDS
+    if _EXTERNAL_CHAIN_KEYWORDS is None:
+        try:
+            from src.services.store_facility_index import get_external_chain_labels
+
+            _EXTERNAL_CHAIN_KEYWORDS = get_external_chain_labels()
+        except ImportError:
+            _EXTERNAL_CHAIN_KEYWORDS = (
+                "マツキヨ",
+                "マツモトキヨシ",
+                "ウエルシア",
+                "ツルハ",
+                "サンドラッグ",
+                "ココカラファインファーマシー",
+                "ココカラ",
+                "スギ薬局",
+                "セイムス",
+            )
+    return _EXTERNAL_CHAIN_KEYWORDS
 
 _LOCATION_INQUIRY_HINTS = ("近く", "どこ", "ありますか", "近隣", "場所")
 
@@ -67,21 +79,122 @@ def detect_external_chain_location_inquiry(user_text: str) -> bool:
     t = user_text or ""
     if "ドラッグストア" in t and any(h in t for h in _LOCATION_INQUIRY_HINTS):
         return True
-    has_chain = any(k in t for k in _EXTERNAL_CHAIN_KEYWORDS)
+    if (
+        "薬局" in t
+        and any(h in t for h in _LOCATION_INQUIRY_HINTS)
+        and not _has_explicit_store_stock_intent(t)
+    ):
+        return True
+    has_chain = any(k in t for k in _external_chain_keywords())
     has_location = any(h in t for h in _LOCATION_INQUIRY_HINTS)
     return bool(has_chain and has_location)
 
 
-def _external_chain_location_message() -> Dict[str, str]:
-    simple_message = (
-        "当キオスクでは近隣店舗の位置情報は提供できません。"
-        "地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n"
-        "店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。"
+def _resolve_facility_subject_label(
+    user_text: str,
+    facility_name: Optional[str] = None,
+    *,
+    default: str = "施設",
+) -> str:
+    if facility_name:
+        return facility_name
+    try:
+        from src.services.store_facility_index import find_facility_in_text
+
+        found = find_facility_in_text(user_text)
+        if found:
+            return found
+    except ImportError:
+        pass
+    return default
+
+
+def _compose_dual_location_guidance(
+    *,
+    subject_label: str,
+    store_location: Optional[str],
+    inside_body: str,
+    outside_body: str,
+) -> str:
+    """店内外が未指定のときは両方の案内を返す。"""
+    opening = f"{subject_label}についてお尋ねいただき、ありがとうございます。"
+    if store_location == "inside":
+        return f"{opening}\n\n{inside_body}"
+    if store_location == "outside":
+        return f"{opening}\n\n{outside_body}"
+    return (
+        f"{opening}\n\n"
+        f"【店内をお探しの場合】\n"
+        f"{inside_body}\n\n"
+        f"【お店の外・近くをお探しの場合】\n"
+        f"{outside_body}"
     )
-    structured_html = f"""<div class="store-inquiry-response">
-    <h4>🏪 近隣店舗のご案内</h4>
-    <p>{html.escape(simple_message).replace(chr(10), "<br>")}</p>
+
+
+def _build_dual_location_html(
+    *,
+    user_text: str,
+    heading: str,
+    simple_message: str,
+    inside_body: str,
+    outside_body: str,
+    store_location: Optional[str],
+) -> str:
+    response_content = simple_message
+    if store_location is None:
+        options_html = f"""<div class="inquiry-options">
+        <p><strong>📍 店内をお探しの場合</strong></p>
+        <p>{html.escape(inside_body).replace(chr(10), "<br>")}</p>
+        <p><strong>📍 お店の外・近くをお探しの場合</strong></p>
+        <p>{html.escape(outside_body).replace(chr(10), "<br>")}</p>
+    </div>"""
+    elif store_location == "inside":
+        options_html = f"""<div class="inquiry-options">
+        <p><strong>📍 ご案内方法</strong></p>
+        <p>{html.escape(inside_body).replace(chr(10), "<br>")}</p>
+    </div>"""
+    else:
+        options_html = f"""<div class="inquiry-options">
+        <p><strong>📍 ご案内方法</strong></p>
+        <p>{html.escape(outside_body).replace(chr(10), "<br>")}</p>
+    </div>"""
+    return f"""<div class="store-inquiry-response">
+    <h4>{heading}</h4>
+    <p>{html.escape(simple_message.split(chr(10))[0])}</p>
+    {options_html}
+    {generate_feedback_section(user_text, response_content)}
 </div>"""
+
+
+def _external_chain_location_message(
+    user_text: str,
+    store_location: Optional[str] = None,
+) -> Dict[str, str]:
+    label = _resolve_facility_subject_label(user_text, default="近隣の店舗")
+    resolved_location = store_location if store_location is not None else detect_store_location(user_text)
+    inside_body = (
+        "店内のスタッフにお尋ねいただければ、売場の場所や市販薬（OTC）の売場をご案内いたします。"
+        "お近くのスタッフまでお気軽にお声がけください。"
+    )
+    outside_body = (
+        "こちらから地図や近隣店舗の位置情報をお調べすることはできません。"
+        "地図アプリまたは各店舗・チェーンの公式サイトでご確認ください。"
+        "周辺のご案内は、店頭のスタッフにもお尋ねいただけます。"
+    )
+    simple_message = _compose_dual_location_guidance(
+        subject_label=label,
+        store_location=resolved_location,
+        inside_body=inside_body,
+        outside_body=outside_body,
+    )
+    structured_html = _build_dual_location_html(
+        user_text=user_text,
+        heading="🏪 店舗・施設のご案内",
+        simple_message=simple_message,
+        inside_body=inside_body,
+        outside_body=outside_body,
+        store_location=resolved_location,
+    )
     return {"simple_message": simple_message, "structured_html": structured_html}
 INVENTORY_INQUIRY_KEYWORDS = _STORE_KW.inventory_inquiry_keywords
 SYMPTOM_KEYWORDS = _STORE_KW.symptom_keywords
@@ -765,7 +878,7 @@ def generate_store_location_response(user_text: str, store_location: Optional[st
     """
     intent = classify_store_user_intent(user_text)
     if intent == "external_chain":
-        return _external_chain_location_message()
+        return _external_chain_location_message(user_text, store_location)
 
     is_toilet_inquiry = _is_toilet_facility_request(user_text)
     
@@ -955,24 +1068,33 @@ def generate_facilities_inquiry_response(
             "structured_html": str
         }
     """
-    label = facility_name or "周辺施設"
-    facility_display = f"（{facility_name}）" if facility_name else ""
-    simple_message = f"""{label}の場所についてお尋ねいただき、ありがとうございます。
-
-周辺のご案内は詳しい情報をお持ちしていないため、店内のスタッフにお尋ねください。
-お近くのスタッフまでお気軽にお声がけください。"""
-    
+    label = facility_name or _resolve_facility_subject_label(user_text, default="周辺施設")
+    resolved_location = detect_store_location(user_text)
+    inside_body = (
+        "店内のスタッフにお尋ねいただければ、売場や施設の場所を詳しくご案内いたします。"
+        "お近くのスタッフまでお気軽にお声がけください。"
+    )
+    outside_body = (
+        "こちらから地図や近隣の位置情報をお調べすることはできません。"
+        "地図アプリや各施設の公式サイトをご利用ください。"
+        "周辺のご案内は、店頭のスタッフにもお尋ねいただけます。"
+    )
+    simple_message = _compose_dual_location_guidance(
+        subject_label=label,
+        store_location=resolved_location,
+        inside_body=inside_body,
+        outside_body=outside_body,
+    )
     response_content = simple_message
-    
-    structured_html = f"""<div class="store-inquiry-response">
-    <h4>🏢 {html.escape(label)}について{facility_display}</h4>
-    <p>{html.escape(simple_message).replace(chr(10), "<br>")}</p>
-    <div class="inquiry-options">
-        <p><strong>📍 ご案内方法</strong></p>
-        <p>店内のスタッフにお尋ねいただければ、周辺の施設についてご案内いたします。</p>
-    </div>
-    {generate_feedback_section(user_text, response_content)}
-</div>"""
+    facility_display = f"（{facility_name}）" if facility_name else ""
+    structured_html = _build_dual_location_html(
+        user_text=user_text,
+        heading=f"🏢 {html.escape(label)}について{facility_display}",
+        simple_message=simple_message,
+        inside_body=inside_body,
+        outside_body=outside_body,
+        store_location=resolved_location,
+    )
     
     return {
         "simple_message": simple_message,
@@ -1572,6 +1694,20 @@ def detect_inventory_inquiry(
 
     # 「場所」または「どこ」キーワードの特別処理：商品名が検出された場合のみ在庫確認として扱う
     if has_location_question:
+        if detect_external_chain_location_inquiry(user_text):
+            logger.info("🔍 他社チェーン・ドラッグストアの位置問い合わせのため在庫判定をスキップ")
+            return False, None
+        try:
+            from src.services.store_facility_index import find_facility_in_text
+
+            if (
+                find_facility_in_text(user_text)
+                and not _has_explicit_store_stock_intent(user_text)
+            ):
+                logger.info("🔍 施設名+位置問い合わせのため在庫判定をスキップ")
+                return False, None
+        except ImportError:
+            pass
         if product_category_info:
             has_symptom_keyword = any(
                 keyword in user_text_lower for keyword in SYMPTOM_KEYWORDS
@@ -1793,9 +1929,24 @@ def process_detailed_classification(
         pass
 
     inquiry_type = llm_result.get("inquiry_type") or "store_inquiry"
+
+    user_intent = classify_store_user_intent(user_text)
+    if user_intent in ("external_chain", "locator"):
+        store_location = detect_store_location(user_text)
+        response = generate_store_location_response(user_text, store_location)
+        return {
+            "is_store_inquiry": True,
+            "inquiry_type": "store_inquiry",
+            "user_intent": user_intent,
+            "store_location": store_location,
+            "product_category": None,
+            "response": response,
+            "confidence": llm_result.get("confidence", 0.8),
+            "reasoning": llm_result.get("reasoning", ""),
+        }
     
     # 在庫確認の検出（商品名が検出された場合は優先的に処理）
-    is_inventory, product_category_info = detect_inventory_inquiry(user_text)
+    is_inventory, product_category_info = detect_inventory_inquiry(user_text, triage_result)
     
     if is_inventory:
         # 在庫確認の応答を生成
